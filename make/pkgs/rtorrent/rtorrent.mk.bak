@@ -1,0 +1,276 @@
+$(call PKG_INIT_BIN, 0.16.6)
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=94e8408a20332cedea45a4b5f09c69f0f0c54581e1b02e1d7f61f46fee3c41f2
+$(PKG)_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$($(PKG)_VERSION)
+### WEBSITE:=https://github.com/rakshasa/rtorrent
+### MANPAGE:=https://github.com/rakshasa/rtorrent/wiki
+### CHANGES:=https://github.com/rakshasa/rtorrent/releases
+### CVSREPO:=https://github.com/rakshasa/rtorrent
+### SUPPORT:=Ircama
+
+# libTorrent by rakshasa
+# (distinct from libtorrent-rasterbar used by qBittorrent/Deluge)
+LIBTORRENT_RAKSHASA_VERSION:=0.16.6
+LIBTORRENT_SOURCE:=libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz
+LIBTORRENT_HASH:=6cead07aa7d20321bce78f927beb608259538ab9d83a596def108ff16731d051
+LIBTORRENT_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$(LIBTORRENT_RAKSHASA_VERSION)
+LIBTORRENT_DIR:=$(SOURCE_DIR)/libtorrent-$(LIBTORRENT_RAKSHASA_VERSION)
+
+# xmlrpc-c (dependency)
+XMLRPC_VERSION:=1.64.03
+XMLRPC_SOURCE:=xmlrpc-$(XMLRPC_VERSION).tgz
+XMLRPC_HASH:=74729d364edbedbe42e782822da1e076f3f45c65c4278a3cfba5f2342d7cedbe
+XMLRPC_SITE:=https://downloads.sourceforge.net/project/xmlrpc-c/Xmlrpc-c%20Super%20Stable/$(XMLRPC_VERSION)
+XMLRPC_DIR:=$(SOURCE_DIR)/xmlrpc-$(XMLRPC_VERSION)
+
+$(PKG)_BINARY:=$($(PKG)_DIR)/src/rtorrent
+$(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/rtorrent
+
+LIBTORRENT_BINARY:=$(LIBTORRENT_DIR)/src/.libs/libtorrent.so
+LIBTORRENT_STAGING_LIB:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtorrent.so
+LIBTORRENT_TARGET_LIB:=$($(PKG)_TARGET_LIBDIR)/libtorrent.so
+
+# xmlrpc-c has multiple libraries
+XMLRPC_LIBS_SHORT := xmlrpc xmlrpc_server xmlrpc_server_abyss xmlrpc_server_cgi xmlrpc_client xmlrpc_abyss xmlrpc_util xmlrpc_xmlparse xmlrpc_xmltok
+XMLRPC_BINARY:=$(XMLRPC_DIR)/src/libxmlrpc.so
+XMLRPC_STAGING_LIBS:=$(XMLRPC_LIBS_SHORT:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.so)
+XMLRPC_TARGET_LIBS:=$(XMLRPC_LIBS_SHORT:%=$($(PKG)_TARGET_LIBDIR)/lib%.so)
+
+$(PKG)_DEPENDS_ON += curl openssl zlib ncurses expat
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_RTORRENT_STATIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_RTORRENT_WITH_IPV6
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_RTORRENT_DAEMON
+
+$(PKG)_CONFIGURE_OPTIONS += --host=$(GNU_TARGET_NAME)
+$(PKG)_CONFIGURE_OPTIONS += --build=$(GNU_HOST_NAME)
+$(PKG)_CONFIGURE_OPTIONS += --prefix=/usr
+$(PKG)_CONFIGURE_OPTIONS += --with-ncurses
+$(PKG)_CONFIGURE_OPTIONS += --enable-static=$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),yes,no)
+$(PKG)_CONFIGURE_OPTIONS += --enable-shared=$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),no,yes)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_RTORRENT_WITH_IPV6),--enable-ipv6,--disable-ipv6)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC),--with-xmlrpc-c)
+
+LIBTORRENT_CONFIGURE_OPTIONS := --host=$(GNU_TARGET_NAME)
+LIBTORRENT_CONFIGURE_OPTIONS += --build=$(GNU_HOST_NAME)
+LIBTORRENT_CONFIGURE_OPTIONS += --prefix=/usr
+LIBTORRENT_CONFIGURE_OPTIONS += --enable-static=$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),yes,no)
+LIBTORRENT_CONFIGURE_OPTIONS += --enable-shared=$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),no,yes)
+LIBTORRENT_CONFIGURE_OPTIONS += --disable-instrumentation
+LIBTORRENT_CONFIGURE_OPTIONS += --enable-aligned
+
+XMLRPC_CONFIGURE_OPTIONS := --host=$(GNU_TARGET_NAME)
+XMLRPC_CONFIGURE_OPTIONS += --build=$(GNU_HOST_NAME)
+XMLRPC_CONFIGURE_OPTIONS += --prefix=/usr
+XMLRPC_CONFIGURE_OPTIONS += --disable-libxml2-backend
+XMLRPC_CONFIGURE_OPTIONS += --disable-wininet-client
+XMLRPC_CONFIGURE_OPTIONS += --disable-cplusplus
+
+# Intermediate variables to avoid double expansion in shell commands
+RTORRENT_PKG_DIR := $($(PKG)_DIR)
+RTORRENT_PKG_CONFIGURE_OPTIONS := $($(PKG)_CONFIGURE_OPTIONS)
+
+# Custom download rule without | $(DL_DIR) to avoid makefile conflicts
+NON_LOCALSOURCE_DOWNLOADABLE+=$(pkg)
+$(DL_DIR)/$($(PKG)_SOURCE):
+	$(call _ECHO,downloading)
+	@if [ -e $(MIRROR_DIR)/$($(PKG)_SOURCE) -a ! -e $(DL_DIR)/$($(PKG)_SOURCE) ]; then \
+		$(call MESSAGE, Found $($(PKG)_SOURCE) in $(MIRROR_DIR), creating hard link); \
+		ln $(MIRROR_DIR)/$($(PKG)_SOURCE) $(DL_DIR); \
+	else \
+		[ -z "$(strip $($(PKG)_HASH))" ] && echo "no checksum is set, abort." && exit 1; \
+		$(DL_TOOL) \
+			$(DL_DIR) \
+			$($(PKG)_SOURCE) \
+			$($(PKG)_SITE) \
+			$($(PKG)_HASH) \
+			$(SILENT) \
+			; \
+	fi
+
+$(pkg)-download: $(DL_DIR)/$($(PKG)_SOURCE)
+
+$(PKG_UNPACKED)
+
+# Download additional sources
+$(DL_DIR)/libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz:
+	$(DL_TOOL) $(DL_DIR) libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz $(LIBTORRENT_SITE) $(LIBTORRENT_HASH)
+
+$(DL_DIR)/xmlrpc-$(XMLRPC_VERSION).tgz:
+	$(DL_TOOL) $(DL_DIR) $(XMLRPC_SOURCE) $(XMLRPC_SITE) $(XMLRPC_HASH)
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_WEBUI)),y)
+$(DL_DIR)/v$(RUTORRENT_VERSION).tar.gz:
+	$(DL_TOOL) -o v$(RUTORRENT_VERSION).tar.gz $(DL_DIR) v$(RUTORRENT_VERSION).tar.gz $(RUTORRENT_SITE) $(RUTORRENT_HASH)
+
+# Download 3rd party plugins
+$(DL_DIR)/$(AUTODL_RUTORRENT_SOURCE):
+	$(DL_TOOL) -o $(AUTODL_RUTORRENT_SOURCE) $(DL_DIR) v$(AUTODL_RUTORRENT_VERSION).tar.gz $(AUTODL_RUTORRENT_SITE) $(AUTODL_RUTORRENT_HASH)
+
+$(DL_DIR)/$(PLUGIN_MOBILE_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_MOBILE_SOURCE) $(DL_DIR) $(PLUGIN_MOBILE_VERSION).tar.gz $(PLUGIN_MOBILE_SITE) $(PLUGIN_MOBILE_HASH)
+
+$(DL_DIR)/$(PLUGIN_NELU_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_NELU_SOURCE) $(DL_DIR) $(PLUGIN_NELU_VERSION).tar.gz $(PLUGIN_NELU_SITE) $(PLUGIN_NELU_HASH)
+
+$(DL_DIR)/$(PLUGIN_FILEMANAGER_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_FILEMANAGER_SOURCE) $(DL_DIR) $(PLUGIN_FILEMANAGER_VERSION).tar.gz $(PLUGIN_FILEMANAGER_SITE) $(PLUGIN_FILEMANAGER_HASH)
+
+$(DL_DIR)/$(PLUGIN_FREETZ_FILEMANAGER_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_FREETZ_FILEMANAGER_SOURCE) $(DL_DIR) $(PLUGIN_FREETZ_FILEMANAGER_VERSION).tar.gz $(PLUGIN_FREETZ_FILEMANAGER_SITE) $(PLUGIN_FREETZ_FILEMANAGER_HASH)
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_MEDIASTREAM)),y)
+$(DL_DIR)/$(PLUGIN_MEDIASTREAM_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_MEDIASTREAM_SOURCE) $(DL_DIR) $(PLUGIN_MEDIASTREAM_VERSION).tar.gz $(PLUGIN_MEDIASTREAM_SITE) $(PLUGIN_MEDIASTREAM_HASH)
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_FILESHARE)),y)
+# $(DL_DIR)/$(PLUGIN_FILESHARE_SOURCE):
+# 	$(DL_TOOL) -o $(PLUGIN_FILESHARE_SOURCE) $(DL_DIR) $(PLUGIN_FILESHARE_VERSION).tar.gz $(PLUGIN_FILESHARE_SITE) $(PLUGIN_FILESHARE_HASH)
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_LOGOFF)),y)
+$(DL_DIR)/$(PLUGIN_LOGOFF_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_LOGOFF_SOURCE) $(DL_DIR) $(PLUGIN_LOGOFF_VERSION).tar.gz $(PLUGIN_LOGOFF_SITE) $(PLUGIN_LOGOFF_HASH)
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_PAUSE)),y)
+$(DL_DIR)/$(PLUGIN_PAUSE_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_PAUSE_SOURCE) $(DL_DIR) $(PLUGIN_PAUSE_VERSION).tar.gz $(PLUGIN_PAUSE_SITE) $(PLUGIN_PAUSE_HASH)
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_INSTANTSEARCH)),y)
+$(DL_DIR)/$(PLUGIN_INSTANTSEARCH_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_INSTANTSEARCH_SOURCE) $(DL_DIR) $(PLUGIN_INSTANTSEARCH_VERSION).tar.gz $(PLUGIN_INSTANTSEARCH_SITE) $(PLUGIN_INSTANTSEARCH_HASH)
+endif
+
+# $(DL_DIR)/$(PLUGIN_TADDLABELS_SOURCE): | $(DL_DIR)
+# 	$(DL_TOOL) -o $(PLUGIN_TADDLABELS_SOURCE) $(DL_DIR) $(PLUGIN_TADDLABELS_VERSION).tar.gz $(PLUGIN_TADDLABELS_SITE) $(PLUGIN_TADDLABELS_HASH)
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_TOGGLEDETAILS)),y)
+$(DL_DIR)/$(PLUGIN_TOGGLEDETAILS_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_TOGGLEDETAILS_SOURCE) $(DL_DIR) $(PLUGIN_TOGGLEDETAILS_VERSION).tar.gz $(PLUGIN_TOGGLEDETAILS_SITE) $(PLUGIN_TOGGLEDETAILS_HASH)
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_PLUGIN_TRACKERSTATUS)),y)
+$(DL_DIR)/$(PLUGIN_TRACKERSTATUS_SOURCE):
+	$(DL_TOOL) -o $(PLUGIN_TRACKERSTATUS_SOURCE) $(DL_DIR) $(PLUGIN_TRACKERSTATUS_VERSION).tar.gz $(PLUGIN_TRACKERSTATUS_SITE) $(PLUGIN_TRACKERSTATUS_HASH)
+endif
+endif
+
+# Build xmlrpc-c
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC)),y)
+$(XMLRPC_BINARY): $(DL_DIR)/xmlrpc-$(XMLRPC_VERSION).tgz
+	$(call UNPACK_TARBALL,$<,$(SOURCE_DIR))
+	# Build gennmtab for host (used during cross-compilation of xmlrpc-c)
+	@echo ">>> Building host gennmtab in $(XMLRPC_DIR)"
+	(cd $(XMLRPC_DIR) && \
+		./configure \
+			--prefix=/usr \
+			--disable-libxml2-backend \
+			--disable-wininet-client \
+			--disable-curl-client \
+			--disable-cplusplus && \
+		$(MAKE) -C lib/expat/gennmtab gennmtab && \
+		mkdir -p tools && \
+		cp lib/expat/gennmtab/gennmtab tools/gennmtab-host \
+	)
+	# Cross-compile with host gennmtab
+	@echo ">>> Building xmlrpc-c in $(XMLRPC_DIR)"
+	(cd $(XMLRPC_DIR) && \
+		$(TARGET_CONFIGURE_ENV) \
+		AR="$(TARGET_AR)" \
+		RANLIB="$(TARGET_RANLIB)" \
+		./configure \
+			$(XMLRPC_CONFIGURE_OPTIONS) && \
+		find . -name Makefile -exec sed -i "s|../gennmtab/gennmtab|$$PWD/tools/gennmtab-host|g" {} \; && \
+		$(MAKE) -j1 \
+	)
+
+$(XMLRPC_STAGING_LIBS): $(XMLRPC_BINARY)
+	$(SUBMAKE) -C $(XMLRPC_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	# Fix xmlrpc-c-config to use sysroot paths
+	sed -i \
+		-e 's|HEADERINST_DIR="/usr/include"|HEADERINST_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"|' \
+		-e 's|LIBINST_DIR="/usr/lib"|LIBINST_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"|' \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/xmlrpc-c-config
+
+$(XMLRPC_TARGET_LIBS): $($(PKG)_TARGET_LIBDIR)/lib%.so: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.so
+	$(INSTALL_LIBRARY_STRIP)
+endif
+
+# Build libtorrent
+$(LIBTORRENT_BINARY): $(DL_DIR)/libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz
+	$(call UNPACK_TARBALL,$<,$(SOURCE_DIR))
+	@echo ">>> Building libtorrent in $(LIBTORRENT_DIR)"
+	(cd $(LIBTORRENT_DIR) && \
+		$(TARGET_CONFIGURE_ENV) \
+		AR="$(TARGET_AR)" \
+		RANLIB="$(TARGET_RANLIB)" \
+		CPPFLAGS="-DOPENSSL_API_COMPAT=0x10100000L -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
+		LDFLAGS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" \
+		./configure \
+			$(LIBTORRENT_CONFIGURE_OPTIONS) && \
+		$(MAKE) \
+	)
+
+$(LIBTORRENT_STAGING_LIB): $(LIBTORRENT_BINARY)
+	$(SUBMAKE) -C $(LIBTORRENT_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	$(PKG_FIX_LIBTOOL_LA) \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtorrent.la
+
+$(LIBTORRENT_TARGET_LIB): $(LIBTORRENT_STAGING_LIB)
+	$(INSTALL_LIBRARY_STRIP)
+
+# Build rTorrent
+ifeq ($(strip $(FREETZ_PACKAGE_RTORRENT_DAEMON)),y)
+$($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked $(LIBTORRENT_STAGING_LIB) $(if $(FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC),$(XMLRPC_STAGING_LIBS))
+	@echo ">>> Building rTorrent in $(RTORRENT_PKG_DIR)"
+	(cd $(RTORRENT_PKG_DIR) && \
+		$(TARGET_CONFIGURE_ENV) \
+		AR="$(TARGET_AR)" \
+		RANLIB="$(TARGET_RANLIB)" \
+		CPPFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
+		CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
+		CXXFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
+		LDFLAGS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" \
+		XMLRPC_C_CONFIG="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/xmlrpc-c-config" \
+		./configure \
+			$(RTORRENT_PKG_CONFIGURE_OPTIONS) \
+	)
+	touch $@
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(RTORRENT_PKG_DIR)
+
+$($(PKG)_BINARY_TARGET): $($(PKG)_BINARY)
+	$(INSTALL_BINARY_STRIP)
+endif
+
+$(pkg):
+
+$(pkg)-precompiled: \
+	$(if $(FREETZ_PACKAGE_RTORRENT_DAEMON),$($(PKG)_BINARY_TARGET)) \
+	$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),,$(LIBTORRENT_TARGET_LIB)) \
+	$(if $(FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC),$(if $(FREETZ_PACKAGE_RTORRENT_STATIC),,$(XMLRPC_TARGET_LIBS)))
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(LIBTORRENT_DIR) clean
+	-$(SUBMAKE) -C $(XMLRPC_DIR) clean
+	-$(SUBMAKE) -C $(RTORRENT_PKG_DIR) clean
+	$(RM) -rf \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtorrent* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libxmlrpc* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/torrent \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libtorrent.pc
+
+$(pkg)-uninstall:
+	$(RM) $($(PKG)_BINARY_TARGET)
+	$(RM) $(LIBTORRENT_TARGET_LIB) $(XMLRPC_TARGET_LIB)
+
+$(PKG_FINISH)

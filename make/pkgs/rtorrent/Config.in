@@ -1,0 +1,80 @@
+menuconfig FREETZ_PACKAGE_RTORRENT
+	bool "rTorrent/ruTorrent"
+	depends on FREETZ_TARGET_GCC_9_MIN
+	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
+	default n
+	select FREETZ_LIB_libatomic               if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libstdcxx               if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libcurl                 if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libcurl_WITH_SSL        if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libcrypto               if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libcrypto_WITH_RC4      if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libssl                  if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libxml2                 if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libncursesw             if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_LIB_libz                    if !FREETZ_PACKAGE_RTORRENT_STATIC
+	select FREETZ_PACKAGE_CA_BUNDLE
+	help
+		rTorrent is a console-based BitTorrent client with optional ruTorrent web interface.
+
+		Includes libtorrent dependency.
+
+if FREETZ_PACKAGE_RTORRENT
+
+	config FREETZ_PACKAGE_RTORRENT_DAEMON
+		bool "rTorrent daemon and libtorrent library"
+		default y
+		help
+			Installs rTorrent daemon and the related libtorrent library (by rakshasa).
+			Version: 0.16.6
+
+	config FREETZ_PACKAGE_RTORRENT_CGI
+		bool "rTorrent CGI web configuration interface"
+		depends on FREETZ_PACKAGE_RTORRENT_DAEMON
+		select FREETZ_BUSYBOX_START_STOP_DAEMON
+		default n
+
+	config FREETZ_PACKAGE_RTORRENT_STATIC
+		bool "Link statically"
+		depends on FREETZ_PACKAGE_RTORRENT_DAEMON
+		default n
+		help
+			Links rTorrent statically (larger binary, no library dependencies).
+
+	config FREETZ_PACKAGE_RTORRENT_WITH_IPV6
+		bool "With IPv6 support"
+		depends on FREETZ_PACKAGE_RTORRENT_DAEMON
+		depends on FREETZ_TARGET_IPV6_SUPPORT
+		default y
+		help
+			Enables IPv6 support in rTorrent.
+
+	config FREETZ_PACKAGE_RTORRENT_WITH_XMLRPC
+		bool "With XMLRPC support"
+		depends on FREETZ_PACKAGE_RTORRENT_DAEMON
+		select FREETZ_LIB_libxmlrpc               if !FREETZ_PACKAGE_RTORRENT_STATIC
+		select FREETZ_LIB_libxmlrpc_server        if !FREETZ_PACKAGE_RTORRENT_STATIC
+		select FREETZ_LIB_libxmlrpc_util          if !FREETZ_PACKAGE_RTORRENT_STATIC
+		select FREETZ_LIB_libxmlrpc_xmlparse      if !FREETZ_PACKAGE_RTORRENT_STATIC
+		select FREETZ_LIB_libxmlrpc_xmltok        if !FREETZ_PACKAGE_RTORRENT_STATIC
+		default y
+		help
+			Enables XMLRPC interface for remote control.
+			Required for ruTorrent web interface.
+
+
+
+	config FREETZ_PACKAGE_RTORRENT_WITH_AVMRULES
+		bool "Enable AVM-Rules support"
+		select FREETZ_PACKAGE_AVM_RULES
+		default n
+		help
+			Enables AVM-Rules integration for rTorrent.
+			Allows automatic port forwarding and firewall rule management.
+
+	comment "ruTorrent web interface (requires PHP or PHP5 - enable in 'Packages -> Web interface & server' first)"
+		depends on !FREETZ_PACKAGE_PHP && !FREETZ_PACKAGE_PHP5
+
+	source "make/pkgs/rutorrent/Config.in.inc"
+
+endif # FREETZ_PACKAGE_RTORRENT

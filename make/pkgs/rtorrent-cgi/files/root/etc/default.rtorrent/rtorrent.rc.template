@@ -1,0 +1,153 @@
+#############################################################################
+# A minimal rTorrent configuration that provides the basic features
+# you want to have in addition to the built-in defaults.
+#
+# See https://github.com/rakshasa/rtorrent/wiki/CONFIG-Template
+# for an up-to-date version.
+#############################################################################
+
+# Networking
+network.port_range.set = 51413-51413
+network.port_random.set = no
+network.bind_address.set = 0.0.0.0
+
+## Daemon mode - COMMENTED OUT because rc.rtorrent init script uses
+## start-stop-daemon with -b (background) flag, making this redundant.
+## Enabling both can cause issues with PID file management.
+# system.daemon.set = true
+
+method.insert = cfg.basedir,  private|const|string, (cat,"/var/media/ftp/MediaServer/rtorrent/")
+method.insert = cfg.download, private|const|string, (cat,(cfg.basedir),"downloads/")
+method.insert = cfg.logs,     private|const|string, (cat,(cfg.basedir),"log/")
+method.insert = cfg.logfile,  private|const|string, (cat,(cfg.logs),"rtorrent-",(system.time),".log")
+method.insert = cfg.session,  private|const|string, (cat,(cfg.basedir),"session/")
+method.insert = cfg.watch,    private|const|string, (cat,(cfg.basedir),"watch/")
+
+## Create instance directories
+execute.throw = sh, -c, (cat,\
+    "mkdir -p \"",(cfg.download),"\" ",\
+    "\"",(cfg.logs),"\" ",\
+    "\"",(cfg.session),"\" ",\
+    "\"",(cfg.watch),"/load\" ",\
+    "\"",(cfg.watch),"/start\" ")
+
+## Tracker-less torrent
+dht.mode.set = __RTORRENT_DHT__
+
+# Adding public DHT servers for easy bootstrapping
+#####schedule2 = dht_node_1, 5, 0, "dht.add_node=router.utorrent.com:__RTORRENT_DHTPORT__"
+#####schedule2 = dht_node_2, 5, 0, "dht.add_node=dht.transmissionbt.com:6881"
+#####schedule2 = dht_node_3, 5, 0, "dht.add_node=router.bitcomet.com:6881"
+#####schedule2 = dht_node_4, 5, 0, "dht.add_node=dht.aelitis.com:6881"
+
+# Enable/disable peer exchange for torrents that aren't marked private. Disabled by default. (peer_exchange)
+protocol.pex.set = 1
+
+# Set whether the client should try to connect to UDP trackers (It can cause various problems if it's enabled, if you experience any with this option enabled then disable it.)
+trackers.use_udp.set = 1
+
+## Peer settings
+throttle.max_uploads.set = __RTORRENT_UPLOADSLOTS__
+throttle.max_uploads.global.set = __RTORRENT_PEERLIMIT__
+throttle.min_peers.normal.set = __RTORRENT_MIN_PEERS__
+throttle.max_peers.normal.set = __RTORRENT_MAX_PEERS__
+throttle.min_peers.seed.set = __RTORRENT_MIN_PEERS_SEED__
+throttle.max_peers.seed.set = __RTORRENT_MAX_PEERS_SEED__
+trackers.numwant.set = 80
+protocol.encryption.set = allow_incoming,try_outgoing,enable_retry
+
+## Limits for file handle resources, this is optimized for
+## an 'ulimit' of 1024 (a common default). You MUST leave
+## a ceiling of handles reserved for rTorrent's internal needs!
+## NOTE: Values reduced for embedded FritzBox devices to prevent
+## "Poll::process() event_error" issues with too many open sockets
+network.http.max_open.set = 50
+network.max_open_files.set = 400
+network.max_open_sockets.set = 200
+
+## Memory resource usage
+## pieces.memory.max: RAM used for buffering torrent pieces (critical on low-RAM devices)
+##   - FritzBox with 64MB RAM: 32M
+##   - FritzBox with 128-256MB RAM: 64M (default)
+##   - FritzBox with 512MB+ RAM: 128M or higher
+##   Too high = OOM crashes, too low = slower performance
+pieces.memory.max.set = 64M
+
+## XMLRPC message size limit - only relevant when using ruTorrent or XMLRPC proxy
+## Limits response size for operations like d.multicall2 (listing many torrents)
+## Can be increased if you manage 1000+ torrents via ruTorrent
+## Commented out by default (4M is reasonable for most use cases)
+# network.xmlrpc.size_limit.set = 4M
+
+## Basic operational settings (no need to change these)
+session.path.set = (cat, (cfg.session))
+directory.default.set = (cat, (cfg.download))
+log.execute = (cat, (cfg.logs), "execute.log")
+#log.xmlrpc = (cat, (cfg.logs), "xmlrpc.log")
+execute.nothrow = sh, -c, (cat, "echo >",\
+    (session.path), "rtorrent.pid", " ",(system.pid))
+
+## Other operational settings (check & adapt)
+encoding.add = UTF-8
+system.umask.set = 0027
+system.cwd.set = (directory.default)
+network.http.dns_cache_timeout.set = 25
+schedule2 = monitor_diskspace, 15, 60, ((close_low_diskspace, 100M))
+#pieces.hash.on_completion.set = no
+#view.sort_current = seeding, greater=d.ratio=
+#keys.layout.set = qwerty
+
+# CURL options to add CA path and to skip TLS verification (for nonofficial SSL trackers)
+network.http.capath.set = "/etc/ssl/certs"
+#network.http.ssl_verify_host.set = 0
+#network.http.ssl_verify_peer.set = 0
+
+## Some additional values and commands
+method.insert = system.startup_time, value|const, (system.time)
+method.insert = d.data_path, simple,\
+    "if=(d.is_multi_file),\
+        (cat, (d.directory), /),\
+        (cat, (d.directory), /, (d.name))"
+method.insert = d.session_file, simple, "cat=(session.path), (d.hash), .torrent"
+
+## Watch directories (add more as you like, but use unique schedule names)
+## Add torrent
+schedule2 = watch_load, 11, 10, ((load.verbose, (cat, (cfg.watch), "load/*.torrent")))
+## Add & download straight away
+schedule2 = watch_start, 10, 10, ((load.start_verbose, (cat, (cfg.watch), "start/*.torrent")))
+
+## SCGI for ruTorrent - TCP socket (FritzBox configuration)
+## Port 16891 is a high port unlikely to conflict with other services
+## Traditional ports are 5000 or 5555, but 16891 avoids conflicts with Flask, Docker, UPnP, etc.
+network.scgi.open_port = 127.0.0.1:16891
+network.send_buffer.size.set = 16M
+network.receive_buffer.size.set = 4M
+
+## Logging:
+##   Levels = critical error warn notice info debug
+##   Groups = connection_* dht_* peer_* rpc_* storage_* thread_* tracker_* torrent_*
+print = (cat, "Logging to ", (cfg.logfile))
+log.open_file = "log", (cfg.logfile)
+
+log.add_output = "debug", "log"
+#####log.add_output = "storage_debug", "log"
+#####log.add_output = "system", "log"
+#####log.add_output = "thread_debug", "log"
+#####log.add_output = "protocol_storage_errors", "log"
+log.add_output = "tracker_dump", "log"
+log.add_output = "tracker_events", "log"
+log.add_output = "tracker_requests", "log"
+
+# Do not preallocate files on storage (avoiding filling preallocated data with NULL bytes):
+#system.file.allocate=0
+#system.file.allocate.set = 0
+
+# Download (KB/s)
+throttle.global_down.max_rate.set_kb = __RTORRENT_DOWNLOADRATE__
+# Upload (KB/s)
+throttle.global_up.max_rate.set_kb   = __RTORRENT_UPLOADRATE__
+
+method.insert=d.down.sequential,value|const,0
+method.insert=d.down.sequential.set,value|const,0
+
+### END of rtorrent.rc ###

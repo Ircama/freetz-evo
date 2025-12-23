@@ -1,0 +1,441 @@
+DAEMON=rtorrent
+DAEMON_BIN=rtorrent
+PID_FILE=/var/run/$DAEMON.pid
+. /etc/init.d/modlibrc
+
+# Load persistent configuration from modconf
+[ -r /mod/etc/conf/rtorrent.cfg ] && . /mod/etc/conf/rtorrent.cfg
+
+# Template file location
+RTORRENT_RC_TEMPLATE="/etc/default.rtorrent/rtorrent.rc.template"
+
+USERNAME=bittorrent
+GROUPNAME=users
+
+echoFailedAndExit() {
+	echo 'failed.'
+	[ -n "$1" ] && exit $1 || exit 1
+}
+
+# Check if daemon is already running
+is_running() {
+	if [ -f "$PID_FILE" ]; then
+		local pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			return 0
+		fi
+	fi
+	# Also check by process name
+	pgrep -x rtorrent >/dev/null 2>&1 && return 0
+	return 1
+}
+
+# Boot monitor: keep rtorrent alive for a short window after boot start.
+# Runs in background (must not block boot).
+boot_monitor() {
+	local basedir="$1"
+	local interval="${RTORRENT_BOOT_MONITOR_INTERVAL:-10}"
+	local duration="${RTORRENT_BOOT_MONITOR_DURATION:-300}"
+	local elapsed=0
+
+	# Validate numbers (fallback to defaults)
+	case "$interval" in ''|*[!0-9]*) interval="10" ;; esac
+	case "$duration" in ''|*[!0-9]*) duration="300" ;; esac
+	[ "$interval" -gt 0 ] 2>/dev/null || interval="10"
+	[ "$duration" -gt 0 ] 2>/dev/null || duration="300"
+
+	[ "$RTORRENT_BOOT_MONITOR" = "yes" ] || return 0
+	[ -n "$basedir" ] || return 0
+
+	echo "$(date): Boot monitor enabled (${duration}s @ ${interval}s)" >> /tmp/rc.rtorrent.log
+
+	while [ $elapsed -lt $duration ]; do
+		sleep "$interval"
+		elapsed=$((elapsed + interval))
+		if is_running; then
+			continue
+		fi
+
+		echo "$(date): Boot monitor: rtorrent not running (t=${elapsed}s), restarting..." >> /tmp/rc.rtorrent.log
+		if [ -s /tmp/rtorrent.startup.err ]; then
+			echo "$(date): rtorrent stderr (tail before restart):" >> /tmp/rc.rtorrent.log
+			tail -n 50 /tmp/rtorrent.startup.err >> /tmp/rc.rtorrent.log 2>&1
+		fi
+
+		# Remove stale pid file if present
+		if [ -f "$PID_FILE" ]; then
+			rm -f "$PID_FILE" 2>/dev/null
+		fi
+
+		if start_rtorrent_daemon "$basedir"; then
+			sleep 2
+			if is_running; then
+				echo "$(date): Boot monitor: restart successful" >> /tmp/rc.rtorrent.log
+			else
+				echo "$(date): Boot monitor: restart attempted but rtorrent still not running" >> /tmp/rc.rtorrent.log
+				if [ -s /tmp/rtorrent.startup.err ]; then
+					echo "$(date): rtorrent stderr (tail after restart):" >> /tmp/rc.rtorrent.log
+					tail -n 50 /tmp/rtorrent.startup.err >> /tmp/rc.rtorrent.log 2>&1
+				fi
+			fi
+		else
+			echo "$(date): Boot monitor: restart failed" >> /tmp/rc.rtorrent.log
+			if [ -s /tmp/rtorrent.startup.err ]; then
+				echo "$(date): rtorrent stderr (tail after failed restart):" >> /tmp/rc.rtorrent.log
+				tail -n 80 /tmp/rtorrent.startup.err >> /tmp/rc.rtorrent.log 2>&1
+			fi
+		fi
+	done
+
+	echo "$(date): Boot monitor finished" >> /tmp/rc.rtorrent.log
+}
+
+# Get .rtorrent.rc path from configuration
+get_rtorrent_rc_path() {
+	local basedir="${RTORRENT_BASEDIR%/}"
+	if [ -n "$basedir" ]; then
+		echo "$basedir/.rtorrent.rc"
+	else
+		echo ""
+	fi
+}
+
+# Always recreate .rtorrent.rc from template
+ensure_rtorrent_rc() {
+	[ -r /etc/options.cfg ] && . /etc/options.cfg
+	local basedir="${RTORRENT_BASEDIR%/}"
+	
+	[ -z "$basedir" ] && return 1
+	
+	local rc_path="$basedir/.rtorrent.rc"
+
+	# Always ensure required directories exist (even if rc already exists)
+	mkdir -p "$basedir/downloads" "$basedir/session" "$basedir/watch/load" "$basedir/watch/start" "$basedir/log" 2>/dev/null
+	# Set directory permissions to allow both daemon (bittorrent) and web user (CGI) to write
+	chmod 777 "$basedir" "$basedir/downloads" "$basedir/session" "$basedir/watch" "$basedir/watch/load" "$basedir/watch/start" "$basedir/log" 2>/dev/null
+	
+	# If .rtorrent.rc already exists, ensure correct permissions
+	if [ -f "$rc_path" ]; then
+		chown $USERNAME:$GROUPNAME "$rc_path" 2>/dev/null
+		chmod a+rw "$rc_path" 2>/dev/null
+		return 0
+	fi
+	
+	if [ -f "$RTORRENT_RC_TEMPLATE" ]; then
+		echo -n "(creating .rtorrent.rc from template) "
+		# Copy template and update basedir path
+		sed "s|/var/media/ftp/MediaServer/rtorrent/|$basedir/|g" \
+			"$RTORRENT_RC_TEMPLATE" > "$rc_path"
+		# Set ownership and permissions (CGI needs write access)
+		chown $USERNAME:$GROUPNAME "$rc_path" 2>/dev/null
+		chmod a+rw "$rc_path" 2>/dev/null
+	else
+		return 1
+	fi
+	return 0
+}
+
+# Wait for time synchronization
+wait_for_time_sync() {
+	local max_wait="${1:-120}"
+	local min_valid_year=2025
+	local elapsed=0
+	
+	while [ $elapsed -lt $max_wait ]; do
+		local current_year=$(date +%Y)
+		if [ "$current_year" -ge $min_valid_year ]; then
+			return 0
+		fi
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	
+	return 1
+}
+
+# Wait for base directory
+wait_for_basedir() {
+	local basedir="$1"
+	local max_wait="${2:-120}"
+	local elapsed=0
+	
+	while [ $elapsed -lt $max_wait ]; do
+		if [ -d "$basedir" ]; then
+			return 0
+		fi
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	
+	return 1
+}
+
+# Start rtorrent daemon (core logic)
+start_rtorrent_daemon() {
+	local basedir="$1"
+	local rc_path="$basedir/.rtorrent.rc"
+	local out_log="/tmp/rtorrent.startup.out"
+	local err_log="/tmp/rtorrent.startup.err"
+
+	# Clean up stale pid file before starting
+	if [ -f "$PID_FILE" ] && ! is_running; then
+		rm -f "$PID_FILE" 2>/dev/null
+	fi
+	
+	# Recreate config file from template
+	ensure_rtorrent_rc || return 1
+	
+	# Remove stale lock file from previous session (at boot, no active session can exist)
+	local lock_file="${basedir}/session/rtorrent.lock"
+	if [ -f "$lock_file" ]; then
+		#echo "$(date): Removing stale lock file: $lock_file" >> /tmp/rc.rtorrent.log
+		rm -f "$lock_file" 2>/dev/null || \
+			echo "$(date): Warning - failed to remove lock file" >> /tmp/rc.rtorrent.log
+	fi
+	
+	# Daemon handling is done by start-stop-daemon (-b/-m/-p).
+	# rTorrent is forced into non-interactive mode via system.daemon.set=true.
+	local rtorrent_opts="-n -o import=$rc_path -o system.daemon.set=true"
+	
+	# Start rtorrent
+	local workdir="/tmp"
+	touch /tmp/rc.rtorrent.log
+	chmod a+rw /tmp/rc.rtorrent.log
+	
+	# Log startup details
+	echo "$(date): About to start rtorrent with config:" >> /tmp/rc.rtorrent.log
+	ls -l "$rc_path" >> /tmp/rc.rtorrent.log 2>&1
+	
+	# Capture rtorrent startup output to help debug quick exits
+	touch "$out_log" "$err_log" 2>/dev/null
+	chmod a+rw "$out_log" "$err_log" 2>/dev/null
+
+	start-stop-daemon -S -b -m -p "$PID_FILE" \
+			-N "${RTORRENT_NICE:-5}" \
+			-v \
+			-O /tmp/rc.rtorrent.log \
+			-c "$USERNAME:$GROUPNAME" \
+			-d "$workdir" \
+			-- /bin/sh -c "exec /usr/bin/rtorrent $rtorrent_opts </dev/null >>\"$out_log\" 2>>\"$err_log\""
+	
+	return $?
+}
+
+# Start asynchronously (for boot/load)
+start_async() {
+	local basedir="$1"
+	local wait_time="${2:-120}"
+	
+	echo "$(date): Starting rTorrent asynchronously..." >> /tmp/rc.rtorrent.log
+	
+	# Wait for time sync
+	if ! wait_for_time_sync "$wait_time"; then
+		echo "$(date): Failed - time not synchronized after $wait_time seconds" >> /tmp/rc.rtorrent.log
+		return 1
+	fi
+	echo "$(date): Time synchronized ($(date))" >> /tmp/rc.rtorrent.log
+	
+	# Wait for directory
+	if ! wait_for_basedir "$basedir" "$wait_time"; then
+		echo "$(date): Failed - directory '$basedir' not accessible after $wait_time seconds" >> /tmp/rc.rtorrent.log
+		return 1
+	fi
+	echo "$(date): Directory '$basedir' is accessible" >> /tmp/rc.rtorrent.log
+	
+	# Start daemon
+	if start_rtorrent_daemon "$basedir"; then
+		sleep 2
+		if is_running; then
+			echo "$(date): rTorrent started successfully" >> /tmp/rc.rtorrent.log
+		else
+			echo "$(date): rTorrent is not running after 2s" >> /tmp/rc.rtorrent.log
+			if [ -s /tmp/rtorrent.startup.err ]; then
+				echo "$(date): rtorrent stderr (tail):" >> /tmp/rc.rtorrent.log
+				tail -n 30 /tmp/rtorrent.startup.err >> /tmp/rc.rtorrent.log 2>&1
+			fi
+			if [ -s /tmp/rtorrent.startup.out ]; then
+				echo "$(date): rtorrent stdout (tail):" >> /tmp/rc.rtorrent.log
+				tail -n 30 /tmp/rtorrent.startup.out >> /tmp/rc.rtorrent.log 2>&1
+			fi
+			return 1
+		fi
+		# Some failures happen a few seconds later (e.g. missing session dir, config errors)
+		sleep 8
+		if ! is_running; then
+			echo "$(date): rTorrent exited shortly after start" >> /tmp/rc.rtorrent.log
+			if [ -s /tmp/rtorrent.startup.err ]; then
+				echo "$(date): rtorrent stderr (tail):" >> /tmp/rc.rtorrent.log
+				tail -n 50 /tmp/rtorrent.startup.err >> /tmp/rc.rtorrent.log 2>&1
+			fi
+			# Don't return here - let boot_monitor handle restarts
+		fi
+		# Monitor stability for a short window if enabled
+		boot_monitor "$basedir"
+	else
+		echo "$(date): Failed to start rTorrent daemon" >> /tmp/rc.rtorrent.log
+		return 1
+	fi
+}
+
+start() {
+	echo 'Starting rTorrent daemon ...'
+	
+	# Check if already running
+	if is_running; then
+		echo 'failed: rTorrent is already running.'
+		echo "Use 'restart' to restart it."
+		exit 1
+	fi
+	
+	[ -r /etc/options.cfg ] && . /etc/options.cfg
+	
+	local basedir="${RTORRENT_BASEDIR%/}"
+	
+	# Add user and group first
+	modlib_add_user_and_group $USERNAME $GROUPNAME
+	
+	# Basedir must be configured
+	if [ -z "$basedir" ]; then
+		echo 'failed: No base directory configured.'
+		echo "Please run the initial setup wizard in the web interface first."
+		exit 1
+	fi
+	
+	# Check time sync immediately (no wait for manual start)
+	echo -n " - Checking time sync ... "
+	local current_year=$(date +%Y)
+	if [ "$current_year" -lt 2025 ]; then
+		echo 'failed.'
+		echo "   Error: System time not synchronized."
+		echo "   Current time: $(date)"
+		exit 1
+	fi
+	echo 'done.'
+	
+	# Check directory immediately (no wait for manual start)
+	echo -n " - Checking base directory ... "
+	if [ ! -d "$basedir" ]; then
+		echo 'failed.'
+		echo "   Error: Base directory '$basedir' does not exist."
+		exit 1
+	fi
+	echo 'done.'
+	
+	# Start daemon
+	echo -n " - Starting daemon ... "
+	if start_rtorrent_daemon "$basedir"; then
+		sleep 2
+		if is_running; then
+			echo 'done.'
+		else
+			echo 'started (initialization in progress).'
+		fi
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+stop() {
+	echo -n 'Stopping rTorrent daemon ... '
+	
+	if ! is_running; then
+		echo 'not running.'
+		rm -f "$PID_FILE" 2>/dev/null
+		return 0
+	fi
+	
+	echo ''  # newline
+	echo -n ' - Terminating process ... '
+	# Use start-stop-daemon to stop the process
+	start-stop-daemon -K -p "$PID_FILE" -s TERM -R 10 || true
+	
+	# Clean up PID file
+	rm -f "$PID_FILE" 2>/dev/null
+	
+	# Clean up socket if used
+	[ -r /etc/options.cfg ] && . /etc/options.cfg
+	if [ -n "$RTORRENT_SCGI_SOCKET" ]; then
+		rm -f "$RTORRENT_SCGI_SOCKET" 2>/dev/null
+	fi
+	rm -f /tmp/rtorrent-rpc.socket 2>/dev/null
+	
+	echo 'done.'
+}
+
+# Override modlibrc's stop_post to avoid spurious "failed" message
+stop_post() {
+	return 0
+}
+
+case $1 in
+	""|load)
+		modlib_add_user_and_group $USERNAME $GROUPNAME
+		modreg cgi 'rtorrent' 'rTorrent'
+		modreg daemon $DAEMON
+
+		# During boot/load, check if sync or async start is needed
+		if [ "$RTORRENT_ENABLED" = "yes" ]; then
+			[ -r /etc/options.cfg ] && . /etc/options.cfg
+			basedir="${RTORRENT_BASEDIR%/}"
+			wait_time="${RTORRENT_CONFIG_WAIT:-120}"
+			
+			if [ -n "$basedir" ]; then
+				if [ "$wait_time" = "0" ]; then
+					# Synchronous start (no wait)
+					echo "rTorrent starting synchronously..."
+					modlib_add_user_and_group $USERNAME $GROUPNAME
+					if start_rtorrent_daemon "$basedir"; then
+						echo "rTorrent started."
+						# Never block boot: monitor in background
+						(
+							. /etc/init.d/modlibrc
+							[ -r /mod/etc/conf/rtorrent.cfg ] && . /mod/etc/conf/rtorrent.cfg
+							boot_monitor "$basedir"
+						) >/dev/null 2>&1 &
+					else
+						echo "rTorrent failed to start."
+					fi
+				else
+					# Asynchronous start (with wait for resources)
+					echo "rTorrent will start in background (waiting for resources)."
+					# Launch in background with nohup
+					(
+						# Re-source needed files and functions
+						. /etc/init.d/modlibrc
+						[ -r /mod/etc/conf/rtorrent.cfg ] && . /mod/etc/conf/rtorrent.cfg
+						# Execute async start
+						start_async "$basedir" "$wait_time"
+					) >/dev/null 2>&1 &
+				fi
+			else
+				echo "rTorrent: base directory not configured, skipped."
+			fi
+		elif [ "$RTORRENT_ENABLED" = "no" ]; then
+			echo "rTorrent is disabled."
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi 'rtorrent'
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

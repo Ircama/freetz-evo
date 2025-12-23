@@ -123,6 +123,8 @@ source "make/libs/libuv/external.in"
 source "make/libs/uclibcxx/external.in"
 source "make/libs/libvorbis/external.in"
 source "make/libs/libxml2/external.in"
+source "make/libs/xmlrpc/external.in"
 source "make/pkgs/xsltproc/external.in.libs"
 source "make/libs/zlib/external.in"
+source "make/pkgs/mediainfo/external.in.libs"
 

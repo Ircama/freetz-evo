@@ -154,7 +154,7 @@ $(PKG)_CONFIGURE_OPTIONS+=--without-sqlite3
 $(PKG)_CONFIGURE_OPTIONS+=--without-pdo-sqlite
 endif
 
-ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_SSL)),y)
+ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_OPENSSL)),y)
 $(PKG)_DEPENDS_ON+=openssl
 $(PKG)_CONFIGURE_OPTIONS+=--with-openssl="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_STATIC)),y)

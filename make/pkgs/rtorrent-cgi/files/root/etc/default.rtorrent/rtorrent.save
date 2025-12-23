@@ -1,0 +1,107 @@
+
+# This file is sourced by /usr/lib/mww/page.d/conf/save_body.sh
+
+pkg_pre_save() {
+	# Do nothing - let framework save configuration first
+	:
+}
+
+pkg_apply_save() {
+	# DEBUG
+	{
+		date
+		echo "=== pkg_apply_save START ==="
+	} >> /var/tmp/rtorrent-save-debug.log 2>&1
+	
+	# Load newly saved configuration (framework has NOW saved it to rtorrent.cfg)
+	[ -r /mod/etc/conf/rtorrent.cfg ] && . /mod/etc/conf/rtorrent.cfg
+	
+	# DEBUG
+	{
+		echo "Loaded values from rtorrent.cfg:"
+		echo "  RTORRENT_BASEDIR=$RTORRENT_BASEDIR"
+		echo "  RTORRENT_UPLOADRATE=$RTORRENT_UPLOADRATE"
+		echo "  RTORRENT_DOWNLOADRATE=$RTORRENT_DOWNLOADRATE"
+		echo "  RTORRENT_MAX_PEERS=$RTORRENT_MAX_PEERS"
+	} >> /var/tmp/rtorrent-save-debug.log 2>&1
+	
+	# Use BASEDIR from saved config (already updated by framework)
+	BASEDIR_PATH="${RTORRENT_BASEDIR%/}"
+	
+	# DEBUG
+	{
+		echo "BASEDIR_PATH=$BASEDIR_PATH"
+		echo "RC_PATH=$BASEDIR_PATH/.rtorrent.rc"
+		[ -f "$BASEDIR_PATH/.rtorrent.rc" ] && echo "RC file exists" || echo "RC file NOT found"
+	} >> /var/tmp/rtorrent-save-debug.log 2>&1
+	
+	# Update .rtorrent.rc with runtime parameters from saved config
+	if [ -n "$BASEDIR_PATH" ]; then
+		RC_PATH="$BASEDIR_PATH/.rtorrent.rc"
+		if [ -f "$RC_PATH" ]; then
+			{
+				echo "Updating .rtorrent.rc..."
+			} >> /var/tmp/rtorrent-save-debug.log 2>&1
+			
+			# Use values from saved config (already updated by framework)
+			UPLOAD_KB="${RTORRENT_UPLOADRATE:-0}"
+			DOWNLOAD_KB="${RTORRENT_DOWNLOADRATE:-0}"
+
+			# Rates (KB/s)
+			sed -i "s|^\s*throttle\.global_up\.max_rate\.set_kb\s*=.*|throttle.global_up.max_rate.set_kb = $UPLOAD_KB|" "$RC_PATH"
+			sed -i "s|^\s*throttle\.global_down\.max_rate\.set_kb\s*=.*|throttle.global_down.max_rate.set_kb = $DOWNLOAD_KB|" "$RC_PATH"
+			grep -q "throttle\.global_up\.max_rate\.set_kb" "$RC_PATH" || echo "throttle.global_up.max_rate.set_kb = $UPLOAD_KB" >>"$RC_PATH"
+			grep -q "throttle\.global_down\.max_rate\.set_kb" "$RC_PATH" || echo "throttle.global_down.max_rate.set_kb = $DOWNLOAD_KB" >>"$RC_PATH"
+
+			# Peers
+			[ -n "$RTORRENT_MAX_PEERS" ] && sed -i "s|^\s*throttle\.max_peers\.normal\.set\s*=.*|throttle.max_peers.normal.set = $RTORRENT_MAX_PEERS|" "$RC_PATH"
+			[ -n "$RTORRENT_MAX_PEERS_SEED" ] && sed -i "s|^\s*throttle\.max_peers\.seed\.set\s*=.*|throttle.max_peers.seed.set = $RTORRENT_MAX_PEERS_SEED|" "$RC_PATH"
+			[ -n "$RTORRENT_MIN_PEERS" ] && sed -i "s|^\s*throttle\.min_peers\.normal\.set\s*=.*|throttle.min_peers.normal.set = $RTORRENT_MIN_PEERS|" "$RC_PATH"
+			[ -n "$RTORRENT_MIN_PEERS_SEED" ] && sed -i "s|^\s*throttle\.min_peers\.seed\.set\s*=.*|throttle.min_peers.seed.set = $RTORRENT_MIN_PEERS_SEED|" "$RC_PATH"
+			[ -n "$RTORRENT_PEERLIMIT" ] && sed -i "s|^\s*throttle\.max_uploads\.global\.set\s*=.*|throttle.max_uploads.global.set = $RTORRENT_PEERLIMIT|" "$RC_PATH"
+			[ -n "$RTORRENT_UPLOADSLOTS" ] && sed -i "s|^\s*throttle\.max_uploads\.set\s*=.*|throttle.max_uploads.set = $RTORRENT_UPLOADSLOTS|" "$RC_PATH"
+
+			# DHT
+			[ -n "$RTORRENT_DHT" ] && sed -i "s|^\s*dht\.mode\.set\s*=.*|dht.mode.set = $RTORRENT_DHT|" "$RC_PATH"
+			[ -n "$RTORRENT_DHTPORT" ] && sed -i "s|^\s*dht\.port\.set\s*=.*|dht.port.set = $RTORRENT_DHTPORT|" "$RC_PATH"
+			grep -q "dht\.port\.set" "$RC_PATH" || echo "dht.port.set = ${RTORRENT_DHTPORT:-6881}" >>"$RC_PATH"
+
+			# Check hash
+			if [ "$RTORRENT_CHECKHASH" = "yes" ]; then
+				sed -i "s|^\s*pieces\.hash\.on_completion\.set\s*=.*|pieces.hash.on_completion.set = yes|" "$RC_PATH"
+			else
+				sed -i "s|^\s*pieces\.hash\.on_completion\.set\s*=.*|pieces.hash.on_completion.set = no|" "$RC_PATH"
+			fi
+			grep -q "pieces\.hash\.on_completion\.set" "$RC_PATH" || echo "pieces.hash.on_completion.set = ${RTORRENT_CHECKHASH:-yes}" >>"$RC_PATH"
+
+			# SCGI Port
+			[ -n "$RTORRENT_SCGI_PORT" ] && sed -i "s|^\s*network\.scgi\.open_port\s*=.*|network.scgi.open_port = 127.0.0.1:$RTORRENT_SCGI_PORT|" "$RC_PATH"
+			grep -q "network\.scgi\.open_port" "$RC_PATH" || echo "network.scgi.open_port = 127.0.0.1:${RTORRENT_SCGI_PORT:-16891}" >>"$RC_PATH"
+
+			# Pieces Memory Max
+			[ -n "$RTORRENT_PIECES_MEMORY_MAX" ] && sed -i "s|^\s*pieces\.memory\.max\.set\s*=.*|pieces.memory.max.set = $RTORRENT_PIECES_MEMORY_MAX|" "$RC_PATH"
+			grep -q "pieces\.memory\.max\.set" "$RC_PATH" || echo "pieces.memory.max.set = ${RTORRENT_PIECES_MEMORY_MAX:-64M}" >>"$RC_PATH"
+
+			chown bittorrent:users "$RC_PATH" 2>/dev/null
+			
+			{
+				echo "Updated .rtorrent.rc successfully"
+				echo "Checking result:"
+				grep -E "throttle\.(global_down|global_up)" "$RC_PATH" | head -2
+			} >> /var/tmp/rtorrent-save-debug.log 2>&1
+		else
+			{
+				echo "ERROR: RC file not found at $RC_PATH"
+			} >> /var/tmp/rtorrent-save-debug.log 2>&1
+		fi
+	else
+		{
+			echo "ERROR: BASEDIR_PATH is empty"
+		} >> /var/tmp/rtorrent-save-debug.log 2>&1
+	fi
+	
+	{
+		echo "=== pkg_apply_save END ==="
+		echo ""
+	} >> /var/tmp/rtorrent-save-debug.log 2>&1
+}

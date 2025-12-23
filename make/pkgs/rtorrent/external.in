@@ -1,0 +1,47 @@
+config EXTERNAL_FREETZ_PACKAGE_RTORRENT
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_RTORRENT
+	bool "rTorrent/ruTorrent"
+	default n
+
+menu "rTorrent/ruTorrent"
+	depends on EXTERNAL_FREETZ_PACKAGE_RTORRENT
+
+	config EXTERNAL_FREETZ_PACKAGE_RTORRENT_DAEMON
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_RTORRENT
+		bool "rTorrent daemon and libtorrent library"
+		default y
+		help
+			externals the following file(s):
+			 /usr/bin/rtorrent
+			 /usr/lib/libtorrent.so*
+
+	config EXTERNAL_FREETZ_PACKAGE_RUTORRENT
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_RUTORRENT
+		bool "ruTorrent web interface"
+		default y
+		help
+			externals the following directory:
+			 /usr/mww/rutorrent
+
+	config EXTERNAL_FREETZ_PACKAGE_RTORRENT_CGI
+		depends on FREETZ_PACKAGE_RTORRENT_CGI
+		bool "rTorrent CGI web configuration interface"
+		default y
+		help
+			externals the following files:
+			 /usr/mww/rtorrent/rtorrent_config_editor.html
+			 /usr/mww/rtorrent/rutorrent_config_editor.html
+			 /usr/lib/cgi-bin/rtorrent.cgi
+
+	config EXTERNAL_FREETZ_PACKAGE_RTORRENT_XMLRPC_LIBS
+		bool "Externalize needed XML-RPC libraries (XML-RPC is required for ruTorrent)"
+		default n
+		select EXTERNAL_FREETZ_LIB_libxmlrpc if FREETZ_LIB_libxmlrpc
+		select EXTERNAL_FREETZ_LIB_libxmlrpc_server if FREETZ_LIB_libxmlrpc_server
+		select EXTERNAL_FREETZ_LIB_libxmlrpc_util if FREETZ_LIB_libxmlrpc_util
+		select EXTERNAL_FREETZ_LIB_libxmlrpc_xmlparse if FREETZ_LIB_libxmlrpc_xmlparse
+		select EXTERNAL_FREETZ_LIB_libxmlrpc_xmltok if FREETZ_LIB_libxmlrpc_xmltok
+		help
+			Externalize all XML-RPC libraries required by ruTorrent.
+
+endmenu
