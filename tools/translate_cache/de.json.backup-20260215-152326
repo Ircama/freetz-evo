@@ -1,0 +1,16 @@
+{
+  "deepl:File not found": {
+    "original": "File not found",
+    "translation": "Datei nicht gefunden",
+    "timestamp": "2026-02-15T13:42:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration updated": {
+    "original": "Configuration updated",
+    "translation": "Konfiguration aktualisiert",
+    "timestamp": "2026-02-15T13:42:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

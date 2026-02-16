@@ -1,0 +1,149 @@
+{
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato",
+    "timestamp": "2026-02-15T23:06:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maintenance": {
+    "original": "Maintenance",
+    "translation": "Manutenzione",
+    "timestamp": "2026-02-15T23:06:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download hosts now": {
+    "original": "Download hosts now",
+    "translation": "Scarica subito gli host",
+    "timestamp": "2026-02-15T23:06:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Proceed?": {
+    "original": "Proceed?",
+    "translation": "Procedere?",
+    "timestamp": "2026-02-15T23:06:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Downloading hosts now": {
+    "original": "Downloading hosts now",
+    "translation": "Scaricare ora gli host",
+    "timestamp": "2026-02-15T23:06:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clear hosts file": {
+    "original": "Clear hosts file",
+    "translation": "Cancellare il file hosts",
+    "timestamp": "2026-02-15T23:06:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clearing hosts file": {
+    "original": "Clearing hosts file",
+    "translation": "Cancellazione del file hosts",
+    "timestamp": "2026-02-15T23:06:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Settings": {
+    "original": "Settings",
+    "translation": "Impostazioni",
+    "timestamp": "2026-02-15T23:06:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:File with blocked hosts": {
+    "original": "File with blocked hosts",
+    "translation": "File con host bloccati",
+    "timestamp": "2026-02-15T23:06:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Target IPv4 for blocked hosts": {
+    "original": "Target IPv4 for blocked hosts",
+    "translation": "IPv4 di destinazione per gli host bloccati",
+    "timestamp": "2026-02-15T23:06:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Target IPv6 for blocked hosts": {
+    "original": "Target IPv6 for blocked hosts",
+    "translation": "Obiettivo IPv6 per gli host bloccati",
+    "timestamp": "2026-02-15T23:06:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:On updating keep the previous hosts": {
+    "original": "On updating keep the previous hosts",
+    "translation": "L'aggiornamento mantiene gli host precedenti",
+    "timestamp": "2026-02-15T23:06:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download by this URLs": {
+    "original": "Download by this URLs",
+    "translation": "Scarica da questo URL",
+    "timestamp": "2026-02-15T23:06:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cron": {
+    "original": "Cron",
+    "translation": "Cron",
+    "timestamp": "2026-02-15T23:06:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Update blocked hosts automatically": {
+    "original": "Update blocked hosts automatically",
+    "translation": "Aggiornare automaticamente gli host bloccati",
+    "timestamp": "2026-02-15T23:06:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Point in time for automatic update (following values are required)": {
+    "original": "Point in time for automatic update (following values are required)",
+    "translation": "Punto nel tempo per l'aggiornamento automatico (sono richiesti i seguenti valori)",
+    "timestamp": "2026-02-15T23:06:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Day of week": {
+    "original": "Day of week",
+    "translation": "Giorno della settimana",
+    "timestamp": "2026-02-15T23:06:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Hour": {
+    "original": "Hour",
+    "translation": "Ora",
+    "timestamp": "2026-02-15T23:06:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Minute": {
+    "original": "Minute",
+    "translation": "Minuto",
+    "timestamp": "2026-02-15T23:06:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Close window": {
+    "original": "Close window",
+    "translation": "Chiudi finestra",
+    "timestamp": "2026-02-15T23:06:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Please wait": {
+    "original": "Please wait",
+    "translation": "Attendere prego",
+    "timestamp": "2026-02-15T23:06:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

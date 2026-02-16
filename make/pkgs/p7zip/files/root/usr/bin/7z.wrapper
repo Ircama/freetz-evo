@@ -1,0 +1,4 @@
+#!/bin/sh
+# Wrapper for 7z to set LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="/mod/external/usr/lib:$LD_LIBRARY_PATH"
+exec /mod/external/usr/bin/7z.real "$@"

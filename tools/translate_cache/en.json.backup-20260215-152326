@@ -1,0 +1,16 @@
+{
+  "deepl:Fehler beim Laden": {
+    "original": "Fehler beim Laden",
+    "translation": "Load Error",
+    "timestamp": "2026-02-15T13:42:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(Log-Datei ist leer)": {
+    "original": "(Log-Datei ist leer)",
+    "translation": "(Log file is empty)",
+    "timestamp": "2026-02-15T13:42:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

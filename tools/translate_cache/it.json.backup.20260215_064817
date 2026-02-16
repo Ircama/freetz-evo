@@ -1,0 +1,1462 @@
+{
+  "mymemory: (separate by spaces)": {
+    "original": " (separate by spaces)",
+    "translation": "(separati da spazi)"
+  },
+  "mymemory: - leave empty for all": {
+    "original": " - leave empty for all",
+    "translation": "Lasciare vuoto per tutti"
+  },
+  "mymemory: cartridge": {
+    "original": " cartridge",
+    "translation": "cartuccia"
+  },
+  "mymemory: and ": {
+    "original": " and ",
+    "translation": " e "
+  },
+  "mymemory:Edit ${daemon}.conf": {
+    "original": "Edit ${daemon}.conf",
+    "translation": "Modifica ${daemon}.conf"
+  },
+  "mymemory:Changes will take effect after a reboot, even if new settings will already be displayed here.": {
+    "original": "Changes will take effect after a reboot, even if new settings will already be displayed here.",
+    "translation": "Le modifiche avranno effetto dopo un riavvio, anche se le nuove impostazioni saranno già visualizzate qui."
+  },
+  "mymemory:Public": {
+    "original": "Public",
+    "translation": "Pubblico"
+  },
+  "mymemory:SKIPPED": {
+    "original": "SKIPPED",
+    "translation": "SALTATO"
+  },
+  "mymemory:Network logger": {
+    "original": "Network logger",
+    "translation": "Registratore di rete"
+  },
+  "mymemory:About": {
+    "original": "About",
+    "translation": "Informazioni"
+  },
+  "mymemory:Apply": {
+    "original": "Apply",
+    "translation": "Applicare"
+  },
+  "mymemory:Observe uptime too": {
+    "original": "Observe uptime too",
+    "translation": "Osserva anche i tempi di attività"
+  },
+  "mymemory:Enable observation of actors": {
+    "original": "Enable observation of actors",
+    "translation": "Abilita l'osservazione degli attori"
+  },
+  "mymemory:By the way ...": {
+    "original": "By the way ...",
+    "translation": "A proposito..."
+  },
+  "mymemory:Observe cable segment load": {
+    "original": "Observe cable segment load",
+    "translation": "Osservare il carico del segmento di cavo"
+  },
+  "mymemory:change": {
+    "original": "change",
+    "translation": "trasformazione"
+  },
+  "mymemory: en:": {
+    "original": " en:",
+    "translation": "IT:"
+  },
+  "mymemory:edit 'hosts' file": {
+    "original": "edit 'hosts' file",
+    "translation": "modifica il file \"hosts\""
+  },
+  "mymemory:(0 = unlimited, default)": {
+    "original": "(0 = unlimited, default)",
+    "translation": "(0 = illimitato, predefinito)"
+  },
+  "mymemory:(Log file is empty)": {
+    "original": "(Log file is empty)",
+    "translation": "(Il file di registro è vuoto)"
+  },
+  "mymemory:(default: /tmp, recommended with < 64MB RAM: basedir)": {
+    "original": "(default: /tmp, recommended with < 64MB RAM: basedir)",
+    "translation": "(default: /tmp, consigliato con < 64MB RAM: basedir)"
+  },
+  "mymemory:(default: 10)": {
+    "original": "(default: 10)",
+    "translation": "impostazione predefinita: 10"
+  },
+  "mymemory:(default: 100)": {
+    "original": "(default: 100)",
+    "translation": "Predefinito: 100"
+  },
+  "mymemory:(default: 120, 0 = immediate)": {
+    "original": "(default: 120, 0 = immediate)",
+    "translation": "(default: 120, 0 = immediato)"
+  },
+  "mymemory:(default: 15)": {
+    "original": "(default: 15)",
+    "translation": "predefinito: 15"
+  },
+  "mymemory:(default: 16891, traditional: 5000 or 5555)": {
+    "original": "(default: 16891, traditional: 5000 or 5555)",
+    "translation": "(default: 16891, tradizionale: 5000 o 5555)"
+  },
+  "mymemory:(default: 200)": {
+    "original": "(default: 200)",
+    "translation": "Predefinito: 200"
+  },
+  "mymemory:(default: 300 = 5 min)": {
+    "original": "(default: 300 = 5 min)",
+    "translation": "(default: 300 = 5 min)"
+  },
+  "mymemory:(default: 40)": {
+    "original": "(default: 40)",
+    "translation": "predefinito: 40"
+  },
+  "mymemory:(default: 50)": {
+    "original": "(default: 50)",
+    "translation": "impostazione predefinita: 50"
+  },
+  "mymemory:(default: 64M, values: 32M/64M/128M/256M)": {
+    "original": "(default: 64M, values: 32M/64M/128M/256M)",
+    "translation": "(default: 64M, valori: 32M/64M/128M/256M)"
+  },
+  "mymemory:(default: 6881)": {
+    "original": "(default: 6881)",
+    "translation": "(default: 6881)"
+  },
+  "mymemory:(default: off)": {
+    "original": "(default: off)",
+    "translation": "Valore assunto: OFF."
+  },
+  "mymemory:(show)": {
+    "original": "(show)",
+    "translation": "(mostra)"
+  },
+  "mymemory:not (yet) implemented": {
+    "original": "not (yet) implemented",
+    "translation": "Non ancora implementato."
+  },
+  "mymemory:(only whith certificates)": {
+    "original": "(only whith certificates)",
+    "translation": "(solo con certificati)"
+  },
+  "mymemory:(choose)": {
+    "original": "(choose)",
+    "translation": "Scegliere"
+  },
+  "mymemory:(e.g. client connection to Server: <i>name 1.2.3.4</i>)": {
+    "original": "(e.g. client connection to Server: <i>name 1.2.3.4</i>)",
+    "translation": "(es. connessione client al Server: <i>nome 1.2.3.4</i>)"
+  },
+  "mymemory:, if not specified": {
+    "original": ", if not specified",
+    "translation": "(se non specificato)"
+  },
+  "mymemory: to start it.": {
+    "original": " to start it.",
+    "translation": "13 per iniziare. "
+  },
+  "mymemory: address": {
+    "original": " address",
+    "translation": "Indirizzo"
+  },
+  "mymemory: family": {
+    "original": " family",
+    "translation": "FAMIGLIA"
+  },
+  "mymemory: cores": {
+    "original": " cores",
+    "translation": "Core"
+  },
+  "mymemory: model": {
+    "original": " model",
+    "translation": "MODELLO"
+  },
+  "mymemory: ports": {
+    "original": " ports",
+    "translation": "PORTE"
+  },
+  "mymemory: version": {
+    "original": " version",
+    "translation": " versione"
+  },
+  "mymemory:-none-": {
+    "original": "-none-",
+    "translation": "- Nessuno -"
+  },
+  "mymemory:.rtorrent.rc does not exist yet. Use the Setup Wizard.": {
+    "original": ".rtorrent.rc does not exist yet. Use the Setup Wizard.",
+    "translation": ".rtorrent.rc non esiste ancora. Utilizzare la Configurazione guidata."
+  },
+  "mymemory:Start/stop <a href=/cgi-bin/conf/mod#external>external</a> with autofs": {
+    "original": "Start/stop <a href=/cgi-bin/conf/mod#external>external</a> with autofs",
+    "translation": "Start/stop <a href=/cgi-bin/conf/mod#external>esterno</a> con autofs"
+  },
+  "mymemory:<b>!Don\\\\'t forget to stop the daemon after some time!</b><br>(To prevent filesystem overflow.)": {
+    "original": "<b>!Don\\'t forget to stop the daemon after some time!</b><br>(To prevent filesystem overflow.)",
+    "translation": "<b>!Non dimenticare di fermare il demone dopo un po' di tempo!</b><br>(Per evitare l'overflow del file system.)"
+  },
+  "mymemory:AVM web interface": {
+    "original": "AVM web interface",
+    "translation": "Interfaccia web"
+  },
+  "mymemory:AVM generates the name by ${METHOD} currently. See help to change.": {
+    "original": "AVM generates the name by ${METHOD} currently. See help to change.",
+    "translation": "AVM genera il nome da ${METHOD} attualmente. Consulta l'aiuto per cambiare."
+  },
+  "mymemory:Do not stop any AVM services (sufficient memory available or pseudo update without reboot)": {
+    "original": "Do not stop any AVM services (sufficient memory available or pseudo update without reboot)",
+    "translation": "Non interrompere alcun servizio AVM (memoria disponibile sufficiente o pseudo aggiornamento senza riavvio)"
+  },
+  "mymemory:Stop AVM services (less memory available)": {
+    "original": "Stop AVM services (less memory available)",
+    "translation": "Arrestare i servizi AVM (meno memoria disponibile)"
+  },
+  "mymemory:AVM services": {
+    "original": "AVM services",
+    "translation": "Servizi AVM"
+  },
+  "mymemory:AVM firmware version": {
+    "original": "AVM firmware version",
+    "translation": "Versione firmware "
+  },
+  "mymemory:AVM-Rules is not installed.": {
+    "original": "AVM-Rules is not installed.",
+    "translation": "AVM-Rules non è installato."
+  },
+  "mymemory:Open AVM-Rules": {
+    "original": "Open AVM-Rules",
+    "translation": "Apri regole AVM"
+  },
+  "mymemory:AVM default password": {
+    "original": "AVM default password",
+    "translation": "Password di default"
+  },
+  "mymemory:Use 256 QAM below this frequency, otherwise 64 QAM.": {
+    "original": "Use 256 QAM below this frequency, otherwise 64 QAM.",
+    "translation": "Utilizzare 256 QAM al di sotto di questa frequenza, altrimenti 64 QAM."
+  },
+  "mymemory:Abort if the year is higher than this value": {
+    "original": "Abort if the year is higher than this value",
+    "translation": "Interrompi se l'anno è superiore a questo valore"
+  },
+  "mymemory:Cancel": {
+    "original": "Cancel",
+    "translation": "Annulla"
+  },
+  "mymemory:canceling": {
+    "original": "canceling",
+    "translation": "annullo"
+  },
+  "mymemory:Log Off": {
+    "original": "Log Off",
+    "translation": "Esci"
+  },
+  "mymemory:Account enabled": {
+    "original": "Account enabled",
+    "translation": "Account abilitato"
+  },
+  "mymemory:Caution! Default cipher \\\\": {
+    "original": "Caution! Default cipher \\",
+    "translation": "Attenzione! Cifrario predefinito\\"
+  },
+  "mymemory:Caution: Activating this option can cause reboot loops": {
+    "original": "Caution: Activating this option can cause reboot loops",
+    "translation": "Attenzione: l'attivazione di questa opzione può causare cicli di riavvio"
+  },
+  "mymemory:AdBlock Plus": {
+    "original": "AdBlock Plus",
+    "translation": "AdBlock Plus"
+  },
+  "mymemory:Address": {
+    "original": "Address",
+    "translation": "Indirizzo"
+  },
+  "mymemory:address": {
+    "original": "address",
+    "translation": "indirizzo"
+  },
+  "mymemory:Reject addresses from upstream nameservers which are in private IP ranges.": {
+    "original": "Reject addresses from upstream nameservers which are in private IP ranges.",
+    "translation": "Rifiuta gli indirizzi dai nameserver a monte che si trovano in intervalli IP privati."
+  },
+  "mymemory:Actions": {
+    "original": "Actions",
+    "translation": "Azioni"
+  },
+  "mymemory:Active": {
+    "original": "Active",
+    "translation": "Attivo"
+  },
+  "mymemory:Activate alert observer": {
+    "original": "Activate alert observer",
+    "translation": "Attiva l'osservatore di allerta"
+  },
+  "mymemory:Enable dark-mode for the graphs": {
+    "original": "Enable dark-mode for the graphs",
+    "translation": "Abilita la modalità scura per i grafici"
+  },
+  "mymemory:Enable HTTP/2 support": {
+    "original": "Enable HTTP/2 support",
+    "translation": "Abilita supporto HTTP/2"
+  },
+  "mymemory:Activate inetd support": {
+    "original": "Activate inetd support",
+    "translation": "Attiva il supporto inetd"
+  },
+  "mymemory:Enable additional IPv6 support": {
+    "original": "Enable additional IPv6 support",
+    "translation": "Abilita supporto IPv6 aggiuntivo"
+  },
+  "mymemory:Enable": {
+    "original": "Enable",
+    "translation": "Abilita"
+  },
+  "mymemory:Activated": {
+    "original": "Activated",
+    "translation": "Attivato"
+  },
+  "mymemory:Enabled": {
+    "original": "Enabled",
+    "translation": "Abilitato"
+  },
+  "mymemory:activation of error pages": {
+    "original": "activation of error pages",
+    "translation": "attivazione pagine di errore"
+  },
+  "mymemory:activation of PHP FastCGI support": {
+    "original": "activation of PHP FastCGI support",
+    "translation": "attivazione supporto PHP FastCGI"
+  },
+  "mymemory:activation of RUBY FastCGI support": {
+    "original": "activation of RUBY FastCGI support",
+    "translation": "attivazione supporto RUBY FASTCGI"
+  },
+  "mymemory:activation of SSL support": {
+    "original": "activation of SSL support",
+    "translation": "attivazione supporto SSL"
+  },
+  "mymemory:activation of mod_cgi": {
+    "original": "activation of mod_cgi",
+    "translation": "attivazione mod_cgi"
+  },
+  "mymemory:activation of mod_deflate support": {
+    "original": "activation of mod_deflate support",
+    "translation": "attivazione supporto mod_deflate"
+  },
+  "mymemory:activation of mod_status support": {
+    "original": "activation of mod_status support",
+    "translation": "attivazione supporto mod_status"
+  },
+  "mymemory:Activation": {
+    "original": "Activation",
+    "translation": "Attivazione"
+  },
+  "mymemory:Refreshing SmartHome": {
+    "original": "Refreshing SmartHome",
+    "translation": "Rinfrescante SmartHome"
+  },
+  "mymemory:Refresh initiated. This max take up to one minute.": {
+    "original": "Refresh initiated. This max take up to one minute.",
+    "translation": "Aggiornamento avviato. Questa operazione richiede fino a un minuto."
+  },
+  "mymemory:Latest firmware version": {
+    "original": "Latest firmware version",
+    "translation": "Versione del firmware più recente"
+  },
+  "mymemory:Running values": {
+    "original": "Running values",
+    "translation": "Valori correnti"
+  },
+  "mymemory:Current path": {
+    "original": "Current path",
+    "translation": "Current User"
+  },
+  "mymemory:Current state:": {
+    "original": "Current state:",
+    "translation": "Stato attuale"
+  },
+  "mymemory:This device": {
+    "original": "This device",
+    "translation": "Questo dispositivo"
+  },
+  "mymemory:Alias of this server": {
+    "original": "Alias of this server",
+    "translation": "Alias di questo server"
+  },
+  "mymemory:Alias of server 1": {
+    "original": "Alias of server 1",
+    "translation": "Alias del server 1"
+  },
+  "mymemory:Alias of server 2": {
+    "original": "Alias of server 2",
+    "translation": "Alias del server 2"
+  },
+  "mymemory:Alias of server 3": {
+    "original": "Alias of server 3",
+    "translation": "Alias del server 3"
+  },
+  "mymemory:Share all devices (except storages and hubs)": {
+    "original": "Share all devices (except storages and hubs)",
+    "translation": "Condividere tutti i dispositivi (ad eccezione di archivi e hub)"
+  },
+  "mymemory:Redirect all client traffic through VPN": {
+    "original": "Redirect all client traffic through VPN",
+    "translation": "Reindirizza tutto il traffico client tramite VPN"
+  },
+  "mymemory:Share all partitions": {
+    "original": "Share all partitions",
+    "translation": "Condividi tutte le partizioni"
+  },
+  "mymemory:Encrypt all peer connections": {
+    "original": "Encrypt all peer connections",
+    "translation": "Crittografa tutte le connessioni peer"
+  },
+  "mymemory:Kill all programs blocking unmount.": {
+    "original": "Kill all programs blocking unmount.",
+    "translation": "Terminare tutti i programmi che bloccano lo smontaggio."
+  },
+  "mymemory:Following directories can be empty": {
+    "original": "Following directories can be empty",
+    "translation": "Le seguenti directory possono essere vuote"
+  },
+  "mymemory:Removing of all by Downloader downloaded files.<br>Please do not forget to stop before all appropriate services!": {
+    "original": "Removing of all by Downloader downloaded files.<br>Please do not forget to stop before all appropriate services!",
+    "translation": "Rimozione di tutti i file scaricati da Downloader.<br>Non dimenticare di fermarti prima di tutti i servizi appropriati!"
+  },
+  "mymemory:Global logfile": {
+    "original": "Global logfile",
+    "translation": "File di log globale"
+  },
+  "mymemory:Basic options": {
+    "original": "Basic options",
+    "translation": "Opzioni base"
+  },
+  "mymemory:Global options": {
+    "original": "Global options",
+    "translation": "Opzioni Globali"
+  },
+  "mymemory:Delete old external files": {
+    "original": "Delete old external files",
+    "translation": "Elimina vecchi file esterni"
+  },
+  "mymemory:Establish alternative connection after a timeout of": {
+    "original": "Establish alternative connection after a timeout of",
+    "translation": "Stabilire una connessione alternativa dopo un timeout di"
+  },
+  "mymemory:Old password": {
+    "original": "Old password",
+    "translation": "Vecchia password"
+  },
+  "mymemory:Request other config from the network": {
+    "original": "Request other config from the network",
+    "translation": "Richiedi altre configurazioni dalla rete"
+  },
+  "mymemory:Additional options (one per line)": {
+    "original": "Additional options (one per line)",
+    "translation": "Opzioni aggiuntive (una per riga)"
+  },
+  "mymemory:Additional options": {
+    "original": "Additional options",
+    "translation": "Opzioni aggiuntive"
+  },
+  "mymemory:Offered services": {
+    "original": "Offered services",
+    "translation": "I servizi offerti"
+  },
+  "mymemory:Shown only for server configurations with selected option \\\\": {
+    "original": "Shown only for server configurations with selected option \\",
+    "translation": "Mostrato solo per le configurazioni del server con l'opzione selezionata\\"
+  },
+  "mymemory:Spinups": {
+    "original": "Spinups",
+    "translation": "Spinup"
+  },
+  "mymemory:Anonymous FTP": {
+    "original": "Anonymous FTP",
+    "translation": "FTP anonimo"
+  },
+  "mymemory:Max number of logs to keep": {
+    "original": "Max number of logs to keep",
+    "translation": "Numero massimo di registri da conservare"
+  },
+  "mymemory:Max connections": {
+    "original": "Max connections",
+    "translation": "Numero massimo connessioni"
+  },
+  "mymemory:Maximum connections": {
+    "original": "Maximum connections",
+    "translation": "Numero massimo di connessioni"
+  },
+  "mymemory:Count of retries, if a sensorc does not return a value": {
+    "original": "Count of retries, if a sensorc does not return a value",
+    "translation": "Conteggio dei tentativi, se un sensorc non restituisce un valore"
+  },
+  "mymemory:Number of Partitions": {
+    "original": "Number of Partitions",
+    "translation": "Numero di partizioni"
+  },
+  "mymemory:Number of administrated devices": {
+    "original": "Number of administrated devices",
+    "translation": "Numero di dispositivi amministrati"
+  },
+  "mymemory:Show statistics": {
+    "original": "Show statistics",
+    "translation": "Mostra le statistiche"
+  },
+  "mymemory:Show": {
+    "original": "Show",
+    "translation": "Mostra"
+  },
+  "mymemory:Workgroup": {
+    "original": "Workgroup",
+    "translation": "Gruppo di lavoro"
+  },
+  "mymemory:Main memory": {
+    "original": "Main memory",
+    "translation": "Memoria principale:"
+  },
+  "mymemory:Working Directories": {
+    "original": "Working Directories",
+    "translation": "Elenchi di lavoro"
+  },
+  "mymemory:Asterisk is not configured. To do so, please run this in a terminal": {
+    "original": "Asterisk is not configured. To do so, please run this in a terminal",
+    "translation": "L'asterisco non è configurato. Per farlo, esegui questo in un terminale"
+  },
+  "mymemory:Clean up attributes": {
+    "original": "Clean up attributes",
+    "translation": "Ripulisci attributi"
+  },
+  "mymemory:Permissions": {
+    "original": "Permissions",
+    "translation": "Permessi"
+  },
+  "mymemory:Both absolute and relative paths are allowed for directories except for the base-directory. The relative ones will be interpreted as being relative to the base-directory.": {
+    "original": "Both absolute and relative paths are allowed for directories except for the base-directory. The relative ones will be interpreted as being relative to the base-directory.",
+    "translation": "Sia i percorsi assoluti che quelli relativi sono consentiti per le directory ad eccezione della directory di base. Quelli relativi saranno interpretati come relativi alla directory di base."
+  },
+  "mymemory:Support IPv6 too": {
+    "original": "Support IPv6 too",
+    "translation": "Supporta anche IPv6"
+  },
+  "mymemory:Link to USB": {
+    "original": "Link to USB",
+    "translation": "Collegamento a USB"
+  },
+  "mymemory:On this Fritz!Box is the PHPXMail webfrontend installed, so you can klick": {
+    "original": "On this Fritz!Box is the PHPXMail webfrontend installed, so you can klick",
+    "translation": "Su questo Fritz!Box è installato il webfrontend PHPXMail, quindi puoi cliccare"
+  },
+  "mymemory:Listing of directory contents not available - mod_dirlisting.so unavailable.": {
+    "original": "Listing of directory contents not available - mod_dirlisting.so unavailable.",
+    "translation": "Elenco dei contenuti della directory non disponibile - mod_dirlisting.so non disponibile."
+  },
+  "mymemory:Removing": {
+    "original": "Removing",
+    "translation": "Eliminazione"
+  },
+  "mymemory:Startparameters": {
+    "original": "Startparameters",
+    "translation": "Startparameters"
+  },
+  "mymemory:Log interval in seconds": {
+    "original": "Log interval in seconds",
+    "translation": "Intervallo in secondi per l'aggiornamento dei dati visualizzati sul dettaglio cella"
+  },
+  "mymemory:Execute": {
+    "original": "Execute",
+    "translation": "Esegui"
+  },
+  "mymemory:Output": {
+    "original": "Output",
+    "translation": "Uscita"
+  },
+  "mymemory:Out file (png):": {
+    "original": "Out file (png):",
+    "translation": "File out (png):"
+  },
+  "mymemory:Save messages to ": {
+    "original": "Save messages to ",
+    "translation": "Salvare i messaggi"
+  },
+  "mymemory:output tray closed": {
+    "original": "output tray closed",
+    "translation": "vassoio di uscita chiuso"
+  },
+  "mymemory:Externalised files": {
+    "original": "Externalised files",
+    "translation": "File esternalizzati"
+  },
+  "mymemory:Logged out": {
+    "original": "Logged out",
+    "translation": "Logout effettuato"
+  },
+  "mymemory:turning off": {
+    "original": "turning off",
+    "translation": "Spegnimento"
+  },
+  "mymemory:Authentication": {
+    "original": "Authentication",
+    "translation": "Autenticazione"
+  },
+  "mymemory:Authentification": {
+    "original": "Authentification",
+    "translation": "Autenticazione"
+  },
+  "mymemory:Authentification Method": {
+    "original": "Authentification Method",
+    "translation": "Metodo di autenticazione"
+  },
+  "mymemory:Auto (default)": {
+    "original": "Auto (default)",
+    "translation": "Auto (predefinito)"
+  },
+  "mymemory:Run autorun.sh and autoend.sh automatically.": {
+    "original": "Run autorun.sh and autoend.sh automatically.",
+    "translation": "Eseguire autorun.sh e autoend.sh automaticamente."
+  },
+  "mymemory:Automatic": {
+    "original": "Automatic",
+    "translation": "Automatica"
+  },
+  "mymemory:Watch-Directory": {
+    "original": "Watch-Directory",
+    "translation": "Watch-Directory"
+  },
+  "mymemory:Backup folder": {
+    "original": "Backup folder",
+    "translation": "Cartella per Copie di Sicurezza"
+  },
+  "mymemory:Backup files": {
+    "original": "Backup files",
+    "translation": "File di backup "
+  },
+  "mymemory:Restore files during startup": {
+    "original": "Restore files during startup",
+    "translation": "Ripristina i file durante l'avvio"
+  },
+  "mymemory:Bandwidth shaper [Bytes/second]": {
+    "original": "Bandwidth shaper [Bytes/second]",
+    "translation": "Modellatore larghezza di banda [Byte/secondo]"
+  },
+  "mymemory:Show banner": {
+    "original": "Show banner",
+    "translation": "Mostra banner"
+  },
+  "mymemory:banner eject": {
+    "original": "banner eject",
+    "translation": "espulsione banner"
+  },
+  "mymemory:Basic authentication": {
+    "original": "Basic authentication",
+    "translation": "Autenticazione base"
+  },
+  "mymemory:Built-in packages": {
+    "original": "Built-in packages",
+    "translation": "Pacchetti integrati"
+  },
+  "mymemory:Basic Configuration": {
+    "original": "Basic Configuration",
+    "translation": "Configurazione di base"
+  },
+  "mymemory:Base directory not set. Suggested": {
+    "original": "Base directory not set. Suggested",
+    "translation": "Directory di base non impostata. Suggerito"
+  },
+  "mymemory:Base Directory": {
+    "original": "Base Directory",
+    "translation": "Directory di base:"
+  },
+  "mymemory:Base-Directory": {
+    "original": "Base-Directory",
+    "translation": "Directory di base:"
+  },
+  "mymemory:Stop of packages at shutdown": {
+    "original": "Stop of packages at shutdown",
+    "translation": "Arresto dei colli allo spegnimento"
+  },
+  "mymemory:Preconnecting command": {
+    "original": "Preconnecting command",
+    "translation": "Comando di preconnessione"
+  },
+  "mymemory:Command-TTY (eg /dev/ttyUSB2)": {
+    "original": "Command-TTY (eg /dev/ttyUSB2)",
+    "translation": "Command-TTY (eg /dev/ttyUSB2)"
+  },
+  "mymemory:On configuration changes old ports are updated after the first intervall": {
+    "original": "On configuration changes old ports are updated after the first intervall",
+    "translation": "Sulle modifiche di configurazione le vecchie porte vengono aggiornate dopo il primo intervallo"
+  },
+  "mymemory:On syntax errors, the whole ar7.cfg will be reset by AVM": {
+    "original": "On syntax errors, the whole ar7.cfg will be reset by AVM",
+    "translation": "In caso di errori di sintassi, l'intero ar7.cfg verrà reimpostato da AVM"
+  },
+  "mymemory:On unknown protocol use this (leave empty to decativate)": {
+    "original": "On unknown protocol use this (leave empty to decativate)",
+    "translation": "Su protocollo sconosciuto utilizzare questo (lasciare vuoto per decativare)"
+  },
+  "mymemory:Option \\\\": {
+    "original": "Option \\",
+    "translation": "Opzione"
+  },
+  "mymemory:Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)": {
+    "original": "Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)",
+    "translation": "I torrent di seeding verranno interrotti quando raggiungono questo rapporto e spostati nella directory di fine (se non vuoti)"
+  },
+  "mymemory:On updating keep the previous hosts": {
+    "original": "On updating keep the previous hosts",
+    "translation": "Durante l'aggiornamento, mantieni gli host precedenti"
+  },
+  "mymemory:Example": {
+    "original": "Example",
+    "translation": "Esempio"
+  },
+  "mymemory:e.g.": {
+    "original": "e.g.",
+    "translation": "es:"
+  },
+  "mymemory:Known hosts": {
+    "original": "Known hosts",
+    "translation": "Host noti"
+  },
+  "mymemory:Remark": {
+    "original": "Remark",
+    "translation": "<g id=\"Bold\">Note</g>"
+  },
+  "mymemory:Notify interval (seconds)": {
+    "original": "Notify interval (seconds)",
+    "translation": "Intervallo di notifica (secondi)"
+  },
+  "mymemory:Create and persistently save users as follows": {
+    "original": "Create and persistently save users as follows",
+    "translation": "Crea e salva in modo persistente gli utenti come segue"
+  },
+  "mymemory:User": {
+    "original": "User",
+    "translation": "Utente"
+  },
+  "mymemory:Users": {
+    "original": "Users",
+    "translation": "Utenti"
+  },
+  "mymemory:User defined": {
+    "original": "User defined",
+    "translation": "Definiti dall'utente"
+  },
+  "mymemory:User defined information": {
+    "original": "User defined information",
+    "translation": "Informazioni definite dall'utente"
+  },
+  "mymemory:User Name": {
+    "original": "User Name",
+    "translation": "Nome utente"
+  },
+  "mymemory:User name": {
+    "original": "User name",
+    "translation": "Nome utente"
+  },
+  "mymemory:Y-axis range": {
+    "original": "Y-axis range",
+    "translation": "Intervallo dell&apos; asse Y"
+  },
+  "mymemory:Cleaning up attributes": {
+    "original": "Cleaning up attributes",
+    "translation": "Ripulitura degli attributi"
+  },
+  "mymemory:Preparing file for swap usage ...": {
+    "original": "Preparing file for swap usage ...",
+    "translation": "Preparazione del file per l'utilizzo dello swap in corso..."
+  },
+  "mymemory:Description": {
+    "original": "Description",
+    "translation": "Descrizione"
+  },
+  "mymemory:Operating hours counter": {
+    "original": "Operating hours counter",
+    "translation": "Contatore delle ore di funzionamento."
+  },
+  "mymemory:Preferred Master": {
+    "original": "Preferred Master",
+    "translation": "Master preferito"
+  },
+  "mymemory:Disk label": {
+    "original": "Disk label",
+    "translation": "Etichetta disco"
+  },
+  "mymemory:Interface label": {
+    "original": "Interface label",
+    "translation": "MMC Interface label"
+  },
+  "mymemory:Applies only to start type 'automatic'. Gives e.g. OpenVPN a chance to establish VPN tunnels": {
+    "original": "Applies only to start type 'automatic'. Gives e.g. OpenVPN a chance to establish VPN tunnels",
+    "translation": "Si applica solo al tipo di avvio \"automatico\". Offre ad esempio a OpenVPN la possibilità di stabilire tunnel VPN"
+  },
+  "mymemory:Bind-address": {
+    "original": "Bind-address",
+    "translation": "Associa indirizzo"
+  },
+  "mymemory:Bind to": {
+    "original": "Bind to",
+    "translation": "Associa a"
+  },
+  "mymemory:Please change these values only if you know what you are doing.": {
+    "original": "Please change these values only if you know what you are doing.",
+    "translation": "Si prega di modificare questi valori solo se si sa cosa si sta facendo."
+  },
+  "mymemory:Please note that XMail saves the log data in logs/.": {
+    "original": "Please note that XMail saves the log data in logs/.",
+    "translation": "Si prega di notare che XMail salva i dati di registro nei registri/."
+  },
+  "mymemory:Please note that the FRITZ!Box does not support normal user management. The files /etc/passwd and /etc/shadow have to be saved with <b>modsave</b>. Please activate the support for regular users only if you know what you are doing.": {
+    "original": "Please note that the FRITZ!Box does not support normal user management. The files /etc/passwd and /etc/shadow have to be saved with <b>modsave</b>. Please activate the support for regular users only if you know what you are doing.",
+    "translation": "Si prega di notare che il Fritz!Box non supporta la normale gestione degli utenti. I file /etc/passwd e /etc/shadow devono essere salvati con <b>modsave</b>. Attiva il supporto per gli utenti regolari solo se sai cosa stai facendo."
+  },
+  "mymemory:Please note that the log files use precious RAM memory if the standard directory for the log files is used (see below). Use logging only for debugging and disable it for regular operation.": {
+    "original": "Please note that the log files use precious RAM memory if the standard directory for the log files is used (see below). Use logging only for debugging and disable it for regular operation.",
+    "translation": "Si noti che i file di registro utilizzano una memoria RAM preziosa se viene utilizzata la directory standard per i file di registro (vedere di seguito). Utilizzare la registrazione solo per il debug e disabilitarla per il normale funzionamento."
+  },
+  "mymemory:Please note: The SSL protected admin access is available from all networks (port 6018). The unprotected admin access is available via localhost only (port 6017).": {
+    "original": "Please note: The SSL protected admin access is available from all networks (port 6018). The unprotected admin access is available via localhost only (port 6017).",
+    "translation": "Nota: l'accesso amministratore protetto da SSL è disponibile da tutte le reti (porta 6018). L'accesso come amministratore non protetto è disponibile solo tramite localhost (porta 6017)."
+  },
+  "mymemory:Please note that port 53 is already used by the Fritz.Box DNS server - use a different port. In order to have the tunnel accessible from the Internet, add a port forwarding rule from UDP port 53 to this configured UDP port.": {
+    "original": "Please note that port 53 is already used by the Fritz.Box DNS server - use a different port. In order to have the tunnel accessible from the Internet, add a port forwarding rule from UDP port 53 to this configured UDP port.",
+    "translation": "Si prega di notare che la porta 53 è già utilizzata dal server DNS Fritz.Box - utilizzare una porta diversa. Affinché il tunnel sia accessibile da Internet, aggiungere una regola di inoltro porta dalla porta UDP 53 a questa porta UDP configurata."
+  },
+  "mymemory:Please note: If XMail is started with an unprivileged user ID, all ports must be above or equal to 1024 as otherwise the service will not be started. To make services available from the Internet, please use the port forwarding with the Fritz!Box firewall (e.g. from port 25 on the Internet side to port 10025 on the local side.": {
+    "original": "Please note: If XMail is started with an unprivileged user ID, all ports must be above or equal to 1024 as otherwise the service will not be started. To make services available from the Internet, please use the port forwarding with the Fritz!Box firewall (e.g. from port 25 on the Internet side to port 10025 on the local side.",
+    "translation": "Nota: se XMail viene avviato con un ID utente non privilegiato, tutte le porte devono essere superiori o uguali a 1024, altrimenti il servizio non verrà avviato. Per rendere disponibili i servizi da Internet, si prega di utilizzare il port forwarding con il Fritz! Firewall box (ad es. dalla porta 25 sul lato Internet alla porta 10025 sul lato locale."
+  },
+  "mymemory:Please specify path of swapfile": {
+    "original": "Please specify path of swapfile",
+    "translation": "Specifica il percorso del file di swap"
+  },
+  "mymemory:Please specifiy size of swapfile (in MB)": {
+    "original": "Please specifiy size of swapfile (in MB)",
+    "translation": "Specificare la dimensione del file di swap (in MB)"
+  },
+  "mymemory:Please complete initial setup first": {
+    "original": "Please complete initial setup first",
+    "translation": "Completa prima la configurazione iniziale"
+  },
+  "mymemory:Please provide the storage location for XMail (this location contains all email boxes, spool storage, configuration files). This directory must be writeable and exist. In case the directory is empty, the proper directory structure will be created. This directory will contain all configuration files for XMail which must be modified directly or via a web frontend.": {
+    "original": "Please provide the storage location for XMail (this location contains all email boxes, spool storage, configuration files). This directory must be writeable and exist. In case the directory is empty, the proper directory structure will be created. This directory will contain all configuration files for XMail which must be modified directly or via a web frontend.",
+    "translation": "Fornire la posizione di archiviazione per XMail (questa posizione contiene tutte le caselle di posta elettronica, l'archiviazione dello spool, i file di configurazione). Questa directory deve essere scrivibile ed esistere. Nel caso in cui la directory sia vuota, verrà creata la struttura di directory appropriata. Questa directory conterrà tutti i file di configurazione per XMail che devono essere modificati direttamente o tramite un frontend web."
+  },
+  "mymemory:Please <a href=''>reload</a> webpage after activation.": {
+    "original": "Please <a href=''>reload</a> webpage after activation.",
+    "translation": "<a href=''>Ricarica la</a> pagina web dopo l'attivazione."
+  },
+  "mymemory:Please don't use the default password!": {
+    "original": "Please don't use the default password!",
+    "translation": "Si prega di non utilizzare la password predefinita!"
+  },
+  "mymemory:Please wait": {
+    "original": "Please wait",
+    "translation": "Attendere prego"
+  },
+  "mymemory:Photo blue": {
+    "original": "Photo blue",
+    "translation": "Blu foto"
+  },
+  "mymemory:Update blocked hosts automatically": {
+    "original": "Update blocked hosts automatically",
+    "translation": "Aggiorna automaticamente gli host bloccati"
+  },
+  "mymemory:Boot Monitor": {
+    "original": "Boot Monitor",
+    "translation": "Boot Monitor"
+  },
+  "mymemory:Boot environment": {
+    "original": "Boot environment",
+    "translation": "Ambiente di boot"
+  },
+  "mymemory:Version of bootloader": {
+    "original": "Version of bootloader",
+    "translation": "Versione del bootloader"
+  },
+  "mymemory:Restart box": {
+    "original": "Restart box",
+    "translation": "Casella di riavvio"
+  },
+  "mymemory:Box info": {
+    "original": "Box info",
+    "translation": "Info scatola"
+  },
+  "mymemory:Box name": {
+    "original": "Box name",
+    "translation": "Nome confezione"
+  },
+  "mymemory:Box type": {
+    "original": "Box type",
+    "translation": "A scatola"
+  },
+  "mymemory:Bridge": {
+    "original": "Bridge",
+    "translation": "Ponte"
+  },
+  "mymemory:Change branding": {
+    "original": "Change branding",
+    "translation": "Cambia branding"
+  },
+  "mymemory:Branding": {
+    "original": "Branding",
+    "translation": "Marchio"
+  },
+  "mymemory:Width of additional webservers": {
+    "original": "Width of additional webservers",
+    "translation": "Larghezza dei webserver aggiuntivi"
+  },
+  "mymemory:Width of the main content area": {
+    "original": "Width of the main content area",
+    "translation": "Larghezza dell'area contenuto"
+  },
+  "mymemory:Broker": {
+    "original": "Broker",
+    "translation": "Intermediario"
+  },
+  "mymemory:bytes": {
+    "original": "bytes",
+    "translation": "byte"
+  },
+  "mymemory:bytes.": {
+    "original": "bytes.",
+    "translation": "byte"
+  },
+  "mymemory:CA name in configuration": {
+    "original": "CA name in configuration",
+    "translation": "Nome CA in configurazione"
+  },
+  "mymemory:CGI support cannot be configured - mod_cgi.so unavailable.": {
+    "original": "CGI support cannot be configured - mod_cgi.so unavailable.",
+    "translation": "Il supporto CGI non può essere configurato - mod_cgi.so non è disponibile."
+  },
+  "mymemory:Cache size": {
+    "original": "Cache size",
+    "translation": "Dimensioni cache"
+  },
+  "mymemory:Capture filter": {
+    "original": "Capture filter",
+    "translation": "Filtro di acquisizione"
+  },
+  "mymemory:Use chroot": {
+    "original": "Use chroot",
+    "translation": "Usa chroot"
+  },
+  "mymemory:chroot_list": {
+    "original": "chroot_list",
+    "translation": "chroot_list"
+  },
+  "mymemory:client_subnet": {
+    "original": "client_subnet",
+    "translation": "client_subnet"
+  },
+  "mymemory:Client name": {
+    "original": "Client name",
+    "translation": "Nome cliente"
+  },
+  "mymemory:Set static VPN-IPs for clients and route networks to particular clients": {
+    "original": "Set static VPN-IPs for clients and route networks to particular clients",
+    "translation": "Imposta VPN-IP statici per i client e instrada le reti a determinati client"
+  },
+  "mymemory:Redirect client traffic": {
+    "original": "Redirect client traffic",
+    "translation": "Reindirizza il traffico del cliente"
+  },
+  "mymemory:Config memory": {
+    "original": "Config memory",
+    "translation": "Memoria di configurazione"
+  },
+  "mymemory:Custom URL": {
+    "original": "Custom URL",
+    "translation": "URL personalizzato"
+  },
+  "mymemory:Photo cyan": {
+    "original": "Photo cyan",
+    "translation": "Ciano Foto"
+  },
+  "mymemory:Cyan and magenta": {
+    "original": "Cyan and magenta",
+    "translation": "Ciano e magenta"
+  },
+  "mymemory:DHCP Boot": {
+    "original": "DHCP Boot",
+    "translation": "Avvio DHCP"
+  },
+  "mymemory:DHCP range (one per line)": {
+    "original": "DHCP range (one per line)",
+    "translation": "Intervallo DHCP (uno per riga)"
+  },
+  "mymemory:DHCP server": {
+    "original": "DHCP server",
+    "translation": "Server DHCP"
+  },
+  "mymemory:DHT Settings": {
+    "original": "DHT Settings",
+    "translation": "Impostazioni DHT"
+  },
+  "mymemory:DHT Port": {
+    "original": "DHT Port",
+    "translation": "Porta DHT"
+  },
+  "mymemory:DNS Domain name": {
+    "original": "DNS Domain name",
+    "translation": "Nome DNS completo del dominio:"
+  },
+  "mymemory:DNS domain": {
+    "original": "DNS domain",
+    "translation": "Dominio DNS"
+  },
+  "mymemory:DNS port number": {
+    "original": "DNS port number",
+    "translation": "Numero della porta"
+  },
+  "mymemory:DNS server": {
+    "original": "DNS server",
+    "translation": "Protezione server"
+  },
+  "mymemory:DNS Service": {
+    "original": "DNS Service",
+    "translation": "Servizio DNS;"
+  },
+  "mymemory:DNS server list (separated by spaces)": {
+    "original": "DNS server list (separated by spaces)",
+    "translation": "Elenco server DNS (separati da spazi)"
+  },
+  "mymemory:DNS domain search list": {
+    "original": "DNS domain search list",
+    "translation": "Elenco di ricerca domini DNS"
+  },
+  "mymemory:DNS2TCP daemon": {
+    "original": "DNS2TCP daemon",
+    "translation": "Daemon DNS2TCP"
+  },
+  "mymemory:Validate DNS replies and cache DNSSEC data.": {
+    "original": "Validate DNS replies and cache DNSSEC data.",
+    "translation": "Convalida le risposte DNS e memorizza nella cache i dati DNSSEC."
+  },
+  "mymemory:DSL drivers and hardware": {
+    "original": "DSL drivers and hardware",
+    "translation": "Driver e hardware DSL"
+  },
+  "mymemory:To start VSFTPD with SSL-Support you have to setup Certifikat&amp;Key <a TARGET=\\\\": {
+    "original": "To start VSFTPD with SSL-Support you have to setup Certifikat&amp;Key <a TARGET=\\",
+    "translation": "Per avviare VSFTPD con SSL-Support è necessario configurare Certifikat&amp;Key &lt;a TARGET=\\"
+  },
+  "mymemory:To allow lighttpd to authenticate users, you have to add users <a TARGET=\\\\": {
+    "original": "To allow lighttpd to authenticate users, you have to add users <a TARGET=\\",
+    "translation": "Per consentire a lighttpd di autenticare gli utenti, è necessario aggiungere utenti <a TARGET=\\"
+  },
+  "mymemory:To start lighttpd with SSL-Support you have to setup Certifikat&amp;Key <a TARGET=\\\\": {
+    "original": "To start lighttpd with SSL-Support you have to setup Certifikat&amp;Key <a TARGET=\\",
+    "translation": "Per avviare lighttpd con SSL-Support è necessario configurare Certifikat&amp;Key &lt;a TARGET=\\"
+  },
+  "mymemory:Encrypt the backup with OpenSSL": {
+    "original": "Encrypt the backup with OpenSSL",
+    "translation": "Crittografa il backup con OpenSSL"
+  },
+  "mymemory:The database directory does not exists. You could initiliaze it this way": {
+    "original": "The database directory does not exists. You could initiliaze it this way",
+    "translation": "La directory del database non esiste. Potresti inizializzarlo in questo modo"
+  },
+  "mymemory:The device will reboot now": {
+    "original": "The device will reboot now",
+    "translation": "Il dispositivo si riavvierà ora"
+  },
+  "mymemory:Mark IPv6 subnet as managed": {
+    "original": "Mark IPv6 subnet as managed",
+    "translation": "Segna la sottorete IPv6 come gestita"
+  },
+  "mymemory:The post-installation script will be executed upon reboot.": {
+    "original": "The post-installation script will be executed upon reboot.",
+    "translation": "Lo script post-installazione verrà eseguito al riavvio."
+  },
+  "mymemory:The password for the user 'ftp' can be set by using the command 'passwd ftp' and subsequently saved persistently by 'modusers save; modsave flash'.": {
+    "original": "The password for the user 'ftp' can be set by using the command 'passwd ftp' and subsequently saved persistently by 'modusers save; modsave flash'.",
+    "translation": "La password per l'utente 'ftp' può essere impostata utilizzando il comando 'passwd ftp' e successivamente salvata in modo persistente da 'modusers save; modsave flash'."
+  },
+  "mymemory:The password is empty!": {
+    "original": "The password is empty!",
+    "translation": "Password non specificata."
+  },
+  "mymemory:The password was not changed.": {
+    "original": "The password was not changed.",
+    "translation": "La password non è stata modificata."
+  },
+  "mymemory:TAP interface will be bridged to LAN using brctl. LAN IP will ignore the local IP and use the IP of the interface lan.": {
+    "original": "TAP interface will be bridged to LAN using brctl. LAN IP will ignore the local IP and use the IP of the interface lan.",
+    "translation": "L'INTERFACCIA TAP verrà collegata alla LAN utilizzando brctl. L'IP LAN ignorerà l'IP locale e utilizzerà l'IP dell'interfaccia lan."
+  },
+  "mymemory:The document root of the virtual host is defined by combining the above configured document root plus the extension selected as follows (&lt;docroot&gt;/&lt;extension&gt;). If the directory for the virtual host does not exist, the above configured document root extended with \\\\": {
+    "original": "The document root of the virtual host is defined by combining the above configured document root plus the extension selected as follows (&lt;docroot&gt;/&lt;extension&gt;). If the directory for the virtual host does not exist, the above configured document root extended with \\",
+    "translation": "La radice del documento dell'host virtuale viene definita combinando la radice del documento sopra configurata più l'estensione selezionata come segue (&lt;docroot&gt;/&lt;extension&gt;). Se la directory per l'host virtuale non esiste, la radice del documento sopra configurata è stata estesa con \\"
+  },
+  "mymemory:The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!": {
+    "original": "The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!",
+    "translation": "La directory deve trovarsi su una memoria persistente (USB, NAS). NON usare /var/tmp!"
+  },
+  "mymemory:The old password was wrong!": {
+    "original": "The old password was wrong!",
+    "translation": "La vecchia password era sbagliata!"
+  },
+  "mymemory:The document root directory must exist as otherwise lighttpd will not start.": {
+    "original": "The document root directory must exist as otherwise lighttpd will not start.",
+    "translation": "La directory principale del documento deve esistere altrimenti lighttpd non verrà avviato."
+  },
+  "mymemory:This is the last configuration and therefor cannot be deleted!": {
+    "original": "This is the last configuration and therefor cannot be deleted!",
+    "translation": "Questa è l'ultima configurazione e quindi non può essere eliminata!"
+  },
+  "mymemory:Edit file": {
+    "original": "Edit file",
+    "translation": "Modifica file"
+  },
+  "mymemory:File successfully uploaded to: $FORM_target\\\\\\\\nFile size:": {
+    "original": "File successfully uploaded to: $FORM_target\\\\nFile size:",
+    "translation": "File caricato con successo su: $FORM_TARGET\\\nDimensione file:"
+  },
+  "mymemory:Upload file": {
+    "original": "Upload file",
+    "translation": "Carica file"
+  },
+  "mymemory:File with blocked hosts": {
+    "original": "File with blocked hosts",
+    "translation": "File con host bloccati"
+  },
+  "mymemory:preshared key file": {
+    "original": "preshared key file",
+    "translation": "file di chiavi precondiviso"
+  },
+  "mymemory:File(w/o.gz)": {
+    "original": "File(w/o.gz)",
+    "translation": "File(w/o.gz)"
+  },
+  "mymemory:File prefix for error": {
+    "original": "File prefix for error",
+    "translation": "Prefisso file per errore"
+  },
+  "mymemory:File:&nbsp;&nbsp;": {
+    "original": "File:&nbsp;&nbsp;",
+    "translation": "File:  "
+  },
+  "mymemory:File:&nbsp;&nbsp;&nbsp;": {
+    "original": "File:&nbsp;&nbsp;&nbsp;",
+    "translation": "File:   "
+  },
+  "mymemory:Caching of files cannot be configured - mod_deflate.so unavailable.": {
+    "original": "Caching of files cannot be configured - mod_deflate.so unavailable.",
+    "translation": "Impossibile configurare la cache dei file - mod_deflate.so non disponibile."
+  },
+  "mymemory:Extract files": {
+    "original": "Extract files",
+    "translation": "Estrai file"
+  },
+  "mymemory:Download files": {
+    "original": "Download files",
+    "translation": "Scarica i file"
+  },
+  "mymemory:Files to copy into chroot environment (separate by \\\\": {
+    "original": "Files to copy into chroot environment (separate by \\",
+    "translation": "File da copiare nell'ambiente chroot (separati da \\"
+  },
+  "mymemory:Filesharing (smbd) ": {
+    "original": "Filesharing (smbd) ",
+    "translation": "Filesharing (smbd)"
+  },
+  "mymemory:File name": {
+    "original": "File name",
+    "translation": "Nome del file"
+  },
+  "mymemory:Album art filenames": {
+    "original": "Album art filenames",
+    "translation": "Nomi dei file delle copertine degli album"
+  },
+  "mymemory:Mount filesystem as": {
+    "original": "Mount filesystem as",
+    "translation": "Monta il file system come"
+  },
+  "mymemory:Filesystem": {
+    "original": "Filesystem",
+    "translation": "File system"
+  },
+  "mymemory:Filesystems": {
+    "original": "Filesystems",
+    "translation": "File system"
+  },
+  "mymemory:Data directory (empty for none)": {
+    "original": "Data directory (empty for none)",
+    "translation": "Directory dati (vuota per nessuno)"
+  },
+  "mymemory:Database directory": {
+    "original": "Database directory",
+    "translation": "Directory del database"
+  },
+  "mymemory:Storages": {
+    "original": "Storages",
+    "translation": "Spazi di Archiviazione"
+  },
+  "mymemory:Share storages": {
+    "original": "Share storages",
+    "translation": "Condividi magazzini"
+  },
+  "mymemory:data directory": {
+    "original": "data directory",
+    "translation": "directory dei dati"
+  },
+  "mymemory:Document root directory extension": {
+    "original": "Document root directory extension",
+    "translation": "Estensione directory principale del documento"
+  },
+  "mymemory:Duration (sec)": {
+    "original": "Duration (sec)",
+    "translation": "Durata (sec)"
+  },
+  "mymemory:Deactivate": {
+    "original": "Deactivate",
+    "translation": "Disattiva"
+  },
+  "mymemory:Deactivated": {
+    "original": "Deactivated",
+    "translation": "Disattivato"
+  },
+  "mymemory:Disabled": {
+    "original": "Disabled",
+    "translation": "Disabilitato"
+  },
+  "mymemory:Debug logging to file and syslog": {
+    "original": "Debug logging to file and syslog",
+    "translation": "Debug logging su file e syslog"
+  },
+  "mymemory:Enable debug mode": {
+    "original": "Enable debug mode",
+    "translation": "Abilità la modalità debug"
+  },
+  "mymemory:Debug level": {
+    "original": "Debug level",
+    "translation": "Livello di debug"
+  },
+  "mymemory:Default port": {
+    "original": "Default port",
+    "translation": "Porta predefinita"
+  },
+  "mymemory:Clean up TFFS": {
+    "original": "Clean up TFFS",
+    "translation": "RIPULIRE"
+  },
+  "mymemory:Decoding files": {
+    "original": "Decoding files",
+    "translation": "Decodifica dei file"
+  },
+  "mymemory:Decoding": {
+    "original": "Decoding",
+    "translation": "Codice"
+  },
+  "mymemory:Client will receive a network route via": {
+    "original": "Client will receive a network route via",
+    "translation": "Il cliente riceverà un percorso di rete tramite"
+  },
+  "mymemory:The DNS server is listening on": {
+    "original": "The DNS server is listening on",
+    "translation": "Il server DNS è in ascolto su"
+  },
+  "mymemory:The FTP server is listening on": {
+    "original": "The FTP server is listening on",
+    "translation": "Il server FTP è in ascolto su"
+  },
+  "mymemory:Internal flash memory is limited. With this option privoxy loads <i>user.action</i> and <i>user.filter</i> from the given directory (usually outside the flash memory of the box).": {
+    "original": "Internal flash memory is limited. With this option privoxy loads <i>user.action</i> and <i>user.filter</i> from the given directory (usually outside the flash memory of the box).",
+    "translation": "La memoria flash interna è limitata. Con questa opzione privoxy carica <i>user.action</i> e <i>user.filter</i> dalla directory specificata (di solito al di fuori della memoria flash della scatola)."
+  },
+  "mymemory:Knockd server listens on:": {
+    "original": "Knockd server listens on:",
+    "translation": "Il server Knockd è in ascolto su:"
+  },
+  "mymemory:The Privoxy server is listening on": {
+    "original": "The Privoxy server is listening on",
+    "translation": "Il server Privoxy è in ascolto su"
+  },
+  "mymemory:The remote CAPI daemon is listening on": {
+    "original": "The remote CAPI daemon is listening on",
+    "translation": "Il demone capi remoto è in ascolto su"
+  },
+  "mymemory:The SSH server is listening on": {
+    "original": "The SSH server is listening on",
+    "translation": "Il server SSH è in ascolto su"
+  },
+  "mymemory:You can customize what page to send back based on a status code. This provides you with an alternative way to customize 404 pages. You may also customize other status-codes with their own custom page (500 pages, etc). Only static files are allowed to be sent back. Format: &lt;errorfile-prefix&gt;&lt;status-code&gt;.html. This path must be the absolute path name on the host system, not only starting with the docroot.": {
+    "original": "You can customize what page to send back based on a status code. This provides you with an alternative way to customize 404 pages. You may also customize other status-codes with their own custom page (500 pages, etc). Only static files are allowed to be sent back. Format: &lt;errorfile-prefix&gt;&lt;status-code&gt;.html. This path must be the absolute path name on the host system, not only starting with the docroot.",
+    "translation": "Puoi personalizzare la pagina da inviare in base a un codice di stato. Questo ti fornisce un modo alternativo per personalizzare 404 pagine. Puoi anche personalizzare altri codici di stato con la propria pagina personalizzata (500 pagine, ecc.). Solo i file statici possono essere rispediti. Formato: &lt;errorfile-prefix&gt;&lt;status-code&gt;.html. Questo percorso deve essere il nome del percorso assoluto sul sistema host, non solo a partire dal docroot."
+  },
+  "mymemory:The Tor server is listening on": {
+    "original": "The Tor server is listening on",
+    "translation": "Il server Tor è in ascolto su"
+  },
+  "mymemory:The device's configuration was not changed": {
+    "original": "The device's configuration was not changed",
+    "translation": "La configurazione del dispositivo non è stata modificata"
+  },
+  "mymemory:Device": {
+    "original": "Device",
+    "translation": "Dispositivo"
+  },
+  "mymemory:Devices: sda, sda1, sda2, sdb, ...": {
+    "original": "Devices: sda, sda1, sda2, sdb, ...",
+    "translation": "Dispositivi: sda, sda1, sda2, sdb, ..."
+  },
+  "mymemory:Decode AVM settings": {
+    "original": "Decode AVM settings",
+    "translation": "Decodifica impostazioni AVM"
+  },
+  "mymemory:The user management can be run by": {
+    "original": "The user management can be run by",
+    "translation": "La gestione degli utenti può essere eseguita da"
+  },
+  "mymemory:This will build a self signed certificate on the box. Will take some time..": {
+    "original": "This will build a self signed certificate on the box. Will take some time..",
+    "translation": "Questo costruirà un certificato autofirmato sulla scatola. Ci vorrà un po' di tempo..."
+  },
+  "mymemory:The file .rtorrent.rc does not exist at": {
+    "original": "The file .rtorrent.rc does not exist at",
+    "translation": "Il file .rtorrent.rc non esiste in"
+  },
+  "mymemory:The file size is": {
+    "original": "The file size is",
+    "translation": "La dimensione del file è 10 GB."
+  },
+  "mymemory:The database will be recreated. This may take a while.": {
+    "original": "The database will be recreated. This may take a while.",
+    "translation": "Il database verrà ricreato. L'operazione potrebbe richiedere un po' di tempo."
+  },
+  "mymemory:You could check the settings by AVM webif with Diagnose > Sicherheit": {
+    "original": "You could check the settings by AVM webif with Diagnose > Sicherheit",
+    "translation": "È possibile controllare le impostazioni da AVM webif con Diagnose > Sicherheit"
+  },
+  "mymemory:Size of swapfile must be at least 1 MB": {
+    "original": "Size of swapfile must be at least 1 MB",
+    "translation": "La dimensione del file di swap deve essere di almeno 1 MB"
+  },
+  "mymemory:You and open the configuration site": {
+    "original": "You and open the configuration site",
+    "translation": "Tu e apri il sito di configurazione"
+  },
+  "mymemory:The console can be run by": {
+    "original": "The console can be run by",
+    "translation": "La console può essere gestita da"
+  },
+  "mymemory:Log file will be deleted next start w/o debug mode.": {
+    "original": "Log file will be deleted next start w/o debug mode.",
+    "translation": "Il file di registro verrà eliminato al prossimo avvio senza la modalità di debug."
+  },
+  "mymemory:Logfile is empty.": {
+    "original": "Logfile is empty.",
+    "translation": "Il file di registro è vuoto."
+  },
+  "mymemory:The log file is empty.": {
+    "original": "The log file is empty.",
+    "translation": "Il file è vuoto"
+  },
+  "mymemory:The logfile is empty.": {
+    "original": "The logfile is empty.",
+    "translation": "Il file di registro è vuoto."
+  },
+  "mymemory:Passwords do not match!": {
+    "original": "Passwords do not match!",
+    "translation": "Le password inserite non corrispondono!"
+  },
+  "mymemory:The ports will be opened for maximum 120 seconds and need to be refreshed afterwards": {
+    "original": "The ports will be opened for maximum 120 seconds and need to be refreshed afterwards",
+    "translation": "Le porte verranno aperte per un massimo di 120 secondi e dovranno essere aggiornate in seguito"
+  },
+  "mymemory:The SSL support can be configured globally as the exclusive access method (the above configured port will be used) or in addition to the unencrypted communication. In case the SSL support is intended to be in addition to the unencrypted communication, all of the following options must be set.": {
+    "original": "The SSL support can be configured globally as the exclusive access method (the above configured port will be used) or in addition to the unencrypted communication. In case the SSL support is intended to be in addition to the unencrypted communication, all of the following options must be set.",
+    "translation": "Il supporto SSL può essere configurato globalmente come metodo di accesso esclusivo (verrà utilizzata la porta sopra configurata) o in aggiunta alla comunicazione non crittografata. Nel caso in cui il supporto SSL sia destinato ad essere in aggiunta alla comunicazione non crittografata, è necessario impostare tutte le seguenti opzioni."
+  },
+  "mymemory:The file specified does already exist.": {
+    "original": "The file specified does already exist.",
+    "translation": "Il file specificato esiste già."
+  },
+  "mymemory:The following 2 settings are mainly for operating with SSL, because the firewall can't follow the encrypted traffic.": {
+    "original": "The following 2 settings are mainly for operating with SSL, because the firewall can't follow the encrypted traffic.",
+    "translation": "Le seguenti 2 impostazioni sono principalmente per il funzionamento con SSL, perché il firewall non può seguire il traffico crittografato."
+  },
+  "mymemory:The following boxes allw the specification of the maximum data transfer rate in kBytes/s. The value of 0 means no limit. Please note that a limit below 32kb/s might actually limit the traffic to 32kb/s. This is caused by the size of the TCP send buffer.": {
+    "original": "The following boxes allw the specification of the maximum data transfer rate in kBytes/s. The value of 0 means no limit. Please note that a limit below 32kb/s might actually limit the traffic to 32kb/s. This is caused by the size of the TCP send buffer.",
+    "translation": "Le seguenti caselle riportano la specifica della velocità massima di trasferimento dati in kByte/s. Il valore 0 significa nessun limite. Tieni presente che un limite inferiore a 32 KB/s potrebbe effettivamente limitare il traffico a 32 KB/s. Ciò è causato dalla dimensione del buffer di invio TCP."
+  },
+  "mymemory:The saved configuration is not supported by this binary.\\\\\\\\n": {
+    "original": "The saved configuration is not supported by this binary.\\\\n",
+    "translation": "La configurazione salvata non è supportata da questo binario.\\"
+  },
+  "mymemory:Private certificates to use with Lighttpd e.g. by <i>ssl.pemfile</i> will be placed here": {
+    "original": "Private certificates to use with Lighttpd e.g. by <i>ssl.pemfile</i> will be placed here",
+    "translation": "I certificati privati da utilizzare con Lighttpd, ad esempio <i>da</i> ssl.pemfile, verranno inseriti qui"
+  },
+  "mymemory:Service started successfully": {
+    "original": "Service started successfully",
+    "translation": "Il servizio è stato avviato."
+  },
+  "mymemory:Service not started. You can start it manually later.": {
+    "original": "Service not started. You can start it manually later.",
+    "translation": "Servizio non avviato. Puoi avviarlo manualmente in un secondo momento."
+  },
+  "mymemory:Edit services file": {
+    "original": "Edit services file",
+    "translation": "Modifica servizi"
+  },
+  "mymemory:Services": {
+    "original": "Services",
+    "translation": "Servizi"
+  },
+  "mymemory:This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.": {
+    "original": "This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.",
+    "translation": "Questo ha modificato il server DNS che la casella utilizza per la risoluzione dei nomi. Né un server dei nomi a monte di un server DNS installato verrà modificato, né alcunché di risoluzione dei nomi per altri dispositivi sulla rete locale."
+  },
+  "mymemory:This would be helpful if a service is not externalized, but needs your USB-device for storing data-files (like RRDstats, Tor, bip, Xmail or vnstat-cgi).": {
+    "original": "This would be helpful if a service is not externalized, but needs your USB-device for storing data-files (like RRDstats, Tor, bip, Xmail or vnstat-cgi).",
+    "translation": "Ciò sarebbe utile se un servizio non è esternalizzato, ma ha bisogno del dispositivo USB per archiviare i file di dati (come RRDstats, Tor, bip, Xmail o vnstat-cgi)."
+  },
+  "mymemory:This setting does only work in inetd mode": {
+    "original": "This setting does only work in inetd mode",
+    "translation": "Questa impostazione funziona solo in modalità inetd"
+  },
+  "mymemory:Shared these devices": {
+    "original": "Shared these devices",
+    "translation": "Condiviso questi dispositivi"
+  },
+  "mymemory:This logfile is empty.": {
+    "original": "This logfile is empty.",
+    "translation": "Questo file di registro è vuoto."
+  },
+  "mymemory:Listen on these ports (space separated)": {
+    "original": "Listen on these ports (space separated)",
+    "translation": "Ascolta su queste porte (separate da spazi)"
+  },
+  "mymemory:Observe these consumers": {
+    "original": "Observe these consumers",
+    "translation": "Osserva questi consumatori"
+  },
+  "mymemory:These values should only be altered by experienced users": {
+    "original": "These values should only be altered by experienced users",
+    "translation": "Questi valori devono essere modificati solo da utenti esperti"
+  },
+  "mymemory:Write this dns server to /etc/resolv.conf": {
+    "original": "Write this dns server to /etc/resolv.conf",
+    "translation": "Scrivi questo server DNS su /etc/resolv.conf"
+  },
+  "mymemory:Use this server as a bridge": {
+    "original": "Use this server as a bridge",
+    "translation": "Usa questo server come bridge"
+  },
+  "mymemory:Don't forget to open this port.": {
+    "original": "Don't forget to open this port.",
+    "translation": "Non dimenticare di aprire questa porta."
+  },
+  "mymemory:This network will be routed to the client": {
+    "original": "This network will be routed to the client",
+    "translation": "Questa rete verrà instradata al client"
+  }
+}

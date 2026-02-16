@@ -1,0 +1,1866 @@
+{
+  "deepl:Memory buffer": {
+    "original": "Memory buffer",
+    "translation": "Buffer di memoria"
+  },
+  "deepl:No local logging enabled": {
+    "original": "No local logging enabled",
+    "translation": "Non è abilitata la registrazione locale"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di partenza"
+  },
+  "deepl:Log viewer": {
+    "original": "Log viewer",
+    "translation": "Visualizzatore di log"
+  },
+  "deepl:Options": {
+    "original": "Options",
+    "translation": "Opzioni"
+  },
+  "deepl:Network logger": {
+    "original": "Network logger",
+    "translation": "Registratore di rete"
+  },
+  "deepl:Local logger": {
+    "original": "Local logger",
+    "translation": "Logger locale"
+  },
+  "deepl:in logfile": {
+    "original": "in logfile",
+    "translation": "nel file di log"
+  },
+  "deepl:Log file location": {
+    "original": "Log file location",
+    "translation": "Posizione del file di registro"
+  },
+  "deepl:Log file rotation": {
+    "original": "Log file rotation",
+    "translation": "Rotazione dei file di registro"
+  },
+  "deepl:Max log file size": {
+    "original": "Max log file size",
+    "translation": "Dimensione massima del file di log"
+  },
+  "deepl:Max number of logs to keep": {
+    "original": "Max number of logs to keep",
+    "translation": "Numero massimo di registri da conservare"
+  },
+  "deepl:In memory buffer": {
+    "original": "In memory buffer",
+    "translation": "Buffer in memoria"
+  },
+  "deepl:Activate kernel-log daemon": {
+    "original": "Activate kernel-log daemon",
+    "translation": "Attivare il demone kernel-log"
+  },
+  "deepl:Kernel Daemon (klogd) loglevel": {
+    "original": "Kernel Daemon (klogd) loglevel",
+    "translation": "Livello di log del demone del kernel (klogd)"
+  },
+  "deepl:Additional command line options (for experts)": {
+    "original": "Additional command line options (for experts)",
+    "translation": "Opzioni aggiuntive della riga di comando (per gli esperti)"
+  },
+  "deepl:Internet 'super-server' (inetd)": {
+    "original": "Internet 'super-server' (inetd)",
+    "translation": "Il \"super-server\" di Internet (inetd)"
+  },
+  "deepl:Enable additional IPv6 support": {
+    "original": "Enable additional IPv6 support",
+    "translation": "Abilitare il supporto IPv6 aggiuntivo"
+  },
+  "deepl:Size of socket listen queue": {
+    "original": "Size of socket listen queue",
+    "translation": "Dimensione della coda di ascolto del socket"
+  },
+  "deepl:Maximum connections per minute": {
+    "original": "Maximum connections per minute",
+    "translation": "Connessioni massime al minuto"
+  },
+  "deepl:Inetd current config": {
+    "original": "Inetd current config",
+    "translation": "Configurazione attuale di Inetd"
+  },
+  "deepl:Inetd custom config": {
+    "original": "Inetd custom config",
+    "translation": "Configurazione personalizzata di Inetd"
+  },
+  "deepl:Inetd config": {
+    "original": "Inetd config",
+    "translation": "Configurazione di Inetd"
+  },
+  "deepl:Inetd custom": {
+    "original": "Inetd custom",
+    "translation": "Inetd personalizzato"
+  },
+  "deepl:The following box allows you to specify the authorized_keys for users. The keys are supplied by providing the username followed by the content of .ssh/id_dsa.pub, .ssh/id_rsa.pub or .ssh/id_ed25519.pub. Per user, you can supply zero, one or more keys.<br>Please note that only for the root user, the keys are automatically saved on persistent storage. For all other users, the home directory should be on a persistent storage device (such as a USB hard disk).<br>If a user is deleted from the list below, then his authorized_key file will also be deleted.": {
+    "original": "The following box allows you to specify the authorized_keys for users. The keys are supplied by providing the username followed by the content of .ssh/id_dsa.pub, .ssh/id_rsa.pub or .ssh/id_ed25519.pub. Per user, you can supply zero, one or more keys.<br>Please note that only for the root user, the keys are automatically saved on persistent storage. For all other users, the home directory should be on a persistent storage device (such as a USB hard disk).<br>If a user is deleted from the list below, then his authorized_key file will also be deleted.",
+    "translation": "La casella seguente consente di specificare le chiavi_autorizzate per gli utenti. Le chiavi vengono fornite fornendo il nome utente seguito dal contenuto di .ssh/id_dsa.pub, .ssh/id_rsa.pub o .ssh/id_ed25519.pub. Per ogni utente è possibile fornire zero, una o più chiavi.<br>Si noti che solo per l'utente root le chiavi vengono salvate automaticamente su una memoria persistente. Per tutti gli altri utenti, la home directory deve trovarsi su un dispositivo di archiviazione persistente (ad esempio un disco rigido USB).<br>Se un utente viene cancellato dall'elenco seguente, anche il suo file authorized_key verrà cancellato."
+  },
+  "deepl:Known host-keys": {
+    "original": "Known host-keys",
+    "translation": "Chiavi host conosciute"
+  },
+  "deepl:Private DSA key": {
+    "original": "Private DSA key",
+    "translation": "Chiave DSA privata"
+  },
+  "deepl:Private RSA key": {
+    "original": "Private RSA key",
+    "translation": "Chiave privata RSA"
+  },
+  "deepl:Private ED25519 key": {
+    "original": "Private ED25519 key",
+    "translation": "Chiave privata ED25519"
+  },
+  "deepl:Private ECDSA key": {
+    "original": "Private ECDSA key",
+    "translation": "Chiave privata ECDSA"
+  },
+  "deepl:Public key authentication": {
+    "original": "Public key authentication",
+    "translation": "Autenticazione a chiave pubblica"
+  },
+  "deepl:Edit authorized_keys": {
+    "original": "Edit authorized_keys",
+    "translation": "Modifica delle chiavi autorizzate"
+  },
+  "deepl:SSH server": {
+    "original": "SSH server",
+    "translation": "Server SSH"
+  },
+  "deepl:The SSH server is listening on": {
+    "original": "The SSH server is listening on",
+    "translation": "Il server SSH è in ascolto su"
+  },
+  "deepl:Allow password login": {
+    "original": "Allow password login",
+    "translation": "Consentire l'accesso con password"
+  },
+  "deepl:Allow only root login": {
+    "original": "Allow only root login",
+    "translation": "Consentire solo il login di root"
+  },
+  "deepl:Please note that the FRITZ!Box does not support normal user management. The files /etc/passwd and /etc/shadow have to be saved with <b>modsave</b>. Please activate the support for regular users only if you know what you are doing.": {
+    "original": "Please note that the FRITZ!Box does not support normal user management. The files /etc/passwd and /etc/shadow have to be saved with <b>modsave</b>. Please activate the support for regular users only if you know what you are doing.",
+    "translation": "Si noti che il FRITZ!Box non supporta la normale gestione degli utenti. I file /etc/passwd e /etc/shadow devono essere salvati con <b>modsave</b>. Attivate il supporto per gli utenti normali solo se sapete cosa state facendo."
+  },
+  "deepl:Additional command-line options (for experts)": {
+    "original": "Additional command-line options (for experts)",
+    "translation": "Opzioni aggiuntive della riga di comando (per gli esperti)"
+  },
+  "deepl:These configuration parameters are stored in Flash RAM where there is not too much space. Therefore, all comments have been removed from the php.ini file. A documentation of the php.ini file can be found on the <a href=\\\"http://de.php.net/ini.core\\\">PHP website</a><br />After re-configuration, the webserver has to be restarted.": {
+    "original": "These configuration parameters are stored in Flash RAM where there is not too much space. Therefore, all comments have been removed from the php.ini file. A documentation of the php.ini file can be found on the <a href=\"http://de.php.net/ini.core\">PHP website</a><br />After re-configuration, the webserver has to be restarted.",
+    "translation": "Questi parametri di configurazione sono memorizzati nella Flash RAM, dove non c'è molto spazio. Pertanto, tutti i commenti sono stati rimossi dal file php.ini. La documentazione del file php.ini è disponibile sul sito web <a href=\"http://de.php.net/ini.core\">PHP</a><br />Dopo la riconfigurazione, il server web deve essere riavviato."
+  },
+  "deepl:Informations": {
+    "original": "Informations",
+    "translation": "Informazioni"
+  },
+  "deepl:Settings": {
+    "original": "Settings",
+    "translation": "Impostazioni"
+  },
+  "deepl:Ports to open, multiple seperated by spaces": {
+    "original": "Ports to open, multiple seperated by spaces",
+    "translation": "Porte da aprire, multiple separate da spazi"
+  },
+  "deepl: ports": {
+    "original": " ports",
+    "translation": " porti"
+  },
+  "deepl:Timeout of opened ports, max 120 [seconds]": {
+    "original": "Timeout of opened ports, max 120 [seconds]",
+    "translation": "Timeout delle porte aperte, max 120 [secondi]."
+  },
+  "deepl:Timeout without internet connection [seconds]": {
+    "original": "Timeout without internet connection [seconds]",
+    "translation": "Timeout senza connessione a Internet [secondi]"
+  },
+  "deepl:Debug logging to file and syslog": {
+    "original": "Debug logging to file and syslog",
+    "translation": "Registrazione del debug su file e syslog"
+  },
+  "deepl:The ports will be opened for maximum 120 seconds and need to be refreshed afterwards": {
+    "original": "The ports will be opened for maximum 120 seconds and need to be refreshed afterwards",
+    "translation": "Le porte saranno aperte per un massimo di 120 secondi e dovranno poi essere aggiornate."
+  },
+  "deepl:New ports get instantly opened on daemon start": {
+    "original": "New ports get instantly opened on daemon start",
+    "translation": "Le nuove porte vengono aperte istantaneamente all'avvio del demone"
+  },
+  "deepl:On configuration changes old ports are updated after the first intervall": {
+    "original": "On configuration changes old ports are updated after the first intervall",
+    "translation": "In caso di modifiche alla configurazione, le vecchie porte vengono aggiornate dopo il primo intervento."
+  },
+  "deepl:Open ports could not be closed and you have wait for the timeout": {
+    "original": "Open ports could not be closed and you have wait for the timeout",
+    "translation": "Non è stato possibile chiudere le porte aperte e bisogna attendere il timeout"
+  },
+  "deepl:script will be executed while the login process of root": {
+    "original": "script will be executed while the login process of root",
+    "translation": "sarà eseguito durante il processo di login di root"
+  },
+  "deepl:minute hour day month day-of-week command": {
+    "original": "minute hour day month day-of-week command",
+    "translation": "minuto ora giorno mese giorno della settimana comando"
+  },
+  "deepl:This script will be executed if the following dtrace-phonecode is detected": {
+    "original": "This script will be executed if the following dtrace-phonecode is detected",
+    "translation": "Questo script viene eseguito se viene rilevato il seguente dtrace-phonecode"
+  },
+  "deepl:e.g. 10.0.0.1 * * www.local mfh1 # my server": {
+    "original": "e.g. 10.0.0.1 * * www.local mfh1 # my server",
+    "translation": "es. 10.0.0.1 * * www.local mfh1 # il mio server"
+  },
+  "deepl:not defined": {
+    "original": "not defined",
+    "translation": "non definito"
+  },
+  "deepl:Here you can enter modules to be loaded during boot process (e.g. pl2303).": {
+    "original": "Here you can enter modules to be loaded during boot process (e.g. pl2303).",
+    "translation": "Qui è possibile inserire i moduli da caricare durante il processo di avvio (ad esempio, pl2303)."
+  },
+  "deepl:script is executed at the end of the boot process": {
+    "original": "script is executed at the end of the boot process",
+    "translation": "viene eseguito alla fine del processo di avvio."
+  },
+  "deepl:script is executed at the end of external": {
+    "original": "script is executed at the end of external",
+    "translation": "viene eseguito alla fine del file esterno"
+  },
+  "deepl:Here you can enter commands to be executed during system shutdown.": {
+    "original": "Here you can enter commands to be executed during system shutdown.",
+    "translation": "Qui è possibile inserire i comandi da eseguire durante lo spegnimento del sistema."
+  },
+  "deepl:Web interface": {
+    "original": "Web interface",
+    "translation": "Interfaccia web"
+  },
+  "deepl:AVM services": {
+    "original": "AVM services",
+    "translation": "Servizi AVM"
+  },
+  "deepl:HIDE lanpublic (docsis only)": {
+    "original": "HIDE lanpublic (docsis only)",
+    "translation": "Nascondere lanpubblica (solo docsis)"
+  },
+  "deepl:Your FRITZ!Box can be reached by AVM to retrieve selected diagnostics data or a diagnostics summary.": {
+    "original": "Your FRITZ!Box can be reached by AVM to retrieve selected diagnostics data or a diagnostics summary.",
+    "translation": "Il FRITZ!Box può essere raggiunto dall'AVM per richiamare i dati diagnostici selezionati o un riepilogo della diagnostica."
+  },
+  "deepl:FRITZ!Box searches for updates periodically.": {
+    "original": "FRITZ!Box searches for updates periodically.",
+    "translation": "FRITZ!Box cerca periodicamente gli aggiornamenti."
+  },
+  "deepl:To improve the product and ensure safe operation on your connection, this FRITZ!Box sends diagnostic data, for instance error reports, to AVM where needed.": {
+    "original": "To improve the product and ensure safe operation on your connection, this FRITZ!Box sends diagnostic data, for instance error reports, to AVM where needed.",
+    "translation": "Per migliorare il prodotto e garantire un funzionamento sicuro sulla vostra connessione, il FRITZ!Box invia all'AVM, se necessario, dati diagnostici, ad esempio segnalazioni di errori."
+  },
+  "deepl:Key Lock": {
+    "original": "Key Lock",
+    "translation": "Serratura a chiave"
+  },
+  "deepl:Nagging with a link when box is not signed during diagnostics": {
+    "original": "Nagging with a link when box is not signed during diagnostics",
+    "translation": "Il nagging con un link quando la casella non è firmata durante la diagnostica"
+  },
+  "deepl:Extra confirmation to configure certain settings and functions": {
+    "original": "Extra confirmation to configure certain settings and functions",
+    "translation": "Conferma supplementare per la configurazione di alcune impostazioni e funzioni"
+  },
+  "deepl:Send error messages automatically to AVM": {
+    "original": "Send error messages automatically to AVM",
+    "translation": "Invio automatico di messaggi di errore all'AVM"
+  },
+  "deepl:Prevent network loop": {
+    "original": "Prevent network loop",
+    "translation": "Prevenzione del loop di rete"
+  },
+  "deepl:DISABLE Energy Efficient Ethernet": {
+    "original": "DISABLE Energy Efficient Ethernet",
+    "translation": "DISABILITA Ethernet ad alta efficienza energetica"
+  },
+  "deepl:GPON ONT-Installation password": {
+    "original": "GPON ONT-Installation password",
+    "translation": "Password di installazione dell'ONT GPON"
+  },
+  "deepl:GPON Registration ID": {
+    "original": "GPON Registration ID",
+    "translation": "ID di registrazione GPON"
+  },
+  "deepl:Boot environment...": {
+    "original": "Boot environment...",
+    "translation": "Ambiente di avvio..."
+  },
+  "deepl:GPON Serial number...": {
+    "original": "GPON Serial number...",
+    "translation": "GPON Numero di serie..."
+  },
+  "deepl:GPON Serial number": {
+    "original": "GPON Serial number",
+    "translation": "GPON Numero di serie"
+  },
+  "deepl:Remote administration of LAN by Provider": {
+    "original": "Remote administration of LAN by Provider",
+    "translation": "Amministrazione remota della LAN da parte del provider"
+  },
+  "deepl:Install new FRITZ!OS-Versions automatically": {
+    "original": "Install new FRITZ!OS-Versions automatically",
+    "translation": "Installare automaticamente nuove versioni di FRITZ!OS"
+  },
+  "deepl:HIDE lanbridges (docsis only)": {
+    "original": "HIDE lanbridges (docsis only)",
+    "translation": "NASCONDERE le lanterne (solo per docsis)"
+  },
+  "deepl:Does not accept changes": {
+    "original": "Does not accept changes",
+    "translation": "Non accetta modifiche"
+  },
+  "deepl:unknown": {
+    "original": "unknown",
+    "translation": "sconosciuto"
+  },
+  "deepl:Box name": {
+    "original": "Box name",
+    "translation": "Nome della scatola"
+  },
+  "deepl: family": {
+    "original": " family",
+    "translation": " famiglia"
+  },
+  "deepl: model": {
+    "original": " model",
+    "translation": " modello"
+  },
+  "deepl: cores": {
+    "original": " cores",
+    "translation": " nuclei"
+  },
+  "deepl:Clock frequencies": {
+    "original": "Clock frequencies",
+    "translation": "Frequenze di clock"
+  },
+  "deepl:Available": {
+    "original": "Available",
+    "translation": "Disponibile"
+  },
+  "deepl:Processor": {
+    "original": "Processor",
+    "translation": "Processore"
+  },
+  "deepl:Temperature": {
+    "original": "Temperature",
+    "translation": "Temperatura"
+  },
+  "deepl:Boot environment": {
+    "original": "Boot environment",
+    "translation": "Ambiente di avvio"
+  },
+  "deepl:Version of bootloader": {
+    "original": "Version of bootloader",
+    "translation": "Versione del bootloader"
+  },
+  "deepl:Version of urlader": {
+    "original": "Version of urlader",
+    "translation": "Versione di urlader"
+  },
+  "deepl:AVM default password": {
+    "original": "AVM default password",
+    "translation": "Password predefinita AVM"
+  },
+  "deepl:Reboot cause": {
+    "original": "Reboot cause",
+    "translation": "Causa del riavvio"
+  },
+  "deepl:Operating hours counter": {
+    "original": "Operating hours counter",
+    "translation": "Contatore delle ore di funzionamento"
+  },
+  "deepl:Network": {
+    "original": "Network",
+    "translation": "Rete"
+  },
+  "deepl:Show section": {
+    "original": "Show section",
+    "translation": "Mostra sezione"
+  },
+  "deepl:Hide section": {
+    "original": "Hide section",
+    "translation": "Nascondere la sezione"
+  },
+  "deepl:Networks": {
+    "original": "Networks",
+    "translation": "Reti"
+  },
+  "deepl:Address": {
+    "original": "Address",
+    "translation": "Indirizzo"
+  },
+  "deepl:Public": {
+    "original": "Public",
+    "translation": "Pubblico"
+  },
+  "deepl:Internal": {
+    "original": "Internal",
+    "translation": "Interno"
+  },
+  "deepl:Boot loader": {
+    "original": "Boot loader",
+    "translation": "Caricatore di avvio"
+  },
+  "deepl:Interfaces": {
+    "original": "Interfaces",
+    "translation": "Interfacce"
+  },
+  "deepl:Protocol": {
+    "original": "Protocol",
+    "translation": "Protocollo"
+  },
+  "deepl:IP address": {
+    "original": "IP address",
+    "translation": "Indirizzo IP"
+  },
+  "deepl:Names": {
+    "original": "Names",
+    "translation": "Nomi"
+  },
+  "deepl: address": {
+    "original": " address",
+    "translation": " indirizzo"
+  },
+  "deepl:DSL drivers and hardware": {
+    "original": "DSL drivers and hardware",
+    "translation": "Driver e hardware DSL"
+  },
+  "deepl:Language": {
+    "original": "Language",
+    "translation": "Lingua"
+  },
+  "deepl:Compilation date": {
+    "original": "Compilation date",
+    "translation": "Data di compilazione"
+  },
+  "deepl:Properties": {
+    "original": "Properties",
+    "translation": "Proprietà"
+  },
+  "deepl:MTDs": {
+    "original": "MTDs",
+    "translation": "MTD"
+  },
+  "deepl:Filesystems": {
+    "original": "Filesystems",
+    "translation": "Sistemi di file"
+  },
+  "deepl:UBI info": {
+    "original": "UBI info",
+    "translation": "Info UBI"
+  },
+  "deepl:Information about firmware": {
+    "original": "Information about firmware",
+    "translation": "Informazioni sul firmware"
+  },
+  "deepl:Box type": {
+    "original": "Box type",
+    "translation": "Tipo di scatola"
+  },
+  "deepl:AVM firmware version": {
+    "original": "AVM firmware version",
+    "translation": "Versione firmware AVM"
+  },
+  "deepl:Region": {
+    "original": "Region",
+    "translation": "Regione"
+  },
+  "deepl: version": {
+    "original": " version",
+    "translation": " versione"
+  },
+  "deepl:Creation date": {
+    "original": "Creation date",
+    "translation": "Data di creazione"
+  },
+  "deepl:Initial file name": {
+    "original": "Initial file name",
+    "translation": "Nome iniziale del file"
+  },
+  "deepl:User defined information": {
+    "original": "User defined information",
+    "translation": "Informazioni definite dall'utente"
+  },
+  "deepl:FREETZ configuration": {
+    "original": "FREETZ configuration",
+    "translation": "Configurazione FREETZ"
+  },
+  "deepl:Download as text file": {
+    "original": "Download as text file",
+    "translation": "Scarica come file di testo"
+  },
+  "deepl:Externalised files": {
+    "original": "Externalised files",
+    "translation": "File esternalizzati"
+  },
+  "deepl:No log files found": {
+    "original": "No log files found",
+    "translation": "Nessun file di log trovato"
+  },
+  "deepl:Unmount messages": {
+    "original": "Unmount messages",
+    "translation": "Smontare i messaggi"
+  },
+  "deepl:Mount options": {
+    "original": "Mount options",
+    "translation": "Opzioni di montaggio"
+  },
+  "deepl:of": {
+    "original": "of",
+    "translation": "di"
+  },
+  "deepl:used": {
+    "original": "used",
+    "translation": "usato"
+  },
+  "deepl:free": {
+    "original": "free",
+    "translation": "libero"
+  },
+  "deepl:Execute": {
+    "original": "Execute",
+    "translation": "Eseguire"
+  },
+  "deepl:Config partition": {
+    "original": "Config partition",
+    "translation": "Partizione di configurazione"
+  },
+  "deepl:Temporary storage": {
+    "original": "Temporary storage",
+    "translation": "Stoccaggio temporaneo"
+  },
+  "deepl:Storages": {
+    "original": "Storages",
+    "translation": "Magazzini"
+  },
+  "deepl:None found": {
+    "original": "None found",
+    "translation": "Nessuno trovato"
+  },
+  "deepl:Web interface start type": {
+    "original": "Web interface start type",
+    "translation": "Tipo di avvio dell'interfaccia web"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porto"
+  },
+  "deepl:Username": {
+    "original": "Username",
+    "translation": "Nome utente"
+  },
+  "deepl:change": {
+    "original": "change",
+    "translation": "cambiamento"
+  },
+  "deepl:Authentification": {
+    "original": "Authentification",
+    "translation": "Autenticazione"
+  },
+  "deepl:New login with session id": {
+    "original": "New login with session id",
+    "translation": "Nuovo accesso con id di sessione"
+  },
+  "deepl:Session id timeout:": {
+    "original": "Session id timeout:",
+    "translation": "Timeout dell'id di sessione:"
+  },
+  "deepl:This is a test sentence": {
+    "original": "This is a test sentence",
+    "translation": "Questa è una frase di prova"
+  },
+  "deepl:Telephone": {
+    "original": "Telephone",
+    "translation": "Telefono"
+  },
+  "deepl:Bookshelf": {
+    "original": "Bookshelf",
+    "translation": "Libreria"
+  },
+  "deepl:Network status": {
+    "original": "Network status",
+    "translation": "Stato della rete"
+  },
+  "deepl:Change branding": {
+    "original": "Change branding",
+    "translation": "Cambiare il marchio"
+  },
+  "deepl:You must reboot the device for the changes to take effect.": {
+    "original": "You must reboot the device for the changes to take effect.",
+    "translation": "Per rendere effettive le modifiche, è necessario riavviare il dispositivo."
+  },
+  "deepl:Clean up attributes": {
+    "original": "Clean up attributes",
+    "translation": "Pulire gli attributi"
+  },
+  "deepl:Cleans up marker for \\\"unauthorized changes\\\"": {
+    "original": "Cleans up marker for \"unauthorized changes\"",
+    "translation": "Pulisce il marcatore per le \"modifiche non autorizzate\"."
+  },
+  "deepl:Cleaning up attributes": {
+    "original": "Cleaning up attributes",
+    "translation": "Pulizia degli attributi"
+  },
+  "deepl:done": {
+    "original": "done",
+    "translation": "fatto"
+  },
+  "deepl:Rebooting": {
+    "original": "Rebooting",
+    "translation": "Riavvio"
+  },
+  "deepl:Login <a href=\\\"/\\\" target=\\\"_top\\\">here</a> after reboot.": {
+    "original": "Login <a href=\"/\" target=\"_top\">here</a> after reboot.",
+    "translation": "Effettuare l'accesso <a href=\"/\" target=\"_top\">qui</a> dopo il riavvio."
+  },
+  "deepl:Rudi(mentary) Shell": {
+    "original": "Rudi(mentary) Shell",
+    "translation": "Conchiglia Rudi(mentary)"
+  },
+  "deepl:Edit": {
+    "original": "Edit",
+    "translation": "Modifica"
+  },
+  "deepl:Edited!": {
+    "original": "Edited!",
+    "translation": "Modificato!"
+  },
+  "deepl:Run script": {
+    "original": "Run script",
+    "translation": "Eseguire lo script"
+  },
+  "deepl:Loop interval": {
+    "original": "Loop interval",
+    "translation": "Intervallo di loop"
+  },
+  "deepl:History": {
+    "original": "History",
+    "translation": "Storia"
+  },
+  "deepl:Delete hist.": {
+    "original": "Delete hist.",
+    "translation": "Cancella hist."
+  },
+  "deepl:Source file": {
+    "original": "Source file",
+    "translation": "File sorgente"
+  },
+  "deepl:Target file": {
+    "original": "Target file",
+    "translation": "File di destinazione"
+  },
+  "deepl:Upload": {
+    "original": "Upload",
+    "translation": "Carica"
+  },
+  "deepl:Edit file": {
+    "original": "Edit file",
+    "translation": "Modifica del file"
+  },
+  "deepl:File successfully uploaded to: $FORM_target\\\\nFile size:": {
+    "original": "File successfully uploaded to: $FORM_target\\nFile size:",
+    "translation": "File caricato con successo su: $FORM_target\nDimensione del file:"
+  },
+  "deepl:bytes": {
+    "original": "bytes",
+    "translation": "byte"
+  },
+  "deepl:ERROR: Either uploading or renaming has failed.": {
+    "original": "ERROR: Either uploading or renaming has failed.",
+    "translation": "ERRORE: il caricamento o la ridenominazione non sono riusciti."
+  },
+  "deepl:not installed": {
+    "original": "not installed",
+    "translation": "non installato"
+  },
+  "deepl:Main memory": {
+    "original": "Main memory",
+    "translation": "Memoria principale"
+  },
+  "deepl:Swap space": {
+    "original": "Swap space",
+    "translation": "Spazio di scambio"
+  },
+  "deepl:Flash memory": {
+    "original": "Flash memory",
+    "translation": "Memoria flash"
+  },
+  "deepl:Config memory": {
+    "original": "Config memory",
+    "translation": "Memoria di configurazione"
+  },
+  "deepl:request": {
+    "original": "request",
+    "translation": "richiesta"
+  },
+  "deepl:external update failed.": {
+    "original": "external update failed.",
+    "translation": "aggiornamento esterno non riuscito."
+  },
+  "deepl:No firmware has been uploaded": {
+    "original": "No firmware has been uploaded",
+    "translation": "Non è stato caricato alcun firmware"
+  },
+  "deepl:external-file update": {
+    "original": "external-file update",
+    "translation": "aggiornamento file esterno"
+  },
+  "deepl:No external-file provided!": {
+    "original": "No external-file provided!",
+    "translation": "Non è stato fornito alcun file esterno!"
+  },
+  "deepl:Upload external-file": {
+    "original": "Upload external-file",
+    "translation": "Caricare un file esterno"
+  },
+  "deepl:First choose an external-file for upload. This": {
+    "original": "First choose an external-file for upload. This",
+    "translation": "Per prima cosa scegliere un file esterno da caricare. Questo"
+  },
+  "deepl:file will be loaded to and extracted on the Box. You should": {
+    "original": "file will be loaded to and extracted on the Box. You should",
+    "translation": "Il file verrà caricato ed estratto sul Box. Si dovrebbe"
+  },
+  "deepl:upload the appropriate firmware afterwards.": {
+    "original": "upload the appropriate firmware afterwards.",
+    "translation": "caricare successivamente il firmware appropriato."
+  },
+  "deepl:External-file": {
+    "original": "External-file",
+    "translation": "File esterno"
+  },
+  "deepl:Delete old external files": {
+    "original": "Delete old external files",
+    "translation": "Eliminare i vecchi file esterni"
+  },
+  "deepl:Start external services after update": {
+    "original": "Start external services after update",
+    "translation": "Avviare i servizi esterni dopo l'aggiornamento"
+  },
+  "deepl:Upload file": {
+    "original": "Upload file",
+    "translation": "Carica il file"
+  },
+  "deepl:No firmware file provided!": {
+    "original": "No firmware file provided!",
+    "translation": "Non è stato fornito alcun file del firmware!"
+  },
+  "deepl:Upload firmware": {
+    "original": "Upload firmware",
+    "translation": "Caricare il firmware"
+  },
+  "deepl:Firmware image": {
+    "original": "Firmware image",
+    "translation": "Immagine del firmware"
+  },
+  "deepl:Allow downgrade to older version": {
+    "original": "Allow downgrade to older version",
+    "translation": "Consentire il downgrade alla versione precedente"
+  },
+  "deepl:Stop AVM services (less memory available)": {
+    "original": "Stop AVM services (less memory available)",
+    "translation": "Interrompere i servizi AVM (meno memoria disponibile)"
+  },
+  "deepl:Stop some of the AVM services (remote firmware update)": {
+    "original": "Stop some of the AVM services (remote firmware update)",
+    "translation": "Arresto di alcuni servizi AVM (aggiornamento remoto del firmware)"
+  },
+  "deepl:Do not stop any AVM services (sufficient memory available or pseudo update without reboot)": {
+    "original": "Do not stop any AVM services (sufficient memory available or pseudo update without reboot)",
+    "translation": "Non interrompere nessun servizio AVM (memoria sufficiente disponibile o pseudo aggiornamento senza riavvio)"
+  },
+  "deepl:Delete JFFS2 partition": {
+    "original": "Delete JFFS2 partition",
+    "translation": "Eliminare la partizione JFFS2"
+  },
+  "deepl:upload external file (optional)": {
+    "original": "upload external file (optional)",
+    "translation": "caricare un file esterno (opzionale)"
+  },
+  "deepl:Help": {
+    "original": "Help",
+    "translation": "Aiuto"
+  },
+  "deepl:Router's system time": {
+    "original": "Router's system time",
+    "translation": "Ora del sistema del router"
+  },
+  "deepl:optimized for": {
+    "original": "optimized for",
+    "translation": "ottimizzato per"
+  },
+  "deepl:Please complete initial setup first": {
+    "original": "Please complete initial setup first",
+    "translation": "Completare prima la configurazione iniziale"
+  },
+  "deepl:Base Directory": {
+    "original": "Base Directory",
+    "translation": "Elenco di base"
+  },
+  "deepl:Main directory for rTorrent. Will be used as default when starting the wizard.": {
+    "original": "Main directory for rTorrent. Will be used as default when starting the wizard.",
+    "translation": "Directory principale di rTorrent. Verrà utilizzata come predefinita all'avvio della procedura guidata."
+  },
+  "deepl:Suggested": {
+    "original": "Suggested",
+    "translation": "Suggerito"
+  },
+  "deepl:Directory does not exist": {
+    "original": "Directory does not exist",
+    "translation": "La directory non esiste"
+  },
+  "deepl:Available Storage Devices (RW)": {
+    "original": "Available Storage Devices (RW)",
+    "translation": "Dispositivi di archiviazione disponibili (RW)"
+  },
+  "deepl:Click to use path as base directory": {
+    "original": "Click to use path as base directory",
+    "translation": "Fare clic per utilizzare il percorso come directory di base"
+  },
+  "deepl:Note": {
+    "original": "Note",
+    "translation": "Nota"
+  },
+  "deepl:Ext4 filesystem is the most appropriate for best performance and reliability.": {
+    "original": "Ext4 filesystem is the most appropriate for best performance and reliability.",
+    "translation": "Il filesystem Ext4 è il più adatto per ottenere le migliori prestazioni e affidabilità."
+  },
+  "deepl:Start Initial Setup Wizard": {
+    "original": "Start Initial Setup Wizard",
+    "translation": "Avvio dell'installazione guidata iniziale"
+  },
+  "deepl:rTorrent Initial Setup": {
+    "original": "rTorrent Initial Setup",
+    "translation": "Configurazione iniziale di rTorrent"
+  },
+  "deepl:Step 1 of 5": {
+    "original": "Step 1 of 5",
+    "translation": "Fase 1 di 5"
+  },
+  "deepl:Choose a directory on your USB storage or NAS where rTorrent will store files.": {
+    "original": "Choose a directory on your USB storage or NAS where rTorrent will store files.",
+    "translation": "Scegliere una directory sulla memoria USB o sul NAS in cui rTorrent memorizzerà i file."
+  },
+  "deepl:Directory path": {
+    "original": "Directory path",
+    "translation": "Percorso della directory"
+  },
+  "deepl:Recommendation": {
+    "original": "Recommendation",
+    "translation": "Raccomandazione"
+  },
+  "deepl:The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!": {
+    "original": "The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!",
+    "translation": "La directory deve trovarsi su una memoria persistente (USB, NAS). NON utilizzare /var/tmp!"
+  },
+  "deepl:Configuration File": {
+    "original": "Configuration File",
+    "translation": "File di configurazione"
+  },
+  "deepl:Checking .rtorrent.rc...": {
+    "original": "Checking .rtorrent.rc...",
+    "translation": "Controllo di .rtorrent.rc..."
+  },
+  "deepl:Directory Structure": {
+    "original": "Directory Structure",
+    "translation": "Struttura della directory"
+  },
+  "deepl:Port Forwarding": {
+    "original": "Port Forwarding",
+    "translation": "Inoltro delle porte"
+  },
+  "deepl:Downloaded files": {
+    "original": "Downloaded files",
+    "translation": "File scaricati"
+  },
+  "deepl:The following directories will be created": {
+    "original": "The following directories will be created",
+    "translation": "Verranno create le seguenti directory"
+  },
+  "deepl:Extra": {
+    "original": "Extra",
+    "translation": "Extra"
+  },
+  "deepl:Hardware": {
+    "original": "Hardware",
+    "translation": "Hardware"
+  },
+  "deepl:Firmware": {
+    "original": "Firmware",
+    "translation": "Firmware"
+  },
+  "deepl:.": {
+    "original": ".",
+    "translation": "."
+  },
+  "deepl:Password": {
+    "original": "Password",
+    "translation": "Password"
+  },
+  "deepl:seconds": {
+    "original": "seconds",
+    "translation": "secondi"
+  },
+  "deepl:Still under development!\\\\nPlease make sure, you have an alternate way to access your box (telnet/ssh).\\\\nDefault password is \\\"freetz\\\", changing password will set it to \\\"<User><PW>\\\"!\\\\n\\\\nYou can set the PW in console with this command:\\\\necho -n \\\"<password>\\\" | md5sum | sed \\\"s/ .*$//\\\" > /tmp/flash/mod/webmd5\\\\n": {
+    "original": "Still under development!\\nPlease make sure, you have an alternate way to access your box (telnet/ssh).\\nDefault password is \"freetz\", changing password will set it to \"<User><PW>\"!\\n\\nYou can set the PW in console with this command:\\necho -n \"<password>\" | md5sum | sed \"s/ .*$//\" > /tmp/flash/mod/webmd5\\n",
+    "translation": "Ancora in fase di sviluppo!\nPer favore, assicuratevi di avere un modo alternativo per accedere al vostro box (telnet/ssh).\nLa password di default è \"freetz\", cambiando la password sarà impostata su \"<Utente><PW>\"!\nPotete impostare la PW in console con questo comando:\necho -n \"<password>\" | md5sum | sed \"s/ .*$/\" > /tmp/flash/mod/webmd5"
+  },
+  "deepl:Advanced settings": {
+    "original": "Advanced settings",
+    "translation": "Impostazioni avanzate"
+  },
+  "deepl:Mounted partitions on": {
+    "original": "Mounted partitions on",
+    "translation": "Partizioni montate su"
+  },
+  "deepl:Submenu": {
+    "original": "Submenu",
+    "translation": "Sottomenu"
+  },
+  "deepl:Mainpage": {
+    "original": "Mainpage",
+    "translation": "Pagina principale"
+  },
+  "deepl:with buttons": {
+    "original": "with buttons",
+    "translation": "con i pulsanti"
+  },
+  "deepl:Additional partitions": {
+    "original": "Additional partitions",
+    "translation": "Partizioni aggiuntive"
+  },
+  "deepl:TFFS": {
+    "original": "TFFS",
+    "translation": "TFFS"
+  },
+  "deepl:NVRAM": {
+    "original": "NVRAM",
+    "translation": "NVRAM"
+  },
+  "deepl:Configuartion": {
+    "original": "Configuartion",
+    "translation": "Configurazione"
+  },
+  "deepl:Temporary": {
+    "original": "Temporary",
+    "translation": "Temporaneo"
+  },
+  "deepl:Additional status pages": {
+    "original": "Additional status pages",
+    "translation": "Pagine di stato aggiuntive"
+  },
+  "deepl:Box info": {
+    "original": "Box info",
+    "translation": "Box info"
+  },
+  "deepl:Flash info": {
+    "original": "Flash info",
+    "translation": "Flash info"
+  },
+  "deepl:Freetz info": {
+    "original": "Freetz info",
+    "translation": "Freetz info"
+  },
+  "deepl:Language selection": {
+    "original": "Language selection",
+    "translation": "Selezione della lingua"
+  },
+  "deepl:Skin selection": {
+    "original": "Skin selection",
+    "translation": "Selezione della pelle"
+  },
+  "deepl:Width of the main content area": {
+    "original": "Width of the main content area",
+    "translation": "Larghezza dell'area di contenuto principale"
+  },
+  "deepl:Show memory usage": {
+    "original": "Show memory usage",
+    "translation": "Mostra l'utilizzo della memoria"
+  },
+  "deepl:Identify inactive firmware version at boot": {
+    "original": "Identify inactive firmware version at boot",
+    "translation": "Identificare la versione del firmware inattiva all'avvio"
+  },
+  "deepl:crond start type": {
+    "original": "crond start type",
+    "translation": "tipo di avviamento del crond"
+  },
+  "deepl:Current method to generate mount point": {
+    "original": "Current method to generate mount point",
+    "translation": "Metodo attuale per generare il punto di montaggio"
+  },
+  "deepl:AVM generates the name by ${METHOD} currently. See help to change.": {
+    "original": "AVM generates the name by ${METHOD} currently. See help to change.",
+    "translation": "AVM genera il nome con ${METHOD} attualmente. Vedere la guida per cambiare."
+  },
+  "deepl:Kill all programs blocking unmount.": {
+    "original": "Kill all programs blocking unmount.",
+    "translation": "Uccidere tutti i programmi che bloccano lo smontaggio."
+  },
+  "deepl:Run autorun.sh and autoend.sh automatically.": {
+    "original": "Run autorun.sh and autoend.sh automatically.",
+    "translation": "Eseguire automaticamente autorun.sh e autoend.sh."
+  },
+  "deepl:-none-": {
+    "original": "-none-",
+    "translation": "-nessuno-"
+  },
+  "deepl:Directory for external": {
+    "original": "Directory for external",
+    "translation": "Directory per l'esterno"
+  },
+  "deepl:Handle externalised scripts:": {
+    "original": "Handle externalised scripts:",
+    "translation": "Gestire gli script esternalizzati:"
+  },
+  "deepl:Link to USB": {
+    "original": "Link to USB",
+    "translation": "Collegamento a USB"
+  },
+  "deepl:Copy to RAM": {
+    "original": "Copy to RAM",
+    "translation": "Copia nella RAM"
+  },
+  "deepl:Manage these externalized services of Freetz": {
+    "original": "Manage these externalized services of Freetz",
+    "translation": "Gestire questi servizi esternalizzati di Freetz"
+  },
+  "deepl:Manage these self defined services": {
+    "original": "Manage these self defined services",
+    "translation": "Gestire questi servizi autodefiniti"
+  },
+  "deepl:Input the names of /mod/etc/init.d/rc.DAEMON files without rc., separated by space. ": {
+    "original": "Input the names of /mod/etc/init.d/rc.DAEMON files without rc., separated by space. ",
+    "translation": "Inserire i nomi dei file /mod/etc/init.d/rc.DAEMON senza rc., separati da spazi. "
+  },
+  "deepl:This would be helpful if a service is not externalized, but needs your USB-device for storing data-files (like RRDstats, Tor, bip, Xmail or vnstat-cgi).": {
+    "original": "This would be helpful if a service is not externalized, but needs your USB-device for storing data-files (like RRDstats, Tor, bip, Xmail or vnstat-cgi).",
+    "translation": "Questo sarebbe utile se un servizio non è esternalizzato, ma ha bisogno del dispositivo USB per memorizzare i file di dati (come RRDstats, Tor, bip, Xmail o vnstat-cgi)."
+  },
+  "deepl:Time-synchronisation": {
+    "original": "Time-synchronisation",
+    "translation": "Sincronizzazione temporale"
+  },
+  "deepl:Wait for time synchronisation (year must be at least 2020)": {
+    "original": "Wait for time synchronisation (year must be at least 2020)",
+    "translation": "Attendere la sincronizzazione dell'ora (l'anno deve essere almeno il 2020)"
+  },
+  "deepl:Wait maximum 15 minutes.": {
+    "original": "Wait maximum 15 minutes.",
+    "translation": "Attendere al massimo 15 minuti."
+  },
+  "deepl:Wait infinitely.": {
+    "original": "Wait infinitely.",
+    "translation": "Aspettare all'infinito."
+  },
+  "deepl:Abort if the year is higher than this value": {
+    "original": "Abort if the year is higher than this value",
+    "translation": "Interrompere se l'anno è superiore a questo valore"
+  },
+  "deepl:Stop of packages at shutdown": {
+    "original": "Stop of packages at shutdown",
+    "translation": "Arresto dei pacchetti allo spegnimento"
+  },
+  "deepl: (separate by spaces)": {
+    "original": " (separate by spaces)",
+    "translation": "(separare con spazi)"
+  },
+  "deepl:Stop at first": {
+    "original": "Stop at first",
+    "translation": "Fermarsi al primo colpo"
+  },
+  "deepl:Stop at last": {
+    "original": "Stop at last",
+    "translation": "Fermatevi finalmente"
+  },
+  "deepl:Do not stop": {
+    "original": "Do not stop",
+    "translation": "Non fermatevi"
+  },
+  "deepl:Always use this method": {
+    "original": "Always use this method",
+    "translation": "Utilizzare sempre questo metodo"
+  },
+  "deepl:Server for STUN/VoIP method": {
+    "original": "Server for STUN/VoIP method",
+    "translation": "Server per il metodo STUN/VoIP"
+  },
+  "deepl:Available methods": {
+    "original": "Available methods",
+    "translation": "Metodi disponibili"
+  },
+  "deepl:This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.": {
+    "original": "This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.",
+    "translation": "In questo modo è stato modificato il server DNS che il box stesso utilizza per la risoluzione dei nomi. Non verrà modificato il server dei nomi a monte di un server dns installato, né la risoluzione dei nomi per altri dispositivi della rete locale."
+  },
+  "deepl:Write this dns server to /etc/resolv.conf": {
+    "original": "Write this dns server to /etc/resolv.conf",
+    "translation": "Scrivete questo server dns in /etc/resolv.conf"
+  },
+  "deepl:Timeout for each request": {
+    "original": "Timeout for each request",
+    "translation": "Timeout per ogni richiesta"
+  },
+  "deepl:empty for default": {
+    "original": "empty for default",
+    "translation": "vuoto per l'impostazione predefinita"
+  },
+  "deepl:Maximum number of requests": {
+    "original": "Maximum number of requests",
+    "translation": "Numero massimo di richieste"
+  },
+  "deepl:Assign IPv6 adresses to interfaces": {
+    "original": "Assign IPv6 adresses to interfaces",
+    "translation": "Assegnare indirizzi IPv6 alle interfacce"
+  },
+  "deepl:Syntax": {
+    "original": "Syntax",
+    "translation": "Sintassi"
+  },
+  "deepl:Example": {
+    "original": "Example",
+    "translation": "Esempio"
+  },
+  "deepl:Enable forwarding.": {
+    "original": "Enable forwarding.",
+    "translation": "Abilita l'inoltro."
+  },
+  "deepl:Mod logs": {
+    "original": "Mod logs",
+    "translation": "Registri Mod"
+  },
+  "deepl:AVM logs": {
+    "original": "AVM logs",
+    "translation": "Registri AVM"
+  },
+  "deepl:AVM info": {
+    "original": "AVM info",
+    "translation": "Info AVM"
+  },
+  "deepl:Flash storage": {
+    "original": "Flash storage",
+    "translation": "Memoria flash"
+  },
+  "deepl:Mod info": {
+    "original": "Mod info",
+    "translation": "Mod info"
+  },
+  "deepl:Name": {
+    "original": "Name",
+    "translation": "Nome"
+  },
+  "deepl:State": {
+    "original": "State",
+    "translation": "Stato"
+  },
+  "deepl:Control": {
+    "original": "Control",
+    "translation": "Controllo"
+  },
+  "deepl:start": {
+    "original": "start",
+    "translation": "iniziare"
+  },
+  "deepl:stop": {
+    "original": "stop",
+    "translation": "stop"
+  },
+  "deepl:restart": {
+    "original": "restart",
+    "translation": "riavviare"
+  },
+  "deepl:Error": {
+    "original": "Error",
+    "translation": "Errore"
+  },
+  "deepl:Warning": {
+    "original": "Warning",
+    "translation": "Avviso"
+  },
+  "deepl:Inetd": {
+    "original": "Inetd",
+    "translation": "Inetd"
+  },
+  "deepl:Automatic": {
+    "original": "Automatic",
+    "translation": "Automatico"
+  },
+  "deepl:Manual": {
+    "original": "Manual",
+    "translation": "Manuale"
+  },
+  "deepl:Activated": {
+    "original": "Activated",
+    "translation": "Attivato"
+  },
+  "deepl:Deactivated": {
+    "original": "Deactivated",
+    "translation": "Disattivato"
+  },
+  "deepl:Back": {
+    "original": "Back",
+    "translation": "Indietro"
+  },
+  "deepl:en": {
+    "original": "en",
+    "translation": "it"
+  },
+  "deepl:Wrong token": {
+    "original": "Wrong token",
+    "translation": "Gettone sbagliato"
+  },
+  "deepl:Access denied!": {
+    "original": "Access denied!",
+    "translation": "Accesso negato!"
+  },
+  "deepl:Back to update": {
+    "original": "Back to update",
+    "translation": "Torna all'aggiornamento"
+  },
+  "deepl:DONE": {
+    "original": "DONE",
+    "translation": "FATTO"
+  },
+  "deepl:FAILED": {
+    "original": "FAILED",
+    "translation": "FALLITO"
+  },
+  "deepl:external-update": {
+    "original": "external-update",
+    "translation": "aggiornamento esterno"
+  },
+  "deepl:Prepare update": {
+    "original": "Prepare update",
+    "translation": "Preparare l'aggiornamento"
+  },
+  "deepl:Target directory": {
+    "original": "Target directory",
+    "translation": "Directory di destinazione"
+  },
+  "deepl:Extract files": {
+    "original": "Extract files",
+    "translation": "Estrarre i file"
+  },
+  "deepl:Starting external services": {
+    "original": "Starting external services",
+    "translation": "Avvio di servizi esterni"
+  },
+  "deepl:Back to main page": {
+    "original": "Back to main page",
+    "translation": "Torna alla pagina principale"
+  },
+  "deepl:Firmware update": {
+    "original": "Firmware update",
+    "translation": "Aggiornamento del firmware"
+  },
+  "deepl:NOTE: The script has not generated any output.": {
+    "original": "NOTE: The script has not generated any output.",
+    "translation": "NOTA: Lo script non ha generato alcun output."
+  },
+  "deepl:unknown error code": {
+    "original": "unknown error code",
+    "translation": "codice di errore sconosciuto"
+  },
+  "deepl:Generated content of": {
+    "original": "Generated content of",
+    "translation": "Contenuto generato di"
+  },
+  "deepl::": {
+    "original": ":",
+    "translation": ":"
+  },
+  "deepl:The post-installation script will be executed upon reboot.": {
+    "original": "The post-installation script will be executed upon reboot.",
+    "translation": "Lo script post-installazione verrà eseguito al riavvio."
+  },
+  "deepl:NOTE: There is no executable post-installation script.": {
+    "original": "NOTE: There is no executable post-installation script.",
+    "translation": "NOTA: Non esiste uno script di post-installazione eseguibile."
+  },
+  "deepl:The device will reboot now": {
+    "original": "The device will reboot now",
+    "translation": "Il dispositivo si riavvia ora"
+  },
+  "deepl:Backup &amp; restore": {
+    "original": "Backup &amp; restore",
+    "translation": "Backup e ripristino"
+  },
+  "deepl:FOS UI-Modules": {
+    "original": "FOS UI-Modules",
+    "translation": "Moduli UI FOS"
+  },
+  "deepl:Create support file": {
+    "original": "Create support file",
+    "translation": "Creare un file di supporto"
+  },
+  "deepl:Rudi shell": {
+    "original": "Rudi shell",
+    "translation": "Conchiglia Rudi"
+  },
+  "deepl:AVM web interface": {
+    "original": "AVM web interface",
+    "translation": "Interfaccia web AVM"
+  },
+  "deepl:About": {
+    "original": "About",
+    "translation": "Informazioni su"
+  },
+  "deepl:Services": {
+    "original": "Services",
+    "translation": "Servizi"
+  },
+  "deepl:Apply": {
+    "original": "Apply",
+    "translation": "Applica"
+  },
+  "deepl:Reset": {
+    "original": "Reset",
+    "translation": "Reset"
+  },
+  "deepl:Defaults": {
+    "original": "Defaults",
+    "translation": "Default"
+  },
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato"
+  },
+  "deepl:No script for": {
+    "original": "No script for",
+    "translation": "Nessuno script per"
+  },
+  "deepl:Saving": {
+    "original": "Saving",
+    "translation": "Risparmio"
+  },
+  "deepl:Restarting the Freetz webinterface in 9 seconds": {
+    "original": "Restarting the Freetz webinterface in 9 seconds",
+    "translation": "Riavvio dell'interfaccia web di Freetz in 9 secondi"
+  },
+  "deepl:Starting": {
+    "original": "Starting",
+    "translation": "Avvio"
+  },
+  "deepl:Stopping": {
+    "original": "Stopping",
+    "translation": "Fermarsi"
+  },
+  "deepl:Restarting": {
+    "original": "Restarting",
+    "translation": "Riavvio"
+  },
+  "deepl:Restore default settings": {
+    "original": "Restore default settings",
+    "translation": "Ripristino delle impostazioni predefinite"
+  },
+  "deepl:Saving settings": {
+    "original": "Saving settings",
+    "translation": "Salvataggio delle impostazioni"
+  },
+  "deepl:Additional script": {
+    "original": "Additional script",
+    "translation": "Scrittura aggiuntiva"
+  },
+  "deepl:Goto extras": {
+    "original": "Goto extras",
+    "translation": "Goto extra"
+  },
+  "deepl:no extras": {
+    "original": "no extras",
+    "translation": "nessun extra"
+  },
+  "deepl:Mod extras": {
+    "original": "Mod extras",
+    "translation": "Mod extra"
+  },
+  "deepl:unknown type": {
+    "original": "unknown type",
+    "translation": "tipo sconosciuto"
+  },
+  "deepl:Built-in packages": {
+    "original": "Built-in packages",
+    "translation": "Pacchetti integrati"
+  },
+  "deepl:Static packages": {
+    "original": "Static packages",
+    "translation": "Pacchetti statici"
+  },
+  "deepl:no static packages": {
+    "original": "no static packages",
+    "translation": "nessun pacchetto statico"
+  },
+  "deepl:unknown view": {
+    "original": "unknown view",
+    "translation": "vista sconosciuta"
+  },
+  "deepl:no script for": {
+    "original": "no script for",
+    "translation": "no script for"
+  },
+  "deepl:Unknown command": {
+    "original": "Unknown command",
+    "translation": "Unknown command"
+  },
+  "deepl:no script for status display": {
+    "original": "no script for status display",
+    "translation": "no script for status display"
+  },
+  "deepl:unknown command": {
+    "original": "unknown command",
+    "translation": "unknown command"
+  },
+  "deepl:Logged out": {
+    "original": "Logged out",
+    "translation": "Logged out"
+  },
+  "deepl:Sucessfully logged out": {
+    "original": "Sucessfully logged out",
+    "translation": "Sucessfully logged out"
+  },
+  "deepl:Log in again": {
+    "original": "Log in again",
+    "translation": "Log in again"
+  },
+  "deepl:Password changed!": {
+    "original": "Password changed!",
+    "translation": "Password changed!"
+  },
+  "deepl:Password successfully changed!": {
+    "original": "Password successfully changed!",
+    "translation": "Password successfully changed!"
+  },
+  "deepl:Restart box": {
+    "original": "Restart box",
+    "translation": "Restart box"
+  },
+  "deepl:Reboot": {
+    "original": "Reboot",
+    "translation": "Reboot"
+  },
+  "deepl:Unauthorized changes": {
+    "original": "Unauthorized changes",
+    "translation": "Unauthorized changes"
+  },
+  "deepl:Clean up TFFS": {
+    "original": "Clean up TFFS",
+    "translation": "Clean up TFFS"
+  },
+  "deepl:Reset warning": {
+    "original": "Reset warning",
+    "translation": "Reset warning"
+  },
+  "deepl:Latest firmware version": {
+    "original": "Latest firmware version",
+    "translation": "Latest firmware version"
+  },
+  "deepl:Last check": {
+    "original": "Last check",
+    "translation": "Last check"
+  },
+  "deepl:Installed version": {
+    "original": "Installed version",
+    "translation": "Installed version"
+  },
+  "deepl:Latest version": {
+    "original": "Latest version",
+    "translation": "Latest version"
+  },
+  "deepl:Unknown": {
+    "original": "Unknown",
+    "translation": "Unknown"
+  },
+  "deepl:Changelog": {
+    "original": "Changelog",
+    "translation": "Changelog"
+  },
+  "deepl:Download": {
+    "original": "Download",
+    "translation": "Download"
+  },
+  "deepl:No firmware found": {
+    "original": "No firmware found",
+    "translation": "No firmware found"
+  },
+  "deepl:Check firmware version": {
+    "original": "Check firmware version",
+    "translation": "Check firmware version"
+  },
+  "deepl:disabled": {
+    "original": "disabled",
+    "translation": "disabled"
+  },
+  "deepl:enabled": {
+    "original": "enabled",
+    "translation": "enabled"
+  },
+  "deepl:Running at": {
+    "original": "Running at",
+    "translation": "Running at"
+  },
+  "deepl:on next system start": {
+    "original": "on next system start",
+    "translation": "on next system start"
+  },
+  "deepl:Reserve at": {
+    "original": "Reserve at",
+    "translation": "Reserve at"
+  },
+  "deepl:Available firmware versions": {
+    "original": "Available firmware versions",
+    "translation": "Available firmware versions"
+  },
+  "deepl:Toggle firmware partition": {
+    "original": "Toggle firmware partition",
+    "translation": "Toggle firmware partition"
+  },
+  "deepl:Login": {
+    "original": "Login",
+    "translation": "Login"
+  },
+  "deepl:Wrong password!": {
+    "original": "Wrong password!",
+    "translation": "Wrong password!"
+  },
+  "deepl:Change password": {
+    "original": "Change password",
+    "translation": "Change password"
+  },
+  "deepl:Please don't use the default password!": {
+    "original": "Please don't use the default password!",
+    "translation": "Please don't use the default password!"
+  },
+  "deepl:The password is empty!": {
+    "original": "The password is empty!",
+    "translation": "The password is empty!"
+  },
+  "deepl:Passwords do not match!": {
+    "original": "Passwords do not match!",
+    "translation": "Passwords do not match!"
+  },
+  "deepl:Old password": {
+    "original": "Old password",
+    "translation": "Old password"
+  },
+  "deepl:New password": {
+    "original": "New password",
+    "translation": "New password"
+  },
+  "deepl:Retype password": {
+    "original": "Retype password",
+    "translation": "Retype password"
+  },
+  "deepl:Save": {
+    "original": "Save",
+    "translation": "Save"
+  },
+  "deepl:The password was not changed.": {
+    "original": "The password was not changed.",
+    "translation": "The password was not changed."
+  },
+  "deepl:The old password was wrong!": {
+    "original": "The old password was wrong!",
+    "translation": "The old password was wrong!"
+  },
+  "deepl:New password set.": {
+    "original": "New password set.",
+    "translation": "New password set."
+  },
+  "deepl:Restarting webcfg ...": {
+    "original": "Restarting webcfg ...",
+    "translation": "Restarting webcfg ..."
+  },
+  "deepl:Local": {
+    "original": "Local",
+    "translation": "Local"
+  },
+  "deepl:Default password set! Please change it.": {
+    "original": "Default password set! Please change it.",
+    "translation": "Default password set! Please change it."
+  },
+  "deepl:You have not provided a password": {
+    "original": "You have not provided a password",
+    "translation": "You have not provided a password"
+  },
+  "deepl:Erron on creating directory": {
+    "original": "Erron on creating directory",
+    "translation": "Erron on creating directory"
+  },
+  "deepl:Erron on creating identity": {
+    "original": "Erron on creating identity",
+    "translation": "Erron on creating identity"
+  },
+  "deepl:Erron on creating of contents.txt": {
+    "original": "Erron on creating of contents.txt",
+    "translation": "Erron on creating of contents.txt"
+  },
+  "deepl:Erron on creating file": {
+    "original": "Erron on creating file",
+    "translation": "Erron on creating file"
+  },
+  "deepl:Erron on encrypting file": {
+    "original": "Erron on encrypting file",
+    "translation": "Erron on encrypting file"
+  },
+  "deepl:Erron on encrypting environment": {
+    "original": "Erron on encrypting environment",
+    "translation": "Erron on encrypting environment"
+  },
+  "deepl:Error on packing": {
+    "original": "Error on packing",
+    "translation": "Error on packing"
+  },
+  "deepl:Backup configuration": {
+    "original": "Backup configuration",
+    "translation": "Backup configuration"
+  },
+  "deepl:Restore configuration": {
+    "original": "Restore configuration",
+    "translation": "Restore configuration"
+  },
+  "deepl:You have not selected any backup file to upload": {
+    "original": "You have not selected any backup file to upload",
+    "translation": "You have not selected any backup file to upload"
+  },
+  "deepl:The device's configuration was not changed": {
+    "original": "The device's configuration was not changed",
+    "translation": "The device's configuration was not changed"
+  },
+  "deepl:You just uploaded the file": {
+    "original": "You just uploaded the file",
+    "translation": "You just uploaded the file"
+  },
+  "deepl:It is stored on the device under the temporary name": {
+    "original": "It is stored on the device under the temporary name",
+    "translation": "It is stored on the device under the temporary name"
+  },
+  "deepl:The file size is": {
+    "original": "The file size is",
+    "translation": "The file size is"
+  },
+  "deepl:bytes.": {
+    "original": "bytes.",
+    "translation": "bytes."
+  },
+  "deepl:Installation log:": {
+    "original": "Installation log:",
+    "translation": "Installation log:"
+  },
+  "deepl:Extracting uploaded file": {
+    "original": "Extracting uploaded file",
+    "translation": "Extracting uploaded file"
+  },
+  "deepl:ERROR: The file could not be unpacked": {
+    "original": "ERROR: The file could not be unpacked",
+    "translation": "ERROR: The file could not be unpacked"
+  },
+  "deepl:Checking identity": {
+    "original": "Checking identity",
+    "translation": "Checking identity"
+  },
+  "deepl:This device": {
+    "original": "This device",
+    "translation": "This device"
+  },
+  "deepl:Backup file": {
+    "original": "Backup file",
+    "translation": "Backup file"
+  },
+  "deepl:ERROR: This backup file was created on another device": {
+    "original": "ERROR: This backup file was created on another device",
+    "translation": "ERROR: This backup file was created on another device"
+  },
+  "deepl:Detected encrypted backup file": {
+    "original": "Detected encrypted backup file",
+    "translation": "Detected encrypted backup file"
+  },
+  "deepl:ERROR: No password was supplied": {
+    "original": "ERROR: No password was supplied",
+    "translation": "ERROR: No password was supplied"
+  },
+  "deepl:Checking OpenSSL": {
+    "original": "Checking OpenSSL",
+    "translation": "Checking OpenSSL"
+  },
+  "deepl:ERROR: OpenSSL is not installed": {
+    "original": "ERROR: OpenSSL is not installed",
+    "translation": "ERROR: OpenSSL is not installed"
+  },
+  "deepl:Decrypting backup files": {
+    "original": "Decrypting backup files",
+    "translation": "Decrypting backup files"
+  },
+  "deepl:Trying OpenSSL 1.0 compatibility mode": {
+    "original": "Trying OpenSSL 1.0 compatibility mode",
+    "translation": "Trying OpenSSL 1.0 compatibility mode"
+  },
+  "deepl:ERROR: File could not be dectypted": {
+    "original": "ERROR: File could not be dectypted",
+    "translation": "ERROR: File could not be dectypted"
+  },
+  "deepl:Extracting backup files": {
+    "original": "Extracting backup files",
+    "translation": "Extracting backup files"
+  },
+  "deepl:ERROR: The data could not be unpacked": {
+    "original": "ERROR: The data could not be unpacked",
+    "translation": "ERROR: The data could not be unpacked"
+  },
+  "deepl:Verifying backup files": {
+    "original": "Verifying backup files",
+    "translation": "Verifying backup files"
+  },
+  "deepl:ERROR: Not a valid backup file": {
+    "original": "ERROR: Not a valid backup file",
+    "translation": "ERROR: Not a valid backup file"
+  },
+  "deepl:Decrypting environment": {
+    "original": "Decrypting environment",
+    "translation": "Decrypting environment"
+  },
+  "deepl:ERROR: Environment could not be dectypted": {
+    "original": "ERROR: Environment could not be dectypted",
+    "translation": "ERROR: Environment could not be dectypted"
+  },
+  "deepl:Verifying environment": {
+    "original": "Verifying environment",
+    "translation": "Verifying environment"
+  },
+  "deepl:ERROR: To decode the environment is required": {
+    "original": "ERROR: To decode the environment is required",
+    "translation": "ERROR: To decode the environment is required"
+  },
+  "deepl:Decoding files": {
+    "original": "Decoding files",
+    "translation": "Decoding files"
+  },
+  "deepl:Decoding": {
+    "original": "Decoding",
+    "translation": "Decoding"
+  },
+  "deepl:ERROR: The data could not be decoded": {
+    "original": "ERROR: The data could not be decoded",
+    "translation": "ERROR: The data could not be decoded"
+  },
+  "deepl:No known method to decode": {
+    "original": "No known method to decode",
+    "translation": "No known method to decode"
+  },
+  "deepl:SKIPPED": {
+    "original": "SKIPPED",
+    "translation": "SKIPPED"
+  },
+  "deepl:Restoring configuration": {
+    "original": "Restoring configuration",
+    "translation": "Restoring configuration"
+  },
+  "deepl:Removing temporary files": {
+    "original": "Removing temporary files",
+    "translation": "Removing temporary files"
+  },
+  "deepl:You have to restart": {
+    "original": "You have to restart",
+    "translation": "You have to restart"
+  },
+  "deepl:Backup/restore configuration": {
+    "original": "Backup/restore configuration",
+    "translation": "Backup/restore configuration"
+  },
+  "deepl:Backup": {
+    "original": "Backup",
+    "translation": "Backup"
+  },
+  "deepl:Include additional an export of the AVM settings": {
+    "original": "Include additional an export of the AVM settings",
+    "translation": "Include additional an export of the AVM settings"
+  },
+  "deepl:Encrypt the backup with OpenSSL": {
+    "original": "Encrypt the backup with OpenSSL",
+    "translation": "Encrypt the backup with OpenSSL"
+  },
+  "deepl:Password for encryption and export": {
+    "original": "Password for encryption and export",
+    "translation": "Password for encryption and export"
+  },
+  "deepl:Restore": {
+    "original": "Restore",
+    "translation": "Restore"
+  },
+  "deepl:Decode AVM settings": {
+    "original": "Decode AVM settings",
+    "translation": "Decode AVM settings"
+  },
+  "deepl:Restore Freetz settings only": {
+    "original": "Restore Freetz settings only",
+    "translation": "Restore Freetz settings only"
+  },
+  "deepl:Reboot after restore": {
+    "original": "Reboot after restore",
+    "translation": "Reboot after restore"
+  },
+  "deepl:Password (if encrypted)": {
+    "original": "Password (if encrypted)",
+    "translation": "Password (if encrypted)"
+  },
+  "deepl:Rudi edit": {
+    "original": "Rudi edit",
+    "translation": "Rudi edit"
+  },
+  "deepl:Branding": {
+    "original": "Branding",
+    "translation": "Branding"
+  },
+  "deepl:cache": {
+    "original": "cache",
+    "translation": "cache"
+  },
+  "deepl:%m/%d/%Y": {
+    "original": "%m/%d/%Y",
+    "translation": "%m/%d/%Y"
+  },
+  "deepl:Torrent session data": {
+    "original": "Torrent session data",
+    "translation": "Torrent session data"
+  },
+  "deepl:Torrent files to load": {
+    "original": "Torrent files to load",
+    "translation": "Torrent files to load"
+  },
+  "deepl:Torrent files to auto-start": {
+    "original": "Torrent files to auto-start",
+    "translation": "Torrent files to auto-start"
+  },
+  "deepl:Log files": {
+    "original": "Log files",
+    "translation": "Log files"
+  },
+  "deepl:rTorrent requires open ports for incoming connections:": {
+    "original": "rTorrent requires open ports for incoming connections:",
+    "translation": "rTorrent requires open ports for incoming connections:"
+  },
+  "deepl:Required ports": {
+    "original": "Required ports",
+    "translation": "Required ports"
+  },
+  "deepl:Setup Complete!": {
+    "original": "Setup Complete!",
+    "translation": "Setup Complete!"
+  },
+  "deepl:is installed": {
+    "original": "is installed",
+    "translation": "is installed"
+  },
+  "deepl:Access via": {
+    "original": "Access via",
+    "translation": "Access via"
+  }
+}

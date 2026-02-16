@@ -1,0 +1,1206 @@
+{
+  "deepl:(0 = unlimited, default)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(Log file is empty)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: /tmp, recommended with < 64MB RAM: basedir)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 10)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 100)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 120, 0 = immediate)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 15)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 16891, traditional: 5000 or 5555)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 200)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 300 = 5 min)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 40)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 50)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 64M, values: 32M/64M/128M/256M)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: 6881)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:(default: off)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:.rtorrent.rc does not exist yet. Use the Setup Wizard.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:AVM-Rules is not installed.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Access via": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Are you sure you want to delete .rtorrent.rc?": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Auto (default)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Available Storage Devices (RW)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Back": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Base Directory": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Base directory not set. Suggested": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Boot Monitor": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Boot Wait Time (sec)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Cancel": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Check Hash on Start": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Checking .rtorrent.rc...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Checking directory configuration...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Checking directory...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Checks downloaded files for integrity on rTorrent start. Yes = safer, but longer startup with many/large torrents.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Choose a directory on your USB storage or NAS where rTorrent will store files.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Click to use path as base directory": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Configuration File": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Configuration saved. Service not started.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Create .rtorrent.rc from template?": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Create Now": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Create directory structure now?": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Creating .rtorrent.rc...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Creating directories...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Creating directory...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Current path": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:DHT Port": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:DHT Settings": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Delete": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Deleted": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directories created successfully": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory Structure": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory configuration exists": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory created and configuration saved": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory created, saving configuration...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory does not exist": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory exists and configuration saved": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory exists, saving configuration...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory path": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Directory structure needs to be created": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Distributed Hash Table - Enables peer discovery without tracker. Auto = enabled for public torrents. Recommended: Auto.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Do you really want to exit the wizard?": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Download Rate (KB/s)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Downloaded files": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Duration (sec)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Edit Configuration Files": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Edit rTorrent configuration": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Edit ruTorrent configuration": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Enable": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Enables HTTP/XMLRPC access to rTorrent (translates XMLRPC to SCGI). Requires username and password of the configured Freetz user.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error checking .rtorrent.rc": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error creating .rtorrent.rc": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error creating directories": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error creating directory": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error reading port configuration": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error saving configuration": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error starting service": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Error: ": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Example": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Ext4 filesystem is the most appropriate for best performance and reliability.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Finish": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Global maximum of all simultaneous peer connections across all torrents. Prevents overload with many active torrents.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:How long to monitor after boot (seconds). Example: 300 = 5 minutes.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:How long to wait at system boot for USB/network resources before starting rTorrent. 0 = immediate start (synchronous, for internal storage only). >0 = background start with wait time (for USB/NAS).": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:How often to check whether rTorrent is running (seconds). Example: 10.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:If enabled, after boot start the init script monitors for a limited time whether rTorrent is still running and restarts it if needed.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:If enabled, ruTorrent uses the base directory (basedir) for temporary files instead of /tmp (RAM). Recommended with many simultaneous uploads or limited RAM. Default: /tmp (faster, but RAM-limited).": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Important": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Interval (sec)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Log files": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Main directory for rTorrent. Downloads, session data and configuration files are stored here. Must be on persistent storage (USB/NAS).": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Main directory for rTorrent. Will be used as default when starting the wizard.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Max Peers": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Max Peers Seeding": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Maximum download speed in KB/s. 0 = unlimited. Set a limit if you want to reserve bandwidth for other services.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Maximum number of connected peers per active torrent (download). Higher values = better speed, but more resource usage.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Maximum number of connected peers per torrent in seeding mode. Usually lower than download, since upload bandwidth is limited.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Maximum number of simultaneous uploads per torrent. Limits how many peers can upload data simultaneously.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Maximum upload speed in KB/s. 0 = unlimited. Recommendation: 80-90% of your upload bandwidth to avoid affecting other services.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Min Peers": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Min Peers Seeding": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Minimum number of peers rTorrent tries to maintain (download). rTorrent actively searches for new peers if the count drops below this.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Minimum number of peers when seeding. Lower than download, since seeding requires fewer active connections.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Network error": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Next": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:No": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Note": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Off": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:On": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Open AVM-Rules": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Open ruTorrent Web Interface": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Other Settings": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Peer Limit": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Peer Settings": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Pieces Memory Max": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Please complete initial setup first": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Port": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Port Configuration": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Port Forwarding": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Port forwarding is NOT configured in AVM-Rules": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Port forwarding is configured in AVM-Rules": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Priority": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Process priority (0-19). Higher values = lower priority. Default: 5. Use higher values to reserve system resources for other services.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:RAM for buffering torrent pieces. Critical on low-RAM devices: too high = system crash (OOM), too low = slower performance. FritzBox 64MB RAM: 32M, 128-256MB: 64M, 512MB+: 128M.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Reading port configuration...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Recommendation": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Required ports": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:SCGI Port": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Saving configuration...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Service not started. You can start it manually later.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Service started successfully": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Setup Complete!": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Shows last 200 lines. Check here for error messages if rTorrent fails to start.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Skip": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Start Initial Setup Wizard": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Start type": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Starting service...": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Startup Log": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Step": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Step 1 of 5": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Suggested": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Supports: config.php, freetz_config.php, plugins.ini, access.ini": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:TCP port for SCGI communication between ruTorrent and rTorrent. Bound only locally (127.0.0.1). Traditional ports are 5000 or 5555, but 16891 avoids conflicts with Flask, Docker, UPnP, etc. Default: 16891.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:The file .rtorrent.rc does not exist at": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:The following directories will be created": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Torrent files to auto-start": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Torrent files to load": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Torrent session data": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:UDP port for DHT communication. Does not need to be forwarded, but improves peer discovery. Default: 6881.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Unknown error": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Upload Rate (KB/s)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Upload Slots": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Use home directory for temporary files": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Warning": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Warning: /var/tmp is not persistent! Data will be lost on reboot. Continue?": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:XMLRPC Proxy": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Yes (default)": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:Yes, create": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:You can install it later through package management.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:created successfully": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:found": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:has been configured in .rtorrent.rc": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:is installed": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:is not installed": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:not found": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:of": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:rTorrent Initial Setup": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:rTorrent requires open ports for incoming connections. Without port forwarding, only outgoing traffic will work.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:rTorrent requires open ports for incoming connections:": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:ruTorrent": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:ruTorrent Web Interface": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:ruTorrent is not installed": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  },
+  "deepl:✓ The ports are already correctly configured.": {
+    "github_user": "",
+    "original": "(multiple values)",
+    "service": "deepl",
+    "timestamp": "",
+    "translation": "(multiple values)"
+  }
+}
