@@ -10,6 +10,9 @@ $(PKG)_CONDITIONAL_PATCHES+=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
 $(PKG)_PATCH_POST_CMDS += $(RM) -r ./readline;
 
 $(PKG)_DEPENDS_ON += ncurses readline
+ifeq ($(FREETZ_GDB_VERSION_17_1),y)
+$(PKG)_DEPENDS_ON += gmp mpfr
+endif
 
 $(PKG)_BINARIES_ALL           := gdb  gdbserver
 $(PKG)_BINARIES_BUILD_SUBDIRS := gdb/ gdb/gdbserver/
@@ -36,6 +39,10 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-sim
 $(PKG)_CONFIGURE_OPTIONS += --disable-werror
 
 $(PKG)_CONFIGURE_OPTIONS += --with-system-readline=yes
+ifeq ($(FREETZ_GDB_VERSION_17_1),y)
+$(PKG)_CONFIGURE_OPTIONS += --with-gmp=$(TARGET_TOOLCHAIN_STAGING_DIR)
+$(PKG)_CONFIGURE_OPTIONS += --with-mpfr=$(TARGET_TOOLCHAIN_STAGING_DIR)
+endif
 $(PKG)_CONFIGURE_OPTIONS += --without-expat
 $(PKG)_CONFIGURE_OPTIONS += --without-guile
 $(PKG)_CONFIGURE_OPTIONS += --without-included-gettext
