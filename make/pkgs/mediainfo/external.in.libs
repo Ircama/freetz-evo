@@ -1,11 +1,3 @@
-config EXTERNAL_FREETZ_LIB_libzen
-	depends on EXTERNAL_ENABLED && FREETZ_LIB_libzen
-	bool "libzen"
-	default n
-	help
-		externals the following file(s):
-		 /usr/lib/libzen.so*
-
 config EXTERNAL_FREETZ_LIB_libmediainfo
 	depends on EXTERNAL_ENABLED && FREETZ_LIB_libmediainfo
 	bool "libmediainfo"
@@ -13,3 +5,4 @@ config EXTERNAL_FREETZ_LIB_libmediainfo
 	help
 		externals the following file(s):
 		 /usr/lib/libmediainfo.so*
+

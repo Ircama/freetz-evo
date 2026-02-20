@@ -1,5 +1,9 @@
-config FREETZ_LIB_libzen
-	bool "libzen"
-
 config FREETZ_LIB_libmediainfo
 	bool "libmediainfo"
+	# libmediainfo requires ZenLib; selecting the MediaInfo package
+	# should automatically pull in the library, otherwise users repeatedly
+	# hit an "unmet dependency" message during menuconfig.
+	select FREETZ_LIB_libzen
+	depends on FREETZ_LIB_libzen
+
+
