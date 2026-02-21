@@ -5,7 +5,7 @@ if FREETZ_PACKAGE_GDB
 
 	choice
 		prompt "version"
-		default FREETZ_GDB_VERSION_7_9
+		default FREETZ_GDB_VERSION_17_1
 		help
 			Select the version of gdb you wish to use.
 
