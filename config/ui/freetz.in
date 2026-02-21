@@ -63,38 +63,6 @@ menu "Web Interface"
 				Requires AI translation to be configured (see below).
 				Strings are translated from English at build time.
 
-		config FREETZ_LANG_PT
-			bool "pt - português"
-			select FREETZ_LANG_NEEDS_TRANSLATION
-			help
-				Portuguese language for the Freetz web interface.
-				Requires AI translation to be configured (see below).
-				Strings are translated from English at build time.
-
-		config FREETZ_LANG_NL
-			bool "nl - Nederlands"
-			select FREETZ_LANG_NEEDS_TRANSLATION
-			help
-				Dutch language for the Freetz web interface.
-				Requires AI translation to be configured (see below).
-				Strings are translated from English at build time.
-
-		config FREETZ_LANG_PL
-			bool "pl - polski"
-			select FREETZ_LANG_NEEDS_TRANSLATION
-			help
-				Polish language for the Freetz web interface.
-				Requires AI translation to be configured (see below).
-				Strings are translated from English at build time.
-
-		config FREETZ_LANG_RU
-			bool "ru - русский"
-			select FREETZ_LANG_NEEDS_TRANSLATION
-			help
-				Russian language for the Freetz web interface.
-				Requires AI translation to be configured (see below).
-				Strings are translated from English at build time.
-
 		config FREETZ_LANG_XX
 			bool "xx - DEVELOPER"
 			depends on FREETZ_SHOW_DEVELOPER
@@ -114,10 +82,6 @@ menu "Web Interface"
 		default "it"            if FREETZ_LANG_IT
 		default "fr"            if FREETZ_LANG_FR
 		default "es"            if FREETZ_LANG_ES
-		default "pt"            if FREETZ_LANG_PT
-		default "nl"            if FREETZ_LANG_NL
-		default "pl"            if FREETZ_LANG_PL
-		default "ru"            if FREETZ_LANG_RU
 		default "xx"            if FREETZ_LANG_XX
 
 	config FREETZ_LANG_NEEDS_TRANSLATION
@@ -236,73 +200,73 @@ menu "Web Interface"
 			Get a free key at https://portal.libretranslate.com
 			Required since 2024 for public instance (https://libretranslate.com)
 			
-				This key is used ONLY at build time and is NOT included in the image.
+			This key is used ONLY at build time and is NOT included in the image.
 
-		config FREETZ_TRANSLATE_API_URL
-			string "API URL (optional override)"
-			default ""
-			depends on FREETZ_TRANSLATE_LIBRETRANSLATE || FREETZ_TRANSLATE_LINGVA
-			help
-				Optional: Override the default API endpoint URL.
+	config FREETZ_TRANSLATE_API_URL
+		string "API URL (optional override)"
+		default ""
+		depends on FREETZ_TRANSLATE_LIBRETRANSLATE || FREETZ_TRANSLATE_LINGVA
+		help
+			Optional: Override the default API endpoint URL.
 
-				For LibreTranslate: default is https://libretranslate.com
-				  You can use a self-hosted instance, e.g. http://localhost:5000
+			For LibreTranslate: default is https://libretranslate.com
+			  You can use a self-hosted instance, e.g. http://localhost:5000
 
-				For Lingva: default is https://lingva.ml
-				  You can use any public Lingva instance.
+			For Lingva: default is https://lingva.ml
+			  You can use any public Lingva instance.
 
-		config FREETZ_TRANSLATE_MYMEMORY_EMAIL
-			string "MyMemory contact email (optional)"
-			default ""
-			depends on FREETZ_TRANSLATE_MYMEMORY
-			help
-				Optional email address for MyMemory API.
-				Without email: 1000 words/day limit.
-				With email: 10000 words/day limit.
+	config FREETZ_TRANSLATE_MYMEMORY_EMAIL
+		string "MyMemory contact email (optional)"
+		default ""
+		depends on FREETZ_TRANSLATE_MYMEMORY
+		help
+			Optional email address for MyMemory API.
+			Without email: 1000 words/day limit.
+			With email: 10000 words/day limit.
 
-		config FREETZ_TRANSLATE_CACHE_ENABLED
-			bool "Enable translation cache"
-			default y
-			help
-				Cache translated strings to avoid re-translating unchanged text
-				on subsequent builds.
-				
-				Cache location: tools/translate_cache/<language>/
-				Organized by target language for easier management.
-				
-				Highly recommended to reduce API calls and build time.
+	config FREETZ_TRANSLATE_CACHE_ENABLED
+		bool "Enable translation cache"
+		default y
+		help
+			Cache translated strings to avoid re-translating unchanged text
+			on subsequent builds.
+			
+			Cache location: tools/translate_cache/<language>/
+			Organized by target language for easier management.
+			
+			Highly recommended to reduce API calls and build time.
 
-		config FREETZ_TRANSLATE_REUSE_CACHE_ANY_SERVICE
-			bool "Reuse translations from other services"
-			default y
-			depends on FREETZ_TRANSLATE_CACHE_ENABLED
-			help
-				If a translation is already cached from a different translation service,
-				reuse it instead of calling the API again.
-				
-				Example: If you switch from MyMemory to DeepL, previously cached
-				MyMemory translations will be reused, avoiding redundant API calls.
-				
-				This saves API quota and build time when the same text has already
-				been translated by another service.
-				
-				Recommended: keep enabled to maximize cache efficiency.
+	config FREETZ_TRANSLATE_REUSE_CACHE_ANY_SERVICE
+		bool "Reuse translations from other services"
+		default y
+		depends on FREETZ_TRANSLATE_CACHE_ENABLED
+		help
+			If a translation is already cached from a different translation service,
+			reuse it instead of calling the API again.
+			
+			Example: If you switch from MyMemory to DeepL, previously cached
+			MyMemory translations will be reused, avoiding redundant API calls.
+			
+			This saves API quota and build time when the same text has already
+			been translated by another service.
+			
+			Recommended: keep enabled to maximize cache efficiency.
 
-		config FREETZ_TRANSLATE_CACHE_CLEAR
-			bool "Clear translation cache on next build"
-			default n
-			help
-				Remove all cached translations before building.
-				
-				Useful when:
-				  - Switching translation service
-				  - Previous translations had poor quality
-				  - You want completely fresh translations
-				
-				This will delete: tools/translate_cache/
-				
-				After the build, remember to disable this option
-				to avoid clearing the cache on every build.
+	config FREETZ_TRANSLATE_CACHE_CLEAR
+		bool "Clear translation cache on next build"
+		default n
+		help
+			Remove all cached translations before building.
+			
+			Useful when:
+			  - Switching translation service
+			  - Previous translations had poor quality
+			  - You want completely fresh translations
+			
+			This will delete: tools/translate_cache/
+			
+			After the build, remember to disable this option
+			to avoid clearing the cache on every build.
 
 	endmenu # "AI Translation" #
 
