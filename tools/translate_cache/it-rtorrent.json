@@ -2,435 +2,498 @@
   "deepl:Directory does not exist": {
     "original": "Directory does not exist",
     "translation": "La directory non esiste",
-    "timestamp": "2026-02-21T13:28:11Z",
+    "timestamp": "2026-02-21T14:26:26Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Available Storage Devices (RW)": {
     "original": "Available Storage Devices (RW)",
     "translation": "Unità di immagazzinamento disponibili (RW)",
-    "timestamp": "2026-02-21T13:28:11Z",
+    "timestamp": "2026-02-21T14:26:29Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Click to use path as base directory": {
     "original": "Click to use path as base directory",
     "translation": "Fare clic per utilizzare il percorso come directory di base",
-    "timestamp": "2026-02-21T13:28:11Z",
+    "timestamp": "2026-02-21T14:26:32Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:Note": {
     "original": "Note",
     "translation": "Nota",
-    "timestamp": "2026-02-21T13:28:12Z",
+    "timestamp": "2026-02-21T14:26:32Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Ext4 filesystem is the most appropriate for best performance and reliability.": {
     "original": "Ext4 filesystem is the most appropriate for best performance and reliability.",
     "translation": "Il file system Ext4 è il più appropriato per le migliori prestazioni e affidabilità.",
-    "timestamp": "2026-02-21T13:28:12Z",
+    "timestamp": "2026-02-21T14:26:35Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Start Initial Setup Wizard": {
     "original": "Start Initial Setup Wizard",
     "translation": "Avvia impostazione guidata",
-    "timestamp": "2026-02-21T13:28:12Z",
+    "timestamp": "2026-02-21T14:26:38Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:rTorrent Initial Setup": {
     "original": "rTorrent Initial Setup",
     "translation": "configurazione iniziale di rTorrent",
-    "timestamp": "2026-02-21T13:28:12Z",
+    "timestamp": "2026-02-21T14:26:41Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:Start type": {
     "original": "Start type",
     "translation": "Tipo di avvio",
-    "timestamp": "2026-02-21T13:27:55Z",
+    "timestamp": "2026-02-21T14:26:16Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Please complete initial setup first": {
     "original": "Please complete initial setup first",
     "translation": "Completa prima la configurazione iniziale",
-    "timestamp": "2026-02-21T13:27:58Z",
+    "timestamp": "2026-02-21T14:26:19Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Base Directory": {
     "original": "Base Directory",
     "translation": "Directory di base:",
-    "timestamp": "2026-02-21T13:28:03Z",
+    "timestamp": "2026-02-21T14:26:21Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Main directory for rTorrent. Will be used as default when starting the wizard.": {
     "original": "Main directory for rTorrent. Will be used as default when starting the wizard.",
     "translation": "Directory principale per rTorrent. Verrà utilizzato come impostazione predefinita all'avvio della procedura guidata.",
-    "timestamp": "2026-02-21T13:28:06Z",
+    "timestamp": "2026-02-21T14:26:24Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Suggested": {
     "original": "Suggested",
     "translation": "Suggerito",
-    "timestamp": "2026-02-21T13:28:10Z",
+    "timestamp": "2026-02-21T14:26:26Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Step 1 of 5": {
     "original": "Step 1 of 5",
     "translation": "Fase 1 di 5",
-    "timestamp": "2026-02-21T13:28:19Z",
+    "timestamp": "2026-02-21T14:26:45Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Choose a directory on your USB storage or NAS where rTorrent will store files.": {
     "original": "Choose a directory on your USB storage or NAS where rTorrent will store files.",
     "translation": "Scegli una directory sulla tua memoria USB o NAS in cui rTorrent memorizzerà i file.",
-    "timestamp": "2026-02-21T13:28:23Z",
+    "timestamp": "2026-02-21T14:26:46Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Directory path": {
     "original": "Directory path",
     "translation": "Percorso directory",
-    "timestamp": "2026-02-21T13:28:28Z",
+    "timestamp": "2026-02-21T14:26:48Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Recommendation": {
     "original": "Recommendation",
     "translation": "Raccomandazione",
-    "timestamp": "2026-02-21T13:28:32Z",
+    "timestamp": "2026-02-21T14:26:52Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:Example": {
     "original": "Example",
     "translation": "Esempio",
-    "timestamp": "2026-02-21T13:28:32Z",
+    "timestamp": "2026-02-21T14:26:52Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!": {
     "original": "The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!",
     "translation": "La directory deve trovarsi su una memoria persistente (USB, NAS). NON usare /var/tmp!",
-    "timestamp": "2026-02-21T13:28:36Z",
+    "timestamp": "2026-02-21T14:26:55Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Configuration File": {
     "original": "Configuration File",
     "translation": "File di configurazione",
-    "timestamp": "2026-02-21T13:28:39Z",
+    "timestamp": "2026-02-21T14:26:59Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Checking .rtorrent.rc...": {
     "original": "Checking .rtorrent.rc...",
     "translation": "Controllo di .rtorrent.rc in corso...",
-    "timestamp": "2026-02-21T13:28:42Z",
+    "timestamp": "2026-02-21T14:27:03Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Directory Structure": {
     "original": "Directory Structure",
     "translation": "STRUTTURA DIRECTORY",
-    "timestamp": "2026-02-21T13:28:45Z",
+    "timestamp": "2026-02-21T14:27:07Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:The following directories will be created": {
     "original": "The following directories will be created",
     "translation": "Verranno create le seguenti directory",
-    "timestamp": "2026-02-21T13:28:48Z",
+    "timestamp": "2026-02-21T14:27:10Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Downloaded files": {
     "original": "Downloaded files",
     "translation": "Files scaricati",
-    "timestamp": "2026-02-21T13:28:51Z",
+    "timestamp": "2026-02-21T14:27:13Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Torrent session data": {
     "original": "Torrent session data",
     "translation": "Dati sessione torrent",
-    "timestamp": "2026-02-21T13:28:55Z",
+    "timestamp": "2026-02-21T14:27:16Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Torrent files to load": {
     "original": "Torrent files to load",
     "translation": "File torrent da caricare",
-    "timestamp": "2026-02-21T13:28:59Z",
+    "timestamp": "2026-02-21T14:27:20Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Torrent files to auto-start": {
     "original": "Torrent files to auto-start",
     "translation": "File torrent da avviare automaticamente",
-    "timestamp": "2026-02-21T13:29:04Z",
+    "timestamp": "2026-02-21T14:27:23Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Log files": {
     "original": "Log files",
     "translation": "File registro",
-    "timestamp": "2026-02-21T13:29:07Z",
+    "timestamp": "2026-02-21T14:27:27Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Port Forwarding": {
     "original": "Port Forwarding",
     "translation": "Port Forwarding",
-    "timestamp": "2026-02-21T13:29:10Z",
+    "timestamp": "2026-02-21T14:27:31Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:rTorrent requires open ports for incoming connections:": {
     "original": "rTorrent requires open ports for incoming connections:",
     "translation": "rTorrent richiede porte aperte per le connessioni in entrata:",
-    "timestamp": "2026-02-21T13:29:13Z",
+    "timestamp": "2026-02-21T14:27:37Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Required ports": {
     "original": "Required ports",
     "translation": "Porte richieste",
-    "timestamp": "2026-02-21T13:29:16Z",
+    "timestamp": "2026-02-21T14:27:41Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Setup Complete!": {
     "original": "Setup Complete!",
     "translation": "Configurazione completata!",
-    "timestamp": "2026-02-21T13:29:20Z",
+    "timestamp": "2026-02-21T14:27:46Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:is installed": {
     "original": "is installed",
     "translation": "l’impianto.",
-    "timestamp": "2026-02-21T13:29:24Z",
+    "timestamp": "2026-02-21T14:27:51Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Access via": {
     "original": "Access via",
     "translation": "Accesso tramite",
-    "timestamp": "2026-02-21T13:29:28Z",
+    "timestamp": "2026-02-21T14:27:56Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:is not installed": {
     "original": "is not installed",
     "translation": "non è installato",
-    "timestamp": "2026-02-21T13:29:32Z",
+    "timestamp": "2026-02-21T14:27:59Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:You can install it later through package management.": {
     "original": "You can install it later through package management.",
     "translation": "Puoi installarlo in seguito tramite la gestione dei pacchetti.",
-    "timestamp": "2026-02-21T13:29:36Z",
+    "timestamp": "2026-02-21T14:28:02Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Finish": {
     "original": "Finish",
     "translation": "Fine",
-    "timestamp": "2026-02-21T13:29:39Z",
+    "timestamp": "2026-02-21T14:28:05Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Cancel": {
     "original": "Cancel",
     "translation": "Annulla",
-    "timestamp": "2026-02-21T13:29:43Z",
+    "timestamp": "2026-02-21T14:28:09Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:Back": {
     "original": "Back",
     "translation": "Indietro",
-    "timestamp": "2026-02-21T13:29:44Z",
+    "timestamp": "2026-02-21T14:28:09Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Next": {
     "original": "Next",
     "translation": "Avanti",
-    "timestamp": "2026-02-21T13:29:48Z",
+    "timestamp": "2026-02-21T14:28:11Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Do you really want to exit the wizard?": {
     "original": "Do you really want to exit the wizard?",
     "translation": "Vuoi davvero uscire dalla procedura guidata?",
-    "timestamp": "2026-02-21T13:29:54Z",
+    "timestamp": "2026-02-21T14:28:13Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Step": {
     "original": "Step",
     "translation": "Passaggio",
-    "timestamp": "2026-02-21T13:29:58Z",
+    "timestamp": "2026-02-21T14:28:15Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:of": {
     "original": "of",
     "translation": "di",
-    "timestamp": "2026-02-21T13:29:58Z",
+    "timestamp": "2026-02-21T14:28:15Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Warning: /var/tmp is not persistent! Data will be lost on reboot. Continue?": {
     "original": "Warning: /var/tmp is not persistent! Data will be lost on reboot. Continue?",
     "translation": "Attenzione: /var/tmp non è persistente! I dati andranno persi al riavvio. Continuare?",
-    "timestamp": "2026-02-21T13:30:03Z",
+    "timestamp": "2026-02-21T14:28:17Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Checking directory...": {
     "original": "Checking directory...",
     "translation": "Controllo della directory in corso...",
-    "timestamp": "2026-02-21T13:30:08Z",
+    "timestamp": "2026-02-21T14:28:20Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "deepl:Error": {
     "original": "Error",
     "translation": "Errore",
-    "timestamp": "2026-02-21T13:30:08Z",
+    "timestamp": "2026-02-21T14:28:20Z",
     "service": "deepl",
     "github_user": "Ircama"
   },
   "mymemory:Directory exists, saving configuration...": {
     "original": "Directory exists, saving configuration...",
     "translation": "La directory esiste, salvataggio della configurazione in corso...",
-    "timestamp": "2026-02-21T13:30:12Z",
+    "timestamp": "2026-02-21T14:28:22Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Error saving configuration": {
     "original": "Error saving configuration",
     "translation": "Errore nel salvataggio della configurazione",
-    "timestamp": "2026-02-21T13:30:15Z",
+    "timestamp": "2026-02-21T14:28:25Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Directory exists and configuration saved": {
     "original": "Directory exists and configuration saved",
     "translation": "La directory esiste e la configurazione è stata salvata",
-    "timestamp": "2026-02-21T13:30:18Z",
+    "timestamp": "2026-02-21T14:28:28Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Create Now": {
     "original": "Create Now",
     "translation": "Inizia a creare",
-    "timestamp": "2026-02-21T13:30:22Z",
+    "timestamp": "2026-02-21T14:28:31Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Creating directory...": {
     "original": "Creating directory...",
     "translation": "Creazione cartella",
-    "timestamp": "2026-02-21T13:30:26Z",
+    "timestamp": "2026-02-21T14:28:32Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Error creating directory": {
     "original": "Error creating directory",
     "translation": "Errore di creazione della directory.",
-    "timestamp": "2026-02-21T13:30:32Z",
+    "timestamp": "2026-02-21T14:28:34Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Directory created, saving configuration...": {
     "original": "Directory created, saving configuration...",
     "translation": "Directory creata, salvataggio della configurazione in corso...",
-    "timestamp": "2026-02-21T13:30:35Z",
+    "timestamp": "2026-02-21T14:28:36Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Directory created and configuration saved": {
     "original": "Directory created and configuration saved",
     "translation": "Directory creata e configurazione salvata",
-    "timestamp": "2026-02-21T13:30:38Z",
+    "timestamp": "2026-02-21T14:28:39Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Error checking .rtorrent.rc": {
     "original": "Error checking .rtorrent.rc",
     "translation": "Errore durante il controllo di .rtorrent.rc",
-    "timestamp": "2026-02-21T13:30:41Z",
+    "timestamp": "2026-02-21T14:28:42Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:found": {
     "original": "found",
     "translation": "trovate",
-    "timestamp": "2026-02-21T13:30:44Z",
+    "timestamp": "2026-02-21T14:28:44Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Checking directory configuration...": {
     "original": "Checking directory configuration...",
     "translation": "Controllo della configurazione della directory in corso...",
-    "timestamp": "2026-02-21T13:30:51Z",
+    "timestamp": "2026-02-21T14:28:47Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:not found": {
     "original": "not found",
     "translation": "non trovato",
-    "timestamp": "2026-02-21T13:30:54Z",
+    "timestamp": "2026-02-21T14:28:49Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Create .rtorrent.rc from template?": {
     "original": "Create .rtorrent.rc from template?",
     "translation": "Creare .rtorrent.rc dal modello?",
-    "timestamp": "2026-02-21T13:30:58Z",
+    "timestamp": "2026-02-21T14:28:51Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Yes, create": {
     "original": "Yes, create",
     "translation": "Sì, crea",
-    "timestamp": "2026-02-21T13:31:01Z",
+    "timestamp": "2026-02-21T14:28:53Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Skip": {
     "original": "Skip",
     "translation": "Salta",
-    "timestamp": "2026-02-21T13:31:04Z",
+    "timestamp": "2026-02-21T14:28:55Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Creating .rtorrent.rc...": {
     "original": "Creating .rtorrent.rc...",
     "translation": "Creazione di .rtorrent.rc in corso...",
-    "timestamp": "2026-02-21T13:31:07Z",
+    "timestamp": "2026-02-21T14:28:58Z",
     "service": "mymemory",
     "github_user": "Ircama"
   },
   "mymemory:Error creating .rtorrent.rc": {
     "original": "Error creating .rtorrent.rc",
     "translation": "Errore durante la creazione di .rtorrent.rc",
-    "timestamp": "2026-02-21T13:31:10Z",
+    "timestamp": "2026-02-21T14:29:01Z",
     "service": "mymemory",
+    "github_user": "Ircama"
+  },
+  "deepl:created successfully": {
+    "original": "created successfully",
+    "translation": "creato con successo",
+    "timestamp": "2026-02-21T14:29:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directory configuration exists": {
+    "original": "Directory configuration exists",
+    "translation": "La configurazione della directory esiste",
+    "timestamp": "2026-02-21T14:29:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directory structure needs to be created": {
+    "original": "Directory structure needs to be created",
+    "translation": "È necessario creare una struttura di directory",
+    "timestamp": "2026-02-21T14:29:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Create directory structure now?": {
+    "original": "Create directory structure now?",
+    "translation": "Creare ora la struttura della directory?",
+    "timestamp": "2026-02-21T14:29:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Creating directories...": {
+    "original": "Creating directories...",
+    "translation": "Creazione di directory...",
+    "timestamp": "2026-02-21T14:29:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Error creating directories": {
+    "original": "Error creating directories",
+    "translation": "Errore nella creazione delle directory",
+    "timestamp": "2026-02-21T14:29:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directories created successfully": {
+    "original": "Directories created successfully",
+    "translation": "Directory create con successo",
+    "timestamp": "2026-02-21T14:29:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Reading port configuration...": {
+    "original": "Reading port configuration...",
+    "translation": "Configurazione della porta di lettura...",
+    "timestamp": "2026-02-21T14:29:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Error reading port configuration": {
+    "original": "Error reading port configuration",
+    "translation": "Errore nella lettura della configurazione della porta",
+    "timestamp": "2026-02-21T14:29:35Z",
+    "service": "deepl",
     "github_user": "Ircama"
   }
 }
