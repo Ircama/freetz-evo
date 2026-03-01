@@ -15,6 +15,10 @@ Compared to Freetz-NG, Freetz-EVO includes GCC on-device compilation, nginx, rto
 aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
 Action for testing new developments, and many other new packages.
 
+Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)
+repository: all upstream fixes, new firmware support, and toolchain updates are regularly merged into
+Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
+
 ---
 
 ### Improvements over Freetz-NG
