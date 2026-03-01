@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libcares
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libcares
+	bool "libcares"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libcares.so.4

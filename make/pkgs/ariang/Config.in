@@ -1,0 +1,7 @@
+
+# AriaNg config moved into the aria2 menu (make/pkgs/aria2/Config.in).
+# This file is kept for historical reference and should not define the
+# Kconfig symbol to avoid duplicate definitions. See aria2/Config.in
+# for the integrated AriaNg option.
+
+

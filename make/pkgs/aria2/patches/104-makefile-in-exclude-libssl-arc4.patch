@@ -1,0 +1,22 @@
+--- src/Makefile.in	2023-11-15 10:52:02.000000000 +0100
++++ src/Makefile.in	2026-02-01 02:26:03.004547670 +0100
+@@ -150,7 +150,7 @@
+ @HAVE_LIBGMP_TRUE@        LibgmpDHKeyExchange.cc LibgmpDHKeyExchange.h
+ 
+ @HAVE_OPENSSL_TRUE@am__append_23 = \
+-@HAVE_OPENSSL_TRUE@	LibsslARC4Encryptor.cc LibsslARC4Encryptor.h \
++@HAVE_OPENSSL_TRUE@@USE_INTERNAL_ARC4_FALSE@	LibsslARC4Encryptor.cc LibsslARC4Encryptor.h \
+ @HAVE_OPENSSL_TRUE@        LibsslDHKeyExchange.cc LibsslDHKeyExchange.h
+ 
+ @HAVE_APPLETLS_FALSE@@HAVE_OPENSSL_TRUE@am__append_24 = \
+@@ -844,8 +844,9 @@
+ @HAVE_LIBNETTLE_TRUE@am__objects_19 = LibnettleARC4Encryptor.lo
+ @HAVE_LIBNETTLE_TRUE@@USE_LIBNETTLE_MD_TRUE@am__objects_20 = LibnettleMessageDigestImpl.lo
+ @HAVE_LIBGMP_TRUE@am__objects_21 = a2gmp.lo LibgmpDHKeyExchange.lo
+-@HAVE_OPENSSL_TRUE@am__objects_22 = LibsslARC4Encryptor.lo \
++@HAVE_OPENSSL_TRUE@@USE_INTERNAL_ARC4_FALSE@am__objects_22 = LibsslARC4Encryptor.lo \
+ @HAVE_OPENSSL_TRUE@	LibsslDHKeyExchange.lo
++@HAVE_OPENSSL_TRUE@@USE_INTERNAL_ARC4_TRUE@am__objects_22 = LibsslDHKeyExchange.lo
+ @HAVE_APPLETLS_FALSE@@HAVE_OPENSSL_TRUE@am__objects_23 =  \
+ @HAVE_APPLETLS_FALSE@@HAVE_OPENSSL_TRUE@	LibsslTLSContext.lo \
+ @HAVE_APPLETLS_FALSE@@HAVE_OPENSSL_TRUE@	LibsslTLSSession.lo

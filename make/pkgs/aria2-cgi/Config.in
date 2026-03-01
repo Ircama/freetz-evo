@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_ARIA2_CGI
+	bool "aria2 CGI"
+	depends on FREETZ_PACKAGE_ARIA2
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default n
+	help
+		Provides a simple configuration interface
+		for aria2 daemon.

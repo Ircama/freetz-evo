@@ -1,0 +1,11 @@
+config FREETZ_LIB_libaria2
+	bool "aria2 C++ library (libaria2.so)"
+	depends on FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
+	select FREETZ_LIB_libstdcpp if !FREETZ_PACKAGE_ARIA2_STATIC
+	default n
+	help
+		libaria2 is a C++ library for embedding aria2 in other applications.
+		This provides the C++ API interface to aria2 functionality.
+		Include file: <aria2/aria2.h>
+		Link with: -laria2
+

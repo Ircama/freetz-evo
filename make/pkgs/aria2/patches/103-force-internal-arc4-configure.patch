@@ -1,0 +1,12 @@
+--- configure
++++ configure
+@@ -22645,7 +22645,8 @@
+ if test "x$have_libnettle" = "xyes" ||
+    test "x$have_libgcrypt" = "xyes" ||
+    test "x$have_openssl" = "xyes"; then
+-   if false; then
++printf "%s\n" "#define USE_INTERNAL_ARC4 1" >>confdefs.h
++   if true; then
+   USE_INTERNAL_ARC4_TRUE=
+   USE_INTERNAL_ARC4_FALSE='#'
+ else
