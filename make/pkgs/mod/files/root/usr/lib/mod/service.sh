@@ -15,9 +15,9 @@ EOF
 
 STAT_SERVICE_URL=$(href mod daemons)
 stat_button() {
-	local pkg=$1 daemon=$2 cmd=$3 active=$4
+	local pkg=$1 daemon=$2 action=$3 label=$4 active=$5
 	if ! $active; then disabled=" disabled"; else disabled=""; fi
-	echo "<td><form class='btn' action='${STAT_SERVICE_URL}/$pkg/$daemon' method='post'> <input type='submit' name='cmd' value='$cmd'$disabled> </form></td>"
+	echo "<td><form class='btn' action='${STAT_SERVICE_URL}/$pkg/$daemon' method='post'><button type='submit' name='cmd' value='$action'$disabled>$label</button></form></td>"
 }
 
 stat_packagelink() {
@@ -83,9 +83,9 @@ stat_line() {
 	if $disable; then
 		start=false; stop=false
 	fi
-	stat_button "$pkg" "$daemon" "$(lang de:"start" en:"start")" $start
-	stat_button "$pkg" "$daemon" "$(lang de:"stop" en:"stop")" $stop
-	stat_button "$pkg" "$daemon" "$(lang de:"restart" en:"restart")" $stop
+	stat_button "$pkg" "$daemon" start "$(lang de:"Start" en:"Start")" $start
+	stat_button "$pkg" "$daemon" stop "$(lang de:"Stop" en:"Stop")" $stop
+	stat_button "$pkg" "$daemon" restart "$(lang de:"Neustart" en:"Restart")" $stop
 
 	if [ "$MOD_SHOW_MEMORY_USAGE" = yes ] && [ $class = running ]; then
 		pid="$(cat /var/run/$daemon.pid 2>/dev/null)"
