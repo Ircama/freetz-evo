@@ -19,8 +19,10 @@ $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_10),5.10,5
 
 $(PKG)_PATCH_PRE_CMDS += chmod -R u+w .;
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/uuudmap.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/ubitcount.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/umg_data.h) .;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\n/*\n * Stub implementations for functions not available in PERL_MICRO\n */\n\nvoid\nPerl_optimize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_finalize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_peep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_rpeep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}' >> op.c;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\n#ifndef PerlProc_pipe_cloexec\n#ifdef HAS_PIPE2\n#define PerlProc_pipe_cloexec(fd)	pipe2((fd), O_CLOEXEC)\n#else\n#define PerlProc_pipe_cloexec(fd)	pipe(fd)\n#endif\n#endif' >> iperlsys.h;)
+ifeq ($(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),y)
+$(PKG)_PATCH_POST_CMDS += echo -e '\n/*\n * Stub implementations for functions not available in PERL_MICRO\n */\n\nvoid\nPerl_optimize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_finalize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_peep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_rpeep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}' >> op.c;
+$(PKG)_PATCH_POST_CMDS += echo -e '\n#ifndef PerlProc_pipe_cloexec\n#ifdef HAS_PIPE2\n#define PerlProc_pipe_cloexec(fd)	pipe2((fd), O_CLOEXEC)\n#else\n#define PerlProc_pipe_cloexec(fd)	pipe(fd)\n#endif\n#endif' >> iperlsys.h;
+endif
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub register_categories {\n    # Stub for microperl\n}' >> lib/warnings.pm;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub enabled {\n    # Stub for microperl - always return 0\n    return 0;\n}\nsub warn {\n    # Stub for microperl\n}\nsub warnif {\n    # Stub for microperl\n}' >> lib/warnings.pm;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub onBOOT {\n    # Stub for microperl\n}' >> lib/Encode.pm;)
@@ -32,8 +34,6 @@ $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Carp.pm) lib/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Fcntl.pm) lib/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Exporter && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Exporter/Heavy.pm) lib/Exporter/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/feature.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/File && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/File/Basename.pm) lib/File/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/feature.pm) lib/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/File && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/File/Basename.pm) lib/File/;)
 
