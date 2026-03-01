@@ -42,6 +42,12 @@ $($(PKG)_BINARY) $($(PKG)_POSIX_BINARY): $($(PKG)_DIR)/.configured
 		all
 
 $($(PKG)_STAGING_BINARY) $($(PKG)_POSIX_STAGING_BINARY): $($(PKG)_BINARY) $($(PKG)_POSIX_BINARY)
+	# Create unversioned dev symlinks that libtool --mode=relink needs when
+	# relinking pcretest/pcregrep during a parallel install.  In a parallel
+	# build these may not exist yet, causing ld to fail with
+	# "cannot find ./.libs/libpcreposix.so".
+	-ln -sf $($(PKG)_LIBNAME)       $($(PKG)_DIR)/.libs/libpcre.so
+	-ln -sf $($(PKG)_POSIX_LIBNAME) $($(PKG)_DIR)/.libs/libpcreposix.so
 	$(SUBMAKE) -C $(PCRE_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
