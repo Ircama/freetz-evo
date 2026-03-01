@@ -16,7 +16,7 @@ $(PKG)_LIBS_BUILD := $($(PKG)_LIBS_SHORT:%=$($(PKG)_DIR)/src/lib%.so)
 $(PKG)_LIBS_STAGING := $($(PKG)_LIBS_SHORT:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.so)
 $(PKG)_LIBS_TARGET := $($(PKG)_LIBS_SHORT:%=$($(PKG)_TARGET_DIR)/lib%.so)
 
-$(PKG)_DEPENDS_ON += curl expat
+$(PKG)_DEPENDS_ON += curl expat gennmtab-host
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
@@ -27,24 +27,7 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-cplusplus
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 
-# Build gennmtab for host first (needed for cross-compilation)
-$($(PKG)_DIR)/.gennmtab_built: $($(PKG)_DIR)/.unpacked
-	@echo ">>> Building host gennmtab for xmlrpc-c" $(SILENT)
-	(cd $(XMLRPC_DIR) && \
-		./configure \
-			--prefix=/usr \
-			--disable-libxml2-backend \
-			--disable-wininet-client \
-			--disable-curl-client \
-			--disable-cplusplus && \
-		$(MAKE) -C lib/expat/gennmtab gennmtab && \
-		mkdir -p tools && \
-		cp lib/expat/gennmtab/gennmtab tools/gennmtab-host \
-	) $(SILENT)
-	touch $@
-
-# Reconfigure for cross-compilation
-$($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.gennmtab_built
+$($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
 	(cd $(XMLRPC_DIR); $(RM) -r config.cache; \
 		$(TARGET_CONFIGURE_ENV) \
 		AR="$(TARGET_AR)" \
@@ -55,7 +38,7 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.gennmtab_built
 			--target=$(GNU_TARGET_NAME) \
 			--prefix=/usr \
 			$($(PKG)_CONFIGURE_OPTIONS) && \
-		find . -name Makefile -exec sed -i "s|../gennmtab/gennmtab|$$PWD/tools/gennmtab-host|g" {} \; \
+		find . -name Makefile -exec sed -i "s|../gennmtab/gennmtab|$(TOOLS_DIR)/gennmtab|g" {} \; \
 	) $(SILENT)
 	touch $@
 
