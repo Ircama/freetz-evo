@@ -45,6 +45,15 @@ if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
 		endchoice
 	endif # FREETZ_LIB_libcurl_WITH_SSL
 
+	config FREETZ_LIB_libcurl_WITH_CA_BUNDLE
+		bool "Enable CA-bundle default path"
+		depends on FREETZ_LIB_libcurl_WITH_SSL
+		default y
+		select FREETZ_PACKAGE_CA_BUNDLE
+		help
+			When enabled, libcurl will be configured to use the system CA
+			bundle path (/etc/ssl/certs/ca-bundle.crt) by default at build time.
+
 	comment "WARNING: Before version 8.16 MbedTLS v2 is required"
 		depends on FREETZ_LIB_libcurl_WITH_VERSION_ABANDON && FREETZ_LIB_libcurl_WITH_MBEDTLS &&  FREETZ_MBEDTLS_VERSION_306_MIN
 	comment "WARNING: Since version 8.16 MbedTLS v3 is required"

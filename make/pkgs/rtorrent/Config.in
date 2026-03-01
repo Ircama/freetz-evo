@@ -13,7 +13,7 @@ menuconfig FREETZ_PACKAGE_RTORRENT
 	select FREETZ_LIB_libxml2                 if !FREETZ_PACKAGE_RTORRENT_STATIC
 	select FREETZ_LIB_libncursesw             if !FREETZ_PACKAGE_RTORRENT_STATIC
 	select FREETZ_LIB_libz                    if !FREETZ_PACKAGE_RTORRENT_STATIC
-	select FREETZ_PACKAGE_CA_BUNDLE
+	select FREETZ_LIB_libcurl_WITH_CA_BUNDLE if !FREETZ_PACKAGE_RTORRENT_STATIC
 	help
 		rTorrent is a console-based BitTorrent client with optional ruTorrent web interface.
 
