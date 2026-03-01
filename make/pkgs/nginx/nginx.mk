@@ -19,6 +19,9 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_SSL
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_HTTP_V2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_STREAM
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_GZIP_STATIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_HTTP_REWRITE
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_WITH_HTTP_GZIP
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_AARCH64
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_CONF_PATH
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_PID_PATH
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_ERROR_LOG_PATH
@@ -27,8 +30,17 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NGINX_HTTP_LOG_PATH
 NGINX_EXTRA_CFLAGS:=-ffunction-sections -fdata-sections
 NGINX_EXTRA_LDFLAGS:=-Wl,--gc-sections
 
+ifeq ($(strip $(FREETZ_PACKAGE_NGINX_WITH_HTTP_REWRITE)),y)
 $(PKG)_DEPENDS_ON += pcre
+else
+$(PKG)_CONFIGURE_OPTIONS += --without-http_rewrite_module
+endif
+
+ifeq ($(strip $(FREETZ_PACKAGE_NGINX_WITH_HTTP_GZIP)),y)
 $(PKG)_DEPENDS_ON += zlib
+else
+$(PKG)_CONFIGURE_OPTIONS += --without-http_gzip_module
+endif
 
 ifeq ($(strip $(FREETZ_PACKAGE_NGINX_WITH_SSL)),y)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_OPENSSL_SHORT_VERSION
@@ -57,14 +69,28 @@ $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_have_map_anon=yes;
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_have_map_devzero=yes;
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_have_sysvshm=yes;
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_have_posix_sem=yes;
+# sizeof values differ between 32-bit and 64-bit targets
+# see include/config.site/_common-linux-uclibc{32,64}
+ifeq ($(strip $(FREETZ_TARGET_ARCH_AARCH64)),y)
+NGINX_SIZEOF_LONG   := 8
+NGINX_SIZEOF_VOID_P := 8
+NGINX_SIZEOF_SIZE_T := 8
+NGINX_SIZEOF_TIME_T := 8
+else
+NGINX_SIZEOF_LONG   := 4
+NGINX_SIZEOF_VOID_P := 4
+NGINX_SIZEOF_SIZE_T := 4
+NGINX_SIZEOF_TIME_T := 4
+endif
+
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_int=4;
-$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_long=4;
+$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_long=$(NGINX_SIZEOF_LONG);
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_long_long=8;
-$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_void_p=4;
+$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_void_p=$(NGINX_SIZEOF_VOID_P);
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_sig_atomic_t=4;
-$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_size_t=4;
+$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_size_t=$(NGINX_SIZEOF_SIZE_T);
 $(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_off_t=8;
-$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_time_t=4;
+$(PKG)_CONFIGURE_PRE_CMDS += export ngx_force_sizeof_time_t=$(NGINX_SIZEOF_TIME_T);
 
 # Nginx configure options (nginx doesn't use standard autoconf, so we specify only what it supports)
 $(PKG)_CONFIGURE_OPTIONS += --prefix=/usr
@@ -73,16 +99,16 @@ $(PKG)_CONFIGURE_OPTIONS += --conf-path=$(call qstrip,$(FREETZ_PACKAGE_NGINX_CON
 $(PKG)_CONFIGURE_OPTIONS += --error-log-path=$(call qstrip,$(FREETZ_PACKAGE_NGINX_ERROR_LOG_PATH))
 $(PKG)_CONFIGURE_OPTIONS += --http-log-path=$(call qstrip,$(FREETZ_PACKAGE_NGINX_HTTP_LOG_PATH))
 $(PKG)_CONFIGURE_OPTIONS += --pid-path=$(call qstrip,$(FREETZ_PACKAGE_NGINX_PID_PATH))
-$(PKG)_CONFIGURE_OPTIONS += --lock-path=/var/run/nginx.lock
+$(PKG)_CONFIGURE_OPTIONS += --lock-path=/var/run/nginx/nginx.lock
 $(PKG)_CONFIGURE_OPTIONS += --http-client-body-temp-path=/tmp/nginx/client_body
 $(PKG)_CONFIGURE_OPTIONS += --http-proxy-temp-path=/tmp/nginx/proxy
 $(PKG)_CONFIGURE_OPTIONS += --http-fastcgi-temp-path=/tmp/nginx/fastcgi
 $(PKG)_CONFIGURE_OPTIONS += --http-uwsgi-temp-path=/tmp/nginx/uwsgi
 $(PKG)_CONFIGURE_OPTIONS += --http-scgi-temp-path=/tmp/nginx/scgi
-$(PKG)_CONFIGURE_OPTIONS += --user=root
-$(PKG)_CONFIGURE_OPTIONS += --group=root
+$(PKG)_CONFIGURE_OPTIONS += --user=nobody
+$(PKG)_CONFIGURE_OPTIONS += --group=nogroup
 
-# PCRE support
+# Compiler/linker flags for external libraries
 $(PKG)_CONFIGURE_OPTIONS += --with-cc-opt="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 $(PKG)_CONFIGURE_OPTIONS += --with-ld-opt="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"
 

@@ -17,7 +17,21 @@ config FREETZ_PACKAGE_NGINX_WITH_SSL
 	default y
 	help
 		Enable HTTPS/SSL support and HTTP/2.
+config FREETZ_PACKAGE_NGINX_WITH_HTTP_REWRITE
+        bool "HTTP rewrite module"
+        select FREETZ_LIB_libpcre
+        default y
+        help
+                Enables rewriting of requested URIs using PCRE regular
+                expressions. Requires the PCRE library.
 
+config FREETZ_PACKAGE_NGINX_WITH_HTTP_GZIP
+        bool "HTTP gzip compression module"
+        select FREETZ_LIB_libz
+        default y
+        help
+                Enables on-the-fly gzip compression of responses.
+                Requires zlib.
 config FREETZ_PACKAGE_NGINX_WITH_STUB_STATUS
 	bool "Stub status module"
 	default y
@@ -233,9 +247,7 @@ config FREETZ_PACKAGE_NGINX_CONF_PATH
 
 config FREETZ_PACKAGE_NGINX_PID_PATH
 	string "PID file path"
-	default "/var/run/nginx.pid"
-	help
-		Path to the nginx PID file.
+        default "/var/run/nginx/nginx.pid"
 
 config FREETZ_PACKAGE_NGINX_ERROR_LOG_PATH
 	string "Error log path"
