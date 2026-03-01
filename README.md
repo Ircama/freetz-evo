@@ -79,6 +79,8 @@ to the target staging directory instead of the host.
 | **make_package workflow** | Advanced GitHub Actions workflow for per-package build testing with matrix parallelism and detailed failure diagnostics. |
 | **sync-upstream workflow** | Automated workflow to merge upstream Freetz-NG changes into Freetz-EVO on a schedule. |
 | **AI translation** | Automatic translation of web UI labels to foreign languages via LLM, with curated override cache. |
+| **ssh_firmware_update.py** | Python tool to flash a Freetz firmware image to a FRITZ!Box over SSH/SCP, emulating the web update process with interactive/batch modes, progress bars, dry-run and debug options. Merged upstream. |
+| **make_progress_monitor.sh** | Bash script to monitor Freetz cross-compilation build progress in real time (run alongside `make` in a second terminal). Merged upstream. |
 
 ---
 
@@ -120,6 +122,12 @@ to the target staging directory instead of the host.
 ```
   cd ~/freetz-evo
   tools/push_firmware -h
+```
+
+### Update freetz firmware via SSH:
+```
+  cd ~/freetz-evo
+  tools/ssh_firmware_update.py --host <myIP> --password <myPassword> --batch
 ```
 
 ### Show GIT states:
