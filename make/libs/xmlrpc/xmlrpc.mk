@@ -38,7 +38,10 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
 			--target=$(GNU_TARGET_NAME) \
 			--prefix=/usr \
 			$($(PKG)_CONFIGURE_OPTIONS) && \
-		find . -name Makefile -exec sed -i "s|../gennmtab/gennmtab|$(TOOLS_DIR)/gennmtab|g" {} \; \
+		find . -name Makefile -exec sed -i \
+			-e "s|../gennmtab/gennmtab|$(abspath $(TOOLS_DIR))/gennmtab|g" \
+			-e "s|GENNMTAB = tools/gennmtab|GENNMTAB = $(abspath $(TOOLS_DIR))/gennmtab|g" \
+			{} \; \
 	) $(SILENT)
 	touch $@
 
