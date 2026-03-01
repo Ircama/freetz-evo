@@ -12,7 +12,6 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/lib/expat/gennmtab/gennmtab
 $(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/gennmtab
 
 
-$(TOOLS_SOURCE_DOWNLOAD)
 $(TOOLS_UNPACKED)
 $(TOOLS_CONFIGURED_NOP)
 
