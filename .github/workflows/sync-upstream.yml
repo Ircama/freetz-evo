@@ -1,0 +1,276 @@
+# .github/workflows/sync-upstream.yml
+#
+# Sync freetz-evo with upstream Freetz-NG/freetz-ng
+#
+# Strategy: merge-based (not rebase) to preserve history, avoid force-push,
+# and keep master always clean.
+#
+# Flow:
+#   1. Update 'upstream-mirror' branch (exact copy of upstream/master)
+#   2. Try merge into a staging branch 'sync/upstream-YYYYMMDD'
+#   3. If clean → fast-forward master
+#   4. If conflict → open GitHub Issue, master untouched
+#
+# The 'upstream-mirror' branch is useful for:
+#   - Quick diffs:  git diff master..upstream-mirror
+#   - Seeing what upstream changed since last sync
+#   - Manual conflict resolution base
+
+name: Sync Upstream freetz-ng
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'          # every Monday at 06:00 UTC
+  workflow_dispatch:               # manual trigger from Actions tab
+    inputs:
+      dry_run:
+        description: 'Dry run (do not push to master)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      UPSTREAM_REPO: https://github.com/Freetz-NG/freetz-ng.git
+      UPSTREAM_BRANCH: master
+      LOCAL_BRANCH: master
+      MIRROR_BRANCH: upstream-mirror
+
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.LOCAL_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity
+        run: |
+          git config user.name  "freetz-evo-bot"
+          git config user.email "freetz-evo-bot@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM_REPO" 2>/dev/null || true
+          git fetch upstream "$UPSTREAM_BRANCH" --no-tags
+          echo "UPSTREAM_SHA=$(git rev-parse upstream/$UPSTREAM_BRANCH)" >> "$GITHUB_ENV"
+          echo "Upstream HEAD: $(git rev-parse --short upstream/$UPSTREAM_BRANCH)"
+
+      # ── 1. Update upstream-mirror branch ──────────────────────────
+      - name: Update upstream-mirror branch
+        run: |
+          # Create or reset upstream-mirror to match upstream exactly
+          if git show-ref --verify --quiet "refs/heads/$MIRROR_BRANCH"; then
+            git branch -f "$MIRROR_BRANCH" "upstream/$UPSTREAM_BRANCH"
+          else
+            git branch "$MIRROR_BRANCH" "upstream/$UPSTREAM_BRANCH"
+          fi
+          git push origin "$MIRROR_BRANCH" --force-with-lease
+
+      # ── 2. Check if sync is needed ───────────────────────────────
+      - name: Check if already up-to-date
+        id: check
+        run: |
+          MERGE_BASE=$(git merge-base "$LOCAL_BRANCH" "upstream/$UPSTREAM_BRANCH")
+          UPSTREAM_HEAD=$(git rev-parse "upstream/$UPSTREAM_BRANCH")
+
+          if [ "$MERGE_BASE" = "$UPSTREAM_HEAD" ]; then
+            echo "already_synced=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Already up-to-date with upstream."
+          else
+            echo "already_synced=false" >> "$GITHUB_OUTPUT"
+            # Count new upstream commits
+            NEW_COMMITS=$(git rev-list --count "$MERGE_BASE".."upstream/$UPSTREAM_BRANCH")
+            echo "new_commits=$NEW_COMMITS" >> "$GITHUB_OUTPUT"
+            echo "📦 $NEW_COMMITS new upstream commits to merge."
+          fi
+
+      # ── 3. Attempt merge on staging branch ──────────────────────
+      - name: Create staging branch and attempt merge
+        if: steps.check.outputs.already_synced != 'true'
+        id: merge
+        run: |
+          DATE_TAG=$(date +%Y%m%d-%H%M%S)
+          SYNC_BRANCH="sync/upstream-${DATE_TAG}"
+          echo "sync_branch=$SYNC_BRANCH" >> "$GITHUB_OUTPUT"
+
+          # Create staging branch from current master
+          git checkout -b "$SYNC_BRANCH" "$LOCAL_BRANCH"
+
+          # Attempt merge
+          if git merge "upstream/$UPSTREAM_BRANCH" \
+               --no-edit \
+               -m "Merge upstream freetz-ng ($(date +%Y-%m-%d))
+
+          Synced with Freetz-NG/freetz-ng@${UPSTREAM_SHA:0:12}
+          New upstream commits: ${{ steps.check.outputs.new_commits }}
+          Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; then
+
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Merge succeeded without conflicts."
+          else
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+
+            # Collect conflicted files for the issue
+            CONFLICTED=$(git diff --name-only --diff-filter=U | head -50)
+            echo "conflicted_files<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$CONFLICTED" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+
+            CONFLICT_COUNT=$(git diff --name-only --diff-filter=U | wc -l)
+            echo "conflict_count=$CONFLICT_COUNT" >> "$GITHUB_OUTPUT"
+
+            echo "❌ Merge conflicts detected in $CONFLICT_COUNT files."
+
+            # Abort merge to leave staging branch clean
+            git merge --abort
+          fi
+
+      # ── 4a. Success: push merge to master ────────────────────────
+      - name: Push merged result to master
+        if: |
+          steps.check.outputs.already_synced != 'true' &&
+          steps.merge.outputs.conflict != 'true' &&
+          github.event.inputs.dry_run != 'true'
+        run: |
+          # We're on the sync branch with the successful merge
+          # Update master to point here
+          git checkout "$LOCAL_BRANCH"
+          git merge --ff-only "${{ steps.merge.outputs.sync_branch }}"
+          git push --force-with-lease origin "$LOCAL_BRANCH"
+
+          # Clean up staging branch
+          git branch -d "${{ steps.merge.outputs.sync_branch }}" 2>/dev/null || true
+          echo "✅ Master updated successfully."
+
+      - name: Dry run notice
+        if: |
+          steps.check.outputs.already_synced != 'true' &&
+          steps.merge.outputs.conflict != 'true' &&
+          github.event.inputs.dry_run == 'true'
+        run: |
+          echo "🔍 DRY RUN: merge succeeded but was NOT pushed to master."
+          echo "  Sync branch: ${{ steps.merge.outputs.sync_branch }}"
+          echo "  New commits:  ${{ steps.check.outputs.new_commits }}"
+
+      # ── 4b. Conflict: create GitHub Issue ────────────────────────
+      - name: Create conflict issue
+        if: |
+          steps.check.outputs.already_synced != 'true' &&
+          steps.merge.outputs.conflict == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const conflictedFiles = `${{ steps.merge.outputs.conflicted_files }}`;
+            const conflictCount = '${{ steps.merge.outputs.conflict_count }}';
+            const upstreamSha = '${{ env.UPSTREAM_SHA }}'.substring(0, 12);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            // Check if there's already an open sync conflict issue
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'upstream-sync-conflict',
+              per_page: 1,
+            });
+
+            const title = `⚠️ Upstream sync conflict (${new Date().toISOString().split('T')[0]})`;
+            const body = `## Upstream sync failed — merge conflicts detected
+
+            **Upstream commit:** \`Freetz-NG/freetz-ng@${upstreamSha}\`
+            **Conflicting files:** ${conflictCount}
+            **Workflow run:** [View logs](${runUrl})
+
+            ### Conflicted files
+            \`\`\`
+            ${conflictedFiles}
+            \`\`\`
+
+            ### Resolution steps
+
+            \`\`\`bash
+            # 1. Fetch upstream
+            git fetch upstream master
+
+            # 2. Update your local upstream-mirror
+            git checkout upstream-mirror
+            git reset --hard upstream/master
+
+            # 3. Create a sync branch from master
+            git checkout master
+            git checkout -b sync/manual-$(date +%Y%m%d)
+
+            # 4. Merge and resolve conflicts
+            git merge upstream-mirror
+            # ... resolve conflicts ...
+            git add .
+            git merge --continue
+
+            # 5. Verify everything builds
+            # make menuconfig && make
+
+            # 6. Merge into master
+            git checkout master
+            git merge --ff-only sync/manual-$(date +%Y%m%d)
+            git push origin master
+
+            # 7. Close this issue
+            \`\`\`
+
+            > **Note:** \`master\` was NOT modified. It remains clean and stable.
+            `;
+
+            if (existingIssues.data.length > 0) {
+              // Update existing issue with new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssues.data[0].number,
+                body: body,
+              });
+              console.log(`Updated existing issue #${existingIssues.data[0].number}`);
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['upstream-sync-conflict'],
+              });
+              console.log('Created new conflict issue.');
+            }
+
+      # ── 5. Summary ──────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Sync Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ steps.check.outputs.already_synced }}" = "true" ]; then
+            echo "✅ **Already up-to-date** with upstream." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.merge.outputs.conflict }}" = "true" ]; then
+            echo "❌ **Merge conflicts** detected in ${{ steps.merge.outputs.conflict_count }} files." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "A GitHub Issue has been created with resolution instructions." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "${{ steps.merge.outputs.conflicted_files }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "✅ **Merged ${{ steps.check.outputs.new_commits }} upstream commits** into master." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Upstream: \`${UPSTREAM_SHA:0:12}\`" >> "$GITHUB_STEP_SUMMARY"
