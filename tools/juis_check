@@ -45,10 +45,10 @@ Variables:
 	Buildtype	1 (1000 for --down)	Common values: "1"=retail, "1001"=labor, "1000"=inhaus
 	Serial		[random]		Example: "123456789ABC"
 	Nonce		[random]		Example: "123456789aBcDeEfGhIjkL=="
-	Flag		[shuffle]		If you do not want to set a flag use "empty", for docsis devices "cable_retail" is added.
+	Flag		[shuffle]		If you do not want to set a flag use "empty", separate multiple by a space, for docsis devices "cable_retail" is added.
 	UserAgent	[shuffle]		Values: "Box", "TestClient" or "BoxInternetCheck"
 	Provider	[shuffle]		Examples: "tonline", "vodafone2_vdsl", "vodafone2_adsl", "1und1", "otwored", "empty" (if you want no value)
-	ProviderName	[shuffle]		Examples: "Telekom", "Vodafone", "1&1 Telecom GmbH", "o2", "empty" (if you want no value)
+	ProviderName	[shuffle]		Examples: "Telekom", "Vodafone", "1&1 Telecom GmbH", "o2", "empty" (if you want no value), "notset" (don't add variable)
 	ManualRequest	[shuffle]		Values: "true" or "false"
 	UpdateConfig	[shuffle]		Values: "1" or "3"
 	DHW (dect)	[mandatory]		The MHW code of the device, eg "06.08" for Dect 302
@@ -79,12 +79,11 @@ exit
 js() { [ -e "$1" ] && sed -rn "s/^<.:$2>(.*)<.*/\1/p" "$1" ; }
 
 main() {
-	local x soap avmca url host sdir docsis flags Envelope body post cache info payload day ser
+	local x soap avmca url port host sdir docsis flags Envelope body post cache info payload day ser
 	local line='################################################################'
 	local type='text/xml; charset="utf-8"'
 	local zwsp="$(printf '\342\200\212')"
 	#soap='SOAPAction: "http://jason.avm.de/updatecheck/BoxFirmwareUpdateCheck"'
-
 
 	[ -z "$Nonce" ] && Nonce="$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | base64)"
 
@@ -97,7 +96,7 @@ main() {
 	[ -z "$Provider" ] && Provider="$(echo 'null oma_ipclient oma_lan tonline vodafone2_vdsl vodafone2_adsl 1und1 otwored' | sed 's/ /\n/g' | shuf | head -n1 | grep -v '^null$')"
 	[ "$Provider" == "empty" ] && Provider=''
 
-	[ -z "$ProviderName" ] && ProviderName="$(echo 'Telekom Vodafone o2' | sed 's/ /\n/g' | shuf | head -n1)"
+	[ -z "$ProviderName" ] && ProviderName="$(echo 'notset null Telekom Vodafone o2' | sed 's/ /\n/g' | shuf | head -n1 | grep -v '^null$')"
 	[ "$ProviderName" == "empty" ] && ProviderName=''
 
 	[ -z "$Serial" ] && while [ "${#Serial}" != "12" ]; do Serial="$(hexdump -n6 -e '/1 "%02X"' /dev/urandom | sed 's/[^0-9A-F]//g')"; done
@@ -167,11 +166,14 @@ main() {
 		[ -e "/etc/avm_root_ca.pem"     ] && avmca="/etc/avm_root_ca.pem"
 		[ -e "/etc/jasonii_root_ca.pem" ] && avmca="/etc/jasonii_root_ca.pem"
 		host="jws.avm.de"              # https-cert matches hostname
+		port="443"
 	else
 		if [ "$HW" -lt 269 ] 2>/dev/null ; then
 			host="$HW.jws.avm.de"  # no wirldcard certificate
+			port="80"
 		else                           # https://github.com/PeterPawn/YourFritz/issues/66
 			host="jws.avm.de"      # since 7690 avm does not use hostnames anymore
+			port="443"
 		fi
 	fi
 
@@ -206,7 +208,7 @@ main() {
 <q:Lang>$Lang</q:Lang></e:DeviceInfo>"
 	fi
 
-if [ -n "$ProviderName" ]; then
+if [ "$ProviderName" != "notset" ]; then
 ProviderName="
 <q:ProviderName>$ProviderName</q:ProviderName>"
 fi
@@ -218,8 +220,8 @@ fi
 		[ -n "$docsis" ] && Flag="$Flag cable_retail"
 		[ -z "${Flag// /}" ] && Flag='empty'
 	fi
-for x in ${Flag//null/}; do flags="<q:Flag>${x/empty/}</q:Flag>
-$flags"; done
+for x in ${Flag//null/}; do flags="$flags
+<q:Flag>${x/empty/}</q:Flag>"; done
 flags="$(echo "$flags" | grep -v '^$')"
 
 body=$(cat << EOX
@@ -252,7 +254,7 @@ EOX
 
 post=$(cat << EOX
 POST /${url#*/} HTTP/1.1
-Host: ${url%%/*}:80
+Host: ${url%%/*}:${port}
 Content-Length: ${#body}
 Content-Type: ${type}
 ${soap}
@@ -265,7 +267,18 @@ EOX
 	[ "$DEV" == 'i' -o "$DEV" == 'a' ] && cache='/dev/null'
 
 	if [ "$SSL" == 'y' ]; then
-		resp="$(curl -s -X POST -H "${type}" ${soap:+-H $soap} -d "${body}" "https://${url}" --cacert "${avmca}" \
+#		resp="$(curl -v -s \
+		resp="$(curl -s \
+		  --http1.1 -X POST \
+		  -H "User-Agent:" \
+		  -H "Accept:" \
+		  -H "Host: ${url%%/*}:${port}" \
+		  -H "Content-Length: ${#body}" \
+		  -H "Content-Type: ${type}" \
+		  ${soap:+-H "$soap"} \
+		  -d "${body}" \
+		  "https://${url}" \
+		  --cacert "${avmca}" \
 		  | tee $cache | sed 's,><,>\n<,g' | sed 's,</.*,,g;s/.*>$//g')"
 	else
 		resp="$(echo -e "${post}" | nc ${url%%/*} 80 2>/dev/null \
@@ -275,15 +288,15 @@ EOX
 
 	case "$DEV" in
 		a)
-			URL="$(echo "$resp" | sed -n "s/^<ns3:DownloadURL>//p")"
+			URL="$(echo "$resp" | sed -n 's/^<ns3:DownloadURL>//p')"
 			[ -n "$URL" ] && ( [ "$CHK" == "DeviceFirmwareUpdateCheck" ] && echo "$DHW=$URL" || echo "$HW=$URL" )
 			;;
 		i)
-			URL="$(echo "$resp" | sed -n "s/^<ns3:DownloadURL>//p")"
+			URL="$(echo "$resp" | sed -n 's/^<ns3:DownloadURL>//p')"
 			[ -n "$URL" ] && echo "URL=$URL"
 			;;
 		s)
-			VER="$(echo "$resp" | sed -n "s/^<ns3:Version>//p")"
+			VER="$(echo "$resp" | sed -n 's/^<ns3:Version>//p')"
 			[ -n "$VER" -a "$VER" != "$Version" ] && echo "Found newer version: $VER" 1>&2 || echo "No newer version found." 1>&2
 			;;
 		*)
@@ -309,7 +322,7 @@ CHK='BoxFirmwareUpdateCheck'
 args() {
 	[ "${#*}" == '0' ] && help
 	local DEVA DEVI DEVS DEVD
-	for x in $*; do
+	for x in "$@"; do
 		l="${x%=*}"
 		r="${x#*=}"
 		[ "$x" == '-a' ] && DEVA='x'
@@ -324,7 +337,7 @@ args() {
 		[ "$x" == '--plain' ] && SSL='n'
 		[ "$x" == '--https' ] && SSL='y'
 		[ "$x" == "$l" ] && continue
-		eval $l="$r"
+		eval $l='"$r"'
 	done
 	[ -n "$DEVA" ] && DEV='a'
 	[ -n "$DEVI" ] && DEV='i'

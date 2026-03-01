@@ -1,5 +1,27 @@
 # Neuigkeiten
 
+  * __[2026-02-26](#2026-02-26)__<a id='2026-02-26'></a><br>
+    Es wurde ein neuer [Tag](https://github.com/Freetz-NG/freetz-ng/tags) `ng26020` erstellt.<br>
+    Ein Tag sollte wie in der [README](https://github.com/Freetz-NG/freetz-ng#or-clone-a-single-tag) beschrieben mit git ausgecheckt werden.<br>
+    Siehe [ng26020](https://github.com/Freetz-NG/freetz-ng/releases/tag/ng26020)<br>
+
+  * __[2026-02-25](#2026-02-25)__<a id='2026-02-25'></a><br>
+    Die Updateprüfung Juis liefert für Geräte ab HWR277 keine Ergebnisse mehr. Vermutlich hat AVM etwas<br>
+    an der Abfrage verändert. Jemand mit so einem Gerät müsste diese Abfrage mit tcpdump mitschneiden!<br>
+    Siehe [Discussions](https://github.com/orgs/Freetz-NG/discussions/1415)<br>
+
+  * __[2026-02-24](#2026-02-24)__<a id='2026-02-24'></a><br>
+    Die Architektur "armeb" funktioniert und wurde mit verschiedenen Cable 63xx Fritzboxen getestet.<br>
+    Von der 6340 fehlt noch eine Firmware mit Fritzos 6, zum Beispiel 115.06.04, 115.06.05 oder 115.06.31.<br>
+
+  * __[2026-01-24](#2026-01-24)__<a id='2026-01-24'></a><br>
+    Kurzer Überblick über den aktuellen Stand von Freetz-NG:<br>
+     - FritzOS 8.2 funktioniert soweit, es sind aber noch nicht alle Remove-Patches getestet (die die ich selbst nicht verwende).
+     - Es gibt momentan recht viel Pull-Requests für die teilweise noch einiges an Nacharbeit nötig ist. Dazu habe ich wenig bis keine Zeit.
+     - Die neue Architektur "armeb" für Cable 63xx Fritzboxen wurde hinzugefügt, bootet aber aus unbekanntem Grund noch nicht auf Hardware.
+       Bei diesen alten Fritzboxen wird die uClibc von AVM noch wegen kleinem Flashspeicher von Freetz ersetzt.
+     - Die neue Architektur "aarch64" für momentan nur 5690xgs wurde hinzugefügt, aber mangels Hardware nicht getestet und es gibt noch keine Sourcen von AVM.
+
   * __[2025-11-22](#2025-11-22)__<a id='2025-11-22'></a><br>
     Die Fritzbox 5690xgs ist die erste mit einm 64-Bit `aarch64 (le)` Linux-Kernel. Da es sich um einen ARM-Prozessor handelt<br>
     können keine 32-Bit Dateien mehr ausgeführt werden.<br>

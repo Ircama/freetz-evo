@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 7.5.3)
+$(call TOOLS_INIT, 7.5.4)
 $(PKG)_SOURCE:=dos2unix-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=28a4b0d9f9179da4e44c567b9c01f818b070a20827115fffd96f760dcfa0f3b2
+$(PKG)_HASH:=f811a2b9e4a0c936c61ef7c1732993d1820e5cf011f4d93861885ccb8101ca21
 $(PKG)_SITE:=@SF/dos2unix
 ### WEBSITE:=https://dos2unix.sourceforge.io/
 ### MANPAGE:=https://waterlan.home.xs4all.nl/dos2unix/man1/dos2unix.htm

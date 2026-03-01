@@ -4,7 +4,7 @@ SCRIPT="$(readlink -f $0)"
 PARENT="$(dirname $(dirname ${SCRIPT%/*}))"
 TOOLS="$PARENT/tools"
 CACHE="/tmp/.freetz-juis"
-CRAP_FILTER="5382169925"
+CRAP_FILTER="5382169925|4040-07.59"
 
 
 #crc32

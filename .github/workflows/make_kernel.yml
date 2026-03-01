@@ -105,7 +105,7 @@ jobs:
       options: --user 1001:1001
     needs: matrizifizieren
     strategy:
-      max-parallel: 25
+      max-parallel: 18
       fail-fast: false
       matrix:
         fritz: ${{ fromJson(needs.matrizifizieren.outputs.matrix) }}
@@ -184,6 +184,7 @@ jobs:
           echo 'FREETZ_SERIES_ALL=y'                                                                  >> .config
           echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                        >> .config
           echo '# FREETZ_DL_IMAGE_AT_LAST is not set'                                                 >> .config
+          echo '# FREETZ_ADD_INACTIVE_SYSTEM is not set'                                              >> .config
           echo 'FREETZ_MODULES_TEST=y'                                                                >> .config
           echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'    >> .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__DLIMG="${{ secrets.ACTIONS_IMAGE }}"'                     >> .config

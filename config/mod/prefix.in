@@ -24,6 +24,7 @@ config FREETZ_TYPE_PREFIX
 	default "1240_AX"           if FREETZ_TYPE_1240_W6
 	default "1260E"             if FREETZ_TYPE_1260_V1
 	default "1260_v2"           if FREETZ_TYPE_1260_V2
+	default "1610"              if FREETZ_TYPE_1610
 	default "1700"              if FREETZ_TYPE_1700
 	default "1750E"             if FREETZ_TYPE_1750
 	default "DVB-C"             if FREETZ_TYPE_1759
@@ -47,6 +48,7 @@ config FREETZ_TYPE_PREFIX
 	default "4040"              if FREETZ_TYPE_4040
 	default "4050"              if FREETZ_TYPE_4050
 	default "4060"              if FREETZ_TYPE_4060
+	default "4630"              if FREETZ_TYPE_4630
 	default "4690"              if FREETZ_TYPE_4690
 	default "5010"              if FREETZ_TYPE_5010
 	default "5050"              if FREETZ_TYPE_5050
@@ -77,7 +79,8 @@ config FREETZ_TYPE_PREFIX
 	default "6820_v3"           if FREETZ_TYPE_6820_V3
 	default "6820_v4"           if FREETZ_TYPE_6820_V4
 	default "6840"              if FREETZ_TYPE_6840
-	default "6850_4G"           if FREETZ_TYPE_6850_4G
+	default "6850_LTE"          if FREETZ_TYPE_6850_4G_V1
+	default "6850_4G"           if FREETZ_TYPE_6850_4G_V2
 	default "6850_5G"           if FREETZ_TYPE_6850_5G
 	default "6860"              if FREETZ_TYPE_6860
 	default "6842"              if FREETZ_TYPE_6842
@@ -123,6 +126,7 @@ config FREETZ_TYPE_PREFIX
 	default "7583_VDSL"         if FREETZ_TYPE_7583_V2
 	default "7590"              if FREETZ_TYPE_7590_W5
 	default "7590_AX"           if FREETZ_TYPE_7590_W6
+	default "7632"              if FREETZ_TYPE_7632
 	default "7682"              if FREETZ_TYPE_7682
 	default "7690"              if FREETZ_TYPE_7690
 	default "Gateway"           if FREETZ_TYPE_GATE

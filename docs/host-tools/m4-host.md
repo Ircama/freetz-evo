@@ -1,4 +1,4 @@
-# m4 1.4.20
+# m4 1.4.21
   - Homepage: [https://www.gnu.org/software/m4/](https://www.gnu.org/software/m4/)
   - Manpage: [https://www.gnu.org/software/m4/manual/index.html](https://www.gnu.org/software/m4/manual/index.html)
   - Changelog: [http://ftp.gnu.org/gnu/m4/](http://ftp.gnu.org/gnu/m4/)

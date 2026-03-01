@@ -18,7 +18,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ca-bundle 2025-12-02](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
-  * **[cmake 4.2.1](cmake-host.md)<a id='cmake-host'></a>**<br>
+  * **[cmake 4.2.3](cmake-host.md)<a id='cmake-host'></a>**<br>
 
   * **[config a2287c3](config-host.md)<a id='config-host'></a>**<br>
 
@@ -26,7 +26,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### D
 
-  * **[dos2unix 7.5.3](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
+  * **[dos2unix 7.5.4](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
 
   * **[dtc 1.7.2](dtc-host.md)<a id='dtc-host'></a>**<br>
 
@@ -36,7 +36,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### F
 
-  * **[fakeroot 1.37.1.2](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
+  * **[fakeroot 1.37.2](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
 
   * **[fastjar 0.98](fastjar-host.md)<a id='fastjar-host'></a>**<br>
 
@@ -54,7 +54,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### K
 
-  * **[kconfig 6.18](kconfig-host.md)<a id='kconfig-host'></a>**<br>
+  * **[kconfig 6.19](kconfig-host.md)<a id='kconfig-host'></a>**<br>
 
 ### L
 
@@ -70,11 +70,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### M
 
-  * **[m4 1.4.20](m4-host.md)<a id='m4-host'></a>**<br>
+  * **[m4 1.4.21](m4-host.md)<a id='m4-host'></a>**<br>
 
   * **[make 4.4.1](make-host.md)<a id='make-host'></a>**<br>
 
-  * **[meson 1.10.0](meson-host.md)<a id='meson-host'></a>**<br>
+  * **[meson 1.10.1](meson-host.md)<a id='meson-host'></a>**<br>
 
   * **[mklibs 0.1.45](mklibs-host.md)<a id='mklibs-host'></a>**<br>
 
@@ -86,7 +86,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ncftp 3.3.0](ncftp-host.md)<a id='ncftp-host'></a>**<br>
 
-  * **[ncurses 6.5-20250419](ncurses-host.md)<a id='ncurses-host'></a>**<br>
+  * **[ncurses 6.6](ncurses-host.md)<a id='ncurses-host'></a>**<br>
 
   * **[netkit-ftp 0.17-35](netkit-ftp-host.md)<a id='netkit-ftp-host'></a>**<br>
 
@@ -94,7 +94,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### O
 
-  * **[openssl 3.5.4](openssl-host.md)<a id='openssl-host'></a>**<br>
+  * **[openssl 3.5.5](openssl-host.md)<a id='openssl-host'></a>**<br>
 
 ### P
 
@@ -150,11 +150,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2025-12-09](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-02-24](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 
-  * **[uboot 2025.10](uboot-host.md)<a id='uboot-host'></a>**<br>
+  * **[uboot 2026.01](uboot-host.md)<a id='uboot-host'></a>**<br>
 
   * **[uimg 871930d](uimg-host.md)<a id='uimg-host'></a>**<br>
 

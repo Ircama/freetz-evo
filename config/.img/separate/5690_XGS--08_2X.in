@@ -12,8 +12,9 @@ config FREETZ_AVM_PROP_HWREV
 	string
 	default "295"
 
-config FREETZ_AVM_HAS_SIGNATURE
-	def_bool y
+config FREETZ_AVM_PROP_PRODUKT
+	string
+	default "Fritz_Box_HW295"
 
 config FREETZ_AVM_PROP_ALL_REGIONS
 	def_bool y
@@ -54,12 +55,12 @@ config FREETZ_AVM_HAS_LANGUAGE_nl
 config FREETZ_AVM_HAS_LANGUAGE_pl
 	def_bool y
 
+config FREETZ_AVM_HAS_SIGNATURE
+	def_bool y
+
 config FREETZ_AVM_SERIAL_CONSOLE_DEVICE
 	string
 	default "/dev/ttyS0"
-
-config FREETZ_AVM_PROP_BITS_64
-	def_bool y
 
 config FREETZ_AVM_HAS_IP_BINARY
 	def_bool y
@@ -233,6 +234,9 @@ config FREETZ_AVM_PROP_ARCH_LE
 	def_bool y
 
 config FREETZ_AVM_PROP_ARCH_AARCH64
+	def_bool y
+
+config FREETZ_AVM_PROP_BITS_64
 	def_bool y
 
 config FREETZ_AVM_PROP_GCC_10_5

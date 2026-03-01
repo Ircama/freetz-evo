@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 9.1.1952)
+$(call PKG_INIT_BIN, 9.2.0000)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=86c973528c5c33772d2969c13931d6abe137ab111ad53f0c6cdc97721895715a
+$(PKG)_HASH:=875875fb5988af3db0726bef9b048a559a9563aa0ecca8240e82057e8e5941c3
 $(PKG)_SITE:=https://github.com/vim/vim/archive/refs/tags
 ### WEBSITE:=https://www.vim.org/
 ### MANPAGE:=https://www.vim.org/docs.php

@@ -4,6 +4,7 @@ Latest changes
 
   - Freetz-NG
     * [devel](#devel)
+    * [ng26020](#ng26020)
     * [ng25090](#ng25090)
     * [ng25030](#ng25030)
     * [ng24080](#ng24080)
@@ -63,9 +64,26 @@ Latest changes
 ### devel
 
   - Build system:
+
+  - Host tools:
+
+  - AVM sources:
+
+  - Packages:
+
+  - Libraries:
+
+  - Firmware updates:
+    * Please see [FIRMWARES](FIRMWARES.md) for the list of currently supported devices and firmwares.
+
+### ng26020
+
+  - Build system:
     * binutils (kernel) 2.18/2.22/2.23.2/2.24/2.25.1/2.26.1/2.31.1/2.36.1/2.42/2.45.1
     * binutils (target) 2.22/2.23.2/2.24/2.25.1/2.26.1/2.31.1/2.36.1/2.43.1/2.45.1
-    * ccache 4.12.2
+    * ccache 4.12.3
+    * dl-toolchains r27868
+    * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.56
     * new architecture: aarch64
     * new architecture: aarch64_eb
     * new architecture: armeb
@@ -74,13 +92,17 @@ Latest changes
     * automake 1.18.1
     * ca-bundle 2025-12-02
     * config a2287c3
-    * cmake 4.2.1
-    * dos2unix 7.5.3
+    * cmake 4.2.3
+    * dos2unix 7.5.4
+    * fakeroot 1.37.2
     * file 5.46
     * gperf 3.3
-    * kconfig 6.18
-    * meson 1.10.0
+    * kconfig 6.19
+    * m4 1.4.21
+    * meson 1.10.1
+    * ncurses 6.6
     * ninja 1.13.2
+    * openssl 3.5.5
     * patchelf 0.14.5/0.18.0-b49de1b33
     * patchelf-target 0.14.5/0.15.0
     * pseudo 1.9.2
@@ -89,17 +111,24 @@ Latest changes
     * python3-jsonschema 4.25.1
     * python3-pip 25.3
     * python3-referencing 0.37.0
-    * tools 2025-12-09
-    * uboot 2025.10
+    * tools 2026-02-24
+    * uboot 2026.01
 
   - AVM sources:
     * 600      8.20 - 4.4.271
     * 1240 AX  8.20 - 5.4.213
     * 2400     8.20 - 4.4.271
+    * 3000 AX  8.20 - 5.4.213
+    * 5590     8.20 - 5.4.213
+    * 5690 XGS 8.20 - 5.4.293
+    * 6000     8.20 - 5.4.213
     * 6850 5G  8.20 - 4.4.271
     * 6860 5G  8.20 - 5.4.213
+    * 4050     8.21 - 5.4.213
+    * 4690     8.21 - 5.4.213
     * 7510     8.20 - 5.4.213
     * 7530     8.20 - 4.4.271
+    * 7690     8.20 - 5.4.213
     * Gateway  8.20 - 5.4.213
 
   - Scripts:
@@ -112,49 +141,65 @@ Latest changes
   - Packages:
     * ACME.sh 3.1.2
     * Apache2 2.4.66
-    * BIND 9.11.37/9.20.16
+    * BIND 9.11.37/9.20.17
     * Binutils 2.45.1
     * Bzip2 1.0.8
     * CA-bundle 2025-12-02
-    * Curl 8.12.1/8.17.0
+    * cpulimit 0.2
+    * Curl 8.12.1/8.18.0
+    * Dnsmasq 2.80/2.92
     * Dropbear 2025.89
     * file 5.46
-    * GNU Make 4.2.1/4.4.1
     * hostapd_cli 2.7/2.10/2.11
-    * ImageMagick 7.1.0-62/7.1.2-9
+    * ImageMagick 7.1.0-62/7.1.2-12
     * Info-ZIP 3.0
     * iPerf3 3.3/3.20
-    * ldd 0.1/1.0.55
+    * ldd 0.1/1.0.56
+    * Make 4.2.1/4.4.1
     * MTR 0.80/0.96
+    * Nano 8.7.1
+    * Net-SNMP 5.9.5.2
     * Nmap 4.76/5.51/7.98
     * OpenSSH 9.3p2/10.2p1
-    * OpenVPN 2.4.12/2.5.11/2.6.17
+    * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.19/3.5.5
+    * OpenVPN 2.4.12/2.5.11/2.6.19
     * PatchELF 0.18.0
+    * Privoxy 4.1.0
     * procps-ng 4.0.5
+    * pyLoad 0.4.x
     * Python 3.14.2
+    * socat 1.8.1.1
     * sslh 2.2.4/2.3.0
-    * strace 4.9/5.0/6.18
-    * Stunnel 5.76
+    * strace 4.9/5.0/6.19
+    * Stunnel 5.77
+    * tcpdump 4.1.1/4.99.6
     * tmux 3.6a
-    * Tor 0.4.8.21
+    * Tor 0.4.8.22
+    * Transmission 3.00/4.1.1
     * Unbound 1.24.2
     * UnRAR 6.1.7/7.2.1
-    * Vim 9.1.1952
+    * Vim 9.2.0000
     * Whois 5.6.5
 
   - Libraries:
-    * harfbuzz 12.2.0
+    * expat 2.7.4
+    * harfbuzz 12.3.2
     * libcap 2.49/2.77
     * libdeflate 1.25
-    * liburcu 0.15.4
+    * libpcap 1.1.1/1.10.6
+    * libpng 1.6.55
+    * liburcu 0.15.6
     * libxml2 2.15.1
     * libyaml 0.2.5
     * MbedTLS 2.7.19/2.28.10/3.6.5
+    * ncurses 6.6
+    * ncursesw 6.6
     * openjp2 2.5.4
     * pcre2 10.47
+    * zlib 1.3.2
 
   - Firmware updates:
-    * Please see [FIRMWARES](FIRMWARES.md) for the list of currently supported devices and firmwares.
+    * Please see [FIRMWARES](https://github.com/Freetz-NG/freetz-ng/blob/ng26020/docs/FIRMWARES.md) for the list of supported devices and firmwares.
 
 ### ng25090
 
@@ -486,7 +531,7 @@ Latest changes
     * OpenSSH 9.3p2/9.8p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.14
     * OpenVPN 2.4.12/2.5.11/2.6.13
-    * PCP client 1c783fb 
+    * PCP client 1c783fb
     * PCSC-lite 1.9.5/2.1.0
     * psl 0.21.5
     * socat 1.8.0.0
