@@ -15,6 +15,73 @@ Compared to Freetz-NG, Freetz-EVO includes GCC on-device compilation, nginx, rto
 aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
 Action for testing new developments, and many other new packages.
 
+---
+
+### Improvements over Freetz-NG
+
+#### New packages
+
+| Package | Description | Status |
+|---|---|---|
+| **aria2** / **AriaNg** / libcares | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
+| **rTorrent** / **ruTorrent** | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
+| **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
+| **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
+| **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too (merged) |
+| **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
+| **GCC On Device** | Full GCC toolchain for on-device compilation; optional externalization; removed gprofng for i686 compatibility. | EVO only |
+| **GitHub CLI** (`gh`) | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
+| **util-linux** | Dual-version support (2.36 / 2.40) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has basic version |
+| **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
+| **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | EVO only |
+| **cpulimit** | Limits the CPU usage of a process to a given percentage; prevents runaway processes from overloading the device. | merged upstream |
+| **microperl** 5.38 | Minimal Perl 5.38.2 interpreter (alongside legacy 5.10.1) with full stub library set for embedded use. | upstream has 5.38 too (merged) |
+| **zip** 3.0 (infozip) | Standard `zip` archiver for creating ZIP archives directly on the device. | upstream has infozip |
+| **gdb** 17.1 | GNU Debugger version 17.1 for on-device debugging of binaries and crash analysis. | merged upstream |
+| **patchelf** (target) | ELF binary patcher for fixing RPATH and dynamic linker paths on cross-compiled binaries. | merged upstream |
+| **binutils-tools** (`c++filt`, `elfedit`, `nm`, `objdump`) | Additional binutils utilities for binary inspection and symbol demangling on the device. | merged upstream |
+| **libnettle** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
+| **libzen** | Helper library required by MediaInfo for portable C++ utilities. | EVO only |
+| **libxmlrpc** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
+| **libcares** (c-ares) | Asynchronous DNS resolver library used by aria2 and curl. | EVO only |
+
+#### Python 2 third-party modules fix
+
+All 13 `python-*` cross-compilation modules (`python-bjoern`, `python-cffi`, `python-cheetah`,
+`python-pycurl`, `python-pycryptodome`, `python-pyopenssl`, etc.) were broken during cross-compilation
+due to missing environment variables. Freetz-EVO fixes `python-module-macros.mk.in` by properly
+setting `CC`, `CXX`, `LDSHARED`, `CFLAGS`, `PYTHONPATH`, and `build_ext --library-dirs` to point
+to the target staging directory instead of the host.
+
+#### Enhanced packages
+
+| Package | Enhancement |
+|---|---|
+| **curl** | Added CA-bundle toggle option; rTorrent uses the curl CA bundle for HTTPS validation. |
+| **pcre** | Fixed parallel install race condition; JIT disabled for kernel 2.6.39.3. |
+| **p7zip** | Uses `FREETZ_RPATH` for correct library path at runtime (merged upstream as PR #1433). |
+| **socat** | Fixed `posix_memalign` for old uClibc; added VSOCK compatibility for kernels < 4.8 (merged upstream). |
+| **bzip2** | Library porting for PHP dependency chain (merged upstream). |
+| **sqlite** | Disabled math functions for uClibc 0.9.28/29 compatibility (merged upstream as PR #1346). |
+| **iconv** / libiconv | Forced ABANDON version for uClibc 0.9.28 compatibility. |
+| **unrar** | Variable naming fix and version bump (merged upstream as PR #1384). |
+| **patchelf** | Synced host and target tools; used for RPATH fixing in Python and GCC toolchain. |
+| **binutils** | Fixed RPATH; disabled for armeb; c++filt / elfedit added (merged upstream). |
+| **ldd** | Bumped to version matching current uClibc toolchain (merged upstream). |
+| **RRDTool** | aarch64 support; no border fix for v1.2; no v1.2 without libart_lgpl (merged upstream). |
+| **libatomic** | Externalization with dynamic versioning for PHP dependency (merged upstream). |
+| **PSL** (libpsl) | Uses crosscompiling Python tool instead of host Python. |
+
+#### CI / tooling
+
+| Feature | Description |
+|---|---|
+| **make_package workflow** | Advanced GitHub Actions workflow for per-package build testing with matrix parallelism and detailed failure diagnostics. |
+| **sync-upstream workflow** | Automated workflow to merge upstream Freetz-NG changes into Freetz-EVO on a schedule. |
+| **AI translation** | Automatic translation of web UI labels to foreign languages via LLM, with curated override cache. |
+
+---
+
 ### Basic infos:
   * A web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
   * Default credentials for shell/ssh/telnet access are: `root`/`freetz`<br>
