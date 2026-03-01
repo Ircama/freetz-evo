@@ -316,14 +316,10 @@ cache_put() {
 	if [ $? -eq 0 ]; then
 		mv "$tmp_file" "$cache_file"
 	else
-		# Fallback: ricrea JSON se corrotto
-		echo '{}' | jq --arg key "$key" \
-		   --arg original "$original" \
-		   --arg translation "$translation" \
-		   --arg timestamp "$timestamp" \
-		   --arg service "$service" \
-		   --arg github_user "$github_user" \
-			'.[$key] = {"original": $original, "translation": $translation, "timestamp": $timestamp, "service": $service, "github_user": $github_user}' > "$cache_file"
+		# Fallback: skip this entry rather than recreating the file from scratch.
+		# Recreating would destroy all other cached translations whenever jq fails
+		# on an existing (possibly large) cache file.
+		echo "cache_put: jq failed for $cache_file, skipping save for key: $key" >&2
 		rm -f "$tmp_file"
 	fi
 	
@@ -884,10 +880,17 @@ translate() {
 		key=$(cache_key "$src_lang" "$tgt_lang" "$text" "$service")
 		local cached
 		if cached=$(cache_get "$key" "$tgt_lang" "$package"); then
-			# If a package is specified, mirror cache-hit into package-specific file
-			# so package cache files become visible even when data comes from base cache.
+			# If a package is specified, mirror cache-hit from base cache into
+			# package-specific file ONLY if not already there.
+			# Avoids rewriting existing entries which would update timestamps and
+			# risk data loss if jq fails (see cache_put fallback).
 			if [ -n "$package" ]; then
-				cache_put "$key" "$text" "$cached" "$tgt_lang" "$service" "$package"
+				local _pkgfile="${CACHE_BASE_DIR}/${tgt_lang}-${package}.json"
+				local _already_in_pkg
+				_already_in_pkg=$(jq -r --arg key "$key" '.[$key].translation // empty' "$_pkgfile" 2>/dev/null)
+				if [ -z "$_already_in_pkg" ]; then
+					cache_put "$key" "$text" "$cached" "$tgt_lang" "$service" "$package"
+				fi
 			fi
 			# Indicate cache hit for statistics
 			echo "from cache" >&2
