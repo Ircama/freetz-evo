@@ -179,11 +179,11 @@ main() {
 
 	#old: /Jason/UpdateCheck
 	sdir='/Jason/UpdateInfoService'
-	Envelope='xmlns:e="http://juis.avm.de/updateinfo" xmlns:q="http://juis.avm.de/request">'
+	Envelope='xmlns:e="http://juis.avm.de/updateinfo" xmlns:q="http://juis.avm.de/request"'
 
 	if [ "$CHK" == "BoxMessageCheck" ]; then
 		sdir='/Jason/MessageInfoService'
-		Envelope='xmlns:e="http://juis.avm.de/messageinfo" xmlns:q="http://juis.avm.de/request" xmlns:s="http://juis.avm.de/response">'
+		Envelope='xmlns:e="http://juis.avm.de/messageinfo" xmlns:q="http://juis.avm.de/request" xmlns:s="http://juis.avm.de/response"'
 	fi
 	
 	url="$host$sdir"
@@ -225,7 +225,7 @@ for x in ${Flag//null/}; do flags="$flags
 flags="$(echo "$flags" | grep -v '^$')"
 
 body=$(cat << EOX
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" $Envelope
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" $Envelope>
 <soap:Header/>
 <soap:Body>
 <e:$CHK>
