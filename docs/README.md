@@ -1,16 +1,18 @@
-# Welcome to Freetz-NG
-[![Freetz-NG](screenshots/000-XXX_Freetz-NG_screens_md.gif "Freetz-NG")](screenshots/000-XXX_Freetz-NG_screens.gif)<br>
+# Welcome to Freetz-EVO
+[![Freetz-EVO](screenshots/000-XXX_Freetz-NG_screens_md.gif "Freetz-EVO")](screenshots/000-XXX_Freetz-NG_screens.gif)<br>
 <br>
-Watch important changes and [NEWS](NEWS.md) about Freetz-NG.<br>
-Talk about everything around Freetz-NG at [DISCUSSIONS](https://github.com/Freetz-NG/freetz-ng/discussions).<br>
+**Freetz-EVO** is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) with GCC on-device compilation, nginx, rtorrent, ruTorrent, PHP, aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.<br>
+<br>
+Watch important changes and [NEWS](NEWS.md) about Freetz-EVO.<br>
+Talk about everything around Freetz-EVO at [DISCUSSIONS](https://github.com/Ircama/freetz-evo/discussions).<br>
 Check list of supported devices and [FIRMWARES](FIRMWARES.md).<br>
 Read [CHANGELOG](CHANGELOG.md) for all improvements and additions.<br>
-For download and quickstart instructions go to [README](https://github.com/Freetz-NG/freetz-ng/blob/master/README.md#readme).<br>
+For download and quickstart instructions go to [README](https://github.com/Ircama/freetz-evo/blob/master/README.md#readme).<br>
 These [PREREQUISITES](prerequisites/README.md) are mandatory to build an image.<br>
 How to [INSTALL](INSTALL.md) a firmware image to the device.<br>
-Things you could do to [SUPPORT](SUPPORT.md) Freetz-NG.<br>
+Things you could do to [SUPPORT](SUPPORT.md) Freetz-EVO.<br>
 Why the [ADDONS](ADDONS.md) of the "Digitale Elite" are not supported here.<br>
-Show current [STATS](stats/README.md) of Freetz-NG.<br>
+Show current [STATS](stats/README.md) of Freetz-EVO.<br>
 
 ### Listings
 [Packages](make/README.md)<br>
@@ -25,7 +27,8 @@ Show current [STATS](stats/README.md) of Freetz-NG.<br>
 [Ftp](ftp/README.md) - Downloads<br>
 
 ### Timeline
-[GitHub](https://github.com/Freetz-NG/freetz-ng/commits/master)<br>
+[GitHub](https://github.com/Ircama/freetz-evo/commits/master)<br>
+[GitHub upstream](https://github.com/Freetz-NG/freetz-ng/commits/master) (upstream)<br>
 [GitLab](https://gitlab.com/Freetz-NG/freetz-ng/commits/master) (Mirror)<br>
 [Bitbucket](https://bitbucket.org/Freetz-NG/freetz-ng/commits/branch/master) (Mirror)<br>
 

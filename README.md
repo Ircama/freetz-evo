@@ -1,21 +1,24 @@
-# Welcome to Freetz-NG
+# Welcome to Freetz-EVO
 
 ```
- _____              _            _   _  ____
-|  ___| __ ___  ___| |_ ____    | \ | |/ ___|
-| |_ | '__/ _ \/ _ \ __|_  /____|  \| | |  _
-|  _|| | |  __/  __/ |_ / /_____| |\  | |_| |
-|_|  |_|  \___|\___|\__/___|    |_| \_|\____|
+    ______               __             _______    ______
+   / ____/_______  ___  / /_____       / ____/ |  / / __ \
+  / /_  / ___/ _ \/ _ \/ __/_  /______/ __/  | | / / / / /
+ / __/ / /  /  __/  __/ /_  / //_____/ /___  | |/ / /_/ /
+/_/   /_/   \___/\___/\__/ /___/    /_____/  |___/\____/
 
 ```
 
-Freetz-NG is a fork of Freetz.
-More features - less bugs!
+Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). More features - less bugs!
+
+Compared to Freetz-NG, Freetz-EVO includes GCC on-device compilation, nginx, rtorrent, ruTorrent, PHP,
+aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
+Action for testing new developments, and many other new packages.
 
 ### Basic infos:
   * A web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
   * Default credentials for shell/ssh/telnet access are: `root`/`freetz`<br>
-  * For more see: [freetz-ng.github.io](https://freetz-ng.github.io/)
+  * For more see: [ircama.github.io/freetz-evo](https://ircama.github.io/freetz-evo/)
 
 ### Requirements:
   * You need an up to date Linux System with some [prerequisites](docs/prerequisites/README.md).
@@ -24,23 +27,23 @@ More features - less bugs!
 
 ### Clone the main branch:
 ```
-  git clone https://github.com/Freetz-NG/freetz-ng ~/freetz-ng
+  git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
 ```
 
 ### Or clone a single [tag](../../tags):
 ```
-  git clone https://github.com/Freetz-NG/freetz-ng ~/freetz-ng --single-branch --branch TAGNAME
+  git clone https://github.com/Ircama/freetz-evo ~/freetz-evo --single-branch --branch TAGNAME
 ```
 
 ### Install prerequisites:
 ```
-  cd ~/freetz-ng
+  cd ~/freetz-evo
   tools/prerequisites install # -y
 ```
 
 ### Build firmware:
 ```
-  cd ~/freetz-ng
+  cd ~/freetz-evo
   make menuconfig
   make
   # make help
@@ -48,7 +51,7 @@ More features - less bugs!
 
 ### Flash firmware:
 ```
-  cd ~/freetz-ng
+  cd ~/freetz-evo
   tools/push_firmware -h
 ```
 
@@ -80,12 +83,11 @@ More features - less bugs!
 
 ### Mirrors:
 ```
-  git clone https://gitlab.com/Freetz-NG/freetz-ng ~/freetz-ng
-  git clone https://bitbucket.org/Freetz-NG/freetz-ng ~/freetz-ng
+  git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
 ```
 
 ### Documentation:
-See [https://freetz-ng.github.io/](https://freetz-ng.github.io/) (or [docs/](docs/README.md)).
+See [https://ircama.github.io/freetz-evo/](https://ircama.github.io/freetz-evo/) (or [docs/](docs/README.md)).
 
 
 <details>
@@ -99,8 +101,8 @@ Please make sure you fork the repo and change the clone URL in the example below
     - Preparations (only required once):
 
     ```bash
-    git clone https://github.com/YOUR-USERNAME/freetz-ng
-    cd freetz-ng
+    git clone https://github.com/YOUR-USERNAME/freetz-evo
+    cd freetz-evo
     sudo apt install python3-pip python3-venv
     python3 -m venv .venv
     source .venv/bin/activate
@@ -123,8 +125,8 @@ Please make sure you fork the repo and change the clone URL in the example below
     - Preparations (only required once):
 
     ```bash
-    git clone https://github.com/YOUR-USERNAME/freetz-ng
-    cd freetz-ng
+    git clone https://github.com/YOUR-USERNAME/freetz-evo
+    cd freetz-evo
     pip install --user -r .github/mkdocs/requirements.txt
     ```
 
