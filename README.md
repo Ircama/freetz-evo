@@ -62,7 +62,10 @@ to the target staging directory instead of the host.
 | Package | Enhancement |
 |---|---|
 | **curl** | Added CA-bundle toggle option; rTorrent uses the curl CA bundle for HTTPS validation. |
-| **pcre** | Fixed parallel install race condition; JIT disabled for kernel 2.6.39.3. |
+| **pcre** | Fixed parallel install race condition; removed stray dev/test files; fixed double-indirection via `$(PKG)` causing stray root symlinks; JIT disabled for kernel 2.6.39.3. |
+| **iptables** | Fixed missing `$` in `external.files` for `VERSION_KERNEL4` conditions, preventing broken externalization. |
+| **ffmpeg** | Fixed missing `$` in `external.files` for `VERSION_ABANDON` condition, preventing broken externalization. |
+| **fwmod** | Augmented `Module.symvers` with inter-module CRC symbols before the `depmod` check; pre-existing AVM inter-module symbol version disagreements are now ignored to avoid false build failures. |
 | **p7zip** | Uses `FREETZ_RPATH` for correct library path at runtime (merged upstream as PR #1433). |
 | **socat** | Fixed `posix_memalign` for old uClibc; added VSOCK compatibility for kernels < 4.8 (merged upstream). |
 | **bzip2** | Library porting for PHP dependency chain (merged upstream). |
