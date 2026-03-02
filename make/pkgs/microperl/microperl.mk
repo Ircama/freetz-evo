@@ -20,10 +20,7 @@ $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_10),5.10,5
 $(PKG)_PATCH_PRE_CMDS += chmod -R u+w .;
 ifeq ($(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),y)
 $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/uuudmap.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/ubitcount.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/umg_data.h) .;
-$(PKG)_PATCH_POST_CMDS += echo -e "\n/*\n * Stub implementations for functions not available in PERL_MICRO\n */\n\nvoid\nPerl_optimize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_finalize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_peep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_rpeep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}" >> op.c;
-$(PKG)_PATCH_POST_CMDS += echo -e "\nsub register_categories {\n    # Stub for microperl\n}" >> lib/warnings.pm;
-$(PKG)_PATCH_POST_CMDS += echo -e "\nsub enabled {\n    # Stub for microperl - always return 0\n    return 0;\n}\nsub warn {\n    # Stub for microperl\n}\nsub warnif {\n    # Stub for microperl\n}" >> lib/warnings.pm;
-$(PKG)_PATCH_POST_CMDS += echo -e "\nsub onBOOT {\n    # Stub for microperl\n}" >> lib/Encode.pm;
+$(PKG)_PATCH_POST_CMDS += sh $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/apply_stubs.sh);
 $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Errno.pm) lib/;
 $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Storable.pm) lib/;
 $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/POSIX.pm) lib/;
