@@ -1452,29 +1452,49 @@ if [ "$DO_MOD" -gt 0 ]; then
 			DEPMOD_SYMVERS="${BASE_DIR}/${SOURCE_SUBDIR}/kernel/ref-${KERNEL_ID}/linux-${FREETZ_KERNEL_VERSION_MAJOR}/Module.symvers"
 			# Augment Module.symvers with inter-module CRC symbols exported by
 			# proprietary firmware .ko files (e.g. directconnect_datapath, eip123_hw).
-			# These are not in the kernel's Module.symvers but are required by other
-			# firmware modules (e.g. mtlk.ko, offload_pa.ko, eip123.ko).
+			# These symbols are absent from the kernel's Module.symvers but are
+			# referenced by other firmware modules (e.g. mtlk.ko, eip123.ko).
+			# Note: AVM may ship modules built at different times with mismatched
+			# CRCs; these pre-existing disagreements are detected via baseline below.
 			DEPMOD_SYMVERS_AUGMENTED="$(mktemp)"
 			cat "${DEPMOD_SYMVERS}" > "${DEPMOD_SYMVERS_AUGMENTED}"
-			find "${FILESYSTEM_MOD_DIR}" -name "*.ko" | while read -r ko_file; do
-				module_name="$(basename "$ko_file" .ko)"
-				nm "$ko_file" 2>/dev/null | grep " A __crc_" | while read -r crc_val type sym_name; do
+			find "${FILESYSTEM_MOD_DIR}" -name "*.ko" -exec sh -c '
+				module_name="$(basename "$1" .ko)"
+				nm "$1" 2>/dev/null | grep " A __crc_" | while read -r crc_val type sym_name; do
 					symbol="${sym_name#__crc_}"
-					if ! grep -qF "	${symbol}	" "${DEPMOD_SYMVERS_AUGMENTED}"; then
-						printf "0x%s\t%s\t%s\tEXPORT_SYMBOL\n" "$crc_val" "$symbol" "$module_name" >> "${DEPMOD_SYMVERS_AUGMENTED}"
-					fi
+					printf "0x%s\t%s\t%s\tEXPORT_SYMBOL\n" "$crc_val" "$symbol" "$module_name"
 				done
-			done
+			' _ {} \; | sort -u -k2,2 >> "${DEPMOD_SYMVERS_AUGMENTED}"
+			# Establish a baseline of pre-existing disagrees from the original
+			# (unmodified) AVM firmware, so we only fail on NEW disagreements
+			# introduced by freetz-ng's modifications (e.g. our compiled modules).
+			DEPMOD_BASELINE_SYMS="$(mktemp)"
+			FILESYSTEM_ORIG_MODULES="${FILESYSTEM_DIR}/${MODULES_SUBDIR}"
+			if [ -d "${FILESYSTEM_ORIG_MODULES}" ]; then
+				LANG=C depmod -e -b "${FILESYSTEM_DIR}" \
+				  -E "${DEPMOD_SYMVERS_AUGMENTED}" \
+				  $FREETZ_KERNEL_VERSION \
+				  2>&1 | grep "disagrees about version of symbol" \
+				       | awk '{print $NF}' | sort -u > "${DEPMOD_BASELINE_SYMS}"
+			fi
+			DEPMOD_BASELINE_COUNT="$(wc -l < "${DEPMOD_BASELINE_SYMS}")"
 			LANG=C depmod -e -b "$FILESYSTEM_MOD_DIR" \
 			  -E "${DEPMOD_SYMVERS_AUGMENTED}" \
 			  $FREETZ_KERNEL_VERSION \
 			  2>&1 | tee "$DEPMOD_TEMP" | sed "s@ ${ABS_BASE_DIR}/@ @g"
 			rm -f "${DEPMOD_SYMVERS_AUGMENTED}"
 			if grep -q "disagrees about version of symbol" "$DEPMOD_TEMP"; then
-				DEPMOD_DISAGREES="$(grep "disagrees about version of symbol" "$DEPMOD_TEMP" | wc -l)"
-				[ "$FREETZ_MODULES_TEST" != "y" ] && error 1 "$DEPMOD_DISAGREES disagrees about version of symbol. Modules will not load. The system will not boot."
-				warn "$DEPMOD_DISAGREES disagrees about version of symbol."
+				DEPMOD_ALL_SYMS="$(grep "disagrees about version of symbol" "$DEPMOD_TEMP" | awk '{print $NF}' | sort -u)"
+				DEPMOD_DISAGREES="$(echo "$DEPMOD_ALL_SYMS" | wc -l)"
+				DEPMOD_NEW="$(echo "$DEPMOD_ALL_SYMS" | comm -23 - "${DEPMOD_BASELINE_SYMS}" | wc -l)"
+				if [ "$DEPMOD_NEW" -gt 0 ]; then
+					[ "$FREETZ_MODULES_TEST" != "y" ] && error 1 "$DEPMOD_NEW new disagrees about version of symbol. Modules will not load. The system will not boot."
+					warn "$DEPMOD_NEW new disagrees about version of symbol."
+				elif [ "$DEPMOD_BASELINE_COUNT" -gt 0 ]; then
+					echo1 "Note: $DEPMOD_DISAGREES pre-existing AVM firmware symbol version disagrees (present in original firmware, ignored)."
+				fi
 			fi
+			rm -f "${DEPMOD_BASELINE_SYMS}"
 			cp -f "${DEPMOD_SYMVERS}" "${BASE_DIR}/make/kernel/configs/symvers/symvers-${KERNEL_ID}"
 		fi
 		rm -f "$DEPMOD_TEMP"
