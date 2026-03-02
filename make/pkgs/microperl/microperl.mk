@@ -46,6 +46,7 @@ $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f /u
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Getopt && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Getopt/Long.pm lib/Getopt/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/IO && cp -f /usr/lib/x86_64-linux-gnu/perl-base/IO/File.pm lib/IO/;)
 $(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Scalar && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Scalar/Util.pm lib/Scalar/;)
+$(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
