@@ -1,0 +1,17 @@
+--- a/iperlsys.h
++++ b/iperlsys.h
+@@ -1416,6 +1416,14 @@
+ 
+ #endif  /* PERL_IMPLICIT_SYS */
+ 
++#ifndef PerlProc_pipe_cloexec
++#ifdef HAS_PIPE2
++#define PerlProc_pipe_cloexec(fd)	pipe2((fd), O_CLOEXEC)
++#else
++#define PerlProc_pipe_cloexec(fd)	pipe(fd)
++#endif
++#endif
++
+ #endif  /* __Inc__IPerl___ */
+ 
+ /*
