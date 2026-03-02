@@ -11,7 +11,7 @@
 
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). More features - less bugs!
 
-Compared to Freetz-NG, Freetz-EVO includes GCC on-device compilation, nginx, rtorrent, ruTorrent, PHP,
+Compared to Freetz-NG, Freetz-EVO includes GCC on-device, nginx, rtorrent, ruTorrent, PHP,
 aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
 Action for testing new developments, and many other new packages.
 
@@ -35,7 +35,7 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too |
 | **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
-| **GCC On Device** | Full GCC toolchain for on-device compilation; optional externalization; removed gprofng for i686 compatibility. | EVO only |
+| **GCC On Device** | Full GCC toolchain for on-device; optional externalization; removed gprofng for i686 compatibility. | EVO only |
 | **GitHub CLI** (`gh`) | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
