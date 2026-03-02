@@ -3,9 +3,9 @@ $(PKG)_CATEGORY:=Web interfaces
 
 # HTML editors from GitHub (pinned)
 # Note: avoid using $($(PKG)_...) in recipes/targets directly (PKG may change at execution time).
-RTORRENT_CGI_EDITORS_VERSION:=1.0.0
+RTORRENT_CGI_EDITORS_VERSION:=1.1.0
 RTORRENT_CGI_EDITORS_SOURCE:=rtorrent-rutorrent-editors-$(RTORRENT_CGI_EDITORS_VERSION).tar.gz
-RTORRENT_CGI_EDITORS_HASH:=ccc430a4fcf081d0bda5569414a04a9939a34b3653d057c665eae0c46cf3c12b
+RTORRENT_CGI_EDITORS_HASH:=8650cc9d13c407da226508cc5ef4a67f057408ea3ce802245b95ad95e6b9dcc0
 RTORRENT_CGI_EDITORS_SITE:=https://github.com/Ircama/rtorrent-rutorrent-editors/archive/refs/tags
 RTORRENT_CGI_EDITORS_DIR:=$(SOURCE_DIR)/rtorrent-rutorrent-editors-$(RTORRENT_CGI_EDITORS_VERSION)
 

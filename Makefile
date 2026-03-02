@@ -51,7 +51,7 @@ endif
 	@umask $(ENVIRA_UMASK) && LANG=C PATH="$(ENVIRA_PATH_ABS):$(PATH):/usr/sbin" $(MAKE) $(MAKECMDGOALS) $(ENVIRA_MAKE_VARS) || kill $$$$
 .PHONY: envira
 
-$(MAKECMDGOALS): envira
+$(filter-out envira,$(MAKECMDGOALS)): envira
 	@:
 .PHONY: $(MAKECMDGOALS)
 

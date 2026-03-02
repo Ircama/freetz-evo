@@ -12,7 +12,7 @@
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). More features - less bugs!
 
 Compared to Freetz-NG, Freetz-EVO includes GCC on-device, nginx, rtorrent, ruTorrent, PHP,
-aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
+AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
 Action for testing new developments, and many other new packages.
 
 Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)
@@ -29,7 +29,6 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 
 | Package | Description | Status |
 |---|---|---|
-| **aria2** / **AriaNg** / libcares | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** / **ruTorrent** | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
@@ -49,7 +48,6 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 | **libnettle** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
 | **libzen** | Helper library required by MediaInfo for portable C++ utilities. | EVO only |
 | **libxmlrpc** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
-| **libcares** (c-ares) | Asynchronous DNS resolver library used by aria2 and curl. | EVO only |
 
 #### Python 2 third-party modules fix
 

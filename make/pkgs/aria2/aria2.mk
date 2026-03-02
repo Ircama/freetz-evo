@@ -9,7 +9,11 @@ $(PKG)_SITE:=https://github.com/aria2/aria2/releases/download/release-$($(PKG)_V
 ### SUPPORT:=Ircama
 
 $(PKG)_BINARIES := aria2c
-$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/$(if $(FREETZ_PACKAGE_ARIA2_STATIC),,.libs/)aria2c
+# When FREETZ_LIB_libaria2=y the binary is linked directly against .libs/libaria2.a
+# (patch 105); libtool therefore places it in src/ rather than src/.libs/.
+# When FREETZ_PACKAGE_ARIA2_STATIC=y the binary is also in src/ (fully static).
+# Only in the plain dynamic case does libtool wrap it in src/.libs/.
+$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/$(if $(or $(FREETZ_PACKAGE_ARIA2_STATIC),$(FREETZ_LIB_libaria2)),,.libs/)aria2c
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_DEST_DIR)/usr/bin/aria2c
 
 $(PKG)_LIB_VERSION := 0.0.0
@@ -170,6 +174,11 @@ endif
 # libaria2 C++ library support
 ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 $(PKG)_CONFIGURE_OPTIONS += --enable-libaria2
+# --enable-static overrides LT_INIT([disable-static]) in configure.ac:
+# required so that libtool builds libaria2.a, allowing aria2c_LDFLAGS=-static
+# (patch 105) to link libaria2 statically and avoid SIGFPE on uClibc/MIPS
+# from C++ global constructors running before malloc init.
+$(PKG)_CONFIGURE_OPTIONS += --enable-static
 else
 $(PKG)_CONFIGURE_OPTIONS += --disable-libaria2
 endif
@@ -180,6 +189,8 @@ $(PKG)_EXTRA_LDFLAGS += -Wl,--gc-sections
 
 # Force C++11 support (aria2 requires C++11)
 $(PKG)_CONFIGURE_ENV += CXX="$(TARGET_TOOLCHAIN_STAGING_DIR)/bin/$(REAL_GNU_TARGET_NAME)-g++"
+# NOTE: -g -O0 added for gdb debug analysis; remove after debugging
+# $(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -std=c++11 -g -O0"
 $(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -std=c++11"
 
 # Static linking option
@@ -207,6 +218,10 @@ endif
 # Binary target
 $($(PKG)_BINARIES_TARGET_DIR): $($(PKG)_BINARIES_BUILD_DIR)
 	$(INSTALL_BINARY_STRIP)
+ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
+	# Fix host staging RPATH baked in by libtool; on the device only /usr/lib/freetz exists
+	patchelf-target --set-rpath $(FREETZ_LIBRARY_DIR) $@
+endif
 
 ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 # Library staging target
@@ -218,8 +233,13 @@ $($(PKG)_LIBS_STAGING_DIR): $($(PKG)_LIBS_BUILD_DIR)
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libaria2.pc
 
 # Library target
+# Note: libtool install-strip rewrites RPATH to the host staging libdir
+# (toolchain/.../mips-linux-uclibc/usr/lib), which does not exist on the device.
+# The loader then falls back to /mod/external/usr/lib/freetz/libc.so.0 (second
+# uClibc instance), causing heap corruption and SIGFPE. Fix with patchelf.
 $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
+	patchelf-target --set-rpath $(FREETZ_LIBRARY_DIR) $@
 
 $(pkg): $($(PKG)_LIBS_STAGING_DIR)
 

@@ -1,6 +1,7 @@
 menuconfig FREETZ_PACKAGE_ARIA2
-	bool "aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)"
+	bool "aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader) - DEVELOPER"
 	depends on FREETZ_TARGET_GCC_4_8_MIN
+	depends on FREETZ_SHOW_DEVELOPER
 	default n
 	select FREETZ_LIB_libcares    if !FREETZ_PACKAGE_ARIA2_STATIC && !FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS
 	select FREETZ_LIB_libz        if !FREETZ_PACKAGE_ARIA2_STATIC
