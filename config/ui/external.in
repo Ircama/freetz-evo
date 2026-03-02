@@ -99,7 +99,7 @@ if EXTERNAL_ENABLED
 			Put your own files/directories here (space separated)
 
 	source "make/pkgs/external.in.generated"
-	source "make/libs/external.in"
+	source "make/libs/external.in.generated"
 	source "make/kernel/external.in"
 	source "make/pkgs/ndas/external.in.modules"
 

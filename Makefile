@@ -97,6 +97,7 @@ PATCH_TOOL:=$(TOOLS_DIR)/freetz_patch
 PARSE_CONFIG_TOOL:=$(TOOLS_DIR)/parse-config
 CHECK_PREREQ_TOOL:=$(TOOLS_DIR)/prerequisites
 GENERATE_IN_TOOL:=$(TOOLS_DIR)/genin
+GENERATE_IN_LIBS_TOOL:=$(TOOLS_DIR)/genin_libs
 TAR:=$(TOOLS_DIR)/tar-gnu
 SED:=sed
 PATCHELF_HOST:=patchelf
@@ -210,6 +211,13 @@ ifneq ($(call genin-get-considered-packages,make/pkgs/Config.in.generated),$(cal
 ifneq ($(shell $(GENERATE_IN_TOOL) $(if $(findstring legacy,$(MAKECMDGOALS)),legacy) >&2 && echo OK),OK)
 $(error genin failed)
 endif
+endif
+endif
+
+# genin_libs: (re)generate sorted make/libs/external.in.generated
+ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+ifneq ($(shell $(GENERATE_IN_LIBS_TOOL) >&2 && echo OK),OK)
+$(error genin_libs failed)
 endif
 endif
 
@@ -658,7 +666,7 @@ $(eval $(call CONFIG_CLEAN_DEPS,config-clean-deps-keep-busybox,kernel modules$(_
 common-cacheclean:
 	[ ! -x .fwmod_custom ] || ./.fwmod_custom clean
 	./fwmod_custom clean
-	$(RM) make/pkgs/Config.in.generated make/pkgs/external.in.generated
+	$(RM) make/pkgs/Config.in.generated make/pkgs/external.in.generated make/libs/external.in.generated
 	$(RM) .config.compressed .config.old .config.*.tmp
 	$(RM) .packages .exclude-release-tmp $(CONFIG_IN_CACHE)
 	$(RM) $(DL_FW_DIR)/*.detected.image $(DL_FW_DIR)/*.detected.image.url
