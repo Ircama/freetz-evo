@@ -18,33 +18,32 @@ $(PKG)_DEPENDS_ON += wget-host
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_10),5.10,5.38)
 
 $(PKG)_PATCH_PRE_CMDS += chmod -R u+w .;
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/uuudmap.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/ubitcount.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/umg_data.h) .;)
 ifeq ($(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),y)
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/uuudmap.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/ubitcount.h) $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/umg_data.h) .;
 $(PKG)_PATCH_POST_CMDS += echo -e '\n/*\n * Stub implementations for functions not available in PERL_MICRO\n */\n\nvoid\nPerl_optimize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_finalize_optree(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_peep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}\n\nvoid\nPerl_rpeep(pTHX_ OP *o)\n{\n    /* No-op in microperl */\n}' >> op.c;
+$(PKG)_PATCH_POST_CMDS += echo -e '\nsub register_categories {\n    # Stub for microperl\n}' >> lib/warnings.pm;
+$(PKG)_PATCH_POST_CMDS += echo -e '\nsub enabled {\n    # Stub for microperl - always return 0\n    return 0;\n}\nsub warn {\n    # Stub for microperl\n}\nsub warnif {\n    # Stub for microperl\n}' >> lib/warnings.pm;
+$(PKG)_PATCH_POST_CMDS += echo -e '\nsub onBOOT {\n    # Stub for microperl\n}' >> lib/Encode.pm;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Errno.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Storable.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/POSIX.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f dist/Exporter/lib/Exporter.pm lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/constant.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Carp.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Fcntl.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Exporter && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Exporter/Heavy.pm) lib/Exporter/;
+$(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/feature.pm) lib/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/File && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/File/Basename.pm) lib/File/;
+$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/Cwd.pm lib/;
+$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/overload.pm lib/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/File && cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Spec.pm lib/File/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Class && cp -f /usr/share/perl/5.38/Class/Struct.pm lib/Class/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Data && cp -f /usr/lib/x86_64-linux-gnu/perl/5.38/Data/Dumper.pm lib/Data/;
+$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Temp.pm lib/File/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Getopt && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Getopt/Long.pm lib/Getopt/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/IO && cp -f /usr/lib/x86_64-linux-gnu/perl-base/IO/File.pm lib/IO/;
+$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Scalar && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Scalar/Util.pm lib/Scalar/;
 endif
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub register_categories {\n    # Stub for microperl\n}' >> lib/warnings.pm;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub enabled {\n    # Stub for microperl - always return 0\n    return 0;\n}\nsub warn {\n    # Stub for microperl\n}\nsub warnif {\n    # Stub for microperl\n}' >> lib/warnings.pm;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),echo -e '\nsub onBOOT {\n    # Stub for microperl\n}' >> lib/Encode.pm;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Errno.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Storable.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/POSIX.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f dist/Exporter/lib/Exporter.pm lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/constant.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Carp.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Fcntl.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Exporter && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Exporter/Heavy.pm) lib/Exporter/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/feature.pm) lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/File && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/File/Basename.pm) lib/File/;)
-
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f /usr/lib/x86_64-linux-gnu/perl-base/Cwd.pm lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f /usr/lib/x86_64-linux-gnu/perl-base/overload.pm lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/File && cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Spec.pm lib/File/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Class && cp -f /usr/share/perl/5.38/Class/Struct.pm lib/Class/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f /usr/lib/x86_64-linux-gnu/perl/5.38/Data/Dumper.pm lib/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Temp.pm lib/File/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Getopt && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Getopt/Long.pm lib/Getopt/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/IO && cp -f /usr/lib/x86_64-linux-gnu/perl-base/IO/File.pm lib/IO/;)
-$(PKG)_PATCH_POST_CMDS += $(if $(FREETZ_PACKAGE_MICROPERL_VERSION_5_38),mkdir -p lib/Scalar && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Scalar/Util.pm lib/Scalar/;)
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
