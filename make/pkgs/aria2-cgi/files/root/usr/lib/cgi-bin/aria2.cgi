@@ -96,7 +96,6 @@ check "$ARIA2_BOOT_MONITOR"  yes:boot_monitor
 # ===========================================================================
 # HTML page output
 # ===========================================================================
-cgi_begin "$(lang de:"aria2 Konfiguration" en:"aria2 Configuration")"
 
 # Status bar showing whether aria2c is running
 IS_RUNNING="no"
@@ -467,5 +466,3 @@ function createBasedir() {
 }
 </script>
 EOF
-
-cgi_end
