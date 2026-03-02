@@ -1450,10 +1450,26 @@ if [ "$DO_MOD" -gt 0 ]; then
 		# symvers
 		if grep -q '^CONFIG_MODVERSIONS=y' "${BASE_DIR}/make/kernel/configs/freetz/config-${KERNEL_ID}"; then
 			DEPMOD_SYMVERS="${BASE_DIR}/${SOURCE_SUBDIR}/kernel/ref-${KERNEL_ID}/linux-${FREETZ_KERNEL_VERSION_MAJOR}/Module.symvers"
+			# Augment Module.symvers with inter-module CRC symbols exported by
+			# proprietary firmware .ko files (e.g. directconnect_datapath, eip123_hw).
+			# These are not in the kernel's Module.symvers but are required by other
+			# firmware modules (e.g. mtlk.ko, offload_pa.ko, eip123.ko).
+			DEPMOD_SYMVERS_AUGMENTED="$(mktemp)"
+			cat "${DEPMOD_SYMVERS}" > "${DEPMOD_SYMVERS_AUGMENTED}"
+			find "${FILESYSTEM_MOD_DIR}" -name "*.ko" | while read -r ko_file; do
+				module_name="$(basename "$ko_file" .ko)"
+				nm "$ko_file" 2>/dev/null | grep " A __crc_" | while read -r crc_val type sym_name; do
+					symbol="${sym_name#__crc_}"
+					if ! grep -qF "	${symbol}	" "${DEPMOD_SYMVERS_AUGMENTED}"; then
+						printf "0x%s\t%s\t%s\tEXPORT_SYMBOL\n" "$crc_val" "$symbol" "$module_name" >> "${DEPMOD_SYMVERS_AUGMENTED}"
+					fi
+				done
+			done
 			LANG=C depmod -e -b "$FILESYSTEM_MOD_DIR" \
-			  -E "${DEPMOD_SYMVERS}" \
+			  -E "${DEPMOD_SYMVERS_AUGMENTED}" \
 			  $FREETZ_KERNEL_VERSION \
 			  2>&1 | tee "$DEPMOD_TEMP" | sed "s@ ${ABS_BASE_DIR}/@ @g"
+			rm -f "${DEPMOD_SYMVERS_AUGMENTED}"
 			if grep -q "disagrees about version of symbol" "$DEPMOD_TEMP"; then
 				DEPMOD_DISAGREES="$(grep "disagrees about version of symbol" "$DEPMOD_TEMP" | wc -l)"
 				[ "$FREETZ_MODULES_TEST" != "y" ] && error 1 "$DEPMOD_DISAGREES disagrees about version of symbol. Modules will not load. The system will not boot."
