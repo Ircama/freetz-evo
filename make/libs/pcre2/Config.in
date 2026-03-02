@@ -22,9 +22,8 @@ endif # FREETZ_LIB_libpcre2
 
 config FREETZ_LIB_libpcre2_posix
 	bool "libpcre2-posix (libpcre2-posix.so)"
-	select FREETZ_LIB_libpcre2
-	default y if FREETZ_LIB_libpcre2
-	default n
+	depends on FREETZ_LIB_libpcre2
+	default y
 	help
 		A POSIX wrapper interface to the Perl Compatible Regular Expression
 		library
