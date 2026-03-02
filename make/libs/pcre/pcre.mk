@@ -46,8 +46,8 @@ $($(PKG)_STAGING_BINARY) $($(PKG)_POSIX_STAGING_BINARY): $($(PKG)_BINARY) $($(PK
 	# relinking pcretest/pcregrep during a parallel install.  In a parallel
 	# build these may not exist yet, causing ld to fail with
 	# "cannot find ./.libs/libpcreposix.so".
-	-ln -sf $($(PKG)_LIBNAME)       $($(PKG)_DIR)/.libs/libpcre.so
-	-ln -sf $($(PKG)_POSIX_LIBNAME) $($(PKG)_DIR)/.libs/libpcreposix.so
+	-ln -sf $(PCRE_LIBNAME)       $(PCRE_DIR)/.libs/libpcre.so
+	-ln -sf $(PCRE_POSIX_LIBNAME) $(PCRE_DIR)/.libs/libpcreposix.so
 	$(SUBMAKE) -C $(PCRE_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
