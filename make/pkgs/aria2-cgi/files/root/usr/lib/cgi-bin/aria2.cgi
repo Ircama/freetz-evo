@@ -97,23 +97,9 @@ check "$ARIA2_BOOT_MONITOR"  yes:boot_monitor
 # HTML page output
 # ===========================================================================
 
-# Status bar showing whether aria2c is running
+# Check running state for conditional sections below
 IS_RUNNING="no"
 pgrep -x aria2c >/dev/null 2>&1 && IS_RUNNING="yes"
-
-if [ "$IS_RUNNING" = "yes" ]; then
-cat << 'EOF'
-<p style="color: green; font-weight: bold; margin: 0 0 10px 0;">
-&#x25CF; $(lang de:"aria2c läuft" en:"aria2c is running")
-</p>
-EOF
-else
-cat << 'EOF'
-<p style="color: #999; margin: 0 0 10px 0;">
-&#x25CB; $(lang de:"aria2c läuft nicht" en:"aria2c is not running")
-</p>
-EOF
-fi
 
 # ===========================================================================
 sec_begin "$(lang de:"Starttyp" en:"Start type")"
@@ -435,7 +421,7 @@ function checkBasedir() {
 	var basedir = getBasedir();
 	if (!basedir) { setBasedirStatus('Please enter a base directory.', 'red'); return; }
 	setBasedirStatus('Checking...', '');
-	fetch('/cgi-bin/aria2?ajax=1&action=check_directory&basedir=' + encodeURIComponent(basedir))
+	fetch('/cgi-bin/conf/aria2?ajax=1&action=check_directory&basedir=' + encodeURIComponent(basedir))
 		.then(function(r) { return r.text(); })
 		.then(function(text) {
 			var d = parseAjaxJson(text);
@@ -452,7 +438,7 @@ function createBasedir() {
 	var basedir = getBasedir();
 	if (!basedir) { setBasedirStatus('Please enter a base directory.', 'red'); return; }
 	setBasedirStatus('Creating...', '');
-	fetch('/cgi-bin/aria2?ajax=1&action=create_directory&basedir=' + encodeURIComponent(basedir))
+	fetch('/cgi-bin/conf/aria2?ajax=1&action=create_directory&basedir=' + encodeURIComponent(basedir))
 		.then(function(r) { return r.text(); })
 		.then(function(text) {
 			var d = parseAjaxJson(text);

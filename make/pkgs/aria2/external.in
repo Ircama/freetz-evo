@@ -4,5 +4,6 @@ config EXTERNAL_FREETZ_PACKAGE_ARIA2
 	default n
 	help
 		externals the following file(s):
-		 /usr/bin/aria2c		 /usr/lib/libaria2.so* (if libaria2 enabled)
+		 /usr/bin/aria2c
+		 ${FREETZ_LIBRARY_DIR}/libaria2.so* (if libaria2 enabled)
 		 /usr/include/aria2/ (if libaria2 enabled)

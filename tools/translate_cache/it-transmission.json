@@ -1,247 +1,247 @@
 {
-  "deepl:Start type": {
-    "original": "Start type",
-    "translation": "Tipo di avvio",
-    "timestamp": "2026-03-02T07:34:40Z",
+  "deepl:Allowed IP-Addresses": {
+    "github_user": "Ircama",
+    "original": "Allowed IP-Addresses",
     "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Priority": {
-    "original": "Priority",
-    "translation": "Priorità",
-    "timestamp": "2026-03-02T07:34:40Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Logging": {
-    "original": "Logging",
-    "translation": "Registrazione",
-    "timestamp": "2026-03-02T07:34:40Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Working Directories": {
-    "original": "Working Directories",
-    "translation": "Directory di lavoro",
-    "timestamp": "2026-03-02T07:34:41Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:35:05Z",
+    "translation": "Indirizzi IP consentiti"
   },
   "deepl:Base-Directory": {
+    "github_user": "Ircama",
     "original": "Base-Directory",
-    "translation": "Base-Directory",
+    "service": "deepl",
     "timestamp": "2026-03-02T07:34:41Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Configuration-Directory": {
-    "original": "Configuration-Directory",
-    "translation": "Configurazione-Directory",
-    "timestamp": "2026-03-02T07:34:42Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Download-Directory": {
-    "original": "Download-Directory",
-    "translation": "Download-Directory",
-    "timestamp": "2026-03-02T07:34:42Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Following directories can be empty": {
-    "original": "Following directories can be empty",
-    "translation": "Le seguenti directory possono essere vuote",
-    "timestamp": "2026-03-02T07:34:43Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Directory to watch for new torrents and to automatically start them:": {
-    "original": "Directory to watch for new torrents and to automatically start them:",
-    "translation": "Directory da controllare per i nuovi torrent e per avviarli automaticamente:",
-    "timestamp": "2026-03-02T07:34:43Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Watch-Directory": {
-    "original": "Watch-Directory",
-    "translation": "Orologio-Directory",
-    "timestamp": "2026-03-02T07:34:44Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Directory to store new torrents until they're complete:": {
-    "original": "Directory to store new torrents until they're complete:",
-    "translation": "Directory in cui memorizzare i nuovi torrent fino al loro completamento:",
-    "timestamp": "2026-03-02T07:34:45Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Incomplete-Directory": {
-    "original": "Incomplete-Directory",
-    "translation": "Incompleto-Directory",
-    "timestamp": "2026-03-02T07:34:45Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Completely seeded downloads will be moved to the following directory:": {
-    "original": "Completely seeded downloads will be moved to the following directory:",
-    "translation": "I download completamente seminati saranno spostati nella seguente directory:",
-    "timestamp": "2026-03-02T07:34:46Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Finish-Directory": {
-    "original": "Finish-Directory",
-    "translation": "Finish-Directory",
-    "timestamp": "2026-03-02T07:34:46Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Base-Directory"
   },
   "deepl:Both absolute and relative paths are allowed for directories except for the base-directory. The relative ones will be interpreted as being relative to the base-directory.": {
+    "github_user": "Ircama",
     "original": "Both absolute and relative paths are allowed for directories except for the base-directory. The relative ones will be interpreted as being relative to the base-directory.",
-    "translation": "Per le directory, eccetto la directory di base, sono ammessi percorsi sia assoluti che relativi. Quelli relativi saranno interpretati come relativi alla directory di base.",
-    "timestamp": "2026-03-02T07:34:47Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:47Z",
+    "translation": "Per le directory, eccetto la directory di base, sono ammessi percorsi sia assoluti che relativi. Quelli relativi saranno interpretati come relativi alla directory di base."
   },
-  "deepl:Peer-Settings": {
-    "original": "Peer-Settings",
-    "translation": "Impostazioni Peer",
-    "timestamp": "2026-03-02T07:34:47Z",
+  "deepl:Completely seeded downloads will be moved to the following directory:": {
+    "github_user": "Ircama",
+    "original": "Completely seeded downloads will be moved to the following directory:",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T17:46:06Z",
+    "translation": "I download e i seed completati saranno spostati nella seguente directory:"
+  },
+  "deepl:Configuration-Directory": {
+    "github_user": "Ircama",
+    "original": "Configuration-Directory",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:42Z",
+    "translation": "Configurazione-Directory"
+  },
+  "deepl:Directory to store new torrents until they're complete:": {
+    "github_user": "Ircama",
+    "original": "Directory to store new torrents until they're complete:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:45Z",
+    "translation": "Directory in cui memorizzare i nuovi torrent fino al loro completamento:"
+  },
+  "deepl:Directory to watch for new torrents and to automatically start them:": {
+    "github_user": "Ircama",
+    "original": "Directory to watch for new torrents and to automatically start them:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:43Z",
+    "translation": "Directory da controllare per i nuovi torrent e per avviarli automaticamente:"
   },
   "deepl:Don't forget to open this port.": {
+    "github_user": "Ircama",
     "original": "Don't forget to open this port.",
-    "translation": "Non dimenticare di aprire questa porta.",
+    "service": "deepl",
     "timestamp": "2026-03-02T07:34:48Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Non dimenticare di aprire questa porta."
   },
-  "deepl:Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)": {
-    "original": "Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)",
-    "translation": "La semina dei torrent verrà interrotta quando raggiungerà questo rapporto e spostata nella directory di destinazione (se non è vuota).",
-    "timestamp": "2026-03-02T07:34:48Z",
+  "deepl:Download-Directory": {
+    "github_user": "Ircama",
+    "original": "Download-Directory",
     "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Ratio:": {
-    "original": "Ratio:",
-    "translation": "Rapporto:",
-    "timestamp": "2026-03-02T07:34:49Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Maximum overall number of peers:": {
-    "original": "Maximum overall number of peers:",
-    "translation": "Numero massimo complessivo di peer:",
-    "timestamp": "2026-03-02T07:34:49Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Maximum number of peers per torrent:": {
-    "original": "Maximum number of peers per torrent:",
-    "translation": "Numero massimo di peer per torrent:",
-    "timestamp": "2026-03-02T07:34:50Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Encryption mode:": {
-    "original": "Encryption mode:",
-    "translation": "Modalità di crittografia:",
-    "timestamp": "2026-03-02T07:34:51Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:No encryption": {
-    "original": "No encryption",
-    "translation": "Nessuna crittografia",
-    "timestamp": "2026-03-02T07:34:51Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Prefer encrypted peer connections": {
-    "original": "Prefer encrypted peer connections",
-    "translation": "Preferire connessioni peer crittografate",
-    "timestamp": "2026-03-02T07:34:52Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:42Z",
+    "translation": "Download-Directory"
   },
   "deepl:Encrypt all peer connections": {
+    "github_user": "Ircama",
     "original": "Encrypt all peer connections",
-    "translation": "Crittografare tutte le connessioni peer",
+    "service": "deepl",
     "timestamp": "2026-03-02T07:34:52Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Crittografare tutte le connessioni peer"
   },
-  "deepl:Use peer-blocklist:": {
-    "original": "Use peer-blocklist:",
-    "translation": "Usa la lista di blocco dei pari:",
-    "timestamp": "2026-03-02T07:34:54Z",
+  "deepl:Encryption mode:": {
+    "github_user": "Ircama",
+    "original": "Encryption mode:",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:51Z",
+    "translation": "Modalità di crittografia:"
   },
-  "deepl:Use DHT:": {
-    "original": "Use DHT:",
-    "translation": "Utilizzare il DHT:",
-    "timestamp": "2026-03-02T07:34:58Z",
+  "deepl:Finish-Directory": {
+    "github_user": "Ircama",
+    "original": "Finish-Directory",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:46Z",
+    "translation": "Finish-Directory"
   },
-  "deepl:Use &mu;TP:": {
-    "original": "Use &mu;TP:",
-    "translation": "Usa &mu;TP:",
-    "timestamp": "2026-03-02T07:35:02Z",
+  "deepl:Following directories can be empty": {
+    "github_user": "Ircama",
+    "original": "Following directories can be empty",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:43Z",
+    "translation": "Le seguenti directory possono essere vuote"
   },
-  "deepl:RPC and Web Interface Settings": {
-    "original": "RPC and Web Interface Settings",
-    "translation": "Impostazioni dell'interfaccia RPC e Web",
-    "timestamp": "2026-03-02T07:35:02Z",
+  "deepl:Incomplete-Directory": {
+    "github_user": "Ircama",
+    "original": "Incomplete-Directory",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:45Z",
+    "translation": "Incompleto-Directory"
   },
   "deepl:Leave user name and password empty if no password protection required.": {
+    "github_user": "Ircama",
     "original": "Leave user name and password empty if no password protection required.",
-    "translation": "Lasciare vuoto il nome utente e la password se non è richiesta la protezione con password.",
+    "service": "deepl",
     "timestamp": "2026-03-02T07:35:03Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Lasciare vuoto il nome utente e la password se non è richiesta la protezione con password."
   },
-  "deepl:RPC- and Web-Interface-Port": {
-    "original": "RPC- and Web-Interface-Port",
-    "translation": "Porta RPC e interfaccia Web",
-    "timestamp": "2026-03-02T07:35:03Z",
+  "deepl:Logging": {
+    "github_user": "Ircama",
+    "original": "Logging",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:40Z",
+    "translation": "Registrazione"
   },
-  "deepl:User Name": {
-    "original": "User Name",
-    "translation": "Nome utente",
-    "timestamp": "2026-03-02T07:35:04Z",
+  "deepl:Maximum number of peers per torrent:": {
+    "github_user": "Ircama",
+    "original": "Maximum number of peers per torrent:",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:50Z",
+    "translation": "Numero massimo di peer per torrent:"
+  },
+  "deepl:Maximum overall number of peers:": {
+    "github_user": "Ircama",
+    "original": "Maximum overall number of peers:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:49Z",
+    "translation": "Numero massimo complessivo di peer:"
+  },
+  "deepl:No encryption": {
+    "github_user": "Ircama",
+    "original": "No encryption",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:51Z",
+    "translation": "Nessuna crittografia"
   },
   "deepl:Password": {
+    "github_user": "Ircama",
     "original": "Password",
-    "translation": "Password",
+    "service": "deepl",
     "timestamp": "2026-03-02T07:35:04Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Password"
   },
-  "deepl:Allowed IP-Addresses": {
-    "original": "Allowed IP-Addresses",
-    "translation": "Indirizzi IP consentiti",
-    "timestamp": "2026-03-02T07:35:05Z",
+  "deepl:Peer-Settings": {
+    "github_user": "Ircama",
+    "original": "Peer-Settings",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:34:47Z",
+    "translation": "Impostazioni Peer"
+  },
+  "deepl:Prefer encrypted peer connections": {
+    "github_user": "Ircama",
+    "original": "Prefer encrypted peer connections",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:52Z",
+    "translation": "Preferire connessioni peer crittografate"
+  },
+  "deepl:Priority": {
+    "github_user": "Ircama",
+    "original": "Priority",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:40Z",
+    "translation": "Priorità"
+  },
+  "deepl:RPC and Web Interface Settings": {
+    "github_user": "Ircama",
+    "original": "RPC and Web Interface Settings",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:35:02Z",
+    "translation": "Impostazioni dell'interfaccia RPC e Web"
+  },
+  "deepl:RPC- and Web-Interface-Port": {
+    "github_user": "Ircama",
+    "original": "RPC- and Web-Interface-Port",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:35:03Z",
+    "translation": "Porta RPC e interfaccia Web"
+  },
+  "deepl:Ratio:": {
+    "github_user": "Ircama",
+    "original": "Ratio:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:49Z",
+    "translation": "Rapporto:"
+  },
+  "deepl:Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)": {
+    "github_user": "Ircama",
+    "original": "Seeding torrents will be stopped when they reach this ratio and moved to the finish-directory (if not empty)",
+    "service": "deepl",
+    "timestamp": "2026-03-02T17:46:46Z",
+    "translation": "I seed dei torrent verranno interrotti quando raggiungeranno questo rapporto e i file verranno spostati nella directory di destinazione (se non è vuota)."
+  },
+  "deepl:Start type": {
+    "github_user": "Ircama",
+    "original": "Start type",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:40Z",
+    "translation": "Tipo di avvio"
+  },
+  "deepl:Use &mu;TP:": {
+    "github_user": "Ircama",
+    "original": "Use &mu;TP:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:35:02Z",
+    "translation": "Usa &mu;TP:"
+  },
+  "deepl:Use DHT:": {
+    "github_user": "Ircama",
+    "original": "Use DHT:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:58Z",
+    "translation": "Utilizzare il DHT:"
+  },
+  "deepl:Use peer-blocklist:": {
+    "github_user": "Ircama",
+    "original": "Use peer-blocklist:",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:54Z",
+    "translation": "Usa la lista di blocco dei pari:"
+  },
+  "deepl:User Name": {
+    "github_user": "Ircama",
+    "original": "User Name",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:35:04Z",
+    "translation": "Nome utente"
+  },
+  "deepl:Watch-Directory": {
+    "github_user": "Ircama",
+    "original": "Watch-Directory",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:44Z",
+    "translation": "Orologio-Directory"
   },
   "deepl:Web-Home Directory": {
+    "github_user": "Ircama",
     "original": "Web-Home Directory",
-    "translation": "Web-Home Directory",
-    "timestamp": "2026-03-02T07:35:05Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-02T07:35:05Z",
+    "translation": "Web-Home Directory"
+  },
+  "deepl:Working Directories": {
+    "github_user": "Ircama",
+    "original": "Working Directories",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:34:41Z",
+    "translation": "Directory di lavoro"
   }
 }

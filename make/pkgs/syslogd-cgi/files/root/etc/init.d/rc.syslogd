@@ -14,8 +14,6 @@ start() {
 	fi
 
 	if [ "$SYSLOGD_LOCAL" = "yes" ]; then
-		modreg status $DAEMON 'Syslog' log
-
 		SYSLOGD_OPTIONS="-L"
 
 		case $SYSLOGD_LOGGING in
@@ -69,7 +67,6 @@ start() {
 }
 
 stop_post() {
-	modunreg status $DAEMON log
 	pidof klogd >/dev/null && killall klogd >/dev/null 2>&1
 }
 
@@ -77,10 +74,12 @@ case $1 in
 	""|load)
 		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
 		modreg daemon $DAEMON
+		modreg status $DAEMON 'Syslog' log
 
 		modlib_start $SYSLOGD_ENABLED
 		;;
 	unload)
+		modunreg status $DAEMON log
 		modunreg daemon $DAEMON
 		modunreg cgi $DAEMON
 		modlib_stop

@@ -16,9 +16,9 @@ EOF
 
 source /usr/lib/mod/service.sh
 stat_button() {
-	local pkg=$1 daemon=$2 cmd=$3 active=$4
+	local pkg=$1 daemon=$2 cmd=$3 label=$4 active=$5
 	if ! $active; then disabled=" disabled"; else disabled=""; fi
-	echo "<td><form class='btn' action='?$cmd' method='post'> <input type='hidden' name='rc' value='${daemon:-$pkg}'> <input type='submit' name='cmd' value='$cmd'$disabled> </form></td>"
+	echo "<td><form class='btn' action='?$cmd' method='post'> <input type='hidden' name='rc' value='$pkg'> <input type='submit' name='cmd' value='$cmd'$disabled> </form></td>"
 }
 
 SERVICE_REG=/mod/etc/reg/daemon.reg

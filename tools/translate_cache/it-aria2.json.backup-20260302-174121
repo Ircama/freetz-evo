@@ -395,8 +395,8 @@
     "github_user": "Ircama",
     "original": "Maximum overall upload rate in KB/s. 0 = unlimited.",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:42:23Z",
-    "translation": "Velocità massima di upload complessiva in KB/s. 0 = illimitata."
+    "timestamp": "2026-03-02T10:29:54Z",
+    "translation": "Velocità massima di caricamento complessiva in KB/s. 0 = illimitata."
   },
   "deepl:Minimum size for splitting (e.g. 20M, 1G). Default: 20M.": {
     "github_user": "Ircama",
@@ -479,36 +479,36 @@
     "github_user": "Ircama",
     "original": "RPC secret (token)",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:41:18Z",
-    "translation": "RPC secret (token)"
+    "timestamp": "2026-03-02T10:28:06Z",
+    "translation": "Segreto RPC (token)"
   },
   "deepl:Seed ratio": {
     "github_user": "Ircama",
     "original": "Seed ratio",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:43:20Z",
-    "translation": "Rapporto di seed"
+    "timestamp": "2026-03-02T10:30:09Z",
+    "translation": "Rapporto di semina"
   },
   "deepl:Seed ratio before stopping (0.0 = always seed, negative = unlimited). Default: 1.0.": {
     "github_user": "Ircama",
     "original": "Seed ratio before stopping (0.0 = always seed, negative = unlimited). Default: 1.0.",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:43:30Z",
-    "translation": "Rapporto di seed prima dell'arresto (0,0 = semina sempre, negativo = illimitato). Predefinito: 1,0."
+    "timestamp": "2026-03-02T10:30:16Z",
+    "translation": "Rapporto di semina prima dell'arresto (0,0 = semina sempre, negativo = illimitato). Predefinito: 1,0."
   },
   "deepl:Seed time (min)": {
     "github_user": "Ircama",
     "original": "Seed time (min)",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:43:40Z",
-    "translation": "Tempo di seed (min)"
+    "timestamp": "2026-03-02T10:30:27Z",
+    "translation": "Tempo di semina (min)"
   },
   "deepl:Seed time in minutes after download (0 = unlimited). Default: 0.": {
     "github_user": "Ircama",
     "original": "Seed time in minutes after download (0 = unlimited). Default: 0.",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:47:07Z",
-    "translation": "Tempo di seed in minuti dopo il download (0 = illimitato). Predefinito: 0."
+    "timestamp": "2026-03-02T10:30:33Z",
+    "translation": "Tempo di semina in minuti dopo il download (0 = illimitato). Predefinito: 0."
   },
   "deepl:Speed Limits": {
     "github_user": "Ircama",
@@ -538,19 +538,12 @@
     "timestamp": "2026-03-02T10:31:55Z",
     "translation": "Log di avvio"
   },
-  "deepl:Status": {
-    "github_user": "Ircama",
-    "original": "Status",
-    "service": "deepl",
-    "timestamp": "2026-03-02T15:15:31Z",
-    "translation": "Stato"
-  },
   "deepl:Upload limit (KB/s)": {
     "github_user": "Ircama",
     "original": "Upload limit (KB/s)",
     "service": "deepl",
-    "timestamp": "2026-03-02T17:42:01Z",
-    "translation": "Limite di upload (KB/s)"
+    "timestamp": "2026-03-02T10:29:49Z",
+    "translation": "Limite di caricamento (KB/s)"
   },
   "deepl:Wait time in seconds at boot until the base directory is available (0=immediate, >0=wait for USB/NFS).": {
     "github_user": "Ircama",
@@ -586,5 +579,12 @@
     "service": "deepl",
     "timestamp": "2026-03-02T10:27:13Z",
     "translation": "secondi"
+  },
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato",
+    "timestamp": "2026-03-02T15:15:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
