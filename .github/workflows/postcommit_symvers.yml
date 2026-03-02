@@ -189,8 +189,9 @@ jobs:
           KERNEL_ID="$(echo "${KERNEL_ID}" | sed 's/\"//g')"
           KERNEL_CONFIG="make/kernel/configs/freetz/config-${KERNEL_ID}"
           KERNEL_SYMVERS="make/kernel/configs/symvers/symvers-${KERNEL_ID}"
-          ! grep -q '^CONFIG_MODVERSIONS=y' "${KERNEL_CONFIG}" && echo "No kernel modversions enabled, abort." && echo 'skip=skip' >> $GITHUB_OUTPUT || true
-          test -s "${KERNEL_SYMVERS}" && echo "Kernel symvers already exists, abort." && echo 'skip=skip' >> $GITHUB_OUTPUT || true
+          ! test -s "${KERNEL_CONFIG}"                          && echo "No kernel .config available, abort."    && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
+          ! grep -q '^CONFIG_MODVERSIONS=y' "${KERNEL_CONFIG}"  && echo "No kernel modversions enabled, abort."  && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
+          test -s "${KERNEL_SYMVERS}"                           && echo "Kernel symvers already exists, abort."  && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
 
       - name: generate
         env:

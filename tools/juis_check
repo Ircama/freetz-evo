@@ -79,7 +79,7 @@ exit
 js() { [ -e "$1" ] && sed -rn "s/^<.:$2>(.*)<.*/\1/p" "$1" ; }
 
 main() {
-	local x soap avmca url port host sdir docsis flags Envelope body post cache info payload day ser
+	local x soap avmca url host sdir docsis flags Envelope body post cache info payload day ser
 	local line='################################################################'
 	local type='text/xml; charset="utf-8"'
 	local zwsp="$(printf '\342\200\212')"
@@ -166,14 +166,11 @@ main() {
 		[ -e "/etc/avm_root_ca.pem"     ] && avmca="/etc/avm_root_ca.pem"
 		[ -e "/etc/jasonii_root_ca.pem" ] && avmca="/etc/jasonii_root_ca.pem"
 		host="jws.avm.de"              # https-cert matches hostname
-		port="443"
 	else
 		if [ "$HW" -lt 269 ] 2>/dev/null ; then
 			host="$HW.jws.avm.de"  # no wirldcard certificate
-			port="80"
 		else                           # https://github.com/PeterPawn/YourFritz/issues/66
 			host="jws.avm.de"      # since 7690 avm does not use hostnames anymore
-			port="443"
 		fi
 	fi
 
@@ -254,7 +251,7 @@ EOX
 
 post=$(cat << EOX
 POST /${url#*/} HTTP/1.1
-Host: ${url%%/*}:${port}
+Host: ${url%%/*}:80
 Content-Length: ${#body}
 Content-Type: ${type}
 ${soap}
@@ -269,10 +266,11 @@ EOX
 	if [ "$SSL" == 'y' ]; then
 #		resp="$(curl -v -s \
 		resp="$(curl -s \
-		  --http1.1 -X POST \
+		  --http1.0 -X POST \
 		  -H "User-Agent:" \
 		  -H "Accept:" \
-		  -H "Host: ${url%%/*}:${port}" \
+		  -H "Host: ${url%%/*}" \
+		  -H "Connection: close" \
 		  -H "Content-Length: ${#body}" \
 		  -H "Content-Type: ${type}" \
 		  ${soap:+-H "$soap"} \
