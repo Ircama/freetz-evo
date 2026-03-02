@@ -117,5 +117,40 @@
     "timestamp": "2026-02-15T23:35:38Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-03-02T07:32:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-03-02T07:32:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-03-02T07:32:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Description": {
+    "original": "Description",
+    "translation": "Descrizione",
+    "timestamp": "2026-03-02T07:32:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porto",
+    "timestamp": "2026-03-02T07:32:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

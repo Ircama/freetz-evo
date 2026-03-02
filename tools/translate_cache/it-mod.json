@@ -3372,5 +3372,26 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "con i pulsanti"
+  },
+  "deepl:Start": {
+    "original": "Start",
+    "translation": "Inizio",
+    "timestamp": "2026-03-02T07:33:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stop": {
+    "original": "Stop",
+    "translation": "Stop",
+    "timestamp": "2026-03-02T07:33:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Restart": {
+    "original": "Restart",
+    "translation": "Riavvio",
+    "timestamp": "2026-03-02T07:33:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
