@@ -150,8 +150,8 @@
     "github_user": "Ircama",
     "original": "Async DNS resolution (libcares)",
     "service": "deepl",
-    "timestamp": "2026-03-02T10:31:08Z",
-    "translation": "Risoluzione DNS asincrona (libre)"
+    "timestamp": "2026-03-02T17:49:44Z",
+    "translation": "Risoluzione DNS asincrona (libcares)"
   },
   "deepl:Base Directory": {
     "github_user": "Ircama",
@@ -339,8 +339,8 @@
     "github_user": "Ircama",
     "original": "Listen on all network interfaces",
     "service": "deepl",
-    "timestamp": "2026-03-02T10:27:55Z",
-    "translation": "Ascoltare su tutte le interfacce di rete"
+    "timestamp": "2026-03-02T17:50:45Z",
+    "translation": "Ascolta su tutte le interfacce di rete"
   },
   "deepl:Log level": {
     "github_user": "Ircama",
@@ -360,8 +360,8 @@
     "github_user": "Ircama",
     "original": "Max. peers",
     "service": "deepl",
-    "timestamp": "2026-03-02T10:30:36Z",
-    "translation": "Max. coetanei"
+    "timestamp": "2026-03-02T17:49:01Z",
+    "translation": "Max. peers"
   },
   "deepl:Maximum number of connections per server per download. Default: 16.": {
     "github_user": "Ircama",
