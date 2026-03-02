@@ -33,7 +33,7 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 | **rTorrent** / **ruTorrent** | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
-| **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too (merged) |
+| **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too |
 | **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
 | **GCC On Device** | Full GCC toolchain for on-device compilation; optional externalization; removed gprofng for i686 compatibility. | EVO only |
 | **GitHub CLI** (`gh`) | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
