@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libaria2" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libaria2.so.0.0.0"

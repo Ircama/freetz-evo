@@ -2,6 +2,7 @@ comment "libraries"
 	depends on EXTERNAL_ENABLED
 source "make/libs/apr/external.in"
 source "make/libs/apr-util/external.in"
+source "make/pkgs/aria2/external.in.libs"
 source "make/libs/attr/external.in"
 source "make/pkgs/avahi/external.in.libs"
 source "make/pkgs/bind/external.in.libs"

@@ -838,11 +838,11 @@ count = sum(1 for s in blocks_to_modify if s[3] in translated)
 if cache_hits + api_calls > 0:
 	if api_calls > 0:
 		sys.stderr.write(
-			f"\n    freetz_translate: injected {count} translations ({target_lang}) into {os.path.basename(filepath)} [{cache_hits} cached, \033[1m{api_calls} API\033[0m]"
+			f"\n    freetz_translate: injected {count} translations ({target_lang}) into {os.path.basename(filepath)} \033[31m[{cache_hits} cached, {api_calls} API]\033[0m  "
 		)
 	else:
 		sys.stderr.write(
-			f"\n    freetz_translate: injected {count} translations ({target_lang}) into {os.path.basename(filepath)} [{cache_hits} cached, {api_calls} API]"
+			f"\n    freetz_translate: injected {count} translations ({target_lang}) into {os.path.basename(filepath)} \033[32m[{cache_hits} cached, {api_calls} API]\033[0m  "
 		)
 else:
 	sys.stderr.write(

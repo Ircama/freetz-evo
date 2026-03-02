@@ -9,11 +9,12 @@ $(PKG)_SITE:=https://github.com/aria2/aria2/releases/download/release-$($(PKG)_V
 ### SUPPORT:=Ircama
 
 $(PKG)_BINARIES := aria2c
-$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/.libs/aria2c
+$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/$(if $(FREETZ_PACKAGE_ARIA2_STATIC),,.libs/)aria2c
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_DEST_DIR)/usr/bin/aria2c
 
+$(PKG)_LIB_VERSION := 0.0.0
 $(PKG)_LIBNAMES_SHORT := aria2
-$(PKG)_LIBNAMES_LONG := $($(PKG)_LIBNAMES_SHORT:%=lib%.so)
+$(PKG)_LIBNAMES_LONG := $($(PKG)_LIBNAMES_SHORT:%=lib%.so.$($(PKG)_LIB_VERSION))
 $(PKG)_LIBS_BUILD_DIR := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_DIR)/src/.libs/%)
 $(PKG)_LIBS_STAGING_DIR := $($(PKG)_LIBNAMES_LONG:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%)
 $(PKG)_LIBS_TARGET_DIR := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_TARGET_LIBDIR)/%)
@@ -63,6 +64,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_SQLITE3
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_STATIC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libaria2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_CA_BUNDLE
 
 # Determine SSL library - using simple variables
@@ -166,7 +168,7 @@ $(PKG)_CONFIGURE_ENV += GNUTLS_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -
 endif
 
 # libaria2 C++ library support
-ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2)),y)
+ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 $(PKG)_CONFIGURE_OPTIONS += --enable-libaria2
 else
 $(PKG)_CONFIGURE_OPTIONS += --disable-libaria2
@@ -194,7 +196,7 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
 # Build targets
-ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2)),y)
+ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 $($(PKG)_LIBS_BUILD_DIR) $($(PKG)_BINARIES_BUILD_DIR): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(ARIA2_DIR)
 else
@@ -206,7 +208,7 @@ endif
 $($(PKG)_BINARIES_TARGET_DIR): $($(PKG)_BINARIES_BUILD_DIR)
 	$(INSTALL_BINARY_STRIP)
 
-ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2)),y)
+ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 # Library staging target
 $($(PKG)_LIBS_STAGING_DIR): $($(PKG)_LIBS_BUILD_DIR)
 	$(SUBMAKE) -C $(ARIA2_DIR) \

@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_LIB_libaria2
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libaria2
+	bool "libaria2"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libaria2.so.0.0.0
+

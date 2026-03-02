@@ -183,6 +183,7 @@ menu "USB & related"
 endmenu ### "USB & related"
 
 menu "Web and WebDAV"
+	source "make/pkgs/aria2/Config.in.libs"
 	source "make/pkgs/curl/Config.in.libs"
 	source "make/libs/libidn/Config.in"
 	source "make/libs/jansson/Config.in"

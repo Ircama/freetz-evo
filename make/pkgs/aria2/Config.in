@@ -100,6 +100,7 @@ if FREETZ_PACKAGE_ARIA2
 	config FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
 		bool "Build libaria2 C++ library"
 		default n
+		select FREETZ_LIB_libaria2
 		select FREETZ_LIB_libstdcpp  if !FREETZ_PACKAGE_ARIA2_STATIC
 		help
 			Build libaria2 C++ library for embedding aria2 in other applications.
