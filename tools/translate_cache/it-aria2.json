@@ -1,0 +1,583 @@
+{
+  "deepl:aria2 Configuration": {
+    "original": "aria2 Configuration",
+    "translation": "aria2 Configurazione",
+    "timestamp": "2026-03-02T10:26:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:aria2c is running": {
+    "original": "aria2c is running",
+    "translation": "aria2c è in funzione",
+    "timestamp": "2026-03-02T10:26:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:aria2c is not running": {
+    "original": "aria2c is not running",
+    "translation": "aria2c non è in esecuzione",
+    "timestamp": "2026-03-02T10:26:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-03-02T10:26:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Priority": {
+    "original": "Priority",
+    "translation": "Priorità",
+    "timestamp": "2026-03-02T10:26:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Nice level": {
+    "original": "Nice level",
+    "translation": "Livello di Nizza",
+    "timestamp": "2026-03-02T10:26:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Process priority: -20 (highest) to 19 (lowest). Default: 10.": {
+    "original": "Process priority: -20 (highest) to 19 (lowest). Default: 10.",
+    "translation": "Priorità del processo: da -20 (massima) a 19 (minima). Predefinito: 10.",
+    "timestamp": "2026-03-02T10:26:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(-20 to 19, default: 10)": {
+    "original": "(-20 to 19, default: 10)",
+    "translation": "(da -20 a 19, valore predefinito: 10)",
+    "timestamp": "2026-03-02T10:26:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Base Directory": {
+    "original": "Base Directory",
+    "translation": "Directory di base",
+    "timestamp": "2026-03-02T10:26:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Base directory": {
+    "original": "Base directory",
+    "translation": "Directory di base",
+    "timestamp": "2026-03-02T10:26:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directory for downloads, session file and aria2.conf (e.g. /var/media/ftp/aria2).": {
+    "original": "Directory for downloads, session file and aria2.conf (e.g. /var/media/ftp/aria2).",
+    "translation": "Directory per i download, il file di sessione e aria2.conf (ad esempio /var/media/ftp/aria2).",
+    "timestamp": "2026-03-02T10:26:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download subdirectory:": {
+    "original": "Download subdirectory:",
+    "translation": "Sottodirectory di download:",
+    "timestamp": "2026-03-02T10:26:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration file:": {
+    "original": "Configuration file:",
+    "translation": "File di configurazione:",
+    "timestamp": "2026-03-02T10:26:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Check directory": {
+    "original": "Check directory",
+    "translation": "Controlla la directory",
+    "timestamp": "2026-03-02T10:27:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Create directory": {
+    "original": "Create directory",
+    "translation": "Crea directory",
+    "timestamp": "2026-03-02T10:27:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Boot wait time:": {
+    "original": "Boot wait time:",
+    "translation": "Tempo di attesa per l'avvio:",
+    "timestamp": "2026-03-02T10:27:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Wait time in seconds at boot until the base directory is available (0=immediate, >0=wait for USB/NFS).": {
+    "original": "Wait time in seconds at boot until the base directory is available (0=immediate, >0=wait for USB/NFS).",
+    "translation": "Tempo di attesa in secondi all'avvio fino alla disponibilità della directory di base (0=immediato, >0=attesa per USB/NFS).",
+    "timestamp": "2026-03-02T10:27:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:seconds": {
+    "original": "seconds",
+    "translation": "secondi",
+    "timestamp": "2026-03-02T10:27:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(0=immediate, &gt;0=wait for USB/NAS)": {
+    "original": "(0=immediate, &gt;0=wait for USB/NAS)",
+    "translation": "(0=immediato, &gt;0=attendere USB/NAS)",
+    "timestamp": "2026-03-02T10:27:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:JSON-RPC Interface": {
+    "original": "JSON-RPC Interface",
+    "translation": "Interfaccia JSON-RPC",
+    "timestamp": "2026-03-02T10:27:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable JSON-RPC": {
+    "original": "Enable JSON-RPC",
+    "translation": "Abilita JSON-RPC",
+    "timestamp": "2026-03-02T10:27:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(Required for AriaNg and external control)": {
+    "original": "(Required for AriaNg and external control)",
+    "translation": "(Richiesto per AriaNg e controllo esterno)",
+    "timestamp": "2026-03-02T10:27:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:RPC port": {
+    "original": "RPC port",
+    "translation": "Porta RPC",
+    "timestamp": "2026-03-02T10:27:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port for the JSON-RPC server (default: 6800).": {
+    "original": "Port for the JSON-RPC server (default: 6800).",
+    "translation": "Porta per il server JSON-RPC (default: 6800).",
+    "timestamp": "2026-03-02T10:27:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 6800)": {
+    "original": "(default: 6800)",
+    "translation": "(default: 6800)",
+    "timestamp": "2026-03-02T10:27:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Listen on all network interfaces": {
+    "original": "Listen on all network interfaces",
+    "translation": "Ascoltare su tutte le interfacce di rete",
+    "timestamp": "2026-03-02T10:27:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(disabled = localhost only)": {
+    "original": "(disabled = localhost only)",
+    "translation": "(disabilitato = solo localhost)",
+    "timestamp": "2026-03-02T10:28:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:RPC secret (token)": {
+    "original": "RPC secret (token)",
+    "translation": "Segreto RPC (token)",
+    "timestamp": "2026-03-02T10:28:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Optional security token. Leave empty to disable authentication.": {
+    "original": "Optional security token. Leave empty to disable authentication.",
+    "translation": "Token di sicurezza opzionale. Lasciare vuoto per disabilitare l'autenticazione.",
+    "timestamp": "2026-03-02T10:28:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(empty = no authentication)": {
+    "original": "(empty = no authentication)",
+    "translation": "(vuoto = nessuna autenticazione)",
+    "timestamp": "2026-03-02T10:28:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Links": {
+    "original": "Links",
+    "translation": "Collegamenti",
+    "timestamp": "2026-03-02T10:28:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download Settings": {
+    "original": "Download Settings",
+    "translation": "Impostazioni di download",
+    "timestamp": "2026-03-02T10:28:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Concurrent downloads": {
+    "original": "Concurrent downloads",
+    "translation": "Download contemporanei",
+    "timestamp": "2026-03-02T10:28:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maximum number of simultaneous downloads. Default: 5.": {
+    "original": "Maximum number of simultaneous downloads. Default: 5.",
+    "translation": "Numero massimo di download simultanei. Predefinito: 5.",
+    "timestamp": "2026-03-02T10:28:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 5)": {
+    "original": "(default: 5)",
+    "translation": "(default: 5)",
+    "timestamp": "2026-03-02T10:28:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Connections per server": {
+    "original": "Connections per server",
+    "translation": "Connessioni per server",
+    "timestamp": "2026-03-02T10:28:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maximum number of connections per server per download. Default: 16.": {
+    "original": "Maximum number of connections per server per download. Default: 16.",
+    "translation": "Numero massimo di connessioni per server per download. Predefinito: 16.",
+    "timestamp": "2026-03-02T10:28:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 16)": {
+    "original": "(default: 16)",
+    "translation": "(default: 16)",
+    "timestamp": "2026-03-02T10:29:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Splits per download": {
+    "original": "Splits per download",
+    "translation": "Spaccati per il download",
+    "timestamp": "2026-03-02T10:29:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Number of parallel parts per download. Default: 5.": {
+    "original": "Number of parallel parts per download. Default: 5.",
+    "translation": "Numero di parti parallele per download. Predefinito: 5.",
+    "timestamp": "2026-03-02T10:29:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Minimum split size": {
+    "original": "Minimum split size",
+    "translation": "Dimensione minima della cartella",
+    "timestamp": "2026-03-02T10:29:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Minimum size for splitting (e.g. 20M, 1G). Default: 20M.": {
+    "original": "Minimum size for splitting (e.g. 20M, 1G). Default: 20M.",
+    "translation": "Dimensione minima per la suddivisione (es. 20M, 1G). Predefinito: 20M.",
+    "timestamp": "2026-03-02T10:29:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(e.g. 20M, default: 20M)": {
+    "original": "(e.g. 20M, default: 20M)",
+    "translation": "(es. 20M, default: 20M)",
+    "timestamp": "2026-03-02T10:29:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Speed Limits": {
+    "original": "Speed Limits",
+    "translation": "Limiti di velocità",
+    "timestamp": "2026-03-02T10:29:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download limit (KB/s)": {
+    "original": "Download limit (KB/s)",
+    "translation": "Limite di download (KB/s)",
+    "timestamp": "2026-03-02T10:29:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maximum overall download rate in KB/s. 0 = unlimited.": {
+    "original": "Maximum overall download rate in KB/s. 0 = unlimited.",
+    "translation": "Velocità massima di download complessiva in KB/s. 0 = illimitata.",
+    "timestamp": "2026-03-02T10:29:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(0 = unlimited)": {
+    "original": "(0 = unlimited)",
+    "translation": "(0 = illimitato)",
+    "timestamp": "2026-03-02T10:29:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Upload limit (KB/s)": {
+    "original": "Upload limit (KB/s)",
+    "translation": "Limite di caricamento (KB/s)",
+    "timestamp": "2026-03-02T10:29:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maximum overall upload rate in KB/s. 0 = unlimited.": {
+    "original": "Maximum overall upload rate in KB/s. 0 = unlimited.",
+    "translation": "Velocità massima di caricamento complessiva in KB/s. 0 = illimitata.",
+    "timestamp": "2026-03-02T10:29:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:BitTorrent": {
+    "original": "BitTorrent",
+    "translation": "BitTorrent",
+    "timestamp": "2026-03-02T10:30:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable BitTorrent (DHT, LPD)": {
+    "original": "Enable BitTorrent (DHT, LPD)",
+    "translation": "Abilita BitTorrent (DHT, LPD)",
+    "timestamp": "2026-03-02T10:30:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Seed ratio": {
+    "original": "Seed ratio",
+    "translation": "Rapporto di semina",
+    "timestamp": "2026-03-02T10:30:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Seed ratio before stopping (0.0 = always seed, negative = unlimited). Default: 1.0.": {
+    "original": "Seed ratio before stopping (0.0 = always seed, negative = unlimited). Default: 1.0.",
+    "translation": "Rapporto di semina prima dell'arresto (0,0 = semina sempre, negativo = illimitato). Predefinito: 1,0.",
+    "timestamp": "2026-03-02T10:30:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(0.0=always, 1.0=default)": {
+    "original": "(0.0=always, 1.0=default)",
+    "translation": "(0.0=sempre, 1.0=default)",
+    "timestamp": "2026-03-02T10:30:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Seed time (min)": {
+    "original": "Seed time (min)",
+    "translation": "Tempo di semina (min)",
+    "timestamp": "2026-03-02T10:30:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Seed time in minutes after download (0 = unlimited). Default: 0.": {
+    "original": "Seed time in minutes after download (0 = unlimited). Default: 0.",
+    "translation": "Tempo di semina in minuti dopo il download (0 = illimitato). Predefinito: 0.",
+    "timestamp": "2026-03-02T10:30:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Max. peers": {
+    "original": "Max. peers",
+    "translation": "Max. coetanei",
+    "timestamp": "2026-03-02T10:30:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Maximum number of peers per torrent (0 = unlimited). Default: 55.": {
+    "original": "Maximum number of peers per torrent (0 = unlimited). Default: 55.",
+    "translation": "Numero massimo di peer per torrent (0 = illimitato). Predefinito: 55.",
+    "timestamp": "2026-03-02T10:30:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(0 = unlimited, default: 55)": {
+    "original": "(0 = unlimited, default: 55)",
+    "translation": "(0 = illimitato, default: 55)",
+    "timestamp": "2026-03-02T10:30:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable DHT": {
+    "original": "Enable DHT",
+    "translation": "Abilita DHT",
+    "timestamp": "2026-03-02T10:30:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:DHT port": {
+    "original": "DHT port",
+    "translation": "Porta DHT",
+    "timestamp": "2026-03-02T10:30:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port for DHT connections. Default: 6881.": {
+    "original": "Port for DHT connections. Default: 6881.",
+    "translation": "Porta per le connessioni DHT, predefinita: 6881.",
+    "timestamp": "2026-03-02T10:30:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 6881)": {
+    "original": "(default: 6881)",
+    "translation": "(default: 6881)",
+    "timestamp": "2026-03-02T10:30:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Logging": {
+    "original": "Logging",
+    "translation": "Registrazione",
+    "timestamp": "2026-03-02T10:30:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log level": {
+    "original": "Log level",
+    "translation": "Livello di log",
+    "timestamp": "2026-03-02T10:31:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: notice)": {
+    "original": "(default: notice)",
+    "translation": "(default: avviso)",
+    "timestamp": "2026-03-02T10:31:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Async DNS resolution (libcares)": {
+    "original": "Async DNS resolution (libcares)",
+    "translation": "Risoluzione DNS asincrona (libre)",
+    "timestamp": "2026-03-02T10:31:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(disable if aria2 was built without --with-libcares)": {
+    "original": "(disable if aria2 was built without --with-libcares)",
+    "translation": "(disabilitare se aria2 è stata compilata senza --with-libcares)",
+    "timestamp": "2026-03-02T10:31:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Boot Monitor": {
+    "original": "Boot Monitor",
+    "translation": "Monitoraggio dell'avvio",
+    "timestamp": "2026-03-02T10:31:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:If enabled, the init script monitors after boot start for a limited time whether aria2c is still running and restarts it if needed.": {
+    "original": "If enabled, the init script monitors after boot start for a limited time whether aria2c is still running and restarts it if needed.",
+    "translation": "Se abilitato, lo script di init controlla dopo l'avvio per un tempo limitato se aria2c è ancora in esecuzione e lo riavvia se necessario.",
+    "timestamp": "2026-03-02T10:31:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable": {
+    "original": "Enable",
+    "translation": "Abilita",
+    "timestamp": "2026-03-02T10:31:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: yes)": {
+    "original": "(default: yes)",
+    "translation": "(default: sì)",
+    "timestamp": "2026-03-02T10:31:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Interval (sec)": {
+    "original": "Interval (sec)",
+    "translation": "Intervallo (sec)",
+    "timestamp": "2026-03-02T10:31:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:How often to check whether aria2c is running (seconds).": {
+    "original": "How often to check whether aria2c is running (seconds).",
+    "translation": "Con quale frequenza controllare se aria2c è in esecuzione (secondi).",
+    "timestamp": "2026-03-02T10:31:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 10)": {
+    "original": "(default: 10)",
+    "translation": "(valore predefinito: 10)",
+    "timestamp": "2026-03-02T10:31:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Duration (sec)": {
+    "original": "Duration (sec)",
+    "translation": "Durata (sec)",
+    "timestamp": "2026-03-02T10:31:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:How long to monitor after boot (seconds).": {
+    "original": "How long to monitor after boot (seconds).",
+    "translation": "Quanto tempo monitorare dopo l'avvio (secondi).",
+    "timestamp": "2026-03-02T10:31:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(default: 300 = 5 min)": {
+    "original": "(default: 300 = 5 min)",
+    "translation": "(valore predefinito: 300 = 5 min)",
+    "timestamp": "2026-03-02T10:31:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:AriaNg Web Interface": {
+    "original": "AriaNg Web Interface",
+    "translation": "Interfaccia web AriaNg",
+    "timestamp": "2026-03-02T10:31:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Open AriaNg": {
+    "original": "Open AriaNg",
+    "translation": "Aprire AriaNg",
+    "timestamp": "2026-03-02T10:31:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(Modern web UI for aria2 via JSON-RPC)": {
+    "original": "(Modern web UI for aria2 via JSON-RPC)",
+    "translation": "(Moderna interfaccia web per aria2 via JSON-RPC)",
+    "timestamp": "2026-03-02T10:31:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Startup Log": {
+    "original": "Startup Log",
+    "translation": "Log di avvio",
+    "timestamp": "2026-03-02T10:31:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(log file is empty)": {
+    "original": "(log file is empty)",
+    "translation": "(il file di log è vuoto)",
+    "timestamp": "2026-03-02T10:32:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}
