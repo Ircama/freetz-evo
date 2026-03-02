@@ -106,6 +106,16 @@ if FREETZ_PACKAGE_ARIA2
 			Include file: <aria2/aria2.h>
 			Link with: -laria2
 
+	config FREETZ_PACKAGE_ARIA2_CGI
+		bool "aria2 CGI (freetz configuration web page)"
+		select FREETZ_BUSYBOX_START_STOP_DAEMON
+		default n
+		help
+			Provides a freetz web configuration page for aria2 daemon.
+
+			Includes init script, default config and CGI script for managing
+			aria2 settings via the freetz web UI (http://fritz.box:81/).
+
 	config FREETZ_PACKAGE_ARIANG
 		bool "AriaNg 1.3.13 (Web frontend for aria2)"
 		default y
@@ -120,6 +130,6 @@ if FREETZ_PACKAGE_ARIA2
 			- Download management (add, pause, resume, delete)
 			- Settings configuration
 
-			Accessed via: http://router_ip:81/ariang/
+			Accessed via: http://fritz.box:81/ariang/
 
 endif # FREETZ_PACKAGE_ARIA2
