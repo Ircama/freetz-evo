@@ -1,0 +1,7 @@
+if [ "$EXTERNAL_FREETZ_LIB_libxmlrpc" == "y" ]; then
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_server.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_xmlparse.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_xmltok.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_util.so.4.64"
+fi

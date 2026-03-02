@@ -9,7 +9,7 @@ config EXTERNAL_FREETZ_LIB_libpcre2
 config EXTERNAL_FREETZ_LIB_libpcre2_posix
 	depends on EXTERNAL_ENABLED && FREETZ_LIB_libpcre2_posix
 	bool "libpcre2-posix"
-	default n
+	default y
 	help
 		externals the following file(s):
 		 ${FREETZ_LIBRARY_DIR}/libpcre2-posix.so.3.0.7
