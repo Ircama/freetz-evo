@@ -35,13 +35,13 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 | **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
 | **GCC On Device** | Full GCC toolchain for on-device compilation; optional externalization; removed gprofng for i686 compatibility. | EVO only |
 | **GitHub CLI** (`gh`) | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
-| **util-linux** | Dual-version support (2.36 / 2.40) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has basic version |
+| **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
-| **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | EVO only |
+| **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | merged upstream |
 | **cpulimit** | Limits the CPU usage of a process to a given percentage; prevents runaway processes from overloading the device. | merged upstream |
-| **microperl** 5.38 | Minimal Perl 5.38.2 interpreter (alongside legacy 5.10.1) with full stub library set for embedded use. | upstream has 5.38 too (merged) |
-| **zip** 3.0 (infozip) | Standard `zip` archiver for creating ZIP archives directly on the device. | upstream has infozip |
-| **gdb** 17.1 | GNU Debugger version 17.1 for on-device debugging of binaries and crash analysis. | merged upstream |
+| **microperl** 5.38 | Minimal Perl 5.38.2 interpreter (alongside legacy 5.10.1) with full stub library set for embedded use. | upstream has 5.10.1; EVO adds 5.38.2 |
+| **zip** 3.0 (infozip) | Standard `zip` archiver for creating ZIP archives directly on the device. | merged upstream |
+| **gdb** 17.1 | GNU Debugger version 17.1 for on-device debugging of binaries and crash analysis. | EVO only for 17.1 (upstream has 6.8/7.9.1) |
 | **patchelf** (target) | ELF binary patcher for fixing RPATH and dynamic linker paths on cross-compiled binaries. | merged upstream |
 | **binutils-tools** (`c++filt`, `elfedit`, `nm`, `objdump`) | Additional binutils utilities for binary inspection and symbol demangling on the device. | merged upstream |
 | **libnettle** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
