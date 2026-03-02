@@ -31,15 +31,7 @@ $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))pat
 $(PKG)_PATCH_POST_CMDS += mkdir -p lib/Exporter && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/Exporter/Heavy.pm) lib/Exporter/;
 $(PKG)_PATCH_POST_CMDS += cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/feature.pm) lib/;
 $(PKG)_PATCH_POST_CMDS += mkdir -p lib/File && cp -f $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/File/Basename.pm) lib/File/;
-$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/Cwd.pm lib/;
-$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/overload.pm lib/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/File && cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Spec.pm lib/File/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Class && cp -f /usr/share/perl/5.38/Class/Struct.pm lib/Class/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Data && cp -f /usr/lib/x86_64-linux-gnu/perl/5.38/Data/Dumper.pm lib/Data/;
-$(PKG)_PATCH_POST_CMDS += cp -f /usr/lib/x86_64-linux-gnu/perl-base/File/Temp.pm lib/File/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Getopt && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Getopt/Long.pm lib/Getopt/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/IO && cp -f /usr/lib/x86_64-linux-gnu/perl-base/IO/File.pm lib/IO/;
-$(PKG)_PATCH_POST_CMDS += mkdir -p lib/Scalar && cp -f /usr/lib/x86_64-linux-gnu/perl-base/Scalar/Util.pm lib/Scalar/;
+$(PKG)_PATCH_POST_CMDS += sh $(abspath $(dir $(lastword $(MAKEFILE_LIST)))patches/5.38/apply_host_modules.sh);
 endif
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
