@@ -1,5 +1,6 @@
 $(call PKG_INIT_BIN, 0.2)
-$(PKG)_SOURCE:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=64312f9ac569ddcadb615593cd002c94b76e93a0d4625d3ce1abb49e08e2c2da
 $(PKG)_SITE:=https://github.com/opsengine/cpulimit/archive/refs/tags
 ### WEBSITE:=https://github.com/opsengine/cpulimit

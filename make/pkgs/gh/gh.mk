@@ -1,5 +1,6 @@
 $(call PKG_INIT_BIN, 2.83.2)
-$(PKG)_SOURCE:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_SHA256:=c031ca887d3aaccb40402a224d901c366852f394f6b2b60d1158f20569e33c89
 $(PKG)_HASH:=$($(PKG)_SOURCE_SHA256)
 $(PKG)_SITE:=https://github.com/cli/cli/archive/refs/tags
