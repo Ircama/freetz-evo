@@ -85,6 +85,7 @@ to the target staging directory instead of the host.
 | **AI translation** | Automatic translation of web UI labels to foreign languages via LLM, with curated override cache. |
 | **ssh_firmware_update.py** | Python tool to flash a Freetz firmware image to a FRITZ!Box over SSH/SCP, emulating the web update process with interactive/batch modes, progress bars, dry-run and debug options. Merged upstream. |
 | **make_progress_monitor.sh** | Bash script to monitor Freetz cross-compilation build progress in real time (run alongside `make` in a second terminal). Merged upstream. |
+| **sync-upstream-manual.sh** | Interactive script to merge upstream Freetz-NG changes into Freetz-EVO on demand, with `--dry-run`, `--diff`, and `--log` modes. See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md). |
 
 ---
 
@@ -150,6 +151,15 @@ to the target staging directory instead of the host.
 ```
   git pull
 ```
+
+### Sync with upstream Freetz-NG:
+```
+  tools/sync-upstream-manual.sh              # interactive merge
+  tools/sync-upstream-manual.sh --log        # show pending upstream commits
+  tools/sync-upstream-manual.sh --diff       # show diff with upstream
+  tools/sync-upstream-manual.sh --dry-run    # test merge without pushing
+```
+See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 
 ### Checkout old revision:
 ```
