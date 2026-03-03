@@ -285,13 +285,18 @@ menu "Web Interface"
 			Changes the style sheet file for Freetz web interface.
 			For example, look of the Freetz status-bars can be changed
 			from colored to grey by change of the Freetz style.
+			"modern" uses a teal palette matching the Evo skin and
+			requires FREETZ_SKIN_evo to be selected.
 
 		config FREETZ_STYLE_COLORED
 			bool "green status-bars"
-			depends on !FREETZ_SKIN_cuma
 
 		config FREETZ_STYLE_GREY
 			bool "grey status-bars"
+
+		config FREETZ_STYLE_MODERN
+			bool "modern (teal) status-bars"
+			depends on FREETZ_SKIN_evo
 
 	endchoice # "Freetz style" #
 
@@ -299,22 +304,32 @@ menu "Web Interface"
 		string
 		default "colored" if FREETZ_STYLE_COLORED
 		default "grey"    if FREETZ_STYLE_GREY
+		default "modern"  if FREETZ_STYLE_MODERN
 
 	menu "Freetz skins"
 
 	comment "CAUTION: You should select at least one skin."
 	depends on \
 		!FREETZ_SKIN_cuma && \
+		!FREETZ_SKIN_evo && \
 		!FREETZ_SKIN_legacy && \
 		!FREETZ_SKIN_newfreetz && \
 		!FREETZ_SKIN_phoenix
 
 	config FREETZ_SKIN_cuma
 		bool "cuma"
-		default y
+		default n
 		help
 			Main theme dark, menu at right.
 			Size: about 12 kB (uncompressed)
+
+	config FREETZ_SKIN_evo
+		bool "evo"
+		default y
+		help
+			Modern teal theme, menu at top, responsive.
+			Self-contained, no images or external resources needed.
+			Size: about 8 kB (uncompressed)
 
 	config FREETZ_SKIN_legacy
 		bool "legacy"

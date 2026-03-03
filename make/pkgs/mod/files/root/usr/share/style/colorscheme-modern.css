@@ -1,0 +1,39 @@
+/* ==========================================================================
+   colorscheme-modern.css — Modern teal scheme (matches Evo skin accent)
+   ========================================================================== */
+
+/* --- Storage / memory bars (table.bar) --- */
+
+/* rw = read-write mount: part0=free, part1=used */
+table.bar.rw .part0, table.bar.br .part0 {
+	background-color: #cffafe;    /* light teal — free space */
+	color: #0e7490;
+}
+table.bar.rw .part1, table.bar.br .part1 {
+	background-color: #0891b2;    /* teal — used space */
+	color: #ffffff;
+}
+table.bar.br .part2 {
+	background-color: #0e7490;    /* dark teal — extra segment */
+	color: #ffffff;
+}
+
+/* ro = read-only mount */
+table.bar.ro .part0 {
+	background-color: #e2e8f0;    /* light slate — free */
+	color: #475569;
+}
+table.bar.ro .part1 {
+	background-color: #475569;    /* slate — used */
+	color: #ffffff;
+}
+
+/* --- Mounted filesystem path colors --- */
+.mounted .rw .path { color: #0e7490; }
+.mounted .ro .path { color: #475569; }
+
+/* --- R/W toggle buttons on mounted filesystems --- */
+.mounted .button[value=R]    { border-color: #475569; color: #475569; }
+.mounted .ro .button[value=R]{ background-color: #475569; color: white; }
+.mounted .button[value=W]    { border-color: #0891b2; color: #0891b2; }
+.mounted .rw .button[value=W]{ background-color: #0891b2; color: white; }

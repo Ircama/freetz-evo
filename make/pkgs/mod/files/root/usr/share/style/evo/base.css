@@ -1,0 +1,844 @@
+@import url(../common.css);
+
+/* ==========================================================================
+   Evo Skin — Modern self-contained theme for Freetz-Evo.
+   ========================================================================== */
+
+/* --- CSS Custom Properties (design tokens) --- */
+:root {
+	--evo-accent:       #0e7490;
+	--evo-accent-light: #22d3ee;
+	--evo-accent-dark:  #065666;
+	--evo-bg:           #f0f4f8;
+	--evo-surface:      #ffffff;
+	--evo-text:         #1e293b;
+	--evo-text-muted:   #64748b;
+	--evo-border:       #cbd5e1;
+	--evo-border-light: #e2e8f0;
+	--evo-header-bg:    linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%);
+	--evo-header-text:  #ffffff;
+	--evo-footer-bg:    #1e293b;
+	--evo-footer-text:  #94a3b8;
+	--evo-menu-hover:   #f1f5f9;
+	--evo-menu-active:  #0e7490;
+	--evo-radius:       6px;
+	--evo-radius-lg:    10px;
+	--evo-shadow:       0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+	--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
+	--evo-transition:   0.15s ease;
+	--evo-font:         -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+	                    "Helvetica Neue", Arial, sans-serif;
+	--evo-font-mono:    "SFMono-Regular", Menlo, Consolas, "Liberation Mono",
+	                    monospace;
+	--evo-focus-ring:   0 0 0 3px rgba(14,116,144,0.3);
+}
+
+/* --- Base Reset & Typography --- */
+html {
+	font-size: 100%;
+	-webkit-text-size-adjust: 100%;
+}
+body {
+	font-family: var(--evo-font);
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--evo-text);
+	background: var(--evo-bg);
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+}
+
+/* --- Page Wrapper --- */
+#world {
+	max-width: 64rem;
+	margin: 0 auto;
+	background: var(--evo-surface);
+	box-shadow: var(--evo-shadow-lg);
+	border-radius: 0 0 var(--evo-radius-lg) var(--evo-radius-lg);
+	overflow: hidden;
+}
+
+/* --- Header --- */
+#header {
+	background: var(--evo-header-bg);
+	color: var(--evo-header-text);
+	padding: 0;
+	border-bottom: 3px solid var(--evo-accent-dark);
+}
+#header-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 24px;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+#header h1 {
+	color: inherit;
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 0;
+	padding: 0;
+	border: none;
+	display: inline;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+#header a {
+	color: inherit;
+	text-decoration: none;
+	border: none;
+}
+#header a:hover {
+	background: transparent;
+	opacity: 0.85;
+}
+#header a.logo {
+	border: none !important;
+}
+.evo-brand {
+	font-weight: 400;
+	opacity: 0.85;
+}
+#header .title {
+	font-style: normal;
+	font-weight: 400;
+	opacity: 0.9;
+}
+#header-right {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	font-size: 0.8rem;
+}
+#header-right .version {
+	opacity: 0.75;
+	font-size: 0.75rem;
+}
+#header a.help {
+	background: rgba(255,255,255,0.15);
+	padding: 4px 12px;
+	border-radius: var(--evo-radius);
+	font-size: 0.8rem;
+	transition: background var(--evo-transition);
+}
+#header a.help:hover {
+	background: rgba(255,255,255,0.25);
+	opacity: 1;
+}
+a#about {
+	border-bottom-style: none !important;
+}
+
+/* --- Container --- */
+#container {
+	padding: 0 24px 24px 24px;
+}
+
+/* --- Content Area --- */
+#content {
+	clear: both;
+	padding-top: 16px;
+}
+
+/* --- headings (inside content) --- */
+h1 {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--evo-accent);
+	margin: 1.25em 0 0.5em 0;
+	padding-bottom: 4px;
+	border-bottom: 2px solid var(--evo-border-light);
+}
+h2 {
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--evo-text);
+	margin: 1em 0 0.5em 0;
+}
+
+/* --- Sections (fieldset-like) --- */
+div.section {
+	clear: left;
+	margin: 16px 0;
+	padding: 0;
+}
+div.section > h1:first-child {
+	border-bottom: 2px solid var(--evo-accent);
+	padding-bottom: 6px;
+}
+
+/* Also support classic fieldset from legacy CGIs */
+fieldset {
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius);
+	margin: 12px 0;
+	padding: 12px 16px;
+}
+fieldset legend {
+	font-weight: 700;
+	font-size: 0.875rem;
+	color: var(--evo-accent);
+	padding: 0 6px;
+}
+
+/* --- Navigation Menu (horizontal, top) --- */
+ul.menu {
+	display: flex;
+	flex-wrap: wrap;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	background: var(--evo-surface);
+	border-bottom: 1px solid var(--evo-border-light);
+	position: relative;
+}
+ul.menu.new.sub {
+	margin-top: -1px;
+	border-top: 1px solid var(--evo-border-light);
+	font-size: 0.85em;
+}
+ul.menu > li {
+	display: block;
+	position: relative;
+	margin: 0;
+	padding: 0;
+}
+ul.menu > li + li {
+	border-left: 1px solid var(--evo-border-light);
+}
+ul.menu a {
+	display: block;
+	padding: 8px 14px;
+	color: var(--evo-text);
+	text-decoration: none;
+	border: none;
+	font-size: 0.85rem;
+	transition: background var(--evo-transition), color var(--evo-transition);
+	white-space: nowrap;
+}
+ul.menu a:hover {
+	background: var(--evo-menu-hover);
+	color: var(--evo-accent);
+	text-decoration: none;
+	border: none;
+}
+ul.menu a.active,
+ul.menu li.open > a,
+ul.menu li.open:hover > a,
+ul.menu li:hover a.active {
+	background: var(--evo-menu-active);
+	color: #fff;
+	font-weight: 600;
+}
+ul.menu ul a,
+ul.menu.sub a {
+	font-size: 0.8rem;
+}
+ul.menu li {
+	display: block;
+	float: left;
+	padding: 0;
+	margin: 0;
+}
+ul.menu ul li {
+	float: none;
+	white-space: nowrap;
+}
+
+/* Dropdown */
+ul.menu ul {
+	display: none;
+	position: absolute;
+	z-index: 100;
+	left: 0;
+	top: 100%;
+	background: var(--evo-surface);
+	border: 1px solid var(--evo-border);
+	border-radius: 0 0 var(--evo-radius) var(--evo-radius);
+	box-shadow: var(--evo-shadow-lg);
+	margin: 0;
+	padding: 4px 0;
+	min-width: 180px;
+}
+ul.menu li:hover ul {
+	display: block;
+}
+ul.menu ul a {
+	padding: 6px 16px;
+}
+ul.menu ul a:hover {
+	background: var(--evo-menu-hover);
+}
+
+/* Also support right-side .menu (legacy/cuma style) */
+.menu {
+	display: block;
+}
+.menu ul, .menu li {
+	margin: 0;
+	padding: 0;
+}
+.menu li {
+	display: block;
+	font-size: 0.8rem;
+	font-weight: 600;
+	margin-top: 2px;
+}
+.menu li li {
+	font-weight: normal;
+}
+.menu a {
+	display: block;
+	padding: 4px 8px;
+	border-radius: 3px;
+}
+.menu a:link, .menu a:visited, .menu a:hover {
+	color: var(--evo-text);
+	text-decoration: none;
+	border: none;
+}
+.menu a:hover {
+	background: var(--evo-menu-hover);
+}
+.menu .active {
+	background: var(--evo-menu-active);
+	color: #fff;
+}
+.menu.new ul {
+	display: none;
+}
+.menu.new > li.open ul {
+	display: block;
+}
+
+/* --- Form Elements --- */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+	font-family: var(--evo-font);
+	font-size: 0.85rem;
+	background: var(--evo-surface);
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius);
+	padding: 6px 10px;
+	color: var(--evo-text);
+	transition: border-color var(--evo-transition), box-shadow var(--evo-transition);
+}
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+	border-color: var(--evo-accent);
+	box-shadow: var(--evo-focus-ring);
+	outline: none;
+}
+input[readonly],
+textarea[readonly] {
+	color: var(--evo-text-muted);
+	background: var(--evo-bg);
+}
+input,
+select {
+	font: inherit;
+}
+input {
+	padding: 4px 8px;
+}
+input[type="text"],
+textarea,
+option {
+	padding: 6px 10px;
+}
+select {
+	cursor: pointer;
+}
+
+/* Buttons */
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+button,
+.btn input {
+	font-family: var(--evo-font);
+	font-size: 0.82rem;
+	font-weight: 600;
+	background: var(--evo-accent);
+	color: #fff;
+	border: none;
+	border-radius: var(--evo-radius);
+	padding: 6px 16px;
+	cursor: pointer;
+	transition: background var(--evo-transition), box-shadow var(--evo-transition);
+}
+input[type="submit"]:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+button:hover,
+.btn input:hover {
+	background: var(--evo-accent-dark);
+	box-shadow: var(--evo-shadow);
+}
+input[type="submit"]:focus-visible,
+input[type="button"]:focus-visible,
+button:focus-visible {
+	box-shadow: var(--evo-focus-ring);
+	outline: none;
+}
+form.btn {
+	margin: 0;
+}
+div.btn {
+	display: block;
+	float: left;
+	margin: 0.75em 0.5em 1em 0;
+}
+
+/* Textarea wrapper */
+.textwrapper {
+	margin-right: 8px;
+}
+.textwrapper textarea {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* --- Links --- */
+:link, :visited {
+	color: var(--evo-accent);
+	text-decoration: none;
+	border-bottom: 1px dotted var(--evo-border);
+	transition: color var(--evo-transition), border-color var(--evo-transition);
+}
+a:hover {
+	color: var(--evo-accent-dark);
+	border-bottom-style: solid;
+	border-bottom-color: var(--evo-accent);
+	background: transparent;
+}
+#header :link, #header :visited {
+	border-bottom: none;
+}
+a.image {
+	border-bottom-style: none !important;
+}
+
+/* --- Tables --- */
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+td, th {
+	padding: 4px 8px;
+	text-align: left;
+	border-style: none;
+}
+/* Styled tables (daemons, packages, etc.) */
+table.daemons,
+table.packages {
+	width: 100%;
+	border: 1px solid var(--evo-border-light);
+	border-radius: var(--evo-radius);
+}
+table.daemons th,
+table.packages th {
+	background: var(--evo-bg);
+	font-weight: 600;
+	font-size: 0.8rem;
+	padding: 8px 10px;
+	border-bottom: 2px solid var(--evo-border);
+}
+table.daemons td,
+table.packages td {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--evo-border-light);
+	font-size: 0.85rem;
+}
+table.daemons tr:last-child td,
+table.packages tr:last-child td {
+	border-bottom: none;
+}
+table.daemons tr:hover td,
+table.packages tr:hover td {
+	background: var(--evo-menu-hover);
+}
+
+/* --- Status Bar (disk, memory, etc.) --- */
+table.bar,
+table.bar td {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+table.bar {
+	width: 100%;
+	table-layout: fixed;
+	margin: 4px 0;
+	border-spacing: 0;
+	border-radius: 3px;
+	overflow: hidden;
+}
+table.bar td {
+	text-align: center;
+	font-size: 0.7rem;
+	padding: 3px;
+	overflow: hidden;
+}
+
+/* --- Log / Pre --- */
+pre {
+	font-family: var(--evo-font-mono);
+	font-size: 0.82rem;
+}
+pre.log {
+	background: #f8fafc;
+	border: 1px solid var(--evo-border-light);
+	border-radius: var(--evo-radius);
+	padding: 12px;
+}
+pre.log.unlimited,
+pre.log.full {
+	max-height: none;
+}
+
+/* --- Status classes --- */
+.daemons tr.running .status {
+	color: #16a34a;
+	font-weight: 600;
+}
+.daemons tr.stopped .status {
+	color: #dc2626;
+	font-weight: 600;
+}
+.btn-colored_enabled {
+	color: #16a34a;
+}
+.btn-colored_disabled {
+	color: var(--evo-text-muted);
+}
+
+/* --- Footer --- */
+#footer {
+	background: var(--evo-footer-bg);
+	color: var(--evo-footer-text);
+	padding: 0;
+	clear: both;
+	border-radius: 0 0 var(--evo-radius-lg) var(--evo-radius-lg);
+}
+#footer-inner {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 24px;
+	font-size: 0.75rem;
+}
+#footer a {
+	color: var(--evo-accent-light);
+	border: none;
+}
+.footer-right {
+	opacity: 0.6;
+	font-style: italic;
+}
+
+/* --- Message boxes (warning, error, info) --- */
+p.warning, p.error, p.info {
+	display: block;
+	padding: 10px 14px 10px 44px;
+	margin: 12px 0;
+	border-radius: var(--evo-radius);
+	border: 1px solid;
+	background-repeat: no-repeat;
+	background-position: 12px center;
+	background-size: 22px 22px;
+	min-height: 22px;
+	font-size: 0.85rem;
+}
+p.warning {
+	border-color: #fbbf24;
+	background-color: #fefce8;
+	/* Inline SVG warning triangle — no external file needed */
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'%3E%3Cpath d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E");
+}
+p.error {
+	border-color: #fca5a5;
+	background-color: #fef2f2;
+	/* Inline SVG error circle */
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ef4444'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+}
+p.info {
+	border-color: #93c5fd;
+	background-color: #eff6ff;
+	/* Inline SVG info circle */
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E");
+}
+
+/* --- Checkbox & Radio refinement --- */
+input[type="checkbox"],
+input[type="radio"] {
+	margin-right: 4px;
+	vertical-align: middle;
+	accent-color: var(--evo-accent);
+}
+
+/* --- Miscellaneous --- */
+p, ul, ol {
+	margin-top: 8px;
+	margin-bottom: 12px;
+}
+ul, ol {
+	margin-left: 20px;
+}
+form {
+	margin-top: 8px;
+	margin-bottom: 0;
+}
+small {
+	font-size: 0.75rem;
+	color: var(--evo-text-muted);
+}
+hr {
+	border: none;
+	border-top: 1px solid var(--evo-border-light);
+	margin: 16px 0;
+}
+
+/* ─── Dark-mode toggle button (in header) ─────────────────── */
+.evo-dark-toggle {
+	background: rgba(255,255,255,0.15);
+	border: none;
+	border-radius: var(--evo-radius);
+	color: #fff;
+	cursor: pointer;
+	font-size: 1rem;
+	line-height: 1;
+	padding: 5px 9px;
+	transition: background var(--evo-transition);
+	font-family: var(--evo-font);
+}
+.evo-dark-toggle:hover { background: rgba(255,255,255,0.28); box-shadow: none; }
+
+/* ─── Hamburger toggle (mobile, hidden on desktop) ─────────── */
+.evo-hamburger {
+	display: none;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 8px 14px;
+	font-size: 1.3rem;
+	color: var(--evo-text);
+	transition: color var(--evo-transition);
+	line-height: 1;
+}
+.evo-hamburger:hover { color: var(--evo-accent); box-shadow: none; }
+
+/* ─── Menu overlay backdrop (hamburger slide-in) ───────────── */
+.evo-nav-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.35);
+	z-index: 199;
+}
+body.evo-menu-open .evo-nav-overlay { display: block; }
+body.evo-menu-open ul.menu.new {
+	display: flex !important;
+	position: fixed;
+	inset: 0 0 0 auto;
+	width: min(260px, 85vw);
+	flex-direction: column;
+	flex-wrap: nowrap;
+	background: var(--evo-surface);
+	box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+	overflow-y: auto;
+	z-index: 200;
+	border-bottom: none;
+	padding-top: 8px;
+}
+body.evo-menu-open ul.menu.new > li {
+	float: none;
+	border-left: none;
+	border-bottom: 1px solid var(--evo-border-light);
+}
+body.evo-menu-open ul.menu.new a { padding: 12px 20px; font-size: 0.9rem; }
+body.evo-menu-open ul.menu.new ul {
+	display: block;
+	position: static;
+	box-shadow: none;
+	border: none;
+	border-radius: 0;
+	border-top: 1px solid var(--evo-border-light);
+	background: var(--evo-bg);
+}
+
+/* ─── Dark Mode ─────────────────────────────────────────────── */
+/* Shared variable overrides: system auto-preference */
+@media (prefers-color-scheme: dark) {
+	body:not(.light-mode) {
+		--evo-bg:           #0f172a;
+		--evo-surface:      #1e293b;
+		--evo-text:         #e2e8f0;
+		--evo-text-muted:   #94a3b8;
+		--evo-border:       #334155;
+		--evo-border-light: #1e293b;
+		--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
+		--evo-footer-bg:    #020617;
+		--evo-menu-hover:   #1e293b;
+		--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+	}
+	body:not(.light-mode) pre.log                         { background: #0f172a; border-color: #1e293b; }
+	body:not(.light-mode) table.daemons th,
+	body:not(.light-mode) table.packages th               { background: #0f172a; }
+	body:not(.light-mode) p.warning                       { background-color: #422006; border-color: #854d0e; }
+	body:not(.light-mode) p.error                         { background-color: #450a0a; border-color: #991b1b; }
+	body:not(.light-mode) p.info                          { background-color: #0c1a2e; border-color: #1e40af; }
+	body:not(.light-mode) input[type="text"],
+	body:not(.light-mode) input[type="password"],
+	body:not(.light-mode) input[type="number"],
+	body:not(.light-mode) textarea,
+	body:not(.light-mode) select { background: #0f172a; border-color: var(--evo-border); }
+	body:not(.light-mode) fieldset { border-color: var(--evo-border); }
+}
+/* Manual dark mode (JS toggle via localStorage) */
+body.dark-mode {
+	--evo-bg:           #0f172a;
+	--evo-surface:      #1e293b;
+	--evo-text:         #e2e8f0;
+	--evo-text-muted:   #94a3b8;
+	--evo-border:       #334155;
+	--evo-border-light: #1e293b;
+	--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
+	--evo-footer-bg:    #020617;
+	--evo-menu-hover:   #1e293b;
+	--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+}
+body.dark-mode pre.log                         { background: #0f172a; border-color: #1e293b; }
+body.dark-mode table.daemons th,
+body.dark-mode table.packages th               { background: #0f172a; }
+body.dark-mode p.warning                       { background-color: #422006; border-color: #854d0e; }
+body.dark-mode p.error                         { background-color: #450a0a; border-color: #991b1b; }
+body.dark-mode p.info                          { background-color: #0c1a2e; border-color: #1e40af; }
+body.dark-mode input[type="text"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="number"],
+body.dark-mode textarea,
+body.dark-mode select                          { background: #0f172a; border-color: var(--evo-border); }
+body.dark-mode fieldset                        { border-color: var(--evo-border); }
+
+/* ─── Responsive: tablet and small desktop ─────────────────── */
+@media (max-width: 768px) {
+	#header-inner {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+	#header-right {
+		width: 100%;
+		justify-content: space-between;
+	}
+	#container {
+		padding: 0 12px 16px 12px;
+	}
+	#footer-inner {
+		flex-direction: column;
+		gap: 4px;
+		text-align: center;
+	}
+}
+
+/* ─── Mobile: bottom navigation bar ───────────────────────────
+   Auto-activates on narrow viewport (portrait) or short landscape.
+   Class .evo-topnav on body forces classic top-horizontal menu.
+   ─────────────────────────────────────────────────────────────── */
+@media (max-width: 600px), (max-height: 480px) and (orientation: landscape) {
+	body:not(.evo-topnav) {
+		padding-bottom: 54px;
+	}
+	body:not(.evo-topnav) ul.menu.new {
+		position: fixed;
+		bottom: 0; left: 0; right: 0; top: auto;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		height: 54px;
+		border-top: 2px solid var(--evo-accent);
+		border-bottom: none;
+		border-radius: 0;
+		background: var(--evo-surface);
+		box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+		z-index: 100;
+		align-items: stretch;
+	}
+	body:not(.evo-topnav) ul.menu.new > li {
+		border-left: none;
+		border-right: 1px solid var(--evo-border-light);
+		flex: 1 0 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	body:not(.evo-topnav) ul.menu.new > li + li { border-left: none; }
+	body:not(.evo-topnav) ul.menu.new > li a {
+		padding: 4px 10px;
+		font-size: 0.73rem;
+		text-align: center;
+		white-space: nowrap;
+		line-height: 1.3;
+	}
+	/* Dropdowns open upward in bottom nav */
+	body:not(.evo-topnav) ul.menu.new ul {
+		top: auto;
+		bottom: 100%;
+		border-radius: var(--evo-radius) var(--evo-radius) 0 0;
+	}
+	/* Sub-menu stays in normal flow */
+	body:not(.evo-topnav) ul.menu.new.sub {
+		position: static;
+		height: auto;
+		flex-wrap: wrap;
+		overflow-x: visible;
+		border: none;
+		border-top: 1px solid var(--evo-border-light);
+		box-shadow: none;
+	}
+	body:not(.evo-topnav) .evo-hamburger { display: none; }
+	body:not(.evo-topnav) #container { padding: 0 10px 16px 10px; }
+	#world { border-radius: 0; }
+	#header-inner { flex-direction: row; align-items: center; }
+	#header h1 { font-size: 0.95rem; }
+	#header-right .version { display: none; }
+}
+
+/* Manual bottom-nav class (JS, regardless of viewport) */
+body.evo-bottomnav {
+	padding-bottom: 54px;
+}
+body.evo-bottomnav ul.menu.new {
+	position: fixed;
+	bottom: 0; left: 0; right: 0; top: auto;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	height: 54px;
+	border-top: 2px solid var(--evo-accent);
+	border-bottom: none;
+	background: var(--evo-surface);
+	box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+	z-index: 100;
+}
+body.evo-bottomnav ul.menu.new > li {
+	border-left: none;
+	border-right: 1px solid var(--evo-border-light);
+	flex: 1 0 auto;
+	display: flex; align-items: center; justify-content: center;
+}
+body.evo-bottomnav ul.menu.new ul { top: auto; bottom: 100%; border-radius: var(--evo-radius) var(--evo-radius) 0 0; }
+body.evo-bottomnav .evo-hamburger { display: none; }
+
+/* Manual hamburger-only mode */
+body.evo-navdrawer ul.menu.new { display: none; }
+body.evo-navdrawer .evo-hamburger { display: block; }
