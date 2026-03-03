@@ -1,28 +1,28 @@
-# Freetz-NG Build Guide
+# Freetz-EVO Build Guide
 
 
-This document provides guidance for building the complete Freetz-NG framework as well as single packages.
+This document provides guidance for building the complete Freetz-EVO framework as well as single packages.
 
-Freetz-NG provides a comprehensive testing framework that combines local development capabilities with automated validation across multiple platforms. Understanding both approaches is crucial for effective package and firmware build, testing and development.
+Freetz-EVO provides a comprehensive testing framework that combines local development capabilities with automated validation across multiple platforms. Understanding both approaches is crucial for effective package and firmware build, testing and development.
 
 ## Overview
 
-When building the firmware, testing the build procedure, developing packages or modifying configurations, you'll first work directly on your development machine. This local testing phase allows you to compile packages, build firmware images, and test them on devices you physically own. It's the foundation of the test and development process, where you can quickly iterate, debug issues, and verify that your changes work as expected. Local testing gives you full control over the build environment and immediate access to debugging tools.
+During the development phase, when porting a package, testing the build procedure, or modifying configurations, you'll first work directly on your development machine and test on  devices you physically own. It's the foundation of the test and development process, where you can quickly iterate, debug issues, and verify that your changes work as expected. Local testing gives you full control over the build environment and immediate access to debugging tools.
 
-While local testing ensures your changes work on your specific setup, Freetz-NG's ecosystem spans approximately tens of different device models, each with unique hardware characteristics, firmware versions, and toolchain requirements. To ensure compatibility across this diverse ecosystem, Freetz-NG uses GitHub Actions workflows that automatically test your changes across all supported platforms. This automated testing catches platform-specific issues that might not appear in your local environment and provides confidence that your modifications work consistently across the entire Freetz-NG user base.
+While local testing ensures your changes work on your specific setup, Freetz-EVO's ecosystem spans approximately tens of different device models, each with unique hardware characteristics, firmware versions, and toolchain requirements. To ensure compatibility across this diverse ecosystem, Freetz-EVO uses GitHub Actions workflows that automatically test your changes across all supported platforms. This automated testing catches platform-specific issues that might not appear in your local environment and provides confidence that your modifications work consistently across the entire Freetz-EVO user base.
 
 This guide first explains the local build system, then covers automated workflow testing to provide a complete testing strategy.
 
 ------------------
 
-## Understanding Freetz-NG Build System
+## Understanding Freetz-EVO Build System
 
-We will now understand the main parameters offered by Freetz-NG's `make` command.
+We will now understand the main parameters offered by Freetz-EVO's `make` command.
 
 The simplest way to use `make` is through the following commands:
 
 ```bash
-make menuconfig  # configure your Freetz-NG firmware build options (device, packages, toolchain, etc.)
+make menuconfig  # configure your Freetz-EVO firmware build options (device, packages, toolchain, etc.)
 make  # build the firmware
 ```
 
@@ -30,7 +30,7 @@ The following two paragraphs better explain the above commands.
 
 ### `make menuconfig`
 
-This is Freetz-NG's implementation of the [Kconfig](https://docs.kernel.org/kbuild/kconfig-language.html) system (derived from Linux kernel configuration tools). It provides an interactive menu-driven [Ncurses](https://en.wikipedia.org/wiki/Ncurses) textual user interface for configuring the firmware build options. It generates the `.config` file that serves as the authoritative configuration for the subsequent `make`.
+This is Freetz-EVO's implementation of the [Kconfig](https://docs.kernel.org/kbuild/kconfig-language.html) system (derived from Linux kernel configuration tools). It provides an interactive menu-driven [Ncurses](https://en.wikipedia.org/wiki/Ncurses) textual user interface for configuring the firmware build options. It generates the `.config` file that serves as the authoritative configuration for the subsequent `make`.
 
 **What it does:**
 - Displays a hierarchical menu structure based on `Config.in` files
@@ -41,21 +41,74 @@ This is Freetz-NG's implementation of the [Kconfig](https://docs.kernel.org/kbui
 - `Config.in` - Main configuration skeleton written in Kconfig language
 - `.config` - User-generated configuration file (should not be edited manually)
 
+#### Freetz language
+
+Freetz-EVO supports multiple web interface languages, selectable at build time via `make menuconfig` under **Web Interface** → **Freetz language**. The chosen language is compiled into the firmware: all menus will appear exclusively in the selected language and cannot be changed at runtime without rebuilding the firmware with a different language setting.
+
+**Native languages** — `en` (English) and `de` (German) — are built in and require no external services. For all other languages, an AI-assisted translation pipeline is used at build time.
+
+##### AI Translation
+
+When a language other than `en` or `de` is selected, the **AI Translation** submenu becomes available in `make menuconfig`. This allows you to configure an external translation provider, which is called at build time to translate all web UI strings from English into the target language. Translation happens entirely at build time; target devices remain fully offline.
+
+Available translation providers:
+
+| Provider | Notes |
+|---|---|
+| **MyMemory** | Free with quota limits; no key required for basic use |
+| **DeepL API** | High quality; API key required |
+| **LibreTranslate** | Self-hostable, open-source; optional API key |
+| **Apertium** | Open-source rule-based MT; free, no key required |
+| **Lingva Translate** | Open frontend to Google Translate; free |
+| **OpenAI API (GPT)** | High quality; API key required |
+
+##### Translation cache
+
+All translations are cached under `tools/translate_cache/` so that subsequent builds do not require repeated API calls. Cache files are organized by language and package name for focused, review-friendly contributions:
+
+```
+tools/translate_cache/
+├── de.json                   # German base language (reference)
+├── en.json                   # English base language (reference)
+├── it-mod.json               # Italian translations for 'mod' package
+├── it-<package>.json         # Italian translations for each package
+├── it.deepl-context          # DeepL context/glossary file for Italian
+├── fr-<package>.json         # French translations (if available)
+└── <lang>.deepl-context      # Context files for other languages
+```
+
+Each JSON cache file contains a dictionary of translation entries keyed by service prefix and source text (e.g., `deepl:Start monitoring`). Each entry records the original string, the translation, a timestamp, the service used, and the contributor's GitHub username for attribution and review tracking.
+
+Context files (`<lang>.deepl-context`) are plain-text files that provide domain-specific translation guidelines — project description, non-translatable terms, and specific translation preferences — to improve AI translation quality and consistency.
+
+Cache scanners process only `.json` files, automatically ignoring backup artifacts (e.g., `*.json.backup-*`) generated by the Cache Manager.
+
+##### Language coverage
+
+- **Italian (`it`)**: fully pre-cached and manually curated for all base menus. The base translation was generated with the DeepL API, then reviewed and corrected for core menu strings.
+- **French (`fr`) and Spanish (`es`)**: initial entries available; further contributions welcome.
+- Additional languages can be added by extending the same cache and context workflow.
+
+##### Auxiliary tools
+
+- **`tools/freetz_precache_translations`** — CLI batch translator that unattendedly pre-translates all Freetz-NG package files containing `lang` tags for a given target language and provider. Accepts command-line arguments for language, provider, and API key.
+- **`python3 tools/translate_cache_manager.py`** — Freetz Translate Cache Manager, an interactive cross-platform GUI application (Linux, macOS, Windows; requires `tkinter`). It provides resizable panels, keyboard shortcuts, syntax highlighting, agent testing, and advanced browsing/filtering/search, enabling contributors to review and edit AI translations without any programming knowledge.
+
 #### User Competence Levels
 
-Freetz-NG's menuconfig introduces a progressive disclosure model through user competence levels, which controls the visibility of configuration options based on the user's expertise. This design philosophy keeps the interface manageable for newcomers while providing full access to advanced features for experienced users.
+Freetz-EVO's menuconfig introduces a progressive disclosure model through user competence levels, which controls the visibility of configuration options based on the user's expertise. This design philosophy keeps the interface manageable for newcomers while providing full access to advanced features for experienced users.
 
 The **Beginner** level is the default setting, offering a curated selection of well-tested packages and straightforward configuration options. At this level, the menu structure remains clean and focused on the most commonly needed features, reducing the risk of misconfiguration for users who are new to firmware modification.
 
 The **Expert** level unlocks several advanced configuration categories. Users at this level gain access to the BusyBox applets menu, allowing fine-grained control over which shell utilities are included in the firmware. The shared libraries menu becomes visible, enabling selection of additional runtime libraries that packages may depend upon. Toolchain configuration options appear, providing the ability to override firmware source locations and compiler settings. Kernel modules selection is exposed, allowing addition of extra kernel functionality. Additionally, various firmware-specific options and hardware-level configuration become accessible.
 
-The **Developer** level is intended for Freetz-NG contributors and advanced users who need access to unstable or experimental features. This level exposes packages that are still under development or not yet thoroughly tested across all device models. A prominent warning is displayed when selecting this level to remind users that Developer features may be unstable or cause issues.
+The **Developer** level is intended for Freetz-EVO contributors and advanced users who need access to unstable or experimental features. This level exposes packages that are still under development or not yet thoroughly tested across all device models. A prominent warning is displayed when selecting this level to remind users that Developer features may be unstable or cause issues.
 
 When writing test configurations or creating packages, understanding these levels is important for setting appropriate visibility. Packages and options that require advanced knowledge or may cause issues if misconfigured should be gated behind `FREETZ_SHOW_EXPERT` or `FREETZ_SHOW_DEVELOPER` dependencies in their `Config.in` files.
 
 #### Externalization
 
-FRITZ!Box devices have limited internal flash storage, and as you add more packages to your firmware, you may encounter the "Filesystem image too big" error during the build process. Freetz-NG addresses this constraint through a feature called externalization, which allows you to move selected packages, libraries, and files from the internal flash to external storage media.
+FRITZ!Box devices have limited internal flash storage, and as you add more packages to your firmware, you may encounter the "Filesystem image too big" error during the build process. Freetz-EVO addresses this constraint through a feature called externalization, which allows you to move selected packages, libraries, and files from the internal flash to external storage media.
 
 For devices with USB host capability, the solution is using a USB storage device (flash drive, external hard drive, or SSD). The externalized components are stored on this device and loaded into the system at boot time.
 
@@ -63,9 +116,9 @@ The externalization system works by creating two output files during the build p
 
 For deployment, several methods are available depending on your situation. The most common approach is using the Freetz web interface: flash the `.image` file through the standard firmware update process, then upload the `.external` file under System → Firmware-Update using the "external file upload" option. The web interface automatically extracts the archive to the designated external storage location.
 
-For initial installations or recovery scenarios, the `tools/push_firmware` script can flash the `.image` file directly through the bootloader via FTP. However, this method only installs the core firmware. It cannot upload the `.external` file since the Freetz-NG system is not yet running.
+For initial installations or recovery scenarios, the `tools/push_firmware` script can flash the `.image` file directly through the bootloader via FTP. However, this method only installs the core firmware. It cannot upload the `.external` file since the Freetz-EVO system is not yet running.
 
-Once the device boots with Freetz-NG installed, you can deploy the external components through the web interface under System → Firmware-Update using the "external file upload" option. Alternatively, the `tools/ssh_firmware_update.py` script provides a more powerful solution: running it with `--host <ip> --password <password> --batch` performs a complete unattended update of both the firmware image and the external file, making it ideal for interactive or unattended updates, or automated deployment workflows.
+Once the device boots with Freetz-EVO installed, you can deploy the external components through the web interface under System → Firmware-Update using the "external file upload" option. Alternatively, the `tools/ssh_firmware_update.py` script provides a more powerful solution: running it with `--host <ip> --password <password> --batch` performs a complete unattended update of both the firmware image and the external file, making it ideal for interactive or unattended updates, or automated deployment workflows.
 
 When selecting components for externalization in menuconfig (under Advanced Options → External), you can choose from two categories: packages (binary programs and their associated files) and libraries (shared runtime libraries). Libraries require careful consideration of dependencies: any program linked against an externalized library won't function until that library is loaded from external storage.
 
@@ -148,7 +201,7 @@ This is useful for discovering available build options and understanding the bui
 
 ### Make Clean Targets
 
-When you want to restart the build process from scratch, you need to use `make dirclean`. However, Freetz-NG provides several cleaning options with different scopes:
+When you want to restart the build process from scratch, you need to use `make dirclean`. However, Freetz-EVO provides several cleaning options with different scopes:
 
 #### make cacheclean
 
@@ -290,12 +343,12 @@ In automated GitHub Actions workflows, jobs may fail due to temporary issues:
 
 **General Tips**:
 - Always run `make dirclean` before retrying major failures to ensure a clean state.
-- For complex issues, check the Freetz-NG GitHub issues or discussions for similar problems.
+- For complex issues, check the Freetz-EVO GitHub issues or discussions for similar problems.
 - If builds consistently fail, verify your environment matches the prerequisites in `docs/PREREQUISITES`.
 
 ## Host Tools
 
-Freetz-NG uses host tools to support the cross-compilation process. These are essential because some commands need to be executed on the host during the firmware build for embedded targets. The list of host tools is available at [https://freetz-ng.github.io/freetz-ng/host-tools](https://freetz-ng.github.io/freetz-ng/host-tools).
+Freetz-EVO uses host tools to support the cross-compilation process. These are essential because some commands need to be executed on the host during the firmware build for embedded targets. The list of host tools is available at [https://Freetz-EVO.github.io/Freetz-EVO/host-tools](https://Freetz-EVO.github.io/Freetz-EVO/host-tools).
 
 Host tools are utilities compiled for the host system (your development machine) that assist in building firmware for embedded targets. They include build tools, compression utilities, file system tools, and other binaries required during the compilation process. Each host tool has its own documentation page with version information, homepage, repository, and maintainer details.
 
@@ -311,11 +364,11 @@ They are built with:
 - `make tools-distclean-local` - Cleans everything of local tools (dl-tools)
 - `make <tool>-host-precompiled` - Builds a specific tool using precompiled binaries if available
 
-Freetz-NG uses GNU Make to manage package dependencies and host tools in a modular way. Host tools are typically built first via `make host-tools-precompiled`, followed by target packages. Dependencies are checked recursively. However, only file existence is verified (version mismatches are not automatically detected). If a dependency is missing, the build fails; otherwise, existing binaries are reused.
+Freetz-EVO uses GNU Make to manage package dependencies and host tools in a modular way. Host tools are typically built first via `make host-tools-precompiled`, followed by target packages. Dependencies are checked recursively. However, only file existence is verified (version mismatches are not automatically detected). If a dependency is missing, the build fails; otherwise, existing binaries are reused.
 
 Built host tools are cached in `tools/build`, `tools/build/usr/bin/` to avoid redundant rebuilds. The cache persists across builds, but can be invalidated manually (e.g., `make tool-host-dirclean` removes build directories and binaries). The cache is shared across packages.
 
-To reduce the build time of host tools, Freetz-NG supports downloading precompiled host tools from a cloud repository. Freetz-NG uses a shared cache hosted on GitHub at [https://github.com/Freetz-NG/dl-mirror/releases/](https://github.com/Freetz-NG/dl-mirror/releases/). The cache is updated by the Freetz-NG team, who periodically release precompiled archives of host tools (e.g., `tools-VERSION.tar.xz`) for common architectures. Source archives are stored in the `dl` directory. Precompiled binaries are extracted directly to `tools/build`, bypassing local compilation when available.
+To reduce the build time of host tools, Freetz-EVO supports downloading precompiled host tools from a cloud repository. Freetz-EVO uses a shared cache hosted on GitHub at [https://github.com/Freetz-EVO/dl-mirror/releases/](https://github.com/Freetz-EVO/dl-mirror/releases/). The cache is updated by the Freetz-EVO team, who periodically release precompiled archives of host tools (e.g., `tools-VERSION.tar.xz`) for common architectures. Source archives are stored in the `dl` directory. Precompiled binaries are extracted directly to `tools/build`, bypassing local compilation when available.
 
 Specifically, Host tools are compiled locally from source (downloaded to `dl`) when:
 - The build directory is clean (e.g., after make tool-host-dirclean).
@@ -330,7 +383,7 @@ The Freetz build system only checks for binary existence, not version compatibil
 
 ## Package-Specific Make Targets
 
-As mentioned in a previous paragraph, Freetz-NG provides specific make targets for individual packages in order to speed-up verification on a specific development. Each package supports several build operations with convenient shortcuts that combine multiple steps.
+As mentioned in a previous paragraph, Freetz-EVO provides specific make targets for individual packages in order to speed-up verification on a specific development. Each package supports several build operations with convenient shortcuts that combine multiple steps.
 
 For example, the `-recompile` target is equivalent to running `-dirclean` followed by `-precompiled` - both achieve a complete clean rebuild.
 
@@ -407,9 +460,9 @@ make bzip2-recompile patchelf-recompile
 
 ## Local vs. Workflow-Based Testing
 
-Freetz-NG supports two main approaches for testing packages and firmware builds:
+Freetz-EVO supports two main approaches for testing packages and firmware builds:
 
-### Local Testing (Understanding Freetz-NG Build System)
+### Local Testing (Understanding Freetz-EVO Build System)
 The previous section explains how to compile the system or individual packages directly on your local machine. This approach is essential for:
 - Initial development and debugging
 - Testing on devices you physically own
@@ -419,11 +472,11 @@ The previous section explains how to compile the system or individual packages d
 ### Workflow-Based Testing (make_package.yml)
 The following section describes automated testing using GitHub Actions workflows. This approach is crucial for:
 - Testing across multiple device/toolchain combinations simultaneously
-- Ensuring compatibility across the entire Freetz-NG ecosystem
+- Ensuring compatibility across the entire Freetz-EVO ecosystem
 - Automated regression testing
 - CI/CD integration
 
-Freetz-NG uses GitHub Actions workflows to automate testing across the entire device and firmware matrix, referring to a predefined list of supported combinations of device models (e.g., 7270_V1, 7390) and firmware versions (e.g., 04_XX, 06_0X). Freetz-NG supports a wide range of AVM Fritz!Box devices and firmware versions. This matrix ensures that Freetz-NG can be built and tested across diverse hardware and software configurations, covering tens of different device models with unique characteristics.
+Freetz-EVO uses GitHub Actions workflows to automate testing across the entire device and firmware matrix, referring to a predefined list of supported combinations of device models (e.g., 7270_V1, 7390) and firmware versions (e.g., 04_XX, 06_0X). Freetz-EVO supports a wide range of AVM Fritz!Box devices and firmware versions. This matrix ensures that Freetz-EVO can be built and tested across diverse hardware and software configurations, covering tens of different device models with unique characteristics.
 
 The matrix is embedded in the build system and can be manually extracted using the following command:
 
@@ -507,7 +560,7 @@ The workflow follows a structured process:
    - Checking for configuration conflicts or missing dependencies.
    - Generating reports on compatibility and potential issues.
 
-This automated workflow ensures that changes to Freetz-NG are validated across the full ecosystem, catching platform-specific issues that local testing might miss.
+This automated workflow ensures that changes to Freetz-EVO are validated across the full ecosystem, catching platform-specific issues that local testing might miss.
 
 ## `make_package.yml` workflow
 
@@ -518,7 +571,7 @@ This section explains how to use GitHub Actions workflows for comprehensive auto
 GitHub Actions workflows automate the build process in isolated environments, allowing you to:
 
 1. **Test Multiple Configurations Simultaneously**: Instead of testing on just one device, workflows can test across dozens of device/firmware/toolchain combinations in parallel
-2. **Ensure Ecosystem Compatibility**: Freetz-NG supports approximately 30 pre-configured devices with different hardware capabilities and firmware versions
+2. **Ensure Ecosystem Compatibility**: Freetz-EVO supports approximately 30 pre-configured devices with different hardware capabilities and firmware versions
 3. **Catch Platform-Specific Issues**: Different devices may have unique kernel versions, toolchain requirements, or hardware-specific code that needs validation
 4. **Automate Regression Testing**: Workflows can run automatically on code changes, catching issues before they reach users
 
@@ -538,7 +591,7 @@ The `make_package.yml` workflow uses a matrix strategy to test packages across m
 
 #### What are GitHub Actions Workflows?
 
-GitHub Actions workflows are automated processes that run on GitHub's infrastructure. For Freetz-NG, they provide:
+GitHub Actions workflows are automated processes that run on GitHub's infrastructure. For Freetz-EVO, they provide:
 
 - **Isolated Build Environments**: Each test runs in a clean Ubuntu environment with no interference from local machine state
 - **Parallel Execution**: Multiple device/toolchain combinations can be tested simultaneously
@@ -547,7 +600,7 @@ GitHub Actions workflows are automated processes that run on GitHub's infrastruc
 
 #### Pre-configured Devices and Toolchains
 
-Freetz-NG comes with approximately 30 pre-configured device profiles, each representing different:
+Freetz-EVO comes with approximately 30 pre-configured device profiles, each representing different:
 
 - **Hardware Platforms**: Different router models (7590, 7530, 7490, etc.)
 - **Firmware Versions**: Various AVM firmware releases (08.0X, 08.2X, 08.3X, etc.)
@@ -722,8 +775,8 @@ Disable queuing when you need workflows to run immediately, but be aware this ma
 Locally clone your already forked repository from GitHub:
 
 ```bash
-git clone https://github.com/<your user>/freetz-ng
-cd freetz-ng
+git clone https://github.com/<your user>/Freetz-EVO
+cd Freetz-EVO
 ```
 
 Add upstream:
@@ -731,12 +784,12 @@ Add upstream:
 ```bash
 git remote -v
 # If upstream is missing, add it:
-git remote add upstream https://github.com/Freetz-NG/freetz-ng.git
+git remote add upstream https://github.com/Freetz-EVO/Freetz-EVO.git
 ```
 
 ### 2. Enable GitHub Actions
 
-- Navigate to: `https://github.com/<your user>/freetz-ng/settings/actions`
+- Navigate to: `https://github.com/<your user>/Freetz-EVO/settings/actions`
 - Select: "Allow all actions and reusable workflows"
 
 Abilita GitHub Pages !!!!!!!!!!!!!!!!!!!!
@@ -745,13 +798,13 @@ Abilita GitHub Pages !!!!!!!!!!!!!!!!!!!!
 
 ```bash
 # Download workflow documentation
-wget https://raw.githubusercontent.com/Ircama/freetz-ng/testing-tools/TESTING_WORKFLOW.md
+wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/TESTING_WORKFLOW.md
 
 # Download make_package.yml workflow
-wget https://raw.githubusercontent.com/Ircama/freetz-ng/testing-tools/make_package.yml
+wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/make_package.yml
 
 # Download merge script
-wget https://raw.githubusercontent.com/Ircama/freetz-ng/testing-tools/merge_all_prs.sh
+wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/merge_all_prs.sh
 chmod +x merge_all_prs.sh
 
 # Alternative: checkout testing branch
@@ -847,7 +900,7 @@ URL=$(gh release create python315 -t ".config" -n ".config" --prerelease .config
 echo $URL
 
 
-gh workflow run make_package.yml -r integration-testing -f make_target='firmware' -f url='https://github.com/Ircama/freetz-ng/releases/download/python315/default.config' -f verbosity="0" -f cancel_previous="true" -f use_queue=false
+gh workflow run make_package.yml -r integration-testing -f make_target='firmware' -f url='https://github.com/Ircama/Freetz-EVO/releases/download/python315/default.config' -f verbosity="0" -f cancel_previous="true" -f use_queue=false
 ```
 
 ```bash
@@ -869,7 +922,7 @@ git push origin master
 ### Step 7: Execute Workflow Manually !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 **Via Web Interface:**
-1. Go to: https://github.com/Ircama/freetz-ng/actions
+1. Go to: https://github.com/Ircama/Freetz-EVO/actions
 2. Click on: "make_package"
 3. Click: "Run workflow"
 4. Enter package name (e.g., `php-recompile` or `patchelf,ncurses`)
@@ -877,7 +930,7 @@ git push origin master
 
 **Via GitHub CLI:**
 ```bash
-gh repo set-default Ircama/freetz-ng
+gh repo set-default Ircama/Freetz-EVO
 gh workflow run make_package.yml -f make_target="util-linux-recompile"
 ```
 
@@ -885,12 +938,12 @@ gh workflow run make_package.yml -f make_target="util-linux-recompile"
 
 **Via CLI:**
 ```bash
-gh repo set-default Ircama/freetz-ng
+gh repo set-default Ircama/Freetz-EVO
 gh run watch
 ```
 
 **Via Web:**
-- https://github.com/Ircama/freetz-ng/actions
+- https://github.com/Ircama/Freetz-EVO/actions
 
 ## Manual Workflow Triggers
 
@@ -940,7 +993,7 @@ The workflow interprets different `make_target` inputs as follows:
   - CI/CD testing of exact configuration files
   - Validating firmware builds with precise configuration control
   - Executing custom pre-build commands via `custom_config` parameter (e.g., for rebuilding host tools)
-- `fake-firmware` creates a complete firmware build without requiring actual AVM firmware downloads, addressing the challenge of testing Freetz-NG across multiple device models and firmware versions. This workflow mode executes the generic `make` build process using a generic firmware stub instead of downloading real firmware from AVM, enabling full build pipeline testing including toolchain compilation and package building. It produces a tar archive containing all compiled packages rather than an installable firmware image, and includes alternative build finalization that provides statistics about compiled packages. This is particularly valuable for testing device configurations when firmware is unavailable or obsolete, validating build system configuration without full firmware builds, testing toolchain compatibility across multiple devices quickly, and CI/CD testing without large firmware downloads.
+- `fake-firmware` creates a complete firmware build without requiring actual AVM firmware downloads, addressing the challenge of testing Freetz-EVO across multiple device models and firmware versions. This workflow mode executes the generic `make` build process using a generic firmware stub instead of downloading real firmware from AVM, enabling full build pipeline testing including toolchain compilation and package building. It produces a tar archive containing all compiled packages rather than an installable firmware image, and includes alternative build finalization that provides statistics about compiled packages. This is particularly valuable for testing device configurations when firmware is unavailable or obsolete, validating build system configuration without full firmware builds, testing toolchain compatibility across multiple devices quickly, and CI/CD testing without large firmware downloads.
 - Package-only targets build individual packages without full firmware
 - Default behavior for packages without suffix is `-precompiled`
 - All builds run across the configured device/toolchain matrix
@@ -958,7 +1011,7 @@ gh workflow run make_package.yml -f make_target="firmware" -f url="$URL" -f verb
 # The "fake-firmware" target triggers a complete build ("make") for each device in the
 # matrix without requiring the original AVM firmware, enabling end-to-end workflow testing
 # even when the vendor firmware is unavailable.
-gh workflow run make_package.yml -r integration-testing -f make_target='fake-firmware # python2' -f url='https://github.com/<your user>/freetz-ng/releases/download/python2/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false
+gh workflow run make_package.yml -r integration-testing -f make_target='fake-firmware # python2' -f url='https://github.com/<your user>/Freetz-EVO/releases/download/python2/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false
 
 # Test single package with all configured devices
 gh workflow run make_package.yml -f make_target="patchelf" -f url="$URL" -f verbosity="0" -f cancel_previous="false" -f use_queue=false
@@ -967,7 +1020,7 @@ gh workflow run make_package.yml -f make_target="patchelf" -f url="$URL" -f verb
 gh workflow run make_package.yml -f make_target="php,openssl,libxml2"
 
 # Test with custom config URL (from GitHub Releases)
-gh workflow run make_package.yml -f make_target="php" -f url="https://github.com/Ircama/freetz-ng/releases/download/none/default.config"
+gh workflow run make_package.yml -f make_target="php" -f url="https://github.com/Ircama/Freetz-EVO/releases/download/none/default.config"
 
 # Force recompilation with verbose output
 gh workflow run make_package.yml -f make_target="patchelf-recompile,ncurses-recompile" -f verbosity="2"
@@ -998,7 +1051,7 @@ gh workflow run make_package.yml -f make_target="php#Test PHP 8.4 with libxml2"
 
 # Fake-firmware build example with detailed option breakdown
 # This creates a complete build without downloading real AVM firmware
-gh workflow run make_package.yml -r integration-test -f make_target='fake-firmware # Full build' -f url='https://github.com/<name>/freetz-ng/releases/download/<release name>/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false -f custom_config='7590_W6 08_2X DE,7530_W5 08_0X EN'
+gh workflow run make_package.yml -r integration-test -f make_target='fake-firmware # Full build' -f url='https://github.com/<name>/Freetz-EVO/releases/download/<release name>/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false -f custom_config='7590_W6 08_2X DE,7530_W5 08_0X EN'
 
 # Option breakdown for the fake-firmware example:
 # -r integration-test: Specifies the Git branch or reference to run the workflow against
@@ -1141,7 +1194,7 @@ gh run watch
 gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware"
 
 # Test with custom configuration (using uploaded config)
-URL="https://github.com/Ircama/freetz-ng/releases/download/none/default.config"
+URL="https://github.com/Ircama/Freetz-EVO/releases/download/none/default.config"
 gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware" -f url="$URL" -f verbosity="2"
 
 # Test with custom configuration (direct URL)
@@ -1167,7 +1220,7 @@ gh run download <run-id> --name myartifact.zip
 gh run view <run-id> --log
 
 # List upstream PRs
-gh pr list --repo Freetz-NG/freetz-ng --state open
+gh pr list --repo Freetz-EVO/Freetz-EVO --state open
 
 # Interactive multi-merge
 ./merge_all_prs.sh
@@ -1186,7 +1239,7 @@ git push origin master --force
 make distclean
 
 # 3. Optionally disable GitHub Actions
-# Go to: https://github.com/Ircama/freetz-ng/settings/actions
+# Go to: https://github.com/Ircama/Freetz-EVO/settings/actions
 # Select: "Disable actions"
 ```
 
@@ -1237,7 +1290,7 @@ git commit -m "test: make =php-precompiled"
 
 ### Fake-Firmware Mode: Comprehensive Build Testing
 
-The `fake-firmware` workflow mode provides a sophisticated solution for testing Freetz-NG builds across multiple device configurations without requiring actual firmware downloads. This mode is particularly valuable for comprehensive testing scenarios where real firmware availability is limited or when you need to validate build system behavior across the entire device matrix.
+The `fake-firmware` workflow mode provides a sophisticated solution for testing Freetz-EVO builds across multiple device configurations without requiring actual firmware downloads. This mode is particularly valuable for comprehensive testing scenarios where real firmware availability is limited or when you need to validate build system behavior across the entire device matrix.
 
 #### How Fake-Firmware Works
 
@@ -1282,7 +1335,7 @@ flowchart TD
 
 #### Firmware Availability Challenges
 
-Freetz-NG supports testing across approximately 30 different device models, but AVM's firmware repository presents significant limitations:
+Freetz-EVO supports testing across approximately 30 different device models, but AVM's firmware repository presents significant limitations:
 
 **Recent Firmware Only**: AVM typically maintains only the latest firmware versions on their public FTP servers. Older firmware releases are removed over time, creating gaps in testing coverage.
 
@@ -1341,5 +1394,5 @@ These secrets enable flexible deployment scenarios while maintaining security by
 
 **Build System Validation**: Verifying that toolchain configurations, package dependencies, and compilation flags work correctly across different architectures.
 
-The `fake-firmware` mode represents a sophisticated approach to comprehensive build testing, enabling robust validation of Freetz-NG packages across diverse device configurations while maintaining efficiency and eliminating external dependencies.
+The `fake-firmware` mode represents a sophisticated approach to comprehensive build testing, enabling robust validation of Freetz-EVO packages across diverse device configurations while maintaining efficiency and eliminating external dependencies.
 ```

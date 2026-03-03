@@ -25,6 +25,8 @@ Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 
 ### Improvements over Freetz-NG
 
+Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.
+
 #### New packages
 
 | Package | Description | Status |
