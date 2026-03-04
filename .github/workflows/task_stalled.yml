@@ -5,8 +5,8 @@ on:
     branches: [ master ]
     paths:
       - '.github/workflows/task_stalled.yml'
-# schedule:
-#   - cron: '0 0 * * 0'
+  schedule:
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
     permissions:
       pull-requests: write
       issues: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository == 'freetz-ng/freetz-ng'
 
     steps:

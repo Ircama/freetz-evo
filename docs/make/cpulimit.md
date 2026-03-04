@@ -1,4 +1,4 @@
-# cpulimit 0.2
+# cpulimit 0.2 - DEPRECATED
   - Homepage: [https://github.com/opsengine/cpulimit](https://github.com/opsengine/cpulimit)
   - Manpage: [https://github.com/opsengine/cpulimit#cpulimit](https://github.com/opsengine/cpulimit#cpulimit)
   - Changelog: [https://github.com/opsengine/cpulimit/commits/master](https://github.com/opsengine/cpulimit/commits/master)

@@ -63,7 +63,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>bfusb: AVM BlueFRITZ! USB stick support (binary only)</u><a id='bfusb'></a>**<br>
     This package adds support for the AVM BlueFRITZ! USB stick.
 
-  * **[BIND 9.11.37/9.20.17](../../docs/make/bind.md)<a id='bind'></a>**<br>
+  * **[BIND 9.11.37/9.20.20](../../docs/make/bind.md)<a id='bind'></a>**<br>
     BIND is a suite of software for interacting with the Domain Name System (DNS). The name BIND stands for "Berkeley Internet Name Daemon".
      - [named.conf](../../docs/make/bind.md#namedconf)
 
@@ -142,7 +142,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     With a patched kernel and this tool it is possible to configure the ADM6996L switch (at least FB 7170, maybe other FBs with 4 LAN ports work too) to support VLANs and/or to split the LAN ports into different subnets. It is also possible to view or set each ports power configuration and to disable auto media detection and to force a given media type for each port (10/100 Mbit, Half-/Full-Duplex). Some features are only available when Replace Kernel is selected. Since version 0.6 cpmaccfg detects the tantos switches used i.e. in F!B 7270. However, since there is not enough documentation (freely) available yet, it is not yet possible to configure this chipset.
      - [cpmaccfg-cgi](../../docs/make/cpmaccfg.md#cpmaccfg-cgi)
 
-  * **[cpulimit 0.2](../../docs/make/cpulimit.md)<a id='cpulimit'></a>**<br>
+  * **[cpulimit 0.2 - DEPRECATED](../../docs/make/cpulimit.md)<a id='cpulimit'></a>**<br>
     cpulimit is a tool which limits the CPU usage of a process (expressed in percentage, not in CPU time). It is useful to control batch jobs, when you don't want them to eat too many CPU cycles. The goal is to prevent a process from running for more than a specified time ratio. It does not change the nice value or other scheduling priority settings, but the real CPU usage. Also, it is able to adapt itself to the overall system load, dynamically and quickly. The control of the used CPU amount is done sending SIGSTOP and SIGCONT POSIX signals to processes. All the children processes and threads of the specified process will share the same percentage of CPU.
 
   * **<u>cryptsetup 1.7.5 (binary only) - DEPRECATED</u><a id='cryptsetup'></a>**<br>
@@ -314,7 +314,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Ghostscript fonts 8.11 (binary only) - DEPRECATED</u><a id='ghostscript-fonts'></a>**<br>
     This package provides the Ghostscript fonts.
 
-  * **[Git 2.26.2/2.50.1](../../docs/make/git.md)<a id='git'></a>**<br>
+  * **[Git 2.26.2/2.50.1 - DEPRECATED](../../docs/make/git.md)<a id='git'></a>**<br>
     Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
   * **<u>gntpsend 0.3.2-git (binary only) - DEPRECATED</u><a id='gntpsend'></a>**<br>
@@ -1183,7 +1183,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[hp-utils 0.3.2 - DEPRECATED](../../docs/make/hp-utils.md)<a id='hp-utils'></a>**<br>
     hp-utils is a collection of utility programs for HP printers. It's meant to be used on systems, which are unable to run the corresponding programs provided by HPLIP, e.g. because they only have limited memory and/or cpu power. hp-utils is primarily focused towards embedded systems, particularly towards the FRITZ!Box, a family of DSL routers produced by AVM.
 
-  * **[Iptables 1.4.11.1/1.4.21/1.6.2/1.8.11 (binary only)](../../docs/make/iptables.md)<a id='iptables'></a>**<br>
+  * **[Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12 (binary only)](../../docs/make/iptables.md)<a id='iptables'></a>**<br>
     Netfilter/iptables Netfilter is the set of hooks within the Linux kernel for intercepting and manipulating network packets. The best-known component on top of netfilter is the firewall which filters packets, but the hooks are also used by a component which performs network address translation, and by another which provides ipchains backwards compatibility. These components are usually Loadable Kernel Modules. iptables is the name of the user space tool by which administrators create rules for the packet filtering and NAT modules. While technically iptables is merely the tool which controls the packet filtering and NAT components within the kernel, the name iptables is often used to refer to the entire infrastructure, including netfilter, connection tracking and NAT, as well as the tool itself. iptables is a standard part of all modern Linux distributions.
      - [Current state (largely broken)](../../docs/make/iptables.md#current-state-largely-broken)
      - [What is iptables and who needs it?](../../docs/make/iptables.md#what-is-iptables-and-who-needs-it)

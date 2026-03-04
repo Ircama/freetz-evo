@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://www.tcpdump.org/release/
 ### VERSION:=1.1.1/1.10.6
 ### WEBSITE:=https://www.tcpdump.org
 ### MANPAGE:=https://www.tcpdump.org/manpages/pcap-filter.7.html
-### CHANGES:=https://git.tcpdump.org/libpcap/blob/HEAD:/CHANGES
+### CHANGES:=https://github.com/the-tcpdump-group/libpcap/blob/master/CHANGES
 ### CVSREPO:=https://github.com/the-tcpdump-group/libpcap
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

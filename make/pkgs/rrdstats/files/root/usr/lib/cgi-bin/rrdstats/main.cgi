@@ -65,6 +65,7 @@ ORANGE_D=#CC7016
 BLACK=#000000
 GREY=#7F7F7F
 MAXIM=#ADF235
+AUNI="$(printf '\xC3\xA4')"
 AUML="$(echo -e '\344')"
 GRD="$(echo -en '\260')"
 NOCACHE="?nocache=$(date -Iseconds | sed 's/T/_/g;s/+.*$//g;s/:/-/g')"
@@ -1026,12 +1027,12 @@ generate_graph() {
 			kind=${1#aha_}
 			DECMAL=1
 			case $kind in
-				pdev|watt|sein|blnd)	DNAME="Leistung";        DESCR="Watt"; RANGE="-l 0" ;;
-				volt)			DNAME="Spannung";        DESCR="Volt"; RANGE="-l 215 -u 245" ;;
-				kilo)			DNAME="Energie";         DESCR="Wh"; DECMAL=3 ;;
-				grad)			DNAME="Temperatur";      DESCR="${GRAD}C" ;;
-				curr)			DNAME="Stromstärke";     DESCR="Ampere"; RANGE="-l 0 -u 1"; DECMAL=2 ;;
-				fact)			DNAME="Leistungsfaktor"; DESCR="Wirkfaktor"; RANGE="-l 0 -u 1"; DECMAL=3 ;;
+				pdev|watt|sein|blnd)	DNAME="Leistung";           DESCR="Watt"; RANGE="-l 0" ;;
+				volt)			DNAME="Spannung";           DESCR="Volt"; RANGE="-l 215 -u 245" ;;
+				kilo)			DNAME="Energie";            DESCR="Wh"; DECMAL=3 ;;
+				grad)			DNAME="Temperatur";         DESCR="${GRAD}C" ;;
+				curr)			DNAME="Stromst${AUNI}rke";  DESCR="Ampere"; RANGE="-l 0 -u 1"; DECMAL=2 ;;
+				fact)			DNAME="Leistungsfaktor";    DESCR="Wirkfaktor"; RANGE="-l 0 -u 1"; DECMAL=3 ;;
 			esac
 
 			_SENSOR_GEN=""

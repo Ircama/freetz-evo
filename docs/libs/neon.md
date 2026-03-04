@@ -1,4 +1,4 @@
-# neon: libneon (libneon.so) 0.30.2/0.32.5
+# neon: libneon (libneon.so) 0.30.2/0.37.0
   - Homepage: [https://notroj.github.io/neon/](https://notroj.github.io/neon/)
   - Manpage: [https://github.com/notroj/neon#readme](https://github.com/notroj/neon#readme)
   - Changelog: [https://notroj.github.io/neon/](https://notroj.github.io/neon/)
