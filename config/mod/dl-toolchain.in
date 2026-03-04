@@ -6,6 +6,10 @@ config FREETZ_DL_TOOLCHAIN_OVERRIDE
 	help
 		Enable this to override automatically generated toolchain entries.
 
+config FREETZ_DL_KERNEL_TOOLCHAIN_SITE
+	string "Download kernel toolchain site"                                       if FREETZ_DL_TOOLCHAIN_OVERRIDE
+	default "https://github.com/Freetz-NG/dl-mirror/releases/download/dl-toolchains-${KERNEL_TOOLCHAIN_VERSION}"
+
 config FREETZ_DL_KERNEL_TOOLCHAIN_VERSION
 	string "Kernel toolchain version"                                             if FREETZ_DL_TOOLCHAIN_OVERRIDE
 	default "r27868"
@@ -36,6 +40,10 @@ config FREETZ_DL_KERNEL_TOOLCHAIN_HASH
 	default "927c0fea1097d142faee72a468428ae5d5a5e4d4ed21e6e56275a69e240f960c"    if FREETZ_TARGET_ARCH_X86                              && FREETZ_KERNEL_GCC_9_4
 	#
 	default "X"
+
+config FREETZ_DL_TARGET_TOOLCHAIN_SITE
+	string "Download target toolchain site"                                       if FREETZ_DL_TOOLCHAIN_OVERRIDE
+	default "https://github.com/Freetz-NG/dl-mirror/releases/download/dl-toolchains-${TARGET_TOOLCHAIN_VERSION}"
 
 config FREETZ_DL_TARGET_TOOLCHAIN_VERSION
 	string "Target toolchain version"                                             if FREETZ_DL_TOOLCHAIN_OVERRIDE

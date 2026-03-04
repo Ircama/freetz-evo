@@ -109,6 +109,10 @@ jobs:
           echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                        >> .config
           sed '/FREETZ_DL_IMAGE_AT_LAST/d'                                                            -i .config
           echo '# FREETZ_DL_IMAGE_AT_LAST is not set'                                                 >> .config
+          sed '/FREETZ_REAL_DEVELOPER_ONLY__DLIMG/d'                                                  -i .config
+          echo 'FREETZ_REAL_DEVELOPER_ONLY__DLIMG="${{ secrets.ACTIONS_IMAGE }}"'                     >> .config
+          sed '/FREETZ_REAL_DEVELOPER_ONLY__TCURL/d'                                                  -i .config
+          echo 'FREETZ_REAL_DEVELOPER_ONLY__TCURL="${{ secrets.ACTIONS_DLTCS }}"'                     >> .config
           sed '/FREETZ_HOSTTOOLS_DOWNLOAD/d'                                                          -i .config
           echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                          >> .config
           sed '/FREETZ_DOWNLOAD_TOOLCHAIN/d'                                                          -i .config
