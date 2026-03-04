@@ -118,8 +118,8 @@ new_menu_tree() {
 	local base=${path##*/}
 	echo -n "<li>"
 	cat "$path"
-	if [ \( "$base" = "$sub" -o -z "$sub" \) -a -s "$path.sub" ]; then
-		echo "<ul>"
+	if [ -s "$path.sub" ]; then
+		echo -n "<ul>"
 		cat "$path.sub"
 		echo "</ul>"
 	fi

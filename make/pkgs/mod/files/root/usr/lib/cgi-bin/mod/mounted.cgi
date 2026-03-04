@@ -82,7 +82,7 @@ print_mp() {
 		echo "<input type='hidden' name='path' value='$(html "$path")'>"
 		echo "<input class='button' type='submit' name='cmd' value='R' $rdisabled>"
 		echo "<input class='button' type='submit' name='cmd' value='W' $wdisabled>"
-		$actions && echo "<input type='submit' name='cmd' value='&nbsp;U&nbsp;'>"
+		$actions && echo "<input class='button' type='submit' name='cmd' value='&nbsp;U&nbsp;'>"
 		echo '</form>'
 	fi
 	echo '</td></tr>'

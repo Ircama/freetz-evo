@@ -280,12 +280,13 @@ menu "Web Interface"
 
 	choice
 		prompt "Freetz style"
+		default FREETZ_STYLE_MODERN if FREETZ_SKIN_evo
 		default FREETZ_STYLE_COLORED
 		help
 			Changes the style sheet file for Freetz web interface.
 			For example, look of the Freetz status-bars can be changed
 			from colored to grey by change of the Freetz style.
-			"modern" uses a teal palette matching the Evo skin and
+			"Freetz-EVO" uses a teal palette matching the Evo skin and
 			requires FREETZ_SKIN_evo to be selected.
 
 		config FREETZ_STYLE_COLORED
@@ -295,7 +296,7 @@ menu "Web Interface"
 			bool "grey status-bars"
 
 		config FREETZ_STYLE_MODERN
-			bool "modern (teal) status-bars"
+			bool "Freetz-EVO status-bars"
 			depends on FREETZ_SKIN_evo
 
 	endchoice # "Freetz style" #
@@ -324,7 +325,7 @@ menu "Web Interface"
 			Size: about 12 kB (uncompressed)
 
 	config FREETZ_SKIN_evo
-		bool "evo"
+		bool "Freetz-EVO"
 		default y
 		help
 			Modern teal theme, menu at top, responsive.
@@ -333,7 +334,7 @@ menu "Web Interface"
 
 	config FREETZ_SKIN_legacy
 		bool "legacy"
-		default y
+		default n
 		help
 			Main color blue, menu at right.
 			Size: about 12 kB (uncompressed)
@@ -356,12 +357,15 @@ menu "Web Interface"
 
 	choice
 		prompt "Favicons"
-		default FREETZ_FAVICON_NONE
+		default FREETZ_FAVICON_EVO
 		help
 			Adds small favicons to the document root.
 
 		config FREETZ_FAVICON_NONE
 			bool "none"
+
+		config FREETZ_FAVICON_EVO
+			bool "Freetz-EVO favicon"
 
 		config FREETZ_FAVICON_ATOMPHIL
 			bool "atomphil's favicon"
@@ -383,6 +387,7 @@ menu "Web Interface"
 	config FREETZ_FAVICON_STRING
 		string
 		default "none"          if FREETZ_FAVICON_NONE
+		default "freetz-evo"    if FREETZ_FAVICON_EVO
 		default "atomphil"      if FREETZ_FAVICON_ATOMPHIL
 		default "cuma"          if FREETZ_FAVICON_CUMA
 		default "dsl123"        if FREETZ_FAVICON_DSL123
@@ -391,7 +396,7 @@ menu "Web Interface"
 
 	choice
 		prompt "AVM tagging"
-		default FREETZ_TAGGING_NG
+		default FREETZ_TAGGING_EVO
 		help
 			Adds a tag to the AVM web-interface, so it is obvious to
 			everybody that this box was modified by Freetz.
@@ -400,12 +405,15 @@ menu "Web Interface"
 		config FREETZ_TAGGING_NONE
 			bool "none"
 
+		config FREETZ_TAGGING_EVO
+			bool "Freetz-EVO"
+
 		config FREETZ_TAGGING_CUMA
 			bool "Freetz MOD"
 
 		config FREETZ_TAGGING_NG
 			bool "Freetz-NG"
-			
+
 		config FREETZ_TAGGING_PIMPED
 			bool "Pimped"
 
@@ -419,6 +427,7 @@ menu "Web Interface"
 	config FREETZ_TAGGING_STRING
 		string
 		depends on !FREETZ_TAGGING_NONE
+		default "freetz-evo"    if FREETZ_TAGGING_EVO
 		default "cuma"          if FREETZ_TAGGING_CUMA
 		default "freetz-ng"     if FREETZ_TAGGING_NG
 		default "pimped"        if FREETZ_TAGGING_PIMPED

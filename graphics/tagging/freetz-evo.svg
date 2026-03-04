@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177.1 139.1">
+  <g>
+    <- workflows: rename German job name 'matrizifizieren' to FREETZ paths — identical to freetz-ng.svg -->
+    <path d="M19.15,23V15.09l3,3v4.14l-1.89,1.94Zm3,4.19v4.11l-3,3V26.42l1.13-1.14ZM32,14.52l-3,3H22.75l-3-3Zm-3.2,8.67,1.52,1.51-1.52,1.51H22.38L20.86,24.7l1.52-1.51Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+    <path d="M39.72,23V15.09l3,3v4.14l-1.89,1.94Zm3,4.19v4.69l-3,3V26.42l1.14-1.14ZM50.55,16,49,17.54h-5.7l-3-3H49Zm-1.14,7.17,1.51,1.51-1.51,1.51H43L41.44,24.7,43,23.19Zm-5.29,5.87V26.91h2.17l5.81,5.8,0,2.16H49.94ZM52.61,23l-1.13,1.17-1.89-1.92V18.12l1.51-1.51,1.51,1.51Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+    <path d="M60.3,23V15.09l3,3v4.14l-1.89,1.94Zm3,4.2v4.11l-3,3V26.42l1.14-1.14Zm9.86-12.66-3,3H63.91l-3-3Zm0,20.36H60.89l3-3h6.26ZM70,23.19,71.5,24.7,70,26.21H63.53L62,24.7l1.51-1.51Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+    <path d="M80.88,23V15.09l3,3v4.14L82,24.15Zm3,4.2v4.11l-3,3V26.42L82,25.28Zm9.86-12.66-3,3H84.49l-3-3Zm0,20.36H81.46l3-3h6.25Zm-3.2-11.69,1.51,1.51-1.51,1.51H84.11L82.6,24.7l1.51-1.51Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+    <path d="M115.05,16l-1.55,1.52H102.31L100.79,16l1.52-1.5H113.5Zm-5.62,7-1.13,1.17-1.89-1.93V19.88l1.51-1.52,1.51,1.52Zm0,10.5L107.92,35l-1.51-1.51V27.17l1.89-1.89,1.13,1.13Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+    <path d="M134.93,16l-1.51,1.52h-8.35l-3-3h11.38Zm-.35,18.86h-11L122,33.37l1.51-1.51h8Zm-6.3-7.4-2.46,3.68h-2.27v-2.1L126.32,25l1.61-.15Zm5.11-7L131,24.11l-2.7.29-.11-1.59,3.08-4.57h2.16Z" style="fill:#000;stroke:#fff;stroke-miterlimit:10;stroke-width:0.25px"/>
+  </g>
+  <g>
+    <- workflows: rename German job name 'matrizifizieren' to EVO — same position/style as NG in freetz-ng.svg -->
+    <text
+      x="80" y="124"
+      font-family="'Eurostile Extended','Bank Gothic','Arial Narrow',sans-serif"
+      font-size="26"
+      letter-spacing="3"
+      text-anchor="middle"
+      fill="#000"
+      stroke="#fff"
+      stroke-width="0.4"
+      stroke-miterlimit="10">EVO</text>
+  </g>
+</svg>

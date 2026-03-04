@@ -51,8 +51,11 @@ body {
 
 /* --- Page Wrapper --- */
 #world {
-	max-width: 64rem;
-	margin: 0 auto;
+	/* --evo-world-max: set by cookie via JS (overrides everything)
+	   --evo-cgi-width: set by skin.sh per-page inline style
+	   900px: default when neither is set */
+	max-width: var(--evo-world-max, max(var(--evo-cgi-width, 900px), 900px));
+	margin: 0 auto 10px auto;
 	background: var(--evo-surface);
 	box-shadow: var(--evo-shadow-lg);
 	border-radius: 0 0 var(--evo-radius-lg) var(--evo-radius-lg);
@@ -191,22 +194,22 @@ ul.menu {
 	padding: 0;
 	margin: 0;
 	background: var(--evo-surface);
-	border-bottom: 1px solid var(--evo-border-light);
 	position: relative;
 }
+/* Sub-menu row hidden — hover dropdown provides submenu access */
 ul.menu.new.sub {
-	margin-top: -1px;
-	border-top: 1px solid var(--evo-border-light);
-	font-size: 0.85em;
+	display: none;
 }
 ul.menu > li {
 	display: block;
 	position: relative;
 	margin: 0;
 	padding: 0;
-}
-ul.menu > li + li {
+	min-width: 90px;
+	text-align: center;
 	border-left: 1px solid var(--evo-border-light);
+	border-right: 1px solid var(--evo-border-light);
+	border-bottom: 1px solid var(--evo-border-light);
 }
 ul.menu a {
 	display: block;
@@ -215,6 +218,8 @@ ul.menu a {
 	text-decoration: none;
 	border: none;
 	font-size: 0.85rem;
+	font-weight: 500;
+	letter-spacing: 0.015em;
 	transition: background var(--evo-transition), color var(--evo-transition);
 	white-space: nowrap;
 }
@@ -222,7 +227,7 @@ ul.menu a:hover {
 	background: var(--evo-menu-hover);
 	color: var(--evo-accent);
 	text-decoration: none;
-	border: none;
+	border-bottom: none;
 }
 ul.menu a.active,
 ul.menu li.open > a,
@@ -256,17 +261,22 @@ ul.menu ul {
 	top: 100%;
 	background: var(--evo-surface);
 	border: 1px solid var(--evo-border);
-	border-radius: 0 0 var(--evo-radius) var(--evo-radius);
+	border-radius: 0 var(--evo-radius) var(--evo-radius) var(--evo-radius);
 	box-shadow: var(--evo-shadow-lg);
 	margin: 0;
-	padding: 4px 0;
-	min-width: 180px;
+	padding: 6px 0;
+	min-width: 200px;
+	font-family: var(--evo-font);
 }
-ul.menu li:hover ul {
+ul.menu.new > li:hover > ul {
 	display: block;
 }
 ul.menu ul a {
-	padding: 6px 16px;
+	padding: 7px 18px;
+	font-size: 0.875rem;
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	border-right: none;
 }
 ul.menu ul a:hover {
 	background: var(--evo-menu-hover);
@@ -287,7 +297,10 @@ ul.menu ul a:hover {
 	margin-top: 2px;
 }
 .menu li li {
-	font-weight: normal;
+	font-weight: 500;
+}
+.menu a.file {
+	padding-left: 22px;
 }
 .menu a {
 	display: block;
@@ -309,7 +322,11 @@ ul.menu ul a:hover {
 .menu.new ul {
 	display: none;
 }
-.menu.new > li.open ul {
+.menu.new > li.open > ul {
+	display: none;
+}
+/* Hover on active section still shows dropdown */
+.menu.new > li.open:hover > ul {
 	display: block;
 }
 
@@ -561,20 +578,14 @@ p.warning, p.error, p.info {
 p.warning {
 	border-color: #fbbf24;
 	background-color: #fefce8;
-	/* Inline SVG warning triangle — no external file needed */
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'%3E%3Cpath d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E");
 }
 p.error {
 	border-color: #fca5a5;
 	background-color: #fef2f2;
-	/* Inline SVG error circle */
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ef4444'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
 }
 p.info {
 	border-color: #93c5fd;
 	background-color: #eff6ff;
-	/* Inline SVG info circle */
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E");
 }
 
 /* --- Checkbox & Radio refinement --- */
@@ -621,6 +632,8 @@ hr {
 	font-family: var(--evo-font);
 }
 .evo-dark-toggle:hover { background: rgba(255,255,255,0.28); box-shadow: none; }
+.evo-help-btn { font-size: 0.8rem; padding: 5px 12px; letter-spacing: 0.01em; }
+.evo-width-toggle { font-size: 0.9rem; padding: 5px 10px; }
 
 /* ─── Hamburger toggle (mobile, hidden on desktop) ─────────── */
 .evo-hamburger {
@@ -636,43 +649,84 @@ hr {
 }
 .evo-hamburger:hover { color: var(--evo-accent); box-shadow: none; }
 
+/* Nav-mode toggle: active state when hammode is on */
+body.evo-hammode #evo-navmode-btn,
+html.evo-hammode #evo-navmode-btn {
+	background: rgba(255,255,255,0.35);
+	outline: 2px solid rgba(255,255,255,0.55);
+}
+
+/* Ham-wrap: hidden by default, shown only in hammode, last on the right */
+#evo-ham-wrap {
+	display: none;
+	position: relative;
+}
+body.evo-hammode #evo-ham-wrap,
+html.evo-hammode #evo-ham-wrap {
+	display: flex;
+	align-items: center;
+	order: 100;
+	margin-left: auto;
+}
+
+/* Ham-open button: hidden by default, shown only when the wrapper is shown */
+#evo-ham-open-btn {
+	display: none;
+}
+body.evo-hammode #evo-ham-open-btn,
+html.evo-hammode #evo-ham-open-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.6rem;
+}
+
+/* ─── Ham mode: hide horizontal menu, allow drawer ─────────── */
+html.evo-hammode ul.menu.new,
+body.evo-hammode ul.menu.new {
+	display: none !important;
+}
+
 /* ─── Menu overlay backdrop (hamburger slide-in) ───────────── */
 .evo-nav-overlay {
 	display: none;
 	position: fixed;
 	inset: 0;
-	background: rgba(0,0,0,0.35);
-	z-index: 199;
+	background: rgba(0,0,0,0.30);
+	backdrop-filter: blur(2px);
+	z-index: 1048;
 }
 body.evo-menu-open .evo-nav-overlay { display: block; }
-body.evo-menu-open ul.menu.new {
-	display: flex !important;
-	position: fixed;
-	inset: 0 0 0 auto;
-	width: min(260px, 85vw);
-	flex-direction: column;
-	flex-wrap: nowrap;
-	background: var(--evo-surface);
-	box-shadow: -4px 0 20px rgba(0,0,0,0.2);
-	overflow-y: auto;
-	z-index: 200;
-	border-bottom: none;
-	padding-top: 8px;
-}
-body.evo-menu-open ul.menu.new > li {
-	float: none;
-	border-left: none;
-	border-bottom: 1px solid var(--evo-border-light);
-}
-body.evo-menu-open ul.menu.new a { padding: 12px 20px; font-size: 0.9rem; }
-body.evo-menu-open ul.menu.new ul {
-	display: block;
-	position: static;
-	box-shadow: none;
-	border: none;
-	border-radius: 0;
-	border-top: 1px solid var(--evo-border-light);
-	background: var(--evo-bg);
+
+/* Desktop ham mode: pure CSS hover dropdown below the ham-open button */
+@media (min-width: 601px) {
+	body.evo-hammode .evo-nav-overlay { display: none !important; }
+	/* Always rendered in hammode (overrides global display:none), invisible by default */
+	body.evo-hammode #evo-ham-wrap #evo-mobile-drawer {
+		display: flex;
+		position: absolute;
+		top: calc(100% + 2px);
+		right: 0;
+		bottom: auto;
+		left: auto;
+		width: 260px;
+		max-height: 80vh;
+		border-radius: var(--evo-radius-lg);
+		border: 1px solid var(--evo-border);
+		box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+		padding: 8px;
+		z-index: 1049;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0s 0.4s; /* 400ms delay before hiding */
+	}
+	/* On hover: show immediately, hide with 400ms delay on leave */
+	body.evo-hammode #evo-ham-wrap:hover #evo-mobile-drawer,
+	body.evo-hammode #evo-ham-wrap:focus-within #evo-mobile-drawer {
+		opacity: 1;
+		pointer-events: auto;
+		transition-delay: 0s;
+	}
 }
 
 /* ─── Dark Mode ─────────────────────────────────────────────── */
@@ -728,6 +782,34 @@ body.dark-mode input[type="number"],
 body.dark-mode textarea,
 body.dark-mode select                          { background: #0f172a; border-color: var(--evo-border); }
 body.dark-mode fieldset                        { border-color: var(--evo-border); }
+/* ─── html.dark-mode: mirrors body.dark-mode for FOUC-free behaviour ──────
+   The anti-FOUC script in <head> sets the class on <html> (body not yet
+   available). DOMContentLoaded then syncs it to <body>. During that brief
+   window these rules prevent a flash. ─────────────────────────────────── */
+html.dark-mode body {
+	--evo-bg:           #0f172a;
+	--evo-surface:      #1e293b;
+	--evo-text:         #e2e8f0;
+	--evo-text-muted:   #94a3b8;
+	--evo-border:       #334155;
+	--evo-border-light: #1e293b;
+	--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
+	--evo-footer-bg:    #020617;
+	--evo-menu-hover:   #1e293b;
+	--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+}
+html.dark-mode pre.log                         { background: #0f172a; border-color: #1e293b; }
+html.dark-mode table.daemons th,
+html.dark-mode table.packages th               { background: #0f172a; }
+html.dark-mode p.warning                       { background-color: #422006; border-color: #854d0e; }
+html.dark-mode p.error                         { background-color: #450a0a; border-color: #991b1b; }
+html.dark-mode p.info                          { background-color: #0c1a2e; border-color: #1e40af; }
+html.dark-mode input[type="text"],
+html.dark-mode input[type="password"],
+html.dark-mode input[type="number"],
+html.dark-mode textarea,
+html.dark-mode select                          { background: #0f172a; border-color: var(--evo-border); }
+html.dark-mode fieldset                        { border-color: var(--evo-border); }
 
 /* ─── Responsive: tablet and small desktop ─────────────────── */
 @media (max-width: 768px) {
@@ -758,9 +840,23 @@ body.dark-mode fieldset                        { border-color: var(--evo-border)
 	body:not(.evo-topnav) {
 		padding-bottom: 54px;
 	}
+	/* Sticky header on mobile */
+	body:not(.evo-topnav) #header {
+		position: sticky;
+		top: 0;
+		z-index: 1060;
+	}
+	/* FOUC prevention: hide bar until JS adds .evo-mobile-ready */
+	body:not(.evo-topnav) ul.menu.new:not(.evo-mobile-ready) {
+		opacity: 0;
+		pointer-events: none;
+	}
+	/* Fixed bottom navigation bar */
 	body:not(.evo-topnav) ul.menu.new {
 		position: fixed;
 		bottom: 0; left: 0; right: 0; top: auto;
+		-webkit-transform: translateZ(0);
+		transform: translateZ(0);
 		flex-wrap: nowrap;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
@@ -770,75 +866,194 @@ body.dark-mode fieldset                        { border-color: var(--evo-border)
 		border-radius: 0;
 		background: var(--evo-surface);
 		box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
-		z-index: 100;
+		z-index: 1050;
 		align-items: stretch;
 	}
 	body:not(.evo-topnav) ul.menu.new > li {
 		border-left: none;
-		border-right: 1px solid var(--evo-border-light);
-		flex: 1 0 auto;
+		border-right: none;
+		border-bottom: none;
+		flex: 1 1 0;
+		min-width: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 	body:not(.evo-topnav) ul.menu.new > li + li { border-left: none; }
 	body:not(.evo-topnav) ul.menu.new > li a {
-		padding: 4px 10px;
+		padding: 4px 6px;
 		font-size: 0.73rem;
 		text-align: center;
 		white-space: nowrap;
 		line-height: 1.3;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 100%;
 	}
-	/* Dropdowns open upward in bottom nav */
+	/* Hide items beyond visible limit */
+	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-hidden { display: none; }
+	/* "..." button */
+	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-more {
+		display: flex;
+		flex: 0 0 56px;
+		justify-content: center;
+	}
+	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-more a {
+		font-size: 1.05rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+	}
+	/* Submenus hidden in bottom bar — drawer handles them */
 	body:not(.evo-topnav) ul.menu.new ul {
-		top: auto;
-		bottom: 100%;
-		border-radius: var(--evo-radius) var(--evo-radius) 0 0;
+		display: none !important;
 	}
-	/* Sub-menu stays in normal flow */
-	body:not(.evo-topnav) ul.menu.new.sub {
-		position: static;
-		height: auto;
-		flex-wrap: wrap;
-		overflow-x: visible;
-		border: none;
-		border-top: 1px solid var(--evo-border-light);
-		box-shadow: none;
-	}
+	body:not(.evo-topnav) ul.menu.new.sub { display: none; }
 	body:not(.evo-topnav) .evo-hamburger { display: none; }
 	body:not(.evo-topnav) #container { padding: 0 10px 16px 10px; }
-	#world { border-radius: 0; }
-	#header-inner { flex-direction: row; align-items: center; }
-	#header h1 { font-size: 0.95rem; }
-	#header-right .version { display: none; }
+	#world { border-radius: 0; margin-bottom: 10px; overflow: visible; }
+	/* Mobile: bottom nav must always be visible regardless of hammode */
+	html.evo-hammode ul.menu.new,
+	body.evo-hammode ul.menu.new { display: flex !important; }
+	/* Mobile: navmode (tree/sidebar) toggle is irrelevant — hide the button */
+	#evo-navmode-btn { display: none !important; }
+	/* Mobile: "Open menu" button is desktop-hammode only — hide it */
+	#evo-ham-wrap { display: none !important; }
+	/* Compact single-row header on mobile */
+	#header-inner {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
+	}
+	#header h1 {
+		font-size: 0.92rem;
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	#header-right {
+		width: auto;
+		flex-shrink: 0;
+		gap: 8px;
+		justify-content: flex-end;
+	}
+	#header-right .version         { display: none; }
+	#header-right .evo-help-btn    { display: none; }
+	#header-right .evo-width-toggle { display: none; }
+	/* Overlay stops at bottom bar */
+	body.evo-menu-open .evo-nav-overlay { bottom: 54px; }
+
+	/* Daemons / packages table: scrollable on narrow screens to keep th/td aligned */
+	table.daemons,
+	table.packages {
+		display: block;
+		width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		white-space: nowrap;
+		border-radius: 0;
+	}
+	table.daemons th,
+	table.packages th,
+	table.daemons td,
+	table.packages td {
+		white-space: nowrap;
+		font-size: 0.78rem;
+		padding: 5px 8px;
+	}
 }
 
-/* Manual bottom-nav class (JS, regardless of viewport) */
-body.evo-bottomnav {
-	padding-bottom: 54px;
-}
-body.evo-bottomnav ul.menu.new {
+/* ─── Mobile popup drawer (#evo-mobile-drawer, created by JS) ─── */
+#evo-mobile-drawer {
+	display: none;
 	position: fixed;
-	bottom: 0; left: 0; right: 0; top: auto;
-	flex-wrap: nowrap;
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
-	height: 54px;
-	border-top: 2px solid var(--evo-accent);
-	border-bottom: none;
+	left: 8px;
+	right: 8px;
+	bottom: 62px;
+	top: auto;
+	max-height: 60vh;
+	flex-direction: column;
 	background: var(--evo-surface);
-	box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
-	z-index: 100;
+	box-shadow: 0 -2px 20px rgba(0,0,0,0.25);
+	overflow-y: auto;
+	z-index: 1049;
+	border: 1px solid var(--evo-border-light);
+	border-radius: 14px;
+	padding: 8px;
 }
-body.evo-bottomnav ul.menu.new > li {
-	border-left: none;
-	border-right: 1px solid var(--evo-border-light);
-	flex: 1 0 auto;
-	display: flex; align-items: center; justify-content: center;
+body.evo-menu-open #evo-mobile-drawer {
+	display: flex;
 }
-body.evo-bottomnav ul.menu.new ul { top: auto; bottom: 100%; border-radius: var(--evo-radius) var(--evo-radius) 0 0; }
-body.evo-bottomnav .evo-hamburger { display: none; }
-
-/* Manual hamburger-only mode */
-body.evo-navdrawer ul.menu.new { display: none; }
-body.evo-navdrawer .evo-hamburger { display: block; }
+#evo-mobile-drawer ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+#evo-mobile-drawer > ul > li {
+	border-bottom: 1px solid var(--evo-border-light);
+}
+#evo-mobile-drawer > ul > li:last-child {
+	border-bottom: none;
+}
+#evo-mobile-drawer > ul > li > a {
+	display: block;
+	padding: 10px 12px;
+	font-size: 0.88rem;
+	color: var(--evo-text);
+	text-decoration: none;
+	border: none;
+	border-radius: 8px;
+	transition: background var(--evo-transition);
+}
+#evo-mobile-drawer > ul > li > a:hover,
+#evo-mobile-drawer > ul > li > a:active {
+	background: var(--evo-menu-hover);
+}
+#evo-mobile-drawer > ul > li.evo-drawer-active > a {
+	background: var(--evo-menu-active);
+	color: #fff;
+	font-weight: 600;
+}
+/* Tree arrow indicator */
+#evo-mobile-drawer > ul > li.evo-drawer-parent > a::after {
+	content: '\25B8';
+	float: right;
+	opacity: 0.5;
+	transition: transform var(--evo-transition);
+}
+#evo-mobile-drawer > ul > li.evo-drawer-open > a::after {
+	transform: rotate(90deg);
+}
+/* Child items */
+#evo-mobile-drawer > ul > li > ul {
+	display: none;
+	background: var(--evo-bg);
+	border-radius: 8px;
+	margin: 4px 0 8px 0;
+	padding: 4px 0;
+}
+#evo-mobile-drawer > ul > li.evo-drawer-open > ul {
+	display: block;
+}
+#evo-mobile-drawer > ul > li > ul > li > a {
+	display: block;
+	padding: 8px 10px 8px 26px;
+	font-size: 0.82rem;
+	color: var(--evo-text);
+	text-decoration: none;
+	border: none;
+	border-radius: 6px;
+	margin: 0 4px 2px 4px;
+	transition: background var(--evo-transition);
+}
+#evo-mobile-drawer > ul > li > ul > li > a:hover {
+	background: var(--evo-menu-hover);
+}
+#evo-mobile-drawer > ul > li > ul > li > a.active {
+	background: var(--evo-menu-active);
+	color: #fff;
+	font-weight: 600;
+}
