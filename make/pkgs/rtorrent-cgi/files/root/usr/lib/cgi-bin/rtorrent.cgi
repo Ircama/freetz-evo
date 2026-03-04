@@ -724,6 +724,59 @@ if [ -d "/usr/mww/rutorrent" ] || [ -d "/mod/external/usr/mww/rutorrent" ]; then
 fi
 
 # ============================================================================
+# Dark-mode CSS overrides (injected once, before any HTML output)
+# ============================================================================
+cat << 'RTORRENT_DARK_STYLE'
+<style>
+/* rtorrent CGI — semantic alert boxes */
+.evo-rtor-warning  { color: #856404; background: #fff3cd; }
+.evo-rtor-info     { color: #1565c0; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px; padding: 12px; margin-top: 10px; }
+.evo-rtor-note     { color: #0066cc; background: #f0f8ff; border-left: 3px solid #0066cc; border-radius: 3px; }
+.evo-rtor-success  { background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px; padding: 15px; margin: 15px 0; }
+.evo-rtor-success-light { background: #e8f5e9; border-radius: 4px; padding: 15px; margin: 15px 0; }
+.evo-rtor-warn2    { background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; padding: 15px; }
+.evo-rtor-li       { padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px; }
+.evo-rtor-danger   { background: #f8d7da; border-radius: 4px; padding: 12px; margin-top: 10px; }
+.evo-rtor-success-sm { background: #d4edda; border-radius: 4px; padding: 12px; margin-top: 10px; }
+.evo-rtor-warn-sm  { background: #fff3cd; border-radius: 4px; padding: 12px; margin-top: 10px; }
+/* Dark mode — manual toggle */
+body.dark-mode .evo-rtor-warning,
+html.dark-mode .evo-rtor-warning    { color: #fcd34d; background: #422006; }
+body.dark-mode .evo-rtor-info,
+html.dark-mode .evo-rtor-info       { color: #93c5fd; background: #0c1a2e; border-color: #1e40af; }
+body.dark-mode .evo-rtor-note,
+html.dark-mode .evo-rtor-note       { color: #7dd3fc; background: #0c1a2e; border-color: #1e40af; }
+body.dark-mode .evo-rtor-success,
+body.dark-mode .evo-rtor-success-light,
+html.dark-mode .evo-rtor-success,
+html.dark-mode .evo-rtor-success-light { background: #052e16; border-color: #15803d; color: #86efac; }
+body.dark-mode .evo-rtor-warn2,
+html.dark-mode .evo-rtor-warn2      { background: #422006; border-color: #b45309; color: #fcd34d; }
+body.dark-mode .evo-rtor-li,
+html.dark-mode .evo-rtor-li         { background: var(--evo-bg, #0f172a); color: var(--evo-text, #e2e8f0); }
+body.dark-mode .evo-rtor-danger,
+html.dark-mode .evo-rtor-danger     { background: #450a0a; color: #fca5a5; }
+body.dark-mode .evo-rtor-success-sm,
+html.dark-mode .evo-rtor-success-sm { background: #052e16; color: #86efac; }
+body.dark-mode .evo-rtor-warn-sm,
+html.dark-mode .evo-rtor-warn-sm    { background: #422006; color: #fcd34d; }
+/* Dark mode — prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) .evo-rtor-warning    { color: #fcd34d; background: #422006; }
+  body:not(.light-mode) .evo-rtor-info       { color: #93c5fd; background: #0c1a2e; border-color: #1e40af; }
+  body:not(.light-mode) .evo-rtor-note       { color: #7dd3fc; background: #0c1a2e; border-color: #1e40af; }
+  body:not(.light-mode) .evo-rtor-success,
+  body:not(.light-mode) .evo-rtor-success-light { background: #052e16; border-color: #15803d; color: #86efac; }
+  body:not(.light-mode) .evo-rtor-warn2      { background: #422006; border-color: #b45309; color: #fcd34d; }
+  body:not(.light-mode) .evo-rtor-li         { background: var(--evo-bg, #0f172a); color: var(--evo-text, #e2e8f0); }
+  body:not(.light-mode) .evo-rtor-danger     { background: #450a0a; color: #fca5a5; }
+  body:not(.light-mode) .evo-rtor-success-sm { background: #052e16; color: #86efac; }
+  body:not(.light-mode) .evo-rtor-warn-sm    { background: #422006; color: #fcd34d; }
+}
+</style>
+RTORRENT_DARK_STYLE
+
+# ============================================================================
 # Initial Setup Wizard OR Normal Form
 # ============================================================================
 
@@ -732,7 +785,7 @@ if [ -z "$RTORRENT_BASEDIR" ] || [ "$RTORRENT_RC_EXISTS" = "no" ]; then
 	
 	sec_begin "$(lang de:"Starttyp" en:"Start type")"
 	cat << EOF
-<p style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px;">
+<p class="evo-rtor-warning" style="padding: 10px; border-radius: 4px;">
 ℹ️ $(lang de:"Bitte führen Sie zuerst die Ersteinrichtung durch" en:"Please complete initial setup first")
 </p>
 
@@ -763,8 +816,8 @@ fi
 
 # List RW mount points
 cat << EOF
-<div style="margin-top: 10px; border: 1px solid #ddd; background-color: #f9f9f9; padding: 8px; border-radius: 4px;">
-<div style="font-weight: bold; margin-bottom: 5px; color: #333;">$(lang de:"Verfügbare Speichergeräte (RW)" en:"Available Storage Devices (RW)"):</div>
+<div style="margin-top: 10px; border: 1px solid var(--evo-border, #ddd); background-color: var(--evo-surface, #f9f9f9); padding: 8px; border-radius: 4px;">
+<div style="font-weight: bold; margin-bottom: 5px; color: var(--evo-text, #333);">$(lang de:"Verfügbare Speichergeräte (RW)" en:"Available Storage Devices (RW)"):</div>
 <div style="max-height: 150px; overflow-y: auto;">
 <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
 EOF
@@ -831,7 +884,7 @@ cat << EOF
 </table>
 </div>
 <div style="font-size: 10px; color: #666; margin-top: 5px;">$(lang de:"Klicken um Pfad als Basisverzeichnis zu übernehmen" en:"Click to use path as base directory")</div>
-<div style="font-size: 11px; color: #0066cc; margin-top: 8px; padding: 8px; background: #f0f8ff; border-left: 3px solid #0066cc; border-radius: 3px;">
+<div class="evo-rtor-note" style="font-size: 11px; margin-top: 8px; padding: 8px;">
 <strong>$(lang de:"Hinweis" en:"Note"):</strong> $(lang de:"Ext4-Dateisystem wird empfohlen für beste Leistung und Zuverlässigkeit." en:"Ext4 filesystem is the most appropriate for best performance and reliability.")
 </div>
 </div>
@@ -850,7 +903,7 @@ cat << EOF
 
 <!-- Setup Wizard Modal -->
 <div id="setupWizardModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6);">
-	<div id="wizardContainer" style="background-color: #fff; margin: 3% auto; padding: 0; border-radius: 10px; width: 90%; max-width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+	<div id="wizardContainer" style="background-color: var(--evo-surface, #fff); margin: 3% auto; padding: 0; border-radius: 10px; width: 90%; max-width: 800px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); color: var(--evo-text, #333);">
 		<!-- Wizard Header -->
 		<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px 10px 0 0;">
 			<h2 style="margin: 0; color: white;">🚀 $(lang de:"rTorrent Ersteinrichtung" en:"rTorrent Initial Setup")</h2>
@@ -861,7 +914,7 @@ cat << EOF
 		<div style="padding: 30px;">
 			<!-- Step 1: Base Directory -->
 			<div class="wizard-step" id="step1">
-				<h3 style="color: #495057; margin-top: 0;">
+				<h3 style="color: var(--evo-text, #495057); margin-top: 0;">
 					<span style="background: #667eea; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">1</span>
 					$(lang de:"Basisverzeichnis" en:"Base Directory")
 				</h3>
@@ -875,9 +928,9 @@ cat << EOF
 					       value="$AUTO_STORAGE" style="padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; border: 2px solid #ddd; border-radius: 4px;">
 				</p>
 				<div id="dirCheckResult"></div>
-				<div style="background: #e7f3ff; padding: 12px; border-radius: 4px; border-left: 4px solid #2196F3; margin-top: 10px;">
+				<div class="evo-rtor-info">
 					<p style="margin: 0; color: #1976D2;"><strong>💡 $(lang de:"Empfehlung" en:"Recommendation"):</strong></p>
-					<p style="margin: 5px 0 0 0; font-size: 13px; color: #555;">
+					<p style="margin: 5px 0 0 0; font-size: 13px; color: var(--evo-text-muted, #555);">
 						$(lang de:"Beispiel" en:"Example"): <code>$AUTO_STORAGE</code><br>
 						$(lang 
 							de:"Das Verzeichnis muss auf persistentem Speicher liegen (USB, NAS). Verwenden Sie NICHT /var/tmp!"
@@ -889,7 +942,7 @@ cat << EOF
 			
 			<!-- Step 2: .rtorrent.rc Check -->
 			<div class="wizard-step" id="step2" style="display: none;">
-				<h3 style="color: #495057; margin-top: 0;">
+				<h3 style="color: var(--evo-text, #495057); margin-top: 0;">
 					<span style="background: #667eea; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">2</span>
 					$(lang de:"Konfigurationsdatei" en:"Configuration File")
 				</h3>
@@ -900,23 +953,23 @@ cat << EOF
 			
 			<!-- Step 3: Directory Structure (conditional) -->
 			<div class="wizard-step" id="step3" style="display: none;">
-				<h3 style="color: #495057; margin-top: 0;">
+				<h3 style="color: var(--evo-text, #495057); margin-top: 0;">
 					<span style="background: #667eea; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">3</span>
 					$(lang de:"Verzeichnisstruktur" en:"Directory Structure")
 				</h3>
 				<p>$(lang de:"Folgende Verzeichnisse werden erstellt" en:"The following directories will be created"):</p>
 				<ul style="line-height: 2; list-style: none; padding: 0;">
-					<li style="padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px;">📁 <strong>downloads/</strong> - $(lang de:"Heruntergeladene Dateien" en:"Downloaded files")</li>
-					<li style="padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px;">📁 <strong>session/</strong> - $(lang de:"Torrent-Sitzungsdaten" en:"Torrent session data")</li>
-					<li style="padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px;">📁 <strong>watch/load/</strong> - $(lang de:"Torrent-Dateien zum Laden" en:"Torrent files to load")</li>
-					<li style="padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px;">📁 <strong>watch/start/</strong> - $(lang de:"Torrent-Dateien zum Auto-Start" en:"Torrent files to auto-start")</li>
-					<li style="padding: 8px; background: #f8f9fa; margin-bottom: 8px; border-radius: 4px;">📁 <strong>log/</strong> - $(lang de:"Protokolldateien" en:"Log files")</li>
+					<li class="evo-rtor-li">📁 <strong>downloads/</strong> - $(lang de:"Heruntergeladene Dateien" en:"Downloaded files")</li>
+					<li class="evo-rtor-li">📁 <strong>session/</strong> - $(lang de:"Torrent-Sitzungsdaten" en:"Torrent session data")</li>
+					<li class="evo-rtor-li">📁 <strong>watch/load/</strong> - $(lang de:"Torrent-Dateien zum Laden" en:"Torrent files to load")</li>
+					<li class="evo-rtor-li">📁 <strong>watch/start/</strong> - $(lang de:"Torrent-Dateien zum Auto-Start" en:"Torrent files to auto-start")</li>
+					<li class="evo-rtor-li">📁 <strong>log/</strong> - $(lang de:"Protokolldateien" en:"Log files")</li>
 				</ul>
 			</div>
 			
 			<!-- Step 4: Port Forwarding -->
 			<div class="wizard-step" id="step4" style="display: none;">
-				<h3 style="color: #495057; margin-top: 0;">
+				<h3 style="color: var(--evo-text, #495057); margin-top: 0;">
 					<span style="background: #667eea; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">4</span>
 					$(lang de:"Port-Weiterleitung" en:"Port Forwarding")
 				</h3>
@@ -924,7 +977,7 @@ cat << EOF
 					de:"rTorrent benötigt offene Ports für eingehende Verbindungen:"
 					en:"rTorrent requires open ports for incoming connections:"
 				)</p>
-				<div style="background: #e8f5e9; padding: 15px; border-radius: 4px; margin: 15px 0;">
+				<div class="evo-rtor-success-light">
 					<p style="margin: 0 0 10px 0;"><strong>$(lang de:"Erforderliche Ports" en:"Required ports"):</strong></p>
 					<ul style="list-style: none; padding: 0; margin: 0;">
 						<li style="padding: 5px 0;">🔌 <strong>TCP Port 51413</strong></li>
@@ -936,7 +989,7 @@ cat << EOF
 			
 			<!-- Step 5: ruTorrent Status (completion) -->
 			<div class="wizard-step" id="step5" style="display: none;">
-				<h3 style="color: #495057; margin-top: 0;">
+				<h3 style="color: var(--evo-text, #495057); margin-top: 0;">
 					<span style="background: #28a745; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">✓</span>
 					$(lang de:"Einrichtung abgeschlossen!" en:"Setup Complete!")
 				</h3>
@@ -944,7 +997,7 @@ EOF
 
 	if [ "$RUTORRENT_INSTALLED" = "yes" ]; then
 		cat << EOF
-				<div style="background: #d4edda; padding: 15px; border-radius: 4px; border-left: 4px solid #28a745; margin: 15px 0;">
+				<div class="evo-rtor-success">
 					<p style="margin: 0; color: #155724;">
 						<strong>✓ ruTorrent $(lang de:"ist installiert" en:"is installed")</strong>
 					</p>
@@ -955,7 +1008,7 @@ EOF
 EOF
 	else
 		cat << EOF
-				<div style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107;">
+				<div class="evo-rtor-warn2">
 					<p style="margin: 0; color: #856404;">
 						<strong>ℹ️ ruTorrent $(lang de:"ist nicht installiert" en:"is not installed")</strong>
 					</p>
@@ -979,7 +1032,7 @@ EOF
 		</div>
 		
 		<!-- Wizard Footer -->
-		<div id="wizardFooter" style="background: #f8f9fa; padding: 15px 30px; border-radius: 0 0 10px 10px;">
+		<div id="wizardFooter" style="background: var(--evo-bg, #f8f9fa); padding: 15px 30px; border-radius: 0 0 10px 10px; border-top: 1px solid var(--evo-border, #dee2e6);">
 			<!-- Normal footer with navigation buttons -->
 			<div id="wizardFooterNormal" style="display: flex; justify-content: space-between;">
 				<button type="button" onclick="closeSetupWizard()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
@@ -996,7 +1049,7 @@ EOF
 			</div>
 			<!-- Confirmation message (hidden by default) -->
 			<div id="wizardFooterConfirm" style="display: none; text-align: center;">
-				<p style="margin: 0 0 15px 0; font-size: 15px; color: #333;">
+				<p style="margin: 0 0 15px 0; font-size: 15px; color: var(--evo-text, #333);">
 					$(lang de:"Möchten Sie den Assistenten wirklich beenden?" en:"Do you really want to exit the wizard?")
 				</p>
 				<button type="button" onclick="cancelCloseWizard()" style="background: #95a5a6; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">
@@ -1221,7 +1274,7 @@ function continueBasedirValidation(basedir) {
 	makeAjaxCall('check_directory', {basedir: basedir}, function(err, response) {
 		if (err) {
 			document.getElementById('dirCheckResult').innerHTML = 
-				'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler" en:"Error"): ' + err + '</p></div>';
 			return;
 		}
@@ -1229,26 +1282,26 @@ function continueBasedirValidation(basedir) {
 		if (response.exists) {
 			// Directory exists - save BASEDIR to config
 			document.getElementById('dirCheckResult').innerHTML = 
-				'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-success-sm">' +
 				'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichnis existiert, speichere Konfiguration..." en:"Directory exists, saving configuration...")</p></div>';
 			
 			// Save BASEDIR to rtorrent.cfg
 			makeAjaxCall('save_basedir_only', {basedir: basedir}, function(err, response) {
 				if (err || !response.success) {
 					document.getElementById('dirCheckResult').innerHTML = 
-						'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+						'<div class="evo-rtor-danger">' +
 						'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler beim Speichern" en:"Error saving configuration")</p></div>';
 					showToast('$(lang de:"Fehler beim Speichern" en:"Error saving configuration")', 'error', 4000);
 					return;
 				}
 				document.getElementById('dirCheckResult').innerHTML = 
-					'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-success-sm">' +
 					'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichnis existiert und Konfiguration gespeichert" en:"Directory exists and configuration saved")</p></div>';
 				setTimeout(function() { showStep(2); }, 800);
 			});
 		} else {
 			document.getElementById('dirCheckResult').innerHTML = 
-				'<div style="background: #fff3cd; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-warn-sm">' +
 				'<p style="margin: 0; color: #856404;">ℹ $(lang de:"Verzeichnis existiert nicht" en:"Directory does not exist")</p>' +
 				'<button onclick="createBasedir(\'' + basedir + '\')" style="margin-top: 10px; background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">$(lang de:"Jetzt erstellen" en:"Create Now")</button></div>';
 		}
@@ -1261,7 +1314,7 @@ function createBasedir(basedir) {
 	makeAjaxCall('create_directory', {basedir: basedir}, function(err, response) {
 		if (err || !response.success) {
 			document.getElementById('dirCheckResult').innerHTML = 
-				'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ ' + (response ? response.message : '$(lang de:"Fehler beim Erstellen" en:"Error creating directory")') + '</p></div>';
 			showToast('$(lang de:"Fehler beim Erstellen" en:"Error creating directory")', 'error', 4000);
 			return;
@@ -1269,19 +1322,19 @@ function createBasedir(basedir) {
 		
 		// Directory created - now save BASEDIR to config
 		document.getElementById('dirCheckResult').innerHTML = 
-			'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+			'<div class="evo-rtor-success-sm">' +
 			'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichnis erstellt, speichere Konfiguration..." en:"Directory created, saving configuration...")</p></div>';
 		
 		makeAjaxCall('save_basedir_only', {basedir: basedir}, function(err, response) {
 			if (err || !response.success) {
 				document.getElementById('dirCheckResult').innerHTML = 
-					'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler beim Speichern" en:"Error saving configuration")</p></div>';
 				showToast('$(lang de:"Fehler beim Speichern" en:"Error saving configuration")', 'error', 4000);
 				return;
 			}
 			document.getElementById('dirCheckResult').innerHTML = 
-				'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-success-sm">' +
 				'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichnis erstellt und Konfiguration gespeichert" en:"Directory created and configuration saved")</p></div>';
 			setTimeout(function() { showStep(2); }, 800);
 		});
@@ -1294,7 +1347,7 @@ function checkRtorrentRc() {
 	makeAjaxCall('check_rtorrent_rc', {basedir: wizardData.basedir}, function(err, response) {
 		if (err) {
 			document.getElementById('rcFileCheck').innerHTML = 
-				'<div style="background: #f8d7da; padding: 12px; border-radius: 4px;">' +
+				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler bei der Prüfung" en:"Error checking .rtorrent.rc")</p></div>';
 			return;
 		}
@@ -1303,7 +1356,7 @@ function checkRtorrentRc() {
 		
 		if (response.exists) {
 			document.getElementById('rcFileCheck').innerHTML = 
-				'<div style="background: #d4edda; padding: 12px; border-radius: 4px;">' +
+				'<div class="evo-rtor-success-sm">' +
 				'<p style="margin: 0; color: #155724;">✓ <strong>.rtorrent.rc</strong> $(lang de:"gefunden" en:"found")</p></div>' +
 				'<p style="margin-top: 15px;">$(lang de:"Prüfe Verzeichniskonfiguration..." en:"Checking directory configuration...")</p>';
 			
@@ -1311,7 +1364,7 @@ function checkRtorrentRc() {
 			checkDirectoryConfig();
 		} else {
 			document.getElementById('rcFileCheck').innerHTML = 
-				'<div style="background: #fff3cd; padding: 12px; border-radius: 4px;">' +
+				'<div class="evo-rtor-warn-sm">' +
 				'<p style="margin: 0; color: #856404;">⚠️ <strong>.rtorrent.rc</strong> $(lang de:"nicht gefunden" en:"not found")</p></div>' +
 				'<p style="margin-top: 15px;">$(lang de:"Soll .rtorrent.rc aus dem Template erstellt werden?" en:"Create .rtorrent.rc from template?")</p>' +
 				'<div style="text-align: center; margin-top: 15px;">' +
@@ -1328,14 +1381,14 @@ function createRtorrentRc() {
 	makeAjaxCall('create_rtorrent_rc', {basedir: wizardData.basedir}, function(err, response) {
 		if (err || !response.success) {
 			document.getElementById('rcFileCheck').innerHTML = 
-				'<div style="background: #f8d7da; padding: 12px; border-radius: 4px;">' +
+				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ ' + (response ? response.message : '$(lang de:"Fehler beim Erstellen" en:"Error creating .rtorrent.rc")') + '</p></div>';
 			showToast('$(lang de:"Fehler beim Erstellen von .rtorrent.rc" en:"Error creating .rtorrent.rc")', 'error', 4000);
 			return;
 		}
 		
 		document.getElementById('rcFileCheck').innerHTML = 
-			'<div style="background: #d4edda; padding: 12px; border-radius: 4px;">' +
+			'<div class="evo-rtor-success-sm">' +
 			'<p style="margin: 0; color: #155724;">✓ .rtorrent.rc $(lang de:"erfolgreich erstellt" en:"created successfully")</p></div>';
 		wizardData.rcExists = true;
 		
@@ -1356,11 +1409,11 @@ function checkDirectoryConfig() {
 		var checkMsg = document.getElementById('rcFileCheck');
 		if (response.has_config) {
 			checkMsg.innerHTML += 
-				'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-success-sm">' +
 				'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichniskonfiguration vorhanden" en:"Directory configuration exists")</p></div>';
 		} else {
 			checkMsg.innerHTML += 
-				'<div style="background: #fff3cd; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-warn-sm">' +
 				'<p style="margin: 0; color: #856404;">⚠️ $(lang de:"Verzeichnisstruktur muss erstellt werden" en:"Directory structure needs to be created")</p></div>';
 		}
 	});
@@ -1372,7 +1425,7 @@ function createDirectories() {
 	}
 	
 	document.getElementById('step3').innerHTML = 
-			'<h3 style="color: #495057; margin-top: 0;">' +
+			'<h3 style="color: var(--evo-text, #495057); margin-top: 0;">' +
 			'<span style="background: #667eea; color: white; border-radius: 50%; padding: 5px 12px; margin-right: 10px;">3</span>' +
 			'$(lang de:"Verzeichnisstruktur" en:"Directory Structure")' +
 			'</h3>' +
@@ -1381,13 +1434,13 @@ function createDirectories() {
 		makeAjaxCall('create_directories', {basedir: wizardData.basedir}, function(err, response) {
 			if (err || !response.success) {
 				document.getElementById('step3').innerHTML += 
-					'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ ' + (response ? response.message : '$(lang de:"Fehler beim Erstellen" en:"Error creating directories")') + '</p></div>';
 				return;
 			}
 			
 		document.getElementById('step3').innerHTML += 
-			'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+			'<div class="evo-rtor-success-sm">' +
 			'<p style="margin: 0; color: #155724;">✓ $(lang de:"Verzeichnisse erfolgreich erstellt" en:"Directories created successfully")</p></div>';
 		setTimeout(function() { showStep(4); }, 1000);
 	});
@@ -1400,7 +1453,7 @@ function checkPortForwarding() {
 	makeAjaxCall('get_port', {basedir: wizardData.basedir}, function(err, response) {
 		if (err || !response.port) {
 			document.getElementById('portForwardingStatus').innerHTML = 
-				'<div style="background: #f8d7da; padding: 12px; border-radius: 4px;">' +
+				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler beim Lesen der Port-Konfiguration" en:"Error reading port configuration")</p></div>';
 			return;
 		}
@@ -1417,7 +1470,7 @@ function checkPortForwarding() {
 		
 		// Show port configuration status
 		document.getElementById('portForwardingStatus').innerHTML = 
-			'<div style="background: #d4edda; padding: 15px; border-radius: 4px; border-left: 4px solid #28a745; margin-top: 15px;">' +
+			'<div class="evo-rtor-success">' +
 			'<p style="margin: 0 0 10px 0;"><strong>✓ $(lang de:"Port-Konfiguration" en:"Port Configuration"):</strong></p>' +
 			'<p style="margin: 5px 0;">$(lang de:"Port" en:"Port") <strong>' + port + '</strong> $(lang de:"wurde in .rtorrent.rc konfiguriert" en:"has been configured in .rtorrent.rc")</p>' +
 			'<p style="font-size: 13px; color: #2d5016; margin: 10px 0 0 0;">$(lang de:"✓ Die Ports sind bereits korrekt konfiguriert. Stellen Sie sicher, dass diese auch im Router weitergeleitet werden für optimale Konnektivität." en:"✓ The ports are already correctly configured.")</p>' +
@@ -1437,7 +1490,7 @@ function startService(shouldStart) {
 			if (err) {
 				var errorMsg = typeof err === 'string' ? err : '$(lang de:"Netzwerkfehler" en:"Network error")';
 				document.getElementById('serviceStartResult').innerHTML = 
-					'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ ' + errorMsg + '</p></div>';
 				showToast('$(lang de:"Fehler beim Starten" en:"Error starting service")', 'error', 4000);
 				return;
@@ -1446,7 +1499,7 @@ function startService(shouldStart) {
 			if (!response || !response.success) {
 				var msg = response && response.message ? response.message : '$(lang de:"Unbekannter Fehler" en:"Unknown error")';
 				document.getElementById('serviceStartResult').innerHTML = 
-					'<div style="background: #f8d7da; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ ' + msg + '</p></div>';
 				showToast('$(lang de:"Fehler beim Starten" en:"Error starting service")', 'error', 4000);
 				return;
@@ -1454,7 +1507,7 @@ function startService(shouldStart) {
 			
 			wizardData.serviceStarted = true;  // Mark that service was started
 			document.getElementById('serviceStartResult').innerHTML = 
-				'<div style="background: #d4edda; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+				'<div class="evo-rtor-success-sm">' +
 				'<p style="margin: 0; color: #155724;">✓ $(lang de:"Dienst erfolgreich gestartet" en:"Service started successfully")</p></div>';
 			setTimeout(function() { showStep(6); }, 1200);
 		});
@@ -1467,11 +1520,11 @@ function startService(shouldStart) {
 			wizardData.serviceStarted = false;  // Mark that service was NOT started
 			if (err || !response || !response.success) {
 				document.getElementById('serviceStartResult').innerHTML = 
-					'<div style="background: #fff3cd; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-warn-sm">' +
 					'<p style="margin: 0; color: #856404;">⚠ $(lang de:"Konfiguration gespeichert. Dienst nicht gestartet." en:"Configuration saved. Service not started.")</p></div>';
 			} else {
 				document.getElementById('serviceStartResult').innerHTML = 
-					'<div style="background: #fff3cd; padding: 12px; border-radius: 4px; margin-top: 10px;">' +
+					'<div class="evo-rtor-warn-sm">' +
 					'<p style="margin: 0; color: #856404;">ℹ $(lang de:"Dienst nicht gestartet. Sie können ihn später manuell starten." en:"Service not started. You can start it manually later.")</p></div>';
 			}
 			setTimeout(function() { showStep(6); }, 800);
@@ -1562,8 +1615,8 @@ fi
 
 # List RW mount points
 cat << EOF
-<div style="margin-top: 10px; border: 1px solid #ddd; background-color: #f9f9f9; padding: 8px; border-radius: 4px;">
-<div style="font-weight: bold; margin-bottom: 5px; color: #333;">$(lang de:"Verfügbare Speichergeräte (RW)" en:"Available Storage Devices (RW)"):</div>
+<div style="margin-top: 10px; border: 1px solid var(--evo-border, #ddd); background-color: var(--evo-surface, #f9f9f9); padding: 8px; border-radius: 4px;">
+<div style="font-weight: bold; margin-bottom: 5px; color: var(--evo-text, #333);">$(lang de:"Verfügbare Speichergeräte (RW)" en:"Available Storage Devices (RW)"):</div>
 <div style="max-height: 150px; overflow-y: auto;">
 <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
 EOF
@@ -1630,7 +1683,7 @@ cat << EOF
 </table>
 </div>
 <div style="font-size: 10px; color: #666; margin-top: 5px;">$(lang de:"Klicken um Pfad als Basisverzeichnis zu übernehmen" en:"Click to use path as base directory")</div>
-<div style="font-size: 11px; color: #0066cc; margin-top: 8px; padding: 8px; background: #f0f8ff; border-left: 3px solid #0066cc; border-radius: 3px;">
+<div class="evo-rtor-note" style="font-size: 11px; margin-top: 8px; padding: 8px;">
 <strong>$(lang de:"Hinweis" en:"Note"):</strong> $(lang de:"Ext4-Dateisystem wird empfohlen für beste Leistung und Zuverlässigkeit." en:"Ext4 filesystem is the most appropriate for best performance and reliability.")
 </div>
 </div>
@@ -1856,7 +1909,7 @@ EOF
 	cat << EOF
 <p style="margin-top: -5px;">
 <small style="color: #666; font-size: 11px;">
-$(lang de:"Aktueller Pfad" en:"Current path"): <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">$RTORRENT_RC_PATH</code>
+$(lang de:"Aktueller Pfad" en:"Current path"): <code style="background: var(--evo-bg, #f5f5f5); padding: 2px 6px; border-radius: 3px;">$RTORRENT_RC_PATH</code>
 </small>
 </p>
 EOF
@@ -1910,8 +1963,8 @@ fi  # End of if [ -z "$RTORRENT_BASEDIR" ] - wizard vs normal form
 if [ -f "/tmp/rc.rtorrent.log" ]; then
 	sec_begin "$(lang de:"Startup-Protokoll" en:"Startup Log")"
 	cat << 'EOF'
-<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; margin-bottom: 10px;">
-	<p style="margin: 0 0 10px 0;"><strong style="color: #495057;">📋 /tmp/rc.rtorrent.log</strong></p>
+<div style="background: var(--evo-surface, #f8f9fa); border: 1px solid var(--evo-border, #dee2e6); border-radius: 4px; padding: 12px; margin-bottom: 10px;">
+	<p style="margin: 0 0 10px 0;"><strong style="color: var(--evo-text, #495057);">📋 /tmp/rc.rtorrent.log</strong></p>
 	<pre style="background: #272822; color: #f8f8f2; padding: 12px; border-radius: 4px; overflow-x: auto; max-height: 400px; overflow-y: auto; margin: 0; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">
 EOF
 	# Display log content with HTML escaping

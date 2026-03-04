@@ -17,8 +17,10 @@
 	--evo-border-light: #e2e8f0;
 	--evo-header-bg:    linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%);
 	--evo-header-text:  #ffffff;
-	--evo-footer-bg:    #1e293b;
+	--evo-footer-bg:    #475569;
 	--evo-footer-text:  #94a3b8;
+	--evo-nav-bg:       rgba(255,255,255,0.95);
+	--evo-nav-border:   rgba(0,0,0,0.1);
 	--evo-menu-hover:   #f1f5f9;
 	--evo-menu-active:  #0e7490;
 	--evo-radius:       6px;
@@ -415,6 +417,14 @@ div.btn {
 	margin: 0.75em 0.5em 1em 0;
 }
 
+/* Textarea/text input — never overflow container regardless of cols/size attribute */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea {
+	max-width: 100%;
+	box-sizing: border-box;
+}
 /* Textarea wrapper */
 .textwrapper {
 	margin-right: 8px;
@@ -679,6 +689,7 @@ html.evo-hammode #evo-ham-open-btn {
 	align-items: center;
 	justify-content: center;
 	font-size: 1.6rem;
+	padding: 0.6rem 1rem;
 }
 
 /* ─── Ham mode: hide horizontal menu, allow drawer ─────────── */
@@ -718,9 +729,9 @@ body.evo-menu-open .evo-nav-overlay { display: block; }
 		z-index: 1049;
 		opacity: 0;
 		pointer-events: none;
-		transition: opacity 0s 0.4s; /* 400ms delay before hiding */
+		transition: opacity 0s 0.6s; /* 600ms delay before hiding */
 	}
-	/* On hover: show immediately, hide with 400ms delay on leave */
+	/* On hover: show immediately, hide with 600ms delay on leave */
 	body.evo-hammode #evo-ham-wrap:hover #evo-mobile-drawer,
 	body.evo-hammode #evo-ham-wrap:focus-within #evo-mobile-drawer {
 		opacity: 1;
@@ -730,9 +741,12 @@ body.evo-menu-open .evo-nav-overlay { display: block; }
 }
 
 /* ─── Dark Mode ─────────────────────────────────────────────── */
-/* Shared variable overrides: system auto-preference */
+/* Shared variable overrides: system auto-preference.
+   Use html:not(.light-mode) body so the anti-FOUC script in <head> can
+   suppress dark styles immediately (it sets class on <html>, which is
+   available before <body> is parsed). */
 @media (prefers-color-scheme: dark) {
-	body:not(.light-mode) {
+	html:not(.light-mode) body {
 		--evo-bg:           #0f172a;
 		--evo-surface:      #1e293b;
 		--evo-text:         #e2e8f0;
@@ -740,22 +754,24 @@ body.evo-menu-open .evo-nav-overlay { display: block; }
 		--evo-border:       #334155;
 		--evo-border-light: #1e293b;
 		--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
-		--evo-footer-bg:    #020617;
+		--evo-footer-bg:    #0b1525;
+		--evo-nav-bg:       rgba(15,23,42,0.95);
+		--evo-nav-border:   rgba(255,255,255,0.1);
 		--evo-menu-hover:   #1e293b;
 		--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
 	}
-	body:not(.light-mode) pre.log                         { background: #0f172a; border-color: #1e293b; }
-	body:not(.light-mode) table.daemons th,
-	body:not(.light-mode) table.packages th               { background: #0f172a; }
-	body:not(.light-mode) p.warning                       { background-color: #422006; border-color: #854d0e; }
-	body:not(.light-mode) p.error                         { background-color: #450a0a; border-color: #991b1b; }
-	body:not(.light-mode) p.info                          { background-color: #0c1a2e; border-color: #1e40af; }
-	body:not(.light-mode) input[type="text"],
-	body:not(.light-mode) input[type="password"],
-	body:not(.light-mode) input[type="number"],
-	body:not(.light-mode) textarea,
-	body:not(.light-mode) select { background: #0f172a; border-color: var(--evo-border); }
-	body:not(.light-mode) fieldset { border-color: var(--evo-border); }
+	html:not(.light-mode) body pre.log                         { background: #0f172a; border-color: #1e293b; }
+	html:not(.light-mode) body table.daemons th,
+	html:not(.light-mode) body table.packages th               { background: #0f172a; }
+	html:not(.light-mode) body p.warning                       { background-color: #422006; border-color: #854d0e; }
+	html:not(.light-mode) body p.error                         { background-color: #450a0a; border-color: #991b1b; }
+	html:not(.light-mode) body p.info                          { background-color: #0c1a2e; border-color: #1e40af; }
+	html:not(.light-mode) body input[type="text"],
+	html:not(.light-mode) body input[type="password"],
+	html:not(.light-mode) body input[type="number"],
+	html:not(.light-mode) body textarea,
+	html:not(.light-mode) body select                          { background: #0f172a; border-color: var(--evo-border); }
+	html:not(.light-mode) body fieldset                        { border-color: var(--evo-border); }
 }
 /* Manual dark mode (JS toggle via localStorage) */
 body.dark-mode {
@@ -766,7 +782,9 @@ body.dark-mode {
 	--evo-border:       #334155;
 	--evo-border-light: #1e293b;
 	--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
-	--evo-footer-bg:    #020617;
+	--evo-footer-bg:    #0b1525;
+	--evo-nav-bg:       rgba(15,23,42,0.95);
+	--evo-nav-border:   rgba(255,255,255,0.1);
 	--evo-menu-hover:   #1e293b;
 	--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
 }
@@ -794,7 +812,9 @@ html.dark-mode body {
 	--evo-border:       #334155;
 	--evo-border-light: #1e293b;
 	--evo-header-bg:    linear-gradient(135deg, #065666 0%, #0e7490 60%, #0891b2 100%);
-	--evo-footer-bg:    #020617;
+	--evo-footer-bg:    #0b1525;
+	--evo-nav-bg:       rgba(15,23,42,0.95);
+	--evo-nav-border:   rgba(255,255,255,0.1);
 	--evo-menu-hover:   #1e293b;
 	--evo-shadow-lg:    0 4px 14px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
 }
@@ -838,7 +858,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
    ─────────────────────────────────────────────────────────────── */
 @media (max-width: 600px), (max-height: 480px) and (orientation: landscape) {
 	body:not(.evo-topnav) {
-		padding-bottom: 54px;
+		padding-bottom: 58px;
 	}
 	/* Sticky header on mobile */
 	body:not(.evo-topnav) #header {
@@ -851,7 +871,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		opacity: 0;
 		pointer-events: none;
 	}
-	/* Fixed bottom navigation bar */
+	/* Fixed bottom navigation bar — PWA-style: frosted glass, ink active indicator */
 	body:not(.evo-topnav) ul.menu.new {
 		position: fixed;
 		bottom: 0; left: 0; right: 0; top: auto;
@@ -860,14 +880,16 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		flex-wrap: nowrap;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-		height: 54px;
-		border-top: 2px solid var(--evo-accent);
+		height: 58px;
+		border-top: 1px solid var(--evo-nav-border);
 		border-bottom: none;
 		border-radius: 0;
-		background: var(--evo-surface);
-		box-shadow: 0 -2px 12px rgba(0,0,0,0.1);
+		background: var(--evo-nav-bg);
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
 		z-index: 1050;
-		align-items: stretch;
+		align-items: center;
 	}
 	body:not(.evo-topnav) ul.menu.new > li {
 		border-left: none;
@@ -889,6 +911,25 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		overflow: hidden;
 		text-overflow: ellipsis;
 		max-width: 100%;
+		color: var(--evo-text-muted);
+		transition: color var(--evo-transition), transform var(--evo-transition);
+	}
+	/* Mobile: hover — slight lift, no background fill */
+	body:not(.evo-topnav) ul.menu.new > li > a:hover {
+		background: transparent;
+		color: var(--evo-accent);
+		transform: translateY(-2px);
+	}
+	/* Mobile: active — ink top-border + accent colour, no background fill */
+	body:not(.evo-topnav) ul.menu.new > li > a.active,
+	body:not(.evo-topnav) ul.menu.new > li.open > a,
+	body:not(.evo-topnav) ul.menu.new > li.open:hover > a,
+	body:not(.evo-topnav) ul.menu.new > li:hover > a.active {
+		background: transparent !important;
+		color: var(--evo-accent) !important;
+		font-weight: 700;
+		border-top: 3px solid var(--evo-accent);
+		padding-top: 1px;
 	}
 	/* Hide items beyond visible limit */
 	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-hidden { display: none; }
@@ -899,9 +940,14 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		justify-content: center;
 	}
 	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-more a {
-		font-size: 1.05rem;
+		font-size: 1.1rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
+		line-height: 1;
+		padding-top: 0;
+		padding-bottom: 0;
+		position: relative;
+		top: -4px;
 	}
 	/* Submenus hidden in bottom bar — drawer handles them */
 	body:not(.evo-topnav) ul.menu.new ul {
@@ -944,7 +990,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	#header-right .evo-help-btn    { display: none; }
 	#header-right .evo-width-toggle { display: none; }
 	/* Overlay stops at bottom bar */
-	body.evo-menu-open .evo-nav-overlay { bottom: 54px; }
+	body.evo-menu-open .evo-nav-overlay { bottom: 58px; }
 
 	/* Daemons / packages table: scrollable on narrow screens to keep th/td aligned */
 	table.daemons,
@@ -972,7 +1018,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	position: fixed;
 	left: 8px;
 	right: 8px;
-	bottom: 62px;
+	bottom: 66px;
 	top: auto;
 	max-height: 60vh;
 	flex-direction: column;

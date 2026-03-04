@@ -22,11 +22,13 @@ EOF
     var ck = '; ' + document.cookie;
     var h  = document.documentElement;
     if (ck.indexOf('; evo-dark=1')       !== -1) h.classList.add('dark-mode');
+    if (ck.indexOf('; evo-dark=0')       !== -1) h.classList.add('light-mode');
     if (ck.indexOf('; evo-nav=top')      !== -1) h.classList.add('evo-topnav');
     if (ck.indexOf('; evo-navmode=ham')  !== -1) h.classList.add('evo-hammode');
     // Sync html classes → body once DOM is ready (CSS targets body.dark-mode)
     document.addEventListener('DOMContentLoaded', function() {
       if (h.classList.contains('dark-mode'))   document.body.classList.add('dark-mode');
+      if (h.classList.contains('light-mode'))  document.body.classList.add('light-mode');
       if (h.classList.contains('evo-topnav'))  document.body.classList.add('evo-topnav');
       if (h.classList.contains('evo-hammode')) document.body.classList.add('evo-hammode');
     });
@@ -91,14 +93,32 @@ EOF
 </div>
 <script>
 function evoDarkToggle() {
-  var h      = document.documentElement;
-  var b      = document.body;
-  var isDark = h.classList.toggle('dark-mode');
-  b.classList[isDark ? 'add' : 'remove']('dark-mode');
-  h.classList.remove('light-mode');
-  b.classList.remove('light-mode');
-  var age = isDark ? 20*365*24*3600 : 0;
-  document.cookie = 'evo-dark=' + (isDark ? '1' : '0') + '; Path=/; Max-Age=' + age + '; SameSite=Lax';
+  var h = document.documentElement;
+  var b = document.body;
+  var hasDarkClass  = h.classList.contains('dark-mode');
+  var hasLightClass = h.classList.contains('light-mode');
+  var osDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Effective dark = explicit dark-mode class, OR OS dark preference not overridden by light-mode
+  var currentlyDark = hasDarkClass || (osDark && !hasLightClass);
+  if (currentlyDark) {
+    // Switch to light
+    h.classList.remove('dark-mode');
+    b.classList.remove('dark-mode');
+    if (osDark) {
+      // Must add light-mode to suppress OS dark preference
+      h.classList.add('light-mode');
+      b.classList.add('light-mode');
+    }
+    var age = osDark ? 20*365*24*3600 : 0;
+    document.cookie = 'evo-dark=0; Path=/; Max-Age=' + age + '; SameSite=Lax';
+  } else {
+    // Switch to dark
+    h.classList.remove('light-mode');
+    b.classList.remove('light-mode');
+    h.classList.add('dark-mode');
+    b.classList.add('dark-mode');
+    document.cookie = 'evo-dark=1; Path=/; Max-Age=' + (20*365*24*3600) + '; SameSite=Lax';
+  }
 }
 function evoWidthToggle() {
   var h = document.documentElement;
