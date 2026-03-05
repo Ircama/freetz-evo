@@ -170,6 +170,7 @@ jobs:
           echo '# FREETZ_DL_IMAGE_AT_LAST is not set'                                                 >> .config
           echo '# FREETZ_ADD_INACTIVE_SYSTEM is not set'                                              >> .config
           echo 'FREETZ_MODULES_TEST=y'                                                                >> .config
+          echo 'FREETZ_REPLACE_KERNEL=y'                                                              >> .config
           echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'    >> .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__DLIMG="${{ secrets.ACTIONS_IMAGE }}"'                     >> .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__TCURL="${{ secrets.ACTIONS_DLTCS }}"'                     >> .config
@@ -190,7 +191,9 @@ jobs:
           KERNEL_ID="$(echo "${KERNEL_ID}" | sed 's/\"//g')"
           KERNEL_CONFIG="make/kernel/configs/freetz/config-${KERNEL_ID}"
           KERNEL_SYMVERS="make/kernel/configs/symvers/symvers-${KERNEL_ID}"
+          mkdir -p make/kernel/configs/symvers/
           ! test -s "${KERNEL_CONFIG}"                          && echo "No kernel .config available, abort."    && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
+          ! grep -q '^FREETZ_REPLACE_KERNEL=y' ".config"        && echo "No replace-kernel enabled, abort."      && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
           ! grep -q '^CONFIG_MODVERSIONS=y' "${KERNEL_CONFIG}"  && echo "No kernel modversions enabled, abort."  && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
           test -s "${KERNEL_SYMVERS}"                           && echo "Kernel symvers already exists, abort."  && echo 'skip=skip' >> $GITHUB_OUTPUT && exit || true
 
