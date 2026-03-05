@@ -1,0 +1,68 @@
+{
+  "id": "/freetz-evo",
+  "name": "Freetz-EVO",
+  "short_name": "Freetz",
+  "description": "FritzBox Router Management — Freetz-EVO",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "lang": "en",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/style/evo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/style/evo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/style/evo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/style/evo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/style/evo/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Overview",
+      "short_name": "Overview",
+      "url": "/cgi-bin/overview.cgi",
+      "icons": [{ "src": "/style/evo/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Packages",
+      "short_name": "Packages",
+      "url": "/cgi-bin/pkgs/",
+      "icons": [{ "src": "/style/evo/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "url": "/cgi-bin/settings/",
+      "icons": [{ "src": "/style/evo/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Maskable background — fills whole 192×192 area -->
+  <rect width="192" height="192" rx="36" fill="#1e293b"/>
+  <!-- Inner card -->
+  <rect x="20" y="20" width="152" height="152" rx="22" fill="#0f172a"/>
+  <!-- Brand text: Freetz — top -->
+  <text x="96" y="52"
+        font-family="'Trebuchet MS',Arial,sans-serif"
+        font-size="24" font-weight="700"
+        letter-spacing="2" text-anchor="middle"
+        fill="#94a3b8">Freetz</text>
+  <!-- WiFi signal arcs (shifted down to leave room for top text) -->
+  <!-- Outer arc -->
+  <path d="M 50,82 Q 96,42 142,82" stroke="#3b82f6" stroke-width="9"
+        fill="none" stroke-linecap="round" opacity="0.6"/>
+  <!-- Mid arc -->
+  <path d="M 64,96 Q 96,68 128,96" stroke="#60a5fa" stroke-width="9"
+        fill="none" stroke-linecap="round" opacity="0.8"/>
+  <!-- Inner arc -->
+  <path d="M 78,110 Q 96,94 114,110" stroke="#93c5fd" stroke-width="9"
+        fill="none" stroke-linecap="round"/>
+  <!-- Router dot -->
+  <circle cx="96" cy="124" r="9" fill="#3b82f6"/>
+  <!-- Brand text: EVO — bottom -->
+  <text x="96" y="158"
+        font-family="'Trebuchet MS',Arial,sans-serif"
+        font-size="22" font-weight="900"
+        letter-spacing="5" text-anchor="middle"
+        fill="#3b82f6">EVO</text>
+</svg>

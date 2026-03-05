@@ -4,7 +4,24 @@ skin_head() {
 	[ "$hname" != "fritz" ] && hname="&nbsp;&#64;${hname}" || hname=""
 	cat << EOF
 <title>$title&nbsp;&ndash; Freetz-EVO${hname}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/style/evo/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Freetz-EVO">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="Freetz-EVO">
+<meta name="msapplication-TileColor" content="#1e293b">
+<meta name="msapplication-TileImage" content="/style/evo/icon-192.png">
+<meta name="msapplication-config" content="none">
+<meta name="color-scheme" content="dark light">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#3b82f6" media="(prefers-color-scheme: light)">
+<link rel="apple-touch-icon" sizes="180x180" href="/style/evo/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/style/evo/icon-152.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/style/evo/icon-120.png">
+<link rel="icon" type="image/svg+xml" href="/style/evo/icon.svg">
 <link rel="stylesheet" type="text/css" href="/style/evo/base.css">
 <link rel="stylesheet" type="text/css" href="/style/colorscheme.css">
 EOF
@@ -51,7 +68,7 @@ skin_body_begin() {
 <div id="header-right">
 EOF
 if [ -n "$_CGI_HELP" ]; then
-	echo "<button class='evo-dark-toggle evo-help-btn' onclick=\"location.href='$(html "$_CGI_HELP")'\">$(lang de:"Hilfe" en:"Help" it:"Aiuto" fr:"Aide" es:"Ayuda")</button>"
+        echo "<button class='evo-dark-toggle evo-help-btn' title='$(lang de:"Hilfe" en:"Help" it:"Aiuto" fr:"Aide" es:"Ayuda")' onclick=\"location.href='$(html "$_CGI_HELP")'\"><svg class='evo-help-icon' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='12' r='10'/><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/><circle cx='12' cy='17' r='0.8' fill='currentColor' stroke='none'/></svg><span class='evo-help-text'>$(lang de:"Hilfe" en:"Help" it:"Aiuto" fr:"Aide" es:"Ayuda")</span></button>"
 fi
 	cat << 'EOF'
 <button class="evo-dark-toggle evo-navmode-btn" id="evo-navmode-btn" title="Toggle tree menu" onclick="evoNavModeToggle()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 14 12" fill="currentColor" aria-hidden="true" style="vertical-align:middle"><rect x="0" y="0" width="14" height="2"/><rect x="3" y="5" width="11" height="2"/><rect x="3" y="10" width="11" height="2"/></svg></button>
@@ -283,6 +300,14 @@ document.addEventListener('DOMContentLoaded', function(){
   evoSetupMobileMenu();
   window.addEventListener('resize', evoSetupMobileMenu);
 });
+// PWA: register service worker when available and on HTTPS / localhost
+if ('serviceWorker' in navigator) {
+  var _loc = window.location;
+  if (_loc.protocol === 'https:' || _loc.hostname === 'localhost' || _loc.hostname === '127.0.0.1') {
+    navigator.serviceWorker.register('/style/evo/sw.js')
+      .catch(function(){}); // silently ignored on HTTP / scope mismatch
+  }
+}
 </script>
 EOF
 }

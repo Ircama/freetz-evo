@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Freetz-EVO — Offline</title>
+<style>
+  :root {
+    --bg:   #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --muted:#94a3b8;
+    --accent:#3b82f6;
+    --border:#334155;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f1f5f9; --card:#fff; --text:#1e293b; --muted:#64748b; --border:#e2e8f0; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+  }
+  .icon {
+    width: 72px; height: 72px;
+    margin: 0 auto 20px;
+  }
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+  .brand {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+  .brand span { color: var(--accent); font-weight: 700; }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- WiFi-off icon -->
+  <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" fill="none">
+    <circle cx="36" cy="36" r="36" fill="#1e40af" opacity="0.18"/>
+    <path d="M14 24 Q36 8 58 24" stroke="#3b82f6" stroke-width="4.5"
+          fill="none" stroke-linecap="round" opacity="0.35"/>
+    <path d="M21 32 Q36 18 51 32" stroke="#60a5fa" stroke-width="4.5"
+          fill="none" stroke-linecap="round" opacity="0.55"/>
+    <path d="M28 40 Q36 30 44 40" stroke="#93c5fd" stroke-width="4.5"
+          fill="none" stroke-linecap="round" opacity="0.75"/>
+    <circle cx="36" cy="50" r="4" fill="#3b82f6"/>
+    <!-- Cross-out slash -->
+    <line x1="16" y1="16" x2="56" y2="56" stroke="#ef4444" stroke-width="4"
+          stroke-linecap="round"/>
+  </svg>
+
+  <h1>You are offline</h1>
+  <p>The router is not reachable right now.<br>
+     Check your network connection and try again.</p>
+  <button onclick="window.location.reload()">Retry</button>
+  <div class="brand">Freetz<span>-EVO</span></div>
+</div>
+</body>
+</html>
