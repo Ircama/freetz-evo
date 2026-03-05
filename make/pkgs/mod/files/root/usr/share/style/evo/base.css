@@ -940,14 +940,14 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		justify-content: center;
 	}
 	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-more a {
-		font-size: 1.1rem;
+		font-size: 1.5rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		line-height: 1;
 		padding-top: 0;
 		padding-bottom: 0;
 		position: relative;
-		top: -4px;
+		top: -7px;
 	}
 	/* Submenus hidden in bottom bar — drawer handles them */
 	body:not(.evo-topnav) ul.menu.new ul {

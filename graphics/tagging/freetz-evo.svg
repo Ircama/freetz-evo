@@ -12,13 +12,13 @@
     <!-- workflows: rename German job name 'matrizifizieren' to EVO — same position/style as NG in freetz-ng.svg -->
     <text
       x="80" y="124"
-      font-family="'Eurostile Extended','Bank Gothic','Arial Narrow',sans-serif"
-      font-size="26"
+      font-family="'Trebuchet MS'"
+      font-size="28"
       letter-spacing="3"
       text-anchor="middle"
       fill="#000"
       stroke="#fff"
-      stroke-width="0.4"
-      stroke-miterlimit="10">EVO</text>
+      stroke-width="0.1"
+    >EVO</text>
   </g>
 </svg>

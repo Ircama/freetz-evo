@@ -97,20 +97,29 @@ function evoDarkToggle() {
   var b = document.body;
   var hasDarkClass  = h.classList.contains('dark-mode');
   var hasLightClass = h.classList.contains('light-mode');
-  var osDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // Effective dark = explicit dark-mode class, OR OS dark preference not overridden by light-mode
-  var currentlyDark = hasDarkClass || (osDark && !hasLightClass);
+  var osDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Determine current visual state:
+  // 1. Explicit class on <html> (set by anti-FOUC or prior toggle)
+  // 2. OS media query (via matchMedia)
+  // 3. Fallback: read the computed --evo-bg CSS variable (reliable even when matchMedia
+  //    reports wrong value on embedded browsers like FritzBox WebKit)
+  var currentlyDark;
+  if (hasDarkClass)       currentlyDark = true;
+  else if (hasLightClass) currentlyDark = false;
+  else if (osDark)        currentlyDark = true;
+  else {
+    try {
+      var bg = getComputedStyle(b).getPropertyValue('--evo-bg').trim();
+      currentlyDark = (bg === '#0f172a');
+    } catch(e) { currentlyDark = false; }
+  }
   if (currentlyDark) {
-    // Switch to light
+    // Switch to light: always add light-mode to suppress OS dark media query
     h.classList.remove('dark-mode');
     b.classList.remove('dark-mode');
-    if (osDark) {
-      // Must add light-mode to suppress OS dark preference
-      h.classList.add('light-mode');
-      b.classList.add('light-mode');
-    }
-    var age = osDark ? 20*365*24*3600 : 0;
-    document.cookie = 'evo-dark=0; Path=/; Max-Age=' + age + '; SameSite=Lax';
+    h.classList.add('light-mode');
+    b.classList.add('light-mode');
+    document.cookie = 'evo-dark=0; Path=/; Max-Age=' + (20*365*24*3600) + '; SameSite=Lax';
   } else {
     // Switch to dark
     h.classList.remove('light-mode');

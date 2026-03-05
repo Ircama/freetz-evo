@@ -9,7 +9,7 @@
 
 ```
 
-Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). More features - less bugs!
+Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). Easier, sleeker, more features - less bugs!
 
 Compared to Freetz-NG, Freetz-EVO includes GCC on-device, nginx, rtorrent, ruTorrent, PHP,
 AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
@@ -35,7 +35,7 @@ The Freetz-EVO web interface features a completely redesigned, fully responsive 
 
 | Package | Description | Status |
 |---|---|---|
-| **rTorrent** / **ruTorrent** | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
+| **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too |
