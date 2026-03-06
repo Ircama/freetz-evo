@@ -309,6 +309,8 @@ menu "Web Interface"
 
 	menu "Freetz skins"
 
+	comment "Skins define the visual theme (colors, layout, icons) of the Freetz web interface."
+
 	comment "CAUTION: You should select at least one skin."
 	depends on \
 		!FREETZ_SKIN_cuma && \
@@ -359,7 +361,10 @@ menu "Web Interface"
 		prompt "Favicons"
 		default FREETZ_FAVICON_EVO
 		help
-			Adds small favicons to the document root.
+			Selects the favicon set (.ico/.svg files) installed into the
+			router's web document root. Favicons appear in browser tabs,
+			bookmarks and home-screen shortcuts when accessing the Freetz
+			web interface. Choose "none" to omit them entirely.
 
 		config FREETZ_FAVICON_NONE
 			bool "none"
@@ -398,9 +403,11 @@ menu "Web Interface"
 		prompt "AVM tagging"
 		default FREETZ_TAGGING_EVO
 		help
-			Adds a tag to the AVM web-interface, so it is obvious to
-			everybody that this box was modified by Freetz.
-			Up to FritzOS 7.0 a .png is used, later the .svg files.
+			Adds a tag/watermark to the AVM web-interface logo, making it
+			immediately visible that the router has been modified by Freetz.
+			Up to FritzOS 7.0 a .png image is used; later firmware versions
+			use .svg. Choose "none" to leave the original AVM branding
+			untouched.
 
 		config FREETZ_TAGGING_NONE
 			bool "none"

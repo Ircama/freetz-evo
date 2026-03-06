@@ -13,6 +13,9 @@ Things you could do to [SUPPORT](SUPPORT.md) Freetz-EVO.<br>
 Why the [ADDONS](ADDONS.md) of the "Digitale Elite" are not supported here.<br>
 Show current [STATS](stats/README.md) of Freetz-EVO.<br>
 
+### Demos
+[Interactive UI Mockup](screenshots/evo-demo.html) — live preview of the Freetz-EVO web interface (no device needed)<br>
+
 ### Listings
 [Packages](make/README.md)<br>
 [Libraries](libs/README.md)<br>
