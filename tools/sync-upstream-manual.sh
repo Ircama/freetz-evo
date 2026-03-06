@@ -161,8 +161,73 @@ else
     echo ""
     echo "❌ Merge conflicts detected!"
     echo ""
-    echo "Conflicted files:"
-    git diff --name-only --diff-filter=U
+
+    # ── Auto-resolve modify/delete conflicts ──────────────────────────────────
+    # git status porcelain codes for unmerged entries:
+    #   UD = deleted by them (upstream deleted, we modified) → keep ours
+    #   DU = deleted by us (we deleted, upstream modified)   → keep our deletion
+    AUTO_RESOLVED=()
+    while IFS= read -r line; do
+        xy="${line:0:2}"
+        file="${line:3}"
+        if [ "$xy" = "UD" ]; then
+            # Upstream deleted, we modified → keep our version
+            git add -- "$file"
+            AUTO_RESOLVED+=("keep-ours: $file")
+        elif [ "$xy" = "DU" ]; then
+            # We deleted, upstream modified → keep our deletion
+            git rm --quiet -- "$file"
+            AUTO_RESOLVED+=("keep-deletion: $file")
+        fi
+    done < <(git status --porcelain)
+
+    if [ ${#AUTO_RESOLVED[@]} -gt 0 ]; then
+        echo "⚙️  Auto-resolved modify/delete conflicts:"
+        for r in "${AUTO_RESOLVED[@]}"; do
+            echo "   ✔ $r"
+        done
+        echo ""
+    fi
+
+    # Check if all conflicts are now resolved
+    REMAINING=$(git diff --name-only --diff-filter=U)
+    if [ -z "$REMAINING" ]; then
+        echo "✅ All conflicts auto-resolved!"
+        GIT_EDITOR=true git merge --continue
+        echo ""
+
+        if [ "$DRY_RUN" = true ]; then
+            echo "🔍 DRY RUN: merge is clean. Reverting..."
+            git checkout "$LOCAL_BRANCH"
+            git branch -D "$SYNC_BRANCH"
+            echo "No changes were made."
+            exit 0
+        fi
+
+        echo "▸ Updating master..."
+        git checkout "$LOCAL_BRANCH"
+        git merge --ff-only "$SYNC_BRANCH"
+        git branch -d "$SYNC_BRANCH"
+
+        echo ""
+        read -rp "Push to origin? [Y/n] " push_confirm
+        if [[ "${push_confirm:-Y}" == [yY] ]]; then
+            echo "▸ Pushing master..."
+            git push --force-with-lease origin "$LOCAL_BRANCH"
+            echo "▸ Pushing upstream-mirror..."
+            git push origin "$MIRROR_BRANCH" --force-with-lease
+            echo ""
+            echo "✅ Sync complete! Master is up-to-date with upstream."
+        else
+            echo "Not pushed. You can push later with:"
+            echo "  git push --force-with-lease origin $LOCAL_BRANCH"
+            echo "  git push origin $MIRROR_BRANCH --force-with-lease"
+        fi
+        exit 0
+    fi
+
+    echo "Remaining conflicts (require manual resolution):"
+    echo "$REMAINING"
     echo ""
 
     if [ "$DRY_RUN" = true ]; then
