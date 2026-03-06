@@ -19,10 +19,6 @@ Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://gi
 repository: all upstream fixes, new firmware support, and toolchain updates are regularly merged into
 Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 
-> **Language**: This repository uses **English** as its primary language for code, documentation, commit messages, and issues.
-
----
-
 ### Improvements over Freetz-NG
 
 Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.
@@ -31,7 +27,7 @@ Note: all new packages are currently developed and tested on an AVM FRITZ!Box 75
 
 The Freetz-EVO web interface features a completely redesigned, fully responsive skin ("EVO skin"). On mobile devices, the navigation adapts to a fixed bottom bar with a slide-up drawer for sub-menus and sub-pages; on desktop and tablet a horizontal top menu with hover dropdowns is used, with an optional hamburger mode that collapses the top bar into a right-side slide-in panel. Dark mode, page-width toggle, and per-device preferences are persisted in cookies for a consistent experience across page loads and devices.
 
-The authentication layer has been updated to support a **form-based session login** (in addition to the legacy HTTP Basic Auth mode). When the *New login with session id* option is enabled, the web interface presents a custom HTML login page instead of the native browser credential dialog; access is protected by a session cookie with a configurable inactivity timeout (default 10 minutes, configurable up to permanent). The session cookie is now persisted across browser restarts (`Max-Age=86400`), so re-opening the browser within an active session no longer forces re-authentication. A bug in `passwd_save.sh` that caused the stored password hash to include the username prefix — making any password change break subsequent logins — has been fixed.
+The authentication layer has been updated to support a **form-based session login** (in addition to the legacy HTTP Basic Auth mode). When the *New login with session id* option is enabled, the web interface presents a custom HTML login page instead of the native browser credential dialog; access is protected by a session cookie with a configurable inactivity timeout, persisted across browser restarts, so re-opening the browser within an active session no longer forces re-authentication. A bug in `passwd_save.sh` that caused the stored password hash to include the username prefix — making any password change break subsequent logins — has been fixed.
 
 #### New packages
 
@@ -43,7 +39,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too |
 | **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
 | **GCC On Device** | Full GCC toolchain for on-device; optional externalization; removed gprofng for i686 compatibility. | EVO only |
-| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer — no Node.js required. | EVO only |
+| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
@@ -244,6 +240,10 @@ Please make sure you fork the repo and change the clone URL in the example below
 After these commands, the current branch is accessible through your favorite browser at <http://localhost:8000>
 
 </details>
+
+---
+
+> **Language**: This repository uses **English** as its primary language for code, documentation, commit messages, and issues.
 
 ---
 
