@@ -23,20 +23,57 @@ fi
 sec_end
 sec_begin "$(lang de:"Authentifizierung" en:"Authentification")"
 
-cgi_print_checkbox "httpd_newlogin" "$MOD_HTTPD_NEWLOGIN" "$(lang de:"Neue Loginversion mit Session-ID" en:"New login with session id")"
+cgi_print_checkbox "httpd_newlogin" "$MOD_HTTPD_NEWLOGIN" "$(lang de:"Neue Loginversion mit Session-ID" en:"Form-based login with session cookie (replaces browser Basic Auth dialog)")"
 echo "<p>"
-cgi_print_textline "httpd_sessiontimeout" "$MOD_HTTPD_SESSIONTIMEOUT" 5 "$(lang de:"Session-ID Timeout:" en:"Session id timeout:") " " $(lang de:"Sekunden" en:"seconds")"
+cgi_print_textline "httpd_sessiontimeout" "$MOD_HTTPD_SESSIONTIMEOUT" 7 "$(lang de:"Inaktivitäts-Timeout der Sitzung:" en:"Session inactivity timeout:") " " $(lang de:"Sekunden (danach wird erneut nach dem Passwort gefragt)" en:"seconds (after this idle period the login prompt reappears)")"
+cat << EOF
+<table style="margin-top:4px;margin-left:2px;font-size:0.85em;border-collapse:collapse">
+<tr><th style="text-align:left;padding:1px 10px 1px 0">$(lang de:"Wert" en:"Value")</th><th style="text-align:left;padding:1px 0">$(lang de:"Inaktivitäts-Timeout" en:"Inactivity timeout")</th></tr>
+<tr><td style="padding:1px 10px 1px 0">600</td><td>$(lang de:"10 Minuten (Standard)" en:"10 minutes (default)")</td></tr>
+<tr><td style="padding:1px 10px 1px 0">3600</td><td>$(lang de:"1 Stunde" en:"1 hour")</td></tr>
+<tr><td style="padding:1px 10px 1px 0">86400</td><td>$(lang de:"24 Stunden" en:"24 hours")</td></tr>
+<tr><td style="padding:1px 10px 1px 0">864000</td><td>$(lang de:"100 Tage" en:"100 days")</td></tr>
+<tr><td style="padding:1px 10px 1px 0">0</td><td>$(lang de:"nie (permanent, solange das Gerät läuft)" en:"never (permanent while device is running)")</td></tr>
+</table>
+EOF
 echo "</p>"
 
+if [ -n "${MOD_HTTPD_CUSTOM_LOGIN+x}" ]; then
+cgi_print_checkbox "httpd_custom_login" "$MOD_HTTPD_CUSTOM_LOGIN" \
+	"$(lang de:"Skin-angepasste Login-Seite (Passwort-Eingabe im Stil des aktiven Themes statt Browser-Dialog; erfordert Session-ID)" \
+	       en:"Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)")"
+
 cat << EOF
-<script >
-var conftext='$(lang de:"Noch in der Erprobung!\\nZur Sicherheit sollte ein anderer Zugang zur Box vorhanden sein (telnet/ssh).\\nStandard PW ist \"freetz\", beim PW-Setzen wird es auf \"<User><PW>\" gesetzt!\\n\\nDas PW kann in Konsole so gesetzt werden:\\necho -n \"<Passwort>\" | md5sum | sed \"s/ .*$//\" > /tmp/flash/mod/webmd5\\n" en:"Still under development!\\nPlease make sure, you have an alternate way to access your box (telnet/ssh).\\nDefault password is \"freetz\", changing password will set it to \"<User><PW>\"!\\n\\nYou can set the PW in console with this command:\\necho -n \"<password>\" | md5sum | sed \"s/ .*$//\" > /tmp/flash/mod/webmd5\\n")'
-var el=document.getElementById('httpd_newlogin_yes');
-var eltime=document.getElementById('httpd_sessiontimeout');
-$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "eltime.disabled = true;")
-el.onchange=function(){eltime.disabled = this.checked ? false : true; if (this.checked){ this.checked = confirm(conftext) ? true : false;}; };
+<script>
+var elNewlogin  = document.getElementById('httpd_newlogin_yes');
+var elCustom    = document.getElementById('httpd_custom_login_yes');
+var elTimeout   = document.getElementById('httpd_sessiontimeout');
+$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true; elCustom.disabled = true;")
+elCustom.onchange = function() {
+  if (this.checked) { elNewlogin.checked = true; elTimeout.disabled = false; elCustom.disabled = false; }
+};
+elNewlogin.onchange = function() {
+  elTimeout.disabled = !this.checked;
+  elCustom.disabled  = !this.checked;
+  if (!this.checked) elCustom.checked = false;
+};
 </script>
 EOF
+
+else
+
+cat << EOF
+<script>
+var elNewlogin = document.getElementById('httpd_newlogin_yes');
+var elTimeout  = document.getElementById('httpd_sessiontimeout');
+$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true;")
+elNewlogin.onchange = function() {
+  elTimeout.disabled = !this.checked;
+};
+</script>
+EOF
+
+fi
 
 sec_end
 sec_begin "$(lang de:"Erweiterte Einstellungen" en:"Advanced settings")"

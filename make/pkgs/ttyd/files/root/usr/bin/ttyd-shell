@@ -1,0 +1,31 @@
+#!/bin/sh
+# ttyd-shell — per-boot auth wrapper for ttyd.
+#
+# rc.ttyd generates a random token at startup and saves it to
+# /var/run/ttyd.token (mode 600, root-only).  This wrapper reads
+# a single line from the PTY before exec'ing the shell; the line must
+# match the token.
+#
+# The ttyd.cgi web terminal auto-submits the token transparently, so
+# users accessing the terminal through the freetz web UI see no prompt.
+#
+# Anyone who reaches port TTYD_PORT directly from the LAN without
+# knowing the per-boot token will be denied, as the token is never
+# displayed and changes on every ttyd restart.
+#
+# If /var/run/ttyd.token does not exist (e.g. TTYD_CMD was overridden
+# to a fixed credential), the wrapper skips the check and exec's directly.
+
+TOKEN_FILE=/var/run/ttyd.token
+
+if [ -f "$TOKEN_FILE" ]; then
+	read -r _tok
+	_exp=$(cat "$TOKEN_FILE" 2>/dev/null)
+	if [ -z "$_exp" ] || [ "$_tok" != "$_exp" ]; then
+		printf 'Access denied.\r\n'
+		sleep 1
+		exit 1
+	fi
+fi
+
+exec /bin/login -f root

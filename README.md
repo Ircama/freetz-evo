@@ -31,6 +31,8 @@ Note: all new packages are currently developed and tested on an AVM FRITZ!Box 75
 
 The Freetz-EVO web interface features a completely redesigned, fully responsive skin ("EVO skin"). On mobile devices, the navigation adapts to a fixed bottom bar with a slide-up drawer for sub-menus and sub-pages; on desktop and tablet a horizontal top menu with hover dropdowns is used, with an optional hamburger mode that collapses the top bar into a right-side slide-in panel. Dark mode, page-width toggle, and per-device preferences are persisted in cookies for a consistent experience across page loads and devices.
 
+The authentication layer has been updated to support a **form-based session login** (in addition to the legacy HTTP Basic Auth mode). When the *New login with session id* option is enabled, the web interface presents a custom HTML login page instead of the native browser credential dialog; access is protected by a session cookie with a configurable inactivity timeout (default 10 minutes, configurable up to permanent). The session cookie is now persisted across browser restarts (`Max-Age=86400`), so re-opening the browser within an active session no longer forces re-authentication. A bug in `passwd_save.sh` that caused the stored password hash to include the username prefix — making any password change break subsequent logins — has been fixed.
+
 #### New packages
 
 | Package | Description | Status |
@@ -41,6 +43,7 @@ The Freetz-EVO web interface features a completely redesigned, fully responsive 
 | **Python 3.14** | Python 3.14.2 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14.2 too |
 | **python3-\*** (11 modules) | New Python 3 third-party packages: `cffi`, `cryptography`, `lxml`, `markupsafe`, `numpy`, `pandas`, `pillow`, `pip`, `pycryptodome`, `pyyaml`, `setuptools`. | EVO only |
 | **GCC On Device** | Full GCC toolchain for on-device; optional externalization; removed gprofng for i686 compatibility. | EVO only |
+| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer — no Node.js required. | EVO only |
 | **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
@@ -54,6 +57,8 @@ The Freetz-EVO web interface features a completely redesigned, fully responsive 
 | **libnettle** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
 | **libzen** | Helper library required by MediaInfo for portable C++ utilities. | EVO only |
 | **libxmlrpc** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
+| **libwebsockets** 4.3.9 | Canonical C WebSocket library; optional SSL/TLS support via OpenSSL. | EVO only |
+| **json-c** 0.17 | Lightweight JSON parser/serialiser library. | EVO only |
 
 #### Python 2 third-party modules fix
 

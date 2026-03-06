@@ -1,0 +1,11 @@
+config FREETZ_LIB_libjson_c
+	bool "json-c (libjson-c.so)"
+	default n
+	help
+		json-c is a JSON library implementing an object model allowing the
+		creation and manipulation of JSON formatted strings.
+
+		This library is required by ttyd.
+
+		Project homepage:
+		https://github.com/json-c/json-c

@@ -4,26 +4,27 @@
 [ -z "$SENDSID" ] && . /usr/lib/libmodcgi.sh
 
 # Schicken wir dem Browser eine SessionID, gueltig fuer alle Pfade
-echo "Set-Cookie: SID=$SENDSID;Path=/"
+echo "Set-Cookie: SID=$SENDSID;Path=/;Max-Age=86400"
 
 cgi_begin "$(lang de:"Anmelden" en:"Login")"
 
 . /usr/mww/cgi-bin/md5hash.sh
 
-cat << EOF
-<br><br>
-$(lang de:"Passwort" en:"Password"): <input  type="password" id="inp_pw" maxlength="45" onkeydown="if (event.keyCode == 13) document.getElementById('id_go').click()">
-&nbsp;
-<input type="button" name="go" id="id_go" value="$(lang de:"Anmelden" en:"Login")"
-EOF
-subpage="$(echo "${REQUEST_URI}" | sed -n 's/.*\?subpage=//p' | sed 's/^\/*//;s/&.*//;s/[^-_a-zA-Z0-9\.\/]//g;s/\.\.//g')"
+subpage="$(echo "${REQUEST_URI}" | sed -n 's/.*\?subpage=//p' | sed 's/^\/*//;s/&.*//;s/[^-_a-zA-Z0-9\.\/]//g;s/\.\.//')"
 [ -z "$subpage" ] && subpage="${REQUEST_URI%%\?*}" || subpage="/$subpage"
-echo "onclick='location.href=\"/cgi-bin/login.cgi?subpage=$subpage&hash=\"+makemd5(document.getElementById(\"inp_pw\").value, \"$SENDSID\")'>"
-echo "<script> document.getElementById(\"inp_pw\").focus(); </script>"
-echo '<br><br>'
 
-# Waren wir schonmal hier? Dann war was falsch!
-[ "$WRONGPW" = 1 ] && echo "<p><b><font color=red>$(lang de:"Passwort falsch!" en:"Wrong password!")</font></b></p></b>"
+if type skin_login_form >/dev/null 2>&1 && [ "$MOD_HTTPD_CUSTOM_LOGIN" = yes ]; then
+	skin_login_form "$SENDSID" "$subpage" "$WRONGPW"
+else
+	cat << LOGINEOF
+<br><br>
+$(lang de:"Passwort" en:"Password"): <input type="password" id="inp_pw" maxlength="45" onkeydown="if (event.keyCode == 13) document.getElementById('id_go').click()">
+&nbsp;
+<input type="button" name="go" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&hash='+makemd5(document.getElementById('inp_pw').value,'$SENDSID')">
+LOGINEOF
+	echo '<br><br>'
+	[ "$WRONGPW" = 1 ] && echo "<p><b><font color=red>$(lang de:"Passwort falsch!" en:"Wrong password!")</font></b></p>"
+fi
 
 cgi_end
 

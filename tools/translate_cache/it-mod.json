@@ -3393,5 +3393,82 @@
     "timestamp": "2026-03-02T07:33:29Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Value": {
+    "original": "Value",
+    "translation": "Valore",
+    "timestamp": "2026-03-06T09:39:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Inactivity timeout": {
+    "original": "Inactivity timeout",
+    "translation": "Timeout di inattività",
+    "timestamp": "2026-03-06T09:39:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:10 minutes (default)": {
+    "original": "10 minutes (default)",
+    "translation": "10 minuti (predefinito)",
+    "timestamp": "2026-03-06T09:40:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:1 hour": {
+    "original": "1 hour",
+    "translation": "1 ora",
+    "timestamp": "2026-03-06T09:40:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:24 hours": {
+    "original": "24 hours",
+    "translation": "24 ore",
+    "timestamp": "2026-03-06T09:40:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:never (permanent while device is running)": {
+    "original": "never (permanent while device is running)",
+    "translation": "mai (permanente mentre il dispositivo è in funzione)",
+    "timestamp": "2026-03-06T09:40:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Form-based login with session cookie (replaces browser Basic Auth dialog)": {
+    "original": "Form-based login with session cookie (replaces browser Basic Auth dialog)",
+    "translation": "Login basato su modulo con cookie di sessione (sostituisce la finestra di dialogo Basic Auth del browser)",
+    "timestamp": "2026-03-06T10:01:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)": {
+    "original": "Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)",
+    "translation": "Pagina di login tematizzata per adattarsi alla skin attiva (richiesta della password nell'interfaccia web invece che nella finestra di dialogo del browser; richiede un login basato su modulo)",
+    "timestamp": "2026-03-06T10:01:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Session inactivity timeout:": {
+    "original": "Session inactivity timeout:",
+    "translation": "Timeout di inattività della sessione:",
+    "timestamp": "2026-03-06T11:16:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:seconds (after this idle period the login prompt reappears)": {
+    "original": "seconds (after this idle period the login prompt reappears)",
+    "translation": "secondi (dopo questo periodo di inattività riappare il prompt di login)",
+    "timestamp": "2026-03-06T11:16:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:100 days": {
+    "original": "100 days",
+    "translation": "100 giorni",
+    "timestamp": "2026-03-06T11:16:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

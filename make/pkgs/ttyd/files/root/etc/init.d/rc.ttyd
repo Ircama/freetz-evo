@@ -1,0 +1,101 @@
+#!/bin/sh
+
+DAEMON=ttyd
+DAEMON_LONG_NAME="ttyd - Web Terminal"
+. /etc/init.d/modlibrc
+
+config() {
+	[ -r /mod/etc/conf/ttyd.cfg ] && . /mod/etc/conf/ttyd.cfg
+}
+
+stop_post() {
+	rm -f /var/run/ttyd.token
+}
+
+start() {
+	config
+	local CMDLINE=""
+
+	[ -n "${TTYD_PORT// /}" ] && CMDLINE="$CMDLINE -p $TTYD_PORT"
+
+	# Per-boot auth token: written to /var/run/ttyd.token (mode 600).
+	# The ttyd-shell wrapper reads one line from the PTY and compares it.
+	# ttyd.cgi embeds the token and auto-submits it, so the web terminal
+	# authenticates transparently.  Direct access to port TTYD_PORT from
+	# the LAN requires knowing the token (changes on every restart).
+	local AUTOTOKEN
+	AUTOTOKEN=$(head -c 16 /dev/urandom | hexdump -e '/1 "%02x"' | tr -d ' \n')
+	printf '%s' "$AUTOTOKEN" > /var/run/ttyd.token
+	chmod 600 /var/run/ttyd.token
+
+	# Authentication: if TTYD_CREDENTIAL is set (format: user:password), ttyd
+	# requires HTTP Basic Auth.  This enables the browser credential prompt
+	# when accessing http://fritz.box:TTYD_PORT/ directly.
+	# The embedded web terminal in ttyd.cgi does NOT use a credential — its
+	# WebSocket is protected by the freetz session login.  Leave blank (default)
+	# so the embedded terminal can connect.  WAN access to port TTYD_PORT is
+	# blocked by the Fritz!Box firewall.
+	[ -n "${TTYD_CREDENTIAL// /}" ] && CMDLINE="$CMDLINE -c $TTYD_CREDENTIAL"
+
+	if [ "$TTYD_READONLY" = "yes" ]; then
+		CMDLINE="$CMDLINE -R"
+	else
+		CMDLINE="$CMDLINE -W"
+	fi
+
+	# Extra environment variables: space-separated KEY=VALUE pairs
+	for _ttyd_env in $TTYD_ENV; do
+		CMDLINE="$CMDLINE --env $_ttyd_env"
+	done
+
+	[ -n "${TTYD_ARGS// /}" ] && CMDLINE="$CMDLINE $TTYD_ARGS"
+
+	local CMD="${TTYD_CMD:-/bin/login -f root}"
+
+        local BINARY
+        BINARY=$(which $DAEMON_BIN 2>/dev/null)
+        if [ ! -x "$BINARY" ]; then
+                echo "Starting ${DAEMON_LONG_NAME} ... failed: $DAEMON_BIN not found."
+                exit 1
+        fi
+
+        echo -n "Starting ${DAEMON_LONG_NAME} ... "
+        start-stop-daemon -S -b -m -p "$PID_FILE" -- "$BINARY" $CMDLINE -- $CMD
+        if [ $? -ne 0 ]; then
+                echo "failed."
+                exit 1
+        fi
+        echo "done."
+}
+
+case $1 in
+	""|load)
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modreg daemon $DAEMON
+
+		modlib_start $TTYD_ENABLED
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

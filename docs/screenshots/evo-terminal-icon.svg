@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="24" fill="#0d1117"/>
+  <!-- Terminal border glow -->
+  <rect x="10" y="10" width="172" height="172" rx="16" fill="none" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+  <!-- Screen background -->
+  <rect x="18" y="18" width="156" height="156" rx="12" fill="#161b22"/>
+  <!-- Title bar -->
+  <rect x="18" y="18" width="156" height="28" rx="12 12 0 0" fill="#1a1f2e"/>
+  <!-- Traffic lights -->
+  <circle cx="38" cy="32" r="5" fill="#ef4444"/>
+  <circle cx="56" cy="32" r="5" fill="#f59e0b"/>
+  <circle cx="74" cy="32" r="5" fill="#22c55e"/>
+  <!-- Prompt line 1: "> _" -->
+  <text x="26" y="72" font-family="monospace" font-size="18" fill="#3b82f6" font-weight="bold">&gt;</text>
+  <text x="42" y="72" font-family="monospace" font-size="18" fill="#e2e8f0">freetz-evo</text>
+  <!-- Prompt line 2 -->
+  <text x="26" y="98" font-family="monospace" font-size="14" fill="#64748b">$ modenv set ttyd</text>
+  <!-- Prompt line 3: blinking cursor -->
+  <text x="26" y="124" font-family="monospace" font-size="18" fill="#3b82f6" font-weight="bold">&gt;</text>
+  <rect x="42" y="110" width="10" height="18" fill="#3b82f6" opacity="0.9"/>
+  <!-- Bottom accent line -->
+  <line x1="26" y1="152" x2="166" y2="152" stroke="#3b82f6" stroke-width="1" opacity="0.3"/>
+  <text x="96" y="168" font-family="sans-serif" font-size="12" fill="#3b82f6" text-anchor="middle" opacity="0.7">FREETZ EVO</text>
+</svg>

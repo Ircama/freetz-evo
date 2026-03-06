@@ -994,8 +994,8 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	.evo-help-btn .evo-help-icon   { display: inline-block; }
 	.evo-help-btn .evo-help-text   { display: none; }
 	#header-right .evo-width-toggle { display: none; }
-	/* Overlay stops at bottom bar */
-	body.evo-menu-open .evo-nav-overlay { bottom: 58px; }
+	/* Overlay stops at bottom bar (env() safe-area aware) */
+	body.evo-menu-open .evo-nav-overlay { bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
 
 	/* Daemons / packages table: scrollable on narrow screens to keep th/td aligned */
 	table.daemons,
@@ -1018,14 +1018,24 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 }
 
 /* ─── iOS safe-area-inset (notch / home bar clearance) ─────────
-   Requires  viewport-fit=cover  in the meta viewport tag.        */
-@supports (padding: env(safe-area-inset-bottom)) {
-        body:not(.evo-topnav) {
-                padding-bottom: calc(58px + env(safe-area-inset-bottom));
-        }
-        body:not(.evo-topnav) ul.menu.new {
-                height: calc(58px + env(safe-area-inset-bottom));
-                padding-bottom: env(safe-area-inset-bottom);
+   Requires  viewport-fit=cover  in the meta viewport tag.
+   Scoped to the same breakpoints as the mobile bottom-bar rule so
+   that desktop pages don't get a spurious 58px bottom padding.
+   Only padding-bottom is used on ul.menu.new — NO height change.
+   Reason: with box-sizing:content-box (default) height sets the
+   *content* area; adding padding-bottom on top would make the bar
+   58px + 2×safe-area tall while body only reserves 58px + safe-area
+   → the last safe-area pixels of content would be hidden under the
+   bar.  Keeping height at 58px and extending via padding-bottom is
+   the correct pattern.                                             */
+@media (max-width: 600px), (max-height: 480px) and (orientation: landscape) {
+        @supports (padding: env(safe-area-inset-bottom)) {
+                body:not(.evo-topnav) {
+                        padding-bottom: calc(58px + env(safe-area-inset-bottom));
+                }
+                body:not(.evo-topnav) ul.menu.new {
+                        padding-bottom: env(safe-area-inset-bottom);
+                }
         }
 }
 /* ─── PWA standalone mode (Add-to-Home-Screen) ─────────────────

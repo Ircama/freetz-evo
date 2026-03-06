@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_LIB_libwebsockets
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libwebsockets
+	bool "libwebsockets"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libwebsockets.so.19
+

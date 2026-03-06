@@ -432,6 +432,19 @@ menu "Web Interface"
 		default "freetz-ng"     if FREETZ_TAGGING_NG
 		default "pimped"        if FREETZ_TAGGING_PIMPED
 
+	config FREETZ_PACKAGE_MOD_SKINNED_LOGIN
+		bool "Skinned login page"
+		depends on FREETZ_PACKAGE_MOD
+		select FREETZ_BUSYBOX_FEATURE_HTTPD_ERROR_PAGES
+		default y
+		help
+			Enable a skin-aware login page for the freetz web interface.
+			When active, each skin provides its own styled login form
+			(skin_login_form) instead of the plain legacy form.
+			Can also be toggled at runtime from the web UI
+			(Configuration > Web Interface > Authentication).
+			Disable to revert to the legacy freetz-ng login behavior.
+
 	config FREETZ_WEBIF_LINK
 		bool "AVM menu link"
 		depends on FREETZ_AVM_VERSION_06_5X_MIN

@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_TTYD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TTYD
+	bool "ttyd"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/ttyd
+

@@ -1,0 +1,25 @@
+config FREETZ_LIB_libwebsockets
+	bool "libwebsockets (libwebsockets.so)"
+	depends on FREETZ_LIB_libuv
+	default n
+	help
+		libwebsockets is a lightweight, low-latency C library for
+		WebSocket clients and servers, HTTP/2, and more.
+
+		Required by ttyd (web-based terminal).
+
+		Project homepage:
+		https://libwebsockets.org/
+
+if FREETZ_LIB_libwebsockets
+
+config FREETZ_LIB_libwebsockets_WITH_SSL
+	bool "SSL/TLS support"
+	depends on FREETZ_LIB_libwebsockets
+	select FREETZ_LIB_libssl
+	default n
+	help
+		Build libwebsockets with SSL/TLS support via OpenSSL.
+		Required for HTTPS/WSS connections.
+
+endif

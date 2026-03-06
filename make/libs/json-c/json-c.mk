@@ -1,0 +1,66 @@
+$(call PKG_INIT_LIB, json-c-0.17-20230812)
+$(PKG)_SHLIB_VERSION:=5
+$(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=024d302a3aadcbf9f78735320a6d5aedf8b77876c8ac8bbb95081ca55054c7eb
+$(PKG)_SITE:=https://github.com/json-c/json-c/archive/refs/tags
+### VERSION:=json-c-0.17-20230812
+### WEBSITE:=https://github.com/json-c/json-c
+### MANPAGE:=https://json-c.github.io/json-c/
+### CHANGES:=https://github.com/json-c/json-c/releases
+### CVSREPO:=https://github.com/json-c/json-c
+
+$(PKG)_LIBNAME:=libjson-c.so.$($(PKG)_SHLIB_VERSION)
+$(PKG)_BINARY:=$($(PKG)_DIR)/$($(PKG)_LIBNAME)
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)
+$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$($(PKG)_LIBNAME)
+
+$(PKG)_DEPENDS_ON += cmake-host
+
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+$(PKG)_CONFIGURE_OPTIONS += -DDISABLE_WERROR=ON
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_STATIC_LIBS=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DDISABLE_BSYMBOLIC=ON
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_APPS=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_TESTING=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DENABLE_RDRAND=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DENABLE_THREADING=OFF
+
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_CMAKE)
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(JSON_C_DIR)
+
+$($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
+	$(SUBMAKE) -C $(JSON_C_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	@touch $@
+
+$($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
+	$(INSTALL_LIBRARY_STRIP)
+
+$(pkg): $($(PKG)_STAGING_BINARY)
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(JSON_C_DIR) clean
+	$(RM) -r \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libjson-c.* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/json-c/ \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/json-c.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/cmake/json-c/
+
+$(pkg)-uninstall:
+	$(RM) $(JSON_C_TARGET_DIR)/libjson-c.so*
+
+$(PKG_FINISH)

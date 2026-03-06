@@ -88,3 +88,28 @@ skin_sec_end() {
 </fieldset>
 EOF
 }
+
+skin_login_form() {
+	local sid="$1" subpage="$2" wrongpw="$3"
+	local errmsg=""
+	[ "$wrongpw" = "1" ] && errmsg="<tr><td></td><td><span style='color:red'>$(lang de:"Passwort falsch!" en:"Wrong password!")</span></td></tr>"
+	cat << EOF
+<br>
+<table cellpadding="4" cellspacing="0">
+<tr>
+  <td>$(lang de:"Benutzername" en:"Username"):</td>
+  <td><input type="text" value="$MOD_HTTPD_USER" readonly style="background:#f0f0f0;border:1px solid #ccc;padding:3px 6px"></td>
+</tr>
+<tr>
+  <td>$(lang de:"Passwort" en:"Password"):</td>
+  <td><input type="password" id="inp_pw" maxlength="45" style="border:1px solid #ccc;padding:3px 6px" onkeydown="if(event.key==='Enter')document.getElementById('id_go').click()"></td>
+</tr>
+$errmsg
+<tr>
+  <td></td>
+  <td><input type="button" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')"></td>
+</tr>
+</table>
+<script>document.getElementById('inp_pw').focus();</script>
+EOF
+}

@@ -1,0 +1,32 @@
+config FREETZ_PACKAGE_TTYD
+	bool "ttyd 1.7.7"
+	select FREETZ_LIB_libuv
+	select FREETZ_LIB_libwebsockets
+	select FREETZ_LIB_libjson_c
+	select FREETZ_LIB_libz
+	default n
+	help
+		ttyd is a simple command-line tool for sharing a terminal over
+		the web. Powered by libwebsockets with an embedded xterm.js
+		terminal frontend.
+
+		The web interface is embedded in the CGI control page of this
+		package and connects to the ttyd WebSocket server.
+
+		Access: http://fritz.box:81/cgi-bin/conf/ttyd
+		ttyd WebSocket: http://fritz.box:7681/
+
+		Project homepage:
+		https://github.com/tsl0922/ttyd
+
+if FREETZ_PACKAGE_TTYD
+
+config FREETZ_PACKAGE_TTYD_PORT
+	int "Default port"
+	depends on FREETZ_PACKAGE_TTYD
+	default 7681
+	help
+		TCP port on which the ttyd web/WebSocket server will listen.
+		Default: 7681
+
+endif

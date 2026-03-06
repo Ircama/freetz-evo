@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_TTYD" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ttyd"
+

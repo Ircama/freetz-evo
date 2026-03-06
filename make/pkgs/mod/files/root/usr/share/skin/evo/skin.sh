@@ -8,7 +8,7 @@ skin_head() {
 <link rel="manifest" href="/style/evo/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Freetz-EVO">
+<meta name="apple-mobile-web-app-title" content="Freetz EVO">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="application-name" content="Freetz-EVO">
 <meta name="msapplication-TileColor" content="#1e293b">
@@ -70,24 +70,34 @@ EOF
 if [ -n "$_CGI_HELP" ]; then
         echo "<button class='evo-dark-toggle evo-help-btn' title='$(lang de:"Hilfe" en:"Help" it:"Aiuto" fr:"Aide" es:"Ayuda")' onclick=\"location.href='$(html "$_CGI_HELP")'\"><svg class='evo-help-icon' xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='12' r='10'/><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/><circle cx='12' cy='17' r='0.8' fill='currentColor' stroke='none'/></svg><span class='evo-help-text'>$(lang de:"Hilfe" en:"Help" it:"Aiuto" fr:"Aide" es:"Ayuda")</span></button>"
 fi
+if [ -n "$id" ]; then
 	cat << 'EOF'
 <button class="evo-dark-toggle evo-navmode-btn" id="evo-navmode-btn" title="Toggle tree menu" onclick="evoNavModeToggle()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 14 12" fill="currentColor" aria-hidden="true" style="vertical-align:middle"><rect x="0" y="0" width="14" height="2"/><rect x="3" y="5" width="11" height="2"/><rect x="3" y="10" width="11" height="2"/></svg></button>
 <div id="evo-ham-wrap"><button class="evo-dark-toggle evo-ham-open-btn" id="evo-ham-open-btn" title="Open menu">&#9776;</button></div>
 <button class="evo-dark-toggle evo-width-toggle" id="evo-width-btn" title="Page width" onclick="evoWidthToggle()">&#8646;</button>
+EOF
+fi
+	cat << 'EOF'
 <button class="evo-dark-toggle" id="evo-dark-btn" title="Dark / Light mode" onclick="evoDarkToggle()">&#9681;</button>
+EOF
+if [ -n "$id" ]; then
+	cat << 'EOF'
 <button class="evo-hamburger" id="evo-ham-btn" title="Menu" onclick="evoHamToggle()">&#9776;</button>
 EOF
+fi
 	cat << EOF
 <span class="version">$(html < /etc/.freetz-version)</span>
 </div>
 </div>
 </div>
-<div class="evo-nav-overlay" id="evo-overlay" onclick="evoHamClose()"></div>
-<div id="container">
 EOF
+	[ -n "$id" ] && echo "<div class=\"evo-nav-overlay\" id=\"evo-overlay\" onclick=\"evoHamClose()\"></div>"
+	echo "<div id='container'>"
 
-	_cgi_print_menu "$id"
-	_cgi_print_submenu "$id"
+	if [ -n "$id" ]; then
+		_cgi_print_menu "$id"
+		_cgi_print_submenu "$id"
+	fi
 
 	echo "<div id='content'>"
 }
@@ -318,4 +328,39 @@ skin_sec_begin() {
 
 skin_sec_end() {
 	echo "</div>"
+}
+
+skin_login_form() {
+	local sid="$1" subpage="$2" wrongpw="$3"
+	local errmsg=""
+	[ "$wrongpw" = "1" ] && errmsg="<p class='evo-lgerr'>$(lang de:"Passwort falsch!" en:"Wrong password!" it:"Password errata!" fr:"Mot de passe erron&eacute;!" es:"&iexcl;Contrase&ntilde;a incorrecta!")</p>"
+	cat << EOF
+<div class="evo-lgwrap">
+<div class="evo-lgcard">
+<div class="evo-lglogo">Freetz<span class="evo-brand">-EVO</span></div>
+<div class="evo-lghost">$(hostname -s | html)</div>
+<label class="evo-lglabel">$(lang de:"Benutzername" en:"Username" it:"Utente" fr:"Utilisateur" es:"Usuario")</label>
+<input type="text" class="evo-lginput" value="$MOD_HTTPD_USER" readonly>
+<label class="evo-lglabel">$(lang de:"Passwort" en:"Password" it:"Password" fr:"Mot de passe" es:"Contrase&ntilde;a")</label>
+<input type="password" id="inp_pw" class="evo-lginput" maxlength="45" autofocus autocomplete="current-password" onkeydown="if(event.key==='Enter')document.getElementById('id_go').click()">
+<button id="id_go" class="evo-lgbtn" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')">
+$(lang de:"Anmelden" en:"Sign in" it:"Accedi" fr:"Connexion" es:"Entrar")
+</button>
+$errmsg
+</div>
+</div>
+<style>
+.evo-lgwrap{display:flex;align-items:center;justify-content:center;min-height:50vh;padding:2rem 1rem}
+.evo-lgcard{background:var(--evo-surface);border:1px solid var(--evo-border);border-radius:var(--evo-radius-lg);padding:2rem 2.5rem;width:100%;max-width:360px;box-shadow:var(--evo-shadow-lg)}
+.evo-lglogo{font-size:1.6rem;font-weight:700;color:var(--evo-accent);margin-bottom:.25rem;letter-spacing:-.5px}
+.evo-lghost{font-size:.85rem;color:var(--evo-text-muted);margin-bottom:1.5rem}
+.evo-lglabel{display:block;font-size:.75rem;color:var(--evo-text-muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px}
+.evo-lginput{display:block;width:100%;box-sizing:border-box;padding:.55rem .75rem;margin-bottom:1rem;background:var(--evo-bg);border:1px solid var(--evo-border);border-radius:var(--evo-radius);color:var(--evo-text);font-size:.95rem;transition:border-color var(--evo-transition)}
+.evo-lginput:focus{outline:none;border-color:var(--evo-accent);box-shadow:var(--evo-focus-ring)}
+.evo-lginput[readonly]{opacity:.55;cursor:default}
+.evo-lgbtn{width:100%;padding:.65rem;background:var(--evo-accent);color:#fff;border:none;border-radius:var(--evo-radius);font-size:1rem;font-weight:600;cursor:pointer;margin-top:.25rem;transition:opacity var(--evo-transition)}
+.evo-lgbtn:hover{opacity:.85}
+.evo-lgerr{color:#f87171;font-size:.875rem;margin-top:.75rem;text-align:center}
+</style>
+EOF
 }

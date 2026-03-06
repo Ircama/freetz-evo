@@ -54,6 +54,17 @@ $(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_FWLAYOUT_5),usr/mww/cgi-bin/system_lfs.
 endif
 
 $(pkg):
+ifeq ($(strip $(FREETZ_PACKAGE_MOD_SKINNED_LOGIN)),y)
+	@if [ -f $(MOD_DEST_DIR)/etc/default.mod/mod.cfg ]; then \
+		sed -i "s/^export MOD_HTTPD_NEWLOGIN=.*/export MOD_HTTPD_NEWLOGIN='yes'/" \
+			$(MOD_DEST_DIR)/etc/default.mod/mod.cfg; \
+	fi
+else
+	@if [ -f $(MOD_DEST_DIR)/etc/default.mod/mod.cfg ]; then \
+		sed -i '/^export MOD_HTTPD_CUSTOM_LOGIN=/d' \
+			$(MOD_DEST_DIR)/etc/default.mod/mod.cfg; \
+	fi
+endif
 
 $(pkg)-precompiled:
 

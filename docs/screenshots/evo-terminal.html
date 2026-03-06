@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Freetz EVO">
+<title>Freetz-EVO Terminal</title>
+<link rel="manifest" href="evo-terminal.webmanifest">
+<link rel="icon" href="evo-terminal-icon.svg" type="image/svg+xml">
+<!--
+  Full-screen WebSocket terminal for Freetz-EVO, powered by xterm.js.
+
+  Requires a WebSocket-capable terminal server running on the target device:
+    • ttyd (https://github.com/tsl0922/ttyd) — recommended, port 7681 by default
+    • shellinabox with the WebSocket proxy enabled
+
+  Install ttyd on Freetz-EVO (example):
+    modenv set ttyd ENABLED=yes BASEDIR=/var/media/ftp/ttyd
+    /etc/init.d/rc.ttyd start
+
+  Default connection: ws://fritz.box:7681/ws  (ttyd)
+  Keyboard shortcut:  Ctrl+Shift+,  →  open settings
+-->
+
+<!-- xterm.js stylesheet (CDN) -->
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/css/xterm.css">
+
+<style>
+:root {
+  --bar-h:    42px;
+  --search-h: 36px;
+  --accent: #3b82f6;
+  --ok:     #22c55e;
+  --warn:   #f59e0b;
+  --err:    #ef4444;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────── */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--bar-h);
+  background: #1a1f2e;
+  border-bottom: 1px solid #2e3a50;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  z-index: 100;
+  user-select: none;
+}
+
+.tb-logo {
+  font-size: 0.82rem; font-weight: 700;
+  color: var(--accent); letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+.tb-logo span { color: #64748b; font-weight: 400; }
+.tb-sep { width: 1px; height: 20px; background: #2e3a50; flex-shrink: 0; }
+
+#status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--err); flex-shrink: 0;
+  transition: background .3s;
+}
+#status-dot.connecting { background: var(--warn); animation: blink .8s infinite; }
+#status-dot.connected  { background: var(--ok); animation: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+#status-text {
+  font-size: 0.74rem; color: #64748b;
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tb-btn {
+  background: #374151; border: none; border-radius: 5px;
+  color: #94a3b8; font-size: 0.74rem; padding: 4px 12px;
+  cursor: pointer; transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.tb-btn:hover          { background: #4b5563; color: #e2e8f0; }
+.tb-btn.danger         { background: rgba(239,68,68,.12); color: var(--err); }
+.tb-btn.danger:hover   { background: rgba(239,68,68,.28); }
+.tb-btn:disabled       { opacity: .35; cursor: default; pointer-events: none; }
+
+/* ── Toolbar extras ─────────────────────────────────────────────── */
+.tb-filler { flex: 1; }
+.tb-select {
+  font-size: 11px; padding: 2px 5px;
+  background: #242b3a; border: 1px solid #2e3a50;
+  border-radius: 4px; color: #94a3b8; cursor: pointer;
+}
+.tb-select:hover { border-color: #3b4a60; color: #e2e8f0; }
+.tb-btn-icon { padding: 4px 8px; }
+
+/* ── Search bar ──────────────────────────────────────────────────── */
+#searchbar {
+  display: none;
+  position: fixed; top: var(--bar-h); left: 0; right: 0;
+  height: var(--search-h);
+  background: #151a27; border-bottom: 1px solid #2e3a50;
+  align-items: center; gap: 6px; padding: 0 10px;
+  z-index: 99;
+}
+#searchbar.open { display: flex; }
+#search-inp {
+  flex: 1; max-width: 360px; font-size: 12px; padding: 3px 8px;
+  background: #0f172a; border: 1px solid #2e3a50;
+  border-radius: 4px; color: #e2e8f0; outline: none;
+}
+#search-inp:focus { border-color: var(--accent); }
+.sb-btn {
+  font-size: 12px; padding: 2px 8px;
+  background: #374151; border: none; border-radius: 4px;
+  color: #94a3b8; cursor: pointer;
+}
+.sb-btn:hover { background: #4b5563; color: #e2e8f0; }
+#search-info { font-size: 11px; color: #64748b; white-space: nowrap; }
+
+/* ── Mobile fullscreen hint (toast) ─────────────────────────────── */
+#fs-hint {
+  display: none;
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(59,130,246,.92); color: #fff;
+  border-radius: 20px; padding: 8px 16px 8px 18px;
+  font-size: 0.82rem; z-index: 150;
+  gap: 10px; align-items: center;
+  white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  cursor: pointer;
+}
+#fs-hint.show { display: flex; }
+#fs-hint .fsh-x {
+  background: none; border: none; color: #fff; opacity: .7;
+  font-size: 1rem; cursor: pointer; padding: 0 0 0 4px; line-height: 1;
+}
+
+/* ── Terminal container ──────────────────────────────────────────── */
+#terminal-wrap {
+  position: fixed;
+  top: var(--bar-h); left: 0; right: 0; bottom: 0;
+  padding: 4px;
+  background: #0d1117;
+  transition: background .3s, top .1s;
+}
+#terminal-wrap.search-open { top: calc(var(--bar-h) + var(--search-h)); }
+#terminal { width: 100%; height: 100%; }
+.xterm           { height: 100%; }
+.xterm-viewport  { overflow-y: auto !important; }
+
+/* ── Settings overlay ────────────────────────────────────────────── */
+#settings-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center; justify-content: center;
+}
+#settings-overlay.open { display: flex; }
+
+#settings-box {
+  background: #1a1f2e;
+  border: 1px solid #2e3a50;
+  border-radius: 10px;
+  padding: 26px 28px 22px;
+  width: 420px; max-width: 96vw;
+  box-shadow: 0 24px 64px rgba(0,0,0,.65);
+}
+#settings-box h2 {
+  margin: 0 0 6px; font-size: 1rem; font-weight: 700;
+  color: #e2e8f0;
+}
+.s-help {
+  margin: 0 0 20px;
+  font-size: 0.76rem; color: #64748b; line-height: 1.6;
+}
+.s-help code {
+  background: rgba(59,130,246,.12);
+  color: var(--accent); border-radius: 3px;
+  padding: 1px 5px; font-size: 0.78em;
+}
+
+.f-row { margin-bottom: 13px; }
+.f-row label {
+  display: block; font-size: 0.72rem;
+  color: #94a3b8; margin-bottom: 4px; font-weight: 600;
+  letter-spacing: .03em;
+}
+.f-row input,
+.f-row select {
+  width: 100%;
+  background: #0f172a; border: 1px solid #2e3a50;
+  border-radius: 6px; padding: 7px 11px;
+  color: #e2e8f0; font-size: 0.83rem;
+  font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
+  outline: none; transition: border-color .15s;
+}
+.f-row input:focus,
+.f-row select:focus { border-color: var(--accent); }
+.f-row select { font-family: system-ui, sans-serif; }
+.f-grid-2 { display: grid; grid-template-columns: 1fr 100px; gap: 10px; }
+.f-grid-2b { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.s-actions {
+  display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+}
+.btn-primary {
+  background: var(--accent); border: none; border-radius: 6px;
+  color: #fff; font-size: 0.84rem; padding: 8px 20px;
+  cursor: pointer; font-weight: 600; transition: background .15s;
+}
+.btn-primary:hover { background: #2563eb; }
+.btn-secondary {
+  background: #374151; border: none; border-radius: 6px;
+  color: #94a3b8; font-size: 0.84rem; padding: 8px 16px;
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.btn-secondary:hover { background: #4b5563; color: #e2e8f0; }
+
+/* ── Disconnect overlay ──────────────────────────────────────────── */
+#disconn-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 150;
+  align-items: center; justify-content: center;
+}
+#disconn-overlay.open { display: flex; }
+#disconn-box {
+  background: #1a1f2e; border: 1px solid #2e3a50;
+  border-radius: 10px; padding: 30px;
+  text-align: center; min-width: 260px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+#disconn-box .d-icon { font-size: 2rem; margin-bottom: 8px; }
+#disconn-box .d-title {
+  font-size: 0.92rem; font-weight: 700; color: #e2e8f0; margin-bottom: 6px;
+}
+#disconn-box .d-msg  { font-size: 0.78rem; color: #64748b; margin-bottom: 20px; }
+#disconn-box .d-btns { display: flex; gap: 10px; justify-content: center; }
+
+/* ── Hint toast ──────────────────────────────────────────────────── */
+#hint {
+  position: fixed; bottom: 18px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(59,130,246,.15);
+  border: 1px solid rgba(59,130,246,.4);
+  color: #93c5fd; border-radius: 6px;
+  padding: 7px 18px; font-size: 0.76rem;
+  pointer-events: none; white-space: nowrap;
+  opacity: 0; transition: opacity .4s;
+  z-index: 50;
+}
+#hint.show { opacity: 1; }
+#hint kbd {
+  background: rgba(255,255,255,.1); border-radius: 3px;
+  padding: 1px 5px; font-size: .88em;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ─────────────────────────────────────────────────── -->
+<div id="topbar">
+  <div class="tb-logo">Freetz<span>-EVO</span>&ensp;Terminal</div>
+  <div class="tb-sep"></div>
+  <div id="status-dot"></div>
+  <div id="status-text">Not connected</div>
+  <div class="tb-filler"></div>
+  <select id="tb-theme" class="tb-select" title="Colour theme"
+          onchange="applyTheme(this.value)">
+    <option value="freetz">Freetz Dark</option>
+    <option value="dark">GitHub Dark</option>
+    <option value="green">Green on Black</option>
+    <option value="amber">Amber on Black</option>
+    <option value="solarized-dark">Solarized Dark</option>
+    <option value="solarized-light">Solarized Light</option>
+    <option value="light">Light</option>
+  </select>
+  <div class="tb-sep"></div>
+  <button class="tb-btn tb-btn-icon" onclick="fontDelta(-1)" title="Decrease font size">A&#x2212;</button>
+  <button class="tb-btn tb-btn-icon" onclick="fontDelta(+1)" title="Increase font size">A+</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn tb-btn-icon" onclick="toggleSearch()"
+          title="Search (Ctrl+Shift+F)">&#x2315;</button>
+  <button class="tb-btn tb-btn-icon" onclick="doReconnect()" title="Reconnect">&#x21BA;</button>
+  <button class="tb-btn tb-btn-icon" id="btn-fs" onclick="toggleFullscreen()"
+          title="Fullscreen">&#x26F6;</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="openSettings()"
+          title="Connection settings (Ctrl+Shift+,)">&#x2699; Settings</button>
+  <button class="tb-btn danger" id="btn-disconn" onclick="doDisconnect()"
+          disabled>Disconnect</button>
+</div>
+
+<!-- ── Search bar ──────────────────────────────────────────────── -->
+<div id="searchbar">
+  <input id="search-inp" type="text" placeholder="Search&#x2026;"
+         autocomplete="off" spellcheck="false"
+         oninput="searchNow()" onkeydown="searchKey(event)">
+  <button class="sb-btn" onclick="searchPrev()" title="Previous">&#9664;</button>
+  <button class="sb-btn" onclick="searchNext()" title="Next">&#9654;</button>
+  <span id="search-info"></span>
+  <div style="flex:1"></div>
+  <button class="sb-btn" onclick="closeSearch()" title="Close">&#x2715;</button>
+</div>
+
+<!-- ── Mobile fullscreen hint ──────────────────────────────────── -->
+<div id="fs-hint">
+  <span>&#x26F6; Tap for full screen</span>
+  <button class="fsh-x" onclick="event.stopPropagation();document.getElementById('fs-hint').classList.remove('show')">&#x2715;</button>
+</div>
+
+<!-- ── Terminal ────────────────────────────────────────────────── -->
+<div id="terminal-wrap">
+  <div id="terminal"></div>
+</div>
+
+<!-- ── Settings overlay ────────────────────────────────────────── -->
+<div id="settings-overlay">
+  <div id="settings-box">
+    <h2>Terminal Connection Settings</h2>
+    <p class="s-help">
+      Connect to a WebSocket terminal server on your Freetz-EVO device.
+      Requires <code>ttyd</code> (port&nbsp;7681 by default) or a compatible
+      server.<br>
+      Use <code>Ctrl+Shift+,</code> to re-open this panel.
+    </p>
+
+    <div class="f-row f-grid-2">
+      <div>
+        <label for="s-host">Host / IP address</label>
+        <input id="s-host" type="text" placeholder="fritz.box" autocomplete="off" spellcheck="false">
+      </div>
+      <div>
+        <label for="s-port">Port</label>
+        <input id="s-port" type="number" min="1" max="65535">
+      </div>
+    </div>
+
+    <div class="f-row">
+      <label for="s-path">WebSocket path</label>
+      <input id="s-path" type="text" placeholder="/ws" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="f-row f-grid-2b">
+      <div>
+        <label for="s-theme">Colour theme</label>
+        <select id="s-theme">
+          <option value="freetz">Freetz Dark</option>
+          <option value="dark">GitHub Dark</option>
+          <option value="green">Green on Black</option>
+          <option value="amber">Amber on Black</option>
+          <option value="solarized-dark">Solarized Dark</option>
+          <option value="solarized-light">Solarized Light</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+      <div>
+        <label for="s-fontsize">Font size (px)</label>
+        <input id="s-fontsize" type="number" min="8" max="32">
+      </div>
+    </div>
+
+    <div class="f-row">
+      <label for="s-fontfam">Font family</label>
+      <select id="s-fontfam">
+        <option value="'Cascadia Code','Fira Code',monospace">Cascadia Code</option>
+        <option value="'JetBrains Mono',monospace">JetBrains Mono</option>
+        <option value="'Source Code Pro',monospace">Source Code Pro</option>
+        <option value="'Courier New',monospace">Courier New</option>
+        <option value="monospace">System monospace</option>
+      </select>
+    </div>
+
+    <div class="s-actions">
+      <button class="btn-secondary" id="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-primary" onclick="applySettings()">Connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Disconnect overlay ──────────────────────────────────────── -->
+<div id="disconn-overlay">
+  <div id="disconn-box">
+    <div class="d-icon">⚡</div>
+    <div class="d-title">Connection closed</div>
+    <div class="d-msg" id="d-msg">The WebSocket connection was closed.</div>
+    <div class="d-btns">
+      <button class="btn-secondary" onclick="openSettings()">Settings</button>
+      <button class="btn-primary"   onclick="doReconnect()">Reconnect</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Hint toast ──────────────────────────────────────────────── -->
+<div id="hint">
+  Press <kbd>Connect</kbd> to start &nbsp;·&nbsp;
+  <kbd>Ctrl+Shift+,</kbd> to reopen settings
+</div>
+
+<!-- ── xterm.js + all addons from jsDelivr CDN ─────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0/lib/addon-fit.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0/lib/addon-web-links.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-search@0/lib/addon-search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-unicode11@0/lib/addon-unicode11.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-canvas@0/lib/addon-canvas.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-webgl@0/lib/addon-webgl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-clipboard@0/lib/addon-clipboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-progress@0/lib/addon-progress.js"></script>
+
+<script>
+'use strict';
+
+// ── Colour themes ─────────────────────────────────────────────────────────────
+var THEMES = {
+  freetz: {
+    background: '#0d1117', foreground: '#c9d1d9',
+    cursor: '#3b82f6', cursorAccent: '#0d1117',
+    selectionBackground: 'rgba(59,130,246,0.3)',
+    black: '#21262d', red: '#f85149', green: '#56d364',
+    yellow: '#e3b341', blue: '#58a6ff', magenta: '#d2a8ff',
+    cyan: '#76e3ea', white: '#b1bac4',
+    brightBlack: '#6e7681', brightRed:  '#ff7b72',
+    brightGreen: '#3fb950', brightYellow: '#d29922',
+    brightBlue: '#79c0ff', brightMagenta: '#d2a8ff',
+    brightCyan: '#56d4dd', brightWhite: '#f0f6fc',
+  },
+  dark: {
+    background: '#1e1e1e', foreground: '#d4d4d4',
+    cursor: '#aeafad', cursorAccent: '#1e1e1e',
+    selectionBackground: 'rgba(255,255,255,0.15)',
+    black: '#000000', red: '#cd3131', green: '#0dbc79',
+    yellow: '#e5e510', blue: '#2472c8', magenta: '#bc3fbc',
+    cyan: '#11a8cd', white: '#e5e5e5',
+    brightBlack: '#666666', brightRed:  '#f14c4c',
+    brightGreen: '#23d18b', brightYellow: '#f5f543',
+    brightBlue: '#3b8eea', brightMagenta: '#d670d6',
+    brightCyan: '#29b8db', brightWhite: '#e5e5e5',
+  },
+  green: {
+    background: '#000000', foreground: '#33ff33',
+    cursor: '#33ff33', cursorAccent: '#000000',
+    selectionBackground: 'rgba(51,255,51,0.25)',
+    black: '#000000', red: '#cc0000', green: '#33ff33',
+    yellow: '#cccc00', blue: '#0000cc', magenta: '#cc00cc',
+    cyan: '#00cccc', white: '#cccccc',
+    brightBlack: '#555555', brightRed:  '#ff3333',
+    brightGreen: '#66ff66', brightYellow: '#ffff55',
+    brightBlue: '#5555ff', brightMagenta: '#ff55ff',
+    brightCyan: '#55ffff', brightWhite: '#ffffff',
+  },
+  amber: {
+    background: '#0c0800', foreground: '#ffb000',
+    cursor: '#ffb000', cursorAccent: '#0c0800',
+    selectionBackground: 'rgba(255,176,0,0.25)',
+    black: '#0c0800', red: '#dd2222', green: '#aaaa00',
+    yellow: '#ffb000', blue: '#555500', magenta: '#aa5500',
+    cyan: '#aa7700', white: '#ffb000',
+    brightBlack: '#555500', brightRed:  '#ff5555',
+    brightGreen: '#dddd00', brightYellow: '#ffd000',
+    brightBlue: '#777700', brightMagenta: '#ff8800',
+    brightCyan: '#ffcc00', brightWhite: '#ffe080',
+  },
+  light: {
+    background: '#f5f7fb', foreground: '#1e293b',
+    cursor: '#3b82f6', cursorAccent: '#f5f7fb',
+    selectionBackground: 'rgba(59,130,246,0.2)',
+    black: '#1e293b', red: '#b91c1c', green: '#15803d',
+    yellow: '#b45309', blue: '#1d4ed8', magenta: '#7e22ce',
+    cyan: '#0e7490', white: '#94a3b8',
+    brightBlack: '#475569', brightRed:  '#ef4444',
+    brightGreen: '#22c55e', brightYellow: '#f59e0b',
+    brightBlue: '#3b82f6', brightMagenta: '#a855f7',
+    brightCyan: '#06b6d4', brightWhite: '#f1f5f9',
+  },
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var term        = null;
+var fitAddon    = null;
+var searchAddon = null;
+var ws          = null;
+var lastCfg     = null;   // {host, port, path, ...} of most recent connection
+var curFontSize = 14;
+
+// ── URL parameters (set by ttyd.cgi link: ?tok=…&port=…) ─────────────────────
+var _qp       = new URLSearchParams(location.search);
+var URL_TOKEN = _qp.get('tok')  || '';
+var URL_PORT  = _qp.get('port') || '';
+
+// ── Defaults ──────────────────────────────────────────────────────────────────
+var DEFAULTS = {
+  host: 'fritz.box', port: '7681', path: '/ws',
+  theme: 'freetz', fontSize: '10',
+  fontFamily: "'Cascadia Code','Fira Code',monospace",
+};
+
+// ── Persistent settings ───────────────────────────────────────────────────────
+function loadSettings() {
+  var s = {};
+  try { s = JSON.parse(localStorage.getItem('evo-terminal') || '{}'); } catch(e) {}
+  var d = DEFAULTS;
+  document.getElementById('s-host').value     = s.host       || d.host;
+  document.getElementById('s-port').value     = URL_PORT || s.port || d.port;
+  document.getElementById('s-path').value     = s.path       || d.path;
+  document.getElementById('s-theme').value    = s.theme      || d.theme;
+  document.getElementById('s-fontsize').value = s.fontSize   || d.fontSize;
+  document.getElementById('s-fontfam').value  = s.fontFamily || d.fontFamily;
+  document.getElementById('tb-theme').value   = s.theme      || d.theme;
+  return s;
+}
+
+function saveSettings(cfg) {
+  try { localStorage.setItem('evo-terminal', JSON.stringify(cfg)); } catch(e) {}
+}
+
+// ── Terminal init / rebuild ───────────────────────────────────────────────────
+function initTerminal(themeName, fontSize, fontFamily) {
+  if (term) { term.dispose(); term = null; searchAddon = null; fitAddon = null; }
+
+  var theme = THEMES[themeName] || THEMES.freetz;
+  curFontSize = parseInt(fontSize, 10) || 10;
+
+  term = new Terminal({
+    theme:       theme,
+    fontSize:    curFontSize,
+    fontFamily:  fontFamily || DEFAULTS.fontFamily,
+    fontWeight:  '400',
+    lineHeight:  1.18,
+    cursorBlink: true,
+    cursorStyle: 'block',
+    scrollback:  10000,
+    allowProposedApi: true,
+    convertEol:  false,
+  });
+
+  fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+
+  try { term.loadAddon(new WebLinksAddon.WebLinksAddon()); } catch(e) {}
+
+  try {
+    searchAddon = new SearchAddon.SearchAddon();
+    term.loadAddon(searchAddon);
+  } catch(e) { searchAddon = null; }
+
+  try {
+    var u11 = new Unicode11Addon.Unicode11Addon();
+    term.loadAddon(u11);
+    term.unicode.activeVersion = '11';
+  } catch(e) {}
+
+  // WebGL renderer, fallback to Canvas
+  var rendered = false;
+  try {
+    var wgl = new WebglAddon.WebglAddon();
+    wgl.onContextLoss(function() { wgl.dispose(); });
+    term.loadAddon(wgl);
+    rendered = true;
+  } catch(e) {}
+  if (!rendered) { try { term.loadAddon(new CanvasAddon.CanvasAddon()); } catch(e) {} }
+
+  try { term.loadAddon(new ClipboardAddon.ClipboardAddon()); } catch(e) {}
+  try { term.loadAddon(new ProgressAddon.ProgressAddon()); }  catch(e) {}
+
+  term.open(document.getElementById('terminal'));
+  fitAddon.fit();
+
+  term.onData(function(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send('0' + data);
+  });
+
+  term.onResize(function(sz) { sendResize(sz.cols, sz.rows); });
+
+  var bg = theme.background || '#0d1117';
+  document.getElementById('terminal-wrap').style.background = bg;
+  document.body.style.background = bg;
+}
+
+// ── WebSocket resize notification ─────────────────────────────────────────────
+// Tries ttyd format first (binary opcode 0x02 + JSON), then plain JSON.
+function sendResize(cols, rows) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  try {
+    // ttyd protocol client→server: opcode '1' (RESIZE_TERMINAL) + JSON
+    ws.send('1' + JSON.stringify({columns: cols, rows: rows}));
+  } catch(e) {}
+}
+
+// ── Connect ───────────────────────────────────────────────────────────────────
+function doConnect(cfg) {
+  lastCfg = cfg;
+  var url = 'ws://' + cfg.host + ':' + cfg.port + cfg.path;
+
+  setStatus('connecting', 'Connecting to ' + url + ' …');
+  hideDisconnOverlay();
+
+  ws = new WebSocket(url, ['tty']);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = function() {
+    setStatus('connected', 'Connected  ·  ' + cfg.host + ':' + cfg.port + cfg.path);
+    document.getElementById('btn-disconn').disabled = false;
+    term.focus();
+    if (fitAddon) fitAddon.fit();
+    // Welcome banner
+    term.writeln('\x1b[2m─── Freetz-EVO Terminal · ' +
+      cfg.host + ':' + cfg.port + cfg.path +
+      ' · ' + new Date().toLocaleString() + ' ───\x1b[0m\r\n');
+    /* ttyd protocol: send JSON_DATA immediately so the server spawns the
+       process.  Without this ttyd waits indefinitely and nothing appears.
+       AuthToken is empty when ttyd runs without -c.                       */
+    ws.send(JSON.stringify({
+      AuthToken: '',
+      columns: term ? term.cols : 80,
+      rows:    term ? term.rows : 24
+    }));
+    /* auto-submit per-boot token (from ?tok= URL param set by ttyd.cgi) */
+    var tok = (cfg && cfg.tok) || URL_TOKEN;
+    if (tok) ws.send('0' + tok + '\n');
+  };
+
+  ws.onmessage = function(ev) {
+    if (!term) return;
+    /* ttyd sends binary ArrayBuffers: byte[0]=command, rest=payload.
+       Command 0x30 ('0') = PTY output.  Pass payload as Uint8Array so
+       xterm handles encoding — TextDecoder would corrupt raw PTY bytes. */
+    var bytes = (ev.data instanceof ArrayBuffer)
+      ? new Uint8Array(ev.data)
+      : (function(s) {
+          var b = new Uint8Array(s.length);
+          for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i) & 0xff;
+          return b;
+        })(ev.data);
+    if (!bytes.length) return;
+    if (bytes[0] === 48 /* '0' = OUTPUT */) term.write(bytes.subarray(1));
+    /* bytes[0] === 49 = title, 50 = prefs — ignore both */
+  };
+
+  ws.onclose = function(ev) {
+    document.getElementById('btn-disconn').disabled = true;
+    var why = ev.wasClean
+      ? 'Connection closed (code ' + ev.code + (ev.reason ? ' — ' + ev.reason : '') + ')'
+      : 'Connection lost — is the terminal server running?';
+    setStatus('', why);
+    if (term) term.writeln('\r\n\x1b[31m[' + why + ']\x1b[0m');
+    document.getElementById('d-msg').textContent = why;
+    showDisconnOverlay();
+  };
+
+  ws.onerror = function() {
+    var why = 'WebSocket error — check host / port and that ttyd is running.';
+    setStatus('', why);
+    if (term) term.writeln('\r\n\x1b[31m[' + why + ']\x1b[0m');
+  };
+}
+
+function doDisconnect() {
+  if (ws) { ws.close(1000, 'User disconnect'); ws = null; }
+  document.getElementById('btn-disconn').disabled = true;
+  setStatus('', 'Disconnected');
+  hideDisconnOverlay();
+}
+
+function doReconnect() {
+  hideDisconnOverlay();
+  if (lastCfg) { if (term) term.clear(); doConnect(lastCfg); }
+  else openSettings();
+}
+
+// ── Theme / font helpers ──────────────────────────────────────────────────────
+function applyTheme(name) {
+  var th = THEMES[name] || THEMES.freetz;
+  if (term) {
+    term.options.theme = th;
+    var bg = th.background || '#0d1117';
+    document.getElementById('terminal-wrap').style.background = bg;
+    document.body.style.background = bg;
+  }
+  document.getElementById('s-theme').value  = name;
+  document.getElementById('tb-theme').value = name;
+}
+
+function fontDelta(d) {
+  curFontSize = Math.max(8, Math.min(30, curFontSize + d));
+  if (term) { term.options.fontSize = curFontSize; if (fitAddon) fitAddon.fit(); }
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+var _SDECO = {
+  matchBackground: '#ffd70066', matchBorder: '#ffa500',
+  matchOverviewRuler: '#ffd700',
+  activeMatchBackground: '#ff6600cc', activeMatchBorder: '#ff4400',
+  activeMatchColorOverviewRuler: '#ff6600',
+};
+
+function toggleSearch() {
+  var bar  = document.getElementById('searchbar');
+  var wrap = document.getElementById('terminal-wrap');
+  if (bar.classList.contains('open')) {
+    closeSearch();
+  } else {
+    bar.classList.add('open');
+    wrap.classList.add('search-open');
+    document.getElementById('search-inp').focus();
+    setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
+  }
+}
+
+function closeSearch() {
+  document.getElementById('searchbar').classList.remove('open');
+  document.getElementById('terminal-wrap').classList.remove('search-open');
+  if (searchAddon) searchAddon.clearDecorations();
+  if (term) term.focus();
+  setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
+}
+
+function searchNow() {
+  if (!searchAddon) return;
+  var v = document.getElementById('search-inp').value;
+  if (v) searchAddon.findNext(v, {decorations: _SDECO});
+  else   searchAddon.clearDecorations();
+}
+
+function searchNext() {
+  if (searchAddon) { var v = document.getElementById('search-inp').value; if (v) searchAddon.findNext(v, {decorations: _SDECO}); }
+}
+
+function searchPrev() {
+  if (searchAddon) { var v = document.getElementById('search-inp').value; if (v) searchAddon.findPrevious(v, {decorations: _SDECO}); }
+}
+
+function searchKey(e) {
+  if (e.key === 'Enter')  { e.shiftKey ? searchPrev() : searchNext(); return; }
+  if (e.key === 'Escape') { closeSearch(); }
+}
+
+// ── Fullscreen ────────────────────────────────────────────────────────────────
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(function() {});
+  } else {
+    document.exitFullscreen().catch(function() {});
+  }
+}
+
+document.addEventListener('fullscreenchange', function() {
+  var btn = document.getElementById('btn-fs');
+  btn.textContent = document.fullscreenElement ? '\u2715' : '\u26F6';
+  btn.title = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
+  setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
+});
+
+// ── Settings UI ───────────────────────────────────────────────────────────────
+function openSettings() {
+  hideDisconnOverlay();
+  // Show cancel only when a connection exists or has been attempted
+  document.getElementById('btn-cancel').style.display = lastCfg ? '' : 'none';
+  document.getElementById('settings-overlay').classList.add('open');
+  document.getElementById('s-host').focus();
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+  if (!lastCfg) showHint();
+}
+
+function applySettings() {
+  var cfg = {
+    host:       (document.getElementById('s-host').value.trim()    || DEFAULTS.host),
+    port:       (document.getElementById('s-port').value.trim()    || DEFAULTS.port),
+    path:       (document.getElementById('s-path').value.trim()    || DEFAULTS.path),
+    theme:      (document.getElementById('s-theme').value          || DEFAULTS.theme),
+    fontSize:   (document.getElementById('s-fontsize').value.trim()|| DEFAULTS.fontSize),
+    fontFamily: (document.getElementById('s-fontfam').value        || DEFAULTS.fontFamily),
+  };
+  saveSettings(cfg);
+  document.getElementById('settings-overlay').classList.remove('open');
+  document.getElementById('tb-theme').value = cfg.theme;
+  if (ws) ws.close(1000, 'Reconfigure');
+  initTerminal(cfg.theme, cfg.fontSize, cfg.fontFamily);
+  doConnect(cfg);
+}
+
+// ── Disconnect overlay ────────────────────────────────────────────────────────
+function showDisconnOverlay() { document.getElementById('disconn-overlay').classList.add('open'); }
+function hideDisconnOverlay() { document.getElementById('disconn-overlay').classList.remove('open'); }
+
+// ── Status helper ─────────────────────────────────────────────────────────────
+function setStatus(state, text) {
+  var dot = document.getElementById('status-dot');
+  dot.className = state;
+  document.getElementById('status-text').textContent = text;
+}
+
+// ── Hint toast ────────────────────────────────────────────────────────────────
+function showHint() {
+  var el = document.getElementById('hint');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.classList.remove('show'); }, 5000);
+}
+
+// ── Window resize → FitAddon ──────────────────────────────────────────────────
+var _rfTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(_rfTimer);
+  _rfTimer = setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
+});
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === ',') { e.preventDefault(); openSettings(); return; }
+  if (e.ctrlKey && e.shiftKey && e.key === 'F') { e.preventDefault(); toggleSearch(); return; }
+  if (e.key === 'Escape') {
+    if (document.getElementById('settings-overlay').classList.contains('open') && lastCfg) { closeSettings(); return; }
+    if (document.getElementById('searchbar').classList.contains('open')) { closeSearch(); return; }
+    if (document.fullscreenElement) { document.exitFullscreen().catch(function() {}); return; }
+  }
+});
+
+// ── Mobile fullscreen hint ──────────────────────────────────────────────────
+(function() {
+  var isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 1);
+  var isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  var hasFS = !!document.documentElement.requestFullscreen;
+  if (!isMobile || isStandalone || !hasFS) return;
+  var hint = document.getElementById('fs-hint');
+  if (!hint) return;
+  hint.classList.add('show');
+  var timer = setTimeout(function() { hint.classList.remove('show'); }, 9000);
+  var go = function() {
+    clearTimeout(timer);
+    hint.classList.remove('show');
+    document.documentElement.requestFullscreen().catch(function() {});
+  };
+  hint.addEventListener('click', go, { once: true });
+  document.addEventListener('touchend', go, { once: true });
+  document.addEventListener('fullscreenchange', function() {
+    hint.classList.remove('show');
+  });
+})();
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+(function init() {
+  var saved = loadSettings();
+
+  initTerminal(
+    saved.theme      || DEFAULTS.theme,
+    saved.fontSize   || DEFAULTS.fontSize,
+    saved.fontFamily || DEFAULTS.fontFamily
+  );
+
+  if (URL_TOKEN || saved.host) {
+    var cfg = {
+      host: URL_TOKEN ? window.location.hostname : (saved.host || DEFAULTS.host),
+      port: URL_PORT  || saved.port || DEFAULTS.port,
+      path: saved.path       || DEFAULTS.path,
+      theme: saved.theme, fontSize: saved.fontSize, fontFamily: saved.fontFamily,
+    };
+    doConnect(cfg);
+  } else {
+    document.getElementById('btn-cancel').style.display = 'none';
+    document.getElementById('settings-overlay').classList.add('open');
+  }
+})();
+</script>
+</body>
+</html>
