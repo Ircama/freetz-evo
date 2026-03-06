@@ -1,6 +1,4 @@
 # Welcome to Freetz-EVO
-**[▶ Interactive Web Interface Demo](screenshots/evo-demo.html)** — browse every page of the Freetz-EVO UI without a device &nbsp;·&nbsp; ← → keys to navigate<br>
-**[⌨ Freetz-EVO Terminal Demo](screenshots/evo-terminal.html)** — full-screen WebSocket terminal powered by xterm.js (requires ttyd on device)<br>
 <br>
 **Freetz-EVO** is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) with GCC on-device compilation, nginx, rtorrent, ruTorrent, PHP, aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.<br>
 <br>

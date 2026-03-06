@@ -142,24 +142,61 @@ class FreetzSession:
         self._asset_cache: dict[str, bytes] = {}
 
     def connect(self) -> bool:
-        """Authenticate and verify connectivity."""
+        """Authenticate and verify connectivity.
+
+        Auth strategy (in order):
+          1. If --newlogin is set: use Freetz SID cookie auth.
+          2. Otherwise try HTTP Basic Auth; if the device returns the login
+             page (i.e. Basic Auth is not supported), fall back automatically
+             to Freetz NEWLOGIN.
+        """
         if self.newlogin:
             return self._auth_newlogin()
-        else:
-            self.session.auth = (self.user, self.password)
-            return self._verify()
-
-    def _verify(self) -> bool:
-        try:
-            r = self.session.get(self.base + "/", timeout=self.timeout)
-            if r.status_code in (200, 302, 301):
-                print(f"  ✓ Connected to {self.base} (HTTP {r.status_code})")
-                return True
-            print(f"  ✗ HTTP {r.status_code} — check credentials")
+        # Try Basic Auth first
+        self.session.auth = (self.user, self.password)
+        r = self._verify_raw()
+        if r is None:
             return False
+        if self._is_login_page(r.text):
+            # Device does not support Basic Auth — fall back to NEWLOGIN
+            print("  ℹ Basic Auth not supported by device; trying NEWLOGIN …")
+            self.session.auth = None
+            return self._auth_newlogin()
+        print(f"  ✓ Connected to {self.base} (HTTP {r.status_code})")
+        return True
+
+    def _verify_raw(self) -> "requests.Response | None":
+        """GET / and return the Response (following redirects), or None on error."""
+        try:
+            return self.session.get(self.base + "/", timeout=self.timeout,
+                                    allow_redirects=True)
         except requests.ConnectionError as e:
             print(f"  ✗ Connection failed: {e}")
+            return None
+
+    @staticmethod
+    def _is_login_page(html: str) -> bool:
+        """Return True if *html* is the Freetz login page.
+
+        Detected by the unique login-button id ``id_go`` which is only
+        emitted by ``login_page.sh`` (not by any other CGI page).
+        """
+        return 'id="id_go"' in html or 'id=\'id_go\'' in html
+
+    def _verify(self) -> bool:
+        r = self._verify_raw()
+        if r is None:
             return False
+        if r.status_code not in (200, 302, 301):
+            print(f"  ✗ HTTP {r.status_code} — check credentials")
+            return False
+        if self._is_login_page(r.text):
+            print(f"  ✗ Authentication failed — got login page "
+                  f"(HTTP {r.status_code}).")
+            print("    Hint: try --newlogin or check --password / --user.")
+            return False
+        print(f"  ✓ Connected to {self.base} (HTTP {r.status_code})")
+        return True
 
     def _auth_newlogin(self) -> bool:
         """Authenticate via Freetz NEWLOGIN (session-cookie) mechanism."""
@@ -176,15 +213,19 @@ class FreetzSession:
             if not sid:
                 print("  ✗ Could not obtain SID from login page")
                 return False
-            # Step 2: compute hash = MD5(SID + MD5(user + password))
-            inner = hashlib.md5((self.user + self.password).encode()).hexdigest()
+            # Step 2: compute hash = MD5(SID + MD5(password))
+            # This matches client makemd5(password, SID) in md5hash.sh and the
+            # server check in login_check.sh: MD5(SID + cat /tmp/flash/mod/webmd5)
+            # where webmd5 = MD5(password).  Username is NOT part of the hash.
+            inner = hashlib.md5(self.password.encode()).hexdigest()
             outer = hashlib.md5((sid + inner).encode()).hexdigest()
             # Step 3: POST hash
             r2 = self.session.get(
                 f"{self.base}/cgi-bin/login.cgi?hash={outer}",
                 timeout=self.timeout
             )
-            if r2.status_code == 200 and "Wrong password" not in r2.text:
+            if r2.status_code == 200 and "Wrong password" not in r2.text \
+                    and not self._is_login_page(r2.text):
                 print(f"  ✓ NEWLOGIN authentication successful")
                 return True
             print("  ✗ NEWLOGIN authentication failed — wrong password?")
@@ -857,6 +898,12 @@ class PageCrawler:
                 continue
 
             html = r.text
+
+            # Detect login page — auth may have failed or expired
+            if FreetzSession._is_login_page(html):
+                print("⚠ LOGIN PAGE — skipped (authentication may have failed)")
+                continue
+
             # Extract menu on first page
             if not self.menu_items:
                 self.menu_items = self._extract_menu_structure(html)
