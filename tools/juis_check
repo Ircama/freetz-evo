@@ -96,7 +96,7 @@ main() {
 	[ -z "$Provider" ] && Provider="$(echo 'null oma_ipclient oma_lan tonline vodafone2_vdsl vodafone2_adsl 1und1 otwored' | sed 's/ /\n/g' | shuf | head -n1 | grep -v '^null$')"
 	[ "$Provider" == "empty" ] && Provider=''
 
-	[ -z "$ProviderName" ] && ProviderName="$(echo 'notset null Telekom Vodafone o2' | sed 's/ /\n/g' | shuf | head -n1 | grep -v '^null$')"
+	[ -z "$ProviderName" ] && ProviderName="$(echo 'null Telekom Vodafone o2' | sed 's/ /\n/g' | shuf | head -n1 | grep -v '^null$')"
 	[ "$ProviderName" == "empty" ] && ProviderName=''
 
 	[ -z "$Serial" ] && while [ "${#Serial}" != "12" ]; do Serial="$(hexdump -n6 -e '/1 "%02X"' /dev/urandom | sed 's/[^0-9A-F]//g')"; done
