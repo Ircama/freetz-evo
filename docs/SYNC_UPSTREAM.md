@@ -62,8 +62,25 @@ tools/sync-upstream-manual.sh
    - In `--dry-run` mode: deletes the branch and exits without pushing.
    - Otherwise: fast-forwards `master` to the staging branch, deletes the staging branch, and asks whether to push to `origin`.
 9. If the merge produces conflicts:
+   - The script first tries to **auto-resolve** known classes of conflicts without prompting (see below).
+   - If all conflicts are resolved automatically it proceeds as if the merge had succeeded.
    - In `--dry-run` mode: aborts the merge automatically and reports the conflicting files.
-   - Otherwise: leaves the staging branch with conflicts and prints step-by-step resolution instructions.
+   - Otherwise: leaves the staging branch with remaining conflicts and prints step-by-step resolution instructions.
+
+### Auto-resolved conflicts
+
+Before prompting for manual intervention the script resolves two known classes of conflict automatically:
+
+| Git status | Meaning | Resolution |
+|---|---|---|
+| `UD` | Upstream deleted a file that EVO modified | Keep EVO's version (`git add`) |
+| `DU` | EVO deleted a file that upstream modified | Keep EVO's deletion (`git rm`) |
+| `UU` on a file in `AUTO_OURS_FILES` | Both bots auto-updated the same file | Keep EVO's version (`git checkout --ours`) |
+
+`AUTO_OURS_FILES` is a list defined at the top of the conflict-handler section inside `tools/sync-upstream-manual.sh`. Add a file path to that list to have future `UU` conflicts on it resolved automatically by taking EVO's version.
+
+Currently registered:
+- `docs/juis/README.md` — updated by both EVO's *juis: automatic update* workflow (which writes obfuscated `download.example.com` URLs) and upstream's *docs: automatic update* bot (which writes `download.avm.de` URLs). Both bots update the same overlapping firmware list, producing a `UU` conflict on every sync where both have run.
 
 ### Resolving merge conflicts
 

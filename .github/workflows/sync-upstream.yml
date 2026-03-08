@@ -118,22 +118,53 @@ jobs:
             echo "conflict=false" >> "$GITHUB_OUTPUT"
             echo "✅ Merge succeeded without conflicts."
           else
-            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            # ── Auto-resolve known classes of conflict ─────────────────────
+            # UU on AUTO_OURS_FILES: both bots updated the same auto-generated
+            # file (e.g. docs/juis/README.md).  Always keep EVO's version.
+            AUTO_OURS_FILES=(
+              "docs/juis/README.md"
+            )
+            while IFS= read -r line; do
+              xy="${line:0:2}"
+              file="${line:3}"
+              if [ "$xy" = "UD" ]; then
+                git add -- "$file"
+              elif [ "$xy" = "DU" ]; then
+                git rm --quiet -- "$file"
+              elif [ "$xy" = "UU" ]; then
+                for pattern in "${AUTO_OURS_FILES[@]}"; do
+                  if [[ "$file" == $pattern ]]; then
+                    git checkout --ours -- "$file"
+                    git add -- "$file"
+                    echo "⚙️  Auto-resolved (take-ours): $file"
+                    break
+                  fi
+                done
+              fi
+            done < <(git status --porcelain)
 
-            # Collect conflicted files for the issue
-            CONFLICTED=$(git diff --name-only --diff-filter=U | head -50)
-            echo "conflicted_files<<EOF" >> "$GITHUB_OUTPUT"
-            echo "$CONFLICTED" >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
+            REMAINING=$(git diff --name-only --diff-filter=U)
+            if [ -z "$REMAINING" ]; then
+              GIT_EDITOR=true git merge --continue
+              echo "conflict=false" >> "$GITHUB_OUTPUT"
+              echo "✅ All conflicts auto-resolved."
+            else
+              echo "conflict=true" >> "$GITHUB_OUTPUT"
 
-            CONFLICT_COUNT=$(git diff --name-only --diff-filter=U | wc -l)
-            echo "conflict_count=$CONFLICT_COUNT" >> "$GITHUB_OUTPUT"
+              # Collect conflicted files for the issue
+              CONFLICTED=$(git diff --name-only --diff-filter=U | head -50)
+              echo "conflicted_files<<EOF" >> "$GITHUB_OUTPUT"
+              echo "$CONFLICTED" >> "$GITHUB_OUTPUT"
+              echo "EOF" >> "$GITHUB_OUTPUT"
 
-            echo "❌ Merge conflicts detected in $CONFLICT_COUNT files."
+              CONFLICT_COUNT=$(git diff --name-only --diff-filter=U | wc -l)
+              echo "conflict_count=$CONFLICT_COUNT" >> "$GITHUB_OUTPUT"
 
-            # Abort merge to leave staging branch clean
-            git merge --abort
-          fi
+              echo "❌ Merge conflicts detected in $CONFLICT_COUNT files."
+
+              # Abort merge to leave staging branch clean
+              git merge --abort
+            fi
 
       # ── 4a. Success: push merge to master ────────────────────────
       - name: Push merged result to master
