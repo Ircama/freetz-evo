@@ -33,6 +33,7 @@ The authentication layer has been updated to support a **form-based session logi
 
 | Package | Description | Status |
 |---|---|---|
+| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway. Exposes all Freetz services over HTTPS at `https://fritz.box/cgi-bin/freetz_proxy`, with HTML/CSS/JS URL rewriting and CDN proxying. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
@@ -55,6 +56,35 @@ The authentication layer has been updated to support a **form-based session logi
 | **libxmlrpc** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
 | **libwebsockets** 4.3.9 | Canonical C WebSocket library; optional SSL/TLS support via OpenSSL. | EVO only |
 | **json-c** 0.17 | Lightweight JSON parser/serialiser library. | EVO only |
+
+#### freetz_proxy: HTTPS gateway and reverse proxy
+
+`freetz_proxy` is a static CGI binary that runs inside the FritzBox's built-in HTTPS server and acts as a configurable reverse-proxy gateway for all Freetz services.
+
+**Entry point:** `https://fritz.box/cgi-bin/freetz_proxy`
+
+When called without parameters it renders an **index page** listing all configured services with their live links. When called with `?service=NAME` it proxies the request to the corresponding upstream HTTP port on `127.0.0.1`.
+
+**Configuration** — `/mod/etc/conf/freetz-proxy.cfg` (one service per line):
+```
+# name=port[:path[:direct]]
+freetz=81
+rtorrent=81:/cgi-bin/conf/rtorrent
+rutorrent=81:/rutorrent/:direct
+ttyd=7681::direct
+```
+Lines marked `direct` are shown as plain HTTP links on the index page (for WebSocket apps or UIs that cannot be proxied). Omitting the `freetz` entry causes the proxy to read the port from `/mod/etc/conf/mod.cfg` automatically.
+
+**URL rewriting** — when proxying an HTML/CSS/JS response the proxy transparently rewrites:
+- Absolute HTTPS CDN URLs → `?service=cdn&url=<encoded>` (CDN proxy sub-service)
+- HTML `src=` / `href=` absolute paths → `?service=NAME&path=<encoded>`
+- CSS `url(…)` absolute and relative paths
+- HTML `<meta http-equiv="refresh">` `content="…;url=/…"`
+- JavaScript navigation arguments `navigate('/')`, `location.href = '/'`
+- JavaScript object-literal URL properties `cgiUrl: '/cgi-bin/…'`
+- ACE editor CDN module paths (basePath, modePath, themePath, workerPath) via injected `ace.config.set()` calls
+
+**Debug mode** — create `/tmp/freetz_proxy_debug` on the device to enable request/response tracing to `/tmp/freetz_proxy.log`; remove the file to silence it.
 
 #### Python 2 third-party modules fix
 

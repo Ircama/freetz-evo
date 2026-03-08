@@ -995,6 +995,8 @@ if [ "$DO_MOD" -gt 0 ]; then
 	oem_list=
 
 	ln -sf /usr/www/cgi-bin/freetz_status "${HTML_LANG_MOD_DIR}/cgi-bin/freetz_status"
+	[ "$FREETZ_PACKAGE_FREETZ_PROXY" == "y" ] && \
+		ln -sf /usr/www/cgi-bin/freetz_proxy "${HTML_LANG_MOD_DIR}/cgi-bin/freetz_proxy"
 
 	for i in $oems; do
 		if [ "$(eval "echo \"\$FREETZ_REMOVE_BRANDING_${i}\"")" == "y" ]; then

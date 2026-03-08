@@ -1,0 +1,27 @@
+config FREETZ_PACKAGE_FREETZ_PROXY
+	bool "freetz-proxy 0.1 - HTTPS multi-service reverse proxy CGI"
+	default n
+	depends on FREETZ_INSTALL_BASE
+	help
+		CGI binary that acts as an HTTPS-to-HTTP reverse proxy for
+		multiple local services, allowing secure access via the
+		FritzBox built-in HTTPS web interface.
+
+		URL scheme:
+		  https://fritz.box/cgi-bin/freetz_proxy/
+		    → HTML index of all configured services
+		  https://fritz.box/cgi-bin/freetz_proxy/freetz/
+		    → Freetz-EVO (port from /mod/etc/conf/mod.cfg)
+		  https://fritz.box/cgi-bin/freetz_proxy/myapp/
+		    → custom service on configured port
+
+		Services are configured in /mod/etc/conf/freetz-proxy.cfg:
+		  freetz=81
+		  myapp=9999
+
+		The "freetz" service is auto-added from MOD_HTTPD_PORT in
+		/mod/etc/conf/mod.cfg when absent from the config file.
+
+		Location: response headers are rewritten so that upstream
+		redirects stay within the HTTPS proxy URL.
+

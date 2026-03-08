@@ -1,7 +1,6 @@
 # libmodcgi.sh
 
-Diese Bibliothek dient der Erzeugung von Webseiten innerhalb des
-Freetz-Webinterface. Einzubinden durch
+This library is used to generate web pages within the Freetz web interface. Include it with:
 
 ```
 source /usr/lib/libmodcgi.sh
@@ -9,81 +8,71 @@ source /usr/lib/libmodcgi.sh
 
 ### cgi
 
-**Diese Schnittstelle ist in Entwicklung und kann sich täglich ändern.**
+**This interface is under development and may change on a daily basis.**
 
-Mithilfe der Funktion `cgi` können verschiedene Einstellungen für die
-aktuelle Seite vorgenommen werden. `cgi` darf nur vor `cgi_begin`
-aufgerufen werden.
+The `cgi` function allows various settings to be configured for the current page. `cgi` must be called before `cgi_begin`.
 
-Die Optionen sind im Einzelnen:
+The available options are:
 
 `--style=URI`
 
-> Das CSS-Stylesheet an der Adresse `URI` wird zusätzlich eingebunden.
-> Diese Option kann mehrfach verwendet werden.
+> The CSS stylesheet at address `URI` will be additionally included.
+> This option can be used multiple times.
 
-> Relative URLs werden relativ zu `/style/` im Freetz-Webinterface
-> ausgewertet. Sollte ein Stylesheet also im Dateisystem unter
-> `/usr/share/style/pkg/status.css` abgelegt sein, so kann es über
-> `--style=pkg/status.css` eingebunden werden.
+> Relative URLs are resolved relative to `/style/` within the Freetz web interface.
+> If a stylesheet is stored in the filesystem at `/usr/share/style/pkg/status.css`,
+> it can be included via `--style=pkg/status.css`.
 
 `--id=ID`
 
-> Das body-Tag der Seite erhält diese ID; die ID dient außerdem der
-> Auswahl des aktiven Menüpunkts in der Navigation.
+> The body tag of the page receives this ID; the ID is also used to
+> highlight the active menu item in the navigation.
 
 `--help=PATH`
 
-> Ein Pfad (beginnend mit "/"), der die Hilfe-Seite zu der aktuellen
-> Seite angibt. (Für das Haupt-Freetz-Interface wird dieser Pfad
-> momentan an
-> [http://trac_freetz_org/wiki](http://trac_freetz_org/wiki)
-> angehängt.)
+> A path (starting with "/") that specifies the help page for the current page.
+> (In the main Freetz interface, this path is currently appended to
+> [http://trac_freetz_org/wiki](http://trac_freetz_org/wiki).)
 
 ### cgi_begin
 
-Startet eine HTML-Seite im Freetz-Stil. (Vom HTTP-Header über den
-HTML-Header bis zu Navigationselementen und ähnlichem wird alles
-geschrieben, was an den Anfang einer Seite gehört.)
+Starts an HTML page in Freetz style. (Everything that belongs at the beginning of a page is written,
+from the HTTP header through the HTML header to navigation elements and similar.)
 
-Alle Seiten im Freetz-Webinterface sind momentan in ISO-8859-1 (Latin 1)
-kodiert.
+All pages in the Freetz web interface are currently encoded in ISO-8859-1 (Latin 1).
 
-Aufruf:
+Usage:
 
 ```
 cgi_begin TITLE
 ```
 
--   TITEL ist der bereits HTML-kodierte Titel der Seite
+- TITLE is the already HTML-encoded title of the page.
 
 ### cgi_end
 
-Schließt eine HTML-Seite im Freetz-Stil ab.
+Closes an HTML page in Freetz style.
 
 ### sec_begin
 
-Startet einen Abschnitt mit dem Titel TITLE. Wie ein "Abschnitt" im
-Detail in der HTML-Ausgabe umgesetzt wird, obliegt dem gewählten Skin;
-garantiert wird jedoch ein umgebendes `<div class="section">`
+Starts a section with the title TITLE. How a "section" is rendered in detail in the HTML output
+depends on the chosen skin; however, a surrounding `<div class="section">` is guaranteed.
 
 ```
 sec_begin TITLE [ID]
 ```
 
-Optional kann eine ID angegeben werden, um sich auf den Abschnitt
-beziehen zu können. Auf HTML-Ebene wird dies die ID des genannten
-div-Elements.
+An ID can optionally be specified in order to reference the section. At the HTML level,
+this will be the ID of the mentioned div element.
 
 ### sec_end
 
-Beendet einen Abschnitt.
+Ends a section.
 
 ### html
 
-Diese Funktion HTML-kodiert ihre Eingaben. Kurze Eingaben können als
-Argument übergeben werden, bei längeren sollte `html` als Filter benutzt
-werden:
+This function HTML-encodes its input. Short inputs can be passed as arguments; for longer inputs,
+`html` should be used as a filter:
 
 ```
     echo "<input value='$(html "$VALUE")'> ..."
@@ -96,8 +85,8 @@ TODO
 
 ### href
 
-Erzeugt einen Link zu einer dynamisch registrierten Seite im
-Freetz-Webinterface: Die Argumente sind denen von `modreg` ähnlich:
+Generates a link to a dynamically registered page in the Freetz web interface.
+The arguments are similar to those of `modreg`:
 
 ```
 href file <pkg> <id>
@@ -106,16 +95,15 @@ href status <pkg> [<cgi-name>]
 href cgi <pkg> [<key-value>]...
 ```
 
-Typischer Einsatz in einem Paket foo:
+Typical usage in a package called foo:
 
 ```
     cat << EOF
-      <a href="$(href file foo advanced)">Konfigurationsdatei bearbeiten</a>
+      <a href="$(href file foo advanced)">Edit configuration file</a>
     EOF
 ```
 
-(wenn die Datei vorher per `modreg file foo advanced ...` registriert
-wurde.)
+(if the file was previously registered with `modreg file foo advanced ...`.)
 
 ### back_button
 
@@ -140,16 +128,13 @@ cgi_error MESSAGE
 print_error MESSAGE
 ```
 
-`cgi_error` erzeugt eine komplette Fehlerseite (inkl.
-cgi_begin/cgi_end) mit der angegeben Meldung. `print_error` erzeugt
-nur die Fehlermeldung und kann innerhalb einer bestehenden Seite genutzt
-werden.
+`cgi_error` generates a complete error page (including cgi_begin/cgi_end) with the given message.
+`print_error` generates only the error message and can be used within an existing page.
 
 ### path_info
 
-Splits PATH_INFO into segments at "/"; returns the segments in the
-given variables. If there are not more variables than segments, the
-final variable will receive the remaining unsplit PATH_INFO.
+Splits PATH_INFO into segments at "/"; returns the segments in the given variables.
+If there are not more variables than segments, the final variable will receive the remaining unsplit PATH_INFO.
 
 ```
 PATH_INFO=/foo/bar/baz
@@ -166,20 +151,17 @@ rest=/baz
 
 ### valid
 
-Validiert bestimmte Arten von Eingabedaten. Momentan unterstützt:
+Validates certain types of input data. Currently supported:
 
 `valid package PACKAGE`
 
-> Ist wahr, wenn PACKAGE ein gültiger Paket-Name ist.
+> Returns true if PACKAGE is a valid package name.
 
 `valid id NAME`
 
-> Ist wahr, wenn NAME eine gültiger Bezeichner ist (der Dateien, Extras,
-> Status-Seiten innerhalb eines Pakets identifiziert)
+> Returns true if NAME is a valid identifier (identifying files, extras,
+> or status pages within a package).
 
-Die Prüfung ist momentan recht lax (hauptsächlich nur Schutz gegen
-Pfadoperationen wie "." und "/" im Namen). Die Ausgabe von `valid`
-sollte momentan nicht als Maßstab genommen werden, um gültige Namen zu
-konstruieren.
-
-
+The validation is currently fairly lenient (mainly just protection against path operations
+such as "." and "/" in the name). The output of `valid` should not currently be used as
+a benchmark for constructing valid names.
