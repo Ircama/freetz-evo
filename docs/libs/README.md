@@ -41,7 +41,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[FLAC (libFLAC.so) 1.3.2](flac.md)<a id='flac'></a>**<br>
     Free Lossless Audio Codec library.
 
-  * **[FreeType (freetype.so) 2.14.1](freetype.md)<a id='freetype'></a>**<br>
+  * **[FreeType (freetype.so) 2.14.2](freetype.md)<a id='freetype'></a>**<br>
     FreeType 2 is a software font engine that is designed to be small, efficient, highly customizable, and portable while capable of producing high-quality output (glyph images). It can be used in graphics libraries, display servers, font conversion tools, text image generation tools, and many other products as well.
 
   * **[FriBidi (libfribidi.so) 1.0.16](fribidi.md)<a id='fribidi'></a>**<br>
@@ -247,7 +247,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libwebsockets (libwebsockets.so) 4.3.9](libwebsockets.md)<a id='libwebsockets'></a>**<br>
     libwebsockets is a lightweight, low-latency C library for WebSocket clients and servers, HTTP/2, and more. Required by ttyd (web-based terminal). Project homepage: https://libwebsockets.org/
 
-  * **[libxml2 (libxml2.so) 2.15.1](libxml2.md)<a id='libxml2'></a>**<br>
+  * **[libxml2 (libxml2.so) 2.15.2](libxml2.md)<a id='libxml2'></a>**<br>
     XML toolkit from the GNOME project
 
   * **[libzen (libzen.so) 0.4.41](libzen.md)<a id='libzen'></a>**<br>
