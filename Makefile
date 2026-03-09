@@ -243,7 +243,16 @@ DLCHG:=y
 $(warning You have an aarch64 CPU+OS and so you can not compile and run 32-bit code, required by yf-akcarea-host which is used for this avm device.)
 endif
 endif
-# check uutils coreutils
+# check gcc for ccache
+ifeq ($(FREETZ_TOOLCHAIN_CCACHE),y)
+ifneq ($(FREETZ_DOWNLOAD_TOOLCHAIN),y)
+ifneq ($(shell test "$(shell gcc -dumpversion)" -ge 10 && echo y),y)
+DLCHG:=$(shell echo 'y' ; sed 's/^FREETZ_TOOLCHAIN_CCACHE=.*/\# FREETZ_TOOLCHAIN_CCACHE is not set/' -i $(TOPDIR)/.config)
+$(warning You have installed gcc older than version 10, ccache automatically disabled.)
+endif
+endif
+endif
+# check ubuntu for uutils' coreutils
 ifeq ($(shell ls --version | grep -q uutils && echo y),y)
 DLCHG:=y
 $(warning You have buggy uutils-coreutils installed. Please remove it!)

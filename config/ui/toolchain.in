@@ -1434,6 +1434,7 @@ comment "Host-tools options ----------------------------------"
 
 config FREETZ_HOSTTOOLS_DOWNLOAD
 	bool "Use precompiled x86_64 host-tools"
+	depends on FREETZ_SHOW_DEVELOPER
 	depends on !FREETZ_ANCIENT_SYSTEM
 	default y
 	help

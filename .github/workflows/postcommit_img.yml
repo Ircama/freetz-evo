@@ -103,7 +103,10 @@ jobs:
 
       - name: tools
         run: |
-          echo 'FREETZ_USER_LEVEL_EXPERT=y\nFREETZ_HOSTTOOLS_DOWNLOAD=y\nFREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"' > .config
+          echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                      >> .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
+          echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                        >> .config
+          echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'  >> .config
           make tools
 
       - name: generate

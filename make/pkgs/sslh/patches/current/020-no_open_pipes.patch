@@ -1,6 +1,6 @@
 --- sslh-main.c
 +++ sslh-main.c
-@@ -326,14 +326,10 @@
+@@ -422,14 +422,10 @@
  #endif
  
     if (!cfg.foreground) {

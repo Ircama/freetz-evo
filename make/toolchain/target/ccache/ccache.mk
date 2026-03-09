@@ -1,7 +1,6 @@
-CCACHE_VERSION:=4.12.3
-# Since version 4.13 is gcc 10 required, ubuntu 20.04 lts has gcc 9.4.0
+CCACHE_VERSION:=4.13
 CCACHE_SOURCE:=ccache-$(CCACHE_VERSION).tar.xz
-CCACHE_HASH:=c8e3ef79531966ecfa05bd1666c483b473df9af00896935cc468cb5ed573c16e
+CCACHE_HASH:=35a24dddd432578f13058d55018218c4250fc733de172afbfbfda538864be284
 CCACHE_SITE:=https://github.com/ccache/ccache/releases/download/v$(CCACHE_VERSION)
 ### WEBSITE:=https://ccache.dev/
 ### MANPAGE:=https://ccache.dev/documentation.html

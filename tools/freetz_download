@@ -338,7 +338,7 @@ enumerate_mirrors_official() {
 					sites[${#sites[@]}]=https://downloads.sourceforge.net/$subpath
 				done
 			elif [ ${url:0:4} == "@AVM" ]; then
-				sites[${#sites[@]}]=@DLTOKEN/https://api.github.com/repos/Freetz-NG/internal/releases/tags/firmware
+				sites[${#sites[@]}]=@DLTOKEN/https://api.github.com/repos/Freetz-NG/internal/releases/tags/firmwares
 				sites[${#sites[@]}]=https://download.avm.de/fritzbox/$subpath
 				sites[${#sites[@]}]=https://download.avm.de/$subpath
 #				sites[${#sites[@]}]=https://download.avm.de/fritzwlan/$subpath

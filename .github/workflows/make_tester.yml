@@ -113,10 +113,12 @@ jobs:
           echo 'FREETZ_REAL_DEVELOPER_ONLY__DLIMG="${{ secrets.ACTIONS_IMAGE }}"'                     >> .config
           sed '/FREETZ_REAL_DEVELOPER_ONLY__TCURL/d'                                                  -i .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__TCURL="${{ secrets.ACTIONS_DLTCS }}"'                     >> .config
-          sed '/FREETZ_HOSTTOOLS_DOWNLOAD/d'                                                          -i .config
-          echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                          >> .config
           sed '/FREETZ_DOWNLOAD_TOOLCHAIN/d'                                                          -i .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
           echo 'FREETZ_DOWNLOAD_TOOLCHAIN=y'                                                          >> .config
+          sed '/FREETZ_HOSTTOOLS_DOWNLOAD/d'                                                          -i .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
+          echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                          >> .config
           sed '/FREETZ_VERBOSITY_FWMOD_/d'                                                            -i .config
           echo 'FREETZ_VERBOSITY_FWMOD_2=y'                                                           >> .config
           sed '/FREETZ_VERBOSITY_LEVEL/d'                                                             -i .config

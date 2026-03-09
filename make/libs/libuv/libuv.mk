@@ -11,8 +11,6 @@ $(PKG)_SITE:=https://dist.libuv.org/dist/v$($(PKG)_VERSION)
 ### CHANGES:=https://github.com/libuv/libuv/releases
 ### CVSREPO:=https://github.com/libuv/libuv
 
-$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_TARGET_GCC_5_MAX),abandon,current)
-
 $(PKG)_LIBNAME=$(pkg).so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)
@@ -23,13 +21,17 @@ $(PKG)_CONFIGURE_PRE_CMDS += ./autogen.sh;
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 
+$(PKG)_CFLAGS := $(TARGET_CFLAGS)
+$(PKG)_CFLAGS += -D_STRUCT_TIMESPEC
+
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
-	$(SUBMAKE) -C $(LIBUV_DIR)
+	$(SUBMAKE) -C $(LIBUV_DIR) \
+		CFLAGS=" $(LIBUV_CFLAGS)"
 
 $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(LIBUV_DIR) \

@@ -64,20 +64,21 @@ Latest changes
 ### devel
 
   - Build system:
+    * ccache 4.13
 
   - Host tools:
     * file 5.47
     * pseudo 1.9.3
     * python3 3.14.3
-    * tools 2026-03-07
 
   - AVM sources:
 
   - Packages:
     * BIND 9.11.37/9.20.20
-    * ImageMagick 7.1.0-62/7.1.2-15
+    * ImageMagick 7.1.0-62/7.1.2-16
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * Python 3.14.3
+    * sslh 2.2.4/2.3.1
 
   - Libraries:
     * file 5.47

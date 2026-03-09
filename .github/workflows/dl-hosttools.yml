@@ -76,6 +76,7 @@ jobs:
 
       - name: generate
         env:
+          FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
           ACTIONS_VERSION: ${{ steps.version.outputs.version }}
         run: |
           tools/dl-hosttools $ACTIONS_VERSION

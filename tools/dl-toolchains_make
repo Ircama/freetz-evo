@@ -8,6 +8,8 @@ VERSION="${1:-r${VERSION%-*}}"
 [ "$1" == "own" ] && VERSION="rLOCAL"
 SUFFIX="freetz-${VERSION}-shared-glibc"
 
+[ -z "$FREETZ_DLTOKEN" ] && echo "Missing DLTOKEN" && exit 1
+
 #
 # required kernel compiler versions:
 #     3.4 LE

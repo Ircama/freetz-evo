@@ -184,8 +184,10 @@ jobs:
           echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'    >> .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__DLIMG="${{ secrets.ACTIONS_IMAGE }}"'                     >> .config
           echo 'FREETZ_REAL_DEVELOPER_ONLY__TCURL="${{ secrets.ACTIONS_DLTCS }}"'                     >> .config
-          echo 'FREETZ_DOWNLOAD_TOOLCHAIN=y'                                                          >> .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
           echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                          >> .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
+          echo 'FREETZ_DOWNLOAD_TOOLCHAIN=y'                                                          >> .config
           for x in $TCS; do echo "$x=y" | sed 's/^_/FREETZ_TYPE_/'; done                              >> .config
           grep -q '^FREETZ_TYPE_' .config || echo 'FREETZ_TYPE_7530_W6_V1=y'                          >> .config
           grep -q '^FREETZ_TYPE_FIRMWARE_' .config || echo 'FREETZ_TYPE_FIRMWARE_08_0X=y'             >> .config
