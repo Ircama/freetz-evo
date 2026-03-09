@@ -760,9 +760,11 @@ static size_t rewrite_body(const char *in, size_t inlen,
 
         /* pattern: url(/ or url('/ or url("/  — and relative: url(../ url(path) */
         /* Word-boundary guard: skip if 'url' is a suffix of a longer identifier
-         * (e.g. URL.createObjectURL(blob) must NOT be treated as a CSS url()). */
+         * (e.g. URL.createObjectURL(blob) must NOT be treated as a CSS url()).
+         * Also skip JS constructors: "new URL(" and method chains "obj.URL(". */
         if (i + 4 <= inlen &&
-            (i == 0 || !isalnum((unsigned char)in[i-1])) &&
+            (i == 0 || (!isalnum((unsigned char)in[i-1]) && in[i-1] != '.')) &&
+            !(i >= 4 && strncasecmp(in + i - 4, "new ", 4) == 0) &&
             tolower((unsigned char)in[i])   == 'u' &&
             tolower((unsigned char)in[i+1]) == 'r' &&
             tolower((unsigned char)in[i+2]) == 'l' &&

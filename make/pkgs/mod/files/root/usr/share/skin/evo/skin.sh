@@ -190,7 +190,56 @@ function evoGetNavFreq() {
 function evoItemFreq(li, freq) {
   var a = li.querySelector(':scope > a') || li.querySelector('a');
   if (!a) return 0;
-  try { return freq[new URL(a.href, window.location.origin).pathname] || 0; } catch(e) { return 0; }
+  try { return freq[a.pathname] || 0; } catch(e) { return 0; }
+}
+function evoSetupDesktopLogout(mainMenu) {
+  /* Find logout li by href */
+  var logoutLi = null;
+  for (var i = 0; i < mainMenu.children.length; i++) {
+    var li = mainMenu.children[i];
+    if (li.tagName === 'HR') continue;
+    var a = li.querySelector('a');
+    if (a && a.href && a.href.indexOf('logout') !== -1) { logoutLi = li; break; }
+  }
+  if (!logoutLi) return;
+  /* Already set up */
+  if (logoutLi.classList.contains('evo-logout-dots')) return;
+  var srcA = logoutLi.querySelector('a');
+  if (!srcA) return;
+  /* Save original <a> so mobile mode can still find it */
+  logoutLi._ldotsOrigA = srcA;
+  /* Build dots button (⋮) */
+  var btn = document.createElement('button');
+  btn.className = 'evo-ldots-btn';
+  btn.setAttribute('aria-label', 'Account');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.textContent = '\u22EE';
+  /* Build dropdown */
+  var drop = document.createElement('ul');
+  drop.className = 'evo-ldots-drop';
+  var dropLi = document.createElement('li');
+  var dropA = document.createElement('a');
+  dropA.href = srcA.href;
+  dropA.textContent = (srcA.textContent || '').trim() || 'Logout';
+  if (srcA.getAttribute('onclick')) dropA.setAttribute('onclick', srcA.getAttribute('onclick'));
+  dropLi.appendChild(dropA);
+  drop.appendChild(dropLi);
+  /* Replace li content */
+  logoutLi.innerHTML = '';
+  logoutLi.classList.add('evo-logout-dots');
+  logoutLi.appendChild(btn);
+  logoutLi.appendChild(drop);
+  /* Toggle on click */
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var open = logoutLi.classList.toggle('evo-ldots-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  /* Close on outside click */
+  document.addEventListener('click', function() {
+    logoutLi.classList.remove('evo-ldots-open');
+    btn.setAttribute('aria-expanded', 'false');
+  });
 }
 function evoSetupMobileMenu() {
   var mqMobile  = window.matchMedia('(max-width: 600px), (max-height: 480px) and (orientation: landscape)');
@@ -230,6 +279,7 @@ function evoSetupMobileMenu() {
     body.classList.remove('evo-menu-open');
     var old = document.getElementById('evo-mobile-drawer');
     if (old) old.remove();
+    evoSetupDesktopLogout(mainMenu);
     return;
   }
 

@@ -273,21 +273,96 @@ ul.menu ul {
 ul.menu.new > li:hover > ul {
 	display: block;
 }
-/* Logout item — pushed to far right, visually separated */
+/* Logout item — three-dots dropdown, pushed to far right */
 ul.menu.new > li:has(a[href*="logout"]) {
-	order: 9999;
-	margin-left: auto;
-	border-left: 2px solid var(--evo-border);
+	order: -1;
+	border-left: 0;
+	min-width: 0;
 }
-ul.menu.new > li:has(a[href*="logout"]) a {
+/* Fallback (no JS): show logout text as-is with red colour */
+ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots) a {
 	color: #c0392b;
 	font-weight: 600;
 }
-ul.menu.new > li:has(a[href*="logout"]) a:hover {
+ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots) a:hover {
 	color: #e74c3c;
 	background: rgba(192,57,43,0.08);
 }
-body.dark-mode ul.menu.new > li:has(a[href*="logout"]) a {
+body.dark-mode ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots) a {
+	color: #e74c3c;
+}
+/* Three-dots button */
+ul.menu.new > li.evo-logout-dots {
+	position: relative;
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+}
+ul.menu.new > li.evo-logout-dots .evo-ldots-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--evo-text);
+	font-size: 1.5rem;
+	font-weight: 400;
+	letter-spacing: -3px;
+	line-height: 1;
+	padding-left: 0;
+	padding-right: 10px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	margin-bottom: 0;
+	box-shadow: none;
+	transition: background var(--evo-transition);
+}
+ul.menu.new > li.evo-logout-dots .evo-ldots-btn:hover,
+ul.menu.new > li.evo-logout-dots.evo-ldots-open .evo-ldots-btn {
+	background: rgba(0,0,0,0.07);
+	box-shadow: none;
+}
+body.dark-mode ul.menu.new > li.evo-logout-dots .evo-ldots-btn:hover,
+body.dark-mode ul.menu.new > li.evo-logout-dots.evo-ldots-open .evo-ldots-btn {
+	background: rgba(255,255,255,0.1);
+}
+/* Dropdown panel */
+ul.menu.new > li.evo-logout-dots .evo-ldots-drop {
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background: var(--evo-surface);
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius);
+	box-shadow: var(--evo-shadow-lg);
+	list-style: none;
+	margin: 2px 0 0;
+	padding: 4px 0;
+	min-width: 130px;
+	z-index: 1100;
+}
+ul.menu.new > li.evo-logout-dots.evo-ldots-open .evo-ldots-drop {
+	display: block;
+}
+ul.menu.new > li.evo-logout-dots .evo-ldots-drop li {
+	display: block;
+}
+ul.menu.new > li.evo-logout-dots .evo-ldots-drop li a {
+	display: block;
+	padding: 9px 18px;
+	color: #c0392b;
+	font-weight: 600;
+	font-size: 0.875rem;
+	white-space: nowrap;
+	text-decoration: none;
+	background: none;
+	margin-bottom: 0;
+}
+ul.menu.new > li.evo-logout-dots .evo-ldots-drop li a:hover {
+	background: rgba(192,57,43,0.08);
+	color: #e74c3c;
+}
+body.dark-mode ul.menu.new > li.evo-logout-dots .evo-ldots-drop li a {
 	color: #e74c3c;
 }
 /* Hide the <hr> that menu-new.sh emits directly inside <ul> */
