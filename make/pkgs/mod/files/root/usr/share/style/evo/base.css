@@ -273,11 +273,42 @@ ul.menu ul {
 ul.menu.new > li:hover > ul {
 	display: block;
 }
-/* Logout item — three-dots dropdown, pushed to far right */
+/* Logout item — three-dots dropdown, pushed to far right.
+ * Layout properties set here (not just on .evo-logout-dots) so the <li>
+ * has the correct size/shape from first paint, avoiding any layout shift
+ * when JS adds .evo-logout-dots. */
 ul.menu.new > li:has(a[href*="logout"]) {
 	order: -1;
 	border-left: 0;
 	min-width: 0;
+	padding: 0;
+	position: relative;
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+}
+/* Hide logout until JS transforms it — prevents FOUC (text "Logout" flashing).
+ * visibility:hidden keeps the space reserved so layout doesn't shift.
+ * Once evo-logout-dots is added the rule no longer matches → visible. */
+/* Before JS runs: show ⋮ immediately via ::before, hide <a> text.
+ * Once .evo-logout-dots is added these rules no longer match. */
+ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots):not(.evo-mobile-hidden)::before {
+	content: '\22EE';
+	font-size: 1.5rem;
+	font-weight: 400;
+	letter-spacing: -3px;
+	line-height: 1;
+	color: var(--evo-text);
+	padding-right: 10px;
+	cursor: default;
+}
+ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots):not(.evo-mobile-hidden) > a {
+	font-size: 0;
+	pointer-events: none;
+	padding: 0;
+	margin: 0;
+	width: 0;
+	overflow: hidden;
 }
 /* Fallback (no JS): show logout text as-is with red colour */
 ul.menu.new > li:has(a[href*="logout"]):not(.evo-logout-dots) a {
@@ -336,11 +367,13 @@ ul.menu.new > li.evo-logout-dots .evo-ldots-drop {
 	border-radius: var(--evo-radius);
 	box-shadow: var(--evo-shadow-lg);
 	list-style: none;
-	margin: 2px 0 0;
-	padding: 4px 0;
+	margin: 0;
+	padding: 6px 0 4px;
 	min-width: 130px;
 	z-index: 1100;
 }
+/* Show on hover (desktop) or via JS class (touch fallback) */
+ul.menu.new > li.evo-logout-dots:hover .evo-ldots-drop,
 ul.menu.new > li.evo-logout-dots.evo-ldots-open .evo-ldots-drop {
 	display: block;
 }
@@ -521,6 +554,11 @@ input[type="number"],
 textarea {
 	max-width: 100%;
 	box-sizing: border-box;
+}
+/* Multiline textarea — monospace for readability of code/config/output */
+textarea {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 0.875rem;
 }
 /* Textarea wrapper */
 .textwrapper {

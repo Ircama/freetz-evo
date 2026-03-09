@@ -14,6 +14,7 @@ if [ "$sec_level" -gt 0 ]; then
 	exit
 fi
 
+cgi --id=rudishell
 cgi_begin "$(lang de:"Rudi(ment&auml;r)-Shell" en:"Rudi(mentary) Shell")"
 cat << EOF
 	<script type="text/javascript">

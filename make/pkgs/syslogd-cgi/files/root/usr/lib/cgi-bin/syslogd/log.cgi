@@ -20,10 +20,12 @@ script() {
 		var collect = new Array();
 		var line = log.firstChild;
 		while (line != null) {
-			var text = line.firstChild.nodeValue;
-			var result = ident.exec(text);
-			if (result) {
-				collect[result[2]] = 1;
+			if (line.firstChild) {
+				var text = line.firstChild.nodeValue;
+				var result = ident.exec(text);
+				if (result) {
+					collect[result[2]] = 1;
+				}
 			}
 			line = line.nextSibling;
 		}
@@ -41,8 +43,10 @@ script() {
 		var regexp = new RegExp(pattern, "i");
 		var line = log.firstChild;
 		while (line != null) {
-			var style = line.style;
-			style.display = regexp.test(line.firstChild.nodeValue) ? 'inline' : 'none';
+			if (line.firstChild) {
+				var style = line.style;
+				style.display = regexp.test(line.firstChild.nodeValue) ? 'inline' : 'none';
+			}
 			line = line.nextSibling;
 		}
 	}

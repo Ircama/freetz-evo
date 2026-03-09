@@ -45,6 +45,18 @@ Path rules in `freetz-proxy.cfg` support `fnmatch(3)` glob patterns (`*`, `?`, `
 
 When the browser requests a CDN resource (e.g. an ACE editor worker script loaded from `cdn.jsdelivr.net`), the proxy fetches it server-side and streams it back to the browser, so all content is served over the same HTTPS origin without mixed-content warnings.
 
+## Internet access and AVM webif integration
+
+Because `freetz_proxy` runs as a standard CGI inside the FritzBox's own HTTPS server (port 443), it is accessible via **MyFRITZ!** and from the internet through the FritzBox's built-in remote-access gateway — no port-forwarding or extra VPN required.
+Authentication is handled by the existing FritzBox session mechanism before the CGI is reached, so Freetz itself remains protected.
+
+When `freetz_proxy` is included in the firmware, the build system also patches the AVM web-interface (`content.lua`) to improve discoverability:
+
+- **Fritz logo link**: the AVM Fritz logo (top-left, with Freetz-EVO overlay) becomes a hyperlink to `https://fritz.box/cgi-bin/freetz_proxy`, giving one-click access to the proxy index from any page.
+- **User menu entry**: a *Freetz* entry is appended to the AVM user menu (the ⊙ icon, top-right), providing a direct shortcut alongside the built-in FritzBox menu items.
+
+Both additions are build-time patches to `content.lua` and require no additional packages or configuration.
+
 ## Debug mode
 
 Create `/tmp/freetz_proxy_debug` on the device to enable request/response tracing to `/tmp/freetz_proxy.log`. Remove the file to silence it.

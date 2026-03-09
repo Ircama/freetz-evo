@@ -27,13 +27,15 @@ Note: all new packages are currently developed and tested on an AVM FRITZ!Box 75
 
 The Freetz-EVO web interface features a completely redesigned, fully responsive skin ("EVO skin"). On mobile devices, the navigation adapts to a fixed bottom bar with a slide-up drawer for sub-menus and sub-pages; on desktop and tablet a horizontal top menu with hover dropdowns is used, with an optional hamburger mode that collapses the top bar into a right-side slide-in panel. Dark mode, page-width toggle, and per-device preferences are persisted in cookies for a consistent experience across page loads and devices.
 
+The web interface can be added to the home screen on any smartphone (Android or iOS) for an app-like experience; on Android, **Samsung Internet** delivers a full PWA-quality install. With `freetz_proxy` and HTTPS the full PWA install prompt is available, and the same HTTPS URL works remotely via MyFRITZ! without port-forwarding. See [docs/mobile.md](docs/mobile.md) for detailed setup instructions.
+
 The authentication layer has been updated to support a **form-based session login** (in addition to the legacy HTTP Basic Auth mode). When the *New login with session id* option is enabled, the web interface presents a custom HTML login page instead of the native browser credential dialog; access is protected by a session cookie with a configurable inactivity timeout, persisted across browser restarts, so re-opening the browser within an active session no longer forces re-authentication. A bug in `passwd_save.sh` that caused the stored password hash to include the username prefix — making any password change break subsequent logins — has been fixed.
 
 #### New packages
 
 | Package | Description | Status |
 |---|---|---|
-| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway. Exposes all Freetz services over HTTPS at `https://fritz.box/cgi-bin/freetz_proxy`, with HTML/CSS/JS URL rewriting and CDN proxying. | EVO only |
+| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway. Exposes all Freetz services over HTTPS at `https://fritz.box/cgi-bin/freetz_proxy`, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |

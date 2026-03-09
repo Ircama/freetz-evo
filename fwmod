@@ -1649,6 +1649,108 @@ if [ "$DO_MOD" -gt 0 ]; then
 
 	fi
 
+	# freetz_proxy: patch AVM webif — clickable Fritz logo + Freetz link in userMenu
+	if [ "$FREETZ_PACKAGE_FREETZ_PROXY" == "y" ]; then
+		CONTENT_LUA="${HTML_LANG_MOD_DIR}/content.lua"
+		if [ -f "$CONTENT_LUA" ]; then
+			echo1 "patching AVM webif for freetz_proxy (logo + userMenu)"
+			# Set the Fritz logo href (static fallback; JS override below handles click interception)
+			sed 's|href=" " id="avmLogo"|href="https://fritz.box/cgi-bin/freetz_proxy?service=freetz" id="avmLogo"|' -i "$CONTENT_LUA"
+			# Inject script:
+			#  1. Override logo click (AVM JS intercepts it; use capture + stopImmediatePropagation)
+			#  2. Patch the existing #freetz userMenu entry href → freetz_proxy?service=freetz
+			#     (modreg adds that entry pointing to freetz_status; we redirect it here)
+			#     If the entry is absent, create a properly formatted one as fallback.
+			python3 - "$CONTENT_LUA" << 'FREETZ_PROXY_PY'
+import sys
+path = sys.argv[1]
+FP = 'https://fritz.box/cgi-bin/freetz_proxy?service=freetz'
+script = (
+    '<script>(function(){'
+    'var FP="' + FP + '";'
+    # --- logo click override (runs in capture phase before AVM handler) ---
+    'document.addEventListener("DOMContentLoaded",function(){'
+    'var logo=document.getElementById("avmLogo");'
+    'if(logo){'
+    'logo.href=FP;'
+    'logo.addEventListener("click",function(e){'
+    'e.stopImmediatePropagation();e.preventDefault();'
+    'window.location.href=FP;'
+    '},true);'
+    '}'
+    '});'
+    # --- userMenu: patch existing #freetz entry or insert a new one ---
+    'function patchMenu(){'
+    'var m=document.getElementById("userMenu");'
+    'if(!m)return;'
+    'var ex=m.querySelector("#freetz");'
+    'if(ex){ex.href=FP;return;}'
+    # fallback: add a well-formatted item if #freetz is absent
+    'if(m.querySelector("#freetz-menu-item"))return;'
+    'var a=document.createElement("a");'
+    'a.id="freetz-menu-item";'
+    'a.href=FP;'
+    'a.className="menu_item h4 show";'
+    'a.setAttribute("role","menuitem");'
+    'a.style.cssText="order:5;";'
+    'var ic=document.createElement("fos-icon");'
+    'ic.setAttribute("name","fritzbox");'
+    'ic.setAttribute("decorative","true");'
+    'ic.setAttribute("size","xl");'
+    'ic.setAttribute("inline","false");'
+    'ic.className="fos-icon--size-xl";'
+    'ic.setAttribute("role","img");'
+    'ic.setAttribute("aria-hidden","true");'
+    'ic.textContent="fritzbox";'
+    'a.appendChild(ic);'
+    'a.appendChild(document.createTextNode("Freetz"));'
+    'm.appendChild(a);'
+    '}'
+    'document.addEventListener("DOMContentLoaded",function(){'
+    'var b=document.getElementById("userMenuBox");'
+    'if(!b)return;'
+    'new MutationObserver(patchMenu).observe(b,{attributes:true,attributeFilter:["class"]});'
+    'patchMenu();'
+    '});'
+    '})();</script>'
+)
+with open(path) as f:
+    content = f.read()
+if '</body>' in content and 'freetz-menu-item' not in content:
+    content = content.replace('</body>', script + '\n</body>', 1)
+    with open(path, 'w') as f:
+        f.write(content)
+FREETZ_PROXY_PY
+		fi
+		# Patch login page: make the Fritz logo (.logoBox) a clickable link to freetz_proxy
+		LOGIN_LUA="${HTML_LANG_MOD_DIR}/login.lua"
+		if [ -f "$LOGIN_LUA" ]; then
+			python3 - "$LOGIN_LUA" << 'FREETZ_LOGIN_PY'
+import sys
+path = sys.argv[1]
+FP = 'https://fritz.box/cgi-bin/freetz_proxy?service=freetz'
+script = (
+    '<script>(function(){'
+    'var FP="' + FP + '";'
+    'document.addEventListener("DOMContentLoaded",function(){'
+    'var box=document.querySelector(".logoBox");'
+    'if(!box||box.tagName==="A")return;'
+    'box.style.cursor="pointer";'
+    'box.setAttribute("title","Freetz");'
+    'box.addEventListener("click",function(){window.location.href=FP;});'
+    '});'
+    '})();</script>'
+)
+with open(path) as f:
+    content = f.read()
+if '</body>' in content and 'freetz_proxy' not in content:
+    content = content.replace('</body>', script + '\n</body>', 1)
+    with open(path, 'w') as f:
+        f.write(content)
+FREETZ_LOGIN_PY
+		fi
+	fi
+
 	if [ "$FREETZ_STRIP_LIBRARIES" == "y" ]; then
 		echo0 "shrinking shared libs"
 		source ${TOOLS_DIR}/freetz_mklibs
