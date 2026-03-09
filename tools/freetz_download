@@ -30,6 +30,11 @@ FREETZ_DL_SITES_COUNT=5
 FREETZ_DL_SITES_NORND_FIRST=1
 FREETZ_DL_SITES_NORND_LAST=1
 
+WGET="wget"
+WVER="$(${WGET} --version | head -n1 | sed -r 's/.* ([\.0-9]*) .*/\1/')"
+HASH="$(tools/freetz_revision repo | tr -d '\n' | md5sum  | cut -f1 -d ' ')"
+userAgent="${WGET^}/${WVER} (${HASH})"
+
 helpmsg() {
 cat << 'EOF'
 freetz_download - download Freetz packages
@@ -95,8 +100,8 @@ do_download() {
 
 	[ "$opt_trap_delete" == y ] && trap 'echo "Deleting file: \"$outFile\""; rm "$outFile" 2>/dev/null; exit 1' TERM INT
 	[ "$DEBUG" == "1" ] && echo \
-	"wget $WGET_INSECURE_HTTPS --no-directories --tries=2 --timeout=3 --progress=bar:force:noscroll '${fullURL}' --output-document='${outFile}' 1>&11 2>&12"
-	 wget $WGET_INSECURE_HTTPS --no-directories --tries=2 --timeout=3 --progress=bar:force:noscroll "${fullURL}" --output-document="${outFile}" 1>&11 2>&12
+	"${WGET} $WGET_INSECURE_HTTPS --no-directories --tries=2 --timeout=3 --progress=bar:force:noscroll --user-agent='${userAgent}' '${fullURL}' --output-document='${outFile}' 1>&11 2>&12"
+	 ${WGET} $WGET_INSECURE_HTTPS --no-directories --tries=2 --timeout=3 --progress=bar:force:noscroll --user-agent="${userAgent}" "${fullURL}" --output-document="${outFile}" 1>&11 2>&12
 	wget_result=$?
 	[ "$opt_trap_delete" == y ] && trap - TERM INT
 
