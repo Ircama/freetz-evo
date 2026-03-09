@@ -1,4 +1,4 @@
-# util-linux (binary only)
+# util-linux (Linux disk utilities)
   - Homepage: [https://en.wikipedia.org/wiki/Util-linux](https://en.wikipedia.org/wiki/Util-linux)
   - Manpage: [https://linux.die.net/man/8/blkid](https://linux.die.net/man/8/blkid)
   - Changelog: [https://mirrors.kernel.org/pub/linux/utils/util-linux/](https://mirrors.kernel.org/pub/linux/utils/util-linux/)

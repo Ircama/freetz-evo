@@ -1,8 +1,4 @@
-# GCC Toolchain 13.4.0 - DEVELOPER
-  - Homepage: [https://gcc.gnu.org/](https://gcc.gnu.org/)
-  - Manpage: [https://gcc.gnu.org/onlinedocs/](https://gcc.gnu.org/onlinedocs/)
-  - Changelog: [https://gcc.gnu.org/gcc-13/changes.html](https://gcc.gnu.org/gcc-13/changes.html)
-  - Repository: [https://github.com/gcc-mirror/gcc](https://github.com/gcc-mirror/gcc)
+# GCC (Native Compiler for On-Device Compilation)
   - Package: [master/make/pkgs/gcc-toolchain/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gcc-toolchain/)
   - Maintainer: [@Ircama](https://github.com/Ircama)
 

@@ -79,6 +79,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[JPEG library (libjpeg.so) 9f](jpeg.md)<a id='jpeg'></a>**<br>
     libjpeg is a library for handling the JPEG (JFIF) image format
 
+  * **[json-c (libjson-c.so) json-c-0.17-20230812](json-c.md)<a id='json-c'></a>**<br>
+    json-c is a JSON library implementing an object model allowing the creation and manipulation of JSON formatted strings. This library is required by ttyd. Project homepage: https://github.com/json-c/json-c
+
 ### L
 
   * **[ldns: libldns (libldns.so) 1.7.1](ldns.md)<a id='ldns'></a>**<br>
@@ -86,6 +89,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[leptonica (liblept.so) 1.69](leptonica.md)<a id='leptonica'></a>**<br>
     A library for efficient image processing and image analysis operations.
+
+  * **[libaria2](libaria2.md)<a id='libaria2'></a>**<br>
 
   * **[libart_lgpl: Libart 2D graphics (libart.so) 2.3.21](libart_lgpl.md)<a id='libart-lgpl'></a>**<br>
     Libart is a library for high-performance 2D graphics. It supports a very powerful imaging model, basically the same as SVG and the Java 2D API. It includes all PostScript imaging operations, and adds antialiasing and alpha-transparency. It is also highly tuned for incremental rendering. It contains data structures and algorithms suited to rapid, precise computation of Region of Interest, and a two-phase rendering pipeline optimized for interactive display.
@@ -106,6 +111,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[libcap-ng (libcap-ng.so) 0.8.5](libcap-ng.md)<a id='libcap-ng'></a>**<br>
     The libcap-ng library should make programming with posix capabilities easier. The library has some utilities to help you analyse a system for apps that may have too much privileges.
+
+  * **[libcares 1.28.1 (Async DNS resolver library) 1.34.6](libcares.md)<a id='libcares'></a>**<br>
+    c-ares is a C library that performs DNS requests and name lookups asynchronously. It is intended for applications which need to perform DNS queries without blocking, or need to perform multiple DNS queries in parallel. This library is used by various download managers and networking tools for asynchronous DNS resolution.
 
   * **[libconfig (libconfig.so) 1.5](libconfig.md)<a id='libconfig'></a>**<br>
     Libconfig is a simple library for processing structured configuration files. Libconfig is very compact - just 46K for the stripped C shared library. This makes it well-suited for memory-constrained systems.
@@ -236,8 +244,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libvorbis (libvorbis.so) 1.3.5](libvorbis.md)<a id='libvorbis'></a>**<br>
     Vorbis is the name of a specific audio compression scheme that's designed to be contained in Ogg. libvorbis is a BSD-style license software implementation of the Vorbis specification by the Xiph.Org Foundation.
 
+  * **[libwebsockets (libwebsockets.so) 4.3.9](libwebsockets.md)<a id='libwebsockets'></a>**<br>
+    libwebsockets is a lightweight, low-latency C library for WebSocket clients and servers, HTTP/2, and more. Required by ttyd (web-based terminal). Project homepage: https://libwebsockets.org/
+
   * **[libxml2 (libxml2.so) 2.15.1](libxml2.md)<a id='libxml2'></a>**<br>
     XML toolkit from the GNOME project
+
+  * **[libzen (libzen.so) 0.4.41](libzen.md)<a id='libzen'></a>**<br>
+    ZenLib is a C++ library that supplements the standard library. It is used by MediaInfo as a dependency.
 
   * **[linux-atm (libatm.so) 2.5.2](linux-atm.md)<a id='linux-atm'></a>**<br>
     Libatm is a library for accessing the Linux ATM subsystem.
@@ -359,6 +373,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[utf8proc (libutf8proc.so) 2.7.0](utf8proc.md)<a id='utf8proc'></a>**<br>
     a clean C library for processing UTF-8 Unicode data: normalization, case-folding, graphemes, and more
+
+### X
+
+  * **[xmlrpc: libxmlrpc.so 1.64.03](xmlrpc.md)<a id='xmlrpc'></a>**<br>
+    xmlrpc-c core library
 
 ### Y
 

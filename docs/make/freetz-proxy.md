@@ -1,6 +1,7 @@
-# freetz-proxy
+# freetz-proxy 0.1 - HTTPS multi-service reverse proxy CGI
+  - Package: [master/make/pkgs/freetz-proxy/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/freetz-proxy/)
+  - Maintainer: -
 
-  - Package: [master/make/pkgs/freetz-proxy/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/freetz-proxy/)
 
 `freetz_proxy` is a static CGI binary that runs inside the FritzBox's built-in HTTPS server and acts as a configurable reverse-proxy gateway for all Freetz services.
 

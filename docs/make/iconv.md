@@ -1,11 +1,11 @@
-# iconv 1.18 (binary only)
+# iconv 1.13.1/1.18 (binary only) - see library for version
   - Homepage: [https://www.gnu.org/software/libiconv/](https://www.gnu.org/software/libiconv/)
   - Manpage: [https://www.gnu.org/savannah-checkouts/gnu/libiconv/documentation/](https://www.gnu.org/savannah-checkouts/gnu/libiconv/documentation/)
   - Changelog: [https://ftp.gnu.org/pub/gnu/libiconv/](https://ftp.gnu.org/pub/gnu/libiconv/)
   - Repository: [https://git.savannah.gnu.org/gitweb/?p=libiconv.git](https://git.savannah.gnu.org/gitweb/?p=libiconv.git)
   - Package: [master/make/pkgs/iconv/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/iconv/)
-  - Library: [master/make/pkgs/iconv/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/iconv/) (Config.in.libs)
   - Maintainer: -
+  - Library: [master/make/pkgs/iconv/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/iconv/) (Config.in.libs)
 
 ## Description
 GNU libiconv is a character encoding conversion library. It provides an `iconv()` implementation for systems that don't have one, or whose implementation cannot convert from/to Unicode.

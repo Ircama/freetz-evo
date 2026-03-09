@@ -47,6 +47,7 @@
   - [Einstellungen speichern im Urlader-Environment](30_Expert/urlader_flags.md)
 
 ### [Troubleshooting](40_Troubleshooting/README.md)
+  - [Download failures during build (sources/tools)](40_Troubleshooting/download_failures.md)
   - [IRC](40_Troubleshooting/irc_channel.md)
   - [Troubleshooting Build-Abbruch](40_Troubleshooting/make_fail.md)
   - [Häufige selbständige Reboots](40_Troubleshooting/random_reboots.md)

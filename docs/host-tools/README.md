@@ -48,7 +48,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[genext2fs 1.5.0-3b99f4a4](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
 
+  * **[gennmtab 1.64.03](gennmtab-host.md)<a id='gennmtab-host'></a>**<br>
+
   * **[gmp 6.3.0](gmp-host.md)<a id='gmp-host'></a>**<br>
+
+  * **[go 1.23.4](go-host.md)<a id='go-host'></a>**<br>
 
   * **[gperf 3.3](gperf-host.md)<a id='gperf-host'></a>**<br>
 
