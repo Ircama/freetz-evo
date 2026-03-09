@@ -118,6 +118,8 @@ EOF
 </div>
 </div>
 </div>
+<button class="evo-scroll-btn" id="evo-scroll-top" title="Top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Scroll to top">&#9650;</button>
+<button class="evo-scroll-btn" id="evo-scroll-bot" title="Bottom" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})" aria-label="Scroll to bottom">&#9660;</button>
 <script>
 function evoDarkToggle() {
   var h = document.documentElement;
@@ -181,6 +183,15 @@ function evoNavModeToggle() {
   if (!isHam) { b.classList.remove('evo-menu-open'); }
   evoSetupMobileMenu();
 }
+/* Helpers for frequency-sorted mobile nav bar */
+function evoGetNavFreq() {
+  try { return JSON.parse(localStorage.getItem('evo-nav-freq') || '{}'); } catch(e) { return {}; }
+}
+function evoItemFreq(li, freq) {
+  var a = li.querySelector(':scope > a') || li.querySelector('a');
+  if (!a) return 0;
+  try { return freq[new URL(a.href, window.location.origin).pathname] || 0; } catch(e) { return 0; }
+}
 function evoSetupMobileMenu() {
   var mqMobile  = window.matchMedia('(max-width: 600px), (max-height: 480px) and (orientation: landscape)');
   var mqLand    = window.matchMedia('(orientation: landscape) and (max-height: 480px)');
@@ -214,6 +225,7 @@ function evoSetupMobileMenu() {
     if (oldMore) oldMore.remove();
     Array.prototype.forEach.call(mainMenu.children, function(li){
       li.classList.remove('evo-mobile-hidden');
+      li.style.order = '';
     });
     body.classList.remove('evo-menu-open');
     var old = document.getElementById('evo-mobile-drawer');
@@ -223,28 +235,67 @@ function evoSetupMobileMenu() {
 
   if (mobileActive) {
     mainMenu.classList.add('evo-mobile-limited');
-    var items = Array.prototype.filter.call(mainMenu.children, function(li){
-      return !li.classList.contains('evo-mobile-more');
-    });
     var maxVisible = isLand ? 5 : 3;
-    items.forEach(function(li, i){
-      li.classList.toggle('evo-mobile-hidden', i >= maxVisible);
-    });
-    if (!mainMenu.querySelector('li.evo-mobile-more')) {
-      var more = document.createElement('li');
-      more.className = 'evo-mobile-more';
-      more.innerHTML = '<a href="#" title="More">\u2026</a>';
-      mainMenu.appendChild(more);
-      more.querySelector('a').addEventListener('click', function(ev){
+    /* Create hamburger immediately so bar is usable before freq sort */
+    var moreEl = mainMenu.querySelector('li.evo-mobile-more');
+    if (!moreEl) {
+      moreEl = document.createElement('li');
+      moreEl.className = 'evo-mobile-more';
+      moreEl.innerHTML = '<a href="#" title="Menu">\u2630</a>';
+      mainMenu.appendChild(moreEl);
+      moreEl.querySelector('a').addEventListener('click', function(ev){
         ev.preventDefault();
         evoHamToggle();
       });
+    }
+    moreEl.style.order = maxVisible + 1;
+    /* Bar + hamburger ready — show immediately */
+    mainMenu.classList.add('evo-mobile-ready');
+    /* Separate logout from freq-sorted items */
+    var logoutLi = null;
+    var items = Array.prototype.filter.call(mainMenu.children, function(li){
+      if (li.classList.contains('evo-mobile-more')) return false;
+      if (li.tagName === 'HR') return false;
+      var a = li.querySelector(':scope > a') || li.querySelector('a');
+      if (a && a.href && a.href.indexOf('logout') !== -1) {
+        li.classList.add('evo-mobile-logout');
+        logoutLi = li;
+        return false;
+      }
+      return true;
+    });
+    var freq = evoGetNavFreq();
+    var freqSlots = maxVisible;
+    /* always keep the currently active item visible */
+    var activeLi = null;
+    items.forEach(function(li){
+      var a = li.querySelector(':scope > a') || li.querySelector('a');
+      if (a && (a.classList.contains('active') || li.classList.contains('open'))) activeLi = li;
+    });
+    /* rank items by visit frequency descending */
+    var ranked = items.slice().sort(function(a, b){
+      return evoItemFreq(b, freq) - evoItemFreq(a, freq);
+    });
+    var visible = ranked.slice(0, freqSlots);
+    if (activeLi && visible.indexOf(activeLi) === -1) {
+      visible[visible.length - 1] = activeLi;
+    }
+    /* apply visibility + CSS order (rank 0 = most visited = leftmost) */
+    items.forEach(function(li){
+      var rank = visible.indexOf(li);
+      li.classList.toggle('evo-mobile-hidden', rank === -1);
+      li.style.order = rank >= 0 ? rank : '';
+    });
+    /* Logout hidden from bottom bar — appears only in drawer */
+    if (logoutLi) {
+      logoutLi.classList.add('evo-mobile-hidden');
     }
   } else {
     /* desktop ham mode: full menu in drawer, no bottom bar limitation */
     mainMenu.classList.remove('evo-mobile-limited');
     var oldMore = mainMenu.querySelector('li.evo-mobile-more');
     if (oldMore) oldMore.remove();
+    Array.prototype.forEach.call(mainMenu.children, function(li){ li.style.order = ''; });
   }
 
   /* Build / rebuild the popup drawer */
@@ -260,8 +311,13 @@ function evoSetupMobileMenu() {
   }
   drawer.innerHTML = '';
   var ul = document.createElement('ul');
+  var srcLogout = null;
   var srcItems = Array.prototype.filter.call(mainMenu.children, function(li){
-    return !li.classList.contains('evo-mobile-more');
+    if (li.classList.contains('evo-mobile-more')) return false;
+    if (li.tagName === 'HR') return false;
+    var a = li.querySelector(':scope > a') || li.querySelector('a');
+    if (a && a.href && a.href.indexOf('logout') !== -1) { srcLogout = li; return false; }
+    return true;
   });
   srcItems.forEach(function(srcLi){
     var li = document.createElement('li');
@@ -304,8 +360,41 @@ function evoSetupMobileMenu() {
     ul.appendChild(li);
   });
   drawer.appendChild(ul);
-  mainMenu.classList.add('evo-mobile-ready');
+  /* Logout pinned at bottom of drawer with separator */
+  if (srcLogout) {
+    var sep = document.createElement('div');
+    sep.className = 'evo-drawer-sep';
+    drawer.appendChild(sep);
+    var logoutUl = document.createElement('ul');
+    logoutUl.className = 'evo-drawer-logout-list';
+    var logoutLiD = document.createElement('li');
+    logoutLiD.className = 'evo-drawer-logout';
+    var srcA = srcLogout.querySelector('a');
+    var logoutA = document.createElement('a');
+    logoutA.href = srcA.href;
+    logoutA.textContent = srcA.textContent;
+    logoutA.id = 'drawer-logout';
+    if (srcA.getAttribute('onclick')) logoutA.setAttribute('onclick', srcA.getAttribute('onclick'));
+    logoutLiD.appendChild(logoutA);
+    logoutUl.appendChild(logoutLiD);
+    drawer.appendChild(logoutUl);
+  }
 }
+/* Track current page visits for dynamic mobile nav ordering */
+(function(){
+  try {
+    var freq = JSON.parse(localStorage.getItem('evo-nav-freq') || '{}');
+    var p = window.location.pathname;
+    freq[p] = (freq[p] || 0) + 1;
+    /* prune to top 60 entries to avoid unbounded growth */
+    var keys = Object.keys(freq);
+    if (keys.length > 60) {
+      keys.sort(function(a,b){ return freq[a]-freq[b]; });
+      keys.slice(0, keys.length - 60).forEach(function(k){ delete freq[k]; });
+    }
+    localStorage.setItem('evo-nav-freq', JSON.stringify(freq));
+  } catch(e) {}
+})();
 document.addEventListener('DOMContentLoaded', function(){
   evoSetupMobileMenu();
   window.addEventListener('resize', evoSetupMobileMenu);
@@ -318,6 +407,55 @@ if ('serviceWorker' in navigator) {
       .catch(function(){}); // silently ignored on HTTP / scope mismatch
   }
 }
+// Scroll navigation buttons: show goto-top when scrolled down,
+// show goto-bottom when there is more content below.
+// Mobile (touch/coarse pointer): visible only during scroll, auto-hide after 1.5 s.
+// Desktop: always visible when not at top / bottom.
+(function(){
+  var btnTop = document.getElementById('evo-scroll-top');
+  var btnBot = document.getElementById('evo-scroll-bot');
+  if (!btnTop || !btnBot) return;
+  var _hideTimer = null;
+  var _hasTouched = false;
+  window.addEventListener('touchstart', function(){ _hasTouched = true; }, {once:true, passive:true});
+  function isMobile() {
+    return _hasTouched || !!(window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches);
+  }
+  function hideBtns() {
+    btnTop.classList.remove('evo-scroll-visible');
+    btnBot.classList.remove('evo-scroll-visible');
+  }
+  function evoUpdateScrollBtns() {
+    var scrollY   = window.scrollY || window.pageYOffset || 0;
+    var winH      = window.innerHeight || document.documentElement.clientHeight;
+    var docH      = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    var atTop     = scrollY <= 40;
+    var atBottom  = scrollY + winH >= docH - 40;
+    var pageShort = docH <= winH + 80;  /* page fits in viewport: hide both */
+    btnTop.classList.toggle('evo-scroll-visible', !atTop  && !pageShort);
+    btnBot.classList.toggle('evo-scroll-visible', !atBottom && !pageShort);
+  }
+  function evoOnScroll() {
+    evoUpdateScrollBtns();
+    if (isMobile()) {
+      if (_hideTimer) clearTimeout(_hideTimer);
+      _hideTimer = setTimeout(hideBtns, 1500);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    if (!isMobile()) {
+      evoUpdateScrollBtns();
+      /* give dynamic content (menus, etc.) time to expand */
+      setTimeout(evoUpdateScrollBtns, 350);
+    }
+    /* mobile: hidden on load, appear only on scroll */
+  });
+  window.addEventListener('scroll', evoOnScroll, {passive: true});
+  window.addEventListener('resize', function(){
+    if (_hideTimer) { clearTimeout(_hideTimer); _hideTimer = null; }
+    if (isMobile()) hideBtns(); else evoUpdateScrollBtns();
+  }, {passive: true});
+})();
 </script>
 EOF
 }

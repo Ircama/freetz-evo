@@ -1892,7 +1892,7 @@ sec_end
 sec_begin "$(lang de:"Konfigurationsdateien bearbeiten" en:"Edit Configuration Files")"
 cat << EOF
 <p><strong>rTorrent:</strong></p>
-<p>
+<p style="margin: 6px 0;">
 <button type="button" onclick="window.open('/rtorrent/rtorrent_config_editor.html', '_blank')" class="btn">
 $(lang de:"rTorrent Konfiguration bearbeiten" en:"Edit rTorrent configuration") (.rtorrent.rc)
 </button>
@@ -1935,7 +1935,7 @@ if [ -d "/mod/external/usr/mww/rutorrent" ] || [ -d "/usr/mww/rutorrent" ]; then
 	fi
 	RUTORRENT_CONFIG_FILE="${RUTORRENT_PATH}/conf/config.php"
 	cat << EOF
-<p>
+<p style="margin: 6px 0;">
 <button type="button" onclick="window.open('/rutorrent/', '_blank')" class="btn" style="background: #28a745; color: white;">
 $(lang de:"ruTorrent Web Interface öffnen" en:"Open ruTorrent Web Interface")
 </button>

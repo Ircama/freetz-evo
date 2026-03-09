@@ -1,0 +1,8 @@
+CAPTION='Freetz Proxy: Services'
+DESCRIPTION='Defines services accessible through the HTTPS proxy.
+Format: <tt>name=port[:path[:direct]]</tt> (one entry per line).
+With <tt>direct</tt> the index link opens the native HTTP URL directly.'
+CONFIG_FILE='/tmp/flash/mod/freetz-proxy.cfg'
+CONFIG_SAVE='modsave flash;'
+CONFIG_TYPE='text'
+TEXT_ROWS=22

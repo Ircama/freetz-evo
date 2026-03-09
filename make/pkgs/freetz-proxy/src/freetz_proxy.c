@@ -42,6 +42,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fnmatch.h>
 
 #define FREETZ_HOST          "127.0.0.1"
 #define DEFAULT_FREETZ_PORT   81
@@ -177,10 +178,14 @@ static int get_freetz_port(void) {
 }
 
 /* ------------------------------------------------------------------
- * Load /mod/etc/conf/freetz-proxy.cfg into services[]
+ * Load service config into services[].
+ * Tries /tmp/flash/mod/freetz-proxy.cfg first (NAND flash, editable
+ * via the Freetz web UI), then falls back to /mod/etc/conf/freetz-proxy.cfg.
  * ------------------------------------------------------------------ */
 static void load_config(void) {
-    FILE *f = fopen("/mod/etc/conf/freetz-proxy.cfg", "r");
+    FILE *f = fopen("/tmp/flash/mod/freetz-proxy.cfg", "r");
+    if (!f)
+        f = fopen("/mod/etc/conf/freetz-proxy.cfg", "r");
     if (!f)
         return;
 
@@ -463,20 +468,53 @@ static void url_full_encode(const char *src, char *dst, int dstsz) {
  * Returns number of bytes written to g_body_out.
  * ------------------------------------------------------------------ */
 
-/* Longest-prefix match: return the direct Service* whose configured path
- * is a prefix of url_path, or NULL.  Paths of length <= 1 ("/") are
- * skipped to avoid catching everything. */
+/* Returns 1 if the pattern contains any glob metacharacter (* or ?). */
+static int path_has_glob(const char *pattern) {
+    return strpbrk(pattern, "*?") != NULL;
+}
+
+/* Score a matching pattern for specificity (higher = more specific).
+ * For plain-prefix patterns: the prefix length itself.
+ * For glob patterns: the length of the literal prefix before the first
+ * wildcard — a tighter literal prefix beats a shorter one. */
+static size_t path_score(const char *pattern) {
+    const char *w = strpbrk(pattern, "*?");
+    return w ? (size_t)(w - pattern) : strlen(pattern);
+}
+
+/* Longest-prefix / best-glob match: return the direct Service* whose
+ * configured path either is a plain prefix of url_path OR matches it
+ * via fnmatch(3) glob semantics.  Paths of length <= 1 ("/") are
+ * skipped to avoid catching everything.
+ *
+ * Scoring: the service with the longest literal-prefix score wins;
+ * ties go to the longer overall pattern string. */
 static Service *find_direct_service_for_path(const char *url_path) {
-    Service *best = NULL;
-    size_t   best_len = 0;
+    Service *best       = NULL;
+    size_t   best_score = 0;
+    size_t   best_len   = 0;
     for (int i = 0; i < n_services; i++) {
         if (!services[i].direct) continue;
         const char *sp    = services[i].path;
         size_t      splen = strlen(sp);
         if (splen <= 1) continue;   /* skip bare "/" */
-        if (strncmp(url_path, sp, splen) == 0 && splen > best_len) {
-            best     = &services[i];
-            best_len = splen;
+        int matched;
+        if (path_has_glob(sp)) {
+            /* Glob pattern: full-path match via fnmatch (FNM_PATHNAME so
+             * '*' does NOT cross '/' boundaries, matching shell behaviour;
+             * drop the flag if you want cross-directory globs). */
+            matched = (fnmatch(sp, url_path, FNM_PATHNAME) == 0);
+        } else {
+            /* Plain prefix match (legacy behaviour). */
+            matched = (strncmp(url_path, sp, splen) == 0);
+        }
+        if (matched) {
+            size_t score = path_score(sp);
+            if (score > best_score || (score == best_score && splen > best_len)) {
+                best       = &services[i];
+                best_score = score;
+                best_len   = splen;
+            }
         }
     }
     return best;
@@ -570,6 +608,32 @@ static size_t rewrite_body(const char *in, size_t inlen,
     int  ace_inject_pending = 0;
 
     while (i < inlen && o + 512 < outsz) {
+        /* Strip <link rel="manifest" ...> — the Fritz HTTPS gateway's CSP uses
+         * default-src 'none' as manifest-src fallback, so a proxied webmanifest
+         * link is always blocked by the browser.  Drop the tag entirely. */
+        if (in[i] == '<' && i + 5 < inlen &&
+            strncasecmp(in + i, "<link", 5) == 0 &&
+            (in[i+5] == ' ' || in[i+5] == '\t' || in[i+5] == '\n' ||
+             in[i+5] == '\r' || in[i+5] == '>')) {
+            size_t te = i + 5;
+            while (te < inlen && in[te] != '>') te++;
+            /* Detect rel="manifest" or rel='manifest' inside the tag */
+            int strip_link = 0;
+            for (size_t k = i; k + 13 < te && !strip_link; k++) {
+                if (strncasecmp(in + k, "rel=", 4) != 0) continue;
+                size_t vk = k + 4;
+                while (vk < te && (in[vk] == ' ' || in[vk] == '\t')) vk++;
+                if (vk < te) {
+                    char q2 = (in[vk] == '"' || in[vk] == '\'') ? in[vk++] : 0;
+                    (void)q2;
+                    if (strncasecmp(in + vk, "manifest", 8) == 0)
+                        strip_link = 1;
+                }
+                break;
+            }
+            if (strip_link) { i = te + 1; continue; }
+        }
+
         /* pattern: ="https://..." or ='https://...' — absolute external HTTPS URL
          * (e.g. CDN resources: <script src="https://cdn..."> <link href="https://cdn...">)
          * Rewrite to ?service=cdn&url=<encoded> so the browser fetches it through
@@ -1036,8 +1100,10 @@ static const char *guess_content_type(const char *url) {
  * fetched directly, but allowed when served from 'self'.
  * ------------------------------------------------------------------ */
 static void do_cdn_proxy(const char *url) {
+    DBG("CDN proxy: %s", url);
     /* Only allow http(s):// URLs */
     if (strncmp(url, "https://", 8) != 0 && strncmp(url, "http://", 7) != 0) {
+        DBG("CDN denied (not http/https): %s", url);
         cgi_error(400, "Bad Request", "CDN URL must start with http(s)://");
         return;
     }
@@ -1068,6 +1134,7 @@ static void do_cdn_proxy(const char *url) {
     }
 
     const char *ct = guess_content_type(url);
+    DBG("CDN serving content-type: %s", ct);
     printf("Status: 200 OK\r\n"
            "Content-Type: %s\r\n"
            "Cache-Control: public, max-age=86400\r\n"
@@ -1075,11 +1142,14 @@ static void do_cdn_proxy(const char *url) {
 
     char buf[BUF_SIZE];
     size_t n;
-    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
+    size_t total = 0;
+    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0) {
         fwrite(buf, 1, n, stdout);
-
+        total += n;
+    }
     fflush(stdout);
-    pclose(fp);
+    int rc = pclose(fp);
+    DBG("CDN done: %zu bytes, curl exit=%d url=%s", total, rc, url);
 }
 
 /* ------------------------------------------------------------------

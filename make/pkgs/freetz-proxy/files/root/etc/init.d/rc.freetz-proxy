@@ -1,0 +1,51 @@
+#!/bin/sh
+
+DAEMON=freetz-proxy
+. /etc/init.d/modlibrc
+
+# Percorso del .def: cerca prima nel path standard del firmware (squashfs),
+# poi via /mod/etc/ (symlink creato da modload), infine su external (deploy script).
+PROXY_DEF=/etc/default.freetz-proxy/freetz-proxy-cfg.def
+[ -r /mod/etc/default.freetz-proxy/freetz-proxy-cfg.def ] && \
+	PROXY_DEF=/mod/etc/default.freetz-proxy/freetz-proxy-cfg.def
+[ -r /mod/external/etc/default.freetz-proxy/freetz-proxy-cfg.def ] && \
+	PROXY_DEF=/mod/external/etc/default.freetz-proxy/freetz-proxy-cfg.def
+
+case $1 in
+	""|load)
+		# Se il file flash non esiste ancora, crealo dalla configurazione di default
+		# (prima volta dopo l'installazione del firmware).
+		if [ ! -f /tmp/flash/mod/freetz-proxy.cfg ]; then
+			for src in \
+				/mod/external/etc/default.freetz-proxy/freetz-proxy.cfg \
+				/mod/etc/default.freetz-proxy/freetz-proxy.cfg \
+				/etc/default.freetz-proxy/freetz-proxy.cfg; do
+				if [ -r "$src" ]; then
+					cp "$src" /tmp/flash/mod/freetz-proxy.cfg
+					break
+				fi
+			done
+		fi
+		# Registra l'editor del file di configurazione sotto la sezione "Freetz" (pacchetto mod),
+		# così appare nel menu Freetz → URL: /cgi-bin/file/mod/freetz_proxy
+		modreg file mod freetz_proxy \
+			"freetz-proxy" \
+			0 "$PROXY_DEF"
+		;;
+	unload)
+		modunreg file mod freetz_proxy
+		;;
+	status)
+		if [ -x /usr/www/cgi-bin/freetz_proxy ]; then
+			echo "freetz_proxy is installed."
+		else
+			echo "freetz_proxy is NOT installed."
+		fi
+		;;
+	*)
+		echo "Usage: $0 [load|unload|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

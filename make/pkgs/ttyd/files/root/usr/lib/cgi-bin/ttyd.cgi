@@ -66,10 +66,18 @@ sec_end
 # Embed in the page so the browser auto-submits on connect.
 TTYD_TOKEN=$(cat /var/run/ttyd.token 2>/dev/null)
 
+# Only render the Web Terminal section when ttyd is actually running
+if pidof ttyd >/dev/null 2>&1; then
+
 sec_begin "$(lang de:"Web-Terminal" en:"Web Terminal")"
 
 cat << EOF
 <div id="ttyd-wrap">
+  <div id="ttyd-proxy-banner" style="display:none;padding:28px 20px;text-align:center;background:#1e1e1e;">
+    <p style="margin:0 0 16px;color:#aaa;font-size:.9em">$(lang de:"Sitzung l&auml;uft &uuml;ber den HTTPS-Proxy &mdash; WebSocket wird als <em>Mixed&nbsp;Content</em> blockiert." en:"Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.")</p>
+    <a id="ttyd-open-btn" href="#" target="_blank" style="display:inline-block;padding:10px 24px;background:#0e9078;color:#fff;border-radius:4px;text-decoration:none;font-size:.95em;font-weight:600;">$(lang de:"Web-Terminal in neuem Tab &ouml;ffnen &nbsp;&#x2197;" en:"Open Web Terminal in new tab &nbsp;&#x2197;")</a>
+  </div>
+  <div id="ttyd-direct">
   <div id="ttyd-toolbar">
     <span id="ttyd-status" class="ttyd-disc">&#x25cf; $(lang de:"Getrennt" en:"Disconnected")</span>
     <span class="ttyd-filler"></span>
@@ -97,8 +105,9 @@ cat << EOF
     <button type="button" onclick="ttydCloseSearch()" title="$(lang de:"Schlie&#223;en" en:"Close")">&#x2715;</button>
   </div>
   <div id="ttyd-term"></div>
+  </div><!-- #ttyd-direct -->
 </div>
-<script>var TTYD_CFG={port:$(html "${TTYD_PORT:-7681}"),tok:"$(html "$TTYD_TOKEN")"};</script>
+<script>var TTYD_CFG={port:$(html "${TTYD_PORT:-7681}"),tok:"$(html "$TTYD_TOKEN")",webport:$(html "${SERVER_PORT:-81}")};</script>
 EOF
 
 cat << 'CSSEOF'
@@ -273,6 +282,7 @@ function initTerm(theme, size) {
 function ttydConnect() {
   var host = window.location.hostname;
   var port = (TTYD_CFG && TTYD_CFG.port) ? TTYD_CFG.port : 7681;
+
   var url  = 'ws://' + host + ':' + port + '/ws';
 
   setStatus('ttyd-prog', 'Connecting to ' + host + ':' + port + '...');
@@ -421,12 +431,40 @@ window.addEventListener('resize', function() {
 });
 
 /* ── Bootstrap ────────────────────────────────────────────────── */
-initTerm(curTheme, fontSize);
-if (term) term.writeln('\x1b[2mttyd web terminal \u2014 connecting\u2026\x1b[0m');
-ttydConnect();
+(function(){
+  var isProxy = window.location.protocol === 'https:';
+  var port    = (TTYD_CFG && TTYD_CFG.port)    ? TTYD_CFG.port    : 7681;
+  var wport   = (TTYD_CFG && TTYD_CFG.webport) ? TTYD_CFG.webport : 81;
+  var tok     = (TTYD_CFG && TTYD_CFG.tok)     ? TTYD_CFG.tok     : '';
+  var host    = window.location.hostname;
+  var extUrl  = 'http://' + host + ':' + wport +
+                '/ttyd/evo-terminal.html?port=' + port +
+                (tok ? '&tok=' + encodeURIComponent(tok) : '');
+
+  /* always keep the "open in tab" arrow link up to date */
+  var extLink = document.getElementById('ttyd-ext-link');
+  if (extLink) extLink.href = extUrl;
+
+  if (isProxy) {
+    /* HTTPS proxy session: show open-button, hide xterm UI */
+    var btn = document.getElementById('ttyd-open-btn');
+    if (btn) btn.href = extUrl;
+    var banner = document.getElementById('ttyd-proxy-banner');
+    if (banner) banner.style.display = '';
+    var direct = document.getElementById('ttyd-direct');
+    if (direct) direct.style.display = 'none';
+  } else {
+    /* Direct HTTP session: initialize xterm and connect */
+    initTerm(curTheme, fontSize);
+    if (term) term.writeln('\x1b[2mttyd web terminal \u2014 connecting\u2026\x1b[0m');
+    ttydConnect();
+  }
+})();
 
 })();
 </script>
 JSEOF
 
 sec_end
+
+fi  # ttyd running

@@ -222,5 +222,19 @@
     "timestamp": "2026-03-06T12:23:51Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.": {
+    "original": "Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.",
+    "translation": "La sessione è in esecuzione tramite il proxy HTTPS; WebSocket è bloccato come <em>contenuto misto</em>.",
+    "timestamp": "2026-03-09T00:53:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Open Web Terminal in new tab &nbsp;&#x2197;": {
+    "original": "Open Web Terminal in new tab &nbsp;&#x2197;",
+    "translation": "Aprire il Terminale Web in una nuova scheda &nbsp;&#x2197;",
+    "timestamp": "2026-03-09T00:53:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

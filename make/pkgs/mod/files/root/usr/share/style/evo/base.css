@@ -273,6 +273,27 @@ ul.menu ul {
 ul.menu.new > li:hover > ul {
 	display: block;
 }
+/* Logout item — pushed to far right, visually separated */
+ul.menu.new > li:has(a[href*="logout"]) {
+	order: 9999;
+	margin-left: auto;
+	border-left: 2px solid var(--evo-border);
+}
+ul.menu.new > li:has(a[href*="logout"]) a {
+	color: #c0392b;
+	font-weight: 600;
+}
+ul.menu.new > li:has(a[href*="logout"]) a:hover {
+	color: #e74c3c;
+	background: rgba(192,57,43,0.08);
+}
+body.dark-mode ul.menu.new > li:has(a[href*="logout"]) a {
+	color: #e74c3c;
+}
+/* Hide the <hr> that menu-new.sh emits directly inside <ul> */
+ul.menu.new > hr {
+	display: none;
+}
 ul.menu ul a {
 	padding: 7px 18px;
 	font-size: 0.875rem;
@@ -392,6 +413,7 @@ button,
 	border-radius: var(--evo-radius);
 	padding: 6px 16px;
 	cursor: pointer;
+	margin-bottom: 6px;
 	transition: background var(--evo-transition), box-shadow var(--evo-transition);
 }
 input[type="submit"]:hover,
@@ -868,8 +890,8 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		top: 0;
 		z-index: 1060;
 	}
-	/* FOUC prevention: hide bar until JS adds .evo-mobile-ready */
-	body:not(.evo-topnav) ul.menu.new:not(.evo-mobile-ready) {
+	/* FOUC prevention: hide items until JS adds .evo-mobile-ready (bar background and hamburger stay visible) */
+	body:not(.evo-topnav) ul.menu.new:not(.evo-mobile-ready) > li:not(.evo-mobile-more) {
 		opacity: 0;
 		pointer-events: none;
 	}
@@ -879,9 +901,11 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		bottom: 0; left: 0; right: 0; top: auto;
 		-webkit-transform: translateZ(0);
 		transform: translateZ(0);
+		will-change: transform;
 		flex-wrap: nowrap;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
+		max-width: 100vw;
 		height: 58px;
 		border-top: 1px solid var(--evo-nav-border);
 		border-bottom: none;
@@ -891,7 +915,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		backdrop-filter: blur(10px);
 		box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
 		z-index: 1050;
-		align-items: center;
+		align-items: stretch;
 	}
 	body:not(.evo-topnav) ul.menu.new > li {
 		border-left: none;
@@ -900,12 +924,19 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		flex: 1 1 0;
 		min-width: 0;
 		display: flex;
-		align-items: center;
+		align-items: stretch;
 		justify-content: center;
+		align-self: stretch;
 	}
 	body:not(.evo-topnav) ul.menu.new > li + li { border-left: none; }
 	body:not(.evo-topnav) ul.menu.new > li a {
-		padding: 4px 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		padding: 0 4px;
 		font-size: 0.73rem;
 		text-align: center;
 		white-space: nowrap;
@@ -922,7 +953,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		color: var(--evo-accent);
 		transform: translateY(-2px);
 	}
-	/* Mobile: active — ink top-border + accent colour, no background fill */
+	/* Mobile: active — ink top inset shadow + accent colour, no background fill */
 	body:not(.evo-topnav) ul.menu.new > li > a.active,
 	body:not(.evo-topnav) ul.menu.new > li.open > a,
 	body:not(.evo-topnav) ul.menu.new > li.open:hover > a,
@@ -930,8 +961,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		background: transparent !important;
 		color: var(--evo-accent) !important;
 		font-weight: 700;
-		border-top: 3px solid var(--evo-accent);
-		padding-top: 1px;
+		box-shadow: inset 0 3px 0 var(--evo-accent);
 	}
 	/* Hide items beyond visible limit */
 	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-hidden { display: none; }
@@ -940,16 +970,19 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		display: flex;
 		flex: 0 0 56px;
 		justify-content: center;
+		align-self: stretch;
 	}
 	body:not(.evo-topnav) ul.menu.new.evo-mobile-limited > li.evo-mobile-more a {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		padding: 0;
 		font-size: 1.5rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
+		font-weight: 800;
+		letter-spacing: 0;
 		line-height: 1;
-		padding-top: 0;
-		padding-bottom: 0;
-		position: relative;
-		top: -7px;
 	}
 	/* Submenus hidden in bottom bar — drawer handles them */
 	body:not(.evo-topnav) ul.menu.new ul {
@@ -958,7 +991,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	body:not(.evo-topnav) ul.menu.new.sub { display: none; }
 	body:not(.evo-topnav) .evo-hamburger { display: none; }
 	body:not(.evo-topnav) #container { padding: 0 10px 16px 10px; }
-	#world { border-radius: 0; margin-bottom: 10px; overflow: visible; }
+	#world { border-radius: 0; margin-bottom: 10px; overflow: clip; width: 100%; max-width: 100%; box-sizing: border-box; }
 	/* Mobile: bottom nav must always be visible regardless of hammode */
 	html.evo-hammode ul.menu.new,
 	body.evo-hammode ul.menu.new { display: flex !important; }
@@ -1080,8 +1113,10 @@ body.evo-menu-open #evo-mobile-drawer {
 	border-bottom: none;
 }
 #evo-mobile-drawer > ul > li > a {
-	display: block;
-	padding: 10px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 7px 12px;
 	font-size: 0.88rem;
 	color: var(--evo-text);
 	text-decoration: none;
@@ -1094,16 +1129,24 @@ body.evo-menu-open #evo-mobile-drawer {
 	background: var(--evo-menu-hover);
 }
 #evo-mobile-drawer > ul > li.evo-drawer-active > a {
-	background: var(--evo-menu-active);
+	background: #0e9078;
 	color: #fff;
 	font-weight: 600;
 }
 /* Tree arrow indicator */
 #evo-mobile-drawer > ul > li.evo-drawer-parent > a::after {
 	content: '\25B8';
-	float: right;
-	opacity: 0.5;
+	font-size: 2.2em;
+	line-height: 1;
+	opacity: 0.85;
+	flex-shrink: 0;
 	transition: transform var(--evo-transition);
+}
+#evo-mobile-drawer > ul > li.evo-drawer-open > a {
+	background: #16554a;
+	color: #fff;
+	padding-top: 1px;
+	padding-bottom: 1px;
 }
 #evo-mobile-drawer > ul > li.evo-drawer-open > a::after {
 	transform: rotate(90deg);
@@ -1137,4 +1180,106 @@ body.evo-menu-open #evo-mobile-drawer {
 	background: var(--evo-menu-active);
 	color: #fff;
 	font-weight: 600;
+}
+/* Drawer separator before logout */
+.evo-drawer-sep {
+	height: 1px;
+	background: var(--evo-border-light);
+	margin: 6px 8px;
+}
+/* Logout in drawer — bottom section */
+.evo-drawer-logout-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.evo-drawer-logout > a {
+	display: flex;
+	align-items: center;
+	padding: 7px 12px;
+	font-size: 0.88rem;
+	color: #c0392b;
+	font-weight: 600;
+	text-decoration: none;
+	border-radius: 8px;
+	transition: background var(--evo-transition);
+}
+body.dark-mode .evo-drawer-logout > a {
+	color: #e74c3c;
+}
+.evo-drawer-logout > a:hover,
+.evo-drawer-logout > a:active {
+	background: rgba(192, 57, 43, 0.12);
+}
+
+/* ==========================================================================
+   Scroll navigation buttons (goto-top / goto-bottom) — EVO skin only.
+   Rendered directly in <body>, outside #world, so overflow:hidden on #world
+   never clips them.  Each button is independently positioned: top-right and
+   bottom-right of the viewport.
+   ========================================================================== */
+.evo-scroll-btn {
+	position: fixed;
+	right: 1rem;
+	width: 36px;
+	height: 36px;
+	background: var(--evo-accent);
+	color: #fff;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	font-size: 11px;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: var(--evo-shadow-lg);
+	z-index: 9000;
+	transition: opacity 0.4s ease, transform 0.4s ease,
+	            background var(--evo-transition);
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0.7);
+}
+#evo-scroll-top {
+	top: 1rem;
+}
+#evo-scroll-bot {
+	bottom: 1rem;
+}
+.evo-scroll-btn.evo-scroll-visible {
+	opacity: 0.72;
+	pointer-events: all;
+	transform: scale(1);
+}
+/* Hover effect only on real pointer devices — prevents sticky :hover on touch */
+@media (hover: hover) and (pointer: fine) {
+	.evo-scroll-btn:hover {
+		background: var(--evo-accent-dark);
+		opacity: 1 !important;
+		transform: scale(1.12) !important;
+	}
+}
+/* Dark-mode tint */
+body.dark-mode .evo-scroll-btn {
+	background: var(--evo-accent-light);
+	color: #0f172a;
+}
+@media (hover: hover) and (pointer: fine) {
+	body.dark-mode .evo-scroll-btn:hover {
+		background: #ffffff;
+		color: var(--evo-accent-dark);
+	}
+}
+/* Mobile: avoid overlap with sticky header (top) and fixed bottom nav bar */
+@media (max-width: 600px) {
+	#evo-scroll-top {
+		top: 3.5rem; /* clears the ~42 px sticky header */
+	}
+	#evo-scroll-bot {
+		bottom: 4.5rem;
+	}
+	.evo-scroll-btn {
+		right: 0.6rem;
+	}
 }
