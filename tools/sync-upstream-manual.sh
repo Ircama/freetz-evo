@@ -180,6 +180,7 @@ else
     # here tells the resolver to always keep EVO's version without prompting.
     AUTO_OURS_FILES=(
         "docs/juis/README.md"
+        "docs/libs/README.md"
     )
     AUTO_RESOLVED=()
     while IFS= read -r line; do
