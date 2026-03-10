@@ -356,8 +356,8 @@ static void show_index(const char *script_name, const char *req_host) {
     }
     printf("</table>\n"
            "<p style=\"font-size:.85em;color:#666;margin-top:1em\">"
-           "<b>HTTPS proxy</b>: served through this gateway (suitable for PWA install).<br>"
-           "<b>HTTP direct</b>: opened directly on the local network (use for WebSocket apps, heavy UIs)."
+           "<b>HTTPS proxy</b>: served through this gateway (REST based approach).<br>"
+           "<b>HTTP direct</b>: opened directly on the local network (use for WebSocket, web streaming)."
            "</p>\n"
            "</body></html>\n");
     fflush(stdout);

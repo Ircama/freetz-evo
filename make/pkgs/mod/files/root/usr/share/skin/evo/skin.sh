@@ -530,8 +530,11 @@ skin_login_form() {
 <label class="evo-lglabel">$(lang de:"Benutzername" en:"Username" it:"Utente" fr:"Utilisateur" es:"Usuario")</label>
 <input type="text" class="evo-lginput" value="$MOD_HTTPD_USER" readonly>
 <label class="evo-lglabel">$(lang de:"Passwort" en:"Password" it:"Password" fr:"Mot de passe" es:"Contrase&ntilde;a")</label>
-<input type="password" id="inp_pw" class="evo-lginput" maxlength="45" autofocus autocomplete="current-password" onkeydown="if(event.key==='Enter')document.getElementById('id_go').click()">
-<button id="id_go" class="evo-lgbtn" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')">
+<div class="evo-lgpwwrap">
+<input type="password" id="inp_pw" class="evo-lginput evo-lgpwinput" maxlength="45" autofocus autocomplete="current-password" onkeydown="if(event.key==='Enter')document.getElementById('id_go').click()">
+<button type="button" class="evo-lgpweye" title="$(lang de:"Passwort anzeigen" en:"Show password" it:"Mostra password" fr:"Afficher le mot de passe" es:"Mostrar contrase&ntilde;a")" onclick="var f=document.getElementById('inp_pw');var s=this.querySelector('.evo-eye-show');var h=this.querySelector('.evo-eye-hide');if(f.type==='password'){f.type='text';s.style.display='none';h.style.display='block';this.title='$(lang de:"Passwort verbergen" en:"Hide password" it:"Nascondi password" fr:"Masquer le mot de passe" es:"Ocultar contrase&ntilde;a")';}else{f.type='password';s.style.display='block';h.style.display='none';this.title='$(lang de:"Passwort anzeigen" en:"Show password" it:"Mostra password" fr:"Afficher le mot de passe" es:"Mostrar contrase&ntilde;a")';}f.focus();"><svg class="evo-eye-show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="evo-eye-hide" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+</div>
+<button id="id_go" class="evo-lgbtn" onclick="var f=document.getElementById('inp_pw');f.type='password';location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(f.value,'$sid')">
 $(lang de:"Anmelden" en:"Sign in" it:"Accedi" fr:"Connexion" es:"Entrar")
 </button>
 $errmsg
@@ -549,6 +552,10 @@ $errmsg
 .evo-lgbtn{width:100%;padding:.65rem;background:var(--evo-accent);color:#fff;border:none;border-radius:var(--evo-radius);font-size:1rem;font-weight:600;cursor:pointer;margin-top:.25rem;transition:opacity var(--evo-transition)}
 .evo-lgbtn:hover{opacity:.85}
 .evo-lgerr{color:#f87171;font-size:.875rem;margin-top:.75rem;text-align:center}
+.evo-lgpwwrap{position:relative;margin-bottom:1rem}
+.evo-lgpwwrap .evo-lgpwinput{margin-bottom:0;padding-right:2.5rem}
+.evo-lgpweye{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;padding:.25rem;cursor:pointer;color:var(--evo-text-muted);display:flex;align-items:center;line-height:1}
+.evo-lgpweye:hover{color:var(--evo-text)}
 </style>
 EOF
 }

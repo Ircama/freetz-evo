@@ -4,7 +4,7 @@
 [ -z "$SENDSID" ] && . /usr/lib/libmodcgi.sh
 
 # Schicken wir dem Browser eine SessionID, gueltig fuer alle Pfade
-echo "Set-Cookie: SID=$SENDSID;Path=/;Max-Age=86400"
+printf "Set-Cookie: SID=$SENDSID;Path=/;Max-Age=86400;HttpOnly;SameSite=Strictict\r\n"
 
 cgi_begin "$(lang de:"Anmelden" en:"Login")"
 
@@ -18,7 +18,9 @@ if type skin_login_form >/dev/null 2>&1 && [ "$MOD_HTTPD_CUSTOM_LOGIN" = yes ]; 
 else
 	cat << LOGINEOF
 <br><br>
-$(lang de:"Passwort" en:"Password"): <input type="password" id="inp_pw" maxlength="45" onkeydown="if (event.keyCode == 13) document.getElementById('id_go').click()">
+$(lang de:"Passwort" en:"Password"):
+<input type="password" id="inp_pw" maxlength="45" onkeydown="if (event.keyCode == 13) document.getElementById('id_go').click()">
+<input type="button" value="$(lang de:"anzeigen" en:"show")" title="$(lang de:"Passwort anzeigen" en:"Show password")" style="padding:2px 6px;cursor:pointer;" onclick="var f=document.getElementById('inp_pw');var b=this;if(f.type==='password'){f.type='text';b.value='$(lang de:"verbergen" en:"hide")';b.title='$(lang de:"Passwort verbergen" en:"Hide password")';}else{f.type='password';b.value='$(lang de:"anzeigen" en:"show")';b.title='$(lang de:"Passwort anzeigen" en:"Show password")';}f.focus();">
 &nbsp;
 <input type="button" name="go" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&hash='+makemd5(document.getElementById('inp_pw').value,'$SENDSID')">
 LOGINEOF

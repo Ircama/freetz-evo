@@ -8,7 +8,7 @@ local idfile="/tmp/$SID.webcfg"
 if [ -z "$SID" -o $lastacc -gt $MOD_HTTPD_SESSIONTIMEOUT ]; then
     isauth=0;
     [ -n "$SID" -a -e $idfile ] && rm $idfile
-    SENDSID="$(echo -n "$(date +%s)" | md5sum | sed 's/[ ]*-//')"
+    SENDSID="$(cat /dev/urandom | tr -dc 'a-f0-9' | head -c 32)"
     return 1;
 else
     touch $idfile

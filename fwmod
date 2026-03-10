@@ -1655,7 +1655,7 @@ if [ "$DO_MOD" -gt 0 ]; then
 		if [ -f "$CONTENT_LUA" ]; then
 			echo1 "patching AVM webif for freetz_proxy (logo + userMenu)"
 			# Set the Fritz logo href (static fallback; JS override below handles click interception)
-			sed 's|href=" " id="avmLogo"|href="https://fritz.box/cgi-bin/freetz_proxy?service=freetz" id="avmLogo"|' -i "$CONTENT_LUA"
+			sed 's|href=" " id="avmLogo"|href="/cgi-bin/freetz_proxy?service=freetz" id="avmLogo"|' -i "$CONTENT_LUA"
 			# Inject script:
 			#  1. Override logo click (AVM JS intercepts it; use capture + stopImmediatePropagation)
 			#  2. Patch the existing #freetz userMenu entry href → freetz_proxy?service=freetz
@@ -1664,32 +1664,43 @@ if [ "$DO_MOD" -gt 0 ]; then
 			python3 - "$CONTENT_LUA" << 'FREETZ_PROXY_PY'
 import sys
 path = sys.argv[1]
-FP = 'https://fritz.box/cgi-bin/freetz_proxy?service=freetz'
+FP_PATH = '/cgi-bin/freetz_proxy?service=freetz'
 script = (
     '<script>(function(){'
-    'var FP="' + FP + '";'
-    # --- logo click override (runs in capture phase before AVM handler) ---
+    'var FP_PATH="' + FP_PATH + '";'
+    'function fp(){return window.location.origin+FP_PATH;}'
+    # --- logo click override (capture phase, before AVM handler) ---
     'document.addEventListener("DOMContentLoaded",function(){'
     'var logo=document.getElementById("avmLogo");'
     'if(logo){'
-    'logo.href=FP;'
+    'logo.href=FP_PATH;'
+    'logo.setAttribute("title","Freetz-EVO");'
     'logo.addEventListener("click",function(e){'
     'e.stopImmediatePropagation();e.preventDefault();'
-    'window.location.href=FP;'
+    'window.location.href=fp();'
     '},true);'
     '}'
     '});'
-    # --- userMenu: patch existing #freetz entry or insert a new one ---
+    # --- userMenu: patch #freetz or insert fallback; intercept click ---
+    'function addClickGuard(el){'
+    'el.addEventListener("click",function(e){'
+    'e.stopImmediatePropagation();e.preventDefault();'
+    'window.location.href=fp();'
+    '},true);'
+    '}'
     'function patchMenu(){'
     'var m=document.getElementById("userMenu");'
     'if(!m)return;'
     'var ex=m.querySelector("#freetz");'
-    'if(ex){ex.href=FP;return;}'
+    'if(ex){'
+    'if(!ex.dataset.fpPatched){ex.href=FP_PATH;addClickGuard(ex);ex.dataset.fpPatched="1";}'
+    'return;'
+    '}'
     # fallback: add a well-formatted item if #freetz is absent
     'if(m.querySelector("#freetz-menu-item"))return;'
     'var a=document.createElement("a");'
     'a.id="freetz-menu-item";'
-    'a.href=FP;'
+    'a.href=FP_PATH;'
     'a.className="menu_item h4 show";'
     'a.setAttribute("role","menuitem");'
     'a.style.cssText="order:5;";'
@@ -1704,6 +1715,7 @@ script = (
     'ic.textContent="fritzbox";'
     'a.appendChild(ic);'
     'a.appendChild(document.createTextNode("Freetz"));'
+    'addClickGuard(a);'
     'm.appendChild(a);'
     '}'
     'document.addEventListener("DOMContentLoaded",function(){'
@@ -1728,16 +1740,17 @@ FREETZ_PROXY_PY
 			python3 - "$LOGIN_LUA" << 'FREETZ_LOGIN_PY'
 import sys
 path = sys.argv[1]
-FP = 'https://fritz.box/cgi-bin/freetz_proxy?service=freetz'
+FP_PATH = '/cgi-bin/freetz_proxy?service=freetz'
 script = (
     '<script>(function(){'
-    'var FP="' + FP + '";'
+    'var FP_PATH="' + FP_PATH + '";'
+    'function fp(){return window.location.origin+FP_PATH;}'
     'document.addEventListener("DOMContentLoaded",function(){'
     'var box=document.querySelector(".logoBox");'
     'if(!box||box.tagName==="A")return;'
     'box.style.cursor="pointer";'
-    'box.setAttribute("title","Freetz");'
-    'box.addEventListener("click",function(){window.location.href=FP;});'
+    'box.setAttribute("title","Freetz-EVO");'
+    'box.addEventListener("click",function(){window.location.href=fp();});'
     '});'
     '})();</script>'
 )
