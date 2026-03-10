@@ -24,5 +24,7 @@ fi
 subpage="$(echo "${QUERY_STRING}" | sed -n 's/.*\?subpage=//p' | sed 's/^\/*//;s/&.*//;s/[^-_a-zA-Z0-9\.\/]//g;s/\.\.//g')"
 [ "$subpage" == "cgi-bin/login.cgi" -o "$subpage" == "cgi-bin/logout.cgi" ] && subpage=''
 . /usr/lib/libmodredir.sh
+# Re-assert cookie on the redirect response so the browser updates any stale SID
+printf "Set-Cookie: SID=$SID;Path=/;Max-Age=86400;HttpOnly;SameSite=Strict\r\n"
 redirect "/$subpage"
 
