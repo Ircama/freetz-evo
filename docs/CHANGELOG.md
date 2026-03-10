@@ -64,7 +64,7 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13
+    * ccache 4.13.1
 
   - Host tools:
     * file 5.47
@@ -79,6 +79,7 @@ Latest changes
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
+    * Whois 5.6.6
 
   - Libraries:
     * file 5.47

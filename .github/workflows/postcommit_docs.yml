@@ -1,10 +1,10 @@
-name: generate_docs
+name: postcommit_docs
 
 on:
   push:
     branches: [ master ]
     paths:
-      - '.github/workflows/generate_docs.yml'
+      - '.github/workflows/postcommit_docs.yml'
       - 'docs/generate.sh'
       - 'docs/*/generate.sh'
       - '!docs/stats/generate.sh'
@@ -15,12 +15,12 @@ on:
       - 'make/libs/*/*.mk'
       - 'config/ui/patches.in'
       - 'config/ui/firmware.in'
-      - 'docs/*/*.tpl'
       - 'docs/*/*.md'
       - 'docs/wiki/*/*.md'
       - 'docs/screenshots/*.png'
       - 'docs/screenshots/*.jpg'
       - 'docs/screenshots/*.gif'
+      - 'docs/prerequisites/*.tpl'
       - 'tools/.prerequisites/*'
   workflow_dispatch:
 

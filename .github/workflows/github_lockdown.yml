@@ -1,4 +1,4 @@
-name: task_lockdown
+name: github_lockdown
 
 on:
   issues:
@@ -27,3 +27,5 @@ jobs:
           issue-lock-reason: ''
           log-output: true
           process-only: 'issues'
+
+

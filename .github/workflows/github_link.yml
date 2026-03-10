@@ -1,4 +1,4 @@
-name: generate_link
+name: github_link
 
 on:
   push:

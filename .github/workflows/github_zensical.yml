@@ -1,19 +1,17 @@
-name: generate_zensical
+name: github_zensical
 
 on:
   workflow_run:
-    workflows: [ generate_docs,generate_stats,avm_ftp,avm_osp,avm_juis,avm_juis-recache ]
+    workflows: [ postcommit_docs,postcommit_stats,avm_ftp,avm_osp,avm_juis,avm_juis-recache ]
     types:
       - completed
   push:
     branches: [ master ]
     paths:
-      - '.github/workflows/generate_zensical.yml'
+      - '.github/workflows/github_zensical.yml'
       - '.github/zensical/*'
-      - 'docs/**/*.md'
-      - 'docs/**/*.jpg'
-      - 'docs/**/*.png'
-      - 'docs/**/*.gif'
+      - 'docs/extra.css'
+      - 'docs/*.md'
   workflow_dispatch:
 
 concurrency:
@@ -56,3 +54,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+

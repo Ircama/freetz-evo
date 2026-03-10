@@ -1112,7 +1112,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Wget 1.25.0 (binary only)](../../docs/make/wget.md)<a id='wget'></a>**<br>
     GNU Wget is a free software package for retrieving files using HTTP, HTTPS and FTP, the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals, etc.
 
-  * **[Whois 5.6.5 (binary only)](../../docs/make/whois.md)<a id='whois'></a>**<br>
+  * **[Whois 5.6.6 (binary only)](../../docs/make/whois.md)<a id='whois'></a>**<br>
     Whois - client for the whois directory service.
 
   * **[wireguard-tools 1.0.20250521](../../docs/make/wireguard.md)<a id='wireguard'></a>**<br>

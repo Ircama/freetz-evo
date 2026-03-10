@@ -98,10 +98,10 @@ detect_linux() {
 }
 
 install_requisite() {
-	local OSV="$1" ARG="$2"DOY="$3"
+	local OSV="$1" ARG="$2" DOY="$3"
 
 	[ -z "$OSV" ] && OSV="$(detect_linux)"
-	[ -z "$OSV" ] && echo 'Can not detect you Linux version, set it manually'&& list_linux  && exit 1
+	[ -z "$OSV" ] && echo 'Can not detect you Linux version, set it manually' && list_linux && exit 1
 
 	OSV="${OSV##*/}"
 	GENERIC="$(echo "$OSV" | sed 's/[0-9]*$//')"
