@@ -554,8 +554,7 @@ $errmsg
 .evo-lgerr{color:#f87171;font-size:.875rem;margin-top:.75rem;text-align:center}
 .evo-lgpwwrap{position:relative;margin-bottom:1rem}
 .evo-lgpwwrap .evo-lgpwinput{margin-bottom:0;padding-right:2.5rem}
-.evo-lgpweye{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;padding:.25rem;cursor:pointer;color:var(--evo-text-muted);display:flex;align-items:center;line-height:1}
-.evo-lgpweye:hover{color:var(--evo-text)}
+.evo-lgpweye{position:absolute;font-family: 'Courier New', monospace !important;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;padding:.25rem;cursor:pointer;color:var(--evo-text-muted);display:flex;align-items:center;line-height:1}
 </style>
 EOF
 }
