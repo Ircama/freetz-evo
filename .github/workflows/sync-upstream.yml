@@ -119,10 +119,13 @@ jobs:
             echo "✅ Merge succeeded without conflicts."
           else
             # ── Auto-resolve known classes of conflict ─────────────────────
-            # UU on AUTO_OURS_FILES: both bots updated the same auto-generated
+            # UU/AA on AUTO_OURS_FILES: both bots updated the same auto-generated
             # file (e.g. docs/juis/README.md).  Always keep EVO's version.
+            # Files deleted by us but re-added by upstream are also handled.
             AUTO_OURS_FILES=(
               "docs/juis/README.md"
+              "docs/libs/README.md"
+              ".github/workflows/github_ghpages.yml"
             )
             while IFS= read -r line; do
               xy="${line:0:2}"
@@ -131,12 +134,17 @@ jobs:
                 git add -- "$file"
               elif [ "$xy" = "DU" ]; then
                 git rm --quiet -- "$file"
-              elif [ "$xy" = "UU" ]; then
+              elif [ "$xy" = "UU" ] || [ "$xy" = "AA" ]; then
                 for pattern in "${AUTO_OURS_FILES[@]}"; do
                   if [[ "$file" == $pattern ]]; then
-                    git checkout --ours -- "$file"
-                    git add -- "$file"
-                    echo "⚙️  Auto-resolved (take-ours): $file"
+                    git checkout --ours -- "$file" 2>/dev/null || true
+                    if [ -f "$file" ]; then
+                      git add -- "$file"
+                      echo "⚙️  Auto-resolved (take-ours): $file"
+                    else
+                      git rm --quiet -- "$file" 2>/dev/null || true
+                      echo "⚙️  Auto-resolved (keep-deleted): $file"
+                    fi
                     break
                   fi
                 done
