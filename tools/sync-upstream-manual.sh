@@ -181,6 +181,8 @@ else
     AUTO_OURS_FILES=(
         "docs/juis/README.md"
         "docs/libs/README.md"
+        # upstream GH-Pages deploy workflow – not used in our fork, always keep deleted
+        ".github/workflows/github_ghpages.yml"
     )
     AUTO_RESOLVED=()
     while IFS= read -r line; do
@@ -194,13 +196,19 @@ else
             # We deleted, upstream modified → keep our deletion
             git rm --quiet -- "$file"
             AUTO_RESOLVED+=("keep-deletion: $file")
-        elif [ "$xy" = "UU" ]; then
-            # Both modified → keep ours if it's a known EVO-owned auto-generated file
+        elif [ "$xy" = "UU" ] || [ "$xy" = "AA" ]; then
+            # Both modified/added → keep ours if it's a known EVO-owned file
             for pattern in "${AUTO_OURS_FILES[@]}"; do
                 if [[ "$file" == $pattern ]]; then
-                    git checkout --ours -- "$file"
-                    git add -- "$file"
-                    AUTO_RESOLVED+=("take-ours (auto-generated): $file")
+                    git checkout --ours -- "$file" 2>/dev/null || true
+                    if [ -f "$file" ]; then
+                        git add -- "$file"
+                        AUTO_RESOLVED+=("take-ours (auto-generated): $file")
+                    else
+                        # Our version is a deletion → keep the file removed
+                        git rm --quiet -- "$file" 2>/dev/null || true
+                        AUTO_RESOLVED+=("keep-deleted: $file")
+                    fi
                     break
                 fi
             done

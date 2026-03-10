@@ -3470,5 +3470,33 @@
     "timestamp": "2026-03-06T11:16:21Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:show": {
+    "original": "show",
+    "translation": "mostra",
+    "timestamp": "2026-03-10T01:27:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show password": {
+    "original": "Show password",
+    "translation": "Mostra password",
+    "timestamp": "2026-03-10T01:27:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:hide": {
+    "original": "hide",
+    "translation": "nascondi",
+    "timestamp": "2026-03-10T01:27:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Hide password": {
+    "original": "Hide password",
+    "translation": "Nascondi la password",
+    "timestamp": "2026-03-10T01:27:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
