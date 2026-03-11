@@ -9,9 +9,9 @@ on:
     branches: [ master ]
     paths:
       - '.github/workflows/github_zensical.yml'
-      - '.github/zensical/*'
+      - '.github/zensical/**'
       - 'docs/extra.css'
-      - 'docs/*.md'
+      - 'docs/**'
   workflow_dispatch:
 
 concurrency:

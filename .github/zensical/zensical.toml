@@ -1,13 +1,13 @@
 [project]
-site_name = "Freetz-NG Documentation"
-site_description = "Freetz-NG firmware modification for ​AVM devices like FRITZ!Box"
-site_author = "Freetz-NG"
-site_url = "https://freetz-ng.github.io/"
+site_name = "Freetz-EVO Documentation"
+site_description = "Freetz-EVO firmware modification for ​AVM devices like FRITZ!Box"
+site_author = "Freetz-EVO"
+site_url = "https://ircama.github.io/freetz-evo/"
 site_dir = "site"
-repo_url = "https://github.com/freetz-ng/freetz-ng"
-edit_uri = "../freetz-ng/blob/master/docs/"
+repo_url = "https://github.com/Ircama/freetz-evo"
+edit_uri = "../freetz-evo/blob/master/docs/"
 docs_dir = "docs"
-copyright = '&copy <span>Freetz-NG</span><br/><span>Licensed under <a href="https://github.com/Freetz-NG/freetz-ng/raw/refs/heads/master/COPYING" target="_blank" rel="noopener noreferrer">GPL-2.0</a></span><br/>'
+copyright = '&copy <span>Freetz-EVO</span><br/><span>Licensed under <a href="https://github.com/Ircama/freetz-evo/raw/refs/heads/master/COPYING" target="_blank" rel="noopener noreferrer">GPL-2.0</a></span><br/>'
 extra_css = ["extra.css"]
 
 [project.extra]
@@ -16,8 +16,8 @@ generator = false
 [project.theme]
 variant = "classic"
 
-favicon = "screenshots/000-TAG_freetz-ng.png"
-logo = "screenshots/000-TAG_freetz-ng.png"
+favicon = "screenshots/000-TAG_freetz-evo.png"
+logo = "screenshots/000-TAG_freetz-evo.png"
 language = "en"
 
 features = [
@@ -53,7 +53,7 @@ toggle.name = "Switch to light mode"
 
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
-link = "https://github.com/freetz-ng"
+link = "https://github.com/Ircama/freetz-evo"
 name = "GitHub"
 
 [project.markdown_extensions.tables]

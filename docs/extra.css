@@ -36,13 +36,13 @@
 }
 
 [data-md-color-scheme="default"] {
-    --code-color: #532ba8;
+    --code-color: #0891b2;        /* teal — matches colorscheme-modern.css .part1 */
     --table-foreground: var(--md-default-bg-color); /* table header backgrounds */
     --table-background: var(--md-default-fg-color--light); /* table header (text) */
 }
 
 [data-md-color-scheme="slate"] {
-    --code-color: #a47df8;
+    --code-color: #06b6d4;        /* bright cyan — readable on dark slate */
     --md-typeset-a-color: #7c90ff; /* links */
     --table-foreground: #a3acdf; /* table header (text) */
     --table-background: #272e53; /* table header backgrounds */
