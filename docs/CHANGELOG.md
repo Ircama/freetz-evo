@@ -73,6 +73,12 @@ Latest changes
 
   - AVM sources:
 
+  - Scripts:
+    * zensical_httpserver.sh - run local zensical http server to develop docs
+
+  - Patches:
+    * Still are some patches for Fritzos 8.2 not adapted for Fritzos 8.2x
+
   - Packages:
     * BIND 9.11.37/9.20.20
     * ImageMagick 7.1.0-62/7.1.2-16

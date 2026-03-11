@@ -80,9 +80,9 @@ EOF
 dltc() {
 	local options="$(echo $* | sed 's/  */ /g')"
 	echo "Building toolchains for ${options// /, }"
+	make distclean >/dev/null
+	make kconfig-host-conf >/dev/null
 	miniconfig $options > .config
-	make distclean
-	make kconfig-host-conf
 	make olddefconfig
 	cp -a .config tc-${options// /_}.conf
 	make KTV=${SUFFIX} TTV=${SUFFIX} toolchain 2>&1 | tee tc-${options// /_}.make

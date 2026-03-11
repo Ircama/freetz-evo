@@ -6,7 +6,7 @@ DIR="$(readlink -f ${0%/*}/..)"
 if [ "${1}" != "${1#r}" ]; then
 	[ -d $DIR/.svn ] && REPO="$(svn info --show-item repos-root-url)"
 	[ -e $DIR/.git ] && REPO="$(git config --get remote.origin.url)"
-	echo "$REPO" | sed 's,.*/,,;s/\.git$//'
+	echo "${REPO,,}" | sed 's,.*/,,;s/\.git$//'
 	exit
 fi
 
