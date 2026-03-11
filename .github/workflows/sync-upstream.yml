@@ -123,6 +123,7 @@ jobs:
             # file (e.g. docs/juis/README.md).  Always keep EVO's version.
             # Files deleted by us but re-added by upstream are also handled.
             AUTO_OURS_FILES=(
+              "README.md"                             # Fully rewritten for Freetz-EVO branding
               "docs/juis/README.md"
               "docs/libs/README.md"
               ".github/workflows/github_ghpages.yml"

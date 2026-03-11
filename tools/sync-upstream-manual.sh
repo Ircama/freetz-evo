@@ -179,6 +179,7 @@ else
     # a UU conflict on every sync where both bots have run.  Adding the file
     # here tells the resolver to always keep EVO's version without prompting.
     AUTO_OURS_FILES=(
+        "README.md"                             # Fully rewritten for Freetz-EVO branding
         "docs/juis/README.md"
         "docs/libs/README.md"
         # upstream GH-Pages deploy workflow – not used in our fork, always keep deleted
