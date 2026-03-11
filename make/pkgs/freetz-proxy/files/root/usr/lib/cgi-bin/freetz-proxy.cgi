@@ -61,6 +61,48 @@ lang de:"&#x270F; Konfiguration bearbeiten" \
      en:"&#x270F; Edit configuration"
 echo '</a></p>'
 
+# ── Security options ──────────────────────────────────────────────────
+echo '<h2>'
+lang de:"Sicherheitsoptionen" en:"Security options"
+echo '</h2>'
+
+# Parse @key=value directives from the active config
+BLOCK_INTERNET=no
+NO_INTERNET_COOKIE=yes
+NO_COOKIE=no
+if [ -n "$ACTIVE_CFG" ]; then
+	while IFS= read -r cfgline; do
+		case "$cfgline" in
+			'@block_internet=yes')    BLOCK_INTERNET=yes ;;
+			'@block_internet=no')     BLOCK_INTERNET=no ;;
+			'@no_internet_cookie=yes') NO_INTERNET_COOKIE=yes ;;
+			'@no_internet_cookie=no')  NO_INTERNET_COOKIE=no ;;
+			'@no_cookie=yes')         NO_COOKIE=yes ;;
+			'@no_cookie=no')          NO_COOKIE=no ;;
+		esac
+	done < "$ACTIVE_CFG"
+fi
+
+echo '<table style="border-collapse:collapse">'
+for _row in \
+	"block_internet|$BLOCK_INTERNET|$(lang de:"Zugriff aus dem Internet sperren (*.myfritz.net → 403)" en:"Block access from internet (*.myfritz.net → 403)")" \
+	"no_internet_cookie|$NO_INTERNET_COOKIE|$(lang de:"Sitzungs-Cookie bei Internetzugriff (Max-Age/Expires entfernen)" en:"Session-only cookies from internet (strip Max-Age/Expires)")" \
+	"no_cookie|$NO_COOKIE|$(lang de:"Sitzungs-Cookie immer (Max-Age/Expires immer entfernen)" en:"Session-only cookies always (strip Max-Age/Expires always)")"; do
+	_key="${_row%%|*}"; _tmp="${_row#*|}"; _val="${_tmp%%|*}"; _desc="${_tmp#*|}"
+	if [ "$_val" = "yes" ]; then
+		_icon="&#x2705;"; _label="$(lang de:"ja" en:"yes")"
+	else
+		_icon="&#x26AA;"; _label="$(lang de:"nein" en:"no")"
+	fi
+	echo "<tr><td style=\"padding:2px 6px\">${_icon}</td>"
+	echo "<td style=\"padding:2px 8px\"><code>@${_key}=${_val}</code></td>"
+	echo "<td style=\"padding:2px 4px;color:#555;font-size:.9em\">${_desc}</td></tr>"
+done
+echo '</table>'
+echo "<p style=\"font-size:.85em;color:#777\">$(lang \
+	de:"Diese Optionen werden in der Konfigurationsdatei als <tt>@schlüssel=ja|nein</tt> gespeichert." \
+	en:"These options are stored in the config file as <tt>@key=yes|no</tt> directives.")</p>"
+
 # ── Format help ───────────────────────────────────────────────────────
 echo '<h2>'
 lang de:"Konfigurationsformat" en:"Configuration format"

@@ -24,8 +24,7 @@ _cgi_option() {
 		width)
 			cgi_width_at_least "$value" ;;
 		help)
-			local _BNT="$(sed -rn 's/.*-(ng[^-]*)$/\1/p' /etc/.freetz-version)"
-			export _CGI_HELP="https://github.com/Ircama/freetz-evo/blob/${_BNT:-master}/make/pkgs/README.md#$(echo $value | sed 's,.*/,,;s,_,-,g;s,#.*,,')"
+			export _CGI_HELP="https://ircama.github.io/freetz-evo/make/$(echo $value | sed 's,.*/,,;s,_,-,g;s,#.*,,')"
 			;;
 		*)
 			cgi_error "cgi: Unknown option '$opt'"

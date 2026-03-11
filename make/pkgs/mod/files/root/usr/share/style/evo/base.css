@@ -1396,3 +1396,76 @@ body.dark-mode .evo-scroll-btn {
 		right: 0.6rem;
 	}
 }
+
+/* ─── Mobile nav order popup (long-press on bottom bar items) ─── */
+#evo-nav-order-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	z-index: 1200;
+	touch-action: none;
+}
+#evo-nav-order-popup {
+	position: fixed;
+	bottom: 70px; /* above the 58px bottom bar */
+	left: 50%;
+	transform: translateX(-50%);
+	width: min(300px, calc(100vw - 2rem));
+	background: var(--evo-surface);
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius-lg, 12px);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.32);
+	z-index: 1201;
+	padding: 1rem;
+	text-align: center;
+}
+.evo-nop-title {
+	font-weight: 600;
+	font-size: 1rem;
+	margin-bottom: .2rem;
+	color: var(--evo-text);
+}
+.evo-nop-desc {
+	font-size: .78rem;
+	color: var(--evo-text-muted);
+	margin-bottom: .75rem;
+}
+.evo-nop-opts {
+	display: flex;
+	gap: .45rem;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-bottom: .75rem;
+}
+.evo-nop-btn {
+	padding: .4rem .75rem;
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius, 6px);
+	background: var(--evo-bg);
+	color: var(--evo-text);
+	font-size: .9rem;
+	cursor: pointer;
+	min-width: 2.4rem;
+	transition: background var(--evo-transition), border-color var(--evo-transition);
+}
+.evo-nop-btn.evo-nop-active {
+	background: var(--evo-accent);
+	border-color: var(--evo-accent);
+	color: #fff;
+}
+.evo-nop-reset-btn {
+	display: block;
+	width: 100%;
+	background: none;
+	border: 1px solid var(--evo-border);
+	border-radius: var(--evo-radius, 6px);
+	color: var(--evo-text-muted);
+	font-size: .8rem;
+	padding: .35rem .75rem;
+	cursor: pointer;
+	transition: color var(--evo-transition), border-color var(--evo-transition);
+}
+.evo-nop-reset-btn:hover {
+	color: var(--evo-text);
+	border-color: var(--evo-text-muted);
+}

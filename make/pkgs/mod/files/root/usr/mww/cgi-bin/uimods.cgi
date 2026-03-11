@@ -37,10 +37,8 @@ uimods_table() {
 table_begin() {
 	local modul="$1"
 	sec_begin "$modul"
-	echo "<table>"
-#	echo "<th align='left'>Key</th>"
-#	echo "<th align='left'>Value</th>"
-#	echo "<th align='left'>Change</th>"
+	echo "<style>table.uimods-tbl{width:100%;border-collapse:collapse;table-layout:auto}table.uimods-tbl td{padding:4px 6px;word-break:break-word;vertical-align:middle}table.uimods-tbl td:first-child{min-width:120px;font-weight:bold}table.uimods-tbl input[type=text]{width:100%;max-width:280px;box-sizing:border-box}@media(max-width:600px){table.uimods-tbl,table.uimods-tbl tbody,table.uimods-tbl tr{display:block;width:100%}table.uimods-tbl tr{padding:4px 0}table.uimods-tbl tr.uimods-desc-row{border-bottom:1px solid #ccc;padding-top:0}table.uimods-tbl td{display:block;width:100%!important;box-sizing:border-box}table.uimods-tbl input[type=text]{max-width:100%}}</style>"
+	echo "<table class='uimods-tbl'>"
 }
 
 table_head() {
@@ -68,21 +66,21 @@ table_line() {
 	echo "<tr>"
 	echo "<form action='/cgi-bin/exec.cgi/uimods' method='post'>"
 
-	echo "<td width='400'><b>$short</b></td>"
+	echo "<td><b>$short</b></td>"
 
-	echo "<td width='150'><input type='text' list='$listid' name='val' id='$htmlid' value='$saved' style='$style' /> <datalist id='$listid'>"
+	echo "<td><input type='text' list='$listid' name='val' id='$htmlid' value='$saved' style='$style' /> <datalist id='$listid'>"
 	for x in $(echo "$items" | sed 's/|/\n/g' | sort -u); do echo "<option value='$x'>"; done
 	echo "</datalist></td>";
 
 	echo "<input type='hidden' name='mod' value='$modul'>"
 	echo "<input type='hidden' name='key' value='$short'>"
 
-	echo "<td width='100'><center> <input type='submit' name='cmd' value='&nbsp;$(lang de:"&auml;ndern" en:"change")&nbsp;' $disabled> </center></td>"
+	echo "<td><center> <input type='submit' name='cmd' value='&nbsp;$(lang de:"&auml;ndern" en:"change")&nbsp;' $disabled> </center></td>"
 
 	echo "</form>"
 	echo "</tr>"
 
-	echo "<tr><td colspan='2'><font size=-2><i>${desc:+&num; $desc}</i></font></td></tr>"
+	echo "<tr class='uimods-desc-row'><td colspan='2'><font size=-2><i>${desc:+&num; $desc}</i></font></td></tr>"
 }
 
 table_end() {

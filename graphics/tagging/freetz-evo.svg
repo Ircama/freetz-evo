@@ -18,7 +18,9 @@
       text-anchor="middle"
       fill="#000"
       stroke="#fff"
-      stroke-width="0.1"
+      stroke-width="1.5"
+      stroke-miterlimit="10"
+      paint-order="stroke fill"
     >EVO</text>
   </g>
 </svg>

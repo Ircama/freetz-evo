@@ -48,14 +48,16 @@ cat << EOF
 var elNewlogin  = document.getElementById('httpd_newlogin_yes');
 var elCustom    = document.getElementById('httpd_custom_login_yes');
 var elTimeout   = document.getElementById('httpd_sessiontimeout');
-$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true; elCustom.disabled = true;")
+var elNoCookie  = document.getElementById('httpd_no_cookie_yes');
+$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true; elCustom.disabled = true; elNoCookie.disabled = true;")
 elCustom.onchange = function() {
-  if (this.checked) { elNewlogin.checked = true; elTimeout.disabled = false; elCustom.disabled = false; }
+  if (this.checked) { elNewlogin.checked = true; elTimeout.disabled = false; elCustom.disabled = false; elNoCookie.disabled = false; }
 };
 elNewlogin.onchange = function() {
   elTimeout.disabled = !this.checked;
   elCustom.disabled  = !this.checked;
-  if (!this.checked) elCustom.checked = false;
+  elNoCookie.disabled = !this.checked;
+  if (!this.checked) { elCustom.checked = false; elNoCookie.checked = false; }
 };
 </script>
 EOF
@@ -66,14 +68,28 @@ cat << EOF
 <script>
 var elNewlogin = document.getElementById('httpd_newlogin_yes');
 var elTimeout  = document.getElementById('httpd_sessiontimeout');
-$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true;")
+var elNoCookie = document.getElementById('httpd_no_cookie_yes');
+$([ "$MOD_HTTPD_NEWLOGIN" = yes ] || echo "elTimeout.disabled = true; elNoCookie.disabled = true;")
 elNewlogin.onchange = function() {
   elTimeout.disabled = !this.checked;
+  elNoCookie.disabled = !this.checked;
+  if (!this.checked) elNoCookie.checked = false;
 };
 </script>
 EOF
 
 fi
+
+echo "<p>"
+cgi_print_checkbox "httpd_no_cookie" "$MOD_HTTPD_NO_COOKIE" \
+	"$(lang de:"Sitzungs-Cookie nach dem Login nicht dauerhaft speichern (Cookie verfällt beim Schließen des Browsers)" \
+	       en:"Do not persist session cookie after login (cookie expires when browser closes)")"
+cat << EOF
+<p style="margin-left:1.5em;font-size:0.85em;color:var(--evo-text-muted,#666)">$(lang \
+  de:"Ohne diese Option wird das Sitzungs-Cookie im Browser mit einer Lebensdauer entsprechend dem oben konfigurierten Inaktivitäts-Timeout gespeichert und überlebt Neustarts des Browsers. Mit dieser Option wird das Cookie beim Schließen des Browsers gelöscht und eine erneute Anmeldung ist erforderlich." \
+  en:"Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.")</p>
+EOF
+echo "</p>"
 
 sec_end
 sec_begin "$(lang de:"Erweiterte Einstellungen" en:"Advanced settings")"

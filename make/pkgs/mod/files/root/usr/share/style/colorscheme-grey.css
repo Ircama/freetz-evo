@@ -7,7 +7,10 @@ table.bar.ro .part1	{ background-color: #404040; color: #ffffff; }
 .mounted .rw .path	{ color: #808080; }
 .mounted .ro .path	{ color: #000000; }
 
-.mounted .button[value=R] { border-color: #404040; color: #404040; }
-.mounted .ro .button[value=R] { background-color: #404040; color: white; }
-.mounted .button[value=W] { border-color: #808080; color: #808080; }
-.mounted .rw .button[value=W] { background-color: #808080; color: white; }
+/* R = dark grey (read-only/locked), W = medium grey (read-write) */
+.mounted .button[value=R]                      { border-color: #374151; color: #374151; background-color: #d1d5db; }
+.mounted .ro .button[value=R]                  { background-color: #374151; color: white; border-color: #374151; }
+.mounted .button[value=R]:hover:not([disabled]){ background-color: #6b7280; color: white; }
+.mounted .button[value=W]                      { border-color: #6b7280; color: #6b7280; background-color: #e5e7eb; }
+.mounted .rw .button[value=W]                  { background-color: #6b7280; color: white; border-color: #6b7280; }
+.mounted .button[value=W]:hover:not([disabled]){ background-color: #9ca3af; color: white; }

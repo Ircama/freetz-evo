@@ -3498,5 +3498,75 @@
     "timestamp": "2026-03-10T01:27:33Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Read-Only": {
+    "original": "Read-Only",
+    "translation": "Di sola lettura",
+    "timestamp": "2026-03-10T08:11:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Read-Write": {
+    "original": "Read-Write",
+    "translation": "Lettura-Scrittura",
+    "timestamp": "2026-03-10T08:11:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Position in mobile navigation": {
+    "original": "Position in mobile navigation",
+    "translation": "Posizione nella navigazione mobile",
+    "timestamp": "2026-03-11T04:37:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto": {
+    "original": "Auto",
+    "translation": "Auto",
+    "timestamp": "2026-03-11T04:37:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Reset all positions": {
+    "original": "Reset all positions",
+    "translation": "Azzeramento di tutte le posizioni",
+    "timestamp": "2026-03-11T04:37:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Do not persist session cookie after login (cookie expires when browser closes)": {
+    "original": "Do not persist session cookie after login (cookie expires when browser closes)",
+    "translation": "Non persistere il cookie di sessione dopo il login (il cookie scade alla chiusura del browser)",
+    "timestamp": "2026-03-11T08:00:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.": {
+    "original": "Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.",
+    "translation": "Senza questa opzione, il cookie di sessione viene memorizzato nel browser con una durata corrispondente al timeout di inattività della sessione configurato in precedenza, sopravvivendo ai riavvii del browser. Con questa opzione attivata, il cookie viene eliminato alla chiusura del browser ed è necessario un nuovo login per ogni nuova sessione del browser.",
+    "timestamp": "2026-03-11T08:00:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Left": {
+    "original": "Left",
+    "translation": "Sinistra",
+    "timestamp": "2026-03-11T08:01:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Center": {
+    "original": "Center",
+    "translation": "Centro",
+    "timestamp": "2026-03-11T08:02:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Right": {
+    "original": "Right",
+    "translation": "Destra",
+    "timestamp": "2026-03-11T08:02:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

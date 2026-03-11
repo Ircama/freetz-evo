@@ -3,8 +3,16 @@
 # keine Schleife, wenn wir schon libmodcgi.sh hatten ;-)
 [ -z "$SENDSID" ] && . /usr/lib/libmodcgi.sh
 
-# Schicken wir dem Browser eine SessionID, gueltig fuer alle Pfade
-printf "Set-Cookie: SID=$SENDSID;Path=/;Max-Age=86400;HttpOnly;SameSite=Strictict\r\n"
+# Load webcfg settings for cookie policy
+[ -r /mod/etc/conf/mod.cfg ] && . /mod/etc/conf/mod.cfg
+
+# Send session cookie — omit Max-Age when MOD_HTTPD_NO_COOKIE=yes so the
+# cookie is a proper session cookie (expires when browser closes).
+if [ "$MOD_HTTPD_NO_COOKIE" = yes ]; then
+	printf "Set-Cookie: SID=$SENDSID;Path=/;HttpOnly;SameSite=Strict\r\n"
+else
+	printf "Set-Cookie: SID=$SENDSID;Path=/;Max-Age=86400;HttpOnly;SameSite=Strict\r\n"
+fi
 
 cgi_begin "$(lang de:"Anmelden" en:"Login")"
 

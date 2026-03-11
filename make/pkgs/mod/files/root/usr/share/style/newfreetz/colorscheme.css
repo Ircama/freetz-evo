@@ -16,10 +16,13 @@ table.bar.ro .part1	{
 .mounted .rw .path	{ color: #339900; }
 .mounted .ro .path	{ color: #3366FF; }
 
-.mounted .button[value=R] { border-color:#3366FF; color: #3366FF; }
-.mounted .ro .button[value=R] { background-color:#3366FF; color: white; }
-.mounted .button[value=W] { border-color:#33CC33; color: #33CC33; }
-.mounted .rw .button[value=W] { background-color:#33CC33; color: white; }
+/* R = amber/orange (read-only), W = green (read-write) */
+.mounted .button[value=R]                      { border-color: #c05c00; color: #c05c00; background-color: #fde8b4; }
+.mounted .ro .button[value=R]                  { background-color: #c05c00; color: white; border-color: #c05c00; }
+.mounted .button[value=R]:hover:not([disabled]){ background-color: #e07000; color: white; }
+.mounted .button[value=W]                      { border-color: #059669; color: #059669; background-color: #bbf7d0; }
+.mounted .rw .button[value=W]                  { background-color: #059669; color: white; border-color: #059669; }
+.mounted .button[value=W]:hover:not([disabled]){ background-color: #10b981; color: white; }
 
 
 table.bar.rw .part0, table.bar.br .part0, table.bar.ro .part0 {

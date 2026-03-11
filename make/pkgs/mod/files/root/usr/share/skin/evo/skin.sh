@@ -192,6 +192,63 @@ function evoItemFreq(li, freq) {
   if (!a) return 0;
   try { return freq[a.pathname] || 0; } catch(e) { return 0; }
 }
+/* Nav order: manual position overrides (localStorage['evo-nav-order'] = {path: 1-based-pos}) */
+function evoGetNavOrder() {
+  try { return JSON.parse(localStorage.getItem('evo-nav-order') || '{}'); } catch(e) { return {}; }
+}
+function evoSetNavOrder(path, pos) {
+  try {
+    var o = evoGetNavOrder();
+    if (pos === null) delete o[path]; else o[path] = pos;
+    localStorage.setItem('evo-nav-order', JSON.stringify(o));
+  } catch(e) {}
+}
+function evoResetNavOrder() {
+  try { localStorage.removeItem('evo-nav-order'); } catch(e) {}
+}
+function evoShowOrderPopup(li, maxSlots) {
+  var a = li.querySelector(':scope > a') || li.querySelector('a');
+  var path = a ? a.pathname : '';
+  var label = a ? (a.textContent || '').trim() : '';
+  var navOrder = evoGetNavOrder();
+  var curPos = navOrder[path];
+  var ex = document.getElementById('evo-nav-order-popup');
+  if (ex) ex.remove();
+  var ov = document.getElementById('evo-nav-order-overlay');
+  if (ov) ov.remove();
+  ov = document.createElement('div');
+  ov.id = 'evo-nav-order-overlay';
+  document.body.appendChild(ov);
+  var popup = document.createElement('div');
+  popup.id = 'evo-nav-order-popup';
+  var html = '<div class="evo-nop-title">' + label + '</div>';
+  html += '<div class="evo-nop-desc">$(lang de:"Position in der mobilen Navigation" en:"Position in mobile navigation")</div>';
+  html += '<div class="evo-nop-opts">';
+  html += '<button class="evo-nop-btn' + (curPos === undefined ? ' evo-nop-active' : '') + '" data-pos="auto">$(lang de:"Auto" en:"Auto")</button>';
+  var _posLabels3 = ['$(lang de:"Links" en:"Left")', '$(lang de:"Mitte" en:"Center")', '$(lang de:"Rechts" en:"Right")'];
+  for (var _bi = 1; _bi <= maxSlots; _bi++) {
+    var _lbl = (maxSlots === 3) ? _posLabels3[_bi - 1] : String(_bi);
+    html += '<button class="evo-nop-btn' + (curPos === _bi ? ' evo-nop-active' : '') + '" data-pos="' + _bi + '">' + _lbl + '</button>';
+  }
+  html += '</div>';
+  html += '<button class="evo-nop-reset-btn">$(lang de:"Alle Positionen zur\xfccksetzen" en:"Reset all positions")</button>';
+  popup.innerHTML = html;
+  document.body.appendChild(popup);
+  popup.querySelectorAll('.evo-nop-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var pos = btn.getAttribute('data-pos');
+      if (pos === 'auto') evoSetNavOrder(path, null); else evoSetNavOrder(path, parseInt(pos));
+      ov.remove(); popup.remove();
+      evoSetupMobileMenu();
+    });
+  });
+  popup.querySelector('.evo-nop-reset-btn').addEventListener('click', function() {
+    evoResetNavOrder();
+    ov.remove(); popup.remove();
+    evoSetupMobileMenu();
+  });
+  ov.addEventListener('click', function() { ov.remove(); popup.remove(); });
+}
 function evoSetupDesktopLogout(mainMenu) {
   /* Find logout li by href */
   var logoutLi = null;
@@ -315,6 +372,7 @@ function evoSetupMobileMenu() {
       return true;
     });
     var freq = evoGetNavFreq();
+    var navOrder = evoGetNavOrder();
     var freqSlots = maxVisible;
     /* always keep the currently active item visible */
     var activeLi = null;
@@ -322,19 +380,57 @@ function evoSetupMobileMenu() {
       var a = li.querySelector(':scope > a') || li.querySelector('a');
       if (a && (a.classList.contains('active') || li.classList.contains('open'))) activeLi = li;
     });
-    /* rank items by visit frequency descending */
-    var ranked = items.slice().sort(function(a, b){
-      return evoItemFreq(b, freq) - evoItemFreq(a, freq);
+    /* rank items: manual position overrides frequency ranking */
+    var manualItems = [], autoItems = [];
+    items.forEach(function(li) {
+      var a = li.querySelector(':scope > a') || li.querySelector('a');
+      var pos = a ? navOrder[a.pathname] : undefined;
+      if (pos !== undefined && pos >= 1 && pos <= freqSlots) manualItems.push([pos, li]);
+      else autoItems.push(li);
     });
-    var visible = ranked.slice(0, freqSlots);
-    if (activeLi && visible.indexOf(activeLi) === -1) {
-      visible[visible.length - 1] = activeLi;
+    manualItems.sort(function(a, b) { return a[0] - b[0]; });
+    autoItems.sort(function(a, b) { return evoItemFreq(b, freq) - evoItemFreq(a, freq); });
+    /* fill slots: manual first, then auto by frequency */
+    var visible = new Array(freqSlots).fill(null);
+    manualItems.forEach(function(pair) { var s = pair[0] - 1; if (s < freqSlots) visible[s] = pair[1]; });
+    var _ai = 0;
+    for (var _si = 0; _si < freqSlots; _si++) {
+      if (visible[_si] === null) {
+        while (_ai < autoItems.length && visible.indexOf(autoItems[_ai]) !== -1) _ai++;
+        if (_ai < autoItems.length) visible[_si] = autoItems[_ai++];
+      }
     }
-    /* apply visibility + CSS order (rank 0 = most visited = leftmost) */
+    /* always keep active item visible (replace last non-manual slot) */
+    if (activeLi && visible.indexOf(activeLi) === -1) {
+      var lastAuto = -1;
+      for (var _s2 = freqSlots - 1; _s2 >= 0; _s2--) {
+        var _la = visible[_s2] ? (visible[_s2].querySelector(':scope > a') || visible[_s2].querySelector('a')) : null;
+        if (_la && navOrder[_la.pathname] === undefined) { lastAuto = _s2; break; }
+      }
+      if (lastAuto >= 0) visible[lastAuto] = activeLi; else visible[freqSlots - 1] = activeLi;
+    }
+    /* apply visibility + CSS order (index 0 = leftmost) */
     items.forEach(function(li){
       var rank = visible.indexOf(li);
       li.classList.toggle('evo-mobile-hidden', rank === -1);
       li.style.order = rank >= 0 ? rank : '';
+    });
+    /* long-press on bar items opens order popup (600 ms threshold) */
+    items.forEach(function(li) {
+      if (li._evoLpAttached) return;
+      li._evoLpAttached = true;
+      var _lpt = null;
+      function _lpCancel() { if (_lpt) { clearTimeout(_lpt); _lpt = null; } }
+      li.addEventListener('touchstart', function(e) {
+        _lpt = setTimeout(function() {
+          _lpt = null; e.preventDefault();
+          evoShowOrderPopup(li, maxVisible);
+        }, 600);
+      }, {passive: false});
+      li.addEventListener('touchmove',   _lpCancel);
+      li.addEventListener('touchend',    _lpCancel);
+      li.addEventListener('touchcancel', _lpCancel);
+      li.addEventListener('contextmenu', function(e) { e.preventDefault(); });
     });
     /* Logout hidden from bottom bar — appears only in drawer */
     if (logoutLi) {

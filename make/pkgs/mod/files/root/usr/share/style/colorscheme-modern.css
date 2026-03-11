@@ -32,8 +32,15 @@ table.bar.ro .part1 {
 .mounted .rw .path { color: #0e7490; }
 .mounted .ro .path { color: #475569; }
 
-/* --- R/W toggle buttons on mounted filesystems --- */
-.mounted .button[value=R]    { border-color: #475569; color: #475569; }
-.mounted .ro .button[value=R]{ background-color: #475569; color: white; }
-.mounted .button[value=W]    { border-color: #0891b2; color: #0891b2; }
-.mounted .rw .button[value=W]{ background-color: #0891b2; color: white; }
+/* --- R/W toggle buttons on mounted filesystems ---
+   Filled  = current state (button is disabled)
+   Outline = available action (button is enabled, clickable)
+   R = amber/orange (read-only / locked)
+   W = teal/cyan   (read-write / writable)
+   -------------------------------------------------------- */
+.mounted .button[value=R]                      { border-color: #d97706; color: #c05c00; background-color: #fde8b4; }
+.mounted .ro .button[value=R]                  { background-color: #b45309; color: white; border-color: #b45309; }
+.mounted .button[value=R]:hover:not([disabled]){ background-color: #d97706; color: white; }
+.mounted .button[value=W]                      { border-color: #0891b2; color: #077a99; background-color: #bae6fd; }
+.mounted .rw .button[value=W]                  { background-color: #0891b2; color: white; border-color: #0891b2; }
+.mounted .button[value=W]:hover:not([disabled]){ background-color: #06b6d4; color: white; }

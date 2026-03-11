@@ -80,8 +80,8 @@ print_mp() {
 	if [ "$outsize" != "small" ]; then
 		echo "<form class='btn' action='$formact' method='post' onsubmit='return confirm(\"$(lang de:"Ausf&uuml;hren" en:"Execute")?\")' >"
 		echo "<input type='hidden' name='path' value='$(html "$path")'>"
-		echo "<input class='button' type='submit' name='cmd' value='R' $rdisabled>"
-		echo "<input class='button' type='submit' name='cmd' value='W' $wdisabled>"
+		echo "<input class='button' type='submit' name='cmd' value='R' $rdisabled title='$(lang de:"Schreibschutz (Read-Only)" en:"Read-Only")'>"
+		echo "<input class='button' type='submit' name='cmd' value='W' $wdisabled title='$(lang de:"Lesen + Schreiben (Read-Write)" en:"Read-Write")'>"
 		$actions && echo "<input class='button' type='submit' name='cmd' value='&nbsp;U&nbsp;'>"
 		echo '</form>'
 	fi

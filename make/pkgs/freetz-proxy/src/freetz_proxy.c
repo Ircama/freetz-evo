@@ -76,6 +76,18 @@ static void dbg_open(void) {
 static char g_body_in [BODY_IN_MAX  + 1];
 static char g_body_out[BODY_OUT_MAX + 1];
 
+/* Method-tunnel buffer: when AVM websrv rejects POST from internet,
+ * the client encodes the POST body in _body= and signals _method=POST.
+ * The proxy decodes it here and feeds it to the upstream instead of stdin.
+ * Note: AVM websrv limits QUERY_STRING to ~8 KB; the URL-encoded body can
+ * be up to 3× the decoded size, so 4 KB decoded fits comfortably within
+ * that limit and covers all typical Freetz config form submissions. */
+#define TUNNEL_BODY_MAX (4 * 1024)
+static char g_tunnel_body[TUNNEL_BODY_MAX + 1];
+static int  g_tunnel_body_len = 0;
+static char g_tunnel_clen_str[32];   /* Content-Length string for do_proxy */
+static char g_tunnel_ctype_str[128]; /* Content-Type  string for do_proxy */
+
 /* ------------------------------------------------------------------
  * Service registry
  * ------------------------------------------------------------------ */
@@ -87,6 +99,36 @@ typedef struct {
 } Service;
 static Service services[MAX_SERVICES];
 static int     n_services = 0;
+
+/* ------------------------------------------------------------------
+ * Security options loaded from @key=value directives in the config.
+ * Defaults: no_internet_cookie=1 (strip Max-Age when from internet).
+ * ------------------------------------------------------------------ */
+static int g_no_cookie          = 0;  /* @no_cookie=yes: session-only cookies always */
+static int g_no_internet_cookie = 1;  /* @no_internet_cookie=yes (default): session-only when from internet */
+static int g_block_internet     = 0;  /* @block_internet=yes: return 403 from internet */
+static int g_is_internet        = 0;  /* set in main() based on SERVER_NAME */
+
+/* Configurable list of hostname substrings that indicate internet access.
+ * Default: ".myfritz.net". Override via @internet_domains= in config. */
+#define MAX_INTERNET_PATTERNS  16
+#define MAX_PATTERN_LEN        128
+static char g_internet_patterns[MAX_INTERNET_PATTERNS][MAX_PATTERN_LEN];
+static int  g_n_internet_patterns = 0;
+
+static void init_internet_patterns(void) {
+    strncpy(g_internet_patterns[0], ".myfritz.net", MAX_PATTERN_LEN - 1);
+    g_internet_patterns[0][MAX_PATTERN_LEN - 1] = '\0';
+    g_n_internet_patterns = 1;
+}
+
+static int is_internet_host(const char *server_name) {
+    if (!server_name || !*server_name) return 0;
+    for (int i = 0; i < g_n_internet_patterns; i++)
+        if (strstr(server_name, g_internet_patterns[i]) != NULL)
+            return 1;
+    return 0;
+}
 
 /* ------------------------------------------------------------------
  * Buffered socket reader
@@ -178,6 +220,31 @@ static int get_freetz_port(void) {
 }
 
 /* ------------------------------------------------------------------
+ * Strip Max-Age=... and Expires=... from a Set-Cookie response header,
+ * converting it to a session-only cookie.  SameSite, HttpOnly, Path,
+ * Domain and other attributes are preserved unchanged.
+ * ------------------------------------------------------------------ */
+static void strip_cookie_maxage(const char *in, char *out, int outsz) {
+    const char *p = in;
+    int written = 0;
+    while (*p && written < outsz - 1) {
+        if (*p == ';') {
+            const char *look = p + 1;
+            while (*look == ' ' || *look == '\t') look++;
+            if (strncasecmp(look, "max-age=", 8) == 0 ||
+                strncasecmp(look, "expires=", 8) == 0) {
+                /* skip the whole attribute (up to next ';' or end) */
+                while (*look && *look != ';') look++;
+                p = look;
+                continue;
+            }
+        }
+        out[written++] = *p++;
+    }
+    out[written] = '\0';
+}
+
+/* ------------------------------------------------------------------
  * Load service config into services[].
  * Tries /tmp/flash/mod/freetz-proxy.cfg first (NAND flash, editable
  * via the Freetz web UI), then falls back to /mod/etc/conf/freetz-proxy.cfg.
@@ -203,6 +270,42 @@ static void load_config(void) {
         char *eq = strchr(p, '=');
         if (!eq) continue;
 
+        /* Handle security/option directives: @key=value
+         * These configure proxy behaviour but are not service entries. */
+        if (*p == '@') {
+            const char *key = p + 1;
+            int klen = (int)(eq - key);
+            const char *val = eq + 1;
+            int bval = (strcmp(val, "yes") == 0) ? 1 : 0;
+            if      (klen == 9  && strncmp(key, "no_cookie",          9)  == 0)
+                g_no_cookie = bval;
+            else if (klen == 18 && strncmp(key, "no_internet_cookie", 18) == 0)
+                g_no_internet_cookie = bval;
+            else if (klen == 14 && strncmp(key, "block_internet",    14) == 0)
+                g_block_internet = bval;
+            else if (klen == 16 && strncmp(key, "internet_domains", 16) == 0) {
+                /* comma-separated list of substrings that indicate internet access */
+                g_n_internet_patterns = 0;
+                char _dtmp[256];
+                strncpy(_dtmp, val, sizeof(_dtmp) - 1);
+                _dtmp[sizeof(_dtmp) - 1] = '\0';
+                char *_tok = strtok(_dtmp, ",");
+                while (_tok && g_n_internet_patterns < MAX_INTERNET_PATTERNS) {
+                    while (*_tok == ' ' || *_tok == '\t') _tok++;
+                    char *_end = _tok + strlen(_tok);
+                    while (_end > _tok && (*(_end-1) == ' ' || *(_end-1) == '\t')) _end--;
+                    int _plen = (int)(_end - _tok);
+                    if (_plen > 0 && _plen < MAX_PATTERN_LEN) {
+                        memcpy(g_internet_patterns[g_n_internet_patterns], _tok, (size_t)_plen);
+                        g_internet_patterns[g_n_internet_patterns][_plen] = '\0';
+                        g_n_internet_patterns++;
+                    }
+                    _tok = strtok(NULL, ",");
+                }
+            }
+            continue; /* not a service entry */
+        }
+
         int nlen = (int)(eq - p);
         if (nlen <= 0 || nlen >= MAX_NAME_LEN) continue;
 
@@ -216,7 +319,9 @@ static void load_config(void) {
         } else {
             port = atoi(eq + 1);
         }
-        if (port <= 0 || port > 65535) continue;
+        if (port < 0 || port > 65535) continue;
+        /* port == 0 is a shorthand for "use the Freetz HTTP port" */
+        if (port == 0) port = get_freetz_port();
 
         memcpy(services[n_services].name, p, (size_t)nlen);
         services[n_services].name[nlen] = '\0';
@@ -1313,6 +1418,8 @@ static void do_proxy(int upstream_port, const char *upstream_path,
     extern char **environ;
     char tmp[BUF_SIZE];
     int  n;
+    /* Strip Max-Age/Expires from Set-Cookie when no_cookie or (no_internet_cookie && from internet) */
+    int strip_cookies = g_no_cookie || (g_no_internet_cookie && g_is_internet);
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) { cgi_error(502, "Bad Gateway", "Cannot create socket"); return; }
@@ -1407,13 +1514,18 @@ static void do_proxy(int upstream_port, const char *upstream_path,
 
     if (content_len && content_len[0]) {
         long body_len = atol(content_len);
-        char buf[BUF_SIZE];
-        while (body_len > 0) {
-            int to_read = (body_len < BUF_SIZE) ? (int)body_len : BUF_SIZE;
-            int r = (int)fread(buf, 1, (size_t)to_read, stdin);
-            if (r <= 0) break;
-            write_all(sock, buf, r);
-            body_len -= r;
+        if (g_tunnel_body_len > 0) {
+            /* Method-tunneled body: send from buffer, not stdin */
+            write_all(sock, g_tunnel_body, (int)g_tunnel_body_len);
+        } else {
+            char buf[BUF_SIZE];
+            while (body_len > 0) {
+                int to_read = (body_len < BUF_SIZE) ? (int)body_len : BUF_SIZE;
+                int r = (int)fread(buf, 1, (size_t)to_read, stdin);
+                if (r <= 0) break;
+                write_all(sock, buf, r);
+                body_len -= r;
+            }
         }
     }
 
@@ -1540,7 +1652,16 @@ static void do_proxy(int upstream_port, const char *upstream_path,
         if (strncasecmp(line, "Content-Security-Policy:", 24) == 0) continue;
         if (strncasecmp(line, "Content-Security-Policy-Report-Only:", 36) == 0) continue;
 
-        if (strncasecmp(line, "Set-Cookie:", 11) == 0) DBG("  set-cookie: [%s]", line);
+        if (strncasecmp(line, "Set-Cookie:", 11) == 0) {
+            DBG("  set-cookie: [%s]", line);
+            if (strip_cookies) {
+                char stripped_sc[BUF_SIZE];
+                strip_cookie_maxage(line, stripped_sc, (int)sizeof(stripped_sc));
+                DBG("  set-cookie stripped: [%s]", stripped_sc);
+                printf("%s\r\n", stripped_sc);
+                continue;
+            }
+        }
         printf("%s\r\n", line);
     }
 
@@ -1668,7 +1789,7 @@ static int qs_get(const char *qs, const char *key, char *out, int outsz) {
     return 0;
 }
 
-/* Build upstream query string: strip 'service' and 'path' params */
+/* Build upstream query string: strip proxy-internal params */
 static void qs_strip_proxy_params(const char *qs, char *out, int outsz) {
     out[0] = '\0';
     int outlen = 0;
@@ -1677,7 +1798,10 @@ static void qs_strip_proxy_params(const char *qs, char *out, int outsz) {
         const char *amp = strchr(p, '&');
         int seglen = amp ? (int)(amp - p) : (int)strlen(p);
         int skip = (strncmp(p, "service=", 8) == 0 ||
-                    strncmp(p, "path=",    5) == 0);
+                    strncmp(p, "path=",    5) == 0 ||
+                    strncmp(p, "_method=", 8) == 0 ||
+                    strncmp(p, "_body=",   6) == 0 ||
+                    strncmp(p, "_ctype=",  7) == 0);
         if (!skip && outlen + seglen + 2 < outsz) {
             if (outlen > 0) out[outlen++] = '&';
             memcpy(out + outlen, p, (size_t)seglen);
@@ -1712,6 +1836,42 @@ int main(void) {
 
     const char *req_host = http_host ? http_host : server_name;
 
+    /* Method tunnel: when AVM websrv rejects POST from internet it only
+     * passes GET requests.  Clients encode the real method in _method=,
+     * the URL-encoded body in _body=, and the content-type in _ctype=.
+     * Decode them here so do_proxy forwards the right method+body upstream. */
+    {
+        char _m[16] = "", _ct[128] = "";
+        if (qs_get(query_str, "_method", _m, (int)sizeof(_m)) && _m[0]) {
+            /* Only allow recognised methods to prevent injection */
+            if (strcmp(_m, "POST")   == 0 ||
+                strcmp(_m, "PUT")    == 0 ||
+                strcmp(_m, "PATCH")  == 0 ||
+                strcmp(_m, "DELETE") == 0) {
+                /* Use a static buffer for the overridden method name */
+                static char _method_buf[16];
+                strncpy(_method_buf, _m, sizeof(_method_buf) - 1);
+                _method_buf[sizeof(_method_buf) - 1] = '\0';
+                method = _method_buf;
+                /* Decode body directly into global buffer (avoids large stack alloc) */
+                qs_get(query_str, "_body", g_tunnel_body, TUNNEL_BODY_MAX + 1);
+                g_tunnel_body_len = (int)strlen(g_tunnel_body);
+                snprintf(g_tunnel_clen_str, sizeof(g_tunnel_clen_str),
+                         "%d", g_tunnel_body_len);
+                content_len = g_tunnel_clen_str;
+                /* Content-Type (default to form-encoded if omitted) */
+                if (!qs_get(query_str, "_ctype", _ct, (int)sizeof(_ct)) || !_ct[0])
+                    strncpy(_ct, "application/x-www-form-urlencoded",
+                            sizeof(_ct) - 1);
+                strncpy(g_tunnel_ctype_str, _ct, sizeof(g_tunnel_ctype_str) - 1);
+                g_tunnel_ctype_str[sizeof(g_tunnel_ctype_str) - 1] = '\0';
+                content_type = g_tunnel_ctype_str;
+                DBG("  method-tunnel: %s body_len=%d ctype=%s",
+                    method, g_tunnel_body_len, content_type);
+            }
+        }
+    }
+
     DBG(">>> REQUEST: %s QUERY=%s PATH_INFO=%s HOST=%s",
         method, query_str, path_info, req_host ? req_host : "-");
     /* Log all incoming HTTP headers */
@@ -1723,8 +1883,18 @@ int main(void) {
     }
 
     /* Load service registry */
+    init_internet_patterns();
     load_config();
     ensure_freetz_service();
+
+    /* Detect internet access: SERVER_NAME matches any configured internet domain pattern */
+    g_is_internet = is_internet_host(server_name);
+
+    /* Block proxy from internet if configured */
+    if (g_block_internet && g_is_internet) {
+        cgi_error(403, "Forbidden", "Proxy access from internet is disabled");
+        return 0;
+    }
 
     /*
      * Routing via query string (AVM websrv does not route PATH_INFO sub-paths):
