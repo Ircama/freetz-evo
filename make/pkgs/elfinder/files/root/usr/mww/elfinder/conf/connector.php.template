@@ -1,0 +1,189 @@
+<?php
+/**
+ * elFinder PHP connector for Freetz-EVO / FritzBox
+ *
+ * This file is GENERATED from connector.php.template by elfinder.save.
+ * Do not edit it manually – it will be overwritten when you save the
+ * configuration in the Freetz web interface.
+ *
+ * Generated: <?php echo date('Y-m-d H:i:s'); ?>
+ *
+ * Template tokens replaced by elfinder.save:
+ *   %%ELFINDER_BASEDIR%%       - root directory exposed to elFinder
+ *   %%ELFINDER_URL%%           - URL prefix for the root directory
+ *   %%ELFINDER_MAX_UPLOAD_SIZE%% - maximum upload file size (PHP format)
+ *   %%ELFINDER_UPLOAD_ALLOW%%  - allowed MIME types (comma-separated)
+ *   %%ELFINDER_AUTH_ENABLED%%  - yes/no: require httpd-webcfg auth
+ *   %%ELFINDER_THUMBPATH%%     - thumbnail cache directory (empty = auto)
+ *   %%ELFINDER_UNRAR_PATH%%    - absolute path to unrar binary
+ *   %%ELFINDER_7Z_PATH%%       - absolute path to 7za / 7z binary
+ *   %%ELFINDER_CONVERT_PATH%%  - absolute path to ImageMagick convert
+ *   %%ELFINDER_MEDIAINFO_PATH%% - absolute path to mediainfo binary
+ */
+
+error_reporting(0); // Set E_ALL for debugging
+
+// ---------------------------------------------------------------------------
+// External tool paths (FritzBox / BusyBox compatible)
+// ---------------------------------------------------------------------------
+// Standard POSIX archive tools are available via BusyBox on FritzBox.
+define('ELFINDER_TAR_PATH',   '/bin/tar');
+define('ELFINDER_GZIP_PATH',  '/bin/gzip');
+define('ELFINDER_BZIP2_PATH', '/bin/bzip2');
+
+// Optional tools – provided by Freetz packages if installed.
+$_elfinder_unrar    = '%%ELFINDER_UNRAR_PATH%%';
+$_elfinder_7z       = '%%ELFINDER_7Z_PATH%%';
+$_elfinder_convert  = '%%ELFINDER_CONVERT_PATH%%';
+$_elfinder_mediainfo = '%%ELFINDER_MEDIAINFO_PATH%%';
+
+if ($_elfinder_unrar    !== '' && is_executable($_elfinder_unrar))    define('ELFINDER_UNRAR_PATH',   $_elfinder_unrar);
+if ($_elfinder_7z       !== '' && is_executable($_elfinder_7z))       define('ELFINDER_7Z_PATH',      $_elfinder_7z);
+if ($_elfinder_convert  !== '' && is_executable($_elfinder_convert))   define('ELFINDER_CONVERT_PATH', $_elfinder_convert);
+
+// ---------------------------------------------------------------------------
+// elFinder autoload
+// ---------------------------------------------------------------------------
+is_readable('./vendor/autoload.php') && require './vendor/autoload.php';
+require './autoload.php';
+
+// ---------------------------------------------------------------------------
+// Network volume drivers
+// ---------------------------------------------------------------------------
+// FTP volume driver – enabled when FREETZ_PACKAGE_ELFINDER_WITH_FTP_VOLUME=y
+// %%ELFINDER_FTP_NETDRIVER_BEGIN%%
+elFinder::$netDrivers['ftp'] = 'FTP';
+// %%ELFINDER_FTP_NETDRIVER_END%%
+
+// ---------------------------------------------------------------------------
+// Access control callback
+// Hides and locks files/folders whose name starts with '.' (except root).
+// ---------------------------------------------------------------------------
+function access($attr, $path, $data, $volume, $isDir, $relpath) {
+    $basename = basename($path);
+    return $basename[0] === '.'
+        && strlen($relpath) !== 1
+        ? !($attr == 'read' || $attr == 'write')
+        :  null;
+}
+
+// ---------------------------------------------------------------------------
+// Upload MIME-type filter
+// ---------------------------------------------------------------------------
+$_uploadAllowStr = '%%ELFINDER_UPLOAD_ALLOW%%';
+$_uploadAllow    = array_filter(array_map('trim', explode(',', $_uploadAllowStr)));
+if (empty($_uploadAllow)) {
+    // Fallback: allow common safe types
+    $_uploadAllow = array(
+        'image/', 'audio/', 'video/',
+        'text/plain', 'application/pdf',
+        'application/zip', 'application/x-gzip',
+        'application/x-bzip2', 'application/x-7z-compressed',
+        'application/x-rar-compressed', 'application/octet-stream',
+    );
+}
+
+// ---------------------------------------------------------------------------
+// PHP upload size settings
+// ---------------------------------------------------------------------------
+$_maxSize = '%%ELFINDER_MAX_UPLOAD_SIZE%%';
+if ($_maxSize !== '') {
+    @ini_set('upload_max_filesize', $_maxSize);
+    @ini_set('post_max_size',       $_maxSize);
+}
+
+// ---------------------------------------------------------------------------
+// Paths
+// ---------------------------------------------------------------------------
+$_basedir  = '%%ELFINDER_BASEDIR%%';
+if ($_basedir === '' || !is_dir($_basedir)) {
+    // Fall back to a safe writable directory
+    $_basedir = '/var/media/ftp';
+}
+// Ensure trailing slash
+$_basedir = rtrim($_basedir, '/');
+
+// URL for the root volume (served by httpd-webcfg from /var/media/ftp)
+$_url = '%%ELFINDER_URL%%';
+if ($_url === '') {
+    // Try to guess from the mount point
+    // Files on /var/media/ftp/* are served by lighttpd at /files/ by default.
+    // Adjust to your httpd-webcfg configuration if different.
+    $_url = '/';
+}
+
+// Thumbnail directory
+$_tmbPath = '%%ELFINDER_THUMBPATH%%';
+$_tmbURL  = '';
+if ($_tmbPath === '') {
+    $_tmbPath = $_basedir . '/.tmb';
+    $_tmbURL  = $_url . '.tmb/';
+}
+if (!is_dir($_tmbPath)) {
+    @mkdir($_tmbPath, 0777, true);
+}
+
+// Trash directory
+$_trashPath = $_basedir . '/.trash';
+if (!is_dir($_trashPath)) {
+    @mkdir($_trashPath, 0777, true);
+}
+
+// ---------------------------------------------------------------------------
+// MediaInfo integration
+// ---------------------------------------------------------------------------
+$_mediaInfoBin = $_elfinder_mediainfo;
+$_mediaInfoPlugin = array();
+if ($_mediaInfoBin !== '' && is_executable($_mediaInfoBin)) {
+    $_mediaInfoPlugin = array(
+        'MediaInfo' => array(
+            'enable'      => true,
+            'mediaInfoCmd' => $_mediaInfoBin,
+        ),
+    );
+}
+
+// ---------------------------------------------------------------------------
+// elFinder connector options
+// ---------------------------------------------------------------------------
+$opts = array(
+    'roots' => array(
+        // ----- Main volume (LocalFileSystem) --------------------------------
+        array(
+            'driver'        => 'LocalFileSystem',
+            'path'          => $_basedir . '/',
+            'URL'           => $_url,
+            'trashHash'     => 't1_Lw',
+            'winHashFix'    => DIRECTORY_SEPARATOR !== '/',
+            'tmbPath'       => $_tmbPath,
+            'tmbURL'        => $_tmbURL,
+            'uploadDeny'    => array('all'),
+            'uploadAllow'   => $_uploadAllow,
+            'uploadOrder'   => array('deny', 'allow'),
+            'accessControl' => 'access',
+            'attributes'    => array(
+                // Hide Linux trash / hidden directories
+                array('pattern' => '/^\\./', 'read' => false, 'write' => false, 'hidden' => true, 'locked' => false),
+            ),
+            'plugins'       => $_mediaInfoPlugin,
+        ),
+        // ----- Trash volume -------------------------------------------------
+        array(
+            'id'            => '1',
+            'driver'        => 'Trash',
+            'path'          => $_trashPath . '/',
+            'tmbURL'        => $_tmbURL,
+            'winHashFix'    => DIRECTORY_SEPARATOR !== '/',
+            'uploadDeny'    => array('all'),
+            'uploadAllow'   => $_uploadAllow,
+            'uploadOrder'   => array('deny', 'allow'),
+            'accessControl' => 'access',
+        ),
+    ),
+);
+
+// ---------------------------------------------------------------------------
+// Run connector
+// ---------------------------------------------------------------------------
+$connector = new elFinderConnector(new elFinder($opts));
+$connector->run();

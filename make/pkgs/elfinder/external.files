@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_ELFINDER" == "y" ] && EXTERNAL_FILES+=" /usr/mww/elfinder"
+[ "$EXTERNAL_FREETZ_PACKAGE_ELFINDER" != "y" ] && [ "$FREETZ_PACKAGE_ELFINDER" == "y" ] && EXTERNAL_FILES+=" /usr/mww/elfinder/conf"

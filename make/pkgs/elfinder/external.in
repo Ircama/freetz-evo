@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_ELFINDER
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_ELFINDER
+	bool "elFinder web file manager"
+	default n
+	help
+		Externalizes the complete elFinder web application
+		to the external package directory.
+
+		Externalized path: /usr/mww/elfinder

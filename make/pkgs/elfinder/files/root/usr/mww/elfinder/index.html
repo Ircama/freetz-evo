@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+	<title>elFinder – FritzBox File Manager</title>
+
+	<!-- elFinder CSS -->
+	<link rel="stylesheet" type="text/css" href="css/elfinder.full.css">
+	<link rel="stylesheet" type="text/css" href="css/theme.css">
+
+	<!-- Optional 3rd-party theme: loaded dynamically based on ELFINDER_THEME config -->
+	<link rel="stylesheet" type="text/css" id="elfinder-theme-css" href="">
+
+	<!-- jQuery and jQuery UI (required by elFinder) -->
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+
+	<!-- elFinder core -->
+	<script src="js/elfinder.full.js"></script>
+
+	<!-- i18n: Italian (default) – loaded dynamically below based on browser language -->
+
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			overflow: hidden;
+		}
+		#elfinder-container {
+			height: 100vh;
+		}
+	</style>
+</head>
+<body>
+	<div id="elfinder-container"></div>
+
+	<script>
+	// ---------------------------------------------------------------------------
+	// Detect browser language and map to elFinder i18n file
+	// ---------------------------------------------------------------------------
+	var langMap = {
+		'it': 'elfinder.it',
+		'de': 'elfinder.de',
+		'fr': 'elfinder.fr',
+		'es': 'elfinder.es',
+		'pt': 'elfinder.pt_BR',
+		'ru': 'elfinder.ru',
+		'zh': 'elfinder.zh_CN',
+		'ja': 'elfinder.ja',
+		'ko': 'elfinder.ko',
+		'nl': 'elfinder.nl',
+		'pl': 'elfinder.pl',
+		'cs': 'elfinder.cs',
+		'hu': 'elfinder.hu',
+		'ro': 'elfinder.ro',
+		'sv': 'elfinder.sv',
+		'tr': 'elfinder.tr',
+	};
+	var browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
+	var i18nFile = langMap[browserLang] || null;
+
+	// ---------------------------------------------------------------------------
+	// Dynamically load i18n file then initialise elFinder
+	// ---------------------------------------------------------------------------
+	function initElFinder() {
+		$('#elfinder-container').elfinder({
+			url : 'php/connector.php',
+			lang: browserLang in langMap ? browserLang : 'en',
+			// Show toolbar with common commands
+			toolbar: [
+				['back', 'forward'],
+				['reload'],
+				['home', 'up'],
+				['mkdir', 'mkfile', 'upload'],
+				['open', 'download', 'getfile'],
+				['info', 'quicklook'],
+				['copy', 'cut', 'paste', 'rm', 'duplicate', 'rename', 'edit', 'resize'],
+				['extract', 'archive'],
+				['search'],
+				['view'],
+				['help']
+			],
+			commands: [
+				'open', 'reload', 'home', 'up', 'back', 'forward', 'getfile',
+				'quicklook', 'download', 'rm', 'duplicate', 'rename', 'mkdir',
+				'mkfile', 'upload', 'copy', 'cut', 'paste', 'edit', 'extract',
+				'archive', 'search', 'info', 'view', 'resize', 'sort', 'netmount',
+				'help', 'fullscreen'
+			],
+			contextmenu: {
+				// Navbar (folder tree) context menu
+				navbar: ['open', 'copy', 'cut', 'paste', 'duplicate', '|', 'rm', '|', 'rename', '|', 'info'],
+				// Workzone (right pane) context menu
+				cwd:    ['reload', 'back', '|', 'mkdir', 'mkfile', 'upload', '|', 'paste', '|', 'sort', '|', 'info'],
+				// File/folder specific context menu
+				files:  ['getfile', '|', 'open', 'quicklook', '|', 'download', '|', 'copy', 'cut', 'paste', 'duplicate', '|', 'rm', '|', 'edit', 'rename', 'resize', '|', 'archive', 'extract', '|', 'info']
+			},
+			// Bootup callback
+			bootCallback: function(fm, extraObj) {
+				var title = document.title;
+				fm.bind('open', function() {
+					var cwd  = fm.cwd();
+					var path = cwd ? (fm.path(cwd.hash) || '') : '';
+					document.title = path ? path + ' – ' + title : title;
+				}).bind('destroy', function() {
+					document.title = title;
+				});
+			}
+		});
+	}
+
+	// -------------------------------------------------------------------------
+	// Apply active theme from ELFINDER_THEME config (stored in connector meta)
+	// -------------------------------------------------------------------------
+	function applyTheme(themeName) {
+		if (!themeName)return;
+		// Sanitize: only alphanumeric, hyphens, underscores
+		if (192.168.178.1[a-zA-Z0-9_-]+$/.test(themeName)) return;
+		var el = document.getElementById('elfinder-theme-css');
+		if (el) {
+			el.href = 'css/themes/' + themeName + '/css/theme.css';
+		}
+	}
+
+	function bootWithI18n() {
+		if (i18nFile) {
+			var script = document.createElement('script');
+			script.src = 'js/i18n/' + i18nFile + '.js';
+			script.onload  = initElFinder;
+			script.onerror = initElFinder;
+			document.head.appendChild(script);
+		} else {
+			initElFinder();
+		}
+	}
+
+	$(document).ready(function() {
+		// Read active theme from Freetz CGI config endpoint
+		var cfgUrl = '/cgi-bin/conf/elfinder?ajax=1&action=get_status';
+		fetch(cfgUrl)
+			.then(function(r) { return r.text(); })
+			.then(function(text) {
+				var marker = 'Content-Type: application/json';
+				var pos = text.indexOf(marker);
+				if (pos !== -1) {
+					var first = text.indexOf('{', pos + marker.length);
+					if (first !== -1) {
+						var depth = 0, end = -1;
+						for (var i = first; i < text.length; i++) {
+							if (text[i] === '{') depth++;
+							else if (text[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+						}
+						if (end !== -1) {
+							try {
+								var data = JSON.parse(text.substring(first, end));
+								if (data && data.theme) { applyTheme(data.theme); }
+							} catch(e) {}
+						}
+					}
+				}
+			})
+			.catch(function() {})
+			.finally(bootWithI18n);
+	});
+	</script>
+</body>
+</html>

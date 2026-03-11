@@ -1,0 +1,26 @@
+# This file is sourced by /usr/lib/mww/page.d/conf/save_body.sh
+
+pkg_pre_save() {
+	# Validation only - framework saves config AFTER this hook.
+	# Do NOT read POST data here (already consumed by framework).
+	# Do NOT update runtime files here (config not saved yet).
+	:
+}
+
+pkg_apply_save() {
+	# Called AFTER framework has saved /mod/etc/conf/elfinder.cfg.
+	# Re-source to get persisted values.
+	[ -r /mod/etc/conf/elfinder.cfg ] && . /mod/etc/conf/elfinder.cfg
+
+	# connector.php reads /mod/etc/conf/elfinder.cfg at PHP runtime;
+	# no file generation is needed here, so this save hook works equally
+	# well with read-only squashfs (non-externalized) and writable external
+	# storage.
+
+	# Ensure writable runtime directories exist under the configured basedir.
+	BASEDIR="${ELFINDER_BASEDIR:-/var/media/ftp}"
+	THUMBDIR="${ELFINDER_THUMBPATH:-${BASEDIR}/.tmb}"
+	[ -n "$THUMBDIR" ] && mkdir -p "$THUMBDIR" 2>/dev/null && chmod a+rwx "$THUMBDIR" 2>/dev/null
+
+	return 0
+}

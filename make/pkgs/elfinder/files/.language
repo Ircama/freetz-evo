@@ -1,0 +1,8 @@
+languages
+{ de en it }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/elfinder.cgi
+}

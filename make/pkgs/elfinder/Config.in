@@ -1,0 +1,151 @@
+menuconfig FREETZ_PACKAGE_ELFINDER
+	bool "elFinder web file manager"
+	depends on FREETZ_PACKAGE_PHP || FREETZ_PACKAGE_PHP5
+	# PHP 8.x required extensions
+	select FREETZ_PACKAGE_PHP_cgi                if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_SESSION       if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_MBSTRING      if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_ZLIB          if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_CURL          if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_CTYPE         if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_FILEINFO      if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_GD            if FREETZ_PACKAGE_PHP
+	# PHP5 5.6.40 required extensions
+	select FREETZ_PACKAGE_PHP5_cgi               if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_SESSION      if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_MBSTRING     if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_ZLIB         if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_CURL         if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_CTYPE        if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_FILEINFO     if FREETZ_PACKAGE_PHP5
+	default n
+	help
+		Installs elFinder 2.x web-based file manager to /usr/mww/elfinder.
+		elFinder is a full-featured file manager for the web browser, inspired
+		by the Finder application in Mac OS X.  It provides a familiar drag-and-
+		drop interface for managing files on the FritzBox storage.
+
+		Version: 2.1.66
+
+		This option requires either PHP (8.x) or PHP5 (5.6.40).
+		If not available, go to "Packages -> Web interface & server"
+		and enable either "PHP" or "PHP5" first.
+
+		PHP extensions enabled automatically:
+		  - CGI support
+		  - SESSION (required for login/state management)
+		  - MBSTRING (multi-byte string handling for filenames)
+		  - ZLIB (archive support)
+		  - CURL (network volume mounts)
+		  - CTYPE (character type checking)
+		  - FILEINFO (MIME type detection)
+		  - GD (thumbnail generation)
+
+		Accessible at: http://fritz.box:81/elfinder/
+		Configure at:  http://fritz.box:81/cgi-bin/conf/elfinder
+
+		Note: League\\Flysystem PHP driver integration is available in the
+		elFinder PHP connector (elFinderFlysystemGoogleDriveNetmount.php is
+		included).  Installing the full league/flysystem library via Composer
+		on an external USB drive allows additional cloud volume drivers.
+		The FritzBox has no Java runtime, so the efw3.X JSP integration
+		(https://github.com/efwGrp/efw3.X) is not applicable here.
+
+if FREETZ_PACKAGE_ELFINDER
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_MEDIAINFO
+		bool "Enable MediaInfo (detailed media file information)"
+		select FREETZ_PACKAGE_MEDIAINFO
+		default n
+		help
+			Integrates MediaInfo with elFinder for displaying detailed information
+			about audio, video and image files (codec, bitrate, duration,
+			resolution, etc.).
+
+			Requires the MediaInfo package to be enabled.
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_UNRAR
+		bool "Enable RAR support (RAR archive extraction)"
+		select FREETZ_PACKAGE_UNRAR
+		default n
+		help
+			Enables extraction of RAR archives (.rar) via unrar.
+			Required to work with RAR archives in the file manager.
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_P7ZIP
+		bool "Enable 7-Zip support (7z, zip, tar archives)"
+		select FREETZ_PACKAGE_P7ZIP
+		default n
+		help
+			Enables support for 7-Zip archives (.7z) and advanced operations
+			on ZIP and TAR archives via 7za.
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_FTP_VOLUME
+		bool "Enable FTP volume driver (access to remote FTP servers)"
+		default n
+		help
+			Enables the driver for mounting remote FTP volumes inside elFinder
+			via the "Mount network" (netmount) function.
+			No additional packages required; the FTP driver is included in
+			the elFinder PHP connector.
+
+	config FREETZ_PACKAGE_ELFINDER_ALLOW_ALL_UPLOADS
+		bool "Allow upload of all file types (no MIME filter)"
+		default n
+		help
+			By default elFinder only accepts images and text files.
+			This option removes the filter and allows uploading any file type.
+
+			Warning: potentially dangerous if elFinder is accessible by
+			untrusted users.
+
+	config FREETZ_PACKAGE_ELFINDER_MAX_UPLOAD_SIZE
+		string "Maximum allowed upload size"
+		default "64M"
+		help
+			Maximum size of a single file uploaded through elFinder.
+			Expressed as a PHP string (e.g. 32M, 64M, 128M, 1G).
+			Must be consistent with PHP's upload_max_filesize and post_max_size.
+
+	comment "Optional visual themes"
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_THEME_MOONO
+		bool "Moono theme (dark style inspired by jQuery UI Moono)"
+		default n
+		help
+			Installs the Moono theme by lokothodida at
+			css/themes/moono/css/theme.css.
+			The theme can be selected from the configuration page.
+			Source: https://github.com/lokothodida/elfinder-theme-moono
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_THEME_WINDOWS10
+		bool "Windows 10 theme (modern flat style)"
+		default n
+		help
+			Installs the Windows 10 theme by lokothodida at
+			css/themes/windows-10/css/theme.css.
+			Includes a custom image set.
+			Source: https://github.com/lokothodida/elfinder-theme-windows-10
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_THEME_MATERIAL
+		bool "Material Design theme (Google Material style, color variants)"
+		default n
+		help
+			Installs the Material Design theme by RobiNN1 at
+			css/themes/material/css/theme.css.
+			Includes variants: theme.css (dark), theme-light.css, theme-gray.css.
+			Requires Material Icons font files (.woff2).
+			Source: https://github.com/RobiNN1/elFinder-Material-Theme
+
+	config FREETZ_PACKAGE_ELFINDER_WITH_THEME_BOOTSTRAP
+		bool "Bootstrap theme (SVG LibreICONS icons, Bootstrap style)"
+		default n
+		help
+			Installs the Bootstrap/LibreICONS theme by StudioJunkyard at
+			css/themes/bootstrap/css/theme.css.
+			Uses scalable SVG icons from LibreICONS.
+			Note: downloads the entire LibreICONS repository (~4 MB) and extracts
+			only the themes/elFinder/ subdirectory.
+			Source: https://github.com/StudioJunkyard/LibreICONS/tree/master/themes/elFinder
+
+endif # FREETZ_PACKAGE_ELFINDER
