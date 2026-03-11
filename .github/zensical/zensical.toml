@@ -7,7 +7,7 @@ site_dir = "site"
 repo_url = "https://github.com/Ircama/freetz-evo"
 edit_uri = "../freetz-evo/blob/master/docs/"
 docs_dir = "docs"
-copyright = '&copy <span>Freetz-EVO</span><br/><span>Licensed under <a href="https://github.com/Ircama/freetz-evo/raw/refs/heads/master/COPYING" target="_blank" rel="noopener noreferrer">GPL-2.0</a></span><br/>'
+copyright = '&copy <span>Freetz-EVO</span><br/><span>Licensed under <a href="https://github.com/Ircama/freetz-evo/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2</a></span><br/>'
 extra_css = ["extra.css"]
 
 [project.extra]
