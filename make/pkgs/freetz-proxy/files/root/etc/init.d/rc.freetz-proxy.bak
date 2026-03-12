@@ -3,17 +3,10 @@
 DAEMON=freetz-proxy
 . /etc/init.d/modlibrc
 
-# Locate the .def file (squashfs → /mod/etc symlink → external deploy path).
-PROXY_DEF=/etc/default.freetz-proxy/freetz-proxy-cfg.def
-[ -r /mod/etc/default.freetz-proxy/freetz-proxy-cfg.def ] && \
-PROXY_DEF=/mod/etc/default.freetz-proxy/freetz-proxy-cfg.def
-[ -r /mod/external/etc/default.freetz-proxy/freetz-proxy-cfg.def ] && \
-PROXY_DEF=/mod/external/etc/default.freetz-proxy/freetz-proxy-cfg.def
-
 case $1 in
 ""|load)
-# Initialize flash config from services template if not yet present
-# (first boot after firmware installation).
+# Inizializza il file flash dal template servizi se non esiste ancora
+# (prima volta dopo l'installazione del firmware).
 if [ ! -f /tmp/flash/mod/freetz-proxy.cfg ]; then
 for src in \
 /mod/external/etc/default.freetz-proxy/freetz-proxy-services.cfg \
@@ -26,15 +19,9 @@ fi
 done
 fi
 
-# Register the config file text editor under the Freetz menu (mod).
-# URL: /cgi-bin/file/mod/freetz_proxy
-modreg file mod freetz_proxy \
-"freetz-proxy" \
-0 "$PROXY_DEF"
-
-# Ensure /mod/usr/lib/cgi-bin/mod/ is a writable directory containing our CGI.
-# By default it is a symlink to /usr/lib/cgi-bin/mod (read-only squashfs).
-# Replace it with a directory of symlinks to the original files plus our CGI.
+# Prepara /mod/usr/lib/cgi-bin/mod/ affinche' includa il nostro CGI.
+# /mod/usr/lib/cgi-bin/mod e' normalmente un symlink verso /usr/lib/cgi-bin/mod (ro)
+# Lo sostituiamo con una directory con symlink ai file originali + il nostro CGI.
 CGI_MOD=/mod/usr/lib/cgi-bin/mod
 if [ -L "$CGI_MOD" ] || [ ! -d "$CGI_MOD" ]; then
 rm -f "$CGI_MOD"
@@ -44,7 +31,7 @@ for f in /usr/lib/cgi-bin/mod/*; do
 done
 fi
 
-# Create symlink for freetz-proxy.cgi inside the mod/ CGI directory.
+# Crea symlink al CGI freetz-proxy nella directory mod/
 for src in \
 /mod/external/usr/lib/cgi-bin/freetz-proxy.cgi \
 /usr/lib/cgi-bin/freetz-proxy.cgi; do
@@ -54,17 +41,15 @@ break
 fi
 done
 
-# Remove legacy standalone registration if present (migration from old layout).
+# Rimuovi la vecchia registrazione standalone se presente (migrazione)
 grep -q "^freetz-proxy|" /mod/etc/reg/pkg.reg  2>/dev/null && modunreg pkg  freetz-proxy 2>/dev/null || true
 grep -q "^freetz-proxy|" /mod/etc/reg/conf.reg 2>/dev/null && modunreg conf freetz-proxy 2>/dev/null || true
 
-# Register the options panel under Freetz menu (mod).
-# URL: /cgi-bin/extra/mod/freetz-proxy
+# Registra sotto il menu Freetz (mod) -> URL: /cgi-bin/extra/mod/freetz-proxy
 [ -e "$CGI_MOD/freetz-proxy.cgi" ] && modreg extra mod 'Freetz Proxy' 0 freetz-proxy
 ;;
 unload)
-modunreg file  mod freetz_proxy   2>/dev/null || true
-modunreg extra mod freetz-proxy   2>/dev/null || true
+modunreg extra mod freetz-proxy 2>/dev/null || true
 rm -f /mod/usr/lib/cgi-bin/mod/freetz-proxy.cgi
 ;;
 status)

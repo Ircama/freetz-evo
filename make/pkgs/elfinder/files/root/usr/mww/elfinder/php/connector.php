@@ -10,7 +10,18 @@
  * read-only (non-externalized) and writable (externalized) setups.
  */
 
-error_reporting(0); // Set E_ALL for debugging
+// Log all PHP errors to a file without corrupting the JSON response.
+// To diagnose issues: ssh root@fritz.box 'tail -f /tmp/elfinder.log'
+// Set to 0 in production once stable.
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors',     '1');
+ini_set('error_log',      '/tmp/elfinder.log');
+
+// The FritzBox PHP CGI default of 16MB is not enough:
+// finfo_file() alone needs ~7MB for the MIME-type magic database.
+// Raise the limit before elFinder initializes.
+ini_set('memory_limit', '48M');
 
 // ---------------------------------------------------------------------------
 // Parse shell-style config files (export VAR='value')
@@ -41,8 +52,17 @@ function elfinder_parse_cfg($file) {
     return $cfg;
 }
 
-// Load defaults first, then overlay with saved values
-$_cfg = elfinder_parse_cfg('/etc/default.elfinder/elfinder.cfg');
+// Load defaults first: check multiple locations for resilience
+// (firmware build: /etc/default.elfinder/, dev deploy: /mod/external/etc/default.elfinder/)
+$_cfg = array();
+foreach (array(
+    '/mod/external/etc/default.elfinder/elfinder.cfg',
+    '/etc/default.elfinder/elfinder.cfg',
+    '/mod/etc/default.elfinder/elfinder.cfg',
+) as $_cfgfile) {
+    $_cfg = elfinder_parse_cfg($_cfgfile);
+    if (!empty($_cfg)) break;
+}
 $_saved = elfinder_parse_cfg('/mod/etc/conf/elfinder.cfg');
 foreach ($_saved as $k => $v) {
     $_cfg[$k] = $v;
@@ -67,7 +87,7 @@ function elfinder_find_bin($configured, $names) {
         return $configured;
     }
     foreach ((array)$names as $name) {
-        $found = trim(shell_exec('which ' . escapeshellarg($name) . ' 2>/dev/null'));
+        $found = trim((string)shell_exec('which ' . escapeshellarg($name) . ' 2>/dev/null'));
         if ($found !== '' && is_executable($found)) {
             return $found;
         }
@@ -87,8 +107,15 @@ if ($_convert !== '') define('ELFINDER_CONVERT_PATH', $_convert);
 // ---------------------------------------------------------------------------
 // elFinder autoload
 // ---------------------------------------------------------------------------
-is_readable('./vendor/autoload.php') && require './vendor/autoload.php';
-require './autoload.php';
+// Use __DIR__ so the path is always relative to this file's location,
+// regardless of what the web server sets as the current working directory.
+is_readable(__DIR__ . '/vendor/autoload.php') && require __DIR__ . '/vendor/autoload.php';
+if (!is_readable(__DIR__ . '/autoload.php')) {
+    header('Content-Type: application/json');
+    echo json_encode(array('error' => 'elFinder PHP library not found. Check that autoload.php is deployed to the php/ directory.'));
+    exit;
+}
+require __DIR__ . '/autoload.php';
 
 // ---------------------------------------------------------------------------
 // Network volume drivers
@@ -137,10 +164,13 @@ if (!is_dir($_basedir)) {
 }
 $_basedir = rtrim($_basedir, '/');
 
+// ELFINDER_URL: base HTTP URL under which the basedir is served by the web server.
+// Example: if /var/media/ftp is accessible at http://fritz.box:81/files/, set '/files/'.
+// IMPORTANT: leave empty if the basedir is NOT directly served via HTTP (e.g. AVM
+// MediaServer at /MediaServer/ is on a different port/service – do NOT use it here).
+// When empty, elFinder uses the PHP connector for all file access (download/preview
+// via connector instead of direct HTTP links – slightly slower but always correct).
 $_url = elfcfg('ELFINDER_URL', '');
-if ($_url === '') {
-    $_url = '/';
-}
 
 // Thumbnail directory
 $_tmbPath = elfcfg('ELFINDER_THUMBPATH', '');
@@ -175,7 +205,21 @@ if ($_mediainfo !== '') {
 // ---------------------------------------------------------------------------
 // elFinder connector options
 // ---------------------------------------------------------------------------
+// MediaInfo: register via the global 'bind' + 'plugin' keys (top-level opts).
+// The 'info' post-command hook fires after elFinder assembles the file stat
+// array, so the plugin can append mediainfo text without patching core code.
+// The volume-level 'plugin' key is a different mechanism used only for
+// upload/paste events (e.g. Sanitizer, Watermark) – do NOT use it here.
+$_bind   = array();
+$_plugin = array();
+if (!empty($_mediaInfoPlugin)) {
+    $_bind['info'] = array('Plugin.MediaInfo.onInfo');
+    $_plugin       = $_mediaInfoPlugin;
+}
+
 $opts = array(
+    'bind'   => $_bind,
+    'plugin' => $_plugin,
     'roots' => array(
         // Main volume – LocalFileSystem
         array(
@@ -194,7 +238,6 @@ $opts = array(
                 array('pattern' => '/^\\./', 'read' => false, 'write' => false,
                       'hidden' => true, 'locked' => false),
             ),
-            'plugins'       => $_mediaInfoPlugin,
         ),
         // Trash volume
         array(

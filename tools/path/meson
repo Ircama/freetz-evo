@@ -1,1 +1,31 @@
-../meson
+#!/usr/bin/env bash
+# tools/path/meson – architecture-agnostic meson wrapper
+#
+# When building with freetz-ng, PATH is prepended with the cross-compilation
+# toolchain's bin directory (TARGET_PATH).  That directory contains a
+# cross-compiled (MIPS / ARM / AArch64 / …) python3 binary that CANNOT run
+# on the build host.  Because tools/meson (the meson Python zipapp) carries
+# the shebang "#!/usr/bin/env python3", a naive exec via PATH would pick up
+# the wrong python3 for any cross-architecture build.
+#
+# This wrapper solves that for ALL target architectures by always invoking
+# tools/build/usr/bin/python3 – the x86-64 host Python built by python3-host
+# – to run the meson zipapp, regardless of what appears first on PATH.
+#
+# Pattern follows tools/path/cmake and tools/path/file.
+
+MYOWN="$(realpath "$0")"
+TOOLS="$(dirname "$(dirname "$MYOWN")")"
+
+PY3="$TOOLS/build/usr/bin/python3"
+MEZ="$TOOLS/meson"
+
+# Preferred path: explicit host Python3 + zipapp (arch-agnostic)
+[ -x "$PY3" ] && [ -f "$MEZ" ] && exec "$PY3" "$MEZ" "$@"
+
+# Fallback: any system meson that is not this wrapper itself
+meson_bin="$(which -a 'meson' 2>/dev/null | grep -v "^$MYOWN$" | head -n1)"
+[ -x "$meson_bin" ] && exec "$meson_bin" "$@"
+
+echo "error: no meson binary found (host python3 missing at $PY3?)" >&2
+exit 1

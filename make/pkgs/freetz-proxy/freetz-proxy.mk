@@ -28,7 +28,7 @@ FREETZ_PROXY_TARGET_BINARY := $($(PKG)_DEST_DIR)/usr/www/cgi-bin/freetz_proxy
 FREETZ_PROXY_TARGET_SYMLINK:= $($(PKG)_DEST_DIR)/usr/www/all/cgi-bin/freetz_proxy
 FREETZ_PROXY_RC            := $($(PKG)_DEST_DIR)/etc/init.d/rc.freetz-proxy
 FREETZ_PROXY_CGI           := $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/freetz-proxy.cgi
-FREETZ_PROXY_CFG           := $($(PKG)_DEST_DIR)/etc/default.freetz-proxy/freetz-proxy.cfg
+FREETZ_PROXY_CFG           := $($(PKG)_DEST_DIR)/etc/default.freetz-proxy/freetz-proxy-services.cfg
 FREETZ_PROXY_DEF           := $($(PKG)_DEST_DIR)/etc/default.freetz-proxy/freetz-proxy-cfg.def
 FREETZ_PROXY_FILES_DIR     := $($(PKG)_MAKE_DIR)/files/root
 
@@ -40,7 +40,7 @@ $(FREETZ_PROXY_CGI): $(FREETZ_PROXY_FILES_DIR)/usr/lib/cgi-bin/freetz-proxy.cgi
 	$(INSTALL_FILE)
 	chmod 755 $@
 
-$(FREETZ_PROXY_CFG): $(FREETZ_PROXY_FILES_DIR)/etc/default.freetz-proxy/freetz-proxy.cfg
+$(FREETZ_PROXY_CFG): $(FREETZ_PROXY_FILES_DIR)/etc/default.freetz-proxy/freetz-proxy-services.cfg
 	$(INSTALL_FILE)
 
 $(FREETZ_PROXY_DEF): $(FREETZ_PROXY_FILES_DIR)/etc/default.freetz-proxy/freetz-proxy-cfg.def

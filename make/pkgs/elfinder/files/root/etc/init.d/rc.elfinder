@@ -1,0 +1,19 @@
+#!/bin/sh
+
+DAEMON=elfinder
+. /etc/init.d/modlibrc
+
+case $1 in
+	""|load)
+		modreg cgi 'elfinder' 'elFinder'
+		;;
+	unload)
+		modunreg cgi 'elfinder'
+		;;
+	*)
+		echo "Usage: $0 [load|unload]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

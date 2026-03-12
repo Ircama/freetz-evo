@@ -4,6 +4,7 @@ Format: <tt>name=port[:path[:direct]]</tt> (one entry per line).
 With <tt>direct</tt> the index link opens the native HTTP URL directly.
 <br><br>
 <b>Security directives</b> (<tt>@key=yes|no</tt>):
+<br><tt>@disabled=yes</tt> — Disable the proxy entirely; every request returns a notice page.
 <br><tt>@block_internet=yes</tt> — Block all access from internet (*.myfritz.net), returns 403.
 <br><tt>@no_internet_cookie=yes</tt> — Strip <tt>Max-Age</tt>/<tt>Expires</tt> from cookies when accessed from internet; sessions expire on browser close (default: yes).
 <br><tt>@no_cookie=yes</tt> — Strip <tt>Max-Age</tt>/<tt>Expires</tt> from all cookies regardless of origin.'

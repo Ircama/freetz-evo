@@ -10,17 +10,18 @@
 	<link rel="stylesheet" type="text/css" href="css/elfinder.full.css">
 	<link rel="stylesheet" type="text/css" href="css/theme.css">
 
-	<!-- Optional 3rd-party theme: loaded dynamically based on ELFINDER_THEME config -->
+	<!-- Optional 3rd-party theme: loaded dynamically based on ELFINDER_THEME config or localStorage -->
 	<link rel="stylesheet" type="text/css" id="elfinder-theme-css" href="">
 
 	<!-- jQuery and jQuery UI (required by elFinder) -->
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css">
 	<script src="js/jquery.min.js"></script>
 	<script src="js/jquery-ui.min.js"></script>
 
 	<!-- elFinder core -->
 	<script src="js/elfinder.full.js"></script>
 
-	<!-- i18n: Italian (default) – loaded dynamically below based on browser language -->
+	<!-- i18n: loaded dynamically below based on browser language -->
 
 	<style>
 		html, body {
@@ -30,12 +31,99 @@
 			overflow: hidden;
 		}
 		#elfinder-container {
-			height: 100vh;
+			position: absolute;
+			top: 0; left: 0; right: 0; bottom: 0;
+		}
+
+		/* ── Fix: jQuery UI dialogs must float above the container ──────────
+		   By default elFinder appends dialogs inside its own element and
+		   positions them with `absolute`, which can put them outside the
+		   visible viewport.  `fixed` ensures they are always relative to
+		   the browser window, never off-screen on first open. */
+		.ui-dialog {
+			position: fixed !important;
+		}
+
+		/* ── Skin panel (position set dynamically near toolbar button) ───── */
+		#ef-skin-panel {
+			position: fixed;
+			z-index: 9991;
+			background: #fff;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			padding: 10px 12px;
+			box-shadow: 0 3px 10px rgba(0,0,0,.18);
+			display: none;
+			min-width: 180px;
+			font-size: 13px;
+			font-family: sans-serif;
+		}
+		#ef-skin-panel label {
+			display: block;
+			font-weight: bold;
+			color: #555;
+			margin-bottom: 5px;
+		}
+		#ef-skin-select {
+			width: 100%;
+			padding: 3px 5px;
+			margin-bottom: 8px;
+			border: 1px solid #ccc;
+			border-radius: 3px;
+		}
+		#ef-skin-panel hr { margin: 6px 0; border: none; border-top: 1px solid #eee; }
+		#ef-skin-panel a {
+			display: block;
+			font-size: 12px;
+			color: #337ab7;
+			text-decoration: none;
+			padding: 2px 0;
+		}
+		#ef-skin-panel a:hover { text-decoration: underline; }
+
+		/* ── MediaInfo output in info dialog ─────────────────────────────── */
+		.elfinder-info-mediainfo pre {
+			white-space: pre-wrap;
+			word-break: break-word;
+			font-size: 0.78em;
+			line-height: 1.4;
+			margin: 4px 0 0 0;
+			padding: 6px 8px;
+			background: #f8f8f8;
+			border: 1px solid #e0e0e0;
+			border-radius: 3px;
+			max-height: 280px;
+			overflow-y: auto;
+		}
+
+		/* ── Mobile toolbar toggle ───────────────────────────────────────── */
+		#ef-toolbar-toggle {
+			display: none; /* hidden on desktop */
+		}
+		/* ── Mobile: bigger touch targets, show toolbar toggle ────────────── */
+		@media (max-width: 600px) {
+			#ef-toolbar-toggle { display: block !important; }
+			.elfinder-button { min-width: 36px !important; min-height: 36px !important; }
+			.elfinder-toolbar-button-separator { display: none !important; }
 		}
 	</style>
 </head>
 <body>
 	<div id="elfinder-container"></div>
+
+	<!-- ── Skin selector panel ──────────────────────────────────────────── -->
+	<div id="ef-skin-panel">
+		<label>Theme / Skin</label>
+		<select id="ef-skin-select" onchange="efChangeSkin(this.value)">
+			<option value="">Default</option>
+			<option value="bootstrap">Bootstrap</option>
+			<option value="material">Material</option>
+			<option value="moono">Moono</option>
+			<option value="windows-10">Windows 10</option>
+		</select>
+		<hr>
+		<a href="/cgi-bin/conf/elfinder" target="_blank">⚙ Advanced settings</a>
+	</div>
 
 	<script>
 	// ---------------------------------------------------------------------------
@@ -62,13 +150,65 @@
 	var browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
 	var i18nFile = langMap[browserLang] || null;
 
+	// ── Theme/skin ────────────────────────────────────────────────────────────
+	function efApplyTheme(name) {
+		// Sanitize: only alphanumeric, hyphens, underscores
+		if (!name || !/^[a-zA-Z0-9_-]+$/.test(name)) {
+			document.getElementById('elfinder-theme-css').href = '';
+			return;
+		}
+		document.getElementById('elfinder-theme-css').href =
+			'css/themes/' + name + '/css/theme.css';
+	}
+
+	function efChangeSkin(name) {
+		efApplyTheme(name);
+		try { localStorage.setItem('elfinder_theme', name); } catch(e) {}
+		document.getElementById('ef-skin-panel').style.display = 'none';
+	}
+
+	// Opens/closes the skin panel, positioning it below the toolbar button.
+	function efToggleSkinPanel(btn) {
+		var p = document.getElementById('ef-skin-panel');
+		if (p.style.display === 'block') {
+			p.style.display = 'none';
+			return;
+		}
+		if (btn) {
+			var rect = btn.getBoundingClientRect();
+			p.style.top  = (rect.bottom + 4) + 'px';
+			// Keep panel on-screen: if would overflow right, align to right edge
+			var panelW = 190;
+			var left   = rect.left;
+			if (left + panelW > window.innerWidth) left = window.innerWidth - panelW - 6;
+			p.style.left  = Math.max(4, left) + 'px';
+			p.style.right = 'auto';
+		}
+		p.style.display = 'block';
+	}
+
+	// Close skin panel when clicking outside it or the skin button
+	document.addEventListener('click', function(e) {
+		var panel = document.getElementById('ef-skin-panel');
+		var btn   = document.getElementById('ef-skin-btn');
+		if (panel && panel.style.display === 'block' &&
+				!panel.contains(e.target) &&
+				!(btn && btn.contains(e.target))) {
+			panel.style.display = 'none';
+		}
+	});
+
 	// ---------------------------------------------------------------------------
-	// Dynamically load i18n file then initialise elFinder
+	// Initialise elFinder
 	// ---------------------------------------------------------------------------
 	function initElFinder() {
 		$('#elfinder-container').elfinder({
 			url : 'php/connector.php',
 			lang: browserLang in langMap ? browserLang : 'en',
+			height: '100%',
+			// Ensure jQuery UI dialogs use a high z-index so they are
+			// never hidden behind other page elements.
+			zIndex: 100,
 			// Show toolbar with common commands
 			toolbar: [
 				['back', 'forward'],
@@ -91,15 +231,61 @@
 				'help', 'fullscreen'
 			],
 			contextmenu: {
-				// Navbar (folder tree) context menu
 				navbar: ['open', 'copy', 'cut', 'paste', 'duplicate', '|', 'rm', '|', 'rename', '|', 'info'],
-				// Workzone (right pane) context menu
 				cwd:    ['reload', 'back', '|', 'mkdir', 'mkfile', 'upload', '|', 'paste', '|', 'sort', '|', 'info'],
-				// File/folder specific context menu
 				files:  ['getfile', '|', 'open', 'quicklook', '|', 'download', '|', 'copy', 'cut', 'paste', 'duplicate', '|', 'rm', '|', 'edit', 'rename', 'resize', '|', 'archive', 'extract', '|', 'info']
 			},
-			// Bootup callback
+			// ── Info command: add MediaInfo section for audio/video ────────
+			// When the user clicks the "i" (info) toolbar button or the
+			// "Information" context-menu entry for an audio/video file, the
+			// PHP MediaInfo plugin adds a `mediainfo` text field to the
+			// server response.  This custom entry renders it in the dialog.
+			commandsOptions: {
+				info: {
+					custom: {
+						// MediaInfo row in the Info dialog.
+						// The elFinder info dialog builds from cached file data and
+						// never triggers a cmd:info server request on its own.
+						// We make an explicit AJAX call here so the PHP plugin can
+						// run 'mediainfo' and return the result for this file.
+						mediainfo: {
+							label : 'MediaInfo',
+							tpl   : '<div class="elfinder-info-mediainfo"><span class="elfinder-spinner"></span></div>',
+							mimes : ['audio', 'video'],
+							action: function(file, fm, dialog) {
+								var el = dialog.find('.elfinder-info-mediainfo');
+								// If already in client cache (e.g. second open), show instantly
+								if (file.mediainfo) {
+									el.html('<pre>' + fm.escape(file.mediainfo) + '</pre>');
+									return;
+								}
+								// Request from server: PHP plugin adds 'mediainfo' to response
+								fm.request({
+									data: { cmd: 'info', targets: [file.hash] },
+									preventDefault: true
+								}).done(function(data) {
+									var f = data.files && data.files.length ? data.files[0] : null;
+									if (f && f.mediainfo) {
+										try { fm.cache(data.files); } catch(e) {} // update local cache
+										el.html('<pre>' + fm.escape(f.mediainfo) + '</pre>');
+									} else {
+										el.closest('tr').hide();
+									}
+								}).fail(function() {
+									el.closest('tr').hide();
+								});
+							}
+						}
+					}
+				}
+			},
+			// ── Bootup callback ───────────────────────────────────────────
 			bootCallback: function(fm, extraObj) {
+				// NOTE: bootCallback fires during the elFinder constructor,
+				// before any UI widgets (toolbar, etc.) exist.
+				// Toolbar manipulation must be deferred to the 'load' event.
+
+				// Update browser tab title to reflect current directory
 				var title = document.title;
 				fm.bind('open', function() {
 					var cwd  = fm.cwd();
@@ -108,23 +294,59 @@
 				}).bind('destroy', function() {
 					document.title = title;
 				});
+
+				// Inject toolbar extras after the toolbar is rendered.
+				// elFinder 2.1.x fires 'toolbarload' (not 'load') at the end
+				// of each toolbar render() call.  Bind here so we get it on
+				// the very first render too (bootCallback runs before bootUp).
+				fm.bind('toolbarload', function() {
+					var toolbar = fm.getUI('toolbar');
+					if (!toolbar || !toolbar.length) return;
+
+					// 1. Inject 🎨 skin switcher button at the right end of
+					//    the toolbar.  Remove any stale instance first because
+					//    render() calls self.empty() on every re-render, which
+					//    strips all children including buttons we injected.
+					toolbar.find('#ef-skin-btn').remove();
+					var $skinBtn = $('<div id="ef-skin-btn" class="elfinder-button"' +
+						' title="Change theme / skin"' +
+						' style="cursor:pointer;font-size:15px;padding:0 5px;">' +
+						'🎨</div>');
+					$skinBtn.on('click', function(e) {
+						e.stopPropagation();
+						efToggleSkinPanel(this);
+					});
+					toolbar.append($skinBtn);
+
+					// 2. Mobile toolbar toggle – inserted BEFORE the toolbar
+					//    so hiding the toolbar doesn't hide the toggle itself.
+					//    It is a sibling (not a child) of the toolbar element,
+					//    so it survives render() / self.empty() – add only once.
+					if ($('#ef-toolbar-toggle').length) return;
+					var tbVisible = true;
+					try {
+						var _s = localStorage.getItem('ef_toolbar_visible');
+						if (_s === '0') tbVisible = false;
+					} catch(e) {}
+					var $toggle = $('<div id="ef-toolbar-toggle"' +
+						' title="Show / hide toolbar"' +
+						' style="cursor:pointer;padding:2px 8px;background:#f0f0f0;' +
+						'border-bottom:1px solid #ccc;font-size:12px;user-select:none;">' +
+						(tbVisible ? '&#9660; Toolbar' : '&#9654; Toolbar') + '</div>');
+					$toggle.on('click', function() {
+						tbVisible = !tbVisible;
+						toolbar.toggle(tbVisible);
+						$(this).html(tbVisible ? '&#9660; Toolbar' : '&#9654; Toolbar');
+						try { localStorage.setItem('ef_toolbar_visible', tbVisible ? '1' : '0'); } catch(e) {}
+					});
+					toolbar.before($toggle);
+					if (!tbVisible) toolbar.hide();
+				});
 			}
 		});
 	}
 
-	// -------------------------------------------------------------------------
-	// Apply active theme from ELFINDER_THEME config (stored in connector meta)
-	// -------------------------------------------------------------------------
-	function applyTheme(themeName) {
-		if (!themeName)return;
-		// Sanitize: only alphanumeric, hyphens, underscores
-		if (192.168.178.1[a-zA-Z0-9_-]+$/.test(themeName)) return;
-		var el = document.getElementById('elfinder-theme-css');
-		if (el) {
-			el.href = 'css/themes/' + themeName + '/css/theme.css';
-		}
-	}
-
+	// ── Apply theme and boot ──────────────────────────────────────────────────
 	function bootWithI18n() {
 		if (i18nFile) {
 			var script = document.createElement('script');
@@ -138,7 +360,20 @@
 	}
 
 	$(document).ready(function() {
-		// Read active theme from Freetz CGI config endpoint
+		// 1. Restore theme from localStorage (instant, no flicker)
+		var savedTheme = '';
+		try { savedTheme = localStorage.getItem('elfinder_theme') || ''; } catch(e) {}
+
+		// Pre-select skin dropdown
+		var sel = document.getElementById('ef-skin-select');
+		if (sel && savedTheme) {
+			for (var i = 0; i < sel.options.length; i++) {
+				if (sel.options[i].value === savedTheme) { sel.selectedIndex = i; break; }
+			}
+		}
+
+		// 2. Fetch server config to get theme saved via Freetz CGI
+		//    (overrides localStorage if admin changed it server-side)
 		var cfgUrl = '/cgi-bin/conf/elfinder?ajax=1&action=get_status';
 		fetch(cfgUrl)
 			.then(function(r) { return r.text(); })
@@ -156,14 +391,25 @@
 						if (end !== -1) {
 							try {
 								var data = JSON.parse(text.substring(first, end));
-								if (data && data.theme) { applyTheme(data.theme); }
+								if (data && data.theme) {
+									savedTheme = data.theme;
+									// Sync dropdown
+									if (sel) {
+										for (var j = 0; j < sel.options.length; j++) {
+											if (sel.options[j].value === savedTheme) { sel.selectedIndex = j; break; }
+										}
+									}
+								}
 							} catch(e) {}
 						}
 					}
 				}
 			})
 			.catch(function() {})
-			.finally(bootWithI18n);
+			.finally(function() {
+				efApplyTheme(savedTheme);
+				bootWithI18n();
+			});
 	});
 	</script>
 </body>

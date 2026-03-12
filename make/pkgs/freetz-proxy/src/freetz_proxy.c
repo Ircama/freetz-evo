@@ -38,7 +38,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
-#include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -52,17 +51,15 @@
 
 /* ------------------------------------------------------------------
  * Optional debug trace.
- * Enable:  touch /tmp/freetz_proxy_debug
- * Disable: rm    /tmp/freetz_proxy_debug
- * Log:     /tmp/freetz_proxy.log
+ * Enable:  set @trace_file=/tmp/freetz_proxy.log in freetz-proxy.cfg
+ * Disable: set @trace_file= (empty) in freetz-proxy.cfg
+ * Log:     tail -f /tmp/freetz_proxy.log
  * ------------------------------------------------------------------ */
-#define DBG_FLAG "/tmp/freetz_proxy_debug"
-#define DBG_LOG  "/tmp/freetz_proxy.log"
-static FILE *g_dbg = NULL;
+static FILE *g_dbg      = NULL;
+static char  g_trace_file[256] = "";  /* @trace_file=path: trace to this file if non-empty */
 static void dbg_open(void) {
-    struct stat st;
-    if (stat(DBG_FLAG, &st) != 0) return;   /* flag file absent → silent */
-    g_dbg = fopen(DBG_LOG, "a");
+    if (!g_trace_file[0]) return;  /* no trace_file configured → silent */
+    g_dbg = fopen(g_trace_file, "a");
 }
 #define DBG(...) do { if (g_dbg) { \
     fprintf(g_dbg, "[%ld] ", (long)time(NULL)); \
@@ -107,6 +104,7 @@ static int     n_services = 0;
 static int g_no_cookie          = 0;  /* @no_cookie=yes: session-only cookies always */
 static int g_no_internet_cookie = 1;  /* @no_internet_cookie=yes (default): session-only when from internet */
 static int g_block_internet     = 0;  /* @block_internet=yes: return 403 from internet */
+static int g_disabled           = 0;  /* @disabled=yes: return notice page for all requests */
 static int g_is_internet        = 0;  /* set in main() based on SERVER_NAME */
 
 /* Configurable list of hostname substrings that indicate internet access.
@@ -283,6 +281,10 @@ static void load_config(void) {
                 g_no_internet_cookie = bval;
             else if (klen == 14 && strncmp(key, "block_internet",    14) == 0)
                 g_block_internet = bval;
+            else if (klen == 8  && strncmp(key, "disabled",           8) == 0)
+                g_disabled = bval;
+            else if (klen == 10 && strncmp(key, "trace_file",        10) == 0)
+                strncpy(g_trace_file, val, sizeof(g_trace_file) - 1);
             else if (klen == 16 && strncmp(key, "internet_domains", 16) == 0) {
                 /* comma-separated list of substrings that indicate internet access */
                 g_n_internet_patterns = 0;
@@ -1814,9 +1816,116 @@ static void qs_strip_proxy_params(const char *qs, char *out, int outsz) {
 }
 
 /* ------------------------------------------------------------------
+ * setcfg -- command-line mode: update @key=value directives in config
+ *           Usage: freetz_proxy --set @key=val [@key=val ...]
+ * Reads the current config, replaces matching @key= lines with the
+ * provided values (preserving all other lines), appends new keys that
+ * were not found, and writes the result back to the flash config file.
+ * Returns 0 on success, 1 on error (message on stderr).
+ * ------------------------------------------------------------------ */
+#define SETCFG_OUT_MAX 65536
+static int setcfg(int nargs, char **args) {
+    int i;
+    /* Validate: each arg must be "@key=value" */
+    for (i = 0; i < nargs; i++) {
+        const char *eq = strchr(args[i], '=');
+        if (args[i][0] != '@' || !eq) {
+            fprintf(stderr, "freetz_proxy --set: invalid arg '%s' (expected @key=value)\n", args[i]);
+            return 1;
+        }
+    }
+
+    /* Locate current config (flash > mod conf > default) */
+    static const char * const cfg_candidates[] = {
+        "/tmp/flash/mod/freetz-proxy.cfg",
+        "/mod/etc/conf/freetz-proxy.cfg",
+        "/mod/etc/default.freetz-proxy/freetz-proxy.cfg",
+        "/etc/default.freetz-proxy/freetz-proxy.cfg",
+        NULL
+    };
+    FILE *fin = NULL;
+    for (i = 0; cfg_candidates[i]; i++) {
+        fin = fopen(cfg_candidates[i], "r");
+        if (fin) break;
+    }
+
+    static char outbuf[SETCFG_OUT_MAX];
+    int out_len = 0;
+    /* Track which args were matched/replaced in the file */
+    int seen[64] = {0};
+    int nsafe = (nargs < 64) ? nargs : 64;
+
+    if (fin) {
+        char line[512];
+        while (fgets(line, (int)sizeof(line), fin)) {
+            int replaced = 0;
+            if (line[0] == '@') {
+                for (i = 0; i < nsafe; i++) {
+                    /* length of "@key" part (up to '=') */
+                    const char *aeq  = strchr(args[i], '=');
+                    int          alen = (int)(aeq - args[i]); /* includes '@' */
+                    if (strncmp(line, args[i], (size_t)alen) == 0 && line[alen] == '=') {
+                        int wlen = snprintf(outbuf + out_len,
+                                           (size_t)(SETCFG_OUT_MAX - out_len - 1),
+                                           "%s\n", args[i]);
+                        if (wlen > 0 && out_len + wlen < SETCFG_OUT_MAX)
+                            out_len += wlen;
+                        seen[i] = 1;
+                        replaced = 1;
+                        break;
+                    }
+                }
+            }
+            if (!replaced) {
+                size_t ll = strlen(line);
+                if (out_len + (int)ll < SETCFG_OUT_MAX) {
+                    memcpy(outbuf + out_len, line, ll);
+                    out_len += (int)ll;
+                }
+            }
+        }
+        fclose(fin);
+    }
+
+    /* Append any args that were not present in the original file */
+    for (i = 0; i < nsafe; i++) {
+        if (!seen[i]) {
+            int wlen = snprintf(outbuf + out_len,
+                                (size_t)(SETCFG_OUT_MAX - out_len - 1),
+                                "%s\n", args[i]);
+            if (wlen > 0 && out_len + wlen < SETCFG_OUT_MAX)
+                out_len += wlen;
+        }
+    }
+
+    /* Write to flash config (primary target for persistence) */
+    FILE *fout = fopen("/tmp/flash/mod/freetz-proxy.cfg", "w");
+    if (!fout) fout = fopen("/mod/etc/conf/freetz-proxy.cfg", "w");
+    if (!fout) {
+        perror("freetz_proxy --set: cannot write config");
+        return 1;
+    }
+    if (fwrite(outbuf, 1, (size_t)out_len, fout) != (size_t)out_len) {
+        perror("freetz_proxy --set: write error");
+        fclose(fout);
+        return 1;
+    }
+    fclose(fout);
+    return 0;
+}
+
+/* ------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------ */
-int main(void) {
+int main(int argc, char **argv) {
+    /* Command-line mode: freetz_proxy --set @key=val [@key=val ...] */
+    if (argc >= 2 && strcmp(argv[1], "--set") == 0)
+        return setcfg(argc - 2, argv + 2);
+
+    /* Normal CGI mode: load config first so dbg_open() can use @trace_file */
+    init_internet_patterns();
+    load_config();
+    ensure_freetz_service();
     dbg_open();
 
     const char *method       = getenv("REQUEST_METHOD");
@@ -1882,10 +1991,27 @@ int main(void) {
                 DBG("  req-hdr: %s", *ep);
     }
 
-    /* Load service registry */
-    init_internet_patterns();
-    load_config();
-    ensure_freetz_service();
+    /* Disabled: return a fixed notice page for every request */
+    if (g_disabled) {
+        printf("Status: 200 OK\r\n"
+               "Content-Type: text/html; charset=UTF-8\r\n"
+               "\r\n"
+               "<!DOCTYPE html>\n<html><head>\n"
+               "<meta charset=\"UTF-8\">\n"
+               "<title>Freetz Proxy &mdash; Disabled</title>\n"
+               "<style>body{font-family:sans-serif;max-width:600px;margin:60px auto;padding:0 16px}"
+               "h2{color:#856404}.box{background:#fff3cd;border:1px solid #ffc107;"
+               "border-radius:4px;padding:16px 20px}</style>\n"
+               "</head><body>\n"
+               "<div class=\"box\"><h2>&#x26A0; Freetz Proxy Disabled</h2>\n"
+               "<p>The Freetz HTTPS proxy is currently disabled.</p>\n"
+               "<p>To re-enable it, uncheck <em>Disable proxy</em> in the proxy settings "
+               "under <a href='http://fritz.box:81/cgi-bin/file/mod/freetz_proxy'>"
+               "Freetz &rarr; freetz_proxy</a>.</p>\n"
+               "</div></body></html>\n");
+        fflush(stdout);
+        return 0;
+    }
 
     /* Detect internet access: SERVER_NAME matches any configured internet domain pattern */
     g_is_internet = is_internet_host(server_name);
@@ -1967,7 +2093,7 @@ int main(void) {
     }
 
     /* Upstream path: use ?path= if given, else service's configured default */
-    char upstream_path[512];
+    char upstream_path[512] = "";
     qs_get(query_str, "path", upstream_path, (int)sizeof(upstream_path));
     if (upstream_path[0] == '\0')
         strncpy(upstream_path, svc->path, sizeof(upstream_path) - 1);
