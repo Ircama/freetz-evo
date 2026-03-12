@@ -1,4 +1,4 @@
-# elFinder 2.1.66 - web file manager
+# elFinder web file manager
   - Homepage: [https://github.com/Studio-42/elFinder](https://github.com/Studio-42/elFinder)
   - Manpage: [https://github.com/Studio-42/elFinder/wiki](https://github.com/Studio-42/elFinder/wiki)
   - Changelog: [https://github.com/Studio-42/elFinder/releases](https://github.com/Studio-42/elFinder/releases)
