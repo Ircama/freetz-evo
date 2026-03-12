@@ -713,6 +713,11 @@ static size_t rewrite_body(const char *in, size_t inlen,
      * immediately after the </script> tag that loaded ace.js -- before any inline init code. */
     char ace_cdn_base[256] = "";
     int  ace_inject_pending = 0;
+    /* Tracks whether the current scan position is inside a double-quoted HTML
+     * attribute value (e.g. onclick="...").  Inside such a context, single-quoted
+     * strings like ='https://...' are JavaScript string literals, NOT HTML resource
+     * attributes, and must NOT be rewritten to ?service=cdn&url=... */
+    int  in_dq_attr = 0;
 
     while (i < inlen && o + 512 < outsz) {
         /* Strip <link rel="manifest" ...> — the Fritz HTTPS gateway's CSP uses
@@ -749,7 +754,11 @@ static size_t rewrite_body(const char *in, size_t inlen,
          * <a href="http://fritz.box:PORT/"> are left untouched so they open directly. */
         if (in[i] == '=' &&
             i + 2 < inlen &&
-            (in[i+1] == '"' || in[i+1] == '\'') &&
+            /* Single-quoted form ('https://') must NOT be rewritten when we are
+             * inside a double-quoted HTML attribute value: that means it is a JS
+             * string literal (e.g. onclick="location.href='https://...'"), not a
+             * resource URL, and should navigate directly in the browser. */
+            (in[i+1] == '"' || (in[i+1] == '\'' && !in_dq_attr)) &&
             strncasecmp(in + i + 2, "https://", 8) == 0) {
 
             char q = in[i+1];
@@ -1167,7 +1176,9 @@ static size_t rewrite_body(const char *in, size_t inlen,
             continue;
         }
 
-        out[o++] = in[i++];
+        /* Track double-quoted HTML attribute context: toggle in_dq_attr on each
+         * unescaped '"' that falls through (i.e. was not consumed by a pattern). */
+        { char ch = in[i++]; if (ch == '"') in_dq_attr = !in_dq_attr; out[o++] = ch; }
     }
     /* copy any remaining bytes that didn't fit in the pattern scan */
     while (i < inlen && o < outsz - 1) out[o++] = in[i++];
