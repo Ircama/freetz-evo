@@ -19,6 +19,10 @@ Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://gi
 repository: all upstream fixes, new firmware support, and toolchain updates are regularly merged into
 Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
 
+### Getting Started
+
+New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walks you through the complete workflow: setting up a Linux build environment (including WSL on Windows), configuring the firmware, building it, and flashing your device.
+
 ### Improvements over Freetz-NG
 
 Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.

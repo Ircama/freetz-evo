@@ -31,10 +31,6 @@ fi
 modreg file mod freetz_proxy \
 "freetz-proxy" \
 0 "$PROXY_DEF"
-
-# Remove legacy standalone registration if present (migration from old layout).
-grep -q "^freetz-proxy|" /mod/etc/reg/pkg.reg  2>/dev/null && modunreg pkg  freetz-proxy 2>/dev/null || true
-grep -q "^freetz-proxy|" /mod/etc/reg/conf.reg 2>/dev/null && modunreg conf freetz-proxy 2>/dev/null || true
 ;;
 unload)
 modunreg file  mod freetz_proxy   2>/dev/null || true

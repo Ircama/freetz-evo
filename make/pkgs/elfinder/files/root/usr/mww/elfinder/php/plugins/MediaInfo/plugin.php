@@ -13,7 +13,7 @@
  *   );
  *
  * The 'onInfo' handler fires after the elFinder 'info' command completes and
- * appends a 'mediainfo' key to each audio/video file stat in $result['files'].
+ * appends a 'mediainfo' key to each non-directory file stat in $result['files'].
  * The JavaScript client (elFinder) displays unknown keys in the info panel.
  */
 class elFinderPluginMediaInfo extends elFinderPlugin
@@ -43,7 +43,7 @@ class elFinderPluginMediaInfo extends elFinderPlugin
      *
      * Called by elFinder after info() returns its result. Iterates every file
      * in $result['files'], resolves the real filesystem path via $dstVolume,
-     * and runs 'mediainfo <path>' for audio/video files. The output text is
+     * and runs 'mediainfo <path>' for every non-directory file. The output text is
      * stored as $file['mediainfo'] so elFinder displays it in the info panel.
      *
      * @param string        $cmd       Command name ('info')
@@ -70,13 +70,12 @@ class elFinderPluginMediaInfo extends elFinderPlugin
         }
 
         foreach ($result['files'] as &$file) {
-            if (empty($file['hash']) || empty($file['mime'])) {
+            if (empty($file['hash'])) {
                 continue;
             }
 
-            // Only process audio and video files
-            if (strpos($file['mime'], 'audio/') !== 0 &&
-                strpos($file['mime'], 'video/') !== 0) {
+            // Skip directories
+            if (!empty($file['mime']) && $file['mime'] === 'directory') {
                 continue;
             }
 

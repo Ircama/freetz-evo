@@ -1,6 +1,5 @@
 # Freetz-EVO Build Guide
 
-
 This document provides guidance for building the complete Freetz-EVO framework as well as single packages.
 
 Freetz-EVO provides a comprehensive testing framework that combines local development capabilities with automated validation across multiple platforms. Understanding both approaches is crucial for effective package and firmware build, testing and development.

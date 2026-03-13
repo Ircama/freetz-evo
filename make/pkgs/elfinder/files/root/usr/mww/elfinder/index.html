@@ -96,6 +96,57 @@
 			overflow-y: auto;
 		}
 
+		/* ── Statusbar font ──────────────────────────────────────────────── */
+		.elfinder .elfinder-statusbar {
+			color: #555;
+			font-size: small;
+		}
+
+		/* ── Custom toolbar button icons ─────────────────────────────────── */
+		/* Reset the elfinder sprite background and render the icon via CSS  */
+		/* content so it is not overridden by the default sprite fallback.   */
+		.elfinder-button-icon-skin,
+		.elfinder-button-icon-mediainfo,
+		.elfinder-button-icon-vlc {
+			background: none !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+		}
+		.elfinder-button-icon-skin::before     { content: '🎨'; font-size: 15px; line-height: 1; }
+		.elfinder-button-icon-mediainfo::before { content: '🎬'; font-size: 15px; line-height: 1; }
+		.elfinder-button-icon-vlc::before      { content: '📺'; font-size: 15px; line-height: 1; }
+
+		/* ── Statusbar colours ────────────────────────────────────────────── */
+		.elfinder .elfinder-statusbar .elfinder-path      { color: #1565c0; }
+		.elfinder .elfinder-statusbar .elfinder-stat-size { color: #6a0dad; }
+
+		/* ── MediaInfo standalone popup ──────────────────────────────────── */
+		.ef-mediainfo-popup pre {
+			white-space: pre-wrap;
+			word-break: break-word;
+			font-size: 0.78em;
+			line-height: 1.4;
+			margin: 0;
+			padding: 8px 10px;
+			background: #f8f8f8;
+			border: 1px solid #e0e0e0;
+			border-radius: 3px;
+			max-height: 400px;
+			overflow-y: auto;
+		}
+
+		/* ── VLC fallback URL panel ──────────────────────────────────────── */
+		.ef-vlc-fallback-popup p { margin: 0 0 8px; }
+		.ef-vlc-fallback-popup .ef-vlc-url-field {
+			width: 100%;
+			box-sizing: border-box;
+			font-size: 11px;
+			font-family: monospace;
+			padding: 4px;
+		}
+		.ef-vlc-fallback-popup .ef-vlc-copy-btn { margin-top: 8px; }
+
 		/* ── Mobile toolbar toggle ───────────────────────────────────────── */
 		#ef-toolbar-toggle {
 			display: none; /* hidden on desktop */
@@ -197,6 +248,111 @@
 			panel.style.display = 'none';
 		}
 	});
+
+	// ---------------------------------------------------------------------------
+	// MediaInfo popup – opens a jQuery UI dialog with the output of the
+	// mediainfo binary for the currently selected file.  Works for any
+	// file type; the PHP plugin no longer limits processing to audio/video.
+	// ---------------------------------------------------------------------------
+	function efShowMediaInfo(fm) {
+		var selected = fm.selectedFiles();
+		if (!selected || !selected.length) {
+			return;
+		}
+		var file = selected[0];
+		var $content = $('<div class="ef-mediainfo-popup"><span class="elfinder-spinner"></span></div>');
+		$content.dialog({
+			title: 'MediaInfo \u2013 ' + fm.escape(file.name),
+			modal: false,
+			width: Math.min(650, $(window).width() - 40),
+			close: function() { $(this).dialog('destroy').remove(); }
+		});
+		fm.request({
+			data: { cmd: 'info', targets: [file.hash] },
+			preventDefault: true
+		}).done(function(data) {
+			var f = data.files && data.files.length ? data.files[0] : null;
+			$content.html(f && f.mediainfo
+				? '<pre>' + fm.escape(f.mediainfo) + '</pre>'
+				: '<p style="color:#888;font-style:italic;padding:8px">No MediaInfo data available.</p>');
+			try { if (f) fm.cache(data.files); } catch(e) {}
+		}).fail(function() {
+			$content.html('<p style="color:#c00;padding:8px">MediaInfo request failed.</p>');
+		});
+	}
+
+	// ---------------------------------------------------------------------------
+	// VLC open – constructs the absolute connector URL for the selected file
+	// and navigates to the vlc:// protocol handler so the OS opens it in VLC.
+	// ---------------------------------------------------------------------------
+	function efOpenInVlc(fm) {
+		var selected = fm.selectedFiles();
+		if (!selected || !selected.length) {
+			return;
+		}
+		var file = selected[0];
+		var rel  = fm.options.url
+			+ '?cmd=file&target=' + encodeURIComponent(file.hash)
+			+ '&_t=' + (file.ts || parseInt(+new Date() / 1000));
+		var abs  = new URL(rel, window.location.href).href;
+		var a = document.createElement('a');
+		a.href = 'vlc:' + abs;
+		a.style.display = 'none';
+		document.body.appendChild(a);
+		a.click();
+		setTimeout(function() { document.body.removeChild(a); }, 200);
+		/* Fallback: if window hasn't lost focus within 1 s the protocol    */
+		/* handler is not registered – show a copy-URL panel instead.       */
+		var launched = false;
+		var blurHandler = function() { launched = true; };
+		window.addEventListener('blur', blurHandler, { once: true });
+		setTimeout(function() {
+			window.removeEventListener('blur', blurHandler);
+			if (!launched) {
+				efShowVlcFallback(abs);
+			}
+		}, 1000);
+	}
+
+	function efShowVlcFallback(url) {
+		var safeUrl = $('<span>').text(url).html();
+		var $dlg = $('<div class="ef-vlc-fallback-popup">')
+			.attr('title', 'Open in VLC – copy URL')
+			.html(
+				'<p>VLC is not registered as a protocol handler.<br>' +
+				'Copy the URL below and paste it in VLC via <em>Media \u2192 Open Network Stream</em>.</p>' +
+				'<input type="text" class="ef-vlc-url-field" value="' + safeUrl + '" readonly>' +
+				'<button class="ef-vlc-copy-btn">Copy URL</button>'
+			);
+		$dlg.dialog({
+			modal: true,
+			width: 500,
+			close: function() { $(this).dialog('destroy').remove(); },
+			open: function() {
+				$dlg.find('.ef-vlc-url-field').trigger('select');
+				$dlg.find('.ef-vlc-copy-btn').on('click', function() {
+					var $btn  = $(this);
+					var $field = $dlg.find('.ef-vlc-url-field');
+					function done() {
+						$btn.text('Copied!');
+						setTimeout(function() { $dlg.dialog('close'); }, 800);
+					}
+					function fallback() {
+						var el = $field[0];
+						el.focus();
+						el.setSelectionRange(0, el.value.length);
+						try { document.execCommand('copy'); done(); }
+						catch(e) { $btn.text('Select the URL above and press Ctrl+C'); }
+					}
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(url).then(done).catch(fallback);
+					} else {
+						fallback();
+					}
+				});
+			}
+		});
+	}
 
 	// ---------------------------------------------------------------------------
 	// Initialise elFinder
@@ -307,18 +463,51 @@
 					//    the toolbar.  Remove any stale instance first because
 					//    render() calls self.empty() on every re-render, which
 					//    strips all children including buttons we injected.
-					toolbar.find('#ef-skin-btn').remove();
-					var $skinBtn = $('<div id="ef-skin-btn" class="elfinder-button"' +
-						' title="Change theme / skin"' +
-						' style="cursor:pointer;font-size:15px;padding:0 5px;">' +
-						'🎨</div>');
-					$skinBtn.on('click', function(e) {
+					toolbar.find('#ef-skin-btn').closest('.elfinder-buttonset').addBack().remove();
+					var $skinBtnSet = $(
+						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+						'<div id="ef-skin-btn" class="ui-state-default elfinder-button"' +
+						' title="Change theme / skin">' +
+						'<span class="elfinder-button-icon elfinder-button-icon-skin"></span>' +
+						'<span class="elfinder-button-text" style="display:none;">Change theme / skin</span>' +
+						'</div></div>');
+					$skinBtnSet.find('#ef-skin-btn').on('click', function(e) {
 						e.stopPropagation();
 						efToggleSkinPanel(this);
 					});
-					toolbar.append($skinBtn);
+					toolbar.append($skinBtnSet);
 
-					// 2. Mobile toolbar toggle – inserted BEFORE the toolbar
+					// 2. Inject 🎴 MediaInfo button at the right end of the toolbar.
+					toolbar.find('#ef-mediainfo-btn').closest('.elfinder-buttonset').addBack().remove();
+					var $miBtnSet = $(
+						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+						'<div id="ef-mediainfo-btn" class="ui-state-default elfinder-button"' +
+						' title="MediaInfo">' +
+						'<span class="elfinder-button-icon elfinder-button-icon-mediainfo"></span>' +
+						'<span class="elfinder-button-text" style="display:none;">MediaInfo</span>' +
+						'</div></div>');
+					$miBtnSet.find('#ef-mediainfo-btn').on('click', function(e) {
+						e.stopPropagation();
+						efShowMediaInfo(fm);
+					});
+					toolbar.append($miBtnSet);
+
+					// 3. Inject 📺 VLC button at the right end of the toolbar.
+					toolbar.find('#ef-vlc-btn').closest('.elfinder-buttonset').addBack().remove();
+					var $vlcBtnSet = $(
+						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+						'<div id="ef-vlc-btn" class="ui-state-default elfinder-button"' +
+						' title="Open in VLC">' +
+						'<span class="elfinder-button-icon elfinder-button-icon-vlc"></span>' +
+						'<span class="elfinder-button-text" style="display:none;">Open in VLC</span>' +
+						'</div></div>');
+					$vlcBtnSet.find('#ef-vlc-btn').on('click', function(e) {
+						e.stopPropagation();
+						efOpenInVlc(fm);
+					});
+					toolbar.append($vlcBtnSet);
+
+					// 4. Mobile toolbar toggle – inserted BEFORE the toolbar
 					//    so hiding the toolbar doesn't hide the toggle itself.
 					//    It is a sibling (not a child) of the toolbar element,
 					//    so it survives render() / self.empty() – add only once.

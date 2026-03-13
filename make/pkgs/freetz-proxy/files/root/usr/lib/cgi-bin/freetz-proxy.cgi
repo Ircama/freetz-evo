@@ -80,7 +80,7 @@ if [ -x "$PROXY_BIN" ]; then
 modsave flash 2>/dev/null || true
 fi
 # PRG redirect (avoids re-submit on back/refresh)
-echo "Location: /cgi-bin/extra/mod/freetz-proxy"
+echo "Location: /cgi-bin/file/mod/freetz_proxy"
 echo ""
 exit 0
 fi
@@ -119,7 +119,7 @@ echo '<h2>'
 lang de:"Einstellungen" en:"Proxy Options"
 echo '</h2>'
 
-echo '<form method="get" action="/cgi-bin/extra/mod/freetz-proxy">'
+echo '<form method="get" action="/cgi-bin/file/mod/freetz_proxy">'
 echo '<input type="hidden" name="action" value="save">'
 echo '<table style="border-collapse:collapse">'
 
