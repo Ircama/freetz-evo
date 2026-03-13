@@ -15,7 +15,7 @@ if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
 			depends on !FREETZ_SEPARATE_AVM_UCLIBC
 
 		config FREETZ_LIB_libcurl_WITH_VERSION_CURRENT
-			bool "8.18.0"
+			bool "8.19.0"
 			depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 	endchoice

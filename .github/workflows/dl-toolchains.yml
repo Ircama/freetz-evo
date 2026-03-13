@@ -160,6 +160,7 @@ jobs:
 
       - name: release
         uses: ncipollo/release-action@v1
+        if: github.repository == 'freetz-ng/freetz-ng'
         with:
           tag: dl-toolchains_${{ steps.version.outputs.version }}
           name: dl-toolchains-${{ steps.version.outputs.version }}

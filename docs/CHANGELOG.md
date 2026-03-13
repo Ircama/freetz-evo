@@ -82,6 +82,7 @@ Latest changes
 
   - Packages:
     * BIND 9.11.37/9.20.20
+    * Curl 8.12.1/8.19.0
     * ImageMagick 7.1.0-62/7.1.2-16
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * Python 3.14.3

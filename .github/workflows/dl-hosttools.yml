@@ -91,6 +91,7 @@ jobs:
 
       - name: release
         uses: ncipollo/release-action@v1
+        if: github.repository == 'freetz-ng/freetz-ng'
         with:
           tag: dl-hosttools
           name: dl-hosttools
