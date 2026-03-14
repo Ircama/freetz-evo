@@ -6,7 +6,7 @@
  | |_ | '__/ _ \/ _ \ __|_  /____|  _|  \ \ / / | | |
  |  _|| | |  __/  __/ |_ / /_____| |___  \ V /| |_| |
  |_|  |_|  \___|\___|\__/___|    |_____|  \_/  \___/
-
+dl
 ```
 
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). Easier, sleeker, more features - less bugs!
@@ -35,6 +35,8 @@ The web interface can be added to the home screen on any smartphone (Android or 
 
 The authentication layer has been updated to support a **form-based session login** (in addition to the legacy HTTP Basic Auth mode). When the *New login with session id* option is enabled, the web interface presents a custom HTML login page instead of the native browser credential dialog; access is protected by a session cookie with a configurable inactivity timeout, persisted across browser restarts, so re-opening the browser within an active session no longer forces re-authentication. A bug in `passwd_save.sh` that caused the stored password hash to include the username prefix — making any password change break subsequent logins — has been fixed. The session cookie has been hardened: the session ID is now generated from `/dev/urandom` (128-bit CSPRNG) instead of a predictable MD5 of the login timestamp, and the cookie is issued with `HttpOnly` (blocks JavaScript access, preventing XSS-based session hijacking) and `SameSite=Strict` (blocks all cross-site request forgery, including top-level navigation from external links) flags.
 
+[Interactive UI Mockup](screenshots/evo-demo.html) — live preview of the Freetz-EVO web interface (no device needed)
+
 #### New packages
 
 | Package | Description | Status |
@@ -49,7 +51,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
-| **elFinder** 2.1.66 | Full-featured web-based file manager for the FritzBox: drag-and-drop UI, PHP connector (squashfs-safe), FTP remote volumes, MediaInfo integration, unrar/7-Zip support, optional themes, multilingual (de/en/it/…). CGI config at `/cgi-bin/conf/elfinder`, UI at `/elfinder/`. | EVO only |
+| **elFinder** 2.1.66 | Full-featured web-based file manager for the FritzBox with enhancements: drag-and-drop UI, PHP connector (squashfs-safe), FTP remote volumes, MediaInfo plugin (specific for Freetz-EVO), VLC plugin (specific for Freetz-EVO), unrar/7-Zip support, optional themes with theme selection plugin (specific for Freetz-EVO), multilingual (de/en/it/…), better status bar (specific for Freetz-EVO). CGI config at `/cgi-bin/conf/elfinder`, UI at `/elfinder/`. | EVO only |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
 | **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | merged upstream |
 | **cpulimit** 0.2 | Limits the CPU usage of a process to a given percentage; prevents runaway processes from overloading the device. | package improvement |

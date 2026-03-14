@@ -541,9 +541,26 @@ function evoSetupMobileMenu() {
     localStorage.setItem('evo-nav-freq', JSON.stringify(freq));
   } catch(e) {}
 })();
+// Right-edge dropdown flip: when a menu item is close to the right edge of
+// #world the sub-menu would overflow and be clipped by overflow:hidden.
+// Add .evo-drop-right so CSS right-aligns the dropdown instead.
+function evoFixDropDir() {
+  var world = document.getElementById('world');
+  if (!world) return;
+  var worldRight = world.getBoundingClientRect().right;
+  var items = document.querySelectorAll('ul.menu.new > li');
+  for (var i = 0; i < items.length; i++) {
+    var li = items[i];
+    if (!li.querySelector('ul')) continue;
+    var liLeft = li.getBoundingClientRect().left;
+    li.classList.toggle('evo-drop-right', liLeft + 200 > worldRight);
+  }
+}
 document.addEventListener('DOMContentLoaded', function(){
   evoSetupMobileMenu();
+  evoFixDropDir();
   window.addEventListener('resize', evoSetupMobileMenu);
+  window.addEventListener('resize', evoFixDropDir);
 });
 // PWA: register service worker when available and on HTTPS / localhost
 if ('serviceWorker' in navigator) {

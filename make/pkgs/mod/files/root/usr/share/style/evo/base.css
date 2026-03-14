@@ -273,6 +273,14 @@ ul.menu ul {
 ul.menu.new > li:hover > ul {
 	display: block;
 }
+/* Right-edge flip: dropdown aligns to the right of the li instead of the left,
+ * so it doesn't overflow (and get clipped by) #world's overflow:hidden.
+ * The .evo-drop-right class is set by evoFixDropDir() in JS. */
+ul.menu.new > li.evo-drop-right > ul {
+	left: auto;
+	right: 0;
+	border-radius: var(--evo-radius) 0 var(--evo-radius) var(--evo-radius);
+}
 /* Logout item — three-dots dropdown, pushed to far right.
  * Layout properties set here (not just on .evo-logout-dots) so the <li>
  * has the correct size/shape from first paint, avoiding any layout shift

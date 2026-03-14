@@ -636,7 +636,7 @@ print_final_download_failure_help() {
 	cat >&${out_fd} << EOF
 
 ${c_dim}${sep_line}${c_reset}
-${c_bold}${c_red}Freetz-NG: download failed${c_reset} for: ${c_bold}${DL_FILE}${c_reset}
+${c_bold}${c_red}Freetz: download failed${c_reset} for: ${c_bold}${DL_FILE}${c_reset}
 
 This might be temporary (network/mirror overload). The issue often resolves by
 simply running ${c_cyan}${c_bold}"make"${c_reset} again (try multiple times, or wait and retry later).

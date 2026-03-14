@@ -63,6 +63,16 @@ DEFAULT_USER = "admin"
 DEFAULT_OUTPUT = "docs/screenshots/evo-demo.html"
 DEFAULT_TIMEOUT = 10
 DEFAULT_MAX_PAGES = 60
+DEFAULT_DEMO_DIR = "docs/screenshots/evo-demo"
+
+# ISO 639-1 language codes → (native name, flag emoji)
+LANGUAGE_NAMES: dict[str, tuple[str, str]] = {
+    "de": ("Deutsch",  "🇩🇪"),
+    "en": ("English",  "🇬🇧"),
+    "es": ("Español",  "🇪🇸"),
+    "fr": ("Français", "🇫🇷"),
+    "it": ("Italiano", "🇮🇹"),
+}
 
 # URL patterns derived from a package name.  Each pattern is tried in order;
 # the first one that returns HTTP 200 is accepted.  The %s placeholder is
@@ -123,6 +133,31 @@ MIME_MAP = {
     ".ttf":   "font/ttf",
     ".eot":   "application/vnd.ms-fontobject",
 }
+
+# Static terminal demo content shown in the mockup for ttyd pages.
+# Displayed whenever a crawled page embeds a ttyd iframe (port 7681) or
+# when the page URL itself contains "ttyd".
+_TTYD_DEMO_LINES = r"""─── Freetz-EVO Terminal · fritz.box:7681/ws · 13/03/2026, 12:52:28 ───
+
+f6edf479d20c8ab7546baf1b2578a266
+Welcome at fritz.box
+Linux fritz.box 4.9.337 #1 SMP 2025-07-31 mips GNU/Linux
+
+  _____              _            _______     _____
+ |  ___| __ ___  ___| |_ ____    | ____\\ \\   / / _ \\ 
+ | |_ | '__/ _ \\/ _ \\ __|_  /____|  _|  \\ \\ / / | | |
+ |  _|| | |  __/  __/ |_ / /_____| |___  \\ V /| |_| |
+ |_|  |_|  \\___|\\___|\\__/___|    |_____|  \\_/  \\___/
+
+
+
+BusyBox v1.37.0 (2026-03-08 06:28:46 CET) built-in shell (ash)
+
+root@fritz:/var/mod/root#
+
+
+
+"""
 
 # ─── HTTP Session ─────────────────────────────────────────────────────────────
 
@@ -537,6 +572,84 @@ class PageProcessor:
 }})();
 </script>
 """
+    @staticmethod
+    def _ttyd_mock_html() -> str:
+        """Return a styled static terminal block for the ttyd mockup."""
+        return r"""<div style="background:#0d0d0d;color:#c9d1d9;font-family:'Courier New',Courier,monospace;font-size:0.82rem;line-height:1.45;padding:14px 16px;border-radius:6px;overflow-x:auto;white-space:pre;/* border:1px solid #30363d; *//* margin:12px 0; */">─── Freetz-EVO Terminal · fritz.box:7681/ws · 13/03/2026, 12:52:28 ───
+
+f6edf479d20c8ab7546baf1b2578a266
+Welcome at fritz.box
+Linux fritz.box 4.9.337 #1 SMP 2025-07-31 mips GNU/Linux
+
+  _____              _            _______     _____
+ |  ___| __ ___  ___| |_ ____    | ____\ \   / / _ \
+ | |_ | '__/ _ \/ _ \ __|_  /____|  _|  \ \ / / | | |
+ |  _|| | |  __/  __/ |_ / /_____| |___  \ V /| |_| |
+ |_|  |_|  \___|\___|\__/___|    |_____|  \_/  \___/
+
+
+
+BusyBox v1.37.0 (2026-03-08 06:28:46 CET) built-in shell (ash)
+
+root@fritz:/var/mod/root# <span style="background:#c9d1d9;color:#0d0d0d">█</span></div>"""
+
+    def _patch_ttyd_iframes(self, body: "Tag", url: str) -> None:
+        """Replace live ttyd iframes / containers with a static terminal mockup.
+
+        Detection rules (first match wins):
+          1. Any ``<iframe>`` whose ``src`` contains ``:7681`` or ``ttyd``.
+          2. Any ``<div id="terminal*">`` or ``<div id="app">`` on a ttyd page.
+          3. URL contains ``ttyd`` and no other terminal element was found:
+             inject the terminal widget at the end of ``#content`` (or body).
+        """
+        mock_soup = BeautifulSoup(self._ttyd_mock_html(), "html.parser")
+        patched = False
+
+        # ttyd pages can wrap terminal content in <div id="ttyd-wrap"> (or
+        # sometimes class="ttyd-wrap"). Replace the wrapper entirely to avoid
+        # duplicate terminal blocks.
+        for div in body.find_all(
+          "div",
+          attrs={
+            "id": re.compile(r"^ttyd-wrap$", re.I)
+          },
+        ):
+          replacement = BeautifulSoup(self._ttyd_mock_html(), "html.parser").find("div")
+          if replacement:
+            div.replace_with(replacement)
+            patched = True
+
+        for div in body.find_all(
+          "div",
+          class_=lambda c: c and any(
+            "ttyd-wrap" in cls for cls in (c if isinstance(c, list) else str(c).split())
+          ),
+        ):
+            replacement = BeautifulSoup(self._ttyd_mock_html(), "html.parser").find("div")
+            if replacement:
+                div.replace_with(replacement)
+                patched = True
+
+        if patched:
+            return
+
+        for iframe in body.find_all("iframe"):
+            src = iframe.get("src", "")
+            if ":7681" in src or "ttyd" in src.lower():
+                iframe.replace_with(mock_soup)
+                mock_soup = BeautifulSoup(self._ttyd_mock_html(), "html.parser")
+                patched = True
+
+        if not patched:
+            for div in body.find_all("div", id=re.compile(r"^(terminal|app)$", re.I)):
+                div.replace_with(mock_soup)
+                patched = True
+                break
+
+        if not patched and "ttyd" in url.lower():
+            target = body.find("div", id="content") or body
+            target.append(BeautifulSoup(self._ttyd_mock_html(), "html.parser"))
+
     def extract_content(self, html: str, url: str) -> dict:
         """
         Parse HTML and return:
@@ -579,6 +692,7 @@ class PageProcessor:
 
         # --- Inline img src ---
         body = soup.find("body") or soup
+        self._patch_ttyd_iframes(body, url)
         for img in body.find_all("img"):
             src = img.get("src", "")
             if src and not src.startswith("data:"):
@@ -957,11 +1071,14 @@ class MockupBuilder:
 
     def build(self, pages: OrderedDict[str, dict],
               menu_items: list[dict],
-              frameless: bool = False) -> str:
+              frameless: bool = False,
+              lang: "str | None" = None) -> str:
         """Build and return the final HTML string.
 
         When *frameless* is True the output uses :data:`_FRAMELESS_TEMPLATE`
         instead of the default browser-chrome wrapper template.
+        When *lang* is set (e.g. ``"it"``), a language-selector dropdown is
+        embedded and the ``<html lang="…">`` attribute is set accordingly.
         """
 
         base_css = self._fetch_base_css()
@@ -1014,6 +1131,15 @@ class MockupBuilder:
             indent=2
         )
 
+        # Language selector: only when --lang is specified
+        if lang:
+            lang_selector_html = _build_lang_selector_html(
+                lang, self.output, sidebar=frameless
+            )
+        else:
+            lang_selector_html = ""
+        html_lang = lang if lang else "en"
+
         template = _FRAMELESS_TEMPLATE if frameless else _TEMPLATE
         return template.format(
             version=VERSION,
@@ -1026,6 +1152,8 @@ class MockupBuilder:
             page_divs=page_divs,
             first_page_id=re.sub(r"[^a-zA-Z0-9_-]", "_", first_id),
             pages_index=pages_index,
+            lang=html_lang,
+            lang_selector_html=lang_selector_html,
         )
 
     def save(self, html: str):
@@ -1068,11 +1196,288 @@ def _build_nav_html(menu_items: list[dict], page_ids: list[str]) -> str:
     return html
 
 
-# ─── HTML Template ────────────────────────────────────────────────────────────
+def _build_lang_selector_html(current_lang: str, output_path: str,
+                               sidebar: bool = False) -> str:
+    """Return HTML for the language selector widget.
+
+    Scans sibling ``<lang>/`` directories next to *output_path* to discover
+    already-generated language versions.  The current language is always shown
+    even if its file does not exist yet (it is being generated right now).
+
+    Parameters
+    ----------
+    current_lang:
+        The language code this mockup was generated for (e.g. ``"it"``).
+    output_path:
+        Path to the file being written; used to find siblings.
+    sidebar:
+        When True, renders the compact sidebar variant.
+    """
+    out = Path(output_path)
+    demo_dir = out.parent.parent   # …/evo-demo/
+    fname = out.name               # evo-demo.html (or whatever basename)
+
+    # Discover already-generated sibling language versions
+    found: list[str] = []
+    if demo_dir.is_dir():
+        for d in sorted(demo_dir.iterdir()):
+            if d.is_dir() and (d / fname).is_file() and d.name != current_lang \
+                    and d.name in LANGUAGE_NAMES:
+                found.append(d.name)
+
+    all_langs = sorted({current_lang} | set(found))
+    cur_name, cur_flag = LANGUAGE_NAMES.get(current_lang, (current_lang.upper(), "🌐"))
+
+    items: list[str] = []
+    for lang in all_langs:
+        name, flag = LANGUAGE_NAMES.get(lang, (lang.upper(), "🌐"))
+        label = f"{flag}\u00a0{name}"
+        if lang == current_lang:
+            items.append(
+                f'    <span class="mk-lang-item mk-lang-active"'
+                f' aria-current="true">{label}</span>'
+            )
+        else:
+            items.append(
+                f'    <a class="mk-lang-item" href="../{lang}/{fname}">{label}</a>'
+            )
+
+    items_html = "\n".join(items)
+    extra_cls = " mk-lang-sidebar" if sidebar else ""
+    svg_arrow = (
+        '<svg width="9" height="9" viewBox="0 0 9 9" fill="none"'
+        ' stroke="currentColor" stroke-width="1.8" stroke-linecap="round">'
+        '<path d="M1 3l3.5 3.5L8 3"/></svg>'
+    )
+    toggle_js = (
+        "var s=document.getElementById('mk-lang-sel');"
+        "s.classList.toggle('open');event.stopPropagation()"
+    )
+    return (
+        f'<div class="mk-lang-sel{extra_cls}" id="mk-lang-sel">\n'
+        f'  <button class="mk-lang-btn" title="Switch language"'
+        f' onclick="{toggle_js}">'
+        f'{cur_flag}\u00a0{cur_name} {svg_arrow}</button>\n'
+        f'  <div class="mk-lang-drop">\n{items_html}\n  </div>\n'
+        f'</div>'
+    )
+
+
+def _load_multilang_mockup(path: Path) -> tuple[OrderedDict, str]:
+    """Load language snapshots from an existing single-file mockup."""
+    if not path.is_file():
+        return OrderedDict(), ""
+
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except Exception:
+        return OrderedDict(), ""
+
+    try:
+        soup = BeautifulSoup(raw, "lxml")
+        docs_tag = soup.find("script", {"id": "evo-mockup-lang-docs"})
+        meta_tag = soup.find("script", {"id": "evo-mockup-lang-meta"})
+        if not docs_tag:
+            return OrderedDict(), ""
+
+        docs_raw = docs_tag.string if docs_tag.string is not None else docs_tag.text
+        docs_data = json.loads(docs_raw or "{}")
+        if not isinstance(docs_data, dict):
+            return OrderedDict(), ""
+
+        docs: OrderedDict[str, str] = OrderedDict()
+        for k, v in docs_data.items():
+            if isinstance(k, str) and isinstance(v, str):
+                # Preferred format: base64-encoded HTML payloads.
+                # Backward-compatible with older plain-HTML payloads.
+                try:
+                    decoded = base64.b64decode(v.encode("ascii"), validate=True)
+                    docs[k] = decoded.decode("utf-8", errors="replace")
+                except Exception:
+                    docs[k] = v
+
+        default_lang = ""
+        if meta_tag:
+            meta_raw = meta_tag.string if meta_tag.string is not None else meta_tag.text
+            meta_data = json.loads(meta_raw or "{}")
+            if isinstance(meta_data, dict):
+                dl = meta_data.get("default_lang", "")
+                if isinstance(dl, str):
+                    default_lang = dl
+
+        return docs, default_lang
+    except Exception:
+        return OrderedDict(), ""
+
+
+def _render_multilang_mockup(docs: OrderedDict, default_lang: str) -> str:
+    """Render a single HTML file containing all language snapshots."""
+    docs_b64 = OrderedDict(
+        (lang, base64.b64encode(html.encode("utf-8")).decode("ascii"))
+        for lang, html in docs.items()
+    )
+    docs_json = json.dumps(docs_b64, ensure_ascii=False)
+    meta_json = json.dumps({"default_lang": default_lang}, ensure_ascii=False)
+    names_json = json.dumps({
+        code: {"name": meta[0], "flag": meta[1]}
+        for code, meta in LANGUAGE_NAMES.items()
+    }, ensure_ascii=False)
+
+    return f"""<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+<meta charset=\"UTF-8\">
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+<title>Freetz-EVO Mockup</title>
+<style>
+html, body {{ height: 100%; margin: 0; }}
+body {{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0b1220;
+  color: #dbe6ff;
+}}
+.topbar {{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #24314f;
+  background: #111a2e;
+}}
+.title {{ font-size: 0.95rem; font-weight: 600; color: #cfe0ff; }}
+.langbox {{ display: inline-flex; align-items: center; gap: 8px; }}
+.langbox label {{ font-size: 0.85rem; color: #9cb0d8; }}
+.langbox select {{
+  border: 1px solid #334a77;
+  background: #15213a;
+  color: #e6eeff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}}
+#mockup-frame {{
+  width: 100%;
+  height: calc(100vh - 52px);
+  border: 0;
+  background: #ffffff;
+  display: block;
+}}
+</style>
+<script id=\"evo-mockup-lang-docs\" type=\"application/json\">{docs_json}</script>
+<script id=\"evo-mockup-lang-meta\" type=\"application/json\">{meta_json}</script>
+<script id=\"evo-mockup-lang-names\" type=\"application/json\">{names_json}</script>
+</head>
+<body>
+  <div class=\"topbar\">
+    <div class=\"title\">Freetz-EVO Interactive Mockup</div>
+    <div class=\"langbox\">
+      <label for=\"lang-select\">Language</label>
+      <select id=\"lang-select\"></select>
+    </div>
+  </div>
+  <iframe id=\"mockup-frame\" title=\"Freetz-EVO Mockup\"></iframe>
+
+<script>
+(function() {{
+  function parseScriptJson(id, fallback) {{
+    var el = document.getElementById(id);
+    if (!el) return fallback;
+    try {{ return JSON.parse(el.textContent || ""); }} catch (_) {{ return fallback; }}
+  }}
+
+  var docsRaw = parseScriptJson('evo-mockup-lang-docs', {{}});
+  var docs = {{}};
+  var meta = parseScriptJson('evo-mockup-lang-meta', {{}});
+  var names = parseScriptJson('evo-mockup-lang-names', {{}});
+  var select = document.getElementById('lang-select');
+  var frame = document.getElementById('mockup-frame');
+
+  function decodeB64Utf8(b64) {{
+    try {{
+      var bin = atob(b64);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      if (window.TextDecoder) return new TextDecoder('utf-8').decode(bytes);
+      var out = '';
+      for (var j = 0; j < bytes.length; j++) out += String.fromCharCode(bytes[j]);
+      return decodeURIComponent(escape(out));
+    }} catch (_) {{
+      return b64;
+    }}
+  }}
+
+  Object.keys(docsRaw || {{}}).forEach(function(lang) {{
+    var payload = docsRaw[lang];
+    if (typeof payload !== 'string') return;
+    docs[lang] = decodeB64Utf8(payload);
+  }});
+
+  var langs = Object.keys(docs).sort();
+
+  function labelFor(lang) {{
+    var info = names[lang] || {{name: lang.toUpperCase(), flag: ''}};
+    return (info.flag ? info.flag + ' ' : '') + info.name;
+  }}
+
+  function render(lang) {{
+    if (!docs[lang]) return;
+    frame.srcdoc = docs[lang];
+    if (window.location.hash !== '#' + lang) {{
+      history.replaceState(null, '', '#' + lang);
+    }}
+  }}
+
+  langs.forEach(function(lang) {{
+    var opt = document.createElement('option');
+    opt.value = lang;
+    opt.textContent = labelFor(lang);
+    select.appendChild(opt);
+  }});
+
+  var hashLang = (window.location.hash || '').replace(/^#/, '');
+  var initial = (hashLang && docs[hashLang]) ? hashLang : (meta.default_lang || langs[0] || '');
+  if (initial && docs[initial]) {{
+    select.value = initial;
+    render(initial);
+  }}
+
+  select.addEventListener('change', function() {{
+    render(select.value);
+  }});
+}})();
+</script>
+</body>
+</html>
+"""
+
+
+def _save_multilang_mockup(output_path: str, lang: str, html_doc: str):
+    """Create/update a single evo-demo.html, replacing only the selected lang."""
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    docs, prev_default = _load_multilang_mockup(out)
+    if lang in docs:
+        docs[lang] = html_doc
+    else:
+        docs = OrderedDict(sorted(dict(docs, **{lang: html_doc}).items()))
+
+    default_lang = lang if lang else (prev_default or (next(iter(docs), "en")))
+    final_html = _render_multilang_mockup(docs, default_lang)
+    out.write_text(final_html, encoding="utf-8")
+    size_kb = out.stat().st_size // 1024
+
+    action = "updated" if lang in docs and len(docs) > 1 else "created"
+    langs = ", ".join(docs.keys())
+    print(f"\n  ✓ Single-file mockup {action}: {output_path}  ({size_kb} KB)")
+    print(f"    Languages in file: {langs}")
+
+
 
 _TEMPLATE = """\
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1307,6 +1712,37 @@ html, body {{
   .mk-content {{ height: calc(100vh - 160px); }}
   .mk-title {{ font-size: 0.9rem; }}
 }}
+
+/* ── Language selector ───────────────────────────────────────────── */
+.mk-lang-sel {{
+  position: relative; flex-shrink: 0;
+}}
+.mk-lang-btn {{
+  display: flex; align-items: center; gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 5px;
+  color: #94a3b8; font-size: 0.72rem;
+  padding: 4px 8px; cursor: pointer; white-space: nowrap;
+  transition: background .15s, color .15s;
+}}
+.mk-lang-btn:hover {{ background: rgba(255,255,255,0.07); color: #e2e8f0; }}
+.mk-lang-drop {{
+  display: none; position: absolute;
+  top: calc(100% + 4px); right: 0;
+  background: #1a1f2e; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 9999; padding: 4px 0; overflow: hidden;
+}}
+.mk-lang-sel.open .mk-lang-drop {{ display: block; }}
+.mk-lang-item {{
+  display: block; padding: 6px 14px;
+  font-size: 0.76rem; color: #94a3b8;
+  text-decoration: none; white-space: nowrap;
+  transition: background .12s, color .12s;
+}}
+a.mk-lang-item:hover {{ background: rgba(59,130,246,0.1); color: #e2e8f0; }}
+.mk-lang-item.mk-lang-active {{ color: #3b82f6; font-weight: 600; cursor: default; }}
 </style>
 </head>
 <body>
@@ -1334,6 +1770,7 @@ html, body {{
         <button class="mk-chrome-btn" onclick="mockupPrev()" title="Previous page">&#8592;</button>
         <button class="mk-chrome-btn" onclick="mockupNext()" title="Next page">&#8594;</button>
       </div>
+      {lang_selector_html}
     </div>
 
     <!-- Content: sidebar + viewport -->
@@ -1457,6 +1894,12 @@ document.addEventListener('keydown', function(e) {{
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   mockupPrev();
 }});
 
+// Close language selector when clicking outside
+document.addEventListener('click', function() {{
+  var sel = document.getElementById('mk-lang-sel');
+  if (sel) sel.classList.remove('open');
+}});
+
 // Init: show first page
 _showPage(0);
 
@@ -1485,7 +1928,7 @@ document.addEventListener('submit', function(e) {{
 # ─────────────────────────────────────────────────────────────────────────────
 _FRAMELESS_TEMPLATE = """\
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1617,6 +2060,56 @@ html, body {{
 @media (max-width: 600px) {{
   .mk-sidebar {{ display: none; }}
 }}
+
+/* ── Language selector (sidebar variant) ────────────────────────── */
+.mk-lang-sel {{
+  position: relative; flex-shrink: 0;
+}}
+.mk-lang-btn {{
+  display: flex; align-items: center; gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 5px;
+  color: #94a3b8; font-size: 0.72rem;
+  padding: 4px 8px; cursor: pointer; white-space: nowrap;
+  transition: background .15s, color .15s;
+}}
+.mk-lang-btn:hover {{ background: rgba(255,255,255,0.07); color: #e2e8f0; }}
+.mk-lang-drop {{
+  display: none; position: absolute;
+  top: calc(100% + 4px); right: 0;
+  background: #1a1f2e; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; min-width: 130px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 9999; padding: 4px 0; overflow: hidden;
+}}
+.mk-lang-sel.open .mk-lang-drop {{ display: block; }}
+.mk-lang-item {{
+  display: block; padding: 6px 14px;
+  font-size: 0.76rem; color: #94a3b8;
+  text-decoration: none; white-space: nowrap;
+  transition: background .12s, color .12s;
+}}
+a.mk-lang-item:hover {{ background: rgba(59,130,246,0.1); color: #e2e8f0; }}
+.mk-lang-item.mk-lang-active {{ color: #3b82f6; font-weight: 600; cursor: default; }}
+/* Sidebar variant: full-width, expands inline */
+.mk-lang-sel.mk-lang-sidebar {{
+  border-bottom: 1px solid var(--mk-chrome-border);
+}}
+.mk-lang-sel.mk-lang-sidebar .mk-lang-btn {{
+  width: 100%; border: none; border-radius: 0;
+  font-size: 0.78rem; padding: 8px 14px;
+  background: rgba(255,255,255,0.03);
+  justify-content: space-between;
+}}
+.mk-lang-sel.mk-lang-sidebar .mk-lang-btn:hover {{ background: rgba(255,255,255,0.07); }}
+.mk-lang-sel.mk-lang-sidebar .mk-lang-drop {{
+  position: static; box-shadow: none;
+  border: none; border-radius: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  min-width: unset; padding: 0;
+  background: rgba(0,0,0,0.2);
+}}
+.mk-lang-sel.mk-lang-sidebar .mk-lang-item {{ padding: 6px 18px; }}
 </style>
 </head>
 <body>
@@ -1632,7 +2125,7 @@ html, body {{
       </svg>
       Exit Simulation
     </button>
-
+    {lang_selector_html}
     <div class="mk-sidebar-title">Navigation</div>
     {nav_html}
   </nav>
@@ -1726,6 +2219,12 @@ document.addEventListener('submit', function(e) {{
   }}, 2000);
 }});
 
+// Close language selector when clicking outside
+document.addEventListener('click', function() {{
+  var sel = document.getElementById('mk-lang-sel');
+  if (sel) sel.classList.remove('open');
+}});
+
 _showPage(0);
 </script>
 
@@ -1780,11 +2279,21 @@ def parse_args():
                         "only the nav sidebar + page viewport at full viewport size.  "
                         "An 'Exit Simulation' button is added to the sidebar.  "
                         "Useful for embedding in an iframe or as a standalone page.")
+    p.add_argument("--lang", default=None, metavar="LANG",
+                   help="Language code for this mockup (e.g. it, en, de). "
+          "When set, the generator writes/updates a single output file "
+          "(e.g. docs/screenshots/evo-demo.html). If the file does not "
+          "exist, it is created; if it exists, only the selected language "
+          "snapshot is updated in place. "
+                        f"Known codes: {', '.join(sorted(LANGUAGE_NAMES))}.")
     return p.parse_args()
 
 
 def main():
     args = parse_args()
+
+    if args.lang:
+        args.lang = args.lang.strip().lower()
 
     if not args.password:
         import getpass
@@ -1794,6 +2303,12 @@ def main():
     print(f"  Target : http://{args.host}:{args.port}")
     print(f"  Auth   : {'NEWLOGIN' if args.newlogin else 'Basic Auth'} ({args.user})")
     print(f"  Output : {args.output}")
+    if args.lang:
+        lang_label = "{} {}".format(
+            LANGUAGE_NAMES.get(args.lang, (args.lang.upper(), ""))[1],
+            LANGUAGE_NAMES.get(args.lang, (args.lang.upper(), ""))[0],
+        )
+        print(f"  Lang   : {args.lang}  ({lang_label})")
     if args.packages:
         mode = " (packages-only)" if args.packages_only else ""
         print(f"  Pkgs   : {', '.join(args.packages)}{mode}")
@@ -1876,16 +2391,21 @@ def main():
     print("\nBuilding self-contained mockup...")
     builder = MockupBuilder(session, inliner, args.output)
     html = builder.build(crawler.pages, crawler.menu_items,
-                         frameless=args.frameless)
+               frameless=args.frameless, lang=None)
 
     # Save
-    builder.save(html)
+    if args.lang:
+      _save_multilang_mockup(args.output, args.lang, html)
+    else:
+      builder.save(html)
     print(f"\n  Pages  : {len(crawler.pages)}")
     print(f"  Assets : {len(session._asset_cache)}")
     print()
     print("  To publish to GitHub Pages, commit the output file:")
-    print(f"    git add {args.output}")
-    print(f"    git commit -m 'Update EVO UI mockup'")
+    git_add_target = args.output
+    commit_msg = f"Update EVO UI mockup ({args.lang})" if args.lang else "Update EVO UI mockup"
+    print(f"    git add {git_add_target}")
+    print(f"    git commit -m '{commit_msg}'")
     print(f"    git push")
     print()
 

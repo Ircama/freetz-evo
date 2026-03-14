@@ -1,0 +1,14 @@
+--- meson.build
++++ meson.build
+@@ -463,9 +463,12 @@ statx_code = '''
+   #ifndef _GNU_SOURCE
+   #define _GNU_SOURCE
+   #endif
+   #include <sys/stat.h>
+   #include <fcntl.h>
++  #ifdef __UCLIBC__
++  #error "uClibc does not provide statx()"
++  #endif
+   int main (void)
+   {
+     struct statx stat_buf;

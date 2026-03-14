@@ -22,11 +22,11 @@ $(PKG)_DEPENDS_ON += wget-host
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_IPV6_SUPPORT
 
+$(PKG)_CONDITIONAL_PATCHES += $(if $(FREETZ_LIB_libglib_2_VERSION_ABANDON),abandon,current)
+
 ifeq ($(strip $(FREETZ_LIB_libglib_2_VERSION_ABANDON)),y)
 $(PKG)_LIBS_BUILD_DIR := $(join $($(PKG)_LIBNAMES_SHORT:%=$($(PKG)_DIR)/%/.libs/),$($(PKG)_LIBNAMES_LONG))
 $(PKG)_DEPENDS_ON += pcre libffi zlib
-
-$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_LIB_libglib_2_VERSION_ABANDON),abandon,current)
 
 # NB: glib2 does require iconv-functions, see glib/gconvert.c
 # The configure option "--with-libiconv=no" means
