@@ -7,6 +7,7 @@ menuconfig FREETZ_PACKAGE_ELFINDER
 	select FREETZ_PACKAGE_PHP_WITH_MBSTRING      if FREETZ_PACKAGE_PHP
 	select FREETZ_PACKAGE_PHP_WITH_ZLIB          if FREETZ_PACKAGE_PHP
 	select FREETZ_PACKAGE_PHP_WITH_CURL          if FREETZ_PACKAGE_PHP
+	select FREETZ_PACKAGE_PHP_WITH_OPENSSL       if FREETZ_PACKAGE_PHP
 	select FREETZ_PACKAGE_PHP_WITH_CTYPE         if FREETZ_PACKAGE_PHP
 	select FREETZ_PACKAGE_PHP_WITH_FILEINFO      if FREETZ_PACKAGE_PHP
 	select FREETZ_PACKAGE_PHP_WITH_GD            if FREETZ_PACKAGE_PHP
@@ -16,8 +17,13 @@ menuconfig FREETZ_PACKAGE_ELFINDER
 	select FREETZ_PACKAGE_PHP5_WITH_MBSTRING     if FREETZ_PACKAGE_PHP5
 	select FREETZ_PACKAGE_PHP5_WITH_ZLIB         if FREETZ_PACKAGE_PHP5
 	select FREETZ_PACKAGE_PHP5_WITH_CURL         if FREETZ_PACKAGE_PHP5
+	select FREETZ_PACKAGE_PHP5_WITH_OPENSSL      if FREETZ_PACKAGE_PHP5
 	select FREETZ_PACKAGE_PHP5_WITH_CTYPE        if FREETZ_PACKAGE_PHP5
 	select FREETZ_PACKAGE_PHP5_WITH_FILEINFO     if FREETZ_PACKAGE_PHP5
+	# Shell curl fallback for HTTPS APIs in MovieInfo plugin
+	select FREETZ_PACKAGE_CURL
+	select FREETZ_PACKAGE_CURL_SELECT_SSL
+	select FREETZ_PACKAGE_CURL_SELECT_CA_BUNDLE
 	default n
 	help
 		Installs elFinder 2.x web-based file manager to /usr/mww/elfinder.
@@ -37,9 +43,13 @@ menuconfig FREETZ_PACKAGE_ELFINDER
 		  - MBSTRING (multi-byte string handling for filenames)
 		  - ZLIB (archive support)
 		  - CURL (network volume mounts)
+		  - OPENSSL (HTTPS stream support for API access)
 		  - CTYPE (character type checking)
 		  - FILEINFO (MIME type detection)
 		  - GD (thumbnail generation)
+
+		Additional runtime prerequisite enabled automatically:
+		  - curl binary with SSL + CA bundle (MovieInfo HTTP fallback)
 
 		Accessible at: http://fritz.box:81/elfinder/
 		Configure at:  http://fritz.box:81/cgi-bin/conf/elfinder

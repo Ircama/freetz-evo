@@ -3,6 +3,10 @@
 # Source CGI helper library
 . /usr/lib/libmodcgi.sh
 
+ELFINDER_CFG_DIR="/mod/etc/conf"
+[ -d "/var/mod/etc/conf" ] && ELFINDER_CFG_DIR="/var/mod/etc/conf"
+ELFINDER_CFG_FILE="$ELFINDER_CFG_DIR/elfinder.cfg"
+
 # ===========================================================================
 # AJAX Handler
 # ===========================================================================
@@ -20,6 +24,51 @@ if [ "$AJAX_MODE" = "1" ]; then
 EOF
 
 	case "$ACTION" in
+		set_movieinfo_keys)
+			TMDB_KEY=$(cgi_param tmdb_api_key)
+			OMDB_KEY=$(cgi_param omdb_api_key)
+			SAVE_CFG=$(cgi_param save_config)
+
+			if [ -n "$TMDB_KEY" ] && ! echo "$TMDB_KEY" | grep -Eq '^[A-Za-z0-9]{16,128}$'; then
+				echo '{"success": false, "error": "Invalid TMDb API key format"}'
+			elif [ -n "$OMDB_KEY" ] && ! echo "$OMDB_KEY" | grep -Eq '^[A-Za-z0-9]{6,128}$'; then
+				echo '{"success": false, "error": "Invalid OMDb API key format"}'
+			elif [ -z "$TMDB_KEY" ] && [ -z "$OMDB_KEY" ]; then
+				echo '{"success": false, "error": "No API key provided"}'
+			elif [ "$SAVE_CFG" = "1" ] || [ "$SAVE_CFG" = "yes" ] || [ "$SAVE_CFG" = "true" ]; then
+				CFG_DIR="$ELFINDER_CFG_DIR"
+				CFG_FILE="$ELFINDER_CFG_FILE"
+				mkdir -p "$CFG_DIR" 2>/dev/null
+
+				if [ ! -f "$CFG_FILE" ]; then
+					: > "$CFG_FILE"
+				fi
+
+				if [ -n "$TMDB_KEY" ]; then
+					if grep -q '^export ELFINDER_MOVIEINFO_TMDB_API_KEY=' "$CFG_FILE"; then
+						sed -i "s|^export ELFINDER_MOVIEINFO_TMDB_API_KEY=.*|export ELFINDER_MOVIEINFO_TMDB_API_KEY='$TMDB_KEY'|" "$CFG_FILE" 2>/dev/null
+					else
+						echo "export ELFINDER_MOVIEINFO_TMDB_API_KEY='$TMDB_KEY'" >> "$CFG_FILE"
+					fi
+				fi
+
+				if [ -n "$OMDB_KEY" ]; then
+					if grep -q '^export ELFINDER_MOVIEINFO_OMDB_API_KEY=' "$CFG_FILE"; then
+						sed -i "s|^export ELFINDER_MOVIEINFO_OMDB_API_KEY=.*|export ELFINDER_MOVIEINFO_OMDB_API_KEY='$OMDB_KEY'|" "$CFG_FILE" 2>/dev/null
+					else
+						echo "export ELFINDER_MOVIEINFO_OMDB_API_KEY='$OMDB_KEY'" >> "$CFG_FILE"
+					fi
+				fi
+
+				if [ $? -eq 0 ]; then
+					echo '{"success": true, "saved": true, "message": "MovieInfo API key(s) saved"}'
+				else
+					echo '{"success": false, "error": "Failed to save MovieInfo API key(s)"}'
+				fi
+			else
+				echo '{"success": true, "saved": false, "message": "MovieInfo API key(s) accepted for this session"}'
+			fi
+			;;
 		check_directory)
 			DIRPATH=$(cgi_param dirpath)
 			# Security: allow only paths under /var/media or /tmp
@@ -38,7 +87,12 @@ EOF
 			;;
 		get_status)
 			# Determine elFinder access URL
-			[ -r /mod/etc/conf/elfinder.cfg ] && . /mod/etc/conf/elfinder.cfg
+			for _cfg in /var/mod/etc/conf/elfinder.cfg /mod/etc/conf/elfinder.cfg; do
+				if [ -r "$_cfg" ]; then
+					. "$_cfg"
+					break
+				fi
+			done
 			CONNECTOR_OK="false"
 			ELFINDER_WWW=""
 			if [ -d "/mod/external/usr/mww/elfinder" ]; then
@@ -48,6 +102,68 @@ EOF
 			fi
 			[ -f "$ELFINDER_WWW/php/connector.php" ] && CONNECTOR_OK="true"
 			echo "{\"connector\": $CONNECTOR_OK, \"basedir\": \"${ELFINDER_BASEDIR:-}\", \"theme\": \"${ELFINDER_THEME:-}\"}"
+			;;
+		set_movieinfo_tmdb_key)
+			TMDB_KEY=$(cgi_param tmdb_api_key)
+			SAVE_CFG=$(cgi_param save_config)
+
+			# Accept empty (clear), or alphanumeric API key tokens.
+			if [ -n "$TMDB_KEY" ] && ! echo "$TMDB_KEY" | grep -Eq '^[A-Za-z0-9]{16,128}$'; then
+				echo '{"success": false, "error": "Invalid TMDb API key format"}'
+			elif [ "$SAVE_CFG" = "1" ] || [ "$SAVE_CFG" = "yes" ] || [ "$SAVE_CFG" = "true" ]; then
+				CFG_DIR="$ELFINDER_CFG_DIR"
+				CFG_FILE="$ELFINDER_CFG_FILE"
+				mkdir -p "$CFG_DIR" 2>/dev/null
+
+				if [ -f "$CFG_FILE" ]; then
+					if grep -q '^export ELFINDER_MOVIEINFO_TMDB_API_KEY=' "$CFG_FILE"; then
+						sed -i "s|^export ELFINDER_MOVIEINFO_TMDB_API_KEY=.*|export ELFINDER_MOVIEINFO_TMDB_API_KEY='$TMDB_KEY'|" "$CFG_FILE" 2>/dev/null
+					else
+						echo "export ELFINDER_MOVIEINFO_TMDB_API_KEY='$TMDB_KEY'" >> "$CFG_FILE"
+					fi
+				else
+					echo "export ELFINDER_MOVIEINFO_TMDB_API_KEY='$TMDB_KEY'" > "$CFG_FILE"
+				fi
+
+				if [ $? -eq 0 ]; then
+					echo '{"success": true, "saved": true, "message": "TMDb API key saved"}'
+				else
+					echo '{"success": false, "error": "Failed to save TMDb API key"}'
+				fi
+			else
+				echo '{"success": true, "saved": false, "message": "TMDb API key accepted for this session"}'
+			fi
+			;;
+		set_movieinfo_omdb_key)
+			OMDB_KEY=$(cgi_param omdb_api_key)
+			SAVE_CFG=$(cgi_param save_config)
+
+			# Accept empty (clear), or alphanumeric API key tokens.
+			if [ -n "$OMDB_KEY" ] && ! echo "$OMDB_KEY" | grep -Eq '^[A-Za-z0-9]{6,128}$'; then
+				echo '{"success": false, "error": "Invalid OMDb API key format"}'
+			elif [ "$SAVE_CFG" = "1" ] || [ "$SAVE_CFG" = "yes" ] || [ "$SAVE_CFG" = "true" ]; then
+				CFG_DIR="$ELFINDER_CFG_DIR"
+				CFG_FILE="$ELFINDER_CFG_FILE"
+				mkdir -p "$CFG_DIR" 2>/dev/null
+
+				if [ -f "$CFG_FILE" ]; then
+					if grep -q '^export ELFINDER_MOVIEINFO_OMDB_API_KEY=' "$CFG_FILE"; then
+						sed -i "s|^export ELFINDER_MOVIEINFO_OMDB_API_KEY=.*|export ELFINDER_MOVIEINFO_OMDB_API_KEY='$OMDB_KEY'|" "$CFG_FILE" 2>/dev/null
+					else
+						echo "export ELFINDER_MOVIEINFO_OMDB_API_KEY='$OMDB_KEY'" >> "$CFG_FILE"
+					fi
+				else
+					echo "export ELFINDER_MOVIEINFO_OMDB_API_KEY='$OMDB_KEY'" > "$CFG_FILE"
+				fi
+
+				if [ $? -eq 0 ]; then
+					echo '{"success": true, "saved": true, "message": "OMDb API key saved"}'
+				else
+					echo '{"success": false, "error": "Failed to save OMDb API key"}'
+				fi
+			else
+				echo '{"success": true, "saved": false, "message": "OMDb API key accepted for this session"}'
+			fi
 			;;
 		*)
 			echo '{"error": "Unknown action"}'
@@ -62,7 +178,12 @@ fi
 # Load configuration
 # ===========================================================================
 [ -r /etc/options.cfg ] && . /etc/options.cfg
-[ -r /mod/etc/conf/elfinder.cfg ] && . /mod/etc/conf/elfinder.cfg
+for _cfg in /var/mod/etc/conf/elfinder.cfg /mod/etc/conf/elfinder.cfg; do
+	if [ -r "$_cfg" ]; then
+		. "$_cfg"
+		break
+	fi
+done
 
 # ===========================================================================
 # Determine if connector.php is already generated
@@ -278,6 +399,48 @@ EOF
 fi
 
 # ===========================================================================
+# Section: MovieInfo (TMDb / OMDb / Wikipedia / IMDb)
+# ===========================================================================
+sec_begin "$(lang de:"MovieInfo (TMDb / OMDb / Wikipedia / IMDb)" en:"MovieInfo (TMDb / OMDb / Wikipedia / IMDb)" it:"MovieInfo (TMDb / OMDb / Wikipedia / IMDb)")"
+cat << EOF
+<p>
+<small>$(lang \
+	de:"Aktiviert den neuen MovieInfo-Button in elFinder.  Daten werden aus dem Dateinamen abgeleitet und online abgefragt." \
+	en:"Enables the new MovieInfo button in elFinder. Data is guessed from filename and fetched online." \
+	it:"Abilita il nuovo pulsante MovieInfo in elFinder. I dati vengono stimati dal nome file e recuperati online.")</small>
+</p>
+<p>
+<label for='movieinfo_tmdb_api_key'>TMDb API key:</label>
+<input type='text' id='movieinfo_tmdb_api_key' name='movieinfo_tmdb_api_key' size='52'
+	value="$(html "${ELFINDER_MOVIEINFO_TMDB_API_KEY:-}")"
+	placeholder="$(lang de:"(optional)" en:"(optional)" it:"(opzionale)")">
+</p>
+<p>
+<label for='movieinfo_omdb_api_key'>OMDb API key:</label>
+<input type='text' id='movieinfo_omdb_api_key' name='movieinfo_omdb_api_key' size='52'
+	value="$(html "${ELFINDER_MOVIEINFO_OMDB_API_KEY:-}")"
+	placeholder="$(lang de:"(optional fallback)" en:"(optional fallback)" it:"(fallback opzionale)")">
+</p>
+<p>
+<label for='movieinfo_provider'>$(lang de:"Provider-Reihenfolge:" en:"Provider order:" it:"Ordine provider:")</label>
+<select id='movieinfo_provider' name='movieinfo_provider'>
+	<option value='auto'$( [ "${ELFINDER_MOVIEINFO_PROVIDER:-auto}" = "auto" ] && echo " selected")>auto (TMDb → OMDb → Wikipedia → IMDb)</option>
+	<option value='tmdb'$( [ "${ELFINDER_MOVIEINFO_PROVIDER:-auto}" = "tmdb" ] && echo " selected")>TMDb only</option>
+	<option value='omdb'$( [ "${ELFINDER_MOVIEINFO_PROVIDER:-auto}" = "omdb" ] && echo " selected")>OMDb only</option>
+	<option value='wikipedia'$( [ "${ELFINDER_MOVIEINFO_PROVIDER:-auto}" = "wikipedia" ] && echo " selected")>Wikipedia only (no key)</option>
+	<option value='imdb'$( [ "${ELFINDER_MOVIEINFO_PROVIDER:-auto}" = "imdb" ] && echo " selected")>IMDb only (no key)</option>
+</select>
+</p>
+<p>
+<label for='movieinfo_lang'>$(lang de:"Metadaten-Sprache:" en:"Metadata language:" it:"Lingua metadati:")</label>
+<input type='text' id='movieinfo_lang' name='movieinfo_lang' size='8' maxlength='8'
+	value="$(html "${ELFINDER_MOVIEINFO_LANG:-en}")"
+	placeholder='en'>
+</p>
+EOF
+sec_end
+
+# ===========================================================================
 # Section: Visual Theme (only shown if at least one theme directory exists)
 # ===========================================================================
 THEMES_DIR=""
@@ -314,30 +477,79 @@ EOF
 EOF
     sec_end
 fi
-		.then(function(r) { return r.text(); })
-		.then(function(text) {
-			var marker = 'Content-Type: application/json';
-			var pos = text.indexOf(marker);
-			if (pos === -1) throw new Error('bad response');
-			var first = text.indexOf('{', pos + marker.length);
-			var depth = 0, end = -1;
-			for (var i = first; i < text.length; i++) {
-				if (text[i] === '{') depth++;
-				else if (text[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+
+cat << 'ENDSCRIPT'
+<script>
+function parseAjaxJson(text) {
+	var marker = 'Content-Type: application/json';
+	var markerPos = text.indexOf(marker);
+	if (markerPos === -1) throw new Error('Invalid response format');
+
+	var firstBrace = text.indexOf('{', markerPos + marker.length);
+	if (firstBrace === -1) throw new Error('No JSON in response');
+
+	var braceCount = 0;
+	var jsonEnd = -1;
+	for (var i = firstBrace; i < text.length; i++) {
+		if (text[i] === '{') braceCount++;
+		else if (text[i] === '}') {
+			braceCount--;
+			if (braceCount === 0) {
+				jsonEnd = i + 1;
+				break;
 			}
-			var data = JSON.parse(text.substring(first, end));
-			if (data.exists) {
-				status.style.color = 'green';
-				status.textContent = '✓';
-			} else {
-				status.style.color = '#c00';
-				status.textContent = '✗ not found';
-			}
-		})
-		.catch(function() {
+		}
+	}
+
+	if (jsonEnd === -1) throw new Error('Incomplete JSON');
+	return JSON.parse(text.substring(firstBrace, jsonEnd));
+}
+
+function checkDir(dirpath) {
+	var status = document.getElementById('basedir_status');
+	if (!status) return;
+
+	dirpath = (dirpath || '').trim();
+	if (!dirpath) {
+		status.style.color = '#c00';
+		status.textContent = 'Please enter a path';
+		return;
+	}
+
+	status.style.color = '#666';
+	status.textContent = 'checking...';
+
+	var endpoints = [
+		'/cgi-bin/elfinder.cgi',
+		'/cgi-bin/conf/elfinder',
+		'/cgi-bin/conf/elfinder.cgi',
+		'/cgi-bin/elfinder'
+	];
+	var idx = 0;
+
+	(function attempt(lastErr) {
+		if (idx >= endpoints.length) {
 			status.style.color = '#c00';
-			status.textContent = '?';
-		});
+			status.textContent = 'Error: ' + (lastErr && lastErr.message ? lastErr.message : 'No working CGI endpoint');
+			return;
+		}
+		var url = endpoints[idx++] + '?ajax=1&action=check_directory&dirpath=' + encodeURIComponent(dirpath);
+		fetch(url)
+			.then(function(r) { return r.text(); })
+			.then(function(text) {
+				var data = parseAjaxJson(text);
+				if (data.exists) {
+					status.style.color = 'green';
+					status.textContent = '\u2713';
+				} else {
+					status.style.color = '#c00';
+					status.textContent = '\u2717 not found';
+				}
+			})
+			.catch(function(err) {
+				attempt(err);
+			});
+	})();
 }
 </script>
 ENDSCRIPT

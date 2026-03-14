@@ -52,6 +52,32 @@ function elfinder_parse_cfg($file) {
     return $cfg;
 }
 
+function elfinder_json_exit($payload) {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode($payload);
+    exit;
+}
+
+function elfinder_cfg_quote($value) {
+    return "'" . str_replace("'", "'\\''", (string)$value) . "'";
+}
+
+function elfinder_cfg_upsert_export(&$lines, $key, $value) {
+    $prefix = 'export ' . $key . '=';
+    $replacement = $prefix . elfinder_cfg_quote($value);
+    $updated = false;
+    foreach ($lines as $i => $line) {
+        if (strpos(trim($line), $prefix) === 0) {
+            $lines[$i] = $replacement;
+            $updated = true;
+            break;
+        }
+    }
+    if (!$updated) {
+        $lines[] = $replacement;
+    }
+}
+
 // Load defaults first: check multiple locations for resilience
 // (firmware build: /etc/default.elfinder/, dev deploy: /mod/external/etc/default.elfinder/)
 $_cfg = array();
@@ -63,9 +89,77 @@ foreach (array(
     $_cfg = elfinder_parse_cfg($_cfgfile);
     if (!empty($_cfg)) break;
 }
-$_saved = elfinder_parse_cfg('/mod/etc/conf/elfinder.cfg');
-foreach ($_saved as $k => $v) {
-    $_cfg[$k] = $v;
+// Saved config may live at /mod/etc/conf or /var/mod/etc/conf depending on setup.
+foreach (array(
+    '/mod/etc/conf/elfinder.cfg',
+    '/var/mod/etc/conf/elfinder.cfg',
+) as $_savedCfgFile) {
+    $_saved = elfinder_parse_cfg($_savedCfgFile);
+    foreach ($_saved as $k => $v) {
+        $_cfg[$k] = $v;
+    }
+}
+
+// Custom command used by MovieInfo UI to persist TMDb/OMDb keys directly
+// through the authenticated connector path, avoiding endpoint alias issues.
+if (isset($_REQUEST['cmd']) && (string)$_REQUEST['cmd'] === 'movieinfo_setkeys') {
+    $_tmdbKey = isset($_REQUEST['tmdb_api_key']) ? trim((string)$_REQUEST['tmdb_api_key']) : '';
+    $_omdbKey = isset($_REQUEST['omdb_api_key']) ? trim((string)$_REQUEST['omdb_api_key']) : '';
+    $_saveCfg = isset($_REQUEST['save_config']) ? strtolower(trim((string)$_REQUEST['save_config'])) : '0';
+
+    if ($_tmdbKey !== '' && !preg_match('/^[A-Za-z0-9]{16,128}$/', $_tmdbKey)) {
+        elfinder_json_exit(array('success' => false, 'error' => 'Invalid TMDb API key format'));
+    }
+    if ($_omdbKey !== '' && !preg_match('/^[A-Za-z0-9]{6,128}$/', $_omdbKey)) {
+        elfinder_json_exit(array('success' => false, 'error' => 'Invalid OMDb API key format'));
+    }
+    if ($_tmdbKey === '' && $_omdbKey === '') {
+        elfinder_json_exit(array('success' => false, 'error' => 'No API key provided'));
+    }
+
+    if ($_saveCfg === '1' || $_saveCfg === 'yes' || $_saveCfg === 'true') {
+        $_cfgDir = is_dir('/var/mod/etc/conf') ? '/var/mod/etc/conf' : '/mod/etc/conf';
+        $_cfgFile = $_cfgDir . '/elfinder.cfg';
+        if (!is_dir($_cfgDir)) {
+            @mkdir($_cfgDir, 0777, true);
+        }
+
+        $_lines = array();
+        if (is_readable($_cfgFile)) {
+            $_raw = @file($_cfgFile, FILE_IGNORE_NEW_LINES);
+            if (is_array($_raw)) {
+                $_lines = $_raw;
+            }
+        }
+
+        if ($_tmdbKey !== '') {
+            elfinder_cfg_upsert_export($_lines, 'ELFINDER_MOVIEINFO_TMDB_API_KEY', $_tmdbKey);
+        }
+        if ($_omdbKey !== '') {
+            elfinder_cfg_upsert_export($_lines, 'ELFINDER_MOVIEINFO_OMDB_API_KEY', $_omdbKey);
+        }
+
+        $_out = implode("\n", $_lines);
+        if ($_out !== '') {
+            $_out .= "\n";
+        }
+
+        if (@file_put_contents($_cfgFile, $_out) === false) {
+            elfinder_json_exit(array('success' => false, 'error' => 'Failed to save MovieInfo API key(s)'));
+        }
+
+        elfinder_json_exit(array(
+            'success' => true,
+            'saved' => true,
+            'message' => 'MovieInfo API key(s) saved'
+        ));
+    }
+
+    elfinder_json_exit(array(
+        'success' => true,
+        'saved' => false,
+        'message' => 'MovieInfo API key(s) accepted for this session'
+    ));
 }
 
 // Helper to get config value with fallback
@@ -99,6 +193,48 @@ $_unrar    = elfinder_find_bin(elfcfg('ELFINDER_UNRAR_PATH'), 'unrar');
 $_7z       = elfinder_find_bin(elfcfg('ELFINDER_7Z_PATH'),    array('7za', '7z'));
 $_convert  = elfinder_find_bin(elfcfg('ELFINDER_CONVERT_PATH'), 'convert');
 $_mediainfo = elfinder_find_bin(elfcfg('ELFINDER_MEDIAINFO_PATH'), 'mediainfo');
+$_movieInfoTmdbKey = trim((string)elfcfg('ELFINDER_MOVIEINFO_TMDB_API_KEY', ''));
+$_movieInfoOmdbKey = trim((string)elfcfg('ELFINDER_MOVIEINFO_OMDB_API_KEY', ''));
+$_movieInfoProvider = strtolower(trim((string)elfcfg('ELFINDER_MOVIEINFO_PROVIDER', 'auto')));
+$_movieInfoLang = trim((string)elfcfg('ELFINDER_MOVIEINFO_LANG', 'en'));
+
+// Run MediaInfo plugin only when explicitly requested by the UI.
+$_withMediaInfo = false;
+if (isset($_REQUEST['with_mediainfo'])) {
+    $_miReq = strtolower(trim((string)$_REQUEST['with_mediainfo']));
+    if ($_miReq === '1' || $_miReq === 'yes' || $_miReq === 'true' || $_miReq === 'on') {
+        $_withMediaInfo = true;
+    }
+}
+
+// Optional request-time override (interactive panel in UI):
+// enable only when explicitly requested to avoid browser-stored stale values
+// silently overriding valid persisted config.
+$_useRequestKeys = false;
+if (isset($_REQUEST['movieinfo_use_request_keys'])) {
+    $_tmpUse = strtolower(trim((string)$_REQUEST['movieinfo_use_request_keys']));
+    if ($_tmpUse === '1' || $_tmpUse === 'yes' || $_tmpUse === 'true' || $_tmpUse === 'on') {
+        $_useRequestKeys = true;
+    }
+}
+if ($_useRequestKeys && isset($_REQUEST['movieinfo_tmdb_api_key'])) {
+    $_tmpTmdb = trim((string)$_REQUEST['movieinfo_tmdb_api_key']);
+    if ($_tmpTmdb !== '') {
+        $_movieInfoTmdbKey = $_tmpTmdb;
+    }
+}
+if ($_useRequestKeys && isset($_REQUEST['movieinfo_omdb_api_key'])) {
+    $_tmpOmdb = trim((string)$_REQUEST['movieinfo_omdb_api_key']);
+    if ($_tmpOmdb !== '') {
+        $_movieInfoOmdbKey = $_tmpOmdb;
+    }
+}
+if (isset($_REQUEST['movieinfo_provider'])) {
+    $_tmpProvider = strtolower(trim((string)$_REQUEST['movieinfo_provider']));
+    if ($_tmpProvider === 'tmdb' || $_tmpProvider === 'omdb' || $_tmpProvider === 'wikipedia' || $_tmpProvider === 'imdb' || $_tmpProvider === 'auto') {
+        $_movieInfoProvider = $_tmpProvider;
+    }
+}
 
 if ($_unrar   !== '') define('ELFINDER_UNRAR_PATH',   $_unrar);
 if ($_7z      !== '') define('ELFINDER_7Z_PATH',      $_7z);
@@ -193,7 +329,7 @@ if (!is_dir($_trashPath)) {
 // MediaInfo plugin
 // ---------------------------------------------------------------------------
 $_mediaInfoPlugin = array();
-if ($_mediainfo !== '') {
+if ($_withMediaInfo && $_mediainfo !== '') {
     $_mediaInfoPlugin = array(
         'MediaInfo' => array(
             'enable'       => true,
@@ -201,6 +337,23 @@ if ($_mediainfo !== '') {
         ),
     );
 }
+
+$_movieInfoPlugin = array();
+if ($_movieInfoProvider !== 'tmdb' && $_movieInfoProvider !== 'omdb' && $_movieInfoProvider !== 'wikipedia' && $_movieInfoProvider !== 'imdb' && $_movieInfoProvider !== 'auto') {
+    $_movieInfoProvider = 'auto';
+}
+$_movieInfoPlugin = array(
+    'MovieInfo' => array(
+        'enable'      => true,
+        'provider'    => $_movieInfoProvider,
+        'tmdbApiKey'  => $_movieInfoTmdbKey,
+        'omdbApiKey'  => $_movieInfoOmdbKey,
+        'language'    => $_movieInfoLang,
+        'cacheFile'   => '/tmp/elfinder-movieinfo-cache.json',
+        'cacheTtl'    => 43200,
+        'httpTimeout' => 4,
+    ),
+);
 
 // ---------------------------------------------------------------------------
 // elFinder connector options
@@ -213,8 +366,12 @@ if ($_mediainfo !== '') {
 $_bind   = array();
 $_plugin = array();
 if (!empty($_mediaInfoPlugin)) {
-    $_bind['info'] = array('Plugin.MediaInfo.onInfo');
-    $_plugin       = $_mediaInfoPlugin;
+    $_bind['info'][] = 'Plugin.MediaInfo.onInfo';
+    $_plugin = array_merge($_plugin, $_mediaInfoPlugin);
+}
+if (!empty($_movieInfoPlugin)) {
+    $_bind['info'][] = 'Plugin.MovieInfo.onInfo';
+    $_plugin = array_merge($_plugin, $_movieInfoPlugin);
 }
 
 $opts = array(

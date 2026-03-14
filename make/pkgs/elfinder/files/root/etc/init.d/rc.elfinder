@@ -10,8 +10,23 @@ case $1 in
 	unload)
 		modunreg cgi 'elfinder'
 		;;
+	start)
+		# CGI package, nothing to daemonize.
+		modreg cgi 'elfinder' 'elFinder'
+		;;
+	stop)
+		# Keep this non-fatal for framework compatibility.
+		modunreg cgi 'elfinder'
+		;;
+	restart)
+		modunreg cgi 'elfinder'
+		modreg cgi 'elfinder' 'elFinder'
+		;;
+	status)
+		echo "$DAEMON: cgi package (no daemon process)"
+		;;
 	*)
-		echo "Usage: $0 [load|unload]" 1>&2
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
 		exit 1
 		;;
 esac

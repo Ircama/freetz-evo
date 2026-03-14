@@ -361,6 +361,89 @@ class PageProcessor:
     def __init__(self, inliner: AssetInliner):
         self.inliner = inliner
 
+    @staticmethod
+    def _looks_sensitive_field(name: str) -> bool:
+      if not name:
+        return False
+      return bool(re.search(
+        r"(?i)(pass(word|wd)?|pwd|secret|token|api[_-]?key|tmdb[_-]?api[_-]?key|omdb[_-]?api[_-]?key|license[_-]?key|private[_-]?key)",
+        name,
+      ))
+
+    def _sanitize_sensitive_text(self, text: str) -> str:
+      """Redact secrets that may appear in captured HTML/JS/config payloads."""
+      if not isinstance(text, str) or text == "":
+        return text
+
+      out = text
+
+      # Explicitly remove known sensitive phrase requested by user.
+      out = re.sub(r"(?i)Password\s+AVM\s+predefinita", "[REDACTED]", out)
+
+      key_names = r"(?:tmdb_api_key|omdb_api_key|api[_-]?key|apikey|secret|token|password|passwd|pwd|ELFINDER_[A-Z0-9_]*(?:KEY|PASSWORD)[A-Z0-9_]*)"
+
+      # URL/query-string style key=value
+      out = re.sub(rf"(?i)([?&]{key_names}=)[^&\s'\"<>]*", r"\1[REDACTED]", out)
+      out = re.sub(rf"(?i)\b({key_names})\s*=\s*([^&\s'\"<>]+)", r"\1=[REDACTED]", out)
+      out = re.sub(rf"(?i)\b({key_names})\s*=\s*'[^']*'", r"\1='[REDACTED]'", out)
+      out = re.sub(rf"(?i)\b({key_names})\s*=\s*\"[^\"]*\"", r'\1="[REDACTED]"', out)
+
+      # JSON style
+      out = re.sub(rf'(?i)("{key_names}"\s*:\s*")[^"]*(")', r'\1[REDACTED]\2', out)
+
+      # Shell export style
+      out = re.sub(rf"(?i)(export\s+{key_names}\s*=\s*)[^\n\r]*", r"\1'[REDACTED]'", out)
+
+      return out
+
+    def _sanitize_sensitive_dom(self, body: "Tag") -> None:
+      """Clear password/key values from form fields and visible sensitive text."""
+      for inp in body.find_all("input"):
+        i_type = (inp.get("type") or "").strip().lower()
+        i_name = " ".join([
+          inp.get("name", ""),
+          inp.get("id", ""),
+          inp.get("data-field", ""),
+        ])
+        if i_type == "password" or self._looks_sensitive_field(i_name):
+          inp["value"] = ""
+          if i_type != "hidden":
+            inp["placeholder"] = "[REDACTED]"
+
+      for ta in body.find_all("textarea"):
+        t_name = " ".join([ta.get("name", ""), ta.get("id", "")])
+        if self._looks_sensitive_field(t_name):
+          ta.string = ""
+
+      for node in body.find_all(string=True):
+        if re.search(r"(?i)Password\s+AVM\s+predefinita", str(node)):
+          node.replace_with(re.sub(r"(?i)Password\s+AVM\s+predefinita", "[REDACTED]", str(node)))
+
+      # Redact <dd> values when their paired <dt> label is sensitive/redacted.
+      for dt in body.find_all("dt"):
+        dt_text = dt.get_text(" ", strip=True)
+        if not dt_text:
+          continue
+        if not (
+          "[REDACTED]" in dt_text
+          or re.search(r"(?i)(password|passwd|pwd|api\s*key|token|secret|chiave|key)", dt_text)
+        ):
+          continue
+
+        dd = dt.find_next_sibling("dd")
+        if dd is None:
+          continue
+
+        # Remove potential sensitive attributes first (e.g. title="secret").
+        for tag in dd.find_all(True):
+          for attr in ("title", "value", "data-value", "data-secret", "aria-label"):
+            if tag.has_attr(attr):
+              tag[attr] = "[REDACTED]"
+
+        # Replace visible value with a fixed redaction marker.
+        dd.clear()
+        dd.append("[REDACTED]")
+
     # ── AJAX file pre-loading helpers ────────────────────────────────────────
 
     def _find_ajax_file_keys(self, html: str) -> list[str]:
@@ -684,15 +767,17 @@ root@fritz:/var/mod/root# <span style="background:#c9d1d9;color:#0d0d0d">█</sp
                     data = self.inliner.session.fetch_asset(
                         self.inliner._abs(src, url))
                     if data:
-                        extra_scripts += f"\n// --- {src} ---\n{data.decode('utf-8', errors='replace')}\n"
+                      sanitized_src = self._sanitize_sensitive_text(data.decode('utf-8', errors='replace'))
+                      extra_scripts += f"\n// --- {src} ---\n{sanitized_src}\n"
                 else:
                     if "serviceWorker" in s_text or "navigator.serviceWorker" in s_text:
                         continue
-                    extra_scripts += "\n" + s_text + "\n"
+                    extra_scripts += "\n" + self._sanitize_sensitive_text(s_text) + "\n"
 
         # --- Inline img src ---
         body = soup.find("body") or soup
         self._patch_ttyd_iframes(body, url)
+        self._sanitize_sensitive_dom(body)
         for img in body.find_all("img"):
             src = img.get("src", "")
             if src and not src.startswith("data:"):
@@ -748,7 +833,7 @@ root@fritz:/var/mod/root# <span style="background:#c9d1d9;color:#0d0d0d">█</sp
             for key in file_keys:
                 content = self._fetch_ajax_file(cgi_path, key)
                 if content is not None:
-                    preloaded[key] = content
+                    preloaded[key] = self._sanitize_sensitive_text(content)
             if preloaded:
                 extra_scripts += self._build_fetch_interceptor(preloaded)
 
@@ -756,9 +841,11 @@ root@fritz:/var/mod/root# <span style="background:#c9d1d9;color:#0d0d0d">█</sp
         body_tag = soup.find("body")
         if body_tag:
             # Remove the very outer #world wrapper we want to keep for styling
-            body_html = body_tag.decode_contents()
+            body_html = self._sanitize_sensitive_text(body_tag.decode_contents())
         else:
-            body_html = str(soup)
+            body_html = self._sanitize_sensitive_text(str(soup))
+
+        extra_scripts = self._sanitize_sensitive_text(extra_scripts)
 
         return {
             "title": title,

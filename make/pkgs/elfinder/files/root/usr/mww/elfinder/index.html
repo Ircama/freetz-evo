@@ -107,6 +107,7 @@
 		/* content so it is not overridden by the default sprite fallback.   */
 		.elfinder-button-icon-skin,
 		.elfinder-button-icon-mediainfo,
+		.elfinder-button-icon-movieinfo,
 		.elfinder-button-icon-vlc {
 			background: none !important;
 			display: flex !important;
@@ -115,8 +116,28 @@
 		}
 		.elfinder-button-icon-skin::before     { content: '🎨'; font-size: 15px; line-height: 1; }
 		.elfinder-button-icon-mediainfo::before { content: '🎬'; font-size: 15px; line-height: 1; }
+		.elfinder-button-icon-movieinfo::before { content: '🎞️'; font-size: 15px; line-height: 1; }
 		.elfinder-button-icon-vlc::before      { content: '📺'; font-size: 15px; line-height: 1; }
 
+		.ef-movieinfo-popup {
+			min-height: 90px;
+			max-height: calc(100vh - 180px);
+			overflow-y: auto;
+			overflow-x: hidden;
+			padding-right: 2px;
+		}
+		.ef-movieinfo-popup .elfinder-spinner { margin: 18px auto; display: block; }
+		.ef-movieinfo-card { font-size: 13px; color: #1f2937; }
+		.ef-movieinfo-card .ef-mi-head { display: flex; gap: 12px; align-items: flex-start; }
+		.ef-movieinfo-card .ef-mi-poster {
+			width: 110px; min-width: 110px; height: auto;
+			border-radius: 6px; border: 1px solid #d1d5db;
+			background: #f3f4f6;
+		}
+		.ef-movieinfo-card .ef-mi-main { min-width: 0; }
+		.ef-movieinfo-card .ef-mi-meta { color: #374151; line-height: 1.45; }
+		.ef-movieinfo-card a { color: #2563eb; text-decoration: none; }
+		.ef-movieinfo-card a:hover { text-decoration: underline; }
 		/* ── Statusbar colours ────────────────────────────────────────────── */
 		.elfinder .elfinder-statusbar .elfinder-path      { color: #1565c0; }
 		.elfinder .elfinder-statusbar .elfinder-stat-size { color: #6a0dad; }
@@ -268,7 +289,7 @@
 			close: function() { $(this).dialog('destroy').remove(); }
 		});
 		fm.request({
-			data: { cmd: 'info', targets: [file.hash] },
+			data: { cmd: 'info', targets: [file.hash], with_mediainfo: 1 },
 			preventDefault: true
 		}).done(function(data) {
 			var f = data.files && data.files.length ? data.files[0] : null;
@@ -279,6 +300,605 @@
 		}).fail(function() {
 			$content.html('<p style="color:#c00;padding:8px">MediaInfo request failed.</p>');
 		});
+	}
+
+	// ---------------------------------------------------------------------------
+	// MovieInfo popup – uses filename inference + online metadata lookup
+	// provided by the MovieInfo PHP plugin (TMDb / OMDb / Wikipedia / IMDb).
+	// ---------------------------------------------------------------------------
+	function efMovieInfoLog(level, msg, data) {
+		var prefix = '[MovieInfo] ';
+		try {
+			if (level === 'error') {
+				if (typeof data !== 'undefined') {
+					console.error(prefix + msg, data);
+				} else {
+					console.error(prefix + msg);
+				}
+			} else {
+				if (typeof data !== 'undefined') {
+					console.debug(prefix + msg, data);
+				} else {
+					console.debug(prefix + msg);
+				}
+			}
+		} catch (e) {}
+	}
+
+	function efAjaxEndpoints(action) {
+		// Probe several known CGI paths: different firmware layouts expose
+		// different endpoint aliases (conf, .cgi, bare name).
+		var qs = '?ajax=1&action=' + encodeURIComponent(action);
+		var bases = [];
+		var persistedBase = '';
+		try { persistedBase = localStorage.getItem('ef_ajax_base') || ''; } catch (e) {}
+		if (persistedBase) {
+			bases.push(persistedBase);
+		}
+		if (window.__efAjaxBase) {
+			bases.push(window.__efAjaxBase);
+		}
+		bases.push('/cgi-bin/conf/elfinder');
+		bases.push('/cgi-bin/elfinder.cgi');
+		bases.push('/cgi-bin/conf/elfinder.cgi');
+		bases.push('/cgi-bin/elfinder');
+		var out = [];
+		for (var i = 0; i < bases.length; i++) {
+			if (out.indexOf(bases[i]) === -1) {
+				out.push(bases[i]);
+			}
+		}
+		for (var j = 0; j < out.length; j++) {
+			out[j] += qs;
+		}
+		return out;
+	}
+
+	function efParseWrappedAjaxJson(text) {
+		if (!text) {
+			throw new Error('Invalid response format');
+		}
+		var trimmed = String(text).trim();
+		if (trimmed.indexOf('{') === 0) {
+			return JSON.parse(trimmed);
+		}
+		if (trimmed.indexOf('id_go') !== -1) {
+			throw new Error('Authentication required');
+		}
+		// Some targets wrap JSON in HTML (<pre>...</pre>), others return
+		// plain text with a Content-Type marker. Accept both formats.
+		var marker = 'Content-Type: application/json';
+		var markerPos = trimmed.indexOf(marker);
+		if (markerPos !== -1) {
+			var marked = trimmed.substring(markerPos + marker.length);
+			var firstMarked = marked.indexOf('{');
+			if (firstMarked !== -1) {
+				var payloadMarked = marked.substring(firstMarked);
+				var depthMarked = 0;
+				for (var j = 0; j < payloadMarked.length; j++) {
+					if (payloadMarked[j] === '{') depthMarked++;
+					else if (payloadMarked[j] === '}') {
+						depthMarked--;
+						if (depthMarked === 0) {
+							return JSON.parse(payloadMarked.substring(0, j + 1));
+						}
+					}
+				}
+			}
+		}
+
+		var m = trimmed.match(/<pre[^>]*>\s*Content-Type:\s*application\/json\s*([\s\S]*?)<\/pre>/i);
+		if (!m || !m[1]) throw new Error('Invalid response format');
+		var payload = String(m[1]).trim();
+		var first = payload.indexOf('{');
+		if (first === -1) throw new Error('No JSON payload');
+		var depth = 0, end = -1;
+		for (var i = first; i < payload.length; i++) {
+			if (payload[i] === '{') depth++;
+			else if (payload[i] === '}') {
+				depth--;
+				if (depth === 0) { end = i + 1; break; }
+			}
+		}
+		if (end === -1) throw new Error('Incomplete JSON payload');
+		return JSON.parse(payload.substring(first, end));
+	}
+
+	function efCallAjaxAction(action, params) {
+		params = params || {};
+		var endpoints = efAjaxEndpoints(action);
+		var idx = 0;
+
+		var buildTail = function() {
+			var tail = '';
+			for (var k in params) {
+				if (!Object.prototype.hasOwnProperty.call(params, k)) continue;
+				tail += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(String(params[k]));
+			}
+			return tail;
+		};
+
+		var tail = buildTail();
+
+		return new Promise(function(resolve, reject) {
+			var attempt = function(lastErr) {
+				if (idx >= endpoints.length) {
+					reject(lastErr || new Error('No working AJAX endpoint found'));
+					return;
+				}
+
+				var url = endpoints[idx++] + tail;
+				efMovieInfoLog('debug', 'Trying AJAX endpoint', { action: action, url: url });
+
+				fetch(url)
+					.then(function(r) {
+						return r.text().then(function(text) {
+							return {
+								url: url,
+								status: r.status,
+								ok: r.ok,
+								text: text
+							};
+						});
+					})
+					.then(function(resp) {
+						efMovieInfoLog('debug', 'AJAX raw response received', {
+							action: action,
+							url: resp.url,
+							status: resp.status,
+							ok: resp.ok,
+							responseLength: resp.text ? resp.text.length : 0,
+							head: resp.text ? resp.text.substring(0, 120) : ''
+						});
+						if (!resp.ok) {
+							throw new Error('HTTP ' + resp.status);
+						}
+						var data = efParseWrappedAjaxJson(resp.text);
+						if (data && typeof data.error === 'string' && /unknown action/i.test(data.error)) {
+							efMovieInfoLog('debug', 'Endpoint returned Unknown action, trying next endpoint', {
+								action: action,
+								url: resp.url
+							});
+							throw new Error('Unknown action');
+						}
+						window.__efAjaxBase = resp.url.split('?')[0];
+						try { localStorage.setItem('ef_ajax_base', window.__efAjaxBase); } catch (e) {}
+						resolve({ data: data, url: resp.url, status: resp.status });
+					})
+					.catch(function(err) {
+						var willRetry = idx < endpoints.length;
+						efMovieInfoLog(willRetry ? 'debug' : 'error', 'AJAX endpoint attempt failed', {
+							action: action,
+							url: url,
+							willRetry: willRetry,
+							error: err && err.message ? err.message : err
+						});
+						attempt(err);
+					});
+			};
+
+			attempt();
+		});
+	}
+
+	function efBindMovieInfoTmdbPanel($content, fm, file, reloadFn) {
+		var $panel = $content.find('.ef-mi-tmdb-panel');
+		if (!$panel.length) return;
+
+		var $tmdbKey = $panel.find('.ef-mi-key-tmdb, .ef-mi-tmdb-key').first();
+		var $omdbKey = $panel.find('.ef-mi-key-omdb').first();
+		var $providerBtns = $panel.find('.ef-mi-provider-btn');
+		var $editKeysBtn = $panel.find('.ef-mi-edit-keys').first();
+		var $keyFields = $panel.find('.ef-mi-key-fields').first();
+		var $save = $panel.find('.ef-mi-keys-save, .ef-mi-tmdb-save').first();
+		var $btn = $panel.find('.ef-mi-keys-apply, .ef-mi-tmdb-apply').first();
+		var $status = $panel.find('.ef-mi-keys-status, .ef-mi-tmdb-status').first();
+		var hasTmdbConfigured = $panel.attr('data-ef-mi-has-tmdb-key') === '1';
+		var hasOmdbConfigured = $panel.attr('data-ef-mi-has-omdb-key') === '1';
+		var keysCollapsed = $panel.attr('data-ef-mi-keys-collapsed') === '1';
+		var selectedProvider = String($panel.attr('data-ef-mi-selected-provider') || 'auto').toLowerCase();
+		if (!/^(auto|tmdb|omdb|wikipedia|imdb)$/.test(selectedProvider)) selectedProvider = 'auto';
+
+		var setStatus = function(message, kind) {
+			if (!$status.length) return;
+			var css = {
+				'margin-top': '6px',
+				'font-size': '12px',
+				'padding': '6px 8px',
+				'border-radius': '4px',
+				'border': '1px solid transparent'
+			};
+			if (kind === 'success') {
+				css.color = '#166534';
+				css.background = '#ecfdf3';
+				css['border-color'] = '#86efac';
+			} else if (kind === 'error') {
+				css.color = '#b91c1c';
+				css.background = '#fef2f2';
+				css['border-color'] = '#fca5a5';
+			} else {
+				css.color = '#374151';
+				css.background = '#f3f4f6';
+				css['border-color'] = '#d1d5db';
+			}
+			$status.css(css).text(message);
+		};
+
+		var setKeysUi = function(collapsed) {
+			keysCollapsed = !!collapsed;
+			if ($keyFields.length) {
+				$keyFields.css('display', keysCollapsed ? 'none' : 'block');
+			}
+			if ($editKeysBtn.length) {
+				$editKeysBtn.text(keysCollapsed ? 'Edit keys' : 'Hide keys');
+			}
+		};
+
+		var setProviderUi = function(provider) {
+			selectedProvider = provider;
+			$providerBtns.removeClass('ef-mi-provider-btn-active').css({
+				'font-weight': 'normal',
+				'border-color': '#d1d5db',
+				'background': '#fff'
+			});
+			$providerBtns.filter('[data-ef-mi-provider="' + provider + '"]').addClass('ef-mi-provider-btn-active').css({
+				'font-weight': '600',
+				'border-color': '#2563eb',
+				'background': '#eff6ff'
+			});
+			setStatus('Selected provider: ' + provider.toUpperCase(), 'info');
+		};
+
+		$providerBtns.off('click').on('click', function() {
+			var p = String($(this).attr('data-ef-mi-provider') || '').toLowerCase();
+			if (/^(auto|tmdb|omdb|wikipedia|imdb)$/.test(p)) {
+				setProviderUi(p);
+			}
+		});
+		setProviderUi(selectedProvider);
+		setKeysUi(keysCollapsed);
+
+		$editKeysBtn.off('click').on('click', function() {
+			setKeysUi(!keysCollapsed);
+		});
+
+		var efLegacySaveMovieInfoKeys = function(tmdbKey, omdbKey) {
+			var calls = [];
+			if (tmdbKey) {
+				calls.push(function() {
+					return efCallAjaxAction('set_movieinfo_tmdb_key', {
+						tmdb_api_key: tmdbKey,
+						save_config: '1'
+					});
+				});
+			}
+			if (omdbKey) {
+				calls.push(function() {
+					return efCallAjaxAction('set_movieinfo_omdb_key', {
+						omdb_api_key: omdbKey,
+						save_config: '1'
+					});
+				});
+			}
+
+			if (!calls.length) {
+				return Promise.reject(new Error('No API key provided'));
+			}
+
+			return calls.reduce(function(p, fn) {
+				return p.then(fn);
+			}, Promise.resolve());
+		};
+
+		var efSaveMovieInfoKeysViaConnector = function(tmdbKey, omdbKey, saveCfg) {
+			var connectorBase = (fm && fm.options && fm.options.url) ? fm.options.url : 'php/connector.php';
+			var sep = connectorBase.indexOf('?') === -1 ? '?' : '&';
+			var url = connectorBase + sep + 'cmd=movieinfo_setkeys'
+				+ '&save_config=' + encodeURIComponent(saveCfg ? '1' : '0');
+			if (tmdbKey) {
+				url += '&tmdb_api_key=' + encodeURIComponent(tmdbKey);
+			}
+			if (omdbKey) {
+				url += '&omdb_api_key=' + encodeURIComponent(omdbKey);
+			}
+
+			return fetch(url, { credentials: 'same-origin' })
+				.then(function(r) {
+					if (!r.ok) {
+						throw new Error('HTTP ' + r.status);
+					}
+					return r.text();
+				})
+				.then(function(text) {
+					var trimmed = String(text || '').trim();
+					if (trimmed.indexOf('id_go') !== -1) {
+						throw new Error('Authentication required');
+					}
+					if (!trimmed || trimmed.indexOf('{') !== 0) {
+						throw new Error('Invalid connector response format');
+					}
+					var data = JSON.parse(trimmed);
+					if (!data || data.success !== true) {
+						throw new Error((data && data.error) ? data.error : 'Unable to save key(s)');
+					}
+					return data;
+				});
+		};
+
+		try {
+			var cachedTmdb = localStorage.getItem('ef_movieinfo_tmdb_api_key') || '';
+			var cachedOmdb = localStorage.getItem('ef_movieinfo_omdb_api_key') || '';
+			if (!hasTmdbConfigured && cachedTmdb && $tmdbKey.length) $tmdbKey.val(cachedTmdb);
+			if (!hasOmdbConfigured && cachedOmdb && $omdbKey.length) $omdbKey.val(cachedOmdb);
+		} catch (e) {}
+		if (hasTmdbConfigured && $tmdbKey.length && !$tmdbKey.val()) {
+			$tmdbKey.attr('placeholder', 'Configured on device');
+		}
+		if (hasOmdbConfigured && $omdbKey.length && !$omdbKey.val()) {
+			$omdbKey.attr('placeholder', 'Configured on device');
+		}
+
+		$btn.off('click').on('click', function() {
+			var tmdbKey = String($tmdbKey.val() || '').trim();
+			var omdbKey = String($omdbKey.val() || '').trim();
+			var saveCfg = !!$save.prop('checked');
+			var hasTmdbAvailable = !!tmdbKey || hasTmdbConfigured;
+			var hasOmdbAvailable = !!omdbKey || hasOmdbConfigured;
+			efMovieInfoLog('debug', 'MovieInfo keys apply clicked', {
+				file: file && file.name ? file.name : '',
+				saveConfig: saveCfg,
+				tmdbKeyLength: tmdbKey.length,
+				omdbKeyLength: omdbKey.length,
+				selectedProvider: selectedProvider,
+				hasTmdbConfigured: hasTmdbConfigured,
+				hasOmdbConfigured: hasOmdbConfigured
+			});
+
+			if (selectedProvider === 'tmdb' && !hasTmdbAvailable) {
+				setStatus('Please enter a TMDb API key.', 'error');
+				efMovieInfoLog('error', 'TMDb key is empty');
+				return;
+			}
+			if (tmdbKey && !/^[A-Za-z0-9]{16,128}$/.test(tmdbKey)) {
+				setStatus('Invalid TMDb key format.', 'error');
+				efMovieInfoLog('error', 'TMDb key format validation failed', { keyLength: tmdbKey.length });
+				return;
+			}
+			if (selectedProvider === 'omdb' && !hasOmdbAvailable) {
+				setStatus('Please enter an OMDb API key.', 'error');
+				efMovieInfoLog('error', 'OMDb key is empty');
+				return;
+			}
+			if (omdbKey && !/^[A-Za-z0-9]{6,128}$/.test(omdbKey)) {
+				setStatus('Invalid OMDb key format.', 'error');
+				efMovieInfoLog('error', 'OMDb key format validation failed', { keyLength: omdbKey.length });
+				return;
+			}
+
+			if (!saveCfg) {
+				try {
+					if (tmdbKey) localStorage.setItem('ef_movieinfo_tmdb_api_key', tmdbKey);
+					if (omdbKey) localStorage.setItem('ef_movieinfo_omdb_api_key', omdbKey);
+				} catch (e) {}
+				setStatus('Applied for current session. Running lookup...', 'success');
+				efMovieInfoLog('debug', 'Applying MovieInfo keys without config save (session override only)', {
+					provider: selectedProvider,
+					hasTmdb: !!tmdbKey,
+					hasOmdb: !!omdbKey
+				});
+				setTimeout(function() {
+					reloadFn(saveCfg ? '' : tmdbKey, saveCfg ? '' : omdbKey, selectedProvider);
+				}, 450);
+				return;
+			}
+
+			setStatus(saveCfg ? 'Saving key(s)...' : 'Applying key(s)...', 'info');
+
+			var req = {
+				save_config: saveCfg ? '1' : '0'
+			};
+			if (tmdbKey) req.tmdb_api_key = tmdbKey;
+			if (omdbKey) req.omdb_api_key = omdbKey;
+
+			efSaveMovieInfoKeysViaConnector(tmdbKey, omdbKey, saveCfg)
+				.then(function(resp) {
+					var data = resp || {};
+					efMovieInfoLog('debug', 'MovieInfo keys saved via connector', {
+						payload: data
+					});
+					if (!data || data.success !== true) {
+						throw new Error((data && data.error) ? data.error : 'Unable to apply key(s)');
+					}
+					try {
+						if (tmdbKey) localStorage.setItem('ef_movieinfo_tmdb_api_key', tmdbKey);
+						if (omdbKey) localStorage.setItem('ef_movieinfo_omdb_api_key', omdbKey);
+					} catch (e) {}
+					setStatus(data.message || 'MovieInfo key(s) applied. Retrying lookup...', 'success');
+					setKeysUi(true);
+					efMovieInfoLog('debug', 'MovieInfo keys applied successfully via connector, retrying lookup', {
+						saved: !!data.saved,
+						saveRequested: saveCfg,
+						provider: selectedProvider,
+						hasTmdb: !!tmdbKey,
+						hasOmdb: !!omdbKey
+					});
+					setTimeout(function() {
+						reloadFn(saveCfg ? '' : tmdbKey, saveCfg ? '' : omdbKey, selectedProvider);
+					}, 450);
+				})
+				.catch(function(err) {
+					var msg = err && err.message ? err.message : 'Unable to apply key(s)';
+					if (!saveCfg) {
+						setStatus('Error: ' + msg, 'error');
+						efMovieInfoLog('error', 'MovieInfo keys set action failed on all endpoints', msg);
+						return;
+					}
+
+					efMovieInfoLog('debug', 'Connector save failed, trying legacy AJAX flow', {
+						error: msg,
+						hasTmdb: !!tmdbKey,
+						hasOmdb: !!omdbKey
+					});
+
+					efCallAjaxAction('set_movieinfo_keys', req)
+						.then(function(resp2) {
+							var data2 = resp2.data || {};
+							if (!data2 || data2.success !== true) {
+								throw new Error((data2 && data2.error) ? data2.error : 'Unable to apply key(s)');
+							}
+							try {
+								if (tmdbKey) localStorage.setItem('ef_movieinfo_tmdb_api_key', tmdbKey);
+								if (omdbKey) localStorage.setItem('ef_movieinfo_omdb_api_key', omdbKey);
+							} catch (e) {}
+							setStatus(data2.message || 'MovieInfo key(s) applied. Retrying lookup...', 'success');
+							setKeysUi(true);
+							setTimeout(function() {
+								reloadFn(saveCfg ? '' : tmdbKey, saveCfg ? '' : omdbKey, selectedProvider);
+							}, 450);
+						})
+						.catch(function() {
+
+							efMovieInfoLog('debug', 'Combined key-save action failed, trying legacy per-key actions', {
+								error: msg,
+								hasTmdb: !!tmdbKey,
+								hasOmdb: !!omdbKey
+							});
+							setStatus('Combined save unsupported, trying legacy save...', 'info');
+
+							efLegacySaveMovieInfoKeys(tmdbKey, omdbKey)
+								.then(function() {
+									try {
+										if (tmdbKey) localStorage.setItem('ef_movieinfo_tmdb_api_key', tmdbKey);
+										if (omdbKey) localStorage.setItem('ef_movieinfo_omdb_api_key', omdbKey);
+									} catch (e) {}
+									setStatus('MovieInfo key(s) saved via legacy API. Retrying lookup...', 'success');
+									setKeysUi(true);
+									efMovieInfoLog('debug', 'Legacy MovieInfo key save completed, retrying lookup', {
+										provider: selectedProvider,
+										hasTmdb: !!tmdbKey,
+										hasOmdb: !!omdbKey
+									});
+									setTimeout(function() {
+										reloadFn(saveCfg ? '' : tmdbKey, saveCfg ? '' : omdbKey, selectedProvider);
+									}, 450);
+								})
+								.catch(function(legacyErr) {
+									var legacyMsg = legacyErr && legacyErr.message ? legacyErr.message : msg;
+									setStatus('Error: ' + legacyMsg, 'error');
+									efMovieInfoLog('error', 'Legacy MovieInfo key save failed', legacyMsg);
+								});
+						});
+				});
+		});
+	}
+
+	function efShowMovieInfo(fm) {
+		var selected = fm.selectedFiles();
+		if (!selected || !selected.length) {
+			return;
+		}
+		var file = selected[0];
+		var $content = $('<div class="ef-movieinfo-popup"><span class="elfinder-spinner"></span></div>');
+		var fitMovieInfoDialog = function() {
+			var $dlg = $content.closest('.ui-dialog');
+			if (!$dlg.length) return;
+			var maxDialogH = Math.max(260, $(window).height() - 80);
+			var chromeH = 96; // titlebar + paddings + margins
+			$dlg.css('max-height', maxDialogH + 'px');
+			$content.css({
+				'max-height': Math.max(120, maxDialogH - chromeH) + 'px',
+				'overflow-y': 'auto',
+				'overflow-x': 'hidden'
+			});
+		};
+		$content.dialog({
+			title: 'Movie Info \u2013 ' + fm.escape(file.name),
+			modal: false,
+			width: Math.min(780, $(window).width() - 40),
+			open: function() {
+				fitMovieInfoDialog();
+			},
+			close: function() { $(this).dialog('destroy').remove(); }
+		});
+
+		var loadMovieInfo = function(tmdbKeyOverride, omdbKeyOverride, providerOverride) {
+			efMovieInfoLog('debug', 'Loading movie info', {
+				file: file && file.name ? file.name : '',
+				hasTmdbOverride: !!tmdbKeyOverride,
+				hasOmdbOverride: !!omdbKeyOverride,
+				providerOverride: providerOverride || ''
+			});
+			$content.html('<span class="elfinder-spinner"></span>');
+			var reqData = { cmd: 'info', targets: [file.hash] };
+			if (tmdbKeyOverride) {
+				reqData.movieinfo_tmdb_api_key = tmdbKeyOverride;
+			}
+			if (omdbKeyOverride) {
+				reqData.movieinfo_omdb_api_key = omdbKeyOverride;
+			}
+			if (tmdbKeyOverride || omdbKeyOverride) {
+				reqData.movieinfo_use_request_keys = 1;
+			}
+			if (providerOverride && /^(auto|tmdb|omdb|wikipedia|imdb)$/.test(String(providerOverride).toLowerCase())) {
+				reqData.movieinfo_provider = String(providerOverride).toLowerCase();
+			}
+			fm.request({
+				data: reqData,
+				preventDefault: true
+			}).done(function(data) {
+				efMovieInfoLog('debug', 'Movie info request completed', data);
+				var f = data.files && data.files.length ? data.files[0] : null;
+				if (f && f.movieinfo_html) {
+					$content.html(f.movieinfo_html);
+						fitMovieInfoDialog();
+					efBindMovieInfoTmdbPanel($content, fm, file, loadMovieInfo);
+					var $notFoundCard = $content.find('.ef-movieinfo-card[data-ef-mi-status="not-found"]').first();
+					if ($notFoundCard.length) {
+						var dbg = {
+							provider: $notFoundCard.attr('data-ef-mi-provider') || '',
+							attemptedProviders: $notFoundCard.attr('data-ef-mi-attempted') || '',
+							guessTitle: $notFoundCard.attr('data-ef-mi-guess-title') || '',
+							guessYear: $notFoundCard.attr('data-ef-mi-guess-year') || '',
+							reason: $notFoundCard.attr('data-ef-mi-debug-reason') || '',
+							debugDetail: $notFoundCard.attr('data-ef-mi-debug-detail') || '',
+							hasTmdbKey: $notFoundCard.attr('data-ef-mi-has-tmdb-key') === '1',
+							hasOmdbKey: $notFoundCard.attr('data-ef-mi-has-omdb-key') === '1',
+							file: file && file.name ? file.name : ''
+						};
+						efMovieInfoLog('error', 'No match found in configured providers', dbg);
+						if (dbg.provider === 'imdb' || dbg.reason === 'imdb_no_hit' || dbg.reason === 'auto_fallback_to_imdb_no_hit') {
+							efMovieInfoLog('error', 'IMDb lookup returned no suitable candidate for parsed filename', {
+								guessTitle: dbg.guessTitle,
+								guessYear: dbg.guessYear,
+								provider: dbg.provider,
+								attemptedProviders: dbg.attemptedProviders,
+								reason: dbg.reason
+							});
+						}
+					}
+					efMovieInfoLog('debug', 'Movie info HTML rendered', {
+						hasTmdbPanel: $content.find('.ef-mi-tmdb-panel').length > 0,
+						hasProviderButtons: $content.find('.ef-mi-provider-btn').length > 0
+					});
+				} else {
+					$content.html('<p style="color:#888;font-style:italic;padding:8px">No movie information available for this file.</p>');
+						fitMovieInfoDialog();
+					efMovieInfoLog('error', 'No movie information available in response payload');
+				}
+				try { if (f) fm.cache(data.files); } catch(e) {}
+			}).fail(function() {
+				$content.html('<p style="color:#c00;padding:8px">MovieInfo request failed.</p>');
+					fitMovieInfoDialog();
+				efMovieInfoLog('error', 'Movie info request failed (fm.request fail callback)');
+			});
+		};
+
+			$(window).off('resize.efMovieInfo').on('resize.efMovieInfo', function() {
+				fitMovieInfoDialog();
+			});
+
+		// First load always uses persisted backend config (file) as source of truth.
+		loadMovieInfo('', '', '');
 	}
 
 	// ---------------------------------------------------------------------------
@@ -417,7 +1037,7 @@
 								}
 								// Request from server: PHP plugin adds 'mediainfo' to response
 								fm.request({
-									data: { cmd: 'info', targets: [file.hash] },
+									data: { cmd: 'info', targets: [file.hash], with_mediainfo: 1 },
 									preventDefault: true
 								}).done(function(data) {
 									var f = data.files && data.files.length ? data.files[0] : null;
@@ -451,67 +1071,88 @@
 					document.title = title;
 				});
 
-				// Inject toolbar extras after the toolbar is rendered.
-				// elFinder 2.1.x fires 'toolbarload' (not 'load') at the end
-				// of each toolbar render() call.  Bind here so we get it on
-				// the very first render too (bootCallback runs before bootUp).
-				fm.bind('toolbarload', function() {
-					var toolbar = fm.getUI('toolbar');
-					if (!toolbar || !toolbar.length) return;
+				// Inject toolbar extras once toolbar is available, then keep
+				// them after any toolbar re-render using a MutationObserver.
+				var getToolbar = function() {
+					if (!fm || !fm.ui || !fm.ui.toolbar) return null;
+					var t = $(fm.ui.toolbar);
+					return (t && t.length) ? t : null;
+				};
 
-					// 1. Inject 🎨 skin switcher button at the right end of
-					//    the toolbar.  Remove any stale instance first because
-					//    render() calls self.empty() on every re-render, which
-					//    strips all children including buttons we injected.
-					toolbar.find('#ef-skin-btn').closest('.elfinder-buttonset').addBack().remove();
-					var $skinBtnSet = $(
-						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
-						'<div id="ef-skin-btn" class="ui-state-default elfinder-button"' +
-						' title="Change theme / skin">' +
-						'<span class="elfinder-button-icon elfinder-button-icon-skin"></span>' +
-						'<span class="elfinder-button-text" style="display:none;">Change theme / skin</span>' +
-						'</div></div>');
-					$skinBtnSet.find('#ef-skin-btn').on('click', function(e) {
-						e.stopPropagation();
-						efToggleSkinPanel(this);
-					});
-					toolbar.append($skinBtnSet);
+				var injectToolbarExtras = function() {
+					var toolbar = getToolbar();
+					if (!toolbar) return false;
 
-					// 2. Inject 🎴 MediaInfo button at the right end of the toolbar.
-					toolbar.find('#ef-mediainfo-btn').closest('.elfinder-buttonset').addBack().remove();
-					var $miBtnSet = $(
-						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
-						'<div id="ef-mediainfo-btn" class="ui-state-default elfinder-button"' +
-						' title="MediaInfo">' +
-						'<span class="elfinder-button-icon elfinder-button-icon-mediainfo"></span>' +
-						'<span class="elfinder-button-text" style="display:none;">MediaInfo</span>' +
-						'</div></div>');
-					$miBtnSet.find('#ef-mediainfo-btn').on('click', function(e) {
-						e.stopPropagation();
-						efShowMediaInfo(fm);
-					});
-					toolbar.append($miBtnSet);
+					// 1. Inject toolbar buttons only if missing.  Idempotent
+					//    insertion avoids mutation loops and UI hangs.
+					if (!toolbar.find('#ef-skin-btn').length) {
+						var $skinBtnSet = $(
+							'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+							'<div id="ef-skin-btn" class="ui-state-default elfinder-button"' +
+							' title="Change theme / skin">' +
+							'<span class="elfinder-button-icon elfinder-button-icon-skin"></span>' +
+							'<span class="elfinder-button-text" style="display:none;">Change theme / skin</span>' +
+							'</div></div>');
+						$skinBtnSet.find('#ef-skin-btn').on('click', function(e) {
+							e.stopPropagation();
+							efToggleSkinPanel(this);
+						});
+						toolbar.append($skinBtnSet);
+					}
 
-					// 3. Inject 📺 VLC button at the right end of the toolbar.
-					toolbar.find('#ef-vlc-btn').closest('.elfinder-buttonset').addBack().remove();
-					var $vlcBtnSet = $(
-						'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
-						'<div id="ef-vlc-btn" class="ui-state-default elfinder-button"' +
-						' title="Open in VLC">' +
-						'<span class="elfinder-button-icon elfinder-button-icon-vlc"></span>' +
-						'<span class="elfinder-button-text" style="display:none;">Open in VLC</span>' +
-						'</div></div>');
-					$vlcBtnSet.find('#ef-vlc-btn').on('click', function(e) {
-						e.stopPropagation();
-						efOpenInVlc(fm);
-					});
-					toolbar.append($vlcBtnSet);
+					// 2. Inject 🎴 MediaInfo button.
+					if (!toolbar.find('#ef-mediainfo-btn').length) {
+						var $miBtnSet = $(
+							'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+							'<div id="ef-mediainfo-btn" class="ui-state-default elfinder-button"' +
+							' title="MediaInfo">' +
+							'<span class="elfinder-button-icon elfinder-button-icon-mediainfo"></span>' +
+							'<span class="elfinder-button-text" style="display:none;">MediaInfo</span>' +
+							'</div></div>');
+						$miBtnSet.find('#ef-mediainfo-btn').on('click', function(e) {
+							e.stopPropagation();
+							efShowMediaInfo(fm);
+						});
+						toolbar.append($miBtnSet);
+					}
 
-					// 4. Mobile toolbar toggle – inserted BEFORE the toolbar
+					// 3. Inject 🎞️ MovieInfo button (TMDb / OMDb / Wikipedia / IMDb lookup).
+					if (!toolbar.find('#ef-movieinfo-btn').length) {
+						var $movieBtnSet = $(
+							'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+							'<div id="ef-movieinfo-btn" class="ui-state-default elfinder-button"' +
+							' title="Movie Info (TMDb / OMDb / Wikipedia / IMDb)">' +
+							'<span class="elfinder-button-icon elfinder-button-icon-movieinfo"></span>' +
+							'<span class="elfinder-button-text" style="display:none;">Movie Info</span>' +
+							'</div></div>');
+						$movieBtnSet.find('#ef-movieinfo-btn').on('click', function(e) {
+							e.stopPropagation();
+							efShowMovieInfo(fm);
+						});
+						toolbar.append($movieBtnSet);
+					}
+
+					// 4. Inject 📺 VLC button.
+					if (!toolbar.find('#ef-vlc-btn').length) {
+						var $vlcBtnSet = $(
+							'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+							'<div id="ef-vlc-btn" class="ui-state-default elfinder-button"' +
+							' title="Open in VLC">' +
+							'<span class="elfinder-button-icon elfinder-button-icon-vlc"></span>' +
+							'<span class="elfinder-button-text" style="display:none;">Open in VLC</span>' +
+							'</div></div>');
+						$vlcBtnSet.find('#ef-vlc-btn').on('click', function(e) {
+							e.stopPropagation();
+							efOpenInVlc(fm);
+						});
+						toolbar.append($vlcBtnSet);
+					}
+
+					// 5. Mobile toolbar toggle – inserted BEFORE the toolbar
 					//    so hiding the toolbar doesn't hide the toggle itself.
 					//    It is a sibling (not a child) of the toolbar element,
 					//    so it survives render() / self.empty() – add only once.
-					if ($('#ef-toolbar-toggle').length) return;
+					if ($('#ef-toolbar-toggle').length) return true;
 					var tbVisible = true;
 					try {
 						var _s = localStorage.getItem('ef_toolbar_visible');
@@ -530,7 +1171,31 @@
 					});
 					toolbar.before($toggle);
 					if (!tbVisible) toolbar.hide();
-				});
+					return true;
+				};
+
+				var observeToolbar = function() {
+					var toolbar = getToolbar();
+					if (!toolbar || toolbar.data('efObserverAttached')) return;
+					if (typeof MutationObserver !== 'function') return;
+					toolbar.data('efObserverAttached', '1');
+					var observer = new MutationObserver(function() {
+						injectToolbarExtras();
+					});
+					observer.observe(toolbar.get(0), { childList: true });
+				};
+
+				var retries = 0;
+				var toolbarTimer = setInterval(function() {
+					retries++;
+					if (injectToolbarExtras()) {
+						observeToolbar();
+						clearInterval(toolbarTimer);
+					} else if (retries > 40) {
+						clearInterval(toolbarTimer);
+					}
+				}, 100);
+				injectToolbarExtras();
 			}
 		});
 	}
@@ -563,38 +1228,30 @@
 
 		// 2. Fetch server config to get theme saved via Freetz CGI
 		//    (overrides localStorage if admin changed it server-side)
-		var cfgUrl = '/cgi-bin/conf/elfinder?ajax=1&action=get_status';
-		fetch(cfgUrl)
-			.then(function(r) { return r.text(); })
-			.then(function(text) {
-				var marker = 'Content-Type: application/json';
-				var pos = text.indexOf(marker);
-				if (pos !== -1) {
-					var first = text.indexOf('{', pos + marker.length);
-					if (first !== -1) {
-						var depth = 0, end = -1;
-						for (var i = first; i < text.length; i++) {
-							if (text[i] === '{') depth++;
-							else if (text[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
-						}
-						if (end !== -1) {
-							try {
-								var data = JSON.parse(text.substring(first, end));
-								if (data && data.theme) {
-									savedTheme = data.theme;
-									// Sync dropdown
-									if (sel) {
-										for (var j = 0; j < sel.options.length; j++) {
-											if (sel.options[j].value === savedTheme) { sel.selectedIndex = j; break; }
-										}
-									}
-								}
-							} catch(e) {}
+		efMovieInfoLog('debug', 'Loading config status via AJAX', {
+			endpoints: efAjaxEndpoints('get_status')
+		});
+		efCallAjaxAction('get_status')
+			.then(function(resp) {
+				var data = resp.data || {};
+				efMovieInfoLog('debug', 'Config status parsed response', {
+					url: resp.url,
+					status: resp.status,
+					payload: data
+				});
+				if (data && data.theme) {
+					savedTheme = data.theme;
+					// Sync dropdown
+					if (sel) {
+						for (var j = 0; j < sel.options.length; j++) {
+							if (sel.options[j].value === savedTheme) { sel.selectedIndex = j; break; }
 						}
 					}
 				}
 			})
-			.catch(function() {})
+			.catch(function(err) {
+				efMovieInfoLog('error', 'Config status AJAX failed', err && err.message ? err.message : err);
+			})
 			.finally(function() {
 				efApplyTheme(savedTheme);
 				bootWithI18n();

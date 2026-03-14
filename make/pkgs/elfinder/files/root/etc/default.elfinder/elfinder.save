@@ -8,9 +8,14 @@ pkg_pre_save() {
 }
 
 pkg_apply_save() {
-	# Called AFTER framework has saved /mod/etc/conf/elfinder.cfg.
-	# Re-source to get persisted values.
-	[ -r /mod/etc/conf/elfinder.cfg ] && . /mod/etc/conf/elfinder.cfg
+	# Called AFTER framework has saved conf. On some setups modconf writes
+	# under /var/mod/etc/conf, on others under /mod/etc/conf.
+	for _cfg in /var/mod/etc/conf/elfinder.cfg /mod/etc/conf/elfinder.cfg; do
+		if [ -r "$_cfg" ]; then
+			. "$_cfg"
+			break
+		fi
+	done
 
 	# connector.php reads /mod/etc/conf/elfinder.cfg at PHP runtime;
 	# no file generation is needed here, so this save hook works equally
