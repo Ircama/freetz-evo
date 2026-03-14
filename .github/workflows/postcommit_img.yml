@@ -102,6 +102,8 @@ jobs:
           echo "args=${{ steps.parse.outputs.args }}" | sed 's/[= ]/&\n/g'
 
       - name: tools
+        env:
+          FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
         run: |
           echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                      >> .config
           [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
