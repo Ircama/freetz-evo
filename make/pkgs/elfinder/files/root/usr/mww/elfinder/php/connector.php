@@ -23,6 +23,32 @@ ini_set('error_log',      '/tmp/elfinder.log');
 // Raise the limit before elFinder initializes.
 ini_set('memory_limit', '48M');
 
+// Enforce WebCFG authentication for php-cgi entrypoints.
+$_webcfgAuth = '';
+if (is_readable('/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/usr/lib/php/webcfg_auth.php';
+} elseif (is_readable('/mod/external/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/mod/external/usr/lib/php/webcfg_auth.php';
+}
+if ($_webcfgAuth !== '') {
+    require_once $_webcfgAuth;
+    // Always return to the UI page after login; using connector URI here
+    // can cause login loops or landing on raw JSON responses.
+    $subpage = 'elfinder/';
+    $loginUrl = '/cgi-bin/conf/elfinder?subpage=elfinder/';
+    if (isset($_REQUEST['cmd']) && (string)$_REQUEST['cmd'] === 'movieinfo_setkeys') {
+        webcfg_require_auth(array('mode' => 'json', 'subpage' => $subpage, 'login_url' => $loginUrl));
+    } else {
+        webcfg_require_auth(array('mode' => 'json', 'subpage' => $subpage, 'login_url' => $loginUrl));
+    }
+}
+
+if (isset($_REQUEST['cmd']) && (string)$_REQUEST['cmd'] === 'auth_ping') {
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode(array('success' => true, 'authenticated' => true));
+    exit;
+}
+
 // ---------------------------------------------------------------------------
 // Parse shell-style config files (export VAR='value')
 // ---------------------------------------------------------------------------

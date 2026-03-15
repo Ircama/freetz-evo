@@ -2,6 +2,28 @@
 // ruTorrent dynamic configuration for Freetz-NG
 // This file is auto-loaded by ruTorrent to configure SCGI connection
 
+$_webcfgAuth = '';
+if (is_readable('/usr/lib/php/webcfg_auth.php')) {
+	$_webcfgAuth = '/usr/lib/php/webcfg_auth.php';
+} elseif (is_readable('/mod/external/usr/lib/php/webcfg_auth.php')) {
+	$_webcfgAuth = '/mod/external/usr/lib/php/webcfg_auth.php';
+}
+if ($_webcfgAuth !== '') {
+	require_once $_webcfgAuth;
+	$subpage = 'rutorrent/';
+	$loginUrl = '/cgi-bin/conf/rtorrent?subpage=rutorrent/';
+	$authMode = 'redirect';
+	if (isset($_GET['auth_ping']) && (string)$_GET['auth_ping'] === '1') {
+		$authMode = 'json';
+	}
+	webcfg_require_auth(array('mode' => $authMode, 'subpage' => $subpage, 'login_url' => $loginUrl));
+	if ($authMode === 'json') {
+		header('Content-Type: application/json; charset=UTF-8');
+		echo json_encode(array('success' => true));
+		exit;
+	}
+}
+
 // Auto-detect first available USB storage
 function autodetect_storage() {
 	// Load Freetz config

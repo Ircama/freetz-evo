@@ -12,6 +12,19 @@
  * @license GPL-2.0
  */
 
+$_webcfgAuth = '';
+if (is_readable('/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/usr/lib/php/webcfg_auth.php';
+} elseif (is_readable('/mod/external/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/mod/external/usr/lib/php/webcfg_auth.php';
+}
+if ($_webcfgAuth !== '') {
+    require_once $_webcfgAuth;
+    $subpage = 'rutorrent/';
+    $loginUrl = '/cgi-bin/conf/rtorrent?subpage=rutorrent/';
+    webcfg_require_auth(array('mode' => 'redirect', 'subpage' => $subpage, 'login_url' => $loginUrl));
+}
+
 // Configuration
 // Traditional SCGI ports are 5000 or 5555, but 16891 avoids conflicts with Flask, Docker, UPnP, etc.
 define('RTORRENT_SCGI_HOST', '127.0.0.1');

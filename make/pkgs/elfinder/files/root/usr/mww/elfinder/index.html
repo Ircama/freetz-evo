@@ -339,9 +339,7 @@
 			bases.push(window.__efAjaxBase);
 		}
 		bases.push('/cgi-bin/conf/elfinder');
-		bases.push('/cgi-bin/elfinder.cgi');
 		bases.push('/cgi-bin/conf/elfinder.cgi');
-		bases.push('/cgi-bin/elfinder');
 		var out = [];
 		for (var i = 0; i < bases.length; i++) {
 			if (out.indexOf(bases[i]) === -1) {
@@ -1057,6 +1055,17 @@
 			},
 			// ── Bootup callback ───────────────────────────────────────────
 			bootCallback: function(fm, extraObj) {
+				fm.bind('error', function(e) {
+					var data = (e && e.data) ? e.data : {};
+					if (efHandleAuthRuntimeError(data)) {
+						if (e && typeof e.preventDefault === 'function') {
+							e.preventDefault();
+						}
+						return false;
+					}
+					return true;
+				});
+
 				// NOTE: bootCallback fires during the elFinder constructor,
 				// before any UI widgets (toolbar, etc.) exist.
 				// Toolbar manipulation must be deferred to the 'load' event.
@@ -1213,49 +1222,105 @@
 		}
 	}
 
-	$(document).ready(function() {
-		// 1. Restore theme from localStorage (instant, no flicker)
-		var savedTheme = '';
-		try { savedTheme = localStorage.getItem('elfinder_theme') || ''; } catch(e) {}
-
-		// Pre-select skin dropdown
-		var sel = document.getElementById('ef-skin-select');
-		if (sel && savedTheme) {
-			for (var i = 0; i < sel.options.length; i++) {
-				if (sel.options[i].value === savedTheme) { sel.selectedIndex = i; break; }
+	function efRememberHashForLogin() {
+		try {
+			if (window.location.hash) {
+				localStorage.setItem('ef_after_login_hash', window.location.hash);
 			}
+		} catch (e) {}
+	}
+
+	function efEnsureAuthOrRedirect() {
+		var url = 'php/connector.php?cmd=auth_ping&_=' + Date.now();
+		return fetch(url, {
+			method: 'GET',
+			credentials: 'same-origin',
+			cache: 'no-store'
+		}).then(function(resp) {
+			return resp.text().then(function(text) {
+				var payload = {};
+				try { payload = JSON.parse(text || '{}'); } catch (e) {}
+				if (resp.ok && payload && payload.success === true) {
+					return true;
+				}
+				efRememberHashForLogin();
+				window.location.href = (payload && payload.login_url) ? payload.login_url : '/cgi-bin/conf/elfinder?subpage=elfinder/';
+				return false;
+			});
+		}).catch(function() {
+			efRememberHashForLogin();
+			window.location.href = '/cgi-bin/conf/elfinder?subpage=elfinder/';
+			return false;
+		});
+	}
+
+	function efHandleAuthRuntimeError(payload) {
+		var text = '';
+		if (typeof payload === 'string') {
+			text = payload;
+		} else if (payload && typeof payload.error === 'string') {
+			text = payload.error;
+		} else if (payload && payload.error && payload.error.length) {
+			text = String(payload.error[0]);
+		}
+		if (!/Authentication required/i.test(text)) {
+			return false;
+		}
+		efRememberHashForLogin();
+		window.location.href = '/cgi-bin/conf/elfinder?subpage=elfinder/';
+		return true;
+	}
+
+	function efRestoreHashAfterLogin() {
+		if (window.location.hash) {
+			return false;
+		}
+		var savedHash = '';
+		try {
+			savedHash = localStorage.getItem('ef_after_login_hash') || '';
+			if (savedHash) {
+				localStorage.removeItem('ef_after_login_hash');
+			}
+		} catch (e) {}
+		if (!savedHash) {
+			return false;
+		}
+		if (savedHash.charAt(0) !== '#') {
+			savedHash = '#' + savedHash;
+		}
+		// Update hash in-place and continue boot to avoid blank-page timing issues
+		// observed on some browsers when using full location.replace() here.
+		window.location.hash = savedHash;
+		return false;
+	}
+
+	$(document).ready(function() {
+		if (efRestoreHashAfterLogin()) {
+			return;
 		}
 
-		// 2. Fetch server config to get theme saved via Freetz CGI
-		//    (overrides localStorage if admin changed it server-side)
-		efMovieInfoLog('debug', 'Loading config status via AJAX', {
-			endpoints: efAjaxEndpoints('get_status')
-		});
-		efCallAjaxAction('get_status')
-			.then(function(resp) {
-				var data = resp.data || {};
-				efMovieInfoLog('debug', 'Config status parsed response', {
-					url: resp.url,
-					status: resp.status,
-					payload: data
-				});
-				if (data && data.theme) {
-					savedTheme = data.theme;
-					// Sync dropdown
-					if (sel) {
-						for (var j = 0; j < sel.options.length; j++) {
-							if (sel.options[j].value === savedTheme) { sel.selectedIndex = j; break; }
-						}
-					}
+		efEnsureAuthOrRedirect().then(function(canContinue) {
+			if (!canContinue) {
+				return;
+			}
+
+			// 1. Restore theme from localStorage (instant, no flicker)
+			var savedTheme = '';
+			try { savedTheme = localStorage.getItem('elfinder_theme') || ''; } catch(e) {}
+
+			// Pre-select skin dropdown
+			var sel = document.getElementById('ef-skin-select');
+			if (sel && savedTheme) {
+				for (var i = 0; i < sel.options.length; i++) {
+					if (sel.options[i].value === savedTheme) { sel.selectedIndex = i; break; }
 				}
-			})
-			.catch(function(err) {
-				efMovieInfoLog('error', 'Config status AJAX failed', err && err.message ? err.message : err);
-			})
-			.finally(function() {
-				efApplyTheme(savedTheme);
-				bootWithI18n();
-			});
+			}
+
+			// 2. Skip optional get_status CGI call to avoid auth HTML responses
+			// interfering with session cookies in some browsers.
+			efApplyTheme(savedTheme);
+			bootWithI18n();
+		});
 	});
 	</script>
 </body>

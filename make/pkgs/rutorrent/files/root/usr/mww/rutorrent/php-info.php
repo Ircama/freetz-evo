@@ -3,6 +3,19 @@
  * PHP Diagnostics Script for ruTorrent/rTorrent
  * URL: http://fritz.box:81/rutorrent/php-info.php
  */
+$_webcfgAuth = '';
+if (is_readable('/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/usr/lib/php/webcfg_auth.php';
+} elseif (is_readable('/mod/external/usr/lib/php/webcfg_auth.php')) {
+    $_webcfgAuth = '/mod/external/usr/lib/php/webcfg_auth.php';
+}
+if ($_webcfgAuth !== '') {
+    require_once $_webcfgAuth;
+    $subpage = 'rutorrent/';
+    $loginUrl = '/cgi-bin/conf/rtorrent?subpage=rutorrent/';
+    webcfg_require_auth(array('mode' => 'redirect', 'subpage' => $subpage, 'login_url' => $loginUrl));
+}
+
 header('Content-Type: text/html; charset=utf-8');
 ?>
 <!DOCTYPE html>
