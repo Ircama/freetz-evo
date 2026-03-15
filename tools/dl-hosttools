@@ -1,10 +1,64 @@
 #! /usr/bin/env bash
 # packs host-tools to dl/tools-VERSION.tar.xz in ~45min
-#Arg $1: <VERSION>
+# Usage:
+#   tools/dl-hosttools own [--no-clean]
+#   tools/dl-hosttools [YYYY-MM-DD] [--no-clean]
+
+set -euo pipefail
 
 MYPWD="$(dirname $(realpath $0))"
-VERSION="${1:-$(date '+%Y-%m-%d')}"
-[ "$1" == "own" ] && VERSION="$(sed -n 's/^$(call TOOLS_INIT, *\(.*\))/\1/p' "$MYPWD/../tools/make/tools-host/tools-host.mk")"
+
+MODE_OWN=0
+VERSION_ARG=""
+NO_CLEAN=0
+
+for arg in "$@"; do
+	case "$arg" in
+		own)
+			MODE_OWN=1
+			;;
+		--no-clean)
+			NO_CLEAN=1
+			;;
+		--help|-h)
+			echo "Usage: $0 own [--no-clean] | [YYYY-MM-DD] [--no-clean]"
+			exit 0
+			;;
+		*)
+			if [ -z "$VERSION_ARG" ]; then
+				VERSION_ARG="$arg"
+			else
+				echo "ERROR: Unexpected argument: $arg" >&2
+				exit 1
+			fi
+			;;
+	esac
+done
+
+if [ "$MODE_OWN" -eq 1 ] && [ -n "$VERSION_ARG" ]; then
+	echo "ERROR: Do not combine 'own' with an explicit version." >&2
+	exit 1
+fi
+
+if [ -n "$VERSION_ARG" ]; then
+	VERSION="$VERSION_ARG"
+else
+	VERSION="$(date '+%Y-%m-%d')"
+fi
+
+# Allow opting out via environment too: DL_HOSTTOOLS_NO_CLEAN=1
+if [ "${DL_HOSTTOOLS_NO_CLEAN:-0}" = "1" ]; then
+	NO_CLEAN=1
+fi
+
+if [ "$MODE_OWN" -eq 1 ]; then
+	TOOLS_HOST_MK="$MYPWD/../make/host-tools/tools-host/tools-host.mk"
+	VERSION="$(sed -n 's/^$(call TOOLS_INIT, *\(.*\))/\1/p' "$TOOLS_HOST_MK")"
+	if [ -z "$VERSION" ]; then
+		echo "ERROR: Could not determine TOOLS_INIT version from $TOOLS_HOST_MK" >&2
+		exit 1
+	fi
+fi
 
 miniconfig() {
 local i
@@ -13,6 +67,7 @@ cat << EOF
 FREETZ_USER_LEVEL_EXPERT=y
 FREETZ_DL_IMAGE_AT_LAST=y
 # FREETZ_HOSTTOOLS_DOWNLOAD is not set
+# FREETZ_TOOLCHAIN_CCACHE is not set
 FREETZ_VERBOSITY_LEVEL_0=y
 FREETZ_DL_SITE_USER="http://192.168.1.104/mirror https://github.com/Freetz-NG/dl-mirror/releases/download/dl"
 EOF
@@ -23,14 +78,36 @@ OUTP="dl/tools-$VERSION.tar.xz"
 [ -s "$OUTP" ] && echo "File $OUTP exists" && exit 1
 
 miniconfig > .config
-make distclean
+if [ "$NO_CLEAN" -eq 0 ]; then
+	make distclean
+else
+	echo "Skipping 'make distclean' (--no-clean). Reusing current workspace tools."
+fi
 make kconfig-host-conf
 make olddefconfig
 time make tools-allexcept-local  # 4min
-make tools-distclean-local
 PACK="$(sed -n 's,^/,tools/,p' tools/.gitignore | grep -vE "/(${SKIP// /|})$")"
-find $PACK -type f -a -executable | xargs strip --strip-all -R .note -R .comment 2>/dev/null
+
+# Abort if expected pack files are missing, otherwise tar may be silently incomplete.
+missing=0
+for p in $PACK; do
+	if [ ! -e "$p" ]; then
+		echo "ERROR: Missing expected host-tool artifact: $p" >&2
+		missing=1
+	fi
+done
+[ "$missing" -eq 0 ]
+
+echo "Packing host-tools into $OUTP ..."
+# Some executable entries are scripts or formats strip cannot handle.
+# Keep stripping as best-effort and continue with packaging.
+find $PACK -type f -a -executable -print0 | xargs -0 -r strip --strip-all -R .note -R .comment 2>/dev/null || true
 time tar cf - $PACK | xz -9 - > "$OUTP"  # 1min
+if [ "$NO_CLEAN" -eq 0 ]; then
+	make tools-distclean-local
+else
+	echo "Keeping built tools (--no-clean)."
+fi
 echo "################################################################"
 du -h "$OUTP"
 sha256sum "$OUTP" | sed 's/^/SHA256:=/;s/ .*//'
