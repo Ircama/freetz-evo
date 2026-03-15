@@ -47,6 +47,7 @@ apply_changes() {
 			#webcfg
 			if [ "$startORstop" == "start" -a "$OLDSTATUS_webcfg" != "stopped" ]; then
 				echo "$(lang de:"Starte das Freetz-Webinterface in 9 Sekunden neu" en:"Restarting the Freetz webinterface in 9 seconds")!"
+					echo "$(lang de:"Wenn die Aktion im Browser nicht abgeschlossen wird, bitte in der CLI ausfuehren:" en:"If the action does not complete in the browser, run this in CLI:") /mod/etc/init.d/rc.webcfg restart"
 				/mod/etc/init.d/rc.webcfg force-restart 9 >/dev/null 2>&1 &
 			fi
 			/usr/lib/mod/reg-status reload

@@ -125,8 +125,38 @@ if (!function_exists('webcfg_require_basic_auth')) {
         $user = webcfg_cfg_get($cfg, 'MOD_HTTPD_USER', 'admin');
         $hash = webcfg_cfg_get($cfg, 'MOD_HTTPD_PASSWD', '');
 
+        // If upstream webserver already authenticated this request via Basic,
+        // trust REMOTE_USER and skip local password re-check.
+        $authType = isset($_SERVER['AUTH_TYPE']) ? strtolower(trim((string)$_SERVER['AUTH_TYPE'])) : '';
+        $remoteUser = isset($_SERVER['REMOTE_USER']) ? (string)$_SERVER['REMOTE_USER'] : '';
+        if ($authType === 'basic' && $remoteUser !== '') {
+            return true;
+        }
+
         $reqUser = isset($_SERVER['PHP_AUTH_USER']) ? (string)$_SERVER['PHP_AUTH_USER'] : '';
         $reqPass = isset($_SERVER['PHP_AUTH_PW']) ? (string)$_SERVER['PHP_AUTH_PW'] : '';
+
+        // php-cgi may not populate PHP_AUTH_*; fall back to raw Authorization.
+        if ($reqUser === '' && $reqPass === '') {
+            $rawAuth = '';
+            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                $rawAuth = (string)$_SERVER['HTTP_AUTHORIZATION'];
+            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $rawAuth = (string)$_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+            }
+
+            if ($rawAuth !== '' && stripos($rawAuth, 'basic ') === 0) {
+                $encoded = trim(substr($rawAuth, 6));
+                $decoded = base64_decode($encoded, true);
+                if (is_string($decoded)) {
+                    $pos = strpos($decoded, ':');
+                    if ($pos !== false) {
+                        $reqUser = substr($decoded, 0, $pos);
+                        $reqPass = substr($decoded, $pos + 1);
+                    }
+                }
+            }
+        }
 
         $ok = false;
         if ($reqUser !== '' && $reqUser === $user && $hash !== '') {

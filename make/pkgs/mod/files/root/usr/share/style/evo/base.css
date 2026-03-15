@@ -57,10 +57,10 @@ body {
 	   --evo-cgi-width: set by skin.sh per-page inline style
 	   900px: default when neither is set */
 	max-width: var(--evo-world-max, max(var(--evo-cgi-width, 900px), 900px));
-	margin: 0 auto 10px auto;
+	margin: 10px auto;
 	background: var(--evo-surface);
 	box-shadow: var(--evo-shadow-lg);
-	border-radius: 0 0 var(--evo-radius-lg) var(--evo-radius-lg);
+	border-radius: var(--evo-radius-lg);
 	overflow: hidden;
 }
 
@@ -1112,7 +1112,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	body:not(.evo-topnav) ul.menu.new.sub { display: none; }
 	body:not(.evo-topnav) .evo-hamburger { display: none; }
 	body:not(.evo-topnav) #container { padding: 0 10px 16px 10px; }
-	#world { border-radius: 0; margin-bottom: 10px; overflow: clip; width: 100%; max-width: 100%; box-sizing: border-box; }
+	#world { border-radius: 0; margin: 0 auto 10px auto; overflow: clip; width: 100%; max-width: 100%; box-sizing: border-box; }
 	/* Mobile: bottom nav must always be visible regardless of hammode */
 	html.evo-hammode ul.menu.new,
 	body.evo-hammode ul.menu.new { display: flex !important; }
