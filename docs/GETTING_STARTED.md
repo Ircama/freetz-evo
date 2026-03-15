@@ -191,12 +191,6 @@ tools/prerequisites install  # may take a few minutes
 
 The script detects your distribution and installs all required packages automatically.
 
-Additional suggested tools:
-
-```bash
-sudo apt install python3-pip golang-go golang-1.19-go
-```
-
 ---
 
 ## 6. Configuring Your Firmware

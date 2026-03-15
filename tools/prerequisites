@@ -110,6 +110,12 @@ install_requisite() {
 	[ ! -e "$PACKAGES/$OSV" ] && echo "Unsupported, file for your Linux version not found: $OSV" && list_linux && exit 1
 
 	vals="$(sed 's/[\t ]*#.*//g' "$PACKAGES/$OSV" | sort | tr '\n' ' ' | sed 's/^ *//;s/  */ /g;s/ *$//')"
+	case "$OSV" in
+		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
+			vals="$vals golang-go"
+			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
+			;;
+	esac
 	echo -e "\nPackages for '$OSV':\n$vals\n"
 	[ "${ARG:0:1}" == "s" ] && exit 0
 	case "$OSV" in
