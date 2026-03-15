@@ -6,7 +6,7 @@
  | |_ | '__/ _ \/ _ \ __|_  /____|  _|  \ \ / / | | |
  |  _|| | |  __/  __/ |_ / /_____| |___  \ V /| |_| |
  |_|  |_|  \___|\___|\__/___|    |_____|  \_/  \___/
-dl
+
 ```
 
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). Easier, sleeker, more features - less bugs!
