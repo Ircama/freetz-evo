@@ -41,6 +41,34 @@
     "timestamp": "2026-02-16T14:19:19Z",
     "translation": "."
   },
+  "deepl:1 hour": {
+    "github_user": "Ircama",
+    "original": "1 hour",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:40:06Z",
+    "translation": "1 ora"
+  },
+  "deepl:10 minutes (default)": {
+    "github_user": "Ircama",
+    "original": "10 minutes (default)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:40:02Z",
+    "translation": "10 minuti (predefinito)"
+  },
+  "deepl:100 days": {
+    "github_user": "Ircama",
+    "original": "100 days",
+    "service": "deepl",
+    "timestamp": "2026-03-06T11:16:21Z",
+    "translation": "100 giorni"
+  },
+  "deepl:24 hours": {
+    "github_user": "Ircama",
+    "original": "24 hours",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:40:08Z",
+    "translation": "24 ore"
+  },
   "deepl::": {
     "github_user": "Ircama",
     "original": ":",
@@ -251,6 +279,13 @@
     "timestamp": "2026-02-16T14:18:28Z",
     "translation": "Autenticazione"
   },
+  "deepl:Auto": {
+    "github_user": "Ircama",
+    "original": "Auto",
+    "service": "deepl",
+    "timestamp": "2026-03-11T04:37:45Z",
+    "translation": "Auto"
+  },
   "deepl:Automatic": {
     "github_user": "Ircama",
     "original": "Automatic",
@@ -397,6 +432,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:51Z",
     "translation": "Pacchetti integrati"
+  },
+  "deepl:Center": {
+    "github_user": "Ircama",
+    "original": "Center",
+    "service": "deepl",
+    "timestamp": "2026-03-11T08:02:01Z",
+    "translation": "Centro"
   },
   "deepl:Change branding": {
     "github_user": "Ircama",
@@ -740,6 +782,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:32Z",
     "translation": "Directory per la sezione \"external\""
+  },
+  "deepl:Do not persist session cookie after login (cookie expires when browser closes)": {
+    "github_user": "Ircama",
+    "original": "Do not persist session cookie after login (cookie expires when browser closes)",
+    "service": "deepl",
+    "timestamp": "2026-03-11T08:00:31Z",
+    "translation": "Non persistere il cookie di sessione dopo il login (il cookie scade alla chiusura del browser)"
   },
   "deepl:Do not stop": {
     "github_user": "Ircama",
@@ -1175,6 +1224,13 @@
     "timestamp": "2026-02-16T14:18:34Z",
     "translation": "Memoria flash"
   },
+  "deepl:Form-based login with session cookie (replaces browser Basic Auth dialog)": {
+    "github_user": "Ircama",
+    "original": "Form-based login with session cookie (replaces browser Basic Auth dialog)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T10:01:32Z",
+    "translation": "Login basato su modulo con cookie di sessione (sostituisce la finestra di dialogo Basic Auth del browser)"
+  },
   "deepl:Freetz info": {
     "github_user": "Ircama",
     "original": "Freetz info",
@@ -1266,6 +1322,13 @@
     "timestamp": "2026-02-16T14:18:12Z",
     "translation": "Qui è possibile inserire i moduli da caricare durante il processo di avvio (ad esempio, pl2303)."
   },
+  "deepl:Hide password": {
+    "github_user": "Ircama",
+    "original": "Hide password",
+    "service": "deepl",
+    "timestamp": "2026-03-10T01:27:33Z",
+    "translation": "Nascondi la password"
+  },
   "deepl:Hide section": {
     "github_user": "Ircama",
     "original": "Hide section",
@@ -1300,6 +1363,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:18Z",
     "translation": "Protezione da rumore impulsivo (INP)"
+  },
+  "deepl:Inactivity timeout": {
+    "github_user": "Ircama",
+    "original": "Inactivity timeout",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:39:59Z",
+    "translation": "Timeout di inattività"
   },
   "deepl:Include additional an export of the AVM settings": {
     "github_user": "Ircama",
@@ -1489,6 +1559,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:02Z",
     "translation": "Ultima versione"
+  },
+  "deepl:Left": {
+    "github_user": "Ircama",
+    "original": "Left",
+    "service": "deepl",
+    "timestamp": "2026-03-11T08:01:55Z",
+    "translation": "Sinistra"
   },
   "deepl:Link to USB": {
     "github_user": "Ircama",
@@ -1872,8 +1949,15 @@
     "github_user": "Ircama",
     "original": "Port",
     "service": "deepl",
-    "timestamp": "2026-02-16T14:18:28Z",
-    "translation": "Porto"
+    "timestamp": "2026-03-15T02:02:05Z",
+    "translation": "Porta"
+  },
+  "deepl:Position in mobile navigation": {
+    "github_user": "Ircama",
+    "original": "Position in mobile navigation",
+    "service": "deepl",
+    "timestamp": "2026-03-11T04:37:40Z",
+    "translation": "Posizione nella navigazione mobile"
   },
   "deepl:Prepare downgrade": {
     "github_user": "Ircama",
@@ -1930,6 +2014,20 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:23Z",
     "translation": "Pubblico"
+  },
+  "deepl:Read-Only": {
+    "github_user": "Ircama",
+    "original": "Read-Only",
+    "service": "deepl",
+    "timestamp": "2026-03-10T08:11:42Z",
+    "translation": "Di sola lettura"
+  },
+  "deepl:Read-Write": {
+    "github_user": "Ircama",
+    "original": "Read-Write",
+    "service": "deepl",
+    "timestamp": "2026-03-10T08:11:48Z",
+    "translation": "Lettura-Scrittura"
   },
   "deepl:Read-only file. It may not be modified.": {
     "github_user": "Ircama",
@@ -2001,12 +2099,26 @@
     "timestamp": "2026-02-16T14:18:44Z",
     "translation": "Reset"
   },
+  "deepl:Reset all positions": {
+    "github_user": "Ircama",
+    "original": "Reset all positions",
+    "service": "deepl",
+    "timestamp": "2026-03-11T04:37:50Z",
+    "translation": "Azzeramento di tutte le posizioni"
+  },
   "deepl:Reset warning": {
     "github_user": "Ircama",
     "original": "Reset warning",
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:02Z",
     "translation": "Avviso di reset"
+  },
+  "deepl:Restart": {
+    "github_user": "Ircama",
+    "original": "Restart",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:33:29Z",
+    "translation": "Riavvio"
   },
   "deepl:Restart box": {
     "github_user": "Ircama",
@@ -2091,6 +2203,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:06Z",
     "translation": "Riscrivi la password"
+  },
+  "deepl:Right": {
+    "github_user": "Ircama",
+    "original": "Right",
+    "service": "deepl",
+    "timestamp": "2026-03-11T08:02:07Z",
+    "translation": "Destra"
   },
   "deepl:Router's system time": {
     "github_user": "Ircama",
@@ -2218,6 +2337,13 @@
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "Timeout dell'id di sessione:"
   },
+  "deepl:Session inactivity timeout:": {
+    "github_user": "Ircama",
+    "original": "Session inactivity timeout:",
+    "service": "deepl",
+    "timestamp": "2026-03-06T11:16:13Z",
+    "translation": "Timeout di inattività della sessione:"
+  },
   "deepl:Settings": {
     "github_user": "Ircama",
     "original": "Settings",
@@ -2238,6 +2364,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:30Z",
     "translation": "Mostra l'utilizzo della memoria"
+  },
+  "deepl:Show password": {
+    "github_user": "Ircama",
+    "original": "Show password",
+    "service": "deepl",
+    "timestamp": "2026-03-10T01:27:19Z",
+    "translation": "Mostra password"
   },
   "deepl:Show section": {
     "github_user": "Ircama",
@@ -2273,6 +2406,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:17Z",
     "translation": "File sorgente"
+  },
+  "deepl:Start": {
+    "github_user": "Ircama",
+    "original": "Start",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:33:24Z",
+    "translation": "Inizio"
   },
   "deepl:Start external services after update": {
     "github_user": "Ircama",
@@ -2329,6 +2469,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "Ancora in fase di sviluppo!\\nAssicuratevi di avere un modo alternativo per accedere al vostro box (telnet/ssh).\\nLa password di default è \"freetz\", cambiando la password sarà impostata su \"<Utente><PW>\"!\\n\\nPotete impostare la PW in console con questo comando:\\necho -n \"<password>\" | md5sum | sed \"s/ .*$//\" > /tmp/flash/mod/webmd5\\n"
+  },
+  "deepl:Stop": {
+    "github_user": "Ircama",
+    "original": "Stop",
+    "service": "deepl",
+    "timestamp": "2026-03-02T07:33:25Z",
+    "translation": "Stop"
   },
   "deepl:Stop AVM services (less memory available)": {
     "github_user": "Ircama",
@@ -2582,6 +2729,13 @@
     "timestamp": "2026-02-16T14:18:42Z",
     "translation": "Lo script post-installazione verrà eseguito al riavvio."
   },
+  "deepl:Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)": {
+    "github_user": "Ircama",
+    "original": "Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T10:01:35Z",
+    "translation": "Pagina di login tematizzata per adattarsi alla skin attiva (richiesta della password nell'interfaccia web invece che nella finestra di dialogo del browser; richiede un login basato su modulo)"
+  },
   "deepl:This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.": {
     "github_user": "Ircama",
     "original": "This changed the DNS server the box uses itself for name resolution. Neither a upstream name server of a installed dns server will be modified, nor anything of name resolution for other devices at the local network.",
@@ -2764,6 +2918,13 @@
     "timestamp": "2026-02-16T14:18:28Z",
     "translation": "Nome utente"
   },
+  "deepl:Value": {
+    "github_user": "Ircama",
+    "original": "Value",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:39:55Z",
+    "translation": "Valore"
+  },
   "deepl:Vendor-Product as prefix": {
     "github_user": "Ircama",
     "original": "Vendor-Product as prefix",
@@ -2910,6 +3071,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:02Z",
     "translation": "Wiki: Moduli UI e ctlmgr_ctl"
+  },
+  "deepl:Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.": {
+    "github_user": "Ircama",
+    "original": "Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.",
+    "service": "deepl",
+    "timestamp": "2026-03-11T08:00:37Z",
+    "translation": "Senza questa opzione, il cookie di sessione viene memorizzato nel browser con una durata corrispondente al timeout di inattività della sessione configurato in precedenza, sopravvivendo ai riavvii del browser. Con questa opzione attivata, il cookie viene eliminato alla chiusura del browser ed è necessario un nuovo login per ogni nuova sessione del browser."
   },
   "deepl:Write this dns server to /etc/resolv.conf": {
     "github_user": "Ircama",
@@ -3128,6 +3296,13 @@
     "timestamp": "2026-02-16T14:19:20Z",
     "translation": "libero"
   },
+  "deepl:hide": {
+    "github_user": "Ircama",
+    "original": "hide",
+    "service": "deepl",
+    "timestamp": "2026-03-10T01:27:26Z",
+    "translation": "nascondi"
+  },
   "deepl:minute hour day month day-of-week command": {
     "github_user": "Ircama",
     "original": "minute hour day month day-of-week command",
@@ -3148,6 +3323,13 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:02Z",
     "translation": "mai"
+  },
+  "deepl:never (permanent while device is running)": {
+    "github_user": "Ircama",
+    "original": "never (permanent while device is running)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T09:40:12Z",
+    "translation": "mai (permanente mentre il dispositivo è in funzione)"
   },
   "deepl:no extras": {
     "github_user": "Ircama",
@@ -3261,6 +3443,20 @@
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "secondi"
   },
+  "deepl:seconds (after this idle period the login prompt reappears)": {
+    "github_user": "Ircama",
+    "original": "seconds (after this idle period the login prompt reappears)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T11:16:17Z",
+    "translation": "secondi (dopo questo periodo di inattività riappare il prompt di login)"
+  },
+  "deepl:show": {
+    "github_user": "Ircama",
+    "original": "show",
+    "service": "deepl",
+    "timestamp": "2026-03-10T01:27:11Z",
+    "translation": "mostra"
+  },
   "deepl:start": {
     "github_user": "Ircama",
     "original": "start",
@@ -3372,201 +3568,5 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "con i pulsanti"
-  },
-  "deepl:Start": {
-    "original": "Start",
-    "translation": "Inizio",
-    "timestamp": "2026-03-02T07:33:24Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Stop": {
-    "original": "Stop",
-    "translation": "Stop",
-    "timestamp": "2026-03-02T07:33:25Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Restart": {
-    "original": "Restart",
-    "translation": "Riavvio",
-    "timestamp": "2026-03-02T07:33:29Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Value": {
-    "original": "Value",
-    "translation": "Valore",
-    "timestamp": "2026-03-06T09:39:55Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Inactivity timeout": {
-    "original": "Inactivity timeout",
-    "translation": "Timeout di inattività",
-    "timestamp": "2026-03-06T09:39:59Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:10 minutes (default)": {
-    "original": "10 minutes (default)",
-    "translation": "10 minuti (predefinito)",
-    "timestamp": "2026-03-06T09:40:02Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:1 hour": {
-    "original": "1 hour",
-    "translation": "1 ora",
-    "timestamp": "2026-03-06T09:40:06Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:24 hours": {
-    "original": "24 hours",
-    "translation": "24 ore",
-    "timestamp": "2026-03-06T09:40:08Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:never (permanent while device is running)": {
-    "original": "never (permanent while device is running)",
-    "translation": "mai (permanente mentre il dispositivo è in funzione)",
-    "timestamp": "2026-03-06T09:40:12Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Form-based login with session cookie (replaces browser Basic Auth dialog)": {
-    "original": "Form-based login with session cookie (replaces browser Basic Auth dialog)",
-    "translation": "Login basato su modulo con cookie di sessione (sostituisce la finestra di dialogo Basic Auth del browser)",
-    "timestamp": "2026-03-06T10:01:32Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)": {
-    "original": "Themed login page styled to match the active skin (password prompt in the web UI instead of browser dialog; requires form-based login)",
-    "translation": "Pagina di login tematizzata per adattarsi alla skin attiva (richiesta della password nell'interfaccia web invece che nella finestra di dialogo del browser; richiede un login basato su modulo)",
-    "timestamp": "2026-03-06T10:01:35Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Session inactivity timeout:": {
-    "original": "Session inactivity timeout:",
-    "translation": "Timeout di inattività della sessione:",
-    "timestamp": "2026-03-06T11:16:13Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:seconds (after this idle period the login prompt reappears)": {
-    "original": "seconds (after this idle period the login prompt reappears)",
-    "translation": "secondi (dopo questo periodo di inattività riappare il prompt di login)",
-    "timestamp": "2026-03-06T11:16:17Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:100 days": {
-    "original": "100 days",
-    "translation": "100 giorni",
-    "timestamp": "2026-03-06T11:16:21Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:show": {
-    "original": "show",
-    "translation": "mostra",
-    "timestamp": "2026-03-10T01:27:11Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Show password": {
-    "original": "Show password",
-    "translation": "Mostra password",
-    "timestamp": "2026-03-10T01:27:19Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:hide": {
-    "original": "hide",
-    "translation": "nascondi",
-    "timestamp": "2026-03-10T01:27:26Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Hide password": {
-    "original": "Hide password",
-    "translation": "Nascondi la password",
-    "timestamp": "2026-03-10T01:27:33Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Read-Only": {
-    "original": "Read-Only",
-    "translation": "Di sola lettura",
-    "timestamp": "2026-03-10T08:11:42Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Read-Write": {
-    "original": "Read-Write",
-    "translation": "Lettura-Scrittura",
-    "timestamp": "2026-03-10T08:11:48Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Position in mobile navigation": {
-    "original": "Position in mobile navigation",
-    "translation": "Posizione nella navigazione mobile",
-    "timestamp": "2026-03-11T04:37:40Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Auto": {
-    "original": "Auto",
-    "translation": "Auto",
-    "timestamp": "2026-03-11T04:37:45Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Reset all positions": {
-    "original": "Reset all positions",
-    "translation": "Azzeramento di tutte le posizioni",
-    "timestamp": "2026-03-11T04:37:50Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Do not persist session cookie after login (cookie expires when browser closes)": {
-    "original": "Do not persist session cookie after login (cookie expires when browser closes)",
-    "translation": "Non persistere il cookie di sessione dopo il login (il cookie scade alla chiusura del browser)",
-    "timestamp": "2026-03-11T08:00:31Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.": {
-    "original": "Without this option the session cookie is stored in the browser with a lifespan matching the session inactivity timeout configured above, surviving browser restarts. With this option enabled the cookie is discarded when the browser closes and a fresh login is required for each new browser session.",
-    "translation": "Senza questa opzione, il cookie di sessione viene memorizzato nel browser con una durata corrispondente al timeout di inattività della sessione configurato in precedenza, sopravvivendo ai riavvii del browser. Con questa opzione attivata, il cookie viene eliminato alla chiusura del browser ed è necessario un nuovo login per ogni nuova sessione del browser.",
-    "timestamp": "2026-03-11T08:00:37Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Left": {
-    "original": "Left",
-    "translation": "Sinistra",
-    "timestamp": "2026-03-11T08:01:55Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Center": {
-    "original": "Center",
-    "translation": "Centro",
-    "timestamp": "2026-03-11T08:02:01Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Right": {
-    "original": "Right",
-    "translation": "Destra",
-    "timestamp": "2026-03-11T08:02:07Z",
-    "service": "deepl",
-    "github_user": "Ircama"
   }
 }

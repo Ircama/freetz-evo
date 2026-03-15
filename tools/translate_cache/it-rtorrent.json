@@ -1,1206 +1,1206 @@
 {
   "deepl:(0 = unlimited, default)": {
+    "github_user": "Ircama",
     "original": "(0 = unlimited, default)",
-    "translation": "(0 = illimitato, predefinito)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "(0 = illimitato, predefinito)"
   },
   "deepl:(Log file is empty)": {
+    "github_user": "Ircama",
     "original": "(Log file is empty)",
-    "translation": "(Il file di log è vuoto)",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "(Il file di log è vuoto)"
   },
   "deepl:(default: /tmp, recommended with < 64MB RAM: basedir)": {
+    "github_user": "Ircama",
     "original": "(default: /tmp, recommended with < 64MB RAM: basedir)",
-    "translation": "(predefinito: /tmp, consigliato con < 64MB di RAM: basedir)",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "(predefinito: /tmp, consigliato con < 64MB di RAM: basedir)"
   },
   "deepl:(default: 10)": {
+    "github_user": "Ircama",
     "original": "(default: 10)",
-    "translation": "(valore predefinito: 10)",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "(valore predefinito: 10)"
   },
   "deepl:(default: 100)": {
+    "github_user": "Ircama",
     "original": "(default: 100)",
-    "translation": "(valore predefinito: 100)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "(valore predefinito: 100)"
   },
   "deepl:(default: 120, 0 = immediate)": {
+    "github_user": "Ircama",
     "original": "(default: 120, 0 = immediate)",
-    "translation": "(valore predefinito: 120, 0 = immediato)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "(valore predefinito: 120, 0 = immediato)"
   },
   "deepl:(default: 15)": {
+    "github_user": "Ircama",
     "original": "(default: 15)",
-    "translation": "(valore predefinito: 15)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "(valore predefinito: 15)"
   },
   "deepl:(default: 16891, traditional: 5000 or 5555)": {
+    "github_user": "Ircama",
     "original": "(default: 16891, traditional: 5000 or 5555)",
-    "translation": "(predefinito: 16891, tradizionale: 5000 o 5555)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "(predefinito: 16891, tradizionale: 5000 o 5555)"
   },
   "deepl:(default: 200)": {
+    "github_user": "Ircama",
     "original": "(default: 200)",
-    "translation": "(valore predefinito: 200)",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "(valore predefinito: 200)"
   },
   "deepl:(default: 300 = 5 min)": {
+    "github_user": "Ircama",
     "original": "(default: 300 = 5 min)",
-    "translation": "(valore predefinito: 300 = 5 min)",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "(valore predefinito: 300 = 5 min)"
   },
   "deepl:(default: 40)": {
+    "github_user": "Ircama",
     "original": "(default: 40)",
-    "translation": "(valore predefinito: 40)",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "(valore predefinito: 40)"
   },
   "deepl:(default: 50)": {
+    "github_user": "Ircama",
     "original": "(default: 50)",
-    "translation": "(valore predefinito: 50)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "(valore predefinito: 50)"
   },
   "deepl:(default: 64M, values: 32M/64M/128M/256M)": {
+    "github_user": "Ircama",
     "original": "(default: 64M, values: 32M/64M/128M/256M)",
-    "translation": "(default: 64M, valori: 32M/64M/128M/256M)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "(default: 64M, valori: 32M/64M/128M/256M)"
   },
   "deepl:(default: 6881)": {
+    "github_user": "Ircama",
     "original": "(default: 6881)",
-    "translation": "(default: 6881)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "(default: 6881)"
   },
   "deepl:(default: off)": {
+    "github_user": "Ircama",
     "original": "(default: off)",
-    "translation": "(predefinito: off)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "(predefinito: off)"
   },
   "deepl:.rtorrent.rc does not exist yet. Use the Setup Wizard.": {
+    "github_user": "Ircama",
     "original": ".rtorrent.rc does not exist yet. Use the Setup Wizard.",
-    "translation": ".rtorrent.rc non esiste ancora. Utilizzare l'installazione guidata.",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": ".rtorrent.rc non esiste ancora. Utilizzare l'installazione guidata."
   },
   "deepl:AVM-Rules is not installed.": {
+    "github_user": "Ircama",
     "original": "AVM-Rules is not installed.",
-    "translation": "AVM-Rules non è installato.",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "AVM-Rules non è installato."
   },
   "deepl:Access via": {
+    "github_user": "Ircama",
     "original": "Access via",
-    "translation": "Accesso tramite",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Accesso tramite"
   },
   "deepl:Are you sure you want to delete .rtorrent.rc?": {
+    "github_user": "Ircama",
     "original": "Are you sure you want to delete .rtorrent.rc?",
-    "translation": "Siete sicuri di voler eliminare .rtorrent.rc?",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Siete sicuri di voler eliminare .rtorrent.rc?"
   },
   "deepl:Auto (default)": {
+    "github_user": "Ircama",
     "original": "Auto (default)",
-    "translation": "Auto (predefinito)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Auto (predefinito)"
   },
   "deepl:Available Storage Devices (RW)": {
+    "github_user": "Ircama",
     "original": "Available Storage Devices (RW)",
-    "translation": "Dispositivi di archiviazione disponibili (RW)",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Dispositivi di archiviazione disponibili (RW)"
   },
   "deepl:Back": {
+    "github_user": "Ircama",
     "original": "Back",
-    "translation": "Indietro",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Indietro"
   },
   "deepl:Base Directory": {
+    "github_user": "Ircama",
     "original": "Base Directory",
-    "translation": "Directory di base",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Directory di base"
   },
   "deepl:Base directory not set. Suggested": {
+    "github_user": "Ircama",
     "original": "Base directory not set. Suggested",
-    "translation": "Directory di base non impostata. Suggerito",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Directory di base non impostata. Suggerito"
   },
   "deepl:Boot Monitor": {
+    "github_user": "Ircama",
     "original": "Boot Monitor",
-    "translation": "Monitoraggio dell'avvio",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Monitoraggio dell'avvio"
   },
   "deepl:Boot Wait Time (sec)": {
+    "github_user": "Ircama",
     "original": "Boot Wait Time (sec)",
-    "translation": "Tempo di attesa per l'avvio (sec)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Tempo di attesa per l'avvio (sec)"
   },
   "deepl:Cancel": {
+    "github_user": "Ircama",
     "original": "Cancel",
-    "translation": "Annulla",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Annulla"
   },
   "deepl:Check Hash on Start": {
+    "github_user": "Ircama",
     "original": "Check Hash on Start",
-    "translation": "Controllare l'hash all'avvio",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Controllare l'hash all'avvio"
   },
   "deepl:Checking .rtorrent.rc...": {
+    "github_user": "Ircama",
     "original": "Checking .rtorrent.rc...",
-    "translation": "Controllo di .rtorrent.rc...",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Controllo di .rtorrent.rc..."
   },
   "deepl:Checking directory configuration...": {
+    "github_user": "Ircama",
     "original": "Checking directory configuration...",
-    "translation": "Verifica della configurazione della directory...",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Verifica della configurazione della directory..."
   },
   "deepl:Checking directory...": {
+    "github_user": "Ircama",
     "original": "Checking directory...",
-    "translation": "Verifica della directory...",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Verifica della directory..."
   },
   "deepl:Checks downloaded files for integrity on rTorrent start. Yes = safer, but longer startup with many/large torrents.": {
+    "github_user": "Ircama",
     "original": "Checks downloaded files for integrity on rTorrent start. Yes = safer, but longer startup with many/large torrents.",
-    "translation": "Controlla l'integrità dei file scaricati all'avvio di rTorrent. Sì = più sicuro, ma avvio più lungo con molti o grandi torrent.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Controlla l'integrità dei file scaricati all'avvio di rTorrent. Sì = più sicuro, ma avvio più lungo con molti o grandi torrent."
   },
   "deepl:Choose a directory on your USB storage or NAS where rTorrent will store files.": {
+    "github_user": "Ircama",
     "original": "Choose a directory on your USB storage or NAS where rTorrent will store files.",
-    "translation": "Scegliere una directory sulla memoria USB o sul NAS in cui rTorrent memorizzerà i file.",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Scegliere una directory sulla memoria USB o sul NAS in cui rTorrent memorizzerà i file."
   },
   "deepl:Click to use path as base directory": {
+    "github_user": "Ircama",
     "original": "Click to use path as base directory",
-    "translation": "Fare clic per utilizzare il percorso come directory di base",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Fare clic per utilizzare il percorso come directory di base"
   },
   "deepl:Configuration File": {
+    "github_user": "Ircama",
     "original": "Configuration File",
-    "translation": "File di configurazione",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "File di configurazione"
   },
   "deepl:Configuration saved. Service not started.": {
+    "github_user": "Ircama",
     "original": "Configuration saved. Service not started.",
-    "translation": "Configurazione salvata. Servizio non avviato.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Configurazione salvata. Servizio non avviato."
   },
   "deepl:Create .rtorrent.rc from template?": {
+    "github_user": "Ircama",
     "original": "Create .rtorrent.rc from template?",
-    "translation": "Creare .rtorrent.rc da un modello?",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Creare .rtorrent.rc da un modello?"
   },
   "deepl:Create Now": {
+    "github_user": "Ircama",
     "original": "Create Now",
-    "translation": "Crea ora",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Crea ora"
   },
   "deepl:Create directory structure now?": {
+    "github_user": "Ircama",
     "original": "Create directory structure now?",
-    "translation": "Creare ora la struttura della directory?",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Creare ora la struttura della directory?"
   },
   "deepl:Creating .rtorrent.rc...": {
+    "github_user": "Ircama",
     "original": "Creating .rtorrent.rc...",
-    "translation": "Creare .rtorrent.rc...",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Creare .rtorrent.rc..."
   },
   "deepl:Creating directories...": {
+    "github_user": "Ircama",
     "original": "Creating directories...",
-    "translation": "Creazione di directory...",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Creazione di directory..."
   },
   "deepl:Creating directory...": {
+    "github_user": "Ircama",
     "original": "Creating directory...",
-    "translation": "Creazione di una directory...",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Creazione di una directory..."
   },
   "deepl:Current path": {
+    "github_user": "Ircama",
     "original": "Current path",
-    "translation": "Percorso attuale",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Percorso attuale"
   },
   "deepl:DHT Port": {
+    "github_user": "Ircama",
     "original": "DHT Port",
-    "translation": "Porta DHT",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Porta DHT"
   },
   "deepl:DHT Settings": {
+    "github_user": "Ircama",
     "original": "DHT Settings",
-    "translation": "Impostazioni DHT",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Impostazioni DHT"
   },
   "deepl:Delete": {
+    "github_user": "Ircama",
     "original": "Delete",
-    "translation": "Elimina",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Elimina"
   },
   "deepl:Deleted": {
+    "github_user": "Ircama",
     "original": "Deleted",
-    "translation": "Soppresso",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Soppresso"
   },
   "deepl:Directories created successfully": {
+    "github_user": "Ircama",
     "original": "Directories created successfully",
-    "translation": "Directory create con successo",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Directory create con successo"
   },
   "deepl:Directory Structure": {
+    "github_user": "Ircama",
     "original": "Directory Structure",
-    "translation": "Struttura della directory",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Struttura della directory"
   },
   "deepl:Directory configuration exists": {
+    "github_user": "Ircama",
     "original": "Directory configuration exists",
-    "translation": "La configurazione della directory esiste",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "La configurazione della directory esiste"
   },
   "deepl:Directory created and configuration saved": {
+    "github_user": "Ircama",
     "original": "Directory created and configuration saved",
-    "translation": "Directory creata e configurazione salvata",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Directory creata e configurazione salvata"
   },
   "deepl:Directory created, saving configuration...": {
+    "github_user": "Ircama",
     "original": "Directory created, saving configuration...",
-    "translation": "Directory creata, salvataggio della configurazione...",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Directory creata, salvataggio della configurazione..."
   },
   "deepl:Directory does not exist": {
+    "github_user": "Ircama",
     "original": "Directory does not exist",
-    "translation": "La directory non esiste",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "La directory non esiste"
   },
   "deepl:Directory exists and configuration saved": {
+    "github_user": "Ircama",
     "original": "Directory exists and configuration saved",
-    "translation": "La directory esiste e la configurazione è stata salvata",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "La directory esiste e la configurazione è stata salvata"
   },
   "deepl:Directory exists, saving configuration...": {
+    "github_user": "Ircama",
     "original": "Directory exists, saving configuration...",
-    "translation": "La directory esiste, salvare la configurazione...",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "La directory esiste, salvare la configurazione..."
   },
   "deepl:Directory path": {
+    "github_user": "Ircama",
     "original": "Directory path",
-    "translation": "Percorso della directory",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Percorso della directory"
   },
   "deepl:Directory structure needs to be created": {
+    "github_user": "Ircama",
     "original": "Directory structure needs to be created",
-    "translation": "È necessario creare una struttura di directory",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "È necessario creare una struttura di directory"
   },
   "deepl:Distributed Hash Table - Enables peer discovery without tracker. Auto = enabled for public torrents. Recommended: Auto.": {
+    "github_user": "Ircama",
     "original": "Distributed Hash Table - Enables peer discovery without tracker. Auto = enabled for public torrents. Recommended: Auto.",
-    "translation": "Distributed Hash Table - Consente di individuare i peer senza tracker. Auto = abilitato per i torrent pubblici. Consigliato: Auto.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Distributed Hash Table - Consente di individuare i peer senza tracker. Auto = abilitato per i torrent pubblici. Consigliato: Auto."
   },
   "deepl:Do you really want to exit the wizard?": {
+    "github_user": "Ircama",
     "original": "Do you really want to exit the wizard?",
-    "translation": "Volete davvero uscire dalla procedura guidata?",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Volete davvero uscire dalla procedura guidata?"
   },
   "deepl:Download Rate (KB/s)": {
+    "github_user": "Ircama",
     "original": "Download Rate (KB/s)",
-    "translation": "Velocità di download (KB/s)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Velocità di download (KB/s)"
   },
   "deepl:Downloaded files": {
+    "github_user": "Ircama",
     "original": "Downloaded files",
-    "translation": "File scaricati",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "File scaricati"
   },
   "deepl:Duration (sec)": {
+    "github_user": "Ircama",
     "original": "Duration (sec)",
-    "translation": "Durata (sec)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Durata (sec)"
   },
   "deepl:Edit Configuration Files": {
+    "github_user": "Ircama",
     "original": "Edit Configuration Files",
-    "translation": "Modifica dei file di configurazione",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Modifica dei file di configurazione"
   },
   "deepl:Edit rTorrent configuration": {
+    "github_user": "Ircama",
     "original": "Edit rTorrent configuration",
-    "translation": "Modifica della configurazione di rTorrent",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Modifica della configurazione di rTorrent"
   },
   "deepl:Edit ruTorrent configuration": {
+    "github_user": "Ircama",
     "original": "Edit ruTorrent configuration",
-    "translation": "Modifica della configurazione di ruTorrent",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Modifica della configurazione di ruTorrent"
   },
   "deepl:Enable": {
+    "github_user": "Ircama",
     "original": "Enable",
-    "translation": "Abilita",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Abilita"
   },
   "deepl:Enables HTTP/XMLRPC access to rTorrent (translates XMLRPC to SCGI). Requires username and password of the configured Freetz user.": {
+    "github_user": "Ircama",
     "original": "Enables HTTP/XMLRPC access to rTorrent (translates XMLRPC to SCGI). Requires username and password of the configured Freetz user.",
-    "translation": "Abilita l'accesso HTTP/XMLRPC a rTorrent (traduce XMLRPC in SCGI). Richiede nome utente e password dell'utente Freetz configurato.",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Abilita l'accesso HTTP/XMLRPC a rTorrent (traduce XMLRPC in SCGI). Richiede nome utente e password dell'utente Freetz configurato."
   },
   "deepl:Error": {
+    "github_user": "Ircama",
     "original": "Error",
-    "translation": "Errore",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Errore"
   },
   "deepl:Error checking .rtorrent.rc": {
+    "github_user": "Ircama",
     "original": "Error checking .rtorrent.rc",
-    "translation": "Errore nella verifica di .rtorrent.rc",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Errore nella verifica di .rtorrent.rc"
   },
   "deepl:Error creating .rtorrent.rc": {
+    "github_user": "Ircama",
     "original": "Error creating .rtorrent.rc",
-    "translation": "Errore nella creazione di .rtorrent.rc",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Errore nella creazione di .rtorrent.rc"
   },
   "deepl:Error creating directories": {
+    "github_user": "Ircama",
     "original": "Error creating directories",
-    "translation": "Errore nella creazione delle directory",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Errore nella creazione delle directory"
   },
   "deepl:Error creating directory": {
+    "github_user": "Ircama",
     "original": "Error creating directory",
-    "translation": "Errore nella creazione della directory",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Errore nella creazione della directory"
   },
   "deepl:Error reading port configuration": {
+    "github_user": "Ircama",
     "original": "Error reading port configuration",
-    "translation": "Errore nella lettura della configurazione della porta",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Errore nella lettura della configurazione della porta"
   },
   "deepl:Error saving configuration": {
+    "github_user": "Ircama",
     "original": "Error saving configuration",
-    "translation": "Errore nel salvataggio della configurazione",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Errore nel salvataggio della configurazione"
   },
   "deepl:Error starting service": {
+    "github_user": "Ircama",
     "original": "Error starting service",
-    "translation": "Errore nell'avvio del servizio",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Errore nell'avvio del servizio"
   },
   "deepl:Error: ": {
+    "github_user": "Ircama",
     "original": "Error: ",
-    "translation": "Errore: ",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Errore: "
   },
   "deepl:Example": {
+    "github_user": "Ircama",
     "original": "Example",
-    "translation": "Esempio",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Esempio"
   },
   "deepl:Ext4 filesystem is the most appropriate for best performance and reliability.": {
+    "github_user": "Ircama",
     "original": "Ext4 filesystem is the most appropriate for best performance and reliability.",
-    "translation": "Il filesystem Ext4 è il più adatto per ottenere le migliori prestazioni e affidabilità.",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Il filesystem Ext4 è il più adatto per ottenere le migliori prestazioni e affidabilità."
   },
   "deepl:Finish": {
+    "github_user": "Ircama",
     "original": "Finish",
-    "translation": "Finitura",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Finitura"
   },
   "deepl:Global maximum of all simultaneous peer connections across all torrents. Prevents overload with many active torrents.": {
+    "github_user": "Ircama",
     "original": "Global maximum of all simultaneous peer connections across all torrents. Prevents overload with many active torrents.",
-    "translation": "Massimo globale di tutte le connessioni peer simultanee tra tutti i torrent. Previene il sovraccarico con molti torrent attivi.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Massimo globale di tutte le connessioni peer simultanee tra tutti i torrent. Previene il sovraccarico con molti torrent attivi."
   },
   "deepl:How long to monitor after boot (seconds). Example: 300 = 5 minutes.": {
+    "github_user": "Ircama",
     "original": "How long to monitor after boot (seconds). Example: 300 = 5 minutes.",
-    "translation": "Quanto tempo monitorare dopo l'avvio (secondi). Esempio: 300 = 5 minuti.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Quanto tempo monitorare dopo l'avvio (secondi). Esempio: 300 = 5 minuti."
   },
   "deepl:How long to wait at system boot for USB/network resources before starting rTorrent. 0 = immediate start (synchronous, for internal storage only). >0 = background start with wait time (for USB/NAS).": {
+    "github_user": "Ircama",
     "original": "How long to wait at system boot for USB/network resources before starting rTorrent. 0 = immediate start (synchronous, for internal storage only). >0 = background start with wait time (for USB/NAS).",
-    "translation": "Quanto tempo attendere all'avvio del sistema per le risorse USB/di rete prima di avviare rTorrent. 0 = avvio immediato (sincrono, solo per l'archiviazione interna). >0 = avvio in background con tempo di attesa (per USB/NAS).",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Quanto tempo attendere all'avvio del sistema per le risorse USB/di rete prima di avviare rTorrent. 0 = avvio immediato (sincrono, solo per l'archiviazione interna). >0 = avvio in background con tempo di attesa (per USB/NAS)."
   },
   "deepl:How often to check whether rTorrent is running (seconds). Example: 10.": {
+    "github_user": "Ircama",
     "original": "How often to check whether rTorrent is running (seconds). Example: 10.",
-    "translation": "Con quale frequenza verificare se rTorrent è in esecuzione (secondi). Esempio: 10.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Con quale frequenza verificare se rTorrent è in esecuzione (secondi). Esempio: 10."
   },
   "deepl:If enabled, after boot start the init script monitors for a limited time whether rTorrent is still running and restarts it if needed.": {
+    "github_user": "Ircama",
     "original": "If enabled, after boot start the init script monitors for a limited time whether rTorrent is still running and restarts it if needed.",
-    "translation": "Se abilitato, dopo l'avvio lo script init controlla per un tempo limitato se rTorrent è ancora in esecuzione e lo riavvia se necessario.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Se abilitato, dopo l'avvio lo script init controlla per un tempo limitato se rTorrent è ancora in esecuzione e lo riavvia se necessario."
   },
   "deepl:If enabled, ruTorrent uses the base directory (basedir) for temporary files instead of /tmp (RAM). Recommended with many simultaneous uploads or limited RAM. Default: /tmp (faster, but RAM-limited).": {
+    "github_user": "Ircama",
     "original": "If enabled, ruTorrent uses the base directory (basedir) for temporary files instead of /tmp (RAM). Recommended with many simultaneous uploads or limited RAM. Default: /tmp (faster, but RAM-limited).",
-    "translation": "Se abilitato, ruTorrent utilizza la directory di base (basedir) per i file temporanei invece di /tmp (RAM). Consigliato con molti upload simultanei o con RAM limitata. Predefinito: /tmp (più veloce, ma con RAM limitata).",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Se abilitato, ruTorrent utilizza la directory di base (basedir) per i file temporanei invece di /tmp (RAM). Consigliato con molti upload simultanei o con RAM limitata. Predefinito: /tmp (più veloce, ma con RAM limitata)."
   },
   "deepl:Important": {
+    "github_user": "Ircama",
     "original": "Important",
-    "translation": "Importante",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Importante"
   },
   "deepl:Interval (sec)": {
+    "github_user": "Ircama",
     "original": "Interval (sec)",
-    "translation": "Intervallo (sec)",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Intervallo (sec)"
   },
   "deepl:Log files": {
+    "github_user": "Ircama",
     "original": "Log files",
-    "translation": "File di log",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "File di log"
   },
   "deepl:Main directory for rTorrent. Downloads, session data and configuration files are stored here. Must be on persistent storage (USB/NAS).": {
+    "github_user": "Ircama",
     "original": "Main directory for rTorrent. Downloads, session data and configuration files are stored here. Must be on persistent storage (USB/NAS).",
-    "translation": "Directory principale di rTorrent, dove vengono memorizzati i download, i dati di sessione e i file di configurazione. Deve trovarsi su uno storage persistente (USB/NAS).",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Directory principale di rTorrent, dove vengono memorizzati i download, i dati di sessione e i file di configurazione. Deve trovarsi su uno storage persistente (USB/NAS)."
   },
   "deepl:Main directory for rTorrent. Will be used as default when starting the wizard.": {
+    "github_user": "Ircama",
     "original": "Main directory for rTorrent. Will be used as default when starting the wizard.",
-    "translation": "Directory principale di rTorrent. Verrà utilizzata come predefinita all'avvio della procedura guidata.",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Directory principale di rTorrent. Verrà utilizzata come predefinita all'avvio della procedura guidata."
   },
   "deepl:Max Peers": {
+    "github_user": "Ircama",
     "original": "Max Peers",
-    "translation": "Max Peers",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Max Peers"
   },
   "deepl:Max Peers Seeding": {
+    "github_user": "Ircama",
     "original": "Max Peers Seeding",
-    "translation": "Numero massimo di peer che stanno effettuando seeding",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Numero massimo di peer che stanno effettuando seeding"
   },
   "deepl:Maximum download speed in KB/s. 0 = unlimited. Set a limit if you want to reserve bandwidth for other services.": {
+    "github_user": "Ircama",
     "original": "Maximum download speed in KB/s. 0 = unlimited. Set a limit if you want to reserve bandwidth for other services.",
-    "translation": "Velocità massima di download in KB/s. 0 = illimitata. Impostare un limite se si desidera riservare la larghezza di banda per altri servizi.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Velocità massima di download in KB/s. 0 = illimitata. Impostare un limite se si desidera riservare la larghezza di banda per altri servizi."
   },
   "deepl:Maximum number of connected peers per active torrent (download). Higher values = better speed, but more resource usage.": {
+    "github_user": "Ircama",
     "original": "Maximum number of connected peers per active torrent (download). Higher values = better speed, but more resource usage.",
-    "translation": "Numero massimo di peer connessi per torrent attivo (download). Valori più alti = migliore velocità, ma maggiore utilizzo di risorse.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Numero massimo di peer connessi per torrent attivo (download). Valori più alti = migliore velocità, ma maggiore utilizzo di risorse."
   },
   "deepl:Maximum number of connected peers per torrent in seeding mode. Usually lower than download, since upload bandwidth is limited.": {
+    "github_user": "Ircama",
     "original": "Maximum number of connected peers per torrent in seeding mode. Usually lower than download, since upload bandwidth is limited.",
-    "translation": "Numero massimo di peer connessi per torrent in modalità seeding. Di solito è inferiore a quello del download, poiché la larghezza di banda in upload è limitata.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Numero massimo di peer connessi per torrent in modalità seeding. Di solito è inferiore a quello del download, poiché la larghezza di banda in upload è limitata."
   },
   "deepl:Maximum number of simultaneous uploads per torrent. Limits how many peers can upload data simultaneously.": {
+    "github_user": "Ircama",
     "original": "Maximum number of simultaneous uploads per torrent. Limits how many peers can upload data simultaneously.",
-    "translation": "Numero massimo di upload simultanei per torrent. Limita il numero di peer che possono caricare dati simultaneamente.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Numero massimo di upload simultanei per torrent. Limita il numero di peer che possono caricare dati simultaneamente."
   },
   "deepl:Maximum upload speed in KB/s. 0 = unlimited. Recommendation: 80-90% of your upload bandwidth to avoid affecting other services.": {
+    "github_user": "Ircama",
     "original": "Maximum upload speed in KB/s. 0 = unlimited. Recommendation: 80-90% of your upload bandwidth to avoid affecting other services.",
-    "translation": "Velocità massima di upload in KB/s. 0 = illimitata. Raccomandazione: 80-90% della larghezza di banda di upload per evitare di influenzare altri servizi.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Velocità massima di upload in KB/s. 0 = illimitata. Raccomandazione: 80-90% della larghezza di banda di upload per evitare di influenzare altri servizi."
   },
   "deepl:Min Peers": {
+    "github_user": "Ircama",
     "original": "Min Peers",
-    "translation": "Min Peers",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Min Peers"
   },
   "deepl:Min Peers Seeding": {
+    "github_user": "Ircama",
     "original": "Min Peers Seeding",
-    "translation": "Numero minimo di peer che stanno effettuando seeding",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Numero minimo di peer che stanno effettuando seeding"
   },
   "deepl:Minimum number of peers rTorrent tries to maintain (download). rTorrent actively searches for new peers if the count drops below this.": {
+    "github_user": "Ircama",
     "original": "Minimum number of peers rTorrent tries to maintain (download). rTorrent actively searches for new peers if the count drops below this.",
-    "translation": "Numero minimo di peer che rTorrent cerca di mantenere (scaricare). rTorrent cerca attivamente nuovi peer se il conteggio scende al di sotto di questo valore.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Numero minimo di peer che rTorrent cerca di mantenere (scaricare). rTorrent cerca attivamente nuovi peer se il conteggio scende al di sotto di questo valore."
   },
   "deepl:Minimum number of peers when seeding. Lower than download, since seeding requires fewer active connections.": {
+    "github_user": "Ircama",
     "original": "Minimum number of peers when seeding. Lower than download, since seeding requires fewer active connections.",
-    "translation": "Numero minimo di peer per il seeding, inferiore a quello del download, poiché il seeding richiede un numero inferiore di connessioni attive.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Numero minimo di peer per il seeding, inferiore a quello del download, poiché il seeding richiede un numero inferiore di connessioni attive."
   },
   "deepl:Network error": {
+    "github_user": "Ircama",
     "original": "Network error",
-    "translation": "Errore di rete",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Errore di rete"
   },
   "deepl:Next": {
+    "github_user": "Ircama",
     "original": "Next",
-    "translation": "Avanti",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Avanti"
   },
   "deepl:No": {
+    "github_user": "Ircama",
     "original": "No",
-    "translation": "No",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "No"
   },
   "deepl:Note": {
+    "github_user": "Ircama",
     "original": "Note",
-    "translation": "Nota",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Nota"
   },
   "deepl:Off": {
+    "github_user": "Ircama",
     "original": "Off",
-    "translation": "Non attivo",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Non attivo"
   },
   "deepl:On": {
+    "github_user": "Ircama",
     "original": "On",
-    "translation": "Attivo",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Attivo"
   },
   "deepl:Open AVM-Rules": {
+    "github_user": "Ircama",
     "original": "Open AVM-Rules",
-    "translation": "Aprire AVM-Rules",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Aprire AVM-Rules"
   },
   "deepl:Open ruTorrent Web Interface": {
+    "github_user": "Ircama",
     "original": "Open ruTorrent Web Interface",
-    "translation": "Aprire l'interfaccia web di ruTorrent",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Aprire l'interfaccia web di ruTorrent"
   },
   "deepl:Other Settings": {
+    "github_user": "Ircama",
     "original": "Other Settings",
-    "translation": "Altre impostazioni",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Altre impostazioni"
   },
   "deepl:Peer Limit": {
+    "github_user": "Ircama",
     "original": "Peer Limit",
-    "translation": "Numero massimo di peers",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Numero massimo di peers"
   },
   "deepl:Peer Settings": {
+    "github_user": "Ircama",
     "original": "Peer Settings",
-    "translation": "Impostazioni Peer",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Impostazioni Peer"
   },
   "deepl:Pieces Memory Max": {
+    "github_user": "Ircama",
     "original": "Pieces Memory Max",
-    "translation": "Massima memoria per la cache dei segmenti di download",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Massima memoria per la cache dei segmenti di download"
   },
   "deepl:Please complete initial setup first": {
+    "github_user": "Ircama",
     "original": "Please complete initial setup first",
-    "translation": "Completare prima la configurazione iniziale",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Completare prima la configurazione iniziale"
   },
   "deepl:Port": {
+    "github_user": "Ircama",
     "original": "Port",
-    "translation": "Porto",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-15T02:02:11Z",
+    "translation": "Porta"
   },
   "deepl:Port Configuration": {
+    "github_user": "Ircama",
     "original": "Port Configuration",
-    "translation": "Configurazione della porta",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Configurazione della porta"
   },
   "deepl:Port Forwarding": {
+    "github_user": "Ircama",
     "original": "Port Forwarding",
-    "translation": "Inoltro delle porte",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Inoltro delle porte"
   },
   "deepl:Port forwarding is NOT configured in AVM-Rules": {
+    "github_user": "Ircama",
     "original": "Port forwarding is NOT configured in AVM-Rules",
-    "translation": "Il port forwarding NON è configurato in AVM-Rules",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Il port forwarding NON è configurato in AVM-Rules"
   },
   "deepl:Port forwarding is configured in AVM-Rules": {
+    "github_user": "Ircama",
     "original": "Port forwarding is configured in AVM-Rules",
-    "translation": "L'inoltro delle porte è configurato in AVM-Rules",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "L'inoltro delle porte è configurato in AVM-Rules"
   },
   "deepl:Priority": {
+    "github_user": "Ircama",
     "original": "Priority",
-    "translation": "Priorità",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Priorità"
   },
   "deepl:Process priority (0-19). Higher values = lower priority. Default: 5. Use higher values to reserve system resources for other services.": {
+    "github_user": "Ircama",
     "original": "Process priority (0-19). Higher values = lower priority. Default: 5. Use higher values to reserve system resources for other services.",
-    "translation": "Priorità del processo (0-19). Valori più alti = priorità più bassa. Predefinito: 5. Usare valori più alti per riservare le risorse del sistema ad altri servizi.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Priorità del processo (0-19). Valori più alti = priorità più bassa. Predefinito: 5. Usare valori più alti per riservare le risorse del sistema ad altri servizi."
   },
   "deepl:RAM for buffering torrent pieces. Critical on low-RAM devices: too high = system crash (OOM), too low = slower performance. FritzBox 64MB RAM: 32M, 128-256MB: 64M, 512MB+: 128M.": {
+    "github_user": "Ircama",
     "original": "RAM for buffering torrent pieces. Critical on low-RAM devices: too high = system crash (OOM), too low = slower performance. FritzBox 64MB RAM: 32M, 128-256MB: 64M, 512MB+: 128M.",
-    "translation": "RAM per il buffering dei torrent. Critico su dispositivi a bassa RAM: troppo alto = crash del sistema (OOM), troppo basso = prestazioni inferiori. FritzBox 64MB RAM: 32M, 128-256MB: 64M, 512MB+: 128M.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "RAM per il buffering dei torrent. Critico su dispositivi a bassa RAM: troppo alto = crash del sistema (OOM), troppo basso = prestazioni inferiori. FritzBox 64MB RAM: 32M, 128-256MB: 64M, 512MB+: 128M."
   },
   "deepl:Reading port configuration...": {
+    "github_user": "Ircama",
     "original": "Reading port configuration...",
-    "translation": "Lettura della configurazione della porta...",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Lettura della configurazione della porta..."
   },
   "deepl:Recommendation": {
+    "github_user": "Ircama",
     "original": "Recommendation",
-    "translation": "Raccomandazione",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Raccomandazione"
   },
   "deepl:Required ports": {
+    "github_user": "Ircama",
     "original": "Required ports",
-    "translation": "Porte IP richieste",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Porte IP richieste"
   },
   "deepl:SCGI Port": {
+    "github_user": "Ircama",
     "original": "SCGI Port",
-    "translation": "Porta SCGI",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Porta SCGI"
   },
   "deepl:Saving configuration...": {
+    "github_user": "Ircama",
     "original": "Saving configuration...",
-    "translation": "Salvataggio della configurazione...",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Salvataggio della configurazione..."
   },
   "deepl:Service not started. You can start it manually later.": {
+    "github_user": "Ircama",
     "original": "Service not started. You can start it manually later.",
-    "translation": "Il servizio non è stato avviato. È possibile avviarlo manualmente in un secondo momento.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Il servizio non è stato avviato. È possibile avviarlo manualmente in un secondo momento."
   },
   "deepl:Service started successfully": {
+    "github_user": "Ircama",
     "original": "Service started successfully",
-    "translation": "Il servizio è stato avviato con successo",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Il servizio è stato avviato con successo"
   },
   "deepl:Setup Complete!": {
+    "github_user": "Ircama",
     "original": "Setup Complete!",
-    "translation": "Configurazione completata!",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "Configurazione completata!"
   },
   "deepl:Shows last 200 lines. Check here for error messages if rTorrent fails to start.": {
+    "github_user": "Ircama",
     "original": "Shows last 200 lines. Check here for error messages if rTorrent fails to start.",
-    "translation": "Mostra le ultime 200 righe. Controllare qui i messaggi di errore se rTorrent non si avvia.",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Mostra le ultime 200 righe. Controllare qui i messaggi di errore se rTorrent non si avvia."
   },
   "deepl:Skip": {
+    "github_user": "Ircama",
     "original": "Skip",
-    "translation": "Salta",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Salta"
   },
   "deepl:Start Initial Setup Wizard": {
+    "github_user": "Ircama",
     "original": "Start Initial Setup Wizard",
-    "translation": "Avvio dell'installazione guidata iniziale",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Avvio dell'installazione guidata iniziale"
   },
   "deepl:Start type": {
+    "github_user": "Ircama",
     "original": "Start type",
-    "translation": "Tipo di avvio",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Tipo di avvio"
   },
   "deepl:Starting service...": {
+    "github_user": "Ircama",
     "original": "Starting service...",
-    "translation": "Avvio del servizio...",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Avvio del servizio..."
   },
   "deepl:Startup Log": {
+    "github_user": "Ircama",
     "original": "Startup Log",
-    "translation": "Log di avvio",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Log di avvio"
   },
   "deepl:Step": {
+    "github_user": "Ircama",
     "original": "Step",
-    "translation": "Passo",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Passo"
   },
   "deepl:Step 1 of 5": {
+    "github_user": "Ircama",
     "original": "Step 1 of 5",
-    "translation": "Fase 1 di 5",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Fase 1 di 5"
   },
   "deepl:Suggested": {
+    "github_user": "Ircama",
     "original": "Suggested",
-    "translation": "Suggerito",
-    "timestamp": "2026-02-16T14:19:27Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:27Z",
+    "translation": "Suggerito"
   },
   "deepl:Supports: config.php, freetz_config.php, plugins.ini, access.ini": {
+    "github_user": "Ircama",
     "original": "Supports: config.php, freetz_config.php, plugins.ini, access.ini",
-    "translation": "Supporta: config.php, freetz_config.php, plugins.ini, access.ini",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "Supporta: config.php, freetz_config.php, plugins.ini, access.ini"
   },
   "deepl:TCP port for SCGI communication between ruTorrent and rTorrent. Bound only locally (127.0.0.1). Traditional ports are 5000 or 5555, but 16891 avoids conflicts with Flask, Docker, UPnP, etc. Default: 16891.": {
+    "github_user": "Ircama",
     "original": "TCP port for SCGI communication between ruTorrent and rTorrent. Bound only locally (127.0.0.1). Traditional ports are 5000 or 5555, but 16891 avoids conflicts with Flask, Docker, UPnP, etc. Default: 16891.",
-    "translation": "Porta TCP per la comunicazione SCGI tra ruTorrent e rTorrent. Legata solo localmente (127.0.0.1). Le porte tradizionali sono 5000 o 5555, ma la 16891 evita i conflitti con Flask, Docker, UPnP, ecc.",
-    "timestamp": "2026-02-16T14:19:34Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:34Z",
+    "translation": "Porta TCP per la comunicazione SCGI tra ruTorrent e rTorrent. Legata solo localmente (127.0.0.1). Le porte tradizionali sono 5000 o 5555, ma la 16891 evita i conflitti con Flask, Docker, UPnP, ecc."
   },
   "deepl:The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!": {
+    "github_user": "Ircama",
     "original": "The directory must be on persistent storage (USB, NAS). Do NOT use /var/tmp!",
-    "translation": "La directory deve trovarsi su una memoria persistente (USB, NAS). NON utilizzare /var/tmp!",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "La directory deve trovarsi su una memoria persistente (USB, NAS). NON utilizzare /var/tmp!"
   },
   "deepl:The file .rtorrent.rc does not exist at": {
+    "github_user": "Ircama",
     "original": "The file .rtorrent.rc does not exist at",
-    "translation": "Il file .rtorrent.rc non esiste su",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Il file .rtorrent.rc non esiste su"
   },
   "deepl:The following directories will be created": {
+    "github_user": "Ircama",
     "original": "The following directories will be created",
-    "translation": "Verranno create le seguenti directory",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Verranno create le seguenti directory"
   },
   "deepl:Torrent files to auto-start": {
+    "github_user": "Ircama",
     "original": "Torrent files to auto-start",
-    "translation": "File Torrent da avviare automaticamente",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "File Torrent da avviare automaticamente"
   },
   "deepl:Torrent files to load": {
+    "github_user": "Ircama",
     "original": "Torrent files to load",
-    "translation": "File Torrent da caricare",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "File Torrent da caricare"
   },
   "deepl:Torrent session data": {
+    "github_user": "Ircama",
     "original": "Torrent session data",
-    "translation": "Dati della sessione Torrent",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Dati della sessione Torrent"
   },
   "deepl:UDP port for DHT communication. Does not need to be forwarded, but improves peer discovery. Default: 6881.": {
+    "github_user": "Ircama",
     "original": "UDP port for DHT communication. Does not need to be forwarded, but improves peer discovery. Default: 6881.",
-    "translation": "Porta UDP per la comunicazione DHT. Non è necessario inoltrarla, ma migliora la scoperta dei peer. Predefinita: 6881.",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Porta UDP per la comunicazione DHT. Non è necessario inoltrarla, ma migliora la scoperta dei peer. Predefinita: 6881."
   },
   "deepl:Unknown error": {
+    "github_user": "Ircama",
     "original": "Unknown error",
-    "translation": "Errore sconosciuto",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Errore sconosciuto"
   },
   "deepl:Upload Rate (KB/s)": {
+    "github_user": "Ircama",
     "original": "Upload Rate (KB/s)",
-    "translation": "Velocità di upload (KB/s)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Velocità di upload (KB/s)"
   },
   "deepl:Upload Slots": {
+    "github_user": "Ircama",
     "original": "Upload Slots",
-    "translation": "Upload Slots",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "Upload Slots"
   },
   "deepl:Use home directory for temporary files": {
+    "github_user": "Ircama",
     "original": "Use home directory for temporary files",
-    "translation": "Utilizza la directory home per i file temporanei",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Utilizza la directory home per i file temporanei"
   },
   "deepl:Warning": {
+    "github_user": "Ircama",
     "original": "Warning",
-    "translation": "Avviso",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Avviso"
   },
   "deepl:Warning: /var/tmp is not persistent! Data will be lost on reboot. Continue?": {
+    "github_user": "Ircama",
     "original": "Warning: /var/tmp is not persistent! Data will be lost on reboot. Continue?",
-    "translation": "Attenzione: /var/tmp non è persistente! I dati andranno persi al riavvio. Continuare?",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "Attenzione: /var/tmp non è persistente! I dati andranno persi al riavvio. Continuare?"
   },
   "deepl:XMLRPC Proxy": {
+    "github_user": "Ircama",
     "original": "XMLRPC Proxy",
-    "translation": "Proxy XMLRPC",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Proxy XMLRPC"
   },
   "deepl:Yes (default)": {
+    "github_user": "Ircama",
     "original": "Yes (default)",
-    "translation": "Sì (predefinito)",
-    "timestamp": "2026-02-16T14:19:33Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:33Z",
+    "translation": "Sì (predefinito)"
   },
   "deepl:Yes, create": {
+    "github_user": "Ircama",
     "original": "Yes, create",
-    "translation": "Sì, creare",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "Sì, creare"
   },
   "deepl:You can install it later through package management.": {
+    "github_user": "Ircama",
     "original": "You can install it later through package management.",
-    "translation": "È possibile installarlo in seguito tramite la gestione dei pacchetti.",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "È possibile installarlo in seguito tramite la gestione dei pacchetti."
   },
   "deepl:created successfully": {
+    "github_user": "Ircama",
     "original": "created successfully",
-    "translation": "creato con successo",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "creato con successo"
   },
   "deepl:found": {
+    "github_user": "Ircama",
     "original": "found",
-    "translation": "trovato",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "trovato"
   },
   "deepl:has been configured in .rtorrent.rc": {
+    "github_user": "Ircama",
     "original": "has been configured in .rtorrent.rc",
-    "translation": "è stato configurato in .rtorrent.rc",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "è stato configurato in .rtorrent.rc"
   },
   "deepl:is installed": {
+    "github_user": "Ircama",
     "original": "is installed",
-    "translation": "è installato",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "è installato"
   },
   "deepl:is not installed": {
+    "github_user": "Ircama",
     "original": "is not installed",
-    "translation": "non è installato",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "non è installato"
   },
   "deepl:not found": {
+    "github_user": "Ircama",
     "original": "not found",
-    "translation": "non trovato",
-    "timestamp": "2026-02-16T14:19:31Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:31Z",
+    "translation": "non trovato"
   },
   "deepl:of": {
+    "github_user": "Ircama",
     "original": "of",
-    "translation": "di",
-    "timestamp": "2026-02-16T14:19:30Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:30Z",
+    "translation": "di"
   },
   "deepl:rTorrent Initial Setup": {
+    "github_user": "Ircama",
     "original": "rTorrent Initial Setup",
-    "translation": "Configurazione iniziale di rTorrent",
-    "timestamp": "2026-02-16T14:19:28Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:28Z",
+    "translation": "Configurazione iniziale di rTorrent"
   },
   "deepl:rTorrent requires open ports for incoming connections. Without port forwarding, only outgoing traffic will work.": {
+    "github_user": "Ircama",
     "original": "rTorrent requires open ports for incoming connections. Without port forwarding, only outgoing traffic will work.",
-    "translation": "rTorrent richiede porte IP aperte per le connessioni in entrata. Senza il port forwarding, funzionerà solo il traffico in uscita.",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "rTorrent richiede porte IP aperte per le connessioni in entrata. Senza il port forwarding, funzionerà solo il traffico in uscita."
   },
   "deepl:rTorrent requires open ports for incoming connections:": {
+    "github_user": "Ircama",
     "original": "rTorrent requires open ports for incoming connections:",
-    "translation": "rTorrent richiede porte aperte per le connessioni in entrata:",
-    "timestamp": "2026-02-16T14:19:29Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:29Z",
+    "translation": "rTorrent richiede porte aperte per le connessioni in entrata:"
   },
   "deepl:ruTorrent": {
+    "github_user": "Ircama",
     "original": "ruTorrent",
-    "translation": "ruTorrent",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "ruTorrent"
   },
   "deepl:ruTorrent Web Interface": {
+    "github_user": "Ircama",
     "original": "ruTorrent Web Interface",
-    "translation": "Interfaccia web ruTorrent",
-    "timestamp": "2026-02-16T14:19:35Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:35Z",
+    "translation": "Interfaccia web ruTorrent"
   },
   "deepl:ruTorrent is not installed": {
+    "github_user": "Ircama",
     "original": "ruTorrent is not installed",
-    "translation": "ruTorrent non è installato",
-    "timestamp": "2026-02-16T14:19:36Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:36Z",
+    "translation": "ruTorrent non è installato"
   },
   "deepl:✓ The ports are already correctly configured.": {
+    "github_user": "Ircama",
     "original": "✓ The ports are already correctly configured.",
-    "translation": "✓ Le porte sono già configurate correttamente.",
-    "timestamp": "2026-02-16T14:19:32Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-02-16T14:19:32Z",
+    "translation": "✓ Le porte sono già configurate correttamente."
   }
 }

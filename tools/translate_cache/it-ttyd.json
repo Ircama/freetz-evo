@@ -1,240 +1,240 @@
 {
-  "deepl:Start type": {
-    "original": "Start type",
-    "translation": "Tipo di avvio",
-    "timestamp": "2026-03-06T07:18:44Z",
+  "deepl:/usr/bin/ttyd-shell = per-boot token auth + auto root login via web UI; or /bin/login to require password": {
+    "github_user": "Ircama",
+    "original": "/usr/bin/ttyd-shell = per-boot token auth + auto root login via web UI; or /bin/login to require password",
     "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Configuration": {
-    "original": "Configuration",
-    "translation": "Configurazione",
-    "timestamp": "2026-03-06T07:18:44Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Port:": {
-    "original": "Port:",
-    "translation": "Porto:",
-    "timestamp": "2026-03-06T07:18:44Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Default: 7681": {
-    "original": "Default: 7681",
-    "translation": "Predefinito: 7681",
-    "timestamp": "2026-03-06T07:18:49Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Credential:": {
-    "original": "Credential:",
-    "translation": "Credenziale:",
-    "timestamp": "2026-03-06T07:18:54Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Format: user:password (blank = no auth)": {
-    "original": "Format: user:password (blank = no auth)",
-    "translation": "Formato: utente:password (vuoto = nessuna autorizzazione)",
-    "timestamp": "2026-03-06T07:19:01Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Read-only:": {
-    "original": "Read-only:",
-    "translation": "Solo lettura:",
-    "timestamp": "2026-03-06T07:19:10Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Disable input from clients": {
-    "original": "Disable input from clients",
-    "translation": "Disabilitare l'input da parte dei clienti",
-    "timestamp": "2026-03-06T07:19:19Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Shell command:": {
-    "original": "Shell command:",
-    "translation": "Comando di shell:",
-    "timestamp": "2026-03-06T07:19:25Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Default: /bin/login": {
-    "original": "Default: /bin/login",
-    "translation": "Predefinito: /bin/login",
-    "timestamp": "2026-03-06T07:19:30Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Extra options:": {
-    "original": "Extra options:",
-    "translation": "Opzioni extra:",
-    "timestamp": "2026-03-06T07:19:36Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Web Terminal": {
-    "original": "Web Terminal",
-    "translation": "Terminale Web",
-    "timestamp": "2026-03-06T07:19:41Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Disconnected": {
-    "original": "Disconnected",
-    "translation": "Disconnesso",
-    "timestamp": "2026-03-06T07:19:46Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Colour theme": {
-    "original": "Colour theme",
-    "translation": "Tema colore",
-    "timestamp": "2026-03-06T07:19:50Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Dark": {
-    "original": "Dark",
-    "translation": "Scuro",
-    "timestamp": "2026-03-06T07:19:55Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Light": {
-    "original": "Light",
-    "translation": "Luce",
-    "timestamp": "2026-03-06T07:20:00Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Decrease font size": {
-    "original": "Decrease font size",
-    "translation": "Diminuire la dimensione dei caratteri",
-    "timestamp": "2026-03-06T07:20:05Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Increase font size": {
-    "original": "Increase font size",
-    "translation": "Aumentare la dimensione dei caratteri",
-    "timestamp": "2026-03-06T07:20:12Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Search": {
-    "original": "Search",
-    "translation": "Ricerca",
-    "timestamp": "2026-03-06T07:20:18Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Reconnect": {
-    "original": "Reconnect",
-    "translation": "Ricollegare",
-    "timestamp": "2026-03-06T07:20:23Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Fullscreen (Esc to exit)": {
-    "original": "Fullscreen (Esc to exit)",
-    "translation": "Schermo intero (Esc per uscire)",
-    "timestamp": "2026-03-06T07:20:27Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Search...": {
-    "original": "Search...",
-    "translation": "Ricerca...",
-    "timestamp": "2026-03-06T07:20:31Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Previous": {
-    "original": "Previous",
-    "translation": "Precedente",
-    "timestamp": "2026-03-06T07:20:35Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Next": {
-    "original": "Next",
-    "translation": "Avanti",
-    "timestamp": "2026-03-06T07:20:35Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T12:23:46Z",
+    "translation": "/usr/bin/ttyd-shell = autenticazione con token per il boot + login automatico di root tramite interfaccia web; oppure /bin/login per richiedere la password"
   },
   "deepl:Close": {
+    "github_user": "Ircama",
     "original": "Close",
-    "translation": "Chiudi",
+    "service": "deepl",
     "timestamp": "2026-03-06T07:20:39Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Chiudi"
   },
-  "deepl:Port protection:": {
-    "original": "Port protection:",
-    "translation": "Protezione della porta:",
-    "timestamp": "2026-03-06T08:38:13Z",
+  "deepl:Colour theme": {
+    "github_user": "Ircama",
+    "original": "Colour theme",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:19:50Z",
+    "translation": "Tema colore"
   },
-  "deepl:user:password for direct LAN access to port $TTYD_PORT (blank = auto-token per start, web UI needs no entry)": {
-    "original": "user:password for direct LAN access to port $TTYD_PORT (blank = auto-token per start, web UI needs no entry)",
-    "translation": "user:password per l'accesso diretto alla LAN sulla porta $TTYD_PORT (blank = auto-token per l'avvio, l'interfaccia web non necessita di alcuna immissione)",
-    "timestamp": "2026-03-06T08:38:16Z",
+  "deepl:Configuration": {
+    "github_user": "Ircama",
+    "original": "Configuration",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:18:44Z",
+    "translation": "Configurazione"
+  },
+  "deepl:Credential:": {
+    "github_user": "Ircama",
+    "original": "Credential:",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:18:54Z",
+    "translation": "Credenziale:"
+  },
+  "deepl:Dark": {
+    "github_user": "Ircama",
+    "original": "Dark",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:55Z",
+    "translation": "Scuro"
+  },
+  "deepl:Decrease font size": {
+    "github_user": "Ircama",
+    "original": "Decrease font size",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:05Z",
+    "translation": "Diminuire la dimensione dei caratteri"
+  },
+  "deepl:Default: /bin/login": {
+    "github_user": "Ircama",
+    "original": "Default: /bin/login",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:30Z",
+    "translation": "Predefinito: /bin/login"
+  },
+  "deepl:Default: 7681": {
+    "github_user": "Ircama",
+    "original": "Default: 7681",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:18:49Z",
+    "translation": "Predefinito: 7681"
+  },
+  "deepl:Disable input from clients": {
+    "github_user": "Ircama",
+    "original": "Disable input from clients",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:19Z",
+    "translation": "Disabilitare l'input da parte dei clienti"
+  },
+  "deepl:Disconnected": {
+    "github_user": "Ircama",
+    "original": "Disconnected",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:46Z",
+    "translation": "Disconnesso"
   },
   "deepl:Environment:": {
+    "github_user": "Ircama",
     "original": "Environment:",
-    "translation": "Ambiente:",
+    "service": "deepl",
     "timestamp": "2026-03-06T08:38:20Z",
-    "service": "deepl",
-    "github_user": "Ircama"
+    "translation": "Ambiente:"
   },
-  "deepl:Shell environment variables, e.g.: LANG=de_DE.UTF-8 TZ=Europe/Berlin": {
-    "original": "Shell environment variables, e.g.: LANG=de_DE.UTF-8 TZ=Europe/Berlin",
-    "translation": "Variabili d'ambiente della shell, ad esempio: LANG=de_DE.UTF-8 TZ=Europa/Berlino",
-    "timestamp": "2026-03-06T08:38:23Z",
+  "deepl:Extra options:": {
+    "github_user": "Ircama",
+    "original": "Extra options:",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:19:36Z",
+    "translation": "Opzioni extra:"
   },
-  "deepl:user:password for direct browser access to http://fritz.box:$TTYD_PORT/ (blank = no ttyd auth; the embedded web terminal does not use this)": {
-    "original": "user:password for direct browser access to http://fritz.box:$TTYD_PORT/ (blank = no ttyd auth; the embedded web terminal does not use this)",
-    "translation": "user:password per l'accesso diretto del browser a http://fritz.box:$TTYD_PORT/ (blank = nessuna autenticazione ttyd; il terminale web incorporato non lo usa)",
-    "timestamp": "2026-03-06T11:17:43Z",
+  "deepl:Format: user:password (blank = no auth)": {
+    "github_user": "Ircama",
+    "original": "Format: user:password (blank = no auth)",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:19:01Z",
+    "translation": "Formato: utente:password (vuoto = nessuna autorizzazione)"
   },
-  "deepl:/usr/bin/ttyd-shell = per-boot token auth + auto root login via web UI; or /bin/login to require password": {
-    "original": "/usr/bin/ttyd-shell = per-boot token auth + auto root login via web UI; or /bin/login to require password",
-    "translation": "/usr/bin/ttyd-shell = autenticazione con token per il boot + login automatico di root tramite interfaccia web; oppure /bin/login per richiedere la password",
-    "timestamp": "2026-03-06T12:23:46Z",
+  "deepl:Fullscreen (Esc to exit)": {
+    "github_user": "Ircama",
+    "original": "Fullscreen (Esc to exit)",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:20:27Z",
+    "translation": "Schermo intero (Esc per uscire)"
   },
-  "deepl:Open full-screen terminal in new tab": {
-    "original": "Open full-screen terminal in new tab",
-    "translation": "Aprire il terminale a schermo intero in una nuova scheda",
-    "timestamp": "2026-03-06T12:23:51Z",
+  "deepl:Increase font size": {
+    "github_user": "Ircama",
+    "original": "Increase font size",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:20:12Z",
+    "translation": "Aumentare la dimensione dei caratteri"
   },
-  "deepl:Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.": {
-    "original": "Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.",
-    "translation": "La sessione è in esecuzione tramite il proxy HTTPS; WebSocket è bloccato come <em>contenuto misto</em>.",
-    "timestamp": "2026-03-09T00:53:01Z",
+  "deepl:Light": {
+    "github_user": "Ircama",
+    "original": "Light",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-06T07:20:00Z",
+    "translation": "Luce"
+  },
+  "deepl:Next": {
+    "github_user": "Ircama",
+    "original": "Next",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:35Z",
+    "translation": "Avanti"
   },
   "deepl:Open Web Terminal in new tab &nbsp;&#x2197;": {
+    "github_user": "Ircama",
     "original": "Open Web Terminal in new tab &nbsp;&#x2197;",
-    "translation": "Aprire il Terminale Web in una nuova scheda &nbsp;&#x2197;",
-    "timestamp": "2026-03-09T00:53:06Z",
     "service": "deepl",
-    "github_user": "Ircama"
+    "timestamp": "2026-03-09T00:53:06Z",
+    "translation": "Aprire il Terminale Web in una nuova scheda &nbsp;&#x2197;"
+  },
+  "deepl:Open full-screen terminal in new tab": {
+    "github_user": "Ircama",
+    "original": "Open full-screen terminal in new tab",
+    "service": "deepl",
+    "timestamp": "2026-03-06T12:23:51Z",
+    "translation": "Aprire il terminale a schermo intero in una nuova scheda"
+  },
+  "deepl:Port protection:": {
+    "github_user": "Ircama",
+    "original": "Port protection:",
+    "service": "deepl",
+    "timestamp": "2026-03-06T08:38:13Z",
+    "translation": "Protezione della porta:"
+  },
+  "deepl:Port:": {
+    "github_user": "Ircama",
+    "original": "Port:",
+    "service": "deepl",
+    "timestamp": "2026-03-15T02:02:22Z",
+    "translation": "Porta:"
+  },
+  "deepl:Previous": {
+    "github_user": "Ircama",
+    "original": "Previous",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:35Z",
+    "translation": "Precedente"
+  },
+  "deepl:Read-only:": {
+    "github_user": "Ircama",
+    "original": "Read-only:",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:10Z",
+    "translation": "Solo lettura:"
+  },
+  "deepl:Reconnect": {
+    "github_user": "Ircama",
+    "original": "Reconnect",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:23Z",
+    "translation": "Ricollegare"
+  },
+  "deepl:Search": {
+    "github_user": "Ircama",
+    "original": "Search",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:18Z",
+    "translation": "Ricerca"
+  },
+  "deepl:Search...": {
+    "github_user": "Ircama",
+    "original": "Search...",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:20:31Z",
+    "translation": "Ricerca..."
+  },
+  "deepl:Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.": {
+    "github_user": "Ircama",
+    "original": "Session is running via the HTTPS proxy &mdash; WebSocket is blocked as <em>mixed&nbsp;content</em>.",
+    "service": "deepl",
+    "timestamp": "2026-03-09T00:53:01Z",
+    "translation": "La sessione è in esecuzione tramite il proxy HTTPS; WebSocket è bloccato come <em>contenuto misto</em>."
+  },
+  "deepl:Shell command:": {
+    "github_user": "Ircama",
+    "original": "Shell command:",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:25Z",
+    "translation": "Comando di shell:"
+  },
+  "deepl:Shell environment variables, e.g.: LANG=de_DE.UTF-8 TZ=Europe/Berlin": {
+    "github_user": "Ircama",
+    "original": "Shell environment variables, e.g.: LANG=de_DE.UTF-8 TZ=Europe/Berlin",
+    "service": "deepl",
+    "timestamp": "2026-03-06T08:38:23Z",
+    "translation": "Variabili d'ambiente della shell, ad esempio: LANG=de_DE.UTF-8 TZ=Europa/Berlino"
+  },
+  "deepl:Start type": {
+    "github_user": "Ircama",
+    "original": "Start type",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:18:44Z",
+    "translation": "Tipo di avvio"
+  },
+  "deepl:Web Terminal": {
+    "github_user": "Ircama",
+    "original": "Web Terminal",
+    "service": "deepl",
+    "timestamp": "2026-03-06T07:19:41Z",
+    "translation": "Terminale Web"
+  },
+  "deepl:user:password for direct LAN access to port $TTYD_PORT (blank = auto-token per start, web UI needs no entry)": {
+    "github_user": "Ircama",
+    "original": "user:password for direct LAN access to port $TTYD_PORT (blank = auto-token per start, web UI needs no entry)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T08:38:16Z",
+    "translation": "user:password per l'accesso diretto alla LAN sulla porta $TTYD_PORT (blank = auto-token per l'avvio, l'interfaccia web non necessita di alcuna immissione)"
+  },
+  "deepl:user:password for direct browser access to http://fritz.box:$TTYD_PORT/ (blank = no ttyd auth; the embedded web terminal does not use this)": {
+    "github_user": "Ircama",
+    "original": "user:password for direct browser access to http://fritz.box:$TTYD_PORT/ (blank = no ttyd auth; the embedded web terminal does not use this)",
+    "service": "deepl",
+    "timestamp": "2026-03-06T11:17:43Z",
+    "translation": "user:password per l'accesso diretto del browser a http://fritz.box:$TTYD_PORT/ (blank = nessuna autenticazione ttyd; il terminale web incorporato non lo usa)"
   }
 }

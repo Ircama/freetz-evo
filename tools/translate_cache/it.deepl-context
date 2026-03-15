@@ -19,6 +19,7 @@ Parole che non devono essere tradotte:
 - seeds
 - peers
 - authorized_key
+- port
 
 Parole che devono essere tradotte in modo specifico:
 - box deve essere tradotto in dispositivo
