@@ -30,15 +30,15 @@ if (is_readable('/usr/lib/php/webcfg_auth.php')) {
 } elseif (is_readable('/mod/external/usr/lib/php/webcfg_auth.php')) {
     $_webcfgAuth = '/mod/external/usr/lib/php/webcfg_auth.php';
 }
+$_cmd = isset($_REQUEST['cmd']) ? (string)$_REQUEST['cmd'] : '';
+$_allowAnonymousFileCmd = ($_cmd === 'file');
 if ($_webcfgAuth !== '') {
     require_once $_webcfgAuth;
-    // Always return to the UI page after login; using connector URI here
-    // can cause login loops or landing on raw JSON responses.
-    $subpage = 'elfinder/';
-    $loginUrl = '/cgi-bin/conf/elfinder?subpage=elfinder/';
-    if (isset($_REQUEST['cmd']) && (string)$_REQUEST['cmd'] === 'movieinfo_setkeys') {
-        webcfg_require_auth(array('mode' => 'json', 'subpage' => $subpage, 'login_url' => $loginUrl));
-    } else {
+    if (!$_allowAnonymousFileCmd) {
+        // Always return to the UI page after login; using connector URI here
+        // can cause login loops or landing on raw JSON responses.
+        $subpage = 'elfinder/';
+        $loginUrl = '/cgi-bin/conf/elfinder?subpage=elfinder/';
         webcfg_require_auth(array('mode' => 'json', 'subpage' => $subpage, 'login_url' => $loginUrl));
     }
 }
