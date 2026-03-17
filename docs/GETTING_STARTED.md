@@ -190,6 +190,7 @@ tools/prerequisites install  # may take a few minutes
 ```
 
 The script detects your distribution and installs all required packages automatically.
+On apt-based systems, this includes `golang-go`.
 
 ---
 
