@@ -1,0 +1,24 @@
+config FREETZ_LIB_libtcmalloc_minimal
+	bool "libtcmalloc_minimal (libtcmalloc_minimal.so)"
+	default n
+	help
+		TCMalloc (Thread-Caching Malloc) from Google's gperftools.
+		A high-performance, thread-safe drop-in replacement for malloc that
+		is significantly faster than glibc malloc, especially for multi-threaded
+		programs.
+
+		This is the minimal variant without heap profiling or checking support,
+		suitable for embedded targets.
+
+		https://gperftools.github.io/gperftools/tcmalloc.html
+
+config FREETZ_LIB_libprofiler
+	bool "libprofiler (libprofiler.so)"
+	default n
+	select FREETZ_LIB_libtcmalloc_minimal
+	help
+		CPU profiler from Google's gperftools. Allows profiling CPU usage of
+		programs at runtime by setting the CPUPROFILE environment variable.
+
+		https://gperftools.github.io/gperftools/cpuprofile.html
+

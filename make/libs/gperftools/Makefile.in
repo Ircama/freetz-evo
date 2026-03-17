@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libtcmalloc_minimal)),y)
+LIBS+=gperftools
+endif

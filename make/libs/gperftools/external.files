@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_LIB_libtcmalloc_minimal" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtcmalloc_minimal.so.4.6.5"
+[ "$EXTERNAL_FREETZ_LIB_libprofiler" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libprofiler.so.0.5.19"

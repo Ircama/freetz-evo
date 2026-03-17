@@ -1,0 +1,14 @@
+config FREETZ_LIB_libjemalloc
+	bool "libjemalloc (libjemalloc.so)"
+	default n
+	help
+		jemalloc is a general purpose malloc(3) implementation that emphasises
+		fragmentation avoidance and scalable concurrency support.
+
+		It is used as the allocator in Firefox, FreeBSD, and many other
+		high-performance applications. Compared to the default uClibc allocator
+		it provides better heap metadata management and avoids SIGFPE crashes
+		caused by corrupted heap state on MIPS targets.
+
+		https://jemalloc.net/
+

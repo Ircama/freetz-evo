@@ -1,0 +1,16 @@
+config EXTERNAL_FREETZ_LIB_libtcmalloc_minimal
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libtcmalloc_minimal
+	bool "libtcmalloc_minimal"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libtcmalloc_minimal.so.4.6.5
+
+config EXTERNAL_FREETZ_LIB_libprofiler
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libprofiler
+	bool "libprofiler"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libprofiler.so.0.5.19
+
