@@ -3568,5 +3568,12 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "con i pulsanti"
+  },
+  "deepl:If the action does not complete in the browser, run this in CLI:": {
+    "original": "If the action does not complete in the browser, run this in CLI:",
+    "translation": "Se l'azione non viene completata nel browser, eseguirla in CLI:",
+    "timestamp": "2026-03-15T18:18:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
