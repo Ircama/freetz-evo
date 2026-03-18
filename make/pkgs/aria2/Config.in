@@ -83,20 +83,20 @@ if FREETZ_PACKAGE_ARIA2
 			Disable libcares async DNS support.
 			Useful if libcares is not available. Uses standard DNS resolver instead.
 
+	config FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC
+		bool "Use jemalloc as memory allocator"
+		default y
+		select FREETZ_LIB_libjemalloc  if !FREETZ_PACKAGE_ARIA2_STATIC
+		help
+			Replace the default uClibc allocator with jemalloc to avoid SIGFPE
+			crashes caused by corrupted heap metadata on MIPS/uClibc-1.0.57.
+			jemalloc provides better fragmentation avoidance and thread scalability.
+
 	config FREETZ_PACKAGE_ARIA2_STATIC
 		bool "Link statically"
 		default n
 		help
 			Build aria2 with statically linked libraries.
-
-	config FREETZ_PACKAGE_ARIA2_CA_BUNDLE
-		string "Path to CA bundle for HTTPS certificate verification"
-		default "/etc/ssl/certs/ca-bundle.crt"
-		depends on FREETZ_PACKAGE_ARIA2_WITH_OPENSSL || FREETZ_PACKAGE_ARIA2_WITH_GNUTLS
-		help
-			Path to the CA bundle file for verifying HTTPS certificates.
-			Default is /etc/ssl/certs/ca-bundle.crt (standard on most Linux distributions).
-			Can be overridden at runtime with --ca-certificate aria2 option.
 
 	config FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
 		bool "Build libaria2 C++ library"

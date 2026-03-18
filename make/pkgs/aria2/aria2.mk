@@ -9,11 +9,8 @@ $(PKG)_SITE:=https://github.com/aria2/aria2/releases/download/release-$($(PKG)_V
 ### SUPPORT:=Ircama
 
 $(PKG)_BINARIES := aria2c
-# When FREETZ_LIB_libaria2=y the binary is linked directly against .libs/libaria2.a
-# (patch 105); libtool therefore places it in src/ rather than src/.libs/.
-# When FREETZ_PACKAGE_ARIA2_STATIC=y the binary is also in src/ (fully static).
-# Only in the plain dynamic case does libtool wrap it in src/.libs/.
-$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/$(if $(or $(FREETZ_PACKAGE_ARIA2_STATIC),$(FREETZ_LIB_libaria2)),,.libs/)aria2c
+# aria2 uses libtool; src/aria2c is a shell wrapper and the real ELF is in src/.libs/aria2c
+$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/.libs/aria2c
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_DEST_DIR)/usr/bin/aria2c
 
 $(PKG)_LIB_VERSION := 0.0.0
@@ -54,6 +51,11 @@ ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS)),)
 $(PKG)_DEPENDS_ON += libcares
 endif
 
+# jemalloc:
+ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),y)
+$(PKG)_DEPENDS_ON += jemalloc
+endif
+
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 
 # Track options that affect rebuild
@@ -69,7 +71,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_STATIC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libaria2
-$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_CA_BUNDLE
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC
 
 # Determine SSL library - using simple variables
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_OPENSSL)),y)
@@ -82,17 +84,17 @@ ARIA2_SSL_LIB := openssl
 endif
 endif
 
+# Keep upstream configure script to avoid accidental host-tool leakage from
+# local autotools regeneration during cross-compilation.
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
+
 # Configure options - base settings
 $(PKG)_CONFIGURE_OPTIONS += --with-libuv=no
-$(PKG)_CONFIGURE_OPTIONS += --without-applets
+$(PKG)_CONFIGURE_OPTIONS += --without-appletls
+$(PKG)_CONFIGURE_OPTIONS += --without-wintls
 $(PKG)_CONFIGURE_OPTIONS += --without-libgcrypt
 $(PKG)_CONFIGURE_OPTIONS += --without-tcmalloc
-$(PKG)_CONFIGURE_OPTIONS += --without-jemalloc
-
-# Sanitize CA bundle path: remove surrounding quotes from Kconfig value
-ARIA2_CA_BUNDLE := $(strip $(FREETZ_PACKAGE_ARIA2_CA_BUNDLE))
-ARIA2_CA_BUNDLE := $(subst ",,$(ARIA2_CA_BUNDLE))
-ARIA2_CA_BUNDLE := $(subst ',,$(ARIA2_CA_BUNDLE))
+$(PKG)_CONFIGURE_OPTIONS += $(if $(filter y,$(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),--with-jemalloc,--without-jemalloc)
 
 # Async DNS (libcares) support
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS)),y)
@@ -160,13 +162,13 @@ endif
 ifeq ($(ARIA2_SSL_LIB),openssl)
 $(PKG)_CONFIGURE_OPTIONS += --with-openssl
 $(PKG)_CONFIGURE_OPTIONS += --without-gnutls
-$(PKG)_CONFIGURE_OPTIONS += --with-ca-bundle="$(ARIA2_CA_BUNDLE)"
+$(PKG)_CONFIGURE_OPTIONS += --with-ca-bundle=/etc/ssl/certs/ca-bundle.crt
 $(PKG)_CONFIGURE_ENV += OPENSSL_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 $(PKG)_CONFIGURE_ENV += OPENSSL_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lssl -lcrypto"
 else ifeq ($(ARIA2_SSL_LIB),gnutls)
 $(PKG)_CONFIGURE_OPTIONS += --with-gnutls
 $(PKG)_CONFIGURE_OPTIONS += --without-openssl
-$(PKG)_CONFIGURE_OPTIONS += --with-ca-bundle="$(ARIA2_CA_BUNDLE)"
+$(PKG)_CONFIGURE_OPTIONS += --with-ca-bundle=/etc/ssl/certs/ca-bundle.crt
 $(PKG)_CONFIGURE_ENV += GNUTLS_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 $(PKG)_CONFIGURE_ENV += GNUTLS_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lgnutls"
 endif
@@ -174,28 +176,42 @@ endif
 # libaria2 C++ library support
 ifeq ($(strip $(FREETZ_LIB_libaria2)),y)
 $(PKG)_CONFIGURE_OPTIONS += --enable-libaria2
-# --enable-static overrides LT_INIT([disable-static]) in configure.ac:
-# required so that libtool builds libaria2.a, allowing aria2c_LDFLAGS=-static
-# (patch 105) to link libaria2 statically and avoid SIGFPE on uClibc/MIPS
-# from C++ global constructors running before malloc init.
+# --enable-static overrides LT_INIT([disable-static]) in configure.ac
+# so that libtool builds libaria2.a.
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 else
 $(PKG)_CONFIGURE_OPTIONS += --disable-libaria2
 endif
 
-# Extra compilation flags for optimization and size reduction
-$(PKG)_EXTRA_CFLAGS  += -ffunction-sections -fdata-sections
-$(PKG)_EXTRA_LDFLAGS += -Wl,--gc-sections
+# Extra compilation flags for optimization and size reduction.
+# NOTE: $(PKG)_EXTRA_CFLAGS/EXTRA_LDFLAGS are only injected via %TARGET_CFLAGS%
+# placeholders in meson.cross files, not for autoconf packages whose CONFIGURE_ENV
+# explicitly overrides CFLAGS/CXXFLAGS/LDFLAGS. Fold them directly here.
+ARIA2_EXTRA_CFLAGS  := -ffunction-sections -fdata-sections
+ARIA2_EXTRA_LDFLAGS := -Wl,--gc-sections
+
+# When jemalloc is enabled, link it explicitly so ELF interposition replaces
+# uClibc's malloc/free for all shared libraries loaded by aria2.
+ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),y)
+ARIA2_EXTRA_LDFLAGS += -L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ljemalloc
+endif
+
+# TARGET_CFLAGS includes --std=gnu99 (TARGET_CFLAGS_GCC) — valid for CC but not
+# for CXX; filter it out to keep CXXFLAGS clean.
+ARIA2_CXXFLAGS := $(filter-out --std=gnu99 -std=gnu99,$(TARGET_CFLAGS))
 
 # Force C++11 support (aria2 requires C++11)
 $(PKG)_CONFIGURE_ENV += CXX="$(TARGET_TOOLCHAIN_STAGING_DIR)/bin/$(REAL_GNU_TARGET_NAME)-g++"
-# NOTE: -g -O0 added for gdb debug analysis; remove after debugging
-# $(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -std=c++11 -g -O0"
-$(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -std=c++11"
+$(PKG)_CONFIGURE_ENV += CFLAGS="$(TARGET_CFLAGS) $(ARIA2_EXTRA_CFLAGS)"
+$(PKG)_CONFIGURE_ENV += CXXFLAGS="$(ARIA2_CXXFLAGS) $(ARIA2_EXTRA_CFLAGS) -std=c++11"
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(ARIA2_EXTRA_LDFLAGS)"
 
-# Static linking option
+# Static linking option — use ARIA2_STATIC env var (supported by aria2 configure)
+# and also pass -all-static directly in LDFLAGS since EXTRA_LDFLAGS is dead for
+# autoconf packages that explicitly set LDFLAGS in CONFIGURE_ENV.
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_STATIC)),y)
-$(PKG)_EXTRA_LDFLAGS += -all-static
+$(PKG)_CONFIGURE_ENV += ARIA2_STATIC=yes
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(ARIA2_EXTRA_LDFLAGS) -all-static"
 endif
 
 # Shorthand variable for recipe expansion
