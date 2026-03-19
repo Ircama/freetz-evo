@@ -142,6 +142,88 @@ $(lang de:"Konfigurationsdatei:" en:"Configuration file:")
 	style="padding: 4px 12px; margin-left: 8px;">$(lang de:"Verzeichnis erstellen" en:"Create directory")</button>
 <span id='basedir_status' style='margin-left:12px; font-size:12px;'></span>
 </p>
+EOF
+
+if [ -n "$ARIA2_BASEDIR" ] && [ ! -d "$ARIA2_BASEDIR" ]; then
+	cat << EOF
+<p style="color: #f80; font-size: 12px; margin-top: 5px;">
+	&#x26A0;&#xFE0F; $(lang de:"Verzeichnis existiert nicht" en:"Directory does not exist"): <code>$(html "$ARIA2_BASEDIR")</code>
+</p>
+EOF
+fi
+
+# List RW mount points
+cat << EOF
+<div style="margin-top: 10px; border: 1px solid var(--evo-border, #ddd); background-color: var(--evo-surface, #f9f9f9); padding: 8px; border-radius: 4px;">
+<div style="font-weight: bold; margin-bottom: 5px; color: var(--evo-text, #333);">$(lang de:"Verfügbare Speichergeräte (RW)" en:"Available Storage Devices (RW)"):</div>
+<div style="max-height: 150px; overflow-y: auto;">
+<table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+EOF
+
+DFOUT=$(df -hP)
+mount | sed -rn '
+	\#^/dev/(sd|mapper/)|^https?://|^.* on .* type (cifs|fuse|jffs|ubifs|yaffs|ext)|^.*:/.* on .* type nfs# {
+		\# on /wrapper | on /var/flash #! {
+			s/^([^ ]+) on (.*) type ([^ ]*) \(([^)]*)\)$/\3 \4 \1 \2/; p
+		}
+	}
+' | while read -r fstyp mountopts device path; do
+	case "$mountopts" in
+		rw*)
+			dfline=$(echo "$DFOUT" | grep " $path$")
+			if [ -n "$dfline" ]; then
+				avail=$(echo "$dfline" | awk '{print $4}')
+				total=$(echo "$dfline" | awk '{print $2}')
+				info="$avail / $total"
+			else
+				info="-"
+			fi
+			echo "<tr>"
+			echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee;'><code style='cursor: pointer; color: #0056b3; font-weight: bold;' onclick=\"document.getElementById('basedir').value='$path/aria2';\">$path</code></td>"
+			echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee; color: #666;'>$fstyp</td>"
+			echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee; text-align: right;'>$info</td>"
+			echo "</tr>"
+			;;
+	esac
+done
+
+# Also list subdirectories under /var/media/ftp (e.g. uStor01) not already listed
+if [ -d "/var/media/ftp" ]; then
+	for subdir in /var/media/ftp/*/; do
+		if [ -d "$subdir" ]; then
+			path="${subdir%/}"
+			if ! mount | grep -q " on $path type "; then
+				dfline=$(echo "$DFOUT" | grep " $path$")
+				if [ -n "$dfline" ]; then
+					avail=$(echo "$dfline" | awk '{print $4}')
+					total=$(echo "$dfline" | awk '{print $2}')
+					info="$avail / $total"
+					fstyp=$(df -T "$path" 2>/dev/null | tail -1 | awk '{print $2}')
+				else
+					info="-"
+					fstyp="dir"
+				fi
+				echo "<tr>"
+				echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee;'><code style='cursor: pointer; color: #0056b3; font-weight: bold;' onclick=\"document.getElementById('basedir').value='$path/aria2';\">$path</code></td>"
+				echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee; color: #666;'>$fstyp</td>"
+				echo "<td style='padding: 3px 2px; border-bottom: 1px solid #eee; text-align: right;'>$info</td>"
+				echo "</tr>"
+			fi
+		fi
+	done
+fi
+
+cat << EOF
+</table>
+</div>
+<div style="font-size: 10px; color: #666; margin-top: 5px;">$(lang de:"Klicken um Pfad als Basisverzeichnis zu übernehmen" en:"Click to use path as base directory")</div>
+<div style="font-size: 11px; margin-top: 8px; padding: 8px; background: #fff8e1; border-radius: 3px;">
+<strong>$(lang de:"Hinweis" en:"Note"):</strong> $(lang de:"Ext4-Dateisystem wird empfohlen für beste Leistung und Zuverlässigkeit." en:"Ext4 filesystem recommended for best performance and reliability.")
+</div>
+</div>
+EOF
+
+cat << EOF
 <p>$(lang de:"Wartezeit beim Booten:" en:"Boot wait time:")
 <label for='config_wait' title="ARIA2_CONFIG_WAIT">
 <input type='text' id='config_wait' name='config_wait' size='4' maxlength='6' value="$(html "${ARIA2_CONFIG_WAIT:-120}")"

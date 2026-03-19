@@ -1,12 +1,12 @@
 menuconfig FREETZ_PACKAGE_ARIA2
-	bool "aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader) - DEVELOPER"
+	bool "aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)"
 	depends on FREETZ_TARGET_GCC_4_8_MIN
-	depends on FREETZ_SHOW_DEVELOPER
 	default n
 	select FREETZ_LIB_libcares    if !FREETZ_PACKAGE_ARIA2_STATIC && !FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS
 	select FREETZ_LIB_libz        if !FREETZ_PACKAGE_ARIA2_STATIC
 	select FREETZ_LIB_libpthread  if !FREETZ_PACKAGE_ARIA2_STATIC && FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	select FREETZ_LIB_libm        if !FREETZ_PACKAGE_ARIA2_STATIC && FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_OPENSSL_LEGACY_PROVIDER if !FREETZ_PACKAGE_ARIA2_STATIC && FREETZ_PACKAGE_ARIA2_WITH_OPENSSL && FREETZ_OPENSSL_VERSION_30_MIN
 	help
 		aria2 is a utility for downloading files. The supported protocols are
 		HTTP(S), FTP, SFTP, BitTorrent and Metalink. aria2 can download a file

@@ -35,6 +35,12 @@ $(PKG)_LIBS_TARGET_DIR := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_TARGET_LIBDIR)/%)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_LIB_libcrypto_WITH_ZLIB),zlib)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_OPENSSL_VERSION_30_MIN),libatomic)
 
+# OpenSSL 3.x provider modules (legacy.so provides RC4, MD4, etc. needed by some apps)
+ifeq ($(strip $(FREETZ_OPENSSL_LEGACY_PROVIDER)),y)
+OPENSSL_LEGACY_SO_STAGING := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/ossl-modules/legacy.so
+OPENSSL_LEGACY_SO_TARGET  := $(OPENSSL_TARGET_LIBDIR)/legacy.so
+endif
+
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libcrypto_WITH_EC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libcrypto_WITH_RC4
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libcrypto_WITH_ZLIB
@@ -110,9 +116,15 @@ $($(PKG)_BINARY_TARGET_DIR): $($(PKG)_BINARY_BUILD_DIR)
 $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
 
+ifeq ($(strip $(FREETZ_OPENSSL_LEGACY_PROVIDER)),y)
+$(OPENSSL_LEGACY_SO_TARGET): $(OPENSSL_LEGACY_SO_STAGING)
+	$(INSTALL_FILE)
+	$(TARGET_STRIP) $@
+endif
+
 $(pkg): $($(PKG)_LIBS_STAGING_DIR)
 
-$(pkg)-precompiled: $($(PKG)_BINARY_TARGET_DIR) $($(PKG)_LIBS_TARGET_DIR)
+$(pkg)-precompiled: $($(PKG)_BINARY_TARGET_DIR) $($(PKG)_LIBS_TARGET_DIR) $(OPENSSL_LEGACY_SO_TARGET)
 
 
 $(pkg)-clean: $(pkg)-clean-staging
@@ -123,10 +135,11 @@ $(pkg)-clean-staging:
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/openssl* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/{libssl,libcrypto}* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/{libssl,libcrypto,openssl}* \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/openssl
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/openssl \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/ossl-modules
 
 $(pkg)-uninstall:
-	$(RM) $(OPENSSL_BINARY_TARGET_DIR) $(OPENSSL_TARGET_LIBDIR)/{libssl,libcrypto}*.so*
+	$(RM) $(OPENSSL_BINARY_TARGET_DIR) $(OPENSSL_TARGET_LIBDIR)/{libssl,libcrypto}*.so* $(OPENSSL_LEGACY_SO_TARGET)
 
 $(call PKG_ADD_LIB,libcrypto)
 $(PKG_FINISH)

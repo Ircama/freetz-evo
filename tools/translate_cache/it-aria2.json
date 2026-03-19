@@ -586,5 +586,40 @@
     "service": "deepl",
     "timestamp": "2026-03-02T10:27:13Z",
     "translation": "secondi"
+  },
+  "deepl:Directory does not exist": {
+    "original": "Directory does not exist",
+    "translation": "La directory non esiste",
+    "timestamp": "2026-03-19T15:02:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Available Storage Devices (RW)": {
+    "original": "Available Storage Devices (RW)",
+    "translation": "Dispositivi di archiviazione disponibili (RW)",
+    "timestamp": "2026-03-19T15:02:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Click to use path as base directory": {
+    "original": "Click to use path as base directory",
+    "translation": "Fare clic per utilizzare il percorso come directory di base",
+    "timestamp": "2026-03-19T15:02:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note": {
+    "original": "Note",
+    "translation": "Nota",
+    "timestamp": "2026-03-19T15:02:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Ext4 filesystem recommended for best performance and reliability.": {
+    "original": "Ext4 filesystem recommended for best performance and reliability.",
+    "translation": "Il filesystem Ext4 è consigliato per ottenere le migliori prestazioni e affidabilità.",
+    "timestamp": "2026-03-19T15:02:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

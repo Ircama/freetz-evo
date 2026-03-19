@@ -51,7 +51,7 @@ ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS)),)
 $(PKG)_DEPENDS_ON += libcares
 endif
 
-# jemalloc:
+# jemalloc (required to avoid SIGFPE with uClibc 1.0.57 when running aria2c):
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),y)
 $(PKG)_DEPENDS_ON += jemalloc
 endif
@@ -73,7 +73,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libaria2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC
 
-# Determine SSL library - using simple variables
+# Determine SSL library
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_OPENSSL)),y)
 ARIA2_SSL_LIB := openssl
 else
