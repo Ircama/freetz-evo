@@ -52,9 +52,7 @@ $(PKG)_DEPENDS_ON += libcares
 endif
 
 # jemalloc (required to avoid SIGFPE with uClibc 1.0.57 when running aria2c):
-ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),y)
 $(PKG)_DEPENDS_ON += jemalloc
-endif
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 
@@ -71,7 +69,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_STATIC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_LIBARIA2
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libaria2
-$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_legacy
 
 # Determine SSL library
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_OPENSSL)),y)
@@ -94,7 +92,7 @@ $(PKG)_CONFIGURE_OPTIONS += --without-appletls
 $(PKG)_CONFIGURE_OPTIONS += --without-wintls
 $(PKG)_CONFIGURE_OPTIONS += --without-libgcrypt
 $(PKG)_CONFIGURE_OPTIONS += --without-tcmalloc
-$(PKG)_CONFIGURE_OPTIONS += $(if $(filter y,$(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),--with-jemalloc,--without-jemalloc)
+$(PKG)_CONFIGURE_OPTIONS += --with-jemalloc
 
 # Async DNS (libcares) support
 ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITHOUT_ASYNC_DNS)),y)
@@ -190,11 +188,8 @@ endif
 ARIA2_EXTRA_CFLAGS  := -ffunction-sections -fdata-sections
 ARIA2_EXTRA_LDFLAGS := -Wl,--gc-sections
 
-# When jemalloc is enabled, link it explicitly so ELF interposition replaces
-# uClibc's malloc/free for all shared libraries loaded by aria2.
-ifeq ($(strip $(FREETZ_PACKAGE_ARIA2_WITH_JEMALLOC)),y)
+# Jemalloc is mandatory
 ARIA2_EXTRA_LDFLAGS += -L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ljemalloc
-endif
 
 # TARGET_CFLAGS includes --std=gnu99 (TARGET_CFLAGS_GCC) — valid for CC but not
 # for CXX; filter it out to keep CXXFLAGS clean.
@@ -250,9 +245,6 @@ $($(PKG)_LIBS_STAGING_DIR): $($(PKG)_LIBS_BUILD_DIR)
 
 # Library target
 # Note: libtool install-strip rewrites RPATH to the host staging libdir
-# (toolchain/.../mips-linux-uclibc/usr/lib), which does not exist on the device.
-# The loader then falls back to /mod/external/usr/lib/freetz/libc.so.0 (second
-# uClibc instance), causing heap corruption and SIGFPE. Fix with patchelf.
 $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
 	patchelf-target --set-rpath $(FREETZ_LIBRARY_DIR) $@

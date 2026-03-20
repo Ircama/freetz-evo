@@ -1,4 +1,4 @@
-# WebCFG SSO for PHP Apps (elFinder, ruTorrent)
+# WebCFG SSO for PHP Apps (elFinder, ruTorrent, AriaNg)
 
 This document describes how to reuse Freetz-EVO WebCFG authentication in php-cgi web apps.
 
@@ -70,6 +70,9 @@ Recommended values:
 - ruTorrent:
   - `subpage = 'rutorrent/'`
   - `login_url = '/cgi-bin/conf/rtorrent?subpage=rutorrent/'`
+- AriaNg:
+  - `subpage = 'ariang/'`
+  - `login_url = '/cgi-bin/conf/aria2?subpage=ariang/'`
 
 ## elFinder Strategy
 
@@ -98,6 +101,55 @@ Auth helper is loaded in ruTorrent PHP entrypoints:
 
 All use fixed subpage/login_url values to avoid loops.
 
+## AriaNg Strategy
+
+AriaNg is a pure static SPA (no PHP backend), so the approach differs from
+elFinder and ruTorrent. A dedicated PHP gateway file and a JS preflight block
+injected into the minified `index.html` at build time are used instead.
+
+### PHP gateway
+
+`make/pkgs/ariang/files/root/usr/mww/ariang/ariang_auth.php` is copied to
+`/usr/mww/ariang/ariang_auth.php` during the build.
+
+- Always uses `mode='json'` so the JS XHR caller gets a status code instead of
+  a Location redirect.
+- When SSO is active and the session is missing, returns HTTP 403 + JSON:
+  `{"error":"...","auth_required":true,"login_url":"/cgi-bin/conf/aria2?subpage=ariang/"}`.
+- When SSO is disabled or session is valid, returns HTTP 200 + JSON:
+  `{"success":true,"authenticated":true}`.
+- When `webcfg_auth.php` is absent (no SSO configured), always returns 200 OK.
+
+### JS preflight injection
+
+`make/pkgs/ariang/files/ariang_sso_snippet.html` contains an inline `<script>`
+block.  The build helper `make/pkgs/ariang/files/inject_sso.py` inserts it into
+`index.html` immediately before the first `<script src="js/jquery-...">` tag so
+that it executes synchronously before AngularJS bootstraps.
+
+The script:
+
+1. Restores the URL hash saved in localStorage before the last login redirect.
+2. Makes a synchronous XHR to `/ariang/ariang_auth.php?auth_ping=1`.
+3. If the response is 403/401 with `auth_required: true`:
+   - saves the current hash to localStorage;
+   - redirects to `login_url` from the JSON response (falls back to
+     `/cgi-bin/conf/aria2?subpage=ariang/`).
+4. On any other response (200, 404, network error) the page loads normally
+   (SSO not enforced — covers non-Freetz-EVO environments).
+
+### Build integration
+
+`ariang.mk` `.compiled` step:
+
+```makefile
+cp $(ARIANG_MAKE_DIR)/files/root/usr/mww/ariang/ariang_auth.php \
+    $(ARIANG_DEST_DIR)/usr/mww/ariang/ariang_auth.php
+python3 $(ARIANG_MAKE_DIR)/files/inject_sso.py \
+    $(ARIANG_MAKE_DIR)/files/ariang_sso_snippet.html \
+    $(ARIANG_DEST_DIR)/usr/mww/ariang/index.html
+```
+
 ## Common Pitfalls
 
 1. Checking SID in JavaScript (`document.cookie`) fails with HttpOnly cookies.
@@ -111,6 +163,9 @@ All use fixed subpage/login_url values to avoid loops.
   - `/mod/external/usr/lib/php/webcfg_auth.php`
 - For ruTorrent dev deployment, update files under:
   - `/mod/external/usr/mww/rutorrent/...`
+- For AriaNg dev deployment, copy directly to:
+  - `/mod/external/usr/mww/ariang/ariang_auth.php`
+  - Re-run `inject_sso.py` on `/mod/external/usr/mww/ariang/index.html`
 
 ## Validation Checklist
 

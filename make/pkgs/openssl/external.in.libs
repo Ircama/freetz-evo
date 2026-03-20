@@ -5,6 +5,7 @@ config EXTERNAL_FREETZ_LIB_libcrypto
 	help
 		externals the following file(s):
 		 ${FREETZ_LIBRARY_DIR}/libcrypto.so.x.x.x
+		 ${FREETZ_LIBRARY_DIR}/legacy.so (if FREETZ_LIB_legacy=y)
 
 config EXTERNAL_FREETZ_LIB_libssl
 	depends on EXTERNAL_ENABLED && FREETZ_LIB_libssl

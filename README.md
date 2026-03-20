@@ -70,6 +70,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **libjemalloc** 5.3.0 | General-purpose allocator replacing uClibc malloc; required by aria2 to avoid SIGFPE on MIPS/uClibc-1.0.57. | EVO only |
 | **libtcmalloc_minimal** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
 | **libprofiler** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
+| **libssl** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
 
 For a full description of `freetz_proxy`, see [docs/make/freetz-proxy.md](docs/make/freetz-proxy.md).
 

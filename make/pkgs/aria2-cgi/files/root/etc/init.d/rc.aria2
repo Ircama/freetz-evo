@@ -172,6 +172,12 @@ start_aria2_daemon() {
 	# Ensure config file and directories exist
 	ensure_aria2_conf || return 1
 
+	# Backward-compat cleanup: older saves may contain an explicit empty
+	# rpc-secret= line, which newer aria2 rejects as a parse error.
+	if grep -q '^rpc-secret=[[:space:]]*$' "$conf_file" 2>/dev/null; then
+		sed -i '/^rpc-secret=[[:space:]]*$/d' "$conf_file" 2>/dev/null
+	fi
+
 	touch /tmp/rc.aria2.log
 	chmod a+rw /tmp/rc.aria2.log
 
@@ -182,10 +188,7 @@ start_aria2_daemon() {
 	touch "$out_log" "$err_log" 2>/dev/null
 	chmod a+rw "$out_log" "$err_log" 2>/dev/null
 
-	# Set OPENSSL_MODULES so aria2c can find the OpenSSL 3.x legacy provider (legacy.so)
-	[ -f "/usr/lib/freetz/legacy.so" ] && export OPENSSL_MODULES="/usr/lib/freetz"
-
-	# Start aria2c; it does not fork itself, so we use -b to background it
+	# Start aria2c; it does not fork itself, so we use -b to background it.
 	start-stop-daemon -S -b -m -p "$PID_FILE" \
 		-N "${ARIA2_NICE:-10}" \
 		-v \

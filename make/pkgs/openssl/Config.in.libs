@@ -158,9 +158,10 @@ menu "OpenSSL configuration"
 			(configuration settings, private key, certificates, etc.)
 			can be found.
 
-	config FREETZ_OPENSSL_LEGACY_PROVIDER
-		bool "Install legacy provider module (legacy.so)"
+	config FREETZ_LIB_legacy
+		bool "OpenSSL legacy provider module (legacy.so)"
 		depends on FREETZ_OPENSSL_VERSION_30_MIN
+		select FREETZ_LIB_libcrypto
 		default y
 		help
 			Installs the OpenSSL 3.x legacy provider (legacy.so).
@@ -169,9 +170,6 @@ menu "OpenSSL configuration"
 			(RC4, MD4, DES, Blowfish, etc.).
 			Examples: aria2 with pre-3.x HTTPS servers, some BitTorrent
 			peers and SFTP servers.
-			Note: providers are not loaded via LD_LIBRARY_PATH; the
-			runtime OPENSSL_MODULES environment variable must point to
-			the directory containing this file.
 
 endmenu # "OpenSSL configuration"
 

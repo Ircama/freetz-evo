@@ -11,10 +11,11 @@ $(PKG)_SITE:=https://github.com/mayswind/AriaNg/releases/download/$($(PKG)_VERSI
 # AriaNg is a web frontend for aria2, static files only (no compilation needed)
 $(PKG)_DEPENDS_ON += aria2
 
-# Shorthand variable for recipe expansion
+# Shorthand variables for recipe expansion
 ARIANG_DIR:=$($(PKG)_DIR)
 ARIANG_DEST_DIR:=$($(PKG)_DEST_DIR)
 ARIANG_SOURCE:=$($(PKG)_SOURCE)
+ARIANG_MAKE_DIR:=$($(PKG)_MAKE_DIR)
 
 # Extract - AriaNg is pure HTML/CSS/JS (no build needed)
 $(PKG_SOURCE_DOWNLOAD)
@@ -33,6 +34,13 @@ $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	@echo "AriaNg is a static web frontend, installing to webcfg directory..."
 	mkdir -p $(ARIANG_DEST_DIR)/usr/mww/ariang
 	cp -r $(ARIANG_DIR)/* $(ARIANG_DEST_DIR)/usr/mww/ariang/
+	# Copy Freetz EVO SSO PHP gateway
+	cp $(ARIANG_MAKE_DIR)/files/root/usr/mww/ariang/ariang_auth.php \
+		$(ARIANG_DEST_DIR)/usr/mww/ariang/ariang_auth.php
+	# Inject Freetz EVO SSO preflight into AriaNg index.html
+	python3 $(ARIANG_MAKE_DIR)/files/inject_sso.py \
+		$(ARIANG_MAKE_DIR)/files/ariang_sso_snippet.html \
+		$(ARIANG_DEST_DIR)/usr/mww/ariang/index.html
 	touch $@
 
 $(pkg):
