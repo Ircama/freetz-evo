@@ -68,7 +68,10 @@ Latest changes
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
+    * ca-bundle 2026-03-19
+    * cmake 4.3.0
     * file 5.47
+    * meson 1.10.2
     * pseudo 1.9.3
     * python3 3.14.3
 
@@ -82,18 +85,21 @@ Latest changes
 
   - Packages:
     * BIND 9.11.37/9.20.20
+    * CA-bundle 2026-03-19
     * Curl 8.12.1/8.19.0
     * ImageMagick 7.1.0-62/7.1.2-16
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
+    * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.0
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
     * Tinyproxy 1.11.3
     * Whois 5.6.6
 
   - Libraries:
+    * expat 2.7.5
     * file 5.47
     * FreeType 2.14.2
-    * harfbuzz 13.1.1
+    * harfbuzz 13.2.1
     * libmaxminddb 1.13.3
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.2

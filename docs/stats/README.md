@@ -677,12 +677,12 @@
 <tr><td>FRITZ.Box_6591_Cable-07.29.image</td><td>FREETZ_TYPE_6591 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_2X</td></tr>
 <tr><td>FRITZ.Box_6591_Cable-07.57.image</td><td>FREETZ_TYPE_6591 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_6591_Cable-08.03.image</td><td>FREETZ_TYPE_6591 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
-<tr><td>FRITZ.Box_6591_Cable-08.21.image</td><td>FREETZ_TYPE_6591 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_6591_Cable-08.25.image</td><td>FREETZ_TYPE_6591 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
 <tr><td>FRITZ.Box_6660_Cable-07.15.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_1X</td></tr>
 <tr><td>FRITZ.Box_6660_Cable-07.29.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_2X</td></tr>
 <tr><td>FRITZ.Box_6660_Cable-07.57.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_6660_Cable-08.03.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
-<tr><td>FRITZ.Box_6660_Cable-08.21.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_6660_Cable-08.25.image</td><td>FREETZ_TYPE_6660 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
 <tr><td>FRITZ.Box_6670_Cable-07.63.image</td><td>FREETZ_TYPE_6670 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_6670_Cable-08.03.image</td><td>FREETZ_TYPE_6670 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_6670_Cable-08.21.image</td><td>FREETZ_TYPE_6670 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>

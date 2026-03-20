@@ -80,7 +80,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[CA-bundle 2025-12-02](ca-bundle.md)<a id='ca-bundle'></a>**<br>
+  * **[CA-bundle 2026-03-19](ca-bundle.md)<a id='ca-bundle'></a>**<br>
     The Mozilla CA certificate store in PEM format, see https://www.curl.se/docs/caextract.html Size of uncompressed file is about 250 KB.
 
   * **[Callmonitor 1.20.9-git](callmonitor.md)<a id='callmonitor'></a>**<br>
@@ -481,7 +481,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.19/3.5.5 (binary only)](openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.19](openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.19/2.7.0](openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
 
   * **[owfs 2.7p32 (binary only) - DEPRECATED](owfs.md)<a id='owfs'></a>**<br>
