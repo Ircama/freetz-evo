@@ -16,7 +16,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Geoblocking](../../docs/make/apache2.md#geoblocking)
      - [Sonstiges](../../docs/make/apache2.md#sonstiges)
 
-  * **[aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader) - DEVELOPER](../../docs/make/aria2.md)<a id='aria2'></a>**<br>
+  * **[aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)](../../docs/make/aria2.md)<a id='aria2'></a>**<br>
     aria2 is a utility for downloading files. The supported protocols are HTTP(S), FTP, SFTP, BitTorrent and Metalink. aria2 can download a file from multiple sources/protocols and tries to utilize your maximum download bandwidth. It supports only a single file per request, but you can specify multiple URLs (even different hosts) for it. It can retrieve multiple files
 
   * **<u>asterisk-chan-capi: chan_capi: ISDN API 2.0 module for asterisk - DEPRECATED</u><a id='asterisk-chan-capi'></a>**<br>

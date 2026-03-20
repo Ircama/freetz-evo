@@ -58,6 +58,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[gmp: GNU MP Bignum Library (libgmp.so) 6.3.0](gmp.md)<a id='gmp'></a>**<br>
     GNU MP Bignum Library The GMP library provides arbitrary precision arithmetic, operating on signed integers, rational numbers, and floating point numbers. It can be used to implement cryptographic algorithms.
 
+  * **[gperftools: libtcmalloc_minimal (libtcmalloc_minimal.so) 2.18.1](gperftools.md)<a id='gperftools'></a>**<br>
+    TCMalloc (Thread-Caching Malloc) from Google's gperftools. A high-performance, thread-safe drop-in replacement for malloc that is significantly faster than glibc malloc, especially for multi-threaded programs. This is the minimal variant without heap profiling or checking support, suitable for embedded targets. https://gperftools.github.io/gperftools/tcmalloc.html
+
   * **[gsasl: libgsasl (libgsasl.so) 1.10.0](gsasl.md)<a id='gsasl'></a>**<br>
     GNU SASL is an implementation of the Simple Authentication and Security Layer framework and a few common SASL mechanisms. SASL is used by network servers (e.g., IMAP, SMTP, XMPP) to request authentication from clients, and in clients to authenticate against servers.
 
@@ -75,6 +78,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[jansson: libjansson (libjansson.so) 2.7](jansson.md)<a id='jansson'></a>**<br>
     A C library for encoding, decoding and manipulating JSON data.
+
+  * **[jemalloc: libjemalloc (libjemalloc.so) 5.3.0](jemalloc.md)<a id='jemalloc'></a>**<br>
+    jemalloc is a general purpose malloc(3) implementation that emphasises fragmentation avoidance and scalable concurrency support. It is used as the allocator in Firefox, FreeBSD, and many other high-performance applications. Compared to the default uClibc allocator it provides better heap metadata management and avoids SIGFPE crashes caused by corrupted heap state on MIPS targets. https://jemalloc.net/
 
   * **[JPEG library (libjpeg.so) 9f](jpeg.md)<a id='jpeg'></a>**<br>
     libjpeg is a library for handling the JPEG (JFIF) image format

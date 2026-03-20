@@ -1,4 +1,4 @@
-# aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader) - DEVELOPER
+# aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)
   - Homepage: [https://aria2.github.io/](https://aria2.github.io/)
   - Manpage: [https://aria2.github.io/manual/en/html/](https://aria2.github.io/manual/en/html/)
   - Changelog: [https://github.com/aria2/aria2/releases](https://github.com/aria2/aria2/releases)
