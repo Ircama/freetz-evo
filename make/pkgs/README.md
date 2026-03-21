@@ -506,10 +506,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[mod: Freetz(-MOD)](../../docs/make/mod.md)<a id='mod'></a>**<br>
     This package is mandatory
-     - [swap](../../docs/make/mod.md#swap)
+     - [Swap](../../docs/make/mod.md#swap)
      - [Udevmount](../../docs/make/mod.md#udevmount)
      - [get_ip](../../docs/make/mod.md#get-ip)
-     - [Konfigurationsdateien](../../docs/make/mod.md#konfigurationsdateien)
+     - [Configuration files](../../docs/make/mod.md#configuration-files)
      - [.profile](../../docs/make/mod.md#profile)
      - [crontab](../../docs/make/mod.md#crontab)
      - [dtrace](../../docs/make/mod.md#dtrace)
