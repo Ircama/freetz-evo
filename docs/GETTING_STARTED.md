@@ -348,6 +348,33 @@ tools/sync-upstream-manual.sh             # perform the interactive merge
 
 ---
 
+## 11. Enabling Swap in the Web Interface (Optional)
+
+If you do not see **Settings -> Swap** in the running WebIF, the option was not included at build time.
+
+Enable it in `make menuconfig`:
+
+1. Open **Additional patches**.
+2. Enable **Add swap options** (`FREETZ_ADD_SWAPOPTIONS`).
+3. Save config and rebuild/flash your firmware.
+
+After flashing, open:
+
+```text
+http://fritz.box:81/cgi-bin/conf/mod
+```
+
+You should now see the **Swap** section, where you can:
+
+- Set the swap file path (or partition path)
+- Choose automatic/manual start behavior
+- Create a swap file from the WebIF
+- Configure swappiness
+
+For a complete step-by-step guide, see [`docs/wiki/20_Advanced/create_swap.md`](wiki/20_Advanced/create_swap.md).
+
+---
+
 For more detail, see:
 - Full documentation: <https://ircama.github.io/freetz-evo/>
 - Prerequisites list: [`docs/prerequisites/README.md`](prerequisites/README.md)

@@ -1,111 +1,46 @@
-# Freetz macht mehr aus der Box!
+# Freetz Makes Your Box More Flexible
 
 [![Screenshot](../../screenshots/52_md.png)](../../screenshots/52.png)
 
-Nicht immer hat der Hersteller der Box in seiner Firmware genau die
-Funktionen vorgesehen, die man sich selber wünscht. Freetz kann das
-ändern! Die Funktionalität der Box kann den individuellen Bedürfnissen
-angepasst werden. Freetz kann Funktionalität
+The stock firmware does not always include every feature users need. Freetz extends the original firmware so you can tailor your device to your own use case.
 
--   **hinzufügen.**\
-    Das könnte zum Beispiel ein Web-Server auf der Box sein oder ein
-    spezielles VPN. Die Liste der Pakete gibt
-    hierzu eine Übersicht.
--   **verändern.**\
-    Manchmal ist die Funktion da, aber sie lässt sich im Original nicht
-    oder nicht detailliert genug konfigurieren (z. B. die integrierte
-    Firewall). Die Liste der Erweiterungen gibt einen Überblick.
--   **entfernen.**\
-    Das kann nötig werden, wenn man eine Funktion nicht braucht oder für
-    zusätzliche Pakete Platz schaffen möchte (der Speicher der Box hat
-    seine Grenzen). Auch hier gibt es einen Überblick in der Liste der
-    Patches.
+With Freetz you can:
 
-### Wie funktioniert Freetz?
+- Add functionality, for example extra services, VPN tools, or diagnostics.
+- Customize existing behavior that is too limited in stock firmware.
+- Remove unneeded components to free space for features you actually use.
 
-Die Firmware der Box besteht aus vielen einzelnen Komponenten. Sie
-wurden von verschiedenen Personen und Firmen entwickelt und bilden
-gemeinsam die Firmware der Box. Freetz tauscht nun einzelne Komponenten
-aus, verändert ihre Konfiguration oder fügt neue Komponenten ein. So
-entsteht eine neue Firmware für die Box ganz nach den individuellen
-Wünschen. Diese neue Firmware kann über die gewohnte Update-Funktion auf
-die Box installiert werden. Die ursprüngliche Funktionalität inklusive
-der AVM Weboberfläche bleibt erhalten, Freetz kann sozusagen als
-Erweiterung angesehen werden.
+## How Freetz Works
 
-### Wie bekomme ich eine eigene Firmware?
+A FRITZ!Box firmware image is made of many components. Freetz modifies selected parts, adjusts configuration, and can add new components while keeping the original AVM web interface available.
 
-Aus rechtlichen Gründen muss jeder seine Firmware selbst bauen. Dazu
-später mehr.
+The result is a custom firmware image you can install using the normal firmware update workflow.
 
-### Voraussetzungen
+## Why You Build It Yourself
 
-Dazu braucht man:
+Because of licensing and redistribution restrictions, ready-made modified images are generally not distributed. Freetz provides the build system and tooling so every user can create a personal image locally.
 
--   Ein Linux-System. Entweder direkt auf dem PC installiert oder in
-    einer Virtuellen Maschine unter Windows (z.B.
-    [Freetz-Linux](http://www.ip-phone-forum.de/showthread.php?t=194433)).
--   Möglicherweise muss das Linux noch um einige Werkzeuge ergänzt
-    werden.
--   Den aktuellen Release von Freetz downloaden.
+## Requirements
 
-### Ablauf
+- A Linux system (native or virtualized).
+- Basic build dependencies required by Freetz.
+- Current Freetz sources.
 
-Sind die Voraussetzugen geschaffen, kann es los gehen. Es ist soweit,
-die individuelle Firmware ...
+## Typical Workflow
 
 [![Freetz menuconfig](../../screenshots/53_md.png)](../../screenshots/53.png)
 
--   **Zusammenstellen.**\
-    Der Prozess ist menü-gesteuert. Man kann festlegen, was genau in die
-    Box kommt und worauf man verzichten kann/will/muss. Freetz kennt die
-    Abhängigkeiten unter den Komponenten und sorgt für eine
-    funktionierende Kombination.
--   **Herstellen.**\
-    Abhängig von der Leistungsfähigkeit des Pcs dauert dieser Prozess
-    eine kleine Weile, läuft im Normalfall aber automatisch ab. Je nach
-    gewählten Komponenten, werden dabei weiter Dateien (Quellen) aus dem
-    Internet geladen. Nach Abschluß ist eine fertige Firmware (Image)
-    entstanden.
--   **Installieren** über das normale Firmware-Update der Box.
--   Die neuen Funktionalitäten auf der Box **konfigurieren** und
-    **benutzen**. In der Konfiguration der Box findet sich jetzt ein Link
-    auf Freetz. Hier können die zusätzlichen neuen Pakete konfiguriert
-    werden.
+1. Configure your image in menuconfig.
+2. Build the image.
+3. Flash it with the standard update process.
+4. Open the Freetz pages in the web interface and configure enabled packages.
 
-Detaillierte Information über die Freetz-Installation finden sich auf
-der entsprechenden Wiki-Seite.
-Für Anfänger existiert eine spezielle
-Anleitung, die man als
-Freetz-Neuling unbedingt lesen sollte.
+In most cases, existing FRITZ!Box settings remain intact after switching to a Freetz image.
 
-Die Einstellungen in der FritzBox bleiben normalerweise bei einem
-Upgrade auf Freetz erhalten.
+## Legal and Support Notes
 
-### Rechtliche Hintergründe
+Freetz includes and integrates free software, but a working firmware also contains proprietary vendor components. This is why distributing prebuilt modified images can create legal issues.
 
-Ein grosser Teil der Komponenten der Firmware ist freie Software. Ihre
-Autoren haben erlaubt, dass sie von jedem verwendet, modifiziert und
-weitergegeben werden kann. Davon macht Freetz reichlich Gebrauch.
+If you run modified firmware, do not expect vendor support from AVM for issues caused by modifications. Community support is available in the IP-Phone forum:
 
-Ein anderer Teil aber ist von AVM (oder anderen Firmen) entwickelt und
-geschützt. Diese Komponenten sind geschützt und nicht öffentlich
-zugänglich. Für eine funktionierende Box braucht es aber beide Teile.
-
-Solange das so ist, darf keine fertige Firmware zum
-Download angeboten werden in der AVM-Teile
-stecken. Freetz muss sich deshalb darauf beschränken die Werkzeuge zu
-liefern, mit denen jeder seine individuelle Firmware selbst bauen kann.
-
-Die selbst gebaute Firmware sollte nicht öffentlich zugänglich gemacht
-werden. Das erspart möglichen Ärger mit AVM.
-
-### Support
-
-Wenn die selbst gebaute Firmware in der Box ist (und nicht mehr das
-Original), kann man bei Fragen und Problemen **keinen Support von AVM**
-erwarten. Hilfe kann man jetzt im
-[IP-Phone-Forum](http://www.ip-phone-forum.de/forumdisplay.php?f=525)
-finden.
-
-
+- <http://www.ip-phone-forum.de/forumdisplay.php?f=525>

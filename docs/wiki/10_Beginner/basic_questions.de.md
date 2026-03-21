@@ -1,52 +1,38 @@
-# Grundlegende Fragen
+# Basic Questions
 
-### Gut zu wissen
+## Good to Know
 
-  * Ein Eintrag in menuconfig/kconfig finden?<br>
-    Öffne menuconfig und gib das Zeichen ```/``` ein, um zu suchen.
-  * Ein (AVM oder modifiziertes) Image per Bootloader flashen?<br>
-    Führe ```tools/push_firmware``` aus, nutze ```tools/push_firmware -h``` für Hilfe.
-    Oder einfach ```make push_firmware``` nach ```make``` ausführen.
-  * Flashen mit Raspberry?<br>
-    Lege das erstellte Image auf den Raspberry. Lade das aktuelle push\_firmware-Skript herunter:
-    ```wget https://raw.githubusercontent.com/Freetz-NG/freetz-ng/master/tools/push_firmware```
-    Mache es ausführbar: ```chmod +x push_firmware```. Führe es dann aus: ```./push_firmware ...```
-  * Warum In-Memory-Image-Format?<br>
-    Es wird nicht mehr benötigt, da push\_firmware ein Image direkt flashen kann.
-  * Ein Image entpacken?<br>
-    Nutze ```tools/fwdu unpack the.image```, um das (interne) Dateisystem zu extrahieren.
-  * Älterer Modem/DSL-Treiber?<br>
-    Entpacke die Quell-Image-Datei mit fwdu. Kopiere dann die benötigten Dateien
-    mit Verzeichnissen in ein Unterverzeichnis des ```addon/```-Verzeichnisses in Freetz.
-    Aktiviere nun das neue Addon in einer ```addon/*.pkg```-Datei.
-    Die benötigten Dateien hängen von deinem Gerät ab. Beispiele:
-     - Für 7490: das gesamte Verzeichnis ```/lib/modules/dsp_vr9/```
-     - Für 7590: das gesamte Verzeichnis ```/lib/modules/dsp_vr11/```
-  * Kernel ersetzen?<br>
-    Nicht verwenden – es sei denn, du weißt genau, warum du es brauchst!
-    Du wirst nie einen Kernel haben, wie ihn AVM erwartet. Möglicherweise fehlen Patches,
-    oder einige Optionen sind nicht so gesetzt, wie es AVM vorgesehen hat.
-  * Kernel-Module erstellen?<br>
-     - Falls du nicht weißt, welches Modul für ein bestimmtes Gerät benötigt wird, schließe das Gerät an einen Linux-PC an und überprüfe es mit den Befehlen: `dmesg`, `lsusb`, `lsmod` etc.
-     - Stelle sicher, dass der neueste Quellcode für dein Gerät unter https://osp.avm.de/ verfügbar ist und in Freetz integriert wurde. Falls nicht, musst du AVM fragen: fritzbox_info@avm.de
-     - Führe nun `make menuconfig` aus und wähle deine Fritzbox und dein Fritzos aus. Dann muss das Modul mit `make kernel-menuconfig` als "M(odule)" aktiviert werden, nutze `/` zum Suchen.
-     - Falls du das nicht jedes Mal manuell tun möchtest, kannst du deine Änderungen in `make/linux/configs/freetz/` als Push-Request hochladen.
-     - Um die Datei ins Image zu kopieren, wähle sie mit ```make menuconfig``` aus oder falls nicht verfügbar, füge ihren Namen unter `Kernel-Module` -> `Eigene Module` hinzu.
-  * Dateien auf Speichermedien ausführen?<br>
-    Seit einiger Zeit von AVM standardmäßig deaktiviert. Um dies zu erlauben,
-    wähle den Patch "Drop noexec for (external) storages".
-    Für interne Speichermedien ist es in Freetz immer aktiviert!
-  * Befehle beim Neustart ausführen?<br>
-    Lege dein ausführbares Skript hier ab: ```/tmp/flash/mod/shutdown```
-  * Schreibgeschützte Dateien bearbeiten?<br>
-    Es gibt Wrapper-Scripte namens ```vix```, ```vimx``` and ```nanox```<br>
-  * Schreibgeschützte Verzeichnisse bearbeiten?<br>
-    Es gibt ein kleines Script welches das Verzeichnis ins RAM kopiert und schreibbar mountet: ```araw /irgend/ein/verzeichnis/```<br>
-  * motd ändern?<br>
-    Du kannst dein eigenes \*Skript\* hier ablegen: ```/tmp/flash/mod/motd```
-    Die motd wird einmal beim Booten generiert. Um sie regelmäßig zu aktualisieren,
-    führe ```/mod/etc/init.d/rc.mod motd``` z. B. per Cron aus.
-  * Alte Paketstruktur in menuconfig?<br>
-    Um die alte Paketstruktur zu verwenden, führe ```make menuconfig-single``` aus.
-  * Wie benutzt man Git?<br>
-    Schnellstart-Anleitung für Anfänger: https://xkcd.com/1597/
+- Find a menu entry in menuconfig:
+  Open menuconfig and press / to search.
+- Flash an image via bootloader:
+  Use tools/push_firmware (or tools/push_firmware -h for help).
+  After a build, make push_firmware also works.
+- Flash from a Raspberry Pi:
+  Copy the image to the Pi, download the current push_firmware script, make it executable, then run it.
+- In-memory image format:
+  Usually not required anymore, because push_firmware can flash normal images directly.
+- Unpack an image:
+  Use tools/fwdu unpack your.image.
+- Use older modem/DSL driver files:
+  Extract from a source image, place files into an addon tree, and enable the addon.
+- Replace kernel:
+  Avoid this unless you clearly understand why you need it.
+- Build kernel modules:
+  Select device/firmware in menuconfig, then enable modules in kernel-menuconfig.
+- Execute files on external storage:
+  If needed, enable the patch that removes noexec for external storage.
+- Run custom commands at boot/shutdown:
+  Use scripts in /tmp/flash/mod as appropriate for your setup.
+- Edit read-only files/directories:
+  Use helper tools such as vix/vimx/nanox and araw.
+- Customize MOTD:
+  Place your script at /tmp/flash/mod/motd and regenerate via rc.mod if needed.
+- Legacy menu layout:
+  Run make menuconfig-single.
+
+## Practical Advice
+
+1. Start from a minimal, reproducible setup.
+2. Change one thing at a time and keep notes.
+3. Keep recovery files ready before flashing.
+4. Prefer stable package combinations first, then expand.

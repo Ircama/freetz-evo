@@ -1,257 +1,82 @@
-# Eigene Dateien in die Firmware integrieren
+# Integrating Your Own Files into Firmware
 
-Die Fritzbox besitzt zwei Speicherbereiche:
+A FRITZ!Box uses two relevant storage areas:
 
-1.  den Flash
-2.  den Arbeitsspeicher (RAM)
+1. Flash storage (persistent, limited)
+2. RAM (volatile, limited)
 
-Um im laufenden Betrieb Dateien anzulegen und zu verändern, lässt sich
-das Verzeichnis `/tmp` nutzen. Es liegt im Arbeitsspeicher in einer
-RAM-Disk und arbeitet wie ein normales beschreibbares Dateisystem.
-Folgende Dinge sind jedoch zu beachten:
+The directory /tmp is writable at runtime, but it lives in RAM. Data stored there is lost after reboot or power loss.
 
--   Es nutzt den vorhandenen Arbeitsspeicher mit, der je nach Box bis zu
-    64MB gross ist. Wird die Menge der Daten im Arbeitsspeicher zu groß,
-    startet die Box ohne Vorwarnung neu.
--   Alles, was im Arbeitsspeicher liegt, ist nach einem Reboot oder
-    Stromausfall verloren.
+## Choosing an Integration Strategy
 
-Für die "feste Integration" gibt es mehrere Möglichkeiten:
+| Method | Advantages | Drawbacks |
+| --- | --- | --- |
+| Include files in Freetz image | Simple deployment, works offline | Requires rebuilding and flashing; flash space is limited |
+| Generate via debug.cfg | Works on all boxes, no internet needed | Best for text/scripts; ongoing edits must also be maintained in debug.cfg |
+| Download from web server at boot | Supports binary files, easy central updates | Requires network or local server; never store private keys publicly |
+| Load from USB storage | Supports binary files, no internet needed | Requires USB storage and stable mount naming |
+| Mount WebDAV or NFS share | Centralized files, less local storage use | Requires network and external service availability |
 
-```
-+----------------------+----------------------+----------------------+
-| Variante             | Pros                 | Contras              |
-+======================+======================+======================+
-| via Freetz Image     | -   einfaches        | -   die modifizierte |
-|                      |     Handling         |     Firmware muss    |
-|                      | -   keine bestehende |     geflasht werden  |
-|                      |     Internetverbindu | -   der              |
-|                      | ng                   |     Flash-Speicher   |
-|                      |     erforderlich     |     ist kleiner als  |
-|                      |                      |     das RAM und oft  |
-|                      |                      |     eh schon fast    |
-|                      |                      |     voll             |
-+----------------------+----------------------+----------------------+
-| via `debug.cfg`      | -   funktioniert auf | -   funktioniert nur |
-|                      |     jeder Box        |     mit              |
-|                      | -   keine bestehende |     ASCII-Dateien,   |
-|                      |     Internetverbindu |     wie z.B. mit     |
-|                      | ng                   |     Skripten oder    |
-|                      |     erforderlich     |     Konfigurationsda |
-|                      |                      | teien                |
-|                      |                      | -   werden           |
-|                      |                      |     Änderungen an    |
-|                      |                      |     diesen Dateien   |
-|                      |                      |     vorgenommen,     |
-|                      |                      |     müssen diese     |
-|                      |                      |     auch wieder in   |
-|                      |                      |     die debug.cfg    |
-|                      |                      |     übernommen       |
-|                      |                      |     werden           |
-+----------------------+----------------------+----------------------+
-| Nachladen von        | -   funktioniert mit | -   bestehende       |
-| Webserver            |     allen Dateien,   |     Internetverbindu |
-|                      |     auch mit         | ng                   |
-|                      |     binären.         |     oder laufender   |
-|                      |     Notwendig z.B.   |     interner         |
-|                      |     für nachgeladene |     Webserver        |
-|                      |     Programme wie    |     erforderlich     |
-|                      |     z.B. bFTP,       | -   private Dateien  |
-|                      |     dropbear(SSH)    |     wie z.B. secret  |
-|                      |     oder OpenVPN,    |     keys für SSH     |
-|                      | -   funktioniert auf |     oder VPN dürfen  |
-|                      |     jeder Box        |     keinesfalls im   |
-|                      | -   Umgeht die       |     Web abgelegt     |
-|                      |     Probleme des     |     werden! Wer dies |
-|                      |     knappen          |     tut, kann sich   |
-|                      |     Flash-Speichers  |     Verschlüsselung  |
-|                      | -   Änderungen       |     gleich sparen.   |
-|                      |     lassen sich      |                      |
-|                      |     leicht am        |                      |
-|                      |     Rechner mit dem  |                      |
-|                      |     eigenen Editor   |                      |
-|                      |     (z.B. TextPad)   |                      |
-|                      |     vornehmen        |                      |
-|                      |     (Achtung: Auf    |                      |
-|                      |     UNIX-Formatierun |                      |
-|                      | g                    |                      |
-|                      |     achten!) und     |                      |
-|                      |     dann auf den     |                      |
-|                      |     Webspace         |                      |
-|                      |     hochladen.       |                      |
-|                      | -   wer mehrere      |                      |
-|                      |     Fritz!Boxen oder |                      |
-|                      |     Router hat, kann |                      |
-|                      |     so auf einmal    |                      |
-|                      |     die              |                      |
-|                      |     Konfiguration    |                      |
-|                      |     für alle         |                      |
-|                      |     gleichzeitig     |                      |
-|                      |     anpassen         |                      |
-+----------------------+----------------------+----------------------+
-| Nachladen vom USB    | -   funktioniert mit | -   funktioniert nur |
-| Stick                |     allen Dateien,   |     bei vorhendenem  |
-|                      |     auch mit         |     USB Slot mit     |
-|                      |     binären.         |     einem USB Stick  |
-|                      |     Notwendig z.B.   |     (bzw. anderem    |
-|                      |     für nachgeladene |     USB              |
-|                      |     Programme wie    |     Speichermedium)  |
-|                      |     z.B. bFTP,       | -   Die USB devices  |
-|                      |     dropbear(SSH)    |     werden, je nach  |
-|                      |     oder OpenVPN,    |     Firmware, leider |
-|                      | -   Umgeht die       |     unter            |
-|                      |     Probleme des     |     verschiedenen    |
-|                      |     knappen          |     Namen            |
-|                      |     Flash-Speichers  |     eingebunden,     |
-|                      | -   Änderungen       |     sodaß in der     |
-|                      |     lassen sich      |     debug.cfg darau  |
-|                      |     leicht am        |     eingegangen      |
-|                      |     Rechner mit dem  |     werden muß.      |
-|                      |     eigenen Editor   |                      |
-|                      |     (z.B.            |                      |
-|                      |     Notepadplus)     |                      |
-|                      |     vornehmen        |                      |
-+----------------------+----------------------+----------------------+
-| WebDAV- bzw. NFS-    | -   RAM wird nicht   | -   bestehende       |
-| Share mounten        |     mit lokalen      |     Internetverbindu |
-|                      |     Kopien von       | ng                   |
-|                      |     Dateien gefüllt  |     und              |
-|                      |     (abgesehen von   |     WebDAV-Server    |
-|                      |     der Ausführung)  |     (z.B. GMX/1&1    |
-|                      | -   funktioniert mit |     MediaCenter)     |
-|                      |     allen Dateien,   |     erforderlich     |
-|                      |     auch mit binären | -   private Dateien  |
-|                      | -   funktioniert auf |     wie z.B. secret  |
-|                      |     jeder Box        |     keys für SSH     |
-|                      | -   umgeht die       |     oder VPN dürfen  |
-|                      |     Probleme des     |     keinesfalls im   |
-|                      |     knappen          |     Web abgelegt     |
-|                      |     Flash-Speichers  |     werden! Wer dies |
-|                      | -   sehr             |     tut, kann sich   |
-|                      |     komfortabel, da  |     Verschlüsselung  |
-|                      |     kein Nachladen   |     gleich sparen.   |
-|                      |     per debug.cfg    |                      |
-|                      |     nötig ist        |                      |
-|                      | -   Änderungen       |                      |
-|                      |     lassen sich      |                      |
-|                      |     leicht am        |                      |
-|                      |     Rechner mit dem  |                      |
-|                      |     eigenen Editor   |                      |
-|                      |     (z.B. TextPad)   |                      |
-|                      |     vornehmen        |                      |
-|                      |     (Achtung: Auf    |                      |
-|                      |     UNIX-Formatierun |                      |
-|                      | g                    |                      |
-|                      |     achten!) und     |                      |
-|                      |     dann auf den     |                      |
-|                      |     WebDAV-Share     |                      |
-|                      |     hochladen.       |                      |
-|                      | -   wer mehrere      |                      |
-|                      |     Fritz!Boxen oder |                      |
-|                      |     Router hat, kann |                      |
-|                      |     so auf einmal    |                      |
-|                      |     die              |                      |
-|                      |     Konfiguration    |                      |
-|                      |     für alle         |                      |
-|                      |     gleichzeitig     |                      |
-|                      |     anpassen         |                      |
-+----------------------+----------------------+----------------------+
-```
+There is no universally best option. Most setups combine two or more methods.
 
-Die "perfekte Lösung" gibt es natürlich nicht. Je nach Anwendungsfall
-werden die Möglichkeiten kombiniert.
+## Method 1: Include Files in the Freetz Image
 
-### Feste Integration über das Freetz Image
+The preferred modern approach is to use the example addon:
 
--   Freetz-1.1.x: Die Datei kann unter `./root` an die gewünschte Stelle
-    kopiert werden.
--   Ab Freetz-1.2: Dies kann ohne großen Aufwand über das Beispiel Addon
-    `own-files-0.1` realisiert werden. Einfach das Kommentarzeichen vor
-    `own-files-0.1` in addon/static.pkg entfernen und die gewünschten
-    Dateien in das Verzeichnis `./addon/own-files-0.1/root/` an die
-    Stelle kopieren, an der sie im root Dateisystem der Box landen
-    sollen.
-    Beispiel: eine Datei `./addon/own-files-0.1/root/usr/bin/foo` wird
-    auf der Box in `/usr/bin/foo` landen.
+1. Enable addon own-files-0.1 in addon/static.pkg.
+2. Place files under addon/own-files-0.1/root with the target path layout.
+3. Build and flash.
 
-> Dateien und Verzeichnisse, die unterhalb von `/var` liegen sollen
-> können nach `./addon/own-files-0.1/var.tar` kopiert werden. Änderungen
-> an diesen Dateien gehen bei jedem Reboot verloren.
+Example:
 
-### Erzeugen der Dateien aus der debug.cfg
+- Source path: addon/own-files-0.1/root/usr/bin/foo
+- Target path on box: /usr/bin/foo
 
-Beim Booten werden die gewünschten Dateien im Verzeichnis `/tmp` neu
-erstellt. Dazu wird das Script `debug.cfg` missbraucht, das beim Starten
-der FritzBox automatisch ausgeführt wird. Da die `debug.cfg` selbst im
-beschreibbaren TFFS des Flash (mtd3/4) liegt, gehen ihre Inhalte beim
-Reboot nicht verloren.
+For volatile paths under /var, place content in addon/own-files-0.1/var.tar.
 
-Beispiel:
+## Method 2: Create Files from debug.cfg
 
-Der Code wird einfach in die `debug.cfg` eingefügt. Am einfachsten geht
-es mit Putty:
+debug.cfg is executed at boot and can generate files dynamically. This works well for scripts and plain-text configuration files.
 
--   Code in Zwischenablage kopieren
--   mit der Box via telnet / SSH verbinden
--   nvi /var/flash/debug.cfg
--   mit *: set paste RETURN* in den Einfügen/Paste Modus wechseln
--   an der passenden stelle "i" für insert drücken
--   rechte Maustaste auf Putty fügt den Text ein
--   nacheinander *ESC ESC : w q RETURN* drücken (Abbrechen wäre: *ESC
-    ESC : q ! RETURN*)
--   Neustarten
+Guidelines:
 
-Hier wird ein Skript erzeugt, das sich mit `/var/tmp/checkonline.sh`
-aufrufen lässt. Es zeigt an, welcher der neun Rechner im FB-LAN online
-ist. Wichtig ist, daß der "Endmarker" (hier 'ENDCHECK') **nicht
-eingerückt** ist. Die letzte Zeile macht das Script ausführbar. Abbruch
-mit STRG+C.
+- Keep generated artifacts in /tmp, /var/tmp, or another writable runtime location.
+- Ensure generated scripts are made executable.
+- Keep debug.cfg maintainable and documented.
 
-```
-    cat > /var/tmp/checkonline.sh << 'ENDCHECK'
-    #!/bin/sh
+## Method 3: Download Files During Boot
 
-    while [ 1 = 1 ]
-    do
-         clear
-         echo Online:
-         date
-         echo ------------------------------------------------
-         for a in "2 Desktop1" "3 Michael" "20 Christina" "21 -" "22 -" "23 -" "24 -" "25 -" "26 -" "27 -" "28 -"  "29 -" "45 FB WLAN SL(WDS)"
+Use startup logic to fetch files from a trusted internal or external server.
 
-         do
-                  ping -c 1 192.168.178.$a |grep "bytes from ">/dev/null && echo 192.168.178.$a &
-         done
-         sleep 1
-         echo ------------------------------------------------
-         sleep 9
-    done
+Best practices:
 
-    ENDCHECK
-    chmod +x /var/tmp/checkonline.sh
-```
+- Validate source integrity where possible.
+- Use HTTPS if credentials or sensitive data are involved.
+- Never host private keys or secrets on publicly accessible endpoints.
 
-### Nachladen vom Webserver
+## Method 4: Use USB Storage
 
-Beim Booten werden alle gewünschten Dateinen aus dem Internet oder von
-einem Webserver im Intranet auf die Box geladen.
+Store larger or frequently changing files on USB storage and copy or execute them at startup.
 
-### Nachladen vom USB-Stick
+Best practices:
 
-Beim Booten werden alle gewünschten Dateinen direkt vom USB Stick bzw.
-via FTP vom internen FTP Server auf die Box geladen.
+- Use stable mount paths in startup scripts.
+- Handle delayed mounts gracefully (retry logic).
+- Log failures for easier troubleshooting.
 
-### WebDAV Share mounten
+## Method 5: Mount Remote Shares (WebDAV/NFS)
 
-Für Freetz gibt es das Paket
-WebDAV, über das man einen
-WebDAV-Share direkt mounten kann. Als Konsequenz werden alle
-Remote-Dateien so behandelt, als wären sie lokal vorhanden, und zwar
-ohne gesondertes Nachladen.
+Mounting a share gives direct access to centrally managed files.
 
-### NFS-Share mounten
+- WebDAV is widely available and simple to provision.
+- NFS is often faster and more stable in LAN-only environments.
 
-Mit dem NFS Paket lässt sich
-gleiches erreichen wie mit WebDAV (s.o.), nur etwas stabiler :)
+This approach is convenient when multiple devices should use the same file set.
 
+## Practical Recommendations
 
+1. Start simple: include only critical files in the image.
+2. Keep mutable data outside the image (USB/share/download).
+3. Separate secrets from public or synced content.
+4. Add logging to startup scripts so failures are visible.
+5. Reboot-test every change before relying on it in production.

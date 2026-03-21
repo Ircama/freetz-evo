@@ -3575,5 +3575,19 @@
     "timestamp": "2026-03-15T18:18:51Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Path": {
+    "original": "Path",
+    "translation": "Percorso",
+    "timestamp": "2026-03-21T20:50:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Close window": {
+    "original": "Close window",
+    "translation": "Chiudi finestra",
+    "timestamp": "2026-03-21T20:50:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -1,41 +1,77 @@
-# Swap-File anlegen
+# Create and Enable Swap
 
-### Was ist ein Swap-File, und wofür brauche ich es?
+## What is swap and why use it?
 
-Das Wort *Swap* kommt aus dem Englischen und bedeutet so viel wie
-"austauschen" oder "auslagern" - und genau um letzteres geht es
-dabei: Wird der Arbeitsspeicher (RAM) knapp, wird es für die Programme
-eng. Damit es trotzdem munter weitergehen kann, kann das System gerade
-nicht benötigte Bereiche aus dem Arbeitsspeicher auslagern. Das sind
-z.B. Programme, die vielleicht gerade gelangweilt im Hintergrund hängen
-und nix zu tun haben. Wird der Speicher später wieder benötigt, holt das
-System ihn zurück.
+Swap extends available memory by moving inactive pages from RAM to a file or partition on storage.
+On FRITZ!Box devices with limited RAM, swap can improve stability when running memory-heavy packages.
 
-Wer's genauer wissen möchte, schaut z.B. in der
-[Wikipedia](http://de.wikipedia.org/wiki/Swapping)
-nach.
+Important: swap on flash/USB storage is slower than RAM and increases write activity.
+Use moderate sizes and avoid over-relying on swap for performance.
 
-### Wie lege ich es an?
+## Prerequisite: enable Swap options in build config
 
-Jetzt kommt der interessantere Teil :) Im
-Entwickler-Repository (`trunk`) gibt es dafür bereits im WebIF eine
-einfache Möglichkeit. Wer lieber auf "Nummer sicher" geht, und daher
-die Release (`freetz-1.0`) oder `stable` Branch verwendet, dem hilft ein
-anderer Linux-PC weiter, auf dem man die benötigte Swap-Datei erstellt,
-um sie dann auf die Box zu kopieren. Das sieht z.B. so aus:
+If **Settings -> Swap** is missing in the WebIF, enable it in build configuration:
 
+1. Run `make menuconfig`
+2. Open **Additional patches**
+3. Enable **Add swap options** (`FREETZ_ADD_SWAPOPTIONS`)
+4. Rebuild and flash firmware
+
+After flashing, open:
+
+`http://fritz.box:81/cgi-bin/conf/mod`
+
+## Method A: create swap from WebIF
+
+In **Settings -> Swap**:
+
+1. Set **Path** to a writable storage location, for example:
+   - `/var/media/ftp/uStor01/swapfile`
+   - or a partition path such as `/dev/sda1`
+2. Set **Size** in MB (when creating a swap file)
+3. Click **Create swap file**
+4. Set start mode to **Automatic**
+5. Save settings
+
+To activate immediately without reboot:
+
+1. Open **Services**
+2. Start service **Swap**
+
+## Method B: create swap file manually (Linux shell)
+
+Use this if you prefer shell-based setup or are on older branches.
+
+Example (64 MB):
+
+```bash
+dd if=/dev/zero of=swapfile bs=1k count=64000
+mkswap swapfile
+scp swapfile root@fritz.box:/var/media/ftp/uStor01/
 ```
-	dd if=/dev/zero of=swapfile bs=1k count=64000
-	mkswap swapfile
-	scp swapfile root@fritz.box:/var/media/ftp/uStor01/
+
+Then configure the same path in **Settings -> Swap**, enable **Automatic**, save, and start the Swap service.
+
+## Verification
+
+From shell, check active swap:
+
+```bash
+cat /proc/swaps
 ```
 
-Dann im Freetz-WebIF unter *Einstellungen ⇒ Swap* noch den Pfad
-eintragen, wo das System es finden kann (also
-`/var/media/ftp/uStor01/swapfile`), und den Starttyp sinnvollerweise auf
-"Automatisch" umstellen. Will man es sofort (ohne Reboot) aktivieren,
-geht man im gleichen WebIF noch ins *Dienste* Menü, und startet den
-Swap-Dienst manuell - er findet sich gleich im ersten Block bei den
-*Basis-Paketen*.
+Expected result: your configured swap file or partition appears in the list.
+
+## Recommended values
+
+- Typical size for routers: 64 to 256 MB
+- `swappiness`: start with 60, then tune if needed
+- Prefer USB/external storage over internal flash when possible
+
+## Troubleshooting
+
+- **Swap section not visible in WebIF**: enable `FREETZ_ADD_SWAPOPTIONS` and rebuild.
+- **Service fails to start**: verify file path exists and permissions allow access.
+- **No entry in `/proc/swaps`**: check service status and run start manually from Services page.
 
 
