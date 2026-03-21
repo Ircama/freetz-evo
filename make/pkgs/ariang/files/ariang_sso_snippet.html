@@ -1,0 +1,22 @@
+<script>/* Freetz EVO SSO preflight — verify webcfg session before AriaNg boots */
+(function(){
+  /* 1. Restore URL hash that was saved before the login redirect */
+  var _h='';
+  try{_h=window.location.hash||'';}catch(e){}
+  if(!_h){var _s='';try{_s=localStorage.getItem('ariang_after_login_hash')||'';}catch(e){}if(_s){try{localStorage.removeItem('ariang_after_login_hash');}catch(e){}window.location.hash=_s.charAt(0)==='#'?_s.substr(1):_s;}}
+  /* 2. Synchronous auth-ping to the PHP SSO gateway */
+  var _r=new XMLHttpRequest();
+  _r.open('GET','/ariang/ariang_auth.php?auth_ping=1&_='+Date.now(),false);
+  _r.withCredentials=true;
+  try{
+    _r.send(null);
+    if(_r.status===403||_r.status===401){
+      var _d={};try{_d=JSON.parse(_r.responseText||'{}');}catch(e){}
+      if(_d.auth_required===true){
+        try{if(_h)localStorage.setItem('ariang_after_login_hash',_h);}catch(e){}
+        window.location.replace(_d.login_url||'/cgi-bin/conf/aria2?subpage=ariang/');
+      }
+    }
+  }catch(e){}
+})();
+</script>
