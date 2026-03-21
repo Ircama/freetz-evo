@@ -1,117 +1,109 @@
-# Freetz(-MOD)
-  - Package: [master/make/pkgs/mod/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mod/)
+# Freetz (mod base package)
 
-"mod" ist das sogenannte Base-Package. Es wird immer automatisch
-installiert.
-Hiermit können grundlegende Dienste von Freetz wie Swap, FREETZMOUNT,
-external und das Freetz-Webinterface konfiguriert werden.<br>
- * Abhängig von der Konfiguration sind nur bestimmte zu sehen!
+- Package source: [make/pkgs/mod](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mod)
 
-### swap
+The mod package is the Freetz base package and is always installed.
+It provides core system integration and central configuration for features such as:
 
-Als Faustregel sollte man die Größe des RAMs als Größe der Swapdatei
-nehmen.
+- swap
+- udevmount behavior
+- external processing
+- Freetz web interface behavior
 
-Über den Parameter *swappiness* (seit
-Changeset r6882) kann das Swapverhalten beeinflusst
-werden. Je höher der eingetragene Wert ist desto früher fängt die Box an
-den Auslagerungsspeicher zu nutzen
-([Weiterlesen](http://lwn.net/Articles/83588/)).
+Note: Depending on your selected configuration, only a subset of options is shown in the UI.
 
-Vor allem beim Betrieb speicher hungriger Pakete wie z.B.
-[PHP](php.md), Tor [packages/tor](tor.md) oder
-[Transmission](transmission.md) ist die Nutzung von Swap zu
-empfehlen.
+### Swap
+
+A common rule of thumb is to size swap roughly equal to installed RAM.
+
+Swap behavior can be tuned using the swappiness parameter (available since Changeset r6882):
+
+- Lower values keep pages in RAM longer.
+- Higher values move pages to swap earlier.
+
+For background details, see [this Linux kernel article](http://lwn.net/Articles/83588/).
+
+Swap is especially useful when running memory-heavy packages such as:
+
+- [PHP](php.md)
+- [Tor](tor.md)
+- [Transmission](transmission.md)
 
 ### Udevmount
 
- * Methode zur Ermittlung des Mountpoints:<br>
-   Der Name des Mountpoints kann durch AVM vom Gerätenamen oder
-   Partitionsnamen abgeleitet werden. Die aktive Methode wird hier
-   angezeigt.<br>
-   Um die Methode auf LABEL zu ändern:
-   ```
-	ctlmgr -s
-	sleep 1
-	cat /var/flash/usb.cfg > /tmp/usb.cfg.tmp
-	sed 's/volume_labels = .*/volume_labels = yes;/' /tmp/usb.cfg.tmp > /var/flash/usb.cfg
-	ctlmgr
-	sleep 30
-	reboot
-   ```
-   Zum aktivieren der DEVICE-Methode das ```yes``` oben auf ```no``` ändern.
- * Alle Programme beenden die das Aushängen verhindern:<br>
-   Beim Unmounten oder Rebooten werden alle Programme ermittelt die ein
-   sauberes Aushängen verhindern und versucht sie zu beenden.
- * Automatisch autorun.sh und autoend.sh ausführen<br>
-   Beim Mounten wird autorun.sh und beim Unmounten autoend.sh
-   ausgeführt, falls sie sich auf dem Datenträger befinden.
-   Dies sollte nur aktiviert werden wenn man es benötig da es
-   ein Sicherheitsrisiko darstellt!
+- Mountpoint detection method:
+  AVM can derive mountpoint names from either device names or partition labels. The currently active method is shown in the UI.
+
+  To switch to LABEL mode:
+
+  ```sh
+  ctlmgr -s
+  sleep 1
+  cat /var/flash/usb.cfg > /tmp/usb.cfg.tmp
+  sed 's/volume_labels = .*/volume_labels = yes;/' /tmp/usb.cfg.tmp > /var/flash/usb.cfg
+  ctlmgr
+  sleep 30
+  reboot
+  ```
+
+  To switch back to DEVICE mode, change `yes` to `no` in the command above.
+
+- Stop processes blocking unmount:
+  During unmount or reboot, blocking processes are detected and Freetz tries to stop them for a clean unmount.
+
+- Auto-run `autorun.sh` and `autoend.sh`:
+  If present on a mounted storage device, `autorun.sh` is executed on mount and `autoend.sh` on unmount.
+
+  Enable this only when needed. It can be a security risk.
 
 ### get_ip
 
-Das Skript *get_ip* ermittelt die öffentliche IP, was an verschiedenen
-Stellen in Freetz und dessen Packages benötigt wird.
+The `get_ip` script determines the public IP address. It is used by multiple Freetz components and packages.
 
-Hier kann das standardmäßige Verhalten von *get_ip* an die lokalen
-Gegebenheiten angepasst werden. So funktioniert bei einer FritzBox, die
-das Internet "mitbenutzt" (IP-Client) oder UMTS verwendet, nur die
-`--extquery` Methode, da die Box keine öffentliche IP erhält (NAT). Die
-Standardeinstellung `--all` deckt diesen Fall jedoch ab, weil sie
-nacheinander mehrere Methoden durchprobiert, bis die externe IP
-ermittelt wurde. Wer ca. 0,4 s pro Abfrage (also 90%) sparen möchte,
-kann hier in diesem Fall aber die Methode von `-all` auf `--extquery`
-ändern.
+You can tune the default `get_ip` behavior to your environment. For example, when a FRITZ!Box is used as an IP client or via UMTS, the box often has no direct public IP (NAT). In that case, `--extquery` is typically the relevant method.
 
-### Konfigurationsdateien
+The default `--all` still works because it tries multiple methods until one succeeds. If you want faster lookups in this scenario, you can switch from `--all` to `--extquery`.
 
-
+### Configuration files
 
 ### .profile
 
-Dies wird beim Login ausgeführt. Es können zB Aliase für häuftig
-genutzte Befehle definiert werden:
-Beispiel:
+This file is executed at login. You can define aliases for frequently used commands.
 
-```
+Example:
+
+```sh
 alias nl="sed '=' | sed 'N;s/n/t/'"
 alias tcpdump6="tcpdump ip6 or proto ipv6"
 ```
 
-
-
 ### crontab
 
-Der "cron" Daemon führt Befehle zu bestimmten Zeiten aus. Er wird
-durch die crontab konfiguriert.
+The cron daemon runs commands at scheduled times and is configured via `crontab`.
+
 Syntax:
 
-```
-Minute | Stunde | Tag | Monat | Wochentag | Befehl
-```
-
-Beispiel:
-
-```
-55  23  * * 7  logger "Es ist Sonntag, 5 Minuten vor 12"
-*/10  * * * *  logger "Es sind wieder 10 Minuten vergangen"
-* 6,18  * * *  logger "Es ist 6 Uhr"
+```text
+minute | hour | day | month | weekday | command
 ```
 
- * Im Gegensatz
-zu "normalen" Linux Systemen fehlt die "Besitzer"-Spalte und alle
-Befehle werden als root ausgeführt.
+Example:
 
+```text
+55  23  * * 7  logger "It is Sunday, 5 minutes before midnight"
+*/10  * * * *  logger "Another 10 minutes passed"
+* 6,18  * * *  logger "It is 6 o'clock"
+```
 
+Unlike typical Linux crontabs, there is no owner/user column. All commands run as `root`.
 
 ### dtrace
 
-Die Befehle in dieser Datei werden durch die Tastenkombination `#97*3*`
-am Telefon ausgeführt.
-Beispiel:
+Commands in this file are triggered by the phone key sequence `#97*3*`.
 
-```
+Example:
+
+```sh
 #!/bin/sh
 if [ "$(/etc/init.d/rc.lighttpd status)" != "stopped" ]; then
     /etc/init.d/rc.lighttpd stop
@@ -120,88 +112,74 @@ else
 fi
 ```
 
- * Nur sichtbar
-wenn der replace-dtrace Patch ausgewählt wurde!
+Visible only when the replace-dtrace patch is enabled.
 
 ### hosts
 
-Hier können IP-Adressen, Hostnamen und MAC-Adressen für DNS und DHCP
-zueinander zugeordnet werden. Siehe auch [dnsmasq: Einträge in der
-Hosts-Liste](dnsmasq.html#EinträgeinderHosts-Liste)
+This file maps IP addresses, hostnames, and MAC addresses for DNS and DHCP handling.
+See also: [dnsmasq](dnsmasq.md).
+
 Syntax:
 
-```
+```text
 <ipaddr>|* <hwaddr>|[id:]<client_id>|* [net:]<netid>|* <hostname>|* [ignore]
 ```
 
-Beispiel:
+Example:
 
+```text
+192.168.178.20    *                   *  MyPC-1
+192.168.178.21    11:22:33:44:55:66   *  MyPC-2
 ```
-192.168.178.20    *           * MeinPC-1
-192.168.178.21  11:22:33:44:55:66   * MeinPC-2
-```
-
-
 
 ### modules
 
-Die Kernel-Module die in dieser Datei aufgeführt sind werden während des
-Bootvorgangs geladen.
-Beispiel:
+Kernel modules listed in this file are loaded during boot.
 
-```
+Example:
+
+```text
 pl2303
 ftdi_sio
 ```
 
- * Die Namen der
-Module sind ohne Pfad und die Endung `.ko` anzugeben.
-
-
+Specify module names without path and without the `.ko` suffix.
 
 ### rc.custom
 
-Die Befehle in dieser Datei werden nach dem Bootvorgang ausgeführt.
- * Es dürfen
-keine Befehle eingetragen sein, die im Vordergrund bleiben oder sehr
-lange brauchen. Dies könnte Probleme beim Starten der FritzBox
-verursachen. Bei Befehlen in Verbindung mit einen USB-Stick, bitte die
-Erweiterung rc.external verwenden.
+Commands in this file run after boot.
+
+Do not add commands that block in foreground or run for a long time, as this can delay or break startup.
+
+For USB/storage-dependent logic, use `rc.external` instead.
 
 ### rc.external
 
-Diese Datei wird ausgeführt nachdem der Datenträger auf dem sich die
-[external](../help/howtos/common/external.html)-Dateien befinden
-eingehängt wurde und bevor er ausgehängt wird.
-Beispiel:
+This file is executed after the storage containing [external](../help/howtos/common/external.html) files is mounted, and again before it is unmounted.
 
-```
+Example:
+
+```sh
 #!/bin/sh
 case "$1" in
     load)
-        logger "Datenträger eingehängt"
+        logger "Storage mounted"
         ;;
     unload)
-        logger "Datenträger ausgehängt"
+        logger "Storage unmounted"
         ;;
 esac
 ```
 
- * Bitte
-`Advanced Options` → `External` → `Enable external processing` für diese
-Erweiterung aktivieren.
+Enable this via:
 
-
+`Advanced Options` -> `External` -> `Enable external processing`
 
 ### shutdown
 
-Die Befehle in dieser Datei werden während des Herunterfahres
-ausgeführt.
-
-
+Commands in this file are executed during system shutdown.
 
 ### udev_first / udev_final
 
-Regeln die von UDEV ausgeführt werden. Siehe [Custom UDEV
-rules](../patches/custom_udev_rules.html).
+Custom rules executed by udev. See [Custom UDEV rules](../patches/custom_udev_rules.html).
 
