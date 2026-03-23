@@ -2573,21 +2573,21 @@
     "original": "Swap file",
     "service": "deepl",
     "timestamp": "2026-02-15T23:35:43Z",
-    "translation": "Scambiare file"
+    "translation": "File di swap"
   },
   "deepl:Swap file creation failed.": {
     "github_user": "Ircama",
     "original": "Swap file creation failed.",
     "service": "deepl",
     "timestamp": "2026-02-15T23:36:15Z",
-    "translation": "Creazione di un file di scambio non riuscita."
+    "translation": "Creazione del file di swap non riuscita."
   },
   "deepl:Swap space": {
     "github_user": "Ircama",
     "original": "Swap space",
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:20Z",
-    "translation": "Spazio di scambio"
+    "translation": "Spazio di swap"
   },
   "deepl:Swapfile": {
     "github_user": "Ircama",
@@ -3098,7 +3098,7 @@
     "original": "Wrong token",
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:39Z",
-    "translation": "Gettone sbagliato"
+    "translation": "Token errato"
   },
   "deepl:You could change here internal variables which are disabled or hidden on the AVM web interface.": {
     "github_user": "Ircama",
