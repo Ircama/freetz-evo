@@ -64,6 +64,32 @@ if FREETZ_PACKAGE_PYTHON3
 			instead. All other libraries Python depends on are still linked
 			in dynamically.
 
+	choice
+		prompt "Runtime compiler for on-device C extensions (cffi, etc.)"
+		default FREETZ_PACKAGE_PYTHON3_COMPILER_ONDEVICE
+		help
+			Select which compiler Python's sysconfig will reference at runtime.
+			This affects cffi.verify(), setuptools.build_ext, and any code
+			that compiles C extensions on the device.
+
+		config FREETZ_PACKAGE_PYTHON3_COMPILER_ONDEVICE
+			bool "GCC On Device (gcc/g++)"
+			select FREETZ_PACKAGE_GCC_TOOLCHAIN
+			help
+				Use the on-device GCC compiler (gcc, g++, ar, ranlib).
+				This is the correct choice when compiling C extensions
+				directly on the Fritz!Box (e.g. cffi.verify(), pip install
+				packages with C code).
+
+		config FREETZ_PACKAGE_PYTHON3_COMPILER_CROSS
+			bool "Cross-compiler (mips-linux-uclibc-gcc)"
+			help
+				Keep cross-compiler tool names in sysconfig.
+				Useful only if cross-compiling Python modules from the
+				host build system with the toolchain accessible on PATH.
+
+	endchoice
+
 	menu "Python binary modules (extensions)"
 
 		config FREETZ_PACKAGE_PYTHON3_MOD_AUDIODEV

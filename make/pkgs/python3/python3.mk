@@ -54,6 +54,21 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_SQLITE
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_SSL
 $(PKG)_REBUILD_SUBOPTS += $(OPENSSL_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_IPV6_SUPPORT
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_COMPILER_ONDEVICE
+
+# Sysconfig compiler names: on-device GCC uses plain "gcc"/"g++",
+# cross-compiler mode uses the prefixed toolchain basenames.
+ifeq ($(strip $(FREETZ_PACKAGE_PYTHON3_COMPILER_ONDEVICE)),y)
+PYTHON3_SYSCONFIG_CC     := gcc
+PYTHON3_SYSCONFIG_CXX    := g++
+PYTHON3_SYSCONFIG_AR     := ar
+PYTHON3_SYSCONFIG_RANLIB := ranlib
+else
+PYTHON3_SYSCONFIG_CC     := $(notdir $(TARGET_CC))
+PYTHON3_SYSCONFIG_CXX    := $(notdir $(TARGET_CXX))
+PYTHON3_SYSCONFIG_AR     := $(notdir $(TARGET_AR))
+PYTHON3_SYSCONFIG_RANLIB := $(notdir $(TARGET_RANLIB))
+endif
 
 $(PKG)_CONFIGURE_ENV += ac_cv_have_chflags=no
 $(PKG)_CONFIGURE_ENV += ac_cv_have_lchflags=no
@@ -100,30 +115,36 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -name "*.pyo" -delete; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" -exec \
 			$(SED) -i -r \
-				-e "s,'CC': '[^']*','CC': '$(notdir $(TARGET_CC))'," \
-				-e "s,'CXX': '[^']*','CXX': '$(notdir $(TARGET_CXX))'," \
-				-e "s,'LDSHARED': '[^']*','LDSHARED': '$(notdir $(TARGET_CC)) -shared'," \
-				-e "s,'BLDSHARED': '[^']*','BLDSHARED': '$(notdir $(TARGET_CC)) -shared'," \
-				-e "s,'LINKCC': '[^']*','LINKCC': '$(notdir $(TARGET_CC))'," \
-				-e "s,'LDCXXSHARED': '[^']*','LDCXXSHARED': '$(notdir $(TARGET_CXX)) -shared'," \
+				-e "s,'CC': '[^']*','CC': '$(PYTHON3_SYSCONFIG_CC)'," \
+				-e "s,'CXX': '[^']*','CXX': '$(PYTHON3_SYSCONFIG_CXX)'," \
+				-e "s,'LDSHARED': '[^']*','LDSHARED': '$(PYTHON3_SYSCONFIG_CC) -shared'," \
+				-e "s,'BLDSHARED': '[^']*','BLDSHARED': '$(PYTHON3_SYSCONFIG_CC) -shared'," \
+				-e "s,'LINKCC': '[^']*','LINKCC': '$(PYTHON3_SYSCONFIG_CC)'," \
+				-e "s,'LDCXXSHARED': '[^']*','LDCXXSHARED': '$(PYTHON3_SYSCONFIG_CXX) -shared'," \
+				-e "s,'AR': '[^']*','AR': '$(PYTHON3_SYSCONFIG_AR)'," \
+				-e "s,'RANLIB': '[^']*','RANLIB': '$(PYTHON3_SYSCONFIG_RANLIB)'," \
 			{} +; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfig_vars*.json" -exec \
 			$(SED) -i -r \
-				-e 's,"CC"[[:space:]]*:[[:space:]]*"[^"]*","CC": "$(notdir $(TARGET_CC))",' \
-				-e 's,"CXX"[[:space:]]*:[[:space:]]*"[^"]*","CXX": "$(notdir $(TARGET_CXX))",' \
-				-e 's,"LDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDSHARED": "$(notdir $(TARGET_CC)) -shared",' \
-				-e 's,"BLDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","BLDSHARED": "$(notdir $(TARGET_CC)) -shared",' \
-				-e 's,"LINKCC"[[:space:]]*:[[:space:]]*"[^"]*","LINKCC": "$(notdir $(TARGET_CC))",' \
-				-e 's,"LDCXXSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDCXXSHARED": "$(notdir $(TARGET_CXX)) -shared",' \
+				-e 's,"CC"[[:space:]]*:[[:space:]]*"[^"]*","CC": "$(PYTHON3_SYSCONFIG_CC)",' \
+				-e 's,"CXX"[[:space:]]*:[[:space:]]*"[^"]*","CXX": "$(PYTHON3_SYSCONFIG_CXX)",' \
+				-e 's,"LDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDSHARED": "$(PYTHON3_SYSCONFIG_CC) -shared",' \
+				-e 's,"BLDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","BLDSHARED": "$(PYTHON3_SYSCONFIG_CC) -shared",' \
+				-e 's,"LINKCC"[[:space:]]*:[[:space:]]*"[^"]*","LINKCC": "$(PYTHON3_SYSCONFIG_CC)",' \
+				-e 's,"LDCXXSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDCXXSHARED": "$(PYTHON3_SYSCONFIG_CXX) -shared",' \
+				-e 's,"AR"[[:space:]]*:[[:space:]]*"[^"]*","AR": "$(PYTHON3_SYSCONFIG_AR)",' \
+				-e 's,"RANLIB"[[:space:]]*:[[:space:]]*"[^"]*","RANLIB": "$(PYTHON3_SYSCONFIG_RANLIB)",' \
 			{} +; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -path "*/config-$(PYTHON3_MAJOR_VERSION)/Makefile" -exec \
 			$(SED) -i -r \
-				-e "s,^CC[[:space:]]*=.*,CC=$(notdir $(TARGET_CC))," \
-				-e "s,^CXX[[:space:]]*=.*,CXX=$(notdir $(TARGET_CXX))," \
-				-e "s,^LDSHARED[[:space:]]*=.*,LDSHARED=$(notdir $(TARGET_CC)) -shared," \
-				-e "s,^BLDSHARED[[:space:]]*=.*,BLDSHARED=$(notdir $(TARGET_CC)) -shared," \
-				-e "s,^LINKCC[[:space:]]*=.*,LINKCC=$(notdir $(TARGET_CC))," \
-				-e "s,^LDCXXSHARED[[:space:]]*=.*,LDCXXSHARED=$(notdir $(TARGET_CXX)) -shared," \
+				-e "s,^CC[[:space:]]*=.*,CC=$(PYTHON3_SYSCONFIG_CC)," \
+				-e "s,^CXX[[:space:]]*=.*,CXX=$(PYTHON3_SYSCONFIG_CXX)," \
+				-e "s,^LDSHARED[[:space:]]*=.*,LDSHARED=$(PYTHON3_SYSCONFIG_CC) -shared," \
+				-e "s,^BLDSHARED[[:space:]]*=.*,BLDSHARED=$(PYTHON3_SYSCONFIG_CC) -shared," \
+				-e "s,^LINKCC[[:space:]]*=.*,LINKCC=$(PYTHON3_SYSCONFIG_CC)," \
+				-e "s,^LDCXXSHARED[[:space:]]*=.*,LDCXXSHARED=$(PYTHON3_SYSCONFIG_CXX) -shared," \
+				-e "s,^AR[[:space:]]*=.*,AR=$(PYTHON3_SYSCONFIG_AR)," \
+				-e "s,^RANLIB[[:space:]]*=.*,RANLIB=$(PYTHON3_SYSCONFIG_RANLIB)," \
 			{} +; \
 		\
 		$(TARGET_STRIP) \
