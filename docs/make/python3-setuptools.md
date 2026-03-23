@@ -1,4 +1,4 @@
-# setuptools 75.6.0
+# setuptools 82.0.1 (pure python, prerequisite)
   - Homepage: [https://setuptools.pypa.io/](https://setuptools.pypa.io/)
   - Manpage: [https://setuptools.pypa.io/en/latest/](https://setuptools.pypa.io/en/latest/)
   - Changelog: [https://setuptools.pypa.io/en/latest/history.html](https://setuptools.pypa.io/en/latest/history.html)

@@ -1,4 +1,4 @@
-# pyyaml 6.0.2
+# pyyaml 6.0.3
   - Homepage: [https://pyyaml.org/](https://pyyaml.org/)
   - Manpage: [https://pyyaml.org/wiki/PyYAMLDocumentation](https://pyyaml.org/wiki/PyYAMLDocumentation)
   - Changelog: [https://github.com/yaml/pyyaml/blob/main/CHANGES](https://github.com/yaml/pyyaml/blob/main/CHANGES)

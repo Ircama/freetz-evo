@@ -1,4 +1,4 @@
-# pip 24.3.1
+# pip 26.0.1 (pure python, prerequisite)
   - Homepage: [https://pip.pypa.io/](https://pip.pypa.io/)
   - Manpage: [https://pip.pypa.io/en/stable/](https://pip.pypa.io/en/stable/)
   - Changelog: [https://pip.pypa.io/en/stable/news/](https://pip.pypa.io/en/stable/news/)

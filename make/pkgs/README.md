@@ -765,38 +765,101 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3: Python 3.14.3 - EXPERIMENTAL](../../docs/make/python3.md)<a id='python3'></a>**<br>
     Python is a remarkably powerful dynamic programming language that is used in a wide variety of application domains. CAUTION: Python 3.14 with all modules requires approximately 59 MB (core) + 24 MB (addon packages) = ~83 MB total. Consider using external storage for complete installations. Size: ~59 MB (core), up to ~83 MB (with all addons)
 
+  * **[python3-aiohappyeyeballs: aiohappyeyeballs 2.6.1 (pure python, prerequisite)](../../docs/make/python3-aiohappyeyeballs.md)<a id='python3-aiohappyeyeballs'></a>**<br>
+    It provides happy-eyeballs connector utilities for asyncio.
+
+  * **[python3-aiohttp: aiohttp 3.13.3](../../docs/make/python3-aiohttp.md)<a id='python3-aiohttp'></a>**<br>
+    aiohttp is an asynchronous HTTP client/server framework for asyncio.
+
+  * **[python3-aiosignal: aiosignal 1.4.0 (pure python, prerequisite)](../../docs/make/python3-aiosignal.md)<a id='python3-aiosignal'></a>**<br>
+    aiosignal is a pure-Python prerequisite module. It manages callbacks in asyncio projects.
+
+  * **[python3-annotatedyaml: annotatedyaml 1.0.2](../../docs/make/python3-annotatedyaml.md)<a id='python3-annotatedyaml'></a>**<br>
+    Annotated YAML that supports secrets for Python. Used by Home Assistant for YAML configuration handling. Optionally uses Cython for performance.
+
+  * **[python3-async-timeout: async-timeout 5.0.1 (pure python, prerequisite)](../../docs/make/python3-async-timeout.md)<a id='python3-async-timeout'></a>**<br>
+    async-timeout is a pure-Python prerequisite module. It provides timeout context management for asyncio.
+
+  * **[python3-attrs: attrs 26.1.0 (pure python, prerequisite)](../../docs/make/python3-attrs.md)<a id='python3-attrs'></a>**<br>
+    attrs is a pure-Python prerequisite module. It provides declarative class helpers.
+
+  * **[python3-audioop-lts: audioop-lts 0.2.1](../../docs/make/python3-audioop-lts.md)<a id='python3-audioop-lts'></a>**<br>
+    LTS port of the audioop module removed from Python 3.13+. Provides audio processing operations as a C extension.
+
+  * **[python3-bcrypt: bcrypt 3.2.2](../../docs/make/python3-bcrypt.md)<a id='python3-bcrypt'></a>**<br>
+    Modern password hashing for your software and your servers. Uses CFFI with C implementation (no Rust required). bcrypt 5.0+ requires Rust; 3.2.2 is the last CFFI/C version.
+
   * **[python3-cffi: cffi 1.17.1](../../docs/make/python3-cffi.md)<a id='python3-cffi'></a>**<br>
     CFFI (C Foreign Function Interface) for Python 3. Interact with almost any C code from Python, based on C-like declarations that you can often copy-paste from header files or documentation. Required by many modern Python packages including: - cryptography - PyNaCl - bcrypt - argon2-cffi Website: https://cffi.readthedocs.io/ GitHub: https://github.com/python-cffi/cffi
 
-  * **[python3-cryptography: cryptography 3.3.2 (last version without Rust)](../../docs/make/python3-cryptography.md)<a id='python3-cryptography'></a>**<br>
-    cryptography 3.3.2 - Last version compatible with embedded targets This is the last version of cryptography (3.3.2, released 2020) that doesn't require Rust compiler. For newer cryptographic features, consider using python3-pycryptodome as an alternative. See PYTHON3_CRYPTOGRAPHY_UNSUPPORTED.md for migration guide. --- cryptography is a package which provides cryptographic recipes and primitives to Python developers. Features: - SSL/TLS support - X.509 certificate handling - Symmetric encryption (AES, ChaCha20, etc.) - Asymmetric encryption (RSA, ECDSA, etc.) - Message digests and signatures - Key derivation functions Dependencies: - Python 3.x - cffi (Python C Foreign Function Interface) - OpenSSL >= 1.1.1 (for cryptographic operations) Build: Uses setuptools (no Rust required for 3.3.2) Size: ~2-3 MB installed WWW: https://cryptography.io/
+  * **[python3-charset-normalizer: charset-normalizer 3.4.6](../../docs/make/python3-charset-normalizer.md)<a id='python3-charset-normalizer'></a>**<br>
+    Unicode charset detector for Python.
 
-  * **[python3-lxml: lxml 5.3.0](../../docs/make/python3-lxml.md)<a id='python3-lxml'></a>**<br>
-    lxml is a powerful XML and HTML processing library. Provides: - Pythonic binding for libxml2 and libxslt - ElementTree API for XML parsing and generation - Fast and memory-efficient XML/HTML processing - XPath and XSLT support (requires libxslt, not available) - HTML cleaning and repair Common uses: - Web scraping (BeautifulSoup backend) - XML parsing and generation - Configuration file processing - Data extraction from HTML/XML Note: This build uses only libxml2 (without libxslt). XSLT transformations will not be available. Website: https://lxml.de/ Docs: https://lxml.de/tutorial.html
+  * **[python3-ciso8601: ciso8601 2.3.3](../../docs/make/python3-ciso8601.md)<a id='python3-ciso8601'></a>**<br>
+    Fast ISO 8601 date/time parser written in C.
 
-  * **[python3-markupsafe: markupsafe 3.0.2](../../docs/make/python3-markupsafe.md)<a id='python3-markupsafe'></a>**<br>
+  * **[python3-cryptography: cryptography 3.3.2 - DEVELOPER](../../docs/make/python3-cryptography.md)<a id='python3-cryptography'></a>**<br>
+    cryptography 3.3.2 (last version without Rust dependency) cryptography is a package which provides cryptographic recipes and primitives to Python developers. Features: - SSL/TLS support - X.509 certificate handling - Symmetric encryption (AES, ChaCha20, etc.) - Asymmetric encryption (RSA, ECDSA, etc.) - Message digests and signatures - Key derivation functions Dependencies: - Python 3.x - cffi (Python C Foreign Function Interface) - OpenSSL >= 1.1.1 (for cryptographic operations) Build: Uses setuptools Size: ~2-3 MB installed WWW: https://cryptography.io/
+
+  * **[python3-dateutil: python-dateutil 2.9.0.post0 (pure python, prerequisite)](../../docs/make/python3-dateutil.md)<a id='python3-dateutil'></a>**<br>
+    python-dateutil is a pure-Python prerequisite module. It provides extensions to the standard datetime module.
+
+  * **[python3-fnvhash: fnvhash 0.2.1 (pure python, prerequisite)](../../docs/make/python3-fnvhash.md)<a id='python3-fnvhash'></a>**<br>
+    fnvhash is a pure-Python prerequisite module. It provides FNV hash implementations (fnv1, fnv1a).
+
+  * **[python3-fnv-hash-fast: fnv-hash-fast 1.6.0](../../docs/make/python3-fnv-hash-fast.md)<a id='python3-fnv-hash-fast'></a>**<br>
+    A fast version of fnv1a hash using an optional Cython C extension. Falls back to pure Python fnvhash if Cython is not available.
+
+  * **[python3-frozenlist: frozenlist 1.8.0](../../docs/make/python3-frozenlist.md)<a id='python3-frozenlist'></a>**<br>
+    A list-like structure which implements collections.abc.MutableSequence.
+
+  * **[python3-idna: idna 3.11 (pure python, prerequisite)](../../docs/make/python3-idna.md)<a id='python3-idna'></a>**<br>
+    idna is a pure-Python prerequisite module. It provides IDNA2008 and UTS #46 support for Python.
+
+  * **[python3-lxml: lxml 6.0.2](../../docs/make/python3-lxml.md)<a id='python3-lxml'></a>**<br>
+    lxml is a powerful XML and HTML processing library. Provides: - Pythonic binding for libxml2 and libxslt - ElementTree API for XML parsing and generation - Fast and memory-efficient XML/HTML processing - XPath and XSLT support (requires libxslt) - HTML cleaning and repair Common uses: - Web scraping (BeautifulSoup backend) - XML parsing and generation - Configuration file processing - Data extraction from HTML/XML Note: XSLT transformations require libxslt at runtime. Website: https://lxml.de/ Docs: https://lxml.de/tutorial.html
+
+  * **[python3-markupsafe: markupsafe 3.0.3](../../docs/make/python3-markupsafe.md)<a id='python3-markupsafe'></a>**<br>
     MarkupSafe implements a text object that escapes characters for safe use in HTML and XML. Provides: - Fast C implementation of text escaping - Safe string handling for web templates - HTML/XML entity encoding - Integration with Jinja2 and other template engines Common uses: - Template rendering (Jinja2, Mako) - Web frameworks (Flask, Django) - HTML/XML generation - XSS attack prevention This is a core dependency for many web frameworks. Website: https://palletsprojects.com/p/markupsafe/ Docs: https://markupsafe.palletsprojects.com/
 
-  * **[python3-numpy: NumPy 2.3.3 (for Python 3) - DEVELOPER ONLY](../../docs/make/python3-numpy.md)<a id='python3-numpy'></a>**<br>
-    NumPy is the fundamental package for scientific computing in Python. NEW: NumPy 2.3.3 with Meson build system (compatible with Python 3.14). Cross-compilation tested but may have edge cases. Provides: - Powerful N-dimensional array object (ndarray) - Sophisticated broadcasting functions - Linear algebra, Fourier transform, random number capabilities - Tools for integrating C/C++ and Fortran code Common uses: - Data analysis and machine learning - Scientific and engineering computations - Image and signal processing - Statistical operations WARNING: NumPy is large (~15-20 MB) and MUST be externalized. Ensure sufficient USB storage is available. This build uses reference BLAS (slower but no extra dependencies). For performance-critical applications, consider optimized libraries. Website: https://numpy.org/ Docs: https://numpy.org/doc/stable/
+  * **[python3-multidict: multidict 6.7.1](../../docs/make/python3-multidict.md)<a id='python3-multidict'></a>**<br>
+    Multidict is dict-like collection of key-value pairs.
 
-  * **[python3-pandas: pandas 2.2.3 (for Python 3) - DEVELOPER ONLY](../../docs/make/python3-pandas.md)<a id='python3-pandas'></a>**<br>
-    pandas is a powerful data analysis and manipulation library. WARNING: Requires NumPy (currently developer-only). Provides: - DataFrame and Series data structures - Data alignment and integrated handling of missing data - Reshaping and pivoting of data sets - Label-based slicing, indexing, and subsetting - Time series functionality - Data I/O (CSV, Excel, SQL, HDF5, JSON, Parquet) Common uses: - Data cleaning and preparation - Statistical analysis - Time series analysis - Data visualization (with matplotlib) WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy. Both MUST be externalized to USB storage. Website: https://pandas.pydata.org/ Docs: https://pandas.pydata.org/docs/
+  * **[python3-numpy: NumPy 2.4.3 (for Python 3)](../../docs/make/python3-numpy.md)<a id='python3-numpy'></a>**<br>
+    NumPy is the fundamental package for scientific computing in Python. NEW: NumPy 2.4.3 with Meson build system (compatible with Python 3.14). Cross-compilation now uses openlibm for extended math support. Provides: - Powerful N-dimensional array object (ndarray) - Sophisticated broadcasting functions - Linear algebra, Fourier transform, random number capabilities - Tools for integrating C/C++ and Fortran code Common uses: - Data analysis and machine learning - Scientific and engineering computations - Image and signal processing - Statistical operations WARNING: NumPy is large (~15-20 MB) and MUST be externalized. Ensure sufficient USB storage is available. This build uses reference BLAS (slower but no extra dependencies). For performance-critical applications, consider optimized libraries. Website: https://numpy.org/ Docs: https://numpy.org/doc/stable/
 
-  * **[python3-pillow: Pillow 11.0.0 (for Python 3) - DEVELOPER ONLY](../../docs/make/python3-pillow.md)<a id='python3-pillow'></a>**<br>
+  * **[python3-pandas: pandas 3.0.1 (for Python 3)](../../docs/make/python3-pandas.md)<a id='python3-pandas'></a>**<br>
+    pandas is a powerful data analysis and manipulation library. WARNING: Requires NumPy. Provides: - DataFrame and Series data structures - Data alignment and integrated handling of missing data - Reshaping and pivoting of data sets - Label-based slicing, indexing, and subsetting - Time series functionality - Data I/O (CSV, Excel, SQL, HDF5, JSON, Parquet) Common uses: - Data cleaning and preparation - Statistical analysis - Time series analysis - Data visualization (with matplotlib) WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy. Both MUST be externalized to USB storage. Website: https://pandas.pydata.org/ Docs: https://pandas.pydata.org/docs/
+
+  * **[python3-pillow: Pillow 12.1.1 (for Python 3)](../../docs/make/python3-pillow.md)<a id='python3-pillow'></a>**<br>
     Pillow is the friendly PIL (Python Imaging Library) fork for Python 3. WARNING: Cross-compilation issues with host include paths. Provides extensive file format support, efficient internal representation, and powerful image processing capabilities. Supported formats: PNG, JPEG, GIF, TIFF, BMP, WebP, and many more. Common uses: - Image manipulation and processing - Thumbnail generation - Image format conversion - Computer vision preprocessing Website: https://python-pillow.org/ GitHub: https://github.com/python-pillow/Pillow
 
-  * **[python3-pip: pip 24.3.1](../../docs/make/python3-pip.md)<a id='python3-pip'></a>**<br>
-    pip is the package installer for Python 3. Allows you to install and manage additional Python packages from PyPI (Python Package Index) and other sources. Common uses: - Install pure-Python packages on the router - Manage Python package dependencies - Install packages from PyPI, git, local files - Upgrade and uninstall packages Usage examples: pip3 install requests pip3 install flask pip3 list pip3 uninstall package-name Note: For packages with C extensions, it's better to use pre-compiled modules from the "3rd-party modules" menu. Pip works best for pure-Python packages. Website: https://pip.pypa.io/ Docs: https://pip.pypa.io/en/stable/
+  * **[python3-pip: pip 26.0.1 (pure python, prerequisite)](../../docs/make/python3-pip.md)<a id='python3-pip'></a>**<br>
+    pip is a pure-Python prerequisite/tooling module. pip is the package installer for Python 3. Allows you to install and manage additional Python packages from PyPI (Python Package Index) and other sources. Common uses: - Install pure-Python packages on the router - Manage Python package dependencies - Install packages from PyPI, git, local files - Upgrade and uninstall packages Usage examples: pip3 install requests pip3 install flask pip3 list pip3 uninstall package-name Note: For packages with C extensions, it's better to use pre-compiled modules from the "3rd-party modules" menu. Pip works best for pure-Python packages. Website: https://pip.pypa.io/ Docs: https://pip.pypa.io/en/stable/
+
+  * **[python3-propcache: propcache 0.4.1](../../docs/make/python3-propcache.md)<a id='python3-propcache'></a>**<br>
+    propcache provides cached property helpers for Python.
+
+  * **[python3-pycparser: pycparser 3.0 (pure python, prerequisite)](../../docs/make/python3-pycparser.md)<a id='python3-pycparser'></a>**<br>
+    pycparser is a pure-Python prerequisite module. It is a complete parser for the C language in pure Python.
 
   * **[python3-pycryptodome: pycryptodome 3.23.0](../../docs/make/python3-pycryptodome.md)<a id='python3-pycryptodome'></a>**<br>
     PyCryptodome is a self-contained Python 3 package of low-level cryptographic primitives. It's a fork of PyCrypto that has been enhanced for modern systems and Python 3 compatibility. Features: - AES, DES, 3DES, ARC2, ARC4, Blowfish, CAST, Salsa20, ChaCha20 - RSA, DSA, ECC (NIST P-curves and Curve25519) - SHA-1, SHA-2, SHA-3, BLAKE2, HMAC, CMAC, PBKDF2 - And many more cryptographic primitives Website: https://www.pycryptodome.org/ GitHub: https://github.com/Legrandin/pycryptodome
 
-  * **[python3-pyyaml: pyyaml 6.0.2](../../docs/make/python3-pyyaml.md)<a id='python3-pyyaml'></a>**<br>
+  * **[python3-pyyaml: pyyaml 6.0.3](../../docs/make/python3-pyyaml.md)<a id='python3-pyyaml'></a>**<br>
     PyYAML is a full-featured YAML framework for Python. Provides: - Complete YAML 1.1 parser and emitter - Python object serialization/deserialization - Support for user-defined Python objects - Unicode support - Low-level event-based API (LibYAML binding) - High-level object-oriented API Common uses: - Configuration file parsing - Data serialization (alternative to JSON/XML) - DevOps and infrastructure automation - CI/CD pipeline configurations This build uses LibYAML C library for faster parsing. Website: https://pyyaml.org/ Docs: https://pyyaml.org/wiki/PyYAMLDocumentation
 
-  * **[python3-setuptools: setuptools 75.6.0](../../docs/make/python3-setuptools.md)<a id='python3-setuptools'></a>**<br>
-    setuptools is a collection of enhancements to Python distutils. Required by pip and many Python packages for: - Package installation - Dependency management - Entry point discovery - Package resource management This is the runtime version of setuptools. The host version (python3-setuptools-host) is used during firmware build, while this version runs on the Fritz!Box. Automatically selected when you install pip. Website: https://setuptools.pypa.io/ Docs: https://setuptools.pypa.io/en/latest/
+  * **[python3-setuptools: setuptools 82.0.1 (pure python, prerequisite)](../../docs/make/python3-setuptools.md)<a id='python3-setuptools'></a>**<br>
+    setuptools is a pure-Python prerequisite/tooling module. setuptools is a collection of enhancements to Python distutils. Required by pip and many Python packages for: - Package installation - Dependency management - Entry point discovery - Package resource management This is the runtime version of setuptools. The host version (python3-setuptools-host) is used during firmware build, while this version runs on the Fritz!Box. Automatically selected when you install pip. Website: https://setuptools.pypa.io/ Docs: https://setuptools.pypa.io/en/latest/
+
+  * **[python3-six: six 1.17.0 (pure python, prerequisite)](../../docs/make/python3-six.md)<a id='python3-six'></a>**<br>
+    six is a pure-Python prerequisite module. It is a Python 2 and 3 compatibility library.
+
+  * **[python3-voluptuous: voluptuous 0.16.0 (pure python, prerequisite)](../../docs/make/python3-voluptuous.md)<a id='python3-voluptuous'></a>**<br>
+    voluptuous is a pure-Python prerequisite module. It is a Python data validation library.
+
+  * **[python3-yarl: yarl 1.23.0](../../docs/make/python3-yarl.md)<a id='python3-yarl'></a>**<br>
+    yarl is a URL library for Python.
 
   * **<u>python-bjoern: bjoern 1.3.4 - DEPRECATED</u><a id='python-bjoern'></a>**<br>
     A screamingly fast Python WSGI server written in C.

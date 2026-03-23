@@ -1,4 +1,4 @@
-# Pillow 11.0.0 (for Python 3) - DEVELOPER ONLY
+# Pillow 12.1.1 (for Python 3)
   - Homepage: [https://python-pillow.org/](https://python-pillow.org/)
   - Manpage: [https://pillow.readthedocs.io/](https://pillow.readthedocs.io/)
   - Changelog: [https://pillow.readthedocs.io/en/stable/releasenotes/](https://pillow.readthedocs.io/en/stable/releasenotes/)

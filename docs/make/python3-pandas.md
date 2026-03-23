@@ -1,4 +1,4 @@
-# pandas 2.2.3 (for Python 3) - DEVELOPER ONLY
+# pandas 3.0.1 (for Python 3)
   - Homepage: [https://pandas.pydata.org/](https://pandas.pydata.org/)
   - Manpage: [https://pandas.pydata.org/docs/](https://pandas.pydata.org/docs/)
   - Changelog: [https://pandas.pydata.org/docs/whatsnew/](https://pandas.pydata.org/docs/whatsnew/)

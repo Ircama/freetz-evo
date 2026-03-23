@@ -303,6 +303,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[openjpeg: libopenjpeg (libopenjpeg.so) 1.5.2](openjpeg.md)<a id='openjpeg'></a>**<br>
     JPEG 2000 image compression/decompression library
 
+  * **[OpenLibm (libopenlibm.so) 0.8.1](openlibm.md)<a id='openlibm'></a>**<br>
+    OpenLibm is a portable standalone C math library (libm). It provides a consistent, high-quality implementation of math functions across platforms and toolchains.
+
   * **[openobex: libopenobex (libopenobex.so) 1.3](openobex.md)<a id='openobex'></a>**<br>
     The overall goal of this project is to make an open source implementation of the Object Exchange (OBEX) protocol.
 

@@ -1,4 +1,4 @@
-# NumPy 2.3.3 (for Python 3) - DEVELOPER ONLY
+# NumPy 2.4.3 (for Python 3)
   - Homepage: [https://numpy.org/](https://numpy.org/)
   - Manpage: [https://numpy.org/doc/stable/](https://numpy.org/doc/stable/)
   - Changelog: [https://numpy.org/doc/stable/release.html](https://numpy.org/doc/stable/release.html)

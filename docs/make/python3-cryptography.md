@@ -1,4 +1,4 @@
-# cryptography 3.3.2 (last version without Rust)
+# cryptography 3.3.2 - DEVELOPER
   - Homepage: [https://cryptography.io/](https://cryptography.io/)
   - Manpage: [https://cryptography.io/en/latest/](https://cryptography.io/en/latest/)
   - Changelog: [https://cryptography.io/en/latest/changelog/](https://cryptography.io/en/latest/changelog/)
