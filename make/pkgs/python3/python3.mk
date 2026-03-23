@@ -147,6 +147,17 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 				-e "s,^RANLIB[[:space:]]*=.*,RANLIB=$(PYTHON3_SYSCONFIG_RANLIB)," \
 			{} +; \
 		\
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -path "*/__pycache__/_sysconfigdata*" -name "*.pyc" -delete; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
+			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -c \
+				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
+			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -O -c \
+				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
+			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -OO -c \
+				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
+		\
 		$(TARGET_STRIP) \
 			usr/bin/python$(PYTHON3_MAJOR_VERSION) \
 			$(if $(FREETZ_PACKAGE_PYTHON3_STATIC),,usr/lib/libpython$(PYTHON3_MAJOR_VERSION).so.1.0) \
