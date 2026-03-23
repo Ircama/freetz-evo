@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_AIOHAPPYEYEBALLS
+	bool "aiohappyeyeballs 2.6.1 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		aiohappyeyeballs is a pure-Python prerequisite module.
+		It provides happy-eyeballs connector utilities for asyncio.

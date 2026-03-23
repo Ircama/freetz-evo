@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_PYTHON3_BCRYPT
+	bool "bcrypt 3.2.2"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_CFFI
+	select FREETZ_PACKAGE_PYTHON3_SIX
+	default n
+	help
+		Modern password hashing for your software and your servers.
+		Uses CFFI with C implementation (no Rust required).
+		bcrypt 5.0+ requires Rust; 3.2.2 is the last CFFI/C version.

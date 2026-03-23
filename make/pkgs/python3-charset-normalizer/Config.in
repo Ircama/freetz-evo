@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_CHARSET_NORMALIZER
+	bool "charset-normalizer 3.4.6"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Unicode charset detector for Python.

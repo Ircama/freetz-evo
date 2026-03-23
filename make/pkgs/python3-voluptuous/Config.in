@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_VOLUPTUOUS
+	bool "voluptuous 0.16.0 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		voluptuous is a pure-Python prerequisite module.
+		It is a Python data validation library.

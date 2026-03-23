@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_CISO8601
+	bool "ciso8601 2.3.3"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Fast ISO 8601 date/time parser written in C.

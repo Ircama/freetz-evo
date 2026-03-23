@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_FNV_HASH_FAST
+	bool "fnv-hash-fast 1.6.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_FNVHASH
+	default n
+	help
+		A fast version of fnv1a hash using an optional Cython C extension.
+		Falls back to pure Python fnvhash if Cython is not available.

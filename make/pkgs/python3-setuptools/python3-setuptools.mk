@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 75.6.0)
+$(call PKG_INIT_BIN, 82.0.1)
 $(PKG)_SOURCE:=setuptools-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=setuptools-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/s/setuptools
-$(PKG)_HASH:=8199222558df7c86216af4f84c30e9b34a61d8ba19366cc914424cdbd28252f6
+$(PKG)_HASH:=7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9
 ### WEBSITE:=https://setuptools.pypa.io/
 ### MANPAGE:=https://setuptools.pypa.io/en/latest/
 ### CHANGES:=https://setuptools.pypa.io/en/latest/history.html

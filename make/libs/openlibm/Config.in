@@ -1,0 +1,8 @@
+config FREETZ_LIB_libopenlibm
+	bool "OpenLibm (libopenlibm.so)"
+	default n
+	help
+		OpenLibm is a portable standalone C math library (libm).
+
+		It provides a consistent, high-quality implementation of math
+		functions across platforms and toolchains.

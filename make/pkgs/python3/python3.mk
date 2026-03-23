@@ -98,6 +98,33 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 		$(RM) -r $(call newline2space,$(Python3/unnecessary/files)); \
 		\
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -name "*.pyo" -delete; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" -exec \
+			$(SED) -i -r \
+				-e "s,'CC': '[^']*','CC': '$(notdir $(TARGET_CC))'," \
+				-e "s,'CXX': '[^']*','CXX': '$(notdir $(TARGET_CXX))'," \
+				-e "s,'LDSHARED': '[^']*','LDSHARED': '$(notdir $(TARGET_CC)) -shared'," \
+				-e "s,'BLDSHARED': '[^']*','BLDSHARED': '$(notdir $(TARGET_CC)) -shared'," \
+				-e "s,'LINKCC': '[^']*','LINKCC': '$(notdir $(TARGET_CC))'," \
+				-e "s,'LDCXXSHARED': '[^']*','LDCXXSHARED': '$(notdir $(TARGET_CXX)) -shared'," \
+			{} +; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfig_vars*.json" -exec \
+			$(SED) -i -r \
+				-e 's,"CC"[[:space:]]*:[[:space:]]*"[^"]*","CC": "$(notdir $(TARGET_CC))",' \
+				-e 's,"CXX"[[:space:]]*:[[:space:]]*"[^"]*","CXX": "$(notdir $(TARGET_CXX))",' \
+				-e 's,"LDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDSHARED": "$(notdir $(TARGET_CC)) -shared",' \
+				-e 's,"BLDSHARED"[[:space:]]*:[[:space:]]*"[^"]*","BLDSHARED": "$(notdir $(TARGET_CC)) -shared",' \
+				-e 's,"LINKCC"[[:space:]]*:[[:space:]]*"[^"]*","LINKCC": "$(notdir $(TARGET_CC))",' \
+				-e 's,"LDCXXSHARED"[[:space:]]*:[[:space:]]*"[^"]*","LDCXXSHARED": "$(notdir $(TARGET_CXX)) -shared",' \
+			{} +; \
+		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -path "*/config-$(PYTHON3_MAJOR_VERSION)/Makefile" -exec \
+			$(SED) -i -r \
+				-e "s,^CC[[:space:]]*=.*,CC=$(notdir $(TARGET_CC))," \
+				-e "s,^CXX[[:space:]]*=.*,CXX=$(notdir $(TARGET_CXX))," \
+				-e "s,^LDSHARED[[:space:]]*=.*,LDSHARED=$(notdir $(TARGET_CC)) -shared," \
+				-e "s,^BLDSHARED[[:space:]]*=.*,BLDSHARED=$(notdir $(TARGET_CC)) -shared," \
+				-e "s,^LINKCC[[:space:]]*=.*,LINKCC=$(notdir $(TARGET_CC))," \
+				-e "s,^LDCXXSHARED[[:space:]]*=.*,LDCXXSHARED=$(notdir $(TARGET_CXX)) -shared," \
+			{} +; \
 		\
 		$(TARGET_STRIP) \
 			usr/bin/python$(PYTHON3_MAJOR_VERSION) \
@@ -119,7 +146,6 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.installed
 	@$(call COPY_USING_TAR,$(PYTHON3_LOCAL_INSTALL_DIR),$(PYTHON3_DEST_DIR),--exclude='libpython$(PYTHON3_MAJOR_VERSION).so*' .) \
 	(cd $(PYTHON3_DEST_DIR); \
 		echo -n > usr/lib/python$(PYTHON3_MAJOR_VERSION)/config-$(PYTHON3_MAJOR_VERSION)/Makefile; \
-		find usr/include/python$(PYTHON3_MAJOR_VERSION)/ -name "*.h" \! -name "pyconfig.h" \! -name "Python.h" -delete; \
 		$(RM) -r $(call newline2space,$(Python3/development/files)); \
 	)
 

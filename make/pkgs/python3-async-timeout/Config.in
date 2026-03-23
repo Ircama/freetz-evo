@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_ASYNC_TIMEOUT
+	bool "async-timeout 5.0.1 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		async-timeout is a pure-Python prerequisite module.
+		It provides timeout context management for asyncio.

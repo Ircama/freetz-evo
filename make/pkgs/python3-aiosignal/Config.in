@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_AIOSIGNAL
+	bool "aiosignal 1.4.0 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_FROZENLIST
+	default n
+	help
+		aiosignal is a pure-Python prerequisite module.
+		It manages callbacks in asyncio projects.

@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_PYTHON3_ANNOTATEDYAML
+	bool "annotatedyaml 1.0.2"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_PROPCACHE
+	select FREETZ_PACKAGE_PYTHON3_PYYAML
+	select FREETZ_PACKAGE_PYTHON3_VOLUPTUOUS
+	default n
+	help
+		Annotated YAML that supports secrets for Python.
+		Used by Home Assistant for YAML configuration handling.
+		Optionally uses Cython for performance.

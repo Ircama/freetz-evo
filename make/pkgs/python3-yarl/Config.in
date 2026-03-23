@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PYTHON3_YARL
+	bool "yarl 1.23.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_IDNA
+	select FREETZ_PACKAGE_PYTHON3_MULTIDICT
+	select FREETZ_PACKAGE_PYTHON3_PROPCACHE
+	default n
+	help
+		yarl is a URL library for Python.

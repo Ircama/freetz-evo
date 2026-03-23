@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 5.3.0)
+$(call PKG_INIT_BIN, 6.0.2)
 $(PKG)_SOURCE:=lxml-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=lxml-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/l/lxml
-$(PKG)_HASH:=4e109ca30d1edec1ac60cdbe341905dc3b8f55b16855e03a54aaf59e51ec8c6f
+$(PKG)_HASH:=cd79f3367bd74b317dda655dc8fcfa304d9eb6e4fb06b7168c5cf27f96e0cd62
 ### WEBSITE:=https://lxml.de/
 ### MANPAGE:=https://lxml.de/tutorial.html
 ### CHANGES:=https://lxml.de/changes-5.3.0.html

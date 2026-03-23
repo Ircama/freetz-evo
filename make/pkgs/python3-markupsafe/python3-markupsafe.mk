@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 3.0.2)
+$(call PKG_INIT_BIN, 3.0.3)
 $(PKG)_SOURCE:=markupsafe-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=markupsafe-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/m/markupsafe
-$(PKG)_HASH:=ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0
+$(PKG)_HASH:=722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698
 ### WEBSITE:=https://palletsprojects.com/p/markupsafe/
 ### MANPAGE:=https://markupsafe.palletsprojects.com/
 ### CHANGES:=https://markupsafe.palletsprojects.com/en/latest/changes/

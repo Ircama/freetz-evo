@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_FROZENLIST
+	bool "frozenlist 1.8.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		A list-like structure which implements collections.abc.MutableSequence.

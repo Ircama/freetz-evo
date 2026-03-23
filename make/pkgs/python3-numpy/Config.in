@@ -1,17 +1,17 @@
 comment "NumPy requires external storage  (Enable 'External processing' in the main menu)"
-	depends on FREETZ_PACKAGE_PYTHON3 && !EXTERNAL_ENABLED && FREETZ_SHOW_DEVELOPER
+	depends on FREETZ_PACKAGE_PYTHON3 && !EXTERNAL_ENABLED
 
 config FREETZ_PACKAGE_PYTHON3_NUMPY
-	bool "NumPy 2.3.3 (for Python 3) - DEVELOPER ONLY"
+	bool "NumPy 2.4.3 (for Python 3)"
 	depends on FREETZ_PACKAGE_PYTHON3
 	depends on EXTERNAL_ENABLED
-	depends on FREETZ_SHOW_DEVELOPER
+	select FREETZ_LIB_libopenlibm
 	default n
 	help
 		NumPy is the fundamental package for scientific computing in Python.
 		
-		NEW: NumPy 2.3.3 with Meson build system (compatible with Python 3.14).
-		Cross-compilation tested but may have edge cases.
+		NEW: NumPy 2.4.3 with Meson build system (compatible with Python 3.14).
+		Cross-compilation now uses openlibm for extended math support.
 		
 		Provides:
 		- Powerful N-dimensional array object (ndarray)

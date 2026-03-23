@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 24.3.1)
+$(call PKG_INIT_BIN, 26.0.1)
 $(PKG)_SOURCE:=pip-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=pip-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pip
-$(PKG)_HASH:=ebcb60557f2aefabc2e0f918751cd24ea0d56d8ec5445fe1807f1d2109660b99
+$(PKG)_HASH:=c4037d8a277c89b320abe636d59f91e6d0922d08a05b60e85e53b296613346d8
 ### WEBSITE:=https://pip.pypa.io/
 ### MANPAGE:=https://pip.pypa.io/en/stable/
 ### CHANGES:=https://pip.pypa.io/en/stable/news/
@@ -18,6 +18,8 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
+	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
+	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --upgrade --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) "flit-core>=3.11,<4"
 	$(call Build/PyMod3/Pip, PYTHON3_PIP, , )
 
 $(pkg):

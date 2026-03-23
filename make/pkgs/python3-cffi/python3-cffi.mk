@@ -10,6 +10,7 @@ $(PKG)_HASH:=1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host
+$(PKG)_DEPENDS_ON += python3-pycparser
 $(PKG)_DEPENDS_ON += libffi
 
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/cffi/__init__.py

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libopenlibm
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libopenlibm
+	bool "libopenlibm"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libopenlibm.so.4.0

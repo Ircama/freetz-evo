@@ -1,17 +1,17 @@
 comment "pandas requires external storage  (Enable 'External processing' in the main menu)"
-	depends on FREETZ_PACKAGE_PYTHON3 && !EXTERNAL_ENABLED && FREETZ_DL_TOOL_developer
+	depends on FREETZ_PACKAGE_PYTHON3 && !EXTERNAL_ENABLED
 
 config FREETZ_PACKAGE_PYTHON3_PANDAS
-	bool "pandas 2.2.3 (for Python 3) - DEVELOPER ONLY"
+	bool "pandas 3.0.1 (for Python 3)"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_PACKAGE_PYTHON3_NUMPY
 	depends on EXTERNAL_ENABLED
-	depends on FREETZ_DL_TOOL_developer
+	select FREETZ_PACKAGE_PYTHON3_NUMPY
+	select FREETZ_PACKAGE_PYTHON3_DATEUTIL
 	default n
 	help
 		pandas is a powerful data analysis and manipulation library.
 		
-		WARNING: Requires NumPy (currently developer-only).
+		WARNING: Requires NumPy.
 		
 		Provides:
 		- DataFrame and Series data structures

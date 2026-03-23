@@ -1,0 +1,22 @@
+--- mips/fenv.c
++++ mips/fenv.c
+@@ -47,6 +47,19 @@
+ #define __env_mask(env)                 (((env) >> _FPUSW_SHIFT)        \
+                                                 & FE_ALL_EXCEPT)
+ #define __env_round(env)                (((env) >> 24) & _ROUND_MASK)
++
++/*
++ * Some soft-float libc/toolchain combinations (for example uClibc based)
++ * do not export these symbols. Provide weak fallbacks so libopenlibm links.
++ */
++__attribute__((weak)) int __softfloat_float_exception_flags;
++__attribute__((weak)) int __softfloat_float_exception_mask;
++__attribute__((weak)) int __softfloat_float_rounding_mode;
++__attribute__((weak)) void __softfloat_float_raise(int __excepts)
++{
++    __softfloat_float_exception_flags |= (__excepts & FE_ALL_EXCEPT);
++}
++
+ #include "fenv-softfloat.h"
+ #endif
+

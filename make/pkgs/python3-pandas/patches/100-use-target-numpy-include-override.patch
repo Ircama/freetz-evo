@@ -1,0 +1,28 @@
+--- pandas/meson.build.orig
++++ pandas/meson.build
+@@ -4,14 +4,17 @@
+         '-c',
+         '''
+ import os
+-import numpy as np
+-try:
+-    # Check if include directory is inside the pandas dir
+-    # e.g. a venv created inside the pandas dir
+-    # If so, convert it to a relative path
+-    incdir = os.path.relpath(np.get_include())
+-except Exception:
+-    incdir = np.get_include()
++
++incdir = os.environ.get('PANDAS_NUMPY_INCLUDE_DIR', '')
++if not incdir:
++    import numpy as np
++    try:
++        # Check if include directory is inside the pandas dir
++        # e.g. a venv created inside the pandas dir
++        # If so, convert it to a relative path
++        incdir = os.path.relpath(np.get_include())
++    except Exception:
++        incdir = np.get_include()
+ print(incdir)
+      ''',
+     ],

@@ -1,0 +1,27 @@
+--- numpy/_core/src/npymath/ieee754.c.src.orig
++++ numpy/_core/src/npymath/ieee754.c.src
+@@ -328,7 +328,11 @@
+  * portability.  This should be unnecessary with C99/C++11 and further
+  * functionality can be used from `fenv.h` directly.
+  */
++#ifdef __UCLIBC__
++#  include <openlibm/openlibm_fenv.h>
++#else
+ #  include <fenv.h>
++#endif
+ 
+ /*
+  * According to the C99 standard FE_DIVBYZERO, etc. may not be provided when
+--- numpy/_core/src/common/float_status.hpp.orig
++++ numpy/_core/src/common/float_status.hpp
+@@ -3,7 +3,11 @@
+ 
+ #include "npstd.hpp"
+ 
++#ifdef __UCLIBC__
++#include <openlibm/openlibm_fenv.h>
++#else
+ #include <fenv.h>
++#endif
+ 
+ namespace np {

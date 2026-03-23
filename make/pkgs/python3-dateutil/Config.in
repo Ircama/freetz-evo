@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_DATEUTIL
+	bool "python-dateutil 2.9.0.post0 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_SIX
+	default n
+	help
+		python-dateutil is a pure-Python prerequisite module.
+		It provides extensions to the standard datetime module.

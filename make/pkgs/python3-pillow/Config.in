@@ -1,7 +1,6 @@
 config FREETZ_PACKAGE_PYTHON3_PILLOW
-	bool "Pillow 11.0.0 (for Python 3) - DEVELOPER ONLY"
+	bool "Pillow 12.1.1 (for Python 3)"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_DL_TOOL_developer
 	select FREETZ_LIB_libjpeg
 	select FREETZ_LIB_libpng
 	select FREETZ_LIB_libz

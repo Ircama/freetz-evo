@@ -101,6 +101,7 @@ menu "Multi precision arithmetic libs"
 	source "make/libs/gmp/Config.in"
 	source "make/libs/mpfr/Config.in"
 	source "make/libs/mpc/Config.in"
+	source "make/libs/openlibm/Config.in"
 endmenu ### "Multi precision arithmetic libs"
 
 menu "Multimedia"

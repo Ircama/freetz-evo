@@ -52,6 +52,11 @@ define Build/PyMod3/Generic
                 , \
                 ./setup.py $(2) build_ext --include-dirs=$(PYTHON3_STAGING_INC_DIR) --library-dirs=$(PYTHON3_STAGING_LIB_DIR) \
         )
+        # setup.py builds may emit host-tagged extension suffixes; normalize installed files to target EXT_SUFFIX.
+        $(if $(strip $(4)),find $(strip $(4)) -type f -name "*.cpython-*-*-linux-gnu.so" | while read -r so; do \
+                new_so="$$(echo "$$so" | sed -E 's/\.cpython-([0-9]+)-[^/]*\.so$$/.cpython-\1.so/')"; \
+                [ "$$new_so" = "$$so" ] || mv "$$so" "$$new_so"; \
+        done)
         $(if $(strip $(4)),find $(strip $(4)) -type f -name "*.so" -exec $(TARGET_STRIP) \{\} \+)
 endef
 
@@ -77,6 +82,7 @@ endef
 # $(2) => additional pip install arguments
 # $(3) => additional environment variables
 # $(4) => if set to "isolated", allows build isolation (default: no isolation)
+# $(5) => if set to "no-build-ext-config", do not pass setuptools build_ext config-settings
 define Build/PyMod3/Pip
         $(call HostPython3, \
                 cd $($(strip $(1))_DIR); \
@@ -88,10 +94,17 @@ define Build/PyMod3/Pip
                         --prefix=/usr \
                         --root=$(abspath $($(strip $(1))_DEST_DIR)) \
                         --no-compile \
+                        $(if $(filter no-build-ext-config,$(strip $(5))),,\
                         --config-settings=build_ext.include_dirs="$(PYTHON3_STAGING_INC_DIR)" \
                         --config-settings=build_ext.library_dirs="$(PYTHON3_STAGING_LIB_DIR)" \
+                        ) \
                         $(2) \
                         . \
         )
+        # Wheel builds may embed host platform tags in .so filenames; normalize to target EXT_SUFFIX.
+        find $($(strip $(1))_DEST_DIR)$(PYTHON3_SITE_PKG_DIR) -type f -name "*.cpython-*-*-linux-gnu.so" | while read -r so; do \
+                new_so="$$(echo "$$so" | sed -E 's/\.cpython-([0-9]+)-[^/]*\.so$$/.cpython-\1.so/')"; \
+                [ "$$new_so" = "$$so" ] || mv "$$so" "$$new_so"; \
+        done
         find $($(strip $(1))_DEST_DIR)$(PYTHON3_SITE_PKG_DIR) -type f -name "*.so" -exec $(TARGET_STRIP) \{\} \+ 2>/dev/null || true
 endef

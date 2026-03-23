@@ -1,9 +1,10 @@
 config FREETZ_PACKAGE_PYTHON3_PIP
-	bool "pip 24.3.1"
+	bool "pip 26.0.1 (pure python, prerequisite)"
 	depends on FREETZ_PACKAGE_PYTHON3
 	select FREETZ_PACKAGE_PYTHON3_SETUPTOOLS
 	default n
 	help
+		pip is a pure-Python prerequisite/tooling module.
 		pip is the package installer for Python 3.
 		
 		Allows you to install and manage additional Python packages

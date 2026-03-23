@@ -9,6 +9,8 @@ $(PKG)_HASH:=5a60d3780149e13b7a6ff7ad6526b38846354d11a15e21068e57073e29e19bed
 ### CVSREPO:=https://github.com/pyca/cryptography
 
 $(PKG)_DEPENDS_ON += openssl python3 python3-cffi
+$(PKG)_DEPENDS_ON += python3-six
+$(PKG)_DEPENDS_ON += python3-setuptools-host
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_OPENSSL_VERSION_09),openssl-0.9,) \
 	$(if $(FREETZ_OPENSSL_VERSION_10),openssl-1.0,) \
@@ -24,7 +26,9 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
-	$(call Build/PyMod3/Pip, PYTHON3_CRYPTOGRAPHY, , \
+	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
+	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) pycparser==2.22
+	$(call Build/PyMod3/PKG, PYTHON3_CRYPTOGRAPHY, , \
 		OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr" \
 		OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" \
 		OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
