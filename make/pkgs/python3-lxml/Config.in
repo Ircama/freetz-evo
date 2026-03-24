@@ -4,6 +4,7 @@ config FREETZ_PACKAGE_PYTHON3_LXML
 	select FREETZ_LIB_libxml2
 	select FREETZ_LIB_libxml2_WITH_RELAXNG if !FREETZ_PACKAGE_PYTHON3_LXML_STATIC
 	select FREETZ_LIB_libxslt
+	select FREETZ_LIB_libexslt
 	default n
 	help
 		lxml is a powerful XML and HTML processing library.

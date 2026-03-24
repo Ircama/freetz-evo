@@ -64,6 +64,37 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		LDFLAGS="$(TARGET_LDFLAGS) -L$(PYTHON3_STAGING_LIB_DIR) -L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lopenlibm" \
 		LIBS="-lopenlibm" \
 	, isolated, no-build-ext-config)
+	@printf '%s\n' \
+		"import io" \
+		"import os" \
+		"import re" \
+		"import sys" \
+		"" \
+		"f = '$(PYTHON3_NUMPY_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/numpy/_core/__init__.py'" \
+		"if not os.path.exists(f):" \
+		"    sys.exit('Freetz python3-numpy.mk: File not found: %s' % f)" \
+		"" \
+		"with io.open(f, 'r', encoding='utf-8') as fh:" \
+		"    src = fh.read()" \
+		"" \
+		"if 'catch_warnings()' in src and 'overflow encountered in cast' in src:" \
+		"    sys.exit(0)" \
+		"" \
+		"pattern = re.compile(r'^(\\s*)from\\s+\\.\\s+import\\s+multiarray\\s*$$', re.MULTILINE)" \
+		"replacement = lambda m: (" \
+		"    m.group(1) + 'import warnings as _numpy_w\\n' +" \
+		"    m.group(1) + 'with _numpy_w.catch_warnings():\\n' +" \
+		"    m.group(1) + '    _numpy_w.filterwarnings(\"ignore\", message=\"overflow encountered in cast\", category=RuntimeWarning)\\n' +" \
+		"    m.group(1) + '    from . import multiarray'" \
+		")" \
+		"new_src, n = pattern.subn(replacement, src, count=1)" \
+		"if n == 0:" \
+		"    sys.exit('Freetz python3-numpy.mk: Pattern not found')" \
+		"" \
+		"with io.open(f, 'w', encoding='utf-8') as fh:" \
+		"    fh.write(new_src)" \
+	| $(TOOLS_DIR)/path/python3
+	$(RM) -r $(PYTHON3_NUMPY_DIR)/build
 
 $(pkg):
 
