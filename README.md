@@ -1,6 +1,6 @@
 # Welcome to Freetz-EVO
 
-```
+```text
   _____              _            _______     _____
  |  ___| __ ___  ___| |_ ____    | ____\ \   / / _ \
  | |_ | '__/ _ \/ _ \ __|_  /____|  _|  \ \ / / | | |
@@ -130,23 +130,23 @@ to the target staging directory instead of the host.
   * There are also Docker images available like [pfichtner-freetz](https://hub.docker.com/r/pfichtner/freetz) ([README](https://github.com/pfichtner/pfichtner-freetz#readme)).
 
 ### Clone the main branch:
-```
+```bash
   git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
 ```
 
 ### Or clone a single [tag](../../tags):
-```
+```bash
   git clone https://github.com/Ircama/freetz-evo ~/freetz-evo --single-branch --branch TAGNAME
 ```
 
 ### Install prerequisites:
-```
+```bash
   cd ~/freetz-evo
   tools/prerequisites install # -y
 ```
 
 ### Build firmware:
-```
+```bash
   cd ~/freetz-evo
   make menuconfig
   make
@@ -154,36 +154,36 @@ to the target staging directory instead of the host.
 ```
 
 ### Flash firmware:
-```
+```bash
   cd ~/freetz-evo
   tools/push_firmware -h
 ```
 
 ### Update freetz firmware via SSH:
-```
+```bash
   cd ~/freetz-evo
   tools/ssh_firmware_update.py --host <myIP> --password <myPassword> --batch
 ```
 
 ### Show GIT states:
-```
+```bash
   git status
   git diff --no-prefix # --cached # > file.patch
   git log --graph # --oneline
 ```
 
 ### Delete local changes:
-```
+```bash
   git checkout master ; git fetch --all --prune ; git reset --hard origin/HEAD ; git clean -fd
 ```
 
 ### Update GIT:
-```
+```bash
   git pull
 ```
 
 ### Sync with upstream Freetz-NG:
-```
+```bash
   tools/sync-upstream-manual.sh              # interactive merge
   tools/sync-upstream-manual.sh --log        # show pending upstream commits
   tools/sync-upstream-manual.sh --diff       # show diff with upstream
@@ -192,16 +192,16 @@ to the target staging directory instead of the host.
 See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 
 ### Checkout old revision:
-```
+```bash
   git checkout HASH-OF-COMMIT # -b NEW-BRANCH
 ```
 ### Checkout another branch:
-```
+```bash
   git checkout EXISTING-BRANCH
 ```
 
 ### Mirrors:
-```
+```bash
   git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
 ```
 
@@ -209,7 +209,7 @@ See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 See [https://ircama.github.io/freetz-evo/](https://ircama.github.io/freetz-evo/) (or [docs/](docs/README.md)).
 
 #### Testing Documentation changes
-```
+```bash
   cd ~/freetz-evo
   tools/zensical_httpserver.sh
 ```
