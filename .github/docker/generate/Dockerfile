@@ -31,5 +31,5 @@ ENV BUILD_USER=$BUILD_USR
 ADD entrypoint.sh /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 LABEL org.opencontainers.image.description="For internal use only!"
-LABEL org.opencontainers.image.source=https://github.com/Freetz-NG/freetz-ng/
+LABEL org.opencontainers.image.source="https://github.com/Freetz-NG/internal"
 

@@ -45,11 +45,13 @@ jobs:
 
   parse_matrix:
     permissions:
+      packages: read
       contents: read
     container:
-#     image: ubuntu:20.04
-#     image: freetzng/generate
-      image: ghcr.io/freetz-ng/generate
+      image: ghcr.io/freetz-ng/internal/generate
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
       options: --user 1001:1001
     runs-on: ubuntu-latest
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
@@ -98,11 +100,13 @@ jobs:
 
   build:
     permissions:
+      packages: read
       contents: read
     container:
-#     image: ubuntu:20.04
-#     image: freetzng/firmware
-      image: ghcr.io/freetz-ng/firmware
+      image: ghcr.io/freetz-ng/internal/firmware
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
       options: --user 1001:1001
     needs: parse_matrix
     strategy:
