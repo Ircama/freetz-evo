@@ -4,7 +4,7 @@ Watch important changes and [NEWS](NEWS.md) about Freetz-EVO.<br>
 Talk about everything around Freetz-EVO at [DISCUSSIONS](https://github.com/Ircama/freetz-evo/discussions).<br>
 Check list of supported devices and [FIRMWARES](FIRMWARES.md).<br>
 Read [CHANGELOG](CHANGELOG.md) for all improvements and additions.<br>
-For download and quickstart instructions go to [README](https://github.com/Ircama/freetz-evo/blob/master/README.md#readme).<br>
+For download and quickstart instructions go to [README](REPO_README.md).<br>
 These [PREREQUISITES](prerequisites/README.md) are mandatory to build an image.<br>
 How to [INSTALL](INSTALL.md) a firmware image to the device.<br>
 Things you could do to [SUPPORT](SUPPORT.md) Freetz-EVO.<br>
