@@ -1,3 +1,3 @@
-zensical
-pymdown-extensions
-Pygments
+zensical==0.0.29
+pymdown-extensions==10.21
+Pygments==2.19.2

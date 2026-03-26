@@ -32,11 +32,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Install dependencies
-        run: pip install -r "${{ env.ZENSICAL_REQUIREMENTS_FILE }}"
+        run: python3 -m pip install --upgrade -r "${{ env.ZENSICAL_REQUIREMENTS_FILE }}"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Zensical
         run: zensical build --config-file "${{ env.ZENSICAL_CONFIG_FILE }}"
+      - name: Verify syntax highlighting markup
+        run: |
+          TARGET_HTML="${{ env.ZENSICAL_INPUT_PATH }}/REPO_README/index.html"
+          test -f "$TARGET_HTML"
+          grep -q '<div class="language-bash highlight">' "$TARGET_HTML"
+          if grep -q '<pre><code class="language-bash">' "$TARGET_HTML"; then
+            echo "Detected non-tokenized bash fences in $TARGET_HTML"
+            exit 1
+          fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
