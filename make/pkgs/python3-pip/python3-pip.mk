@@ -21,6 +21,16 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
 	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --upgrade --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) "flit-core>=3.11,<4"
 	$(call Build/PyMod3/Pip, PYTHON3_PIP, , )
+	@mkdir -p $(PYTHON3_PIP_DEST_DIR)/usr/bin
+	cp ./make/pkgs/python3-pip/files/root/usr/bin/pip3 $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3
+	chmod 755 $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3
+	@if [ ! -e $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3 ] && [ -e $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip$(PYTHON3_MAJOR_VERSION) ]; then \
+		ln -sf pip$(PYTHON3_MAJOR_VERSION) $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3; \
+	fi
+	@if [ ! -e $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3 ] && [ -e $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip ]; then \
+		ln -sf pip $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip3; \
+	fi
+	ln -sf pip3 $(PYTHON3_PIP_DEST_DIR)/usr/bin/pip
 
 $(pkg):
 

@@ -76,7 +76,7 @@ For a full description of `freetz_proxy`, see [docs/make/freetz-proxy.md](docs/m
 
 #### Python 2 third-party modules fix
 
-All 13 `python-*` cross-compilation modules (`python-bjoern`, `python-cffi`, `python-cheetah`,
+Added python-pip for python2. All 13 `python-*` cross-compilation modules (`python-bjoern`, `python-cffi`, `python-cheetah`,
 `python-pycurl`, `python-pycryptodome`, `python-pyopenssl`, etc.) were broken during cross-compilation
 due to missing environment variables. Freetz-EVO fixes `python-module-macros.mk.in` by properly
 setting `CC`, `CXX`, `LDSHARED`, `CFLAGS`, `PYTHONPATH`, and `build_ext --library-dirs` to point

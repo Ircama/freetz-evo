@@ -9,6 +9,13 @@ edit_uri = "../freetz-evo/blob/master/docs/"
 docs_dir = "docs"
 copyright = '&copy <span>Freetz-EVO</span><br/><span>Licensed under <a href="https://github.com/Ircama/freetz-evo/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2</a></span><br/>'
 extra_css = ["extra.css"]
+extra_javascript = [
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+    "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js",
+    "javascripts/mermaid-init.js",
+    "javascripts/toc-toggle.js",
+]
 
 [project.extra]
 generator = false
@@ -57,4 +64,47 @@ link = "https://github.com/Ircama/freetz-evo"
 name = "GitHub"
 
 [project.markdown_extensions.tables]
+
+[project.markdown_extensions.fenced_code]
+
+[project.markdown_extensions.abbr]
+
+[project.markdown_extensions.attr_list]
+
+[project.markdown_extensions.def_list]
+
+[project.markdown_extensions.footnotes]
+
+[project.markdown_extensions.md_in_html]
+
+[project.markdown_extensions.nl2br]
+
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions."pymdownx.caret"]
+
+[project.markdown_extensions."pymdownx.mark"]
+
+[project.markdown_extensions."pymdownx.tilde"]
+
+[project.markdown_extensions."pymdownx.tasklist"]
+
+[project.markdown_extensions."pymdownx.inlinehilite"]
+
+[project.markdown_extensions."pymdownx.highlight"]
+anchor_linenums = true
+use_pygments = true
+auto_title = true
+pygments_lang_class = true
+
+[project.markdown_extensions."pymdownx.emoji"]
+
+[project.markdown_extensions."pymdownx.arithmatex"]
+generic = true
+
+[project.markdown_extensions."pymdownx.superfences"]
+custom_fences = [
+    {name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format"},
+]
 

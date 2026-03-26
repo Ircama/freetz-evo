@@ -85,6 +85,7 @@ endef
 # $(5) => if set to "no-build-ext-config", do not pass setuptools build_ext config-settings
 define Build/PyMod3/Pip
         $(call HostPython3, \
+                $(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade; \
                 cd $($(strip $(1))_DIR); \
                 $(TARGET_CONFIGURE_ENV) \
                 $(FREETZ_LD_RUN_PATH) \

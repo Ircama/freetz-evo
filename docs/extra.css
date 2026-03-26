@@ -1,9 +1,156 @@
-/* Disable secondary navigation */
+/* ── Secondary sidebar (right-side TOC): hidden by default, togglable ── */
+.md-sidebar--secondary.md-sidebar {
+    display: none;
+}
 .md-nav--secondary {
     display: none;
 }
-.md-sidebar--secondary.md-sidebar {
-    display: none;
+/* When the user activates the TOC via the hamburger toggle */
+body.toc-visible .md-sidebar--secondary.md-sidebar {
+    display: block;
+}
+body.toc-visible .md-nav--secondary {
+    display: block;
+}
+/* Active TOC link highlighting */
+body.toc-visible .md-nav--secondary .md-nav__link--active {
+    font-weight: 600;
+    border-left: 3px solid var(--heading-accent, #3c678a);
+    padding-left: 0.5em;
+}
+
+/* Keep the TOC scrollwrap within the viewport.
+   When the footer is visible, JS overrides this with
+   max-height: calc(100vh - 8rem) !important. */
+body.toc-visible .md-sidebar--secondary .md-sidebar__scrollwrap {
+    height: 85vh !important;
+    overflow-y: auto !important;
+}
+
+/* Subtle background tint on the TOC inner panel */
+body.toc-visible .md-sidebar--secondary .md-sidebar__inner {
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 4px;
+}
+[data-md-color-scheme="slate"] body.toc-visible .md-sidebar--secondary .md-sidebar__inner {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Expand main grid to near-full-width when TOC is active */
+body.toc-visible .md-grid {
+    max-width: 95%;
+}
+
+/* ── Heading permalink anchors (GitHub octicon-link style) ── */
+.md-typeset .headerlink {
+    visibility: hidden;
+    opacity: 0.55;
+    margin-left: 0.3em;
+    text-decoration: none;
+    transition: visibility 0.15s, opacity 0.15s;
+    vertical-align: middle;
+}
+.md-typeset h1:hover .headerlink,
+.md-typeset h2:hover .headerlink,
+.md-typeset h3:hover .headerlink,
+.md-typeset h4:hover .headerlink,
+.md-typeset h5:hover .headerlink,
+.md-typeset h6:hover .headerlink,
+.md-typeset .headerlink:hover,
+.md-typeset .headerlink:focus {
+    visibility: visible;
+    opacity: 0.85;
+}
+
+/* ── TOC hamburger toggle button in the header bar ── */
+.toc-toggle-btn {
+    background: transparent;
+    border: none;
+    color: currentColor;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    border-radius: 0.2rem;
+    transition: background 0.2s, opacity 0.2s;
+    opacity: 0.7;
+    position: relative;
+    vertical-align: middle;
+}
+.toc-toggle-btn:hover {
+    opacity: 1;
+    background: rgba(127,127,127,0.12);
+}
+.toc-toggle-btn.active {
+    opacity: 1;
+}
+.toc-toggle-btn svg {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+/* Hide on very small screens where sidebar can't fit */
+@media (max-width: 76.1875em) {
+    .toc-toggle-btn {
+        display: none;
+    }
+    body.toc-visible .md-sidebar--secondary.md-sidebar {
+        display: none;
+    }
+}
+
+/* ── Code block language label (.filename): hidden by default ── */
+/* Use same specificity as theme rule (.highlight span.filename) and !important
+   to override its display:flow-root. */
+.highlight span.filename {
+    display: none !important;
+}
+.highlight span.filename.filename--visible {
+    display: flow-root !important;  /* restore theme value when shown */
+}
+/* When .filename is hidden the theme's .filename+pre margin/radius reset
+   no longer applies, so restore normal pre border-radius */
+.highlight span.filename:not(.filename--visible) + pre {
+    margin-top: 1em;
+    border-top-left-radius: 0.1rem;
+    border-top-right-radius: 0.1rem;
+}
+
+/* Language toggle button — positioned like the copy-to-clipboard btn */
+.lang-toggle-btn {
+    position: absolute;
+    top: 0.45em;
+    right: 2.8em;  /* leave room for the copy button to the right */
+    z-index: 2;
+    background: transparent;
+    border: none;
+    color: var(--md-default-fg-color--lightest, rgba(0,0,0,0.26));
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5em;
+    height: 1.5em;
+    padding: 0;
+    border-radius: 0.15em;
+    transition: color 0.2s, background 0.2s;
+    opacity: 0.6;
+}
+.lang-toggle-btn:hover {
+    opacity: 1;
+    color: var(--md-accent-fg-color, #526cfe);
+    background: rgba(127,127,127,0.08);
+}
+.lang-toggle-btn.active {
+    opacity: 1;
+    color: var(--md-accent-fg-color, #526cfe);
+}
+.lang-toggle-btn svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: currentColor;
 }
 
 /* General styles for navigation and typeset */
@@ -21,6 +168,31 @@
     line-height: 1.5;
 }
 
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5 {
+    color: var(--heading-color);
+    letter-spacing: 0.01em;
+}
+
+.md-typeset h1 {
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--heading-rule);
+}
+
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5 {
+    font-weight: 500;
+    margin-top: 1.4em;
+    margin-bottom: 0.65em;
+    padding-bottom: 0.12rem;
+    border-bottom: 1px dashed var(--heading-accent);
+}
+
 .md-typeset code,
 .md-typeset pre {
     color: var(--code-color);
@@ -35,10 +207,17 @@
     background-color: var(--table-background);
 }
 
+[data-md-color-primary="blue-grey"] {
+    --md-primary-fg-color: #436584;
+}
+
 [data-md-color-scheme="default"] {
     --code-color: #0891b2;        /* teal — matches colorscheme-modern.css .part1 */
     --table-foreground: var(--md-default-bg-color); /* table header backgrounds */
     --table-background: var(--md-default-fg-color--light); /* table header (text) */
+    --heading-color: #203146;
+    --heading-accent: #3c678a;
+    --heading-rule: rgba(60, 103, 138, 0.32);
 }
 
 [data-md-color-scheme="slate"] {
@@ -46,4 +225,7 @@
     --md-typeset-a-color: #7c90ff; /* links */
     --table-foreground: #a3acdf; /* table header (text) */
     --table-background: #272e53; /* table header backgrounds */
+    --heading-color: #dfe7ff;
+    --heading-accent: #6a85d8;
+    --heading-rule: rgba(106, 133, 216, 0.45);
 }

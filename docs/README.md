@@ -1,7 +1,5 @@
 # Welcome to Freetz-EVO
-<br>
 **Freetz-EVO** is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) with GCC on-device compilation, nginx, rtorrent, ruTorrent, PHP, aria2, AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.<br>
-<br>
 Watch important changes and [NEWS](NEWS.md) about Freetz-EVO.<br>
 Talk about everything around Freetz-EVO at [DISCUSSIONS](https://github.com/Ircama/freetz-evo/discussions).<br>
 Check list of supported devices and [FIRMWARES](FIRMWARES.md).<br>

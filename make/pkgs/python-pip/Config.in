@@ -1,0 +1,19 @@
+config FREETZ_PACKAGE_PYTHON_PIP
+	bool "pip 20.3.4"
+	depends on FREETZ_PACKAGE_PYTHON
+	default n
+	help
+		pip is a pure-Python prerequisite/tooling module.
+		pip is the package installer for Python 2.7.
+		
+		This package bootstraps pip using get-pip.py for Python 2.7.
+		
+		Usage examples:
+		  pip2 install requests
+		  pip2 list
+		  pip2 uninstall package-name
+		
+		Note: Python 2 is deprecated upstream. Prefer Python 3 when possible.
+		
+		Website: https://pip.pypa.io/
+		Docs: https://pip.pypa.io/en/stable/
