@@ -33,26 +33,20 @@ jobs:
     permissions:
       packages: read
       contents: write
-    container:
-      image: ghcr.io/freetz-ng/internal/generate
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-      options: --user 1001:1001
     runs-on: ubuntu-latest
 
     steps:
 
-#     - name: update
-#       run: apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
-#
-#     - name: install
-#       run: |
-#         DEBIAN_FRONTEND=noninteractive apt-get -y install \
-#           git locales imagemagick
-#
-#     - name: locale
-#       run: locale-gen en_US.utf8 && locale-gen de_DE.UTF-8 && update-locale
+      - name: update
+        run: sudo apt-get -y update
+
+      - name: install
+        run: |
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y install \
+            git locales imagemagick
+
+      - name: locale
+        run: sudo locale-gen en_US.utf8 && sudo locale-gen de_DE.UTF-8 && sudo update-locale
 
       - name: clone
         uses: actions/checkout@v6
