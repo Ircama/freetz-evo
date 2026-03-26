@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_HA_FFMPEG
+	bool "ha-ffmpeg 3.2.2"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_ASYNC_TIMEOUT
+	default n
+	help
+		Home Assistant helper library for ffmpeg/ffprobe process handling.

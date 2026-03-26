@@ -1,0 +1,23 @@
+config FREETZ_PACKAGE_PYTHON3_AV
+	bool "av 16.0.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	depends on FREETZ_PACKAGE_FFMPEG
+	depends on FREETZ_PACKAGE_FFMPEG_VERSION_CURRENT
+	select FREETZ_LIB_libavcodec
+	select FREETZ_LIB_libavdevice
+	select FREETZ_LIB_libavfilter
+	select FREETZ_LIB_libavformat
+	select FREETZ_LIB_libavutil
+	select FREETZ_LIB_libswresample
+	select FREETZ_LIB_libswscale
+	default n
+	help
+		PyAV is Pythonic bindings for FFmpeg libraries.
+		
+		This package precompiles PyAV for the target, avoiding on-device
+		build failures such as missing pkg-config during pip install.
+		
+		Requires FFmpeg "current" shared libraries at runtime.
+		
+		Website: https://pyav.basswood-io.com/
+		Source: https://github.com/PyAV-Org/PyAV

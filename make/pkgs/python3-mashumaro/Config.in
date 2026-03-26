@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_MASHUMARO
+	bool "mashumaro 3.17 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_TYPING_EXTENSIONS
+	default n
+	help
+		Fast dataclass serialization/deserialization framework.

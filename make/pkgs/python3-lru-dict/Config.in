@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_LRU_DICT
+	bool "lru-dict 1.4.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Fast C implementation of a dictionary with LRU eviction.

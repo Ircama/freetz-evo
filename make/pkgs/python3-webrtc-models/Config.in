@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_WEBRTC_MODELS
+	bool "webrtc-models 0.3.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_MASHUMARO
+	select FREETZ_PACKAGE_PYTHON3_ORJSON
+	default n
+	help
+		Model definitions used by WebRTC-related Home Assistant components.

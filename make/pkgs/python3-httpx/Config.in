@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PYTHON3_HTTPX
+	bool "httpx 0.28.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_CERTIFI
+	select FREETZ_PACKAGE_PYTHON3_HTTPCORE
+	select FREETZ_PACKAGE_PYTHON3_IDNA
+	default n
+	help
+		Next-generation HTTP client for Python.

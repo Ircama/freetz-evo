@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_ZEROCONF
+	bool "zeroconf 0.148.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_IFADDR
+	default n
+	help
+		Multicast DNS service discovery library (pure Python mode).

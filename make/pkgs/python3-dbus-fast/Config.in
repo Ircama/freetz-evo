@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_DBUS_FAST
+	bool "dbus-fast 4.0.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		High-performance DBus client/service library.
+		Build is configured to require Cython extension compilation.
