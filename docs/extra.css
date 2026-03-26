@@ -1,44 +1,41 @@
-/* ── Secondary sidebar (right-side TOC): hidden by default, togglable ── */
-.md-sidebar--secondary.md-sidebar {
-    display: none;
-}
+/* ── Secondary sidebar (right-side TOC) ────────────────────────────── */
+/* Hidden by default and enabled only when JS marks body.toc-has-content */
+.md-sidebar--secondary.md-sidebar,
 .md-nav--secondary {
     display: none;
 }
-/* When the user activates the TOC via the hamburger toggle */
-body.toc-visible .md-sidebar--secondary.md-sidebar {
-    display: block;
+
+/* Desktop behavior: keep native Material layout */
+@media (min-width: 76.25em) {
+    body.toc-visible.toc-has-content .md-sidebar--secondary.md-sidebar,
+    body.toc-visible.toc-has-content .md-nav--secondary {
+        display: block;
+    }
+
+    body.toc-visible.toc-has-content .md-sidebar--secondary .md-sidebar__scrollwrap {
+        height: 85vh !important;
+        overflow-y: auto !important;
+    }
+
+    body.toc-visible.toc-has-content .md-sidebar--secondary .md-sidebar__inner {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 4px;
+    }
+
+    [data-md-color-scheme="slate"] body.toc-visible.toc-has-content .md-sidebar--secondary .md-sidebar__inner {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    body.toc-visible.toc-has-content .md-grid {
+        max-width: 95%;
+    }
 }
-body.toc-visible .md-nav--secondary {
-    display: block;
-}
+
 /* Active TOC link highlighting */
-body.toc-visible .md-nav--secondary .md-nav__link--active {
+body.toc-visible.toc-has-content .md-nav--secondary .md-nav__link--active {
     font-weight: 600;
     border-left: 3px solid var(--heading-accent, #3c678a);
     padding-left: 0.5em;
-}
-
-/* Keep the TOC scrollwrap within the viewport.
-   When the footer is visible, JS overrides this with
-   max-height: calc(100vh - 8rem) !important. */
-body.toc-visible .md-sidebar--secondary .md-sidebar__scrollwrap {
-    height: 85vh !important;
-    overflow-y: auto !important;
-}
-
-/* Subtle background tint on the TOC inner panel */
-body.toc-visible .md-sidebar--secondary .md-sidebar__inner {
-    background: rgba(0, 0, 0, 0.03);
-    border-radius: 4px;
-}
-[data-md-color-scheme="slate"] body.toc-visible .md-sidebar--secondary .md-sidebar__inner {
-    background: rgba(255, 255, 255, 0.04);
-}
-
-/* Expand main grid to near-full-width when TOC is active */
-body.toc-visible .md-grid {
-    max-width: 95%;
 }
 
 /* ── Heading permalink anchors (GitHub octicon-link style) ── */
@@ -68,7 +65,7 @@ body.toc-visible .md-grid {
     border: none;
     color: currentColor;
     cursor: pointer;
-    display: inline-flex;
+    display: none;
     align-items: center;
     justify-content: center;
     width: 2.4rem;
@@ -91,13 +88,105 @@ body.toc-visible .md-grid {
     width: 1.2rem;
     height: 1.2rem;
 }
-/* Hide on very small screens where sidebar can't fit */
+/* Button is shown only when page has a generated TOC */
+body.toc-has-content .toc-toggle-btn {
+    display: inline-flex;
+}
+
+/* Mobile behavior: TOC as a right drawer overlay */
 @media (max-width: 76.1875em) {
-    .toc-toggle-btn {
-        display: none;
+    .md-sidebar--secondary.md-sidebar {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: min(86vw, 22rem);
+        height: 100dvh;
+        margin: 0;
+        z-index: 16;
+        background: var(--md-default-bg-color);
+        border-left: 1px solid var(--md-default-fg-color--lightest);
+        box-shadow: none;
+        transform: translateX(100%);
+        transition: transform 0.2s ease;
+        pointer-events: none;
     }
-    body.toc-visible .md-sidebar--secondary.md-sidebar {
-        display: none;
+
+    .md-sidebar--secondary .md-sidebar__inner {
+        height: 100%;
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .md-sidebar--secondary .md-sidebar__scrollwrap {
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary.md-sidebar {
+        transform: translateX(0);
+        pointer-events: auto;
+    }
+
+    body.toc-visible.toc-mobile-open.toc-has-content .md-nav--secondary {
+        display: block;
+    }
+
+    .md-sidebar--secondary .md-nav--secondary .md-nav__list {
+        margin: 0;
+        padding-left: 0;
+    }
+
+    .md-sidebar--secondary .md-nav--secondary .md-nav__link {
+        display: block;
+        width: 100%;
+    }
+
+    .md-sidebar--secondary .md-nav--secondary > .md-nav__list > .md-nav__item > .md-nav__link {
+        padding-left: 0.1rem;
+    }
+
+    .md-sidebar--secondary .md-nav--secondary .md-nav__list .md-nav__list {
+        margin-left: 0.9rem;
+        padding-left: 0.7rem;
+        border-left: 1px solid var(--md-default-fg-color--lightest);
+    }
+
+    .md-sidebar--secondary .md-nav--secondary .md-nav__list .md-nav__list .md-nav__list {
+        margin-left: 0.75rem;
+        padding-left: 0.55rem;
+    }
+
+    .toc-mobile-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 15;
+        background: rgba(0, 0, 0, 0.42);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    body.toc-visible.toc-mobile-open.toc-has-content .toc-mobile-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.toc-visible.toc-mobile-open.toc-has-content {
+        overflow: hidden;
+    }
+
+    /* Prevent any layout expansion on mobile when TOC is missing/hidden */
+    .md-main__inner,
+    .md-content {
+        margin-right: 0 !important;
+    }
+
+    body.toc-visible.toc-has-content .md-grid {
+        max-width: 100%;
     }
 }
 

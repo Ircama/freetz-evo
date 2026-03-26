@@ -11,6 +11,10 @@
   "use strict";
 
   var STORAGE_KEY = "__toc_visible";
+  var MOBILE_QUERY = "(max-width: 76.1875em)";
+  var _eventsBound = false;
+  var _tocPresenceObserver = null;
+  var _scrollToActiveTocLink = null;
 
   /* ── SVG icons ─────────────────────────────────────────────── */
   // "list-tree" icon — represents a table of contents
@@ -35,11 +39,11 @@
   function isVisible() {
     try {
       var stored = localStorage.getItem(STORAGE_KEY);
-      // If user never toggled, use the wide-screen default
-      if (stored === null) return isWideScreen();
+      // If user never toggled: show TOC on desktop, hide on mobile.
+      if (stored === null) return !isMobile();
       return stored === "1";
     } catch (e) {
-      return isWideScreen();
+      return !isMobile();
     }
   }
 
@@ -51,15 +55,103 @@
     }
   }
 
+  function isMobile() {
+    return window.matchMedia(MOBILE_QUERY).matches;
+  }
+
+  function getTocContainer() {
+    return document.querySelector('.md-sidebar--secondary [data-md-component="toc"]');
+  }
+
+  function hasTocEntries() {
+    var toc = getTocContainer();
+    if (toc) {
+      // Accept both local anchors (#...) and absolute URLs ending with #...
+      return toc.querySelectorAll('a.md-nav__link[href*="#"]').length > 0;
+    }
+
+    // Fallback: some theme states may have secondary nav before the toc list node
+    var secondaryNav = document.querySelector('.md-sidebar--secondary .md-nav--secondary');
+    if (!secondaryNav) return false;
+
+    return secondaryNav.querySelectorAll('a.md-nav__link[href*="#"]').length > 0;
+  }
+
+  function queueAvailabilityResync() {
+    requestAnimationFrame(syncTocAvailability);
+    setTimeout(syncTocAvailability, 120);
+    setTimeout(syncTocAvailability, 420);
+  }
+
+  function watchTocPresence() {
+    if (_tocPresenceObserver) {
+      _tocPresenceObserver.disconnect();
+      _tocPresenceObserver = null;
+    }
+
+    if (!document.body) return;
+
+    _tocPresenceObserver = new MutationObserver(function () {
+      syncTocAvailability();
+    });
+
+    _tocPresenceObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  function ensureBackdrop() {
+    var backdrop = document.querySelector('.toc-mobile-backdrop');
+    if (backdrop) return backdrop;
+
+    backdrop = document.createElement('div');
+    backdrop.className = 'toc-mobile-backdrop';
+    document.body.appendChild(backdrop);
+    return backdrop;
+  }
+
+  function syncTocAvailability() {
+    var hasToc = hasTocEntries();
+    document.body.classList.toggle('toc-has-content', hasToc);
+
+    var btn = document.querySelector('.toc-toggle-btn');
+    if (btn) {
+      btn.style.display = hasToc ? 'inline-flex' : 'none';
+      btn.disabled = !hasToc;
+    }
+
+    if (!hasToc) {
+      document.body.classList.remove('toc-visible');
+      document.body.classList.remove('toc-mobile-open');
+    }
+
+    return hasToc;
+  }
+
   function applyState(visible) {
-    if (visible) {
+    var hasToc = syncTocAvailability();
+    var effectiveVisible = !!visible && hasToc;
+
+    if (effectiveVisible) {
       document.body.classList.add("toc-visible");
     } else {
       document.body.classList.remove("toc-visible");
     }
+
+    document.body.classList.toggle('toc-mobile-open', effectiveVisible && isMobile());
+
+    if (effectiveVisible && _scrollToActiveTocLink) {
+      // Wait for class application and drawer transition before aligning scroll.
+      requestAnimationFrame(function () {
+        _scrollToActiveTocLink();
+        setTimeout(_scrollToActiveTocLink, 210);
+      });
+    }
+
     var btn = document.querySelector(".toc-toggle-btn");
     if (btn) {
-      if (visible) {
+      if (effectiveVisible) {
         btn.classList.add("active");
         btn.setAttribute("title", "Hide table of contents");
         btn.setAttribute("aria-pressed", "true");
@@ -71,12 +163,17 @@
     }
   }
 
+  function closeToc() {
+    persist(false);
+    applyState(false);
+  }
+
   /* ── Inject button ─────────────────────────────────────────── */
   function injectButton() {
     // Don't double-inject
     if (document.querySelector(".toc-toggle-btn")) return;
 
-    // Only inject if the page actually has a secondary sidebar / TOC
+    // Only inject if the page has a secondary sidebar container.
     var toc = document.querySelector(".md-sidebar--secondary");
     if (!toc) return;
 
@@ -100,6 +197,36 @@
       var nav = document.querySelector(".md-header__inner");
       if (nav) nav.appendChild(btn);
     }
+
+    syncTocAvailability();
+  }
+
+  function bindGlobalEvents() {
+    if (_eventsBound) return;
+    _eventsBound = true;
+
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('.toc-mobile-backdrop')) {
+        closeToc();
+        return;
+      }
+
+      var tocLink = event.target.closest('.md-sidebar--secondary a.md-nav__link');
+      if (tocLink && isMobile()) {
+        closeToc();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && document.body.classList.contains('toc-mobile-open')) {
+        closeToc();
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (!document.body.classList.contains('toc-visible')) return;
+      applyState(true);
+    }, { passive: true });
   }
 
   /* ── Active scroll tracking for the TOC sidebar ────────────── */
@@ -135,6 +262,15 @@
       }
     }
 
+    function scrollCurrentActiveIntoView() {
+      var active = tocList.querySelector('.md-nav__link--active');
+      if (!active) return;
+      currentActive = active;
+      scrollTocToActive(active);
+    }
+
+    _scrollToActiveTocLink = scrollCurrentActiveIntoView;
+
     // Use a MutationObserver on the TOC list to detect when
     // mkdocs-material's built-in JS adds/removes .md-nav__link--active
     var observer = new MutationObserver(function () {
@@ -153,8 +289,16 @@
       subtree: true
     });
 
+    // Align once on init so opening the mobile drawer starts at the active item.
+    requestAnimationFrame(scrollCurrentActiveIntoView);
+
     // Return disconnect handle so we can clean up on page nav
-    return function () { observer.disconnect(); };
+    return function () {
+      observer.disconnect();
+      if (_scrollToActiveTocLink === scrollCurrentActiveIntoView) {
+        _scrollToActiveTocLink = null;
+      }
+    };
   }
 
   var _footerAvoidanceCleanup = null;
@@ -232,10 +376,14 @@
       _footerAvoidanceCleanup = null;
     }
     injectButton();
+    ensureBackdrop();
     applyState(isVisible());
+    queueAvailabilityResync();
+    watchTocPresence();
     _disconnectScrollTracking = attachScrollTracking();
     _footerAvoidanceCleanup = attachFooterAvoidance();
     injectLangButtons();
+    bindGlobalEvents();
   }
 
   // Run on DOMContentLoaded (first load)
