@@ -304,12 +304,20 @@
   var _footerAvoidanceCleanup = null;
 
   function attachFooterAvoidance() {
+    if (isMobile()) return null;
+
     var sidebar = document.querySelector('.md-sidebar--secondary');
     var scrollwrap = sidebar && sidebar.querySelector('.md-sidebar__scrollwrap');
     var footer = document.querySelector('.md-footer');
     if (!scrollwrap || !footer) return null;
 
     function update() {
+      if (isMobile()) {
+        // On mobile, keep native drawer scroll and avoid any inline max-height clamp.
+        scrollwrap.style.removeProperty('max-height');
+        return;
+      }
+
       var footerVisible = footer.getBoundingClientRect().top < window.innerHeight;
       if (footerVisible) {
         // Footer is in view: constrain sidebar so it doesn't overlap

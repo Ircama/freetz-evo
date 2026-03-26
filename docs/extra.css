@@ -100,9 +100,10 @@ body.toc-has-content .toc-toggle-btn {
         position: fixed;
         top: 0;
         right: 0;
-        width: min(86vw, 22rem);
+        width: min(82vw, 20rem);
         height: 100dvh;
         margin: 0;
+        padding-right: 0 !important;
         z-index: 16;
         background: var(--md-default-bg-color);
         border-left: 1px solid var(--md-default-fg-color--lightest);
@@ -114,16 +115,22 @@ body.toc-has-content .toc-toggle-btn {
 
     .md-sidebar--secondary .md-sidebar__inner {
         height: 100%;
+        padding-right: 0 !important;
         background: transparent;
         border-radius: 0;
     }
 
     .md-sidebar--secondary .md-sidebar__scrollwrap {
         height: 100% !important;
-        max-height: 100% !important;
+        max-height: none !important;
         min-height: 0;
+        padding-right: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .md-sidebar--secondary .md-nav--secondary {
+        padding-right: 0 !important;
     }
 
     body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary.md-sidebar {
@@ -317,4 +324,19 @@ body.toc-has-content .toc-toggle-btn {
     --heading-color: #dfe7ff;
     --heading-accent: #6a85d8;
     --heading-rule: rgba(106, 133, 216, 0.45);
+}
+
+/* Final mobile override: disable theme max-height clamps and keep scrolling */
+@media (max-width: 76.1875em) {
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary .md-sidebar__inner,
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary .md-sidebar__scrollwrap,
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary .md-nav--secondary {
+        max-height: none !important;
+    }
+
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary .md-sidebar__scrollwrap,
+    body.toc-visible.toc-mobile-open.toc-has-content .md-sidebar--secondary .md-nav--secondary {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
 }
