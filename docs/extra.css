@@ -264,6 +264,16 @@ body.toc-has-content .toc-toggle-btn {
     line-height: 1.5;
 }
 
+/* Adjust spacing for paragraphs and line breaks */
+.md-typeset p {
+    margin: 0.5em 0;
+}
+
+/* Hide double line breaks in markdown source (e.g. between list items) */
+.md-typeset p br + br {
+    display: none;
+}
+
 .md-typeset h1,
 .md-typeset h2,
 .md-typeset h3,
