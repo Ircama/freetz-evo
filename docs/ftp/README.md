@@ -271,14 +271,14 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
     - deutschland: [FRITZ.Repeater_3000_AX-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-3000-ax/deutschland/fritz.os/FRITZ.Repeater_3000_AX-08.20.image)
     - other: [FRITZ.Repeater_3000_AX-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-3000-ax/other/fritz.os/FRITZ.Repeater_3000_AX-08.20.image)
   * fritzrepeater-600/
-    - deutschland: [FRITZ.Repeater_600-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-600/deutschland/fritz.os/FRITZ.Repeater_600-08.20.image)
-    - other: [FRITZ.Repeater_600-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-600/other/fritz.os/FRITZ.Repeater_600-08.20.image)
+    - deutschland: [FRITZ.Repeater_600-08.25.image](https://download.avm.de/fritzwlan/fritzrepeater-600/deutschland/fritz.os/FRITZ.Repeater_600-08.25.image)
+    - other: [FRITZ.Repeater_600-08.25.image](https://download.avm.de/fritzwlan/fritzrepeater-600/other/fritz.os/FRITZ.Repeater_600-08.25.image)
   * fritzrepeater-6000/
     - deutschland: [FRITZ.Repeater_6000-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-6000/deutschland/fritz.os/FRITZ.Repeater_6000-08.20.image)
     - other: [FRITZ.Repeater_6000-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-6000/other/fritz.os/FRITZ.Repeater_6000-08.20.image)
   * fritzrepeater-600v2/
-    - deutschland: [FRITZ.Repeater_600v2-08.20.image](https://download.avm.de/fritzwlan/fritzrepeater-600v2/deutschland/fritz.os/FRITZ.Repeater_600v2-08.20.image)
-    - other: [FRITZ.Repeater_600v2-07.58.image](https://download.avm.de/fritzwlan/fritzrepeater-600v2/other/fritz.os/FRITZ.Repeater_600v2-07.58.image)
+    - deutschland: [FRITZ.Repeater_600v2-08.25.image](https://download.avm.de/fritzwlan/fritzrepeater-600v2/deutschland/fritz.os/FRITZ.Repeater_600v2-08.25.image)
+    - other: [FRITZ.Repeater_600v2-08.25.image](https://download.avm.de/fritzwlan/fritzrepeater-600v2/other/fritz.os/FRITZ.Repeater_600v2-08.25.image)
   * fritzwlan-repeater-1160/
     - deutschland: [FRITZ.Box_WLAN_Repeater_1160-07.15.image](https://download.avm.de/fritzwlan/fritzwlan-repeater-1160/deutschland/fritz.os/FRITZ.Box_WLAN_Repeater_1160-07.15.image)
     - other: [FRITZ.Box_WLAN_Repeater_1160-07.15.image](https://download.avm.de/fritzwlan/fritzwlan-repeater-1160/other/fritz.os/FRITZ.Box_WLAN_Repeater_1160-07.15.image)
