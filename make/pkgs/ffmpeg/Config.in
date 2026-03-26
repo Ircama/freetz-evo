@@ -19,7 +19,6 @@ if FREETZ_PACKAGE_FFMPEG
 			bool "7.1.1"
 			depends on !FREETZ_TARGET_GCC_4_MAX
 			depends on !FREETZ_PACKAGE_MEDIATOMB
-			depends on !FREETZ_PACKAGE_MINIDLNA
 
 	endchoice
 
