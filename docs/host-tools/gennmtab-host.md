@@ -3,5 +3,6 @@
   - Changelog: [https://sourceforge.net/projects/xmlrpc-c/files/](https://sourceforge.net/projects/xmlrpc-c/files/)
   - Repository: [https://sourceforge.net/p/xmlrpc-c/code/](https://sourceforge.net/p/xmlrpc-c/code/)
   - Host-Tool: [master/make/host-tools/gennmtab-host/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/host-tools/gennmtab-host/)
+  - Steward: -
   - Maintainer: [@Ircama](https://github.com/Ircama)
 

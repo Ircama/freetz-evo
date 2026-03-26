@@ -4,5 +4,6 @@
   - Changelog: [https://pandas.pydata.org/docs/whatsnew/](https://pandas.pydata.org/docs/whatsnew/)
   - Repository: [https://github.com/pandas-dev/pandas](https://github.com/pandas-dev/pandas)
   - Package: [master/make/pkgs/python3-pandas/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-pandas/)
+  - Steward: -
   - Maintainer: -
 

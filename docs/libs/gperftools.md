@@ -4,6 +4,6 @@
   - Changelog: [https://github.com/gperftools/gperftools/releases](https://github.com/gperftools/gperftools/releases)
   - Repository: [https://github.com/gperftools/gperftools](https://github.com/gperftools/gperftools)
   - Library: [master/make/libs/gperftools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/gperftools/)
-  - Maintainer: -
+  - Steward: -
 
 TCMalloc (Thread-Caching Malloc) from Google's gperftools. A high-performance, thread-safe drop-in replacement for malloc that is significantly faster than glibc malloc, especially for multi-threaded programs. This is the minimal variant without heap profiling or checking support, suitable for embedded targets. https://gperftools.github.io/gperftools/tcmalloc.html

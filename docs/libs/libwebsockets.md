@@ -4,6 +4,6 @@
   - Changelog: [https://github.com/warmcat/libwebsockets/releases](https://github.com/warmcat/libwebsockets/releases)
   - Repository: [https://github.com/warmcat/libwebsockets](https://github.com/warmcat/libwebsockets)
   - Library: [master/make/libs/libwebsockets/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/libwebsockets/)
-  - Maintainer: -
+  - Steward: -
 
 libwebsockets is a lightweight, low-latency C library for WebSocket clients and servers, HTTP/2, and more. Required by ttyd (web-based terminal). Project homepage: https://libwebsockets.org/

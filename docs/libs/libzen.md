@@ -3,6 +3,6 @@
   - Changelog: [https://github.com/MediaArea/ZenLib/releases](https://github.com/MediaArea/ZenLib/releases)
   - Repository: [https://github.com/MediaArea/ZenLib](https://github.com/MediaArea/ZenLib)
   - Library: [master/make/libs/libzen/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/libzen/)
-  - Maintainer: -
+  - Steward: -
 
 ZenLib is a C++ library that supplements the standard library. It is used by MediaInfo as a dependency.

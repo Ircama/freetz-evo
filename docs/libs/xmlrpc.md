@@ -4,6 +4,6 @@
   - Changelog: [https://sourceforge.net/projects/xmlrpc-c/files/](https://sourceforge.net/projects/xmlrpc-c/files/)
   - Repository: [https://sourceforge.net/p/xmlrpc-c/code/](https://sourceforge.net/p/xmlrpc-c/code/)
   - Library: [master/make/libs/xmlrpc/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/xmlrpc/)
-  - Maintainer: [@Ircama](https://github.com/Ircama)
+  - Steward: -
 
 xmlrpc-c core library

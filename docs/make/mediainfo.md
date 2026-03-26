@@ -4,5 +4,6 @@
   - Changelog: [https://github.com/MediaArea/MediaInfo/releases](https://github.com/MediaArea/MediaInfo/releases)
   - Repository: [https://github.com/MediaArea/MediaInfo](https://github.com/MediaArea/MediaInfo)
   - Package: [master/make/pkgs/mediainfo/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mediainfo/)
+  - Steward: -
   - Maintainer: [@Ircama](https://github.com/Ircama)
 

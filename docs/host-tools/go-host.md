@@ -4,5 +4,6 @@
   - Changelog: [https://go.dev/doc/devel/release](https://go.dev/doc/devel/release)
   - Repository: [https://github.com/golang/go](https://github.com/golang/go)
   - Host-Tool: [master/make/host-tools/go-host/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/host-tools/go-host/)
+  - Steward: -
   - Maintainer: [@ircama](https://github.com/ircama)
 

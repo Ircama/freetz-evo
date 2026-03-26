@@ -4,5 +4,6 @@
   - Changelog: [https://cryptography.io/en/latest/changelog/](https://cryptography.io/en/latest/changelog/)
   - Repository: [https://github.com/pyca/cryptography](https://github.com/pyca/cryptography)
   - Package: [master/make/pkgs/python3-cryptography/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-cryptography/)
+  - Steward: -
   - Maintainer: -
 

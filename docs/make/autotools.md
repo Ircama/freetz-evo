@@ -4,5 +4,6 @@
   - Changelog: [https://ftp.gnu.org/gnu/autoconf/](https://ftp.gnu.org/gnu/autoconf/)
   - Repository: [https://git.savannah.gnu.org/git/autoconf.git](https://git.savannah.gnu.org/git/autoconf.git)
   - Package: [master/make/pkgs/autotools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/autotools/)
+  - Steward: -
   - Maintainer: [@Ircama](https://github.com/Ircama)
 

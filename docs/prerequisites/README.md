@@ -2,12 +2,12 @@
 
 # Installing Required Packages
 
-There are the following ways to install required packages (prerequisites):
+You can install the required packages (prerequisites) in the following ways:
 
-  - Install packages automatically using `tools/prerequisites`.
-  - Copy/paste the commands from this page into a shell (for example in PuTTY using right click).
+  - Use `tools/prerequisites` to install packages automatically.
+  - Copy and paste the commands from this page into your console (for example, right-click in PuTTY).
 
-### Tested Distributions
+### Tested distributions
   - [Fedora](#fedora)
   - [Debian](#debian)
   - [Devuan](#devuan)
@@ -16,19 +16,19 @@ There are the following ways to install required packages (prerequisites):
   - [Mint](#mint)
   - [Kali](#kali)
   - [Arch](#arch)
-  - no others
+  - none others
 
-### Problematic Distributions
+### Problematic distributions
   - Gentoo
   - NixOS
   - Ubuntu 25.10
   - WSL/WSL2
 
-### All Other Distributions
-... are untested and may or may not work. This strongly depends on the operator's experience.
+### All other distributions
+... are untested and may or may not work. Results strongly depend on your Linux/admin experience.
 
-### Detect Your Distribution
-If you forgot which Linux version is installed, you can check like this:
+### Detect your distribution
+If you do not remember which Linux version is installed, check it as follows:
 
   - Linux distribution:
 ```
@@ -51,12 +51,12 @@ aarch64
 
 ### Fedora
 
-  - Update system:
+  - Update the system:
 ```
 sudo dnf -y update && sudo systemctl daemon-reload
 ```
 
-  - Fedora 42/43 64-Bit:
+  - Fedora 42/43 64-bit:
 ```
 sudo dnf -y install \
   bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc gcc-c++ gettext \
@@ -68,7 +68,7 @@ sudo dnf -y install \
   subversion texinfo unar util-linux wget which xz zlib-ng-devel
 ```
 
-  - Fedora 41 64-Bit:
+  - Fedora 41 64-bit:
 ```
 sudo dnf -y install \
   bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc gcc-c++ gettext \
@@ -80,7 +80,7 @@ sudo dnf -y install \
   util-linux wget which xz zlib-ng-devel
 ```
 
-  - Fedora 40 64-Bit:
+  - Fedora 40 64-bit:
 ```
 sudo dnf -y install \
   bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc gcc-c++ gettext \
@@ -92,7 +92,7 @@ sudo dnf -y install \
   zlib-ng-devel
 ```
 
-  - Fedora 37/38/39 64-Bit:
+  - Fedora 37/38/39 64-bit:
 ```
 sudo dnf -y install \
   bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex ftp gcc gcc-c++ \
@@ -105,7 +105,7 @@ sudo dnf -y install \
   zlib-devel.i686
 ```
 
-  - Fedora 36 64-Bit:
+  - Fedora 36 64-bit:
 ```
 sudo dnf -y install \
   autoconf automake bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex \
@@ -118,7 +118,7 @@ sudo dnf -y install \
   zlib-devel.i686
 ```
 
-  - Fedora 35 64-Bit:
+  - Fedora 35 64-bit:
 ```
 sudo dnf -y install \
   autoconf automake bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex \
@@ -131,7 +131,7 @@ sudo dnf -y install \
   zlib-devel.i686
 ```
 
-  - Fedora 33/34 64-Bit:
+  - Fedora 33/34 64-bit:
 ```
 sudo dnf -y install \
   autoconf automake bc binutils bison bzip2 ccache cmake ecj flex gcc gcc-c++ gettext git \
@@ -142,12 +142,12 @@ sudo dnf -y install \
   texinfo unar util-linux wget xz zlib-devel zlib-devel.i686
 ```
 
-  - If a 64-bit Linux is installed on the following system, additionally install:
+  - If the following system runs 64-bit Linux, install additionally:
 ```
 sudo yum -y install ncurses-devel.i686 glibc-devel.i686 libgcc.i686
 ```
 
-  - Fedora ~20 32-Bit:
+  - Fedora ~20 32-bit:
 ```
 sudo yum -y install \
   autoconf automake binutils bison bzip2 ecj flex gcc gcc-c++ gettext git glib2-devel \
@@ -157,14 +157,14 @@ sudo yum -y install \
 
 ### Debian
 
-  - Update system:
+  - Update the system:
 ```
 sudo apt -y update
 sudo apt -y upgrade
 sudo apt -y dist-upgrade
 ```
 
-  - Debian 13 64-Bit:
+  - Debian 13 64-bit:
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -176,7 +176,7 @@ sudo apt -y install \
   wget zlib1g-dev
 ```
 
-  - Debian 12 64-Bit:
+  - Debian 12 64-bit:
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -188,7 +188,7 @@ sudo apt -y install \
   wget zlib1g-dev
 ```
 
-  - Debian 11 64-Bit:
+  - Debian 11 64-bit:
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -202,11 +202,11 @@ sudo apt -y install \
 
 
 ### Devuan
-Devuan has already been used successfully for building. Just install the packages recommended for Debian.
+Devuan has already been used successfully for builds. Install the same packages suggested for Debian.
 
 
 ### LMDE
-LMDE (Linux Mint Debian Edition) has already been used successfully for building. Just install the packages recommended for Debian.
+LMDE (Linux Mint Debian Edition) has already been used successfully for builds. Install the same packages suggested for Debian.
 
 
 ### Ubuntu
@@ -218,32 +218,32 @@ sudo apt-get -y install console-data && sudo locale-gen de_DE && sudo dpkg-recon
 ```
 
   - Enable 32-bit (multiarch):<br>
-See [debian.org: Multiarch HOWTO](https://wiki.debian.org/Multiarch/HOWTO) and [heise.de: Install packages for multiple CPU architectures in Linux](http://heise.de/-2056403)
+See [debian.org: Multiarch HOWTO](https://wiki.debian.org/Multiarch/HOWTO) and [heise.de: install packages for multiple CPU architectures on Linux](http://heise.de/-2056403)
 ```
 # dpkg --print-foreign-architectures
 sudo dpkg --add-architecture i386
 sudo apt-get -y update
 ```
 
-  - Update system:
+  - Update the system:
 ```
 sudo apt-get -y update
 sudo apt-get -y upgrade
 sudo apt-get -y dist-upgrade
 ```
 
-  - uutil-coreutils issue starting with Ubuntu 25.10:<br>
-Canonical replaced GNU coreutils (GPL) with uutils-coreutils (MIT+Rust+Code-of-Conduct), which causes multiple issues, including problems with `pseudo-host`.
+  - uutils-coreutils issue starting with Ubuntu 25.10:<br>
+Canonical replaced GNU coreutils (GPL) with uutils coreutils (MIT/Rust/Code of Conduct), which causes several issues, including problems with `pseudo-host`.
 See [Carefully But Purposefully Oxidising Ubuntu](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995) and
-[Ubuntu 25.10 move to Rust coreutils is causing significant issues with some executables](https://www.reddit.com/r/linux/comments/1nr1bas/ubuntu_2510s_move_to_rust_coreutils_is_causing/?tl=de).<br>
+[Ubuntu 25.10's move to Rust coreutils causes major issues for some executables](https://www.reddit.com/r/linux/comments/1nr1bas/ubuntu_2510s_move_to_rust_coreutils_is_causing/?tl=de).<br>
 Typical error: `couldn't allocate absolute path for 'null'`.<br>
-In general, uutils-coreutils is currently not recommended because it is still immature and shows multiple [tool-level regressions](https://freetz-ng.github.io/freetz-ng/NEWS/#2025-11-21) (for example `date`, `cp`, `mv`, `base64`, `du`, `sort`, `tail`, `ls`, `md5sum`, `dd`, `sudo`, and others).<br>
-Workaround: remove uutils-coreutils and install GNU coreutils using
+In general, uutils-coreutils is currently not recommended for Freetz builds due to immaturity and known [issues in multiple tools](https://freetz-ng.github.io/freetz-ng/NEWS/#2025-11-21) (`date`, `cp`, `mv`, `base64`, `du`, `sort`, `tail`, `ls`, `md5sum`, `dd`, `sudo`, ...).<br>
+Workaround: remove uutils-coreutils and install GNU coreutils with
 ```
 sudo apt-get remove --allow-remove-essential coreutils-from-uutils
 ```
 
-  - Ubuntu 26 64-Bit:
+  - Ubuntu 26 64-bit:
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -255,7 +255,7 @@ sudo apt-get -y install \
   uuid-dev wget zip zlib1g-dev
 ```
 
-  - Ubuntu 23/24/25 64-Bit:
+  - Ubuntu 23/24/25 64-bit:
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -267,7 +267,7 @@ sudo apt-get -y install \
   uuid-dev wget zip zlib1g-dev
 ```
 
-  - Ubuntu 22 64-Bit:
+  - Ubuntu 22 64-bit:
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -279,7 +279,7 @@ sudo apt-get -y install \
   uuid-dev wget zip zlib1g-dev
 ```
 
-  - Ubuntu 20/21 64-Bit:
+  - Ubuntu 20/21 64-bit:
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
@@ -289,12 +289,12 @@ sudo apt-get -y install \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp netcat net-tools patch \
   patchutils perl pkg-config pv rsync sharutils sqlite3 subversion sudo texinfo tofrodos unar unzip \
   uuid-dev wget zip zlib1g-dev
-# sqlite 32-bit cannot be installed with apt, but it works with apt-get. See also:
+# sqlite 32-bit may fail with apt, but works with apt-get. See also:
 # https://developpaper.com/ubuntu-solves-the-problem-of-libsqlite3-0-dependency-recommended/
 sudo apt -y install libzstd-dev:i386 sqlite3:i386
 ```
 
-  - Ubuntu 18/19 64-Bit:
+  - Ubuntu 18/19 64-bit:
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils build-essential bzip2 ccache cmake curl ecj flex \
@@ -305,7 +305,7 @@ sudo apt-get -y install \
   pkg-config pv rsync sqlite3 subversion sudo texinfo tofrodos unar unzip uuid-dev wget zlib1g-dev
 ```
 
-  - Ubuntu 15/16/17 64-Bit:
+  - Ubuntu 15/16/17 64-bit:
 ```
 sudo apt-get -y install \
   autoconf automake autopoint bc binutils bison bsdmainutils bzip2 ecj flex g++ gawk gcc \
@@ -315,7 +315,7 @@ sudo apt-get -y install \
   tofrodos unar unzip wget zlib1g-dev
 ```
 
-  - Ubuntu 14 64-Bit:
+  - Ubuntu 14 64-bit:
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 autopoint bc binutils bison bsdmainutils build-essential \
@@ -332,7 +332,7 @@ cpio min v2.12    https://ftp.gnu.org/gnu/cpio/cpio-2.12.tar.bz2
 make min v3.82    https://ftp.gnu.org/gnu/make/make-3.82.tar.bz2
 libzstd min v0    https://github.com/facebook/zstd/releases/download/v1.4.9/zstd-1.4.9.tar.gz
 ```
-And if `ccache` should be built as well:
+Also, if you want to build ccache:
 ```
 cmake min v3.10   https://ftp.osuosl.org/pub/blfs/conglomeration/cmake/cmake-3.10.3.tar.gz
 gmp min v4.2      https://ftp.gnu.org/gnu/gmp/gmp-4.2.4.tar.bz2
@@ -342,17 +342,17 @@ gcc min v6        https://ftp.gnu.org/gnu/gcc/gcc-6.5.0/gcc-6.5.0.tar.xz
 # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64:/usr/local/lib32"
 ```
 
-  - If a 64-bit Linux is installed on the following systems, additionally install:
+  - If the following systems run 64-bit Linux, install additionally:
 ```
 sudo apt-get -y install libc6-dev-i386 lib32ncurses5-dev gcc-multilib lib32stdc++6
 ```
 
-  - Ubuntu 15 32-Bit / Debian 8: In addition to Ubuntu 13/14 32-bit, install:
+  - Ubuntu 15 32-bit / Debian 8: in addition to Ubuntu 13/14 32-bit, install:
 ```
 sudo apt-get -y install libtool-bin
 ```
 
-  - Ubuntu 13/14 32-Bit:
+  - Ubuntu 13/14 32-bit:
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext \
@@ -361,7 +361,7 @@ sudo apt-get -y install \
   zlib1g-dev
 ```
 
-  - Ubuntu 10/11/12 32-Bit:
+  - Ubuntu 10/11/12 32-bit:
 ```
 sudo apt-get -y install \
   autoconf automake binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext git-core \
@@ -370,7 +370,7 @@ sudo apt-get -y install \
   subversion texinfo tofrodos unzip xz-utils zlib1g-dev
 ```
 
-  - Ubuntu 9.04 32-Bit (kein automake 1.8, "ecj" statt "ecj-bootstrap"):
+  - Ubuntu 9.04 32-bit (no automake 1.8, use "ecj" instead of "ecj-bootstrap"):
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext \
@@ -380,12 +380,12 @@ sudo apt-get -y install \
 ```
 
 ### Mint
-Mint has already been used successfully for building. Just install the packages recommended for Ubuntu.
+Mint has already been used successfully for builds. Install the same packages suggested for Ubuntu.
 
 ### Kali
-Kali rolling has already been used successfully for building. Just install the packages recommended for Ubuntu.
-Most of them are usually already present on Kali.
+Kali rolling has already been used successfully for builds. Install the same packages suggested for Ubuntu.
+Most requirements are usually already installed on Kali.
 
 ### Arch
-On Arch, the metapackage [freetz-ng-tools](https://aur.archlinux.org/packages/freetz-ng-tools-git)<sup>AUR</sup> has been used successfully for building.
+On Arch, the [freetz-ng-tools](https://aur.archlinux.org/packages/freetz-ng-tools-git)<sup>AUR</sup> meta-package has been used successfully for builds.
 
