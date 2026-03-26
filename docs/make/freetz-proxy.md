@@ -69,6 +69,7 @@ rtorrent=0:/cgi-bin/conf/rtorrent
 
 # Direct HTTP link (no proxying through HTTPS)
 rutorrent=81:/rutorrent/:direct
+ariang=81:/ariang/:direct
 ttyd=7681::direct
 
 # Glob path pattern (fnmatch): covers /cgi-bin/conf/* without listing each CGI
@@ -192,6 +193,9 @@ rtorrent_cfg=0:/rtorrent/rtorrent_config_editor.html:direct
 
 # ruTorrent web UI — direct HTTP (WebSocket, heavy JS)
 rutorrent=0:/rutorrent/:direct
+
+# AriaNg web UI — direct HTTP (single-page app, heavy JS)
+ariang=0:/ariang/:direct
 
 # ttyd web terminal — direct HTTP (WebSocket required)
 ttyd=7681::direct

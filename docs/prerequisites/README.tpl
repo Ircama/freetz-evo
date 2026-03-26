@@ -1,11 +1,11 @@
-# Installation der benötigten Pakete
+# Installing Required Packages
 
-Es gibt folgende Möglichkeiten die benötigten Pakete (prerequisites) zu installieren:
+You can install the required packages (prerequisites) in the following ways:
 
-  - Mit dem Befehl `tools/prerequisites` können die Pakete automatisch installiert werden.
-  - Den Code auf dieser Seite per Copy and Paste auf der Konsole auszuführen, zB in PuTTY per Rechtsclick.
+  - Use `tools/prerequisites` to install packages automatically.
+  - Copy and paste the commands from this page into your console (for example, right-click in PuTTY).
 
-### Getestete Distributionen
+### Tested distributions
   - [Fedora](#fedora)
   - [Debian](#debian)
   - [Devuan](#devuan)
@@ -14,34 +14,34 @@ Es gibt folgende Möglichkeiten die benötigten Pakete (prerequisites) zu instal
   - [Mint](#mint)
   - [Kali](#kali)
   - [Arch](#arch)
-  - sonst keine
+  - none others
 
-### Problematische Distributionen
+### Problematic distributions
   - Gentoo
   - NixOS
   - Ubuntu 25.10
   - WSL/WSL2
 
-### Alle anderen Distributionen
-... sind ungetestet und können funktionieren oder auch nicht. Dies hängt stark von den Fähigkeiten des Bedieners ab.
+### All other distributions
+... are untested and may or may not work. Results strongly depend on your Linux/admin experience.
 
-### Distribution ermitteln
-Wenn man vergessen hat welche Linux Version installiert ist kann dies so prüfen:
+### Detect your distribution
+If you do not remember which Linux version is installed, check it as follows:
 
-  - Linux Distribution:
+  - Linux distribution:
 ```
 $ hostnamectl status
   Operating System: Fedora 33 (Thirty Three)
     Kernel: Linux 5.10.15-200.fc33.x86_64
 ```
 
-  - Ubuntu/Debian Version:
+  - Ubuntu/Debian version:
 ```
 $ lsb_release -d
 Description:    Ubuntu 14.04.6 LTS
 ```
 
-  - Maschinen Typ: `i686` bei 32-Bit x86 und `x86_64` bei 64-Bit x86:
+  - Machine type: `i686` for 32-bit x86 and `x86_64` for 64-bit x86:
 ```
 $ uname -m
 aarch64
@@ -49,167 +49,168 @@ aarch64
 
 ### Fedora
 
-  - System aktualisieren:
+  - Update the system:
 ```
 sudo dnf -y update && sudo systemctl daemon-reload
 ```
 
-  - Fedora 42/43 64-Bit:
+  - Fedora 42/43 64-bit:
 ```
 sudo dnf -y install %%Fedora42%%
 ```
 
-  - Fedora 41 64-Bit:
+  - Fedora 41 64-bit:
 ```
 sudo dnf -y install %%Fedora41%%
 ```
 
-  - Fedora 40 64-Bit:
+  - Fedora 40 64-bit:
 ```
 sudo dnf -y install %%Fedora40%%
 ```
 
-  - Fedora 37/38/39 64-Bit:
+  - Fedora 37/38/39 64-bit:
 ```
 sudo dnf -y install %%Fedora37%%
 ```
 
-  - Fedora 36 64-Bit:
+  - Fedora 36 64-bit:
 ```
 sudo dnf -y install %%Fedora36%%
 ```
 
-  - Fedora 35 64-Bit:
+  - Fedora 35 64-bit:
 ```
 sudo dnf -y install %%Fedora35%%
 ```
 
-  - Fedora 33/34 64-Bit:
+  - Fedora 33/34 64-bit:
 ```
 sudo dnf -y install %%Fedora33%%
 ```
 
-  - Falls auf dem folgenden System ein 64-Bit Linux installiert ist wird zusätzlich benötigt:
+  - If the following system runs 64-bit Linux, install additionally:
 ```
 sudo yum -y install ncurses-devel.i686 glibc-devel.i686 libgcc.i686
 ```
 
-  - Fedora ~20 32-Bit:
+  - Fedora ~20 32-bit:
 ```
 sudo yum -y install %%Fedora20%%
 ```
 
 ### Debian
 
-  - System aktualisieren:
+  - Update the system:
 ```
 sudo apt -y update
 sudo apt -y upgrade
 sudo apt -y dist-upgrade
 ```
 
-  - Debian 13 64-Bit:
+  - Debian 13 64-bit:
 ```
 sudo apt -y install %%Debian13%%
 ```
 
-  - Debian 12 64-Bit:
+  - Debian 12 64-bit:
 ```
 sudo apt -y install %%Debian12%%
 ```
 
-  - Debian 11 64-Bit:
+  - Debian 11 64-bit:
 ```
 sudo apt -y install %%Debian11%%
 ```
 
 
 ### Devuan
-Devuan wurde schon erfolgreich zum Bauen benutzt. Einfach die Pakete installieren, die für Debian vorgeschlagen werden.
+Devuan has already been used successfully for builds. Install the same packages suggested for Debian.
 
 
 ### LMDE
-LMDE (Linux Mint Debian Edition) wurde schon erfolgreich zum Bauen benutzt. Einfach die Pakete installieren, die für Debian vorgeschlagen werden.
+LMDE (Linux Mint Debian Edition) has already been used successfully for builds. Install the same packages suggested for Debian.
 
 
 ### Ubuntu
 
-  - Deutsche Tastaturbelegung:<br>
-Siehe [ubuntu.com: LocaleConf](https://help.ubuntu.com/community/LocaleConf)
+  - German keyboard layout:<br>
+See [ubuntu.com: LocaleConf](https://help.ubuntu.com/community/LocaleConf)
 ```
 sudo apt-get -y install console-data && sudo locale-gen de_DE && sudo dpkg-reconfigure console-data && exit
 ```
 
-  - 32-Bit (Multiarch) aktivieren:<br>
-Siehe [debian.org: Multiarch HOWTO](https://wiki.debian.org/Multiarch/HOWTO) und [heise.de: Pakete für mehrere CPU-Architekturen in Linux installieren](http://heise.de/-2056403)
+  - Enable 32-bit (multiarch):<br>
+See [debian.org: Multiarch HOWTO](https://wiki.debian.org/Multiarch/HOWTO) and [heise.de: install packages for multiple CPU architectures on Linux](http://heise.de/-2056403)
 ```
 # dpkg --print-foreign-architectures
 sudo dpkg --add-architecture i386
 sudo apt-get -y update
 ```
 
-  - System aktualisieren:
+  - Update the system:
 ```
 sudo apt-get -y update
 sudo apt-get -y upgrade
 sudo apt-get -y dist-upgrade
 ```
 
-  - uutil-Coreutils Problem ab Ubuntu 25.10:<br>
-Canonical Ltd. hat die GNU-Coreutils (GPL) durch uutil-Coreutils (MIT+Rust+Code-of-Conduct) ersetzt, was viele Probleme, unter anderem mit `pseudo-host` verursacht.
-Siehe [Carefully But Purposefully Oxidising Ubuntu](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995) und
-[Der Wechsel von Ubuntu 25.10 zu Rust Coreutils verursacht bei einigen ausführbaren Dateien erhebliche Probleme](https://www.reddit.com/r/linux/comments/1nr1bas/ubuntu_2510s_move_to_rust_coreutils_is_causing/?tl=de).<br>
-Die Fehlermeldung lautet `couldn't allocate absolute path for 'null'`.<br>
-Grundsätzlich ist von uutil-Coreutils abzuraten da diese unausgereift und vielfältige [Fehler in allen möglichen tools](https://freetz-ng.github.io/freetz-ng/NEWS/#2025-11-21) wie date, cp, mv, base64, du, sort, tail, ls, md5sum, dd, sudo usw usf aso aufweisen.<br>
-Workaround: Deinstallation von uutil-Coreutils und gleichzeitige Installation von GNU-Coreutils mittels
+  - uutils-coreutils issue starting with Ubuntu 25.10:<br>
+Canonical replaced GNU coreutils (GPL) with uutils coreutils (MIT/Rust/Code of Conduct), which causes several issues, including problems with `pseudo-host`.
+See [Carefully But Purposefully Oxidising Ubuntu](https://discourse.ubuntu.com/t/carefully-but-purposefully-oxidising-ubuntu/56995) and
+[Ubuntu 25.10's move to Rust coreutils causes major issues for some executables](https://www.reddit.com/r/linux/comments/1nr1bas/ubuntu_2510s_move_to_rust_coreutils_is_causing/?tl=de).<br>
+Typical error: `couldn't allocate absolute path for 'null'`.<br>
+In general, uutils-coreutils is currently not recommended for Freetz builds due to immaturity and known [issues in multiple tools](https://freetz-ng.github.io/freetz-ng/NEWS/#2025-11-21) (`date`, `cp`, `mv`, `base64`, `du`, `sort`, `tail`, `ls`, `md5sum`, `dd`, `sudo`, ...).<br>
+Workaround: remove uutils-coreutils and install GNU coreutils with
 ```
 sudo apt-get remove --allow-remove-essential coreutils-from-uutils
 ```
 
-  - Ubuntu 26 64-Bit:
+  - Ubuntu 26 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu26%%
+```
 
-  - Ubuntu 23/24/25 64-Bit:
+  - Ubuntu 23/24/25 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu23%%
 ```
 
-  - Ubuntu 22 64-Bit:
+  - Ubuntu 22 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu22%%
 ```
 
-  - Ubuntu 20/21 64-Bit:
+  - Ubuntu 20/21 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu20%%
-# sqlite-32bit lässt sich mit apt nicht installieren, aber mit apt-get schon. Siehe auch:
+# sqlite 32-bit may fail with apt, but works with apt-get. See also:
 # https://developpaper.com/ubuntu-solves-the-problem-of-libsqlite3-0-dependency-recommended/
 sudo apt -y install libzstd-dev:i386 sqlite3:i386
 ```
 
-  - Ubuntu 18/19 64-Bit:
+  - Ubuntu 18/19 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu18%%
 ```
 
-  - Ubuntu 15/16/17 64-Bit:
+  - Ubuntu 15/16/17 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu15%%
 ```
 
-  - Ubuntu 14 64-Bit:
+  - Ubuntu 14 64-bit:
 ```
 sudo apt-get -y install %%Ubuntu14%%
 ```
-Zusätzlich muss manuell installiert werden:
+Additionally, install manually:
 ```
 cmake min v3.4.3  https://ftp.osuosl.org/pub/blfs/conglomeration/cmake/cmake-3.4.3.tar.gz
 cpio min v2.12    https://ftp.gnu.org/gnu/cpio/cpio-2.12.tar.bz2
 make min v3.82    https://ftp.gnu.org/gnu/make/make-3.82.tar.bz2
 libzstd min v0    https://github.com/facebook/zstd/releases/download/v1.4.9/zstd-1.4.9.tar.gz
 ```
-Und ausserdem falls ccache gebaut werden soll:
+Also, if you want to build ccache:
 ```
 cmake min v3.10   https://ftp.osuosl.org/pub/blfs/conglomeration/cmake/cmake-3.10.3.tar.gz
 gmp min v4.2      https://ftp.gnu.org/gnu/gmp/gmp-4.2.4.tar.bz2
@@ -219,38 +220,38 @@ gcc min v6        https://ftp.gnu.org/gnu/gcc/gcc-6.5.0/gcc-6.5.0.tar.xz
 # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/lib64:/usr/local/lib32"
 ```
 
-  - Falls auf den folgenden Systemen ein 64-Bit Linux installiert ist wird zusätzlich benötigt:
+  - If the following systems run 64-bit Linux, install additionally:
 ```
 sudo apt-get -y install libc6-dev-i386 lib32ncurses5-dev gcc-multilib lib32stdc++6
 ```
 
-  - Ubuntu 15 32-Bit / Debian 8: Zusätzlich zu Ubuntu 13/14 32-Bit wird benötigt:
+  - Ubuntu 15 32-bit / Debian 8: in addition to Ubuntu 13/14 32-bit, install:
 ```
 sudo apt-get -y install libtool-bin
 ```
 
-  - Ubuntu 13/14 32-Bit:
+  - Ubuntu 13/14 32-bit:
 ```
 sudo apt-get -y install %%Ubuntu13%%
 ```
 
-  - Ubuntu 10/11/12 32-Bit:
+  - Ubuntu 10/11/12 32-bit:
 ```
 sudo apt-get -y install %%Ubuntu10%%
 ```
 
-  - Ubuntu 9.04 32-Bit (kein automake 1.8, "ecj" statt "ecj-bootstrap"):
+  - Ubuntu 9.04 32-bit (no automake 1.8, use "ecj" instead of "ecj-bootstrap"):
 ```
 sudo apt-get -y install %%Ubuntu09%%
 ```
 
 ### Mint
-Mint wurde schon erfolgreich zum Bauen benutzt. Einfach die Pakete installieren, die für Ubuntu vorgeschlagen werden.
+Mint has already been used successfully for builds. Install the same packages suggested for Ubuntu.
 
 ### Kali
-Kali rolling wurde schon erfolgreich zum Bauen benutzt. Einfach die Pakete installieren, die für Ubuntu vorgeschlagen werden.
-Das meiste wird bei Kali sowieso schon dabei installiert sein.
+Kali rolling has already been used successfully for builds. Install the same packages suggested for Ubuntu.
+Most requirements are usually already installed on Kali.
 
 ### Arch
-Unter Arch wurde das Metapackage [freetz-ng-tools](https://aur.archlinux.org/packages/freetz-ng-tools-git)<sup>AUR</sup> erfolgreich zum Bauen benutzt.
+On Arch, the [freetz-ng-tools](https://aur.archlinux.org/packages/freetz-ng-tools-git)<sup>AUR</sup> meta-package has been used successfully for builds.
 

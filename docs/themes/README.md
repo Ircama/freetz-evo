@@ -1,25 +1,26 @@
-# Aussehen
+# Appearance
 
-Momentan gibt es nur ganz wenige Möglichkeiten, das Aussehen von
-FREETZ- oder auch von AVM-Webinterface zu verändern. Bei FREETZ-WebIF
-ist es mehr historisch gewachsen: Bei der Vielfalt der vorhandenen
-Pakete ist es momentan nur schwer denkbar globale Änderungen im
-WebIF-Design durchzuführen.
+At the moment there are only a few options to customize the appearance
+of the Freetz or AVM web interface. For the Freetz WebIF this is mostly
+historically grown: because of the wide variety of existing packages,
+global and consistent WebIF redesigns are currently difficult.
 
   * [Favicon](favicon.md)<br>
-    Ein Favicon ist ein kleines Icon, Symbol oder Logo, welches in
-    der Adresszeile eines Browsers links von der URL oder auf dem
-    Tab angezeigt wird  
+    A favicon is a small icon, symbol, or logo shown in the browser
+    address bar (left of the URL) or in the tab.
 
   * [Skin](skin.md)<br>
-    Aussehen des Freetz-Webinterfaces. Menüposition, Farben usw.
+    Overall Freetz web interface look and feel: menu position, colors, etc.
 
   * [Style](style.md)<br>
-    Farbliche Darstellung der eingebundenen Medien/Partitionen.
+    Color styling for integrated media/partition displays.
 
   * [Tagging](tagging.md)<br>
-    Das Logo im AVM-Webinterface wird "getaggt". So kann einfacher
-    erkannt werden ob Freetz installiert und die Fritz!Box
-    modifiziert ist.
+    Tags the AVM web interface logo, making it easier to identify
+    that Freetz is installed and the FRITZ!Box is modified.
+
+  * [EVO theme](evo.md)<br>
+    The EVO visual theme for Freetz-EVO, including branding/styling
+    adjustments beyond classic skin/style options.
 
 

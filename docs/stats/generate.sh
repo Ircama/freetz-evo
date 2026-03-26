@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-# generates docs/stats/README.md
+# Generates docs/stats/README.md
 SCRIPT="$(readlink -f $0)"
 PARENT="$(dirname $(dirname ${SCRIPT%/*}))"
 OUTFILE="$PARENT/docs/stats/README.md"
@@ -167,48 +167,48 @@ get_tc() {
 
 main() {
 
-	echo "# Statistiken rund um Freetz-NG"
+	echo "# Statistics around Freetz-NG"
 	echo
 
 	echo "firmware" >&2
 	[ "$DEBUG_GET" ] && get_fw
-	spoiler_head "$TMPFILE.fw.head" "verschiedene FRITZ!OS"
+	spoiler_head "$TMPFILE.fw.head" "different FRITZ!OS versions"
 	spoiler_body "$TMPFILE.fw.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.fw."*
 
 	echo "hwrev" >&2
 	[ "$DEBUG_GET" ] && get_hr
-	spoiler_head "$TMPFILE.hr.head" "verschiedene HWR"
+	spoiler_head "$TMPFILE.hr.head" "different HWR values"
 	spoiler_body "$TMPFILE.hr.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.hr."*
 
 	echo "prod" >&2
 	[ "$DEBUG_GET" ] && get_pd
-	spoiler_head "$TMPFILE.pd.head" "verschiedene Produkte"
+	spoiler_head "$TMPFILE.pd.head" "different products"
 	spoiler_body "$TMPFILE.pd.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.pd."*
 
 	echo "hardware" >&2
 	[ "$DEBUG_GET" ] && get_hw
-	spoiler_head "$TMPFILE.hw.head" "verschiedene Geräte"
+	spoiler_head "$TMPFILE.hw.head" "different devices"
 	spoiler_body "$TMPFILE.hw.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.hw."*
 
 	echo "image" >&2
 	[ "$DEBUG_GET" ] && get_dl
-	spoiler_head "$TMPFILE.dl.head" "verschiedene Images"
+	spoiler_head "$TMPFILE.dl.head" "different images"
 	spoiler_body "$TMPFILE.dl.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.dl."*
 
 	echo "layout" >&2
 	[ "$DEBUG_GET" ] && get_lg
-	spoiler_head "$TMPFILE.lg.head" "verschiedene Layouts"
+	spoiler_head "$TMPFILE.lg.head" "different layouts"
 	spoiler_body "$TMPFILE.lg.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.lg."*
 
 	echo "toolchain" >&2
 	[ "$DEBUG_GET" ] && get_tc
-	spoiler_head "$TMPFILE.tc.head" "verschiedene Toolchains"
+	spoiler_head "$TMPFILE.tc.head" "different toolchains"
 	spoiler_body "$TMPFILE.tc.body"
 	[ "$DEBUG_DEL" ] && rm -f "$TMPFILE.tc."*
 

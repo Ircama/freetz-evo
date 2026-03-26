@@ -1394,4 +1394,3 @@ These secrets enable flexible deployment scenarios while maintaining security by
 **Build System Validation**: Verifying that toolchain configurations, package dependencies, and compilation flags work correctly across different architectures.
 
 The `fake-firmware` mode represents a sophisticated approach to comprehensive build testing, enabling robust validation of Freetz-EVO packages across diverse device configurations while maintaining efficiency and eliminating external dependencies.
-```

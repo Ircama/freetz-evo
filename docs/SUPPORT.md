@@ -1,50 +1,50 @@
 # Support
-Wie kann ich Freetz-NG unterstützen?
+How can I support Freetz-NG?
 
  * __[Sponsor](#sponsor)__<a id='sponsor'></a><br>
     - [![](https://img.shields.io/static/v1?label=GitHub&message=fda77&logo=GitHub&color=%230e8e86)](https://github.com/sponsors/fda77)
  * __[UNTESTED](#untested)__<a id='untested'></a><br>
-   Im ```menuconfig``` und in [FIRMWARES](FIRMWARES.md) sind verschieden Geräte als ```UNTESTED``` markiert.<br>
-   Mangels Hardware konnte auf diesen nicht ausprobiert werden ob Freetz-NG funktioniert.<br>
-   Falls jemand so ein Gerät erfolgreich mit Freetz-NG betreibt, bitte Rückmeldung geben.<br>
-   Am besten gleich mit einem Screenshot von ```Box-Info``` und ```Flashspeicher```.<br>
- * __[Quellcode](#quellcode)__<a id='quellcode'></a><br>
-   Um ein modifiziertes Image zu erstellen, ist von AVM der passende Quellcode notwendig.<br>
-   Da AVM Software nutzt die zB unter der GPL steht, muss dieser Sourcecode herausgegeben<br>
-   werden - allerdings nur auf Anfrage!<br>
-   Dazu sollte **jeder** für **jedes** seiner Geräte eine E-Mail an [fritzbox_info@avm.de](mailto:fritzbox_info@avm.de) schicken.<br>
-   Dies zu **jeder** veröffentlichten FritzOS Version, auch für die sogenannten "Labor".<br>
-   AVM veröffentlicht das Paket dann früher oder später auf [osp.avm.de/](https://osp.avm.de/).<br>
+   In `menuconfig` and in [FIRMWARES](FIRMWARES.md), several devices are marked as `UNTESTED`.<br>
+   Because of missing hardware, it was not possible to verify whether Freetz-NG works on them.<br>
+   If you run Freetz-NG successfully on one of these devices, please report back.<br>
+   Ideally include screenshots of `Box-Info` and `Flashspeicher`.<br>
+ * __[Source code](#source-code)__<a id='source-code'></a><br>
+   Building a modified image requires the matching AVM source code.<br>
+   Since AVM uses software licensed under terms like GPL, they must provide source code,<br>
+   but usually only on request.<br>
+   Everyone should send an email for each owned device to [fritzbox_info@avm.de](mailto:fritzbox_info@avm.de).<br>
+   Do this for every published FRITZ!OS version, including so-called "Labor" builds.<br>
+   AVM then publishes the package on [osp.avm.de/](https://osp.avm.de/).<br>
  * __[Pull request](#pull-request)__<a id='pull-request'></a><br>
-   Eigene Änderungen zu Freetz-NG "pushen":
-    - Auf [github.com/Freetz-NG/freetz-ng/](https://github.com/Freetz-NG/freetz-ng/) oben mit ```Fork``` einen Fork im eigenen Account erstellen.
-    - Eigenen Fork auschecken: ```git clone https://github.com/BENUTZERNAME/freetz-ng.git```
-    - Einen Branch erstellen: ```git branch BRANCHNAME``` ; ```git checkout BRANCHNAME``` ; ```git push -u origin BRANCHNAME```
-    - Geänderte/hinzugefügte Dateien hochladen: ```git add . ; git commit -m "BESCHREIBUNG" ; git push```
-    - Auf [github.com/Freetz-NG/freetz-ng/](https://github.com/Freetz-NG/freetz-ng/) mit ```New pull request``` die eigenen Änderungen abschicken.
- * __[Mailbox Format](#mailbox-format)__<a id='mailbox-format'></a><br>
-   Falls ein pull request zu aufwändig ist kann auch ein Patch erstellt werden:
-    - Auschecken: `git clone https://github.com/Freetz-NG/freetz-ng.git`
-    - Sicherstellen dass der Name gesetzt ist: `git config --global user.name "GITHUB-NAME"`
-    - Sicherstellen dass die eMail gesetzt ist: `git config --global user.email GITHUB-NAME@users.noreply.github.com`
-    - Veränderungen vornehmen, Dateien löschen oder hinzufügen.
-    - Alle Veränderungen hinzufügen: `git add .`
-    - Einen Commit erstellen: `git commit -m "BESCHREIBUNG"`
-    - Die Patchdatei erstellen: `git format-patch origin/HEAD`
-    - Alle lokalen Veränderungen wieder löschen `git reset --hard  origin/HEAD`
+   Contributing your own changes to Freetz-NG:
+    - Create your own fork on [github.com/Freetz-NG/freetz-ng/](https://github.com/Freetz-NG/freetz-ng/) using `Fork`.
+    - Clone your fork: `git clone https://github.com/USERNAME/freetz-ng.git`
+    - Create a branch: `git branch BRANCHNAME` ; `git checkout BRANCHNAME` ; `git push -u origin BRANCHNAME`
+    - Commit and push your changes: `git add . ; git commit -m "DESCRIPTION" ; git push`
+    - Open a PR from your fork using `New pull request` on [github.com/Freetz-NG/freetz-ng/](https://github.com/Freetz-NG/freetz-ng/).
+ * __[Mailbox format](#mailbox-format)__<a id='mailbox-format'></a><br>
+   If creating a pull request is too much effort, you can also send a patch:
+    - Clone: `git clone https://github.com/Freetz-NG/freetz-ng.git`
+    - Ensure your name is set: `git config --global user.name "GITHUB-NAME"`
+    - Ensure your email is set: `git config --global user.email GITHUB-NAME@users.noreply.github.com`
+    - Make your changes, add/remove files as needed.
+    - Stage all changes: `git add .`
+    - Create a commit: `git commit -m "DESCRIPTION"`
+    - Create patch file(s): `git format-patch origin/HEAD`
+    - Remove all local changes again: `git reset --hard origin/HEAD`
  * __[Package bump](#package-bump)__<a id='package-bump'></a><br>
-   Minimale Schritte um die Version eines Packages/Library zu aktualisieren:
-    - Changelog lesen, es kann sich etwas geändert haben das beachtet werden muss.
-    - Hinweis: Libraries befinden sich nicht in ```make/pkgs/$PKG/``` sondern: ```make/libs/$PKG/```
-    - Die Datei ```docs/CHANGELOG.md``` anpassen.
-    - Die Version in ```make/pkgs/$PKG/Config.in``` anpassen.
-    - Die Version in ```make/pkgs/$PKG/$PKG.mk``` anpassen.
-    - Die Prüfsumme in ```make/pkgs/$PKG/$PKG.mk``` anpassen.
-    - Falls der Dateiname die Version enthält, ```make/pkgs/$PKG/external.*``` anpassen.
-    - Vorhandene Patches in ```make/pkgs/$PKG/patches/``` aktualisieren durch ausführen von: ```make $PKG-autofix```
-    - Compilieren testen mit: ```make $PKG-recompile```
-    - Am besten noch auf eine Fritzbox flashen und testen.
+   Minimal steps to update a package/library version:
+    - Read the changelog, there may be relevant behavior changes.
+    - Note: libraries are in `make/libs/$PKG/`, not in `make/pkgs/$PKG/`.
+    - Update `docs/CHANGELOG.md`.
+    - Update version in `make/pkgs/$PKG/Config.in`.
+    - Update version in `make/pkgs/$PKG/$PKG.mk`.
+    - Update checksum in `make/pkgs/$PKG/$PKG.mk`.
+    - If filename includes version, update `make/pkgs/$PKG/external.*`.
+    - Refresh existing patches in `make/pkgs/$PKG/patches/` with `make $PKG-autofix`.
+    - Test build with `make $PKG-recompile`.
+    - Best practice: flash and test on a real FRITZ!Box.
  * __[Wiki](#wiki)__<a id='wiki'></a><br>
-    Viele Teile des unter [freetz-ng.github.io/](https://freetz-ng.github.io/) zu erreichenden Wikis sind veraltet und bedürfen einer<br>
-    Überarbeitung. Alle Datein des Wikis sind im Checkout unter ```docs/wiki/``` zu finden.<br>
+    Many parts of the wiki at [freetz-ng.github.io/](https://freetz-ng.github.io/) are outdated and need updates.<br>
+    All wiki files are available in the checkout under `docs/wiki/`.<br>
 

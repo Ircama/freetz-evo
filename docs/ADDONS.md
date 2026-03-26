@@ -1,41 +1,40 @@
 # Addons
-Addons der "Digitalen Elite" werden hier nicht supported!
+"Digitale Elite" addons are not supported here.
 
-Diese Addons wurden augenscheinlich von Personen programmiert die wenig bis gar keine Ahnung von Freetz haben.<br>
-Deshalb sind die dadurch verursachten Fehler vielfältig. Es ist sogar möglich dass die Freetz-Konfiguration<br>
-so nachhaltig beschädigt wird, dass selbst mit einem später geflashten Image ohne Addons die Fritzbox nicht<br>
-mehr richtig funktioniert.
+These addons appear to be implemented by people with little or no understanding of how Freetz works.<br>
+As a result, failures are diverse and often severe. In some cases the Freetz configuration is damaged so badly<br>
+that even after flashing a later image without addons, the FRITZ!Box may still not work correctly.
 
-### Vielfältige aus Foren bekannte Fehler
-Diese Liste erhebt keinen Anspruch auf Vollständigkeit oder Korrektheit
- - Das Freetz-Webinterface funktioniert überhaupt nicht mehr
- - Crond funktioniert nicht mehr
- - Die Onlinehilfe funktionieren nicht mehr
- - Es werden Datein von Freetz überschrieben
- - Ein Watchdog löst ohne Grund Reboots aus, bis hin zum Bootloop
- - Cron wird missbraucht um endlos externe STUN/VoIP Server zu hammern
- - Es werden fehlerhafte Binaries gestartet die Crashes verursachen
- - Binaries werden auch gerne mit UPX gepackt und verursachen ebenfalls Crashes
- - Es werden alberne Standardwert in der Config gesetzt die Segfaults verursachen
- - Manche Einstellungen werden doppelt gespeichert
- - Andere Einstellungen dagegen werden gar nicht mehr gespeichert
- - Es ist nicht mehr möglich ein Einstellungsbackup wiederherzustellen
- - Benutzer werden gelöscht
- - Planloses setzen von Systemvariablen verursachen Segfaults von AVM Binaries
- - Überflüssiges ständiges Speichern ins Flash lässt den Speicher schneller altern
- - Die rc.custom wird verändert und durch Flashen eines sauberen Images nicht bereinigt
+### Common problems reported in forums
+This list is not guaranteed to be complete or perfectly accurate:
+ - The Freetz web interface stops working entirely
+ - `crond` no longer works
+ - Online help pages no longer work
+ - Freetz files are overwritten
+ - A watchdog triggers reboots without reason, up to boot loops
+ - Cron jobs repeatedly hammer external STUN/VoIP servers
+ - Broken binaries are started and crash
+ - Binaries packed with UPX also crash frequently
+ - Invalid default config values cause segmentation faults
+ - Some settings are saved twice
+ - Other settings are no longer saved at all
+ - Restoring configuration backups stops working
+ - Users are deleted
+ - Random system variable changes trigger segfaults in AVM binaries
+ - Excessive and unnecessary flash writes accelerate wear
+ - `rc.custom` is modified and not cleaned by flashing a clean image
  - ...
 
-### Steigerung der Unzulänglichkeit
-Dies alles betrifft ausdrücklich auch Sammys l-matic Script da dort nicht nur diese mangelhaften DEB-Addons<br>
-eingebaut werden, sondern noch weiter in Freetz herumgemurkst wird.<br>
+### Even worse combinations
+This also explicitly applies to Sammy's `l-matic` script, because it not only installs these problematic DEB addons,<br>
+it also performs additional invasive modifications inside Freetz.<br>
 
-### Die Scheisse wieder vom Stiefel bekommen
-Falls aus versehen ein Image mit Addon geflasht wurds, empfiehlt sich ein Recovery um alle Einstellungen zu<br>
-löschen. Danach kann Freetz wieder geflasht werden. **Es darf keine alte Sicherung zurückgespielt werden!**<br>
+### How to recover
+If you accidentally flashed an image with such addons, run a recovery and wipe all settings.
+After that, flash Freetz again. **Do not restore an old backup.**<br>
 
-### Nervt mit dem Krempel nicht herum
-Wenn ihr irgend wo herumheult dass etwas nicht funktioniert schreibt dazu dass ihr den Müll eingebaut habt.<br>
-**Auf keinen Fall sollten wegen einem Image mit solch einem Addon hier ein Issue erstellt werden.**
+### Issue policy
+If something breaks and these addons were used, mention that clearly.
+**Do not open issues here for images containing such addons.**
 
 

@@ -1,7 +1,7 @@
 # Getting Started with Freetz-EVO
 
 Freetz-EVO is a firmware extension framework for AVM FRITZ!Box devices. It lets you add packages
-and features, such as a web file manager, torrent client, web terminal, PHP, Python, Nginx, and
+and features, such as a web file manager, multi-protocol download tool, torrent client, web terminal, PHP, Python, Nginx, and
 more, well beyond what the stock FRITZ!OS firmware offers.
 
 A Linux build environment with approximately 10–20 GB of free disk space is required.
@@ -190,7 +190,6 @@ tools/prerequisites install  # may take a few minutes
 ```
 
 The script detects your distribution and installs all required packages automatically.
-On apt-based systems, this includes `golang-go`.
 
 ---
 
