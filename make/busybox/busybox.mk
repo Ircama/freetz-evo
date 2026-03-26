@@ -10,7 +10,7 @@ $(PKG)_SITE:=https://www.busybox.net/downloads,https://busybox.net/downloads/sna
 ### MANPAGE:=https://www.busybox.net/downloads/BusyBox.html
 ### CHANGES:=https://www.busybox.net/news.html
 ### CVSREPO:=https://git.busybox.net/busybox/
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_MAKE_DIR:=$(MAKE_DIR)/busybox
 

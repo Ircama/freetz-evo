@@ -8,7 +8,7 @@ $(PKG)_SITE:=http://download.openpkg.org/components/cache/python-setup,https://d
 ### MANPAGE:=https://pip.pypa.io/
 ### CHANGES:=https://pypi.org/project/pip/#history
 ### CVSREPO:=https://github.com/pypa/pip
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=python3-host
 

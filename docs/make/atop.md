@@ -4,5 +4,5 @@
   - Changelog: [https://www.atoptool.nl/downloadatop.php](https://www.atoptool.nl/downloadatop.php)
   - Repository: [https://github.com/Atoptool/atop](https://github.com/Atoptool/atop)
   - Package: [master/make/pkgs/atop/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/atop/)
-  - Maintainer: -
+  - Steward: -
 

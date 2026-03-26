@@ -4,7 +4,7 @@
   - Changelog: [https://github.com/the-tcpdump-group/tcpdump/blob/master/CHANGES](https://github.com/the-tcpdump-group/tcpdump/blob/master/CHANGES)
   - Repository: [https://github.com/the-tcpdump-group/tcpdump](https://github.com/the-tcpdump-group/tcpdump)
   - Package: [master/make/pkgs/tcpdump/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tcpdump/)
-  - Maintainer: [@fda77](https://github.com/fda77)
+  - Steward: [@fda77](https://github.com/fda77)
 
 **[tcpdump](http://www.tcpdump.org/)** ist ein
 Netzwerk-[Sniffer](http://de.wikipedia.org/wiki/Sniffer)

@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://curl.se/download,https://curl.haxx.se/download
 ### MANPAGE:=https://curl.se/docs/manpage.html
 ### CHANGES:=https://curl.se/changes.html
 ### CVSREPO:=https://github.com/curl/curl
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_LIB_libcurl_WITH_VERSION_ABANDON),abandon,current)
 

@@ -6,7 +6,7 @@ $(PKG)_SITE:=@SF/procps-ng/Production
 ### MANPAGE:=https://linux.die.net/man/1/ps
 ### CHANGES:=https://gitlab.com/procps-ng/procps/-/tags
 ### CVSREPO:=https://gitlab.com/procps-ng/procps
-### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES_SRC_DIR             := ps        top .    .      .      .  .   .     .     .     .    .       .     .     .     .     .      .   
 $(PKG)_BINARIES_ALL                 := ps        top free uptime vmstat w pmap pgrep pkill pidof pwdx slabtop tload watch skill snice sysctl kill

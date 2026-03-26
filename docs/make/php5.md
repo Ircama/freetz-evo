@@ -4,7 +4,7 @@
   - Changelog: [https://github.com/php/php-src/releases](https://github.com/php/php-src/releases)
   - Repository: [https://github.com/php/php-src](https://github.com/php/php-src)
   - Package: [master/make/pkgs/php5/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/php5/)
-  - Maintainer: -
+  - Steward: -
 
 "*PHP is a widely-used general-purpose scripting language that is
 especially suited for Web development and can be embedded into HTML.*"

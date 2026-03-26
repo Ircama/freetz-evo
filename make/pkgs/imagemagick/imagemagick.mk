@@ -11,7 +11,7 @@ $(PKG)_SITE:=https://download.imagemagick.org/archive,https://download.imagemagi
 ### MANPAGE:=https://www.imagemagick.org/Usage/
 ### CHANGES:=https://github.com/ImageMagick/ImageMagick/releases
 ### CVSREPO:=https://github.com/ImageMagick/ImageMagick
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_IMAGEMAGICK_VERSION_ABANDON),abandon,current)
 

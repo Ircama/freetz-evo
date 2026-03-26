@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://github.com/oetiker/rrdtool-1.x/releases/download/v$($(PKG)_
 ### MANPAGE:=https://oss.oetiker.ch/rrdtool/doc
 ### CHANGES:=https://github.com/oetiker/rrdtool-1.x/blob/master/CHANGES
 ### CVSREPO:=https://github.com/oetiker/rrdtool-1.x
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_LIB_librrd_WITH_VERSION_ABANDON),abandon,current)
 

@@ -5,7 +5,7 @@ $(PKG)_SITE:=git@https://github.com/TangoCash/lcd4linux.git
 ### MANPAGE:=https://wiki.vuplus-support.org/index.php?title=LCD4Linux
 ### CHANGES:=https://github.com/TangoCash/lcd4linux/commits/master/
 ### CVSREPO:=https://github.com/TangoCash/lcd4linux
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/lcd4linux
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lcd4linux

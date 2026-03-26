@@ -3,5 +3,5 @@
   - Changelog: [https://cgit.git.savannah.gnu.org/cgit/config.git/log/](https://cgit.git.savannah.gnu.org/cgit/config.git/log/)
   - Repository: [https://cgit.git.savannah.gnu.org/cgit/config.git](https://cgit.git.savannah.gnu.org/cgit/config.git)
   - Host-Tool: [master/make/host-tools/config-host/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/host-tools/config-host/)
-  - Maintainer: [@fda77](https://github.com/fda77)
+  - Steward: [@fda77](https://github.com/fda77)
 

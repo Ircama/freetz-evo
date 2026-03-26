@@ -33,12 +33,6 @@ make/pkgs/PACKAGE_NAME/
 - Variables: Use `$(PKG)` macro, NOT hardcoded package names
 - Avoid nested variable references: Use `$(ZIP_DIR)` not `$($(PKG)_DIR)`
 
-### SUPPORT Field
-Add a SUPPORT field to track maintainership:
-```makefile
-### SUPPORT:=YourGitHubUsername
-```
-
 ---
 
 ## Adding Simple Binary Packages
@@ -77,7 +71,6 @@ $(PKG)_SITE:=https://downloads.sourceforge.net/infozip
 $(PKG)_SOURCE_DIR:=$(SOURCE_DIR)/$(PKG_LANG)
 $(PKG)_DIR:=$($(PKG)_SOURCE_DIR)/zip30  # Actual directory name after extraction
 ### WEBSITE:=https://infozip.sourceforge.net/Zip.html
-### SUPPORT:=YourUsername
 
 $(PKG)_BINARY_BUILD := $(ZIP_DIR)/zip
 $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/zip
@@ -195,7 +188,6 @@ $(call PKG_INIT_BIN, 2.41)
 $(PKG)_SOURCE:=binutils-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=<sha256>
 $(PKG)_SITE:=https://ftp.gnu.org/gnu/binutils
-### SUPPORT:=YourUsername
 
 # Define all binaries
 $(PKG)_READELF_BUILD := $($(PKG)_DIR)/binutils/readelf
@@ -285,7 +277,6 @@ $(PKG)_SOURCE:=modulename-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=<sha256>
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/m/modulename
 ### WEBSITE:=https://pypi.org/project/modulename/
-### SUPPORT:=YourUsername
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools

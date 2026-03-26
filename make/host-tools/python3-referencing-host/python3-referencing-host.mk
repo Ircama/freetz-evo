@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/python-jsonschema/referencing/releases/download/
 ### MANPAGE:=https://referencing.readthedocs.io
 ### CHANGES:=https://github.com/python-jsonschema/referencing/releases
 ### CVSREPO:=https://github.com/python-jsonschema/referencing
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=python3-host
 

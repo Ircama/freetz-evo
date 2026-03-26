@@ -4,6 +4,6 @@
   - Changelog: [https://github.com/the-tcpdump-group/libpcap/blob/master/CHANGES](https://github.com/the-tcpdump-group/libpcap/blob/master/CHANGES)
   - Repository: [https://github.com/the-tcpdump-group/libpcap](https://github.com/the-tcpdump-group/libpcap)
   - Library: [master/make/libs/libpcap/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/libpcap/)
-  - Maintainer: -
+  - Steward: -
 
 libpcap is a system-independent interface for user-level packet capture. libpcap provides a portable framework for low-level network monitoring. Applications include network statistics collection, security monitoring, network debugging, etc.

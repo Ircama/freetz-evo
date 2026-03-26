@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/acmesh-official/acme.sh/archive/refs/tags
 ### MANPAGE:=https://github.com/acmesh-official/acme.sh/wiki
 ### CHANGES:=https://github.com/acmesh-official/acme.sh/releases
 ### CVSREPO:=https://github.com/acmesh-official/acme.sh
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_ALL_ADDS:=deploy dnsapi notify acme.sh
 $(PKG)_ADDS:=$(addprefix $($(PKG)_DIR)/,$($(PKG)_ALL_ADDS))

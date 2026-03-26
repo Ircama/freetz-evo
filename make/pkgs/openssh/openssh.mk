@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable,$(PKG)_SITE:=h
 ### MANPAGE:=https://www.openssh.com/manual.html
 ### CHANGES:=https://www.openssh.com/releasenotes.html
 ### CVSREPO:=https://github.com/openssh/openssh-portable
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_OPENSSH_VERSION_ABANDON),abandon,current)
 

@@ -4,5 +4,5 @@
   - Changelog: [https://git.w1.fi/cgit/hostap/log/hostapd](https://git.w1.fi/cgit/hostap/log/hostapd)
   - Repository: [https://git.w1.fi/cgit/hostap/tree/hostapd](https://git.w1.fi/cgit/hostap/tree/hostapd)
   - Package: [master/make/pkgs/hostapd_cli/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hostapd_cli/)
-  - Maintainer: [@jpsollie](https://github.com/jpsollie)
+  - Steward: [@jpsollie](https://github.com/jpsollie)
 

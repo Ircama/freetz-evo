@@ -6,7 +6,7 @@ $(PKG)_SITE:=http://ftp.astron.com/pub/file,ftp://ftp.astron.com/pub/file
 ### MANPAGE:=https://linux.die.net/man/1/file
 ### CHANGES:=http://ftp.astron.com/pub/file
 ### CVSREPO:=https://github.com/file/file
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/src/file
 $(PKG)_BINARY_TARGET:=$(TOOLS_BUILD_DIR)/usr/bin/file

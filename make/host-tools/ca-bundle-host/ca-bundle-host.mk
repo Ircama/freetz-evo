@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=cacert-$($(PKG)_VERSION).pem
 $(PKG)_HASH:=b6e66569cc3d438dd5abe514d0df50005d570bfc96c14dca8f768d020cb96171
 $(PKG)_SITE:=https://curl.se/ca,https://www.curl.se/ca,https://curl.haxx.se/ca
 ### WEBSITE:=https://www.curl.se/ca
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/cacert.pem
 $(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/cacert.pem

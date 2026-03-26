@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://w1.fi/releases
 ### MANPAGE:=https://manpages.ubuntu.com/manpages/jammy/man1/hostapd_cli.1.html
 ### CHANGES:=https://git.w1.fi/cgit/hostap/log/hostapd
 ### CVSREPO:=https://git.w1.fi/cgit/hostap/tree/hostapd
-### SUPPORT:=jpsollie
+### STEWARD:=jpsollie
 
 $(PKG)_BINARY         := $($(PKG)_DIR)/hostapd/hostapd_cli
 $(PKG)_TARGET_BINARY  := $($(PKG)_DEST_DIR)/usr/sbin/hostapd_cli

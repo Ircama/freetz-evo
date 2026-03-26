@@ -6,7 +6,7 @@ $(PKG)_SITE:=http://ftp.astron.com/pub/file,ftp://ftp.astron.com/pub/file
 ### MANPAGE:=https://linux.die.net/man/1/file
 ### CHANGES:=http://ftp.astron.com/pub/file
 ### CVSREPO:=https://github.com/file/file
-### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_CATEGORY:=Debug helpers
 

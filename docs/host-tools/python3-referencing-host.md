@@ -4,5 +4,5 @@
   - Changelog: [https://github.com/python-jsonschema/referencing/releases](https://github.com/python-jsonschema/referencing/releases)
   - Repository: [https://github.com/python-jsonschema/referencing](https://github.com/python-jsonschema/referencing)
   - Host-Tool: [master/make/host-tools/python3-referencing-host/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/host-tools/python3-referencing-host/)
-  - Maintainer: [@fda77](https://github.com/fda77)
+  - Steward: [@fda77](https://github.com/fda77)
 

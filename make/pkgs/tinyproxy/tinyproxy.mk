@@ -6,7 +6,7 @@ $(PKG)_SITE:=https://github.com/tinyproxy/tinyproxy/releases/download/$($(PKG)_V
 ### MANPAGE:=https://tinyproxy.github.io/#documentation
 ### CHANGES:=https://github.com/tinyproxy/tinyproxy/releases
 ### CVSREPO:=https://github.com/tinyproxy/tinyproxy
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/tinyproxy
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/tinyproxy

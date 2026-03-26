@@ -6,7 +6,7 @@ $(PKG)_SITE:=@SAVANNAH/attr,@DEBIAN/attr
 ### WEBSITE:=https://savannah.nongnu.org/projects/attr/
 ### CHANGES:=https://git.savannah.nongnu.org/cgit/attr.git/log/
 ### CVSREPO:=https://git.savannah.nongnu.org/cgit/attr.git
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/lib$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/lib$(pkg).so.$($(PKG)_LIB_VERSION)

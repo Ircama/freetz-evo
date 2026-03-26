@@ -6,7 +6,7 @@ $(PKG)_SITE:=@DEBIAN/whois
 ### MANPAGE:=https://manpages.debian.org/whois/whois.1.en.html
 ### CHANGES:=https://github.com/rfc1036/whois/tags
 ### CVSREPO:=https://github.com/rfc1036/whois
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/whois
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/whois

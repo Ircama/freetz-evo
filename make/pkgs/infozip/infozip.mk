@@ -7,7 +7,7 @@ $(PKG)_SITE:=@SF/infozip
 ### MANPAGE:=https://infozip.sourceforge.net/FAQ.html
 ### CHANGES:=https://infozip.sourceforge.net/Zip.html#Release
 ### CVSREPO:=https://sourceforge.net/projects/infozip/
-### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_BINARY_BUILD := $($(PKG)_DIR)/zip
 $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/zip

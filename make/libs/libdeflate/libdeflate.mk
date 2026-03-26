@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/ebiggers/libdeflate/releases/download/v$($(PKG)_
 ### MANPAGE:=https://github.com/ebiggers/libdeflate/blob/master/NEWS.md
 ### CHANGES:=https://github.com/ebiggers/libdeflate/releases
 ### CVSREPO:=https://github.com/ebiggers/libdeflate
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_LIBNAME=$(pkg).so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/$($(PKG)_LIBNAME)

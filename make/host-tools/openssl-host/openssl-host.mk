@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://www.openssl.org/source,https://github.com/openssl/openssl/r
 ### MANPAGE:=https://www.openssl.org/docs/
 ### CHANGES:=https://www.openssl.org/news/changelog.html
 ### CVSREPO:=https://github.com/openssl/openssl
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=patchelf-host
 

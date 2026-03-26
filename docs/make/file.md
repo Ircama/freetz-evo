@@ -4,5 +4,5 @@
   - Changelog: [http://ftp.astron.com/pub/file](http://ftp.astron.com/pub/file)
   - Repository: [https://github.com/file/file](https://github.com/file/file)
   - Package: [master/make/pkgs/file/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/file/)
-  - Maintainer: [@Ircama](https://github.com/Ircama)
+  - Steward: [@Ircama](https://github.com/Ircama)
 

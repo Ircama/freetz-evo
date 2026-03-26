@@ -5,7 +5,7 @@ $(PKG)_SITE:=https://snapshot.debian.org/archive/debian/20200101T000000Z/pool/ma
 ### WEBSITE:=https://people.redhat.com/jakub/prelink/
 ### MANPAGE:=https://people.redhat.com/jakub/prelink/prelink.pdf
 ### CHANGES:=https://packages.debian.org/buster/execstack
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/execstack
 $(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/execstack

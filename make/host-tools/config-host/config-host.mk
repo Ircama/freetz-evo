@@ -5,7 +5,7 @@ $(PKG)_SITE:=https://cgit.git.savannah.gnu.org/cgit/config.git/snapshot
 ### WEBSITE:=https://savannah.gnu.org/projects/config
 ### CHANGES:=https://cgit.git.savannah.gnu.org/cgit/config.git/log/
 ### CVSREPO:=https://cgit.git.savannah.gnu.org/cgit/config.git
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DESTDIR             := $(FREETZ_BASE_DIR)/$(TOOLS_BUILD_DIR)
 

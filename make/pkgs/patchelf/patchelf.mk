@@ -6,7 +6,7 @@ $(PKG)_SITE:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSIO
 ### MANPAGE:=https://github.com/NixOS/patchelf/blob/master/README.md
 ### CHANGES:=https://github.com/NixOS/patchelf/releases
 ### CVSREPO:=https://github.com/NixOS/patchelf
-### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_CATEGORY:=Debug helpers
 

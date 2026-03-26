@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/pyload/pyload/archive/refs/tags
 ### MANPAGE:=https://github.com/pyload/pyload/wiki
 ### CHANGES:=https://github.com/pyload/pyload/releases
 ### CVSREPO:=https://github.com/pyload/pyload/commits/
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/opt/pyLoad/pyLoadCore.py
 

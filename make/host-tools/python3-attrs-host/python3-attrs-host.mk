@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/python-attrs/attrs/archive/refs/tags
 ### MANPAGE:=https://www.attrs.org/
 ### CHANGES:=https://github.com/python-attrs/attrs/releases
 ### CVSREPO:=https://github.com/python-attrs/attrs
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=python3-host
 

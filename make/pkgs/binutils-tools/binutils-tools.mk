@@ -7,7 +7,7 @@ $(PKG)_SITE:=@GNU/binutils
 ### MANPAGE:=https://sourceware.org/binutils/docs/
 ### CHANGES:=https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob_plain;f=binutils/NEWS
 ### CVSREPO:=https://sourceware.org/git/binutils-gdb.git
-### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_CATEGORY:=Debug helpers
 

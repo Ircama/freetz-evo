@@ -5,7 +5,7 @@ $(PKG)_SITE:=@GNU/ncurses,https://invisible-island.net/archives/ncurses
 ### WEBSITE:=https://invisible-island.net/ncurses/
 ### MANPAGE:=https://invisible-island.net/ncurses/announce.html
 ### CHANGES:=https://invisible-island.net/ncurses/NEWS.html
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 
 $(TOOLS_SOURCE_DOWNLOAD)

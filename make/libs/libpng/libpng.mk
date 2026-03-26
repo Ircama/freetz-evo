@@ -7,7 +7,7 @@ $(PKG)_SITE:=@SF/libpng
 ### MANPAGE:=http://www.libpng.org/pub/png/
 ### CHANGES:=https://github.com/pnggroup/libpng/tags
 ### CVSREPO:=https://github.com/glennrp/libpng
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libpng16.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libpng16.so.$($(PKG)_LIB_VERSION)

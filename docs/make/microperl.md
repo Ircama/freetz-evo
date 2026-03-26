@@ -1,6 +1,6 @@
 # microperl (binary only)
   - Package: [master/make/pkgs/microperl/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/microperl/)
-  - Maintainer: -
+  - Steward: -
 
 **microperl** ist eine Perl Distribution, die noch kleiner ist als
 *miniperl* (deswegen auch "micro" - vielleicht kommen bald noch

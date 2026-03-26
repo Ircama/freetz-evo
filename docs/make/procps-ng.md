@@ -4,7 +4,7 @@
   - Changelog: [https://gitlab.com/procps-ng/procps/-/tags](https://gitlab.com/procps-ng/procps/-/tags)
   - Repository: [https://gitlab.com/procps-ng/procps](https://gitlab.com/procps-ng/procps)
   - Package: [master/make/pkgs/procps-ng/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/procps-ng/)
-  - Maintainer: [@Ircama](https://github.com/Ircama)
+  - Steward: [@Ircama](https://github.com/Ircama)
 
 ## Overview
 

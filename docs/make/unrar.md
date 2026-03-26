@@ -4,5 +4,5 @@
   - Changelog: [https://www.rarlab.com/rarnew.htm](https://www.rarlab.com/rarnew.htm)
   - Repository: [https://www.rarlab.com/rar_add.htm](https://www.rarlab.com/rar_add.htm)
   - Package: [master/make/pkgs/unrar/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/unrar/)
-  - Maintainer: [@fda77](https://github.com/fda77)
+  - Steward: [@fda77](https://github.com/fda77)
 

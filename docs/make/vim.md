@@ -4,7 +4,7 @@
   - Changelog: [https://github.com/vim/vim/tags](https://github.com/vim/vim/tags)
   - Repository: [https://github.com/vim/vim](https://github.com/vim/vim)
   - Package: [master/make/pkgs/vim/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/vim/)
-  - Maintainer: [@fda77](https://github.com/fda77)
+  - Steward: [@fda77](https://github.com/fda77)
 
 **vim** (**vi i**mproved)
 ist eine Variante des bekannten Unix-Editors *vi*. Wie sein "Parent",

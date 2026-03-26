@@ -4,7 +4,7 @@
   - Changelog: [https://www.php.net/ChangeLog-8.php](https://www.php.net/ChangeLog-8.php)
   - Repository: [https://github.com/php/php-src](https://github.com/php/php-src)
   - Package: [master/make/pkgs/php/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/php/)
-  - Maintainer: -
+  - Steward: -
 
 "*PHP is a widely-used general-purpose scripting language that is
 especially suited for Web development and can be embedded into HTML.*"

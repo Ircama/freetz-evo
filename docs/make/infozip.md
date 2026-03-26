@@ -4,5 +4,5 @@
   - Changelog: [https://infozip.sourceforge.net/Zip.html#Release](https://infozip.sourceforge.net/Zip.html#Release)
   - Repository: [https://sourceforge.net/projects/infozip/](https://sourceforge.net/projects/infozip/)
   - Package: [master/make/pkgs/infozip/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/infozip/)
-  - Maintainer: [@Ircama](https://github.com/Ircama)
+  - Steward: [@Ircama](https://github.com/Ircama)
 

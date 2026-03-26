@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://git.yoctoproject.org/pseudo/snapshot,https://downloads.yoct
 ### MANPAGE:=https://manpages.debian.org/testing/pseudo/pseudo.1.en.html
 ### CHANGES:=https://git.yoctoproject.org/pseudo/log/?h=master
 ### CVSREPO:=https://git.yoctoproject.org/pseudo/
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DESTDIR:=$(FREETZ_BASE_DIR)/$(TOOLS_DIR)/build
 

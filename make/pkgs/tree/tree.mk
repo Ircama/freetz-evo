@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://gitlab.com/OldManProgrammer/unix-tree/-/archive/$($(PKG)_VE
 ### MANPAGE:=https://linux.die.net/man/1/tree
 ### CHANGES:=https://gitlab.com/OldManProgrammer/unix-tree/tags
 ### CVSREPO:=https://gitlab.com/OldManProgrammer/unix-tree
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/tree
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/tree

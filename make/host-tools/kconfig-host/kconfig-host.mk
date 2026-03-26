@@ -6,7 +6,7 @@ $(PKG)_SITE:=git_archive@git://repo.or.cz/linux.git,scripts/basic,scripts/includ
 ### MANPAGE:=https://www.kernel.org/doc/html/next/kbuild/kconfig-language.html
 ### CHANGES:=https://github.com/torvalds/linux/tags
 ### CVSREPO:=https://github.com/torvalds/linux/tree/master/scripts/kconfig
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON:=
 

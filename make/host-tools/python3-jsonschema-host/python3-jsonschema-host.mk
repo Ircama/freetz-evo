@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/python-jsonschema/jsonschema/releases/download/v
 ### MANPAGE:=https://python-jsonschema.readthedocs.io
 ### CHANGES:=https://github.com/python-jsonschema/jsonschema/releases
 ### CVSREPO:=https://github.com/python-jsonschema/jsonschema
-### SUPPORT:=fda77
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=python3-host
 
