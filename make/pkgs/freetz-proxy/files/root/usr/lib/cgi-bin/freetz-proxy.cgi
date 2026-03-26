@@ -207,6 +207,7 @@ echo "$(lang \
 freetz=0
 rtorrent=0:/cgi-bin/conf/rtorrent
 rutorrent=0:/rutorrent/:direct
+ariang=0:/ariang/:direct
 ttyd=7681::direct" \
   en:"# Format: name=port[:path[:direct]]
 #   name   - service identifier (in URL: ?service=name)
@@ -218,6 +219,7 @@ ttyd=7681::direct" \
 freetz=0
 rtorrent=0:/cgi-bin/conf/rtorrent
 rutorrent=0:/rutorrent/:direct
+ariang=0:/ariang/:direct
 ttyd=7681::direct")"
 echo '</pre>'
 
