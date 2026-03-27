@@ -1,0 +1,11 @@
+--- networking/httpd.c
++++ networking/httpd.c
+@@ -2509,6 +2509,8 @@
+ 		if (STRNCASECMP(iobuf, "Range:") == 0) {
+ 			/* We know only bytes=NNN-[MMM] */
+ 			char *s = skip_whitespace(iobuf + sizeof("Range:")-1);
++			if (cgi_type != CGI_NONE)
++				putenv(xasprintf("HTTP_RANGE=%s", s));
+ 			s = is_prefixed_with(s, "bytes=");
+ 			if (s) {
+ 				range_start = BB_STRTOOFF(s, &s, 10);
