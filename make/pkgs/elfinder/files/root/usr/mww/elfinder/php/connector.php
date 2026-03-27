@@ -23,6 +23,10 @@ ini_set('error_log',      '/tmp/elfinder.log');
 // Raise the limit before elFinder initializes.
 ini_set('memory_limit', '48M');
 
+// Disable PHP-side compression/buffering for binary streams.
+@ini_set('zlib.output_compression', '0');
+@ini_set('output_buffering', '0');
+
 // Enforce WebCFG authentication for php-cgi entrypoints.
 $_webcfgAuth = '';
 if (is_readable('/usr/lib/php/webcfg_auth.php')) {
@@ -102,6 +106,57 @@ function elfinder_cfg_upsert_export(&$lines, $key, $value) {
     if (!$updated) {
         $lines[] = $replacement;
     }
+}
+
+function elfinder_get_request_header($name) {
+    $upper = strtoupper(str_replace('-', '_', (string)$name));
+    $keys = array(
+        'HTTP_' . $upper,
+        $upper,
+        'REDIRECT_HTTP_' . $upper,
+        'REDIRECT_' . $upper,
+    );
+
+    foreach ($keys as $key) {
+        if (!empty($_SERVER[$key])) {
+            return (string)$_SERVER[$key];
+        }
+    }
+
+    foreach (array('getallheaders', 'apache_request_headers') as $fn) {
+        if (function_exists($fn)) {
+            $headers = @$fn();
+            if (is_array($headers)) {
+                foreach ($headers as $headerName => $headerValue) {
+                    if (strcasecmp((string)$headerName, (string)$name) === 0 && $headerValue !== '') {
+                        return (string)$headerValue;
+                    }
+                }
+            }
+        }
+    }
+
+    return '';
+}
+
+function elfinder_get_preview_bytes() {
+    $defaultBytes = 64 * 1024 * 1024;
+    $minBytes = 4 * 1024 * 1024;
+    $maxBytes = 256 * 1024 * 1024;
+
+    if (!isset($_REQUEST['preview']) || $_REQUEST['preview'] === '' || $_REQUEST['preview'] === '0') {
+        return 0;
+    }
+
+    $bytes = isset($_REQUEST['preview_bytes']) ? (int)$_REQUEST['preview_bytes'] : $defaultBytes;
+    if ($bytes < $minBytes) {
+        $bytes = $minBytes;
+    }
+    if ($bytes > $maxBytes) {
+        $bytes = $maxBytes;
+    }
+
+    return $bytes;
 }
 
 // Load defaults first: check multiple locations for resilience
@@ -339,7 +394,9 @@ $_tmbPath = elfcfg('ELFINDER_THUMBPATH', '');
 $_tmbURL  = '';
 if ($_tmbPath === '') {
     $_tmbPath = $_basedir . '/.tmb';
-    $_tmbURL  = rtrim($_url, '/') . '/.tmb/';
+    if ($_url !== '') {
+        $_tmbURL = rtrim($_url, '/') . '/.tmb/';
+    }
 }
 if (!is_dir($_tmbPath)) {
     @mkdir($_tmbPath, 0777, true);
@@ -437,8 +494,142 @@ $opts = array(
     ),
 );
 
+class FreetzElFinderConnector extends elFinderConnector {
+    private static $extMimeMap = array(
+        'mp4'  => 'video/mp4',
+        'm4v'  => 'video/mp4',
+        'webm' => 'video/webm',
+        'mkv'  => 'video/x-matroska',
+        'mov'  => 'video/quicktime',
+        'avi'  => 'video/x-msvideo',
+        'ts'   => 'video/mp2t',
+        'm2ts' => 'video/mp2t',
+        'mpeg' => 'video/mpeg',
+        'mpg'  => 'video/mpeg',
+        'wmv'  => 'video/x-ms-wmv',
+        'flv'  => 'video/x-flv',
+        'ogv'  => 'video/ogg',
+        'mp3'  => 'audio/mpeg',
+        'ogg'  => 'audio/ogg',
+        'oga'  => 'audio/ogg',
+        'flac' => 'audio/flac',
+        'wav'  => 'audio/wav',
+        'aac'  => 'audio/aac',
+        'm4a'  => 'audio/mp4',
+        'wma'  => 'audio/x-ms-wma',
+    );
+
+    protected function output(array $data)
+    {
+        $isFile = isset($data['pointer'])
+            && isset($_REQUEST['cmd'])
+            && (string)$_REQUEST['cmd'] === 'file';
+
+        if ($isFile) {
+            $fp = $data['pointer'];
+            $name = isset($data['info']['name']) ? (string)$data['info']['name'] : '';
+            $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $size = (isset($data['info']['size']) && (float)$data['info']['size'] > 0)
+                ? (float)$data['info']['size'] : 0.0;
+            $mime = '';
+
+            if (isset($data['header']) && is_array($data['header'])) {
+                foreach ($data['header'] as $header) {
+                    if (stripos($header, 'Content-Type:') === 0) {
+                        $mime = strtolower(trim(substr($header, 13)));
+                        break;
+                    }
+                }
+            }
+
+            if (($mime === '' || $mime === 'application/octet-stream') && isset(self::$extMimeMap[$ext])) {
+                $mime = self::$extMimeMap[$ext];
+            }
+
+            $isMedia = (strpos($mime, 'video/') === 0) || (strpos($mime, 'audio/') === 0);
+            if ($isMedia) {
+                $previewBytes = elfinder_get_preview_bytes();
+
+                if (method_exists($this->elFinder, 'getSession')) {
+                    $this->elFinder->getSession()->close();
+                }
+                while (ob_get_level() > 0) {
+                    @ob_end_clean();
+                }
+
+                header_remove('Set-Cookie');
+
+                if (isset($data['header']) && is_array($data['header'])) {
+                    foreach ($data['header'] as $header) {
+                        if (stripos($header, 'Content-Type:') === 0) {
+                            continue;
+                        }
+                        if (stripos($header, 'Content-Disposition:') === 0) {
+                            continue;
+                        }
+                        if (stripos($header, 'Content-Length:') === 0) {
+                            continue;
+                        }
+                        if (stripos($header, 'Accept-Ranges:') === 0) {
+                            continue;
+                        }
+                        if (stripos($header, 'Content-Range:') === 0) {
+                            continue;
+                        }
+                        header($header, false);
+                    }
+                }
+
+                header('Content-Type: ' . $mime);
+                header('Content-Disposition: inline; filename="' . str_replace(array('\\', '"'), array('\\\\', '\\"'), $name) . '"');
+                header('Accept-Ranges: none');
+                header('Content-Encoding: identity');
+                header('X-Elfinder-Streaming: sequential');
+                if ($previewBytes > 0) {
+                    header('X-Elfinder-Preview: sequential-start');
+                }
+
+                $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
+                if ($method !== 'HEAD') {
+                    fseek($fp, 0, SEEK_SET);
+
+                    $remaining = ($previewBytes > 0 && $size > 0)
+                        ? min((float)$previewBytes, $size)
+                        : (($previewBytes > 0) ? (float)$previewBytes : -1.0);
+                    while (!feof($fp) && !connection_aborted()) {
+                        $chunk = ($remaining >= 0.0)
+                            ? (int)min(131072.0, $remaining)
+                            : 131072;
+                        if ($chunk <= 0) {
+                            break;
+                        }
+                        $buf = fread($fp, $chunk);
+                        if ($buf === false || $buf === '') {
+                            break;
+                        }
+                        echo $buf;
+                        flush();
+                        if ($remaining >= 0.0) {
+                            $remaining -= strlen($buf);
+                        }
+                    }
+                }
+
+                if (!empty($data['volume'])) {
+                    $data['volume']->close($fp, $data['info']['hash']);
+                } else {
+                    fclose($fp);
+                }
+                exit();
+            }
+        }
+
+        parent::output($data);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Run connector
 // ---------------------------------------------------------------------------
-$connector = new elFinderConnector(new elFinder($opts));
+$connector = new FreetzElFinderConnector(new elFinder($opts));
 $connector->run();
