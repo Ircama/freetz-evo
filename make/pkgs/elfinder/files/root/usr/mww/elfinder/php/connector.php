@@ -26,6 +26,8 @@ ini_set('memory_limit', '48M');
 // Disable PHP-side compression/buffering for binary streams.
 @ini_set('zlib.output_compression', '0');
 @ini_set('output_buffering', '0');
+@ini_set('max_execution_time', '0');
+@set_time_limit(0);
 
 // Enforce WebCFG authentication for php-cgi entrypoints.
 $_webcfgAuth = '';
@@ -157,6 +159,201 @@ function elfinder_get_preview_bytes() {
     }
 
     return $bytes;
+}
+
+function elfinder_is_large_file($size) {
+    return (PHP_INT_SIZE < 8) && ((float)$size > (float)PHP_INT_MAX);
+}
+
+function elfinder_format_int_string($value) {
+    return sprintf('%.0f', (float)$value);
+}
+
+function elfinder_parse_single_range($rangeHeader, $size) {
+    $sizeFloat = (float)$size;
+    if ($sizeFloat <= 0.0) {
+        return false;
+    }
+
+    if (!preg_match('/bytes=(\d*)-(\d*)(,?)/i', (string)$rangeHeader, $matches) || !empty($matches[3])) {
+        return false;
+    }
+
+    if ($matches[1] === '' && $matches[2] === '') {
+        return false;
+    }
+
+    $startFloat = 0.0;
+    $endFloat = $sizeFloat - 1.0;
+
+    if ($matches[1] === '') {
+        $suffixFloat = (float)$matches[2];
+        if ($suffixFloat <= 0.0) {
+            return false;
+        }
+        $startFloat = max(0.0, $sizeFloat - $suffixFloat);
+    } else {
+        $startFloat = (float)$matches[1];
+        if ($startFloat < 0.0 || $startFloat >= $sizeFloat) {
+            return array('invalid' => true);
+        }
+        if ($matches[2] !== '') {
+            $endFloat = min((float)$matches[2], $sizeFloat - 1.0);
+            if ($endFloat < $startFloat) {
+                return array('invalid' => true);
+            }
+        }
+    }
+
+    return array(
+        'start' => elfinder_format_int_string($startFloat),
+        'end' => elfinder_format_int_string($endFloat),
+        'length' => elfinder_format_int_string(($endFloat - $startFloat) + 1.0),
+    );
+}
+
+function elfinder_needs_large_range_workaround($rangeInfo) {
+    if (!is_array($rangeInfo) || !isset($rangeInfo['start'])) {
+        return false;
+    }
+
+    return ((float)$rangeInfo['start'] > (float)PHP_INT_MAX);
+}
+
+function elfinder_resolve_media_path($volume, $hash) {
+    $candidates = array();
+
+    if ($volume && $hash !== '') {
+        if (method_exists($volume, 'realpath')) {
+            $candidate = $volume->realpath($hash);
+            if (is_string($candidate) && $candidate !== '') {
+                $candidates[] = $candidate;
+            }
+        }
+        if (method_exists($volume, 'path')) {
+            $candidate = $volume->path($hash);
+            if (is_string($candidate) && $candidate !== '') {
+                $candidates[] = $candidate;
+            }
+        }
+    }
+
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate) && is_readable($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return false;
+}
+
+function elfinder_build_large_range_command($path, $rangeInfo) {
+    $pathArg = escapeshellarg($path);
+    $blockSize = 1048576.0;
+    $startFloat = (float)$rangeInfo['start'];
+    $lengthFloat = (float)$rangeInfo['length'];
+    $skipBlocks = floor($startFloat / $blockSize);
+    $skipBytes = $skipBlocks * $blockSize;
+    $tailOffset = (int)($startFloat - $skipBytes);
+    $bytesNeeded = $tailOffset + $lengthFloat;
+    $countBlocks = (int)ceil($bytesNeeded / $blockSize);
+
+    if ($countBlocks < 1) {
+        $countBlocks = 1;
+    }
+
+    $cmd = 'dd if=' . $pathArg
+        . ' bs=1048576 skip=' . sprintf('%.0f', $skipBlocks)
+        . ' count=' . $countBlocks
+        . ' 2>/dev/null';
+    if ($tailOffset > 0) {
+        $cmd .= ' | tail -c +' . ($tailOffset + 1);
+    }
+    $cmd .= ' | head -c ' . elfinder_format_int_string($lengthFloat);
+
+    return $cmd;
+}
+
+function elfinder_stream_command_output($command) {
+    $handle = @popen($command, 'r');
+    if (!is_resource($handle)) {
+        return false;
+    }
+
+    while (!feof($handle) && !connection_aborted()) {
+        @set_time_limit(0);
+        $chunk = fread($handle, 131072);
+        if ($chunk === false || $chunk === '') {
+            break;
+        }
+        echo $chunk;
+        flush();
+    }
+
+    pclose($handle);
+    return true;
+}
+
+function elfinder_stream_seek($fp, $offset) {
+    $remaining = (float)$offset;
+    if ($remaining <= 0.0) {
+        return true;
+    }
+
+    $seekStep = 1073741824.0;
+
+    if (@rewind($fp) === false) {
+        @fseek($fp, 0, SEEK_SET);
+    }
+
+    while ($remaining > 0.0) {
+        @set_time_limit(0);
+        $step = ($remaining > $seekStep) ? $seekStep : $remaining;
+        $stepInt = (int)$step;
+        if ($stepInt <= 0) {
+            break;
+        }
+        if (@fseek($fp, $stepInt, SEEK_CUR) !== 0) {
+            break;
+        }
+        $remaining -= $stepInt;
+    }
+
+    while ($remaining > 0.0 && !feof($fp) && !connection_aborted()) {
+        @set_time_limit(0);
+        $chunkSize = ($remaining > 131072.0) ? 131072 : (int)$remaining;
+        if ($chunkSize <= 0) {
+            break;
+        }
+        $chunk = fread($fp, $chunkSize);
+        if ($chunk === false || $chunk === '') {
+            return false;
+        }
+        $remaining -= strlen($chunk);
+    }
+
+    return ($remaining <= 0.0);
+}
+
+function elfinder_stream_copy_output($fp, $length) {
+    $remaining = (float)$length;
+
+    while ($remaining > 0.0 && !feof($fp) && !connection_aborted()) {
+        @set_time_limit(0);
+        $chunkSize = ($remaining > 131072.0) ? 131072 : (int)$remaining;
+        if ($chunkSize <= 0) {
+            break;
+        }
+        $chunk = fread($fp, $chunkSize);
+        if ($chunk === false || $chunk === '') {
+            return false;
+        }
+        echo $chunk;
+        flush();
+        $remaining -= strlen($chunk);
+    }
+
+    return ($remaining <= 0.0);
 }
 
 // Load defaults first: check multiple locations for resilience
@@ -547,80 +744,103 @@ class FreetzElFinderConnector extends elFinderConnector {
             }
 
             $isMedia = (strpos($mime, 'video/') === 0) || (strpos($mime, 'audio/') === 0);
-            if ($isMedia) {
-                $previewBytes = elfinder_get_preview_bytes();
+            if ($isMedia && elfinder_is_large_file($size)) {
+                $rangeHeader = elfinder_get_request_header('Range');
+                $rangeInfo = elfinder_parse_single_range($rangeHeader, $size);
 
-                if (method_exists($this->elFinder, 'getSession')) {
-                    $this->elFinder->getSession()->close();
-                }
-                while (ob_get_level() > 0) {
-                    @ob_end_clean();
-                }
+                if (is_array($rangeInfo) && elfinder_needs_large_range_workaround($rangeInfo)) {
+                    $realPath = false;
+                    if (!empty($data['volume']) && !empty($data['info']['hash'])) {
+                        $realPath = elfinder_resolve_media_path($data['volume'], $data['info']['hash']);
+                    }
 
-                header_remove('Set-Cookie');
+                    error_log(
+                        'elfinder large-file range request: '
+                        . 'name=' . $name
+                        . ' range=' . ($rangeHeader !== '' ? $rangeHeader : '(none)')
+                    );
 
-                if (isset($data['header']) && is_array($data['header'])) {
-                    foreach ($data['header'] as $header) {
-                        if (stripos($header, 'Content-Type:') === 0) {
-                            continue;
-                        }
-                        if (stripos($header, 'Content-Disposition:') === 0) {
-                            continue;
-                        }
-                        if (stripos($header, 'Content-Length:') === 0) {
-                            continue;
-                        }
-                        if (stripos($header, 'Accept-Ranges:') === 0) {
-                            continue;
-                        }
-                        if (stripos($header, 'Content-Range:') === 0) {
-                            continue;
-                        }
-                        header($header, false);
+                    if ($realPath) {
+                        error_log('elfinder large-file range path: ' . $realPath);
                     }
                 }
 
-                header('Content-Type: ' . $mime);
-                header('Content-Disposition: inline; filename="' . str_replace(array('\\', '"'), array('\\\\', '\\"'), $name) . '"');
-                header('Accept-Ranges: none');
-                header('Content-Encoding: identity');
-                header('X-Elfinder-Streaming: sequential');
-                if ($previewBytes > 0) {
-                    header('X-Elfinder-Preview: sequential-start');
+                if (is_array($rangeInfo) && !empty($rangeInfo['invalid'])) {
+                    while (ob_get_level() > 0) {
+                        @ob_end_clean();
+                    }
+                    header_remove('Set-Cookie');
+                    header('HTTP/1.1 416 Range Not Satisfiable');
+                    header('Content-Range: bytes */' . elfinder_format_int_string($size));
+                    if (!empty($data['volume'])) {
+                        $data['volume']->close($fp, $data['info']['hash']);
+                    } else {
+                        fclose($fp);
+                    }
+                    exit();
                 }
 
-                $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
-                if ($method !== 'HEAD') {
-                    fseek($fp, 0, SEEK_SET);
+                if (is_array($rangeInfo) && elfinder_needs_large_range_workaround($rangeInfo)) {
+                    if (method_exists($this->elFinder, 'getSession')) {
+                        $this->elFinder->getSession()->close();
+                    }
+                    while (ob_get_level() > 0) {
+                        @ob_end_clean();
+                    }
 
-                    $remaining = ($previewBytes > 0 && $size > 0)
-                        ? min((float)$previewBytes, $size)
-                        : (($previewBytes > 0) ? (float)$previewBytes : -1.0);
-                    while (!feof($fp) && !connection_aborted()) {
-                        $chunk = ($remaining >= 0.0)
-                            ? (int)min(131072.0, $remaining)
-                            : 131072;
-                        if ($chunk <= 0) {
-                            break;
-                        }
-                        $buf = fread($fp, $chunk);
-                        if ($buf === false || $buf === '') {
-                            break;
-                        }
-                        echo $buf;
-                        flush();
-                        if ($remaining >= 0.0) {
-                            $remaining -= strlen($buf);
+                    header_remove('Set-Cookie');
+
+                    if (isset($data['header']) && is_array($data['header'])) {
+                        foreach ($data['header'] as $header) {
+                            if (stripos($header, 'Content-Type:') === 0) {
+                                continue;
+                            }
+                            if (stripos($header, 'Content-Disposition:') === 0) {
+                                continue;
+                            }
+                            if (stripos($header, 'Content-Length:') === 0) {
+                                continue;
+                            }
+                            if (stripos($header, 'Accept-Ranges:') === 0) {
+                                continue;
+                            }
+                            if (stripos($header, 'Content-Range:') === 0) {
+                                continue;
+                            }
+                            header($header, false);
                         }
                     }
-                }
 
-                if (!empty($data['volume'])) {
-                    $data['volume']->close($fp, $data['info']['hash']);
-                } else {
-                    fclose($fp);
+                    header('Content-Type: ' . $mime);
+                    header('Content-Disposition: inline; filename="' . str_replace(array('\\', '"'), array('\\\\', '\\"'), $name) . '"');
+                    header('Accept-Ranges: bytes');
+                    header('Content-Encoding: identity');
+                    header('HTTP/1.1 206 Partial Content');
+                    header('Content-Length: ' . $rangeInfo['length']);
+                    header('Content-Range: bytes ' . $rangeInfo['start'] . '-' . $rangeInfo['end'] . '/' . elfinder_format_int_string($size));
+
+                    $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string)$_SERVER['REQUEST_METHOD']) : 'GET';
+                    if ($method !== 'HEAD') {
+                        if (!empty($realPath)) {
+                            $command = elfinder_build_large_range_command($realPath, $rangeInfo);
+                            error_log('elfinder large-file range command: ' . $command);
+                            if (!elfinder_stream_command_output($command)) {
+                                error_log('elfinder large-file shell stream failed: name=' . $name . ' range=' . $rangeHeader);
+                            }
+                        } else if (!elfinder_stream_seek($fp, (float)$rangeInfo['start'])) {
+                            error_log('elfinder large-file range seek failed: name=' . $name . ' range=' . $rangeHeader);
+                        } else if (!elfinder_stream_copy_output($fp, (float)$rangeInfo['length'])) {
+                            error_log('elfinder large-file range stream ended early: name=' . $name . ' range=' . $rangeHeader);
+                        }
+                    }
+
+                    if (!empty($data['volume'])) {
+                        $data['volume']->close($fp, $data['info']['hash']);
+                    } else {
+                        fclose($fp);
+                    }
+                    exit();
                 }
-                exit();
             }
         }
 

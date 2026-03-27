@@ -123,7 +123,8 @@
 		.elfinder-button-icon-skin,
 		.elfinder-button-icon-mediainfo,
 		.elfinder-button-icon-movieinfo,
-		.elfinder-button-icon-vlc {
+		.elfinder-button-icon-vlc,
+		.elfinder-button-icon-videoplayer {
 			background: none !important;
 			display: flex !important;
 			align-items: center !important;
@@ -133,12 +134,14 @@
 		.elfinder-button-icon-mediainfo::before { content: '🎬'; font-size: 15px; line-height: 1; }
 		.elfinder-button-icon-movieinfo::before { content: '🎞️'; font-size: 15px; line-height: 1; }
 		.elfinder-button-icon-vlc::before      { content: '📺'; font-size: 15px; line-height: 1; }
+		.elfinder-button-icon-videoplayer::before { content: '▶'; font-size: 13px; font-weight: 700; line-height: 1; }
 
 		/* Keep custom toolbar buttons aligned like core ones when labels are shown. */
 		#ef-skin-btn,
 		#ef-mediainfo-btn,
 		#ef-movieinfo-btn,
-		#ef-vlc-btn {
+		#ef-vlc-btn,
+		#ef-videoplayer-btn {
 			display: inline-flex !important;
 			align-items: center !important;
 			gap: 4px;
@@ -147,7 +150,8 @@
 		#ef-skin-btn .elfinder-button-text,
 		#ef-mediainfo-btn .elfinder-button-text,
 		#ef-movieinfo-btn .elfinder-button-text,
-		#ef-vlc-btn .elfinder-button-text {
+		#ef-vlc-btn .elfinder-button-text,
+		#ef-videoplayer-btn .elfinder-button-text {
 			white-space: nowrap !important;
 			line-height: 1.2 !important;
 		}
@@ -212,6 +216,31 @@
 			padding: 4px;
 		}
 		.ef-vlc-fallback-popup .ef-vlc-copy-btn { margin-top: 8px; }
+
+		.ef-videoplayer-popup .ef-videoplayer-host {
+			width: 100%;
+			min-height: 240px;
+			background: #000;
+			border-radius: 4px;
+		}
+		.ef-videoplayer-popup .ef-videoplayer-note {
+			margin-top: 8px;
+			font-size: 12px;
+			line-height: 1.4;
+			color: #555;
+		}
+		.ef-videoplayer-popup .ef-videoplayer-actions { margin-top: 10px; }
+		.ef-videoplayer-popup .ef-videoplayer-link {
+			display: inline-block;
+			padding: 6px 10px;
+			border: 1px solid #bbb;
+			border-radius: 4px;
+			text-decoration: none;
+			font-size: 12px;
+			color: #1f2937;
+			background: #fff;
+		}
+		.ef-videoplayer-popup .ef-videoplayer-link:hover { background: #f3f4f6; }
 
 		/* ── Mobile: bigger touch targets ─────────────────────────────────── */
 		@media (max-width: 600px) {
@@ -1203,6 +1232,113 @@
 		});
 	}
 
+	function efIsLikelyVideo(file) {
+		if (!file) return false;
+		if (file.mime && String(file.mime).indexOf('video/') === 0) {
+			return true;
+		}
+		return /\.(mp4|m4v|webm|mkv|mov|avi|mpeg|mpg|ts|m2ts|wmv|flv|ogv)$/i.test(file.name || '');
+	}
+
+	function efGetVideoExt(file) {
+		var n = (file && file.name ? String(file.name).toLowerCase() : '');
+		var m = n.match(/\.([a-z0-9]+)$/i);
+		return m ? m[1] : '';
+	}
+
+	function efGuessVideoMime(file) {
+		if (file && file.mime && String(file.mime).indexOf('video/') === 0) {
+			return String(file.mime).toLowerCase();
+		}
+		var ext = efGetVideoExt(file);
+		if (ext === 'mp4' || ext === 'm4v') return 'video/mp4';
+		if (ext === 'webm') return 'video/webm';
+		if (ext === 'mkv') return 'video/x-matroska';
+		if (ext === 'mov') return 'video/quicktime';
+		if (ext === 'avi') return 'video/x-msvideo';
+		if (ext === 'ts' || ext === 'm2ts') return 'video/mp2t';
+		if (ext === 'mpeg' || ext === 'mpg') return 'video/mpeg';
+		if (ext === 'wmv') return 'video/x-ms-wmv';
+		if (ext === 'flv') return 'video/x-flv';
+		if (ext === 'ogv') return 'video/ogg';
+		return '';
+	}
+
+	function efBuildConnectorFileUrl(fm, file) {
+		var rel = fm.options.url
+			+ '?cmd=file&target=' + encodeURIComponent(file.hash)
+			+ '&_t=' + (file.ts || parseInt(+new Date() / 1000, 10));
+		return new URL(rel, window.location.href).href;
+	}
+
+	function efBuildPreviewFileUrl(fm, file) {
+		var previewBytes = 64 * 1024 * 1024;
+		var rel = fm.options.url
+			+ '?cmd=file&target=' + encodeURIComponent(file.hash)
+			+ '&preview=1'
+			+ '&preview_bytes=' + previewBytes
+			+ '&_t=' + (file.ts || parseInt(+new Date() / 1000, 10));
+		return new URL(rel, window.location.href).href;
+	}
+
+	function efOpenInVideoPlayer(fm) {
+		var selected = fm.selectedFiles();
+		if (!selected || !selected.length) {
+			return;
+		}
+
+		var file = selected[0];
+		if (!efIsLikelyVideo(file)) {
+			$('<div>This action is available only for video files.</div>').dialog({
+				title: 'Video Player',
+				modal: true,
+				appendTo: efDialogAppendTarget(),
+				width: Math.min(420, Math.max(260, efViewportSize().width - 16)),
+				close: function() { $(this).dialog('destroy').remove(); }
+			});
+			return;
+		}
+
+		var sourceUrl = efBuildConnectorFileUrl(fm, file);
+		var fullStreamUrl = efBuildConnectorFileUrl(fm, file);
+		var mime = efGuessVideoMime(file);
+		var safeName = fm.escape(file.name || 'Video');
+		var safeUrl = $('<span>').text(sourceUrl).html();
+		var safeFullUrl = $('<span>').text(fullStreamUrl).html();
+		var sourcePrimary = '<source src="' + safeUrl + '"' + (mime ? ' type="' + $('<span>').text(mime).html() + '"' : '') + '>';
+		var sourceFallback = '<source src="' + safeUrl + '">';
+
+		var $dlg = $('<div class="ef-videoplayer-popup">').html(
+			'<div class="ef-videoplayer-host">' +
+				'<video controls preload="metadata" playsinline style="width:100%;max-height:calc(100vh - 260px);background:#000;border-radius:4px;">' +
+					sourcePrimary + sourceFallback +
+				'</video>' +
+			'</div>' +
+			'<div class="ef-videoplayer-note"><strong>' + safeName + '</strong><br>HTTP Range is enabled again. Seek should work when the browser supports the container and codec.</div>' +
+			'<div class="ef-videoplayer-actions">' +
+				'<a class="ef-videoplayer-link" target="_blank" rel="noopener" href="' + safeUrl + '">Open playback</a> ' +
+				'<a class="ef-videoplayer-link" target="_blank" rel="noopener" href="' + safeFullUrl + '">Open full stream</a>' +
+			'</div>'
+		);
+
+		$dlg.dialog({
+			title: 'Video Player - ' + safeName,
+			modal: false,
+			appendTo: efDialogAppendTarget(),
+			width: Math.min(960, Math.max(340, efViewportSize().width - 16)),
+			open: function() {
+				$dlg.attr('data-ef-dialog-width', '960');
+				efFitCustomDialog($dlg, 960);
+				var vp = efViewportSize();
+				var dlgW = $dlg.outerWidth(true) || Math.min(960, vp.width - 16);
+				var idealH = Math.round(dlgW * 9 / 16);
+				var maxH = Math.max(240, vp.height - 300);
+				$dlg.find('.ef-videoplayer-host').css('height', Math.min(idealH, maxH) + 'px');
+			},
+			close: function() { $(this).dialog('destroy').remove(); }
+		});
+	}
+
 	// ---------------------------------------------------------------------------
 	// Initialise elFinder
 	// ---------------------------------------------------------------------------
@@ -1365,7 +1501,7 @@
 							show = false;
 						}
 						var $labels = toolbar
-							.find('#ef-skin-btn .elfinder-button-text, #ef-mediainfo-btn .elfinder-button-text, #ef-movieinfo-btn .elfinder-button-text, #ef-vlc-btn .elfinder-button-text');
+							.find('#ef-skin-btn .elfinder-button-text, #ef-mediainfo-btn .elfinder-button-text, #ef-movieinfo-btn .elfinder-button-text, #ef-vlc-btn .elfinder-button-text, #ef-videoplayer-btn .elfinder-button-text');
 						$labels[show ? 'show' : 'hide']();
 					};
 
@@ -1435,6 +1571,22 @@
 					}
 
 					// 5. Mobile top drawer toggle. Place it before the toolbar so it
+					if (!toolbar.find('#ef-videoplayer-btn').length) {
+						var $videoBtnSet = $(
+							'<div class="ui-widget-content ui-corner-all elfinder-buttonset">' +
+							'<div id="ef-videoplayer-btn" class="ui-state-default elfinder-button"' +
+							' title="Open video player">' +
+							'<span class="elfinder-button-icon elfinder-button-icon-videoplayer"></span>' +
+							'<span class="elfinder-button-text" style="display:none;">Player</span>' +
+							'</div></div>');
+						$videoBtnSet.find('#ef-videoplayer-btn').on('click', function(e) {
+							e.stopPropagation();
+							efOpenInVideoPlayer(fm);
+						});
+						toolbar.append($videoBtnSet);
+					}
+
+					// 6. Mobile top drawer toggle. Place it before the toolbar so it
 					// remains visible even when the toolbar itself is hidden.
 					if (!$('#ef-toolbar-toggle').length) {
 						var tbVisible = true;
