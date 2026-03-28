@@ -30,4 +30,8 @@
 # ignore ide project files
 /.project
 /.vs
+deploy-*
+.tmp_*
+.venv-build/
+.vscode/
 
