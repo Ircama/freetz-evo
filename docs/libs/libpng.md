@@ -1,4 +1,4 @@
-# libpng: PNG library (libpng.so) 1.6.55
+# libpng: PNG library (libpng.so) 1.6.56
   - Homepage: [https://libpng.sf.net](https://libpng.sf.net)
   - Manpage: [http://www.libpng.org/pub/png/](http://www.libpng.org/pub/png/)
   - Changelog: [https://github.com/pnggroup/libpng/tags](https://github.com/pnggroup/libpng/tags)
