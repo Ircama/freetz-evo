@@ -6,13 +6,17 @@ on:
     paths:
       - '.github/workflows/image_firmware.yml'
       - '.github/docker/firmware/*'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - '.github/docker/*/*'
   schedule:
     - cron: '45 18 28 * *'
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}${{ github.event.pull_request.number && '-' }}${{ github.event.pull_request.number || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && false || true }}
 
 
 jobs:
@@ -20,8 +24,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: read
     runs-on: ubuntu-latest
-    if: github.repository == 'freetz-ng/freetz-ng'
+    if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
 
     steps:
 
@@ -35,22 +40,21 @@ jobs:
           IMAGE="$(echo "${{ github.workflow }}" | sed 's/.*_//')"
           URI="ghcr.io/$OWNER/internal/$IMAGE"
           echo "uri=$URI" >> $GITHUB_OUTPUT
-          for x in Dockerfile entrypoint.sh; do ln -s .github/docker/$IMAGE/$x; done
           echo "################################################################" && echo "URI=$uri"
 
       - name: login
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.FREETZ_DLTOKEN }}
+        if: github.repository == 'freetz-ng/freetz-ng' && github.event_name != 'pull_request'
 
       - name: docker
         uses: docker/build-push-action@v7
         with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          context: .github/docker/${{ matrix.image }}
           tags: ${{ steps.prepare.outputs.uri }}:latest
+          push: ${{ github.repository == 'freetz-ng/freetz-ng' && github.event_name != 'pull_request' }}
 
 
