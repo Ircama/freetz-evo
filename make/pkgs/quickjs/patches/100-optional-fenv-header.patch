@@ -1,0 +1,16 @@
+--- quickjs.c
++++ quickjs.c
+@@ -30,7 +30,13 @@
+ #include <assert.h>
+ #include <sys/time.h>
+ #include <time.h>
++#if defined(__has_include)
++#if __has_include(<fenv.h>)
+ #include <fenv.h>
++#endif
++#else
++#include <fenv.h>
++#endif
+ #include <math.h>
+ #if defined(__APPLE__)
+ #include <malloc/malloc.h>

@@ -1,0 +1,19 @@
+config FREETZ_PACKAGE_QUICKJS
+	bool "QuickJS 2026-03-23 snapshot (binary only)"
+	default n
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	help
+		QuickJS is a small and embeddable JavaScript engine.
+
+if FREETZ_PACKAGE_QUICKJS
+
+	config FREETZ_PACKAGE_QUICKJS_WITH_QJSC
+		bool "Build qjsc compiler"
+		default n
+		help
+			Build and install qjsc in addition to the qjs interpreter.
+
+endif # FREETZ_PACKAGE_QUICKJS

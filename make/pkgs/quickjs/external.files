@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_QUICKJS" == "y" ] && EXTERNAL_FILES+=" /usr/bin/qjs"
+[ "$EXTERNAL_FREETZ_PACKAGE_QUICKJS" == "y" ] && [ "$FREETZ_PACKAGE_QUICKJS_WITH_QJSC" == "y" ] && EXTERNAL_FILES+=" /usr/bin/qjsc"

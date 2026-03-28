@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_QUICKJS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_QUICKJS
+	bool "quickjs"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/qjs
+		 /usr/bin/qjsc (if enabled)

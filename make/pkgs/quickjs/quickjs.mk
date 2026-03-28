@@ -1,0 +1,61 @@
+$(call PKG_INIT_BIN, 20260323)
+$(PKG)_GIT_COMMIT:=d7ae12ae71dfd6ab2997527d295014a8996fa0f9
+$(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_GIT_COMMIT).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=b2f6206844649ea3b56887de15c46e75e2619308ea06248619244bbac0f68392
+$(PKG)_SITE:=https://github.com/bellard/quickjs/archive
+$(PKG)_DIR:=$(SOURCE_DIR)/quickjs-$($(PKG)_GIT_COMMIT)
+### WEBSITE:=https://bellard.org/quickjs/
+### MANPAGE:=https://bellard.org/quickjs/quickjs.html
+### CHANGES:=https://github.com/bellard/quickjs/commits/master/
+### CVSREPO:=https://github.com/bellard/quickjs/
+
+$(PKG)_BINARY_QJS:=$($(PKG)_DIR)/qjs
+$(PKG)_TARGET_BINARY_QJS:=$($(PKG)_DEST_DIR)/usr/bin/qjs
+
+$(PKG)_BINARY_QJSC:=$($(PKG)_DIR)/qjsc
+$(PKG)_TARGET_BINARY_QJSC:=$($(PKG)_DEST_DIR)/usr/bin/qjsc
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_QUICKJS_WITH_QJSC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_MIPS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_ARM
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_X86
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_AARCH64
+
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_NOP)
+
+$($(PKG)_BINARY_QJS): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(QUICKJS_DIR) \
+		CROSS_PREFIX="$(TARGET_CROSS)" \
+		CC="$(TARGET_CC) $(TARGET_CFLAGS) $(FPIC)" \
+		EXTRA_LIBS="-latomic" \
+		AR="$(TARGET_AR)" \
+		STRIP="$(TARGET_STRIP)" \
+		qjs \
+		$(if $(FREETZ_PACKAGE_QUICKJS_WITH_QJSC),qjsc)
+
+$($(PKG)_BINARY_QJSC): $($(PKG)_BINARY_QJS)
+
+$($(PKG)_TARGET_BINARY_QJS): $($(PKG)_BINARY_QJS)
+	$(INSTALL_BINARY_STRIP)
+
+$($(PKG)_TARGET_BINARY_QJSC): $($(PKG)_BINARY_QJSC)
+	$(INSTALL_BINARY_STRIP)
+
+$(pkg):
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY_QJS)
+$(pkg)-precompiled: $(if $(FREETZ_PACKAGE_QUICKJS_WITH_QJSC),$($(PKG)_TARGET_BINARY_QJSC))
+
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(QUICKJS_DIR) clean
+
+$(pkg)-uninstall:
+	$(RM) $(QUICKJS_TARGET_BINARY_QJS)
+	$(RM) $(QUICKJS_TARGET_BINARY_QJSC)
+
+$(PKG_FINISH)
