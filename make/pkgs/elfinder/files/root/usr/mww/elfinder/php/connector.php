@@ -141,6 +141,16 @@ function elfinder_get_request_header($name) {
     return '';
 }
 
+function elfinder_request_trace_id() {
+    static $traceId = null;
+
+    if ($traceId === null) {
+        $traceId = sprintf('req-%s-%u', str_replace('.', '', sprintf('%.6f', microtime(true))), mt_rand());
+    }
+
+    return $traceId;
+}
+
 function elfinder_get_preview_bytes() {
     $defaultBytes = 64 * 1024 * 1024;
     $minBytes = 4 * 1024 * 1024;
@@ -212,85 +222,34 @@ function elfinder_parse_single_range($rangeHeader, $size) {
     );
 }
 
-function elfinder_needs_large_range_workaround($rangeInfo) {
-    if (!is_array($rangeInfo) || !isset($rangeInfo['start'])) {
+function elfinder_native_seek($fp, $offset) {
+    $remaining = (float)$offset;
+    if ($remaining <= 0.0) {
+        if (@rewind($fp) === false) {
+            return (@fseek($fp, 0, SEEK_SET) === 0);
+        }
+        return true;
+    }
+
+    $seekStep = 1073741824.0;
+
+    if (@rewind($fp) === false && @fseek($fp, 0, SEEK_SET) !== 0) {
         return false;
     }
 
-    return ((float)$rangeInfo['start'] > (float)PHP_INT_MAX);
-}
-
-function elfinder_resolve_media_path($volume, $hash) {
-    $candidates = array();
-
-    if ($volume && $hash !== '') {
-        if (method_exists($volume, 'realpath')) {
-            $candidate = $volume->realpath($hash);
-            if (is_string($candidate) && $candidate !== '') {
-                $candidates[] = $candidate;
-            }
-        }
-        if (method_exists($volume, 'path')) {
-            $candidate = $volume->path($hash);
-            if (is_string($candidate) && $candidate !== '') {
-                $candidates[] = $candidate;
-            }
-        }
-    }
-
-    foreach ($candidates as $candidate) {
-        if (is_file($candidate) && is_readable($candidate)) {
-            return $candidate;
-        }
-    }
-
-    return false;
-}
-
-function elfinder_build_large_range_command($path, $rangeInfo) {
-    $pathArg = escapeshellarg($path);
-    $blockSize = 1048576.0;
-    $startFloat = (float)$rangeInfo['start'];
-    $lengthFloat = (float)$rangeInfo['length'];
-    $skipBlocks = floor($startFloat / $blockSize);
-    $skipBytes = $skipBlocks * $blockSize;
-    $tailOffset = (int)($startFloat - $skipBytes);
-    $bytesNeeded = $tailOffset + $lengthFloat;
-    $countBlocks = (int)ceil($bytesNeeded / $blockSize);
-
-    if ($countBlocks < 1) {
-        $countBlocks = 1;
-    }
-
-    $cmd = 'dd if=' . $pathArg
-        . ' bs=1048576 skip=' . sprintf('%.0f', $skipBlocks)
-        . ' count=' . $countBlocks
-        . ' 2>/dev/null';
-    if ($tailOffset > 0) {
-        $cmd .= ' | tail -c +' . ($tailOffset + 1);
-    }
-    $cmd .= ' | head -c ' . elfinder_format_int_string($lengthFloat);
-
-    return $cmd;
-}
-
-function elfinder_stream_command_output($command) {
-    $handle = @popen($command, 'r');
-    if (!is_resource($handle)) {
-        return false;
-    }
-
-    while (!feof($handle) && !connection_aborted()) {
+    while ($remaining > 0.0) {
         @set_time_limit(0);
-        $chunk = fread($handle, 131072);
-        if ($chunk === false || $chunk === '') {
-            break;
+        $step = ($remaining > $seekStep) ? $seekStep : $remaining;
+        $stepInt = (int)$step;
+        if ($stepInt <= 0) {
+            return false;
         }
-        echo $chunk;
-        flush();
+        if (@fseek($fp, $stepInt, SEEK_CUR) !== 0) {
+            return false;
+        }
+        $remaining -= $stepInt;
     }
 
-    pclose($handle);
     return true;
 }
 
@@ -318,7 +277,6 @@ function elfinder_stream_seek($fp, $offset) {
         }
         $remaining -= $stepInt;
     }
-
     while ($remaining > 0.0 && !feof($fp) && !connection_aborted()) {
         @set_time_limit(0);
         $chunkSize = ($remaining > 131072.0) ? 131072 : (int)$remaining;
@@ -744,26 +702,32 @@ class FreetzElFinderConnector extends elFinderConnector {
             }
 
             $isMedia = (strpos($mime, 'video/') === 0) || (strpos($mime, 'audio/') === 0);
-            if ($isMedia && elfinder_is_large_file($size)) {
+            if ($isMedia) {
+                $traceId = elfinder_request_trace_id();
+                $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string)$_SERVER['REQUEST_METHOD']) : 'GET';
+                $requestUri = isset($_SERVER['REQUEST_URI']) ? (string)$_SERVER['REQUEST_URI'] : '';
+                $requestRange = elfinder_get_request_header('Range');
+                // Release the PHP session lock before any media streaming.
+                // webcfg_auth.php calls session_start() which locks the session file;
+                // without this, a concurrent seek request blocks at session_start()
+                // for the entire duration of the current stream (potentially minutes).
+                if (method_exists($this->elFinder, 'getSession')) {
+                    $this->elFinder->getSession()->close();
+                }
+                @session_write_close();
+                error_log(
+                    'elfinder media request begin: '
+                    . 'id=' . $traceId
+                    . ' method=' . $requestMethod
+                    . ' name=' . $name
+                    . ' size=' . sprintf('%.0f', $size)
+                    . ' range=' . ($requestRange !== '' ? $requestRange : '(none)')
+                    . ' uri=' . $requestUri
+                );
+            }
+            if ($isMedia) {
                 $rangeHeader = elfinder_get_request_header('Range');
                 $rangeInfo = elfinder_parse_single_range($rangeHeader, $size);
-
-                if (is_array($rangeInfo) && elfinder_needs_large_range_workaround($rangeInfo)) {
-                    $realPath = false;
-                    if (!empty($data['volume']) && !empty($data['info']['hash'])) {
-                        $realPath = elfinder_resolve_media_path($data['volume'], $data['info']['hash']);
-                    }
-
-                    error_log(
-                        'elfinder large-file range request: '
-                        . 'name=' . $name
-                        . ' range=' . ($rangeHeader !== '' ? $rangeHeader : '(none)')
-                    );
-
-                    if ($realPath) {
-                        error_log('elfinder large-file range path: ' . $realPath);
-                    }
-                }
 
                 if (is_array($rangeInfo) && !empty($rangeInfo['invalid'])) {
                     while (ob_get_level() > 0) {
@@ -780,10 +744,15 @@ class FreetzElFinderConnector extends elFinderConnector {
                     exit();
                 }
 
-                if (is_array($rangeInfo) && elfinder_needs_large_range_workaround($rangeInfo)) {
-                    if (method_exists($this->elFinder, 'getSession')) {
-                        $this->elFinder->getSession()->close();
-                    }
+                if (is_array($rangeInfo)) {
+                    $traceId = elfinder_request_trace_id();
+                    error_log(
+                        'elfinder media range request: '
+                        . 'id=' . $traceId
+                        . ' '
+                        . 'name=' . $name
+                        . ' range=' . ($rangeHeader !== '' ? $rangeHeader : '(none)')
+                    );
                     while (ob_get_level() > 0) {
                         @ob_end_clean();
                     }
@@ -818,19 +787,28 @@ class FreetzElFinderConnector extends elFinderConnector {
                     header('HTTP/1.1 206 Partial Content');
                     header('Content-Length: ' . $rangeInfo['length']);
                     header('Content-Range: bytes ' . $rangeInfo['start'] . '-' . $rangeInfo['end'] . '/' . elfinder_format_int_string($size));
+                    error_log(
+                        'elfinder media response range: '
+                        . 'id=' . $traceId
+                        . ' status=206'
+                        . ' content-range=bytes ' . $rangeInfo['start'] . '-' . $rangeInfo['end'] . '/' . elfinder_format_int_string($size)
+                        . ' content-length=' . $rangeInfo['length']
+                    );
 
                     $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string)$_SERVER['REQUEST_METHOD']) : 'GET';
                     if ($method !== 'HEAD') {
-                        if (!empty($realPath)) {
-                            $command = elfinder_build_large_range_command($realPath, $rangeInfo);
-                            error_log('elfinder large-file range command: ' . $command);
-                            if (!elfinder_stream_command_output($command)) {
-                                error_log('elfinder large-file shell stream failed: name=' . $name . ' range=' . $rangeHeader);
+                        // Ensure PHP detects client disconnect quickly so streaming stops
+                        // when the player aborts (e.g., on seek), preventing resource waste.
+                        ignore_user_abort(false);
+                        if (elfinder_native_seek($fp, (float)$rangeInfo['start'])) {
+                            error_log('elfinder media native seek ok: id=' . $traceId . ' name=' . $name . ' range=' . $rangeHeader);
+                            if (!elfinder_stream_copy_output($fp, (float)$rangeInfo['length'])) {
+                                error_log('elfinder media native stream ended early: id=' . $traceId . ' name=' . $name . ' range=' . $rangeHeader);
                             }
                         } else if (!elfinder_stream_seek($fp, (float)$rangeInfo['start'])) {
-                            error_log('elfinder large-file range seek failed: name=' . $name . ' range=' . $rangeHeader);
+                            error_log('elfinder media range seek failed: id=' . $traceId . ' name=' . $name . ' range=' . $rangeHeader);
                         } else if (!elfinder_stream_copy_output($fp, (float)$rangeInfo['length'])) {
-                            error_log('elfinder large-file range stream ended early: name=' . $name . ' range=' . $rangeHeader);
+                            error_log('elfinder media range stream ended early: id=' . $traceId . ' name=' . $name . ' range=' . $rangeHeader);
                         }
                     }
 
