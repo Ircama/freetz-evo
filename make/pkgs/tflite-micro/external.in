@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD
+	bool "tflite-micro hello_world"
+	default n
+	help
+		Externalises the following file:
+		 /usr/bin/tflm-hello-world

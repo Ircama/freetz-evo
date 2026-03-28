@@ -1,0 +1,32 @@
+config FREETZ_PACKAGE_TFLITE_MICRO
+	bool "tflite-micro (TensorFlow Lite for Microcontrollers)"
+	default n
+	help
+		TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow
+		Lite designed to run ML inference on resource-constrained devices.
+
+		This package cross-compiles TFLM into a static library (libtflm.a)
+		and installs the public headers into the staging area so that other
+		packages can link against it.
+
+		The build uses the official project-generation script
+		(create_tflm_tree.py) to produce a self-contained source tree, then
+		compiles it with the freetz cross-toolchain (C++17 required).
+
+		Requires Python 3 on the build host.
+
+		Homepage:  https://github.com/tensorflow/tflite-micro
+		Reference: https://www.tensorflow.org/lite/microcontrollers
+
+if FREETZ_PACKAGE_TFLITE_MICRO
+
+	config FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD
+		bool "Build hello_world example binary"
+		default n
+		help
+			Cross-compiles the bundled hello_world example and installs it
+			as /usr/bin/tflm-hello-world on the target.
+			Useful for verifying that TFLM inference runs correctly on the
+			device.
+
+endif # FREETZ_PACKAGE_TFLITE_MICRO

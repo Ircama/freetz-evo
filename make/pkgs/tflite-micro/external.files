@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD" == "y" ] && \
+	EXTERNAL_FILES+=" /usr/bin/tflm-hello-world"
