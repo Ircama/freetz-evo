@@ -40,7 +40,7 @@ skin_body_begin() {
 		<div id="title-box-left"></div>
 		<div id="title-box-mid" style="width:${_cgi_title_box_mid_width}px"></div>
 		<div id="title-box-right"></div>
-		<div id="title-box-logo"><a href="https://freetz-ng.github.io" target="_blank" class="logo"><img src="/images/newfreetz/freetz_logo.gif"></a></div>
+		<div id="title-box-logo"><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo"><img src="/images/newfreetz/freetz_logo.gif"></a></div>
 		<div id="title-box-fun">the fun has just begun ...</div>
 		<div id="title-box-version" style="width:${_cgi_title_box_version_width}px">$(html < /etc/.freetz-version)</div>
 	</div>

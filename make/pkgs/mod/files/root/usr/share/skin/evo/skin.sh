@@ -64,7 +64,7 @@ skin_body_begin() {
 <div id="world">
 <div id="header">
 <div id="header-inner">
-<h1><a href="https://freetz-ng.github.io" target="_blank" class="logo">Freetz<span class="evo-brand">-EVO</span></a>&nbsp;<a id="about" href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span></h1>
+<h1><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo">Freetz EVO<span class="evo-brand">-EVO</span></a>&nbsp;<a id="about" href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span></h1>
 <div id="header-right">
 EOF
 if [ -n "$_CGI_HELP" ]; then
