@@ -1,11 +1,11 @@
-name: image_generate
+name: github_docker
 
 on:
   push:
     branches: [ master ]
     paths:
-      - '.github/workflows/image_generate.yml'
-      - '.github/docker/generate/*'
+      - '.github/workflows/github_docker.yml'
+      - '.github/docker/*/*'
   pull_request:
     branches: [ master ]
     paths:
@@ -20,27 +20,55 @@ concurrency:
 
 
 jobs:
-  build:
+  matrizifizieren:
     permissions:
       contents: read
-      packages: write
       pull-requests: read
     runs-on: ubuntu-latest
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
+
+    outputs:
+      gitsha: ${{ steps.parse.outputs.gitsha }}
+      matrix: ${{ steps.parse.outputs.matrix }}
 
     steps:
 
       - name: checkout
         uses: actions/checkout@v6
 
-      - name: prepare
-        id: prepare
+      - name: parse
+        id: parse
         run: |
-          OWNER="freetz-ng"
-          IMAGE="$(echo "${{ github.workflow }}" | sed 's/.*_//')"
-          URI="ghcr.io/$OWNER/internal/$IMAGE"
-          echo "uri=$URI" >> $GITHUB_OUTPUT
-          echo "################################################################" && echo "URI=$uri"
+          echo "gitsha=\"${{ github.sha }}\"" >> $GITHUB_OUTPUT
+          find .github/docker/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | \
+          while read -r line; do \
+            echo -n "$matrix\"$line\","; \
+          done | sed 's/^/matrix=\[/;s/,$/\]/' >> $GITHUB_OUTPUT
+
+      - name: vars
+        id: vars
+        run: |
+          echo "################################################################"
+          echo "gitsha=${{ steps.parse.outputs.gitsha }}"
+          echo "matrix=${{ steps.parse.outputs.matrix }}"
+
+  build:
+    permissions:
+      contents: read
+      packages: write
+    needs: matrizifizieren
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.matrizifizieren.outputs.matrix) }}
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ fromJson(needs.matrizifizieren.outputs.gitsha) }}
 
       - name: login
         uses: docker/login-action@v4
@@ -54,7 +82,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .github/docker/${{ matrix.image }}
-          tags: ${{ steps.prepare.outputs.uri }}:latest
+          tags: ghcr.io/freetz-ng/internal/${{ matrix.image }}:latest
           push: ${{ github.repository == 'freetz-ng/freetz-ng' && github.event_name != 'pull_request' }}
 
 
