@@ -18,6 +18,24 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)](../../docs/make/aria2.md)<a id='aria2'></a>**<br>
     aria2 is a utility for downloading files. The supported protocols are HTTP(S), FTP, SFTP, BitTorrent and Metalink. aria2 can download a file from multiple sources/protocols and tries to utilize your maximum download bandwidth. It supports only a single file per request, but you can specify multiple URLs (even different hosts) for it. It can retrieve multiple files
+     - [Real-time statistics](../../docs/make/aria2.md#real-time-statistics)
+     - [Task inspection](../../docs/make/aria2.md#task-inspection)
+     - [BitTorrent integration (via aria2)](../../docs/make/aria2.md#bittorrent-integration-via-aria2)
+     - [Metalink and multi-source downloads](../../docs/make/aria2.md#metalink-and-multi-source-downloads)
+     - [Configuration and session handling](../../docs/make/aria2.md#configuration-and-session-handling)
+     - [User experience design](../../docs/make/aria2.md#user-experience-design)
+     - [Data flow model](../../docs/make/aria2.md#data-flow-model)
+     - [Parallel downloads](../../docs/make/aria2.md#parallel-downloads)
+     - [Smart scheduling](../../docs/make/aria2.md#smart-scheduling)
+     - [Resume support](../../docs/make/aria2.md#resume-support)
+     - [BitTorrent support](../../docs/make/aria2.md#bittorrent-support)
+     - [Metalink support (optional)](../../docs/make/aria2.md#metalink-support-optional)
+     - [Remote control interfaces](../../docs/make/aria2.md#remote-control-interfaces)
+     - [DNS](../../docs/make/aria2.md#dns)
+     - [TLS / HTTPS](../../docs/make/aria2.md#tls--https)
+     - [Storage and data handling](../../docs/make/aria2.md#storage-and-data-handling)
+     - [Optional C++ library libaria2](../../docs/make/aria2.md#optional-c-library-libaria2)
+     - [Build-time optimizations](../../docs/make/aria2.md#build-time-optimizations)
 
   * **<u>asterisk-chan-capi: chan_capi: ISDN API 2.0 module for asterisk - DEPRECATED</u><a id='asterisk-chan-capi'></a>**<br>
     Common ISDN API 2.0 module for asterisk
@@ -993,6 +1011,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[quagga 0.99.17 - DEPRECATED](../../docs/make/quagga.md)<a id='quagga'></a>**<br>
     The Quagga Software Routing Suite A routing software package that provides TCP/IP based routing services with routing protocols support such as RIPv1, RIPv2, RIPng, OSPFv2, OSPFv3, BGP-4, and BGP-4+. This package does not provide any configuration help yet, though you can edit the configuration file(s) via the web interface. You can find the documentation at http://www.quagga.net/. YOU SHOULD NOT SELECT THIS PACKAGE (I.E. YOU DO NOT NEED IT) IF YOU DON'T KNOW HOW TO CONFIGURE THE ROUTING DAEMONS! (However: a guided/safe config interface is on the todo list ;-)
 
+  * **[QuickJS 2026-03-23 snapshot (binary only)](../../docs/make/quickjs.md)<a id='quickjs'></a>**<br>
+    QuickJS is a small and embeddable JavaScript engine.
+
 ### R
 
   * **[radvd 1.9.3/2.20](../../docs/make/radvd.md)<a id='radvd'></a>**<br>
@@ -1026,6 +1047,25 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[rTorrent/ruTorrent](../../docs/make/rtorrent.md)<a id='rtorrent'></a>**<br>
     rTorrent is a console-based BitTorrent client with optional ruTorrent web interface. Includes libtorrent dependency.
+     - [AJAX service endpoints](../../docs/make/rtorrent.md#ajax-service-endpoints)
+     - [Initial setup wizard](../../docs/make/rtorrent.md#initial-setup-wizard)
+     - [Standard configuration page](../../docs/make/rtorrent.md#standard-configuration-page)
+     - [Integrated config editors](../../docs/make/rtorrent.md#integrated-config-editors)
+     - [Save hook behavior](../../docs/make/rtorrent.md#save-hook-behavior)
+     - [Init script behavior](../../docs/make/rtorrent.md#init-script-behavior)
+     - [Core and base plugin model](../../docs/make/rtorrent.md#core-and-base-plugin-model)
+     - [Included/optional plugin groups](../../docs/make/rtorrent.md#includedoptional-plugin-groups)
+     - [Freetz filemanager plugin variant](../../docs/make/rtorrent.md#freetz-filemanager-plugin-variant)
+     - [1) Build prerequisites](../../docs/make/rtorrent.md#1-build-prerequisites)
+     - [2) Open the configuration page](../../docs/make/rtorrent.md#2-open-the-configuration-page)
+     - [3) Validate setup results](../../docs/make/rtorrent.md#3-validate-setup-results)
+     - [4) Tune runtime settings from the UI](../../docs/make/rtorrent.md#4-tune-runtime-settings-from-the-ui)
+     - [5) Configure router forwarding](../../docs/make/rtorrent.md#5-configure-router-forwarding)
+     - [6) Launch ruTorrent and verify connection](../../docs/make/rtorrent.md#6-launch-rutorrent-and-verify-connection)
+     - [Service does not start](../../docs/make/rtorrent.md#service-does-not-start)
+     - [Changes saved but not applied](../../docs/make/rtorrent.md#changes-saved-but-not-applied)
+     - [ruTorrent cannot connect to backend](../../docs/make/rtorrent.md#rutorrent-cannot-connect-to-backend)
+     - [Permission/path issues](../../docs/make/rtorrent.md#permissionpath-issues)
 
   * **<u>Rush 1.7 (binary only) - DEPRECATED</u><a id='rush'></a>**<br>
     GNU Rush is a Restricted User Shell, designed for sites providing limited remote access to their resources, such as, for example, savannah.gnu.org. Its main program, rush, is configured as a user login shell for users that are allowed only remote access to the machine. Using a flexible configuration file, GNU Rush gives administrator complete control over the command lines that users execute, and allows to tune the usage of system resources, such as virtual memory, CPU time, etc. on a per-user basis. http://puszcza.gnu.org.ua/software/rush/

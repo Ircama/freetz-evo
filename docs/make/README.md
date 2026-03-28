@@ -777,6 +777,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[quagga 0.99.17 - DEPRECATED](quagga.md)<a id='quagga'></a>**<br>
     The Quagga Software Routing Suite A routing software package that provides TCP/IP based routing services with routing protocols support such as RIPv1, RIPv2, RIPng, OSPFv2, OSPFv3, BGP-4, and BGP-4+. This package does not provide any configuration help yet, though you can edit the configuration file(s) via the web interface. You can find the documentation at http://www.quagga.net/. YOU SHOULD NOT SELECT THIS PACKAGE (I.E. YOU DO NOT NEED IT) IF YOU DON'T KNOW HOW TO CONFIGURE THE ROUTING DAEMONS! (However: a guided/safe config interface is on the todo list ;-)
 
+  * **[QuickJS 2026-03-23 snapshot (binary only)](quickjs.md)<a id='quickjs'></a>**<br>
+    QuickJS is a small and embeddable JavaScript engine.
+
 ### R
 
   * **[radvd 1.9.3/2.20](radvd.md)<a id='radvd'></a>**<br>
