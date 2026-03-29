@@ -1,0 +1,49 @@
+config FREETZ_PACKAGE_NODEJS
+	bool "Node.js 18.20.8"
+	depends on FREETZ_TARGET_GCC_13_MIN
+	depends on FREETZ_OPENSSL_VERSION_30 || FREETZ_OPENSSL_VERSION_35
+	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libz
+	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Node.js is a JavaScript runtime built on Chrome's V8 engine.
+		
+		This package builds a target Node.js runtime linked against
+		shared OpenSSL and zlib from freetz.
+		
+		OpenSSL 3.0 is the recommended choice.
+		OpenSSL 3.5 is allowed as an experimental variant and may still
+		require fixes depending on target/toolchain.
+
+if FREETZ_PACKAGE_NODEJS
+
+	config FREETZ_PACKAGE_NODEJS_WITH_NPM
+		bool "With npm and npx"
+		default n
+		help
+			Install the bundled npm/npx tools.
+			
+			Disabled by default to keep image size lower.
+
+	config FREETZ_PACKAGE_NODEJS_WITH_INTL
+		bool "With Intl (small-icu)"
+		default n
+		help
+			Enable JavaScript Intl support with small-icu.
+			
+			Disabled by default to keep build and runtime footprint lower.
+
+	config FREETZ_PACKAGE_NODEJS_WITH_INSPECTOR
+		bool "With V8 inspector"
+		default n
+		help
+			Enable the V8 inspector/debug protocol.
+
+endif # FREETZ_PACKAGE_NODEJS
