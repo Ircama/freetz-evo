@@ -1,4 +1,10 @@
-# tflite-micro (TFLM) — 20260318
+# tflite-micro (TensorFlow Lite for Microcontrollers)
+  - Homepage: [https://github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro)
+  - Manpage: [https://www.tensorflow.org/lite/microcontrollers](https://www.tensorflow.org/lite/microcontrollers)
+  - Changelog: [https://github.com/tensorflow/tflite-micro/commits/main](https://github.com/tensorflow/tflite-micro/commits/main)
+  - Repository: [https://github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro)
+  - Package: [master/make/pkgs/tflite-micro/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tflite-micro/)
+  - Steward: -
 
 | | |
 |---|---|

@@ -8,6 +8,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[ACME.sh 3.1.2](acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
+  * **[aMUTorrent 3.5.0 (frontend statico)](amutorrent.md)<a id='amutorrent'></a>**<br>
+    aMUTorrent frontend statico installato in /usr/mww/amutorrent. Richiede un backend RPC compatibile (es. Transmission) configurato a runtime. Accesso: http://fritz.box:81/amutorrent/
+
   * **[Apache2 2.4.66 (binary only)](apache2.md)<a id='apache2'></a>**<br>
     The Apache httpd server
 
@@ -357,6 +360,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[Lighttpd 1.4.82](lighttpd.md)<a id='lighttpd'></a>**<br>
     Security, speed, compliance, and flexibility -- all of these describe lighttpd (pron. lighty) which is rapidly redefining efficiency of a webserver; as it is designed and optimized for high performance environments. With a small memory footprint compared to other web-servers, effective management of the cpu-load, and advanced feature set (FastCGI, SCGI, Auth, Output-Compression, URL-Rewriting and many more) lighttpd is the perfect solution for every server that is suffering load problems. In case you want to configure virtual hosts, you may want to consider the package onlinechanged-cgi which allows you to configure multiple DynDNS entries for your box.
+
+  * **[llama-cpp: llama.cpp b8575 (LLM inference engine)](llama-cpp.md)<a id='llama-cpp'></a>**<br>
+    llama.cpp — CPU-only LLM inference engine. Runs quantized GGUF language models on-device using only CPU and system RAM. No GPU required. On a FRITZ!Box 7590 AX (4-core MIPS, 512 MB RAM) practical model sizes are Q4_K_M quantized models up to ~400 MB (e.g. Qwen2.5-0.5B, SmolLM2-360M). Always installed: • llama-cli      — interactive/single-shot inference CLI • llama-server   — OpenAI-compatible REST API (GET /health, POST /v1/chat/completions, POST /completion) • llama-quantize — GGUF model quantization tool Optional tools can be enabled below. Models must be stored on USB/NAS storage (external filesystem). The llama-server init script uses LLAMA_CPP_BASEDIR (default /var/media/ftp/llama-cpp) as the model search path. Web interface: llama-server exposes its API on port 8080 by default (configurable). Works alongside the Freetz web UI on port 81. https://github.com/ggml-org/llama.cpp
 
   * **[Lua 5.1.5/5.4.8 (binary only)](lua.md)<a id='lua'></a>**<br>
     Lua Scripting Language. Lua is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. Lua combines simple procedural syntax with powerful data description constructs based on associative arrays and extensible semantics. Lua is dynamically typed, runs by interpreting bytecode with a register-based virtual machine, and has automatic memory management with incremental garbage collection, making it ideal for configuration, scripting, and rapid prototyping.
@@ -911,6 +917,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>Tesseract OCR 3.02.02 (binary only)</u><a id='tesseract'></a>**<br>
     Tesseract is an Open Source OCR engine Note: Tesseract including languages files is a huge package and requires a lot of RAM at run-time. It is NOT recommended to use it on boxes having less than 64MB RAM.
+
+  * **[tflite-micro (TensorFlow Lite for Microcontrollers)](tflite-micro.md)<a id='tflite-micro'></a>**<br>
+    TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow Lite designed to run ML inference on resource-constrained devices. This package cross-compiles TFLM into a static library (libtflm.a) and installs the public headers into the staging area so that other packages can link against it. The build uses the official project-generation script (create_tflm_tree.py) to produce a self-contained source tree, then compiles it with the freetz cross-toolchain (C++17 required). Requires Python 3 on the build host. Homepage:  https://github.com/tensorflow/tflite-micro Reference: https://www.tensorflow.org/lite/microcontrollers
 
   * **<u>tichksum: TI chksum 1.0</u><a id='tichksum'></a>**<br>
 

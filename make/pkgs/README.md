@@ -8,6 +8,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[ACME.sh 3.1.2](../../docs/make/acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
+  * **[aMUTorrent 3.5.0 (frontend statico)](../../docs/make/amutorrent.md)<a id='amutorrent'></a>**<br>
+    aMUTorrent frontend statico installato in /usr/mww/amutorrent. Richiede un backend RPC compatibile (es. Transmission) configurato a runtime. Accesso: http://fritz.box:81/amutorrent/
+
   * **[Apache2 2.4.66 (binary only)](../../docs/make/apache2.md)<a id='apache2'></a>**<br>
     The Apache httpd server
      - [apache.conf](../../docs/make/apache2.md#apacheconf)
@@ -482,6 +485,19 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Lua](../../docs/make/lighttpd.md#lua)
      - [Geoblocking](../../docs/make/lighttpd.md#geoblocking)
      - [Links](../../docs/make/lighttpd.md#links)
+
+  * **[llama-cpp: llama.cpp b8575 (LLM inference engine)](../../docs/make/llama-cpp.md)<a id='llama-cpp'></a>**<br>
+    llama.cpp — CPU-only LLM inference engine. Runs quantized GGUF language models on-device using only CPU and system RAM. No GPU required. On a FRITZ!Box 7590 AX (4-core MIPS, 512 MB RAM) practical model sizes are Q4_K_M quantized models up to ~400 MB (e.g. Qwen2.5-0.5B, SmolLM2-360M). Always installed: • llama-cli      — interactive/single-shot inference CLI • llama-server   — OpenAI-compatible REST API (GET /health, POST /v1/chat/completions, POST /completion) • llama-quantize — GGUF model quantization tool Optional tools can be enabled below. Models must be stored on USB/NAS storage (external filesystem). The llama-server init script uses LLAMA_CPP_BASEDIR (default /var/media/ftp/llama-cpp) as the model search path. Web interface: llama-server exposes its API on port 8080 by default (configurable). Works alongside the Freetz web UI on port 81. https://github.com/ggml-org/llama.cpp
+     - [Practical device constraints](../../docs/make/llama-cpp.md#practical-device-constraints)
+     - [Recommended models for this device](../../docs/make/llama-cpp.md#recommended-models-for-this-device)
+     - [1. Place a GGUF model on USB storage](../../docs/make/llama-cpp.md#1-place-a-gguf-model-on-usb-storage)
+     - [2. Configure via the Freetz web UI](../../docs/make/llama-cpp.md#2-configure-via-the-freetz-web-ui)
+     - [3. Start the server](../../docs/make/llama-cpp.md#3-start-the-server)
+     - [4. Run inference](../../docs/make/llama-cpp.md#4-run-inference)
+     - [CMake cross-compilation](../../docs/make/llama-cpp.md#cmake-cross-compilation)
+     - [No submodule issue](../../docs/make/llama-cpp.md#no-submodule-issue)
+     - [Shared libraries and storage](../../docs/make/llama-cpp.md#shared-libraries-and-storage)
+     - [Model storage](../../docs/make/llama-cpp.md#model-storage)
 
   * **[Lua 5.1.5/5.4.8 (binary only)](../../docs/make/lua.md)<a id='lua'></a>**<br>
     Lua Scripting Language. Lua is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. Lua combines simple procedural syntax with powerful data description constructs based on associative arrays and extensible semantics. Lua is dynamically typed, runs by interpreting bytecode with a register-based virtual machine, and has automatic memory management with incremental garbage collection, making it ideal for configuration, scripting, and rapid prototyping.
@@ -1204,6 +1220,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>Tesseract OCR 3.02.02 (binary only)</u><a id='tesseract'></a>**<br>
     Tesseract is an Open Source OCR engine Note: Tesseract including languages files is a huge package and requires a lot of RAM at run-time. It is NOT recommended to use it on boxes having less than 64MB RAM.
+
+  * **[tflite-micro (TensorFlow Lite for Microcontrollers)](../../docs/make/tflite-micro.md)<a id='tflite-micro'></a>**<br>
+    TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow Lite designed to run ML inference on resource-constrained devices. This package cross-compiles TFLM into a static library (libtflm.a) and installs the public headers into the staging area so that other packages can link against it. The build uses the official project-generation script (create_tflm_tree.py) to produce a self-contained source tree, then compiles it with the freetz cross-toolchain (C++17 required). Requires Python 3 on the build host. Homepage:  https://github.com/tensorflow/tflite-micro Reference: https://www.tensorflow.org/lite/microcontrollers
 
   * **<u>tichksum: TI chksum 1.0</u><a id='tichksum'></a>**<br>
 
