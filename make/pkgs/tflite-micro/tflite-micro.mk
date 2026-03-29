@@ -5,8 +5,12 @@
 #   - headers      (installed into staging dir under usr/include/tflite-micro)
 # Optionally, a hello_world binary can be built and installed on the target.
 #
-# Build requires Python 3 on the host for the project-generation script.
-# The library itself only needs the cross C++17 compiler - no external deps.
+# NOTE: libtflm.a is a STATIC library - it only goes into the staging area.
+# It does NOT appear in "Shared libraries" of menuconfig.  Other packages
+# that want to link against it can reference $(TARGET_TOOLCHAIN_STAGING_DIR).
+#
+# Build requires Python 3 on the host.  numpy and Pillow are installed
+# automatically into the freetz host Python during tree generation.
 
 # Pinned to commit f5302ed (Mar 18 2026)
 TFLITE_MICRO_COMMIT := f5302ed4fa99b7ec697e578057a1f61445a442fe
@@ -22,15 +26,6 @@ $(PKG)_SOURCE_DOWNLOAD_NAME:=$(pkg)-$($(PKG)_VERSION).tar.gz
 ### CVSREPO:=https://github.com/tensorflow/tflite-micro
 ### STEWARD:=
 
-$(PKG)_LIB_BINARY   := $($(PKG)_DIR)/gen/libtflm.a
-$(PKG)_HELLO_BINARY := $($(PKG)_DIR)/gen/hello_world
-
-$(PKG)_LIB_STAGING_DIR    := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib
-$(PKG)_LIB_STAGING_BINARY := $($(PKG)_LIB_STAGING_DIR)/libtflm.a
-$(PKG)_INC_STAGING_DIR    := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/tflite-micro
-
-$(PKG)_TARGET_HELLO_BINARY := $($(PKG)_DEST_DIR)/usr/bin/tflm-hello-world
-
 $(PKG)_BUILD_PREREQ := python3
 
 $(PKG)_TARBALL_STRIP_COMPONENTS := 1
@@ -41,21 +36,25 @@ TFLITE_MICRO_TREE_DIR        := $(TFLITE_MICRO_DIR)/tflm-tree
 TFLITE_MICRO_GEN_DIR         := $(TFLITE_MICRO_DIR)/gen
 TFLITE_MICRO_LIB_STAGING_DIR := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib
 TFLITE_MICRO_INC_STAGING_DIR := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/tflite-micro
+TFLITE_MICRO_TARGET_HELLO_BINARY := $(TFLITE_MICRO_DEST_DIR)/usr/bin/tflm-hello-world
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 # ---------------------------------------------------------------------------
-# Step 1: run the project-generation script
+# Step 1: install Python build prerequisites, then run the project-generation
+# script to create a flat source tree in $(TFLITE_MICRO_TREE_DIR).
 # ---------------------------------------------------------------------------
 $(TFLITE_MICRO_TREE_DIR)/.generated: $(TFLITE_MICRO_DIR)/.configured
+	@$(call _ECHO,installing Python build prerequisites)
+	python3 -m pip install --quiet numpy Pillow
 	@$(call _ECHO,generating tflm source tree)
 	cd $(TFLITE_MICRO_DIR) && \
 		python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py \
 			-e hello_world \
 			$(CURDIR)/$(TFLITE_MICRO_TREE_DIR)
-	# Copy headers that the tree-generation script misses
+	@# array.h is not copied by create_tflm_tree.py but is required by kernel_util.cc
 	cp $(TFLITE_MICRO_DIR)/tensorflow/lite/array.h \
 		$(TFLITE_MICRO_TREE_DIR)/tensorflow/lite/array.h
 	@touch $@
@@ -84,7 +83,7 @@ $(TFLITE_MICRO_DIR)/gen/libtflm.a: $(TFLITE_MICRO_TREE_DIR)/.generated
 			$(TARGET_CXX) $(TARGET_CFLAGS) -std=c++17 \
 				-fno-rtti -fno-exceptions -ffunction-sections -fdata-sections \
 				$(TFLITE_MICRO_INC) \
-				-c $$src -o $$obj || exit 1 ;; \
+				-c $$src -o $$obj || exit 1 ;;  \
 		*.c) \
 			$(TARGET_CC) $(TARGET_CFLAGS) \
 				-ffunction-sections -fdata-sections \
@@ -103,19 +102,22 @@ ifeq ($(strip $(FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD)),y)
 
 $(TFLITE_MICRO_DIR)/gen/hello_world: $(TFLITE_MICRO_DIR)/gen/libtflm.a
 	@$(call _ECHO,building hello_world example)
-	mkdir -p $(TFLITE_MICRO_GEN_DIR)/obj/examples/hello_world
-	for src in $(TFLITE_MICRO_TREE_DIR)/examples/hello_world/*.cc; do \
+	# Keep hello_world_test.cc (it provides main), skip only benchmarks.
+	find $(TFLITE_MICRO_TREE_DIR)/examples/hello_world -name '*.cc' \
+		! -name '*benchmark.cc' | sort | \
+	while read src; do \
 		rel=$${src#$(TFLITE_MICRO_TREE_DIR)/}; \
 		obj=$(TFLITE_MICRO_GEN_DIR)/obj/$${rel%.*}.o; \
 		mkdir -p $$(dirname $$obj); \
 		$(TARGET_CXX) $(TARGET_CFLAGS) -std=c++17 \
 			-fno-rtti -fno-exceptions -ffunction-sections -fdata-sections \
 			$(TFLITE_MICRO_INC) \
+			-I$(TFLITE_MICRO_TREE_DIR)/examples/hello_world \
 			-c $$src -o $$obj || exit 1; \
 	done
+	objs=`find $(TFLITE_MICRO_GEN_DIR)/obj/examples/hello_world -name '*.o' | sort`; \
 	$(TARGET_CXX) $(TARGET_CFLAGS) -Wl,--gc-sections \
-		$(TFLITE_MICRO_GEN_DIR)/obj/examples/hello_world/*.o \
-		$(TFLITE_MICRO_DIR)/gen/libtflm.a -lm -o $@
+		$$objs $(TFLITE_MICRO_DIR)/gen/libtflm.a -lm -o $@
 
 $(TFLITE_MICRO_TARGET_HELLO_BINARY): $(TFLITE_MICRO_DIR)/gen/hello_world
 	$(INSTALL_BINARY_STRIP)
@@ -123,7 +125,8 @@ $(TFLITE_MICRO_TARGET_HELLO_BINARY): $(TFLITE_MICRO_DIR)/gen/hello_world
 endif # FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD
 
 # ---------------------------------------------------------------------------
-# Install library + headers into staging area
+# Install static library + headers into the staging area.
+# (libtflm.a is a static lib - it is not installed to the target filesystem.)
 # ---------------------------------------------------------------------------
 $(TFLITE_MICRO_LIB_STAGING_DIR)/libtflm.a: $(TFLITE_MICRO_DIR)/gen/libtflm.a
 	mkdir -p $(TFLITE_MICRO_LIB_STAGING_DIR)
@@ -138,10 +141,14 @@ $(TFLITE_MICRO_LIB_STAGING_DIR)/libtflm.a: $(TFLITE_MICRO_DIR)/gen/libtflm.a
 	done
 
 # ---------------------------------------------------------------------------
-# Phony / precompiled targets
+# Standard freetz phony targets
 # ---------------------------------------------------------------------------
-$(pkg):
 
+# $(pkg) = "install to staging" target, used as dependency by other packages
+$(pkg): $(TFLITE_MICRO_LIB_STAGING_DIR)/libtflm.a
+
+# $(pkg)-precompiled = built by the normal freetz build flow.
+# Static lib goes to staging only; hello_world binary goes to target if enabled.
 $(pkg)-precompiled: $(TFLITE_MICRO_LIB_STAGING_DIR)/libtflm.a \
                     $(if $(FREETZ_PACKAGE_TFLITE_MICRO_HELLO_WORLD),$(TFLITE_MICRO_TARGET_HELLO_BINARY))
 
