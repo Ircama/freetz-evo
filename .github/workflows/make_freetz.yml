@@ -22,7 +22,7 @@ jobs:
       image: ghcr.io/freetz-ng/internal/firmware
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.FREETZ_DLTOKEN }}
       options: --user 1001:1001
 #   strategy:
 #     fail-fast: false
@@ -117,8 +117,6 @@ jobs:
           *)   wget -q "$URL" -O - 2>/dev/null > .config            && echo Done || echo Fail ;; \
           esac
           echo -n
-          grep -q '^FREETZ_TYPE_' .config || echo 'FREETZ_TYPE_7530_W6_V1=y'                          >> .config
-          grep -q '^FREETZ_TYPE_FIRMWARE_' .config || echo 'FREETZ_TYPE_FIRMWARE_08_0X=y'             >> .config
           echo "##########################################################" && echo -n "Lines=" && wc -l .config
 
       - name: generate

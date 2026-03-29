@@ -1,4 +1,4 @@
-# autoconf 2.72
+# autoconf 2.73
   - Homepage: [https://www.gnu.org/software/autoconf/](https://www.gnu.org/software/autoconf/)
   - Manpage: [https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/)
   - Changelog: [https://ftp.gnu.org/gnu/autoconf/](https://ftp.gnu.org/gnu/autoconf/)

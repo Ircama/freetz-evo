@@ -68,7 +68,7 @@ menu "GCC"
 	source "make/libs/libstdcxx/Config.in"
 endmenu ### "GCC"
 
-menu "GLib"
+menu "GLib2"
 	source "make/libs/glib2/Config.in"
 endmenu ### "GLib"
 

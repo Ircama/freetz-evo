@@ -4,7 +4,7 @@ $(PKG)_HASH:=1a5bf03381e83fbfbbe98ecca7b58ce2e726f662b560c3ff05aebcdaae397130
 $(PKG)_SITE:=https://snapshot.debian.org/archive/debian/20200101T000000Z/pool/main/p/prelink
 ### WEBSITE:=https://people.redhat.com/jakub/prelink/
 ### MANPAGE:=https://people.redhat.com/jakub/prelink/prelink.pdf
-### CHANGES:=https://packages.debian.org/buster/execstack
+### CHANGES:=https://tracker.debian.org/pkg/prelink
 ### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/execstack

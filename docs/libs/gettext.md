@@ -1,4 +1,4 @@
-# gettext (libintl.so) 0.24
+# gettext (libintl.so) 1.0
   - Homepage: [https://www.gnu.org/software/gettext/](https://www.gnu.org/software/gettext/)
   - Manpage: [https://www.gnu.org/software/gettext/manual/index.html](https://www.gnu.org/software/gettext/manual/index.html)
   - Changelog: [https://ftp.gnu.org/pub/gnu/gettext/](https://ftp.gnu.org/pub/gnu/gettext/)

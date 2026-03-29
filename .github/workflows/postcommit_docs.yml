@@ -33,6 +33,12 @@ jobs:
     permissions:
       packages: read
       contents: write
+    container:
+      image: ghcr.io/freetz-ng/internal/generate
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.FREETZ_DLTOKEN }}
+      options: --user 1001:1001
     runs-on: ubuntu-latest
 
     steps:

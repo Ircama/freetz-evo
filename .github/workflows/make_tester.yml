@@ -25,7 +25,7 @@ jobs:
       image: ghcr.io/freetz-ng/internal/firmware
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.FREETZ_DLTOKEN }}
       options: --user 1001:1001
 #   strategy:
 #     fail-fast: false

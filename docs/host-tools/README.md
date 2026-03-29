@@ -4,7 +4,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### A
 
-  * **[autoconf 2.72](autoconf-host.md)<a id='autoconf-host'></a>**<br>
+  * **[autoconf 2.73](autoconf-host.md)<a id='autoconf-host'></a>**<br>
 
   * **[automake 1.18.1](automake-host.md)<a id='automake-host'></a>**<br>
 
@@ -18,7 +18,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ca-bundle 2026-03-19](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
-  * **[cmake 4.3.0](cmake-host.md)<a id='cmake-host'></a>**<br>
+  * **[cmake 4.3.1](cmake-host.md)<a id='cmake-host'></a>**<br>
 
   * **[config a2287c3](config-host.md)<a id='config-host'></a>**<br>
 

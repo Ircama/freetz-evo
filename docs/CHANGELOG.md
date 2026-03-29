@@ -68,8 +68,9 @@ Latest changes
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
+    * autoconf 2.73
     * ca-bundle 2026-03-19
-    * cmake 4.3.0
+    * cmake 4.3.1
     * file 5.47
     * meson 1.10.2
     * pseudo 1.9.3
@@ -84,28 +85,35 @@ Latest changes
     * Still are some patches for Fritzos 8.2 not adapted for Fritzos 8.2x
 
   - Packages:
-    * BIND 9.11.37/9.20.20
+    * Atop 2.12.1
+    * BIND 9.11.37/9.20.21
     * CA-bundle 2026-03-19
     * Curl 8.12.1/8.19.0
     * ImageMagick 7.1.0-62/7.1.2-16
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
+    * ldd 0.1/1.0.57
+    * Nmap 4.76/5.51/7.99
     * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.0
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
     * Tinyproxy 1.11.3
     * Tor 0.4.8.23
+    * UnRAR 6.1.7/7.2.5
     * Whois 5.6.6
 
   - Libraries:
     * expat 2.7.5
     * file 5.47
     * FreeType 2.14.3
+    * gettext 1.0
+    * GLib2 2.32.4/2.88.0
     * harfbuzz 13.2.1
     * libmaxminddb 1.13.3
     * libpng 1.6.56
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.2
     * neon 0.30.2/0.37.0
+    * pango 1.57.1
 
   - Firmware updates:
     * Please see [FIRMWARES](FIRMWARES.md) for the list of currently supported devices and firmwares.
