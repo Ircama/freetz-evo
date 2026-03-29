@@ -48,6 +48,12 @@ echo "▸ Fetching upstream..."
 git remote add upstream "https://github.com/Freetz-NG/freetz-ng.git" 2>/dev/null || true
 git fetch upstream "$UPSTREAM_BRANCH" --no-tags
 
+# Reuse previously validated manual conflict resolutions.
+# This is the safest form of automation: Git only reapplies exact/similar
+# conflict preimages and still leaves unresolved cases for manual review.
+git config --local rerere.enabled true
+git config --local rerere.autoupdate true
+
 # Update upstream-mirror
 git branch -f "$MIRROR_BRANCH" "upstream/$UPSTREAM_BRANCH"
 
@@ -160,6 +166,7 @@ New upstream commits: $NEW_COMMITS"; then
 else
     echo ""
     echo "❌ Merge conflicts detected!"
+    echo "ℹ️  rerere enabled: known conflict patterns may auto-resolve after first manual fix."
     echo ""
 
     # ── Auto-resolve modify/delete and known auto-generated conflicts ─────────

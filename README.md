@@ -9,15 +9,14 @@
 
 ```
 
-Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). Easier, sleeker, more features - less bugs!
+Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng), which remains the technical foundation of this project.
+Freetz-EVO builds on that foundation with additional packages, UX improvements, and workflow tooling. Freetz-EVO is easier, sleeker, with more features and less bugs.
 
-Compared to Freetz-NG, Freetz-EVO includes GCC on-device, nginx, rtorrent, ruTorrent, PHP,
-AI translation for foreign languages, more explicit error/warning messages, an advanced GitHub
-Action for testing new developments, and many other new packages.
+Relevant new packages include GCC on-device, nginx, rtorrent, ruTorrent, PHP,
+AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.
 
 Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)
-repository: all upstream fixes, new firmware support, and toolchain updates are regularly merged into
-Freetz-EVO so that it always builds on the latest Freetz-NG foundation.
+repository: upstream fixes, new firmware support, and toolchain updates are regularly merged so Freetz-EVO keeps evolving on top of the latest Freetz-NG base.
 
 ### Getting Started
 
