@@ -17,6 +17,55 @@ sec_begin "$(lang de:"Starttyp" en:"Start type")"
 cgi_print_radiogroup_service_starttype "enabled" "$TRANSMISSION_ENABLED" "" "" 0
 sec_end
 
+sec_begin "$(lang de:"Installierte Web-Interfaces" en:"Installed Web Interfaces")"
+
+WEBUI_FOUND="no"
+
+cat << EOF
+<p><small>$(lang de:"Folgende statische Web-Interfaces wurden erkannt:" en:"The following static web interfaces were detected:")</small></p>
+<ul>
+EOF
+
+if [ -d "/usr/mww/transmission-flood" ] || [ -d "/mod/external/usr/mww/transmission-flood" ]; then
+	WEBUI_FOUND="yes"
+	cat << EOF
+<li><a href="/transmission-flood/" target="_blank">flood-for-transmission</a></li>
+EOF
+fi
+
+if [ -d "/usr/mww/trguing" ] || [ -d "/mod/external/usr/mww/trguing" ]; then
+	WEBUI_FOUND="yes"
+	cat << EOF
+<li><a href="/trguing/" target="_blank">TrguiNG web</a></li>
+EOF
+fi
+
+if [ -d "/usr/mww/transmissionic" ] || [ -d "/mod/external/usr/mww/transmissionic" ]; then
+	WEBUI_FOUND="yes"
+	cat << EOF
+<li><a href="/transmissionic/" target="_blank">Transmissionic web UI</a></li>
+EOF
+fi
+
+if [ -d "/usr/mww/transmission-web-control" ] || [ -d "/mod/external/usr/mww/transmission-web-control" ]; then
+	WEBUI_FOUND="yes"
+	cat << EOF
+<li><a href="/transmission-web-control/" target="_blank">transmission-web-control</a></li>
+EOF
+fi
+
+if [ "$WEBUI_FOUND" = "no" ]; then
+	cat << EOF
+<li><em>$(lang de:"Kein statisches Transmission-Web-Interface installiert" en:"No static transmission web interface installed")</em></li>
+EOF
+fi
+
+cat << EOF
+</ul>
+EOF
+
+sec_end
+
 sec_begin "$(lang de:"Priorit&auml;t" en:"Priority")"
 
 cat << EOF

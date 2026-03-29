@@ -723,6 +723,12 @@ if [ -d "/usr/mww/rutorrent" ] || [ -d "/mod/external/usr/mww/rutorrent" ]; then
 	fi
 fi
 
+# Check if aMUTorrent is installed
+AMUTORRENT_INSTALLED="no"
+if [ -d "/usr/mww/amutorrent" ] || [ -d "/mod/external/usr/mww/amutorrent" ]; then
+	AMUTORRENT_INSTALLED="yes"
+fi
+
 # ============================================================================
 # Dark-mode CSS overrides (injected once, before any HTML output)
 # ============================================================================
@@ -1846,6 +1852,19 @@ if [ -d "/mod/external/usr/mww/rutorrent" ] || [ -d "/usr/mww/rutorrent" ]; then
 <input type='checkbox' id='uses_home' name='uses_home' value='yes'$uses_home_chk 
        title="$(lang de:"Falls aktiviert, nutzt ruTorrent das Basisverzeichnis (basedir) für temporäre Dateien statt /tmp (RAM). Empfohlen bei vielen gleichzeitigen Uploads oder begrenztem RAM. Standard: /tmp (schneller, aber RAM-begrenzt)." en:"If enabled, ruTorrent uses the base directory (basedir) for temporary files instead of /tmp (RAM). Recommended with many simultaneous uploads or limited RAM. Default: /tmp (faster, but RAM-limited).")">
 <small>$(lang de:"(Standard: /tmp, empfohlen bei < 64MB RAM: basedir)" en:"(default: /tmp, recommended with < 64MB RAM: basedir)")</small>
+</p>
+EOF
+	sec_end
+fi
+
+if [ "$AMUTORRENT_INSTALLED" = "yes" ]; then
+	sec_begin "$(lang de:"aMUTorrent" en:"aMUTorrent")"
+	cat << EOF
+<p>
+<strong>$(lang de:"aMUTorrent Web-Interface" en:"aMUTorrent Web Interface"):</strong> <a href="/amutorrent/" target="_blank" style="color: #007bff; font-weight: bold;">/amutorrent/</a>
+</p>
+<p>
+<small style="color: #666;">$(lang de:"aMUTorrent ist ein alternatives Web-Frontend und benötigt einen laufenden RPC-Backend-Dienst (z. B. Transmission)." en:"aMUTorrent is an alternative web frontend and requires a running RPC backend service (e.g. Transmission).")</small>
 </p>
 EOF
 	sec_end

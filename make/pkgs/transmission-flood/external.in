@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_TRANSMISSION_FLOOD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TRANSMISSION_FLOOD
+	bool "flood-for-transmission"
+	default n
+	help
+		externals the following file(s):
+		 /usr/mww/transmission-flood

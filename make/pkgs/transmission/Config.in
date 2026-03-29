@@ -94,6 +94,42 @@ if FREETZ_PACKAGE_TRANSMISSION
 			help
 				The official web interface for transmission called clutch
 
+		config FREETZ_PACKAGE_TRANSMISSION_FRONTEND_FLOOD
+			bool "flood-for-transmission (static web frontend)"
+			depends on FREETZ_PACKAGE_TRANSMISSION_DAEMON
+			select FREETZ_PACKAGE_TRANSMISSION_FLOOD
+			default n
+			help
+				Adds flood-for-transmission static web UI under /usr/mww/transmission-flood.
+				URL: http://fritz.box:81/transmission-flood/
+
+		config FREETZ_PACKAGE_TRANSMISSION_FRONTEND_TRGUING
+			bool "TrguiNG web (static frontend)"
+			depends on FREETZ_PACKAGE_TRANSMISSION_DAEMON
+			select FREETZ_PACKAGE_TRGUING_WEB
+			default n
+			help
+				Adds TrguiNG static web UI under /usr/mww/trguing.
+				URL: http://fritz.box:81/trguing/
+
+		config FREETZ_PACKAGE_TRANSMISSION_FRONTEND_TRANSMISSIONIC
+			bool "Transmissionic web UI (static frontend)"
+			depends on FREETZ_PACKAGE_TRANSMISSION_DAEMON
+			select FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI
+			default n
+			help
+				Adds Transmissionic static web UI under /usr/mww/transmissionic.
+				URL: http://fritz.box:81/transmissionic/
+
+		config FREETZ_PACKAGE_TRANSMISSION_FRONTEND_WEB_CONTROL
+			bool "transmission-web-control (static frontend)"
+			depends on FREETZ_PACKAGE_TRANSMISSION_DAEMON
+			select FREETZ_PACKAGE_TRANSMISSION_WEB_CONTROL
+			default n
+			help
+				Adds transmission-web-control static web UI under /usr/mww/transmission-web-control.
+				URL: http://fritz.box:81/transmission-web-control/
+
 	config FREETZ_PACKAGE_TRANSMISSION_CREATE
 		bool "transmission-create"
 		default n
@@ -126,6 +162,23 @@ if FREETZ_PACKAGE_TRANSMISSION
 		default y
 		help
 			Configuration web interface for Freetz.
+
+	# Hidden package symbols selected by integrated frontend options above.
+	config FREETZ_PACKAGE_TRANSMISSION_FLOOD
+		bool
+		default n
+
+	config FREETZ_PACKAGE_TRGUING_WEB
+		bool
+		default n
+
+	config FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI
+		bool
+		default n
+
+	config FREETZ_PACKAGE_TRANSMISSION_WEB_CONTROL
+		bool
+		default n
 
 endif # FREETZ_PACKAGE_TRANSMISSION
 

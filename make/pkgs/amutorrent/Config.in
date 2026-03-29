@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_AMUTORRENT
+	bool "aMUTorrent 3.5.0 (frontend statico)"
+	default n
+	help
+		aMUTorrent frontend statico installato in /usr/mww/amutorrent.
+		Richiede un backend RPC compatibile (es. Transmission) configurato a runtime.
+
+		Accesso: http://fritz.box:81/amutorrent/

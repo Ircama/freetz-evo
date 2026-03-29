@@ -43,7 +43,12 @@ The authentication layer has been updated to support a **form-based session logi
 |---|---|---|
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
-| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway. Exposes all Freetz services over HTTPS at `https://fritz.box/cgi-bin/freetz_proxy`, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
+| **aMUTorrent** 3.5.0 | Static web frontend compatible with Transmission-style RPC backends. | EVO only |
+| **flood-for-transmission** 1.0.1 | Static Transmission frontend integrated as selectable option in the Transmission package menu. | EVO only |
+| **transmission-web-control** (commit snapshot) | Static Transmission Web frontend. | EVO only |
+| **Transmissionic web UI** 1.8.0 | Static Transmission frontend integrated in the Transmission package menu. | EVO only |
+| **TrguiNG web** 1.5.1 | Static Transmission frontend integrated in the Transmission package menu. | EVO only |
+| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **QuickJS** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
@@ -90,6 +95,8 @@ to the target staging directory instead of the host.
 | Package | Enhancement |
 |---|---|
 | **curl** | Added CA-bundle toggle option; rTorrent uses the curl CA bundle for HTTPS validation. |
+| **transmission** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission`, `TrguiNG web`, `Transmissionic web UI`, `transmission-web-control`), with package-level installation under `/usr/mww/*`. |
+| **busybox** (`httpd`) | Added support for HTTP `Range` header handling for CGI responses, enabling partial-content workflows with CGI-backed endpoints. |
 | **pcre** | Fixed parallel install race condition; removed stray dev/test files; fixed double-indirection via `$(PKG)` causing stray root symlinks; JIT disabled for kernel 2.6.39.3. |
 | **pcre2** / libpcre2-posix | Added `select FREETZ_LIB_libpcre2_posix` to `FREETZ_LIB_libpcre2` (posix wrapper is always built alongside pcre2-8); `EXTERNAL_FREETZ_LIB_libpcre2_posix` changed to `default y` so `libpcre2-posix.so.3.0.7` is automatically externalized. |
 | **libyaml** | Fixed broken `find "$FILESYSTEM_MOD_DIR/..."` pattern in `external.files` (replaced with `${FREETZ_LIBRARY_DIR}/libyaml-0.so.2.0.9`, matching the working pcre2 approach); `EXTERNAL_FREETZ_LIB_libyaml` changed to `default y` so it is auto-enabled when libyaml is selected. |

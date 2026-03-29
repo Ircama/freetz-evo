@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_TRGUING_WEB
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TRGUING_WEB
+	bool "TrguiNG web"
+	default n
+	help
+		externals the following file(s):
+		 /usr/mww/trguing

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI
+	bool "Transmissionic web UI"
+	default n
+	help
+		externals the following file(s):
+		 /usr/mww/transmissionic
