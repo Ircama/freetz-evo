@@ -1,0 +1,13 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP_BINS" = "y" ]; then
+	for bin in /usr/bin/llama-*; do
+		[ -f "$FREETZ_BASE_DIR/filesystem$bin" ] && \
+			EXTERNAL_FILES+=" $bin"
+	done
+fi
+
+if [ "$EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP_LIBS" = "y" ]; then
+	for lib in /usr/lib/libllama*.so* /usr/lib/libggml*.so*; do
+		[ -f "$FREETZ_BASE_DIR/filesystem$lib" ] && \
+			EXTERNAL_FILES+=" $lib"
+	done
+fi

@@ -1,0 +1,52 @@
+#!/bin/sh
+# /mod/etc/default.llama-cpp/llama-cpp.save
+# Save hooks for the llama-cpp package (called by the modconf save framework).
+
+# Called BEFORE the framework writes /mod/etc/conf/llama-cpp.cfg
+pkg_pre_save() {
+	# Validate host field (must be empty, an IP, or 'localhost')
+	case "$LLAMA_CPP_HOST" in
+		localhost|'')
+			;;
+		*.*.*.*)
+			# Looks like an IP — accept without further validation
+			;;
+		*)
+			echo "Warning: LLAMA_CPP_HOST='$LLAMA_CPP_HOST' is unusual; update may fail." >&2
+			;;
+	esac
+
+	# Validate port (must be 1-65535)
+	if [ -n "$LLAMA_CPP_PORT" ]; then
+		case "$LLAMA_CPP_PORT" in
+			''|*[!0-9]*)
+				echo "Error: LLAMA_CPP_PORT must be a number." >&2
+				return 1
+				;;
+		esac
+		if [ "$LLAMA_CPP_PORT" -lt 1 ] || [ "$LLAMA_CPP_PORT" -gt 65535 ]; then
+			echo "Error: LLAMA_CPP_PORT must be between 1 and 65535." >&2
+			return 1
+		fi
+	fi
+
+	# Warn if BASEDIR doesn't exist yet (it may be mounted later)
+	if [ -n "$LLAMA_CPP_BASEDIR" ] && [ ! -d "$LLAMA_CPP_BASEDIR" ]; then
+		echo "Notice: LLAMA_CPP_BASEDIR '$LLAMA_CPP_BASEDIR' not yet mounted." >&2
+	fi
+
+	return 0
+}
+
+# Called AFTER the framework writes /mod/etc/conf/llama-cpp.cfg
+pkg_apply_save() {
+	# Re-source saved config so we see the just-persisted values
+	[ -r /mod/etc/conf/llama-cpp.cfg ] && . /mod/etc/conf/llama-cpp.cfg
+
+	# Create BASEDIR if it already exists on a mounted filesystem
+	if [ -n "$LLAMA_CPP_BASEDIR" ] && [ -d "$(dirname "$LLAMA_CPP_BASEDIR")" ]; then
+		mkdir -p "$LLAMA_CPP_BASEDIR" 2>/dev/null
+	fi
+
+	return 0
+}

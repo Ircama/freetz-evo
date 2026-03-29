@@ -1,0 +1,27 @@
+config EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_LLAMA_CPP
+	bool "llama.cpp (llama-server, tools, shared libraries)"
+	default y
+
+menu "llama.cpp externalization"
+	depends on EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP
+
+	config EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP_BINS
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_LLAMA_CPP
+		bool "llama.cpp binaries (llama-*)"
+		default y
+		help
+			Externalises all installed llama.cpp tool binaries to the
+			external filesystem.  Binaries are large (~5–30 MB each
+			stripped); externalisation is strongly recommended.
+
+	config EXTERNAL_FREETZ_PACKAGE_LLAMA_CPP_LIBS
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_LLAMA_CPP
+		bool "llama.cpp shared libraries (libllama.so, libggml*.so)"
+		default y
+		help
+			Externalises the llama.cpp and ggml shared libraries.
+			These are ~15–40 MB total stripped and must typically
+			be externalised on any device with limited flash.
+
+endmenu

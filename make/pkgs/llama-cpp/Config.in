@@ -1,0 +1,116 @@
+config FREETZ_PACKAGE_LLAMA_CPP
+	bool "llama.cpp b8575 (LLM inference engine)"
+	select FREETZ_PACKAGE_HAS_LIBSTDCPP
+	default n
+	help
+		llama.cpp — CPU-only LLM inference engine.
+
+		Runs quantized GGUF language models on-device using only CPU and
+		system RAM. No GPU required. On a FRITZ!Box 7590 AX (4-core MIPS,
+		512 MB RAM) practical model sizes are Q4_K_M quantized models up to
+		~400 MB (e.g. Qwen2.5-0.5B, SmolLM2-360M).
+
+		Always installed:
+		 • llama-cli      — interactive/single-shot inference CLI
+		 • llama-server   — OpenAI-compatible REST API (GET /health,
+		                    POST /v1/chat/completions, POST /completion)
+		 • llama-quantize — GGUF model quantization tool
+
+		Optional tools can be enabled below.
+
+		Models must be stored on USB/NAS storage (external filesystem).
+		The llama-server init script uses LLAMA_CPP_BASEDIR (default
+		/var/media/ftp/llama-cpp) as the model search path.
+
+		Web interface: llama-server exposes its API on port 8080 by default
+		(configurable). Works alongside the Freetz web UI on port 81.
+
+		https://github.com/ggml-org/llama.cpp
+
+if FREETZ_PACKAGE_LLAMA_CPP
+
+comment "Optional tools"
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_BENCH
+	bool "llama-bench — performance benchmark"
+	default n
+	help
+		Measures prompt-processing and token-generation speed
+		for any GGUF model at various settings.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_PERPLEXITY
+	bool "llama-perplexity — model quality measurement"
+	default n
+	help
+		Calculates perplexity (PPL) of a model on a text corpus.
+		Useful for comparing quantisation levels.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_TOKENIZE
+	bool "llama-tokenize — tokenizer diagnostic tool"
+	default n
+	help
+		Shows how text is tokenized by a specific model's vocabulary.
+		Useful for prompt engineering and debugging.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_IMATRIX
+	bool "llama-imatrix — importance matrix for smart quantisation"
+	default n
+	help
+		Computes an importance matrix (imatrix) from a calibration
+		dataset. Feeding it to llama-quantize produces higher-quality
+		quantised models.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_GGUF_SPLIT
+	bool "llama-gguf-split — split/merge multi-shard GGUF files"
+	default n
+	help
+		Splits a large GGUF model across multiple files or merges
+		shards back into one. Useful when USB filesystem has file-
+		size limits.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_BATCHED_BENCH
+	bool "llama-batched-bench — batched inference benchmark"
+	default n
+	help
+		Benchmarks batched prompt processing. Useful for measuring
+		server throughput when multiple requests arrive simultaneously.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_TTS
+	bool "llama-tts — text-to-speech (OuteTTS models)"
+	default n
+	help
+		Runs OuteTTS text-to-speech models. Requires an OuteTTS GGUF
+		model. Experimental on MIPS.
+
+config FREETZ_PACKAGE_LLAMA_CPP_TOOL_MTMD
+	bool "llama-mtmd-cli — multimodal (vision) inference"
+	default n
+	help
+		Runs multimodal models (e.g. LLaVA) that accept both text
+		and image inputs. Requires a vision-capable GGUF model.
+
+comment "llama-server options"
+
+config FREETZ_PACKAGE_LLAMA_CPP_SERVER_OPENSSL
+	bool "Enable HTTPS (OpenSSL) support in llama-server"
+	select FREETZ_OPENSSL_VERSION_1_1_1
+	default n
+	help
+		Links llama-server against OpenSSL to enable TLS/HTTPS.
+		Without this option, llama-server only serves plain HTTP.
+
+		Requires --ssl-key-file and --ssl-cert-file at startup.
+
+config FREETZ_PACKAGE_LLAMA_CPP_SERVER_WEBUI
+	bool "Embed built-in web UI in llama-server (~2 MB extra)"
+	default n
+	help
+		Bundles the pre-built llama.cpp web interface (chat UI,
+		model selector) directly into the llama-server binary.
+		When enabled, visit http://device:8080/ for the UI.
+
+		Adds ~2 MB to the llama-server binary. Leave OFF if
+		storage is critical or you only use the API programmatically.
+
+endif
+

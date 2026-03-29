@@ -1,0 +1,210 @@
+#!/bin/sh
+
+DAEMON=llama-cpp
+DAEMON_BIN=llama-server
+PID_FILE=/var/run/llama-server.pid
+. /etc/init.d/modlibrc
+
+# Load persistent configuration
+[ -r /mod/etc/conf/llama-cpp.cfg ] && . /mod/etc/conf/llama-cpp.cfg
+
+USERNAME=nobody
+GROUPNAME=nogroup
+
+# Check whether llama-server is running
+is_running() {
+	if [ -f "$PID_FILE" ]; then
+		local pid
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			return 0
+		fi
+	fi
+	pgrep -x $DAEMON_BIN >/dev/null 2>&1 && return 0
+	return 1
+}
+
+# Wait for system clock to be synchronized (SSL/TLS and log timestamps)
+wait_for_time_sync() {
+	local max_wait="${1:-120}"
+	local min_year=2025
+	local elapsed=0
+	while [ $elapsed -lt $max_wait ]; do
+		if [ "$(date +%Y)" -ge "$min_year" ]; then
+			return 0
+		fi
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	return 1
+}
+
+# Wait for a directory to become available (USB or NAS mount)
+wait_for_dir() {
+	local dir="$1"
+	local max_wait="${2:-120}"
+	local elapsed=0
+	while [ $elapsed -lt $max_wait ]; do
+		[ -d "$dir" ] && return 0
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	return 1
+}
+
+# Core start logic — builds and launches the llama-server command
+start_server() {
+	local basedir="${LLAMA_CPP_BASEDIR%/}"
+	local host="${LLAMA_CPP_HOST:-0.0.0.0}"
+	local port="${LLAMA_CPP_PORT:-8080}"
+	local threads="${LLAMA_CPP_THREADS:-4}"
+	local ctx="${LLAMA_CPP_CTX_SIZE:-2048}"
+	local ngl="${LLAMA_CPP_NGL:-0}"
+	local parallel="${LLAMA_CPP_PARALLEL:-1}"
+	local nice="${LLAMA_CPP_NICE:-5}"
+	local extra="${LLAMA_CPP_EXTRA_ARGS:-}"
+	local model="${LLAMA_CPP_MODEL:-}"
+
+	mkdir -p "$basedir" 2>/dev/null
+
+	# Build argument list
+	local args="--host $host --port $port --threads $threads"
+	args="$args --ctx-size $ctx --n-gpu-layers $ngl"
+	args="$args --parallel $parallel"
+	[ -n "$model" ] && args="$args --model $model"
+	[ -n "$extra" ] && args="$args $extra"
+
+	echo "$(date): Starting $DAEMON_BIN $args" >> /tmp/rc.$DAEMON.log
+
+	start-stop-daemon -S -b -m -p "$PID_FILE" -N "$nice" \
+		-- /usr/bin/$DAEMON_BIN $args \
+		>> /tmp/$DAEMON.out.log 2>> /tmp/$DAEMON.err.log
+
+	return $?
+}
+
+# Asynchronous boot start: waits for clock sync and BASEDIR mount
+start_async() {
+	local basedir="${LLAMA_CPP_BASEDIR%/}"
+	local wait_time="${LLAMA_CPP_CONFIG_WAIT:-120}"
+
+	echo "$(date): Async start requested (waiting up to ${wait_time}s)" \
+		>> /tmp/rc.$DAEMON.log
+
+	if ! wait_for_time_sync "$wait_time"; then
+		echo "$(date): Aborted — clock not synchronized" >> /tmp/rc.$DAEMON.log
+		return 1
+	fi
+
+	if [ -n "$basedir" ] && ! wait_for_dir "$basedir" "$wait_time"; then
+		echo "$(date): Aborted — BASEDIR '$basedir' not available" \
+			>> /tmp/rc.$DAEMON.log
+		return 1
+	fi
+
+	if start_server; then
+		echo "$(date): $DAEMON_BIN started (pid $(cat $PID_FILE 2>/dev/null))" \
+			>> /tmp/rc.$DAEMON.log
+	else
+		echo "$(date): $DAEMON_BIN failed to start (rc=$?)" \
+			>> /tmp/rc.$DAEMON.log
+		return 1
+	fi
+}
+
+# Synchronous start (manual "start" command — fails fast)
+start() {
+	echo "Starting $DAEMON..."
+	if is_running; then
+		echo "failed: $DAEMON is already running."
+		exit 1
+	fi
+	basedir="${LLAMA_CPP_BASEDIR%/}"
+	if [ -n "$basedir" ] && [ ! -d "$basedir" ]; then
+		echo "failed: BASEDIR '$basedir' is not accessible."
+		exit 1
+	fi
+	if start_server; then
+		echo 'done.'
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+# Stop the server
+stop() {
+	echo "Stopping $DAEMON..."
+	if ! is_running; then
+		echo "not running."
+		return 0
+	fi
+	start-stop-daemon -K -q -p "$PID_FILE"
+	local timeout=15
+	while [ $timeout -gt 0 ] && is_running; do
+		sleep 1
+		timeout=$((timeout - 1))
+	done
+	if is_running; then
+		local pid
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		[ -n "$pid" ] && kill -9 "$pid" 2>/dev/null
+		rm -f "$PID_FILE"
+	fi
+	echo 'done.'
+}
+
+case $1 in
+	""|load)
+		modreg cgi 'llama-cpp' 'llama.cpp'
+		modreg daemon $DAEMON
+
+		if [ "$LLAMA_CPP_ENABLED" = "yes" ]; then
+			wait_time="${LLAMA_CPP_CONFIG_WAIT:-120}"
+			basedir="${LLAMA_CPP_BASEDIR%/}"
+
+			if [ -z "$basedir" ]; then
+				echo "$DAEMON: LLAMA_CPP_BASEDIR not set, skipped." >&2
+			elif [ "$wait_time" = "0" ]; then
+				# Synchronous start when no wait needed (BASEDIR available immediately)
+				echo "$DAEMON starting synchronously..."
+				start_server
+			else
+				# Background async start — never block the boot chain
+				echo "$DAEMON: will start in background (waiting up to ${wait_time}s)."
+				(
+					# Re-source config inside the subshell
+					. /etc/init.d/modlibrc
+					[ -r /mod/etc/conf/llama-cpp.cfg ] && \
+						. /mod/etc/conf/llama-cpp.cfg
+					start_async
+				) >/dev/null 2>&1 &
+			fi
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi 'llama-cpp'
+		stop
+		;;
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		sleep 1
+		start
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0
