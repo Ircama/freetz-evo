@@ -1,0 +1,13 @@
+--- parted/parted.c
++++ parted/parted.c
+@@ -20,6 +20,10 @@
+ #include <stdbool.h>
+ #include <uuid/uuid.h>
+ 
++#ifndef UUID_STR_LEN
++#define UUID_STR_LEN 37
++#endif
++
+ #include "argmatch.h"
+ #include "closeout.h"
+ #include "configmake.h"

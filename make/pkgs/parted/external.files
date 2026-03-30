@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_PARTED_parted" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/parted"
+[ "$EXTERNAL_FREETZ_PACKAGE_PARTED_partprobe" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/partprobe"

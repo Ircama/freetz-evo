@@ -1,0 +1,22 @@
+config FREETZ_PACKAGE_PARTED
+	bool "parted 3.6 (binary only)"
+	select FREETZ_LIB_libuuid
+	default n
+	help
+		GNU Parted is a disk partition editor.
+
+if FREETZ_PACKAGE_PARTED
+
+	config FREETZ_PACKAGE_PARTED_parted
+		bool "parted"
+		default y
+		help
+			This option enables the interactive partition editor.
+
+	config FREETZ_PACKAGE_PARTED_partprobe
+		bool "partprobe"
+		default y
+		help
+			This option enables the partition table re-read helper.
+
+endif # FREETZ_PACKAGE_PARTED

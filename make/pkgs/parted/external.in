@@ -1,0 +1,27 @@
+config EXTERNAL_FREETZ_PACKAGE_PARTED
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PARTED
+	bool "parted"
+	default n
+	help
+		external parted file(s)
+
+menu "parted"
+	depends on EXTERNAL_FREETZ_PACKAGE_PARTED
+
+	config EXTERNAL_FREETZ_PACKAGE_PARTED_parted
+		bool "parted"
+		depends on FREETZ_PACKAGE_PARTED_parted
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/parted
+
+	config EXTERNAL_FREETZ_PACKAGE_PARTED_partprobe
+		bool "partprobe"
+		depends on FREETZ_PACKAGE_PARTED_partprobe
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/partprobe
+
+endmenu
