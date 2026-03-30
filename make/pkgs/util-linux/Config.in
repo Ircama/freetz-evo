@@ -89,6 +89,17 @@ config FREETZ_UTIL_LINUX_LSBLK
 		Requires ncursesw library for colored output.
 		Unique to util-linux (no busybox equivalent).
 
+config FREETZ_UTIL_LINUX_CFDISK
+	bool "cfdisk - curses partition editor"
+	select FREETZ_LIB_libncursesw
+	default n
+	help
+		cfdisk displays and manipulates the partition table in a
+		curses-based user interface.
+		
+		Requires libfdisk support in util-linux and ncursesw library.
+		Unique to util-linux (no busybox equivalent).
+
 config FREETZ_UTIL_LINUX_FINDMNT
 	bool "findmnt - find mounted filesystems"
 	default y

@@ -38,6 +38,7 @@ $(eval $(call UTIL_LINUX_ADD_BINARY,LOSETUP,losetup,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,MKSWAP,mkswap,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,SWAPON,swapon,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,LSBLK,lsblk,no))
+$(eval $(call UTIL_LINUX_ADD_BINARY,CFDISK,cfdisk,no))
 $(eval $(call UTIL_LINUX_ADD_BINARY,FINDMNT,findmnt,no))
 
 
@@ -114,7 +115,6 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-fsck
 $(PKG)_CONFIGURE_OPTIONS += --disable-hwclock
 $(PKG)_CONFIGURE_OPTIONS += --disable-kill
 $(PKG)_CONFIGURE_OPTIONS += --disable-last
-$(PKG)_CONFIGURE_OPTIONS += --disable-libfdisk
 $(PKG)_CONFIGURE_OPTIONS += --enable-libmount
 
 # Version-specific options
@@ -122,11 +122,17 @@ ifeq ($(strip $(FREETZ_UTIL_LINUX_VERSION_2_27_1)),y)
 # Legacy 2.27.1: minimal build
 $(PKG)_CONFIGURE_OPTIONS += --disable-libsmartcols
 $(PKG)_CONFIGURE_OPTIONS += --disable-losetup
+$(PKG)_CONFIGURE_OPTIONS += --disable-libfdisk
 else
 # Modern 2.41: enable additional features
-ifeq ($(strip $(FREETZ_UTIL_LINUX_LSBLK)),y)
+ifneq ($(strip $(FREETZ_UTIL_LINUX_LSBLK)$(FREETZ_UTIL_LINUX_CFDISK)),)
 $(PKG)_DEPENDS_ON += ncursesw
 $(PKG)_CONFIGURE_OPTIONS += --with-ncursesw
+endif
+ifeq ($(strip $(FREETZ_UTIL_LINUX_CFDISK)),y)
+$(PKG)_CONFIGURE_OPTIONS += --enable-libfdisk
+else
+$(PKG)_CONFIGURE_OPTIONS += --disable-libfdisk
 endif
 $(PKG)_CONFIGURE_OPTIONS += --disable-gtk-doc
 $(PKG)_CONFIGURE_OPTIONS += --disable-year2038

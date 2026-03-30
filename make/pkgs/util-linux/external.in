@@ -10,6 +10,7 @@ config EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX
 		
 		Version 2.41 (modern):
 		 /sbin/blkid-util-linux
+		 /sbin/cfdisk
 		 /sbin/lsblk
 		 /sbin/findmnt
 		 /sbin/losetup-util-linux
