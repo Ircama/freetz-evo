@@ -75,6 +75,7 @@ else
 $(PKG)_LIBS_BUILD_DIR := $(join $($(PKG)_LIBNAMES_SHORT:%=$($(PKG)_DIR)/builddir/%/),$($(PKG)_LIBNAMES_LONG))
 $(PKG)_DEPENDS_ON += python3-host python3-packaging-host meson-host
 $(PKG)_DEPENDS_ON += pcre2 gettext
+GLIB2_MESON_ENV := PATH="$(abspath $(TOOLS_DIR)/path):$(subst ",,$(TARGET_PATH))" $(FREETZ_LD_RUN_PATH) FREETZ_LIBRARY_DIR="$(FREETZ_LIBRARY_DIR)"
 
 #$(PKG)_CONFIGURE_OPTIONS += -D iconv=libc
 $(PKG)_CONFIGURE_OPTIONS += -D selinux=disabled
@@ -96,6 +97,16 @@ $(PKG)_CONFIGURE_OPTIONS += -D glib_checks=false
 $(PKG)_CONFIGURE_OPTIONS += -D libelf=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D multiarch=false
 #$(PKG)_CONFIGURE_OPTIONS += -D force_posix_threads=true
+
+# Keep Meson fixes local to glib2: avoid deprecated key and force host tools.
+$(PKG)_CONFIGURE_PRE_CMDS += $(SED) -r -i \
+	-e "s|^pkg-?config[[:space:]]*=.*|pkg-config        = 'pkg-config'|" \
+	-e "s|^python[[:space:]]*=.*|python            = '$(abspath $(TOOLS_DIR)/path/python3)'|" \
+	-e "s|^cmake[[:space:]]*=.*|cmake             = '$(abspath $(TOOLS_DIR)/path/cmake)'|" \
+	meson.freetz;
+$(PKG)_CONFIGURE_PRE_CMDS += find . -type f -exec $(SED) -r -i \
+	-e "1s|^\#!/usr/bin/env python3|\#!$(abspath $(TOOLS_DIR)/path/python3)|" \
+	{} +;
 endif
 
 
@@ -108,7 +119,7 @@ ifeq ($(strip $(FREETZ_LIB_libglib_2_VERSION_ABANDON)),y)
 	$(SUBMAKE) -C $(GLIB2_DIR) \
 		all
 else
-	$(SUBMESON) compile \
+	cmd() { $(GLIB2_MESON_ENV) $(MESON) "$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } }; $(call _ECHO,building) cmd compile \
 		-C $(GLIB2_DIR)/builddir/
 endif
 
@@ -121,7 +132,7 @@ ifeq ($(strip $(FREETZ_LIB_libglib_2_VERSION_ABANDON)),y)
 		$(GLIB2_LIBNAMES_SHORT:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%-$(GLIB2_MAJOR_VERSION).la) \
 		$(GLIB2_PKGCONFIGS_SHORT:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/%-$(GLIB2_MAJOR_VERSION).pc)
 else
-	$(SUBMESON) install \
+	cmd() { $(GLIB2_MESON_ENV) $(MESON) "$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } }; $(call _ECHO,building) cmd install \
 		--destdir "$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		-C $(GLIB2_DIR)/builddir/
 	$(PKG_FIX_LIBTOOL_LA) \
