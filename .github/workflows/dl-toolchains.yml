@@ -22,7 +22,6 @@ jobs:
       contents: read
     container:
       image: docker.io/pfichtner/freetz:0.4.3
-      options: --user 1001:1001
     runs-on: ubuntu-latest
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
 
@@ -75,7 +74,6 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.FREETZ_DLTOKEN || github.token }}
-      options: --user 1001:1001
     needs: parse_matrix
     strategy:
       max-parallel: 12
