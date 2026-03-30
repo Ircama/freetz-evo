@@ -37,7 +37,7 @@ jobs:
       image: ghcr.io/freetz-ng/internal/generate
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.FREETZ_DLTOKEN }}
+        password: ${{ secrets.FREETZ_DLTOKEN || github.token }}
       options: --user 1001:1001
     runs-on: ubuntu-latest
 

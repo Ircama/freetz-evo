@@ -41,9 +41,12 @@ jobs:
         run: |
           TARGET_HTML="${{ env.ZENSICAL_INPUT_PATH }}/REPO_README/index.html"
           test -f "$TARGET_HTML"
-          grep -q '<div class="language-bash highlight">' "$TARGET_HTML"
-          if grep -q '<pre><code class="language-bash">' "$TARGET_HTML"; then
-            echo "Detected non-tokenized bash fences in $TARGET_HTML"
+          if grep -q '<div class="language-bash highlight">' "$TARGET_HTML"; then
+            echo "Detected tokenized bash blocks in $TARGET_HTML"
+          elif grep -q '<pre><code class="language-bash">' "$TARGET_HTML"; then
+            echo "Detected language-tagged bash fences in $TARGET_HTML"
+          else
+            echo "Missing expected bash markup in $TARGET_HTML"
             exit 1
           fi
       - name: Upload artifact
