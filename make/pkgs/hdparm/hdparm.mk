@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 9.58)
+$(call PKG_INIT_BIN, 9.65)
 $(PKG)_CATEGORY:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=9ae78e883f3ce071d32ee0f1b9a2845a634fc4dd94a434e653fdbef551c5e10f
+$(PKG)_HASH:=d14929f910d060932e717e9382425d47c2e7144235a53713d55a94f7de535a4b
 $(PKG)_SITE:=@SF/$(pkg)
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/hdparm
