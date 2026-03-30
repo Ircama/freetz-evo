@@ -38,6 +38,37 @@ body.toc-visible.toc-has-content .md-nav--secondary .md-nav__link--active {
     padding-left: 0.5em;
 }
 
+/* TOC search box (under md-nav__title) */
+body.toc-has-content .md-sidebar--secondary .toc-search {
+    margin: 0.6rem 0.2rem 0.45rem;
+}
+
+body.toc-has-content .md-sidebar--secondary .toc-search__input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 0.25rem;
+    padding: 0.35rem 0.55rem;
+    background: var(--md-default-bg-color);
+    color: var(--md-default-fg-color);
+    font-size: 0.62rem;
+    line-height: 1.25;
+}
+
+body.toc-has-content .md-sidebar--secondary .toc-search__input::placeholder {
+    color: var(--md-default-fg-color--light);
+}
+
+body.toc-has-content .md-sidebar--secondary .toc-search__input:focus {
+    border-color: var(--md-accent-fg-color);
+    outline: none;
+}
+
+body.toc-search-active .md-sidebar--secondary .md-nav__link.toc-search-hit {
+    color: var(--md-accent-fg-color);
+    font-weight: 600;
+}
+
 /* ── Heading permalink anchors (GitHub octicon-link style) ── */
 .md-typeset .headerlink {
     visibility: hidden;

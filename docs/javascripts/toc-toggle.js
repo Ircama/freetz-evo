@@ -15,6 +15,7 @@
   var _eventsBound = false;
   var _tocPresenceObserver = null;
   var _scrollToActiveTocLink = null;
+  var _tocSearchValue = "";
 
   /* ── SVG icons ─────────────────────────────────────────────── */
   // "list-tree" icon — represents a table of contents
@@ -61,6 +62,155 @@
 
   function getTocContainer() {
     return document.querySelector('.md-sidebar--secondary [data-md-component="toc"]');
+  }
+
+  function getTocNav() {
+    return document.querySelector('.md-sidebar--secondary .md-nav--secondary');
+  }
+
+  function getTocSearchInput() {
+    return document.querySelector('.md-sidebar--secondary .toc-search__input');
+  }
+
+  function getTopLevelTocItems(nav) {
+    if (!nav) return [];
+
+    var topLevel = [];
+    var topLists = nav.querySelectorAll(':scope > .md-nav__list');
+    topLists.forEach(function (list) {
+      list.querySelectorAll(':scope > .md-nav__item').forEach(function (item) {
+        topLevel.push(item);
+      });
+    });
+
+    return topLevel;
+  }
+
+  function getChildTocItems(item) {
+    if (!item) return [];
+
+    var children = [];
+    var childLists = item.querySelectorAll(':scope > .md-nav > .md-nav__list, :scope > .md-nav__list');
+    childLists.forEach(function (list) {
+      list.querySelectorAll(':scope > .md-nav__item').forEach(function (child) {
+        children.push(child);
+      });
+    });
+
+    return children;
+  }
+
+  function getDirectTocLink(item) {
+    if (!item) return null;
+    var link = item.querySelector(':scope > .md-nav__link');
+    if (link) return link;
+
+    // Fallback for theme variations that render clickable labels.
+    return item.querySelector(':scope > label.md-nav__link');
+  }
+
+  function ensureTocSearch() {
+    var nav = getTocNav();
+    if (!nav) return null;
+
+    var title = nav.querySelector('.md-nav__title');
+    if (!title) return null;
+
+    var wrapper = nav.querySelector('.toc-search');
+    var input = wrapper && wrapper.querySelector('.toc-search__input');
+
+    if (!wrapper || !input) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'toc-search';
+
+      input = document.createElement('input');
+      input.type = 'search';
+      input.className = 'toc-search__input';
+      input.setAttribute('placeholder', 'Filter index');
+      input.setAttribute('aria-label', 'Filter table of contents');
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('spellcheck', 'false');
+
+      input.addEventListener('input', function () {
+        _tocSearchValue = input.value || '';
+        filterTocEntries(_tocSearchValue);
+      });
+
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && input.value) {
+          event.stopPropagation();
+          input.value = '';
+          _tocSearchValue = '';
+          filterTocEntries('');
+        }
+      });
+
+      wrapper.appendChild(input);
+      title.insertAdjacentElement('afterend', wrapper);
+    }
+
+    if (input.value !== _tocSearchValue) {
+      input.value = _tocSearchValue;
+    }
+
+    return input;
+  }
+
+  function resetTocFilter(nav) {
+    if (!nav) return;
+
+    document.body.classList.remove('toc-search-active');
+
+    nav.querySelectorAll('.md-nav__item').forEach(function (item) {
+      item.style.removeProperty('display');
+    });
+
+    nav.querySelectorAll('.md-nav__link.toc-search-hit').forEach(function (link) {
+      link.classList.remove('toc-search-hit');
+    });
+  }
+
+  function filterTocItem(item, query) {
+    var link = getDirectTocLink(item);
+    var ownMatch = false;
+
+    if (link) {
+      var label = (link.textContent || '').trim().toLowerCase();
+      ownMatch = label.indexOf(query) !== -1;
+    }
+
+    var childMatch = false;
+    getChildTocItems(item).forEach(function (child) {
+      if (filterTocItem(child, query)) {
+        childMatch = true;
+      }
+    });
+
+    var visible = ownMatch || childMatch;
+    item.style.display = visible ? '' : 'none';
+
+    if (link) {
+      link.classList.toggle('toc-search-hit', ownMatch && query.length > 0);
+    }
+
+    return visible;
+  }
+
+  function filterTocEntries(rawQuery) {
+    var nav = getTocNav();
+    if (!nav) return;
+
+    var query = (rawQuery || '').trim().toLowerCase();
+    if (!query) {
+      resetTocFilter(nav);
+      return;
+    }
+
+    document.body.classList.add('toc-search-active');
+
+    getTopLevelTocItems(nav).forEach(function (item) {
+      filterTocItem(item, query);
+    });
   }
 
   function hasTocEntries() {
@@ -121,9 +271,23 @@
       btn.disabled = !hasToc;
     }
 
+    var searchInput = getTocSearchInput();
+    if (searchInput) {
+      var searchContainer = searchInput.closest('.toc-search');
+      if (searchContainer) {
+        searchContainer.style.display = hasToc ? '' : 'none';
+      }
+    }
+
     if (!hasToc) {
       document.body.classList.remove('toc-visible');
       document.body.classList.remove('toc-mobile-open');
+      _tocSearchValue = '';
+      if (searchInput) searchInput.value = '';
+      filterTocEntries('');
+    } else {
+      ensureTocSearch();
+      filterTocEntries(_tocSearchValue);
     }
 
     return hasToc;
@@ -384,6 +548,7 @@
       _footerAvoidanceCleanup = null;
     }
     injectButton();
+    ensureTocSearch();
     ensureBackdrop();
     applyState(isVisible());
     queueAvailabilityResync();
