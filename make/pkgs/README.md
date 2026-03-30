@@ -628,6 +628,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Example](../../docs/make/nmap.md#example)
      - [Known open ports](../../docs/make/nmap.md#known-open-ports)
 
+  * **[nodejs: Node.js 18.20.8](../../docs/make/nodejs.md)<a id='nodejs'></a>**<br>
+    Node.js is a JavaScript runtime built on Chrome's V8 engine. This package builds a target Node.js runtime linked against shared OpenSSL and zlib from freetz. OpenSSL 3.0 is the recommended choice. OpenSSL 3.5 is allowed as an experimental variant and may still require fixes depending on target/toolchain.
+
   * **<u>noip 2.1.9-1 (binary only) - DEPRECATED</u><a id='noip'></a>**<br>
     This is No-IP.com's dynamic DNS update client. When configured correctly, the client will check the local IP address at a given time interval for any changes. If the local IP address has changed it will notify the DNS servers at No-IP.com and update the IP corresponding to your No-IP/No-IP+ hostname.
 

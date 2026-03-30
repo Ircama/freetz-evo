@@ -458,6 +458,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Nmap 4.76/5.51/7.99 (binary only)](nmap.md)<a id='nmap'></a>**<br>
     Nmap ("Network Mapper") is a free and open source (license) utility for network exploration or security auditing. Many systems and network administrators also find it useful for tasks such as network inventory, managing service upgrade schedules, and monitoring host or service uptime. Nmap uses raw IP packets in novel ways to determine what hosts are available on the network, what services (application name and version) those hosts are offering, what operating systems (and OS versions) they are running, what type of packet filters/firewalls are in use, and dozens of other characteristics. It was designed to rapidly scan large networks, but works fine against single hosts. Nmap runs on all major computer operating systems, and both console and graphical versions are available.
 
+  * **[nodejs: Node.js 18.20.8](nodejs.md)<a id='nodejs'></a>**<br>
+    Node.js is a JavaScript runtime built on Chrome's V8 engine. This package builds a target Node.js runtime linked against shared OpenSSL and zlib from freetz. OpenSSL 3.0 is the recommended choice. OpenSSL 3.5 is allowed as an experimental variant and may still require fixes depending on target/toolchain.
+
   * **<u>noip 2.1.9-1 (binary only) - DEPRECATED</u><a id='noip'></a>**<br>
     This is No-IP.com's dynamic DNS update client. When configured correctly, the client will check the local IP address at a given time interval for any changes. If the local IP address has changed it will notify the DNS servers at No-IP.com and update the IP corresponding to your No-IP/No-IP+ hostname.
 
