@@ -114,6 +114,8 @@ to the target staging directory instead of the host.
 | **RRDTool** | aarch64 support; no border fix for v1.2; no v1.2 without libart_lgpl (merged upstream). |
 | **libatomic** | Externalization with dynamic versioning for PHP dependency (merged upstream). |
 | **PSL** (libpsl) | Uses crosscompiling Python tool instead of host Python. |
+| **glib2** | Meson cross-build fixes: normalized cross-file tool keys and forced host Python for Meson internal generators to avoid target `python3` execution. |
+| **Disk tools** | Updated `dosfstools`, `e2fsprogs`, `gptfdisk`, `hdparm`, `util-linux`, and `parted` (porting, packaging, and menu/externalization improvements). |
 
 #### CI / tooling
 

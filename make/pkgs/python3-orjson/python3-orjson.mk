@@ -1,5 +1,4 @@
 $(call PKG_INIT_BIN, 3.10.7)
-$(PKG)_CATEGORY:=Python
 ### WEBSITE:=https://github.com/ijl/orjson
 ### NOTE:=This package installs a pure-Python compatibility shim.
 
