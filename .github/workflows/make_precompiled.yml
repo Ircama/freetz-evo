@@ -26,7 +26,7 @@ on:
 
 jobs:
 
-  parse_matrix:
+  matrizifizieren:
     permissions:
       packages: read
       contents: read
@@ -104,13 +104,14 @@ jobs:
       image: ghcr.io/freetz-ng/internal/firmware
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.FREETZ_DLTOKEN || github.token }}
-    needs: parse_matrix
+        password: ${{ secrets.FREETZ_DLTOKEN || secrets.GITHUB_TOKEN }}
+      options: --user 1001:1001
+    needs: matrizifizieren
     strategy:
       max-parallel: 18
       fail-fast: false
       matrix:
-        fritz: ${{ fromJson(needs.parse_matrix.outputs.matrix) }}
+        fritz: ${{ fromJson(needs.matrizifizieren.outputs.matrix) }}
     name: "${{ matrix.fritz.pkg }} - ${{ matrix.fritz.name }}"
     runs-on: ubuntu-latest
 
@@ -150,7 +151,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           set-safe-directory: true
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ fromJson(needs.parse_matrix.outputs.gitsha) }}
+          ref: ${{ fromJson(needs.matrizifizieren.outputs.gitsha) }}
           path: ${{ github.workspace }}
           fetch-depth: 0
           clean: false

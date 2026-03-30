@@ -15,9 +15,15 @@ $(PKG)_DEPENDS_ON += zlib ncursesw glib2
 
 $(PKG)_PATCH_POST_CMDS += $(SED) -i -r -e 's,^($(_hash)define _POSIX_C_SOURCE)[ \t]*,\1 1,g' ./*.c;
 
-$(PKG)_EXTRA_CFLAGS := -I.
-$(PKG)_EXTRA_CFLAGS += -I$(TARGET_TOOLCHAIN_STAGING_DIR)/include/glib-2.0
-$(PKG)_EXTRA_CFLAGS += -I$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/glib-2.0/include
+$(PKG)_CFLAGS := $(TARGET_CFLAGS)
+$(PKG)_CFLAGS += -I.
+$(PKG)_CFLAGS += -I$(TARGET_TOOLCHAIN_STAGING_DIR)/include/glib-2.0
+$(PKG)_CFLAGS += -I$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/glib-2.0/include
+$(PKG)_CFLAGS += -Wall
+
+$(PKG)_LDFLAGS := $(TARGET_LDFLAGS)
+$(PKG)_LDFLAGS += -lglib-2.0
+$(PKG)_LDFLAGS += -L$(TARGET_TOOLCHAIN_STAGING_DIR)/lib
 
 
 $(PKG_SOURCE_DOWNLOAD)
@@ -27,7 +33,8 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(ATOP_DIR) \
 		CC="$(TARGET_CC)" \
-		CFLAGS="$(TARGET_CFLAGS) $(ATOP_EXTRA_CFLAGS) -Wall" \
+		CFLAGS="$(ATOP_CFLAGS)" \
+		LDFLAGS="$(ATOP_LDFLAGS)" \
 		atop
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
