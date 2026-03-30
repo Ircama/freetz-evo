@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 1.42.13)
+$(call PKG_INIT_BIN, 1.47.4)
 $(PKG)_CATEGORY:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=e16474b5a3a30f9197160c4b91bd48d5a463583049c0fcc405b6f0f7075aa0c7
+$(PKG)_HASH:=fd5bf388cbdbe006a3d3b318d983b2948382440acc85a87f1e7d108653e8db0b
 $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)_VERSION)
 ### WEBSITE:=https://e2fsprogs.sourceforge.net/
 ### MANPAGE:=https://www.mankier.com/package/e2fsprogs
@@ -51,6 +51,7 @@ $(PKG)_BINARIES_ALL := \
 	badblocks filefrag e2freefrag uuidd uuidgen \
 	resize2fs \
 	blkid
+$(PKG)_BINARY_SUFFIX := $(if $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG),-ng,)
 $(PKG)_BINARIES :=
 ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK)),y)
 $(PKG)_BINARIES += e2fsck fsck
@@ -77,18 +78,44 @@ ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_BLKID)),y)
 $(PKG)_BINARIES += blkid
 endif
 $(PKG)_BINARIES_BUILD_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DIR)/misc/%)
-$(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DEST_DIR)/usr/sbin/%)
+$(PKG)_BINARIES_TARGET_DIR := $(foreach binary,$($(PKG)_BINARIES),$($(PKG)_DEST_DIR)/usr/sbin/$(binary)$($(PKG)_BINARY_SUFFIX))
+$(PKG)_BINARIES_SUFFIX_LINKS :=
 
 $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/sbin/%,$(filter-out $($(PKG)_BINARIES),$($(PKG)_BINARIES_ALL)))
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG)),y)
+$(PKG)_EXCLUDED += usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev
+$(PKG)_EXCLUDED += usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3
+$(PKG)_EXCLUDED += sbin/blkid
+else
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK),,usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev)
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_E2MAKING),,usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3)
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_BLKID),,sbin/blkid)
+endif
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_E2FSPROGS_PKG_STAT
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_E2FSPROGS_ALL_STAT
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG
 
-$(PKG)_CONDITIONAL_PATCHES+=abandon
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG)),y)
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK)),y)
+$(PKG)_BINARIES_SUFFIX_LINKS += \
+	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext2-ng \
+	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext3-ng \
+	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4-ng \
+	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4dev-ng
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2MAKING)),y)
+$(PKG)_BINARIES_SUFFIX_LINKS += \
+	$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext2-ng \
+	$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext3-ng
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_BLKID)),y)
+$(PKG)_BINARIES_SUFFIX_LINKS += $($(PKG)_DEST_DIR)/sbin/blkid-ng
+endif
+endif
+
+$(PKG)_CONDITIONAL_PATCHES+=current
 
 $(PKG)_CONFIGURE_ENV += ac_cv_path_LDCONFIG=$(TARGET_LDCONFIG)
 $(PKG)_CONFIGURE_ENV += gt_cv_func_printf_posix=yes
@@ -102,6 +129,7 @@ $(PKG)_CONFIGURE_PRE_CMDS += find $(abspath $($(PKG)_DIR)) -type f -name "*.c" \
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpath
 $(PKG)_CONFIGURE_OPTIONS += --enable-elf-shlibs
+$(PKG)_CONFIGURE_OPTIONS += --enable-libuuid
 $(PKG)_CONFIGURE_OPTIONS += --without-libintl-prefix
 $(PKG)_CONFIGURE_OPTIONS += --without-libiconv-prefix
 $(PKG)_CONFIGURE_OPTIONS += --disable-defrag
@@ -144,12 +172,27 @@ $($(PKG)_LIBS_STAGING_DIR): $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%: $($(PKG)_
 $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
 
-$($(PKG)_BINARIES_TARGET_DIR): $($(PKG)_DEST_DIR)/usr/sbin/%: $($(PKG)_DIR)/misc/%
-	$(INSTALL_BINARY_STRIP)
+$(foreach binary,$($(PKG)_BINARIES_BUILD_DIR),$(eval $(call INSTALL_BINARY_STRIP_RULE,$(binary),/usr/sbin,,$(notdir $(binary))$($(PKG)_BINARY_SUFFIX))))
+
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext2-ng \
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext3-ng \
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4-ng \
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4dev-ng: $($(PKG)_DEST_DIR)/usr/sbin/e2fsck-ng
+	mkdir -p $(dir $@); \
+	ln -sf e2fsck-ng $@
+
+$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext2-ng \
+$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext3-ng: $($(PKG)_DEST_DIR)/usr/sbin/mke2fs-ng
+	mkdir -p $(dir $@); \
+	ln -sf mke2fs-ng $@
+
+$($(PKG)_DEST_DIR)/sbin/blkid-ng: $($(PKG)_DEST_DIR)/usr/sbin/blkid-ng
+	mkdir -p $(dir $@); \
+	ln -sf ../usr/sbin/blkid-ng $@
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_LIBS_TARGET_DIR) $($(PKG)_BINARIES_TARGET_DIR)
+$(pkg)-precompiled: $($(PKG)_LIBS_TARGET_DIR) $($(PKG)_BINARIES_TARGET_DIR) $($(PKG)_BINARIES_SUFFIX_LINKS)
 
 
 $(pkg)-clean:
@@ -168,6 +211,14 @@ $(pkg)-clean:
 $(pkg)-uninstall:
 	$(RM) \
 		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(E2FSPROGS_TARGET_LIBDIR)/lib%.so*) \
-		$(E2FSPROGS_BINARIES_ALL:%=$(E2FSPROGS_DEST_DIR)/usr/sbin/%)
+		$(E2FSPROGS_BINARIES_ALL:%=$(E2FSPROGS_DEST_DIR)/usr/sbin/%) \
+		$(E2FSPROGS_BINARIES_ALL:%=$(E2FSPROGS_DEST_DIR)/usr/sbin/%-ng) \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/fsck.ext2-ng \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/fsck.ext3-ng \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/fsck.ext4-ng \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/fsck.ext4dev-ng \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/mkfs.ext2-ng \
+		$(E2FSPROGS_DEST_DIR)/usr/sbin/mkfs.ext3-ng \
+		$(E2FSPROGS_DEST_DIR)/sbin/blkid-ng
 
 $(PKG_FINISH)

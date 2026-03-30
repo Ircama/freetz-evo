@@ -1,6 +1,8 @@
+comment "E2fsprogs requires 'Remove e2fsprogs' patch or '-ng' suffix mode"
+	depends on !FREETZ_REMOVE_AVM_E2FSPROGS
+
 config FREETZ_PACKAGE_E2FSPROGS
-	bool "E2fsprogs 1.42.13 (binary only) - DEPRECATED"
-	depends on FREETZ_REMOVE_AVM_E2FSPROGS
+	bool "E2fsprogs 1.47.4 (binary only)"
 	default n
 	help
 		This package contains essential ext2, ext3 and ext4 filesystem
@@ -9,6 +11,18 @@ config FREETZ_PACKAGE_E2FSPROGS
 		Homepage: http://e2fsprogs.sourceforge.net/
 
 if FREETZ_PACKAGE_E2FSPROGS
+
+	config FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG
+		bool "Install binaries with '-ng' suffix" if FREETZ_REMOVE_AVM_E2FSPROGS
+		default y if !FREETZ_REMOVE_AVM_E2FSPROGS
+		default n
+		help
+			Install selected e2fsprogs tools as <name>-ng in /usr/sbin
+			to avoid conflicts with AVM-provided binaries.
+			This mode is forced when "Remove e2fsprogs" patch is not active.
+
+	comment "AVM e2fsprogs patch not active: '-ng' suffix mode is forced"
+		depends on !FREETZ_REMOVE_AVM_E2FSPROGS
 
 	config FREETZ_PACKAGE_E2FSPROGS_E2FSCK
 		bool "Checking Tools"

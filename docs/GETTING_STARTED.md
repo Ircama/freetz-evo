@@ -1,34 +1,93 @@
 # Getting Started with Freetz-EVO
 
-Freetz-EVO is a firmware extension framework for AVM FRITZ!Box devices. It lets you add packages
-and features, such as a web file manager, multi-protocol download tool, torrent client, web terminal, PHP, Python, Nginx, and
-more, well beyond what the stock FRITZ!OS firmware offers.
+This guide describes the complete workflow: preparing a Linux build environment, configuring firmware options, compiling the image, and flashing it onto the device.
 
 A Linux build environment with approximately 10–20 GB of free disk space is required.
 
-This guide describes the complete workflow: preparing the Linux build environment, configuring the firmware, compiling it, and flashing it onto the device.
+Before the practical steps, this document introduces the ecosystem in the correct order: FRITZ!Box, AVM/FRITZ!, Freetz, Freetz-NG, and finally Freetz-EVO.
 
 ---
 
 ## Table of Contents
 
-1. [What is Freetz-EVO?](#1-what-is-freetz-evo)
-2. [What You Need](#2-what-you-need)
-3. [Setting Up a Linux Environment](#3-setting-up-a-linux-environment)
+1. [FRITZ!Box, AVM, Freetz, Freetz-NG, and Freetz-EVO](#1-fritzbox-avm-freetz-freetz-ng-and-freetz-evo)
+2. [What is Freetz-EVO?](#2-what-is-freetz-evo)
+3. [What You Need](#3-what-you-need)
+4. [Setting Up a Linux Environment](#4-setting-up-a-linux-environment)
    - [Option A — Native Linux](#option-a--native-linux)
    - [Option B — WSL on Windows](#option-b--wsl-on-windows)
-4. [Installing Freetz-EVO Prerequisites](#4-installing-freetz-evo-prerequisites)
 5. [Cloning the Repository](#5-cloning-the-repository)
-6. [Configuring Your Firmware](#6-configuring-your-firmware)
-7. [Building the Firmware](#7-building-the-firmware)
-8. [Flashing the Firmware](#8-flashing-the-firmware)
-9. [First Login](#9-first-login)
-10. [Keeping Freetz-EVO Up to Date](#10-keeping-freetz-evo-up-to-date)
-11. [Troubleshooting Tips](#11-troubleshooting-tips)
+6. [Installing Freetz-EVO Prerequisites](#6-installing-freetz-evo-prerequisites)
+7. [Configuring Your Firmware](#7-configuring-your-firmware)
+8. [Building the Firmware](#8-building-the-firmware)
+9. [Flashing the Firmware](#9-flashing-the-firmware)
+10. [First Login](#10-first-login)
+11. [Keeping Freetz-EVO Up to Date](#11-keeping-freetz-evo-up-to-date)
+12. [Enabling Swap in the Web Interface (Optional)](#12-enabling-swap-in-the-web-interface-optional)
 
 ---
 
-## 1. What is Freetz-EVO?
+## 1. FRITZ!Box, AVM, Freetz, Freetz-NG, and Freetz-EVO
+
+### What is a FRITZ!Box?
+
+A FRITZ!Box is a family of residential gateway devices made for home and small-office networking. Depending on the model, it combines broadband access (DSL, cable, fiber, or mobile uplink), routing, Wi-Fi, switching, telephony features, and USB-based services in a single device.
+
+FRITZ!Box devices run FRITZ!OS, a Linux-based firmware with an integrated web interface and strong support for features such as VoIP, DECT, NAS/media services, and network management.
+
+### AVM and the FRITZ! brand
+
+The FRITZ! product line is developed by AVM (now branded as FRITZ! at company level in recent communications), a German networking vendor known for consumer broadband and telephony products. In practice, when the community speaks about "AVM firmware" for FRITZ!Box, it refers to the original FRITZ!OS firmware provided by the manufacturer.
+
+### What is Freetz?
+
+Freetz is a build and customization framework for FRITZ!Box firmware. It does not start from a blank operating system; instead, it takes the original AVM firmware as base and modifies selected components.
+
+In practical terms, Freetz can:
+
+- add extra software packages and services;
+- change configuration defaults and expose more advanced tuning options;
+- remove unneeded components to free up space for custom additions.
+
+This is why Freetz is best described as a firmware augmentation framework.
+
+Freetz does not replace AVM firmware with a fully independent third-party firmware. It produces a derived firmware image that extends the existing AVM image while preserving the AVM platform stack, including FRITZ!OS core behaviors and features such as DSL integration, VoIP stack, DECT support, Wi-Fi handling/tuning, and the AVM web interface.
+
+The major advantage is compatibility: users keep the native FRITZ!OS functionality and gain additional packages selected at build time.
+
+Freetz also does not perform a full operating-system rebase and does not update the kernel to a new upstream major branch on its own. The result remains anchored to the vendor firmware baseline for that device/firmware generation.
+
+### Legal Background (important)
+
+The original Freetz documentation explicitly explains a mixed legal model:
+
+- part of FRITZ!Box firmware is open source and can be modified/redistributed under its licenses;
+- another part is proprietary AVM (or AVM-licensed) code required for a fully working image.
+
+Because of that proprietary portion, complete prebuilt firmware images that include AVM-protected components are not distributed by the Freetz project.
+
+Therefore, Freetz distributes tooling and build logic, and each user must build their own image locally from the original vendor firmware.
+
+The same legal guidance also warns against publishing self-built full images publicly, and reminds users that once a self-built firmware is installed, official AVM support should not be expected for issues related to that modified system.
+
+### What is Freetz-NG?
+
+Freetz-NG is the actively maintained modern continuation of the Freetz ecosystem. It keeps the same core philosophy (augmenting original FRITZ!OS firmware), while extending device support, toolchains, package sets, and build-system maintenance.
+
+### What is Freetz-EVO?
+
+Freetz-EVO is a fork of Freetz-NG. It keeps Freetz-NG as technical foundation and adds UX improvements, additional packages, and project-specific enhancements.
+
+Sources used for this overview:
+
+- https://en.wikipedia.org/wiki/Fritz!Box
+- https://en.wikipedia.org/wiki/Fritz!
+- https://freetz.github.io/wiki/freetz.html
+- https://freetz.github.io/wiki/freetz.en.html
+
+---
+
+## 2. What is Freetz-EVO?
 
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). It extends the
 original project with a redesigned web interface (the **EVO skin**, fully responsive with dark
@@ -54,7 +113,7 @@ Some highlights compared to stock Freetz-NG:
 
 ---
 
-## 2. What You Need
+## 3. What You Need
 
 - An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.20)
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
@@ -64,10 +123,10 @@ Some highlights compared to stock Freetz-NG:
 
 ---
 
-## 3. Setting Up a Linux Environment
+## 4. Setting Up a Linux Environment
 
 The Freetz-EVO build system runs on Linux. If you already have a Debian/Ubuntu Linux machine,
-skip to [Section 4](#4-installing-freetz-evo-prerequisites).
+skip to [Section 6](#6-installing-freetz-evo-prerequisites).
 
 ### Option A — Native Linux
 
@@ -163,7 +222,7 @@ You should now be logged in as `myuser`.
 
 ---
 
-## 4. Cloning the Repository
+## 5. Cloning the Repository
 
 Once inside your Linux/WSL environment, clone the [Freetz-EVO](https://github.com/Ircama/freetz-evo) repository.
 
@@ -175,7 +234,7 @@ cd freetz-evo
 
 ---
 
-## 5. Installing Freetz-EVO Prerequisites
+## 6. Installing Freetz-EVO Prerequisites
 
 Update the system and install all build dependencies.
 The `tools/prerequisites` script automates this for you.
@@ -193,7 +252,7 @@ The script detects your distribution and installs all required packages automati
 
 ---
 
-## 6. Configuring Your Firmware
+## 7. Configuring Your Firmware
 
 Freetz-EVO uses the same **Kconfig** system as the Linux kernel. An interactive
 text-based menu lets you choose your device model, packages, language, and more.
@@ -230,7 +289,7 @@ the device and loaded at boot time.
 
 ---
 
-## 7. Building the Firmware
+## 8. Building the Firmware
 
 ```bash
 make
@@ -271,7 +330,7 @@ tools/make_progress_monitor.sh
 
 ---
 
-## 8. Flashing the Firmware
+## 9. Flashing the Firmware
 
 ### Method 1 — via FTP bootloader (initial installation)
 
@@ -303,7 +362,7 @@ This script updates both the firmware image and the external file in a single un
 
 ---
 
-## 9. First Login
+## 10. First Login
 
 After flashing, the device reboots. Access the Freetz-EVO web interface at:
 
@@ -327,7 +386,7 @@ With `freetz_proxy`, you can access the device remotely via MyFRITZ!, then click
 
 ---
 
-## 10. Keeping Freetz-EVO Up to Date
+## 11. Keeping Freetz-EVO Up to Date
 
 Pull the latest commits:
 
@@ -347,7 +406,7 @@ tools/sync-upstream-manual.sh             # perform the interactive merge
 
 ---
 
-## 11. Enabling Swap in the Web Interface (Optional)
+## 12. Enabling Swap in the Web Interface (Optional)
 
 If you do not see **Settings -> Swap** in the running WebIF, the option was not included at build time.
 
