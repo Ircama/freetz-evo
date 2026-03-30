@@ -87,7 +87,7 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
 $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
-	# Node.js builds are memory-intensive, limit parallelism to reduce OOM failures.
+	# Keep parallelism controlled by top-level make/jobserver.
 	# Remove target sysroot paths from host-tool makefiles so host tools use host headers/libs.
 	# Some host-only V8 helpers do not require OpenSSL; strip -lcrypto/-lssl from host makefiles
 	# to avoid unnecessary host-link dependencies while keeping generated host flags untouched.
@@ -155,7 +155,7 @@ STATIC_ASSERT((kTaggedSize == 8) == TAGGED_SIZE_8_BYTES);\
 	fi
 endif
 
-	$(SUBMAKE) -C $(NODEJS_DIR) -j1 \
+	$(SUBMAKE) -C $(NODEJS_DIR) \
 		PATH="$(HOST_TOOLS_DIR)/usr/bin:$(PATH)" \
 		CC.host="$(HOSTCC)" CXX.host="g++" LINK.host="g++" \
 		CFLAGS.host="" \
@@ -173,7 +173,7 @@ $(pkg)-precompiled: $($(PKG)_BINARY_TARGET)
 
 
 $(pkg)-clean:
-	-$(SUBMAKE) -C $(NODEJS_DIR) -j1 clean
+	-$(SUBMAKE) -C $(NODEJS_DIR) clean
 	$(RM) $(NODEJS_DIR)/.configured
 
 $(pkg)-uninstall:
