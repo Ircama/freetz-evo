@@ -31,10 +31,7 @@ jobs:
       packages: read
       contents: read
     container:
-      image: ghcr.io/freetz-ng/internal/generate
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.FREETZ_DLTOKEN || github.token }}
+      image: docker.io/pfichtner/freetz:0.4.3
       options: --user 1001:1001
     runs-on: ubuntu-latest
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
@@ -61,6 +58,11 @@ jobs:
           fetch-depth: 0
           clean: false
           persist-credentials: true
+
+      - name: install go and pip
+        run: |
+          sudo apt-get -y update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go python3-pip
 
       - name: parse
         id: parse

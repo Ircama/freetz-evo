@@ -30,15 +30,11 @@ concurrency:
 
 jobs:
   build:
-    if: github.repository == 'freetz-ng/freetz-ng'
     permissions:
       packages: read
       contents: write
     container:
-      image: ghcr.io/freetz-ng/internal/generate
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.FREETZ_DLTOKEN || github.token }}
+      image: docker.io/pfichtner/freetz:0.4.3
       options: --user 1001:1001
     runs-on: ubuntu-latest
 
@@ -50,7 +46,7 @@ jobs:
       - name: install
         run: |
           DEBIAN_FRONTEND=noninteractive sudo apt-get -y install \
-            git locales imagemagick
+            git locales imagemagick golang-go python3-pip
 
       - name: locale
         run: sudo locale-gen en_US.utf8 && sudo locale-gen de_DE.UTF-8 && sudo update-locale
