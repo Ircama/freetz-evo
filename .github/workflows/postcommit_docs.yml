@@ -30,6 +30,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.repository == 'freetz-ng/freetz-ng'
     permissions:
       packages: read
       contents: write
