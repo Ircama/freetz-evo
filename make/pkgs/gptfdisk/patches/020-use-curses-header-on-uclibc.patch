@@ -1,0 +1,10 @@
+--- gptcurses.cc
++++ gptcurses.cc
+@@ -24,7 +24,7 @@
+ #include <string>
+ #include <sstream>
+-#if defined (__APPLE__) || (__FreeBSD__)
++#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__UCLIBC__)
+ #include <ncurses.h>
+ #else
+ #include <ncursesw/ncurses.h>

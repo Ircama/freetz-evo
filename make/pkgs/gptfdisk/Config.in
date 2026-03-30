@@ -1,9 +1,39 @@
 config FREETZ_PACKAGE_GPTFDISK
-	bool "gptfdisk 1.0.1 - DEPRECATED"
+	bool "gptfdisk 1.0.10"
 	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_libuuid
 	default n
 	help
 		Interactive GUID partition table (GPT) manipulator
+
+if FREETZ_PACKAGE_GPTFDISK
+
+	config FREETZ_PACKAGE_GPTFDISK_gdisk
+		bool "gdisk"
+		default y
+		help
+			This option enables the GPT partition editor.
+
+	config FREETZ_PACKAGE_GPTFDISK_cgdisk
+		bool "cgdisk"
+		select FREETZ_LIB_libncursesw
+		default n
+		help
+			This option enables the curses-based GPT partition editor.
+
+	config FREETZ_PACKAGE_GPTFDISK_sgdisk
+		bool "sgdisk"
+		select FREETZ_LIB_libpopt
+		default n
+		help
+			This option enables the command-line GPT partition tool.
+
+	config FREETZ_PACKAGE_GPTFDISK_fixparts
+		bool "fixparts"
+		default n
+		help
+			This option enables the MBR repair/partition tool.
+
+endif # FREETZ_PACKAGE_GPTFDISK
 

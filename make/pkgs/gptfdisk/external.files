@@ -1,2 +1,7 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_GPTFDISK" == "y" ] && EXTERNAL_FILES+=" /usr/bin/gdisk"
+if [ "$EXTERNAL_FREETZ_PACKAGE_GPTFDISK" == "y" ]; then
+	[ "$FREETZ_PACKAGE_GPTFDISK_gdisk" == "y" ] && EXTERNAL_FILES+=" /usr/bin/gdisk"
+	[ "$FREETZ_PACKAGE_GPTFDISK_cgdisk" == "y" ] && EXTERNAL_FILES+=" /usr/bin/cgdisk"
+	[ "$FREETZ_PACKAGE_GPTFDISK_sgdisk" == "y" ] && EXTERNAL_FILES+=" /usr/bin/sgdisk"
+	[ "$FREETZ_PACKAGE_GPTFDISK_fixparts" == "y" ] && EXTERNAL_FILES+=" /usr/bin/fixparts"
+fi
 
