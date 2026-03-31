@@ -1,9 +1,9 @@
 # Disk Management (disk-mgmt)
   - Package: [master/make/pkgs/disk-mgmt/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/disk-mgmt/)
+  - Steward: -
   - CGI: `/usr/lib/cgi-bin/disk-mgmt.cgi`
   - Init script: `/etc/init.d/rc.disk-mgmt`
   - Configuration URL: `http://fritz.box:81/cgi-bin/conf/disk-mgmt`
-  - Steward: -
 
 `Disk Management` (`disk-mgmt`) provides a comprehensive web interface for disk, partition, and filesystem operations, integrated into the Freetz web server (`httpd`) through a shell CGI (`ash`/`sh`).
 

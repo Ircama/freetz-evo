@@ -1448,6 +1448,15 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 # Disk Tools
 
+  * **[disk-mgmt: Disk Management (disk-mgmt)](../../docs/make/disk-mgmt.md)<a id='disk-mgmt'></a>**<br>
+    Disk management web interface (superset of classic parted usage). Features: - Device and partition map visualization - Drag-like partition resize planning - Partition creation/deletion and metadata update - Filesystem creation/check/label operations - Toolchain diagnostics and capability analysis The interface is available at: http://fritz.box:81/cgi-bin/conf/disk-mgmt
+     - [1) Partitioning and disk map tools](../../docs/make/disk-mgmt.md#1-partitioning-and-disk-map-tools)
+     - [2) FAT filesystem tools (dosfstools)](../../docs/make/disk-mgmt.md#2-fat-filesystem-tools-dosfstools)
+     - [3) ext filesystem tools (e2fsprogs / e2fsprogs-ng)](../../docs/make/disk-mgmt.md#3-ext-filesystem-tools-e2fsprogs--e2fsprogs-ng)
+     - [4) Advanced GPT/MBR tools](../../docs/make/disk-mgmt.md#4-advanced-gptmbr-tools)
+     - [5) Disk diagnostics](../../docs/make/disk-mgmt.md#5-disk-diagnostics)
+     - [6) Filesystem/signature detection](../../docs/make/disk-mgmt.md#6-filesystemsignature-detection)
+
   * **<u>dosfstools 4.2 (binary only)</u><a id='dosfstools'></a>**<br>
     utilities to create, check and label MS-DOS FAT filesystems
 
@@ -1463,8 +1472,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>hdparm 9.65 (binary only)</u><a id='hdparm'></a>**<br>
     Hdparm can be used to show and set parameters of ATA-drives (e.g. hard disk drives).
 
-  * **[NTFS-3G 2017.3.23 (binary only) - DEPRECATED](../../docs/make/ntfs.md)<a id='ntfs'></a>**<br>
-    The NTFS-3G driver is an open source, freely available read/write NTFS driver for Linux, FreeBSD, OS X, and NetBSD. It provides safe and fast handling of the Windows XP, Windows Server 2003, Windows 2000 and Windows Vista file systems. Most POSIX file system operations are supported, with the exception of full file ownership and access right support. This binary is needed for ntfs automount feature thus there is no webinterface.
+  * **[NTFS-3G 2022.10.3 (binary only)](../../docs/make/ntfs.md)<a id='ntfs'></a>**<br>
+    The NTFS-3G userspace stack is an open source, freely available read/write NTFS driver for Linux, FreeBSD, OS X, and NetBSD. It provides safe and fast handling of the Windows XP, Windows Server 2003, Windows 2000 and Windows Vista file systems. Most POSIX file system operations are supported, with the exception of full file ownership and access right support.
 
   * **[parted 3.6 (binary only)](../../docs/make/parted.md)<a id='parted'></a>**<br>
     GNU Parted is a disk partition editor.
@@ -1567,6 +1576,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Addhole (for dnsmasq)](../../docs/make/addhole.md)<a id='addhole'></a>**<br>
     Downloads block lists and adds them to dnsmasq. Warning: If you enable all included lists, dnsmasq will need 25 MB of RAM instead of 1MB without them.
 
+  * **<u>aria2 CGI (freetz configuration web page)</u><a id='aria2'></a>**<br>
+    Provides a freetz web configuration page for aria2 daemon. Includes init script, default config and CGI script for managing aria2 settings via the freetz web UI (http://fritz.box:81/).
+
   * **[authorized_keys: Frontend for SSH keys](../../docs/make/authorized-keys.md)<a id='authorized-keys'></a>**<br>
     This frontend allows the management of the authorized_keys file used by either Dropbear or OpenSSH to allow a key-based authentication. The key-based authentication is much more secure than password-based authentication.
 
@@ -1590,6 +1602,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>Cpmaccfg CGI</u><a id='cpmaccfg'></a>**<br>
     Configuration front-end to cpmaccfg This frontend shows the current settings of the LAN ports and gives a very simple way to set VLAN, portmode and WLAN assigment. Additional to this, you can set IP addresses for the VLAN interfaces eth0-eth3 if needed.
+
+  * **<u>disk-mgmt-cgi: Disk Management CGI web interface</u><a id='disk-mgmt'></a>**<br>
+    Provides the Disk Management web interface in the freetz UI.
 
   * **[dnsd-cgi](../../docs/make/dnsd-cgi.md)<a id='dnsd'></a>**<br>
     WebIF for dnsd (busybox applet)
@@ -1670,6 +1685,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>Transmission CGI</u><a id='transmission'></a>**<br>
     Provides a simple configuration interface for transmission-daemon.
+
+  * **<u>ttyd-cgi: Web Terminal (ttyd CGI)</u><a id='ttyd'></a>**<br>
+    Provides the freetz CGI control page for ttyd, including service management and the embedded web terminal UI.
 
   * **<u>vnstat-cgi: vnstat Webinterface - DEPRECATED</u><a id='vnstat'></a>**<br>
     Lets you view graphically the output of vnstat.
