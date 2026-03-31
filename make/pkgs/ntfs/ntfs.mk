@@ -1,9 +1,9 @@
-$(call PKG_INIT_BIN, 2017.3.23)
+$(call PKG_INIT_BIN, 2022.10.3)
 $(PKG)_CATEGORY:=Disk Tools
-$(PKG)_LIB_VERSION:=88.0.0
+$(PKG)_LIB_VERSION:=89.0.0
 $(PKG)_SOURCE:=ntfs-3g_ntfsprogs-$($(PKG)_VERSION).tgz
-$(PKG)_HASH:=3e5a021d7b761261836dcb305370af299793eedbded731df3d6943802e1262d5
-$(PKG)_SITE:=http://tuxera.com/opensource
+$(PKG)_HASH:=f20e36ee68074b845e3629e6bced4706ad053804cbaf062fbae60738f854170c
+$(PKG)_SITE:=https://download.tuxera.com/opensource
 
 $(PKG)_LIB_BINARY:=$($(PKG)_DIR)/libntfs-3g/.libs/libntfs-3g.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libntfs-3g.so.$($(PKG)_LIB_VERSION)
@@ -11,23 +11,24 @@ $(PKG)_LIB_TARGET_BINARY:=$($(PKG)_TARGET_LIBDIR)/libntfs-3g.so.$($(PKG)_LIB_VER
 
 $(PKG)_BINARIES_ALL := mkntfs ntfscat ntfsclone ntfscluster ntfscmp ntfscp ntfsfix ntfsinfo ntfslabel ntfsls ntfsresize ntfsundelete
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))
-$(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/.libs/ntfs-3g
+$(PKG)_BINARIES_BUILD_DIR := $(if $(FREETZ_PACKAGE_NTFS_DRIVER),$($(PKG)_DIR)/src/.libs/ntfs-3g)
 $(PKG)_BINARIES_BUILD_DIR += $(join $(NTFS_BINARIES:%=$($(PKG)_DIR)/ntfsprogs/.libs/),$(NTFS_BINARIES))
-$(PKG)_BINARIES += ntfs-3g
+$(PKG)_BINARIES += $(if $(FREETZ_PACKAGE_NTFS_DRIVER),ntfs-3g)
 $(PKG)_BINARIES_TARGET_DIR := $(NTFS_BINARIES:%=$($(PKG)_DEST_DIR)/usr/bin/%)
 
 $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/bin/%,$(filter-out $($(PKG)_BINARIES),$($(PKG)_BINARIES_ALL)))
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
-$(PKG)_CONFIGURE_OPTIONS += --enable-ntfs-3g
-$(PKG)_CONFIGURE_OPTIONS += --enable-ntfsprogs
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NTFS_DRIVER),--enable-ntfs-3g,--disable-ntfs-3g)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NTFS_TOOLS),--enable-ntfsprogs,--disable-ntfsprogs)
 # TODO: enabling extras causes the following extra programs to be compiled
 # ntfsck ntfsdump_logfile ntfsmftalloc ntfsmove ntfstruncate ntfswipe
 $(PKG)_CONFIGURE_OPTIONS += --disable-extras
 $(PKG)_CONFIGURE_OPTIONS += --disable-crypto
 $(PKG)_CONFIGURE_OPTIONS += --with-fuse=internal
 $(PKG)_CONFIGURE_OPTIONS += --without-uuid
+$(PKG)_CONFIGURE_ENV += ac_cv_header_libintl_h=no
 
 # add EXTRA_(C|LD)FLAGS
 $(PKG)_CONFIGURE_PRE_CMDS += $(SED) -i -r -e 's,^(C)FLAGS[ \t]*=[ \t]*@\1FLAGS@,& $$$$(EXTRA_\1FLAGS),' $(abspath $($(PKG)_DIR))/{src,ntfsprogs,libfuse-lite}/Makefile.in;
@@ -79,7 +80,7 @@ $(pkg)-clean:
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/ntfs-3g
 
 $(pkg)-uninstall:
-	$(RM) $(NTFS_BINARIES_ALL:%=$(NTFS_DEST_DIR)/usr/bin/%) $(NTFS_TARGET_LIBDIR)/libntfs-3g.so*
+	$(RM) $(NTFS_BINARIES_ALL:%=$(NTFS_DEST_DIR)/usr/bin/%) $(NTFS_DEST_DIR)/usr/bin/ntfs-3g $(NTFS_TARGET_LIBDIR)/libntfs-3g.so*
 
 $(call PKG_ADD_LIB,libntfs)
 $(PKG_FINISH)

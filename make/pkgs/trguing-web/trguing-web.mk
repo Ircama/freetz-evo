@@ -12,7 +12,7 @@ $(PKG)_DEPENDS_ON += transmission
 
 $(PKG_SOURCE_DOWNLOAD)
 
-$($(PKG)_DIR)/.unpacked: $($(PKG)_SOURCE_DOWNLOAD_TIMESTAMP)
+$($(PKG)_DIR)/.unpacked: $(DL_DIR)/$(TRGUING_WEB_SOURCE)
 	mkdir -p $(TRGUING_WEB_DIR)
 	tools/unzip $(DL_DIR)/$(TRGUING_WEB_SOURCE) -d $(TRGUING_WEB_DIR)
 	@touch $@

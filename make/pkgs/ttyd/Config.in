@@ -21,9 +21,17 @@ config FREETZ_PACKAGE_TTYD
 
 if FREETZ_PACKAGE_TTYD
 
+config FREETZ_PACKAGE_TTYD_CGI
+	bool "Web Terminal (ttyd CGI)"
+	default y
+	help
+		Provides the freetz CGI control page for ttyd, including
+		service management and the embedded web terminal UI.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
 config FREETZ_PACKAGE_TTYD_PORT
 	int "Default port"
-	depends on FREETZ_PACKAGE_TTYD
+	depends on FREETZ_PACKAGE_TTYD_CGI
 	default 7681
 	help
 		TCP port on which the ttyd web/WebSocket server will listen.

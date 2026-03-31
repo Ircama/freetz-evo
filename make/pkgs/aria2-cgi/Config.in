@@ -1,5 +1,9 @@
+config FREETZ_PACKAGE_ARIA2_CGI
+	bool "aria2 CGI (freetz configuration web page)"
+	depends on FREETZ_PACKAGE_ARIA2
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	help
+		Provides a freetz web configuration page for aria2 daemon.
 
-# aria2-CGI config is integrated into the aria2 menu (make/pkgs/aria2/Config.in).
-# This file is kept for historical reference and must NOT redefine
-# FREETZ_PACKAGE_ARIA2_CGI to avoid duplicate symbol errors.
-# See aria2/Config.in for the integrated option.
+		Includes init script, default config and CGI script for managing
+		aria2 settings via the freetz web UI (http://fritz.box:81/).

@@ -21,7 +21,7 @@ ARIANG_MAKE_DIR:=$($(PKG)_MAKE_DIR)
 $(PKG_SOURCE_DOWNLOAD)
 
 # Custom unpacking: AriaNg zip doesn't have subdirectory, extract directly
-$($(PKG)_DIR)/.unpacked: $($(PKG)_SOURCE_DOWNLOAD_TIMESTAMP)
+$($(PKG)_DIR)/.unpacked: $(DL_DIR)/$(ARIANG_SOURCE)
 	@echo "preparing ... "
 	mkdir -p $(ARIANG_DIR)
 	tools/unzip $(DL_DIR)/$(ARIANG_SOURCE) -d $(ARIANG_DIR)

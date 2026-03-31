@@ -10,7 +10,7 @@ menu "ntfs"
 
 	config EXTERNAL_FREETZ_PACKAGE_NTFS_ntfs3g
 		bool "ntfs-3g"
-		depends on FREETZ_PACKAGE_NTFS
+		depends on FREETZ_PACKAGE_NTFS_DRIVER
 		default n
 		help
 			externals the following file(s):

@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_TTYD_CGI
+	bool "Web Terminal (ttyd CGI)"
+	depends on FREETZ_PACKAGE_TTYD
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	help
+		Provides the freetz CGI control page for ttyd, including
+		service management and the embedded web terminal UI.

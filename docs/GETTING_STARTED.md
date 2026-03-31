@@ -31,19 +31,19 @@ Before the practical steps, this document introduces the ecosystem in the correc
 
 ### What is a FRITZ!Box?
 
-A FRITZ!Box is a family of residential gateway devices made for home and small-office networking. Depending on the model, it combines broadband access (DSL, cable, fiber, or mobile uplink), routing, Wi-Fi, switching, telephony features, and USB-based services in a single device.
+A [FRITZ!Box](https://en.wikipedia.org/wiki/Fritz!Box) is a family of residential gateway devices made for home and small-office networking. Depending on the model, it combines broadband access (DSL, cable, fiber, or mobile uplink), routing, Wi-Fi, switching, telephony features, and USB-based services in a single device.
 
 FRITZ!Box devices run FRITZ!OS, a Linux-based firmware with an integrated web interface and strong support for features such as VoIP, DECT, NAS/media services, and network management.
 
 ### AVM and the FRITZ! brand
 
-The FRITZ! product line is developed by AVM (now branded as FRITZ! at company level in recent communications), a German networking vendor known for consumer broadband and telephony products. In practice, when the community speaks about "AVM firmware" for FRITZ!Box, it refers to the original FRITZ!OS firmware provided by the manufacturer.
+The [FRITZ!](https://en.wikipedia.org/wiki/Fritz!) product line is developed by AVM (now branded as FRITZ! at company level in recent communications), a German networking vendor known for consumer broadband and telephony products. In practice, when the community speaks about "AVM firmware" for FRITZ!Box, it refers to the original FRITZ!OS firmware provided by the manufacturer.
 
 ### What is Freetz?
 
-Freetz is a build and customization framework for FRITZ!Box firmware. It does not start from a blank operating system; instead, it takes the original AVM firmware as base and modifies selected components.
+[Freetz](https://freetz.github.io/wiki/freetz.html) is a build and customization framework for FRITZ!Box firmware. It does not start from a blank operating system; instead, it takes the original AVM firmware as base and modifies selected components.
 
-In practical terms, Freetz can:
+In practical terms, [Freetz](https://freetz.github.io/wiki/freetz.en.html) can:
 
 - add extra software packages and services;
 - change configuration defaults and expose more advanced tuning options;
@@ -57,7 +57,7 @@ The major advantage is compatibility: users keep the native FRITZ!OS functionali
 
 Freetz also does not perform a full operating-system rebase and does not update the kernel to a new upstream major branch on its own. The result remains anchored to the vendor firmware baseline for that device/firmware generation.
 
-### Legal Background (important)
+### Legal Background
 
 The original Freetz documentation explicitly explains a mixed legal model:
 
@@ -72,26 +72,16 @@ The same legal guidance also warns against publishing self-built full images pub
 
 ### What is Freetz-NG?
 
-Freetz-NG is the actively maintained modern continuation of the Freetz ecosystem. It keeps the same core philosophy (augmenting original FRITZ!OS firmware), while extending device support, toolchains, package sets, and build-system maintenance.
-
-### What is Freetz-EVO?
-
-Freetz-EVO is a fork of Freetz-NG. It keeps Freetz-NG as technical foundation and adds UX improvements, additional packages, and project-specific enhancements.
-
-Sources used for this overview:
-
-- https://en.wikipedia.org/wiki/Fritz!Box
-- https://en.wikipedia.org/wiki/Fritz!
-- https://freetz.github.io/wiki/freetz.html
-- https://freetz.github.io/wiki/freetz.en.html
+[Freetz-NG](https://freetz-ng.github.io/freetz-ng/) is the actively maintained modern continuation of the Freetz ecosystem. It keeps the same core philosophy (augmenting original FRITZ!OS firmware), while extending device support, toolchains, package sets, and build-system maintenance.
 
 ---
 
 ## 2. What is Freetz-EVO?
 
-Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng). It extends the
-original project with a redesigned web interface (the **EVO skin**, fully responsive with dark
-mode and PWA support), new packages and some bug fixes.
+Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng).
+It keeps Freetz-NG as technical foundation and adds UX improvements, additional packages, and project-specific enhancements.
+It extends the original project with a redesigned web interface (the **EVO skin**, fully responsive with dark
+mode and PWA support).
 
 Some highlights compared to stock Freetz-NG:
 
