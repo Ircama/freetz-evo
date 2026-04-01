@@ -51,11 +51,4 @@ if FREETZ_PACKAGE_DISK_MGMT
 	comment "Note: NTFS mount uses AVM stack when ntfs-3g driver is unavailable"
 		depends on FREETZ_AVMPLUGINS_NTFS || FREETZ_AVM_HAS_ANTFS_FS_BUILTIN || (FREETZ_AVM_HAS_NTFS && !FREETZ_REMOVE_NTFS)
 
-	config FREETZ_PACKAGE_DISK_MGMT_CGI
-		bool "Disk Management CGI web interface"
-		default y
-		help
-			Provides the Disk Management web interface in the freetz UI.
-			This is the same symbol shown in "Packages -> Web interfaces".
-
 endif

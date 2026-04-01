@@ -210,7 +210,7 @@ $($(PKG)_ZIPPED_PYC_TARGET_DIR): $($(PKG)_TARGET_DIR)/excluded-module-files-zip.
 		$(if $(FREETZ_PACKAGE_PYTHON3_COMPRESS_PYC),zip -9qyR -x@$(FREETZ_BASE_DIR)/$(PYTHON3_TARGET_DIR)/excluded-module-files-zip.lst ../$(notdir $@) . "*.pyc";) \
 	)
 	$(if $(FREETZ_PACKAGE_PYTHON3_COMPRESS_PYC), \
-		$(FREETZ_BASE_DIR)/make/pkgs/python3/scripts/fix-python314-zip.sh $(FREETZ_BASE_DIR)/$@; \
+		$(FREETZ_BASE_DIR)/make/pkgs/python3/scripts/fix-python314-zip.sh $(FREETZ_BASE_DIR)/$@ $(SILENT); \
 	)
 
 $($(PKG)_TARGET_DIR)/.exclude-extra: $(TOPDIR)/.config $($(PKG)_TARGET_DIR)/py.lst $($(PKG)_TARGET_DIR)/pyc.lst $($(PKG)_TARGET_DIR)/excluded-module-files.lst

@@ -36,7 +36,7 @@ define HostPython3
                 export LDFLAGS="$(TARGET_LDFLAGS) -L$(PYTHON3_STAGING_LIB_DIR)"; \
                 $(1) \
                 $(HOST_PYTHON3_BIN) $(2); \
-        )
+        ) $(SILENT)
 endef
 
 # $(1) => build dir
@@ -71,6 +71,7 @@ define Build/PyMod3/PKG
                 $(3), \
                 $($(strip $(1))_DEST_DIR)$(PYTHON3_SITE_PKG_DIR) \
         )
+        $(if $($(strip $(1))_TARGET_BINARY),[ ! -e $(abspath $($(strip $(1))_TARGET_BINARY)) ] || touch $(abspath $($(strip $(1))_TARGET_BINARY));)
 endef
 
 # Alias for Python3 modules
@@ -108,4 +109,5 @@ define Build/PyMod3/Pip
                 [ "$$new_so" = "$$so" ] || mv "$$so" "$$new_so"; \
         done
         find $($(strip $(1))_DEST_DIR)$(PYTHON3_SITE_PKG_DIR) -type f -name "*.so" -exec $(TARGET_STRIP) \{\} \+ 2>/dev/null || true
+        $(if $($(strip $(1))_TARGET_BINARY),[ ! -e $(abspath $($(strip $(1))_TARGET_BINARY)) ] || touch $(abspath $($(strip $(1))_TARGET_BINARY));)
 endef

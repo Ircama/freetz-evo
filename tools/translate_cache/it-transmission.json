@@ -243,5 +243,26 @@
     "service": "deepl",
     "timestamp": "2026-03-02T07:34:41Z",
     "translation": "Directory di lavoro"
+  },
+  "deepl:Installed Web Interfaces": {
+    "original": "Installed Web Interfaces",
+    "translation": "Interfacce Web installate",
+    "timestamp": "2026-03-31T06:54:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The following static web interfaces were detected:": {
+    "original": "The following static web interfaces were detected:",
+    "translation": "Sono state rilevate le seguenti interfacce web statiche:",
+    "timestamp": "2026-03-31T06:54:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No static transmission web interface installed": {
+    "original": "No static transmission web interface installed",
+    "translation": "Nessuna interfaccia web di trasmissione statica installata",
+    "timestamp": "2026-03-31T06:54:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

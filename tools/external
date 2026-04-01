@@ -73,6 +73,123 @@ for EXT_FILE in make/pkgs/*/external.files make/libs/*/external.files; do
 done
 EXTERNAL_FILES=$(echo $EXTERNAL_FILES | sed -e 's| |\n/|g;s|//\+|/|g' | sort -u)
 
+# Build a list of services that must be deferred until external storage is mounted.
+# A package is deferred when:
+# - it is selected and not externalized as a service
+# - one of its ELF binaries/libraries needs a SONAME that is externalized
+generate_external_defer_list() {
+	local defer_list_file="${VARTAR_MOD_DIR}/var/mod/etc/external.defer.pkg"
+	local build_mod_dir="$(dirname "${FILESYSTEM_MOD_DIR}")"
+	local defer_report_file="${build_mod_dir}/external.defer.report.txt"
+	local static_pkg_file="${VARTAR_MOD_DIR}/var/mod/etc/static.pkg"
+	local ext_sonames_tmp="$(mktemp)"
+	local pkg_needed_tmp="$(mktemp)"
+	local pkg_files_tmp="$(mktemp)"
+	local ext_services=" ${EXTERNAL_SERVICES} "
+	local matched=""
+	local pkg_candidates=""
+	local pkg_has_boot_rc="n"
+
+	mkdir -p "$(dirname "${defer_list_file}")"
+	: > "${defer_list_file}"
+	: > "${defer_report_file}"
+
+	# Collect SONAME candidates from externalized library files.
+	for ext_file in ${EXTERNAL_FILES}; do
+		case "${ext_file}" in
+			*/lib/*.so*|*/lib64/*.so*)
+				lib_base="$(basename "${ext_file}")"
+				echo "${lib_base}" >> "${ext_sonames_tmp}"
+				# libfoo.so.1.2.3 -> libfoo.so.1
+				echo "${lib_base}" | sed -n 's/^\(lib[^ ]*\.so\.[0-9][0-9]*\)\..*$/\1/p' >> "${ext_sonames_tmp}"
+				# libfoo.so.1.2.3 -> libfoo.so
+				echo "${lib_base}" | sed -n 's/^\(lib[^ ]*\.so\)\..*$/\1/p' >> "${ext_sonames_tmp}"
+				;;
+		esac
+	done
+
+	# Normalize SONAME list and drop empties.
+	sed -i '/^$/d' "${ext_sonames_tmp}"
+	sort -u -o "${ext_sonames_tmp}" "${ext_sonames_tmp}"
+
+	if [ ! -s "${ext_sonames_tmp}" ]; then
+		echo "No externalized libraries detected; no deferred services required." >> "${defer_report_file}"
+		rm -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}"
+		return 0
+	fi
+
+	echo "Externalized SONAME candidates:" >> "${defer_report_file}"
+	sed 's/^/  - /' "${ext_sonames_tmp}" >> "${defer_report_file}"
+	echo "" >> "${defer_report_file}"
+	echo "Services deferred because they require externalized libraries:" >> "${defer_report_file}"
+
+	while read -r pkg; do
+		[ -z "${pkg}" ] && continue
+		[ "${pkg}" == "mod" ] && continue
+
+		# Already externalized services are started by rc.external anyway.
+		echo "${ext_services}" | grep -q " ${pkg} " && continue
+
+		pkg_candidates=""
+		pkg_has_boot_rc="n"
+		for candidate in "${pkg}" "${pkg}-cgi" "${pkg}-v2-cgi"; do
+			[ -f "${PACKAGES_DIR}/.${candidate}" ] || continue
+			candidate_ver="$(cat "${PACKAGES_DIR}/.${candidate}")"
+			candidate_root="${PACKAGES_DIR}/${candidate}-${candidate_ver}/root"
+			[ -d "${candidate_root}" ] || continue
+			pkg_candidates+=" ${candidate}"
+			ls "${candidate_root}/etc/init.d"/rc.* >/dev/null 2>&1 && pkg_has_boot_rc="y"
+		done
+		[ -z "${pkg_candidates}" ] && continue
+		[ "${pkg_has_boot_rc}" != "y" ] && continue
+
+		pkg_files="$(collect_pkg_files ${pkg_candidates} 2>/dev/null)"
+		[ -z "${pkg_files}" ] && continue
+
+		: > "${pkg_files_tmp}"
+		for rel in ${pkg_files}; do
+			abs="${FILESYSTEM_MOD_DIR}${rel}"
+			case "${rel}" in
+				/bin/*|/sbin/*|/usr/bin/*|/usr/sbin/*|/usr/libexec/*|/lib/*.so*|/usr/lib/*.so*|/usr/lib/*/*.so*|/usr/lib/freetz/*.so*)
+					[ -f "${abs}" ] && echo "${abs}" >> "${pkg_files_tmp}"
+					;;
+			esac
+		done
+
+		[ ! -s "${pkg_files_tmp}" ] && continue
+
+		# getNeededEntries comes from tools/freetz_functions and uses target readelf.
+		getNeededEntries $(cat "${pkg_files_tmp}") > "${pkg_needed_tmp}" 2>/dev/null
+		[ ! -s "${pkg_needed_tmp}" ] && continue
+
+		matched="$(grep -F -x -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" | tr '\n' ' ' | sed 's/[ ]*$//')"
+		if [ -n "${matched}" ]; then
+			echo "${pkg}" >> "${defer_list_file}"
+			echo "  - ${pkg}: ${matched}" >> "${defer_report_file}"
+		fi
+	done < "${static_pkg_file}"
+
+	if [ -s "${defer_list_file}" ]; then
+		sort -u -o "${defer_list_file}" "${defer_list_file}"
+		echo "" >> "${defer_report_file}"
+		echo "Summary:" >> "${defer_report_file}"
+		echo "  Deferred service count: $(wc -l < "${defer_list_file}")" >> "${defer_report_file}"
+		echo1 "generated deferred-service list: ${defer_list_file}"
+		echo1 "generated deferred-service report: ${defer_report_file}"
+		echo1 -b "deferred services: $(tr '\n' ' ' < "${defer_list_file}" | sed 's/[ ]*$//')"
+	else
+		echo "  (none)" >> "${defer_report_file}"
+		echo "" >> "${defer_report_file}"
+		echo "Summary:" >> "${defer_report_file}"
+		echo "  Deferred service count: 0" >> "${defer_report_file}"
+		echo1 "generated deferred-service report: ${defer_report_file}"
+	fi
+
+	rm -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}"
+}
+
+generate_external_defer_list
+
 # Special handling for GCC_TOOLCHAIN_ARCHIVE marker
 # If found, unpack its contents to external/ and remove the marker directory
 if echo "$EXTERNAL_FILES" | grep -q "/GCC_TOOLCHAIN_ARCHIVE"; then

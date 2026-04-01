@@ -81,7 +81,7 @@ else
 			$$(call ERROR,3,Failed to detect the URL of the latest firmware version) \
 		fi; \
 		echo -n "$$$$DL_URL_FIRMWARE ... " 2>/dev/null; \
-		echo "done."; \
+		echo "$$(date +%H:%M) done."; \
 		echo "$$$$DL_URL_FIRMWARE" > "$$(IMAGE$(1)).url.bak"; \
 		DL_SITE0="$$$${DL_URL_FIRMWARE%/*}"; \
 		DL_SOURCE0_CONTAINER="$$$${DL_URL_FIRMWARE##*/}"; \

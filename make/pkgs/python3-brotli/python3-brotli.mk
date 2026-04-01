@@ -32,8 +32,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		'exec $(TARGET_CC) -I$(PYTHON3_STAGING_INC_DIR) "$$@"' \
 	> $(abspath $(@D))/.cc-wrap.sh
 	@chmod +x $(abspath $(@D))/.cc-wrap.sh
-	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
-	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) pkgconfig
+	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade $(SILENT)
+	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) pkgconfig $(SILENT)
 	$(call Build/PyMod3/Pip, PYTHON3_BROTLI, , \
 		CC="$(abspath $(@D))/.cc-wrap.sh" \
 		CXX="$(TARGET_CXX)" \

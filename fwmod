@@ -363,7 +363,7 @@ if [ -n "$FWMOD_RECURSIVE" ] && [ $UID -eq 0 ]; then
 	# Has current combination of firmware already been unpacked?
 	if [ "$(cat "$UNPACKED_FILE" 2>/dev/null)" == "$FIRMWARE_MD5" ]; then
 		# Yes -> skip unpack
-		[ $DO_UNPACK -gt 0 ] && SKIP_UNPACK="STEP 1: UNPACK (SKIPPED)\n\n"
+		[ $DO_UNPACK -gt 0 ] && SKIP_UNPACK="$(date +%H:%M) STEP 1: UNPACK (SKIPPED)\n\n"
 		DO_UNPACK=0
 	else
 		# No -> force unpack
@@ -411,10 +411,10 @@ else
 			error 1 "cannot create directory $COPY_FS_DIR"
 		sudo "$TAR_BBA" -C "$COPY_FS_DIR" -xf "$rootfs_archive" ||
 			error 1 "cannot unpack root file system"
-		echo -e "done.\n"
+		echo -e "$(date +%H:%M) done.\n"
 	fi
 
-	echo0 -b "FINISHED"
+	echo0 -b "$(date +%H:%M) FINISHED"
 
 	exit 0
 fi
@@ -454,7 +454,7 @@ echo
 STEP="1"
 if [ "$DO_UNPACK" -gt 0 ]; then
 	[ "$FIRMWARE2" ] && UNPACK_SUBSTEP="A" && UNPACK_MAIN=" 1ST"
-	echo0 -b "STEP 1${UNPACK_SUBSTEP}: UNPACK${UNPACK_MAIN}${FORCE_UNPACK}"
+	echo0 -b "$(date +%H:%M) STEP 1${UNPACK_SUBSTEP}: UNPACK${UNPACK_MAIN}${FORCE_UNPACK}"
 
 	# Remove old "unpacked" marker to avoid an undefined state in case of
 	# interruption before unpacking operation is finished
@@ -624,7 +624,7 @@ if [ "$DO_UNPACK" -gt 0 ]; then
 	image_details
 	echo2 -lc "detected firmware version: ${SOURCE_IMAGE_DETAILS}"
 
-	echo -e "done.\n"
+	echo -e "$(date +%H:%M) done.\n"
 
 	# Unpack secondary firmware image
 	if [ -n "$FIRMWARE2" ]; then
@@ -786,7 +786,7 @@ image_details
 
 STEP="2"
 if [ "$DO_MOD" -gt 0 ]; then
-	echo0 -b "STEP 2: MODIFY"
+	echo0 -b "$(date +%H:%M) STEP 2: MODIFY"
 
 	# Check if firmware is unpacked
 	if [ ! -r "$UNPACKED_FILE" ]; then
@@ -957,6 +957,9 @@ if [ "$DO_MOD" -gt 0 ]; then
 	echo1 "creating symlinks /tmp, /mod, /home and /ftp"
 	rm -rf "$FILESYSTEM_MOD_DIR"/tmp
 	ln -s var/{tmp,mod} "$FILESYSTEM_MOD_DIR"/
+	# Some packages install files under /mod/... (symlinked to /var/mod).
+	# Ensure target exists in the staging filesystem before tar extraction.
+	mkdir -p "$FILESYSTEM_MOD_DIR"/var/mod
 	ln -s var/mod/home "$FILESYSTEM_MOD_DIR"/
 	ln -s var/media/ftp "$FILESYSTEM_MOD_DIR"/
 
@@ -1853,7 +1856,7 @@ FREETZ_LOGIN_PY
 	esac
 
 	touch "${DIR}/.modified"
-	echo0 "done.\n"
+	echo0 "$(date +%H:%M) done.\n"
 fi
 
 
@@ -1874,7 +1877,7 @@ action_names=${action_names##/}
 
 STEP="3"
 if [ "$action_names" ]; then
-	echo0 -b "STEP 3: ${action_names}"
+	echo0 -b "$(date +%H:%M) STEP 3: ${action_names}"
 
 	if [ ! "$DO_MOD" -gt 0 ]; then
 		echo "WARNING: Modifications (STEP 2) and this step should never" 1>&2
@@ -2448,7 +2451,7 @@ if [ "$action_names" ]; then
 		echo "See https://freetz-ng.github.io/freetz-ng/wiki/00_FAQ/FAQ.de.html#nach-dem-flashen-ist-das-avm-webinterface-nicht-mehr-erreichbar for details."
 	fi
 
-	[ "$COPY_FS_DIR" ] || echo -e "done.\n"
+	[ "$COPY_FS_DIR" ] || echo -e "$(date +%H:%M) done.\n"
 fi
 
 exit 0

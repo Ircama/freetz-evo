@@ -39,16 +39,16 @@ jobs:
 
     steps:
 
-#     - name: update
-#       run: apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
-#
-#     - name: install
-#       run: |
-#         DEBIAN_FRONTEND=noninteractive apt-get -y install \
-#           git locales imagemagick
-#
-#     - name: locale
-#       run: locale-gen en_US.utf8 && locale-gen de_DE.UTF-8 && update-locale
+      - name: update
+        run: sudo apt-get -y update
+
+      - name: install
+        run: |
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y install \
+            git locales imagemagick golang-go python3-pip
+
+      - name: locale
+        run: sudo locale-gen en_US.utf8 && sudo locale-gen de_DE.UTF-8 && sudo update-locale
 
       - name: clone
         uses: actions/checkout@v6
@@ -61,11 +61,6 @@ jobs:
           fetch-depth: 0
           clean: false
           persist-credentials: true
-
-      - name: install go and pip
-        run: |
-          sudo apt-get -y update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go python3-pip
 
       - name: generate
         run: |

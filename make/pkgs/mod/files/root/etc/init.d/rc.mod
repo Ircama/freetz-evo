@@ -142,14 +142,17 @@ start() {
 	if [ -x /mod/etc/init.d/rc.external ]; then
 		[ "$MOD_EXTERNAL_FREETZ_SERVICES" == "yes" ] && EXTERNAL_SERVICES="$(cat /mod/etc/external.pkg 2>/dev/null)"
 		EXTERNAL_SERVICES=" $EXTERNAL_SERVICES $(echo $MOD_EXTERNAL_OWN_SERVICES | tr '\n' ' ') "
+		DEFERRED_SERVICES=" $(cat /mod/etc/external.defer.pkg 2>/dev/null) "
 	fi
 	for pkg in $(cat /etc/static.pkg 2>/dev/null); do
 		[ "$pkg" = mod ] && continue
 		local rc="/etc/init.d/rc.$pkg"
 		if [ -x "$rc" ]; then
+			local long="$(sed -n "s/^DAEMON_LONG_NAME=[\"' ]*\([^\""\$"' ]*\).*/\1/p" "$rc")"
 			if echo "$EXTERNAL_SERVICES" | grep -q " $pkg "; then
-				local long="$(sed -n "s/^DAEMON_LONG_NAME=[\"' ]*\([^\""\$"' ]*\).*/\1/p" "$rc")"
 				echo "${long:-$pkg} will be started by external."
+			elif echo "$DEFERRED_SERVICES" | grep -q " $pkg "; then
+				echo "${long:-$pkg} start is deferred until external storage is available."
 			else
 				"$rc"
 			fi

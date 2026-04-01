@@ -98,7 +98,7 @@ config EXTERNAL_FREETZ_LIB_libintl
 
 config EXTERNAL_FREETZ_LIB_libz
 	depends on FREETZ_LIB_libz
-	bool "libz (~80 KB, required internal by Dropbear SSH)"
+	bool "libz (~80 KB)"
 	default n
 	help
 		Compression library (zlib).

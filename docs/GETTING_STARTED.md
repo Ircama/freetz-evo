@@ -285,6 +285,14 @@ the device and loaded at boot time.
 make
 ```
 
+Or, better, to perform the same action with a cleaner and less verbose output:
+
+```bash
+make FREETZ_VERBOSITY_LEVEL=0
+```
+
+Using `make FREETZ_VERBOSITY_LEVEL=0`, the detailed output can be analyzed using another terminal, via `tail -f .build.log`.
+
 The build process:
 1. Downloads all required source packages and the original FRITZ!OS firmware
 2. Builds a cross-compilation toolchain (GCC, binutils, …)

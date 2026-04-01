@@ -82,5 +82,12 @@
     "timestamp": "2026-02-15T23:54:02Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Device": {
+    "original": "Device",
+    "translation": "Dispositivo",
+    "timestamp": "2026-03-31T06:54:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

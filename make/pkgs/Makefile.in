@@ -548,7 +548,7 @@ endef
 define PKG_FINISH_CHECK_REBUILD_SUBOPTS__INT2
 $($(PKG)_FREETZ_CONFIG_FILE): $(TOPDIR)/.config | $(SOURCE_DIR)
 	@($(foreach OPT,$($(PKG)_REBUILD_SUBOPTS),echo "$(if $($(OPT)),$(OPT)=$($(OPT)),$(_hash) $(OPT) is not set)";):) > $($(PKG)_FREETZ_CONFIG_FILE).temp
-	@if ! diff -q $($(PKG)_FREETZ_CONFIG_FILE).temp $($(PKG)_FREETZ_CONFIG_FILE) 2>/dev/null $(SILENT); then \
+	@if ! diff -q $($(PKG)_FREETZ_CONFIG_FILE).temp $($(PKG)_FREETZ_CONFIG_FILE) $(SILENT) 2>/dev/null; then \
 		$(RM) -r $($(PKG)_DIR); \
 		$($(PKG)_CLEAN_TARGET_DIR__INT) \
 		mv $($(PKG)_FREETZ_CONFIG_FILE).temp $($(PKG)_FREETZ_CONFIG_FILE); \

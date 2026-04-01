@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_DISK_MGMT_CGI
-	bool "Disk Management CGI web interface"
-	depends on FREETZ_PACKAGE_DISK_MGMT
+	bool
+	depends on n
+	default n
 	help
-		Provides the Disk Management web interface in the freetz UI.
+		Deprecated. Disk Management CGI is now integrated into FREETZ_PACKAGE_DISK_MGMT.

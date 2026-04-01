@@ -3,6 +3,10 @@ SCRIPT="$(readlink -f $0)"
 PARENT="$(dirname ${SCRIPT%/*})"
 PACKAGES="$PARENT/tools/.prerequisites"
 [ -x "$(command -v sudo)" ] && SUDO="sudo" || SUDO=""
+NODEJS_HOST_MULTILIB_PKG="lib32stdc++-13-dev"
+NODEJS_HOST_MULTILIB_DIR="$PARENT/build/host-multilib"
+NODEJS_HOST_MULTILIB_CXXINC="$NODEJS_HOST_MULTILIB_DIR/usr/include/x86_64-linux-gnu/c++/13/32/bits/c++config.h"
+NODEJS_HOST_MULTILIB_LIB="$NODEJS_HOST_MULTILIB_DIR/usr/lib/gcc/x86_64-linux-gnu/13/32/libstdc++.a"
 
 
 check_requisite() {
@@ -97,6 +101,31 @@ detect_linux() {
 	echo "$NAME$VERSION"
 }
 
+extract_nodejs_host_multilib() {
+	[ -r "$NODEJS_HOST_MULTILIB_CXXINC" ] && [ -r "$NODEJS_HOST_MULTILIB_LIB" ] && return 0
+	[ -x "$(command -v apt)" ] || return 0
+	[ -x "$(command -v dpkg-deb)" ] || return 0
+
+	echo "Preparing nodejs host multilib cache in '$NODEJS_HOST_MULTILIB_DIR'"
+	mkdir -p "$NODEJS_HOST_MULTILIB_DIR" || return 1
+	tmpdir="$(mktemp -d)" || return 1
+	(
+		cd "$tmpdir" || exit 1
+		apt download "$NODEJS_HOST_MULTILIB_PKG" || exit 1
+		dpkg-deb -x "${NODEJS_HOST_MULTILIB_PKG}"_*.deb "$NODEJS_HOST_MULTILIB_DIR" || exit 1
+	)
+	ret=$?
+	rm -rf "$tmpdir"
+	[ "$ret" = "0" ] || return 1
+
+	if [ ! -r "$NODEJS_HOST_MULTILIB_CXXINC" ] || [ ! -r "$NODEJS_HOST_MULTILIB_LIB" ]; then
+		echo "ERROR: nodejs host multilib extraction finished but required files are still missing" >&2
+		return 1
+	fi
+
+	return 0
+}
+
 install_requisite() {
 	local OSV="$1" ARG="$2" DOY="$3"
 
@@ -112,7 +141,7 @@ install_requisite() {
 	vals="$(sed 's/[\t ]*#.*//g' "$PACKAGES/$OSV" | sort | tr '\n' ' ' | sed 's/^ *//;s/  */ /g;s/ *$//')"
 	case "$OSV" in
 		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
-			vals="$vals golang-go"
+			vals="$vals golang-go $NODEJS_HOST_MULTILIB_PKG"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
 			;;
 	esac
@@ -120,8 +149,8 @@ install_requisite() {
 	[ "${ARG:0:1}" == "s" ] && exit 0
 	case "$OSV" in
 		Fedora*)                                       $SUDO dnf --refresh  install $DOY $vals || exit 1 ;;
-		Debian*|Devuan*|LMDE*) $SUDO apt-get update && $SUDO apt            install $DOY $vals || exit 1 ;;
-		Ubuntu*|Mint*)         $SUDO apt-get update && $SUDO apt-get        install $DOY $vals || exit 1 ;;
+		Debian*|Devuan*|LMDE*) $SUDO apt-get update && $SUDO apt            install $DOY $vals || exit 1; extract_nodejs_host_multilib || exit 1 ;;
+		Ubuntu*|Mint*)         $SUDO apt-get update && $SUDO apt-get        install $DOY $vals || exit 1; extract_nodejs_host_multilib || exit 1 ;;
 		*)                     echo 'No known installer'                                       && exit 1 ;;
 	esac
 	exit 0

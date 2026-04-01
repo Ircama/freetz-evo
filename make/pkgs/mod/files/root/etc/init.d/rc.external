@@ -80,6 +80,27 @@ exec_rcs() {
 	[ -f $EXTERNAL_CUSTOM_FILE ] && log "$(. $EXTERNAL_CUSTOM_FILE $1 2>&1)"
 }
 
+start_deferred_services() {
+	[ -r /mod/etc/external.defer.pkg ] || return 0
+
+	for pkg in $(cat /mod/etc/external.defer.pkg 2>/dev/null); do
+		[ -z "$pkg" ] && continue
+		# Services already handled by EXTERNAL_SERVICES are started by exec_rcs.
+		echo " $EXTERNAL_SERVICES " | grep -q " $pkg " && continue
+
+		rc="/mod/etc/init.d/rc.$pkg"
+		if [ ! -x "$rc" ]; then
+			log "Deferred service '$pkg' has no executable init script, skipped."
+			continue
+		fi
+
+		status="$($rc status 2>/dev/null)"
+		[ -n "$status" -a "$status" != "stopped" ] && continue
+
+		log "$($rc start 2>&1)"
+	done
+}
+
 start() {
 	log -x "Starting external ($EXTERNAL_DIRECTORY):"
 
@@ -145,6 +166,7 @@ start() {
 	done
 
 	exec_rcs load
+	start_deferred_services
 
 	log "Starting external finished."
 }
@@ -165,7 +187,8 @@ stop() {
 	done
 
 	rm -rf "$EXTERNAL_LINK" 2>/dev/null
-	tar xf /var.tar ./var/mod/etc/external.pkg ./var/mod/etc/static.pkg -C /
+	tar xf /var.tar ./var/mod/etc/external.pkg ./var/mod/etc/static.pkg ./var/mod/etc/external.defer.pkg -C / 2>/dev/null || \
+		tar xf /var.tar ./var/mod/etc/external.pkg ./var/mod/etc/static.pkg -C /
 
 	log "Stopping external finished."
 }

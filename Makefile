@@ -323,7 +323,7 @@ ifeq ($(strip $(FREETZ_VERBOSITY_LEVEL)),0)
 # Don't be silent when a menuconfig target is called
 ifneq ($(findstring menuconfig,$(MAKECMDGOALS)),menuconfig)
 #SILENT:= >>build.log 2>&1
-SILENT:= > .build.log 2>&1
+SILENT:= > >({ printf "\n\033[1;48;5;90m===== [%s] " "`date +%H:%M`"; if [ -s "$(SOURCE_DIR_ROOT)/.echo_item_new" ]; then tr -d '\n' < "$(SOURCE_DIR_ROOT)/.echo_item_new"; elif [ -s "$(SOURCE_DIR_ROOT)/.echo_item_old" ]; then tr -d '\n' < "$(SOURCE_DIR_ROOT)/.echo_item_old"; else printf "make"; fi; printf " =====\033[0m\n"; cat; } >> .build.log) 2>&1
 #SILENT:= > /dev/null 2>&1
 endif
 endif
@@ -720,7 +720,7 @@ release: distclean
 	$(RM) .exclude-release-tmp
 
 clear-echo-temporary:
-	@$(RM) $(ECHO_ITEM_1ST) $(ECHO_ITEM_TMP) $(ECHO_ITEM_NEW) $(ECHO_ITEM_END)
+	@$(RM) $(ECHO_ITEM_1ST) $(ECHO_ITEM_OLD) $(ECHO_ITEM_TMP) $(ECHO_ITEM_NEW) $(ECHO_ITEM_END)
 
 # Check .config is up-to-date. Any change to any of the menuconfig configuration files (either manual or one caused by 'svn up') require .config to be updated.
 check-dot-config-uptodateness: $(CONFIG_IN_CACHE)

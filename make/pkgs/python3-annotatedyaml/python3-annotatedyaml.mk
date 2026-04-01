@@ -22,8 +22,8 @@ $(PKG_CONFIGURED_NOP)
 # Build with optional Cython C extension for performance.
 # The build_ext.py gracefully falls back to pure Python if Cython is unavailable.
 $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
-	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
-	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) Cython==3.2.0
+	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade $(SILENT)
+	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) Cython==3.2.0 $(SILENT)
 	$(call Build/PyMod3/PKG, PYTHON3_ANNOTATEDYAML, , )
 
 $(pkg):

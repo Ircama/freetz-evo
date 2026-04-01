@@ -1202,5 +1202,26 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:19:32Z",
     "translation": "✓ Le porte sono già configurate correttamente."
+  },
+  "deepl:aMUTorrent": {
+    "original": "aMUTorrent",
+    "translation": "aMUTorrent",
+    "timestamp": "2026-03-31T06:53:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:aMUTorrent Web Interface": {
+    "original": "aMUTorrent Web Interface",
+    "translation": "Interfaccia web di aMUTorrent",
+    "timestamp": "2026-03-31T06:53:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:aMUTorrent is an alternative web frontend and requires a running RPC backend service (e.g. Transmission).": {
+    "original": "aMUTorrent is an alternative web frontend and requires a running RPC backend service (e.g. Transmission).",
+    "translation": "aMUTorrent è un frontend web alternativo e richiede un servizio backend RPC funzionante (ad esempio Transmission).",
+    "timestamp": "2026-03-31T06:54:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

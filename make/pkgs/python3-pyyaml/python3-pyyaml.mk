@@ -27,8 +27,8 @@ $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 ifeq ($(PYTHON3_PYYAML_USE_C),y)
-	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade
-	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) Cython==3.2.0
+	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade $(SILENT)
+	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) Cython==3.2.0 $(SILENT)
 	$(call Build/PyMod3/PKG, PYTHON3_PYYAML, , \
 		PYYAML_FORCE_LIBYAML=1 \
 		PYYAML_FORCE_CYTHON=1 \

@@ -29,6 +29,7 @@ UCLIBC_CONFIG_FILE:=$(UCLIBC_MAKE_DIR)/configs/freetz/config-$(FREETZ_TARGET_ARC
 UCLIBC_PATCHES_DIR:=$(UCLIBC_MAKE_DIR)/patches/$(if $(FREETZ_SEPARATE_AVM_UCLIBC),separate,$(UCLIBC_VERSION))
 
 UCLIBC_TARGET_SUBDIR:=$(if $(FREETZ_SEPARATE_AVM_UCLIBC),$(FREETZ_RPATH),/lib)
+UCLIBC_TARGET_UTILS_STAMP:=$(TARGET_UTILS_DIR)/.uclibc_target_installed
 
 # uClibc >= 0.9.31 supports parallel building
 #  TODO    1.0.14: reenable parallel building
@@ -310,7 +311,7 @@ uclibc-distclean: uclibc-dirclean
 #
 #############################################################
 
-$(TARGET_UTILS_DIR)/usr/lib/libc.a: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc.a
+$(UCLIBC_TARGET_UTILS_STAMP): $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc.a
 	@$(call _ECHO,headers,$(UCLIBC_ECHO_TYPE),$(UCLIBC_ECHO_MAKE),target)
 	$(UCLIBC_MAKE) -C $(UCLIBC_DIR) \
 		$(UCLIBC_COMMON_BUILD_FLAGS) \
@@ -326,13 +327,13 @@ $(TARGET_UTILS_DIR)/usr/lib/libc.a: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc
 	done
 	$(call COPY_KERNEL_HEADERS,$(UCLIBC_KERNEL_HEADERS_DIR),$(TARGET_UTILS_DIR)/usr)
 	$(call REMOVE_DOC_NLS_DIRS,$(TARGET_UTILS_DIR))
-	touch -c $@
+	touch $@
 
-uclibc_target: gcc uclibc $(TARGET_UTILS_DIR)/usr/lib/libc.a
+uclibc_target: gcc uclibc $(UCLIBC_TARGET_UTILS_STAMP)
 
 
 uclibc_target-clean: uclibc_target-dirclean
-	$(RM) $(TARGET_UTILS_DIR)/lib/libc.a
+	$(RM) $(UCLIBC_TARGET_UTILS_STAMP) $(TARGET_UTILS_DIR)/usr/lib/libc.a $(TARGET_UTILS_DIR)/lib/libc.a
 
 uclibc_target-dirclean:
 	$(RM) -r $(TARGET_UTILS_DIR)/usr/include

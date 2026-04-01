@@ -33,7 +33,7 @@ define _ECHO_START_INT
 		[ -s $(ECHO_ITEM_TMP) ] && cat $(ECHO_ITEM_TMP) > $(ECHO_ITEM_NEW) 2>/dev/null; \
 		[ -s $(ECHO_ITEM_NEW) ] || cat $(ECHO_ITEM_OLD) > $(ECHO_ITEM_NEW) 2>/dev/null; \
 		if [ -s "$(ECHO_ITEM_NEW)" ]; then \
-			echo -ne "\e[48;5;90m---> "; \
+			echo -ne "\e[48;5;90m`date +%H:%M` ---> \e[49m"; \
 			cat $(ECHO_ITEM_NEW) 2>/dev/null | tee $(ECHO_ITEM_OLD); \
 			echo -ne "\e[49m ... "; \
 			[ "$(FREETZ_VERBOSITY_LEVEL)" != "0" ] && echo; \
@@ -45,12 +45,12 @@ endef
 
 define _ECHO
 	$(call _ECHO_START_INT,$(1),$(2),$(3),$(4)) \
-	echo -ne "\e[48;5;56m$(1)\e[49m ... ";
+	echo -ne "\e[48;5;56m`date +%H:%M` $(1)\e[49m ... ";
 endef
 
 define _ECHO_DONE
 	if [ -e $(ECHO_ITEM_END) -a -e $(ECHO_ITEM_NEW) -a -e $(ECHO_ITEM_1ST) ]; then \
-		echo -e "\e[48;5;26mdone\e[49m."; \
+		echo -e "\e[48;5;26m`date +%H:%M` done\e[49m."; \
 		$(RM) $(ECHO_ITEM_END) $(ECHO_ITEM_1ST); \
 	fi;
 endef

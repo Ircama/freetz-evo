@@ -466,15 +466,56 @@ modlang_complete_base_translations() {
 		return 0  # Skip silently if no service configured
 	fi
 
+	# Use host/system Python explicitly to avoid accidentally picking the
+	# target-toolchain python from PATH.
+	local host_python="/usr/bin/python3"
+	[ -x "$host_python" ] || host_python="python3"
+
 	# Use Python to extract, translate, and inject missing base language translations
-	python3 - "$file" "$translate_tool" << 'PYEOF'
-import os
-import re
-import subprocess
 import sys
+env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$file" "$translate_tool" << 'PYEOF'
+import sys
+try:
+	import os
+	import re
+	import importlib.util
+	import io
+	import contextlib
+except KeyboardInterrupt:
+	sys.exit(130)
 
 filepath = sys.argv[1]
 translate_tool = sys.argv[2]
+
+core_path = os.path.splitext(translate_tool)[0] + '.py'
+if not os.path.isfile(core_path):
+	sys.stderr.write(f"freetz_translate: ERROR: python core not found: {core_path}\n")
+	sys.exit(1)
+
+spec = importlib.util.spec_from_file_location('freetz_translate_core', core_path)
+if spec is None or spec.loader is None:
+	sys.stderr.write(f"freetz_translate: ERROR: cannot load translation core: {core_path}\n")
+	sys.exit(1)
+
+core = importlib.util.module_from_spec(spec)
+try:
+	spec.loader.exec_module(core)
+	core.load_translate_config()
+except KeyboardInterrupt:
+	sys.exit(130)
+
+
+def run_translate(src_lang, tgt_lang, text, package_name=''):
+	stderr_buf = io.StringIO()
+	rc = 1
+	stdout = ''
+	with contextlib.redirect_stderr(stderr_buf):
+		try:
+			stdout, rc = core.translate(src_lang, tgt_lang, text, package_name)
+		except core.TranslateError:
+			stdout = ''
+			rc = 1
+	return rc, stdout, stderr_buf.getvalue()
 
 
 def extract_lang_blocks(text):
@@ -563,22 +604,16 @@ en_count = 0
 
 for text, src_lang, tgt_lang in translations_needed.keys():
 	try:
-		result = subprocess.run(
-			[translate_tool, src_lang, tgt_lang, text],
-			capture_output=True,
-			text=True,
-			timeout=60,
-			env=env,
-		)
-		if result.returncode == 0 and result.stdout.strip():
-			t = result.stdout.strip().replace('\\', '\\\\').replace('"', '\\"')
+		rc, stdout, stderr = run_translate(src_lang, tgt_lang, text)
+
+		if rc == 0 and stdout.strip():
+			t = stdout.strip().replace('\\', '\\\\').replace('"', '\\"')
 			translated[(text, src_lang, tgt_lang)] = t
 			if tgt_lang == 'de':
 				de_count += 1
 			else:
 				en_count += 1
 	except KeyboardInterrupt:
-		sys.stderr.write("\nInterrupted by user (Ctrl+C)\n")
 		sys.exit(130)
 	except Exception as e:
 		sys.stderr.write(f"freetz_translate: WARNING: failed to complete base translation: {e}\\n")
@@ -608,7 +643,8 @@ if de_count > 0 or en_count > 0:
 		f"    freetz_translate: completed {' + '.join(parts)} base translations in {os.path.basename(filepath)}\\n"
 	)
 PYEOF
-
+	local rc=$?
+	[ $rc -eq 130 ] && return 130
 	return 0
 }
 
@@ -664,6 +700,11 @@ modlang_inject_translations() {
 		return 1
 	fi
 
+	# Use host/system Python explicitly to avoid accidentally picking the
+	# target-toolchain python from PATH.
+	local host_python="/usr/bin/python3"
+	[ -x "$host_python" ] || host_python="python3"
+
 	# Extract all unique $(lang ...) blocks, get source text, translate, build sed script
 	# We use a temporary file for the sed substitution script
 	local sed_script
@@ -682,17 +723,53 @@ modlang_inject_translations() {
 
 	# Use a python helper for reliable multi-line $(lang ...) block extraction
 	# since the blocks can span multiple lines
-	python3 - "$target_lang" "$file" "$translate_tool" "$sed_script" "$package_name" << 'PYEOF'
-import os
-import re
-import subprocess
 import sys
+env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$target_lang" "$file" "$translate_tool" "$sed_script" "$package_name" << 'PYEOF'
+import sys
+try:
+	import os
+	import re
+	import importlib.util
+	import io
+	import contextlib
+except KeyboardInterrupt:
+	sys.exit(130)
 
 target_lang = sys.argv[1]
 filepath = sys.argv[2]
 translate_tool = sys.argv[3]
 sed_script_path = sys.argv[4]
 package_name = sys.argv[5]
+
+core_path = os.path.splitext(translate_tool)[0] + '.py'
+if not os.path.isfile(core_path):
+	sys.stderr.write(f"freetz_translate: ERROR: python core not found: {core_path}\n")
+	sys.exit(1)
+
+spec = importlib.util.spec_from_file_location('freetz_translate_core', core_path)
+if spec is None or spec.loader is None:
+	sys.stderr.write(f"freetz_translate: ERROR: cannot load translation core: {core_path}\n")
+	sys.exit(1)
+
+core = importlib.util.module_from_spec(spec)
+try:
+	spec.loader.exec_module(core)
+	core.load_translate_config()
+except KeyboardInterrupt:
+	sys.exit(130)
+
+
+def run_translate(src_lang, tgt_lang, text, package_name=''):
+	stderr_buf = io.StringIO()
+	rc = 1
+	stdout = ''
+	with contextlib.redirect_stderr(stderr_buf):
+		try:
+			stdout, rc = core.translate(src_lang, tgt_lang, text, package_name)
+		except core.TranslateError:
+			stdout = ''
+			rc = 1
+	return rc, stdout, stderr_buf.getvalue()
 
 
 def extract_lang_blocks(text):
@@ -785,22 +862,17 @@ for text, info in translations_needed.items():
 		continue
 
 	try:
-		result = subprocess.run(
-			[translate_tool, info['source_lang'], target_lang, text, package_name],
-			capture_output=True,
-			text=True,
-			timeout=60,
-			env=env,
-		)
-		if result.returncode == 0 and result.stdout.strip():
-			t = result.stdout.strip().replace('\\', '\\\\').replace('"', '\\"')
+		rc, stdout, stderr = run_translate(info['source_lang'], target_lang, text, package_name)
+
+		if rc == 0 and stdout.strip():
+			t = stdout.strip().replace('\\', '\\\\').replace('"', '\\"')
 			translated[text] = t
-			if 'from cache' in result.stderr.lower():
+			if 'from cache' in stderr.lower():
 				cache_hits += 1
 			else:
 				api_calls += 1
 		else:
-			stderr_msg = result.stderr.lower() if result.stderr else ""
+			stderr_msg = stderr.lower() if stderr else ""
 			if 'quota exceeded' in stderr_msg or 'daily quota' in stderr_msg or 'rate limit' in stderr_msg:
 				sys.stderr.write("freetz_translate: QUOTA EXCEEDED - stopping translations\n")
 				quota_exceeded = True
@@ -810,13 +882,10 @@ for text, info in translations_needed.items():
 				sys.stderr.write(f"freetz_translate: WARNING: text too short, skipping: {text[:50]}...\n")
 			else:
 				sys.stderr.write(f"freetz_translate: WARNING: failed to translate: {text[:50]}...\n")
-				if result.stderr:
-					sys.stderr.write(f"  stderr: {result.stderr.strip()}\n")
+				if stderr:
+					sys.stderr.write(f"  stderr: {stderr.strip()}\n")
 	except KeyboardInterrupt:
-		sys.stderr.write("\nInterrupted by user (Ctrl+C)\n")
 		sys.exit(130)
-	except subprocess.TimeoutExpired:
-		sys.stderr.write(f"freetz_translate: WARNING: timeout translating: {text[:50]}...\n")
 	except Exception as e:
 		sys.stderr.write(f"freetz_translate: WARNING: error translating: {e}\n")
 
@@ -851,7 +920,7 @@ else:
 PYEOF
 
 	local rc=$?
-	if [ $rc -ne 0 ]; then
+	if [ $rc -ne 0 ] && [ $rc -ne 130 ]; then
 		warn "modlang_inject_translations: translation injection failed for $file (rc=$rc)"
 	fi
 	return $rc
@@ -869,6 +938,8 @@ modlangsubst() {
 	# Pre-process: complete missing base translations (de/en) if AI translation is enabled
 	if [ "$FREETZ_LANG_NEEDS_TRANSLATION" = "y" ]; then
 		modlang_complete_base_translations "$2"
+		local _rc=$?
+		[ $_rc -eq 130 ] && return 130
 	fi
 
 	# Pre-process: inject AI translations if needed for non-native languages
@@ -877,6 +948,8 @@ modlangsubst() {
 		*)
 			if [ "$FREETZ_LANG_NEEDS_TRANSLATION" = "y" ]; then
 				modlang_inject_translations "$1" "$2" "$package_name"
+				local _rc=$?
+				[ $_rc -eq 130 ] && return 130
 			fi
 			;;
 	esac
@@ -993,9 +1066,62 @@ modlang() {
 		if [ -n "$translate_target" ]; then
 			subst_lang="$translate_target"
 		fi
+
+		# Optional parallel processing for file substitutions.
+		# Default: system core count; FREETZ_TRANSLATE_JOBS overrides it.
+		local translate_jobs
+		if [ -n "${FREETZ_TRANSLATE_JOBS+x}" ] && [ -n "${FREETZ_TRANSLATE_JOBS}" ]; then
+			translate_jobs="${FREETZ_TRANSLATE_JOBS}"
+		else
+			if command -v nproc >/dev/null 2>&1; then
+				translate_jobs="$(nproc 2>/dev/null)"
+			elif command -v getconf >/dev/null 2>&1; then
+				translate_jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null)"
+			else
+				translate_jobs=1
+			fi
+		fi
+		case "$translate_jobs" in
+			''|*[!0-9]*) translate_jobs=1 ;;
+		esac
+		[ "$translate_jobs" -lt 1 ] && translate_jobs=1
+
+		wait_modlang_jobs() {
+			local _pid
+			local _st
+			for _pid in $(jobs -p); do
+				wait "$_pid"
+				_st=$?
+				if [ $_st -eq 130 ]; then
+					for _kp in $(jobs -p); do
+						kill "$_kp" 2>/dev/null
+					done
+					for _kp in $(jobs -p); do
+						wait "$_kp" 2>/dev/null
+					done
+					return 130
+				fi
+			done
+			return 0
+		}
+
+		local _queued=0
 		for i in $(modlangconf "files" "$conffile"); do
 			if [ -e "${i}" ]; then
-				modlangsubst "$subst_lang" "${i}"
+				if [ "$translate_jobs" -gt 1 ]; then
+					modlangsubst "$subst_lang" "${i}" &
+					_queued=$((_queued + 1))
+					if [ "$_queued" -ge "$translate_jobs" ]; then
+						wait_modlang_jobs
+						local _rc=$?
+						[ $_rc -eq 130 ] && return 130
+						_queued=0
+					fi
+				else
+					modlangsubst "$subst_lang" "${i}"
+					local _rc=$?
+					[ $_rc -eq 130 ] && return 130
+				fi
 			else
 				do_excluded=n
 				do_asterisk=n
@@ -1006,6 +1132,12 @@ modlang() {
 				[ "$do_excluded" != "y" -a "$do_asterisk" != "y" ] && warn "modlang: ${2}/${i} not found"
 			fi
 		done
+
+		if [ "$translate_jobs" -gt 1 ] && [ "$_queued" -gt 0 ]; then
+			wait_modlang_jobs
+			local _rc=$?
+			[ $_rc -eq 130 ] && return 130
+		fi
 	)
 }
 

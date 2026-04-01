@@ -169,55 +169,6 @@ PHP and its dependency libraries can be externalized to save flash space (approx
 
 **Configuration**: `make menuconfig` → Advanced options → External processing → External files → php
 
-#### Library Externalization Options
-
-By default, **PHP binaries are externalized** but **libraries remain in firmware** (`/usr/lib/freetz/`). You can optionally externalize libraries individually or all at once:
-
-1. **No library externalization** (Default, Recommended):
-   - PHP binaries → `/mod/external/usr/bin/php*`
-   - Libraries → `/usr/lib/freetz/` (in firmware flash)
-   - **Advantage**: All services (including Dropbear SSH) start immediately at boot
-   - **Space cost**: ~4 MB in firmware flash
-
-2. **Selective library externalization**:
-   - Choose specific libraries to externalize
-   - Useful for targeting large libraries (libxml2 ~1.5 MB, libiconv ~1.2 MB)
-   
-3. **Full library externalization**:
-   - Enable "Externalize all PHP dependency libraries"
-   - All libraries → `/mod/external/usr/lib/freetz/`
-   - **Space saved**: ~4 MB in firmware flash
-   - **⚠️ Important**: See warning below
-
-#### ⚠️ Critical Warning: libz and Boot Dependencies
-
-**`libz.so.1` is required by Dropbear SSH server** for compression support. If you externalize libz:
-
-1. Dropbear will **fail to start at boot** (segmentation fault) because `/mod/external/` is not yet mounted
-2. You will **lose SSH access** until external storage is mounted manually
-3. **Solution**: Add dropbear to `/mod/etc/external.pkg`:
-   ```bash
-   echo "dropbear" >> /mod/etc/external.pkg
-   ```
-   This ensures dropbear starts AFTER external storage is mounted.
-
-#### Boot Order and External Services
-
-Services listed in `/mod/etc/external.pkg` are started **after** external storage is mounted:
-
-- **Normal boot order**: 
-  1. Mount filesystems
-  2. Start core services (including Dropbear) ← Needs libraries in `/usr/lib/freetz/`
-  3. Mount `/mod/external/` (if available)
-  4. Start external services (from `/mod/etc/external.pkg`)
-
-- **If libraries externalized without updating external.pkg**:
-  - Services depending on externalized libraries will crash at boot
-  - Example: Dropbear crashes if libz externalized but not in external.pkg
-  - SSH access lost until manual intervention
-
-**Best Practice**: Only externalize libraries if you understand the boot dependencies, or keep the default configuration (libraries in firmware, binaries externalized).
-
 ## Build Information
 
 - **Toolchain**: GCC 13.4.0
