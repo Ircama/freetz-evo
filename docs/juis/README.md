@@ -106,24 +106,24 @@ Content: [FOS-Release](#fos-release) - [FOS-Labor](#fos-labor) - [FOS-Inhaus](#f
 ### FOS-Inhaus
   - HWR 226: [FRITZ.Box_7590-08.24-130849-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7590/FRITZ.Box_7590-08.24-130849-Inhaus.image)
   - HWR 229: [FRITZ.Powerline_1260E-08.10-126210-Inhaus.image](http://download.example.com/inhaus/Smart24P2/1260E/FRITZ.Powerline_1260E-08.10-126210-Inhaus.image)
-  - HWR 236: [FRITZ.Box_7530-08.24-130871-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-130871-Inhaus.image)
+  - HWR 236: [FRITZ.Box_7530-08.24-131147-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-131147-Inhaus.image)
   - HWR 240: [FRITZ.Repeater_600-08.24-130210-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/600/FRITZ.Repeater_600-08.24-130210-Inhaus.image)
-  - HWR 241: [FRITZ.Repeater_2400-08.24-130737-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/2400/FRITZ.Repeater_2400-08.24-130737-Inhaus.image)
-  - HWR 244: [FRITZ.Repeater_1200-08.24-130735-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/1200/FRITZ.Repeater_1200-08.24-130735-Inhaus.image)
-  - HWR 246: [FRITZ.Repeater_3000-08.24-130739-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/3000/FRITZ.Repeater_3000-08.24-130739-Inhaus.image)
+  - HWR 241: [FRITZ.Repeater_2400-08.24-131020-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/2400/FRITZ.Repeater_2400-08.24-131020-Inhaus.image)
+  - HWR 244: [FRITZ.Repeater_1200-08.24-131017-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/1200/FRITZ.Repeater_1200-08.24-131017-Inhaus.image)
+  - HWR 246: [FRITZ.Repeater_3000-08.24-131023-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/3000/FRITZ.Repeater_3000-08.24-131023-Inhaus.image)
   - HWR 247: [FRITZ.Box_7520-08.24-130490-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7520/FRITZ.Box_7520-08.24-130490-Inhaus.image)
   - HWR 249: [FRITZ.Powerline_1260-08.10-126208-Inhaus.image](http://download.example.com/inhaus/Smart24P2/1260/FRITZ.Powerline_1260-08.10-126208-Inhaus.image)
-  - HWR 253: [FRITZ.Repeater_6000-08.24-130749-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/6000/FRITZ.Repeater_6000-08.24-130749-Inhaus.image)
+  - HWR 253: [FRITZ.Repeater_6000-08.24-131038-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/6000/FRITZ.Repeater_6000-08.24-131038-Inhaus.image)
   - HWR 256: [FRITZ.Box_7530_AX-08.24-130872-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7530AX/FRITZ.Box_7530_AX-08.24-130872-Inhaus.image)
-  - HWR 257: [FRITZ.Box_5530_Fiber-08.24-130791-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/5530Fiber/FRITZ.Box_5530_Fiber-08.24-130791-Inhaus.image)
+  - HWR 257: [FRITZ.Box_5530_Fiber-08.24-131078-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/5530Fiber/FRITZ.Box_5530_Fiber-08.24-131078-Inhaus.image)
   - HWR 258: [FRITZ.Box_6850_5G-08.24-130514-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/68505G/FRITZ.Box_6850_5G-08.24-130514-Inhaus.image)
   - HWR 259: [FRITZ.Box_7590_AX-08.24-130850-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7590AX/FRITZ.Box_7590_AX-08.24-130850-Inhaus.image)
   - HWR 261: [FRITZ.Box_4060-08.24-130443-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/4060/FRITZ.Box_4060-08.24-130443-Inhaus.image)
   - HWR 262: [FRITZ.Box_6850_LTE-08.24-130519-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/6850LTE/FRITZ.Box_6850_LTE-08.24-130519-Inhaus.image)
   - HWR 263: [FRITZ.Repeater_600v2-08.24-130212-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/600v2/FRITZ.Repeater_600v2-08.24-130212-Inhaus.image)
-  - HWR 267: [FRITZ.Box_6690_Cable-08.24-130766-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/6690Cable/FRITZ.Box_6690_Cable-08.24-130766-Inhaus.image)
-  - HWR 268: [FRITZ.Repeater_1200_AX-08.24-130741-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/1200AX/FRITZ.Repeater_1200_AX-08.24-130741-Inhaus.image)
-  - HWR 270: [FRITZ.Repeater_3000_AX-08.24-130747-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/3000AX/FRITZ.Repeater_3000_AX-08.24-130747-Inhaus.image)
+  - HWR 267: [FRITZ.Box_6690_Cable-08.24-131053-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/6690Cable/FRITZ.Box_6690_Cable-08.24-131053-Inhaus.image)
+  - HWR 268: [FRITZ.Repeater_1200_AX-08.24-131026-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/1200AX/FRITZ.Repeater_1200_AX-08.24-131026-Inhaus.image)
+  - HWR 270: [FRITZ.Repeater_3000_AX-08.24-131035-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/3000AX/FRITZ.Repeater_3000_AX-08.24-131035-Inhaus.image)
   - HWR 271: [FRITZ.Box_7510-08.24-130549-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7510/FRITZ.Box_7510-08.24-130549-Inhaus.image)
   - HWR 272: [FRITZ.Box_5590_Fiber-08.24-131081-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/5590Fiber/FRITZ.Box_5590_Fiber-08.24-131081-Inhaus.image)
   - HWR 275: [FRITZ.Powerline_1240_AX-08.10-126883-Inhaus.image](http://download.example.com/inhaus/Smart24P2/1240AX/FRITZ.Powerline_1240_AX-08.10-126883-Inhaus.image)
@@ -160,6 +160,7 @@ Content: [FOS-Release](#fos-release) - [FOS-Labor](#fos-labor) - [FOS-Inhaus](#f
 
 ### Dect-Labor
   - MHW 06.04: [06.04.03.54.avm.de.upd](http://download.avm.de/dect/0604/p15/06.04.03.54.avm.de.upd)
+  - MHW 06.14: [06.14.03.75.avm.de.upd](http://download.avm.de/dect/0614/Labor/06.14.03.75.avm.de.upd)
   - MHW 08.01: [08.01.05.11.avm.de.upd](http://download.avm.de/dect/0801/smart24p1/08.01.05.11.avm.de.upd)
   - MHW 08.02: [08.02.05.11.avm.de.upd](http://download.avm.de/dect/0802/smart24p1/08.02.05.11.avm.de.upd)
   - MHW 08.03: [08.03.05.12.avm.de.upd](http://download.avm.de/dect/0803/smart24p1/08.03.05.12.avm.de.upd)
@@ -167,4 +168,4 @@ Content: [FOS-Release](#fos-release) - [FOS-Labor](#fos-labor) - [FOS-Inhaus](#f
 ### Dect-Inhaus
 
 ### BPjM
-  - CRC 4a95f0fc: [bpjm.data](http://download.avm.de/bpjm/298285/bpjm.data)
+  - CRC 9f61700a: [bpjm.data](http://download.avm.de/bpjm/302014/bpjm.data)

@@ -490,7 +490,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.19/3.5.5 (binary only)](openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.19/2.7.0](openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.19/2.7.1](openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
 
   * **[owfs 2.7p32 (binary only) - DEPRECATED](owfs.md)<a id='owfs'></a>**<br>
@@ -1033,7 +1033,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[xsltproc 1.1.43 (binary only)](xsltproc.md)<a id='xsltproc'></a>**<br>
     xsltproc is a command line tool for applying XSLT stylesheets to XML documents. It is part of libxslt, the XSLT C library for GNOME. While it was developed as part of the GNOME project, it can operate independently of the GNOME desktop.
 
-  * **[XZ 5.6.4 (binary only)](xz.md)<a id='xz'></a>**<br>
+  * **[XZ 5.8.3 (binary only)](xz.md)<a id='xz'></a>**<br>
     XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm compression format, which provides memory-hungry but powerful compression (often better than bzip2) and fast, easy decompression. This package provides the command line tools for working with XZ compression. They can also handle the older LZMA format, and if invoked via appropriate symlinks will emulate the behavior of the commands in the lzma package.
 
 # Debug helpers

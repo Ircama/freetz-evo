@@ -64,7 +64,7 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13.1
+    * ccache 4.13.2
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
@@ -93,13 +93,14 @@ Latest changes
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * ldd 0.1/1.0.57
     * Nmap 4.76/5.51/7.99
-    * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.0
+    * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.1
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
     * Tinyproxy 1.11.3
     * Tor 0.4.8.23
     * UnRAR 6.1.7/7.2.5
     * Whois 5.6.6
+    * XZ 5.8.3
 
   - Libraries:
     * expat 2.7.5
@@ -112,6 +113,7 @@ Latest changes
     * libpng 1.6.56
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.2
+    * MbedTLS 2.7.19/2.28.10/3.6.6
     * neon 0.30.2/0.37.0
     * pango 1.57.1
 

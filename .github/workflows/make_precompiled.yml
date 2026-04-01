@@ -31,8 +31,12 @@ jobs:
       packages: read
       contents: read
     container:
-      image: docker.io/pfichtner/freetz:0.4.3
-    runs-on: ubuntu-latest
+      image: ghcr.io/freetz-ng/internal/generate
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.FREETZ_DLTOKEN || secrets.GITHUB_TOKEN }}
+      options: --user 1001:1001
+    runs-on: ubuntu-24.04
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
 
     outputs:
@@ -47,21 +51,14 @@ jobs:
           delay: "10000"
 
       - name: clone
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          set-safe-directory: true
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-          path: ${{ github.workspace }}
-          fetch-depth: 0
-          clean: false
-          persist-credentials: true
-
-      - name: install go and pip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
         run: |
-          sudo apt-get -y update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go python3-pip
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git clone https://github-actions:$GITHUB_TOKEN@${GITHUB_SERVER_URL##*/}/$REPOSITORY.git $GITHUB_WORKSPACE
+          git checkout $REF_NAME
 
       - name: parse
         id: parse
@@ -113,7 +110,7 @@ jobs:
       matrix:
         fritz: ${{ fromJson(needs.matrizifizieren.outputs.matrix) }}
     name: "${{ matrix.fritz.pkg }} - ${{ matrix.fritz.name }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
 
@@ -146,16 +143,14 @@ jobs:
 ##        echo -n "V6: " ; wget -q https://ipaddress.ai -6 -O - || echo none
 
       - name: clone
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          set-safe-directory: true
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ fromJson(needs.matrizifizieren.outputs.gitsha) }}
-          path: ${{ github.workspace }}
-          fetch-depth: 0
-          clean: false
-          persist-credentials: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ fromJson(needs.matrizifizieren.outputs.gitsha) }}
+          REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git clone https://github-actions:$GITHUB_TOKEN@${GITHUB_SERVER_URL##*/}/$REPOSITORY.git $GITHUB_WORKSPACE
+          git checkout $REF_NAME
 
       - name: cache_load
         uses: actions/cache/restore@v5

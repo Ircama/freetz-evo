@@ -29,7 +29,7 @@ jobs:
 #     max-parallel: 1
 #     matrix:
 #       fritz: [ "" ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -63,16 +63,12 @@ jobs:
 ##        echo -n "V6: " ; wget -q https://ipaddress.ai -6 -O - || echo none
 
       - name: clone
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          set-safe-directory: true
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref_name }}
-          path: ${{ github.workspace }}
-          fetch-depth: 0
-          clean: false
-          persist-credentials: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git clone https://github-actions:$GITHUB_TOKEN@${GITHUB_SERVER_URL##*/}/$GITHUB_REPOSITORY.git $GITHUB_WORKSPACE
+          git checkout $GITHUB_REF_NAME
 
       - name: cache
         uses: actions/cache@v5

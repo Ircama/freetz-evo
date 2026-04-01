@@ -20,8 +20,12 @@ jobs:
       packages: read
       contents: write
     container:
-      image: docker.io/pfichtner/freetz:0.4.3
-    runs-on: ubuntu-latest
+      image: ghcr.io/freetz-ng/internal/generate
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.FREETZ_DLTOKEN || secrets.GITHUB_TOKEN }}
+      options: --user 1001:1001
+    runs-on: ubuntu-24.04
     if: ${{ github.repository == 'freetz-ng/freetz-ng' || github.event_name == 'workflow_dispatch' }}
 
     steps:
@@ -38,21 +42,12 @@ jobs:
 #       run: locale-gen en_US.utf8 && locale-gen de_DE.UTF-8 && update-locale
 
       - name: clone
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          set-safe-directory: true
-          repository: ${{ github.repository }}
-          ref: ${{ github.ref_name }}
-          path: ${{ github.workspace }}
-          fetch-depth: 0
-          clean: false
-          persist-credentials: true
-
-      - name: install go and pip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          sudo apt-get -y update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -y install golang-go python3-pip
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git clone https://github-actions:$GITHUB_TOKEN@${GITHUB_SERVER_URL##*/}/$GITHUB_REPOSITORY.git $GITHUB_WORKSPACE
+          git checkout $GITHUB_REF_NAME
 
       - name: generate
         run: |

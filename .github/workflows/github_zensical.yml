@@ -36,7 +36,7 @@ jobs:
       - name: Show renderer versions
         run: python3 -m pip show Markdown zensical pymdown-extensions Pygments
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Build with Zensical
         run: zensical build --config-file "${{ env.ZENSICAL_CONFIG_FILE }}"
       - name: Verify syntax highlighting markup
