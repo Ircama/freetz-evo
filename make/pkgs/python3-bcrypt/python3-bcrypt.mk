@@ -20,7 +20,10 @@ $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade $(SILENT)
-	$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) cffi $(SILENT)
+	[ -d "$(PYTHON3_PYCPARSER_DIR)" ] || { echo "ERROR: missing local source dir $(PYTHON3_PYCPARSER_DIR)" >&2; exit 1; }
+	[ -d "$(PYTHON3_CFFI_DIR)" ] || { echo "ERROR: missing local source dir $(PYTHON3_CFFI_DIR)" >&2; exit 1; }
+	PIP_NO_INDEX=1 $(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --no-build-isolation --no-deps --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) "$(PYTHON3_PYCPARSER_DIR)" $(SILENT)
+	PIP_NO_INDEX=1 $(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --no-build-isolation --no-deps --target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) "$(PYTHON3_CFFI_DIR)" $(SILENT)
 	$(call Build/PyMod3/PKG, PYTHON3_BCRYPT, , )
 
 $(pkg):

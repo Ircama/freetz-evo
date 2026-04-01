@@ -472,8 +472,7 @@ modlang_complete_base_translations() {
 	[ -x "$host_python" ] || host_python="python3"
 
 	# Use Python to extract, translate, and inject missing base language translations
-import sys
-env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$file" "$translate_tool" << 'PYEOF'
+	PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$file" "$translate_tool" << 'PYEOF'
 import sys
 try:
 	import os
@@ -723,8 +722,7 @@ modlang_inject_translations() {
 
 	# Use a python helper for reliable multi-line $(lang ...) block extraction
 	# since the blocks can span multiple lines
-import sys
-env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$target_lang" "$file" "$translate_tool" "$sed_script" "$package_name" << 'PYEOF'
+	PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH -u PYTHONHOME "$host_python" - "$target_lang" "$file" "$translate_tool" "$sed_script" "$package_name" << 'PYEOF'
 import sys
 try:
 	import os
