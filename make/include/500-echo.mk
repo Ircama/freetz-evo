@@ -11,6 +11,7 @@ ECHO_ITEM_OLD:=$(SOURCE_DIR_ROOT)/.echo_item_old
 ECHO_ITEM_TMP:=$(SOURCE_DIR_ROOT)/.echo_item_tmp
 ECHO_ITEM_NEW:=$(SOURCE_DIR_ROOT)/.echo_item_new
 ECHO_ITEM_END:=$(SOURCE_DIR_ROOT)/.echo_item_end
+ECHO_ITEM_PRELIM:=$(SOURCE_DIR_ROOT)/.echo_item_prelim
 
 define _ECHO_START_ARG
 	mkdir -p $(SOURCE_DIR_ROOT); \
@@ -33,6 +34,10 @@ define _ECHO_START_INT
 		[ -s $(ECHO_ITEM_TMP) ] && cat $(ECHO_ITEM_TMP) > $(ECHO_ITEM_NEW) 2>/dev/null; \
 		[ -s $(ECHO_ITEM_NEW) ] || cat $(ECHO_ITEM_OLD) > $(ECHO_ITEM_NEW) 2>/dev/null; \
 		if [ -s "$(ECHO_ITEM_NEW)" ]; then \
+			if [ -e $(ECHO_ITEM_PRELIM) ]; then \
+				echo; \
+				$(RM) $(ECHO_ITEM_PRELIM); \
+			fi; \
 			echo -ne "\e[48;5;90m`date +%H:%M` ---> \e[49m"; \
 			cat $(ECHO_ITEM_NEW) 2>/dev/null | tee $(ECHO_ITEM_OLD); \
 			echo -ne "\e[49m ... "; \
@@ -45,13 +50,16 @@ endef
 
 define _ECHO
 	$(call _ECHO_START_INT,$(1),$(2),$(3),$(4)) \
-	echo -ne "\e[48;5;56m`date +%H:%M` $(1)\e[49m ... ";
+	echo -ne "\e[48;5;56m`date +%H:%M` $(1)\e[49m ... "; \
+	if [ "$(1)" = "building" ] && [ ! -s "$(ECHO_ITEM_NEW)" ] && [ ! -s "$(ECHO_ITEM_OLD)" ]; then \
+		touch $(ECHO_ITEM_PRELIM); \
+	fi;
 endef
 
 define _ECHO_DONE
 	if [ -e $(ECHO_ITEM_END) -a -e $(ECHO_ITEM_NEW) -a -e $(ECHO_ITEM_1ST) ]; then \
-		echo -e "\e[48;5;26m`date +%H:%M` done\e[49m."; \
-		$(RM) $(ECHO_ITEM_END) $(ECHO_ITEM_1ST); \
+		echo -e "\e[48;5;26m`date +%H:%M` done.\e[49m\e[K"; \
+		$(RM) $(ECHO_ITEM_END) $(ECHO_ITEM_1ST) $(ECHO_ITEM_PRELIM); \
 	fi;
 endef
 
