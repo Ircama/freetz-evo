@@ -2554,7 +2554,8 @@ cat <<'EOF'
 		toolStatus: null,
 		language: 'en',
 		usbOnly: false,
-		contextPart: null,
+		contextTarget: null,
+		contextMenuHideTimer: null,
 		dryRun: false,
 		aceEditor: null
 	};
@@ -2820,6 +2821,23 @@ cat <<'EOF'
 		rows += tooltipKV('Used', humanBytes(fsUsed));
 		rows += tooltipKV('Unused', humanBytes(fsAvail));
 		if (p.mountpoint) rows += tooltipKV('Mounted at', p.mountpoint);
+		return '<div class="pcgi-hover-tooltip-grid">' + rows + '</div>';
+	}
+
+	function buildDiskTooltipHtml(dev) {
+		var total = Number(dev && dev.total_sectors ? dev.total_sectors : 0);
+		var logical = Number(dev && dev.logical_sector_size ? dev.logical_sector_size : 512);
+		var rows = '';
+		rows += tooltipKV('Disk', (dev && dev.path) ? dev.path : '-');
+		rows += tooltipKV('Name', (dev && dev.name) ? dev.name : '-');
+		rows += tooltipKV('Model', (dev && dev.model) ? dev.model : '-');
+		rows += tooltipKV('Vendor', (dev && dev.vendor) ? dev.vendor : '-');
+		rows += tooltipKV('Serial', (dev && dev.serial) ? dev.serial : '-');
+		rows += tooltipKV('Transport', (dev && dev.transport) ? dev.transport : '-');
+		rows += tooltipKV('Partition table', (dev && dev.table) ? dev.table : '-');
+		rows += tooltipKV('Sector size', logical + ' B');
+		rows += tooltipKV('Total sectors', total > 0 ? String(total) : '-');
+		rows += tooltipKV('Disk size', total > 0 ? humanBytes(total * logical) : '-');
 		return '<div class="pcgi-hover-tooltip-grid">' + rows + '</div>';
 	}
 
@@ -3100,10 +3118,14 @@ cat <<'EOF'
 		});
 	}
 
-	function queueOp(action, params, label, commandPreview) {
+	function queueOp(action, params, label, commandPreview, quiet) {
 		state.queue.push({ action: action, params: params, label: label, commandPreview: commandPreview || '' });
 		renderQueue();
-		showToast(t('tQueued') + ' ' + label, 'info', 2400);
+		syncSelectionWithPreview();
+		renderMap();
+		if (!quiet) {
+			showToast(t('tQueued') + ' ' + label, 'info', 2400);
+		}
 	}
 
 	function queueOpWithConfirm(action, params, label, confirmTitle, confirmMessage) {
@@ -3136,6 +3158,8 @@ cat <<'EOF'
 				var idx = parseInt(this.getAttribute('data-index'), 10);
 				state.queue.splice(idx, 1);
 				renderQueue();
+				syncSelectionWithPreview();
+				renderMap();
 			};
 			tdDel.appendChild(btn);
 			tr.appendChild(tdIdx);
@@ -3153,6 +3177,238 @@ cat <<'EOF'
 			}
 		}
 		return null;
+	}
+
+	function clearSelectedPartitionUi() {
+		document.getElementById('selectedPartNum').value = '';
+		document.getElementById('selectedPartPath').value = '';
+		document.getElementById('fsPartitionPath').value = '';
+		document.getElementById('newStartSector').value = '';
+		document.getElementById('newEndSector').value = '';
+		document.getElementById('resizeEndSector').value = '';
+		document.getElementById('newPartName').value = '';
+		document.getElementById('renamePartInput').value = '';
+		document.getElementById('flagNameInput').value = '';
+		document.getElementById('flagStateInput').value = 'off';
+		document.getElementById('fsLabelInput').value = '';
+		document.getElementById('mountpointInput').value = '';
+	}
+
+	function buildPartitionPath(devicePath, partNum) {
+		var dev = String(devicePath || '');
+		if (/(nvme\d+n\d+|mmcblk\d+|loop\d+)$/.test(dev)) {
+			return dev + 'p' + String(partNum);
+		}
+		return dev + String(partNum);
+	}
+
+	function clonePartitionEntry(p) {
+		var out = {};
+		for (var k in p) {
+			if (Object.prototype.hasOwnProperty.call(p, k)) out[k] = p[k];
+		}
+		out.kind = String(out.kind || 'partition');
+		out.number = Number(out.number || 0);
+		out.start = Number(out.start || 0);
+		out.end = Number(out.end || 0);
+		out.size = Number(out.size || 0);
+		return out;
+	}
+
+	function getNextPartitionNumber(parts) {
+		var used = {};
+		for (var i = 0; i < parts.length; i++) {
+			var n = Number(parts[i].number || 0);
+			if (n > 0) used[n] = true;
+		}
+		for (var candidate = 1; candidate < 65535; candidate++) {
+			if (!used[candidate]) return candidate;
+		}
+		return parts.length + 1;
+	}
+
+	function normalizePreviewPartitions(parts, totalSectors) {
+		var out = [];
+		var maxSector = Math.max(1, Number(totalSectors || 0) - 1);
+		var ordered = parts.slice().sort(function (a, b) {
+			if (Number(a.start || 0) === Number(b.start || 0)) {
+				return Number(a.number || 0) - Number(b.number || 0);
+			}
+			return Number(a.start || 0) - Number(b.start || 0);
+		});
+
+		var cursor = 1;
+		for (var i = 0; i < ordered.length; i++) {
+			var p = clonePartitionEntry(ordered[i]);
+			var start = Math.max(1, Math.floor(Number(p.start || 0)));
+			var end = Math.max(start, Math.floor(Number(p.end || 0)));
+
+			if (start > maxSector) continue;
+			if (end > maxSector) end = maxSector;
+			if (end < cursor) continue;
+			if (start < cursor) start = cursor;
+
+			if (start > cursor) {
+				out.push({ kind: 'free', start: cursor, end: start - 1, size: start - cursor });
+			}
+
+			p.start = start;
+			p.end = end;
+			p.size = Math.max(1, (end - start + 1));
+			out.push(p);
+			cursor = end + 1;
+		}
+
+		if (cursor <= maxSector) {
+			out.push({ kind: 'free', start: cursor, end: maxSector, size: maxSector - cursor + 1 });
+		}
+
+		return out;
+	}
+
+	function buildPreviewDevice(dev) {
+		if (!dev) return null;
+
+		var preview = {};
+		for (var dk in dev) {
+			if (Object.prototype.hasOwnProperty.call(dev, dk)) preview[dk] = dev[dk];
+		}
+
+		var partsOnly = [];
+		for (var i = 0; i < (dev.partitions || []).length; i++) {
+			var basePart = dev.partitions[i];
+			if (basePart && basePart.kind === 'partition') {
+				partsOnly.push(clonePartitionEntry(basePart));
+			}
+		}
+
+		for (var q = 0; q < state.queue.length; q++) {
+			var op = state.queue[q] || {};
+			var action = String(op.action || '');
+			var params = op.params || {};
+
+			if (action === 'delete_partition' || action === 'resize_partition' || action === 'move_partition' || action === 'create_partition' || action === 'set_partition_name' || action === 'set_partition_flag') {
+				if (String(params.device || '') !== String(dev.path || '')) continue;
+			}
+
+			if (action === 'delete_partition') {
+				var delNum = Number(params.partnum || 0);
+				partsOnly = partsOnly.filter(function (p) { return Number(p.number || 0) !== delNum; });
+				continue;
+			}
+
+			if (action === 'create_partition') {
+				var newStart = Number(params.start_sector || 0);
+				var newEnd = Number(params.end_sector || 0);
+				if (!isFinite(newStart) || !isFinite(newEnd) || newStart <= 0 || newEnd < newStart) continue;
+				var newNum = getNextPartitionNumber(partsOnly);
+				partsOnly.push({
+					kind: 'partition',
+					number: newNum,
+					start: Math.floor(newStart),
+					end: Math.floor(newEnd),
+					size: Math.max(1, Math.floor(newEnd - newStart + 1)),
+					path: buildPartitionPath(dev.path, newNum),
+					fs: String(params.fs_hint || ''),
+					name: String(params.part_name || ''),
+					flags: '',
+					label: '',
+					mountpoint: '',
+					fs_size_bytes: 0,
+					fs_used_bytes: 0,
+					fs_avail_bytes: 0,
+					used_pct: 0
+				});
+				continue;
+			}
+
+			var targetNum = Number(params.partnum || 0);
+			var targetPart = null;
+			for (var pidx = 0; pidx < partsOnly.length; pidx++) {
+				if (Number(partsOnly[pidx].number || 0) === targetNum) {
+					targetPart = partsOnly[pidx];
+					break;
+				}
+			}
+			if (!targetPart) continue;
+
+			if (action === 'resize_partition') {
+				var newEndSector = Number(params.end_sector || 0);
+				if (!isFinite(newEndSector) || newEndSector <= Number(targetPart.start || 0)) continue;
+				targetPart.end = Math.floor(newEndSector);
+				targetPart.size = Math.max(1, Number(targetPart.end) - Number(targetPart.start) + 1);
+				continue;
+			}
+
+			if (action === 'move_partition') {
+				var moveStart = Number(params.start_sector || 0);
+				var moveEnd = Number(params.end_sector || 0);
+				if (!isFinite(moveStart) || !isFinite(moveEnd) || moveStart <= 0 || moveEnd < moveStart) continue;
+				targetPart.start = Math.floor(moveStart);
+				targetPart.end = Math.floor(moveEnd);
+				targetPart.size = Math.max(1, Number(targetPart.end) - Number(targetPart.start) + 1);
+				continue;
+			}
+
+			if (action === 'set_partition_name') {
+				targetPart.name = String(params.part_name || targetPart.name || '');
+				continue;
+			}
+
+			if (action === 'set_partition_flag') {
+				var flagName = String(params.flag || '').trim();
+				if (!flagName) continue;
+				var flags = String(targetPart.flags || '').split(/[ ,]+/).filter(function (s) { return s; });
+				var stateOn = String(params.state || '').toLowerCase() === 'on';
+				var present = false;
+				for (var fi = 0; fi < flags.length; fi++) {
+					if (flags[fi] === flagName) {
+						present = true;
+						break;
+					}
+				}
+				if (stateOn && !present) flags.push(flagName);
+				if (!stateOn && present) {
+					flags = flags.filter(function (f) { return f !== flagName; });
+				}
+				targetPart.flags = flags.join(',');
+			}
+		}
+
+		preview.partitions = normalizePreviewPartitions(partsOnly, Number(dev.total_sectors || 0));
+		return preview;
+	}
+
+	function syncSelectionWithPreview() {
+		if (!state.selectedComponent || state.selectedComponent.kind !== 'partition') return;
+		var dev = getSelectedDeviceData();
+		if (!dev) return;
+		var preview = buildPreviewDevice(dev);
+		if (!preview || !preview.partitions) return;
+
+		var selectedPath = String(state.selectedComponent.path || '');
+		var selectedNum = Number(state.selectedComponent.number || 0);
+		var exists = false;
+
+		for (var i = 0; i < preview.partitions.length; i++) {
+			var p = preview.partitions[i];
+			if (!p || p.kind !== 'partition') continue;
+			if (selectedPath && String(p.path || '') === selectedPath) {
+				exists = true;
+				break;
+			}
+			if (!selectedPath && selectedNum > 0 && Number(p.number || 0) === selectedNum) {
+				exists = true;
+				break;
+			}
+		}
+
+		if (!exists) {
+			state.selectedPart = null;
+			state.selectedComponent = null;
+			clearSelectedPartitionUi();
+			updateMapStatus('Selected partition is no longer available in queued preview.');
+		}
 	}
 
 	function mapFsHintValue(fs) {
@@ -3253,28 +3509,55 @@ cat <<'EOF'
 
 	function hideContextMenu() {
 		var menu = document.getElementById('partContextMenu');
-		if (menu) menu.style.display = 'none';
+		if (state.contextMenuHideTimer) {
+			clearTimeout(state.contextMenuHideTimer);
+			state.contextMenuHideTimer = null;
+		}
+		if (!menu) return;
+		menu.onmouseenter = null;
+		menu.onmouseleave = null;
+		menu.style.display = 'none';
 	}
 
-	function showContextMenu(part, ev) {
+	function scheduleContextMenuAutoHide() {
+		if (state.contextMenuHideTimer) clearTimeout(state.contextMenuHideTimer);
+		state.contextMenuHideTimer = setTimeout(function () {
+			hideContextMenu();
+		}, 5000);
+	}
+
+	function showContextMenu(target, ev, menuType) {
 		var menu = document.getElementById('partContextMenu');
-		if (!menu || !part) return;
+		if (!menu || !target) return;
 		hideHoverTooltip();
-		state.contextPart = part;
+		if (state.contextMenuHideTimer) {
+			clearTimeout(state.contextMenuHideTimer);
+			state.contextMenuHideTimer = null;
+		}
+		state.contextTarget = { type: menuType === 'disk' ? 'disk' : 'partition', target: target };
 		menu.innerHTML = '';
 
-		var items = [
-			{ id: 'select', label: 'Select partition' },
-			{ id: 'meta', label: 'Load metadata' },
-			{ id: 'delete', label: 'Queue delete partition' },
-			{ id: 'rename', label: 'Queue rename partition' },
-			{ id: 'flag', label: 'Queue set flag' },
-			{ id: 'mkfs', label: 'Queue create filesystem' },
-			{ id: 'mount', label: part.mountpoint ? 'Queue remount' : 'Queue mount' },
-			{ id: 'umount', label: 'Queue unmount' },
-			{ id: 'fsck_ro', label: 'Filesystem check read-only' },
-			{ id: 'fsck_fix', label: 'Filesystem check/repair' }
-		];
+		var items = [];
+		if (menuType === 'disk') {
+			items = [
+				{ id: 'select_disk', label: 'Select disk' },
+				{ id: 'delete_all_parts', label: 'Queue delete all disk partitions' }
+			];
+		} else {
+			var part = target;
+			items = [
+				{ id: 'select', label: 'Select partition' },
+				{ id: 'meta', label: 'Load metadata' },
+				{ id: 'delete', label: 'Queue delete partition' },
+				{ id: 'rename', label: 'Queue rename partition' },
+				{ id: 'flag', label: 'Queue set flag' },
+				{ id: 'mkfs', label: 'Queue create filesystem' },
+				{ id: 'mount', label: part.mountpoint ? 'Queue remount' : 'Queue mount' },
+				{ id: 'umount', label: 'Queue unmount' },
+				{ id: 'fsck_ro', label: 'Filesystem check read-only' },
+				{ id: 'fsck_fix', label: 'Filesystem check/repair' }
+			];
+		}
 
 		for (var i = 0; i < items.length; i++) {
 			(function (item) {
@@ -3284,18 +3567,40 @@ cat <<'EOF'
 				btn.textContent = item.label;
 				btn.onclick = function () {
 					hideContextMenu();
-					handleContextAction(item.id, part);
+					handleContextAction(item.id, target, menuType);
 				};
 				menu.appendChild(btn);
 			})(items[i]);
 		}
+
+		menu.onmouseenter = function () {
+			if (state.contextMenuHideTimer) {
+				clearTimeout(state.contextMenuHideTimer);
+				state.contextMenuHideTimer = null;
+			}
+		};
+		menu.onmouseleave = scheduleContextMenuAutoHide;
 
 		menu.style.display = 'block';
 		menu.style.left = Math.min(ev.clientX, window.innerWidth - 240) + 'px';
 		menu.style.top = Math.min(ev.clientY, window.innerHeight - 280) + 'px';
 	}
 
-	function handleContextAction(action, part) {
+	function handleContextAction(action, target, menuType) {
+		if (menuType === 'disk') {
+			if (action === 'select_disk') {
+				selectDisk(target);
+				return;
+			}
+			if (action === 'delete_all_parts') {
+				queueDeleteAllPartitions(target);
+				return;
+			}
+			showToast(t('tContextUnavailable'), 'warn');
+			return;
+		}
+
+		var part = target;
 		selectPartition(part);
 		if (action === 'select') return;
 		if (action === 'meta') { loadPartitionMetadata(); return; }
@@ -3311,11 +3616,16 @@ cat <<'EOF'
 	}
 
 	function renderMap() {
-		var dev = getSelectedDeviceData();
+		var baseDev = getSelectedDeviceData();
 		var map = document.getElementById('partitionMap');
 		var legend = document.getElementById('mapLegend');
 		map.innerHTML = '';
 		legend.textContent = '';
+		if (!baseDev) {
+			legend.textContent = 'No device selected.';
+			return;
+		}
+		var dev = buildPreviewDevice(baseDev);
 		if (!dev) {
 			legend.textContent = 'No device selected.';
 			return;
@@ -3324,7 +3634,8 @@ cat <<'EOF'
 		var total = Number(dev.total_sectors || 0);
 		var logical = Number(dev.logical_sector_size || 512);
 		var mapWidth = Math.max(1, Math.floor(map.clientWidth || map.getBoundingClientRect().width || 1));
-		var minPartWidth = 52;
+		var minPartWidth = 10;
+		var selectedPartMinWidth = 52;
 		if (!total || total <= 0) {
 			legend.textContent = 'Unable to render this device.';
 			return;
@@ -3336,7 +3647,24 @@ cat <<'EOF'
 		if (state.selectedComponent && state.selectedComponent.kind === 'disk' && String(state.selectedComponent.path || '') === String(dev.path || '')) {
 			diskBlock.className += ' selected';
 		}
-		diskBlock.onclick = function () { selectDisk(dev); };
+		diskBlock.onmouseenter = function (ev) {
+			showHoverTooltip(ev, buildDiskTooltipHtml(dev));
+		};
+		diskBlock.onmousemove = moveHoverTooltip;
+		diskBlock.onmouseleave = hideHoverTooltip;
+		diskBlock.onclick = function (ev) {
+			if (ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
+			}
+			hideContextMenu();
+			selectDisk(baseDev);
+		};
+		diskBlock.oncontextmenu = function (ev) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			showContextMenu(baseDev, ev, 'disk');
+		};
 		map.appendChild(diskBlock);
 
 		legend.textContent = dev.path + ' | table=' + (dev.table || 'unknown') + ' | model=' + (dev.model || '-') + ' | size=' + humanBytes(total * logical);
@@ -3347,15 +3675,26 @@ cat <<'EOF'
 		for (var i = 0; i < dev.partitions.length; i++) {
 			(function (idx) {
 				var p = dev.partitions[idx];
+				var selectedDisk = !!(state.selectedComponent && state.selectedComponent.kind === 'disk' && String(state.selectedComponent.path || '') === String(dev.path || ''));
+				var selectedPart = !!(state.selectedComponent && p.kind === 'partition' && state.selectedComponent.kind === 'partition' && (
+					(String(state.selectedComponent.path || '') && String(p.path || '') === String(state.selectedComponent.path || '')) ||
+					(!String(state.selectedComponent.path || '') && Number(p.number) === Number(state.selectedComponent.number) && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end))
+				));
+				var selectedFree = !!(state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end));
+
 				var leftPx = Math.round((Number(p.start) / total) * mapWidth);
-				var rawWidthPx = Math.round((Number(p.size) / total) * mapWidth);
-				var widthPx = p.kind === 'partition' ? Math.max(rawWidthPx, minPartWidth) : Math.max(rawWidthPx, 4);
+				var rawWidthPx = Math.max(1, Math.round((Number(p.size) / total) * mapWidth));
+				var desiredPartWidth = selectedPart ? selectedPartMinWidth : minPartWidth;
+				var widthPx = p.kind === 'partition' ? Math.max(rawWidthPx, desiredPartWidth) : Math.max(rawWidthPx, 4);
+				if (p.kind === 'partition' && widthPx > rawWidthPx) {
+					leftPx = leftPx - Math.floor((widthPx - rawWidthPx) / 2);
+				}
 				if (leftPx < 0) leftPx = 0;
 				if (leftPx > mapWidth - 2) leftPx = mapWidth - 2;
 				if (leftPx + widthPx > mapWidth) {
-					if (p.kind === 'partition' && mapWidth > minPartWidth) {
-						leftPx = Math.max(0, mapWidth - minPartWidth);
-						widthPx = minPartWidth;
+					if (p.kind === 'partition' && mapWidth > desiredPartWidth) {
+						leftPx = Math.max(0, mapWidth - desiredPartWidth);
+						widthPx = desiredPartWidth;
 					} else {
 						widthPx = Math.max(2, mapWidth - leftPx);
 					}
@@ -3364,16 +3703,13 @@ cat <<'EOF'
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
 				block.style.left = leftPx + 'px';
 				block.style.width = widthPx + 'px';
-				if (state.selectedComponent && state.selectedComponent.kind === 'disk' && p.kind === 'partition') {
+				if (selectedDisk && p.kind === 'partition') {
 					block.className += ' selected';
 				}
-				if (state.selectedComponent && p.kind === 'partition' && state.selectedComponent.kind === 'partition' && (
-					(String(state.selectedComponent.path || '') && String(p.path || '') === String(state.selectedComponent.path || '')) ||
-					(!String(state.selectedComponent.path || '') && Number(p.number) === Number(state.selectedComponent.number) && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end))
-				)) {
+				if (selectedPart) {
 					block.className += ' selected';
 				}
-				if (state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end)) {
+				if (selectedFree) {
 					block.className += ' selected';
 				}
 
@@ -3388,10 +3724,18 @@ cat <<'EOF'
 					};
 					block.onmousemove = moveHoverTooltip;
 					block.onmouseleave = hideHoverTooltip;
-					block.onclick = function () { selectPartition(p); };
+					block.onclick = function (ev) {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+						hideContextMenu();
+						selectPartition(p);
+					};
 					block.oncontextmenu = function (ev) {
 						ev.preventDefault();
-						showContextMenu(p, ev);
+						ev.stopPropagation();
+						showContextMenu(p, ev, 'partition');
 					};
 					if (Number(p.fs_size_bytes || 0) > 0) {
 						var fsBar = document.createElement('div');
@@ -3440,7 +3784,14 @@ cat <<'EOF'
 					};
 					block.onmousemove = moveHoverTooltip;
 					block.onmouseleave = hideHoverTooltip;
-					block.onclick = function () { selectUnallocatedSegment(p); };
+					block.onclick = function (ev) {
+						if (ev) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+						hideContextMenu();
+						selectUnallocatedSegment(p);
+					};
 					block.ondragover = function (ev) { ev.preventDefault(); };
 					block.ondrop = function (ev) {
 						ev.preventDefault();
@@ -3766,6 +4117,48 @@ cat <<'EOF'
 		);
 	}
 
+	function queueDeleteAllPartitions(devArg) {
+		var baseDev = devArg || getSelectedDeviceData();
+		if (!baseDev || !baseDev.path) {
+			showToast(t('tNoDevice'), 'warn');
+			return;
+		}
+
+		var previewDev = buildPreviewDevice(baseDev);
+		var parts = [];
+		for (var i = 0; i < (previewDev.partitions || []).length; i++) {
+			var p = previewDev.partitions[i];
+			if (p && p.kind === 'partition' && Number(p.number || 0) > 0) {
+				parts.push(p);
+			}
+		}
+
+		if (!parts.length) {
+			showToast('No partitions to delete on ' + baseDev.path + '.', 'warn');
+			return;
+		}
+
+		showConfirmModal(t('confirmDelete'), 'Queue deletion of ALL partitions on ' + baseDev.path + '?')
+			.then(function (ok) {
+				if (!ok) return;
+				parts.sort(function (a, b) {
+					return Number(b.number || 0) - Number(a.number || 0);
+				});
+
+				for (var j = 0; j < parts.length; j++) {
+					var params = { device: baseDev.path, partnum: parts[j].number };
+					queueOp(
+						'delete_partition',
+						params,
+						'Delete partition p' + parts[j].number + ' on ' + baseDev.path,
+						buildCommandPreview('delete_partition', params),
+						true
+					);
+				}
+				showToast('Queued delete-all partitions on ' + baseDev.path + '.', 'warn', 2800);
+			});
+	}
+
 	function queueResizePartitionFromInputs() {
 		var partnum = document.getElementById('selectedPartNum').value.trim();
 		var endSector = document.getElementById('resizeEndSector').value.trim();
@@ -3942,6 +4335,8 @@ cat <<'EOF'
 	function clearQueue() {
 		state.queue = [];
 		renderQueue();
+		syncSelectionWithPreview();
+		renderMap();
 	}
 
 	function applyQueue() {

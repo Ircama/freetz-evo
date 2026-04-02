@@ -1,5 +1,5 @@
 # Disk Management (disk-mgmt)
-  - Package: [master/make/pkgs/disk-mgmt/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/disk-mgmt/)
+  - Package: [master/make/pkgs/disk-mgmt-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/disk-mgmt-cgi/)
   - Steward: -
   - CGI: `/usr/lib/cgi-bin/disk-mgmt.cgi`
   - Init script: `/etc/init.d/rc.disk-mgmt`

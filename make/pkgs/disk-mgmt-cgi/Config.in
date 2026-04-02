@@ -1,7 +1,51 @@
 config FREETZ_PACKAGE_DISK_MGMT_CGI
-	bool "Disk Management CGI (freetz configuration web page)"
-	depends on FREETZ_PACKAGE_DISK_MGMT
-	default y
+	bool "Disk Management CGI"
+	depends on FREETZ_AVM_HAS_USB_HOST
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	select FREETZ_PACKAGE_PARTED
+	select FREETZ_PACKAGE_PARTED_parted
+	select FREETZ_PACKAGE_PARTED_partprobe
+	select FREETZ_PACKAGE_EXFATPROGS
+	select FREETZ_PACKAGE_EXFATPROGS_mkfs_exfat
+	select FREETZ_PACKAGE_EXFATPROGS_fsck_exfat
+	select FREETZ_PACKAGE_EXFATPROGS_exfatlabel
+	select FREETZ_PACKAGE_DOSFSTOOLS
+	select FREETZ_PACKAGE_DOSFSTOOLS_fsck_fat
+	select FREETZ_PACKAGE_DOSFSTOOLS_fatlabel
+	select FREETZ_PACKAGE_DOSFSTOOLS_mkfs_fat
+	select FREETZ_PACKAGE_E2FSPROGS
+	select FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG
+	select FREETZ_PACKAGE_E2FSPROGS_E2FSCK
+	select FREETZ_PACKAGE_E2FSPROGS_E2MAKING
+	select FREETZ_PACKAGE_E2FSPROGS_E2RESIZE
+	select FREETZ_PACKAGE_E2FSPROGS_E2TUNING
+	select FREETZ_PACKAGE_E2FSPROGS_BLKID
+	select FREETZ_PACKAGE_NTFS
+	select FREETZ_PACKAGE_NTFS_TOOLS
+	select FREETZ_PACKAGE_NTFS_mkntfs
+	select FREETZ_PACKAGE_NTFS_ntfsfix
+	select FREETZ_PACKAGE_NTFS_ntfsinfo
+	select FREETZ_PACKAGE_NTFS_ntfslabel
+	select FREETZ_PACKAGE_NTFS_ntfsresize
+	select FREETZ_PACKAGE_GPTFDISK
+	select FREETZ_PACKAGE_GPTFDISK_gdisk
+	select FREETZ_PACKAGE_GPTFDISK_cgdisk
+	select FREETZ_PACKAGE_GPTFDISK_sgdisk
+	select FREETZ_PACKAGE_GPTFDISK_fixparts
+	select FREETZ_PACKAGE_HDPARM
+	select FREETZ_PACKAGE_SMARTMONTOOLS
+	select FREETZ_PACKAGE_UTIL_LINUX
+	select FREETZ_UTIL_LINUX_BLKID if FREETZ_UTIL_LINUX_VERSION_2_41
+	select FREETZ_UTIL_LINUX_LSBLK if FREETZ_UTIL_LINUX_VERSION_2_41
+	default n
 	help
-		Provides a visible entry in Packages -> Web interfaces for
-		the Disk Management web UI integrated in disk-mgmt.
+		Disk Management web UI.
+		This is the same as in Packages -> Disk Tools
+		http://fritz.box:81/cgi-bin/conf/disk-mgmt
+
+if FREETZ_PACKAGE_DISK_MGMT_CGI
+
+	comment "Note: NTFS mount uses AVM stack when ntfs-3g driver is unavailable"
+		depends on FREETZ_AVMPLUGINS_NTFS || FREETZ_AVM_HAS_ANTFS_FS_BUILTIN || (FREETZ_AVM_HAS_NTFS && !FREETZ_REMOVE_NTFS)
+
+endif

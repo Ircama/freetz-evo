@@ -4,26 +4,26 @@ DAEMON=disk-mgmt
 . /etc/init.d/modlibrc
 
 case "$1" in
-	""|load)
-		modreg cgi 'disk-mgmt' 'Disk Management'
-		modreg daemon --hide disk-mgmt
-		;;
-	unload)
-		modunreg cgi 'disk-mgmt'
-		modunreg daemon 'disk-mgmt'
-		;;
-	start)
-		;;
-	stop)
-		;;
-	restart)
-		;;
-	status)
-		;;
-	*)
-		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
-		exit 1
-		;;
+""|load)
+modreg cgi 'disk-mgmt' 'Disk Management'
+modreg daemon --hide disk-mgmt
+;;
+unload)
+modunreg cgi 'disk-mgmt'
+modunreg daemon 'disk-mgmt'
+;;
+start)
+;;
+stop)
+;;
+restart)
+;;
+status)
+;;
+*)
+echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+exit 1
+;;
 esac
 
 exit 0

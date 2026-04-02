@@ -4,9 +4,9 @@
 # Save/apply hooks are kept as no-ops to satisfy the modconf framework.
 
 pkg_pre_save() {
-	:
+:
 }
 
 pkg_apply_save() {
-	:
+:
 }

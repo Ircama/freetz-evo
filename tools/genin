@@ -137,6 +137,9 @@ for CAT in $CATs; do
 		CATDIV=y
 	fi
 	echo -e "\nmenu \"${CATREAL}\""                                                                 >> $CFILE
+	if [ "$CATREAL" = "Disk Tools" ] && [ -e "$PKGDIR/disk-mgmt-cgi/Config.in.disk-tools" ]; then
+		echo -e "\tsource \"$PKGDIR/disk-mgmt-cgi/Config.in.disk-tools\""                         >> $CFILE
+	fi
 	for PKG in $(echo -e "${CATTABLE}"| sed "/^${CATONLY/\//\\/}##/ !d ; s/^[^#]*##// "); do
 		[ -e "$PKGDIR/$PKG/external.in" ] && echo "source \"$PKGDIR/$PKG/external.in\""         >> $EFILE
 		case "$PKG" in asterisk-*|iptables-cgi|nhipt|python-*|python3-*|ruby-fcgi|sg3_utils) continue ;; esac
