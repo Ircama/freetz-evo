@@ -1,0 +1,43 @@
+config EXTERNAL_FREETZ_PACKAGE_EXFATPROGS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_EXFATPROGS
+	bool "exfatprogs"
+	default n
+	help
+		external exfatprogs file(s)
+
+menu "exfatprogs"
+	depends on EXTERNAL_FREETZ_PACKAGE_EXFATPROGS
+
+	config EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_mkfs_exfat
+		bool "mkfs.exfat"
+		depends on FREETZ_PACKAGE_EXFATPROGS_mkfs_exfat
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/mkfs.exfat
+
+	config EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_fsck_exfat
+		bool "fsck.exfat"
+		depends on FREETZ_PACKAGE_EXFATPROGS_fsck_exfat
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/fsck.exfat
+
+	config EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_exfatlabel
+		bool "exfatlabel"
+		depends on FREETZ_PACKAGE_EXFATPROGS_exfatlabel
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/exfatlabel
+
+	config EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_tune_exfat
+		bool "tune.exfat"
+		depends on FREETZ_PACKAGE_EXFATPROGS_tune_exfat
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/tune.exfat
+
+endmenu

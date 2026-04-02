@@ -1,0 +1,4 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_mkfs_exfat" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/mkfs.exfat"
+[ "$EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_fsck_exfat" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/fsck.exfat"
+[ "$EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_exfatlabel" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/exfatlabel"
+[ "$EXTERNAL_FREETZ_PACKAGE_EXFATPROGS_tune_exfat" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/tune.exfat"
