@@ -63,7 +63,8 @@ emit_dry_run_result() {
 }
 
 json_escape() {
-	printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g' -e 's/\r/\\r/g'
+	_tab=$(printf '\t')
+	printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g' -e 's/\r/\\r/g' -e "s/${_tab}/\\\\t/g"
 }
 
 safe_uint() {
@@ -106,9 +107,9 @@ resolve_tools() {
 	CMD_MKFS_FAT=$(find_cmd mkfs.fat)
 	CMD_FSCK_FAT=$(find_cmd fsck.fat)
 	CMD_FATLABEL=$(find_cmd fatlabel)
-	CMD_MKFS_EXFAT=$(find_cmd mkfs.exfat mkexfatfs)
-	CMD_FSCK_EXFAT=$(find_cmd fsck.exfat exfatfsck)
-	CMD_EXFATLABEL=$(find_cmd exfatlabel tune.exfat)
+	CMD_MKFS_EXFAT=$(find_cmd mkfs.exfat-ng mkfs.exfat mkexfatfs)
+	CMD_FSCK_EXFAT=$(find_cmd fsck.exfat-ng fsck.exfat exfatfsck)
+	CMD_EXFATLABEL=$(find_cmd exfatlabel-ng exfatlabel tune.exfat-ng tune.exfat)
 	CMD_MKE2FS=$(find_cmd mke2fs-ng mke2fs)
 	CMD_E2FSCK=$(find_cmd e2fsck-ng e2fsck)
 	CMD_RESIZE2FS=$(find_cmd resize2fs-ng resize2fs)
@@ -138,7 +139,7 @@ run_exfat_label() {
 	[ -n "$CMD_EXFATLABEL" ] || return 127
 
 	case "$(basename "$CMD_EXFATLABEL")" in
-		tune.exfat)
+		tune.exfat|tune.exfat-ng)
 			_out=$($CMD_EXFATLABEL -L "$_label" "$_partition" 2>&1)
 			_rc=$?
 			if [ "$_rc" -ne 0 ]; then
@@ -204,6 +205,26 @@ is_valid_mountpoint() {
 			return 1
 			;;
 	esac
+}
+
+is_disk_listed_in_proc() {
+	_dev="$1"
+	_base=$(basename "$_dev" 2>/dev/null)
+	[ -n "$_base" ] || return 1
+	[ -r /proc/partitions ] || return 0
+	awk -v n="$_base" '$4 == n { found=1; exit } END { exit found ? 0 : 1 }' /proc/partitions
+}
+
+is_parted_scan_candidate() {
+	_dev="$1"
+	_base=$(basename "$_dev" 2>/dev/null)
+	[ -n "$_base" ] || return 1
+	case "$_base" in
+		loop*|ram*|fd*|sr*|mtd*|mtdblock*|dm-*)
+			return 1
+			;;
+	esac
+	is_disk_listed_in_proc "$_dev"
 }
 
 is_valid_extra_opts() {
@@ -340,6 +361,7 @@ action_list_devices() {
 
 		_dev="/dev/$_name"
 		[ -b "$_dev" ] || continue
+		is_parted_scan_candidate "$_dev" || continue
 
 		if [ "$_usb_only" = "1" ]; then
 			_dev_path=$(readlink -f "$_sys/device" 2>/dev/null)
@@ -809,6 +831,8 @@ action_check_filesystem() {
 	_fs_type=$(cgi_param fs_type)
 	_repair=$(cgi_param repair)
 	_extra_opts=$(cgi_param extra_opts)
+	_opts_display=''
+	[ -n "$_extra_opts" ] && _opts_display="$_extra_opts "
 
 	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
 	is_valid_extra_opts "$_extra_opts" || { emit_json_error "Invalid extra options"; return; }
@@ -833,6 +857,7 @@ action_check_filesystem() {
 		ext2|ext3|ext4)
 			[ -n "$CMD_E2FSCK" ] || { emit_json_error "e2fsck/e2fsprogs not available"; return; }
 			if [ "$_repair" = "yes" ]; then
+				_cmd_display="$CMD_E2FSCK -f -p ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_E2FSCK -f -p "$@" "$_partition" 2>&1)
@@ -840,6 +865,7 @@ action_check_filesystem() {
 					_out=$($CMD_E2FSCK -f -p "$_partition" 2>&1)
 				fi
 			else
+				_cmd_display="$CMD_E2FSCK -f -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_E2FSCK -f -n "$@" "$_partition" 2>&1)
@@ -848,6 +874,8 @@ action_check_filesystem() {
 				fi
 			fi
 			_rc=$?
+			_out="\$ $_cmd_display
+$_out"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
 				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
 			else
@@ -857,6 +885,7 @@ action_check_filesystem() {
 		fat|fat12|fat16|fat32|vfat)
 			[ -n "$CMD_FSCK_FAT" ] || { emit_json_error "fsck.fat not available"; return; }
 			if [ "$_repair" = "yes" ]; then
+				_cmd_display="$CMD_FSCK_FAT -a ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_FSCK_FAT -a "$@" "$_partition" 2>&1)
@@ -864,6 +893,7 @@ action_check_filesystem() {
 					_out=$($CMD_FSCK_FAT -a "$_partition" 2>&1)
 				fi
 			else
+				_cmd_display="$CMD_FSCK_FAT -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_FSCK_FAT -n "$@" "$_partition" 2>&1)
@@ -872,6 +902,8 @@ action_check_filesystem() {
 				fi
 			fi
 			_rc=$?
+			_out="\$ $_cmd_display
+$_out"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ]; then
 				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
 			else
@@ -881,6 +913,7 @@ action_check_filesystem() {
 		exfat)
 			[ -n "$CMD_FSCK_EXFAT" ] || { emit_json_error "fsck.exfat not available"; return; }
 			if [ "$_repair" = "yes" ]; then
+				_cmd_display="$CMD_FSCK_EXFAT ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_FSCK_EXFAT "$@" "$_partition" 2>&1)
@@ -888,6 +921,7 @@ action_check_filesystem() {
 					_out=$($CMD_FSCK_EXFAT "$_partition" 2>&1)
 				fi
 			else
+				_cmd_display="$CMD_FSCK_EXFAT -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
 					_out=$($CMD_FSCK_EXFAT -n "$@" "$_partition" 2>&1)
@@ -896,6 +930,8 @@ action_check_filesystem() {
 				fi
 			fi
 			_rc=$?
+			_out="\$ $_cmd_display
+$_out"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
 				emit_cmd_result true "$_rc" "exFAT check completed" "$_out"
 			else
@@ -905,6 +941,7 @@ action_check_filesystem() {
 		ntfs)
 			if [ -n "$CMD_NTFSFIX" ]; then
 				if [ "$_repair" = "yes" ]; then
+					_cmd_display="$CMD_NTFSFIX ${_opts_display}$_partition"
 					if [ -n "$_extra_opts" ]; then
 						set -- $_extra_opts
 						_out=$($CMD_NTFSFIX "$@" "$_partition" 2>&1)
@@ -912,6 +949,7 @@ action_check_filesystem() {
 						_out=$($CMD_NTFSFIX "$_partition" 2>&1)
 					fi
 				else
+					_cmd_display="$CMD_NTFSFIX -n ${_opts_display}$_partition"
 					if [ -n "$_extra_opts" ]; then
 						set -- $_extra_opts
 						_out=$($CMD_NTFSFIX -n "$@" "$_partition" 2>&1)
@@ -920,10 +958,15 @@ action_check_filesystem() {
 					fi
 				fi
 				_rc=$?
+				_out="\$ $_cmd_display
+$_out"
 				emit_cmd_result true "$_rc" "NTFS check completed" "$_out"
 			elif [ -n "$CMD_NTFSINFO" ]; then
+				_cmd_display="$CMD_NTFSINFO -m $_partition"
 				_out=$($CMD_NTFSINFO -m "$_partition" 2>&1)
 				_rc=$?
+				_out="\$ $_cmd_display
+$_out"
 				emit_cmd_result true "$_rc" "NTFS metadata report collected (ntfsfix unavailable)" "$_out"
 			else
 				emit_json_error "Neither ntfsfix nor ntfsinfo is available"
@@ -1840,6 +1883,7 @@ cat <<'EOF'
 	display: none;
 	min-width: 220px;
 	background: #fff;
+	color: #111;
 	border: 1px solid #bac5d2;
 	border-radius: 6px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -1851,6 +1895,7 @@ cat <<'EOF'
 	width: 100%;
 	border: 0;
 	background: #fff;
+	color: #111;
 	padding: 8px 10px;
 	font-size: 12px;
 	text-align: left;
@@ -1858,6 +1903,8 @@ cat <<'EOF'
 }
 .pcgi-context-item:hover {
 	background: #eef4fb;
+	color: #000;
+	font-weight: 700;
 }
 .pcgi-kv-grid {
 	display: grid;
@@ -1900,15 +1947,39 @@ cat <<'EOF'
 }
 #partitionMap {
 	position: relative;
-	height: 88px;
+	height: 110px;
 	border: 1px solid #9ba8b6;
 	background: linear-gradient(180deg, #f5f8fb 0%, #e8eef5 100%);
 	overflow: hidden;
 	border-radius: 4px;
 }
+.pcgi-disk-block {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 4px;
+	height: 16px;
+	line-height: 16px;
+	padding: 0 6px;
+	font-size: 11px;
+	font-weight: 700;
+	box-sizing: border-box;
+	border: 1px solid #4a5f74;
+	border-radius: 3px;
+	background: linear-gradient(180deg, #b0bec5 0%, #90a4ae 100%);
+	color: #10212f;
+	cursor: pointer;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.pcgi-disk-block.selected {
+	outline: 2px solid #ff8f00;
+	z-index: 3;
+}
 .pcgi-block {
 	position: absolute;
-	top: 8px;
+	top: 28px;
 	height: 54px;
 	border: 1px solid #5d7187;
 	box-sizing: border-box;
@@ -1923,6 +1994,10 @@ cat <<'EOF'
 	background: linear-gradient(180deg, #90caf9 0%, #64b5f6 100%);
 	cursor: pointer;
 }
+.pcgi-block.part:hover {
+	font-weight: 700;
+	z-index: 2;
+}
 .pcgi-block.free {
 	background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 6px, #e5e5e5 6px, #e5e5e5 12px);
 	border-style: dashed;
@@ -1934,7 +2009,7 @@ cat <<'EOF'
 }
 .pcgi-part-fsbar {
 	position: absolute;
-	left: 2px;
+	left: 10px;
 	right: 10px;
 	bottom: 2px;
 	height: 7px;
@@ -1962,10 +2037,45 @@ cat <<'EOF'
 	cursor: ew-resize;
 	background: rgba(0, 0, 0, 0.18);
 }
+.pcgi-resize-handle-left {
+	left: 0;
+	right: auto;
+}
 .pcgi-map-legend {
 	font-size: 11px;
 	margin-top: 6px;
 	color: #4f5b67;
+}
+.pcgi-hover-tooltip {
+	position: fixed;
+	display: none;
+	max-width: 360px;
+	padding: 8px 10px;
+	border: 1px solid #394a5a;
+	border-radius: 6px;
+	background: rgba(17, 24, 39, 0.95);
+	color: #f3f7fb;
+	font-size: 12px;
+	line-height: 1.35;
+	z-index: 5000;
+	pointer-events: none;
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+.pcgi-hover-tooltip-grid {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: 8px;
+	row-gap: 2px;
+}
+.pcgi-hover-tooltip-key {
+	color: #9fb3c8;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.pcgi-hover-tooltip-value {
+	color: #ffffff;
+	font-weight: 700;
+	word-break: break-word;
 }
 .pcgi-inline-form {
 	display: grid;
@@ -2012,11 +2122,12 @@ cat <<'EOF'
 
 <div class="pcgi-toolbar">
 	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to prefill new partition range">New partition</span>
-	<span id="i18nDragHint" class="pcgi-small">Drag this chip into a free region. Drag the right edge of a partition to queue resize. Drag partitions into free regions to queue move.</span>
+	<span id="i18nDragHint" class="pcgi-small">Drag this chip into a free region. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.</span>
 </div>
 
 <div id="partitionMap"></div>
 <div id="mapLegend" class="pcgi-map-legend"></div>
+<div id="pcgiHoverTooltip" class="pcgi-hover-tooltip"></div>
 
 <div id="partContextMenu" class="pcgi-context-menu"></div>
 
@@ -2046,7 +2157,7 @@ cat <<'EOF'
 		</select>
 	</div>
 	<div>
-		<label id="i18nFsHintLabel">FS hint</label>
+		<label id="i18nFsHintLabel">Filesystem</label>
 		<select id="newFsHint">
 			<option value="">(none)</option>
 			<option value="ext2">ext2</option>
@@ -2229,10 +2340,6 @@ EOF
 sec_end
 
 cat <<'EOF'
-<script src="/ace/ace.js"></script>
-EOF
-
-cat <<'EOF'
 <script>
 (function () {
 	var API_URL = '/cgi-bin/conf/disk-mgmt';
@@ -2247,13 +2354,13 @@ cat <<'EOF'
 			workflow2: 'Drag new partition into free space, drag partition edge to resize, drag partition into free area to move it.',
 			workflow3: 'Queue operations, review, then apply in order.',
 			workflow4: 'Run metadata view, filesystem checks, mount operations and diagnostics.',
-			dragHint: 'Drag this chip into a free region. Drag the right edge of a partition to queue resize. Drag partitions into free regions to queue move.',
+			dragHint: 'Drag this chip into a free region. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.',
 			missingCommandsLabel: 'Missing commands:',
 			languageLabel: 'Language',
 			usbOnlyLabel: 'Device filter',
 			dryRunLabel: 'Dry-run mode (log only, do not execute)',
 			helperTitle: 'Keyboard shortcuts and workflow',
-			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operation queue\nDelete: queue delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition edge: queue resize\nDrag partition to free area: queue move',
+			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operation queue\nDelete: queue delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition left/right edge: queue resize\nDrag partition to free area: queue move',
 			cmdPreviewTitle: 'Command preview',
 			cmdPreviewHint: 'Review/edit the command preview, then validate to queue the operation.',
 			toolAllAvailable: 'Toolchain status: all detected commands are available.',
@@ -2313,13 +2420,13 @@ cat <<'EOF'
 			workflow2: 'Trascina una nuova partizione nello spazio libero, trascina il bordo destro per ridimensionare, trascina una partizione su spazio libero per spostarla.',
 			workflow3: 'Metti in coda le operazioni, controlla, poi applica in ordine.',
 			workflow4: 'Usa vista metadati, controlli filesystem, mount e diagnostica.',
-			dragHint: 'Trascina questo chip su spazio libero. Trascina il bordo destro di una partizione per accodare resize. Trascina una partizione su spazio libero per accodare move.',
+			dragHint: 'Trascina questo chip su spazio libero. Trascina il bordo sinistro o destro di una partizione per accodare resize. Trascina una partizione su spazio libero per accodare move.',
 			missingCommandsLabel: 'Comandi mancanti:',
 			languageLabel: 'Lingua',
 			usbOnlyLabel: 'Filtro dispositivi',
 			dryRunLabel: 'Modalita dry-run (solo log, nessuna esecuzione)',
 			helperTitle: 'Scorciatoie da tastiera e workflow',
-			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica coda operazioni\nCanc: accoda eliminazione partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo partizione: accoda resize\nTrascina partizione su spazio libero: accoda move',
+			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica coda operazioni\nCanc: accoda eliminazione partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo sinistro/destro partizione: accoda resize\nTrascina partizione su spazio libero: accoda move',
 			cmdPreviewTitle: 'Anteprima comando',
 			cmdPreviewHint: 'Controlla/modifica il comando in anteprima, poi valida per accodare l\'operazione.',
 			toolAllAvailable: 'Stato toolchain: tutti i comandi rilevati sono disponibili.',
@@ -2379,13 +2486,13 @@ cat <<'EOF'
 			workflow2: 'Neue Partition in freien Bereich ziehen, rechten Partitionsrand zum Resize ziehen, Partition in freien Bereich ziehen zum Verschieben.',
 			workflow3: 'Operationen in Queue sammeln, pruefen und dann anwenden.',
 			workflow4: 'Metadatenansicht, Dateisystem-Pruefung, Mount und Diagnose verwenden.',
-			dragHint: 'Chip in freien Bereich ziehen. Rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer Move.',
+			dragHint: 'Chip in freien Bereich ziehen. Linken oder rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer Move.',
 			missingCommandsLabel: 'Fehlende Befehle:',
 			languageLabel: 'Sprache',
 			usbOnlyLabel: 'Geraetefilter',
 			dryRunLabel: 'Dry-run Modus (nur Log, keine Ausfuehrung)',
 			helperTitle: 'Tastenkuerzel und Ablauf',
-			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Queue anwenden\nEntf: Loeschen der gewaehlten Partition in Queue\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nPartitionsrand ziehen: Resize in Queue\nPartition auf freien Bereich ziehen: Move in Queue',
+			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Queue anwenden\nEntf: Loeschen der gewaehlten Partition in Queue\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nLinken/rechten Partitionsrand ziehen: Resize in Queue\nPartition auf freien Bereich ziehen: Move in Queue',
 			cmdPreviewTitle: 'Befehlsvorschau',
 			cmdPreviewHint: 'Befehlsvorschau pruefen/bearbeiten und dann bestaetigen, um die Operation in die Queue aufzunehmen.',
 			toolAllAvailable: 'Toolchain-Status: alle erkannten Befehle sind verfuegbar.',
@@ -2584,10 +2691,28 @@ cat <<'EOF'
 			throw new Error('No JSON payload');
 		}
 		var braceCount = 0;
+		var inString = false;
+		var escaped = false;
 		var endPos = -1;
 		for (var i = firstBrace; i < text.length; i++) {
-			if (text[i] === '{') braceCount++;
-			if (text[i] === '}') {
+			var ch = text[i];
+			if (inString) {
+				if (escaped) {
+					escaped = false;
+				} else if (ch === '\\') {
+					escaped = true;
+				} else if (ch === '"') {
+					inString = false;
+				}
+				continue;
+			}
+			if (ch === '"') {
+				inString = true;
+				continue;
+			}
+			if (ch === '{') {
+				braceCount++;
+			} else if (ch === '}') {
 				braceCount--;
 				if (braceCount === 0) {
 					endPos = i + 1;
@@ -2628,6 +2753,102 @@ cat <<'EOF'
 			i++;
 		}
 		return v.toFixed(i === 0 ? 0 : 2) + ' ' + units[i];
+	}
+
+	function escapeHtml(v) {
+		return String(v === undefined || v === null ? '' : v)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function tooltipKV(key, value) {
+		return '<div class="pcgi-hover-tooltip-key">' + escapeHtml(key) + '</div><div class="pcgi-hover-tooltip-value">' + escapeHtml(value) + '</div>';
+	}
+
+	function getCurrentSectorSize() {
+		var dev = getSelectedDeviceData();
+		var ss = Number(dev && dev.logical_sector_size ? dev.logical_sector_size : 512);
+		if (!isFinite(ss) || ss <= 0) ss = 512;
+		return ss;
+	}
+
+	function bindSectorFieldTooltip(inputId, labelText) {
+		var el = document.getElementById(inputId);
+		if (!el) return;
+
+		function buildHtml() {
+			var raw = (el.value || '').trim();
+			if (!/^\d+$/.test(raw)) {
+				el.title = '';
+				return '<div class="pcgi-hover-tooltip-grid">' +
+					tooltipKV(labelText, 'Enter a numeric sector value') +
+				'</div>';
+			}
+			var sectors = Number(raw);
+			var secSize = getCurrentSectorSize();
+			var bytes = sectors * secSize;
+			el.title = sectors + ' sectors (~' + humanBytes(bytes) + ', ' + secSize + ' B/sector)';
+			return '<div class="pcgi-hover-tooltip-grid">' +
+				tooltipKV(labelText, sectors + ' sectors') +
+				tooltipKV('Approx size', humanBytes(bytes)) +
+				tooltipKV('Sector size', secSize + ' B') +
+			'</div>';
+		}
+
+		el.addEventListener('mouseenter', function (ev) {
+			showHoverTooltip(ev, buildHtml());
+		});
+		el.addEventListener('mousemove', moveHoverTooltip);
+		el.addEventListener('mouseleave', hideHoverTooltip);
+		el.addEventListener('input', buildHtml);
+	}
+
+	function buildPartitionTooltipHtml(p, logical, fsUsed, fsAvail) {
+		var rows = '';
+		rows += tooltipKV('Number', p.number || '-');
+		rows += tooltipKV('Start', String(p.start || 0) + 's');
+		rows += tooltipKV('End', String(p.end || 0) + 's');
+		rows += tooltipKV('Size', humanBytes(Number(p.size || 0) * logical));
+		rows += tooltipKV('File system', p.fs || '-');
+		rows += tooltipKV('Name', p.name || '-');
+		rows += tooltipKV('Flags', p.flags || '-');
+		rows += tooltipKV('Label', p.label || '-');
+		rows += tooltipKV('Path', p.path || '-');
+		rows += tooltipKV('Used', humanBytes(fsUsed));
+		rows += tooltipKV('Unused', humanBytes(fsAvail));
+		if (p.mountpoint) rows += tooltipKV('Mounted at', p.mountpoint);
+		return '<div class="pcgi-hover-tooltip-grid">' + rows + '</div>';
+	}
+
+	function showHoverTooltip(ev, html) {
+		var tip = document.getElementById('pcgiHoverTooltip');
+		if (!tip) return;
+		tip.innerHTML = html;
+		tip.style.display = 'block';
+		moveHoverTooltip(ev);
+	}
+
+	function moveHoverTooltip(ev) {
+		var tip = document.getElementById('pcgiHoverTooltip');
+		if (!tip || tip.style.display === 'none') return;
+		var x = ev.clientX + 12;
+		var y = ev.clientY + 12;
+		var maxX = window.innerWidth - tip.offsetWidth - 8;
+		var maxY = window.innerHeight - tip.offsetHeight - 8;
+		if (x > maxX) x = Math.max(8, ev.clientX - tip.offsetWidth - 12);
+		if (y > maxY) y = Math.max(8, ev.clientY - tip.offsetHeight - 12);
+		tip.style.left = x + 'px';
+		tip.style.top = y + 'px';
+	}
+
+	function hideHoverTooltip() {
+		var tip = document.getElementById('pcgiHoverTooltip');
+		if (!tip) return;
+		tip.style.display = 'none';
+		tip.innerHTML = '';
 	}
 
 	function logTo(id, msg, clear) {
@@ -2934,17 +3155,80 @@ cat <<'EOF'
 		return null;
 	}
 
+	function mapFsHintValue(fs) {
+		var v = String(fs || '').toLowerCase();
+		if (!v) return '';
+		if (v === 'fat' || v === 'vfat') return 'fat32';
+		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'fat16' || v === 'fat32' || v === 'ntfs' || v === 'linux-swap') {
+			return v;
+		}
+		return '';
+	}
+
+	function mapFsTypeSelectValue(fs) {
+		var v = String(fs || '').toLowerCase();
+		if (!v) return 'auto';
+		if (v === 'fat') return 'fat32';
+		if (v === 'vfat') return 'vfat';
+		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'exfat' || v === 'ntfs' || v === 'fat16' || v === 'fat32') {
+			return v;
+		}
+		return 'auto';
+	}
+
+	function firstFlagValue(flags) {
+		var raw = String(flags || '').trim();
+		if (!raw) return '';
+		var parts = raw.split(/[ ,]+/);
+		for (var i = 0; i < parts.length; i++) {
+			if (parts[i]) return parts[i];
+		}
+		return '';
+	}
+
 	function updateMapStatus(txt) {
 		document.getElementById('mapStatus').textContent = txt || '';
 	}
 
 	function selectPartition(part) {
 		state.selectedPart = part;
-		state.selectedComponent = part ? { kind: 'partition', number: Number(part.number || 0) } : null;
+		state.selectedComponent = part ? {
+			kind: 'partition',
+			number: Number(part.number || 0),
+			path: String(part.path || ''),
+			start: Number(part.start || 0),
+			end: Number(part.end || 0)
+		} : null;
 		document.getElementById('selectedPartNum').value = part ? String(part.number || '') : '';
 		document.getElementById('selectedPartPath').value = part ? (part.path || '') : '';
 		document.getElementById('fsPartitionPath').value = part ? (part.path || '') : '';
+		document.getElementById('newStartSector').value = part ? String(part.start || '') : '';
+		document.getElementById('newEndSector').value = part ? String(part.end || '') : '';
+		document.getElementById('resizeEndSector').value = part ? String(part.end || '') : '';
+		document.getElementById('newFsHint').value = part ? mapFsHintValue(part.fs) : '';
+		document.getElementById('fsTypeSelect').value = part ? mapFsTypeSelectValue(part.fs) : 'auto';
+		document.getElementById('newPartName').value = part ? (part.name || '') : '';
+		document.getElementById('renamePartInput').value = part ? (part.name || '') : '';
+		document.getElementById('flagNameInput').value = part ? firstFlagValue(part.flags) : '';
+		document.getElementById('flagStateInput').value = part && part.flags ? 'on' : 'off';
+		document.getElementById('fsLabelInput').value = part ? (part.label || '') : '';
 		document.getElementById('mountpointInput').value = part && part.mountpoint ? part.mountpoint : '';
+		updateMapStatus(part ? ('Selected partition #' + part.number + ' [' + part.start + 's..' + part.end + 's].') : '');
+		renderMap();
+	}
+
+	function selectDisk(dev) {
+		state.selectedPart = null;
+		state.selectedComponent = dev ? { kind: 'disk', path: String(dev.path || '') } : null;
+		document.getElementById('selectedPartNum').value = '';
+		document.getElementById('selectedPartPath').value = '';
+		document.getElementById('fsPartitionPath').value = '';
+		document.getElementById('newStartSector').value = '';
+		document.getElementById('newEndSector').value = '';
+		document.getElementById('resizeEndSector').value = '';
+		if (dev && dev.path) {
+			updateMapStatus('Selected disk ' + dev.path + '.');
+		}
 		renderMap();
 	}
 
@@ -2975,6 +3259,7 @@ cat <<'EOF'
 	function showContextMenu(part, ev) {
 		var menu = document.getElementById('partContextMenu');
 		if (!menu || !part) return;
+		hideHoverTooltip();
 		state.contextPart = part;
 		menu.innerHTML = '';
 
@@ -3038,10 +3323,21 @@ cat <<'EOF'
 
 		var total = Number(dev.total_sectors || 0);
 		var logical = Number(dev.logical_sector_size || 512);
+		var mapWidth = Math.max(1, Math.floor(map.clientWidth || map.getBoundingClientRect().width || 1));
+		var minPartWidth = 52;
 		if (!total || total <= 0) {
 			legend.textContent = 'Unable to render this device.';
 			return;
 		}
+
+		var diskBlock = document.createElement('div');
+		diskBlock.className = 'pcgi-disk-block';
+		diskBlock.textContent = (dev.name || (dev.path || '').replace('/dev/', '')) + ' (disk)';
+		if (state.selectedComponent && state.selectedComponent.kind === 'disk' && String(state.selectedComponent.path || '') === String(dev.path || '')) {
+			diskBlock.className += ' selected';
+		}
+		diskBlock.onclick = function () { selectDisk(dev); };
+		map.appendChild(diskBlock);
 
 		legend.textContent = dev.path + ' | table=' + (dev.table || 'unknown') + ' | model=' + (dev.model || '-') + ' | size=' + humanBytes(total * logical);
 		if (dev.transport) legend.textContent += ' | transport=' + dev.transport;
@@ -3051,14 +3347,30 @@ cat <<'EOF'
 		for (var i = 0; i < dev.partitions.length; i++) {
 			(function (idx) {
 				var p = dev.partitions[idx];
-				var leftPct = (Number(p.start) / total) * 100;
-				var widthPct = (Number(p.size) / total) * 100;
-				if (widthPct < 0.4) widthPct = 0.4;
+				var leftPx = Math.round((Number(p.start) / total) * mapWidth);
+				var rawWidthPx = Math.round((Number(p.size) / total) * mapWidth);
+				var widthPx = p.kind === 'partition' ? Math.max(rawWidthPx, minPartWidth) : Math.max(rawWidthPx, 4);
+				if (leftPx < 0) leftPx = 0;
+				if (leftPx > mapWidth - 2) leftPx = mapWidth - 2;
+				if (leftPx + widthPx > mapWidth) {
+					if (p.kind === 'partition' && mapWidth > minPartWidth) {
+						leftPx = Math.max(0, mapWidth - minPartWidth);
+						widthPx = minPartWidth;
+					} else {
+						widthPx = Math.max(2, mapWidth - leftPx);
+					}
+				}
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
-				block.style.left = leftPct + '%';
-				block.style.width = widthPct + '%';
-				if (state.selectedComponent && p.kind === 'partition' && state.selectedComponent.kind === 'partition' && Number(p.number) === Number(state.selectedComponent.number)) {
+				block.style.left = leftPx + 'px';
+				block.style.width = widthPx + 'px';
+				if (state.selectedComponent && state.selectedComponent.kind === 'disk' && p.kind === 'partition') {
+					block.className += ' selected';
+				}
+				if (state.selectedComponent && p.kind === 'partition' && state.selectedComponent.kind === 'partition' && (
+					(String(state.selectedComponent.path || '') && String(p.path || '') === String(state.selectedComponent.path || '')) ||
+					(!String(state.selectedComponent.path || '') && Number(p.number) === Number(state.selectedComponent.number) && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end))
+				)) {
 					block.className += ' selected';
 				}
 				if (state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end)) {
@@ -3069,8 +3381,13 @@ cat <<'EOF'
 					var fsUsed = Number(p.fs_used_bytes || 0);
 					var fsAvail = Number(p.fs_avail_bytes || 0);
 					var usedPct = Number(p.used_pct || 0);
-					block.title = p.path + '\nfs=' + (p.fs || '-') + '\nname=' + (p.name || '-') + '\nlabel=' + (p.label || '-') + '\nflags=' + (p.flags || '-') + '\nused=' + humanBytes(fsUsed) + '\nunused=' + humanBytes(fsAvail) + (p.mountpoint ? ('\nmounted at ' + p.mountpoint) : '');
-					block.textContent = 'p' + p.number + ' ' + (p.name || p.fs || '-');
+					block.title = '';
+					block.textContent = (p.name || p.label || p.fs || 'partition');
+					block.onmouseenter = function (ev) {
+						showHoverTooltip(ev, buildPartitionTooltipHtml(p, logical, fsUsed, fsAvail));
+					};
+					block.onmousemove = moveHoverTooltip;
+					block.onmouseleave = hideHoverTooltip;
 					block.onclick = function () { selectPartition(p); };
 					block.oncontextmenu = function (ev) {
 						ev.preventDefault();
@@ -3094,14 +3411,35 @@ cat <<'EOF'
 						ev.dataTransfer.setData('text/plain', 'partition:' + p.number);
 						ev.dataTransfer.setData('part-size', String(p.size || 0));
 					};
+					var leftHandle = document.createElement('div');
+					leftHandle.className = 'pcgi-resize-handle pcgi-resize-handle-left';
+					leftHandle.title = 'Drag left edge to queue move/resize';
+					leftHandle.onmousedown = function (ev) {
+						ev.stopPropagation();
+						startResize(ev, dev, idx, 'left');
+					};
+					block.appendChild(leftHandle);
 					var handle = document.createElement('div');
 					handle.className = 'pcgi-resize-handle';
 					handle.title = 'Drag to queue resize';
-					handle.onmousedown = function (ev) { startResize(ev, dev, idx); };
+					handle.onmousedown = function (ev) {
+						ev.stopPropagation();
+						startResize(ev, dev, idx, 'right');
+					};
 					block.appendChild(handle);
 				} else {
-					block.title = 'Unallocated space: ' + humanBytes(Number(p.size) * logical) + '\nRange: [' + p.start + 's..' + p.end + 's]';
+					block.title = '';
 					block.textContent = 'unallocated';
+					block.onmouseenter = function (ev) {
+						showHoverTooltip(ev, '<div class="pcgi-hover-tooltip-grid">' +
+							tooltipKV('Segment', 'Unallocated') +
+							tooltipKV('Start', String(p.start || 0) + 's') +
+							tooltipKV('End', String(p.end || 0) + 's') +
+							tooltipKV('Size', humanBytes(Number(p.size || 0) * logical)) +
+						'</div>');
+					};
+					block.onmousemove = moveHoverTooltip;
+					block.onmouseleave = hideHoverTooltip;
 					block.onclick = function () { selectUnallocatedSegment(p); };
 					block.ondragover = function (ev) { ev.preventDefault(); };
 					block.ondrop = function (ev) {
@@ -3151,7 +3489,7 @@ cat <<'EOF'
 		}
 	}
 
-	function startResize(ev, dev, partIndex) {
+	function startResize(ev, dev, partIndex, edge) {
 		ev.preventDefault();
 		var part = dev.partitions[partIndex];
 		if (!part || part.kind !== 'partition') return;
@@ -3161,21 +3499,26 @@ cat <<'EOF'
 		var total = Number(dev.total_sectors || 0);
 		if (!total) return;
 
-		var minEnd = Number(part.start) + 2048;
+		var prevSeg = partIndex > 0 ? dev.partitions[partIndex - 1] : null;
+		var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
+		var minStart = 1;
 		var maxEnd = total - 1;
-		for (var i = 0; i < dev.partitions.length; i++) {
-			var c = dev.partitions[i];
-			if (Number(c.start) > Number(part.end)) {
-				maxEnd = Number(c.start) - 1;
-				break;
-			}
-		}
+		if (prevSeg) minStart = Number(prevSeg.end) + 1;
+		if (nextSeg) maxEnd = Number(nextSeg.start) - 1;
+		var minEnd = Number(part.start) + 2048;
+		if (minEnd > maxEnd) minEnd = Number(part.start);
+		var maxStart = Number(part.end) - 2048;
+		if (maxStart < minStart) maxStart = minStart;
 
 		state.dragCtx = {
 			dev: dev,
 			part: part,
+			edge: edge || 'right',
 			mapRect: rect,
 			total: total,
+			minStart: minStart,
+			maxStart: maxStart,
+			currentStart: Number(part.start),
 			minEnd: minEnd,
 			maxEnd: maxEnd,
 			currentEnd: Number(part.end)
@@ -3192,10 +3535,17 @@ cat <<'EOF'
 		if (relX < 0) relX = 0;
 		if (relX > d.mapRect.width) relX = d.mapRect.width;
 		var sec = Math.floor((relX / d.mapRect.width) * d.total);
-		if (sec < d.minEnd) sec = d.minEnd;
-		if (sec > d.maxEnd) sec = d.maxEnd;
-		d.currentEnd = sec;
-		updateMapStatus('Resize preview: p' + d.part.number + ' end -> ' + sec + 's');
+		if (d.edge === 'left') {
+			if (sec < d.minStart) sec = d.minStart;
+			if (sec > d.maxStart) sec = d.maxStart;
+			d.currentStart = sec;
+			updateMapStatus('Resize preview: #' + d.part.number + ' start -> ' + sec + 's');
+		} else {
+			if (sec < d.minEnd) sec = d.minEnd;
+			if (sec > d.maxEnd) sec = d.maxEnd;
+			d.currentEnd = sec;
+			updateMapStatus('Resize preview: #' + d.part.number + ' end -> ' + sec + 's');
+		}
 	}
 
 	function onResizeUp() {
@@ -3206,7 +3556,24 @@ cat <<'EOF'
 		state.dragCtx = null;
 		updateMapStatus('');
 
-		if (Number(d.currentEnd) !== Number(d.part.end)) {
+		if (d.edge === 'left') {
+			if (Number(d.currentStart) !== Number(d.part.start)) {
+				queueOpWithConfirm(
+					'move_partition',
+					{
+						device: d.dev.path,
+						partnum: d.part.number,
+						start_sector: d.currentStart,
+						end_sector: d.part.end
+					},
+					'Adjust left edge of partition #' + d.part.number + ' on ' + d.dev.path + ' to start=' + d.currentStart + 's',
+					t('confirmAction'),
+					'Move/resize operation will be queued.'
+				);
+				document.getElementById('newStartSector').value = String(d.currentStart);
+				selectPartition(d.part);
+			}
+		} else if (Number(d.currentEnd) !== Number(d.part.end)) {
 			queueOpWithConfirm(
 				'resize_partition',
 				{
@@ -3215,13 +3582,106 @@ cat <<'EOF'
 					end_sector: d.currentEnd,
 					resize_fs: 'no'
 				},
-				'Resize p' + d.part.number + ' on ' + d.dev.path + ' to end=' + d.currentEnd + 's',
+				'Resize partition #' + d.part.number + ' on ' + d.dev.path + ' to end=' + d.currentEnd + 's',
 				t('confirmAction'),
 				'Resize operation will be queued.'
 			);
 			document.getElementById('resizeEndSector').value = String(d.currentEnd);
 			selectPartition(d.part);
 		}
+	}
+
+	function queueMoveSelectedByDirection(direction) {
+		if (!state.selectedPart || !state.selectedPart.number) {
+			showToast(t('tNoPartition'), 'warn');
+			return;
+		}
+		var dev = getSelectedDeviceData();
+		if (!dev) {
+			showToast(t('tNoDevice'), 'warn');
+			return;
+		}
+
+		var idx = -1;
+		for (var i = 0; i < dev.partitions.length; i++) {
+			var part = dev.partitions[i];
+			if (part.kind === 'partition' && String(part.path || '') === String(state.selectedPart.path || '')) {
+				idx = i;
+				break;
+			}
+		}
+		if (idx < 0) {
+			showToast(t('tContextUnavailable'), 'warn');
+			return;
+		}
+
+		var source = dev.partitions[idx];
+		var target = null;
+		var size = Number(source.size || 0);
+		var targetStart = Number(source.start || 0);
+		var targetEnd = Number(source.end || 0);
+
+		if (direction === 'left') {
+			target = idx > 0 ? dev.partitions[idx - 1] : null;
+			if (!target || target.kind !== 'free') {
+				showToast('No free segment on the left of selected partition.', 'warn');
+				return;
+			}
+			targetStart = Number(target.start || 0);
+			targetEnd = targetStart + size - 1;
+		} else {
+			target = idx < dev.partitions.length - 1 ? dev.partitions[idx + 1] : null;
+			if (!target || target.kind !== 'free') {
+				showToast('No free segment on the right of selected partition.', 'warn');
+				return;
+			}
+			targetEnd = Number(target.end || 0);
+			targetStart = targetEnd - size + 1;
+			if (targetStart < Number(target.start || 0)) {
+				showToast(t('tMoveNoSpace'), 'warn');
+				return;
+			}
+		}
+
+		if (targetStart === Number(source.start || 0) && targetEnd === Number(source.end || 0)) {
+			showToast(t('tMoveSame'), 'warn');
+			return;
+		}
+
+		queueOpWithConfirm(
+			'move_partition',
+			{ device: dev.path, partnum: source.number, start_sector: targetStart, end_sector: targetEnd },
+			'Move partition #' + source.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]',
+			t('confirmMove'),
+			t('confirmMoveMsg')
+		);
+	}
+
+	function navigateSelectedPartition(direction) {
+		var dev = getSelectedDeviceData();
+		if (!dev || !dev.partitions || !dev.partitions.length) return;
+		var parts = [];
+		for (var i = 0; i < dev.partitions.length; i++) {
+			if (dev.partitions[i].kind === 'partition') parts.push(dev.partitions[i]);
+		}
+		if (!parts.length) return;
+
+		var cur = -1;
+		if (state.selectedPart && state.selectedPart.path) {
+			for (var j = 0; j < parts.length; j++) {
+				if (String(parts[j].path || '') === String(state.selectedPart.path || '')) {
+					cur = j;
+					break;
+				}
+			}
+		}
+
+		if (direction === 'left') {
+			cur = cur <= 0 ? parts.length - 1 : cur - 1;
+		} else {
+			cur = cur < 0 || cur >= parts.length - 1 ? 0 : cur + 1;
+		}
+		selectPartition(parts[cur]);
 	}
 
 	function onDeviceChange() {
@@ -3744,6 +4204,24 @@ cat <<'EOF'
 			applyQueue();
 			return;
 		}
+		if (ev.key === 'ArrowLeft') {
+			ev.preventDefault();
+			if (ev.altKey) {
+				queueMoveSelectedByDirection('left');
+			} else {
+				navigateSelectedPartition('left');
+			}
+			return;
+		}
+		if (ev.key === 'ArrowRight') {
+			ev.preventDefault();
+			if (ev.altKey) {
+				queueMoveSelectedByDirection('right');
+			} else {
+				navigateSelectedPartition('right');
+			}
+			return;
+		}
 		if (ev.key === 'Delete') {
 			ev.preventDefault();
 			queueDeletePartition();
@@ -3774,13 +4252,16 @@ cat <<'EOF'
 		if (menu.style.display === 'none') return;
 		if (!menu.contains(ev.target)) hideContextMenu();
 	});
+	document.addEventListener('scroll', hideHoverTooltip, true);
 	document.addEventListener('keydown', function (ev) {
 		if (ev.key === 'Escape') {
 			hideContextMenu();
 			hideHelpModal();
+			hideHoverTooltip();
 		}
 	});
 	document.addEventListener('keydown', onKeyboardShortcuts);
+	window.addEventListener('resize', renderMap);
 
 	window.refreshDevices = refreshDevices;
 	window.onDeviceChange = onDeviceChange;
@@ -3805,6 +4286,9 @@ cat <<'EOF'
 	document.getElementById('dryRunToggle').checked = false;
 	state.dryRun = false;
 	applyTranslations();
+	bindSectorFieldTooltip('newStartSector', 'New start sector');
+	bindSectorFieldTooltip('newEndSector', 'New end sector');
+	bindSectorFieldTooltip('resizeEndSector', 'Resize end sector');
 	refreshDevices();
 	analyzeTools();
 })();
