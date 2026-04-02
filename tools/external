@@ -88,7 +88,7 @@ generate_external_defer_list() {
 	local ext_services=" ${EXTERNAL_SERVICES} "
 	local matched=""
 	local pkg_candidates=""
-	local pkg_has_boot_rc="n"
+	local rc_file=""
 
 	mkdir -p "$(dirname "${defer_list_file}")"
 	: > "${defer_list_file}"
@@ -131,17 +131,22 @@ generate_external_defer_list() {
 		echo "${ext_services}" | grep -q " ${pkg} " && continue
 
 		pkg_candidates=""
-		pkg_has_boot_rc="n"
 		for candidate in "${pkg}" "${pkg}-cgi" "${pkg}-v2-cgi"; do
 			[ -f "${PACKAGES_DIR}/.${candidate}" ] || continue
 			candidate_ver="$(cat "${PACKAGES_DIR}/.${candidate}")"
 			candidate_root="${PACKAGES_DIR}/${candidate}-${candidate_ver}/root"
 			[ -d "${candidate_root}" ] || continue
 			pkg_candidates+=" ${candidate}"
-			ls "${candidate_root}/etc/init.d"/rc.* >/dev/null 2>&1 && pkg_has_boot_rc="y"
 		done
 		[ -z "${pkg_candidates}" ] && continue
-		[ "${pkg_has_boot_rc}" != "y" ] && continue
+
+		rc_file="${FILESYSTEM_MOD_DIR}/etc/init.d/rc.${pkg}"
+		[ -f "${rc_file}" ] || continue
+		# Defer only packages that can actually be started later by rc.external.
+		# Empty start) handlers (e.g. utility tools like htop/screen) must be skipped.
+		sed -n '/^[[:space:]]*start)[[:space:]]*$/,/^[[:space:]]*;;[[:space:]]*$/p' "${rc_file}" |
+			sed '1d;$d' |
+			grep -q '[^[:space:]#]' || continue
 
 		pkg_files="$(collect_pkg_files ${pkg_candidates} 2>/dev/null)"
 		[ -z "${pkg_files}" ] && continue
