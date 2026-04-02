@@ -1787,6 +1787,57 @@ cat <<'EOF'
 	align-items: center;
 	margin-bottom: 10px;
 }
+.pcgi-device-strip {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	padding: 2px 0 6px;
+	margin: -2px 0 10px;
+}
+.pcgi-device-card {
+	min-width: 180px;
+	padding: 8px 10px;
+	border: 1px solid #aebccb;
+	border-radius: 6px;
+	background: linear-gradient(180deg, #f8fbfe 0%, #eef3f8 100%);
+	cursor: pointer;
+	text-align: left;
+	color: #152230;
+	box-sizing: border-box;
+}
+.pcgi-device-card:hover {
+	border-color: #6e95bb;
+	background: linear-gradient(180deg, #f4f9ff 0%, #e8f0f8 100%);
+}
+.pcgi-device-card.selected {
+	border-color: #1e88e5;
+	box-shadow: inset 0 0 0 1px #1e88e5;
+	background: linear-gradient(180deg, #e8f3ff 0%, #d7eaff 100%);
+}
+.pcgi-device-card-main {
+	display: block;
+	font-weight: 700;
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.pcgi-device-card-meta {
+	display: block;
+	margin-top: 2px;
+	font-size: 11px;
+	color: #425464;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.pcgi-device-select-hidden {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
 .pcgi-chip {
 	display: inline-block;
 	padding: 4px 8px;
@@ -1879,7 +1930,7 @@ cat <<'EOF'
 	resize: vertical;
 }
 .pcgi-context-menu {
-	position: fixed;
+	position: absolute;
 	display: none;
 	min-width: 220px;
 	background: #fff;
@@ -1993,6 +2044,7 @@ cat <<'EOF'
 .pcgi-block.part {
 	background: linear-gradient(180deg, #90caf9 0%, #64b5f6 100%);
 	cursor: pointer;
+	min-width: 6px;
 }
 .pcgi-block.part:hover {
 	font-weight: 700;
@@ -2112,13 +2164,15 @@ cat <<'EOF'
 
 <div class="pcgi-toolbar">
 	<button type="button" onclick="refreshDevices()" id="refreshMapBtn">Refresh map</button>
-	<label for="deviceSelect">Device:</label>
-	<select id="deviceSelect" onchange="onDeviceChange()"></select>
+	<span id="i18nDeviceStripLabel">Devices:</span>
 	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn">Run partprobe</button>
 	<button type="button" onclick="analyzeTools()" id="analyzeBtn">Analyze toolchain</button>
 	<button type="button" onclick="loadPartitionMetadata()" id="metaBtn">Partition metadata</button>
 	<span id="mapStatus" class="pcgi-small"></span>
 </div>
+
+<div id="deviceStrip" class="pcgi-device-strip" aria-label="Devices"></div>
+<select id="deviceSelect" class="pcgi-device-select-hidden" onchange="onDeviceChange()" aria-hidden="true" tabindex="-1"></select>
 
 <div class="pcgi-toolbar">
 	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to prefill new partition range">New partition</span>
@@ -2403,8 +2457,10 @@ cat <<'EOF'
 			tMetaLoaded: 'Metadata loaded successfully.',
 			tNoMetaData: 'No metadata available for this partition.',
 			tMapLoaded: 'Map updated',
+			tDevices: 'disks',
 			tMapLoading: 'Loading device map...',
 			tMapError: 'Map load error',
+			deviceStripLabel: 'Devices:',
 			btnConfirm: 'Confirm',
 			btnCancel: 'Cancel',
 			btnClose: 'Close',
@@ -2469,8 +2525,10 @@ cat <<'EOF'
 			tMetaLoaded: 'Metadati caricati con successo.',
 			tNoMetaData: 'Nessun metadato disponibile per questa partizione.',
 			tMapLoaded: 'Mappa aggiornata',
+			tDevices: 'dischi',
 			tMapLoading: 'Caricamento mappa dispositivi...',
 			tMapError: 'Errore caricamento mappa',
+			deviceStripLabel: 'Dischi:',
 			btnConfirm: 'Conferma',
 			btnCancel: 'Annulla',
 			btnClose: 'Chiudi',
@@ -2535,8 +2593,10 @@ cat <<'EOF'
 			tMetaLoaded: 'Metadaten erfolgreich geladen.',
 			tNoMetaData: 'Keine Metadaten fuer diese Partition verfuegbar.',
 			tMapLoaded: 'Karte aktualisiert',
+			tDevices: 'Datentraeger',
 			tMapLoading: 'Geraetekarte wird geladen...',
 			tMapError: 'Fehler beim Laden der Karte',
+			deviceStripLabel: 'Datentraeger:',
 			btnConfirm: 'Bestaetigen',
 			btnCancel: 'Abbrechen',
 			btnClose: 'Schliessen',
@@ -2587,6 +2647,7 @@ cat <<'EOF'
 			i18nWorkflow3: 'workflow3',
 			i18nWorkflow4: 'workflow4',
 			i18nDragHint: 'dragHint',
+			i18nDeviceStripLabel: 'deviceStripLabel',
 			i18nMissingCommandsLabel: 'missingCommandsLabel',
 			i18nLanguageLabel: 'languageLabel',
 			i18nUsbOnlyLabel: 'usbOnlyLabel',
@@ -2620,6 +2681,7 @@ cat <<'EOF'
 			usbSel.options[0].text = state.language === 'it' ? 'Tutti i dispositivi a blocchi' : (state.language === 'de' ? 'Alle Blockgeraete' : 'All block devices');
 			usbSel.options[1].text = state.language === 'it' ? 'Solo dispositivi USB' : (state.language === 'de' ? 'Nur USB-Geraete' : 'USB devices only');
 		}
+		renderDeviceStrip();
 	}
 
 	function showToast(message, type, ttl) {
@@ -3043,7 +3105,33 @@ cat <<'EOF'
 			return 'umount ' + v(params.partition || params.mountpoint);
 		}
 		if (action === 'check_filesystem') {
-			return '# fs check preview\n# fs_type=' + v(params.fs_type) + ' repair=' + v(params.repair) + ' target=' + v(params.partition);
+			var fs = v(params.fs_type).toLowerCase();
+			var repair = v(params.repair) === 'yes';
+			var target = v(params.partition);
+			var extra = v(params.extra_opts).trim();
+			if (!target) return '# fs check preview unavailable: missing partition path';
+
+			if (!fs || fs === 'auto') {
+				var autoTxt = '# backend auto-detects filesystem for ' + target + '\n';
+				autoTxt += '# requested mode: ' + (repair ? 'repair' : 'read-only') + '\n';
+				autoTxt += '# extra opts: ' + (extra || '(none)');
+				return autoTxt;
+			}
+
+			if (fs === 'ext2' || fs === 'ext3' || fs === 'ext4') {
+				return 'e2fsck -f ' + (repair ? '-p' : '-n') + (extra ? (' ' + extra) : '') + ' ' + target;
+			}
+			if (fs === 'fat' || fs === 'fat12' || fs === 'fat16' || fs === 'fat32' || fs === 'vfat') {
+				return 'fsck.fat ' + (repair ? '-a' : '-n') + (extra ? (' ' + extra) : '') + ' ' + target;
+			}
+			if (fs === 'exfat') {
+				return 'fsck.exfat' + (repair ? '' : ' -n') + (extra ? (' ' + extra) : '') + ' ' + target;
+			}
+			if (fs === 'ntfs') {
+				return 'ntfsfix' + (repair ? '' : ' -n') + (extra ? (' ' + extra) : '') + ' ' + target + '\n# fallback: ntfsinfo -m ' + target;
+			}
+
+			return '# unsupported fs_type=' + fs + ' target=' + target;
 		}
 		if (action === 'smart_info') return 'smartctl -H -A ' + v(params.device);
 		if (action === 'hdparm_info') return 'hdparm -I ' + v(params.device);
@@ -3177,6 +3265,54 @@ cat <<'EOF'
 			}
 		}
 		return null;
+	}
+
+	function partitionCountOf(dev) {
+		if (!dev || !dev.partitions) return 0;
+		var n = 0;
+		for (var i = 0; i < dev.partitions.length; i++) {
+			if (dev.partitions[i].kind === 'partition') n++;
+		}
+		return n;
+	}
+
+	function renderDeviceStrip() {
+		var strip = document.getElementById('deviceStrip');
+		if (!strip) return;
+		strip.innerHTML = '';
+		for (var i = 0; i < state.devices.length; i++) {
+			(function (dev) {
+				var btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'pcgi-device-card' + (String(dev.path || '') === String(state.selectedDevice || '') ? ' selected' : '');
+				btn.setAttribute('aria-pressed', String(String(dev.path || '') === String(state.selectedDevice || '')));
+
+				var main = document.createElement('span');
+				main.className = 'pcgi-device-card-main';
+				var logical = Number(dev.logical_sector_size || 512);
+				var total = Number(dev.total_sectors || 0);
+				main.textContent = String(dev.path || '-') + ' | ' + (total > 0 ? humanBytes(total * logical) : '-');
+
+				var meta = document.createElement('span');
+				meta.className = 'pcgi-device-card-meta';
+				var model = String(dev.model || '').trim();
+				var pcount = partitionCountOf(dev);
+				var info = String(dev.table || '-').toUpperCase() + ' | ' + pcount + 'p';
+				if (model) info += ' | ' + model;
+				meta.textContent = info;
+
+				btn.title = String(dev.path || '-') + ' [' + String(dev.table || '-') + ']';
+				btn.onclick = function () {
+					var sel = document.getElementById('deviceSelect');
+					if (sel) sel.value = String(dev.path || '');
+					onDeviceChange();
+				};
+
+				btn.appendChild(main);
+				btn.appendChild(meta);
+				strip.appendChild(btn);
+			})(state.devices[i]);
+		}
 	}
 
 	function clearSelectedPartitionUi() {
@@ -3523,7 +3659,7 @@ cat <<'EOF'
 		if (state.contextMenuHideTimer) clearTimeout(state.contextMenuHideTimer);
 		state.contextMenuHideTimer = setTimeout(function () {
 			hideContextMenu();
-		}, 5000);
+		}, 4000);
 	}
 
 	function showContextMenu(target, ev, menuType) {
@@ -3582,8 +3718,11 @@ cat <<'EOF'
 		menu.onmouseleave = scheduleContextMenuAutoHide;
 
 		menu.style.display = 'block';
-		menu.style.left = Math.min(ev.clientX, window.innerWidth - 240) + 'px';
-		menu.style.top = Math.min(ev.clientY, window.innerHeight - 280) + 'px';
+		var _mx = (ev.pageX != null ? ev.pageX : ev.clientX + (document.documentElement.scrollLeft || 0));
+		var _my = (ev.pageY != null ? ev.pageY : ev.clientY + (document.documentElement.scrollTop  || 0));
+		menu.style.position = 'absolute';
+		menu.style.left = Math.max(0, Math.min(_mx, (document.documentElement.scrollWidth  || 9999) - 250)) + 'px';
+		menu.style.top  = Math.max(0, Math.min(_my, (document.documentElement.scrollHeight || 9999) - 300)) + 'px';
 	}
 
 	function handleContextAction(action, target, menuType) {
@@ -3634,8 +3773,8 @@ cat <<'EOF'
 		var total = Number(dev.total_sectors || 0);
 		var logical = Number(dev.logical_sector_size || 512);
 		var mapWidth = Math.max(1, Math.floor(map.clientWidth || map.getBoundingClientRect().width || 1));
-		var minPartWidth = 10;
-		var selectedPartMinWidth = 52;
+		if (mapWidth <= 1) { requestAnimationFrame(renderMap); return; }
+		// Width is strictly proportional; CSS min-width on .pcgi-block.part ensures click-target size.
 		if (!total || total <= 0) {
 			legend.textContent = 'Unable to render this device.';
 			return;
@@ -3676,36 +3815,43 @@ cat <<'EOF'
 			(function (idx) {
 				var p = dev.partitions[idx];
 				var selectedDisk = !!(state.selectedComponent && state.selectedComponent.kind === 'disk' && String(state.selectedComponent.path || '') === String(dev.path || ''));
-				var selectedPart = !!(state.selectedComponent && p.kind === 'partition' && state.selectedComponent.kind === 'partition' && (
-					(String(state.selectedComponent.path || '') && String(p.path || '') === String(state.selectedComponent.path || '')) ||
-					(!String(state.selectedComponent.path || '') && Number(p.number) === Number(state.selectedComponent.number) && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end))
-				));
+				// A partition is uniquely identified by its start sector (no two valid partitions
+				// share the same start); path and number serve as optional secondary confirmation.
+				var scPath  = String(state.selectedComponent ? (state.selectedComponent.path   || '') : '');
+				var scNum   = state.selectedComponent ? Number(state.selectedComponent.number  || 0) : 0;
+				var scStart = state.selectedComponent ? Number(state.selectedComponent.start   || 0) : 0;
+				var pPath   = String(p.path   || '');
+				var pNum    = Number(p.number || 0);
+				var pStart  = Number(p.start  || 0);
+				var selectedPart = !!(state.selectedComponent &&
+					p.kind === 'partition' &&
+					state.selectedComponent.kind === 'partition' &&
+					scStart > 0 && pStart === scStart &&
+					(
+						(scPath && pPath === scPath) ||
+						(scNum > 0 && pNum === scNum) ||
+						(!scPath && !scNum)
+					)
+				);
 				var selectedFree = !!(state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end));
 
 				var leftPx = Math.round((Number(p.start) / total) * mapWidth);
-				var rawWidthPx = Math.max(1, Math.round((Number(p.size) / total) * mapWidth));
-				var desiredPartWidth = selectedPart ? selectedPartMinWidth : minPartWidth;
-				var widthPx = p.kind === 'partition' ? Math.max(rawWidthPx, desiredPartWidth) : Math.max(rawWidthPx, 4);
-				if (p.kind === 'partition' && widthPx > rawWidthPx) {
-					leftPx = leftPx - Math.floor((widthPx - rawWidthPx) / 2);
-				}
+				var widthPx = Math.max(1, Math.round((Number(p.size) / total) * mapWidth));
+				// Ensure partition blocks have a minimum display width so they remain clickable,
+				// even when the partition is much smaller than the others.  Free-space segments
+				// use strictly proportional widths so they don't obscure adjacent partitions.
+				if (p.kind === 'partition') widthPx = Math.max(30, widthPx);
+				// Clamp to map bounds.  Keep leftPx at the proportional position so the block
+				// never shifts left into adjacent partitions' territory.  If the expanded block
+				// protrudes past the right edge it is clipped by the map's overflow:hidden.
 				if (leftPx < 0) leftPx = 0;
-				if (leftPx > mapWidth - 2) leftPx = mapWidth - 2;
-				if (leftPx + widthPx > mapWidth) {
-					if (p.kind === 'partition' && mapWidth > desiredPartWidth) {
-						leftPx = Math.max(0, mapWidth - desiredPartWidth);
-						widthPx = desiredPartWidth;
-					} else {
-						widthPx = Math.max(2, mapWidth - leftPx);
-					}
-				}
+				if (leftPx >= mapWidth) leftPx = mapWidth - 1;
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
 				block.style.left = leftPx + 'px';
 				block.style.width = widthPx + 'px';
-				if (selectedDisk && p.kind === 'partition') {
-					block.className += ' selected';
-				}
+				// Only highlight the individually selected partition/free segment.
+				// Do NOT apply 'selected' class to all partitions when the disk is selected.
 				if (selectedPart) {
 					block.className += ' selected';
 				}
@@ -4018,9 +4164,11 @@ cat <<'EOF'
 		if (!parts.length) return;
 
 		var cur = -1;
-		if (state.selectedPart && state.selectedPart.path) {
+		if (state.selectedPart) {
+			// Match by start sector (unique per partition, same key used in renderMap).
+			var spStart = Number(state.selectedPart.start || 0);
 			for (var j = 0; j < parts.length; j++) {
-				if (String(parts[j].path || '') === String(state.selectedPart.path || '')) {
+				if (spStart > 0 && Number(parts[j].start || 0) === spStart) {
 					cur = j;
 					break;
 				}
@@ -4037,9 +4185,10 @@ cat <<'EOF'
 
 	function onDeviceChange() {
 		var sel = document.getElementById('deviceSelect');
-		state.selectedDevice = sel.value;
+		state.selectedDevice = sel ? sel.value : '';
 		state.selectedPart = null;
 		state.selectedComponent = null;
+		renderDeviceStrip();
 		renderMap();
 	}
 
@@ -4069,8 +4218,12 @@ cat <<'EOF'
 				} else {
 					state.selectedDevice = '';
 				}
+				renderDeviceStrip();
 				renderMap();
-				updateMapStatus(t('tMapLoaded') + ' (' + state.devices.length + ' device(s)).');
+				var _dl = state.devices.map(function(d){return d.path+' ['+(d.table||'-')+']';}).join(', ');
+					var _dm = state.devices.length === 1 ? t('tMapLoaded') + ': ' + _dl
+						: t('tMapLoaded') + ' - ' + state.devices.length + ' ' + t('tDevices') + ': ' + _dl;
+					updateMapStatus(_dm);
 			})
 			.catch(function (err) {
 				updateMapStatus(t('tMapError') + ': ' + err.message);
@@ -4291,45 +4444,46 @@ cat <<'EOF'
 		);
 	}
 
+	function resolveFsTypeForCheck(partitionPath, requestedType) {
+		var req = String(requestedType || '').toLowerCase();
+		if (req && req !== 'auto') return req;
+
+		if (state.selectedPart && String(state.selectedPart.path || '') === String(partitionPath || '') && state.selectedPart.fs) {
+			return String(state.selectedPart.fs).toLowerCase();
+		}
+
+		var dev = getSelectedDeviceData();
+		if (dev && dev.partitions) {
+			for (var i = 0; i < dev.partitions.length; i++) {
+				var p = dev.partitions[i];
+				if (p && p.kind === 'partition' && String(p.path || '') === String(partitionPath || '') && p.fs) {
+					return String(p.fs).toLowerCase();
+				}
+			}
+		}
+
+		return req || 'auto';
+	}
+
 	function runFsck(repair) {
 		var part = document.getElementById('fsPartitionPath').value.trim();
 		if (!part) {
 			showToast(t('tNeedPartPath'), 'warn');
 			return;
 		}
-		function doRun() {
-			var previewParams = {
-				partition: part,
-				fs_type: document.getElementById('fsTypeSelect').value,
-				repair: repair ? 'yes' : 'no',
-				extra_opts: document.getElementById('extraOptsInput').value.trim()
-			};
-			showCommandPreviewModal('check_filesystem', previewParams, 'Filesystem check', t('confirmAction'), t('cmdPreviewHint')).then(function (previewText) {
-				if (previewText === null) return;
-			callApi('check_filesystem', {
-				partition: part,
-				fs_type: document.getElementById('fsTypeSelect').value,
-				repair: repair ? 'yes' : 'no',
-				extra_opts: document.getElementById('extraOptsInput').value.trim(),
-				command_preview: previewText
-			}).then(function (res) {
-				logTo('cmdOutput', '[check_filesystem] ' + (res.message || '') + '\nrc=' + (res.rc || 0) + '\n' + (res.output || ''), false);
-				showToast((res.success ? 'OK: ' : 'Warning: ') + (res.message || 'check done'), res.success ? 'success' : 'warn', 2800);
-			}).catch(function (err) {
-				logTo('cmdOutput', 'Filesystem check error: ' + err.message, false);
-				showToast('Filesystem check error: ' + err.message, 'error', 3200);
-			});
-			});
-		}
 
-		if (repair) {
-			showConfirmModal(t('confirmRepair'), t('confirmRepairMsg')).then(function (ok) {
-				if (!ok) return;
-				doRun();
-			});
-		} else {
-			doRun();
-		}
+		var reqFs = document.getElementById('fsTypeSelect').value;
+		var resolvedFs = resolveFsTypeForCheck(part, reqFs);
+		var extra = document.getElementById('extraOptsInput').value.trim();
+		var mode = repair ? 'yes' : 'no';
+
+		queueOpWithConfirm(
+			'check_filesystem',
+			{ partition: part, fs_type: resolvedFs, repair: mode, extra_opts: extra },
+			(repair ? 'Check/repair' : 'Check (read-only)') + ' filesystem on ' + part + ' [' + resolvedFs + ']',
+			repair ? t('confirmRepair') : t('confirmAction'),
+			repair ? t('confirmRepairMsg') : 'Filesystem check will be queued.'
+		);
 	}
 
 	function clearQueue() {
@@ -4570,8 +4724,10 @@ cat <<'EOF'
 
 	function onKeyboardShortcuts(ev) {
 		var tag = (ev.target && ev.target.tagName) ? ev.target.tagName.toLowerCase() : '';
-		if ((tag === 'input' || tag === 'textarea' || tag === 'select') && !ev.ctrlKey && ev.key !== 'F1') {
-			return;
+		// Suppress shortcuts in text fields; for <select> allow ArrowLeft/Right.
+		if (!ev.ctrlKey && ev.key !== 'F1') {
+			if (tag === 'input' || tag === 'textarea') return;
+			if (tag === 'select' && ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
 		}
 
 		if (ev.key === 'F1' || ev.key === '?') {

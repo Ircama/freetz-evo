@@ -180,13 +180,13 @@ endif
 $($(PKG)_BINARY_TARGET): $($(PKG)_BINARY_BUILD)
 	$(INSTALL_BINARY_STRIP)
 	if [ "$(FREETZ_PACKAGE_NODEJS_WITH_INTL)" = "y" ]; then \
-		$(INSTALL_DIR) $($(PKG)_DEST_DIR)/usr/share/icu; \
+		mkdir -p "$($(PKG)_DEST_DIR)/usr/share/icu"; \
 		icu_data_file="$$(find $($(PKG)_DIR)/out/Release/obj/gen/icutmp $($(PKG)_DIR)/deps/icu-tmp -maxdepth 1 -type f -name 'icudt*l.dat' 2>/dev/null | head -n 1)"; \
 		if [ -z "$$icu_data_file" ]; then \
 			echo "nodejs: ICU data file not found (expected icudt*l.dat)" >&2; \
 			exit 1; \
 		fi; \
-		$(INSTALL_FILE) "$$icu_data_file" $($(PKG)_DEST_DIR)/usr/share/icu/; \
+		cp "$$icu_data_file" "$($(PKG)_DEST_DIR)/usr/share/icu/"; \
 	fi
 
 $(pkg):
