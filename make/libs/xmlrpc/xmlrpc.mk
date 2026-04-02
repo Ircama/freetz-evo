@@ -27,6 +27,12 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-cplusplus
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 
+# Preserve library context for SUBMAKE-driven build/install output.
+$($(PKG)_LIBS_BUILD): PKG_TYPE:=LIB
+$($(PKG)_LIBS_BUILD): pkg:=$(pkg)
+$($(PKG)_LIBS_STAGING): PKG_TYPE:=LIB
+$($(PKG)_LIBS_STAGING): pkg:=$(pkg)
+
 $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
 	(cd $(XMLRPC_DIR); $(RM) -r config.cache; \
 		$(TARGET_CONFIGURE_ENV) \

@@ -25,6 +25,12 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
+# Preserve library context for SUBMAKE-driven build/install output.
+$($(PKG)_LIBS_BUILD_DIR): PKG_TYPE:=LIB
+$($(PKG)_LIBS_BUILD_DIR): pkg:=$(pkg)
+$($(PKG)_LIBS_STAGING_DIR): PKG_TYPE:=LIB
+$($(PKG)_LIBS_STAGING_DIR): pkg:=$(pkg)
+
 $($(PKG)_LIBS_BUILD_DIR): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(LIBCARES_DIR)
 
