@@ -57,6 +57,9 @@ $(PKG)_CONFIGURE_DEFOPTS:=n
 
 # V8/Node can emit 64-bit atomic ops on 32-bit Linux targets; ensure -latomic is linked.
 $(PKG)_CONFIGURE_PRE_CMDS += $(SED) -i -e 's/OS=="linux" and clang==1/OS=="linux"/' node.gyp;
+# Freetz passes --quiet to ./configure at low verbosity; consume it in Node's
+# argparse layer so it is not forwarded to gyp as an input filename.
+$(PKG)_CONFIGURE_PRE_CMDS += grep -q "dest='freetz_quiet'" configure.py || $(SED) -i -e "/parser = argparse.ArgumentParser()/a\\parser.add_argument('--quiet', '--silent', action='store_true', dest='freetz_quiet', default=False, help=argparse.SUPPRESS)" configure.py;
 
 $(PKG)_CONFIGURE_ENV += PYTHON=$(HOST_TOOLS_DIR)/usr/bin/python3
 # Ensure /usr/bin/env python3 resolves to host Python, not the target-toolchain wrapper.
@@ -80,6 +83,7 @@ $(PKG)_CONFIGURE_OPTIONS += --shared-zlib
 
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_NPM),,--without-npm)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INTL),--with-intl=small-icu,--without-intl)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INTL),--with-icu-default-data-dir=/usr/share/icu,)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INSPECTOR),,--without-inspector)
 
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_TARGET_ARCH_ARM),--with-arm-float-abi=$(FREETZ_GCC_FLOAT_ABI))
@@ -90,6 +94,10 @@ $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_TARGET_ARCH_MIPS),--with-mips-float-ab
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
+
+# Preserve package context for deferred SUBMAKE status output.
+$($(PKG)_BINARY_BUILD): PKG_TYPE:=BIN
+$($(PKG)_BINARY_BUILD): pkg:=$(pkg)
 
 $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
 	# Keep parallelism controlled by top-level make/jobserver.
@@ -171,6 +179,15 @@ endif
 
 $($(PKG)_BINARY_TARGET): $($(PKG)_BINARY_BUILD)
 	$(INSTALL_BINARY_STRIP)
+	if [ "$(FREETZ_PACKAGE_NODEJS_WITH_INTL)" = "y" ]; then \
+		$(INSTALL_DIR) $($(PKG)_DEST_DIR)/usr/share/icu; \
+		icu_data_file="$$(find $($(PKG)_DIR)/out/Release/obj/gen/icutmp $($(PKG)_DIR)/deps/icu-tmp -maxdepth 1 -type f -name 'icudt*l.dat' 2>/dev/null | head -n 1)"; \
+		if [ -z "$$icu_data_file" ]; then \
+			echo "nodejs: ICU data file not found (expected icudt*l.dat)" >&2; \
+			exit 1; \
+		fi; \
+		$(INSTALL_FILE) "$$icu_data_file" $($(PKG)_DEST_DIR)/usr/share/icu/; \
+	fi
 
 $(pkg):
 
