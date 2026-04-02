@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x
 ### CHANGES:=https://github.com/rpm-software-management/popt/releases
 ### CVSREPO:=https://github.com/rpm-software-management/popt
 
-$(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libpopt.so.$($(PKG)_LIB_VERSION)
+$(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libpopt.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libpopt.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libpopt.so.$($(PKG)_LIB_VERSION)
 

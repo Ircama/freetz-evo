@@ -12,7 +12,10 @@ $(PKG)_DIR:=$(SOURCE_DIR)/xmlrpc-$($(PKG)_VERSION)
 # xmlrpc-c provides multiple libraries
 $(PKG)_LIBS_SHORT := xmlrpc xmlrpc_server xmlrpc_server_abyss xmlrpc_server_cgi xmlrpc_client xmlrpc_abyss xmlrpc_util xmlrpc_xmlparse xmlrpc_xmltok
 
-$(PKG)_LIBS_BUILD := $($(PKG)_LIBS_SHORT:%=$($(PKG)_DIR)/src/lib%.so)
+# Single build sentinel: used to track whether the build step has run.
+# The 4 internal libs (abyss, util, xmlparse, xmltok) are built in lib/
+# subdirectories, not in src/, so they cannot be used as sentinel targets.
+$(PKG)_BINARY := $($(PKG)_DIR)/src/libxmlrpc.so
 $(PKG)_LIBS_STAGING := $($(PKG)_LIBS_SHORT:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.so)
 $(PKG)_LIBS_TARGET := $($(PKG)_LIBS_SHORT:%=$($(PKG)_TARGET_DIR)/lib%.so)
 
@@ -28,8 +31,8 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 
 # Preserve library context for SUBMAKE-driven build/install output.
-$($(PKG)_LIBS_BUILD): PKG_TYPE:=LIB
-$($(PKG)_LIBS_BUILD): pkg:=$(pkg)
+$($(PKG)_BINARY): PKG_TYPE:=LIB
+$($(PKG)_BINARY): pkg:=$(pkg)
 $($(PKG)_LIBS_STAGING): PKG_TYPE:=LIB
 $($(PKG)_LIBS_STAGING): pkg:=$(pkg)
 
@@ -51,10 +54,10 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
 	) $(SILENT)
 	touch $@
 
-$($(PKG)_LIBS_BUILD): $($(PKG)_DIR)/.configured
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(XMLRPC_DIR) -j1
 
-$($(PKG)_LIBS_STAGING): $($(PKG)_LIBS_BUILD)
+$($(PKG)_LIBS_STAGING): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(XMLRPC_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
@@ -71,8 +74,10 @@ $(pkg): $($(PKG)_LIBS_STAGING)
 
 $(pkg)-precompiled: $($(PKG)_LIBS_TARGET)
 
+
 $(pkg)-clean:
 	-[ -d $(XMLRPC_DIR) ] && $(MAKE) -C $(XMLRPC_DIR) clean $(SILENT)
+	$(RM) $($(PKG)_BINARY)
 	$(RM) -r $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libxmlrpc* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/xmlrpc* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/xmlrpc-c-config
