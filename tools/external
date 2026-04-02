@@ -83,16 +83,23 @@ generate_external_defer_list() {
 	local defer_report_file="${build_mod_dir}/external.defer.report.txt"
 	local static_pkg_file="${VARTAR_MOD_DIR}/var/mod/etc/static.pkg"
 	local ext_sonames_tmp="$(mktemp)"
+	local ext_soname_to_files_tmp="$(mktemp)"
 	local pkg_needed_tmp="$(mktemp)"
 	local pkg_files_tmp="$(mktemp)"
+	local matched_sonames_tmp="$(mktemp)"
+	local pkg_summary_tmp="$(mktemp)"
 	local ext_services=" ${EXTERNAL_SERVICES} "
 	local matched=""
+	local pkg_ext_files=""
 	local pkg_candidates=""
 	local rc_file=""
+	local load_block=""
 
 	mkdir -p "$(dirname "${defer_list_file}")"
 	: > "${defer_list_file}"
 	: > "${defer_report_file}"
+	: > "${ext_soname_to_files_tmp}"
+	: > "${pkg_summary_tmp}"
 
 	# Collect SONAME candidates from externalized library files.
 	for ext_file in ${EXTERNAL_FILES}; do
@@ -100,10 +107,13 @@ generate_external_defer_list() {
 			*/lib/*.so*|*/lib64/*.so*)
 				lib_base="$(basename "${ext_file}")"
 				echo "${lib_base}" >> "${ext_sonames_tmp}"
+				echo "${lib_base}|${ext_file}" >> "${ext_soname_to_files_tmp}"
 				# libfoo.so.1.2.3 -> libfoo.so.1
 				echo "${lib_base}" | sed -n 's/^\(lib[^ ]*\.so\.[0-9][0-9]*\)\..*$/\1/p' >> "${ext_sonames_tmp}"
+				echo "${lib_base}" | sed -n "s/^\(lib[^ ]*\.so\.[0-9][0-9]*\)\..*$/\1|${ext_file}/p" >> "${ext_soname_to_files_tmp}"
 				# libfoo.so.1.2.3 -> libfoo.so
 				echo "${lib_base}" | sed -n 's/^\(lib[^ ]*\.so\)\..*$/\1/p' >> "${ext_sonames_tmp}"
+				echo "${lib_base}" | sed -n "s/^\(lib[^ ]*\.so\)\..*$/\1|${ext_file}/p" >> "${ext_soname_to_files_tmp}"
 				;;
 		esac
 	done
@@ -111,10 +121,12 @@ generate_external_defer_list() {
 	# Normalize SONAME list and drop empties.
 	sed -i '/^$/d' "${ext_sonames_tmp}"
 	sort -u -o "${ext_sonames_tmp}" "${ext_sonames_tmp}"
+	sed -i '/^$/d' "${ext_soname_to_files_tmp}"
+	sort -u -o "${ext_soname_to_files_tmp}" "${ext_soname_to_files_tmp}"
 
 	if [ ! -s "${ext_sonames_tmp}" ]; then
 		echo "No externalized libraries detected; no deferred services required." >> "${defer_report_file}"
-		rm -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}"
+		rm -f "${ext_sonames_tmp}" "${ext_soname_to_files_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}" "${matched_sonames_tmp}" "${pkg_summary_tmp}"
 		return 0
 	fi
 
@@ -142,11 +154,10 @@ generate_external_defer_list() {
 
 		rc_file="${FILESYSTEM_MOD_DIR}/etc/init.d/rc.${pkg}"
 		[ -f "${rc_file}" ] || continue
-		# Defer only packages that can actually be started later by rc.external.
-		# Empty start) handlers (e.g. utility tools like htop/screen) must be skipped.
-		sed -n '/^[[:space:]]*start)[[:space:]]*$/,/^[[:space:]]*;;[[:space:]]*$/p' "${rc_file}" |
-			sed '1d;$d' |
-			grep -q '[^[:space:]#]' || continue
+		# Defer only packages that can actually be loaded later by rc.external.
+		# Empty load) handlers (or no load handler at all) must be skipped.
+		load_block="$(sed -n -r '/^[[:space:]]*(""\|)?load\)[[:space:]]*$/,/^[[:space:]]*;;[[:space:]]*$/p' "${rc_file}" | sed '1d;$d')"
+		echo "${load_block}" | grep -q '[^[:space:]#]' || continue
 
 		pkg_files="$(collect_pkg_files ${pkg_candidates} 2>/dev/null)"
 		[ -z "${pkg_files}" ] && continue
@@ -167,15 +178,31 @@ generate_external_defer_list() {
 		getNeededEntries $(cat "${pkg_files_tmp}") > "${pkg_needed_tmp}" 2>/dev/null
 		[ ! -s "${pkg_needed_tmp}" ] && continue
 
-		matched="$(grep -F -x -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" | tr '\n' ' ' | sed 's/[ ]*$//')"
+		matched="$(grep -F -x -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" | sort -u | tr '\n' ' ' | sed 's/[ ]*$//')"
 		if [ -n "${matched}" ]; then
 			echo "${pkg}" >> "${defer_list_file}"
-			echo "  - ${pkg}: ${matched}" >> "${defer_report_file}"
+			echo "${pkg}|${matched}" >> "${pkg_summary_tmp}"
+
+			: > "${matched_sonames_tmp}"
+			for soname in ${matched}; do
+				echo "${soname}" >> "${matched_sonames_tmp}"
+			done
+			pkg_ext_files="$(awk -F'|' 'NR==FNR { need[$1]=1; next } need[$1] { print $2 }' "${matched_sonames_tmp}" "${ext_soname_to_files_tmp}" | sort -u | tr '\n' ' ' | sed 's/[ ]*$//')"
+
+			echo "  - ${pkg}" >> "${defer_report_file}"
+			echo "      required SONAMEs (externalized): ${matched}" >> "${defer_report_file}"
+			if [ -n "${pkg_ext_files}" ]; then
+				echo "      externalized library files: ${pkg_ext_files}" >> "${defer_report_file}"
+			fi
 		fi
 	done < "${static_pkg_file}"
 
 	if [ -s "${defer_list_file}" ]; then
 		sort -u -o "${defer_list_file}" "${defer_list_file}"
+		echo1 "deferred-service dependency summary:"
+		sort -u "${pkg_summary_tmp}" | while IFS='|' read -r pkg sonames; do
+			echo1 -b "  ${pkg}: ${sonames}"
+		done
 		echo "" >> "${defer_report_file}"
 		echo "Summary:" >> "${defer_report_file}"
 		echo "  Deferred service count: $(wc -l < "${defer_list_file}")" >> "${defer_report_file}"
@@ -190,7 +217,7 @@ generate_external_defer_list() {
 		echo1 "generated deferred-service report: ${defer_report_file}"
 	fi
 
-	rm -f "${ext_sonames_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}"
+	rm -f "${ext_sonames_tmp}" "${ext_soname_to_files_tmp}" "${pkg_needed_tmp}" "${pkg_files_tmp}" "${matched_sonames_tmp}" "${pkg_summary_tmp}"
 }
 
 generate_external_defer_list

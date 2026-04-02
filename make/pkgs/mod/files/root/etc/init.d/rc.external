@@ -97,7 +97,8 @@ start_deferred_services() {
 		status="$($rc status 2>/dev/null)"
 		[ -n "$status" -a "$status" != "stopped" ] && continue
 
-		log "$($rc start 2>&1)"
+		# Use load (not start) so package init hooks run (modreg/pre_config).
+		log "$($rc load 2>&1)"
 	done
 }
 
