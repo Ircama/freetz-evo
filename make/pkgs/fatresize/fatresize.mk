@@ -13,7 +13,6 @@ $(PKG)_DIR:=$(SOURCE_DIR)/fatresize-$($(PKG)_GIT_COMMIT)
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/fatresize
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/fatresize
-$(PKG)_PARTED_PC_STAGING:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libparted.pc
 
 $(PKG)_DEPENDS_ON += parted e2fsprogs
 
@@ -28,13 +27,7 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
-$($(PKG)_PARTED_PC_STAGING): parted-configured
-	$(SUBMAKE) -C $(PARTED_DIR) V=1 all
-	$(SUBMAKE) -C $(PARTED_DIR) DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" STRIP=true install
-
-$($(PKG)_DIR)/.configured: $($(PKG)_PARTED_PC_STAGING) e2fsprogs-configured
-
-$($(PKG)_BINARY): $($(PKG)_DIR)/.configured parted-precompiled
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	# Build only the binary target (no manpage tool dependency) and allow
 	# duplicate symbols from libparted/libparted-fs-resize static archives.
 	$(SUBMAKE) -C $(FATRESIZE_DIR) V=1 LDFLAGS="$(TARGET_LDFLAGS) -Wl,--allow-multiple-definition" fatresize
