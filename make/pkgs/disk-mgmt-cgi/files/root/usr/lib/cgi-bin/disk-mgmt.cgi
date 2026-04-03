@@ -28,6 +28,7 @@ CMD_NTFSFIX=''
 CMD_NTFSINFO=''
 CMD_NTFSLABEL=''
 CMD_NTFSRESIZE=''
+CMD_FATRESIZE=''
 CMD_MOUNT=''
 CMD_UMOUNT=''
 
@@ -128,6 +129,7 @@ resolve_tools() {
 	CMD_NTFSINFO=$(find_cmd ntfsinfo)
 	CMD_NTFSLABEL=$(find_cmd ntfslabel)
 	CMD_NTFSRESIZE=$(find_cmd ntfsresize)
+	CMD_FATRESIZE=$(find_cmd fatresize)
 	CMD_MOUNT=$(find_cmd mount)
 	CMD_UMOUNT=$(find_cmd umount)
 }
@@ -332,6 +334,7 @@ action_analyze_tools() {
 	add_item "ntfsinfo" "$CMD_NTFSINFO" "Read NTFS metadata"
 	add_item "ntfslabel" "$CMD_NTFSLABEL" "Set NTFS label"
 	add_item "ntfsresize" "$CMD_NTFSRESIZE" "Resize NTFS filesystem"
+	add_item "fatresize" "$CMD_FATRESIZE" "Resize FAT filesystem"
 	add_item "mount" "$CMD_MOUNT" "Mount filesystem"
 	add_item "umount" "$CMD_UMOUNT" "Unmount filesystem"
 
@@ -603,7 +606,7 @@ partprobe $_device"
 # if shrink confirmation is requested, backend retries with scripted 'Yes'"
 		if [ "$_resize_fs" = "yes" ]; then
 			_preview_cmd="$_preview_cmd
-# filesystem resize requested: backend auto-detects FS and runs ext/ntfs resize tools when available"
+# filesystem resize requested: backend auto-detects FS and runs ext/ntfs/fat resize tools when available"
 		fi
 		emit_dry_run_result "partition resize" "$_preview_cmd"
 		return
@@ -662,8 +665,17 @@ partprobe $_device"
 						_out="$_out\n\nWarning: NTFS resize requested but ntfsresize is not available"
 					fi
 					;;
+				fat|fat12|fat16|fat32|vfat)
+					if [ -n "$CMD_FATRESIZE" ]; then
+						_rs=$($CMD_FATRESIZE -s max "$_ppath" 2>&1)
+						_rs_rc=$?
+						_out="$_out\n\nfatresize rc=$_rs_rc:\n$_rs"
+					else
+						_out="$_out\n\nWarning: FAT resize requested but fatresize is not available"
+					fi
+					;;
 				*)
-					_out="$_out\n\nWarning: filesystem resize supports ext2/3/4 and NTFS only (detected: ${_fstype:-unknown})"
+					_out="$_out\n\nWarning: filesystem resize supports ext2/3/4, NTFS and FAT only (detected: ${_fstype:-unknown})"
 					;;
 			esac
 		fi
@@ -723,6 +735,14 @@ if [ "$_direction" = "shrink" ]; then
 emit_dry_run_result "filesystem resize" "ntfsresize -f -s ${_target_bytes} $_partition"
 else
 emit_dry_run_result "filesystem resize" "ntfsresize -f $_partition"
+fi
+return
+;;
+fat|fat12|fat16|fat32|vfat)
+if [ "$_direction" = "shrink" ]; then
+emit_dry_run_result "filesystem resize" "fatresize -s ${_target_bytes}B $_partition"
+else
+emit_dry_run_result "filesystem resize" "fatresize -s max $_partition"
 fi
 return
 ;;
@@ -796,6 +816,36 @@ set -- $_extra_opts
 _out=$($CMD_NTFSRESIZE -f "$@" "$_partition" 2>&1)
 else
 _out=$($CMD_NTFSRESIZE -f "$_partition" 2>&1)
+fi
+fi
+_rc=$?
+_out="\$ $_cmd_rs
+$_out"
+if [ "$_rc" -eq 0 ]; then
+emit_cmd_result true "$_rc" "Filesystem resized" "$_out"
+else
+emit_cmd_result false "$_rc" "Filesystem resize failed" "$_out"
+fi
+;;
+fat|fat12|fat16|fat32|vfat)
+[ -n "$CMD_FATRESIZE" ] || { emit_json_error "fatresize not available"; return; }
+if [ "$_direction" = "shrink" ]; then
+_target_bytes=$(safe_uint "$_target_bytes")
+[ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
+_cmd_rs="$CMD_FATRESIZE -s ${_target_bytes}B ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_out=$($CMD_FATRESIZE -s "${_target_bytes}B" "$@" "$_partition" 2>&1)
+else
+_out=$($CMD_FATRESIZE -s "${_target_bytes}B" "$_partition" 2>&1)
+fi
+else
+_cmd_rs="$CMD_FATRESIZE -s max ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_out=$($CMD_FATRESIZE -s max "$@" "$_partition" 2>&1)
+else
+_out=$($CMD_FATRESIZE -s max "$_partition" 2>&1)
 fi
 fi
 _rc=$?
@@ -2181,6 +2231,17 @@ cat <<'EOF'
 	overflow: hidden;
 	border-radius: 4px;
 }
+.pcgi-map-loading {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 700;
+	color: #304658;
+	background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55) 8px, rgba(230, 238, 246, 0.55) 8px, rgba(230, 238, 246, 0.55) 16px);
+}
 .pcgi-disk-block {
 	position: absolute;
 	left: 0;
@@ -2453,7 +2514,7 @@ cat <<'EOF'
 	<div>
 		<label id="i18nResizeFsLabel">Resize filesystem too</label>
 		<select id="resizeFsSelect">
-			<option value="yes" selected>yes (ext/ntfs)</option>
+			<option value="yes" selected>yes (ext2/3/4, ntfs, fat*)</option>
 			<option value="no">no</option>
 		</select>
 	</div>
@@ -3151,10 +3212,12 @@ cat <<'EOF'
 		if (!available['mke2fs/e2fsprogs']) featureIssues.push('ext filesystem creation');
 		if (!available['e2fsck/e2fsprogs']) featureIssues.push('ext filesystem checks');
 		if (!available['resize2fs/e2fsprogs']) featureIssues.push('ext filesystem resize');
+		if (!available['fatresize']) featureIssues.push('FAT filesystem resize');
 		if (!available['mkntfs']) featureIssues.push('NTFS filesystem creation');
 		if (!available['ntfsfix']) featureIssues.push('NTFS check/repair');
 		if (!available['ntfsinfo']) featureIssues.push('NTFS metadata inspection');
 		if (!available['ntfslabel']) featureIssues.push('NTFS label updates');
+		if (!available['ntfsresize']) featureIssues.push('NTFS filesystem resize');
 		if (!available['mount']) featureIssues.push('mount operations');
 		if (!available['umount']) featureIssues.push('unmount operations');
 		if (!available['smartctl']) featureIssues.push('SMART diagnostics');
@@ -3162,6 +3225,7 @@ cat <<'EOF'
 		if (!available['gdisk'] && !available['sgdisk']) featureIssues.push('GPT diagnostics');
 
 		return {
+			available: available,
 			missing: missing,
 			requiredMissing: requiredMissing,
 			featureIssues: featureIssues,
@@ -3227,7 +3291,7 @@ cat <<'EOF'
 		if (action === 'resize_partition') {
 			var txt = 'parted -s ' + v(params.device) + ' unit s resizepart ' + v(params.partnum) + ' ' + v(params.end_sector) + 's\npartprobe ' + v(params.device);
 			if (v(params.resize_fs) === 'yes') {
-				txt += '\n# backend will auto-detect filesystem and run ext/ntfs resize tools when available';
+				txt += '\n# backend will auto-detect filesystem and run ext/ntfs/fat resize tools when available';
 			}
 			return txt;
 		}
@@ -3245,6 +3309,12 @@ cat <<'EOF'
 					return 'ntfsresize -f -s ' + v(params.target_bytes) + ' ' + v(params.partition);
 				}
 				return 'ntfsresize -f ' + v(params.partition);
+			}
+			if (fstype === 'fat' || fstype === 'fat12' || fstype === 'fat16' || fstype === 'fat32' || fstype === 'vfat') {
+				if (direction === 'shrink') {
+					return 'fatresize -s ' + v(params.target_bytes) + 'B ' + v(params.partition);
+				}
+				return 'fatresize -s max ' + v(params.partition);
 			}
 			return '# unsupported fs resize preview for fs_type=' + fstype + ' partition=' + v(params.partition);
 		}
@@ -3754,7 +3824,7 @@ cat <<'EOF'
 	function mapFsTypeSelectValue(fs) {
 		var v = String(fs || '').toLowerCase();
 		if (!v) return 'auto';
-		if (v === 'fat') return 'fat32';
+		if (v === 'fat' || v === 'fat12' || v === 'fat16' || v === 'fat32' || v === 'vfat') return 'fat';
 		if (v === 'vfat') return 'vfat';
 		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'exfat' || v === 'ntfs' || v === 'fat16' || v === 'fat32') {
 			return v;
@@ -3774,6 +3844,16 @@ cat <<'EOF'
 
 	function updateMapStatus(txt) {
 		document.getElementById('mapStatus').textContent = txt || '';
+	}
+
+	function renderMapLoading(msg) {
+		var map = document.getElementById('partitionMap');
+		if (!map) return;
+		map.innerHTML = '';
+		var box = document.createElement('div');
+		box.className = 'pcgi-map-loading';
+		box.textContent = msg || t('tMapLoading');
+		map.appendChild(box);
 	}
 
 	function selectPartition(part) {
@@ -4297,12 +4377,66 @@ cat <<'EOF'
 	function normalizeFsTypeForResize(fsType) {
 		var v = String(fsType || '').toLowerCase();
 		if (!v || v === 'auto') return '';
-		if (v === 'fat') return 'fat32';
+		if (v === 'fat' || v === 'fat12' || v === 'fat16' || v === 'fat32' || v === 'vfat') return 'fat';
 		if (v.indexOf('ext') === 0) return v;
 		if (v === 'ntfs') return 'ntfs';
 		return '';
 	}
 
+
+	function getToolAvailability(name) {
+		if (!state.toolStatus || !state.toolStatus.available) return null;
+		return !!state.toolStatus.available[name];
+	}
+
+	function getFsResizeCapability(fsType, direction) {
+		var normalized = normalizeFsTypeForResize(fsType);
+		if (!normalized) {
+			return { supported: false, hasTool: false, canResize: false, fsType: '', toolHint: '' };
+		}
+
+		if (normalized.indexOf('ext') === 0) {
+			var hasResize2fs = getToolAvailability('resize2fs/e2fsprogs');
+			var hasE2fsck = getToolAvailability('e2fsck/e2fsprogs');
+			var hasToolExt = direction === 'shrink' ? ((hasResize2fs !== false) && (hasE2fsck !== false)) : (hasResize2fs !== false);
+			if (hasResize2fs === false || (direction === 'shrink' && hasE2fsck === false)) hasToolExt = false;
+			return {
+				supported: true,
+				hasTool: hasToolExt,
+				canResize: hasToolExt,
+				fsType: normalized,
+				toolHint: direction === 'shrink' ? 'e2fsck + resize2fs' : 'resize2fs'
+			};
+		}
+
+		if (normalized === 'ntfs') {
+			var hasNtfsresize = getToolAvailability('ntfsresize');
+			var canNtfs = (hasNtfsresize !== false);
+			if (hasNtfsresize === false) canNtfs = false;
+			return {
+				supported: true,
+				hasTool: canNtfs,
+				canResize: canNtfs,
+				fsType: 'ntfs',
+				toolHint: 'ntfsresize'
+			};
+		}
+
+		if (normalized === 'fat') {
+			var hasFatresize = getToolAvailability('fatresize');
+			var canFat = (hasFatresize !== false);
+			if (hasFatresize === false) canFat = false;
+			return {
+				supported: true,
+				hasTool: canFat,
+				canResize: canFat,
+				fsType: 'fat',
+				toolHint: 'fatresize'
+			};
+		}
+
+		return { supported: false, hasTool: false, canResize: false, fsType: '', toolHint: '' };
+	}
 	function findPartitionInDeviceByNumber(dev, partnum) {
 		if (!dev || !dev.partitions) return null;
 		var n = Number(partnum || 0);
@@ -4331,14 +4465,41 @@ cat <<'EOF'
 			return;
 		}
 
+		var isShrink = targetEnd < oldEnd;
 		var queueFs = String(resizeFs || 'no') === 'yes';
-		var fsType = normalizeFsTypeForResize(part.fs);
-		if (queueFs && !fsType) {
-			showToast('Filesystem resize supports ext2/3/4 and NTFS only. Partition resize will still be queued.', 'warn', 3200);
-			queueFs = false;
+		var rawFsType = String(part.fs || '').toLowerCase().trim();
+		var hasFilesystem = !!(rawFsType && rawFsType !== 'unknown' && rawFsType !== '-');
+		var fsCap = hasFilesystem ? getFsResizeCapability(rawFsType, isShrink ? 'shrink' : 'grow') : { supported: true, hasTool: true, canResize: true, fsType: '', toolHint: '' };
+		var fsType = fsCap.fsType || normalizeFsTypeForResize(rawFsType);
+
+		if (isShrink && hasFilesystem) {
+			if (!fsCap.supported) {
+				showToast('Cannot shrink partition #' + part.number + ': filesystem ' + rawFsType + ' is not supported for resize.', 'error', 4200);
+				return;
+			}
+			if (fsCap.hasTool === false) {
+				showToast('Cannot shrink partition #' + part.number + ': missing resize tool (' + fsCap.toolHint + ').', 'error', 4200);
+				return;
+			}
+			if (!queueFs) {
+				queueFs = true;
+				showToast('Filesystem resize enabled automatically for shrink operation.', 'warn', 3200);
+			}
 		}
 
-		var isShrink = targetEnd < oldEnd;
+		if (!isShrink && hasFilesystem) {
+			if (!fsCap.supported) {
+				showToast('Warning: growing partition with filesystem ' + rawFsType + ' has no supported resize. Filesystem resize will be skipped.', 'warn', 3800);
+				queueFs = false;
+			} else if (fsCap.hasTool === false) {
+				showToast('Warning: missing tool ' + fsCap.toolHint + '. Partition growth will be queued without filesystem resize.', 'warn', 3800);
+				queueFs = false;
+			}
+		}
+
+		if (queueFs && !hasFilesystem) queueFs = false;
+		if (queueFs && !fsType) queueFs = false;
+
 		var logical = Number(dev.logical_sector_size || 512);
 		var targetBytes = Math.max(1, (targetEnd - start + 1) * logical);
 		var targetKib = Math.max(1, Math.floor(targetBytes / 1024));
@@ -4428,6 +4589,7 @@ cat <<'EOF'
 			showToast('Resize plan queued (' + (isShrink ? 'shrink' : 'grow') + ').', 'success', 2200);
 		});
 	}
+
 
 	function queueMoveSelectedByDirection(direction) {
 		if (!state.selectedPart || !state.selectedPart.number) {
@@ -4534,6 +4696,7 @@ cat <<'EOF'
 	}
 
 	function refreshDevices() {
+		renderMapLoading(t('tMapLoading'));
 		updateMapStatus(t('tMapLoading'));
 		return callApi('list_devices', { usb_only: state.usbOnly ? '1' : '0' })
 			.then(function (data) {
@@ -4567,6 +4730,7 @@ cat <<'EOF'
 					updateMapStatus(_dm);
 			})
 			.catch(function (err) {
+				renderMapLoading(t('tMapError'));
 				updateMapStatus(t('tMapError') + ': ' + err.message);
 				logTo('cmdOutput', t('tMapError') + ': ' + err.message, false);
 				showToast(t('tMapError') + ': ' + err.message, 'error', 3500);
@@ -5179,6 +5343,7 @@ cat <<'EOF'
 	document.getElementById('dryRunToggle').checked = false;
 	state.dryRun = false;
 	applyTranslations();
+	renderMapLoading(t('tMapLoading'));
 	bindSectorFieldTooltip('newStartSector', 'New start sector');
 	bindSectorFieldTooltip('newEndSector', 'New end sector');
 	bindSectorFieldTooltip('resizeEndSector', 'Resize end sector');
