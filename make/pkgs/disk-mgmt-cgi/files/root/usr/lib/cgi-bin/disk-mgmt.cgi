@@ -599,6 +599,8 @@ action_resize_partition() {
 	if dry_run_enabled; then
 		_preview_cmd="parted -s $_device unit s resizepart $_partnum ${_end_sector}s
 partprobe $_device"
+		_preview_cmd="$_preview_cmd
+# if shrink confirmation is requested, backend retries with scripted 'Yes'"
 		if [ "$_resize_fs" = "yes" ]; then
 			_preview_cmd="$_preview_cmd
 # filesystem resize requested: backend auto-detects FS and runs ext/ntfs resize tools when available"
@@ -607,8 +609,28 @@ partprobe $_device"
 		return
 	fi
 
-	_out=$($CMD_PARTED -s "$_device" unit s resizepart "$_partnum" "${_end_sector}s" 2>&1)
+	_out=$($CMD_PARTED -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" 2>&1)
 	_rc=$?
+
+	# Some parted versions still require an explicit confirmation when shrinking.
+	# Retry with scripted confirmation so queued operations do not stop on rc=134.
+	if [ "$_rc" -ne 0 ]; then
+		case "$_out" in
+			*"Shrinking a partition can cause data loss"*|*"are you sure you want to continue"*)
+				_retry_out=$(printf 'Yes\nIgnore\nIgnore\nIgnore\n' | $CMD_PARTED ---pretend-input-tty -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes 2>&1)
+				_retry_rc=$?
+				if [ "$_retry_rc" -eq 0 ]; then
+					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out"
+					_rc=0
+				else
+					_retry_out2=$($CMD_PARTED -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes 2>&1)
+					_retry_rc2=$?
+					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out\n\nRetry with trailing yes rc=$_retry_rc2:\n$_retry_out2"
+					_rc=$_retry_rc2
+				fi
+				;;
+		esac
+	fi
 
 	if [ "$_rc" -eq 0 ]; then
 		run_partprobe "$_device"
@@ -652,6 +674,143 @@ partprobe $_device"
 	else
 		emit_cmd_result false "$_rc" "Partition resize failed" "$_out"
 	fi
+}
+
+action_resize_filesystem() {
+resolve_tools
+if ! require_ack; then
+emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+return
+fi
+
+_partition=$(cgi_param partition)
+_fs_type=$(cgi_param fs_type)
+_direction=$(cgi_param direction)
+_target_kib=$(cgi_param target_kib)
+_target_bytes=$(cgi_param target_bytes)
+_extra_opts=$(cgi_param extra_opts)
+_opts_display=''
+[ -n "$_extra_opts" ] && _opts_display="$_extra_opts "
+
+is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+is_valid_extra_opts "$_extra_opts" || { emit_json_error "Invalid extra options"; return; }
+
+case "$_direction" in
+shrink|grow|'') : ;;
+*) emit_json_error "Invalid resize direction"; return ;;
+esac
+[ -n "$_direction" ] || _direction='grow'
+
+if [ -z "$_fs_type" ] || [ "$_fs_type" = "auto" ]; then
+if [ -n "$CMD_BLKID" ]; then
+_fs_type=$($CMD_BLKID -o value -s TYPE "$_partition" 2>/dev/null | head -n 1)
+fi
+fi
+
+if dry_run_enabled; then
+case "$_fs_type" in
+ext2|ext3|ext4)
+if [ "$_direction" = "shrink" ]; then
+emit_dry_run_result "filesystem resize" "e2fsck -f -p $_partition
+resize2fs $_partition ${_target_kib}K"
+else
+emit_dry_run_result "filesystem resize" "resize2fs $_partition"
+fi
+return
+;;
+ntfs)
+if [ "$_direction" = "shrink" ]; then
+emit_dry_run_result "filesystem resize" "ntfsresize -f -s ${_target_bytes} $_partition"
+else
+emit_dry_run_result "filesystem resize" "ntfsresize -f $_partition"
+fi
+return
+;;
+*)
+emit_dry_run_result "filesystem resize" "# unsupported fs_type=${_fs_type:-unknown} for $_partition"
+return
+;;
+esac
+fi
+
+case "$_fs_type" in
+ext2|ext3|ext4)
+[ -n "$CMD_E2FSCK" ] || { emit_json_error "e2fsck/e2fsprogs not available"; return; }
+[ -n "$CMD_RESIZE2FS" ] || { emit_json_error "resize2fs/e2fsprogs not available"; return; }
+
+if [ "$_direction" = "shrink" ]; then
+_target_kib=$(safe_uint "$_target_kib")
+[ "$_target_kib" -gt 0 ] || { emit_json_error "Invalid target_kib for shrink"; return; }
+
+_cmd_ck="$CMD_E2FSCK -f -p $_partition"
+_ck=$($CMD_E2FSCK -f -p "$_partition" 2>&1)
+
+_cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition ${_target_kib}K"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_rs=$($CMD_RESIZE2FS "$@" "$_partition" "${_target_kib}K" 2>&1)
+else
+_rs=$($CMD_RESIZE2FS "$_partition" "${_target_kib}K" 2>&1)
+fi
+_rc=$?
+_out="\$ $_cmd_ck
+$_ck
+
+\$ $_cmd_rs
+$_rs"
+else
+_cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_rs=$($CMD_RESIZE2FS "$@" "$_partition" 2>&1)
+else
+_rs=$($CMD_RESIZE2FS "$_partition" 2>&1)
+fi
+_rc=$?
+_out="\$ $_cmd_rs
+$_rs"
+fi
+
+if [ "$_rc" -eq 0 ]; then
+emit_cmd_result true "$_rc" "Filesystem resized" "$_out"
+else
+emit_cmd_result false "$_rc" "Filesystem resize failed" "$_out"
+fi
+;;
+ntfs)
+[ -n "$CMD_NTFSRESIZE" ] || { emit_json_error "ntfsresize not available"; return; }
+if [ "$_direction" = "shrink" ]; then
+_target_bytes=$(safe_uint "$_target_bytes")
+[ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
+_cmd_rs="$CMD_NTFSRESIZE -f -s $_target_bytes ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_out=$($CMD_NTFSRESIZE -f -s "$_target_bytes" "$@" "$_partition" 2>&1)
+else
+_out=$($CMD_NTFSRESIZE -f -s "$_target_bytes" "$_partition" 2>&1)
+fi
+else
+_cmd_rs="$CMD_NTFSRESIZE -f ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+set -- $_extra_opts
+_out=$($CMD_NTFSRESIZE -f "$@" "$_partition" 2>&1)
+else
+_out=$($CMD_NTFSRESIZE -f "$_partition" 2>&1)
+fi
+fi
+_rc=$?
+_out="\$ $_cmd_rs
+$_out"
+if [ "$_rc" -eq 0 ]; then
+emit_cmd_result true "$_rc" "Filesystem resized" "$_out"
+else
+emit_cmd_result false "$_rc" "Filesystem resize failed" "$_out"
+fi
+;;
+*)
+emit_json_error "Unsupported or undetected filesystem type for resize"
+;;
+esac
 }
 
 action_create_filesystem() {
@@ -1259,6 +1418,21 @@ action_unmount_partition() {
 		return
 	fi
 
+	# Keep unmount idempotent so orchestrated queues can always start with this step.
+	if [ -n "$_partition" ]; then
+		_is_mounted=$(awk -v p="$_partition" '$1 == p { print 1; exit }' /proc/mounts 2>/dev/null)
+		if [ "$_is_mounted" != "1" ]; then
+			emit_cmd_result true 0 "Partition already unmounted" "$_partition is not mounted"
+			return
+		fi
+	elif [ -n "$_mountpoint" ]; then
+		_is_mounted=$(awk -v m="$_mountpoint" '$2 == m { print 1; exit }' /proc/mounts 2>/dev/null)
+		if [ "$_is_mounted" != "1" ]; then
+			emit_cmd_result true 0 "Mountpoint already unmounted" "$_mountpoint is not mounted"
+			return
+		fi
+	fi
+
 	_out=$($CMD_UMOUNT "$_target" 2>&1)
 	_rc=$?
 
@@ -1626,6 +1800,9 @@ EOF
 			;;
 		resize_partition)
 			action_resize_partition
+			;;
+		resize_filesystem)
+			action_resize_filesystem
 			;;
 		create_filesystem)
 			action_create_filesystem
@@ -2276,8 +2453,8 @@ cat <<'EOF'
 	<div>
 		<label id="i18nResizeFsLabel">Resize filesystem too</label>
 		<select id="resizeFsSelect">
+			<option value="yes" selected>yes (ext/ntfs)</option>
 			<option value="no">no</option>
-			<option value="yes">yes (ext/ntfs)</option>
 		</select>
 	</div>
 	<div>
@@ -3053,6 +3230,23 @@ cat <<'EOF'
 				txt += '\n# backend will auto-detect filesystem and run ext/ntfs resize tools when available';
 			}
 			return txt;
+		}
+		if (action === 'resize_filesystem') {
+			var fstype = v(params.fs_type).toLowerCase();
+			var direction = v(params.direction).toLowerCase() || 'grow';
+			if (fstype === 'ext2' || fstype === 'ext3' || fstype === 'ext4') {
+				if (direction === 'shrink') {
+					return 'e2fsck -f -p ' + v(params.partition) + '\nresize2fs ' + v(params.partition) + ' ' + v(params.target_kib) + 'K';
+				}
+				return 'resize2fs ' + v(params.partition);
+			}
+			if (fstype === 'ntfs') {
+				if (direction === 'shrink') {
+					return 'ntfsresize -f -s ' + v(params.target_bytes) + ' ' + v(params.partition);
+				}
+				return 'ntfsresize -f ' + v(params.partition);
+			}
+			return '# unsupported fs resize preview for fs_type=' + fstype + ' partition=' + v(params.partition);
 		}
 		if (action === 'create_filesystem') {
 			var opts = v(params.extra_opts || '').trim();
@@ -3834,9 +4028,25 @@ cat <<'EOF'
 					)
 				);
 				var selectedFree = !!(state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end));
+				var draggingThis = false;
+				var drawStart = Number(p.start || 0);
+				var drawEnd = Number(p.end || 0);
+				var drawSize = Number(p.size || Math.max(1, drawEnd - drawStart + 1));
+				if (state.dragCtx && p.kind === 'partition' && String(state.dragCtx.dev && state.dragCtx.dev.path || '') === String(dev.path || '')) {
+					var dragPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
+					if (dragPath && dragPath === pPath) {
+						draggingThis = true;
+						if (state.dragCtx.edge === 'left') {
+							drawStart = Number(state.dragCtx.currentStart || drawStart);
+						} else {
+							drawEnd = Number(state.dragCtx.currentEnd || drawEnd);
+						}
+						drawSize = Math.max(1, drawEnd - drawStart + 1);
+					}
+				}
 
-				var leftPx = Math.round((Number(p.start) / total) * mapWidth);
-				var widthPx = Math.max(1, Math.round((Number(p.size) / total) * mapWidth));
+				var leftPx = Math.round((drawStart / total) * mapWidth);
+				var widthPx = Math.max(1, Math.round((drawSize / total) * mapWidth));
 				// Ensure partition blocks have a minimum display width so they remain clickable,
 				// even when the partition is much smaller than the others.  Free-space segments
 				// use strictly proportional widths so they don't obscure adjacent partitions.
@@ -3852,7 +4062,7 @@ cat <<'EOF'
 				block.style.width = widthPx + 'px';
 				// Only highlight the individually selected partition/free segment.
 				// Do NOT apply 'selected' class to all partitions when the disk is selected.
-				if (selectedPart) {
+				if (selectedPart || draggingThis) {
 					block.className += ' selected';
 				}
 				if (selectedFree) {
@@ -4010,6 +4220,7 @@ cat <<'EOF'
 		state.dragCtx = {
 			dev: dev,
 			part: part,
+			partPath: String(part.path || ''),
 			edge: edge || 'right',
 			mapRect: rect,
 			total: total,
@@ -4021,6 +4232,9 @@ cat <<'EOF'
 			currentEnd: Number(part.end)
 		};
 
+		hideHoverTooltip();
+		hideContextMenu();
+		renderMap();
 		document.addEventListener('mousemove', onResizeMove);
 		document.addEventListener('mouseup', onResizeUp);
 	}
@@ -4036,13 +4250,16 @@ cat <<'EOF'
 			if (sec < d.minStart) sec = d.minStart;
 			if (sec > d.maxStart) sec = d.maxStart;
 			d.currentStart = sec;
+			document.getElementById('newStartSector').value = String(sec);
 			updateMapStatus('Resize preview: #' + d.part.number + ' start -> ' + sec + 's');
 		} else {
 			if (sec < d.minEnd) sec = d.minEnd;
 			if (sec > d.maxEnd) sec = d.maxEnd;
 			d.currentEnd = sec;
+			document.getElementById('resizeEndSector').value = String(sec);
 			updateMapStatus('Resize preview: #' + d.part.number + ' end -> ' + sec + 's');
 		}
+		renderMap();
 	}
 
 	function onResizeUp() {
@@ -4071,21 +4288,145 @@ cat <<'EOF'
 				selectPartition(d.part);
 			}
 		} else if (Number(d.currentEnd) !== Number(d.part.end)) {
-			queueOpWithConfirm(
-				'resize_partition',
-				{
-					device: d.dev.path,
-					partnum: d.part.number,
-					end_sector: d.currentEnd,
-					resize_fs: 'no'
-				},
-				'Resize partition #' + d.part.number + ' on ' + d.dev.path + ' to end=' + d.currentEnd + 's',
-				t('confirmAction'),
-				'Resize operation will be queued.'
-			);
+			queueResizePlan(d.dev, d.part, Number(d.currentEnd), document.getElementById('resizeFsSelect').value);
 			document.getElementById('resizeEndSector').value = String(d.currentEnd);
 			selectPartition(d.part);
 		}
+	}
+
+	function normalizeFsTypeForResize(fsType) {
+		var v = String(fsType || '').toLowerCase();
+		if (!v || v === 'auto') return '';
+		if (v === 'fat') return 'fat32';
+		if (v.indexOf('ext') === 0) return v;
+		if (v === 'ntfs') return 'ntfs';
+		return '';
+	}
+
+	function findPartitionInDeviceByNumber(dev, partnum) {
+		if (!dev || !dev.partitions) return null;
+		var n = Number(partnum || 0);
+		for (var i = 0; i < dev.partitions.length; i++) {
+			var p = dev.partitions[i];
+			if (p && p.kind === 'partition' && Number(p.number || 0) === n) return p;
+		}
+		return null;
+	}
+
+	function queueResizePlan(dev, part, newEnd, resizeFs) {
+		if (!dev || !part) {
+			showToast(t('tContextUnavailable'), 'warn');
+			return;
+		}
+
+		var start = Number(part.start || 0);
+		var oldEnd = Number(part.end || 0);
+		var targetEnd = Number(newEnd || 0);
+		if (!isFinite(targetEnd) || targetEnd <= start) {
+			showToast('Invalid end sector for resize.', 'warn');
+			return;
+		}
+		if (targetEnd === oldEnd) {
+			showToast(t('tMoveSame'), 'warn');
+			return;
+		}
+
+		var queueFs = String(resizeFs || 'no') === 'yes';
+		var fsType = normalizeFsTypeForResize(part.fs);
+		if (queueFs && !fsType) {
+			showToast('Filesystem resize supports ext2/3/4 and NTFS only. Partition resize will still be queued.', 'warn', 3200);
+			queueFs = false;
+		}
+
+		var isShrink = targetEnd < oldEnd;
+		var logical = Number(dev.logical_sector_size || 512);
+		var targetBytes = Math.max(1, (targetEnd - start + 1) * logical);
+		var targetKib = Math.max(1, Math.floor(targetBytes / 1024));
+		var isMounted = !!(part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-');
+		var mountpoint = isMounted ? String(part.mountpoint).trim() : '';
+		var partitionPath = String(part.path || '');
+
+		showConfirmModal(
+			t('confirmAction'),
+			'Queue resize plan for partition #' + part.number + ' on ' + dev.path + '?'
+		).then(function (ok) {
+			if (!ok) return;
+
+			var umParams = { partition: partitionPath };
+			queueOp(
+				'unmount_partition',
+				umParams,
+				'Unmount ' + partitionPath,
+				buildCommandPreview('unmount_partition', umParams),
+				true
+			);
+
+			if (queueFs && isShrink) {
+				var fsBeforeParams = {
+					partition: partitionPath,
+					fs_type: fsType,
+					direction: 'shrink',
+					target_kib: String(targetKib),
+					target_bytes: String(targetBytes)
+				};
+				queueOp(
+					'resize_filesystem',
+					fsBeforeParams,
+					'Resize filesystem (shrink) on ' + partitionPath,
+					buildCommandPreview('resize_filesystem', fsBeforeParams),
+					true
+				);
+			}
+
+			var rpParams = {
+				device: dev.path,
+				partnum: part.number,
+				end_sector: String(targetEnd),
+				resize_fs: 'no'
+			};
+			queueOp(
+				'resize_partition',
+				rpParams,
+				'Resize partition #' + part.number + ' on ' + dev.path + ' to end=' + targetEnd + 's',
+				buildCommandPreview('resize_partition', rpParams),
+				true
+			);
+
+			if (queueFs && !isShrink) {
+				var fsAfterParams = {
+					partition: partitionPath,
+					fs_type: fsType,
+					direction: 'grow',
+					target_kib: String(targetKib),
+					target_bytes: String(targetBytes)
+				};
+				queueOp(
+					'resize_filesystem',
+					fsAfterParams,
+					'Resize filesystem (grow) on ' + partitionPath,
+					buildCommandPreview('resize_filesystem', fsAfterParams),
+					true
+				);
+			}
+
+			if (isMounted && mountpoint) {
+				var mParams = {
+					partition: partitionPath,
+					mountpoint: mountpoint,
+					fs_type: mapFsTypeSelectValue(part.fs),
+					mount_opts: ''
+				};
+				queueOp(
+					'mount_partition',
+					mParams,
+					'Remount ' + partitionPath + ' on ' + mountpoint,
+					buildCommandPreview('mount_partition', mParams),
+					true
+				);
+			}
+
+			showToast('Resize plan queued (' + (isShrink ? 'shrink' : 'grow') + ').', 'success', 2200);
+		});
 	}
 
 	function queueMoveSelectedByDirection(direction) {
@@ -4319,18 +4660,19 @@ cat <<'EOF'
 			showToast(t('tNeedResizeInput'), 'warn');
 			return;
 		}
-		queueOpWithConfirm(
-			'resize_partition',
-			{
-				device: state.selectedDevice,
-				partnum: partnum,
-				end_sector: endSector,
-				resize_fs: document.getElementById('resizeFsSelect').value
-			},
-			'Resize partition p' + partnum + ' on ' + state.selectedDevice + ' to end=' + endSector + 's',
-			t('confirmAction'),
-			'Resize operation will be queued.'
-		);
+
+		var dev = getSelectedDeviceData();
+		if (!dev) {
+			showToast(t('tNoDevice'), 'warn');
+			return;
+		}
+		var part = findPartitionInDeviceByNumber(dev, partnum);
+		if (!part) {
+			showToast(t('tNoPartition'), 'warn');
+			return;
+		}
+
+		queueResizePlan(dev, part, Number(endSector), document.getElementById('resizeFsSelect').value);
 	}
 
 	function queueMkfs() {
