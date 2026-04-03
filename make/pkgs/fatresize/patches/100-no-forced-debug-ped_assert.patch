@@ -1,0 +1,14 @@
+--- a/fatresize.c
++++ b/fatresize.c
+@@ -17,11 +17,6 @@
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
+-/* activate PED_ASSERT */
+-#ifndef DEBUG
+-#define DEBUG 1
+-#endif
+-
+ #include <ctype.h>
+ #include <errno.h>
+ #include <getopt.h>
