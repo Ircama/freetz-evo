@@ -64,8 +64,29 @@ emit_dry_run_result() {
 }
 
 json_escape() {
-	_tab=$(printf '\t')
-	printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g' -e 's/\r/\\r/g' -e "s/${_tab}/\\\\t/g"
+	# Use awk for robust JSON string escaping.  Handles all control
+	# characters (0x00-0x1f) including those BusyBox sed may not
+	# reliably escape: newlines, carriage-returns, tabs, etc.
+	printf '%s' "$1" | awk '
+	BEGIN {
+		ORS = ""
+		for (_i = 0; _i < 32; _i++)
+			_ctrl[sprintf("%c", _i)] = sprintf("\\u%04x", _i)
+	}
+	NR > 1 { printf "\\n" }
+	{
+		_n = length($0)
+		for (_i = 1; _i <= _n; _i++) {
+			_c = substr($0, _i, 1)
+			if      (_c == "\\") printf "\\\\"
+			else if (_c == "\"") printf "\\\""
+			else if (_c == "\r") printf "\\r"
+			else if (_c == "\t") printf "\\t"
+			else if (_c in _ctrl) printf "%s", _ctrl[_c]
+			else printf "%s", _c
+		}
+	}
+	'
 }
 
 safe_uint() {
@@ -434,7 +455,9 @@ action_list_devices() {
 			fi
 			first_part=0
 
-			if [ "$_pid" = "free" ]; then
+			# Detect free space: older parted uses "free" in field 1; newer parted
+			# uses a numeric slot index in field 1 but "free" in field 5 (_pfs).
+			if [ "$_pid" = "free" ] || [ "$_pfs" = "free" ]; then
 				_parts="$_parts{\"kind\":\"free\",\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize}"
 			else
 				_pnum=$(safe_uint "$_pid")
@@ -1749,16 +1772,38 @@ action_smart_info() {
 	[ -n "$CMD_SMARTCTL" ] || { emit_json_error "smartctl not available"; return; }
 
 	if dry_run_enabled; then
-		emit_dry_run_result "smart diagnostics" "smartctl -H -A $_device"
+		emit_dry_run_result "smart diagnostics" "smartctl --xall $_device\n# fallback for USB/SAT bridges: smartctl -d sat,auto -T permissive -x $_device\n# info-only fallback: smartctl -d sat,auto -T permissive -i $_device"
 		return
 	fi
 
-	_out=$($CMD_SMARTCTL -H -A "$_device" 2>&1 | sed -n '1,220p')
+	_smart_has_info() {
+		echo "$1" | grep -Eq 'START OF INFORMATION SECTION|Device Model:|Vendor:|Model Family:|User Capacity:|Serial Number:|SMART support is'
+	}
+
+	_smart_needs_fallback() {
+		echo "$1" | grep -Eq 'INVALID ARGUMENT TO -l|VALID ARGUMENTS ARE:|Use smartctl -h|Smartctl open device: .* failed'
+	}
+
+	_smart_cmd_used="--xall"
+	_out=$($CMD_SMARTCTL --xall "$_device" 2>&1 | sed -n '1,220p')
 	_rc=$?
-	if [ -n "$_out" ]; then
-		emit_cmd_result true "$_rc" "SMART report collected" "$_out"
+
+	if _smart_needs_fallback "$_out" || { [ "$_rc" -ne 0 ] && ! _smart_has_info "$_out"; }; then
+		_smart_cmd_used='-d sat,auto -T permissive -x'
+		_out=$($CMD_SMARTCTL -d sat,auto -T permissive -x "$_device" 2>&1 | sed -n '1,220p')
+		_rc=$?
+	fi
+
+	if [ "$_rc" -ne 0 ] && ! _smart_has_info "$_out"; then
+		_smart_cmd_used='-d sat,auto -T permissive -i'
+		_out=$($CMD_SMARTCTL -d sat,auto -T permissive -i "$_device" 2>&1 | sed -n '1,220p')
+		_rc=$?
+	fi
+
+	if [ -n "$_out" ] && { _smart_has_info "$_out" || [ "$_rc" -eq 0 ]; }; then
+		emit_cmd_result true "$_rc" "SMART report collected (smartctl $_smart_cmd_used $_device)" "$_out"
 	else
-		emit_cmd_result false "$_rc" "SMART report failed" "$_out"
+		emit_cmd_result false "$_rc" "SMART report failed (smartctl $_smart_cmd_used $_device)" "$_out"
 	fi
 }
 
@@ -1905,7 +1950,7 @@ EOF
 	exit 0
 fi
 
-sec_begin "Safety and operation mode"
+sec_begin "Safety and operation mode" "safetyModeSection"
 cat <<'EOF'
 <div class="pcgi-grid">
 	<div class="pcgi-card pcgi-card-danger">
@@ -1927,6 +1972,8 @@ cat <<'EOF'
 				<label id="i18nLanguageLabel" for="langSelect">Language</label>
 				<select id="langSelect">
 					<option value="en">English</option>
+					<option value="fr">Francais</option>
+					<option value="es">Espanol</option>
 					<option value="it">Italiano</option>
 					<option value="de">Deutsch</option>
 				</select>
@@ -1937,9 +1984,6 @@ cat <<'EOF'
 					<option value="0">All block devices</option>
 					<option value="1">USB devices only</option>
 				</select>
-			</div>
-			<div>
-				<label for="dryRunToggle"><input id="dryRunToggle" type="checkbox"> <span id="i18nDryRunLabel">Dry-run mode (log only, do not execute)</span></label>
 			</div>
 		</div>
 	</div>
@@ -2398,16 +2442,21 @@ cat <<'EOF'
 .pcgi-mono {
 	font-family: monospace;
 }
+/* Hide the framework Applica / Default (submit) buttons;
+   disk-mgmt manages all actions via its own JavaScript flow. */
+input[type="submit"], button[type="submit"] { display: none !important; }
 </style>
 
 <div class="pcgi-toolbar">
 	<button type="button" onclick="refreshDevices()" id="refreshMapBtn">Refresh map</button>
 	<span id="i18nDeviceStripLabel">Devices:</span>
-	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn">Run partprobe</button>
-	<button type="button" onclick="analyzeTools()" id="analyzeBtn">Analyze toolchain</button>
-	<button type="button" onclick="loadPartitionMetadata()" id="metaBtn">Partition metadata</button>
+	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn" title="Reload kernel partition table after partition changes">Run partprobe</button>
+	<button type="button" onclick="analyzeTools()" id="analyzeBtn" title="Check required/optional disk-management commands on this system">Analyze toolchain</button>
+	<button type="button" onclick="loadPartitionMetadata()" id="metaBtn" title="Load partition geometry and filesystem metadata for selected partition">Partition metadata</button>
+	<button type="button" onclick="toggleToolchainSection()" id="toolchainToggleBtn">Show toolchain panel</button>
 	<span id="mapStatus" class="pcgi-small"></span>
 </div>
+<div id="i18nTopButtonsExplain" class="pcgi-small" style="margin-top:-4px; margin-bottom:8px;">Run partprobe refreshes kernel partition table visibility, Analyze toolchain checks required/optional commands, Partition metadata loads partition geometry and filesystem metadata of the selected partition.</div>
 
 <div id="deviceStrip" class="pcgi-device-strip" aria-label="Devices"></div>
 <select id="deviceSelect" class="pcgi-device-select-hidden" onchange="onDeviceChange()" aria-hidden="true" tabindex="-1"></select>
@@ -2437,8 +2486,16 @@ cat <<'EOF'
 		<input id="newStartSector" type="text" placeholder="e.g. 2048">
 	</div>
 	<div>
+		<label id="i18nNewStartHumanLabel">New start size</label>
+		<input id="newStartHuman" type="text" placeholder="e.g. 1 MiB or 2048 KiB">
+	</div>
+	<div>
 		<label id="i18nNewEndLabel">New end sector</label>
 		<input id="newEndSector" type="text" placeholder="e.g. 1023999">
+	</div>
+	<div>
+		<label id="i18nNewEndHumanLabel">New end size</label>
+		<input id="newEndHuman" type="text" placeholder="e.g. 488 MiB">
 	</div>
 	<div>
 		<label id="i18nRoleLabel">Role</label>
@@ -2512,6 +2569,10 @@ cat <<'EOF'
 		<input id="resizeEndSector" type="text" placeholder="new end sector">
 	</div>
 	<div>
+		<label id="i18nResizeEndHumanLabel">Resize target size</label>
+		<input id="resizeEndHuman" type="text" placeholder="e.g. 8 GiB">
+	</div>
+	<div>
 		<label id="i18nResizeFsLabel">Resize filesystem too</label>
 		<select id="resizeFsSelect">
 			<option value="yes" selected>yes (ext2/3/4, ntfs, fat*)</option>
@@ -2550,18 +2611,20 @@ cat <<'EOF'
 	<button type="button" onclick="loadPartitionMetadata()" id="loadMetaBtn">Load metadata view</button>
 	<span id="metaStatus" class="pcgi-small"></span>
 </div>
+<p id="i18nMetaExplain" class="pcgi-small">Shows partition geometry and filesystem metadata (size, used/free bytes, model/serial and table details) for the selected partition. Read-only view.</p>
 <div id="metaGraph"></div>
 <pre id="metaRawOutput" class="pcgi-log"></pre>
 EOF
 sec_end
 
-sec_begin "Diagnostics (hdparm, SMART, GPT)"
+sec_begin "Disk Diagnostics (hdparm, SMART, GPT)"
 cat <<'EOF'
 <div class="pcgi-toolbar">
-	<button type="button" onclick="runDiagnostics('smart_info')">SMART health</button>
+	<button type="button" onclick="runDiagnostics('smart_info')">SMART information</button>
 	<button type="button" onclick="runDiagnostics('hdparm_info')">hdparm identify</button>
 	<button type="button" onclick="runDiagnostics('gpt_info')">GPT summary</button>
 </div>
+<p id="i18nDiagExplain" class="pcgi-small">Runs hardware/partition diagnostics on the selected disk: SMART status, hdparm identify output and GPT layout summary. Read-only diagnostics.</p>
 <pre id="diagOutput" class="pcgi-log"></pre>
 EOF
 sec_end
@@ -2587,10 +2650,15 @@ cat <<'EOF'
 EOF
 sec_end
 
-sec_begin "Toolchain analysis"
+sec_begin "Toolchain analysis" "toolchainSection"
 cat <<'EOF'
 <pre id="toolsOutput" class="pcgi-log"></pre>
+EOF
+sec_end
 
+# Modals and toast container must live outside any collapsible section so that
+# position:fixed overlays remain visible even when toolchainSection is hidden.
+cat <<'EOF'
 <div id="pcgiToastWrap"></div>
 
 <div id="pcgiConfirmModal" class="pcgi-modal" aria-hidden="true">
@@ -2629,7 +2697,6 @@ cat <<'EOF'
 	</div>
 </div>
 EOF
-sec_end
 
 cat <<'EOF'
 <script>
@@ -2650,7 +2717,6 @@ cat <<'EOF'
 			missingCommandsLabel: 'Missing commands:',
 			languageLabel: 'Language',
 			usbOnlyLabel: 'Device filter',
-			dryRunLabel: 'Dry-run mode (log only, do not execute)',
 			helperTitle: 'Keyboard shortcuts and workflow',
 			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operation queue\nDelete: queue delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition left/right edge: queue resize\nDrag partition to free area: queue move',
 			cmdPreviewTitle: 'Command preview',
@@ -2718,7 +2784,6 @@ cat <<'EOF'
 			missingCommandsLabel: 'Comandi mancanti:',
 			languageLabel: 'Lingua',
 			usbOnlyLabel: 'Filtro dispositivi',
-			dryRunLabel: 'Modalita dry-run (solo log, nessuna esecuzione)',
 			helperTitle: 'Scorciatoie da tastiera e workflow',
 			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica coda operazioni\nCanc: accoda eliminazione partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo sinistro/destro partizione: accoda resize\nTrascina partizione su spazio libero: accoda move',
 			cmdPreviewTitle: 'Anteprima comando',
@@ -2786,7 +2851,6 @@ cat <<'EOF'
 			missingCommandsLabel: 'Fehlende Befehle:',
 			languageLabel: 'Sprache',
 			usbOnlyLabel: 'Geraetefilter',
-			dryRunLabel: 'Dry-run Modus (nur Log, keine Ausfuehrung)',
 			helperTitle: 'Tastenkuerzel und Ablauf',
 			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Queue anwenden\nEntf: Loeschen der gewaehlten Partition in Queue\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nLinken/rechten Partitionsrand ziehen: Resize in Queue\nPartition auf freien Bereich ziehen: Move in Queue',
 			cmdPreviewTitle: 'Befehlsvorschau',
@@ -2842,6 +2906,93 @@ cat <<'EOF'
 		}
 	};
 
+	translations.en = Object.assign({}, translations.en, {
+		topButtonsExplain: "Run partprobe refreshes kernel partition table visibility, Analyze toolchain checks required/optional commands, Partition metadata loads partition geometry and filesystem metadata of the selected partition.",
+		metaExplain: "Shows partition geometry and filesystem metadata (size, used/free bytes, model/serial and table details) for the selected partition. Read-only view.",
+		diagExplain: "Runs hardware/partition diagnostics on the selected disk: SMART status, hdparm identify output and GPT layout summary. Read-only diagnostics.",
+		btnRunPartprobe: "Run partprobe",
+		btnAnalyzeToolchain: "Analyze toolchain",
+		btnPartitionMetadata: "Partition metadata",
+		btnLoadMetadataView: "Load metadata view",
+		btnToolchainShow: "Show toolchain panel",
+		btnToolchainHide: "Hide toolchain panel",
+		partprobeHint: "Reload kernel partition table after partition changes",
+		analyzeHint: "Check required/optional disk-management commands on this system",
+		metadataHint: "Load partition geometry and filesystem metadata for selected partition",
+		usbAllDevices: "All block devices",
+		usbOnlyDevices: "USB devices only"
+	});
+	translations.it = Object.assign({}, translations.it, {
+		topButtonsExplain: "Run partprobe aggiorna la tabella partizioni vista dal kernel, Analyze toolchain controlla i comandi richiesti/opzionali, Partition metadata carica geometria partizione e metadati filesystem della partizione selezionata.",
+		metaExplain: "Mostra geometria partizione e metadati filesystem (dimensione, usato/libero, modello/seriale e dettagli tabella) per la partizione selezionata. Vista in sola lettura.",
+		diagExplain: "Esegue diagnostica hardware/partizioni sul disco selezionato: stato SMART, output identify di hdparm e riepilogo layout GPT. Diagnostica in sola lettura.",
+		btnRunPartprobe: "Esegui partprobe",
+		btnAnalyzeToolchain: "Analizza toolchain",
+		btnPartitionMetadata: "Metadati partizione",
+		btnLoadMetadataView: "Carica vista metadati",
+		btnToolchainShow: "Mostra pannello toolchain",
+		btnToolchainHide: "Nascondi pannello toolchain",
+		partprobeHint: "Ricarica la tabella partizioni nel kernel dopo modifiche alle partizioni",
+		analyzeHint: "Controlla disponibilita dei comandi richiesti/opzionali per la gestione disco",
+		metadataHint: "Carica geometria partizione e metadati filesystem per la partizione selezionata",
+		usbAllDevices: "Tutti i dispositivi a blocchi",
+		usbOnlyDevices: "Solo dispositivi USB"
+	});
+	translations.de = Object.assign({}, translations.de, {
+		topButtonsExplain: "Run partprobe aktualisiert die Kernel-Sicht auf die Partitionstabelle, Analyze toolchain prueft erforderliche/optionale Befehle, Partition metadata laedt Partitionsgeometrie und Dateisystem-Metadaten der gewaehlten Partition.",
+		metaExplain: "Zeigt Partitionsgeometrie und Dateisystem-Metadaten (Groesse, belegt/frei, Modell/Seriennummer und Tabellendetails) fuer die gewaehlte Partition. Nur-Lese-Ansicht.",
+		diagExplain: "Fuehrt Hardware-/Partitionsdiagnosen fuer den gewaehlten Datentraeger aus: SMART-Status, hdparm-Identify-Ausgabe und GPT-Layout-Zusammenfassung. Nur-Lese-Diagnose.",
+		btnRunPartprobe: "Partprobe ausfuehren",
+		btnAnalyzeToolchain: "Toolchain analysieren",
+		btnPartitionMetadata: "Partitions-Metadaten",
+		btnLoadMetadataView: "Metadatenansicht laden",
+		btnToolchainShow: "Toolchain-Panel anzeigen",
+		btnToolchainHide: "Toolchain-Panel ausblenden",
+		partprobeHint: "Kernel-Partitionstabelle nach Partitionsaenderungen neu laden",
+		analyzeHint: "Erforderliche/optionale Befehle fuer die Datentraegerverwaltung pruefen",
+		metadataHint: "Partitionsgeometrie und Dateisystem-Metadaten fuer die gewaehlte Partition laden",
+		usbAllDevices: "Alle Blockgeraete",
+		usbOnlyDevices: "Nur USB-Geraete"
+	});
+	translations.fr = Object.assign({}, translations.en, {
+		languageLabel: "Langue",
+		usbOnlyLabel: "Filtre peripheriques",
+		deviceStripLabel: "Peripheriques:",
+		topButtonsExplain: "Run partprobe rafraichit la table de partitions du noyau, Analyze toolchain verifie les commandes requises/optionnelles, Partition metadata charge la geometrie et les metadonnees de la partition selectionnee.",
+		metaExplain: "Affiche la geometrie de partition et les metadonnees du systeme de fichiers pour la partition selectionnee. Vue en lecture seule.",
+		diagExplain: "Execute des diagnostics materiel/partition: SMART, hdparm identify et resume GPT. Lecture seule.",
+		btnRunPartprobe: "Executer partprobe",
+		btnAnalyzeToolchain: "Analyser la toolchain",
+		btnPartitionMetadata: "Metadonnees partition",
+		btnLoadMetadataView: "Charger vue metadonnees",
+		btnToolchainShow: "Afficher panneau toolchain",
+		btnToolchainHide: "Masquer panneau toolchain",
+		partprobeHint: "Recharger la table de partitions du noyau apres modifications",
+		analyzeHint: "Verifier les commandes requises/optionnelles de gestion disque",
+		metadataHint: "Charger geometrie et metadonnees de la partition selectionnee",
+		usbAllDevices: "Tous les peripheriques bloc",
+		usbOnlyDevices: "Peripheriques USB uniquement"
+	});
+	translations.es = Object.assign({}, translations.en, {
+		languageLabel: "Idioma",
+		usbOnlyLabel: "Filtro de dispositivos",
+		deviceStripLabel: "Dispositivos:",
+		topButtonsExplain: "Run partprobe actualiza la tabla de particiones del kernel, Analyze toolchain verifica comandos requeridos/opcionales, Partition metadata carga geometria y metadatos de la particion seleccionada.",
+		metaExplain: "Muestra la geometria de particion y metadatos del sistema de archivos para la particion seleccionada. Vista de solo lectura.",
+		diagExplain: "Ejecuta diagnostico de hardware/particiones: SMART, hdparm identify y resumen GPT. Solo lectura.",
+		btnRunPartprobe: "Ejecutar partprobe",
+		btnAnalyzeToolchain: "Analizar toolchain",
+		btnPartitionMetadata: "Metadatos de particion",
+		btnLoadMetadataView: "Cargar vista de metadatos",
+		btnToolchainShow: "Mostrar panel de toolchain",
+		btnToolchainHide: "Ocultar panel de toolchain",
+		partprobeHint: "Recargar la tabla de particiones del kernel tras cambios",
+		analyzeHint: "Comprobar comandos requeridos/opcionales de gestion de discos",
+		metadataHint: "Cargar geometria y metadatos de la particion seleccionada",
+		usbAllDevices: "Todos los dispositivos de bloque",
+		usbOnlyDevices: "Solo dispositivos USB"
+	});
+
 	var state = {
 		devices: [],
 		selectedDevice: '',
@@ -2855,7 +3006,9 @@ cat <<'EOF'
 		contextTarget: null,
 		contextMenuHideTimer: null,
 		dryRun: false,
-		aceEditor: null
+		aceEditor: null,
+		mapDragActive: false,
+		sectorSyncLock: false
 	};
 
 	function t(key) {
@@ -2868,6 +3021,8 @@ cat <<'EOF'
 
 	function detectLanguage() {
 		var browser = (navigator.language || 'en').toLowerCase();
+		if (browser.indexOf('fr') === 0) return 'fr';
+		if (browser.indexOf('es') === 0) return 'es';
 		if (browser.indexOf('it') === 0) return 'it';
 		if (browser.indexOf('de') === 0) return 'de';
 		return 'en';
@@ -2885,11 +3040,13 @@ cat <<'EOF'
 			i18nWorkflow3: 'workflow3',
 			i18nWorkflow4: 'workflow4',
 			i18nDragHint: 'dragHint',
+			i18nTopButtonsExplain: 'topButtonsExplain',
+			i18nMetaExplain: 'metaExplain',
+			i18nDiagExplain: 'diagExplain',
 			i18nDeviceStripLabel: 'deviceStripLabel',
 			i18nMissingCommandsLabel: 'missingCommandsLabel',
 			i18nLanguageLabel: 'languageLabel',
 			i18nUsbOnlyLabel: 'usbOnlyLabel',
-			i18nDryRunLabel: 'dryRunLabel'
 		};
 		for (var id in map) {
 			if (!Object.prototype.hasOwnProperty.call(map, id)) continue;
@@ -2914,12 +3071,60 @@ cat <<'EOF'
 		var cmdText = document.getElementById('pcgiCmdPreviewText');
 		if (cmdTitle) cmdTitle.textContent = t('cmdPreviewTitle');
 		if (cmdText) cmdText.textContent = t('cmdPreviewHint');
+		var partprobeBtn = document.getElementById('partprobeBtn');
+		var analyzeBtn = document.getElementById('analyzeBtn');
+		var metaBtn = document.getElementById('metaBtn');
+		var loadMetaBtn = document.getElementById('loadMetaBtn');
+		if (partprobeBtn) { partprobeBtn.textContent = t('btnRunPartprobe'); partprobeBtn.title = t('partprobeHint'); }
+		if (analyzeBtn) { analyzeBtn.textContent = t('btnAnalyzeToolchain'); analyzeBtn.title = t('analyzeHint'); }
+		if (metaBtn) { metaBtn.textContent = t('btnPartitionMetadata'); metaBtn.title = t('metadataHint'); }
+		if (loadMetaBtn) loadMetaBtn.textContent = t('btnLoadMetadataView');
 		var usbSel = document.getElementById('usbOnlySelect');
 		if (usbSel && usbSel.options.length >= 2) {
-			usbSel.options[0].text = state.language === 'it' ? 'Tutti i dispositivi a blocchi' : (state.language === 'de' ? 'Alle Blockgeraete' : 'All block devices');
-			usbSel.options[1].text = state.language === 'it' ? 'Solo dispositivi USB' : (state.language === 'de' ? 'Nur USB-Geraete' : 'USB devices only');
+			usbSel.options[0].text = t('usbAllDevices');
+			usbSel.options[1].text = t('usbOnlyDevices');
 		}
+		updateToolchainToggleButton();
 		renderDeviceStrip();
+	}
+
+	function hideLegacyFooterButtons() {
+		var submitEls = document.querySelectorAll('input[type="submit"], button[type="submit"]');
+		for (var i = 0; i < submitEls.length; i++) {
+			var el = submitEls[i];
+			var txt = String(el.value || el.textContent || '').toLowerCase().trim();
+			if (!txt) continue;
+			if (txt === 'apply' || txt === 'default' || txt === 'applica' || txt === 'predefinito' || txt === 'anwenden' || txt === 'standard') {
+				el.style.display = 'none';
+				if (el.parentNode && el.parentNode.className && String(el.parentNode.className).indexOf('btn') !== -1) {
+					el.parentNode.style.display = 'none';
+				}
+			}
+		}
+	}
+
+	function updateSafetySectionVisibility() {
+		var safetySec = document.getElementById('safetyModeSection');
+		var ackEl = document.getElementById('ackToken');
+		if (!safetySec || !ackEl) return;
+		if (ackEl.value.trim() === 'YES_I_UNDERSTAND') safetySec.style.display = 'none';
+	}
+
+	function updateToolchainToggleButton() {
+		var sec = document.getElementById('toolchainSection');
+		var btn = document.getElementById('toolchainToggleBtn');
+		if (!btn || !sec) return;
+		var isHidden = sec.style.display === 'none';
+		btn.textContent = isHidden ? t('btnToolchainShow') : t('btnToolchainHide');
+	}
+
+	function toggleToolchainSection() {
+		var sec = document.getElementById('toolchainSection');
+		var btn = document.getElementById('toolchainToggleBtn');
+		if (!sec) return;
+		var isHidden = sec.style.display === 'none';
+		sec.style.display = isHidden ? '' : 'none';
+		if (btn) btn.textContent = isHidden ? t('btnToolchainHide') : t('btnToolchainShow');
 	}
 
 	function showToast(message, type, ttl) {
@@ -3056,6 +3261,92 @@ cat <<'EOF'
 		return v.toFixed(i === 0 ? 0 : 2) + ' ' + units[i];
 	}
 
+	function parseHumanBytes(text) {
+		var raw = String(text || '').trim();
+		if (!raw) return null;
+		var m = raw.match(/^([0-9]+(?:[.,][0-9]+)?)\s*([kmgtp]?i?b?|b)?$/i);
+		if (!m) return null;
+		var num = Number(String(m[1]).replace(',', '.'));
+		if (!isFinite(num) || num < 0) return null;
+		var unit = String(m[2] || 'b').toLowerCase();
+		if (unit === '' || unit === 'b') unit = 'b';
+		var mul = 1;
+		if (unit === 'k' || unit === 'kb' || unit === 'kib') mul = Math.pow(1024, 1);
+		else if (unit === 'm' || unit === 'mb' || unit === 'mib') mul = Math.pow(1024, 2);
+		else if (unit === 'g' || unit === 'gb' || unit === 'gib') mul = Math.pow(1024, 3);
+		else if (unit === 't' || unit === 'tb' || unit === 'tib') mul = Math.pow(1024, 4);
+		else if (unit === 'p' || unit === 'pb' || unit === 'pib') mul = Math.pow(1024, 5);
+		else if (unit !== 'b') return null;
+		var bytes = num * mul;
+		if (!isFinite(bytes) || bytes < 0) return null;
+		return bytes;
+	}
+
+	function updateHumanFieldFromSector(sectorId, humanId) {
+		var s = document.getElementById(sectorId);
+		var h = document.getElementById(humanId);
+		if (!s || !h) return;
+		var raw = String(s.value || '').trim();
+		if (!/^\d+$/.test(raw)) {
+			h.value = '';
+			return;
+		}
+		var sectors = Number(raw);
+		if (!isFinite(sectors) || sectors < 0) {
+			h.value = '';
+			return;
+		}
+		h.value = humanBytes(sectors * getCurrentSectorSize());
+	}
+
+	function refreshSectorHumanFields() {
+		if (state.sectorSyncLock) return;
+		state.sectorSyncLock = true;
+		updateHumanFieldFromSector('newStartSector', 'newStartHuman');
+		updateHumanFieldFromSector('newEndSector', 'newEndHuman');
+		updateHumanFieldFromSector('resizeEndSector', 'resizeEndHuman');
+		state.sectorSyncLock = false;
+	}
+
+	function syncSectorFromHumanField(humanId, sectorId) {
+		if (state.sectorSyncLock) return;
+		var h = document.getElementById(humanId);
+		var s = document.getElementById(sectorId);
+		if (!h || !s) return;
+
+		var txt = String(h.value || '').trim();
+		if (!txt) {
+			state.sectorSyncLock = true;
+			s.value = '';
+			state.sectorSyncLock = false;
+			s.dispatchEvent(new Event('input', { bubbles: true }));
+			return;
+		}
+
+		var bytes = parseHumanBytes(txt);
+		if (bytes === null) return;
+
+		var secSize = getCurrentSectorSize();
+		var sectors = Math.floor(bytes / secSize);
+		if (bytes > 0 && sectors === 0) sectors = 1;
+		if (!isFinite(sectors) || sectors < 0) return;
+
+		state.sectorSyncLock = true;
+		s.value = String(sectors);
+		h.value = humanBytes(sectors * secSize);
+		state.sectorSyncLock = false;
+		s.dispatchEvent(new Event('input', { bubbles: true }));
+	}
+
+	function bindSectorHumanPair(sectorId, humanId) {
+		var s = document.getElementById(sectorId);
+		var h = document.getElementById(humanId);
+		if (!s || !h) return;
+		s.addEventListener('input', refreshSectorHumanFields);
+		h.addEventListener('input', function () { syncSectorFromHumanField(humanId, sectorId); });
+		h.addEventListener('change', function () { syncSectorFromHumanField(humanId, sectorId); });
+	}
+
 	function escapeHtml(v) {
 		return String(v === undefined || v === null ? '' : v)
 			.replace(/&/g, '&amp;')
@@ -3142,6 +3433,10 @@ cat <<'EOF'
 	}
 
 	function showHoverTooltip(ev, html) {
+		if (state.dragCtx || state.mapDragActive) {
+			hideHoverTooltip();
+			return;
+		}
 		var tip = document.getElementById('pcgiHoverTooltip');
 		if (!tip) return;
 		tip.innerHTML = html;
@@ -3150,6 +3445,10 @@ cat <<'EOF'
 	}
 
 	function moveHoverTooltip(ev) {
+		if (state.dragCtx || state.mapDragActive) {
+			hideHoverTooltip();
+			return;
+		}
 		var tip = document.getElementById('pcgiHoverTooltip');
 		if (!tip || tip.style.display === 'none') return;
 		var x = ev.clientX + 12;
@@ -3397,7 +3696,7 @@ cat <<'EOF'
 
 			return '# unsupported fs_type=' + fs + ' target=' + target;
 		}
-		if (action === 'smart_info') return 'smartctl -H -A ' + v(params.device);
+		if (action === 'smart_info') return 'smartctl --xall ' + v(params.device) + '\n# fallback: smartctl -d sat,auto -T permissive -x ' + v(params.device) + '\n# info-only fallback: smartctl -d sat,auto -T permissive -i ' + v(params.device);
 		if (action === 'hdparm_info') return 'hdparm -I ' + v(params.device);
 		if (action === 'gpt_info') return '# backend uses sgdisk -p or gdisk -l for ' + v(params.device);
 		if (action === 'reload_table') return 'partprobe ' + v(params.device);
@@ -3592,6 +3891,7 @@ cat <<'EOF'
 		document.getElementById('flagStateInput').value = 'off';
 		document.getElementById('fsLabelInput').value = '';
 		document.getElementById('mountpointInput').value = '';
+		refreshSectorHumanFields();
 	}
 
 	function buildPartitionPath(devicePath, partNum) {
@@ -3879,6 +4179,7 @@ cat <<'EOF'
 		document.getElementById('flagStateInput').value = part && part.flags ? 'on' : 'off';
 		document.getElementById('fsLabelInput').value = part ? (part.label || '') : '';
 		document.getElementById('mountpointInput').value = part && part.mountpoint ? part.mountpoint : '';
+		refreshSectorHumanFields();
 		updateMapStatus(part ? ('Selected partition #' + part.number + ' [' + part.start + 's..' + part.end + 's].') : '');
 		renderMap();
 	}
@@ -3892,6 +4193,7 @@ cat <<'EOF'
 		document.getElementById('newStartSector').value = '';
 		document.getElementById('newEndSector').value = '';
 		document.getElementById('resizeEndSector').value = '';
+		refreshSectorHumanFields();
 		if (dev && dev.path) {
 			updateMapStatus('Selected disk ' + dev.path + '.');
 		}
@@ -3909,11 +4211,20 @@ cat <<'EOF'
 		document.getElementById('selectedPartPath').value = '';
 		document.getElementById('fsPartitionPath').value = '';
 		document.getElementById('mountpointInput').value = '';
+		document.getElementById('fsLabelInput').value = '';
+		document.getElementById('newFsHint').value = '';
+		document.getElementById('fsTypeSelect').value = 'auto';
+		document.getElementById('newPartName').value = '';
+		document.getElementById('renamePartInput').value = '';
+		document.getElementById('flagNameInput').value = '';
+		document.getElementById('flagStateInput').value = 'off';
+		document.getElementById('resizeEndSector').value = '';
 		if (seg) {
 			document.getElementById('newStartSector').value = String(seg.start || '');
 			document.getElementById('newEndSector').value = String(seg.end || '');
 			updateMapStatus('Selected unallocated segment [' + seg.start + 's..' + seg.end + 's].');
 		}
+		refreshSectorHumanFields();
 		renderMap();
 	}
 
@@ -4085,6 +4396,47 @@ cat <<'EOF'
 		if (dev.vendor) legend.textContent += ' | vendor=' + dev.vendor;
 		if (dev.serial) legend.textContent += ' | serial=' + dev.serial;
 
+		// Pre-compute per-block layout geometry in a single forward pass so that:
+		// (a) free-space segments get a 4 px minimum making small leading gaps
+		//     (e.g. the pre-8064s area) visible instead of a 0-1 px sliver, and
+		// (b) any block widened by the minimum pushes subsequent blocks rightward
+		//     rather than overlapping them.
+		var blockLayouts = [];
+		var pixelCursor = 0;
+		for (var bli = 0; bli < dev.partitions.length; bli++) {
+			var blp      = dev.partitions[bli];
+			var blStart  = Number(blp.start || 0);
+			var blEnd    = Number(blp.end   || 0);
+			var blSize   = Number(blp.size  || Math.max(1, blEnd - blStart + 1));
+			if (state.dragCtx && blp.kind === 'partition') {
+				var blDevPath  = String(state.dragCtx.dev && state.dragCtx.dev.path || '');
+				var blPartPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
+				if (blDevPath === String(dev.path || '') && blPartPath && blPartPath === String(blp.path || '')) {
+					if (state.dragCtx.edge === 'left') {
+						blStart = Number(state.dragCtx.currentStart || blStart);
+					} else {
+						blEnd = Number(state.dragCtx.currentEnd || blEnd);
+					}
+					blSize = Math.max(1, blEnd - blStart + 1);
+				}
+			}
+			var blNatLeft  = Math.round((blStart / total) * mapWidth);
+			var blNatWidth = Math.max(1, Math.round((blSize  / total) * mapWidth));
+			var blMinWidth = (blp.kind === 'partition') ? 30 : 4;
+			var blWidth    = Math.max(blMinWidth, blNatWidth);
+			var blLeft     = Math.max(pixelCursor, blNatLeft);
+			if (blLeft < 0)         blLeft = 0;
+			if (blLeft >= mapWidth) blLeft = mapWidth - 1;
+			// Clamp right edge to mapWidth so the rightmost partition is never
+			// clipped by the container's overflow:hidden when a leading free
+			// segment minimum-width has shifted it right.
+			if (blLeft + blWidth > mapWidth) {
+				blWidth = Math.max(1, mapWidth - blLeft);
+			}
+			pixelCursor = blLeft + blWidth;
+			blockLayouts.push({ leftPx: blLeft, widthPx: blWidth, drawStart: blStart, drawEnd: blEnd, drawSize: blSize });
+		}
+
 		for (var i = 0; i < dev.partitions.length; i++) {
 			(function (idx) {
 				var p = dev.partitions[idx];
@@ -4108,34 +4460,22 @@ cat <<'EOF'
 					)
 				);
 				var selectedFree = !!(state.selectedComponent && p.kind === 'free' && state.selectedComponent.kind === 'free' && Number(p.start) === Number(state.selectedComponent.start) && Number(p.end) === Number(state.selectedComponent.end));
+				// Use pre-computed geometry (correct min-widths + cursor shift applied).
 				var draggingThis = false;
-				var drawStart = Number(p.start || 0);
-				var drawEnd = Number(p.end || 0);
-				var drawSize = Number(p.size || Math.max(1, drawEnd - drawStart + 1));
-				if (state.dragCtx && p.kind === 'partition' && String(state.dragCtx.dev && state.dragCtx.dev.path || '') === String(dev.path || '')) {
+				var layout    = blockLayouts[idx];
+				var drawStart = layout.drawStart;
+				var drawEnd   = layout.drawEnd;
+				var drawSize  = layout.drawSize;
+				var leftPx    = layout.leftPx;
+				var widthPx   = layout.widthPx;
+				// Mark block as dragging if it is attached to the active handle.
+				if (state.dragCtx && p.kind === 'partition' &&
+						String(state.dragCtx.dev && state.dragCtx.dev.path || '') === String(dev.path || '')) {
 					var dragPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
 					if (dragPath && dragPath === pPath) {
 						draggingThis = true;
-						if (state.dragCtx.edge === 'left') {
-							drawStart = Number(state.dragCtx.currentStart || drawStart);
-						} else {
-							drawEnd = Number(state.dragCtx.currentEnd || drawEnd);
-						}
-						drawSize = Math.max(1, drawEnd - drawStart + 1);
 					}
 				}
-
-				var leftPx = Math.round((drawStart / total) * mapWidth);
-				var widthPx = Math.max(1, Math.round((drawSize / total) * mapWidth));
-				// Ensure partition blocks have a minimum display width so they remain clickable,
-				// even when the partition is much smaller than the others.  Free-space segments
-				// use strictly proportional widths so they don't obscure adjacent partitions.
-				if (p.kind === 'partition') widthPx = Math.max(30, widthPx);
-				// Clamp to map bounds.  Keep leftPx at the proportional position so the block
-				// never shifts left into adjacent partitions' territory.  If the expanded block
-				// protrudes past the right edge it is clipped by the map's overflow:hidden.
-				if (leftPx < 0) leftPx = 0;
-				if (leftPx >= mapWidth) leftPx = mapWidth - 1;
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
 				block.style.left = leftPx + 'px';
@@ -4153,6 +4493,13 @@ cat <<'EOF'
 					var fsUsed = Number(p.fs_used_bytes || 0);
 					var fsAvail = Number(p.fs_avail_bytes || 0);
 					var usedPct = Number(p.used_pct || 0);
+					// During shrink drag recompute usedPct relative to the current draw size
+					// so the filled bar stays at its real pixel width (incompressible) and
+					// only the unused (light) area shrinks.
+					if (draggingThis && drawSize > 0 && fsUsed > 0) {
+						var drawBytesD = drawSize * logical;
+						usedPct = drawBytesD > 0 ? Math.min(100, (fsUsed / drawBytesD) * 100) : 100;
+					}
 					block.title = '';
 					block.textContent = (p.name || p.label || p.fs || 'partition');
 					block.onmouseenter = function (ev) {
@@ -4181,15 +4528,30 @@ cat <<'EOF'
 						fsUsedBar.style.width = Math.max(0, Math.min(100, usedPct)) + '%';
 						var fsUnusedBar = document.createElement('div');
 						fsUnusedBar.className = 'pcgi-part-fsbar-unused';
-						fsUnusedBar.style.width = (100 - Math.max(0, Math.min(100, usedPct))) + '%';
+						// Unused portion also computed from absolute bytes during drag.
+						var fsUnusedPct;
+						if (draggingThis && drawSize > 0) {
+							var drawBytesD2 = drawSize * logical;
+							var fsUnusedBytes = Math.max(0, Number(p.fs_size_bytes || 0) - fsUsed);
+							fsUnusedPct = drawBytesD2 > 0 ? Math.min(100 - Math.max(0, Math.min(100, usedPct)), (fsUnusedBytes / drawBytesD2) * 100) : 0;
+						} else {
+							fsUnusedPct = 100 - Math.max(0, Math.min(100, usedPct));
+						}
+						fsUnusedBar.style.width = Math.max(0, fsUnusedPct) + '%';
 						fsBar.appendChild(fsUsedBar);
 						fsBar.appendChild(fsUnusedBar);
 						block.appendChild(fsBar);
 					}
 					block.draggable = true;
 					block.ondragstart = function (ev) {
+						state.mapDragActive = true;
+						hideHoverTooltip();
 						ev.dataTransfer.setData('text/plain', 'partition:' + p.number);
 						ev.dataTransfer.setData('part-size', String(p.size || 0));
+					};
+					block.ondragend = function () {
+						state.mapDragActive = false;
+						hideHoverTooltip();
 					};
 					var leftHandle = document.createElement('div');
 					leftHandle.className = 'pcgi-resize-handle pcgi-resize-handle-left';
@@ -4231,10 +4593,13 @@ cat <<'EOF'
 					block.ondragover = function (ev) { ev.preventDefault(); };
 					block.ondrop = function (ev) {
 						ev.preventDefault();
+						state.mapDragActive = false;
+						hideHoverTooltip();
 						var data = ev.dataTransfer.getData('text/plain');
 						if (data === 'new-partition') {
 							document.getElementById('newStartSector').value = String(p.start);
 							document.getElementById('newEndSector').value = String(p.end);
+							refreshSectorHumanFields();
 							updateMapStatus('New partition range loaded from dropped free segment.');
 							showToast('New partition range pre-filled from free segment.', 'info', 1800);
 						} else if (data.indexOf('partition:') === 0) {
@@ -4279,20 +4644,29 @@ cat <<'EOF'
 	function startResize(ev, dev, partIndex, edge) {
 		ev.preventDefault();
 		var part = dev.partitions[partIndex];
-		if (!part || part.kind !== 'partition') return;
+		if (!part||part.kind!=='partition')return;
+
+		// Select the partition immediately so all form fields are populated
+		// even when the user starts dragging without a prior click.
+		selectPartition(part);
 
 		var map = document.getElementById('partitionMap');
 		var rect = map.getBoundingClientRect();
 		var total = Number(dev.total_sectors || 0);
-		if (!total) return;
+		if (!total)return;
 
+		var logical = Number(dev.logical_sector_size || 512);
 		var prevSeg = partIndex > 0 ? dev.partitions[partIndex - 1] : null;
 		var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
 		var minStart = 1;
 		var maxEnd = total - 1;
 		if (prevSeg) minStart = Number(prevSeg.end) + 1;
 		if (nextSeg) maxEnd = Number(nextSeg.start) - 1;
-		var minEnd = Number(part.start) + 2048;
+		// The right edge must not move below the used filesystem area (data loss).
+		// 2048-sector alignment floor is always kept even with no filesystem.
+		var fsUsedBytes = Number(part.fs_used_bytes || 0);
+		var fsUsedMinSectors = (fsUsedBytes > 0 && logical > 0) ? Math.ceil(fsUsedBytes / logical) + 1 : 0;
+		var minEnd = Number(part.start) + Math.max(2048, fsUsedMinSectors);
 		if (minEnd > maxEnd) minEnd = Number(part.start);
 		var maxStart = Number(part.end) - 2048;
 		if (maxStart < minStart) maxStart = minStart;
@@ -4304,6 +4678,7 @@ cat <<'EOF'
 			edge: edge || 'right',
 			mapRect: rect,
 			total: total,
+			logical: logical,
 			minStart: minStart,
 			maxStart: maxStart,
 			currentStart: Number(part.start),
@@ -4318,7 +4693,6 @@ cat <<'EOF'
 		document.addEventListener('mousemove', onResizeMove);
 		document.addEventListener('mouseup', onResizeUp);
 	}
-
 	function onResizeMove(ev) {
 		if (!state.dragCtx) return;
 		var d = state.dragCtx;
@@ -4331,49 +4705,63 @@ cat <<'EOF'
 			if (sec > d.maxStart) sec = d.maxStart;
 			d.currentStart = sec;
 			document.getElementById('newStartSector').value = String(sec);
+			refreshSectorHumanFields();
 			updateMapStatus('Resize preview: #' + d.part.number + ' start -> ' + sec + 's');
 		} else {
 			if (sec < d.minEnd) sec = d.minEnd;
 			if (sec > d.maxEnd) sec = d.maxEnd;
 			d.currentEnd = sec;
 			document.getElementById('resizeEndSector').value = String(sec);
+			document.getElementById('newEndSector').value = String(sec);
+			refreshSectorHumanFields();
 			updateMapStatus('Resize preview: #' + d.part.number + ' end -> ' + sec + 's');
 		}
 		renderMap();
 	}
 
 	function onResizeUp() {
-		if (!state.dragCtx) return;
+		if (!state.dragCtx)return;
 		var d = state.dragCtx;
+		// Remove listeners first to stop tracking mouse movement.
 		document.removeEventListener('mousemove', onResizeMove);
 		document.removeEventListener('mouseup', onResizeUp);
-		state.dragCtx = null;
+		// Keep state.dragCtx alive during the confirm modal so the map
+		// continues to show the dragged position.  Clear only after the
+		// Promise settles (confirmed, cancelled, or early error return).
 		updateMapStatus('');
+
+		function finishResize() {
+			state.dragCtx = null;
+			renderMap();
+		}
 
 		if (d.edge === 'left') {
 			if (Number(d.currentStart) !== Number(d.part.start)) {
-				queueOpWithConfirm(
-					'move_partition',
-					{
-						device: d.dev.path,
-						partnum: d.part.number,
-						start_sector: d.currentStart,
-						end_sector: d.part.end
-					},
-					'Adjust left edge of partition #' + d.part.number + ' on ' + d.dev.path + ' to start=' + d.currentStart + 's',
-					t('confirmAction'),
-					'Move/resize operation will be queued.'
-				);
+				var p = queueMoveResizePlan(d.dev, d.part, Number(d.currentStart), document.getElementById('resizeFsSelect').value);
 				document.getElementById('newStartSector').value = String(d.currentStart);
-				selectPartition(d.part);
+				refreshSectorHumanFields();
+				if (p && typeof p.then === 'function') {
+					p.then(finishResize, finishResize);
+				} else {
+					finishResize();
+				}
+			} else {
+				finishResize();
 			}
 		} else if (Number(d.currentEnd) !== Number(d.part.end)) {
-			queueResizePlan(d.dev, d.part, Number(d.currentEnd), document.getElementById('resizeFsSelect').value);
+			var p2 = queueResizePlan(d.dev, d.part, Number(d.currentEnd), document.getElementById('resizeFsSelect').value);
 			document.getElementById('resizeEndSector').value = String(d.currentEnd);
-			selectPartition(d.part);
+			document.getElementById('newEndSector').value = String(d.currentEnd);
+			refreshSectorHumanFields();
+			if (p2 && typeof p2.then === 'function') {
+				p2.then(finishResize, finishResize);
+			} else {
+				finishResize();
+			}
+		} else {
+			finishResize();
 		}
 	}
-
 	function normalizeFsTypeForResize(fsType) {
 		var v = String(fsType || '').toLowerCase();
 		if (!v || v === 'auto') return '';
@@ -4507,7 +4895,7 @@ cat <<'EOF'
 		var mountpoint = isMounted ? String(part.mountpoint).trim() : '';
 		var partitionPath = String(part.path || '');
 
-		showConfirmModal(
+		return showConfirmModal(
 			t('confirmAction'),
 			'Queue resize plan for partition #' + part.number + ' on ' + dev.path + '?'
 		).then(function (ok) {
@@ -4590,6 +4978,149 @@ cat <<'EOF'
 		});
 	}
 
+
+        function queueMoveResizePlan(dev, part, newStart, resizeFs) {
+                if (!dev || !part) {
+                        showToast(t('tContextUnavailable'), 'warn');
+                        return;
+                }
+
+                var oldStart = Number(part.start || 0);
+                var end = Number(part.end || 0);
+                var targetStart = Number(newStart || 0);
+                if (!isFinite(targetStart) || targetStart <= 0 || targetStart >= end) {
+                        showToast('Invalid start sector for resize.', 'warn');
+                        return;
+                }
+                if (targetStart === oldStart) {
+                        showToast(t('tMoveSame'), 'warn');
+                        return;
+                }
+
+                var isShrink = targetStart > oldStart;
+                var queueFs = String(resizeFs || 'no') === 'yes';
+                var rawFsType = String(part.fs || '').toLowerCase().trim();
+                var hasFilesystem = !!(rawFsType && rawFsType !== 'unknown' && rawFsType !== '-');
+                var fsCap = hasFilesystem ? getFsResizeCapability(rawFsType, isShrink ? 'shrink' : 'grow') : { supported: true, hasTool: true, canResize: true, fsType: '', toolHint: '' };
+                var fsType = fsCap.fsType || normalizeFsTypeForResize(rawFsType);
+
+                if (isShrink && hasFilesystem) {
+                        if (!fsCap.supported) {
+                                showToast('Cannot shrink partition #' + part.number + ': filesystem ' + rawFsType + ' is not supported for resize.', 'error', 4200);
+                                return;
+                        }
+                        if (fsCap.hasTool === false) {
+                                showToast('Cannot shrink partition #' + part.number + ': missing resize tool (' + fsCap.toolHint + ').', 'error', 4200);
+                                return;
+                        }
+                        if (!queueFs) {
+                                queueFs = true;
+                                showToast('Filesystem resize enabled automatically for shrink operation.', 'warn', 3200);
+                        }
+                }
+
+                if (!isShrink && hasFilesystem) {
+                        if (!fsCap.supported) {
+                                showToast('Warning: growing partition with filesystem ' + rawFsType + ' has no supported resize. Filesystem resize will be skipped.', 'warn', 3800);
+                                queueFs = false;
+                        } else if (fsCap.hasTool === false) {
+                                showToast('Warning: missing tool ' + fsCap.toolHint + '. Partition growth will be queued without filesystem resize.', 'warn', 3800);
+                                queueFs = false;
+                        }
+                }
+
+                if (queueFs && !hasFilesystem) queueFs = false;
+                if (queueFs && !fsType) queueFs = false;
+
+                var logical = Number(dev.logical_sector_size || 512);
+                var targetBytes = Math.max(1, (end - targetStart + 1) * logical);
+                var targetKib = Math.max(1, Math.floor(targetBytes / 1024));
+                var isMounted = !!(part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-');
+                var mountpoint = isMounted ? String(part.mountpoint).trim() : '';
+                var partitionPath = String(part.path || '');
+
+                return showConfirmModal(
+                        t('confirmAction'),
+                        'Queue resize plan for partition #' + part.number + ' on ' + dev.path + ' (left edge)?'
+                ).then(function (ok) {
+                        if (!ok) return;
+
+                        var umParams = { partition: partitionPath };
+                        queueOp(
+                                'unmount_partition',
+                                umParams,
+                                'Unmount ' + partitionPath,
+                                buildCommandPreview('unmount_partition', umParams),
+                                true
+                        );
+
+                        if (queueFs && isShrink) {
+                                var fsBeforeParams = {
+                                        partition: partitionPath,
+                                        fs_type: fsType,
+                                        direction: 'shrink',
+                                        target_kib: String(targetKib),
+                                        target_bytes: String(targetBytes)
+                                };
+                                queueOp(
+                                        'resize_filesystem',
+                                        fsBeforeParams,
+                                        'Resize filesystem (shrink) on ' + partitionPath,
+                                        buildCommandPreview('resize_filesystem', fsBeforeParams),
+                                        true
+                                );
+                        }
+
+                        var mpParams = {
+                                device: dev.path,
+                                partnum: part.number,
+                                start_sector: String(targetStart),
+                                end_sector: String(end)
+                        };
+                        queueOp(
+                                'move_partition',
+                                mpParams,
+                                'Move/resize partition #' + part.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + end + 's]',
+                                buildCommandPreview('move_partition', mpParams),
+                                true
+                        );
+
+                        if (queueFs && !isShrink) {
+                                var fsAfterParams = {
+                                        partition: partitionPath,
+                                        fs_type: fsType,
+                                        direction: 'grow',
+                                        target_kib: String(targetKib),
+                                        target_bytes: String(targetBytes)
+                                };
+                                queueOp(
+                                        'resize_filesystem',
+                                        fsAfterParams,
+                                        'Resize filesystem (grow) on ' + partitionPath,
+                                        buildCommandPreview('resize_filesystem', fsAfterParams),
+                                        true
+                                );
+                        }
+
+                        if (isMounted && mountpoint) {
+                                var mParams = {
+                                        partition: partitionPath,
+                                        mountpoint: mountpoint,
+                                        fs_type: mapFsTypeSelectValue(part.fs),
+                                        mount_opts: ''
+                                };
+                                queueOp(
+                                        'mount_partition',
+                                        mParams,
+                                        'Remount ' + partitionPath + ' on ' + mountpoint,
+                                        buildCommandPreview('mount_partition', mParams),
+                                        true
+                                );
+                        }
+
+                        showToast('Resize plan queued (' + (isShrink ? 'shrink' : 'grow') + ', left edge).', 'success', 2200);
+                });
+        }
 
 	function queueMoveSelectedByDirection(direction) {
 		if (!state.selectedPart || !state.selectedPart.number) {
@@ -5066,25 +5597,28 @@ cat <<'EOF'
 
 	function runDiagnostics(action) {
 		var dev = state.selectedDevice;
-		if (!dev) {
+		if (! dev) {
 			showToast(t('tNoDevice'), 'warn');
 			return;
 		}
-		var diagParams = { device: dev };
-		showCommandPreviewModal(action, diagParams, 'Diagnostics: ' + action, t('confirmAction'), t('cmdPreviewHint')).then(function (previewText) {
-			if (previewText === null) return;
-		callApi(action, { device: dev, command_preview: previewText })
+		var diagEl = document.getElementById('diagOutput');
+		if (diagEl) {
+			diagEl.textContent = '\u2026';
+			diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		}
+		callApi(action, { device: dev })
 			.then(function (res) {
-				var msg = '[' + action + '] ' + (res.message || '') + '\nrc=' + (res.rc || 0) + '\n' + (res.output || '');
+				var msg = '[' + action + '] ' + (res.message || '') +
+				          '\nrc=' + (res.rc || 0) + '\n' + (res.output || '');
 				logTo('diagOutput', msg, true);
+				if (diagEl) diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			})
 			.catch(function (err) {
 				logTo('diagOutput', 'Diagnostics error: ' + err.message, true);
 				showToast('Diagnostics error: ' + err.message, 'error', 3300);
+				if (diagEl) diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			});
-		});
 	}
-
 	function renderMetadata(data) {
 		var graph = document.getElementById('metaGraph');
 		var raw = document.getElementById('metaRawOutput');
@@ -5286,7 +5820,13 @@ cat <<'EOF'
 	}
 
 	document.getElementById('newPartChip').ondragstart = function (ev) {
+		state.mapDragActive = true;
+		hideHoverTooltip();
 		ev.dataTransfer.setData('text/plain', 'new-partition');
+	};
+	document.getElementById('newPartChip').ondragend = function () {
+		state.mapDragActive = false;
+		hideHoverTooltip();
 	};
 	document.getElementById('helpBtn').onclick = showHelpModal;
 	document.getElementById('pcgiHelpCloseBtn').onclick = hideHelpModal;
@@ -5299,10 +5839,10 @@ cat <<'EOF'
 		state.usbOnly = this.value === '1';
 		refreshDevices();
 	};
-	document.getElementById('dryRunToggle').onchange = function () {
-		state.dryRun = !!this.checked;
-		showToast(state.dryRun ? 'Dry-run enabled: commands are logged but not executed.' : 'Dry-run disabled: operations will execute normally.', state.dryRun ? 'warn' : 'info', 2600);
-	};
+	document.getElementById('ackToken').addEventListener('change', updateSafetySectionVisibility);
+	document.getElementById('ackToken').addEventListener('keyup', function () {
+		if (this.value.trim() === 'YES_I_UNDERSTAND') updateSafetySectionVisibility();
+	});
 	document.addEventListener('click', function (ev) {
 		var menu = document.getElementById('partContextMenu');
 		if (!menu) return;
@@ -5310,6 +5850,10 @@ cat <<'EOF'
 		if (!menu.contains(ev.target)) hideContextMenu();
 	});
 	document.addEventListener('scroll', hideHoverTooltip, true);
+	document.addEventListener('dragend', function () {
+		state.mapDragActive = false;
+		hideHoverTooltip();
+	}, true);
 	document.addEventListener('keydown', function (ev) {
 		if (ev.key === 'Escape') {
 			hideContextMenu();
@@ -5337,18 +5881,28 @@ cat <<'EOF'
 	window.runDiagnostics = runDiagnostics;
 	window.analyzeTools = analyzeTools;
 	window.loadPartitionMetadata = loadPartitionMetadata;
+	window.toggleToolchainSection = toggleToolchainSection;
 
 	state.language = detectLanguage();
 	document.getElementById('langSelect').value = state.language;
-	document.getElementById('dryRunToggle').checked = false;
 	state.dryRun = false;
 	applyTranslations();
+	var toolchainSection = document.getElementById('toolchainSection');
+	if (toolchainSection) toolchainSection.style.display = 'none';
+	hideLegacyFooterButtons();
+	setTimeout(hideLegacyFooterButtons, 0);
+	updateSafetySectionVisibility();
 	renderMapLoading(t('tMapLoading'));
 	bindSectorFieldTooltip('newStartSector', 'New start sector');
 	bindSectorFieldTooltip('newEndSector', 'New end sector');
 	bindSectorFieldTooltip('resizeEndSector', 'Resize end sector');
+	bindSectorHumanPair('newStartSector', 'newStartHuman');
+	bindSectorHumanPair('newEndSector', 'newEndHuman');
+	bindSectorHumanPair('resizeEndSector', 'resizeEndHuman');
+	refreshSectorHumanFields();
 	refreshDevices();
 	analyzeTools();
 })();
 </script>
 EOF
+

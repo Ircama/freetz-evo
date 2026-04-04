@@ -983,6 +983,11 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 		align-items: flex-start;
 		gap: 4px;
 	}
+	/*
+	#footer {
+		border-radius: 0;
+	}
+	*/
 	#header-right {
 		width: 100%;
 		justify-content: space-between;
@@ -1004,6 +1009,9 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 @media (max-width: 600px), (max-height: 480px) and (orientation: landscape) {
 	body:not(.evo-topnav) {
 		padding-bottom: 58px;
+	}
+	#footer {
+		border-radius: 0;
 	}
 	/* Sticky header on mobile */
 	body:not(.evo-topnav) #header {

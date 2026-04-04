@@ -1,0 +1,3 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_TESTDISK_testdisk" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/testdisk"
+[ "$EXTERNAL_FREETZ_PACKAGE_TESTDISK_photorec" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/photorec"
+[ "$EXTERNAL_FREETZ_PACKAGE_TESTDISK_fidentify" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/fidentify"

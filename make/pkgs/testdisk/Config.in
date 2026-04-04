@@ -1,0 +1,48 @@
+config FREETZ_PACKAGE_TESTDISK
+	bool "testdisk 7.2"
+	select FREETZ_LIB_libncursesw
+	default n
+	help
+		TestDisk is a powerful data recovery tool designed to recover
+		lost partitions and repair non-booting disks caused by software
+		faults or accidental deletion of the partition table. PhotoRec
+		is a companion tool focused on file data recovery, supporting
+		over 480 file extensions. fidentify uses PhotoRec's signature
+		database to identify file types from raw data.
+
+		TestDisk and PhotoRec provide an ncurses TUI and are intended
+		for use over SSH on the FRITZ!Box.
+
+		Project home: https://www.cgsecurity.org/wiki/TestDisk
+		GitHub:       https://github.com/cgsecurity/testdisk
+
+		These are large binaries; can be externalized to save flash memory.
+
+if FREETZ_PACKAGE_TESTDISK
+
+	config FREETZ_PACKAGE_TESTDISK_testdisk
+		bool "testdisk"
+		default y
+		help
+			Partition scanner and undelete tool. Supports GPT, MBR,
+			Mac partition maps and BSD disklabels. Rebuilds lost
+			partition tables and fixes boot sectors.
+
+	config FREETZ_PACKAGE_TESTDISK_photorec
+		bool "photorec"
+		default y
+		help
+			File data recovery tool. Ignores the filesystem and
+			recovers lost files from hard disks, CD-ROMs and
+			digital camera memory (hence the name, though it
+			recovers far more than just photos).
+
+	config FREETZ_PACKAGE_TESTDISK_fidentify
+		bool "fidentify"
+		default n
+		help
+			File type identification tool that uses PhotoRec's
+			signature database to determine the type of a file
+			from its content rather than its extension.
+
+endif # FREETZ_PACKAGE_TESTDISK

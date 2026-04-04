@@ -1,0 +1,22 @@
+--- libparted/labels/atari.c
++++ libparted/labels/atari.c
+@@ -1962,7 +1962,11 @@ ped_disk_atari_init ()
+ 	PED_ASSERT (sizeof (AtariRawPartition) == 12);
+ 	PED_ASSERT (sizeof (AtariRawTable) == 512);
+ 	/* GNU Libc doesn't support NULL instead of the locale name */
+-	PED_ASSERT ((atr_c_locale = newlocale(LC_ALL_MASK, "C", NULL)) != NULL);
++	/* The assignment must be outside PED_ASSERT: when DEBUG is disabled
++	 * (--disable-debug), PED_ASSERT is a no-op and atr_c_locale stays NULL,
++	 * causing freelocale(NULL) crash on exit via uClibc (null-deref at +0xb1c). */
++	atr_c_locale = newlocale(LC_ALL_MASK, "C", NULL);
++	PED_ASSERT (atr_c_locale != NULL);
+ 
+ 	ped_disk_type_register (&atari_disk_type);
+ }
+@@ -1972,4 +1976,5 @@ ped_disk_atari_done ()
+ {
+ 	ped_disk_type_unregister (&atari_disk_type);
+-	freelocale(atr_c_locale);
++	if (atr_c_locale)
++		freelocale(atr_c_locale);
+ }

@@ -1,0 +1,35 @@
+config EXTERNAL_FREETZ_PACKAGE_TESTDISK
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TESTDISK
+	bool "testdisk"
+	default n
+	help
+		external testdisk file(s)
+
+menu "testdisk"
+	depends on EXTERNAL_FREETZ_PACKAGE_TESTDISK
+
+	config EXTERNAL_FREETZ_PACKAGE_TESTDISK_testdisk
+		bool "testdisk"
+		depends on FREETZ_PACKAGE_TESTDISK_testdisk
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/testdisk
+
+	config EXTERNAL_FREETZ_PACKAGE_TESTDISK_photorec
+		bool "photorec"
+		depends on FREETZ_PACKAGE_TESTDISK_photorec
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/photorec
+
+	config EXTERNAL_FREETZ_PACKAGE_TESTDISK_fidentify
+		bool "fidentify"
+		depends on FREETZ_PACKAGE_TESTDISK_fidentify
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/fidentify
+
+endmenu
