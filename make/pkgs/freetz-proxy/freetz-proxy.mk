@@ -19,7 +19,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 
 $($(PKG)_TARGET_SYMLINK): $($(PKG)_TARGET_BINARY)
 	mkdir -p $(dir $@)
-	ln -sf /usr/www/cgi-bin/freetz_proxy $@
+	ln -sf ../../cgi-bin/freetz_proxy $@
 
 # Fixed variable names: captured at parse time so recipes expand correctly
 # at execution time (after $(PKG) has been overwritten by later packages).
