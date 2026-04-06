@@ -96,6 +96,18 @@ safe_uint() {
 	esac
 }
 
+safe_bytes_uint() {
+	_v=${1%[bB]}
+	safe_uint "$_v"
+}
+
+normalize_mount_fs_type() {
+	case "$1" in
+		fat|fat12|fat16|fat32|vfat) echo "vfat" ;;
+		*) echo "$1" ;;
+	esac
+}
+
 human_bytes_sh() {
 	_b=$(safe_uint "$1")
 	awk -v b="$_b" 'BEGIN {
@@ -153,6 +165,113 @@ resolve_tools() {
 	CMD_FATRESIZE=$(find_cmd fatresize)
 	CMD_MOUNT=$(find_cmd mount)
 	CMD_UMOUNT=$(find_cmd umount)
+}
+
+run_tune2fs() {
+	[ -n "$CMD_TUNE2FS" ] || return 127
+	case "$CMD_TUNE2FS" in
+		*tune2fs-ng*)
+			"$CMD_TUNE2FS" "$@"
+			return
+			;;
+	esac
+	"$CMD_TUNE2FS" "$@"
+}
+
+# Best-effort filesystem usage probe for unmounted partitions when lsblk does
+# not provide FSSIZE/FSUSED/FSAVAIL. Prints: "size_bytes used_bytes avail_bytes".
+get_unmounted_fs_usage() {
+	_partition="$1"
+	_fstype="$2"
+	_mountpoint="$3"
+
+	# Prefer lsblk/df values for mounted filesystems.
+	[ -z "$_mountpoint" ] || return 1
+
+	case "$_fstype" in
+		ext2|ext3|ext4)
+			[ -n "$CMD_TUNE2FS" ] || return 1
+			_t2_out=$(run_tune2fs -l "$_partition" 2>/dev/null) || return 1
+			printf '%s\n' "$_t2_out" | awk -F: '
+				/^[[:space:]]*Block count[[:space:]]*:/ { bc=$2 }
+				/^[[:space:]]*Free blocks[[:space:]]*:/ { fb=$2 }
+				/^[[:space:]]*Reserved block count[[:space:]]*:/ { rb=$2 }
+				/^[[:space:]]*Block size[[:space:]]*:/ { bs=$2 }
+				END {
+					gsub(/[^0-9]/, "", bc)
+					gsub(/[^0-9]/, "", fb)
+					gsub(/[^0-9]/, "", rb)
+					gsub(/[^0-9]/, "", bs)
+					if (bc == "" || bs == "") exit 1
+					if (fb == "") fb = 0
+					if (rb == "") rb = 0
+					total = bc * bs
+					freeb = fb * bs
+					resv = rb * bs
+					avail = freeb - resv
+					if (avail < 0) avail = 0
+					used = total - freeb
+					if (used < 0) used = 0
+					printf "%.0f %.0f %.0f", total, used, avail
+				}
+			' || return 1
+			return 0
+			;;
+		ntfs)
+			[ -n "$CMD_NTFSINFO" ] || return 1
+			_ntfs_out=$($CMD_NTFSINFO -m "$_partition" 2>/dev/null) || return 1
+			printf '%s\n' "$_ntfs_out" | awk -F: '
+				/^[[:space:]]*Cluster Size[[:space:]]*:/ { cs=$2 }
+				/^[[:space:]]*Volume Size in Clusters[[:space:]]*:/ { vc=$2 }
+				/^[[:space:]]*Free Clusters[[:space:]]*:/ { fc=$2 }
+				END {
+					gsub(/[^0-9]/, "", cs)
+					gsub(/[^0-9]/, "", vc)
+					gsub(/[^0-9]/, "", fc)
+					if (cs == "" || vc == "") exit 1
+					if (fc == "") fc = 0
+					total = vc * cs
+					avail = fc * cs
+					if (avail < 0) avail = 0
+					if (avail > total) avail = total
+					used = total - avail
+					printf "%.0f %.0f %.0f", total, used, avail
+				}
+			' || return 1
+			return 0
+			;;
+		fat|fat12|fat16|fat32|vfat)
+			[ -n "$CMD_FSCK_FAT" ] || return 1
+			_fat_out=$($CMD_FSCK_FAT -n -v "$_partition" 2>/dev/null)
+			printf '%s\n' "$_fat_out" | awk '
+				BEGIN { bpc=0; usedc=-1; totalc=-1 }
+				/bytes per cluster/ {
+					if (match($0, /[0-9]+/)) bpc = substr($0, RSTART, RLENGTH) + 0
+				}
+				{
+					if (match($0, /([0-9]+)[[:space:]]*\/[[:space:]]*([0-9]+)[[:space:]]+clusters/)) {
+						t = substr($0, RSTART, RLENGTH)
+						gsub(/[^0-9\/]/, "", t)
+						split(t, a, "/")
+						if (a[1] ~ /^[0-9]+$/) usedc = a[1] + 0
+						if (a[2] ~ /^[0-9]+$/) totalc = a[2] + 0
+					}
+				}
+				END {
+					if (bpc <= 0 || usedc < 0 || totalc < 0) exit 1
+					if (usedc > totalc) usedc = totalc
+					total = totalc * bpc
+					used = usedc * bpc
+					avail = total - used
+					if (avail < 0) avail = 0
+					printf "%.0f %.0f %.0f", total, used, avail
+				}
+			' || return 1
+			return 0
+			;;
+	esac
+
+	return 1
 }
 
 run_exfat_label() {
@@ -301,6 +420,17 @@ partition_path() {
 run_partprobe() {
 	if [ -n "$CMD_PARTPROBE" ]; then
 		$CMD_PARTPROBE "$1" >/tmp/disk-mgmt-partprobe.log 2>&1
+		_rp_rc=$?
+		if [ "$_rp_rc" -eq 139 ] && [ -n "$1" ]; then
+			$CMD_PARTPROBE >>/tmp/disk-mgmt-partprobe.log 2>&1
+			_rp_rc=$?
+		fi
+		if [ "$_rp_rc" -ne 0 ]; then
+			_bdev=$(command -v blockdev 2>/dev/null)
+			if [ -n "$_bdev" ]; then
+				"$_bdev" --rereadpt "$1" >>/tmp/disk-mgmt-partprobe.log 2>&1
+			fi
+		fi
 	fi
 }
 
@@ -473,6 +603,15 @@ action_list_devices() {
 					_p_fs_size_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSSIZE "$_ppath" 2>/dev/null | head -n 1)")
 					_p_fs_used_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSUSED "$_ppath" 2>/dev/null | head -n 1)")
 					_p_fs_avail_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSAVAIL "$_ppath" 2>/dev/null | head -n 1)")
+				fi
+				if [ -z "$_mountpoint" ] && { [ "$_p_fs_size_bytes" -eq 0 ] || { [ "$_p_fs_used_bytes" -eq 0 ] && [ "$_p_fs_avail_bytes" -eq 0 ]; }; }; then
+					_fallback_usage=$(get_unmounted_fs_usage "$_ppath" "$_pfs" "$_mountpoint")
+					if [ -n "$_fallback_usage" ]; then
+						set -- $_fallback_usage
+						_p_fs_size_bytes=$(safe_uint "$1")
+						_p_fs_used_bytes=$(safe_uint "$2")
+						_p_fs_avail_bytes=$(safe_uint "$3")
+					fi
 				fi
 				if [ -z "$_plabel" ] && [ -n "$CMD_BLKID" ]; then
 					_plabel=$($CMD_BLKID -o value -s LABEL "$_ppath" 2>/dev/null | head -n 1)
@@ -690,7 +829,7 @@ partprobe $_device"
 					;;
 				fat|fat12|fat16|fat32|vfat)
 					if [ -n "$CMD_FATRESIZE" ]; then
-						_rs=$($CMD_FATRESIZE -s max "$_ppath" 2>&1)
+						_rs=$($CMD_FATRESIZE -vps max "$_ppath" 2>&1)
 						_rs_rc=$?
 						_out="$_out\n\nfatresize rc=$_rs_rc:\n$_rs"
 					else
@@ -726,6 +865,9 @@ _target_bytes=$(cgi_param target_bytes)
 _extra_opts=$(cgi_param extra_opts)
 _opts_display=''
 [ -n "$_extra_opts" ] && _opts_display="$_extra_opts "
+
+# Accept legacy byte payloads that may include a trailing B/b.
+_target_bytes=$(safe_bytes_uint "$_target_bytes")
 
 is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
 is_valid_extra_opts "$_extra_opts" || { emit_json_error "Invalid extra options"; return; }
@@ -763,9 +905,9 @@ return
 ;;
 fat|fat12|fat16|fat32|vfat)
 if [ "$_direction" = "shrink" ]; then
-emit_dry_run_result "filesystem resize" "fatresize -s ${_target_bytes}B $_partition"
+emit_dry_run_result "filesystem resize" "fatresize -vps ${_target_bytes} $_partition"
 else
-emit_dry_run_result "filesystem resize" "fatresize -s max $_partition"
+emit_dry_run_result "filesystem resize" "fatresize -vps max $_partition"
 fi
 return
 ;;
@@ -813,7 +955,6 @@ _rc=$?
 _out="\$ $_cmd_rs
 $_rs"
 fi
-
 if [ "$_rc" -eq 0 ]; then
 emit_cmd_result true "$_rc" "Filesystem resized" "$_out"
 else
@@ -823,7 +964,7 @@ fi
 ntfs)
 [ -n "$CMD_NTFSRESIZE" ] || { emit_json_error "ntfsresize not available"; return; }
 if [ "$_direction" = "shrink" ]; then
-_target_bytes=$(safe_uint "$_target_bytes")
+_target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
 _cmd_rs="$CMD_NTFSRESIZE -f -s $_target_bytes ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
@@ -853,22 +994,22 @@ fi
 fat|fat12|fat16|fat32|vfat)
 [ -n "$CMD_FATRESIZE" ] || { emit_json_error "fatresize not available"; return; }
 if [ "$_direction" = "shrink" ]; then
-_target_bytes=$(safe_uint "$_target_bytes")
+_target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
-_cmd_rs="$CMD_FATRESIZE -s ${_target_bytes}B ${_opts_display}$_partition"
+_cmd_rs="$CMD_FATRESIZE -vps ${_target_bytes} ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 set -- $_extra_opts
-_out=$($CMD_FATRESIZE -s "${_target_bytes}B" "$@" "$_partition" 2>&1)
+_out=$($CMD_FATRESIZE -vps "${_target_bytes}" "$@" "$_partition" 2>&1)
 else
-_out=$($CMD_FATRESIZE -s "${_target_bytes}B" "$_partition" 2>&1)
+_out=$($CMD_FATRESIZE -vps "${_target_bytes}" "$_partition" 2>&1)
 fi
 else
-_cmd_rs="$CMD_FATRESIZE -s max ${_opts_display}$_partition"
+_cmd_rs="$CMD_FATRESIZE -vps max ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 set -- $_extra_opts
-_out=$($CMD_FATRESIZE -s max "$@" "$_partition" 2>&1)
+_out=$($CMD_FATRESIZE -vps max "$@" "$_partition" 2>&1)
 else
-_out=$($CMD_FATRESIZE -s max "$_partition" 2>&1)
+_out=$($CMD_FATRESIZE -vps max "$_partition" 2>&1)
 fi
 fi
 _rc=$?
@@ -958,7 +1099,9 @@ fatlabel $_partition $_label"
 					_lbl_out=$($CMD_E2LABEL "$_partition" "$_label" 2>&1)
 					_out="$_out\n\nLabel:\n$_lbl_out"
 				elif [ -n "$CMD_TUNE2FS" ]; then
-					_lbl_out=$($CMD_TUNE2FS -L "$_label" "$_partition" 2>&1)
+					_lbl_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
+					_lbl_rc=$?
+					[ "$_lbl_rc" -eq 139 ] && _lbl_out="[tune2fs: Segmentation fault (SIGSEGV)]"
 					_out="$_out\n\nLabel:\n$_lbl_out"
 				fi
 			fi
@@ -1117,20 +1260,20 @@ $_out"
 		fat|fat12|fat16|fat32|vfat)
 			[ -n "$CMD_FSCK_FAT" ] || { emit_json_error "fsck.fat not available"; return; }
 			if [ "$_repair" = "yes" ]; then
-				_cmd_display="$CMD_FSCK_FAT -a ${_opts_display}$_partition"
+				_cmd_display="$CMD_FSCK_FAT -v -a ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
-					_out=$($CMD_FSCK_FAT -a "$@" "$_partition" 2>&1)
+					_out=$($CMD_FSCK_FAT -v -a "$@" "$_partition" 2>&1)
 				else
-					_out=$($CMD_FSCK_FAT -a "$_partition" 2>&1)
+					_out=$($CMD_FSCK_FAT -v -a "$_partition" 2>&1)
 				fi
 			else
-				_cmd_display="$CMD_FSCK_FAT -n ${_opts_display}$_partition"
+				_cmd_display="$CMD_FSCK_FAT -v -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					set -- $_extra_opts
-					_out=$($CMD_FSCK_FAT -n "$@" "$_partition" 2>&1)
+					_out=$($CMD_FSCK_FAT -v -n "$@" "$_partition" 2>&1)
 				else
-					_out=$($CMD_FSCK_FAT -n "$_partition" 2>&1)
+					_out=$($CMD_FSCK_FAT -v -n "$_partition" 2>&1)
 				fi
 			fi
 			_rc=$?
@@ -1246,8 +1389,9 @@ action_set_label() {
 				_out=$($CMD_E2LABEL "$_partition" "$_label" 2>&1)
 				_rc=$?
 			elif [ -n "$CMD_TUNE2FS" ]; then
-				_out=$($CMD_TUNE2FS -L "$_label" "$_partition" 2>&1)
+				_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
 				_rc=$?
+				[ "$_rc" -eq 139 ] && _out="[tune2fs: Segmentation fault (SIGSEGV)]" && _rc=1
 			else
 				emit_json_error "Neither e2label nor tune2fs is available"
 				return
@@ -1378,7 +1522,6 @@ partprobe $_device"
 	_out=$($CMD_PARTED -s "$_device" unit s move "$_partnum" "${_start_sector}s" "${_end_sector}s" 2>&1)
 	_rc=$?
 	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
-
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition moved" "$_out"
 	else
@@ -1397,6 +1540,7 @@ action_mount_partition() {
 	_mountpoint=$(cgi_param mountpoint)
 	_fs_type=$(cgi_param fs_type)
 	_mount_opts=$(cgi_param mount_opts)
+	_fs_type=$(normalize_mount_fs_type "$_fs_type")
 
 	[ -n "$CMD_MOUNT" ] || { emit_json_error "mount command not available"; return; }
 	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
@@ -1457,7 +1601,7 @@ $_preview_cmd"
 
 	if [ "$_rc" -eq 0 ]; then
 		_now=$(awk -v p="$_partition" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
-		emit_cmd_result true "$_rc" "Partition mounted" "$_out\nMountpoint: ${_now:-$_mountpoint}"
+		emit_cmd_result true "$_rc" "Partition mounted" "$_out Mountpoint: ${_now:-$_mountpoint}"
 	else
 		emit_cmd_result false "$_rc" "Mount failed" "$_out"
 	fi
@@ -1566,6 +1710,15 @@ action_partition_metadata() {
 		_fs_size_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSSIZE "$_partition" 2>/dev/null | head -n 1)")
 		_fs_used_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSUSED "$_partition" 2>/dev/null | head -n 1)")
 		_fs_avail_bytes=$(safe_uint "$($CMD_LSBLK -bn -o FSAVAIL "$_partition" 2>/dev/null | head -n 1)")
+	fi
+	if [ -z "$_mountpoint" ] && { [ "$_fs_size_bytes" -eq 0 ] || { [ "$_fs_used_bytes" -eq 0 ] && [ "$_fs_avail_bytes" -eq 0 ]; }; }; then
+		_fallback_usage=$(get_unmounted_fs_usage "$_partition" "$_fstype" "$_mountpoint")
+		if [ -n "$_fallback_usage" ]; then
+			set -- $_fallback_usage
+			_fs_size_bytes=$(safe_uint "$1")
+			_fs_used_bytes=$(safe_uint "$2")
+			_fs_avail_bytes=$(safe_uint "$3")
+		fi
 	fi
 
 	_dev_path="$_device"
@@ -1711,7 +1864,10 @@ EOF
 	case "$_fstype" in
 		ext2|ext3|ext4)
 			if [ -n "$CMD_TUNE2FS" ]; then
-				_ext_out=$($CMD_TUNE2FS -l "$_partition" 2>&1 | sed -n '1,260p')
+				_ext_out=$(run_tune2fs -l "$_partition" 2>&1)
+				_t2_rc=$?
+				[ "$_t2_rc" -eq 139 ] && _ext_out="[tune2fs: Segmentation fault (SIGSEGV) - binary crashed on this platform]"
+				_ext_out=$(printf '%s' "$_ext_out" | head -n 260)
 				add_source "$CMD_TUNE2FS -l $_partition" "$_ext_out"
 			fi
 			;;
@@ -1758,6 +1914,23 @@ action_reload_table() {
 
 	_out=$($CMD_PARTPROBE "$_device" 2>&1)
 	_rc=$?
+	if [ "$_rc" -eq 139 ]; then
+		# SIGSEGV with device arg: retry without argument
+		_out2=$($CMD_PARTPROBE 2>&1)
+		_rc2=$?
+		_out="$_out\n[retry without device] rc=$_rc2\n$_out2"
+		[ "$_rc2" -eq 0 ] && _rc=0
+	fi
+	if [ "$_rc" -ne 0 ]; then
+		# Last resort: blockdev --rereadpt
+		_bdev=$(command -v blockdev 2>/dev/null)
+		if [ -n "$_bdev" ]; then
+			_out3=$("$_bdev" --rereadpt "$_device" 2>&1)
+			_rc3=$?
+			_out="$_out\n[blockdev --rereadpt] rc=$_rc3\n$_out3"
+			[ "$_rc3" -eq 0 ] && _rc=0
+		fi
+	fi
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Kernel partition table refreshed" "$_out"
 	else
@@ -2445,26 +2618,33 @@ cat <<'EOF'
 /* Hide the framework Applica / Default (submit) buttons;
    disk-mgmt manages all actions via its own JavaScript flow. */
 input[type="submit"], button[type="submit"] { display: none !important; }
+details#advancedInfoDetails > summary.pcgi-sec-summary {
+	cursor: pointer;
+	user-select: none;
+	padding: 4px 0;
+	font-weight: bold;
+}
+.pcgi-rule {
+	margin: 6px 0;
+	border: none;
+	border-top: 1px solid #d1d5db;
+}
+.pcgi-flag-hint {
+	flex: 0 0 100%;
+	font-size: 11px;
+	color: #6b7280;
+	margin-bottom: 2px;
+}
 </style>
 
 <div class="pcgi-toolbar">
 	<button type="button" onclick="refreshDevices()" id="refreshMapBtn">Refresh map</button>
-	<span id="i18nDeviceStripLabel">Devices:</span>
-	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn" title="Reload kernel partition table after partition changes">Run partprobe</button>
-	<button type="button" onclick="analyzeTools()" id="analyzeBtn" title="Check required/optional disk-management commands on this system">Analyze toolchain</button>
-	<button type="button" onclick="loadPartitionMetadata()" id="metaBtn" title="Load partition geometry and filesystem metadata for selected partition">Partition metadata</button>
-	<button type="button" onclick="toggleToolchainSection()" id="toolchainToggleBtn">Show toolchain panel</button>
+	<span id="i18nDeviceStripLabel"><b>Devices:</b></span>
 	<span id="mapStatus" class="pcgi-small"></span>
 </div>
-<div id="i18nTopButtonsExplain" class="pcgi-small" style="margin-top:-4px; margin-bottom:8px;">Run partprobe refreshes kernel partition table visibility, Analyze toolchain checks required/optional commands, Partition metadata loads partition geometry and filesystem metadata of the selected partition.</div>
 
 <div id="deviceStrip" class="pcgi-device-strip" aria-label="Devices"></div>
 <select id="deviceSelect" class="pcgi-device-select-hidden" onchange="onDeviceChange()" aria-hidden="true" tabindex="-1"></select>
-
-<div class="pcgi-toolbar">
-	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to prefill new partition range">New partition</span>
-	<span id="i18nDragHint" class="pcgi-small">Drag this chip into a free region. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.</span>
-</div>
 
 <div id="partitionMap"></div>
 <div id="mapLegend" class="pcgi-map-legend"></div>
@@ -2472,7 +2652,7 @@ input[type="submit"], button[type="submit"] { display: none !important; }
 
 <div id="partContextMenu" class="pcgi-context-menu"></div>
 
-<div class="pcgi-inline-form">
+<div class="pcgi-inline-form" style="grid-template-columns:repeat(2,1fr)">
 	<div>
 		<label id="i18nSelPartNumLabel">Selected partition number</label>
 		<input id="selectedPartNum" type="text" readonly>
@@ -2481,6 +2661,8 @@ input[type="submit"], button[type="submit"] { display: none !important; }
 		<label id="i18nSelPartPathLabel">Selected partition path</label>
 		<input id="selectedPartPath" type="text" readonly>
 	</div>
+</div>
+<div class="pcgi-inline-form" style="margin-top:4px">
 	<div>
 		<label id="i18nNewStartLabel">New start sector</label>
 		<input id="newStartSector" type="text" placeholder="e.g. 2048">
@@ -2497,6 +2679,8 @@ input[type="submit"], button[type="submit"] { display: none !important; }
 		<label id="i18nNewEndHumanLabel">New end size</label>
 		<input id="newEndHuman" type="text" placeholder="e.g. 488 MiB">
 	</div>
+</div>
+<div class="pcgi-inline-form" style="margin-top:4px">
 	<div>
 		<label id="i18nRoleLabel">Role</label>
 		<select id="newPartRole">
@@ -2524,16 +2708,29 @@ input[type="submit"], button[type="submit"] { display: none !important; }
 	</div>
 </div>
 
+<div class="pcgi-toolbar">
+	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to prefill new partition range">New partition</span>
+	<span id="newPartWithFsChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to prefill and queue partition with role/filesystem/name">New partition with filesystem</span>
+	<span id="i18nDragHint" class="pcgi-small">Drag <strong>New partition</strong> for a quick create with default values. Drag <strong>New partition with filesystem</strong> to include Role, Filesystem and Partition name from the form above. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.</span>
+</div>
+
 <div class="pcgi-toolbar" style="margin-top: 8px;">
 	<button type="button" onclick="queueCreatePartition()" id="queueCreateBtn">Queue create partition</button>
 	<button type="button" onclick="queueDeletePartition()" id="queueDeleteBtn">Queue delete selected partition</button>
-	<button type="button" onclick="queueRenamePartition()" id="queueRenameBtn">Queue set partition name</button>
+</div>
+<hr class="pcgi-rule">
+<div class="pcgi-toolbar" style="margin-top: 4px;">
 	<input id="renamePartInput" type="text" placeholder="new partition name">
-	<input id="flagNameInput" type="text" placeholder="flag (boot, esp, lba)">
+	<button type="button" onclick="queueRenamePartition()" id="queueRenameBtn">Queue set partition name</button>
+</div>
+<hr class="pcgi-rule">
+<div class="pcgi-toolbar" style="margin-top: 4px;">
+	<span class="pcgi-flag-hint">Flags: boot, esp, lba, msftdata, swap, raid, hidden, diag, lvm, bios_grub, pmbr_boot</span>
 	<select id="flagStateInput">
 		<option value="on">on</option>
 		<option value="off">off</option>
 	</select>
+	<input id="flagNameInput" type="text" placeholder="flag name">
 	<button type="button" onclick="queueSetFlag()" id="queueFlagBtn">Queue set flag</button>
 </div>
 EOF
@@ -2599,19 +2796,59 @@ cat <<'EOF'
 	<button type="button" onclick="queueSetLabel()" id="queueLabelBtn">Queue set label</button>
 	<button type="button" onclick="queueMountPartition()" id="queueMountBtn">Queue mount</button>
 	<button type="button" onclick="queueUnmountPartition()" id="queueUnmountBtn">Queue unmount</button>
-	<button type="button" onclick="runFsck(false)" id="checkReadonlyBtn">Check filesystem (read-only)</button>
-	<button type="button" onclick="runFsck(true)" id="checkRepairBtn">Check/repair filesystem</button>
+</div>
+<hr class="pcgi-rule">
+<div class="pcgi-toolbar" style="margin-top: 4px;">
+	<button type="button" onclick="runFsck(false)" id="checkReadonlyBtn">Queue Check filesystem (read-only)</button>
+	<button type="button" onclick="runFsck(true)" id="checkRepairBtn">Queue Check/repair filesystem</button>
 </div>
 EOF
 sec_end
 
+sec_begin "Operation queue"
+cat <<'EOF'
+<p class="pcgi-small" style="margin:0 0 6px;">The <em>Command</em> column is a preview of the main shell command(s) that will run. The backend may add validation and cleanup steps. Operations run in sequence and stop on the first failure. Individual items can be removed from the queue by clicking <strong>Remove</strong>.</p>
+<div style="overflow-x:auto">
+<table class="pcgi-table" id="queueTable" style="table-layout:fixed;min-width:520px">
+	<colgroup>
+		<col style="width:2.6em">
+		<col style="width:9em">
+		<col style="width:28%">
+		<col style="width:37%">
+		<col style="width:5.5em">
+	</colgroup>
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Operation</th>
+			<th>Parameters</th>
+			<th>Command</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody id="queueBody"></tbody>
+</table>
+</div>
+<div class="pcgi-toolbar" style="margin-top:8px;">
+	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply queued operations</button>
+	<button type="button" onclick="clearQueue()">Clear queue</button>
+</div>
+<pre id="cmdOutput" class="pcgi-log"></pre>
+EOF
+sec_end
+
+cat <<'EOF'
+<details id="advancedInfoDetails">
+<summary class="pcgi-sec-summary">Advanced information</summary>
+EOF
+
 sec_begin "Partition/filesystem metadata"
 cat <<'EOF'
 <div class="pcgi-toolbar">
-	<button type="button" onclick="loadPartitionMetadata()" id="loadMetaBtn">Load metadata view</button>
+	<button type="button" onclick="loadPartitionMetadata()" id="metaBtn" title="Load partition geometry and filesystem metadata for selected partition">Partition metadata</button>
 	<span id="metaStatus" class="pcgi-small"></span>
 </div>
-<p id="i18nMetaExplain" class="pcgi-small">Shows partition geometry and filesystem metadata (size, used/free bytes, model/serial and table details) for the selected partition. Read-only view.</p>
+<p id="i18nMetaExplain" class="pcgi-small">Shows partition geometry and filesystem metadata (size, used/free bytes, model/serial and table details) for the selected partition. Fetches live data from the device without modifying anything.</p>
 <div id="metaGraph"></div>
 <pre id="metaRawOutput" class="pcgi-log"></pre>
 EOF
@@ -2623,38 +2860,25 @@ cat <<'EOF'
 	<button type="button" onclick="runDiagnostics('smart_info')">SMART information</button>
 	<button type="button" onclick="runDiagnostics('hdparm_info')">hdparm identify</button>
 	<button type="button" onclick="runDiagnostics('gpt_info')">GPT summary</button>
+	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn" title="Reload kernel partition table after partition changes (uses partprobe or blockdev --rereadpt)">Run partprobe</button>
 </div>
-<p id="i18nDiagExplain" class="pcgi-small">Runs hardware/partition diagnostics on the selected disk: SMART status, hdparm identify output and GPT layout summary. Read-only diagnostics.</p>
+<p id="i18nDiagExplain" class="pcgi-small">Runs hardware/partition diagnostics on the selected disk: SMART status, hdparm identify output, GPT layout summary, and kernel partition table refresh. Read-only diagnostics except for partprobe.</p>
 <pre id="diagOutput" class="pcgi-log"></pre>
-EOF
-sec_end
-
-sec_begin "Operation queue"
-cat <<'EOF'
-<table class="pcgi-table" id="queueTable">
-	<thead>
-		<tr>
-			<th>#</th>
-			<th>Operation</th>
-			<th>Parameters</th>
-			<th>Action</th>
-		</tr>
-	</thead>
-	<tbody id="queueBody"></tbody>
-</table>
-<div class="pcgi-toolbar" style="margin-top:8px;">
-	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply queued operations</button>
-	<button type="button" onclick="clearQueue()">Clear queue</button>
-</div>
-<pre id="cmdOutput" class="pcgi-log"></pre>
 EOF
 sec_end
 
 sec_begin "Toolchain analysis" "toolchainSection"
 cat <<'EOF'
+<div class="pcgi-toolbar">
+	<button type="button" onclick="analyzeTools()" id="analyzeBtn" title="Check required/optional disk-management commands on this system">Analyze toolchain</button>
+</div>
 <pre id="toolsOutput" class="pcgi-log"></pre>
 EOF
 sec_end
+
+cat <<'EOF'
+</details>
+EOF
 
 # Modals and toast container must live outside any collapsible section so that
 # position:fixed overlays remain visible even when toolchainSection is hidden.
@@ -2708,12 +2932,14 @@ cat <<'EOF'
 			dangerText: 'This interface executes real partitioning commands. Backup your data before applying any operation.',
 			dangerUnlock: 'To unlock mutating actions, type YES_I_UNDERSTAND:',
 			dangerReadonly: 'Read-only actions (scan, map, diagnostics, filesystem check in read-only mode) do not require unlock.',
+			chipNewPartition: 'New partition',
+			chipNewPartitionFs: 'New partition with filesystem',
 			workflowTitle: 'Disk management workflow',
 			workflow1: 'Refresh devices and choose one disk.',
-			workflow2: 'Drag new partition into free space, drag partition edge to resize, drag partition into free area to move it.',
+			workflow2: 'Drag New partition for quick create, or New partition with filesystem to include role/filesystem/name; drag partition edge to resize; drag a partition into free area to move it.',
 			workflow3: 'Queue operations, review, then apply in order.',
 			workflow4: 'Run metadata view, filesystem checks, mount operations and diagnostics.',
-			dragHint: 'Drag this chip into a free region. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.',
+			dragHint: 'Drag New partition for a quick create with default values. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag the left or right edge of a partition to queue resize. Drag partitions into free regions to queue move.',
 			missingCommandsLabel: 'Missing commands:',
 			languageLabel: 'Language',
 			usbOnlyLabel: 'Device filter',
@@ -2753,6 +2979,8 @@ cat <<'EOF'
 			tNeedMkfsType: 'Choose a concrete filesystem type for mkfs.',
 			tNeedPartName: 'Select partition and provide a new name.',
 			tNeedFlag: 'Select partition and provide flag name.',
+			tDropQueuedQuick: 'New partition queued from dropped free segment (quick mode).',
+			tDropQueuedWithFs: 'New partition queued from dropped free segment with Role, Filesystem and Partition name.',
 			tQueued: 'Operation queued.',
 			tQueueApplied: 'Queue completed successfully.',
 			tContextUnavailable: 'Action unavailable for this selection.',
@@ -2775,12 +3003,14 @@ cat <<'EOF'
 			dangerText: 'Questa interfaccia esegue comandi reali di partizionamento. Esegui un backup prima di applicare operazioni.',
 			dangerUnlock: 'Per sbloccare le operazioni di modifica, digita YES_I_UNDERSTAND:',
 			dangerReadonly: 'Le azioni in sola lettura (scan, mappa, diagnostica, check read-only) non richiedono sblocco.',
+			chipNewPartition: 'Nuova partizione',
+			chipNewPartitionFs: 'Nuova partizione con filesystem',
 			workflowTitle: 'Workflow gestione dischi',
 			workflow1: 'Aggiorna i dispositivi e scegli un disco.',
-			workflow2: 'Trascina una nuova partizione nello spazio libero, trascina il bordo destro per ridimensionare, trascina una partizione su spazio libero per spostarla.',
+			workflow2: 'Trascina Nuova partizione per creazione rapida, oppure Nuova partizione con filesystem per includere ruolo/filesystem/nome; trascina il bordo partizione per resize; trascina una partizione su spazio libero per spostarla.',
 			workflow3: 'Metti in coda le operazioni, controlla, poi applica in ordine.',
 			workflow4: 'Usa vista metadati, controlli filesystem, mount e diagnostica.',
-			dragHint: 'Trascina questo chip su spazio libero. Trascina il bordo sinistro o destro di una partizione per accodare resize. Trascina una partizione su spazio libero per accodare move.',
+			dragHint: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina il bordo sinistro o destro di una partizione per accodare resize. Trascina una partizione su spazio libero per accodare move.',
 			missingCommandsLabel: 'Comandi mancanti:',
 			languageLabel: 'Lingua',
 			usbOnlyLabel: 'Filtro dispositivi',
@@ -2820,6 +3050,8 @@ cat <<'EOF'
 			tNeedMkfsType: 'Scegli un filesystem concreto per mkfs.',
 			tNeedPartName: 'Seleziona una partizione e fornisci un nuovo nome.',
 			tNeedFlag: 'Seleziona una partizione e fornisci il nome flag.',
+			tDropQueuedQuick: 'Nuova partizione accodata dal segmento libero (modalita rapida).',
+			tDropQueuedWithFs: 'Nuova partizione accodata dal segmento libero con Role, Filesystem e Partition name.',
 			tQueued: 'Operazione accodata.',
 			tQueueApplied: 'Coda completata con successo.',
 			tContextUnavailable: 'Azione non disponibile per questa selezione.',
@@ -2842,12 +3074,14 @@ cat <<'EOF'
 			dangerText: 'Diese Oberflaeche fuehrt echte Partitionierungsbefehle aus. Vor dem Anwenden unbedingt sichern.',
 			dangerUnlock: 'Zum Freigeben von Aenderungen YES_I_UNDERSTAND eingeben:',
 			dangerReadonly: 'Nur-Lese-Aktionen (Scan, Karte, Diagnose, read-only Check) benoetigen keine Freigabe.',
+			chipNewPartition: 'Neue Partition',
+			chipNewPartitionFs: 'Neue Partition mit Dateisystem',
 			workflowTitle: 'Datentraegerverwaltung',
 			workflow1: 'Geraete aktualisieren und Datentraeger waehlen.',
-			workflow2: 'Neue Partition in freien Bereich ziehen, rechten Partitionsrand zum Resize ziehen, Partition in freien Bereich ziehen zum Verschieben.',
+			workflow2: 'Neue Partition fuer Schnellanlage ziehen oder Neue Partition mit Dateisystem fuer Rolle/Dateisystem/Name; Partitionsrand zum Resize ziehen; Partition in freien Bereich ziehen zum Verschieben.',
 			workflow3: 'Operationen in Queue sammeln, pruefen und dann anwenden.',
 			workflow4: 'Metadatenansicht, Dateisystem-Pruefung, Mount und Diagnose verwenden.',
-			dragHint: 'Chip in freien Bereich ziehen. Linken oder rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer Move.',
+			dragHint: 'Neue Partition fuer Schnellanlage mit Standardwerten ziehen. Neue Partition mit Dateisystem ziehen, um Role, Filesystem und Partition name aus dem Formular zu uebernehmen. Linken oder rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer Move.',
 			missingCommandsLabel: 'Fehlende Befehle:',
 			languageLabel: 'Sprache',
 			usbOnlyLabel: 'Geraetefilter',
@@ -2887,6 +3121,8 @@ cat <<'EOF'
 			tNeedMkfsType: 'Fuer mkfs einen konkreten Dateisystemtyp waehlen.',
 			tNeedPartName: 'Partition auswaehlen und neuen Namen angeben.',
 			tNeedFlag: 'Partition auswaehlen und Flag-Namen angeben.',
+			tDropQueuedQuick: 'Neue Partition aus freiem Segment in Queue gestellt (Schnellmodus).',
+			tDropQueuedWithFs: 'Neue Partition aus freiem Segment mit Role, Filesystem und Partition name in Queue gestellt.',
 			tQueued: 'Operation in Queue aufgenommen.',
 			tQueueApplied: 'Queue erfolgreich abgeschlossen.',
 			tContextUnavailable: 'Aktion fuer diese Auswahl nicht verfuegbar.',
@@ -3039,6 +3275,8 @@ cat <<'EOF'
 			i18nWorkflow2: 'workflow2',
 			i18nWorkflow3: 'workflow3',
 			i18nWorkflow4: 'workflow4',
+			newPartChip: 'chipNewPartition',
+			newPartWithFsChip: 'chipNewPartitionFs',
 			i18nDragHint: 'dragHint',
 			i18nTopButtonsExplain: 'topButtonsExplain',
 			i18nMetaExplain: 'metaExplain',
@@ -3074,11 +3312,9 @@ cat <<'EOF'
 		var partprobeBtn = document.getElementById('partprobeBtn');
 		var analyzeBtn = document.getElementById('analyzeBtn');
 		var metaBtn = document.getElementById('metaBtn');
-		var loadMetaBtn = document.getElementById('loadMetaBtn');
 		if (partprobeBtn) { partprobeBtn.textContent = t('btnRunPartprobe'); partprobeBtn.title = t('partprobeHint'); }
 		if (analyzeBtn) { analyzeBtn.textContent = t('btnAnalyzeToolchain'); analyzeBtn.title = t('analyzeHint'); }
 		if (metaBtn) { metaBtn.textContent = t('btnPartitionMetadata'); metaBtn.title = t('metadataHint'); }
-		if (loadMetaBtn) loadMetaBtn.textContent = t('btnLoadMetadataView');
 		var usbSel = document.getElementById('usbOnlySelect');
 		if (usbSel && usbSel.options.length >= 2) {
 			usbSel.options[0].text = t('usbAllDevices');
@@ -3611,9 +3847,9 @@ cat <<'EOF'
 			}
 			if (fstype === 'fat' || fstype === 'fat12' || fstype === 'fat16' || fstype === 'fat32' || fstype === 'vfat') {
 				if (direction === 'shrink') {
-					return 'fatresize -s ' + v(params.target_bytes) + 'B ' + v(params.partition);
+					return 'fatresize -vps ' + v(params.target_bytes) + ' ' + v(params.partition);
 				}
-				return 'fatresize -s max ' + v(params.partition);
+				return 'fatresize -vps max ' + v(params.partition);
 			}
 			return '# unsupported fs resize preview for fs_type=' + fstype + ' partition=' + v(params.partition);
 		}
@@ -3646,7 +3882,22 @@ cat <<'EOF'
 			}
 		}
 		if (action === 'set_label') {
-			return '# fs_type=' + v(params.fs_type) + '\n# backend auto-detects FS for auto and applies ext/fat/exfat/ntfs label command\n# target=' + v(params.partition) + ' label=' + v(params.label);
+			var lblFstype = v(params.fs_type).toLowerCase();
+			var lblTarget = v(params.partition);
+			var lblValue = v(params.label);
+			if (lblFstype === 'ext2' || lblFstype === 'ext3' || lblFstype === 'ext4') {
+				return 'e2label ' + lblTarget + ' ' + lblValue;
+			}
+			if (lblFstype === 'fat' || lblFstype === 'fat12' || lblFstype === 'fat16' || lblFstype === 'fat32' || lblFstype === 'vfat') {
+				return 'fatlabel ' + lblTarget + ' ' + lblValue;
+			}
+			if (lblFstype === 'exfat') {
+				return 'exfatlabel ' + lblTarget + ' ' + lblValue;
+			}
+			if (lblFstype === 'ntfs') {
+				return 'ntfslabel ' + lblTarget + ' ' + lblValue;
+			}
+			return '# backend auto-detects FS for ' + lblTarget + '\n# ext: e2label, fat: fatlabel, exfat: exfatlabel, ntfs: ntfslabel\n# label=' + lblValue;
 		}
 		if (action === 'set_partition_name') {
 			return 'parted -s ' + v(params.device) + ' name ' + v(params.partnum) + ' ' + v(params.part_name);
@@ -3659,7 +3910,9 @@ cat <<'EOF'
 		}
 		if (action === 'mount_partition') {
 			var mtxt = 'mkdir -p ' + v(params.mountpoint || '<auto>') + '\nmount';
-			if (v(params.fs_type) && v(params.fs_type) !== 'auto') mtxt += ' -t ' + v(params.fs_type);
+			var mfs = v(params.fs_type).toLowerCase();
+			if (mfs === 'fat' || mfs === 'fat12' || mfs === 'fat16' || mfs === 'fat32') mfs = 'vfat';
+			if (mfs && mfs !== 'auto') mtxt += ' -t ' + mfs;
 			if (v(params.mount_opts)) mtxt += ' -o ' + v(params.mount_opts);
 			mtxt += ' ' + v(params.partition) + ' ' + v(params.mountpoint || '<auto>');
 			return mtxt;
@@ -3799,7 +4052,12 @@ cat <<'EOF'
 			tdLabel.textContent = op.label;
 			var tdParams = document.createElement('td');
 			tdParams.className = 'pcgi-mono';
-			tdParams.textContent = JSON.stringify(op.params);
+			tdParams.style.cssText = 'white-space:pre-wrap;word-break:break-all;font-size:0.82em;vertical-align:top;';
+			tdParams.textContent = JSON.stringify(op.params, null, 2);
+			var tdCmd = document.createElement('td');
+			tdCmd.className = 'pcgi-mono';
+			tdCmd.style.cssText = 'white-space:pre-wrap;word-break:break-all;font-size:0.82em;vertical-align:top;';
+			tdCmd.textContent = op.commandPreview || buildCommandPreview(op.action, op.params);
 			var tdDel = document.createElement('td');
 			var btn = document.createElement('button');
 			btn.type = 'button';
@@ -3816,6 +4074,7 @@ cat <<'EOF'
 			tr.appendChild(tdIdx);
 			tr.appendChild(tdLabel);
 			tr.appendChild(tdParams);
+			tr.appendChild(tdCmd);
 			tr.appendChild(tdDel);
 			body.appendChild(tr);
 		}
@@ -4124,9 +4383,8 @@ cat <<'EOF'
 	function mapFsTypeSelectValue(fs) {
 		var v = String(fs || '').toLowerCase();
 		if (!v) return 'auto';
-		if (v === 'fat' || v === 'fat12' || v === 'fat16' || v === 'fat32' || v === 'vfat') return 'fat';
-		if (v === 'vfat') return 'vfat';
-		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'exfat' || v === 'ntfs' || v === 'fat16' || v === 'fat32') {
+		if (v === 'fat' || v === 'fat12' || v === 'vfat') return 'fat32';
+		if (v === 'fat16' || v === 'fat32' || v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'exfat' || v === 'ntfs') {
 			return v;
 		}
 		return 'auto';
@@ -4596,13 +4854,20 @@ cat <<'EOF'
 						state.mapDragActive = false;
 						hideHoverTooltip();
 						var data = ev.dataTransfer.getData('text/plain');
-						if (data === 'new-partition') {
-							document.getElementById('newStartSector').value = String(p.start);
-							document.getElementById('newEndSector').value = String(p.end);
-							refreshSectorHumanFields();
-							updateMapStatus('New partition range loaded from dropped free segment.');
-							showToast('New partition range pre-filled from free segment.', 'info', 1800);
-						} else if (data.indexOf('partition:') === 0) {
+						if (data === 'new-partition' || data === 'new-partition-with-filesystem') {
+						document.getElementById('newStartSector').value = String(p.start);
+						document.getElementById('newEndSector').value = String(p.end);
+						refreshSectorHumanFields();
+						if (data === 'new-partition-with-filesystem') {
+							updateMapStatus(t('tDropQueuedWithFs'));
+							showToast(t('tDropQueuedWithFs'), 'info', 2200);
+							queueCreatePartition();
+						} else {
+							updateMapStatus(t('tDropQueuedQuick'));
+							showToast(t('tDropQueuedQuick'), 'info', 2200);
+							queueCreatePartitionBasic();
+						}
+					} else if (data.indexOf('partition:') === 0) {
 							var pnum = data.split(':')[1];
 							var moveSource = null;
 							for (var m = 0; m < dev.partitions.length; m++) {
@@ -4909,6 +5174,17 @@ cat <<'EOF'
 				buildCommandPreview('unmount_partition', umParams),
 				true
 			);
+
+			if (hasFilesystem && fsType) {
+				var ckParams = { partition: partitionPath, fs_type: fsType, repair: 'no', extra_opts: '' };
+				queueOp(
+					'check_filesystem',
+					ckParams,
+					'Check filesystem (read-only) on ' + partitionPath + ' before resize',
+					buildCommandPreview('check_filesystem', ckParams),
+					true
+				);
+			}
 
 			if (queueFs && isShrink) {
 				var fsBeforeParams = {
@@ -5270,13 +5546,13 @@ cat <<'EOF'
 
 	function queueCreatePartition() {
 		var dev = state.selectedDevice;
-		if (!dev) {
+		if (dev === null || dev === '') {
 			showToast(t('tNoDevice'), 'warn');
 			return;
 		}
 		var start = document.getElementById('newStartSector').value.trim();
 		var end = document.getElementById('newEndSector').value.trim();
-		if (!start || !end) {
+		if (start === '' || end === '') {
 			showToast(t('tNeedStartEnd'), 'warn');
 			return;
 		}
@@ -5286,14 +5562,35 @@ cat <<'EOF'
 		queueOpWithConfirm(
 			'create_partition',
 			{ device: dev, start_sector: start, end_sector: end, part_role: role, fs_hint: fsHint, part_name: partName },
-			'Create partition on ' + dev + ' [' + start + 's..' + end + 's]',
+			'Create partition on ' + dev + ' [' + start + 's..' + end + 's] (with form Role/Filesystem/Name)',
+			t('confirmCreate'),
+			t('confirmCreateMsg')
+		);
+	}
+
+	function queueCreatePartitionBasic() {
+		var dev = state.selectedDevice;
+		if (dev === null || dev === '') {
+			showToast(t('tNoDevice'), 'warn');
+			return;
+		}
+		var start = document.getElementById('newStartSector').value.trim();
+		var end = document.getElementById('newEndSector').value.trim();
+		if (start === '' || end === '') {
+			showToast(t('tNeedStartEnd'), 'warn');
+			return;
+		}
+		queueOpWithConfirm(
+			'create_partition',
+			{ device: dev, start_sector: start, end_sector: end, part_role: 'primary', fs_hint: '', part_name: '' },
+			'Create partition on ' + dev + ' [' + start + 's..' + end + 's] (quick mode)',
 			t('confirmCreate'),
 			t('confirmCreateMsg')
 		);
 	}
 
 	function queueDeletePartition() {
-		if (!state.selectedPart || !state.selectedPart.number) {
+		if (!state.selectedPart||!state.selectedPart.number){
 			showToast(t('tNoPartition'), 'warn');
 			return;
 		}
@@ -5570,6 +5867,9 @@ cat <<'EOF'
 				if (op.commandPreview) {
 					params.command_preview = op.commandPreview;
 				}
+				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition") {
+					logTo("cmdOutput", "WARNING: Disk resize operation is starting now. Do not interrupt power or disconnect storage. This operation may take several minutes.", false);
+				}
 
 				callApi(op.action, params)
 					.then(function (res) {
@@ -5828,6 +6128,15 @@ cat <<'EOF'
 		state.mapDragActive = false;
 		hideHoverTooltip();
 	};
+	document.getElementById('newPartWithFsChip').ondragstart = function (ev) {
+		state.mapDragActive = true;
+		hideHoverTooltip();
+		ev.dataTransfer.setData('text/plain', 'new-partition-with-filesystem');
+	};
+	document.getElementById('newPartWithFsChip').ondragend = function () {
+		state.mapDragActive = false;
+		hideHoverTooltip();
+	};
 	document.getElementById('helpBtn').onclick = showHelpModal;
 	document.getElementById('pcgiHelpCloseBtn').onclick = hideHelpModal;
 	document.getElementById('langSelect').onchange = function () {
@@ -5887,8 +6196,6 @@ cat <<'EOF'
 	document.getElementById('langSelect').value = state.language;
 	state.dryRun = false;
 	applyTranslations();
-	var toolchainSection = document.getElementById('toolchainSection');
-	if (toolchainSection) toolchainSection.style.display = 'none';
 	hideLegacyFooterButtons();
 	setTimeout(hideLegacyFooterButtons, 0);
 	updateSafetySectionVisibility();
