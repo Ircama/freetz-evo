@@ -18,6 +18,9 @@ $(PKG)_DEPENDS_ON += parted e2fsprogs
 
 # fatresize's configure checks parted headers before pkg-config macros.
 $(PKG)_CONFIGURE_ENV += CFLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
+# Cross-compile probe may otherwise set this to "no", which would later
+# produce an invalid -D_FILE_OFFSET_BITS=no define.
+$(PKG)_CONFIGURE_ENV += ac_cv_sys_file_offset_bits=64
 $(PKG)_CONFIGURE_ENV += PARTED_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 # configure adds -lparted-fs-resize itself for libparted >= 3.1.
 # Keep only base libs/path here to avoid duplicate symbols from static archives.

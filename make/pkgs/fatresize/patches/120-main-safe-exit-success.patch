@@ -1,0 +1,189 @@
+--- a/fatresize.c
++++ b/fatresize.c
+@@ -86,6 +86,11 @@
+   _exit(code);
+ }
+ 
++static void safe_exit(int code) {
++  fflush(NULL);
++  _exit(code);
++}
++
+ static void printd(int level, const char *fmt, ...) {
+   va_list ap;
+ 
+@@ -537,10 +542,10 @@
+ 
+   if (!opts.device) {
+     fprintf(stderr, "You must specify exactly one existing device.\n");
+-    return 1;
++    safe_exit(1);
+   } else if (!opts.size && !opts.info) {
+     fprintf(stderr, "You must specify new size.\n");
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   ped_exception_set_handler(fatresize_handler);
+@@ -553,42 +558,42 @@
+   printd(3, "ped_device_get(%s)\n", opts.device);
+   dev = ped_device_get(opts.device);
+   if (!dev) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   printd(3, "ped_device_open()\n");
+   if (!ped_device_open(dev)) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   if (opts.pnum > 0) {
+     printd(3, "ped_disk_new()\n");
+     disk = ped_disk_new(dev);
+     if (!disk) {
+-      return 1;
++      safe_exit(1);
+     }
+ 
+     printd(3, "ped_disk_get_partition(%d)\n", opts.pnum);
+     part = ped_disk_get_partition(disk, opts.pnum);
+     if (!part || !part->fs_type) {
+-      return 1;
++      safe_exit(1);
+     }
+ 
+     if (strncmp(part->fs_type->name, "fat", 3)) {
+       ped_exception_throw(PED_EXCEPTION_ERROR, PED_EXCEPTION_CANCEL,
+                           "%s is not valid FAT16/FAT32 partition.",
+                           opts.fullpath);
+-      return 1;
++      safe_exit(1);
+     }
+ 
+     if (!partition_warn_busy(part)) {
+       ped_disk_destroy(disk);
+-      return 1;
++      safe_exit(1);
+     }
+     memcpy(&part_geom, &part->geom, sizeof(PedGeometry));
+   } else {
+     if (!ped_geometry_init(&part_geom, dev, 0, dev->length)) {
+-      return 1;
++      safe_exit(1);
+     }
+   }
+ 
+@@ -599,13 +604,13 @@
+     printd(3, "ped_file_system_open()\n");
+     fs = ped_file_system_open(&part_geom);
+     if (!fs) {
+-      return 1;
++      safe_exit(1);
+     }
+ 
+     printd(3, "ped_file_system_get_resize_constraint()\n");
+     constraint = ped_file_system_get_resize_constraint(fs);
+     if (!constraint) {
+-      return 1;
++      safe_exit(1);
+     }
+   }
+   if (opts.info) {
+@@ -615,7 +620,7 @@
+     printf("Max size: %llu\n", constraint->max_size * dev->sector_size);
+ 
+     ped_constraint_destroy(constraint);
+-    return 0;
++    safe_exit(0);
+   }
+   if (opts.size == LLONG_MAX) {
+     opts.size = constraint->max_size * dev->sector_size;
+@@ -626,7 +631,7 @@
+   printd(3, "ped_geometry_new(%llu)\n", start);
+   range_start = ped_geometry_new(dev, start, 1);
+   if (!range_start) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   end = part_geom.start + opts.size / dev->sector_size;
+@@ -636,10 +641,10 @@
+   if (!strcmp(old_str, def_str)) {
+     range_end = ped_geometry_new(dev, part_geom.end, 1);
+     if (!range_end) {
+-      return 1;
++      safe_exit(1);
+     }
+   } else if (!ped_unit_parse(def_str, dev, &end, &range_end)) {
+-    return 1;
++    safe_exit(1);
+   }
+   free(old_str);
+   free(def_str);
+@@ -647,12 +652,12 @@
+   printd(3, "ped_geometry_duplicate()\n");
+   old_geom = ped_geometry_duplicate(&part_geom);
+   if (!old_geom) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   printd(3, "ped_geometry_init(%llu, %llu)\n", start, end - start + 1);
+   if (!ped_geometry_init(&new_geom, dev, start, end - start + 1)) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   printd(3, "snap_to_boundaries()\n");
+@@ -661,7 +666,7 @@
+   printd(3, "ped_file_system_open()\n");
+   fs = ped_file_system_open(&part->geom);
+   if (!fs) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   printd(3, "constraint_intersect_and_destroy()\n");
+@@ -669,7 +674,7 @@
+       ped_file_system_get_resize_constraint(fs),
+       constraint_from_start_end(dev, range_start, range_end));
+   if (!constraint) {
+-    return 1;
++    safe_exit(1);
+   }
+ 
+   /* Resize partition */
+@@ -680,13 +685,13 @@
+                                      new_geom.end)) {
+       ped_file_system_close(fs);
+       ped_constraint_destroy(constraint);
+-      return 1;
++      safe_exit(1);
+     }
+   }
+ 
+   printd(1, "Resizing file system.\n");
+   if (!ped_file_system_resize(fs, &new_geom, timer)) {
+-    return 1;
++    safe_exit(1);
+   }
+   if (opts.verbose == 3 && opts.progress) {
+     printf("\n");
+@@ -703,7 +708,7 @@
+   if (opts.pnum > 0) {
+     printd(1, "Committing changes.\n");
+     if (!ped_disk_commit(disk)) {
+-      return 1;
++      safe_exit(1);
+     }
+     ped_disk_destroy(disk);
+   }
+@@ -717,5 +722,5 @@
+ 
+   ped_device_close(dev);
+ 
+-  return 0;
++  safe_exit(0);
+ }
