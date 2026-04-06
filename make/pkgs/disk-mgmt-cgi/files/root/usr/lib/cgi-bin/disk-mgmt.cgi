@@ -417,6 +417,24 @@ partition_path() {
 	echo "$_guess"
 }
 
+partition_number_by_range() {
+    _device="$1"
+    _start_sector="$2"
+    _end_sector="$3"
+
+    [ -n "$CMD_PARTED" ] || return 1
+    $CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: -v s="$_start_sector" -v e="$_end_sector" '
+        $1 ~ /^[0-9]+$/ {
+            gsub(/s$/, "", $2)
+            gsub(/s$/, "", $3)
+            if ($2 == s && $3 == e) {
+                print $1
+                exit
+            }
+        }
+    '
+}
+
 run_partprobe() {
 	if [ -n "$CMD_PARTPROBE" ]; then
 		$CMD_PARTPROBE "$1" >/tmp/disk-mgmt-partprobe.log 2>&1
@@ -1497,35 +1515,83 @@ action_move_partition() {
 		return
 	fi
 
+	emit_json_error "Partition move via parted is disabled (unsupported/unstable on this target). Use queued workflow: create target partition, clone with dd, delete source."
+}
+
+action_clone_partition_dd() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+
 	_device=$(cgi_param device)
-	_partnum=$(cgi_param partnum)
-	_start_sector=$(cgi_param start_sector)
-	_end_sector=$(cgi_param end_sector)
+	_source_partnum=$(cgi_param source_partnum)
+	_target_start_sector=$(cgi_param target_start_sector)
+	_target_end_sector=$(cgi_param target_end_sector)
+	_dd_bs=$(cgi_param dd_bs)
 
 	[ -n "$CMD_PARTED" ] || { emit_json_error "parted command not available"; return; }
 	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
-	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
-	is_valid_sector "$_start_sector" || { emit_json_error "Invalid start sector"; return; }
-	is_valid_sector "$_end_sector" || { emit_json_error "Invalid end sector"; return; }
+	is_valid_partnum "$_source_partnum" || { emit_json_error "Invalid source partition number"; return; }
+	is_valid_sector "$_target_start_sector" || { emit_json_error "Invalid target start sector"; return; }
+	is_valid_sector "$_target_end_sector" || { emit_json_error "Invalid target end sector"; return; }
+	case "$_dd_bs" in
+		''|*[!0-9kKmMgG]*) _dd_bs='1M' ;;
+		*) : ;;
+	esac
 
-	if [ "$_start_sector" -ge "$_end_sector" ]; then
-		emit_json_error "Start sector must be lower than end sector"
+	if [ "$_target_start_sector" -ge "$_target_end_sector" ]; then
+		emit_json_error "Target start sector must be lower than target end sector"
 		return
+	fi
+
+	_source_path=$(partition_path "$_device" "$_source_partnum")
+	[ -b "$_source_path" ] || { emit_json_error "Source partition block device not found"; return; }
+
+	_target_partnum=$(partition_number_by_range "$_device" "$_target_start_sector" "$_target_end_sector")
+	is_valid_partnum "$_target_partnum" || { emit_json_error "Target partition not found at requested sector range"; return; }
+
+	_target_path=$(partition_path "$_device" "$_target_partnum")
+	[ -b "$_target_path" ] || { emit_json_error "Target partition block device not found"; return; }
+
+	if [ "$_source_partnum" = "$_target_partnum" ]; then
+		emit_json_error "Source and target partition are the same"
+		return
+	fi
+
+	_src_mp=$(awk -v p="$_source_path" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
+	_tgt_mp=$(awk -v p="$_target_path" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
+	if [ -n "$_src_mp" ] || [ -n "$_tgt_mp" ]; then
+		emit_json_error "Source/target must be unmounted before dd clone"
+		return
+	fi
+
+	_bdev=$(command -v blockdev 2>/dev/null)
+	if [ -n "$_bdev" ]; then
+		_src_bytes=$($_bdev --getsize64 "$_source_path" 2>/dev/null)
+		_tgt_bytes=$($_bdev --getsize64 "$_target_path" 2>/dev/null)
+		_src_bytes=$(safe_uint "$_src_bytes")
+		_tgt_bytes=$(safe_uint "$_tgt_bytes")
+		if [ "$_src_bytes" -gt 0 ] && [ "$_tgt_bytes" -gt 0 ] && [ "$_tgt_bytes" -lt "$_src_bytes" ]; then
+			emit_json_error "Target partition is smaller than source partition"
+			return
+		fi
 	fi
 
 	if dry_run_enabled; then
-		emit_dry_run_result "partition move" "parted -s $_device unit s move $_partnum ${_start_sector}s ${_end_sector}s
-partprobe $_device"
+		emit_dry_run_result "partition clone (dd)" "dd if=$_source_path of=$_target_path bs=$_dd_bs
+sync"
 		return
 	fi
 
-	_out=$($CMD_PARTED -s "$_device" unit s move "$_partnum" "${_start_sector}s" "${_end_sector}s" 2>&1)
+	_out=$(dd if="$_source_path" of="$_target_path" bs="$_dd_bs" 2>&1)
 	_rc=$?
-	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
 	if [ "$_rc" -eq 0 ]; then
-		emit_cmd_result true "$_rc" "Partition moved" "$_out"
+		sync
+		emit_cmd_result true "$_rc" "Partition cloned with dd" "$_out"
 	else
-		emit_cmd_result false "$_rc" "Partition move failed" "$_out"
+		emit_cmd_result false "$_rc" "Partition clone failed" "$_out"
 	fi
 }
 
@@ -2089,6 +2155,9 @@ EOF
 			;;
 		move_partition)
 			action_move_partition
+			;;
+		clone_partition_dd)
+			action_clone_partition_dd
 			;;
 		mount_partition)
 			action_mount_partition
@@ -3906,7 +3975,15 @@ cat <<'EOF'
 			return 'parted -s ' + v(params.device) + ' set ' + v(params.partnum) + ' ' + v(params.flag) + ' ' + v(params.state);
 		}
 		if (action === 'move_partition') {
-			return 'parted -s ' + v(params.device) + ' unit s move ' + v(params.partnum) + ' ' + v(params.start_sector) + 's ' + v(params.end_sector) + 's\npartprobe ' + v(params.device);
+			var wf = '# move workflow without parted move (safe fallback)\n';
+			wf += 'parted -s ' + v(params.device) + ' unit s mkpart primary ' + v(params.start_sector) + 's ' + v(params.end_sector) + 's\n';
+			wf += 'dd if=<source_partition> of=<new_partition> bs=1M\n';
+			wf += 'parted -s ' + v(params.device) + ' rm ' + v(params.partnum) + '\n';
+			wf += 'partprobe ' + v(params.device);
+			return wf;
+		}
+		if (action === 'clone_partition_dd') {
+			return 'dd if=<partition ' + v(params.source_partnum) + '> of=<partition at [' + v(params.target_start_sector) + 's..' + v(params.target_end_sector) + 's]> bs=' + v(params.dd_bs || '1M') + '\nsync';
 		}
 		if (action === 'mount_partition') {
 			var mtxt = 'mkdir -p ' + v(params.mountpoint || '<auto>') + '\nmount';
@@ -5258,7 +5335,7 @@ cat <<'EOF'
         function queueMoveResizePlan(dev, part, newStart, resizeFs) {
                 if (!dev || !part) {
                         showToast(t('tContextUnavailable'), 'warn');
-                        return;
+                        return Promise.resolve(false);
                 }
 
                 var oldStart = Number(part.start || 0);
@@ -5266,136 +5343,20 @@ cat <<'EOF'
                 var targetStart = Number(newStart || 0);
                 if (!isFinite(targetStart) || targetStart <= 0 || targetStart >= end) {
                         showToast('Invalid start sector for resize.', 'warn');
-                        return;
+                        return Promise.resolve(false);
                 }
                 if (targetStart === oldStart) {
                         showToast(t('tMoveSame'), 'warn');
-                        return;
+                        return Promise.resolve(false);
                 }
 
-                var isShrink = targetStart > oldStart;
-                var queueFs = String(resizeFs || 'no') === 'yes';
-                var rawFsType = String(part.fs || '').toLowerCase().trim();
-                var hasFilesystem = !!(rawFsType && rawFsType !== 'unknown' && rawFsType !== '-');
-                var fsCap = hasFilesystem ? getFsResizeCapability(rawFsType, isShrink ? 'shrink' : 'grow') : { supported: true, hasTool: true, canResize: true, fsType: '', toolHint: '' };
-                var fsType = fsCap.fsType || normalizeFsTypeForResize(rawFsType);
-
-                if (isShrink && hasFilesystem) {
-                        if (!fsCap.supported) {
-                                showToast('Cannot shrink partition #' + part.number + ': filesystem ' + rawFsType + ' is not supported for resize.', 'error', 4200);
-                                return;
-                        }
-                        if (fsCap.hasTool === false) {
-                                showToast('Cannot shrink partition #' + part.number + ': missing resize tool (' + fsCap.toolHint + ').', 'error', 4200);
-                                return;
-                        }
-                        if (!queueFs) {
-                                queueFs = true;
-                                showToast('Filesystem resize enabled automatically for shrink operation.', 'warn', 3200);
-                        }
-                }
-
-                if (!isShrink && hasFilesystem) {
-                        if (!fsCap.supported) {
-                                showToast('Warning: growing partition with filesystem ' + rawFsType + ' has no supported resize. Filesystem resize will be skipped.', 'warn', 3800);
-                                queueFs = false;
-                        } else if (fsCap.hasTool === false) {
-                                showToast('Warning: missing tool ' + fsCap.toolHint + '. Partition growth will be queued without filesystem resize.', 'warn', 3800);
-                                queueFs = false;
-                        }
-                }
-
-                if (queueFs && !hasFilesystem) queueFs = false;
-                if (queueFs && !fsType) queueFs = false;
-
-                var logical = Number(dev.logical_sector_size || 512);
-                var targetBytes = Math.max(1, (end - targetStart + 1) * logical);
-                var targetKib = Math.max(1, Math.floor(targetBytes / 1024));
-                var isMounted = !!(part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-');
-                var mountpoint = isMounted ? String(part.mountpoint).trim() : '';
-                var partitionPath = String(part.path || '');
-
-                return showConfirmModal(
-                        t('confirmAction'),
-                        'Queue resize plan for partition #' + part.number + ' on ' + dev.path + ' (left edge)?'
-                ).then(function (ok) {
-                        if (!ok) return;
-
-                        var umParams = { partition: partitionPath };
-                        queueOp(
-                                'unmount_partition',
-                                umParams,
-                                'Unmount ' + partitionPath,
-                                buildCommandPreview('unmount_partition', umParams),
-                                true
-                        );
-
-                        if (queueFs && isShrink) {
-                                var fsBeforeParams = {
-                                        partition: partitionPath,
-                                        fs_type: fsType,
-                                        direction: 'shrink',
-                                        target_kib: String(targetKib),
-                                        target_bytes: String(targetBytes)
-                                };
-                                queueOp(
-                                        'resize_filesystem',
-                                        fsBeforeParams,
-                                        'Resize filesystem (shrink) on ' + partitionPath,
-                                        buildCommandPreview('resize_filesystem', fsBeforeParams),
-                                        true
-                                );
-                        }
-
-                        var mpParams = {
-                                device: dev.path,
-                                partnum: part.number,
-                                start_sector: String(targetStart),
-                                end_sector: String(end)
-                        };
-                        queueOp(
-                                'move_partition',
-                                mpParams,
-                                'Move/resize partition #' + part.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + end + 's]',
-                                buildCommandPreview('move_partition', mpParams),
-                                true
-                        );
-
-                        if (queueFs && !isShrink) {
-                                var fsAfterParams = {
-                                        partition: partitionPath,
-                                        fs_type: fsType,
-                                        direction: 'grow',
-                                        target_kib: String(targetKib),
-                                        target_bytes: String(targetBytes)
-                                };
-                                queueOp(
-                                        'resize_filesystem',
-                                        fsAfterParams,
-                                        'Resize filesystem (grow) on ' + partitionPath,
-                                        buildCommandPreview('resize_filesystem', fsAfterParams),
-                                        true
-                                );
-                        }
-
-                        if (isMounted && mountpoint) {
-                                var mParams = {
-                                        partition: partitionPath,
-                                        mountpoint: mountpoint,
-                                        fs_type: mapFsTypeSelectValue(part.fs),
-                                        mount_opts: ''
-                                };
-                                queueOp(
-                                        'mount_partition',
-                                        mParams,
-                                        'Remount ' + partitionPath + ' on ' + mountpoint,
-                                        buildCommandPreview('mount_partition', mParams),
-                                        true
-                                );
-                        }
-
-                        showToast('Resize plan queued (' + (isShrink ? 'shrink' : 'grow') + ', left edge).', 'success', 2200);
-                });
+                return queueMovePartitionWithConfirm(
+                        dev.path,
+                        part,
+                        targetStart,
+                        end,
+                        'Relocate partition #' + part.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + end + 's] (create + dd + delete)'
+                );
         }
 
 function partitionMountInfo(part, devPath) {
@@ -5412,9 +5373,10 @@ return { isMounted: isMounted, mountpoint: mountpoint, partitionPath: partitionP
 }
 
 function enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, movePreview, quiet) {
-var moveParams = { device: devPath, partnum: part.number, start_sector: targetStart, end_sector: targetEnd };
-var moveLabel = 'Move partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's]';
+var moveLabel = 'Relocate partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's] (create + dd + delete)';
 var mountInfo = partitionMountInfo(part, devPath);
+var fsHint = mapFsHintValue(part.fs);
+var partName = String(part.name || '');
 
 if (mountInfo.isMounted && mountInfo.partitionPath) {
 var umParams = { partition: mountInfo.partitionPath };
@@ -5427,29 +5389,62 @@ true
 );
 }
 
-queueOp('move_partition', moveParams, moveLabel, movePreview || buildCommandPreview('move_partition', moveParams), quiet);
-
-if (mountInfo.isMounted && mountInfo.partitionPath && mountInfo.mountpoint) {
-var mParams = {
-partition: mountInfo.partitionPath,
-mountpoint: mountInfo.mountpoint,
-fs_type: mapFsTypeSelectValue(part.fs),
-mount_opts: ''
+var cpParams = {
+device: devPath,
+start_sector: String(targetStart),
+end_sector: String(targetEnd),
+part_role: 'primary',
+fs_hint: fsHint,
+part_name: partName
 };
 queueOp(
-'mount_partition',
-mParams,
-'Remount ' + mountInfo.partitionPath + ' on ' + mountInfo.mountpoint,
-buildCommandPreview('mount_partition', mParams),
+'create_partition',
+cpParams,
+'Create target partition on ' + devPath + ' [' + targetStart + 's..' + targetEnd + 's]',
+buildCommandPreview('create_partition', cpParams),
 true
 );
+
+var cloneParams = {
+device: devPath,
+source_partnum: String(part.number),
+target_start_sector: String(targetStart),
+target_end_sector: String(targetEnd),
+dd_bs: '1M'
+};
+queueOp(
+'clone_partition_dd',
+cloneParams,
+'Clone source partition #' + part.number + ' into target range with dd',
+buildCommandPreview('clone_partition_dd', cloneParams),
+true
+);
+
+var delParams = {
+device: devPath,
+partnum: String(part.number)
+};
+queueOp(
+'delete_partition',
+delParams,
+'Delete source partition #' + part.number + ' on ' + devPath,
+buildCommandPreview('delete_partition', delParams),
+true
+);
+
+if (mountInfo.isMounted && mountInfo.partitionPath && mountInfo.mountpoint) {
+showToast('Source partition was mounted. After apply, mount the new target partition manually on ' + mountInfo.mountpoint + '.', 'warn', 5000);
+}
+
+if (!quiet) {
+showToast(moveLabel, 'info', 2600);
 }
 }
 
 function queueMovePartitionWithConfirm(devPath, part, targetStart, targetEnd, label) {
 var moveParams = { device: devPath, partnum: part.number, start_sector: targetStart, end_sector: targetEnd };
-var moveLabel = label || ('Move partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's]');
-showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
+var moveLabel = label || ('Relocate partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's] (create + dd + delete)');
+return showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
 .then(function (previewText) {
 if (previewText === null) return;
 enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, previewText, true);
@@ -5944,7 +5939,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 				if (op.commandPreview) {
 					params.command_preview = op.commandPreview;
 				}
-				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition") {
+				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition" || op.action === "clone_partition_dd") {
 					logTo("cmdOutput", "WARNING: Disk resize operation is starting now. Do not interrupt power or disconnect storage. This operation may take several minutes.", false);
 				}
 

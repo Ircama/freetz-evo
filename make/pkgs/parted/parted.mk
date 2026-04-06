@@ -14,9 +14,12 @@ $(PKG)_BINARIES_BUILD_DIR := $(addprefix $($(PKG)_DIR)/,$(join $($(PKG)_BINARIES
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DEST_DIR)/usr/sbin/%)
 $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/sbin/%,$(filter-out $($(PKG)_BINARIES),$($(PKG)_BINARIES_ALL)))
 
-$(PKG)_DEPENDS_ON += e2fsprogs
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libjemalloc
+
+$(PKG)_DEPENDS_ON += e2fsprogs jemalloc
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ljemalloc"
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared=no
 $(PKG)_CONFIGURE_OPTIONS += --enable-static=yes

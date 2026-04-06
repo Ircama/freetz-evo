@@ -1,9 +1,13 @@
 config FREETZ_PACKAGE_PARTED
 	bool "parted 3.6 (binary only)"
 	select FREETZ_LIB_libuuid
+	select FREETZ_LIB_libjemalloc
 	default n
 	help
 		GNU Parted is a disk partition editor.
+		
+		This package is linked with jemalloc to reduce allocator-related
+		crashes observed on some target combinations.
 
 if FREETZ_PACKAGE_PARTED
 
