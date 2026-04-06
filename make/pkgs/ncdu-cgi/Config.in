@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_NCDU_CGI
+	bool "ncdu CGI (disk usage web UI)"
+	depends on FREETZ_PACKAGE_NCDU
+	default n
+	help
+		Provides a web interface for ncdu disk usage analysis.
+
+		Runs ncdu in JSON export mode (-0xo-) on a selected path and
+		renders the result as an interactive expandable directory tree
+		in the browser.
+
+		http://fritz.box:81/cgi-bin/conf/ncdu

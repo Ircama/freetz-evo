@@ -1,0 +1,29 @@
+#!/bin/sh
+
+DAEMON=ncdu
+. /etc/init.d/modlibrc
+
+case "$1" in
+""|load)
+	modreg cgi 'ncdu' 'Disk Usage'
+	modreg daemon --hide ncdu
+	;;
+unload)
+	modunreg cgi 'ncdu'
+	modunreg daemon 'ncdu'
+	;;
+start)
+	;;
+stop)
+	;;
+restart)
+	;;
+status)
+	;;
+*)
+	echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+	exit 1
+	;;
+esac
+
+exit 0

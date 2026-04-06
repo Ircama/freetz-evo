@@ -1,0 +1,22 @@
+menuconfig FREETZ_PACKAGE_NCDU
+	bool "ncdu 1.19 (disk usage analyzer)"
+	select FREETZ_LIB_libncurses
+	default n
+	help
+		ncdu (NCurses Disk Usage) is a disk usage analyzer with an
+		ncurses interface. It provides a fast way to see what directories
+		are using your disk space.
+
+		https://dev.yorhel.nl/ncdu
+
+if FREETZ_PACKAGE_NCDU
+
+config FREETZ_PACKAGE_NCDU_CGI
+	bool "ncdu CGI (disk usage web UI)"
+	default n
+	depends on FREETZ_PACKAGE_NCDU
+	help
+		Provides the freetz CGI control page for ncdu.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif
