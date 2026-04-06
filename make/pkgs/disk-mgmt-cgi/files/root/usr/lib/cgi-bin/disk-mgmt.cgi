@@ -4891,12 +4891,12 @@ cat <<'EOF'
 								showToast(t('tMoveSame'), 'warn');
 								return;
 							}
-							queueOpWithConfirm(
-								'move_partition',
-								{ device: dev.path, partnum: moveSource.number, start_sector: targetStart, end_sector: targetEnd },
-								'Move p' + moveSource.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]',
-								t('confirmMove'),
-								t('confirmMoveMsg')
+							queueMovePartitionWithConfirm(
+								dev.path,
+								moveSource,
+								targetStart,
+								targetEnd,
+								'Move p' + moveSource.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]'
 							);
 						}
 					};
@@ -5398,6 +5398,95 @@ cat <<'EOF'
                 });
         }
 
+function partitionMountInfo(part, devPath) {
+var mountpoint = (part && part.mountpoint != null) ? String(part.mountpoint).trim() : '';
+var isMounted = !!(mountpoint && mountpoint !== '-');
+var partitionPath = '';
+if (part && part.path) {
+partitionPath = String(part.path).trim();
+}
+if (!partitionPath && devPath && part && part.number) {
+partitionPath = buildPartitionPath(devPath, part.number);
+}
+return { isMounted: isMounted, mountpoint: mountpoint, partitionPath: partitionPath };
+}
+
+function enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, movePreview, quiet) {
+var moveParams = { device: devPath, partnum: part.number, start_sector: targetStart, end_sector: targetEnd };
+var moveLabel = 'Move partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's]';
+var mountInfo = partitionMountInfo(part, devPath);
+
+if (mountInfo.isMounted && mountInfo.partitionPath) {
+var umParams = { partition: mountInfo.partitionPath };
+queueOp(
+'unmount_partition',
+umParams,
+'Unmount ' + mountInfo.partitionPath,
+buildCommandPreview('unmount_partition', umParams),
+true
+);
+}
+
+queueOp('move_partition', moveParams, moveLabel, movePreview || buildCommandPreview('move_partition', moveParams), quiet);
+
+if (mountInfo.isMounted && mountInfo.partitionPath && mountInfo.mountpoint) {
+var mParams = {
+partition: mountInfo.partitionPath,
+mountpoint: mountInfo.mountpoint,
+fs_type: mapFsTypeSelectValue(part.fs),
+mount_opts: ''
+};
+queueOp(
+'mount_partition',
+mParams,
+'Remount ' + mountInfo.partitionPath + ' on ' + mountInfo.mountpoint,
+buildCommandPreview('mount_partition', mParams),
+true
+);
+}
+}
+
+function queueMovePartitionWithConfirm(devPath, part, targetStart, targetEnd, label) {
+var moveParams = { device: devPath, partnum: part.number, start_sector: targetStart, end_sector: targetEnd };
+var moveLabel = label || ('Move partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's]');
+showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
+.then(function (previewText) {
+if (previewText === null) return;
+enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, previewText, true);
+showToast(t('tQueued') + ' ' + moveLabel, 'info', 2400);
+});
+}
+
+function enqueueDeletePartitionOps(devPath, part, deletePreview, quiet) {
+var deleteParams = { device: devPath, partnum: part.number };
+var deleteLabel = 'Delete partition p' + part.number + ' on ' + devPath;
+var mountInfo = partitionMountInfo(part, devPath);
+
+if (mountInfo.isMounted && mountInfo.partitionPath) {
+var umParams = { partition: mountInfo.partitionPath };
+queueOp(
+'unmount_partition',
+umParams,
+'Unmount ' + mountInfo.partitionPath,
+buildCommandPreview('unmount_partition', umParams),
+true
+);
+}
+
+queueOp('delete_partition', deleteParams, deleteLabel, deletePreview || buildCommandPreview('delete_partition', deleteParams), quiet);
+}
+
+function queueDeletePartitionWithConfirm(devPath, part) {
+var deleteParams = { device: devPath, partnum: part.number };
+var deleteLabel = 'Delete partition p' + part.number + ' on ' + devPath;
+showCommandPreviewModal('delete_partition', deleteParams, deleteLabel, t('confirmDelete'), t('confirmDeleteMsg'))
+.then(function (previewText) {
+if (previewText === null) return;
+enqueueDeletePartitionOps(devPath, part, previewText, true);
+showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
+});
+}
+
 	function queueMoveSelectedByDirection(direction) {
 		if (!state.selectedPart || !state.selectedPart.number) {
 			showToast(t('tNoPartition'), 'warn');
@@ -5455,12 +5544,12 @@ cat <<'EOF'
 			return;
 		}
 
-		queueOpWithConfirm(
-			'move_partition',
-			{ device: dev.path, partnum: source.number, start_sector: targetStart, end_sector: targetEnd },
-			'Move partition #' + source.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]',
-			t('confirmMove'),
-			t('confirmMoveMsg')
+		queueMovePartitionWithConfirm(
+			dev.path,
+			source,
+			targetStart,
+			targetEnd,
+			'Move partition #' + source.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]'
 		);
 	}
 
@@ -5594,13 +5683,7 @@ cat <<'EOF'
 			showToast(t('tNoPartition'), 'warn');
 			return;
 		}
-		queueOpWithConfirm(
-			'delete_partition',
-			{ device: state.selectedDevice, partnum: state.selectedPart.number },
-			'Delete partition p' + state.selectedPart.number + ' on ' + state.selectedDevice,
-			t('confirmDelete'),
-			t('confirmDeleteMsg')
-		);
+		queueDeletePartitionWithConfirm(state.selectedDevice, state.selectedPart);
 	}
 
 	function queueDeleteAllPartitions(devArg) {
@@ -5633,13 +5716,7 @@ cat <<'EOF'
 
 				for (var j = 0; j < parts.length; j++) {
 					var params = { device: baseDev.path, partnum: parts[j].number };
-					queueOp(
-						'delete_partition',
-						params,
-						'Delete partition p' + parts[j].number + ' on ' + baseDev.path,
-						buildCommandPreview('delete_partition', params),
-						true
-					);
+					enqueueDeletePartitionOps(baseDev.path, parts[j], buildCommandPreview('delete_partition', params), true);
 				}
 				showToast('Queued delete-all partitions on ' + baseDev.path + '.', 'warn', 2800);
 			});
