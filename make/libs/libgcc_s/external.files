@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libgcc_s" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libgcc_s.so.1"

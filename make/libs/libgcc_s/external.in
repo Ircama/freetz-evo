@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libgcc_s
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libgcc_s && FREETZ_SEPARATE_AVM_UCLIBC
+	bool "libgcc_s"
+	default n
+	help
+		Externalizes the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libgcc_s.so.1
