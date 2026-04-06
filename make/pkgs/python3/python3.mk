@@ -195,10 +195,12 @@ $($(PKG)_TARGET_DIR)/py.lst $($(PKG)_TARGET_DIR)/pyc.lst: $($(PKG)_DIR)/.install
 	)
 
 $($(PKG)_TARGET_DIR)/excluded-module-files.lst: $(TOPDIR)/.config $(PACKAGES_DIR)/.$(pkg)-$($(PKG)_VERSION)
-	@(set -f; echo $(PYTHON3_EXCLUDED_FILES) | tr " " "\n" | sort > $@)
+	@(tmp="$@.tmp"; set -f; echo $(PYTHON3_EXCLUDED_FILES) | tr " " "\n" | sort > "$$tmp"; \
+		if ! cmp -s "$$tmp" "$@" 2>/dev/null; then mv "$$tmp" "$@"; else rm -f "$$tmp"; fi)
 
 $($(PKG)_TARGET_DIR)/excluded-module-files-zip.lst: $($(PKG)_TARGET_DIR)/excluded-module-files.lst
-	@cat $< | sed -r 's,usr/lib/python$(PYTHON3_MAJOR_VERSION)/,,g' > $@
+	@(tmp="$@.tmp"; sed -r 's,usr/lib/python$(PYTHON3_MAJOR_VERSION)/,,g' $< > "$$tmp"; \
+		if ! cmp -s "$$tmp" "$@" 2>/dev/null; then mv "$$tmp" "$@"; else rm -f "$$tmp"; fi)
 
 # Python 3.14 zip importer fix: copy .pyc files from __pycache__ to package level
 # This ensures compatibility with Python 3.14's zip importer which expects
