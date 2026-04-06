@@ -233,7 +233,7 @@ VARTAR_AUX_DIR="${KERNEL_AUX_DIR}/${VARTAR_SUBDIR}"
 
 # Include config file, but do not override variables which are already defined
 # in the environment, e.g. via "make FREETZ_SOMETHING=y"
-sed -nr 's/^([^=]+)=(.*)/: ${\1:=\2}/p' "$DOT_CONFIG" > "$DOT_CONFIG.fwmod"
+sed -nr 's/^([A-Za-z_][A-Za-z0-9_]*)=(.*)/: ${\1:=\2}/p' "$DOT_CONFIG" > "$DOT_CONFIG.fwmod"
 source "$DOT_CONFIG.fwmod"
 rm "$DOT_CONFIG.fwmod"
 
