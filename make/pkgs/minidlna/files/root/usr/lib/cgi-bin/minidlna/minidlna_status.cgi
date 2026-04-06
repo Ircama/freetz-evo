@@ -7,14 +7,14 @@
 eval "$(modcgi branding:pkg:cmd mod_cgi)"
 
 if [ -n "$MOD_CGI_CMD" ]; then
-	sec_begin "$(lang de:"Hinweis" en:"Remark")"
-	echo "<font size=-2 color=red><br>$(lang de:"Die Datenbank wird neu aufgebaut. Dies kann eine Weile dauern." en:"The database will be recreated. This may take a while.")<br></font>"
+	sec_begin "$(lang de:"Hinweis" en:"Remark" it:"Nota" fr:"Remarque" es:"Nota")"
+	echo "<font size=-2 color=red><br>$(lang de:"Die Datenbank wird neu aufgebaut. Dies kann eine Weile dauern." en:"The database will be recreated. This may take a while." it:"Il database verrà ricreato. Potrebbe richiedere del tempo." fr:"La base de données sera recréée. Cela peut prendre un moment." es:"La base de datos será recreada. Esto puede tardar un momento.")<br></font>"
 	sec_end
 	/mod/etc/init.d/rc.minidlna rescan >/dev/null 2>&1
 fi
 
 if [ "$(/mod/etc/init.d/rc.minidlna status)" != "running" ]; then
-echo "<br>$(lang de:"MiniDLNA ist nicht gestartet." en:"MiniDLNA is not running.")"
+echo "<br>$(lang de:"MiniDLNA ist nicht gestartet." en:"MiniDLNA is not running." it:"MiniDLNA non è in esecuzione." fr:"MiniDLNA n'est pas démarré." es:"MiniDLNA no está en ejecución.")"
 else
 cat << EOF
 <center>
@@ -30,12 +30,12 @@ cat << EOF
 
 <form class="btn" action="$(href status minidlna minidlna_status)" method="post" style="display:inline;">
 <input type="hidden" name="cmd" value="rescan">
-<input type="submit" value="$(lang de:"neu einlesen" en:"rescan")">
+<input type="submit" value="$(lang de:"neu einlesen" en:"rescan" it:"riscansiona" fr:"rescanner" es:"reescanear")">
 </form>
 &nbsp;&nbsp;&nbsp;
 <form class="btn" action="$(href status minidlna minidlna_status)" method="post" style="display:inline;">
 <input type="hidden" name="cmd" value="">
-<input type="submit" value="$(lang de:"aktualisieren" en:"refresh")">
+<input type="submit" value="$(lang de:"aktualisieren" en:"refresh" it:"aggiorna" fr:"actualiser" es:"actualizar")">
 </form>
 
 </center>
