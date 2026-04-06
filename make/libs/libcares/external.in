@@ -3,5 +3,5 @@ config EXTERNAL_FREETZ_LIB_libcares
 	bool "libcares"
 	default n
 	help
-		externals the following file(s):
-		 ${FREETZ_LIBRARY_DIR}/libcares.so.4
+		Externalizes the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libcares.so.2.x
