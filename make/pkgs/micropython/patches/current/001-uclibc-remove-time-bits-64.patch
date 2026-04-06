@@ -1,0 +1,13 @@
+--- a/ports/unix/Makefile
++++ b/ports/unix/Makefile
+@@ -56,9 +56,7 @@ CFLAGS += -U _FORTIFY_SOURCE
+ # Required for UDP multicast group membership and SO_REUSEPORT with POSIX.
+ CFLAGS += -D_POSIX_C_SOURCE=200809L
+ 
+-# Force the use of 64-bits for time_t in C library functions on 32-bit platforms.
+-# This option has no effect on 64-bit builds.
+-CFLAGS += -D_TIME_BITS=64
++# NOTE: _TIME_BITS=64 is a glibc-only extension not supported by uClibc; omitted.
+ 
+ # Debugging/tracing
+ ifeq ($(DEBUG),1)

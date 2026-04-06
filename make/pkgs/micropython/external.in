@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_MICROPYTHON
+depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MICROPYTHON
+bool "micropython"
+default n
+help
+externals the following file(s):
+ /usr/bin/micropython
+ /usr/bin/mpy-cross (if FREETZ_PACKAGE_MICROPYTHON_MPYCROSS=y)
+ /usr/lib/micropython/ (if any micropython-lib module is selected)

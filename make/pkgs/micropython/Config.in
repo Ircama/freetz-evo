@@ -1,0 +1,478 @@
+config FREETZ_PACKAGE_MICROPYTHON
+	bool "MicroPython 1.27.0 (binary + lib)"
+	default n
+	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs && FREETZ_PACKAGE_MICROPYTHON_THREAD
+	help
+		MicroPython is a lean and efficient implementation of the Python 3
+		programming language that includes a small subset of the Python standard
+		library and is optimised to run on microcontrollers and in constrained
+		environments - including Linux (unix port).
+
+		This package provides the Unix port of MicroPython, which runs on the
+		FritzBox like a standard executable. It includes the interactive REPL,
+		script execution, all built-in modules (json, re, struct, asyncio, os,
+		socket, hashlib, tls, etc.) and optionally selectable micropython-lib
+		modules installed to /usr/lib/micropython/.
+
+		The release tarball includes the micropython-lib submodule, providing
+		150+ additional library packages installable as plain .py files.
+
+		Build requires Python 3 on the host (for header generation scripts).
+		Size: ~600-900 KB compiled binary (stripped, -Os, MIPS32).
+
+		Web: https://micropython.org/
+		Docs: https://docs.micropython.org/en/latest/
+
+if FREETZ_PACKAGE_MICROPYTHON
+
+	# --- Variant ------------------------------------------------------------------
+
+	comment "--- Variant ---"
+
+	choice
+		prompt "Build variant"
+		default FREETZ_PACKAGE_MICROPYTHON_VARIANT_STANDARD
+
+		config FREETZ_PACKAGE_MICROPYTHON_VARIANT_STANDARD
+			bool "standard"
+			help
+				The standard variant (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES):
+				enables asyncio, json, re, os, socket, tls, hashlib, struct,
+				deflate (zlib), framebuf, platform, and many other built-in
+				modules. Recommended for general use.
+
+		config FREETZ_PACKAGE_MICROPYTHON_VARIANT_MINIMAL
+			bool "minimal"
+			help
+				The minimal variant (MICROPY_CONFIG_ROM_LEVEL_MINIMUM) produces a
+				much smaller binary with only core Python language support and very
+				few built-in modules. Use when flash space is critical.
+
+	endchoice
+
+	# --- Float precision ----------------------------------------------------------
+
+	comment "--- Floating point ---"
+
+	choice
+		prompt "Float implementation"
+		default FREETZ_PACKAGE_MICROPYTHON_FLOAT_DOUBLE
+
+		config FREETZ_PACKAGE_MICROPYTHON_FLOAT_DOUBLE
+			bool "double - 64-bit (default)"
+			help
+				Use 64-bit double precision floats (CPython compatible).
+
+		config FREETZ_PACKAGE_MICROPYTHON_FLOAT_FLOAT
+			bool "float - 32-bit (smaller, saves ~30 KB)"
+			help
+				Use 32-bit single precision floats. Saves significant code size
+				(~30 KB) at the cost of precision. Sufficient for most IoT use.
+
+		config FREETZ_PACKAGE_MICROPYTHON_FLOAT_NONE
+			bool "none - disable floating point (minimal size)"
+			help
+				Completely disable floating point support. Smallest binary.
+				Use only when no float arithmetic is needed.
+
+	endchoice
+
+	# --- Optional interpreter features -------------------------------------------
+
+	comment "--- Optional interpreter features ---"
+
+	config FREETZ_PACKAGE_MICROPYTHON_READLINE
+		bool "Build with readline support (interactive REPL)"
+		default n
+		select FREETZ_LIB_libreadline
+		select FREETZ_LIB_libncurses
+		help
+			Link with GNU readline or libedit for line editing, history, and
+			tab-completion in the interactive REPL. Adds ~100 KB.
+
+	config FREETZ_PACKAGE_MICROPYTHON_THREAD
+		bool "Enable threading support (micropython.Thread)"
+		default n
+		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		help
+			Enable the _thread / micropython.Thread module backed by pthreads.
+			Also links -lpthread. Needed for any concurrent execution.
+
+	config FREETZ_PACKAGE_MICROPYTHON_SOCKET
+		bool "Enable socket module (built-in network)"
+		default y
+		help
+			Enable the built-in socket module (modsocket.c). Provides BSD-style
+			socket API. Required for most network functionality.
+			Only meaningful for the standard variant - already enabled there.
+
+	config FREETZ_PACKAGE_MICROPYTHON_BTREE
+		bool "Enable btree module (berkeley-db)"
+		default n
+		help
+			Compile the btree module backed by berkeley-db 1.xx (included in
+			the source tarball under lib/berkeley-db-1.xx/). Provides a simple
+			persistent key-value store with btree cursor support.
+
+			NOTE: cross-compiling berkeley-db for MIPS/uClibc may require
+			additional patches. Disabled by default.
+
+	config FREETZ_PACKAGE_MICROPYTHON_FFI
+		bool "Enable FFI module (call shared libraries via ctypes-like API)"
+		default n
+		help
+			Build the modffi.c module, which allows calling C functions in
+			shared libraries (similar to ctypes). Requires libffi to link
+			against. Cross-compiling libffi for MIPS/uClibc is handled
+			automatically using the libffi submodule included in the source
+			(set MICROPY_STANDALONE=1 automatically).
+
+			The unix-ffi micropython-lib modules (ffilib, machine, signal,
+			sqlite3, ...) require this option to be functional.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MPYCROSS
+		bool "Build and install mpy-cross (on-device .py to .mpy compiler)"
+		default n
+		help
+			Cross-compile the mpy-cross bytecode compiler for the FritzBox
+			(MIPS). mpy-cross converts .py source files to .mpy bytecode files
+			that load faster and use less RAM. Installed as /usr/bin/mpy-cross.
+
+			Note: this is the MIPS binary that runs ON the FritzBox, not the
+			host-side build tool.
+
+	# =============================================================================
+	# micropython-lib: python-stdlib modules
+	# =============================================================================
+
+	comment "--- micropython-lib: python-stdlib modules ---"
+	comment "    Installed to /usr/lib/micropython/ as plain .py files"
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_ABC
+		bool "abc - Abstract Base Classes"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_ARGPARSE
+		bool "argparse - Command-line argument parser"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_BASE64
+		bool "base64 - Base16/32/64 encoding"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_BINASCII
+		bool "binascii - Binary/ASCII conversion"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_BISECT
+		bool "bisect - Binary search / sorted list"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_CMD
+		bool "cmd - Line-oriented command interpreter"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_COLLECTIONS
+		bool "collections - Container types (OrderedDict, deque, defaultdict...)"
+		default n
+		help
+			Installs collections/__init__.py and collections/defaultdict.py
+			from python-stdlib/collections and collections-defaultdict.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_CONTEXTLIB
+		bool "contextlib - Context manager utilities"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_COPY
+		bool "copy - Shallow and deep copy operations"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_CURSES_ASCII
+		bool "curses.ascii - ASCII character helpers"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_DATETIME
+		bool "datetime - Date/time types"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_ERRNO
+		bool "errno - Standard POSIX errno constants"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_FNMATCH
+		bool "fnmatch - Unix filename pattern matching"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_FUNCTOOLS
+		bool "functools - Higher-order functions"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_GZIP
+		bool "gzip - gzip file support"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_HASHLIB
+		bool "hashlib - Secure hashes (SHA-224/256/384/512, ...)"
+		default n
+		help
+			Installs the hashlib package from hashlib-core, hashlib-sha256,
+			hashlib-sha224, hashlib-sha384, hashlib-sha512 subpackages.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_HEAPQ
+		bool "heapq - Heap queue algorithm"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_HMAC
+		bool "hmac - Keyed-Hashing for Message Authentication"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_HTML
+		bool "html - HTML entities/escape"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_INSPECT
+		bool "inspect - Inspect live objects"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_IO
+		bool "io - I/O stream helpers (StringIO, BytesIO)"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_ITERTOOLS
+		bool "itertools - Functions creating iterators"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_KEYWORD
+		bool "keyword - Python keyword list"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_LOCALE
+		bool "locale - Internationalization"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_LOGGING
+		bool "logging - Flexible event logging"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_OPERATOR
+		bool "operator - Standard operators as functions"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_OS
+		bool "os - OS interface (os.path, os.walk, ...)"
+		default n
+		help
+			Installs os/__init__.py and os/path.py from python-stdlib/os
+			and python-stdlib/os-path.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_PATHLIB
+		bool "pathlib - Object-oriented filesystem paths"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_PICKLE
+		bool "pickle - Python object serialization"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_PKGUTIL
+		bool "pkgutil - Package utilities"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_PPRINT
+		bool "pprint - Data pretty-printer"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_RANDOM
+		bool "random - Pseudo-random number generation"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_SHUTIL
+		bool "shutil - High-level file operations"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_SSL
+		bool "ssl - TLS/SSL wrapper for sockets (stdlib)"
+		default n
+		help
+			Installs the stdlib ssl.py wrapper that delegates to the built-in
+			tls module present in the standard variant. For on-device TLS.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_STAT
+		bool "stat - File stat result constants"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_STRING
+		bool "string - String constants and templates"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_STRUCT
+		bool "struct - Struct packing/unpacking (extended)"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_TARFILE
+		bool "tarfile - Read/write tar archives"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_TEMPFILE
+		bool "tempfile - Temporary files and directories"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_TEXTWRAP
+		bool "textwrap - Text wrapping and filling"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_THREADING
+		bool "threading - Thread-based parallelism (stdlib port)"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_THREAD
+		help
+			Installs the threading stdlib wrapper. Requires the threading
+			interpreter feature (MICROPY_PY_THREAD) to be enabled.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_TRACEBACK
+		bool "traceback - Print/extract stack traces"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_TYPES
+		bool "types - Dynamic type creation / type names"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_UNITTEST
+		bool "unittest - Unit testing framework + test discovery"
+		default n
+		help
+			Installs unittest package and unittest-discover extension from
+			python-stdlib.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_WARNINGS
+		bool "warnings - Warning control"
+		default n
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_ZLIB
+		bool "zlib - Compression compatible with gzip (stdlib port)"
+		default n
+
+	# =============================================================================
+	# micropython-lib: micropython-specific modules
+	# =============================================================================
+
+	comment "--- micropython-lib: micropython-specific modules ---"
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_AIOREPL
+		bool "aiorepl - Async REPL for asyncio applications"
+		default n
+		help
+			Provides an asyncio-based REPL that can run concurrently with other
+			coroutines. Useful for interactive debugging of async applications.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_MIP
+		bool "mip - Package manager (install from micropython-lib / GitHub)"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_SOCKET
+		help
+			The mip package manager allows installing additional packages from
+			micropython-lib or arbitrary URLs at runtime. Installs to
+			/usr/lib/micropython/mip/.
+			Requires socket support.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_SENML
+		bool "senml - SenML (Sensor Markup Language) encoder/decoder"
+		default n
+		help
+			Implements the SenML IoT sensor data format (RFC 8428).
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_UMQTT
+		bool "umqtt - Lightweight MQTT client (simple + robust)"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_SOCKET
+		help
+			Installs umqtt/simple.py and umqtt/robust.py.
+			umqtt.simple: basic MQTT 3.1 publish/subscribe.
+			umqtt.robust: adds auto-reconnect on error.
+			Requires socket support.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_UREQUESTS
+		bool "urequests / requests - HTTP/HTTPS client"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_SOCKET
+		help
+			A minimal requests-compatible HTTP client for MicroPython.
+			Supports GET, POST, PUT, DELETE; HTTP and HTTPS (if ssl built-in).
+			Requires socket support.
+
+	config FREETZ_PACKAGE_MICROPYTHON_MOD_UPYSH
+		bool "upysh - Unix-like shell utilities (ls, cat, ...)"
+		default n
+		help
+			Small set of file-system helper functions for interactive use:
+			ls, cat, head, rm, cp, mv, pwd, mkdir, etc.
+
+	# =============================================================================
+	# micropython-lib: unix-ffi modules
+	# =============================================================================
+
+	comment "--- micropython-lib: unix-ffi modules ---"
+	comment "    Most require FREETZ_PACKAGE_MICROPYTHON_FFI enabled to work fully"
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_FFILIB
+		bool "ffilib - Low-level FFI wrapper (ctypes-like)"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+		help
+			Provides ffilib.py, a convenience wrapper around the built-in ffi
+			module. Required by several other unix-ffi library modules.
+			Requires FFI interpreter support.
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_GETOPT
+		bool "getopt - C-style option parsing via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_GLOB
+		bool "glob - Unix pathname expansion via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_MACHINE
+		bool "machine - machine.Pin / I2C / SPI stubs via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+		help
+			Provides a subset of the machine module for the unix port,
+			using FFI to access GPIO/I2C/SPI if available on the host.
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_SELECT
+		bool "select - I/O multiplexing (select/poll) via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_SIGNAL
+		bool "signal - POSIX signal handling via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_SQLITE3
+		bool "sqlite3 - SQLite3 database via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+		help
+			Provides a partial sqlite3 interface via FFI to the system
+			libsqlite3.so. Requires libsqlite3 to be present on the target.
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_TIME
+		bool "time - Enhanced time module via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_TIMEIT
+		bool "timeit - Measure execution time via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+	config FREETZ_PACKAGE_MICROPYTHON_UNIX_TTY
+		bool "tty - Terminal I/O control via FFI"
+		default n
+		depends on FREETZ_PACKAGE_MICROPYTHON_FFI
+
+endif # FREETZ_PACKAGE_MICROPYTHON
