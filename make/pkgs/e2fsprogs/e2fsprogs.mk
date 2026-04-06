@@ -46,31 +46,71 @@ $(PKG)_MAKE_ALL_EXTRAS  := && ln -fsT et $($(PKG)_DIR)/lib/com_err
 $(PKG)_BINARIES_ALL := \
 	e2fsck fsck \
 	mke2fs mklost+found \
-	tune2fs dumpe2fs chattr lsattr \
+	tune2fs dumpe2fs chattr lsattr e2label findfs \
 	e2image e2undo debugfs logsave \
 	badblocks filefrag e2freefrag uuidd uuidgen \
 	resize2fs \
 	blkid
 $(PKG)_BINARY_SUFFIX := $(if $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG),-ng,)
 $(PKG)_BINARIES :=
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK)),y)
-$(PKG)_BINARIES += e2fsck fsck
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FSCK)),y)
+$(PKG)_BINARIES += e2fsck
 $(PKG)_MAKE_ALL_EXTRAS += && cp $($(PKG)_DIR)/e2fsck/e2fsck $($(PKG)_DIR)/misc/
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2MAKING)),y)
-$(PKG)_BINARIES += mke2fs mklost+found
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_FSCK)),y)
+$(PKG)_BINARIES += fsck
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2TUNING)),y)
-$(PKG)_BINARIES += tune2fs dumpe2fs chattr lsattr
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_MKE2FS)),y)
+$(PKG)_BINARIES += mke2fs
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2DEBUG)),y)
-$(PKG)_BINARIES += e2image e2undo debugfs logsave
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_MKLOSTFOUND)),y)
+$(PKG)_BINARIES += mklost+found
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_TUNE2FS)),y)
+$(PKG)_BINARIES += tune2fs
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_DUMPE2FS)),y)
+$(PKG)_BINARIES += dumpe2fs
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_CHATTR)),y)
+$(PKG)_BINARIES += chattr
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_LSATTR)),y)
+$(PKG)_BINARIES += lsattr
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2LABEL)),y)
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_FINDFS)),y)
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2IMAGE)),y)
+$(PKG)_BINARIES += e2image
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2UNDO)),y)
+$(PKG)_BINARIES += e2undo
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_DEBUGFS)),y)
+$(PKG)_BINARIES += debugfs
 $(PKG)_MAKE_ALL_EXTRAS += && cp $($(PKG)_DIR)/debugfs/debugfs $($(PKG)_DIR)/misc/
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2FIXING)),y)
-$(PKG)_BINARIES += badblocks filefrag e2freefrag uuidd uuidgen
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_LOGSAVE)),y)
+$(PKG)_BINARIES += logsave
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2RESIZE)),y)
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_BADBLOCKS)),y)
+$(PKG)_BINARIES += badblocks
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_FILEFRAG)),y)
+$(PKG)_BINARIES += filefrag
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FREEFRAG)),y)
+$(PKG)_BINARIES += e2freefrag
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_UUIDD)),y)
+$(PKG)_BINARIES += uuidd
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_UUIDGEN)),y)
+$(PKG)_BINARIES += uuidgen
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_RESIZE2FS)),y)
 $(PKG)_BINARIES += resize2fs
 $(PKG)_MAKE_ALL_EXTRAS += && cp $($(PKG)_DIR)/resize/resize2fs $($(PKG)_DIR)/misc/
 endif
@@ -80,15 +120,21 @@ endif
 $(PKG)_BINARIES_BUILD_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DIR)/misc/%)
 $(PKG)_BINARIES_TARGET_DIR := $(foreach binary,$($(PKG)_BINARIES),$($(PKG)_DEST_DIR)/usr/sbin/$(binary)$($(PKG)_BINARY_SUFFIX))
 $(PKG)_BINARIES_SUFFIX_LINKS :=
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2LABEL)),y)
+$(PKG)_BINARIES_SUFFIX_LINKS += $($(PKG)_DEST_DIR)/usr/sbin/e2label$($(PKG)_BINARY_SUFFIX)
+endif
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_FINDFS)),y)
+$(PKG)_BINARIES_SUFFIX_LINKS += $($(PKG)_DEST_DIR)/usr/sbin/findfs$($(PKG)_BINARY_SUFFIX)
+endif
 
-$(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/sbin/%,$(filter-out $($(PKG)_BINARIES),$($(PKG)_BINARIES_ALL)))
+$(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/sbin/%,$(filter-out $($(PKG)_BINARIES) $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2LABEL),e2label) $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_FINDFS),findfs),$($(PKG)_BINARIES_ALL)))
 ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG)),y)
-$(PKG)_EXCLUDED += usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev
-$(PKG)_EXCLUDED += usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FSCK),,usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_MKE2FS),,usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3)
 $(PKG)_EXCLUDED += sbin/blkid
 else
-$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK),,usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev)
-$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_E2MAKING),,usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FSCK),,usr/sbin/fsck.ext2 usr/sbin/fsck.ext3 usr/sbin/fsck.ext4 usr/sbin/fsck.ext4dev)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_TOOL_MKE2FS),,usr/sbin/mkfs.ext2 usr/sbin/mkfs.ext3)
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_E2FSPROGS_BLKID),,sbin/blkid)
 endif
 
@@ -101,14 +147,14 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libjemalloc
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_LIB_libjemalloc),jemalloc)
 
 ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_SUFFIX_NG)),y)
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2FSCK)),y)
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FSCK)),y)
 $(PKG)_BINARIES_SUFFIX_LINKS += \
 	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext2-ng \
 	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext3-ng \
 	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4-ng \
 	$($(PKG)_DEST_DIR)/usr/sbin/fsck.ext4dev-ng
 endif
-ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_E2MAKING)),y)
+ifeq ($(strip $(FREETZ_PACKAGE_E2FSPROGS_TOOL_MKE2FS)),y)
 $(PKG)_BINARIES_SUFFIX_LINKS += \
 	$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext2-ng \
 	$($(PKG)_DEST_DIR)/usr/sbin/mkfs.ext3-ng
@@ -176,6 +222,14 @@ $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING
 	$(INSTALL_LIBRARY_STRIP)
 
 $(foreach binary,$($(PKG)_BINARIES_BUILD_DIR),$(eval $(call INSTALL_BINARY_STRIP_RULE,$(binary),/usr/sbin,,$(notdir $(binary))$($(PKG)_BINARY_SUFFIX))))
+
+$($(PKG)_DEST_DIR)/usr/sbin/e2label$($(PKG)_BINARY_SUFFIX): $($(PKG)_DEST_DIR)/usr/sbin/tune2fs$($(PKG)_BINARY_SUFFIX)
+	mkdir -p $(dir $@); \
+	ln -sf $(notdir $<) $@
+
+$($(PKG)_DEST_DIR)/usr/sbin/findfs$($(PKG)_BINARY_SUFFIX): $($(PKG)_DEST_DIR)/usr/sbin/tune2fs$($(PKG)_BINARY_SUFFIX)
+	mkdir -p $(dir $@); \
+	ln -sf $(notdir $<) $@
 
 $($(PKG)_DEST_DIR)/usr/sbin/fsck.ext2-ng \
 $($(PKG)_DEST_DIR)/usr/sbin/fsck.ext3-ng \

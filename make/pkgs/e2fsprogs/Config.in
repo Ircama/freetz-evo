@@ -33,7 +33,17 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libext2fs	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libuuid	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy e2fsck, fsck and the fsck.ext* symlinks to image
+			Enable selection of checking tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FSCK
+		bool "e2fsck"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FSCK
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_FSCK
+		bool "fsck"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FSCK
+		default y
 
 	config FREETZ_PACKAGE_E2FSPROGS_E2MAKING
 		bool "Making tools"
@@ -44,7 +54,17 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libext2fs	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libuuid	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy mke2fs, the mkfs.ext* symlinks and mklost+found to image
+			Enable selection of making tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_MKE2FS
+		bool "mke2fs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2MAKING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_MKLOSTFOUND
+		bool "mklost+found"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2MAKING
+		default y
 
 	config FREETZ_PACKAGE_E2FSPROGS_E2TUNING
 		bool "Tuning tools"
@@ -55,7 +75,37 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libext2fs	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libuuid	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy tune2fs, chattr, lsattr and dumpe2fs to image
+			Enable selection of tuning tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_TUNE2FS
+		bool "tune2fs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_DUMPE2FS
+		bool "dumpe2fs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_CHATTR
+		bool "chattr"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_LSATTR
+		bool "lsattr"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_E2LABEL
+		bool "e2label"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING && FREETZ_PACKAGE_E2FSPROGS_TOOL_TUNE2FS
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_FINDFS
+		bool "findfs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2TUNING && FREETZ_PACKAGE_E2FSPROGS_TOOL_TUNE2FS
+		default y
 
 	config FREETZ_PACKAGE_E2FSPROGS_E2DEBUG
 		bool "Debugging tools"
@@ -67,7 +117,27 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libss		if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libuuid	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy e2image, e2undo, debugfs and logsave to image
+			Enable selection of debug tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_E2IMAGE
+		bool "e2image"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2DEBUG
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_E2UNDO
+		bool "e2undo"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2DEBUG
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_DEBUGFS
+		bool "debugfs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2DEBUG
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_LOGSAVE
+		bool "logsave"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2DEBUG
+		default y
 
 	config FREETZ_PACKAGE_E2FSPROGS_BLKID
 		bool "blkid"
@@ -85,7 +155,32 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libcom_err	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libuuid	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy badblocks, filefrag, e2freefrag, uuidd and uuidgen to image
+			Enable selection of repair/misc tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_BADBLOCKS
+		bool "badblocks"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FIXING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_FILEFRAG
+		bool "filefrag"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FIXING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_E2FREEFRAG
+		bool "e2freefrag"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FIXING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_UUIDD
+		bool "uuidd"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FIXING
+		default y
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_UUIDGEN
+		bool "uuidgen"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2FIXING
+		default y
 
 	config FREETZ_PACKAGE_E2FSPROGS_E2RESIZE
 		bool "Resize tools"
@@ -94,7 +189,12 @@ if FREETZ_PACKAGE_E2FSPROGS
 		select FREETZ_LIB_libext2fs	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		select FREETZ_LIB_libcom_err	if FREETZ_PACKAGE_E2FSPROGS_ALL_DYN
 		help
-			Copy resize2fs to image
+			Enable selection of resize tools below.
+
+	config FREETZ_PACKAGE_E2FSPROGS_TOOL_RESIZE2FS
+		bool "resize2fs"
+		depends on FREETZ_PACKAGE_E2FSPROGS_E2RESIZE
+		default y
 
 	choice
 		prompt "Link"
