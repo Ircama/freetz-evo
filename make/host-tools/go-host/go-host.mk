@@ -17,6 +17,7 @@ $(TOOLS_CONFIGURED_NOP)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	@echo "Using pre-built Go toolchain" $(SILENT)
+	@touch $@
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	@mkdir -p $(TOOLS_DIR)/go-host
