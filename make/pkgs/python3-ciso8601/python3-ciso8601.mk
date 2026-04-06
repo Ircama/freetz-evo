@@ -10,7 +10,7 @@ $(PKG)_HASH:=db5d78d9fb0de8686fbad1c1c2d168ed52efb6e8bf8774ae26226e5034a46dae
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host
 
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/ciso8601/__init__.py
+$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/ciso8601.cpython-$(subst .,,$(PYTHON3_MAJOR_VERSION)).so
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -30,7 +30,7 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -r \
-		$(PYTHON3_CISO8601_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/ciso8601 \
+		$(PYTHON3_CISO8601_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/ciso8601*.so \
 		$(PYTHON3_CISO8601_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/ciso8601-*.dist-info
 
 $(PKG_FINISH)
