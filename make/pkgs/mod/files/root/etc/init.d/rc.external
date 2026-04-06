@@ -57,6 +57,16 @@ check_date() {
 	log " done."
 }
 
+onlinechanged_busy() {
+	[ -e /var/run/onlinechanged ] || return 1
+	if pidof onlinechanged.sh >/dev/null 2>&1 || pidof onlinechanged >/dev/null 2>&1; then
+		return 0
+	fi
+	log "Detected stale /var/run/onlinechanged lock, removing it."
+	rm -rf /var/run/onlinechanged 2>/dev/null
+	return 1
+}
+
 exec_rcs() {
 	eventadd 1 "Running external: $1" 2>/dev/null
 	if [ "$MOD_EXTERNAL_FREETZ_SERVICES" != "yes" ]; then
@@ -106,11 +116,11 @@ start() {
 	log -x "Starting external ($EXTERNAL_DIRECTORY):"
 
 	# wait until it's external's turn
-	if [ ! -e /tmp/.mod.started -o -e /var/run/onlinechanged ]; then
+	if [ ! -e /tmp/.mod.started ] || onlinechanged_busy; then
 		log -n "Waiting for mod-startup:"
 		spaceit=" "
 		while [ true ]; do
-			[ -e /tmp/.mod.started -a ! -e /var/run/onlinechanged ] && break
+			[ -e /tmp/.mod.started ] && ! onlinechanged_busy && break
 			log -n "$spaceit."
 			spaceit=
 			sleep 1
