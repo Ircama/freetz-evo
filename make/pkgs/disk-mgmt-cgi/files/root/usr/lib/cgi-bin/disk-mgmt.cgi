@@ -3313,6 +3313,7 @@ cat <<'EOF'
 		dryRun: false,
 		aceEditor: null,
 		mapDragActive: false,
+		partitionDragInfo: null,
 		sectorSyncLock: false
 	};
 
@@ -3322,6 +3323,45 @@ cat <<'EOF'
 			return langMap[key];
 		}
 		return (translations.en && translations.en[key]) || key;
+	}
+
+	function clampNumber(v, minV, maxV) {
+		var n = Number(v);
+		if (!isFinite(n)) n = minV;
+		if (n < minV) n = minV;
+		if (n > maxV) n = maxV;
+		return n;
+	}
+
+	function computeMoveDropTargetStart(ev, freeSeg, moveSize, grabRatio) {
+		var freeStart = Number(freeSeg && freeSeg.start || 0);
+		var freeEnd = Number(freeSeg && freeSeg.end || 0);
+		var size = Number(moveSize || 0);
+		if (!isFinite(freeStart) || !isFinite(freeEnd) || !isFinite(size) || size <= 0 || freeEnd < freeStart) {
+			return NaN;
+		}
+
+		var minStart = freeStart;
+		var maxStart = freeEnd - size + 1;
+		if (maxStart < minStart) return NaN;
+
+		var ratio = clampNumber(grabRatio, 0, 1);
+		var relRatio = 0;
+		var tgt = ev && (ev.currentTarget || ev.target);
+		if (tgt && tgt.getBoundingClientRect) {
+			var rect = tgt.getBoundingClientRect();
+			if (rect.width > 0) {
+				var relX = (ev.clientX || 0) - rect.left;
+				relX = clampNumber(relX, 0, rect.width);
+				relRatio = relX / rect.width;
+			}
+		}
+
+		var freeSpan = freeEnd - freeStart;
+		var dropSector = freeStart + Math.round(relRatio * freeSpan);
+		var grabOffset = Math.round(ratio * Math.max(0, size - 1));
+		var targetStart = dropSector - grabOffset;
+		return Math.floor(clampNumber(targetStart, minStart, maxStart));
 	}
 
 	function detectLanguage() {
@@ -4878,16 +4918,28 @@ cat <<'EOF'
 						block.appendChild(fsBar);
 					}
 					block.draggable = true;
-					block.ondragstart = function (ev) {
-						state.mapDragActive = true;
-						hideHoverTooltip();
-						ev.dataTransfer.setData('text/plain', 'partition:' + p.number);
-						ev.dataTransfer.setData('part-size', String(p.size || 0));
-					};
-					block.ondragend = function () {
-						state.mapDragActive = false;
-						hideHoverTooltip();
-					};
+                    block.ondragstart = function (ev) {
+                        state.mapDragActive = true;
+                        var blockRect = block.getBoundingClientRect();
+                        var grabPx = (ev.clientX || 0) - blockRect.left;
+                        grabPx = clampNumber(grabPx, 0, Math.max(1, blockRect.width));
+                        state.partitionDragInfo = {
+                            devPath: String(dev.path || ''),
+                            partnum: Number(p.number || 0),
+                            partPath: String(p.path || ''),
+                            size: Number(p.size || 0),
+                            grabRatio: blockRect.width > 0 ? (grabPx / blockRect.width) : 0
+                        };
+                        hideHoverTooltip();
+                        ev.dataTransfer.setData('text/plain', 'partition:' + p.number);
+                        ev.dataTransfer.setData('part-size', String(p.size || 0));
+                    };
+                    block.ondragend = function () {
+                        state.mapDragActive = false;
+                        state.partitionDragInfo = null;
+                        hideHoverTooltip();
+                    };
+
 					var leftHandle = document.createElement('div');
 					leftHandle.className = 'pcgi-resize-handle pcgi-resize-handle-left';
 					leftHandle.title = 'Drag left edge to queue move/resize';
@@ -4954,21 +5006,42 @@ cat <<'EOF'
 								}
 							}
 							if (!moveSource) {
-								showToast(t('tContextUnavailable'), 'warn');
-								return;
-							}
-							var moveSize = Number(moveSource.size || 0);
-							var targetStart = Number(p.start || 0);
-							var targetEnd = targetStart + moveSize - 1;
-							if (targetEnd > Number(p.end || 0)) {
-								showToast(t('tMoveNoSpace'), 'error');
-								return;
-							}
-							if (Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
-								showToast(t('tMoveSame'), 'warn');
-								return;
-							}
-							queueMovePartitionWithConfirm(
+                                state.partitionDragInfo = null;
+                                showToast(t('tContextUnavailable'), 'warn');
+                                return;
+                            }
+                            var moveSize = Number(moveSource.size || 0);
+                            var dragInfo = state.partitionDragInfo;
+                            var grabRatio = 0;
+                            if (dragInfo &&
+                                String(dragInfo.devPath || '') === String(dev.path || '') &&
+                                (
+                                    (String(dragInfo.partPath || '') && String(dragInfo.partPath || '') === String(moveSource.path || '')) ||
+                                    (Number(dragInfo.partnum || 0) > 0 && Number(dragInfo.partnum || 0) === Number(moveSource.number || 0))
+                                )
+                            ) {
+                                grabRatio = Number(dragInfo.grabRatio || 0);
+                            }
+                            var targetStart = computeMoveDropTargetStart(ev, p, moveSize, grabRatio);
+                            if (!isFinite(targetStart)) {
+                                state.partitionDragInfo = null;
+                                showToast(t('tMoveNoSpace'), 'error');
+                                return;
+                            }
+                            var targetEnd = targetStart + moveSize - 1;
+                            if (targetEnd > Number(p.end || 0)) {
+                                state.partitionDragInfo = null;
+                                showToast(t('tMoveNoSpace'), 'error');
+                                return;
+                            }
+                            if (Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
+                                state.partitionDragInfo = null;
+                                showToast(t('tMoveSame'), 'warn');
+                                return;
+                            }
+                            state.partitionDragInfo = null;
+                            queueMovePartitionWithConfirm(
+
 								dev.path,
 								moveSource,
 								targetStart,
@@ -5372,7 +5445,32 @@ partitionPath = buildPartitionPath(devPath, part.number);
 return { isMounted: isMounted, mountpoint: mountpoint, partitionPath: partitionPath };
 }
 
+function moveRangesIntersect(startA, endA, startB, endB) {
+var a0 = Number(startA || 0);
+var a1 = Number(endA || 0);
+var b0 = Number(startB || 0);
+var b1 = Number(endB || 0);
+if (!isFinite(a0) || !isFinite(a1) || !isFinite(b0) || !isFinite(b1)) return false;
+if (a1 < a0 || b1 < b0) return false;
+return (a0 <= b1) && (b0 <= a1);
+}
+
+function ensureMoveTargetDoesNotIntersectSource(part, targetStart, targetEnd) {
+var srcStart = Number(part && part.start || 0);
+var srcEnd = Number(part && part.end || 0);
+var tgtStart = Number(targetStart || 0);
+var tgtEnd = Number(targetEnd || 0);
+if (moveRangesIntersect(srcStart, srcEnd, tgtStart, tgtEnd)) {
+showToast('Move blocked: target range intersects source partition range.', 'error', 4200);
+return false;
+}
+return true;
+}
+
 function enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, movePreview, quiet) {
+if (!ensureMoveTargetDoesNotIntersectSource(part, targetStart, targetEnd)) {
+return false;
+}
 var moveLabel = 'Relocate partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's] (create + dd + delete)';
 var mountInfo = partitionMountInfo(part, devPath);
 var fsHint = mapFsHintValue(part.fs);
@@ -5439,15 +5537,21 @@ showToast('Source partition was mounted. After apply, mount the new target parti
 if (!quiet) {
 showToast(moveLabel, 'info', 2600);
 }
+return true;
 }
 
 function queueMovePartitionWithConfirm(devPath, part, targetStart, targetEnd, label) {
+if (!ensureMoveTargetDoesNotIntersectSource(part, targetStart, targetEnd)) {
+return Promise.resolve(false);
+}
 var moveParams = { device: devPath, partnum: part.number, start_sector: targetStart, end_sector: targetEnd };
 var moveLabel = label || ('Relocate partition #' + part.number + ' on ' + devPath + ' to [' + targetStart + 's..' + targetEnd + 's] (create + dd + delete)');
 return showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
 .then(function (previewText) {
 if (previewText === null) return;
-enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, previewText, true);
+if (!ensureMoveTargetDoesNotIntersectSource(part, targetStart, targetEnd)) return;
+var enqueued = enqueueMovePartitionOps(devPath, part, targetStart, targetEnd, previewText, true);
+if (enqueued === false) return;
 showToast(t('tQueued') + ' ' + moveLabel, 'info', 2400);
 });
 }
