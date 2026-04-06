@@ -1,0 +1,26 @@
+--- a/lib/support/plausible.c
++++ b/lib/support/plausible.c
+@@ -234,11 +234,17 @@ int check_plausibility(const char *device, int flags, int *ret_is_dev)
+ 	 * blkid-probe interfaces to access functionality not
+ 	 * available in the original blkid library.
+ 	 */
+-	if ((flags & CHECK_FS_EXIST) && blkid_get_cache(&cache, NULL) >= 0) {
+-		fs_type = blkid_get_tag_value(cache, "TYPE", device);
+-		if (fs_type)
+-			fs_label = blkid_get_tag_value(cache, "LABEL", device);
+-		blkid_put_cache(cache);
+-	}
++	/*
++	 * NOTE: blkid_get_tag_value() ultimately calls blkid_verify(), which
++	 * opens the device and iterates over every filesystem-type probe in
++	 * type_array.  On MIPS/big-endian (AVM FritzBox / uClibc) certain
++	 * probes for non-ext filesystems (FAT, swap, NTFS, ...) trigger a
++	 * SIGSEGV, likely due to unaligned struct accesses inside the probe
++	 * callback.  The existing 905-blkid_mtdworkaround patch already skips
++	 * /dev/mtd* devices; this patch disables the entire informational
++	 * lookup since the "Bad magic number" error is already printed before
++	 * check_plausibility() is called.  fs_type stays NULL so the if-block
++	 * below is skipped safely.
++	 */
+
+ 	if (fs_type) {

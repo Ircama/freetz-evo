@@ -1,31 +1,21 @@
 # E2fsprogs 1.47.4 (binary only)
-  - Homepage: [https://e2fsprogs.sourceforge.net/](https://e2fsprogs.sourceforge.net/)
-  - Manpage: [https://www.mankier.com/package/e2fsprogs](https://www.mankier.com/package/e2fsprogs)
-  - Changelog: [https://e2fsprogs.sourceforge.net/e2fsprogs-release.html](https://e2fsprogs.sourceforge.net/e2fsprogs-release.html)
-  - Repository: [https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git](https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git)
-  - Package: [master/make/pkgs/e2fsprogs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/e2fsprogs/)
-  - Steward: -
 
-**e2fsprogs** ist eine Tool-Sammlung zur Wartung von *ext2* and *ext3*
-Dateisystemen. Diese Dateisysteme werden für gewöhnlich als Standard bei
-den meisten Linux-Distributionen eingesetzt. Die Sammlung beinhaltet für
-gewöhnlich:
+* Homepage: [https://e2fsprogs.sourceforge.net/](https://e2fsprogs.sourceforge.net/)
+* Manpage: [https://www.mankier.com/package/e2fsprogs](https://www.mankier.com/package/e2fsprogs)
+* Changelog: [https://e2fsprogs.sourceforge.net/e2fsprogs-release.html](https://e2fsprogs.sourceforge.net/e2fsprogs-release.html)
+* Repository: [https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git](https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git)
+* Package: [https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/e2fsprogs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/e2fsprogs/)
+* Steward: -
 
--   **e2fsck** zum Überprüfen und ggf. reparieren der Dateisysteme
--   **mke2fs** um *ext2*/*ext3* Dateisysteme zu erstellen
--   **resize2fs** zum Vergrößern/Verkleinern von Dateisystemen
--   **tune2fs** zur Einstellung von Dateisystem Parametern
--   **dumpe2fs** zur Ausgabe von Superblock und Blockgruppen Information
--   **debugfs** zur manuellen Anzeige bzw. Bearbeitung von Dateisystem
-    Strukturen
+**e2fsprogs** is a collection of tools for maintaining *ext2* and *ext3* file systems. These file systems are commonly used as the default in most Linux distributions. The collection typically includes:
 
-Anders als es der Name vermuten lässt, ist diese Sammlung nicht auf
-*ext2* beschränkt - sondern arbeitet auch mit *ext3*, welches ja
-letztendlich auch nur eine Erweiterung von *ext2* darstellt.
+* **e2fsck** for checking and, if necessary, repairing file systems
+* **mke2fs** for creating *ext2*/*ext3* file systems
+* **resize2fs** for enlarging or shrinking file systems
+* **tune2fs** for configuring file system parameters
+* **dumpe2fs** for displaying superblock and block group information
+* **debugfs** for manually inspecting and modifying file system structures
 
-Weitere Informationen finden sich auf der [e2fsprogs
-Homepage](http://e2fsprogs.sourceforge.net/), bei
-[Wikipedia](http://en.wikipedia.org/wiki/E2fsprogs)
-und im inoffiziellen [FRITZ!Box
-Wiki](http://wehavemorefun.de/fritzbox/PACKAGE_E2FSPROGS).
+Despite its name, this collection is not limited to *ext2*; it also works with *ext3*, which is essentially an extension of *ext2*.
 
+Additional information can be found on the e2fsprogs homepage, on Wikipedia, and in the unofficial FRITZ!Box wiki.

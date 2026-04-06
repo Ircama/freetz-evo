@@ -1,0 +1,146 @@
+--- a/MCONFIG.in
++++ b/MCONFIG.in
+@@ -145,6 +145,8 @@
+ SYSLIBS = @LIBS@ @PTHREAD_LIBS@
+ DEPLIBSS = $(LIB)/libss@LIB_EXT@
+ DEPLIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@
++DEPLIBE2P = $(LIB)/libe2p@LIB_EXT@
++DEPLIBEXT2FS = $(LIB)/libext2fs@LIB_EXT@
+ DEPLIBUUID = @DEPLIBUUID@
+ DEPLIBSUPPORT = $(LIB)/libsupport@STATIC_LIB_EXT@
+ DEPLIBBLKID = @DEPLIBBLKID@ @PRIVATE_LIBS_CMT@ $(DEPLIBUUID)
+--- a/debugfs/Makefile.in
++++ b/debugfs/Makefile.in
+@@ -40,7 +40,7 @@
+ 
+ LIBS= $(LIBSUPPORT) $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
+ 	$(LIBUUID) $(LIBMAGIC) $(SYSLIBS) $(LIBARCHIVE)
+-DEPLIBS= $(DEPLIBSUPPORT) $(LIBEXT2FS) $(LIBE2P) $(DEPLIBSS) $(DEPLIBCOM_ERR) \
++DEPLIBS= $(DEPLIBSUPPORT) $(DEPLIBEXT2FS) $(DEPLIBE2P) $(DEPLIBSS) $(DEPLIBCOM_ERR) \
+ 	$(DEPLIBBLKID) $(DEPLIBUUID)
+ 
+ STATIC_LIBS= $(STATIC_LIBSUPPORT) $(STATIC_LIBEXT2FS) $(STATIC_LIBSS) \
+--- a/e2fsck/Makefile.in
++++ b/e2fsck/Makefile.in
+@@ -18,7 +18,7 @@
+ 
+ LIBS= $(LIBSUPPORT) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID) \
+ 	$(LIBINTL) $(LIBE2P) $(LIBMAGIC) $(SYSLIBS)
+-DEPLIBS= $(DEPLIBSUPPORT) $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBBLKID) \
++DEPLIBS= $(DEPLIBSUPPORT) $(DEPLIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBBLKID) \
+ 	 $(DEPLIBUUID) $(DEPLIBE2P)
+ 
+ STATIC_LIBS= $(STATIC_LIBSUPPORT) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+@@ -132,13 +132,13 @@
+ 	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(RDYNAMIC) \
+ 		$(srcdir)/sigcatcher.c -DDEBUG -o tst_sigcatcher
+ 
+-tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
++tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(DEPLIBEXT2FS) \
+ 	$(DEPLIBCOM_ERR)
+ 	$(Q) $(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o tst_problem \
+ 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR) \
+ 		$(LIBINTL) $(SYSLIBS)
+ 
+-tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR) $(LIBEXT2FS)
++tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR) $(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
+ 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
+@@ -149,7 +149,7 @@
+ 	$(Q) $(CC) -o tst_logfile $(srcdir)/logfile.c \
+ 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(SYSLIBS)
+ 
+-tst_region: region.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
++tst_region: region.c $(DEPLIBEXT2FS) $(DEPLIBCOM_ERR)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) -o tst_region $(srcdir)/region.c \
+ 		$(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM \
+--- a/misc/Makefile.in
++++ b/misc/Makefile.in
+@@ -114,7 +114,7 @@
+ 		$(srcdir)/../e2fsck/recovery.c
+ 
+ LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBSUPPORT)
+-DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBSUPPORT)
++DEPLIBS= $(DEPLIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBSUPPORT)
+ PROFILED_LIBS= $(LIBSUPPORT) $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
+ PROFILED_DEPLIBS= $(DEPLIBSUPPORT) $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR)
+ 
+@@ -122,7 +122,7 @@
+ STATIC_DEPLIBS= $(DEPLIBSUPPORT) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR)
+ 
+ LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
+-DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR)
++DEPLIBS_E2P= $(DEPLIBE2P) $(DEPLIBCOM_ERR)
+ 
+ COMPILE_ET=	_ET_DIR_OVERRIDE=$(srcdir)/../lib/et/et ../lib/et/compile_et
+ 
+@@ -173,13 +173,13 @@
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o partinfo partinfo.o $(LIBCOM_ERR)
+ 
+-e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(LIBEXT2FS)
++e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
+ 		$(LIBBLKID) $(LIBEXT2FS) $(LIBINTL) $(SYSLIBS)
+ 
+ tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBBLKID) \
+-		$(DEPLIBUUID) $(LIBEXT2FS)
++		$(DEPLIBUUID) $(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
+ 		$(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(LIBS_E2P) \
+@@ -200,7 +200,7 @@
+ 		$(PROFILED_LIBBLKID) $(PROFILED_LIBUUID) $(PROFILED_LIBE2P) \
+ 		$(LIBINTL) $(SYSLIBS) $(PROFILED_LIBUUID) $(LIBMAGIC)
+ 
+-blkid: $(BLKID_OBJS) $(DEPLIBBLKID) $(LIBEXT2FS)
++blkid: $(BLKID_OBJS) $(DEPLIBBLKID) $(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBBLKID) $(LIBINTL) \
+ 		$(LIBEXT2FS) $(SYSLIBS)
+@@ -278,8 +278,8 @@
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) \
+ 		$(LIBINTL) $(SYSLIBS)
+ 
+-mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
+-		$(LIBEXT2FS)
++mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(DEPLIBE2P) $(DEPLIBBLKID) $(DEPLIBUUID) \
++		$(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBBLKID) \
+ 		$(LIBUUID) $(LIBEXT2FS) $(LIBE2P) $(LIBINTL) \
+@@ -405,7 +405,7 @@
+ 		$(PROFILED_E2FREEFRAG_OBJS) $(PROFILED_LIBS) $(SYSLIBS)
+ 
+-e2fuzz: $(E2FUZZ_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
+-		$(LIBEXT2FS)
++e2fuzz: $(E2FUZZ_OBJS) $(DEPLIBS) $(DEPLIBBLKID) $(DEPLIBUUID) \
++		$(DEPLIBEXT2FS)
+ 	$(E) "	LD $@"
+ 	$(Q) $(CC) $(ALL_LDFLAGS) -o e2fuzz $(E2FUZZ_OBJS) $(LIBS) \
+ 		$(LIBBLKID) $(LIBUUID) $(LIBEXT2FS) $(SYSLIBS)
+--- a/resize/Makefile.in
++++ b/resize/Makefile.in
+@@ -29,7 +29,7 @@
+ 	$(srcdir)/sim_progress.c
+ 
+ LIBS= $(LIBE2P) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBINTL) $(SYSLIBS)
+-DEPLIBS= $(LIBE2P) $(LIBEXT2FS) $(DEPLIBCOM_ERR)
++DEPLIBS= $(DEPLIBE2P) $(DEPLIBEXT2FS) $(DEPLIBCOM_ERR)
+ 
+ STATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
+ 	$(LIBINTL) $(SYSLIBS)
+--- a/tests/progs/Makefile.in
++++ b/tests/progs/Makefile.in
+@@ -24,7 +24,7 @@
+ 	$(srcdir)/test_rel.c
+ 
+ LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) $(SYSLIBS)
+-DEPLIBS= $(LIBEXT2FS) $(DEPLIBSS) $(DEPLIBCOM_ERR)
++DEPLIBS= $(DEPLIBEXT2FS) $(DEPLIBSS) $(DEPLIBCOM_ERR)
+ 
+ .c.o:
+ 	$(E) "	CC $<"
