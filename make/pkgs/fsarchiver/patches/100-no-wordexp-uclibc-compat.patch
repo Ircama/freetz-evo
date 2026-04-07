@@ -1,0 +1,12 @@
+--- src/common.c
++++ src/common.c
+@@ -30,7 +30,9 @@
+ #include <sys/utsname.h>
+ #include <fcntl.h>
+ #include <stdlib.h>
++#ifdef HAVE_WORDEXP_H
+ #include <wordexp.h>
++#endif
+ #include <fnmatch.h>
+ #include <time.h>
+ #include <limits.h>

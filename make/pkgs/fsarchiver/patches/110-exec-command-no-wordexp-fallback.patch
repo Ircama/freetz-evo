@@ -1,0 +1,101 @@
+--- src/common.c
++++ src/common.c
+@@ -296,13 +296,17 @@
+     int errpos=0; // how many bytes have already been stored in the buffer for stderr
+     int pfildes1[2];
+     int pfildes2[2];
++#ifdef HAVE_WORDEXP_H
+     wordexp_t p;
++#endif
+     int status;
+     int mystdout;
+     int mystderr;
+     va_list ap;
+     int cmdpid;
++#ifdef HAVE_WORDEXP_H
+     int flags;
++#endif
+     int pid;
+     int res;
+     char c;
+@@ -325,12 +329,13 @@
+     va_end(ap);
+     
+     // do shell expansion to parse the quotes for args with spaces
++#ifdef HAVE_WORDEXP_H
+     wordexp(command, &p, 0); // will require wordfree to free the memory
+     for(i=0; (i < p.we_wordc) && (i<max_argv); i++)
+     {   argv[i]=p.we_wordv[i];
+         msgprintf(MSG_DEBUG1, "argv[%d]=[%s]\n", i, argv[i]);
+     }
+-    
++
+     // get the full path to the program
+     if (getpathtoprog(pathtoprog, sizeof(pathtoprog), argv[0])!=0)
+     {   errprintf("program [%s] no found in PATH or bad permissions on that program\n", argv[0]);
+@@ -338,11 +343,21 @@
+         return -1;
+     }
+     msgprintf(MSG_VERB2, "getpathtoprog(%s)=[%s]\n", argv[0], pathtoprog);
++#else
++    // libc fallback when wordexp(3) is unavailable (e.g. some uClibc builds)
++    argv[0] = "sh";
++    argv[1] = "-c";
++    argv[2] = command;
++    argv[3] = NULL;
++    snprintf(pathtoprog, sizeof(pathtoprog), "/bin/sh");
++#endif
+     
+     // execute the command
+     if ((pipe(pfildes1)==-1) || (pipe(pfildes2)==-1))
+     {   errprintf("pipe() failed\n");
++#ifdef HAVE_WORDEXP_H
+         wordfree(&p);
++#endif
+         return -1;
+     }
+     
+@@ -350,7 +365,9 @@
+     
+     if ((pid = fork()) == -1)
+     {   sysprintf("fork() failed\n");
++#ifdef HAVE_WORDEXP_H
+         wordfree(&p);
++#endif
+         return -1;
+     }
+     
+@@ -364,7 +381,9 @@
+         setenv("LC_ALL", "C", 1); // kill internationalization
+         execvp(pathtoprog, argv);
+         errprintf("execvp(%s) failed\n", pathtoprog); // still around? exec failed
++#ifdef HAVE_WORDEXP_H
+         wordfree(&p);
++#endif
+         exit(EXIT_FAILURE);
+     }
+     else // parent --> fsarchiver
+@@ -374,11 +393,13 @@
+         close(pfildes1[1]); // close write end of pipe
+         close(pfildes2[1]); // close write end of pipe
+         
++        #ifdef HAVE_WORDEXP_H
+         // set non blocking reads to make sure we dont block on read(stderr) when buffer for stdout is full for instance
+         flags = fcntl(mystdout, F_GETFL, 0);
+         fcntl(mystdout, F_SETFL, flags | O_NONBLOCK);
+         flags = fcntl(mystderr, F_GETFL, 0);
+         fcntl(mystderr, F_SETFL, flags | O_NONBLOCK);
++#endif
+         
+         do
+         {   // read data stored in the stdout pipe (read to prevents the sub-process command from blocking on write)
+@@ -414,7 +435,9 @@
+         if ((stderrbuf!=NULL) && (errpos>0))
+             msgprintf(MSG_DEBUG1, "\n----stderr----\n%s\n----stderr----\n\n", stderrbuf);
+         
++        #ifdef HAVE_WORDEXP_H
+         wordfree(&p);
++#endif
+         return 0;
+     }
+ }
