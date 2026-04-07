@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_UDPCAST
+	bool "udpcast 20250223 (binary only)"
+	default n
+	help
+		udpcast is a multicast file transfer tool used by cloning workflows.
+		This package installs udp-sender and udp-receiver.

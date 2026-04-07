@@ -1,0 +1,4 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_UDPCAST" == "y" ]; then
+	EXTERNAL_FILES+=" /usr/sbin/udp-sender"
+	EXTERNAL_FILES+=" /usr/sbin/udp-receiver"
+fi
