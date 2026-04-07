@@ -1,30 +1,32 @@
 # NTFS-3G 2022.10.3 (binary only)
+  - Homepage: [https://github.com/tuxera/ntfs-3g](https://github.com/tuxera/ntfs-3g)
+  - Changelog: [https://github.com/tuxera/ntfs-3g/releases](https://github.com/tuxera/ntfs-3g/releases)
+  - Repository: [https://github.com/tuxera/ntfs-3g](https://github.com/tuxera/ntfs-3g)
   - Package: [master/make/pkgs/ntfs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ntfs/)
   - Steward: -
 
-**[NTFS-3G](http://www.ntfs-3g.com/)** ist ein
-Treiber für das
-[NTFS-Dateisystem](http://de.wikipedia.org/wiki/Dateisystem)
-unter Linux, Solaris, FreeBSD, Mac OS X und NetBSD mit umfassender
-Schreibunterstützung.
+NTFS-3G provides read/write NTFS support and NTFS userspace tools.
 
-Im Gegensatz zum Kernel-NTFS Treiber unterstützt *NTFS-3G* die meisten
-Dateisystem-Operationen: Dateien jeder Größe können auf NTFS
-Dateisystemen erstellt, modifiziert, umbenannt, verschoben oder gelöscht
-werden (ausgenommen komprimierte und verschlüsselte Dateien). Es ist
-auch experimentelle Unterstützung zur Modifikation von
-[ACLs](http://de.wikipedia.org/wiki/Access_Control_List)
-und
-[Dateisystem-Berechtigungen](http://de.wikipedia.org/wiki/Dateiberechtigung)
-vorhanden.
+In this package:
 
-*NTFS-3G* basiert auf dem *[FUSE](fuse.md)* Paket.
+- `FREETZ_PACKAGE_NTFS_DRIVER` installs the `ntfs-3g` mount binary.
+- `FREETZ_PACKAGE_NTFS_TOOLS` enables the ntfsprogs tools set.
 
-### Weiterführende Links
+Selectable ntfsprogs tools include:
 
--   [NTFS-3G Homepage](http://www.ntfs-3g.com/)
--   [Wikipedia
-    Artikel](http://en.wikipedia.org/wiki/NTFS3G) (englisch)
--   [Comparing JFS, XFS, NTFS-3G and ZFS-FUSE
-    performance](http://www.csamuel.org/2007/04/25/comparing-ntfs-3g-to-zfs-fuse-for-fuse-performance/)
+- `mkntfs`
+- `ntfscat`
+- `ntfsclone`
+- `ntfscluster`
+- `ntfscmp`
+- `ntfscp`
+- `ntfsfix`
+- `ntfsinfo`
+- `ntfslabel`
+- `ntfsls`
+- `ntfsresize`
+- `ntfsundelete`
+
+`ntfsclone` is commonly used by clone/imaging workflows (for example with
+Clonezilla-related setups).
 

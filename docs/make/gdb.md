@@ -1,9 +1,5 @@
-# gdb (6.8 / 7.9.1 / 17.1 selectable)
-  - Homepage: [https://www.gnu.org/software/gdb/](https://www.gnu.org/software/gdb/)
-  - Manpage: [https://sourceware.org/gdb/current/onlinedocs/gdb.html](https://sourceware.org/gdb/current/onlinedocs/gdb.html)
-  - Changelog: [https://sourceware.org/gdb/news/](https://sourceware.org/gdb/news/)
-  - Repository: [https://sourceware.org/git/?p=binutils-gdb.git](https://sourceware.org/git/?p=binutils-gdb.git)
-  - Package: [master/make/pkgs/gdb/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/gdb/)
+# gdb GNU debugger 6.8/7.9.1/17.1 (binary only)
+  - Package: [master/make/pkgs/gdb/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gdb/)
   - Steward: -
 
 GNU Debugger for on-device debugging and remote debugging scenarios.

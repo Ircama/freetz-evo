@@ -1,8 +1,5 @@
-# dosfstools 4.2 (FAT filesystem utilities)
-  - Homepage: [https://github.com/dosfstools/dosfstools](https://github.com/dosfstools/dosfstools)
-  - Changelog: [https://github.com/dosfstools/dosfstools/releases](https://github.com/dosfstools/dosfstools/releases)
-  - Repository: [https://github.com/dosfstools/dosfstools.git](https://github.com/dosfstools/dosfstools.git)
-  - Package: [master/make/pkgs/dosfstools/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/dosfstools/)
+# dosfstools 4.2 (binary only)
+  - Package: [master/make/pkgs/dosfstools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/dosfstools/)
   - Steward: -
 
 dosfstools provides core utilities for FAT filesystems and is commonly used

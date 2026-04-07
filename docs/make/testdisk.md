@@ -1,8 +1,8 @@
-# testdisk 7.2 (data recovery tools)
+# testdisk 7.2
   - Homepage: [https://www.cgsecurity.org/wiki/TestDisk](https://www.cgsecurity.org/wiki/TestDisk)
   - Changelog: [https://github.com/cgsecurity/testdisk/releases](https://github.com/cgsecurity/testdisk/releases)
   - Repository: [https://github.com/cgsecurity/testdisk](https://github.com/cgsecurity/testdisk)
-  - Package: [master/make/pkgs/testdisk/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/testdisk/)
+  - Package: [master/make/pkgs/testdisk/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/testdisk/)
   - Steward: -
 
 testdisk provides partition and file recovery tools for damaged or

@@ -1,5 +1,4 @@
 # ncdu CGI (disk usage web UI)
-  - Homepage: [https://dev.yorhel.nl/ncdu](https://dev.yorhel.nl/ncdu)
   - Package: [master/make/pkgs/ncdu-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ncdu-cgi/)
   - Steward: -
   - Depends on: `ncdu`
