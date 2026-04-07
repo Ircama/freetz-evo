@@ -34,6 +34,7 @@ endif
 endef
 
 $(eval $(call UTIL_LINUX_ADD_BINARY,BLKID,blkid,with))
+$(eval $(call UTIL_LINUX_ADD_BINARY,BLOCKDEV,blockdev,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,LOSETUP,losetup,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,MKSWAP,mkswap,with))
 $(eval $(call UTIL_LINUX_ADD_BINARY,SWAPON,swapon,with))
@@ -66,6 +67,8 @@ $(PKG)_BINARIES_SUFFIX:=-util-linux
 $(PKG)_BINARIES_BUILD_DIR:=$($(PKG)_BINARIES:%=$($(PKG)_DIR)/%)
 $(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR:=$($(PKG)_BINARIES_WITH_SUFFIX:%=$($(PKG)_DEST_DIR)/sbin/%$($(PKG)_BINARIES_SUFFIX))
 $(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR:=$($(PKG)_BINARIES_NO_SUFFIX:%=$($(PKG)_DEST_DIR)/sbin/%)
+$(PKG)_BLOCKDEV_WITH_SUFFIX_TARGET:=$($(PKG)_DEST_DIR)/sbin/blockdev$($(PKG)_BINARIES_SUFFIX)
+$(PKG)_BLOCKDEV_NG_TARGET:=$($(PKG)_DEST_DIR)/sbin/blockdev-ng
 
 # Version-specific configure commands
 ifeq ($(strip $(FREETZ_UTIL_LINUX_VERSION_2_27_1)),y)
@@ -205,16 +208,23 @@ ifeq ($(strip $(FREETZ_UTIL_LINUX_VERSION_2_41)),y)
 $($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX): $($(PKG)_DEST_DIR)/sbin/swapon$($(PKG)_BINARIES_SUFFIX)
 	ln -sf $(notdir $<) $@
 
-$(pkg)-precompiled: $($(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR) $($(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR) $($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX)
+ifeq ($(strip $(FREETZ_UTIL_LINUX_BLOCKDEV)),y)
+$($(PKG)_BLOCKDEV_NG_TARGET): $($(PKG)_BLOCKDEV_WITH_SUFFIX_TARGET)
+	ln -sf $(notdir $<) $@
+endif
+
+$(pkg)-precompiled: $($(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR) $($(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR) $($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX) $(if $(strip $(FREETZ_UTIL_LINUX_BLOCKDEV)),$($(PKG)_BLOCKDEV_NG_TARGET))
 
 $(pkg)-uninstall:
 	$(RM) $(UTIL_LINUX_BINARIES_WITH_SUFFIX_TARGET_DIR) $(UTIL_LINUX_BINARIES_NO_SUFFIX_TARGET_DIR)
 	$(RM) $(UTIL_LINUX_DEST_DIR)/sbin/swapoff$(UTIL_LINUX_BINARIES_SUFFIX)
+	$(RM) $(UTIL_LINUX_DEST_DIR)/sbin/blockdev-ng
 else
 $(pkg)-precompiled: $($(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR) $($(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR)
 
 $(pkg)-uninstall:
 	$(RM) $(UTIL_LINUX_BINARIES_WITH_SUFFIX_TARGET_DIR) $(UTIL_LINUX_BINARIES_NO_SUFFIX_TARGET_DIR)
+	$(RM) $(UTIL_LINUX_DEST_DIR)/sbin/blockdev-ng
 endif
 
 $(pkg):

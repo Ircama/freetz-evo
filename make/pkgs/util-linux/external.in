@@ -10,6 +10,8 @@ config EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX
 		
 		Version 2.41 (modern):
 		 /sbin/blkid-util-linux
+		 /sbin/blockdev-util-linux
+		 /sbin/blockdev-ng
 		 /sbin/cfdisk
 		 /sbin/lsblk
 		 /sbin/findmnt

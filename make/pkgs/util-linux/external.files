@@ -1,5 +1,7 @@
 if [ "$EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX" == "y" ]; then
 	EXTERNAL_FILES+=" /sbin/blkid-util-linux"
+	[ "$FREETZ_UTIL_LINUX_BLOCKDEV" == "y" ] && EXTERNAL_FILES+=" /sbin/blockdev-util-linux"
+	[ "$FREETZ_UTIL_LINUX_BLOCKDEV" == "y" ] && EXTERNAL_FILES+=" /sbin/blockdev-ng"
 	EXTERNAL_FILES+=" /sbin/losetup-util-linux"
 	EXTERNAL_FILES+=" /sbin/mkswap-util-linux"
 	EXTERNAL_FILES+=" /sbin/swapon-util-linux"

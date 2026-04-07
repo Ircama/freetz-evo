@@ -50,6 +50,15 @@ config FREETZ_UTIL_LINUX_BLKID
 		
 		Conflicts with busybox blkid, renamed to blkid-util-linux.
 
+config FREETZ_UTIL_LINUX_BLOCKDEV
+	bool "blockdev - call block-device ioctls (renamed to blockdev-ng)"
+	default y
+	help
+		blockdev allows getting/setting low-level block device parameters
+		and triggering ioctls like partition table reread.
+		
+		Conflicts with busybox blockdev, renamed to blockdev-ng.
+
 config FREETZ_UTIL_LINUX_LOSETUP
 	bool "losetup - manage loop devices (renamed to losetup-util-linux)"
 	default y
