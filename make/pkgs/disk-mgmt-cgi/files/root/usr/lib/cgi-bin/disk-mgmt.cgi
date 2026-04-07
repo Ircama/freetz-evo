@@ -23,6 +23,7 @@ CMD_HDPARM=''
 CMD_SMARTCTL=''
 CMD_LSBLK=''
 CMD_BLKID=''
+CMD_BLOCKDEV=''
 CMD_MKNTFS=''
 CMD_NTFSFIX=''
 CMD_NTFSINFO=''
@@ -157,6 +158,7 @@ resolve_tools() {
 	CMD_SMARTCTL=$(find_cmd smartctl)
 	CMD_LSBLK=$(find_cmd lsblk)
 	CMD_BLKID=$(find_cmd blkid-util-linux blkid-ng blkid)
+	CMD_BLOCKDEV=$(find_cmd blockdev-ng blockdev-util-linux blockdev)
 	CMD_MKNTFS=$(find_cmd mkntfs)
 	CMD_NTFSFIX=$(find_cmd ntfsfix)
 	CMD_NTFSINFO=$(find_cmd ntfsinfo)
@@ -444,9 +446,8 @@ run_partprobe() {
 			_rp_rc=$?
 		fi
 		if [ "$_rp_rc" -ne 0 ]; then
-			_bdev=$(command -v blockdev 2>/dev/null)
-			if [ -n "$_bdev" ]; then
-				"$_bdev" --rereadpt "$1" >>/tmp/disk-mgmt-partprobe.log 2>&1
+			if [ -n "$CMD_BLOCKDEV" ]; then
+				"$CMD_BLOCKDEV" --rereadpt "$1" >>/tmp/disk-mgmt-partprobe.log 2>&1
 			fi
 		fi
 	fi
@@ -498,6 +499,7 @@ action_analyze_tools() {
 	add_item "smartctl" "$CMD_SMARTCTL" "SMART health check"
 	add_item "lsblk" "$CMD_LSBLK" "Block device topology"
 	add_item "blkid" "$CMD_BLKID" "Filesystem signatures"
+	add_item "blockdev" "$CMD_BLOCKDEV" "Low-level block-device ioctls"
 	add_item "mkntfs" "$CMD_MKNTFS" "Create NTFS filesystem"
 	add_item "ntfsfix" "$CMD_NTFSFIX" "Check and repair NTFS"
 	add_item "ntfsinfo" "$CMD_NTFSINFO" "Read NTFS metadata"
@@ -1579,10 +1581,9 @@ action_clone_partition_dd() {
 		return
 	fi
 
-	_bdev=$(command -v blockdev 2>/dev/null)
-	if [ -n "$_bdev" ]; then
-		_src_bytes=$($_bdev --getsize64 "$_source_path" 2>/dev/null)
-		_tgt_bytes=$($_bdev --getsize64 "$_target_path" 2>/dev/null)
+	if [ -n "$CMD_BLOCKDEV" ]; then
+		_src_bytes=$($CMD_BLOCKDEV --getsize64 "$_source_path" 2>/dev/null)
+		_tgt_bytes=$($CMD_BLOCKDEV --getsize64 "$_target_path" 2>/dev/null)
 		_src_bytes=$(safe_uint "$_src_bytes")
 		_tgt_bytes=$(safe_uint "$_tgt_bytes")
 		if [ "$_src_bytes" -gt 0 ] && [ "$_tgt_bytes" -gt 0 ] && [ "$_tgt_bytes" -lt "$_src_bytes" ]; then
@@ -2001,9 +2002,8 @@ action_reload_table() {
 	fi
 	if [ "$_rc" -ne 0 ]; then
 		# Last resort: blockdev --rereadpt
-		_bdev=$(command -v blockdev 2>/dev/null)
-		if [ -n "$_bdev" ]; then
-			_out3=$("$_bdev" --rereadpt "$_device" 2>&1)
+		if [ -n "$CMD_BLOCKDEV" ]; then
+			_out3=$("$CMD_BLOCKDEV" --rereadpt "$_device" 2>&1)
 			_rc3=$?
 			_out="$_out\n[blockdev --rereadpt] rc=$_rc3\n$_out3"
 			[ "$_rc3" -eq 0 ] && _rc=0
@@ -2441,12 +2441,12 @@ cat <<'EOF'
 	background: #f8fbff;
 }
 #pcgiCommandEditor {
-	height: 280px;
+	height: 140px;
 }
 #pcgiCommandEditorFallback {
 	display: none;
 	width: 100%;
-	height: 280px;
+	height: 140px;
 	border: 0;
 	font-family: monospace;
 	font-size: 12px;
@@ -2481,36 +2481,29 @@ cat <<'EOF'
 	overflow: auto;
 	max-height: 170px;
 }
-.pcgi-param-ranges-copy {
-	margin-top: 8px;
-	border: 1px solid #d6e0ea;
-	background: #fff;
-	border-radius: 4px;
-	font-size: 11px;
-	padding: 6px;
-	white-space: pre;
-	overflow: auto;
-	max-height: 160px;
-}
-.pcgi-param-value-cell {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-.pcgi-param-value-input {
-	width: 100%;
-	min-width: 80px;
-	font-family: monospace;
-	font-size: 11px;
-}
 .pcgi-queue-actions {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	align-items: stretch;
+	gap: 3px;
+}
+.pcgi-queue-arrows {
+	display: flex;
+	gap: 3px;
 }
 .pcgi-queue-actions button {
 	display: block;
 	width: 100%;
+}
+.pcgi-queue-arrow-btn {
+	font-size: 10px;
+	line-height: 1;
+	padding: 1px 4px;
+	min-width: 20px;
+}
+.pcgi-queue-arrows .pcgi-queue-arrow-btn {
+	flex: 1 1 auto;
+	width: auto;
 }
 
 
@@ -3050,21 +3043,22 @@ cat <<'EOF'
 <div id="pcgiCmdPreviewModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box">
 		<h3 id="pcgiCmdPreviewTitle" class="pcgi-modal-head">Command preview</h3>
-		<div id="pcgiCmdPreviewText" class="pcgi-modal-subtle">Review/edit the command preview, then validate to queue the operation.</div>
-		<div class="pcgi-editor-wrap">
-			<div id="pcgiCommandEditor"></div>
-			<textarea id="pcgiCommandEditorFallback" readonly></textarea>
-		</div>
-		<div class="pcgi-modal-subtle">Parameters (editable JSON). You can tune sectors, sizes and options before queueing.</div>
-		<div class="pcgi-editor-wrap">
-			<div id="pcgiParamsEditor"></div>
-			<textarea id="pcgiParamsEditorFallback"></textarea>
-		</div>
-		<div id="pcgiParamRangesWrap" class="pcgi-param-ranges-wrap">
-			<div class="pcgi-modal-subtle" style="margin:0 0 4px;">Numeric ranges with normalized min/max (alignment-aware)</div>
-			<div id="pcgiParamRanges" class="pcgi-param-ranges pcgi-mono"></div>
-			<pre id="pcgiParamRangesCopy" class="pcgi-param-ranges-copy pcgi-mono"></pre>
-		</div>
+		<div id="pcgiCmdPreviewText" class="pcgi-modal-subtle">Review parameters first; command preview is regenerated automatically.</div>
+<div id="pcgiParamsEditorLabel" class="pcgi-modal-subtle">Parameters (editable JSON). You can tune sectors, sizes and options before queueing.</div>
+<div class="pcgi-editor-wrap">
+<div id="pcgiParamsEditor"></div>
+<textarea id="pcgiParamsEditorFallback"></textarea>
+</div>
+<div class="pcgi-modal-subtle">Command preview (auto-generated from Parameters).</div>
+<div class="pcgi-editor-wrap">
+<div id="pcgiCommandEditor"></div>
+<textarea id="pcgiCommandEditorFallback" readonly></textarea>
+</div>
+<div id="pcgiParamRangesWrap" class="pcgi-param-ranges-wrap">
+<div class="pcgi-modal-subtle" style="margin:0 0 4px;">Numeric ranges with normalized min/max (alignment-aware)</div>
+<div id="pcgiParamRanges" class="pcgi-param-ranges pcgi-mono"></div>
+</div>
+
 
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiCmdCancelBtn">Cancel</button>
@@ -3170,7 +3164,7 @@ cat <<'EOF'
 			helperTitle: 'Scorciatoie da tastiera e workflow',
 			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica coda operazioni\nCanc: accoda eliminazione partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo sinistro/destro partizione: accoda resize\nTrascina partizione su spazio libero: accoda move',
 			cmdPreviewTitle: 'Anteprima comando',
-			cmdPreviewHint: 'Controlla/modifica il comando in anteprima, poi valida per accodare l\'operazione.',
+			cmdPreviewHint: 'Anteprima comando in sola lettura, rigenerata automaticamente dai Parametri.',
 			toolAllAvailable: 'Stato toolchain: tutti i comandi rilevati sono disponibili.',
 			toolRequiredMissing: 'Stato toolchain: mancano comandi richiesti.',
 			toolOptionalMissing: 'Stato toolchain: mancano alcuni comandi opzionali.',
@@ -3241,7 +3235,7 @@ cat <<'EOF'
 			helperTitle: 'Tastenkuerzel und Ablauf',
 			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Queue anwenden\nEntf: Loeschen der gewaehlten Partition in Queue\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nLinken/rechten Partitionsrand ziehen: Resize in Queue\nPartition auf freien Bereich ziehen: Move in Queue',
 			cmdPreviewTitle: 'Befehlsvorschau',
-			cmdPreviewHint: 'Befehlsvorschau pruefen/bearbeiten und dann bestaetigen, um die Operation in die Queue aufzunehmen.',
+			cmdPreviewHint: 'Befehlsvorschau ist schreibgeschuetzt und wird automatisch aus den Parametern neu erzeugt.',
 			toolAllAvailable: 'Toolchain-Status: alle erkannten Befehle sind verfuegbar.',
 			toolRequiredMissing: 'Toolchain-Status: erforderliche Befehle fehlen.',
 			toolOptionalMissing: 'Toolchain-Status: optionale Befehle fehlen.',
@@ -3397,6 +3391,9 @@ cat <<'EOF'
 		dryRun: false,
 		aceEditor: null,
 		paramsAceEditor: null,
+		paramsAceBound: false,
+		paramEditorSyncTimer: null,
+		previewEditContext: null,
 		mapDragActive: false,
 		partitionDragInfo: null,
 		sectorSyncLock: false
@@ -4163,20 +4160,27 @@ cat <<'EOF'
 		state.aceEditor = window.ace.edit('pcgiCommandEditor');
 		state.aceEditor.setTheme('ace/theme/chrome');
 		state.aceEditor.session.setMode('ace/mode/sh');
-		state.aceEditor.session.setUseWorker(true);
+		state.aceEditor.session.setUseWorker(false);
 		state.aceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2, readOnly: true, highlightActiveLine: false, highlightGutterLine: false });
 	}
 
 	function ensureParamsAceEditor() {
-		if (state.paramsAceEditor || !window.ace) return;
-		state.paramsAceEditor = window.ace.edit('pcgiParamsEditor');
-		state.paramsAceEditor.setTheme('ace/theme/chrome');
-		state.paramsAceEditor.session.setMode('ace/mode/json');
-		state.paramsAceEditor.session.setUseWorker(true);
-		state.paramsAceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2 });
-	}
+if (!state.paramsAceEditor&&window.ace){
+state.paramsAceEditor = window.ace.edit('pcgiParamsEditor');
+state.paramsAceEditor.setTheme('ace/theme/chrome');
+state.paramsAceEditor.session.setMode('ace/mode/json');
+state.paramsAceEditor.session.setUseWorker(false);
+state.paramsAceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2 });
+}
+if (state.paramsAceEditor && !state.paramsAceBound){
+state.paramsAceEditor.session.on('change', function () {
+schedulePreviewFromParamEditorLive();
+});
+state.paramsAceBound = true;
+}
+}
 
-	function setPreviewEditorValue(text) {
+function setPreviewEditorValue(text) {
 		ensureAceEditor();
 		var fallback = document.getElementById('pcgiCommandEditorFallback');
 		var aceWrap = document.getElementById('pcgiCommandEditor');
@@ -4219,12 +4223,48 @@ cat <<'EOF'
 	}
 
 	function getParamEditorValue() {
-		var fallback = document.getElementById('pcgiParamsEditorFallback');
-		if (state.paramsAceEditor) return state.paramsAceEditor.getValue();
-		return fallback ? fallback.value : '';
-	}
+var fallback = document.getElementById('pcgiParamsEditorFallback');
+if (state.paramsAceEditor) return state.paramsAceEditor.getValue();
+return fallback ? fallback.value : '';
+}
 
-	function validateCommandPreviewSyntax(cmdText) {
+function refreshPreviewFromParamEditorLive() {
+if (!state.previewEditContext||!state.previewEditContext.params)return;
+var action = state.previewEditContext.action;
+var params = state.previewEditContext.params;
+var txt = String(getParamEditorValue() || '').trim();
+if (!txt)return;
+
+var parsed = null;
+try {
+parsed = JSON.parse(txt);
+} catch (err) {
+return;
+}
+if (!parsed||typeof parsed!=='object'||Array.isArray(parsed))return;
+
+for (var k in params) {
+if (Object.prototype.hasOwnProperty.call(params, k)) delete params[k];
+}
+for (var key in parsed) {
+if (!Object.prototype.hasOwnProperty.call(parsed,key))continue;
+params[key] = parsed[key];
+}
+
+setPreviewEditorValue(buildCommandPreview(action, params));
+renderParamRanges(action, params);
+}
+
+function schedulePreviewFromParamEditorLive() {
+if (!state.previewEditContext)return;
+if (state.paramEditorSyncTimer) clearTimeout(state.paramEditorSyncTimer);
+state.paramEditorSyncTimer = setTimeout(function () {
+state.paramEditorSyncTimer = null;
+refreshPreviewFromParamEditorLive();
+}, 150);
+}
+
+function validateCommandPreviewSyntax(cmdText) {
 		var txt = String(cmdText || '');
 		if (!txt.trim()) return 'Command cannot be empty.';
 		var inSingle = false;
@@ -4384,159 +4424,130 @@ cat <<'EOF'
 	}
 
 	function renderParamRanges(action, params) {
-		var wrap = document.getElementById('pcgiParamRangesWrap');
-		var ranges = document.getElementById('pcgiParamRanges');
-		var copy = document.getElementById('pcgiParamRangesCopy');
-		if (!wrap || !ranges || !copy) return;
+var wrap = document.getElementById('pcgiParamRangesWrap');
+var ranges = document.getElementById('pcgiParamRanges');
+if (!wrap||!ranges)return;
 
-		var rows = buildParamRangeRows(action, params || {});
-		if (!rows.length) {
-			wrap.style.display = 'none';
-			ranges.innerHTML = '';
-			copy.textContent = '';
-			return;
-		}
+var rows = buildParamRangeRows(action, params || {});
+if (!rows.length){
+wrap.style.display = 'none';
+ranges.innerHTML = '';
+return;
+}
 
-		wrap.style.display = '';
-		ranges.innerHTML = '';
+wrap.style.display = '';
+ranges.innerHTML = '';
 
-		var table = document.createElement('table');
-		table.className = 'pcgi-table';
-		var thead = document.createElement('thead');
-		var hrow = document.createElement('tr');
-		['parameter', 'current', 'min', 'max', 'min normalized', 'max normalized'].forEach(function (h) {
-			var th = document.createElement('th');
-			th.textContent = h;
-			hrow.appendChild(th);
-		});
-		thead.appendChild(hrow);
-		table.appendChild(thead);
+var table = document.createElement('table');
+table.className = 'pcgi-table';
+var thead = document.createElement('thead');
+var hrow = document.createElement('tr');
+['parameter', 'current', 'min', 'max', 'min normalized', 'max normalized'].forEach(function (h) {
+var th = document.createElement('th');
+th.textContent = h;
+hrow.appendChild(th);
+});
+thead.appendChild(hrow);
+table.appendChild(thead);
 
-		var tbody = document.createElement('tbody');
-		for (var i = 0; i < rows.length; i++) {
-			(function (row) {
-				var tr = document.createElement('tr');
+var tbody = document.createElement('tbody');
+for (var i = 0; i < rows.length; i++) {
+var row = rows[i];
+var tr = document.createElement('tr');
 
-				var tdKey = document.createElement('td');
-				tdKey.className = 'pcgi-mono';
-				tdKey.textContent = row.key;
-				tr.appendChild(tdKey);
+var tdKey = document.createElement('td');
+tdKey.className = 'pcgi-mono';
+tdKey.textContent = row.key;
+tr.appendChild(tdKey);
 
-				var tdCur = document.createElement('td');
-				var curWrap = document.createElement('div');
-				curWrap.className = 'pcgi-param-value-cell';
-				var curInput = document.createElement('input');
-				curInput.type = 'text';
-				curInput.className = 'pcgi-param-value-input';
-				curInput.value = String(row.cur);
-				curInput.setAttribute('data-key', row.key);
-				curInput.onchange = function () {
-					var key = this.getAttribute('data-key');
-					var rawV = String(this.value || '').trim();
-					if (!/^-?\d+$/.test(rawV)) {
-						showToast('Numeric value expected for ' + key, 'error', 2800);
-						this.value = String(params[key] || row.cur);
-						return;
-					}
-					var next = Number(rawV);
-					if (row.min !== null && next < row.min) next = row.min;
-					if (row.max !== null && next > row.max) next = row.max;
-					params[key] = String(Math.floor(next));
-					this.value = params[key];
-					setParamEditorValue(JSON.stringify(params, null, 2));
-					renderParamRanges(action, params);
-					setPreviewEditorValue(buildCommandPreview(action, params));
-				};
-				curWrap.appendChild(curInput);
-				if (row.unit) {
-					var u = document.createElement('span');
-					u.className = 'pcgi-mono';
-					u.textContent = row.unit;
-					curWrap.appendChild(u);
-				}
-				tdCur.appendChild(curWrap);
-				tr.appendChild(tdCur);
+var tdCur = document.createElement('td');
+tdCur.className = 'pcgi-mono';
+tdCur.textContent = formatRangeCell(row.cur, row.unit);
+tr.appendChild(tdCur);
 
-				var tdMin = document.createElement('td');
-				tdMin.className = 'pcgi-mono';
-				tdMin.textContent = formatRangeCell(row.min, row.unit);
-				tr.appendChild(tdMin);
+var tdMin = document.createElement('td');
+tdMin.className = 'pcgi-mono';
+tdMin.textContent = formatRangeCell(row.min, row.unit);
+tr.appendChild(tdMin);
 
-				var tdMax = document.createElement('td');
-				tdMax.className = 'pcgi-mono';
-				tdMax.textContent = formatRangeCell(row.max, row.unit);
-				tr.appendChild(tdMax);
+var tdMax = document.createElement('td');
+tdMax.className = 'pcgi-mono';
+tdMax.textContent = formatRangeCell(row.max, row.unit);
+tr.appendChild(tdMax);
 
-				var tdMinNorm = document.createElement('td');
-				tdMinNorm.className = 'pcgi-mono';
-				tdMinNorm.textContent = formatRangeCell(row.minNorm, row.unit);
-				tr.appendChild(tdMinNorm);
+var tdMinNorm = document.createElement('td');
+tdMinNorm.className = 'pcgi-mono';
+tdMinNorm.textContent = formatRangeCell(row.minNorm, row.unit);
+tr.appendChild(tdMinNorm);
 
-				var tdMaxNorm = document.createElement('td');
-				tdMaxNorm.className = 'pcgi-mono';
-				tdMaxNorm.textContent = formatRangeCell(row.maxNorm, row.unit);
-				tr.appendChild(tdMaxNorm);
+var tdMaxNorm = document.createElement('td');
+tdMaxNorm.className = 'pcgi-mono';
+tdMaxNorm.textContent = formatRangeCell(row.maxNorm, row.unit);
+tr.appendChild(tdMaxNorm);
 
-				tbody.appendChild(tr);
-			})(rows[i]);
-		}
-		table.appendChild(tbody);
-		ranges.appendChild(table);
+tbody.appendChild(tr);
+}
+table.appendChild(tbody);
+ranges.appendChild(table);
+}
 
-		var lines = [];
-		lines.push('parameter\tcurrent\tmin\tmax\tmin_normalized\tmax_normalized');
-		for (var j = 0; j < rows.length; j++) {
-			var rr = rows[j];
-			lines.push(rr.key + '\t' + formatRangeCell(rr.cur, rr.unit) + '\t' + formatRangeCell(rr.min, rr.unit) + '\t' + formatRangeCell(rr.max, rr.unit) + '\t' + formatRangeCell(rr.minNorm, rr.unit) + '\t' + formatRangeCell(rr.maxNorm, rr.unit));
-		}
-		copy.textContent = lines.join('\n');
-	}
-
-	function renderParamEditors(action, params) {
+function renderParamEditors(action, params) {
 		setParamEditorValue(JSON.stringify(params || {}, null, 2));
 		setPreviewEditorValue(buildCommandPreview(action, params || {}));
 		renderParamRanges(action, params || {});
 	}
 
 	function applyParamEditors(params, action) {
-		var txt = String(getParamEditorValue() || '').trim();
-		if (!txt) return;
+var txt = String(getParamEditorValue() || '').trim();
+if (!txt)return;
 
-		var parsed = null;
-		try {
-			parsed = JSON.parse(txt);
-		} catch (err) {
-			showToast('Invalid JSON in parameter editor: ' + err.message, 'error', 3600);
-			throw err;
-		}
-		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-			showToast('Parameter editor must contain a JSON object.', 'error', 3200);
-			throw new Error('Invalid JSON object');
-		}
+var parsed = null;
+try {
+parsed = JSON.parse(txt);
+} catch (err) {
+showToast('Invalid JSON in parameter editor: ' + err.message, 'error', 3600);
+throw err;
+}
+if (!parsed||typeof parsed!=='object'||Array.isArray(parsed)){
+showToast('Parameter editor must contain a JSON object.', 'error', 3200);
+throw new Error('Invalid JSON object');
+}
 
-		for (var k in params) {
-			if (Object.prototype.hasOwnProperty.call(params, k)) delete params[k];
-		}
-		for (var key in parsed) {
-			if (!Object.prototype.hasOwnProperty.call(parsed, key)) continue;
-			params[key] = parsed[key];
-		}
-				setPreviewEditorValue(buildCommandPreview(action, params));
+for (var k in params) {
+if (Object.prototype.hasOwnProperty.call(params, k)) delete params[k];
+}
+for (var key in parsed) {
+if (!Object.prototype.hasOwnProperty.call(parsed,key))continue;
+params[key] = parsed[key];
+}
+setPreviewEditorValue(buildCommandPreview(action, params));
 renderParamRanges(action, params);
+}
+
+function summarizeOperationLabel(label, action) {
+		var ref = String(label || '').trim();
+		if (!ref) ref = String(action || '').replace(/_/g, ' ');
+		ref = ref.replace(/\s+on\s+\/dev\/\S+.*$/i, '');
+		ref = ref.replace(/\s+on\s+[^\s].*$/i, '');
+		return ref.trim() || String(action || '').replace(/_/g, ' ');
 	}
 
-	function showCommandPreviewModal(action, params, label, confirmTitle, confirmMessage) {
+function showCommandPreviewModal(action, params, label, confirmTitle, confirmMessage) {
 		var modal = document.getElementById('pcgiCmdPreviewModal');
 		var title = document.getElementById('pcgiCmdPreviewTitle');
 		var text = document.getElementById('pcgiCmdPreviewText');
+		var paramsLabel = document.getElementById('pcgiParamsEditorLabel');
 		var btnCancel = document.getElementById('pcgiCmdCancelBtn');
 		var btnValidate = document.getElementById('pcgiCmdValidateBtn');
-		if (!modal || !title || !text || !btnCancel || !btnValidate) {
+		if (!modal || !title || !text || !btnCancel || !btnValidate || !paramsLabel) {
 			return Promise.resolve(buildCommandPreview(action, params));
 		}
 		var previewText = buildCommandPreview(action, params);
+		state.previewEditContext = { action: action, params: params };
 		title.textContent = (confirmTitle || t('cmdPreviewTitle')) + ': ' + label;
 		text.textContent = confirmMessage || t('cmdPreviewHint');
+		var opRefLabel = summarizeOperationLabel(label, action);
+		paramsLabel.textContent = 'Parameters for operation: ' + opRefLabel + ' (editable JSON). You can tune sectors, sizes and options before queueing.';
 		setPreviewEditorValue(previewText);
 		renderParamEditors(action, params);
 		modal.style.display = 'flex';
@@ -4549,6 +4560,11 @@ renderParamRanges(action, params);
 				btnCancel.onclick = null;
 				btnValidate.onclick = null;
 				document.removeEventListener('keydown', onEsc);
+				if (state.paramEditorSyncTimer) {
+					clearTimeout(state.paramEditorSyncTimer);
+					state.paramEditorSyncTimer = null;
+				}
+				state.previewEditContext = null;
 				resolve(result);
 			}
 			function onEsc(ev) {
@@ -4581,7 +4597,7 @@ renderParamRanges(action, params);
 		for (var k in op.params) {
 			if (Object.prototype.hasOwnProperty.call(op.params, k)) paramsCopy[k] = op.params[k];
 		}
-		showCommandPreviewModal(op.action, paramsCopy, op.label, 'Edit queued operation', 'Edit parameters, numeric values and command preview, then save.')
+		showCommandPreviewModal(op.action, paramsCopy, op.label, 'Edit queued operation', 'Edit parameters and numeric values; command preview updates automatically.')
 			.then(function (previewText) {
 				if (previewText === null) return;
 				op.params = paramsCopy;
@@ -4593,7 +4609,21 @@ renderParamRanges(action, params);
 			});
 	}
 
-	function queueOp(action, params, label, commandPreview, quiet) {
+	function moveQueueOp(index, direction) {
+var idx = Number(index);
+var dir = Number(direction);
+if (!isFinite(idx)||!isFinite(dir)||idx<0||idx>=state.queue.length)return;
+var dst = idx + dir;
+if (dst < 0 || dst >= state.queue.length) return;
+var item = state.queue.splice(idx, 1)[0];
+state.queue.splice(dst, 0, item);
+renderQueue();
+syncSelectionWithPreview();
+renderMap();
+}
+
+function queueOp(action, params, label, commandPreview, quiet) {
+
 		state.queue.push({ action: action, params: params, label: label, commandPreview: commandPreview || '' });
 		renderQueue();
 		syncSelectionWithPreview();
@@ -4633,29 +4663,59 @@ renderParamRanges(action, params);
 			var actionsWrap = document.createElement('div');
 			actionsWrap.className = 'pcgi-queue-actions';
 
-			var btnEdit = document.createElement('button');
-			btnEdit.type = 'button';
-			btnEdit.textContent = 'Edit';
-			btnEdit.setAttribute('data-index', String(i));
-			btnEdit.onclick = function () {
-				var idx = parseInt(this.getAttribute('data-index'), 10);
-				editQueueOp(idx);
-			};
+			var btnUp = document.createElement('button');
+btnUp.type = 'button';
+btnUp.textContent = '▲';
+btnUp.title = 'Move up';
+btnUp.className = 'pcgi-queue-arrow-btn';
+btnUp.disabled = (i === 0);
+btnUp.setAttribute('data-index', String(i));
+btnUp.onclick = function () {
+var idx = parseInt(this.getAttribute('data-index'), 10);
+moveQueueOp(idx, -1);
+};
 
-			var btnRemove = document.createElement('button');
-			btnRemove.type = 'button';
-			btnRemove.textContent = 'Remove';
-			btnRemove.setAttribute('data-index', String(i));
-			btnRemove.onclick = function () {
-				var idx = parseInt(this.getAttribute('data-index'), 10);
-				state.queue.splice(idx, 1);
-				renderQueue();
-				syncSelectionWithPreview();
-				renderMap();
-			};
+var btnDown = document.createElement('button');
+btnDown.type = 'button';
+btnDown.textContent = '▼';
+btnDown.title = 'Move down';
+btnDown.className = 'pcgi-queue-arrow-btn';
+btnDown.disabled = (i === state.queue.length - 1);
+btnDown.setAttribute('data-index', String(i));
+btnDown.onclick = function () {
+var idx = parseInt(this.getAttribute('data-index'), 10);
+moveQueueOp(idx, 1);
+};
 
-			actionsWrap.appendChild(btnEdit);
-			actionsWrap.appendChild(btnRemove);
+var btnEdit = document.createElement('button');
+btnEdit.type = 'button';
+btnEdit.textContent = 'Edit';
+btnEdit.setAttribute('data-index', String(i));
+btnEdit.onclick = function () {
+var idx = parseInt(this.getAttribute('data-index'), 10);
+editQueueOp(idx);
+};
+
+var btnRemove = document.createElement('button');
+btnRemove.type = 'button';
+btnRemove.textContent = 'Remove';
+btnRemove.setAttribute('data-index', String(i));
+btnRemove.onclick = function () {
+var idx = parseInt(this.getAttribute('data-index'), 10);
+state.queue.splice(idx, 1);
+renderQueue();
+syncSelectionWithPreview();
+renderMap();
+};
+
+var arrowsWrap = document.createElement('div');
+arrowsWrap.className = 'pcgi-queue-arrows';
+arrowsWrap.appendChild(btnUp);
+arrowsWrap.appendChild(btnDown);
+actionsWrap.appendChild(arrowsWrap);
+actionsWrap.appendChild(btnEdit);
+actionsWrap.appendChild(btnRemove);
+
 			tdDel.appendChild(actionsWrap);
 			tr.appendChild(tdIdx);
 			tr.appendChild(tdLabel);
@@ -6798,6 +6858,12 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 	document.getElementById('ackToken').addEventListener('keyup', function () {
 		if (this.value.trim() === 'YES_I_UNDERSTAND') updateSafetySectionVisibility();
 	});
+	var paramsFallbackEditor = document.getElementById('pcgiParamsEditorFallback');
+	if (paramsFallbackEditor) {
+		paramsFallbackEditor.addEventListener('input', function () {
+			schedulePreviewFromParamEditorLive();
+		});
+	}
 	document.addEventListener('click', function (ev) {
 		var menu = document.getElementById('partContextMenu');
 		if (!menu) return;
