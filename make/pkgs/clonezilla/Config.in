@@ -1,0 +1,16 @@
+config FREETZ_PACKAGE_CLONEZILLA
+	bool "clonezilla 5.15.23 (script bundle)"
+	select FREETZ_PACKAGE_BASH
+	select FREETZ_BUSYBOX_DD
+	select FREETZ_PACKAGE_PARTCLONE
+	select FREETZ_PACKAGE_UDPCAST
+	select FREETZ_PACKAGE_DDRESCUE
+	select FREETZ_PACKAGE_FSARCHIVER
+	select FREETZ_PACKAGE_NTFS
+	select FREETZ_PACKAGE_NTFS_TOOLS
+	select FREETZ_PACKAGE_NTFS_ntfsclone
+	default n
+	help
+		Clonezilla script bundle for disk/partition cloning workflows.
+		This package installs DRBL/Clonezilla scripts under /usr/share/drbl
+		and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly).

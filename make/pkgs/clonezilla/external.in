@@ -1,0 +1,32 @@
+config EXTERNAL_FREETZ_PACKAGE_CLONEZILLA
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_CLONEZILLA
+	bool "clonezilla"
+	default n
+	help
+		external clonezilla wrappers.
+
+menu "clonezilla"
+	depends on EXTERNAL_FREETZ_PACKAGE_CLONEZILLA
+
+	config EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_clonezilla
+		bool "clonezilla"
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/clonezilla
+
+	config EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_ocs_sr
+		bool "ocs-sr"
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/ocs-sr
+
+	config EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_ocs_onthefly
+		bool "ocs-onthefly"
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/ocs-onthefly
+
+endmenu

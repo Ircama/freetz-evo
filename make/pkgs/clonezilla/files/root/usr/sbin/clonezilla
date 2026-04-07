@@ -1,0 +1,4 @@
+#!/bin/sh
+export DRBL_SCRIPT_PATH=/usr/share/drbl
+export PATH="/usr/share/drbl/sbin:/usr/share/drbl/bin:$PATH"
+exec /usr/share/drbl/sbin/clonezilla "$@"

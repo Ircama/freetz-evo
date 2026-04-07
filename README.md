@@ -15,7 +15,7 @@ Freetz-EVO builds on that foundation with additional packages, UX improvements, 
 Freetz-EVO includes:
 
 - over 50 new packages and libraries
-- over 60 python3 packages
+- over 60 python3 libraries
 - over 25 improved packages and libraries.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, a Disk Management web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.

@@ -1,0 +1,5 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_CLONEZILLA" == "y" ]; then
+	[ "$EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_clonezilla" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/clonezilla"
+	[ "$EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_ocs_sr" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/ocs-sr"
+	[ "$EXTERNAL_FREETZ_PACKAGE_CLONEZILLA_ocs_onthefly" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/ocs-onthefly"
+fi
