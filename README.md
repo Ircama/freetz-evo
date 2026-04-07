@@ -12,7 +12,14 @@
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng), which remains the technical foundation of this project.
 Freetz-EVO builds on that foundation with additional packages, UX improvements, and workflow tooling. Freetz-EVO is easier, sleeker, with more features and less bugs.
 
-Relevant new packages include GCC on-device, nginx, rtorrent, ruTorrent, PHP,
+Freetz-EVO includes:
+
+- over 50 new packages and libraries
+- over 60 python3 packages
+- over 25 improved packages and libraries.
+
+Relevant new packages include rtorrent with improved ruTorrent web tool, a Disk Management web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
+
 AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.
 
 Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)
@@ -52,10 +59,24 @@ The authentication layer has been updated to support a **form-based session logi
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **QuickJS** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
 | **Python 3.14** | Python 3.14.3 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14 too |
+| **MicroPython** 1.27.0 | Lightweight Python implementation for constrained environments, including REPL, script execution, and optional micropython-lib modules. | EVO only |
+| **Node.js** 18.20.8 | JavaScript runtime for server-side tooling and package ecosystems on the device. | EVO only |
 | **python3-*** (58 modules) | New Python 3 third-party packages: `aiodns 4.0.0`, `aiohttp 3.13.3`, `aiohttp-asyncmdnsresolver 0.1.1`, `aiohttp-fast-zlib 0.3.0`, `aiohappyeyeballs 2.6.1`, `aiosignal 1.4.0`, `annotatedyaml 1.0.2`, `async-timeout 5.0.1`, `attrs 26.1.0`, `av 16.0.1`, `audioop-lts 0.2.1`, `bcrypt 3.2.2`, `brotli 1.2.0`, `cffi 1.17.1`, `charset-normalizer 3.4.6`, `ciso8601 2.3.3`, `dateutil 2.9.0.post0`, `dbus-fast 4.0.0`, `faust-cchardet 2.1.19`, `fnv-hash-fast 1.6.0`, `fnvhash 0.2.1`, `frozenlist 1.8.0`, `grpcio 1.78.0`, `grpcio-reflection 1.78.1`, `grpcio-status 1.78.1`, `h11 0.16.0`, `ha-ffmpeg 3.2.2`, `httpcore 1.0.9`, `httpx 0.28.1`, `idna 3.11`, `lru-dict 1.4.1`, `lxml 6.0.2`, `markupsafe 3.0.3`, `multidict 6.7.1`, `numpy 2.4.3`, `pandas 3.0.1`, `pillow 12.1.1`, `pip 26.0.1`, `propcache 0.4.1`, `psutil 7.2.2`, `pycares 5.0.1`, `pycparser 3.0`, `pycryptodome 3.23.0`, `pymicro-vad 2.0.1`, `pynacl 1.6.2`, `pyspeex-noise 2.0.0`, `pyturbojpeg 2.2.0`, `pyyaml 6.0.3`, `setuptools 82.0.1`, `six 1.17.0`, `voluptuous 0.16.0`, `webrtc-models 0.3.0`, `yarl 1.23.0`, `zeroconf 0.148.0`, `python3-certifi 2025.10.5`, `python3-ifaddr 0.2.0`,  `python3-mashumaro 3.17`, `python3-orjson 3.10.7`, `typing_extensions 4.15.0`. Of which, pure-Python runtime modules (no compiled extensions) are: aiohappyeyeballs, aiosignal, async-timeout, attrs, charset-normalizer, dateutil, fnvhash, h11, idna, pycparser, six, voluptuous, certifi, ifaddr, mashumaro, typing_extensions. Build-time tooling (not required at runtime): pip, setuptools. | EVO only |
 | **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
+| **Disk Management Web UI** (`disk-mgmt-cgi`) | Comprehensive web interface for disk, partition, and filesystem operations, integrated via CGI and init scripting. | EVO only |
+| **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
+| **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
+| **autotools** (autoconf 2.72) | Build-system generation toolchain support for advanced package development workflows. | EVO only |
+| **Clonezilla** 5.15.23 | Script bundle for disk cloning and imaging scenarios, aligned with storage recovery workflows. | EVO only |
+| **GNU ddrescue** 1.30 | Resilient data recovery and block-copy utility with mapfile-based resume support. | EVO only |
+| **exfatprogs** 1.3.2 | User-space exFAT utilities for formatting, checking, labeling, and tuning exFAT filesystems. | EVO only |
+| **fatresize** (snapshot) | FAT16/FAT32 resize utility for non-destructive partition resizing tasks. | EVO only |
+| **fsarchiver** 0.8.9 | Filesystem-level backup and restore archiver with compressed image support. | EVO only |
+| **partclone** 0.3.31 | Block-level partition backup/restore/check tools frequently used in cloning workflows. | EVO only |
+| **testdisk** 7.2 | Partition and file recovery toolkit for damaged media and lost partition tables. | EVO only |
+| **udpcast** 20250223 | Multicast transfer utility for one-to-many image distribution in cloning operations. | EVO only |
 | **elFinder** 2.1.66 | Full-featured web-based file manager for the FritzBox with enhancements: drag-and-drop UI, PHP connector (squashfs-safe), FTP remote volumes, video preview (with complete seek back and limited seek forward features), Movie plugin (scaping metadata from TMDb, OMDb, IMDb, Wikipedia; specific for Freetz-EVO), MediaInfo plugin (specific for Freetz-EVO), VLC plugin (specific for Freetz-EVO), unrar/7-Zip support, optional themes with theme selection plugin (specific for Freetz-EVO), multilingual (de/en/it/…), better status bar (specific for Freetz-EVO). | EVO only |
 | **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
 | **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | merged upstream |

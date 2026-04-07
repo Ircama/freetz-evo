@@ -2769,6 +2769,41 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	color: #6b7280;
 	margin-bottom: 2px;
 }
+.pace {
+	pointer-events: none;
+	user-select: none;
+}
+.pace.pace-inactive {
+	display: none;
+}
+.pace .pace-progress {
+	display: none;
+}
+.pace .pace-activity {
+	position: fixed;
+	top: 12px;
+	right: 12px;
+	width: 34px;
+	height: 34px;
+	border: 1px solid #c8d2de;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.96);
+	box-shadow: 0 2px 12px rgba(17, 24, 39, 0.25);
+	z-index: 12000;
+}
+.pace .pace-activity:before {
+	content: '⌛';
+	display: block;
+	font-size: 20px;
+	line-height: 34px;
+	text-align: center;
+	animation: pcgi-hourglass-pulse 1.1s ease-in-out infinite;
+}
+@keyframes pcgi-hourglass-pulse {
+	0% { transform: scale(0.9); opacity: 0.7; }
+	50% { transform: scale(1.05); opacity: 1; }
+	100% { transform: scale(0.9); opacity: 0.7; }
+}
 </style>
 
 <div class="pcgi-toolbar">
@@ -3069,6 +3104,16 @@ cat <<'EOF'
 EOF
 
 cat <<'EOF'
+<script>
+window.paceOptions = {
+	ajax: false,
+	document: false,
+	eventLag: false,
+	restartOnRequestAfter: false,
+	restartOnPushState: false
+};
+</script>
+<script src="/pace/pace.min.js"></script>
 <script src="/ace/ace.js"></script>
 <script>
 (function () {
@@ -3907,6 +3952,25 @@ cat <<'EOF'
 			el.textContent += msg;
 		}
 		el.scrollTop = el.scrollHeight;
+	}
+
+	function paceHourglassStart() {
+		if (!window.Pace || !Pace.bar || typeof Pace.bar.render !== 'function') return;
+		try {
+			Pace.stop();
+			Pace.bar.render();
+		} catch (e) {
+			// Ignore Pace rendering errors to keep operations functional.
+		}
+	}
+
+	function paceHourglassStop() {
+		if (!window.Pace) return;
+		try {
+			Pace.stop();
+		} catch (e) {
+			// Ignore Pace stop errors.
+		}
 	}
 
 	function summarizeTools(res) {
@@ -6550,6 +6614,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 
 		showConfirmModal(t('confirmQueueApply'), t('confirmQueueApplyMsg')).then(function (ok) {
 			if (!ok) return;
+			paceHourglassStart();
 			document.getElementById('applyQueueBtn').disabled = true;
 			logTo('cmdOutput', 'Applying ' + state.queue.length + ' queued operation(s)...', false);
 
@@ -6560,6 +6625,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 					showToast(t('tQueueApplied'), 'success', 2600);
 					state.queue = [];
 					renderQueue();
+					paceHourglassStop();
 					document.getElementById('applyQueueBtn').disabled = false;
 					refreshDevices();
 					return;
@@ -6584,6 +6650,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 						if (!res.success) {
 							logTo('cmdOutput', 'Queue stopped due to failure at step ' + (i + 1) + '.', false);
 							showToast('Queue stopped at step ' + (i + 1), 'error', 3400);
+							paceHourglassStop();
 							document.getElementById('applyQueueBtn').disabled = false;
 							return;
 						}
@@ -6593,6 +6660,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 					.catch(function (err) {
 						logTo('cmdOutput', 'Queue error at step ' + (i + 1) + ': ' + err.message, false);
 						showToast('Queue error: ' + err.message, 'error', 3600);
+						paceHourglassStop();
 						document.getElementById('applyQueueBtn').disabled = false;
 					});
 			}
@@ -6612,16 +6680,19 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			diagEl.textContent = '\u2026';
 			diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 		}
+		paceHourglassStart();
 		callApi(action, { device: dev })
 			.then(function (res) {
 				var msg = '[' + action + '] ' + (res.message || '') +
 				          '\nrc=' + (res.rc || 0) + '\n' + (res.output || '');
 				logTo('diagOutput', msg, true);
+				paceHourglassStop();
 				if (diagEl) diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			})
 			.catch(function (err) {
 				logTo('diagOutput', 'Diagnostics error: ' + err.message, true);
 				showToast('Diagnostics error: ' + err.message, 'error', 3300);
+				paceHourglassStop();
 				if (diagEl) diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			});
 	}
