@@ -1,0 +1,12 @@
+config EXTERNAL_FREETZ_PACKAGE_PARTCLONE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PARTCLONE
+	bool "partclone"
+	default n
+	help
+		externals the following file(s):
+		 /usr/sbin/partclone.info
+		 /usr/sbin/partclone.dd
+		 /usr/sbin/partclone.restore
+		 /usr/sbin/partclone.chkimg
+		 /usr/sbin/partclone.imager
+		 /usr/sbin/partclone.ntfsfixboot

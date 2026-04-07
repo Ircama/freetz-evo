@@ -1,0 +1,8 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_PARTCLONE" == "y" ]; then
+	EXTERNAL_FILES+=" /usr/sbin/partclone.info"
+	EXTERNAL_FILES+=" /usr/sbin/partclone.dd"
+	EXTERNAL_FILES+=" /usr/sbin/partclone.restore"
+	EXTERNAL_FILES+=" /usr/sbin/partclone.chkimg"
+	EXTERNAL_FILES+=" /usr/sbin/partclone.imager"
+	EXTERNAL_FILES+=" /usr/sbin/partclone.ntfsfixboot"
+fi

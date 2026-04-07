@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PARTCLONE
+	bool "partclone 0.3.31 (binary only)"
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libuuid
+	default n
+	help
+		Partclone provides block-level clone/restore/check tools.
+		This package installs the generic engines (dd/imager/restore/check)
+		and ntfsfixboot helper.
