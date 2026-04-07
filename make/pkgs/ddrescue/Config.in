@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_DDRESCUE
+	bool "GNU ddrescue 1.30 (binary only)"
+	default n
+	help
+		GNU ddrescue is a data recovery tool with mapfile support.
+		This package installs ddrescue and ddrescuelog.

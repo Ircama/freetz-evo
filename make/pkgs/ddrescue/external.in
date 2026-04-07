@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_DDRESCUE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DDRESCUE
+	bool "ddrescue"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/ddrescue
+		 /usr/bin/ddrescuelog

@@ -1,0 +1,4 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_DDRESCUE" == "y" ]; then
+	EXTERNAL_FILES+=" /usr/bin/ddrescue"
+	EXTERNAL_FILES+=" /usr/bin/ddrescuelog"
+fi
