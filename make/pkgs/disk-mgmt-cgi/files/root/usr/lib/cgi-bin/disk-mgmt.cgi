@@ -688,6 +688,18 @@ action_create_partition() {
 		return
 	fi
 
+	_dev_base=$(basename "$_device" 2>/dev/null)
+	_logical_sector_size='512'
+	if [ -n "$_dev_base" ] && [ -r "/sys/class/block/$_dev_base/queue/logical_block_size" ]; then
+		_logical_sector_size=$(safe_uint "$(cat "/sys/class/block/$_dev_base/queue/logical_block_size" 2>/dev/null)")
+	fi
+	[ "$_logical_sector_size" -gt 0 ] || _logical_sector_size='512'
+	_min_start_sector=$(( (1048576 + _logical_sector_size - 1) / _logical_sector_size ))
+	if [ "$_start_sector" -lt "$_min_start_sector" ]; then
+		emit_json_error "Start sector too low. Use start sector >= $_min_start_sector to keep metadata/protective area and alignment."
+		return
+	fi
+
 	if dry_run_enabled; then
 		if [ -n "$_fs_hint" ]; then
 			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s"
@@ -1069,7 +1081,7 @@ action_create_filesystem() {
 			ext2|ext3|ext4)
 				_preview_cmd="mke2fs -F -t $_fs_type ${_extra_opts:-} $_partition"
 				[ -n "$_label" ] && _preview_cmd="$_preview_cmd
-e2label $_partition $_label"
+e2label -L $_label $_partition"
 				;;
 			fat16)
 				_preview_cmd="mkfs.fat -F 16 ${_extra_opts:-} $_partition"
@@ -1114,7 +1126,7 @@ fatlabel $_partition $_label"
 				if ! is_valid_label "$_label"; then
 					_out="$_out\nWarning: label skipped (invalid chars)"
 				elif [ -n "$CMD_E2LABEL" ]; then
-					_lbl_out=$($CMD_E2LABEL "$_partition" "$_label" 2>&1)
+					_lbl_out=$($CMD_E2LABEL -L "$_label" "$_partition" 2>&1)
 					_out="$_out\n\nLabel:\n$_lbl_out"
 				elif [ -n "$CMD_TUNE2FS" ]; then
 					_lbl_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
@@ -1404,7 +1416,7 @@ action_set_label() {
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			if [ -n "$CMD_E2LABEL" ]; then
-				_out=$($CMD_E2LABEL "$_partition" "$_label" 2>&1)
+				_out=$($CMD_E2LABEL -L "$_label" "$_partition" 2>&1)
 				_rc=$?
 			elif [ -n "$CMD_TUNE2FS" ]; then
 				_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
@@ -2442,6 +2454,66 @@ cat <<'EOF'
 	box-sizing: border-box;
 	resize: vertical;
 }
+#pcgiParamsEditor {
+	height: 180px;
+}
+#pcgiParamsEditorFallback {
+	display: none;
+	width: 100%;
+	height: 180px;
+	border: 0;
+	font-family: monospace;
+	font-size: 12px;
+	padding: 10px;
+	box-sizing: border-box;
+	resize: vertical;
+}
+.pcgi-param-ranges-wrap {
+	margin-top: 8px;
+	border: 1px solid #d9e2ec;
+	border-radius: 6px;
+	padding: 8px;
+	background: #fbfdff;
+}
+.pcgi-param-ranges {
+	font-size: 11px;
+	white-space: pre;
+	overflow: auto;
+	max-height: 170px;
+}
+.pcgi-param-ranges-copy {
+	margin-top: 8px;
+	border: 1px solid #d6e0ea;
+	background: #fff;
+	border-radius: 4px;
+	font-size: 11px;
+	padding: 6px;
+	white-space: pre;
+	overflow: auto;
+	max-height: 160px;
+}
+.pcgi-param-value-cell {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.pcgi-param-value-input {
+	width: 100%;
+	min-width: 80px;
+	font-family: monospace;
+	font-size: 11px;
+}
+.pcgi-queue-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.pcgi-queue-actions button {
+	display: block;
+	width: 100%;
+}
+
+
 .pcgi-context-menu {
 	position: absolute;
 	display: none;
@@ -2876,7 +2948,7 @@ sec_end
 
 sec_begin "Operation queue"
 cat <<'EOF'
-<p class="pcgi-small" style="margin:0 0 6px;">The <em>Command</em> column is a preview of the main shell command(s) that will run. The backend may add validation and cleanup steps. Operations run in sequence and stop on the first failure. Individual items can be removed from the queue by clicking <strong>Remove</strong>.</p>
+<p class="pcgi-small" style="margin:0 0 6px;">The <em>Command</em> column is a preview of the main shell command(s) that will run. The backend may add validation and cleanup steps. Operations run in sequence and stop on the first failure. Individual items can be edited or removed from the queue by using <strong>Edit</strong> and <strong>Remove</strong> in the Action column.</p>
 <div style="overflow-x:auto">
 <table class="pcgi-table" id="queueTable" style="table-layout:fixed;min-width:520px">
 	<colgroup>
@@ -2884,7 +2956,7 @@ cat <<'EOF'
 		<col style="width:9em">
 		<col style="width:28%">
 		<col style="width:37%">
-		<col style="width:5.5em">
+		<col style="width:7em">
 	</colgroup>
 	<thead>
 		<tr>
@@ -2981,8 +3053,19 @@ cat <<'EOF'
 		<div id="pcgiCmdPreviewText" class="pcgi-modal-subtle">Review/edit the command preview, then validate to queue the operation.</div>
 		<div class="pcgi-editor-wrap">
 			<div id="pcgiCommandEditor"></div>
-			<textarea id="pcgiCommandEditorFallback"></textarea>
+			<textarea id="pcgiCommandEditorFallback" readonly></textarea>
 		</div>
+		<div class="pcgi-modal-subtle">Parameters (editable JSON). You can tune sectors, sizes and options before queueing.</div>
+		<div class="pcgi-editor-wrap">
+			<div id="pcgiParamsEditor"></div>
+			<textarea id="pcgiParamsEditorFallback"></textarea>
+		</div>
+		<div id="pcgiParamRangesWrap" class="pcgi-param-ranges-wrap">
+			<div class="pcgi-modal-subtle" style="margin:0 0 4px;">Numeric ranges with normalized min/max (alignment-aware)</div>
+			<div id="pcgiParamRanges" class="pcgi-param-ranges pcgi-mono"></div>
+			<pre id="pcgiParamRangesCopy" class="pcgi-param-ranges-copy pcgi-mono"></pre>
+		</div>
+
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiCmdCancelBtn">Cancel</button>
 			<button type="button" id="pcgiCmdValidateBtn">Validate and queue</button>
@@ -2992,6 +3075,7 @@ cat <<'EOF'
 EOF
 
 cat <<'EOF'
+<script src="/ace/ace.js"></script>
 <script>
 (function () {
 	var API_URL = '/cgi-bin/conf/disk-mgmt';
@@ -3015,7 +3099,7 @@ cat <<'EOF'
 			helperTitle: 'Keyboard shortcuts and workflow',
 			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operation queue\nDelete: queue delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition left/right edge: queue resize\nDrag partition to free area: queue move',
 			cmdPreviewTitle: 'Command preview',
-			cmdPreviewHint: 'Review/edit the command preview, then validate to queue the operation.',
+			cmdPreviewHint: 'Command preview is read-only and auto-generated from Parameters.',
 			toolAllAvailable: 'Toolchain status: all detected commands are available.',
 			toolRequiredMissing: 'Toolchain status: required command(s) missing.',
 			toolOptionalMissing: 'Toolchain status: some optional commands are missing.',
@@ -3312,6 +3396,7 @@ cat <<'EOF'
 		contextMenuHideTimer: null,
 		dryRun: false,
 		aceEditor: null,
+		paramsAceEditor: null,
 		mapDragActive: false,
 		partitionDragInfo: null,
 		sectorSyncLock: false
@@ -3967,7 +4052,7 @@ cat <<'EOF'
 			var pre = '';
 			if (v(params.fs_type) === 'ext2' || v(params.fs_type) === 'ext3' || v(params.fs_type) === 'ext4') {
 				pre = 'mke2fs -F -t ' + v(params.fs_type) + (opts ? (' ' + opts) : '') + ' ' + v(params.partition);
-				if (v(params.label)) pre += '\ne2label ' + v(params.partition) + ' ' + v(params.label);
+				if (v(params.label)) pre += '\ne2label -L ' + v(params.label) + ' ' + v(params.partition);
 				return pre;
 			}
 			if (v(params.fs_type) === 'fat16') {
@@ -3995,7 +4080,7 @@ cat <<'EOF'
 			var lblTarget = v(params.partition);
 			var lblValue = v(params.label);
 			if (lblFstype === 'ext2' || lblFstype === 'ext3' || lblFstype === 'ext4') {
-				return 'e2label ' + lblTarget + ' ' + lblValue;
+				return 'e2label -L ' + lblValue + ' ' + lblTarget;
 			}
 			if (lblFstype === 'fat' || lblFstype === 'fat12' || lblFstype === 'fat16' || lblFstype === 'fat32' || lblFstype === 'vfat') {
 				return 'fatlabel ' + lblTarget + ' ' + lblValue;
@@ -4073,12 +4158,22 @@ cat <<'EOF'
 		return '# preview unavailable for action: ' + v(action);
 	}
 
-	function ensureAceEditor() {
+		function ensureAceEditor() {
 		if (state.aceEditor || !window.ace) return;
 		state.aceEditor = window.ace.edit('pcgiCommandEditor');
 		state.aceEditor.setTheme('ace/theme/chrome');
 		state.aceEditor.session.setMode('ace/mode/sh');
-		state.aceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2 });
+		state.aceEditor.session.setUseWorker(true);
+		state.aceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2, readOnly: true, highlightActiveLine: false, highlightGutterLine: false });
+	}
+
+	function ensureParamsAceEditor() {
+		if (state.paramsAceEditor || !window.ace) return;
+		state.paramsAceEditor = window.ace.edit('pcgiParamsEditor');
+		state.paramsAceEditor.setTheme('ace/theme/chrome');
+		state.paramsAceEditor.session.setMode('ace/mode/json');
+		state.paramsAceEditor.session.setUseWorker(true);
+		state.paramsAceEditor.setOptions({ fontSize: '12px', showPrintMargin: false, useSoftTabs: true, tabSize: 2 });
 	}
 
 	function setPreviewEditorValue(text) {
@@ -4088,13 +4183,13 @@ cat <<'EOF'
 		if (state.aceEditor) {
 			if (fallback) fallback.style.display = 'none';
 			if (aceWrap) aceWrap.style.display = '';
-			state.aceEditor.setValue(text, -1);
+			state.aceEditor.setValue(String(text || ''), -1);
 			state.aceEditor.clearSelection();
 		} else {
 			if (aceWrap) aceWrap.style.display = 'none';
 			if (fallback) {
 				fallback.style.display = 'block';
-				fallback.value = text;
+				fallback.value = String(text || '');
 			}
 		}
 	}
@@ -4103,6 +4198,331 @@ cat <<'EOF'
 		var fallback = document.getElementById('pcgiCommandEditorFallback');
 		if (state.aceEditor) return state.aceEditor.getValue();
 		return fallback ? fallback.value : '';
+	}
+
+	function setParamEditorValue(text) {
+		ensureParamsAceEditor();
+		var fallback = document.getElementById('pcgiParamsEditorFallback');
+		var aceWrap = document.getElementById('pcgiParamsEditor');
+		if (state.paramsAceEditor) {
+			if (fallback) fallback.style.display = 'none';
+			if (aceWrap) aceWrap.style.display = '';
+			state.paramsAceEditor.setValue(String(text || ''), -1);
+			state.paramsAceEditor.clearSelection();
+		} else {
+			if (aceWrap) aceWrap.style.display = 'none';
+			if (fallback) {
+				fallback.style.display = 'block';
+				fallback.value = String(text || '');
+			}
+		}
+	}
+
+	function getParamEditorValue() {
+		var fallback = document.getElementById('pcgiParamsEditorFallback');
+		if (state.paramsAceEditor) return state.paramsAceEditor.getValue();
+		return fallback ? fallback.value : '';
+	}
+
+	function validateCommandPreviewSyntax(cmdText) {
+		var txt = String(cmdText || '');
+		if (!txt.trim()) return 'Command cannot be empty.';
+		var inSingle = false;
+		var inDouble = false;
+		var inBacktick = false;
+		var escaped = false;
+		for (var i = 0; i < txt.length; i++) {
+			var ch = txt.charAt(i);
+			if (escaped) {
+				escaped = false;
+				continue;
+			}
+			if (!inSingle && ch === '\\') {
+				escaped = true;
+				continue;
+			}
+			if (!inDouble && !inBacktick && ch === "'") {
+				inSingle = !inSingle;
+				continue;
+			}
+			if (!inSingle && !inBacktick && ch === '"') {
+				inDouble = !inDouble;
+				continue;
+			}
+			if (!inSingle && !inDouble && ch === '`') inBacktick = !inBacktick;
+		}
+		if (inSingle) return 'Unclosed single quote in command preview.';
+		if (inDouble) return 'Unclosed double quote in command preview.';
+		if (inBacktick) return 'Unclosed backtick in command preview.';
+		if (escaped) return 'Command preview ends with an unfinished escape (\\).';
+		return '';
+	}
+
+	function getDeviceByPath(path) {
+		var wanted = String(path || '');
+		for (var i = 0; i < state.devices.length; i++) {
+			if (String(state.devices[i].path || '') === wanted) return state.devices[i];
+		}
+		return null;
+	}
+
+	function getPreviewDeviceByPath(path) {
+		var dev = getDeviceByPath(path);
+		if (!dev) return null;
+		return buildPreviewDevice(dev);
+	}
+
+	function alignUp(value, alignment) {
+		var a = Math.max(1, Number(alignment) || 1);
+		var v = Number(value);
+		if (!isFinite(v)) return null;
+		return Math.ceil(v / a) * a;
+	}
+
+	function alignDown(value, alignment) {
+		var a = Math.max(1, Number(alignment) || 1);
+		var v = Number(value);
+		if (!isFinite(v)) return null;
+		return Math.floor(v / a) * a;
+	}
+
+	function normalizeSectorBoundary(value, alignment, isEnd) {
+		var v = Number(value);
+		if (!isFinite(v)) return null;
+		if (isEnd) return alignUp(v + 1, alignment) - 1;
+		return alignUp(v, alignment);
+	}
+
+	function formatRangeCell(v, unit) {
+		if (v === null || v === undefined || !isFinite(Number(v))) return '-';
+		var n = String(Math.floor(Number(v)));
+		if (unit) return n + ' ' + unit;
+		return n;
+	}
+
+	function buildParamRangeRows(action, params) {
+		var rows = [];
+		if (!params) return rows;
+
+		var devPath = String(params.device || state.selectedDevice || '');
+		var previewDev = devPath ? getPreviewDeviceByPath(devPath) : null;
+		var totalSectors = Number(previewDev && previewDev.total_sectors || 0);
+		var logicalSectorSize = Number(previewDev && previewDev.logical_sector_size || 512);
+		if (!isFinite(logicalSectorSize) || logicalSectorSize <= 0) logicalSectorSize = 512;
+		var alignSectors = Math.max(1, Math.ceil((1024 * 1024) / logicalSectorSize));
+		var tableType = String(previewDev && previewDev.table || '').toLowerCase();
+		var reservedHead = alignSectors;
+		var reservedTail = tableType === 'gpt' ? 33 : 0;
+		var lastUsableSector = totalSectors > (reservedTail + 1) ? (totalSectors - 1 - reservedTail) : null;
+
+		var part = null;
+		var partnum = Number(params.partnum || 0);
+		if (previewDev && partnum > 0) part = findPartitionInDeviceByNumber(previewDev, partnum);
+
+		var keys = Object.keys(params);
+		for (var i = 0; i < keys.length; i++) {
+			var key = keys[i];
+			if (key === 'ack' || key === 'dry_run' || key === 'command_preview') continue;
+
+			var raw = String(params[key] === undefined || params[key] === null ? '' : params[key]).trim();
+			if (!/^-?\d+$/.test(raw)) continue;
+
+			var n = Number(raw);
+			var min = 0;
+			var max = null;
+			var minNorm = null;
+			var maxNorm = null;
+			var unit = '';
+
+			if (/(^|_)(start|end)_sector$/.test(key) || /(^|_)sector$/.test(key)) {
+				var isEnd = /(^|_)end_sector$/.test(key);
+				unit = 's';
+				if (isEnd) {
+					min = reservedHead + 1;
+					if (String(action || '') === 'resize_partition' && part) min = Math.max(min, Number(part.start || 0) + 1);
+					if (String(params.start_sector || '').match(/^\d+$/)) min = Math.max(min, Number(params.start_sector) + 1);
+					if (String(params.target_start_sector || '').match(/^\d+$/)) min = Math.max(min, Number(params.target_start_sector) + 1);
+					if (lastUsableSector !== null) max = Math.max(min, lastUsableSector);
+					minNorm = normalizeSectorBoundary(min, alignSectors, true);
+					if (max !== null) maxNorm = alignDown(max + 1, alignSectors) - 1;
+				} else {
+					min = reservedHead;
+					if (lastUsableSector !== null) max = Math.max(min, lastUsableSector - 1);
+					minNorm = normalizeSectorBoundary(min, alignSectors, false);
+					if (max !== null) maxNorm = alignDown(max, alignSectors);
+				}
+			}
+			if (key === 'target_kib') {
+				min = 1;
+				unit = 'KiB';
+				max = lastUsableSector !== null ? Math.floor(((lastUsableSector + 1) * logicalSectorSize) / 1024) : null;
+				minNorm = Math.max(1, Math.floor((alignSectors * logicalSectorSize) / 1024));
+				if (max !== null) maxNorm = alignDown(max, Math.max(1, minNorm));
+			}
+			if (key === 'target_bytes') {
+				min = logicalSectorSize;
+				unit = 'B';
+				max = lastUsableSector !== null ? (lastUsableSector + 1) * logicalSectorSize : null;
+				minNorm = alignSectors * logicalSectorSize;
+				if (max !== null) maxNorm = alignDown(max, minNorm);
+			}
+			if (key === 'partnum') {
+				min = 1;
+				max = previewDev ? (partitionCountOf(previewDev) + 1) : null;
+				minNorm = 1;
+				maxNorm = max;
+			}
+
+			if (max !== null && min > max) min = max;
+			if (minNorm !== null && minNorm < min) minNorm = min;
+			if (maxNorm !== null && max !== null && maxNorm > max) maxNorm = max;
+			if (maxNorm !== null && minNorm !== null && maxNorm < minNorm) maxNorm = minNorm;
+
+			rows.push({ key: key, cur: Math.floor(n), min: min, max: max, minNorm: minNorm, maxNorm: maxNorm, unit: unit });
+		}
+		return rows;
+	}
+
+	function renderParamRanges(action, params) {
+		var wrap = document.getElementById('pcgiParamRangesWrap');
+		var ranges = document.getElementById('pcgiParamRanges');
+		var copy = document.getElementById('pcgiParamRangesCopy');
+		if (!wrap || !ranges || !copy) return;
+
+		var rows = buildParamRangeRows(action, params || {});
+		if (!rows.length) {
+			wrap.style.display = 'none';
+			ranges.innerHTML = '';
+			copy.textContent = '';
+			return;
+		}
+
+		wrap.style.display = '';
+		ranges.innerHTML = '';
+
+		var table = document.createElement('table');
+		table.className = 'pcgi-table';
+		var thead = document.createElement('thead');
+		var hrow = document.createElement('tr');
+		['parameter', 'current', 'min', 'max', 'min normalized', 'max normalized'].forEach(function (h) {
+			var th = document.createElement('th');
+			th.textContent = h;
+			hrow.appendChild(th);
+		});
+		thead.appendChild(hrow);
+		table.appendChild(thead);
+
+		var tbody = document.createElement('tbody');
+		for (var i = 0; i < rows.length; i++) {
+			(function (row) {
+				var tr = document.createElement('tr');
+
+				var tdKey = document.createElement('td');
+				tdKey.className = 'pcgi-mono';
+				tdKey.textContent = row.key;
+				tr.appendChild(tdKey);
+
+				var tdCur = document.createElement('td');
+				var curWrap = document.createElement('div');
+				curWrap.className = 'pcgi-param-value-cell';
+				var curInput = document.createElement('input');
+				curInput.type = 'text';
+				curInput.className = 'pcgi-param-value-input';
+				curInput.value = String(row.cur);
+				curInput.setAttribute('data-key', row.key);
+				curInput.onchange = function () {
+					var key = this.getAttribute('data-key');
+					var rawV = String(this.value || '').trim();
+					if (!/^-?\d+$/.test(rawV)) {
+						showToast('Numeric value expected for ' + key, 'error', 2800);
+						this.value = String(params[key] || row.cur);
+						return;
+					}
+					var next = Number(rawV);
+					if (row.min !== null && next < row.min) next = row.min;
+					if (row.max !== null && next > row.max) next = row.max;
+					params[key] = String(Math.floor(next));
+					this.value = params[key];
+					setParamEditorValue(JSON.stringify(params, null, 2));
+					renderParamRanges(action, params);
+					setPreviewEditorValue(buildCommandPreview(action, params));
+				};
+				curWrap.appendChild(curInput);
+				if (row.unit) {
+					var u = document.createElement('span');
+					u.className = 'pcgi-mono';
+					u.textContent = row.unit;
+					curWrap.appendChild(u);
+				}
+				tdCur.appendChild(curWrap);
+				tr.appendChild(tdCur);
+
+				var tdMin = document.createElement('td');
+				tdMin.className = 'pcgi-mono';
+				tdMin.textContent = formatRangeCell(row.min, row.unit);
+				tr.appendChild(tdMin);
+
+				var tdMax = document.createElement('td');
+				tdMax.className = 'pcgi-mono';
+				tdMax.textContent = formatRangeCell(row.max, row.unit);
+				tr.appendChild(tdMax);
+
+				var tdMinNorm = document.createElement('td');
+				tdMinNorm.className = 'pcgi-mono';
+				tdMinNorm.textContent = formatRangeCell(row.minNorm, row.unit);
+				tr.appendChild(tdMinNorm);
+
+				var tdMaxNorm = document.createElement('td');
+				tdMaxNorm.className = 'pcgi-mono';
+				tdMaxNorm.textContent = formatRangeCell(row.maxNorm, row.unit);
+				tr.appendChild(tdMaxNorm);
+
+				tbody.appendChild(tr);
+			})(rows[i]);
+		}
+		table.appendChild(tbody);
+		ranges.appendChild(table);
+
+		var lines = [];
+		lines.push('parameter\tcurrent\tmin\tmax\tmin_normalized\tmax_normalized');
+		for (var j = 0; j < rows.length; j++) {
+			var rr = rows[j];
+			lines.push(rr.key + '\t' + formatRangeCell(rr.cur, rr.unit) + '\t' + formatRangeCell(rr.min, rr.unit) + '\t' + formatRangeCell(rr.max, rr.unit) + '\t' + formatRangeCell(rr.minNorm, rr.unit) + '\t' + formatRangeCell(rr.maxNorm, rr.unit));
+		}
+		copy.textContent = lines.join('\n');
+	}
+
+	function renderParamEditors(action, params) {
+		setParamEditorValue(JSON.stringify(params || {}, null, 2));
+		setPreviewEditorValue(buildCommandPreview(action, params || {}));
+		renderParamRanges(action, params || {});
+	}
+
+	function applyParamEditors(params, action) {
+		var txt = String(getParamEditorValue() || '').trim();
+		if (!txt) return;
+
+		var parsed = null;
+		try {
+			parsed = JSON.parse(txt);
+		} catch (err) {
+			showToast('Invalid JSON in parameter editor: ' + err.message, 'error', 3600);
+			throw err;
+		}
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			showToast('Parameter editor must contain a JSON object.', 'error', 3200);
+			throw new Error('Invalid JSON object');
+		}
+
+		for (var k in params) {
+			if (Object.prototype.hasOwnProperty.call(params, k)) delete params[k];
+		}
+		for (var key in parsed) {
+			if (!Object.prototype.hasOwnProperty.call(parsed, key)) continue;
+			params[key] = parsed[key];
+		}
+				setPreviewEditorValue(buildCommandPreview(action, params));
+renderParamRanges(action, params);
 	}
 
 	function showCommandPreviewModal(action, params, label, confirmTitle, confirmMessage) {
@@ -4118,6 +4538,7 @@ cat <<'EOF'
 		title.textContent = (confirmTitle || t('cmdPreviewTitle')) + ': ' + label;
 		text.textContent = confirmMessage || t('cmdPreviewHint');
 		setPreviewEditorValue(previewText);
+		renderParamEditors(action, params);
 		modal.style.display = 'flex';
 		modal.setAttribute('aria-hidden', 'false');
 
@@ -4135,8 +4556,41 @@ cat <<'EOF'
 			}
 			document.addEventListener('keydown', onEsc);
 			btnCancel.onclick = function () { cleanup(null); };
-			btnValidate.onclick = function () { cleanup(getPreviewEditorValue()); };
+			btnValidate.onclick = function () {
+				try {
+					applyParamEditors(params, action);
+				} catch (err) {
+					return;
+				}
+				var previewValue = getPreviewEditorValue();
+				var cmdErr = validateCommandPreviewSyntax(previewValue);
+				if (cmdErr) {
+					showToast(cmdErr, 'error', 3200);
+					return;
+				}
+				cleanup(previewValue);
+			};
 		});
+	}
+
+	function editQueueOp(index) {
+		var idx = Number(index);
+		if (!isFinite(idx) || idx < 0 || idx >= state.queue.length) return;
+		var op = state.queue[idx];
+		var paramsCopy = {};
+		for (var k in op.params) {
+			if (Object.prototype.hasOwnProperty.call(op.params, k)) paramsCopy[k] = op.params[k];
+		}
+		showCommandPreviewModal(op.action, paramsCopy, op.label, 'Edit queued operation', 'Edit parameters, numeric values and command preview, then save.')
+			.then(function (previewText) {
+				if (previewText === null) return;
+				op.params = paramsCopy;
+				op.commandPreview = previewText;
+				renderQueue();
+				syncSelectionWithPreview();
+				renderMap();
+				showToast('Queued operation updated.', 'success', 2200);
+			});
 	}
 
 	function queueOp(action, params, label, commandPreview, quiet) {
@@ -4176,18 +4630,33 @@ cat <<'EOF'
 			tdCmd.style.cssText = 'white-space:pre-wrap;word-break:break-all;font-size:0.82em;vertical-align:top;';
 			tdCmd.textContent = op.commandPreview || buildCommandPreview(op.action, op.params);
 			var tdDel = document.createElement('td');
-			var btn = document.createElement('button');
-			btn.type = 'button';
-			btn.textContent = 'Remove';
-			btn.setAttribute('data-index', String(i));
-			btn.onclick = function () {
+			var actionsWrap = document.createElement('div');
+			actionsWrap.className = 'pcgi-queue-actions';
+
+			var btnEdit = document.createElement('button');
+			btnEdit.type = 'button';
+			btnEdit.textContent = 'Edit';
+			btnEdit.setAttribute('data-index', String(i));
+			btnEdit.onclick = function () {
+				var idx = parseInt(this.getAttribute('data-index'), 10);
+				editQueueOp(idx);
+			};
+
+			var btnRemove = document.createElement('button');
+			btnRemove.type = 'button';
+			btnRemove.textContent = 'Remove';
+			btnRemove.setAttribute('data-index', String(i));
+			btnRemove.onclick = function () {
 				var idx = parseInt(this.getAttribute('data-index'), 10);
 				state.queue.splice(idx, 1);
 				renderQueue();
 				syncSelectionWithPreview();
 				renderMap();
 			};
-			tdDel.appendChild(btn);
+
+			actionsWrap.appendChild(btnEdit);
+			actionsWrap.appendChild(btnRemove);
+			tdDel.appendChild(actionsWrap);
 			tr.appendChild(tdIdx);
 			tr.appendChild(tdLabel);
 			tr.appendChild(tdParams);
@@ -4198,6 +4667,7 @@ cat <<'EOF'
 	}
 
 	function getSelectedDeviceData() {
+
 		for (var i = 0; i < state.devices.length; i++) {
 			if (state.devices[i].path === state.selectedDevice) {
 				return state.devices[i];

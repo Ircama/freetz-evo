@@ -97,9 +97,9 @@ $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_NPM),,--without-np
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INTL),--with-intl=small-icu,--without-intl)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INTL),--with-icu-default-data-dir=/usr/share/icu,)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NODEJS_WITH_INSPECTOR),,--without-inspector)
-# MIPS big-endian can hit V8 heap deserialization crashes at startup
+# MIPS targets can hit V8 heap deserialization crashes at startup
 # with embedded node snapshot; disable snapshot integration there.
-$(PKG)_CONFIGURE_OPTIONS += $(if $(and $(FREETZ_TARGET_ARCH_MIPS),$(FREETZ_TARGET_ARCH_BE)),--without-node-snapshot,)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_TARGET_ARCH_MIPS),--without-node-snapshot,)
 
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_TARGET_ARCH_ARM),--with-arm-float-abi=$(FREETZ_GCC_FLOAT_ABI))
 $(PKG)_CONFIGURE_OPTIONS += $(if $(and $(FREETZ_TARGET_ARCH_ARM),$(FREETZ_GCC_FPU)),--with-arm-fpu=$(FREETZ_GCC_FPU))
