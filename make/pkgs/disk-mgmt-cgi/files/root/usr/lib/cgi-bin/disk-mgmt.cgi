@@ -455,6 +455,11 @@ require_ack() {
 }
 
 emit_json_error() {
+	if [ -n "$STREAM_LOG" ]; then
+		printf '\n── Error: %s ──\n' "$1" >> "$STREAM_LOG"
+		printf 'false\n1\n%s\n\n' "$1" > "$STREAM_DONE"
+		return 0
+	fi
 	_msg=$(json_escape "$1")
 	echo "{\"success\": false, \"message\": \"$_msg\"}"
 }
@@ -462,33 +467,35 @@ emit_json_error() {
 emit_cmd_result() {
 	_success="$1"
 	_rc="$2"
+	_msg="$3"
+	_detail="$4"
 	if [ -n "$STREAM_LOG" ]; then
-		printf '\n── Result: %s | rc=%s ──\n%s\n' "$_success" "$2" "$3" >> "$STREAM_LOG"
-		printf '%s\n%s\n%s\n' "$_success" "$2" "$3" > "$STREAM_DONE"
+		printf '%s\n%s\n%s\n' "$_success" "$_rc" "$_msg" > "$STREAM_DONE"
 		return 0
 	fi
-	_msg=$(json_escape "$3")
-	_out=$(json_escape "$4")
-	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg\", \"output\": \"$_out\"}"
+	_msg_json=$(json_escape "$_msg")
+	_out_json=$(json_escape "$_detail")
+	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\"}"
 }
 
 emit_cmd_result_with_target() {
 	_success="$1"
 	_rc="$2"
+	_msg="$3"
+	_detail="$4"
 	if [ -n "$STREAM_LOG" ]; then
 		_ecwt_extras="\"target_partnum\": \"$(json_escape "$5")\", \"target_partition\": \"$(json_escape "$6")\", \"target_device\": \"$(json_escape "$7")\", \"target_start_sector\": \"$(json_escape "$8")\", \"target_end_sector\": \"$(json_escape "$9")\""
-		printf '\n── Result: %s | rc=%s ──\n%s\n' "$_success" "$2" "$3" >> "$STREAM_LOG"
-		printf '%s\n%s\n%s\n%s\n' "$_success" "$2" "$3" "$_ecwt_extras" > "$STREAM_DONE"
+		printf '%s\n%s\n%s\n%s\n' "$_success" "$_rc" "$_msg" "$_ecwt_extras" > "$STREAM_DONE"
 		return 0
 	fi
-	_msg=$(json_escape "$3")
-	_out=$(json_escape "$4")
+	_msg_json=$(json_escape "$_msg")
+	_out_json=$(json_escape "$_detail")
 	_target_partnum=$(json_escape "$5")
 	_target_partition=$(json_escape "$6")
 	_target_device=$(json_escape "$7")
 	_target_start_sector=$(json_escape "$8")
 	_target_end_sector=$(json_escape "$9")
-	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg\", \"output\": \"$_out\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
+	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
 }
 
 # exec_cmd: run command with direct streaming output to STREAM_LOG (no capture).
@@ -498,13 +505,13 @@ emit_cmd_result_with_target() {
 exec_cmd() {
 	_ec_label="$1"; _ec_disp="$2"; shift 2
 	if [ -n "$STREAM_LOG" ]; then
-		printf '\n══════════════════════════════════════════════════\n▶ %s\n── cmd: %s\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
+		printf '\n════════════════════════════════════════════════════════════════════════════\n\033[1;36m▶ %s\033[0m\n\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
 		"$@" >> "$STREAM_LOG" 2>&1
 		EXEC_RC=$?
 		if [ "$EXEC_RC" -eq 0 ]; then
-			printf '── exit: %d (OK) ──────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+			printf '\033[1;32m── exit: %d (OK)\033[0m ────────────────────────────────────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
 		else
-			printf '── exit: %d (FAILED) ──────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+			printf '\033[1;31m── exit: %d (FAILED)\033[0m ────────────────────────────────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
 		fi
 		EXEC_OUT=''
 	else
@@ -520,7 +527,7 @@ exec_cmd() {
 exec_cmd_c() {
 	_ec_label="$1"; _ec_disp="$2"; shift 2
 	if [ -n "$STREAM_LOG" ]; then
-		printf '\n══════════════════════════════════════════════════\n▶ %s\n── cmd: %s\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
+		printf '\n════════════════════════════════════════════════════════════════════════════\n\033[1;36m▶ %s\033[0m\n\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
 	fi
 	EXEC_OUT=$("$@" 2>&1)
 	EXEC_RC=$?
@@ -529,9 +536,9 @@ exec_cmd_c() {
 	fi
 	if [ -n "$STREAM_LOG" ]; then
 		if [ "$EXEC_RC" -eq 0 ]; then
-			printf '── exit: %d (OK) ──────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+			printf '\033[1;32m── exit: %d (OK)\033[0m ────────────────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
 		else
-			printf '── exit: %d (FAILED) ──────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+			printf '\033[1;31m── exit: %d (FAILED)\033[0m ────────────────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
 		fi
 	fi
 	return $EXEC_RC
@@ -1030,11 +1037,11 @@ partprobe $_device"
 			case "$_fstype" in
 				ext2|ext3|ext4)
 					if [ -n "$CMD_E2FSCK" ] && [ -n "$CMD_RESIZE2FS" ]; then
-						exec_cmd_c "e2fsck before FS resize" "$CMD_E2FSCK -f -p $_ppath" \
-							"$CMD_E2FSCK" -f -p "$_ppath"
+						exec_cmd_c "e2fsck before FS resize" "$CMD_E2FSCK -v -f -p $_ppath" \
+							"$CMD_E2FSCK" -v -f -p "$_ppath"
 						_ck=$EXEC_OUT; _ck_rc=$EXEC_RC
-						exec_cmd_c "resize2fs grow to partition size" "$CMD_RESIZE2FS $_ppath" \
-							"$CMD_RESIZE2FS" "$_ppath"
+						exec_cmd_c "resize2fs grow to partition size" "$CMD_RESIZE2FS -p $_ppath" \
+							"$CMD_RESIZE2FS" -p "$_ppath"
 						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
 						_out="$_out\n\nFilesystem check rc=$_ck_rc:\n$_ck\n\nresize2fs rc=$_rs_rc:\n$_rs"
 					else
@@ -1043,8 +1050,8 @@ partprobe $_device"
 					;;
 				ntfs)
 					if [ -n "$CMD_NTFSRESIZE" ]; then
-						exec_cmd_c "ntfsresize grow" "$CMD_NTFSRESIZE -f $_ppath" \
-							"$CMD_NTFSRESIZE" -f "$_ppath"
+						exec_cmd_c "ntfsresize grow" "$CMD_NTFSRESIZE -v -f $_ppath" \
+							"$CMD_NTFSRESIZE" -v -f "$_ppath"
 						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
 						_out="$_out\n\nntfsresize rc=$_rs_rc:\n$_rs"
 					else
@@ -1152,16 +1159,16 @@ if [ "$_direction" = "shrink" ]; then
 _target_kib=$(safe_uint "$_target_kib")
 [ "$_target_kib" -gt 0 ] || { emit_json_error "Invalid target_kib for shrink"; return; }
 
-_cmd_ck="$CMD_E2FSCK -f -p $_partition"
-exec_cmd_c "e2fsck before shrink" "$_cmd_ck" "$CMD_E2FSCK" -f -p "$_partition"
+_cmd_ck="$CMD_E2FSCK -v -f -p $_partition"
+exec_cmd_c "e2fsck before shrink" "$_cmd_ck" "$CMD_E2FSCK" -v -f -p "$_partition"
 _ck="$EXEC_OUT"
 
-_cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition ${_target_kib}K"
+_cmd_rs="$CMD_RESIZE2FS -p ${_opts_display}$_partition ${_target_kib}K"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
-exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" $_extra_opts "$_partition" "${_target_kib}K"
+exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" -p $_extra_opts "$_partition" "${_target_kib}K"
 else
-exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" "$_partition" "${_target_kib}K"
+exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" -p "$_partition" "${_target_kib}K"
 fi
 _rc=$EXEC_RC; _rs="$EXEC_OUT"
 _out="\$ $_cmd_ck
@@ -1170,12 +1177,12 @@ $_ck
 \$ $_cmd_rs
 $_rs"
 else
-_cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition"
+_cmd_rs="$CMD_RESIZE2FS -p ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
-exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" $_extra_opts "$_partition"
+exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p $_extra_opts "$_partition"
 else
-exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" "$_partition"
+exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p "$_partition"
 fi
 _rc=$EXEC_RC; _rs="$EXEC_OUT"
 _out="\$ $_cmd_rs
@@ -1192,20 +1199,20 @@ ntfs)
 if [ "$_direction" = "shrink" ]; then
 _target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
-_cmd_rs="$CMD_NTFSRESIZE -f -s $_target_bytes ${_opts_display}$_partition"
+_cmd_rs="$CMD_NTFSRESIZE -v -f -s $_target_bytes ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
-exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -f -s "$_target_bytes" $_extra_opts "$_partition"
+exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -v -f -s "$_target_bytes" $_extra_opts "$_partition"
 else
-exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -f -s "$_target_bytes" "$_partition"
+exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -v -f -s "$_target_bytes" "$_partition"
 fi
 else
-_cmd_rs="$CMD_NTFSRESIZE -f ${_opts_display}$_partition"
+_cmd_rs="$CMD_NTFSRESIZE -v -f ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
-exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -f $_extra_opts "$_partition"
+exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -v -f $_extra_opts "$_partition"
 else
-exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -f "$_partition"
+exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -v -f "$_partition"
 fi
 fi
 _rc=$EXEC_RC; _out="$EXEC_OUT"
@@ -1277,7 +1284,7 @@ action_create_filesystem() {
 			ext2|ext3|ext4)
 				_preview_cmd="mke2fs -F -t $_fs_type ${_extra_opts:-} $_partition"
 				[ -n "$_label" ] && _preview_cmd="$_preview_cmd
-e2label -L $_label $_partition"
+e2label $_partition $_label"
 				;;
 			fat16)
 				_preview_cmd="mkfs.fat -F 16 ${_extra_opts:-} $_partition"
@@ -1311,19 +1318,19 @@ fatlabel $_partition $_label"
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			[ -n "$CMD_MKE2FS" ] || { emit_json_error "mke2fs/e2fsprogs not available"; return; }
-			_cmd_mk="$CMD_MKE2FS -F -t $_fs_type ${_extra_opts:-}$_partition"
+			_cmd_mk="$CMD_MKE2FS -v -F -t $_fs_type ${_extra_opts:+$_extra_opts }$_partition"
 			if [ -n "$_extra_opts" ]; then
 				# shellcheck disable=SC2086
-				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -F -t "$_fs_type" $_extra_opts "$_partition"
+				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -v -F -t "$_fs_type" $_extra_opts "$_partition"
 			else
-				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -F -t "$_fs_type" "$_partition"
+				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -v -F -t "$_fs_type" "$_partition"
 			fi
 			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ]; then
 				if ! is_valid_label "$_label"; then
 					_out="$_out\nWarning: label skipped (invalid chars)"
 				elif [ -n "$CMD_E2LABEL" ]; then
-					exec_cmd_c "e2label set" "$CMD_E2LABEL -L $_label $_partition" "$CMD_E2LABEL" -L "$_label" "$_partition"
+					exec_cmd_c "e2label set" "$CMD_E2LABEL $_partition $_label" "$CMD_E2LABEL" "$_partition" "$_label"
 					_out="$_out\n\nLabel:\n$EXEC_OUT"
 				elif [ -n "$CMD_TUNE2FS" ]; then
 					exec_cmd_c "tune2fs set label" "$CMD_TUNE2FS -L $_label $_partition" run_tune2fs -L "$_label" "$_partition"
@@ -1335,12 +1342,12 @@ fatlabel $_partition $_label"
 			;;
 		fat16)
 			[ -n "$CMD_MKFS_FAT" ] || { emit_json_error "mkfs.fat not available"; return; }
-			_cmd_mk="$CMD_MKFS_FAT -F 16 ${_extra_opts:-}$_partition"
+			_cmd_mk="$CMD_MKFS_FAT -v -F 16 ${_extra_opts:+$_extra_opts }$_partition"
 			if [ -n "$_extra_opts" ]; then
 				# shellcheck disable=SC2086
-				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -F 16 $_extra_opts "$_partition"
+				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -v -F 16 $_extra_opts "$_partition"
 			else
-				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -F 16 "$_partition"
+				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -v -F 16 "$_partition"
 			fi
 			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ] && [ -n "$CMD_FATLABEL" ]; then
@@ -1350,12 +1357,12 @@ fatlabel $_partition $_label"
 			;;
 		fat32|vfat)
 			[ -n "$CMD_MKFS_FAT" ] || { emit_json_error "mkfs.fat not available"; return; }
-			_cmd_mk="$CMD_MKFS_FAT -F 32 ${_extra_opts:-}$_partition"
+			_cmd_mk="$CMD_MKFS_FAT -v -F 32 ${_extra_opts:+$_extra_opts }$_partition"
 			if [ -n "$_extra_opts" ]; then
 				# shellcheck disable=SC2086
-				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -F 32 $_extra_opts "$_partition"
+				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -v -F 32 $_extra_opts "$_partition"
 			else
-				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -F 32 "$_partition"
+				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -v -F 32 "$_partition"
 			fi
 			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ] && [ -n "$CMD_FATLABEL" ]; then
@@ -1411,21 +1418,21 @@ fatlabel $_partition $_label"
 			fi
 			if [ -n "$_extra_opts" ]; then
 				if [ -n "$_label" ]; then
-					_cmd_mk="$CMD_MKNTFS -F -L $_label $_extra_opts $_partition"
+					_cmd_mk="$CMD_MKNTFS -v -F -L $_label $_extra_opts $_partition"
 					# shellcheck disable=SC2086
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F -L "$_label" $_extra_opts "$_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F -L "$_label" $_extra_opts "$_partition"
 				else
-					_cmd_mk="$CMD_MKNTFS -F $_extra_opts $_partition"
+					_cmd_mk="$CMD_MKNTFS -v -F $_extra_opts $_partition"
 					# shellcheck disable=SC2086
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F $_extra_opts "$_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F $_extra_opts "$_partition"
 				fi
 			else
 				if [ -n "$_label" ]; then
-					_cmd_mk="$CMD_MKNTFS -F -L $_label $_partition"
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F -L "$_label" "$_partition"
+					_cmd_mk="$CMD_MKNTFS -v -F -L $_label $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F -L "$_label" "$_partition"
 				else
-					_cmd_mk="$CMD_MKNTFS -F $_partition"
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F "$_partition"
+					_cmd_mk="$CMD_MKNTFS -v -F $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F "$_partition"
 				fi
 			fi
 			_rc=$EXEC_RC; _out="$EXEC_OUT"
@@ -1454,6 +1461,7 @@ action_check_filesystem() {
 		_preview_cmd="# fs_type=$_fs_type repair=$_repair
 # backend auto-detects filesystem when fs_type=auto
 # backend runs e2fsck/fsck.fat/fsck.exfat/ntfsfix depending on detected type
+# if partition is mounted: umount → check/repair → remount
 "
 		emit_dry_run_result "filesystem check" "$_preview_cmd"
 		return
@@ -1467,34 +1475,61 @@ action_check_filesystem() {
 			;;
 	esac
 
+	# ── umount if currently mounted ──────────────────────────────────────────
+	_was_mounted=''
+	_orig_mountpoint=''
+	_orig_mnt_fstype=''
+	_orig_mnt_opts=''
+	_mount_info=$(awk -v p="$_partition" '$1 == p { print $2, $3, $4; exit }' /proc/mounts 2>/dev/null)
+	if [ -n "$_mount_info" ]; then
+		_orig_mountpoint=$(printf '%s' "$_mount_info" | awk '{print $1}')
+		_orig_mnt_fstype=$(printf '%s' "$_mount_info" | awk '{print $2}')
+		_orig_mnt_opts=$(printf '%s'   "$_mount_info" | awk '{print $3}')
+		[ -n "$CMD_UMOUNT" ] || { emit_json_error "umount not available; cannot unmount before check"; return; }
+		exec_cmd_c "umount before check" "$CMD_UMOUNT $_partition" "$CMD_UMOUNT" "$_partition"
+		if [ "$EXEC_RC" -ne 0 ]; then
+			emit_cmd_result false "$EXEC_RC" "Unmount failed, check aborted" "$EXEC_OUT"
+			return
+		fi
+		_was_mounted='yes'
+	fi
+
+	# ── run fsck (result stored, not emitted yet) ────────────────────────────
+	_fsck_success='false'
+	_fsck_rc=1
+	_fsck_msg='Filesystem check failed'
+	_fsck_out=''
+	_fsck_done=''
+
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			[ -n "$CMD_E2FSCK" ] || { emit_json_error "e2fsck/e2fsprogs not available"; return; }
 			if [ "$_repair" = "yes" ]; then
-				_cmd_display="$CMD_E2FSCK -f -p ${_opts_display}$_partition"
+				_cmd_display="$CMD_E2FSCK -v -f -p ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					# shellcheck disable=SC2086
-					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -f -p $_extra_opts "$_partition"
+					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -v -f -p $_extra_opts "$_partition"
 				else
-					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -f -p "$_partition"
+					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -v -f -p "$_partition"
 				fi
 			else
-				_cmd_display="$CMD_E2FSCK -f -n ${_opts_display}$_partition"
+				_cmd_display="$CMD_E2FSCK -v -f -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
 					# shellcheck disable=SC2086
-					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -f -n $_extra_opts "$_partition"
+					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -v -f -n $_extra_opts "$_partition"
 				else
-					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -f -n "$_partition"
+					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -v -f -n "$_partition"
 				fi
 			fi
-			_rc=$EXEC_RC
-			_out="\$ $_cmd_display
+			_fsck_rc=$EXEC_RC
+			_fsck_out="\$ $_cmd_display
 $EXEC_OUT"
-			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
-				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
+			if [ "$_fsck_rc" -eq 0 ] || [ "$_fsck_rc" -eq 1 ] || [ "$_fsck_rc" -eq 2 ]; then
+				_fsck_success='true'; _fsck_msg='Filesystem check completed'
 			else
-				emit_cmd_result false "$_rc" "Filesystem check reported errors" "$_out"
+				_fsck_success='false'; _fsck_msg='Filesystem check reported errors'
 			fi
+			_fsck_done='yes'
 			;;
 		fat|fat12|fat16|fat32|vfat)
 			[ -n "$CMD_FSCK_FAT" ] || { emit_json_error "fsck.fat not available"; return; }
@@ -1515,14 +1550,15 @@ $EXEC_OUT"
 					exec_cmd_c "fsck.fat check" "$_cmd_display" "$CMD_FSCK_FAT" -v -n "$_partition"
 				fi
 			fi
-			_rc=$EXEC_RC
-			_out="\$ $_cmd_display
+			_fsck_rc=$EXEC_RC
+			_fsck_out="\$ $_cmd_display
 $EXEC_OUT"
-			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ]; then
-				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
+			if [ "$_fsck_rc" -eq 0 ] || [ "$_fsck_rc" -eq 1 ]; then
+				_fsck_success='true'; _fsck_msg='Filesystem check completed'
 			else
-				emit_cmd_result false "$_rc" "Filesystem check reported errors" "$_out"
+				_fsck_success='false'; _fsck_msg='Filesystem check reported errors'
 			fi
+			_fsck_done='yes'
 			;;
 		exfat)
 			[ -n "$CMD_FSCK_EXFAT" ] || { emit_json_error "fsck.exfat not available"; return; }
@@ -1543,14 +1579,15 @@ $EXEC_OUT"
 					exec_cmd_c "fsck.exfat check" "$_cmd_display" "$CMD_FSCK_EXFAT" -n "$_partition"
 				fi
 			fi
-			_rc=$EXEC_RC
-			_out="\$ $_cmd_display
+			_fsck_rc=$EXEC_RC
+			_fsck_out="\$ $_cmd_display
 $EXEC_OUT"
-			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
-				emit_cmd_result true "$_rc" "exFAT check completed" "$_out"
+			if [ "$_fsck_rc" -eq 0 ] || [ "$_fsck_rc" -eq 1 ] || [ "$_fsck_rc" -eq 2 ]; then
+				_fsck_success='true'; _fsck_msg='exFAT check completed'
 			else
-				emit_cmd_result false "$_rc" "exFAT check reported errors" "$_out"
+				_fsck_success='false'; _fsck_msg='exFAT check reported errors'
 			fi
+			_fsck_done='yes'
 			;;
 		ntfs)
 			if [ -n "$CMD_NTFSFIX" ]; then
@@ -1571,17 +1608,19 @@ $EXEC_OUT"
 						exec_cmd_c "ntfsfix check" "$_cmd_display" "$CMD_NTFSFIX" -n "$_partition"
 					fi
 				fi
-				_rc=$EXEC_RC
-				_out="\$ $_cmd_display
+				_fsck_rc=$EXEC_RC
+				_fsck_out="\$ $_cmd_display
 $EXEC_OUT"
-				emit_cmd_result true "$_rc" "NTFS check completed" "$_out"
+				_fsck_success='true'; _fsck_msg='NTFS check completed'
+				_fsck_done='yes'
 			elif [ -n "$CMD_NTFSINFO" ]; then
 				_cmd_display="$CMD_NTFSINFO -m $_partition"
 				exec_cmd_c "ntfsinfo" "$_cmd_display" "$CMD_NTFSINFO" -m "$_partition"
-				_rc=$EXEC_RC
-				_out="\$ $_cmd_display
+				_fsck_rc=$EXEC_RC
+				_fsck_out="\$ $_cmd_display
 $EXEC_OUT"
-				emit_cmd_result true "$_rc" "NTFS metadata report collected (ntfsfix unavailable)" "$_out"
+				_fsck_success='true'; _fsck_msg='NTFS metadata report collected (ntfsfix unavailable)'
+				_fsck_done='yes'
 			else
 				emit_json_error "Neither ntfsfix nor ntfsinfo is available"
 			fi
@@ -1590,6 +1629,29 @@ $EXEC_OUT"
 			emit_json_error "Unsupported or undetected filesystem type"
 			;;
 	esac
+
+	[ "$_fsck_done" = 'yes' ] || return
+
+	# ── remount if partition was mounted before ──────────────────────────────
+	if [ "$_was_mounted" = 'yes' ] && [ -n "$CMD_MOUNT" ]; then
+		mkdir -p "$_orig_mountpoint" 2>/dev/null
+		if [ -n "$_orig_mnt_fstype" ] && [ "$_orig_mnt_fstype" != "auto" ]; then
+			exec_cmd_c "remount after check" \
+				"$CMD_MOUNT -t $_orig_mnt_fstype -o $_orig_mnt_opts $_partition $_orig_mountpoint" \
+				"$CMD_MOUNT" -t "$_orig_mnt_fstype" -o "$_orig_mnt_opts" "$_partition" "$_orig_mountpoint"
+		else
+			exec_cmd_c "remount after check" \
+				"$CMD_MOUNT $_partition $_orig_mountpoint" \
+				"$CMD_MOUNT" "$_partition" "$_orig_mountpoint"
+		fi
+		if [ "$EXEC_RC" -ne 0 ]; then
+			_fsck_msg="$_fsck_msg (remount failed: $EXEC_OUT)"
+		else
+			_fsck_msg="$_fsck_msg; remounted on $_orig_mountpoint"
+		fi
+	fi
+
+	emit_cmd_result "$_fsck_success" "$_fsck_rc" "$_fsck_msg" "$_fsck_out"
 }
 
 action_set_label() {
@@ -1625,7 +1687,7 @@ action_set_label() {
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			if [ -n "$CMD_E2LABEL" ]; then
-				exec_cmd_c "e2label set" "$CMD_E2LABEL -L $_label $_partition" "$CMD_E2LABEL" -L "$_label" "$_partition"
+				exec_cmd_c "e2label set" "$CMD_E2LABEL $_partition $_label" "$CMD_E2LABEL" "$_partition" "$_label"
 				_rc=$EXEC_RC; _out="$EXEC_OUT"
 			elif [ -n "$CMD_TUNE2FS" ]; then
 				exec_cmd_c "tune2fs set label" "$CMD_TUNE2FS -L $_label $_partition" run_tune2fs -L "$_label" "$_partition"
@@ -2048,12 +2110,12 @@ action_verify_partition() {
 	fi
 }
 
-# ── Partclone image / network / ddrescue helpers ──────────────────────────────
+# ── Partclone image / network / ddrescue helpers ────────────────────────────────────────
 
 # Common param validation and script path resolution for partition_image.sh calls
 _action_partition_image_common() {
 	resolve_tools
-	CMD_PARTITION_IMAGE=$(find_command partition_image.sh)
+	CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
 	[ -n "$CMD_PARTITION_IMAGE" ] || { emit_json_error "partition_image.sh not found in PATH"; return 1; }
 	return 0
 }
@@ -2333,7 +2395,7 @@ action_partclone_ddrescue() {
 action_disk_migration() {
 	resolve_tools
 
-	CMD_DISK_MIGRATION=$(find_command disk_migration.sh)
+	CMD_DISK_MIGRATION=$(find_cmd disk_migration.sh)
 	[ -n "$CMD_DISK_MIGRATION" ] || { emit_json_error "disk_migration.sh not found in PATH"; return; }
 
 	_source_device=$(cgi_param source_device)
@@ -2420,6 +2482,9 @@ action_disk_migration() {
 }
 
 action_mount_partition() {
+	resolve_tools
+	_partition=$(cgi_param partition)
+	_device=$(cgi_param device)
 	_target_partnum=$(cgi_param target_partnum)
 	_target_start_sector=$(cgi_param target_start_sector)
 	_target_end_sector=$(cgi_param target_end_sector)
@@ -2942,17 +3007,30 @@ action_gpt_info() {
 
 # ── Streaming job management ──────────────────────────────────────────────────
 
+# Remove stale job files older than 1 hour
+_cleanup_stale_jobs() {
+	for _stale in /tmp/disk-mgmt-job-*.done; do
+		[ -f "$_stale" ] || continue
+		_stale_base="${_stale%.done}"
+		# Check age via find; remove if older than 60 min
+		find "$_stale" -mmin +60 -exec rm -f "$_stale_base.log" "$_stale_base.done" "$_stale_base.pid" \; 2>/dev/null
+	done
+}
+
 action_start_job() {
-	_real_action=$(cgi_param job_action)
-	[ -n "$_real_action" ] || { emit_json_error "job_action required"; return; }
+	_cleanup_stale_jobs
+	_real_action=$(cgi_param job_cmd)
+	[ -n "$_real_action" ] || { emit_json_error "job_cmd required"; return; }
 	_token="$(date +%s 2>/dev/null || echo 0)$$"
 	_token=$(printf '%s' "$_token" | tr -cd '0-9')
 	[ -n "$_token" ] || _token="0$$"
 	_slog="/tmp/disk-mgmt-job-${_token}.log"
 	_sdone="/tmp/disk-mgmt-job-${_token}.done"
 	_spid="/tmp/disk-mgmt-job-${_token}.pid"
-	printf '=== JOB START: %s === %s ===\n' "$_real_action" "$(date 2>/dev/null || :)" > "$_slog"
+	backend_log "JOB START: $_real_action token=$_token"
+	: > "$_slog"
 	(
+		set +x
 		STREAM_LOG="$_slog"
 		STREAM_DONE="$_sdone"
 		ACTION="$_real_action"
@@ -3001,6 +3079,23 @@ action_poll_job() {
 	_sdone="/tmp/disk-mgmt-job-${_token}.done"
 	_offset=$(cgi_param offset)
 	case "$_offset" in ''|*[!0-9]*) _offset=0 ;; esac
+
+	# Check done sentinel FIRST, before reading the log.
+	# This prevents a race condition where a fast-completing command
+	# writes its output + creates .done between our log read and done check,
+	# causing the log content to be lost when files are deleted.
+	# When .done exists, the log is guaranteed complete (emit_cmd_result
+	# always writes STREAM_LOG before creating STREAM_DONE).
+	_done=false; _success=true; _rc=0; _msg=''; _extras=''
+	if [ -f "$_sdone" ]; then
+		_success=$(sed -n '1p' "$_sdone" 2>/dev/null); case "$_success" in true|false) : ;; *) _success=true ;; esac
+		_rc=$(sed -n '2p' "$_sdone" 2>/dev/null); case "$_rc" in ''|*[!0-9]*) _rc=0 ;; esac
+		_msg=$(sed -n '3p' "$_sdone" 2>/dev/null)
+		_extras=$(sed -n '4p' "$_sdone" 2>/dev/null)
+		_done=true
+	fi
+
+	# Read log content AFTER done check (guaranteed complete if done=true)
 	_size=0
 	if [ -f "$_slog" ]; then
 		_size=$(wc -c < "$_slog" 2>/dev/null | tr -d ' ')
@@ -3010,15 +3105,12 @@ action_poll_job() {
 	if [ "$_size" -gt "$_offset" ]; then
 		_newtext=$(tail -c "+$((_offset + 1))" "$_slog" 2>/dev/null || true)
 	fi
-	_done=false; _success=true; _rc=0; _msg=''; _extras=''
-	if [ -f "$_sdone" ]; then
-		_success=$(sed -n '1p' "$_sdone" 2>/dev/null); case "$_success" in true|false) : ;; *) _success=true ;; esac
-		_rc=$(sed -n '2p' "$_sdone" 2>/dev/null); case "$_rc" in ''|*[!0-9]*) _rc=0 ;; esac
-		_msg=$(sed -n '3p' "$_sdone" 2>/dev/null)
-		_extras=$(sed -n '4p' "$_sdone" 2>/dev/null)
-		_done=true
+
+	# Clean up AFTER reading final content
+	if [ "$_done" = "true" ]; then
 		rm -f "$_slog" "$_sdone" "/tmp/disk-mgmt-job-${_token}.pid" 2>/dev/null
 	fi
+
 	_te=$(json_escape "$_newtext")
 	_me=$(json_escape "$_msg")
 	if [ "$_done" = "true" ] && [ -n "$_extras" ]; then
@@ -3035,7 +3127,6 @@ if [ "$AJAX_MODE" = "1" ]; then
 	DRY_RUN=$(cgi_param dry_run)
 	[ "$DRY_RUN" = "1" ] || DRY_RUN='0'
 
-	exec 2>>"$BACKEND_LOG_FILE"
 	backend_log "REQUEST action=$ACTION dry_run=$DRY_RUN remote=${REMOTE_ADDR:-unknown} query=${QUERY_STRING:-}"
 	if [ -n "$(cgi_param command_preview)" ]; then
 		backend_log "REQUEST command_preview=$(cgi_param command_preview)"
@@ -3193,7 +3284,7 @@ cat <<'EOF'
 		<ol>
 			<li id="i18nWorkflow1">Refresh devices and choose one disk.</li>
 			<li id="i18nWorkflow2">Drag new partition into free space, drag partition edge to resize, drag partition into free area to move it.</li>
-			<li id="i18nWorkflow3">Queue operations, review, then apply in order.</li>
+			<li id="i18nWorkflow3">Add operations, review, then apply in order.</li>
 			<li id="i18nWorkflow4">Run metadata view, filesystem checks, mount operations and diagnostics.</li>
 		</ol>
 		<div class="pcgi-toolbar">
@@ -3720,6 +3811,14 @@ cat <<'EOF'
 	max-height: 300px;
 	overflow: auto;
 }
+.pcgi-ansi-log .ansi-bold      { font-weight: bold }
+.pcgi-ansi-log .ansi-green     { color: #4ade80 }
+.pcgi-ansi-log .ansi-red       { color: #f87171 }
+.pcgi-ansi-log .ansi-yellow    { color: #fbbf24 }
+.pcgi-ansi-log .ansi-blue      { color: #60a5fa }
+.pcgi-ansi-log .ansi-cyan      { color: #22d3ee }
+.pcgi-ansi-log .ansi-gray      { color: #9ca3af }
+.pcgi-ansi-log .ansi-dim       { opacity: 0.7 }
 .pcgi-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -3863,23 +3962,65 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 </div>
 
 <div class="pcgi-toolbar">
-	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to queue new partition">New partition</span>
+	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to create new partition">New partition</span>
 	<span id="verifyPartChip" class="pcgi-chip" style="cursor:pointer" title="Compare two partitions byte-by-byte (read-only)">Verify partition</span>
 	<span id="moveClonePartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to open move/clone configuration">Move or clone partition</span>
-	<span id="i18nDragHint" class="pcgi-small">Drag <strong>New partition</strong> to a free segment to create a partition. Drag <strong>Move or clone partition</strong> to a free segment to open the configuration form. Click <strong>Verify partition</strong> to compare two partitions read-only. Drag the left or right edge of a partition to queue resize. Drag a partition to free space to queue smart move.</span>
+	<span id="i18nDragHint" class="pcgi-small">Drag <strong>New partition</strong> to a free segment for quick create. Drag <strong>New partition with filesystem</strong> to include Role, Filesystem and Partition name from the form above. Drag <strong>Move or clone partition</strong> to a free segment to open the move/clone form pre-filled with the selected partition. Click <strong>Verify partition</strong> to compare two partitions. Drag the left or right edge of a partition to resize. Drag a partition to free space for smart move.</span>
 </div>
 
 <div class="pcgi-toolbar" style="margin-top: 8px;">
-	<button type="button" onclick="queueCreatePartition()" id="queueCreateBtn">Queue create partition</button>
-	<button type="button" onclick="queueDeletePartition()" id="queueDeleteBtn">Queue delete selected partition</button>
+	<button type="button" onclick="queueCreatePartition()" id="queueCreateBtn">Create partition</button>
+	<button type="button" onclick="queueDeletePartition()" id="queueDeleteBtn">Delete selected partition</button>
 </div>
 
 <!-- New partition question modal -->
 <div id="pcgiNewPartModal" class="pcgi-modal" aria-hidden="true">
-	<div class="pcgi-modal-box" style="max-width:420px">
+	<div class="pcgi-modal-box" style="max-width:560px">
 		<h3 id="pcgiNewPartTitle" class="pcgi-modal-head">New partition</h3>
-		<div id="pcgiNewPartText" style="margin-bottom:14px"></div>
-		<div class="pcgi-modal-actions">
+		<div class="pcgi-inline-form" style="margin-top:8px">
+			<div>
+				<label id="i18nPnpStartLabel">New start sector</label>
+				<input id="pnpStartSector" type="text" placeholder="e.g. 2048">
+			</div>
+			<div>
+				<label id="i18nPnpStartHLabel">New start size</label>
+				<input id="pnpStartHuman" type="text" placeholder="e.g. 1 MiB">
+			</div>
+			<div>
+				<label id="i18nPnpEndLabel">New end sector</label>
+				<input id="pnpEndSector" type="text" placeholder="e.g. 1023999">
+			</div>
+			<div>
+				<label id="i18nPnpEndHLabel">New end size</label>
+				<input id="pnpEndHuman" type="text" placeholder="e.g. 488 MiB">
+			</div>
+			<div>
+				<label id="i18nPnpRoleLabel">Role</label>
+				<select id="pnpRole">
+					<option value="primary">primary</option>
+					<option value="logical">logical</option>
+					<option value="extended">extended</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPnpFsHintLabel">Filesystem</label>
+				<select id="pnpFsHint">
+					<option value="">(none)</option>
+					<option value="ext2">ext2</option>
+					<option value="ext3">ext3</option>
+					<option value="ext4">ext4</option>
+					<option value="fat16">fat16</option>
+					<option value="fat32">fat32</option>
+					<option value="ntfs">ntfs</option>
+					<option value="linux-swap">linux-swap</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPnpPartNameLabel">Partition name</label>
+				<input id="pnpPartName" type="text" placeholder="optional">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions" style="margin-top:12px">
 			<button type="button" id="pcgiNewPartCancelBtn">Cancel</button>
 			<button type="button" id="pcgiNewPartQuickBtn">Quick (no filesystem)</button>
 			<button type="button" id="pcgiNewPartFsBtn">With filesystem</button>
@@ -4438,7 +4579,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 <hr class="pcgi-rule">
 <div class="pcgi-toolbar" style="margin-top: 4px;">
 	<input id="renamePartInput" type="text" placeholder="new partition name">
-	<button type="button" onclick="queueRenamePartition()" id="queueRenameBtn">Queue set partition name</button>
+	<button type="button" onclick="queueRenamePartition()" id="queueRenameBtn">Set partition name</button>
 </div>
 <hr class="pcgi-rule">
 <div class="pcgi-toolbar" style="margin-top: 4px;">
@@ -4448,7 +4589,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<option value="off">off</option>
 	</select>
 	<input id="flagNameInput" type="text" placeholder="flag name">
-	<button type="button" onclick="queueSetFlag()" id="queueFlagBtn">Queue set flag</button>
+	<button type="button" onclick="queueSetFlag()" id="queueFlagBtn">Set flag</button>
 </div>
 EOF
 sec_end
@@ -4508,23 +4649,23 @@ cat <<'EOF'
 </div>
 
 <div class="pcgi-toolbar" style="margin-top: 8px;">
-	<button type="button" onclick="queueResizePartitionFromInputs()" id="queueResizeBtn">Queue resize partition</button>
-	<button type="button" onclick="queueMkfs()" id="queueMkfsBtn">Queue create filesystem</button>
-	<button type="button" onclick="queueSetLabel()" id="queueLabelBtn">Queue set label</button>
-	<button type="button" onclick="queueMountPartition()" id="queueMountBtn">Queue mount</button>
-	<button type="button" onclick="queueUnmountPartition()" id="queueUnmountBtn">Queue unmount</button>
+	<button type="button" onclick="queueResizePartitionFromInputs()" id="queueResizeBtn">Resize partition</button>
+	<button type="button" onclick="queueMkfs()" id="queueMkfsBtn">Create filesystem</button>
+	<button type="button" onclick="queueSetLabel()" id="queueLabelBtn">Set label</button>
+	<button type="button" onclick="queueMountPartition()" id="queueMountBtn">Mount</button>
+	<button type="button" onclick="queueUnmountPartition()" id="queueUnmountBtn">Unmount</button>
 </div>
 <hr class="pcgi-rule">
 <div class="pcgi-toolbar" style="margin-top: 4px;">
-	<button type="button" onclick="runFsck(false)" id="checkReadonlyBtn">Queue Check filesystem (read-only)</button>
-	<button type="button" onclick="runFsck(true)" id="checkRepairBtn">Queue Check/repair filesystem</button>
+	<button type="button" onclick="runFsck(false)" id="checkReadonlyBtn">Check filesystem (read-only)</button>
+	<button type="button" onclick="runFsck(true)" id="checkRepairBtn">Check/repair filesystem</button>
 </div>
 EOF
 sec_end
 
 sec_begin "Operation queue"
 cat <<'EOF'
-<p class="pcgi-small" style="margin:0 0 6px;">The <em>Command</em> column is a preview of the main shell command(s) that will run. The backend may add validation and cleanup steps. Operations run in sequence and stop on the first failure. Each queued step is executed in a separate CGI request, so shell variables are not shared across steps; required values must be passed in parameters or re-detected from disk state. Individual items can be edited or removed from the queue by using <strong>Edit</strong> and <strong>Remove</strong> in the Action column.</p>
+<p class="pcgi-small" style="margin:0 0 6px;">The <em>Command</em> column is a preview of the main shell command(s) that will run. The backend may add validation and cleanup steps. Operations run in sequence and stop on the first failure. Each step is executed in a separate CGI request, so shell variables are not shared across steps; required values must be passed in parameters or re-detected from disk state. Individual items can be edited or removed by using <strong>Edit</strong> and <strong>Remove</strong> in the Action column.</p>
 <div style="overflow-x:auto">
 <table class="pcgi-table" id="queueTable" style="table-layout:fixed;min-width:520px">
 	<colgroup>
@@ -4547,10 +4688,11 @@ cat <<'EOF'
 </table>
 </div>
 <div class="pcgi-toolbar" style="margin-top:8px;">
-	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply queued operations</button>
+	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply pending operations</button>
 	<button type="button" onclick="clearQueue()">Clear queue</button>
+	<button type="button" onclick="clearLogOutput()" id="clearLogBtn" style="margin-left:auto">Clear log</button>
 </div>
-<pre id="cmdOutput" class="pcgi-log"></pre>
+<pre id="cmdOutput" class="pcgi-log pcgi-ansi-log"></pre>
 EOF
 sec_end
 
@@ -4690,10 +4832,10 @@ window.paceOptions = {
 			chipClonePartitionSector: 'Clone partition (sector-by-sector)',
 			workflowTitle: 'Disk management workflow',
 			workflow1: 'Refresh devices and choose one disk.',
-			workflow2: 'Drag New partition for quick create with defaults. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag one of the four move/clone chips onto free space to queue exactly that mode. Drag the left or right partition edge to queue resize.',
-			workflow3: 'Queue operations, review, then apply in order.',
+			workflow2: 'Drag New partition for quick create with defaults. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag Move or clone partition onto free space to open the move/clone form pre-filled with the selected partition. Drag the left or right partition edge to resize. Drag a partition to free space for smart move.',
+			workflow3: 'Add operations, review, then apply in order.',
 			workflow4: 'Run metadata view, filesystem checks, mount operations and diagnostics.',
-			dragHint: 'Drag New partition for quick create with default values. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag one of the four move/clone chips onto free space to queue exactly that mode. Drag the left or right edge of a partition to queue resize. Drag a partition into free space to queue smart move.',
+			dragHint: 'Drag New partition for quick create with default values. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag Move or clone partition onto free space to open the move/clone form pre-filled with the selected partition. Drag the left or right edge of a partition to resize. Drag a partition into free space for smart move.',
 			missingCommandsLabel: 'Missing commands:',
 			languageLabel: 'Language',
 			usbOnlyLabel: 'Device filter',
@@ -4704,7 +4846,7 @@ window.paceOptions = {
 			chipPartcloneVerifyLabel: 'Smart clone verify',
 			chipDdBsLabel: 'dd block size',
 			helperTitle: 'Keyboard shortcuts and workflow',
-			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operation queue\nDelete: queue delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition left/right edge: queue resize\nDrag partition to free area: queue smart move\nDrag smart/sector move/clone chips to free area: queue exact plan from source fields',
+			helperText: 'Ctrl+R: refresh map\nCtrl+Shift+A: analyze toolchain\nCtrl+M: load partition metadata\nCtrl+Enter: apply operations\nDelete: delete selected partition\nF1 or ?: open this help\nRight click on partition: context menu actions\nDrag partition left/right edge: resize\nDrag partition to free area: smart move\nDrag smart/sector move/clone chips to free area: exact plan from source fields',
 			cmdPreviewTitle: 'Command preview',
 			cmdPreviewHint: 'Command preview is read-only and auto-generated from Parameters.',
 			toolAllAvailable: 'Toolchain status: all detected commands are available.',
@@ -4712,24 +4854,24 @@ window.paceOptions = {
 			toolOptionalMissing: 'Toolchain status: some optional commands are missing.',
 			toolAnalysisFailed: 'Toolchain status: analysis failed.',
 			confirmAction: 'Confirm action',
-			confirmQueueApply: 'Apply queued operations?',
-			confirmQueueApplyMsg: 'The queue will execute real disk operations in order. Continue?',
+			confirmQueueApply: 'Apply pending operations?',
+			confirmQueueApplyMsg: 'This will execute real disk operations in order. Continue?',
 			confirmRepair: 'Confirm repair check',
 			confirmRepairMsg: 'Repair mode can modify filesystem structures. Continue?',
 			confirmDelete: 'Confirm partition deletion',
-			confirmDeleteMsg: 'Queue deletion of selected partition?',
+			confirmDeleteMsg: 'Delete the selected partition?',
 			confirmCreate: 'Confirm partition creation',
-			confirmCreateMsg: 'Queue partition creation with the selected geometry?',
+			confirmCreateMsg: 'Create a partition with the selected geometry?',
 			confirmMkfs: 'Confirm filesystem creation',
-			confirmMkfsMsg: 'Queue filesystem creation. Existing data will be lost when applied.',
+			confirmMkfsMsg: 'Create filesystem. Existing data will be lost when applied.',
 			confirmMove: 'Confirm partition move',
-			confirmMoveMsg: 'Queue move of selected partition to target free region?',
+			confirmMoveMsg: 'Move the selected partition to the target free region?',
 			confirmClone: 'Confirm partition clone',
-			confirmCloneMsg: 'Queue clone of selected source partition to target free region?',
+			confirmCloneMsg: 'Clone the selected source partition to the target free region?',
 			confirmMount: 'Confirm mount request',
-			confirmMountMsg: 'Queue mount operation for selected partition?',
+			confirmMountMsg: 'Mount the selected partition?',
 			confirmUnmount: 'Confirm unmount request',
-			confirmUnmountMsg: 'Queue unmount operation for selected partition or mountpoint?',
+			confirmUnmountMsg: 'Unmount the selected partition or mountpoint?',
 			tQueueEmpty: 'Operation queue is empty.',
 			tNeedAck: 'Type YES_I_UNDERSTAND in the safety field first.',
 			tNoDevice: 'Select a device first.',
@@ -4742,14 +4884,14 @@ window.paceOptions = {
 			tNeedPartName: 'Select partition and provide a new name.',
 			tNeedFlag: 'Select partition and provide flag name.',
 			tNeedSourcePart: 'Set source partition path (or source device + number) first.',
-			tDropQueuedQuick: 'New partition queued from dropped free segment (quick mode).',
-			tDropQueuedWithFs: 'New partition queued from dropped free segment with Role, Filesystem and Partition name.',
-			tDropQueuedMoveSmartChip: 'Smart move plan queued from dropped Move partition chip.',
-			tDropQueuedMoveSectorChip: 'Sector-by-sector move plan queued from dropped Move partition chip.',
-			tDropQueuedCloneSmartChip: 'Smart clone plan queued from dropped Clone partition chip.',
-			tDropQueuedCloneSectorChip: 'Sector-by-sector clone plan queued from dropped Clone partition chip.',
-			tQueued: 'Operation queued.',
-			tQueueApplied: 'Queue completed successfully.',
+			tDropQueuedQuick: 'New partition added from dropped free segment (quick mode).',
+			tDropQueuedWithFs: 'New partition added from dropped free segment with Role, Filesystem and Partition name.',
+			tDropQueuedMoveSmartChip: 'Smart move plan added from dropped Move partition chip.',
+			tDropQueuedMoveSectorChip: 'Sector-by-sector move plan added from dropped Move partition chip.',
+			tDropQueuedCloneSmartChip: 'Smart clone plan added from dropped Clone partition chip.',
+			tDropQueuedCloneSectorChip: 'Sector-by-sector clone plan added from dropped Clone partition chip.',
+			tQueued: 'Operation added.',
+			tQueueApplied: 'All operations completed successfully.',
 			tContextUnavailable: 'Action unavailable for this selection.',
 			tMoveNoSpace: 'Not enough free space for move target.',
 			tMoveSame: 'Source and target area overlap or are unchanged.',
@@ -4763,7 +4905,14 @@ window.paceOptions = {
 			btnConfirm: 'Confirm',
 			btnCancel: 'Cancel',
 			btnClose: 'Close',
-			btnValidateQueue: 'Validate and queue'
+			btnValidateQueue: 'Validate and add',
+			tDone: 'Done',
+			tError: 'Error',
+			tQueueApplying: 'Applying {0} pending operation(s)...',
+			tQueueAllDone: 'All {0} operation(s) applied successfully.',
+			tQueueDiskWarning: 'WARNING: Disk operation is starting now. Do not interrupt power or disconnect storage. This may take several minutes.',
+			tQueueStoppedAt: 'Stopped due to failure at step {0}.',
+			tQueueErrorAt: 'Error at step {0}: {1}'
 		},
 		it: {
 			dangerTitle: 'Zona pericolosa',
@@ -4778,10 +4927,10 @@ window.paceOptions = {
 			chipClonePartitionSector: 'Clona partizione (settore per settore)',
 			workflowTitle: 'Workflow gestione dischi',
 			workflow1: 'Aggiorna i dispositivi e scegli un disco.',
-			workflow2: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina uno dei quattro chip move/clone su spazio libero per accodare esattamente quella modalita. Trascina il bordo sinistro o destro di una partizione per accodare resize.',
-			workflow3: 'Metti in coda le operazioni, controlla, poi applica in ordine.',
+			workflow2: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina Move or clone partition su spazio libero per aprire il form di spostamento/clonazione pre-compilato con la partizione selezionata. Trascina il bordo sinistro o destro di una partizione per il resize. Trascina una partizione su spazio libero per lo spostamento smart.',
+			workflow3: 'Aggiungi le operazioni, controlla, poi applica in ordine.',
 			workflow4: 'Usa vista metadati, controlli filesystem, mount e diagnostica.',
-			dragHint: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina uno dei quattro chip move/clone su spazio libero per accodare esattamente quella modalita. Trascina il bordo sinistro o destro di una partizione per accodare resize. Trascina una partizione su spazio libero per accodare move smart.',
+			dragHint: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina Move or clone partition su spazio libero per aprire il form pre-compilato con la partizione selezionata. Trascina il bordo sinistro o destro di una partizione per il resize. Trascina una partizione su spazio libero per lo spostamento smart.',
 			missingCommandsLabel: 'Comandi mancanti:',
 			languageLabel: 'Lingua',
 			usbOnlyLabel: 'Filtro dispositivi',
@@ -4792,7 +4941,7 @@ window.paceOptions = {
 			chipPartcloneVerifyLabel: 'Verifica clone smart',
 			chipDdBsLabel: 'Dimensione blocco dd',
 			helperTitle: 'Scorciatoie da tastiera e workflow',
-			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica coda operazioni\nCanc: accoda eliminazione partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo sinistro/destro partizione: accoda resize\nTrascina partizione su spazio libero: accoda move smart\nTrascina chip smart/settore move/clone su spazio libero: accoda il piano esatto dalla sorgente',
+			helperText: 'Ctrl+R: aggiorna mappa\nCtrl+Shift+A: analizza toolchain\nCtrl+M: carica metadati partizione\nCtrl+Invio: applica operazioni\nCanc: elimina partizione selezionata\nF1 o ?: apri aiuto\nClick destro sulla partizione: menu contestuale\nTrascina bordo sinistro/destro partizione: resize\nTrascina partizione su spazio libero: spostamento smart\nTrascina chip smart/settore move/clone su spazio libero: piano esatto dalla sorgente',
 			cmdPreviewTitle: 'Anteprima comando',
 			cmdPreviewHint: 'Anteprima comando in sola lettura, rigenerata automaticamente dai Parametri.',
 			toolAllAvailable: 'Stato toolchain: tutti i comandi rilevati sono disponibili.',
@@ -4800,24 +4949,24 @@ window.paceOptions = {
 			toolOptionalMissing: 'Stato toolchain: mancano alcuni comandi opzionali.',
 			toolAnalysisFailed: 'Stato toolchain: analisi fallita.',
 			confirmAction: 'Conferma azione',
-			confirmQueueApply: 'Applicare le operazioni in coda?',
-			confirmQueueApplyMsg: 'La coda eseguira vere operazioni sul disco in sequenza. Continuare?',
+			confirmQueueApply: 'Applicare le operazioni pendenti?',
+			confirmQueueApplyMsg: 'Le operazioni eseguiranno comandi reali sul disco in sequenza. Continuare?',
 			confirmRepair: 'Conferma controllo riparazione',
 			confirmRepairMsg: 'La modalita riparazione puo modificare il filesystem. Continuare?',
 			confirmDelete: 'Conferma eliminazione partizione',
-			confirmDeleteMsg: 'Accodare eliminazione della partizione selezionata?',
+			confirmDeleteMsg: 'Eliminare la partizione selezionata?',
 			confirmCreate: 'Conferma creazione partizione',
-			confirmCreateMsg: 'Accodare creazione partizione con la geometria selezionata?',
+			confirmCreateMsg: 'Creare una partizione con la geometria selezionata?',
 			confirmMkfs: 'Conferma creazione filesystem',
-			confirmMkfsMsg: 'Accodare creazione filesystem. I dati esistenti andranno persi quando applicata.',
+			confirmMkfsMsg: 'Creare filesystem. I dati esistenti andranno persi quando applicata.',
 			confirmMove: 'Conferma spostamento partizione',
-			confirmMoveMsg: 'Accodare spostamento della partizione selezionata verso lo spazio libero target?',
+			confirmMoveMsg: 'Spostare la partizione selezionata verso lo spazio libero target?',
 			confirmClone: 'Conferma clonazione partizione',
-			confirmCloneMsg: 'Accodare clonazione della partizione sorgente selezionata verso lo spazio libero target?',
+			confirmCloneMsg: 'Clonare la partizione sorgente selezionata verso lo spazio libero target?',
 			confirmMount: 'Conferma richiesta mount',
-			confirmMountMsg: 'Accodare operazione di mount per la partizione selezionata?',
+			confirmMountMsg: 'Montare la partizione selezionata?',
 			confirmUnmount: 'Conferma richiesta unmount',
-			confirmUnmountMsg: 'Accodare operazione di unmount per partizione o mountpoint?',
+			confirmUnmountMsg: 'Smontare la partizione o mountpoint selezionato?',
 			tQueueEmpty: 'La coda operazioni e vuota.',
 			tNeedAck: 'Digita YES_I_UNDERSTAND prima nel campo sicurezza.',
 			tNoDevice: 'Seleziona prima un dispositivo.',
@@ -4830,14 +4979,14 @@ window.paceOptions = {
 			tNeedPartName: 'Seleziona una partizione e fornisci un nuovo nome.',
 			tNeedFlag: 'Seleziona una partizione e fornisci il nome flag.',
 			tNeedSourcePart: 'Imposta prima il percorso partizione sorgente (oppure dispositivo sorgente + numero).',
-			tDropQueuedQuick: 'Nuova partizione accodata dal segmento libero (modalita rapida).',
-			tDropQueuedWithFs: 'Nuova partizione accodata dal segmento libero con Role, Filesystem e Partition name.',
-			tDropQueuedMoveSmartChip: 'Piano di spostamento smart accodato dal chip Sposta partizione.',
-			tDropQueuedMoveSectorChip: 'Piano di spostamento settore per settore accodato dal chip Sposta partizione.',
-			tDropQueuedCloneSmartChip: 'Piano di clonazione smart accodato dal chip Clona partizione.',
-			tDropQueuedCloneSectorChip: 'Piano di clonazione settore per settore accodato dal chip Clona partizione.',
-			tQueued: 'Operazione accodata.',
-			tQueueApplied: 'Coda completata con successo.',
+			tDropQueuedQuick: 'Nuova partizione aggiunta dal segmento libero (modalita rapida).',
+			tDropQueuedWithFs: 'Nuova partizione aggiunta dal segmento libero con Role, Filesystem e Partition name.',
+			tDropQueuedMoveSmartChip: 'Piano di spostamento smart aggiunto dal chip Sposta partizione.',
+			tDropQueuedMoveSectorChip: 'Piano di spostamento settore per settore aggiunto dal chip Sposta partizione.',
+			tDropQueuedCloneSmartChip: 'Piano di clonazione smart aggiunto dal chip Clona partizione.',
+			tDropQueuedCloneSectorChip: 'Piano di clonazione settore per settore aggiunto dal chip Clona partizione.',
+			tQueued: 'Operazione aggiunta.',
+			tQueueApplied: 'Tutte le operazioni completate con successo.',
 			tContextUnavailable: 'Azione non disponibile per questa selezione.',
 			tMoveNoSpace: 'Spazio libero insufficiente per il target di move.',
 			tMoveSame: 'Area sorgente e target sovrapposte o uguali.',
@@ -4851,7 +5000,14 @@ window.paceOptions = {
 			btnConfirm: 'Conferma',
 			btnCancel: 'Annulla',
 			btnClose: 'Chiudi',
-			btnValidateQueue: 'Valida e accoda'
+			btnValidateQueue: 'Valida e aggiungi',
+			tDone: 'Fatto',
+			tError: 'Errore',
+			tQueueApplying: 'Applicazione di {0} operazione/i pendente/i...',
+			tQueueAllDone: 'Tutte le {0} operazione/i applicate con successo.',
+			tQueueDiskWarning: 'ATTENZIONE: Operazione disco in corso. Non interrompere alimentazione o staccare lo storage. Potrebbe richiedere alcuni minuti.',
+			tQueueStoppedAt: 'Interrotto per errore al passo {0}.',
+			tQueueErrorAt: 'Errore al passo {0}: {1}'
 		},
 		de: {
 			dangerTitle: 'Gefahrenbereich',
@@ -4866,10 +5022,10 @@ window.paceOptions = {
 			chipClonePartitionSector: 'Partition klonen (sektorweise)',
 			workflowTitle: 'Datentraegerverwaltung',
 			workflow1: 'Geraete aktualisieren und Datentraeger waehlen.',
-			workflow2: 'Neue Partition fuer Schnellanlage mit Standardwerten ziehen. Neue Partition mit Dateisystem ziehen, um Role, Filesystem und Partition name aus dem Formular zu uebernehmen. Einen der vier Move/Clone-Chips auf freien Bereich ziehen, um genau diesen Modus in die Queue zu stellen. Linken oder rechten Partitionsrand ziehen fuer Resize.',
-			workflow3: 'Operationen in Queue sammeln, pruefen und dann anwenden.',
+			workflow2: 'Neue Partition fuer Schnellanlage mit Standardwerten ziehen. Neue Partition mit Dateisystem ziehen, um Role, Filesystem und Partition name aus dem Formular zu uebernehmen. Move or clone partition auf freien Bereich ziehen, um das vorausgefuellte Move/Clone-Formular zu oeffnen. Linken oder rechten Partitionsrand ziehen fuer Resize. Partition in freien Bereich ziehen fuer smarten Move.',
+			workflow3: 'Operationen hinzufuegen, pruefen und dann anwenden.',
 			workflow4: 'Metadatenansicht, Dateisystem-Pruefung, Mount und Diagnose verwenden.',
-			dragHint: 'Neue Partition fuer Schnellanlage mit Standardwerten ziehen. Neue Partition mit Dateisystem ziehen, um Role, Filesystem und Partition name aus dem Formular zu uebernehmen. Einen der vier Move/Clone-Chips auf freien Bereich ziehen, um genau diesen Modus in die Queue zu stellen. Linken oder rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer smarten Move.',
+			dragHint: 'Neue Partition fuer Schnellanlage mit Standardwerten ziehen. Neue Partition mit Dateisystem ziehen, um Role, Filesystem und Partition name aus dem Formular zu uebernehmen. Move or clone partition auf freien Bereich ziehen, um das vorausgefuellte Move/Clone-Formular zu oeffnen. Linken oder rechten Rand einer Partition ziehen fuer Resize. Partition in freien Bereich ziehen fuer smarten Move.',
 			missingCommandsLabel: 'Fehlende Befehle:',
 			languageLabel: 'Sprache',
 			usbOnlyLabel: 'Geraetefilter',
@@ -4880,7 +5036,7 @@ window.paceOptions = {
 			chipPartcloneVerifyLabel: 'Smart-Clone pruefen',
 			chipDdBsLabel: 'dd-Blockgroesse',
 			helperTitle: 'Tastenkuerzel und Ablauf',
-			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Queue anwenden\nEntf: Loeschen der gewaehlten Partition in Queue\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nLinken/rechten Partitionsrand ziehen: Resize in Queue\nPartition auf freien Bereich ziehen: smarten Move in Queue\nSmart/Sektor Move/Clone-Chips auf freien Bereich ziehen: exakten Plan aus Quellfeldern in Queue',
+			helperText: 'Ctrl+R: Karte aktualisieren\nCtrl+Shift+A: Toolchain analysieren\nCtrl+M: Partitions-Metadaten laden\nCtrl+Enter: Operationen anwenden\nEntf: Gewaehlte Partition loeschen\nF1 oder ?: Hilfe oeffnen\nRechtsklick auf Partition: Kontextmenue\nLinken/rechten Partitionsrand ziehen: Resize\nPartition auf freien Bereich ziehen: smarter Move\nSmart/Sektor Move/Clone-Chips auf freien Bereich ziehen: exakter Plan aus Quellfeldern',
 			cmdPreviewTitle: 'Befehlsvorschau',
 			cmdPreviewHint: 'Befehlsvorschau ist schreibgeschuetzt und wird automatisch aus den Parametern neu erzeugt.',
 			toolAllAvailable: 'Toolchain-Status: alle erkannten Befehle sind verfuegbar.',
@@ -4888,25 +5044,25 @@ window.paceOptions = {
 			toolOptionalMissing: 'Toolchain-Status: optionale Befehle fehlen.',
 			toolAnalysisFailed: 'Toolchain-Status: Analyse fehlgeschlagen.',
 			confirmAction: 'Aktion bestaetigen',
-			confirmQueueApply: 'Warteschlangen-Operationen anwenden?',
-			confirmQueueApplyMsg: 'Die Queue fuehrt echte Datentraeger-Operationen der Reihe nach aus. Fortfahren?',
+			confirmQueueApply: 'Anstehende Operationen anwenden?',
+			confirmQueueApplyMsg: 'Die Operationen fuehren echte Datentraeger-Befehle der Reihe nach aus. Fortfahren?',
 			confirmRepair: 'Reparaturpruefung bestaetigen',
 			confirmRepairMsg: 'Reparaturmodus kann Dateisystemstrukturen aendern. Fortfahren?',
 			confirmDelete: 'Partitionsloeschung bestaetigen',
-			confirmDeleteMsg: 'Loeschen der gewaehlten Partition in die Queue aufnehmen?',
+			confirmDeleteMsg: 'Gewaehlte Partition loeschen?',
 			confirmCreate: 'Partitionserstellung bestaetigen',
-			confirmCreateMsg: 'Partitionserstellung mit gewaehlter Geometrie in Queue aufnehmen?',
+			confirmCreateMsg: 'Partition mit gewaehlter Geometrie erstellen?',
 			confirmMkfs: 'Dateisystemerstellung bestaetigen',
-			confirmMkfsMsg: 'Dateisystemerstellung in Queue aufnehmen. Vorhandene Daten gehen beim Anwenden verloren.',
+			confirmMkfsMsg: 'Dateisystem erstellen. Vorhandene Daten gehen beim Anwenden verloren.',
 			confirmMove: 'Partitionsverschiebung bestaetigen',
-			confirmMoveMsg: 'Verschiebung der gewaehlten Partition in Ziel-Freiraum in Queue aufnehmen?',
+			confirmMoveMsg: 'Gewaehlte Partition in den Ziel-Freiraum verschieben?',
 			confirmClone: 'Partitionsklon bestaetigen',
-			confirmCloneMsg: 'Klonen der gewaehlten Quellpartition in Ziel-Freiraum in Queue aufnehmen?',
+			confirmCloneMsg: 'Gewaehlte Quellpartition in den Ziel-Freiraum klonen?',
 			confirmMount: 'Mount-Anfrage bestaetigen',
-			confirmMountMsg: 'Mount-Operation fuer die gewaehlte Partition in Queue aufnehmen?',
+			confirmMountMsg: 'Gewaehlte Partition mounten?',
 			confirmUnmount: 'Unmount-Anfrage bestaetigen',
-			confirmUnmountMsg: 'Unmount-Operation fuer Partition oder Mountpoint in Queue aufnehmen?',
-			tQueueEmpty: 'Die Operations-Queue ist leer.',
+			confirmUnmountMsg: 'Partition oder Mountpoint unmounten?',
+			tQueueEmpty: 'Die Operationsliste ist leer.',
 			tNeedAck: 'Bitte zuerst YES_I_UNDERSTAND in das Sicherheitsfeld eingeben.',
 			tNoDevice: 'Bitte zuerst ein Geraet auswaehlen.',
 			tNoPartition: 'Bitte zuerst eine Partition auswaehlen.',
@@ -4918,14 +5074,14 @@ window.paceOptions = {
 			tNeedPartName: 'Partition auswaehlen und neuen Namen angeben.',
 			tNeedFlag: 'Partition auswaehlen und Flag-Namen angeben.',
 			tNeedSourcePart: 'Zuerst Quell-Partitionspfad (oder Quellgeraet + Nummer) setzen.',
-			tDropQueuedQuick: 'Neue Partition aus freiem Segment in Queue gestellt (Schnellmodus).',
-			tDropQueuedWithFs: 'Neue Partition aus freiem Segment mit Role, Filesystem und Partition name in Queue gestellt.',
-			tDropQueuedMoveSmartChip: 'Smarter Move-Plan aus gezogenem Partition-verschieben-Chip in Queue gestellt.',
-			tDropQueuedMoveSectorChip: 'Sektorweiser Move-Plan aus gezogenem Partition-verschieben-Chip in Queue gestellt.',
-			tDropQueuedCloneSmartChip: 'Smarter Clone-Plan aus gezogenem Partition-klonen-Chip in Queue gestellt.',
-			tDropQueuedCloneSectorChip: 'Sektorweiser Clone-Plan aus gezogenem Partition-klonen-Chip in Queue gestellt.',
-			tQueued: 'Operation in Queue aufgenommen.',
-			tQueueApplied: 'Queue erfolgreich abgeschlossen.',
+			tDropQueuedQuick: 'Neue Partition aus freiem Segment hinzugefuegt (Schnellmodus).',
+			tDropQueuedWithFs: 'Neue Partition aus freiem Segment mit Role, Filesystem und Partition name hinzugefuegt.',
+			tDropQueuedMoveSmartChip: 'Smarter Move-Plan aus gezogenem Partition-verschieben-Chip hinzugefuegt.',
+			tDropQueuedMoveSectorChip: 'Sektorweiser Move-Plan aus gezogenem Partition-verschieben-Chip hinzugefuegt.',
+			tDropQueuedCloneSmartChip: 'Smarter Clone-Plan aus gezogenem Partition-klonen-Chip hinzugefuegt.',
+			tDropQueuedCloneSectorChip: 'Sektorweiser Clone-Plan aus gezogenem Partition-klonen-Chip hinzugefuegt.',
+			tQueued: 'Operation hinzugefuegt.',
+			tQueueApplied: 'Alle Operationen erfolgreich abgeschlossen.',
 			tContextUnavailable: 'Aktion fuer diese Auswahl nicht verfuegbar.',
 			tMoveNoSpace: 'Nicht genuegend freier Platz fuer das Move-Ziel.',
 			tMoveSame: 'Quell- und Zielbereich ueberlappen oder sind unveraendert.',
@@ -4939,7 +5095,14 @@ window.paceOptions = {
 			btnConfirm: 'Bestaetigen',
 			btnCancel: 'Abbrechen',
 			btnClose: 'Schliessen',
-			btnValidateQueue: 'Bestaetigen und queue'
+			btnValidateQueue: 'Bestaetigen und hinzufuegen',
+			tDone: 'Fertig',
+			tError: 'Fehler',
+			tQueueApplying: '{0} anstehende Operation(en) werden angewendet...',
+			tQueueAllDone: 'Alle {0} Operation(en) erfolgreich angewendet.',
+			tQueueDiskWarning: 'WARNUNG: Festplattenoperation laeuft. Unterbrechung der Stromversorgung und Abtrennen des Speichers vermeiden. Dies kann einige Minuten dauern.',
+			tQueueStoppedAt: 'Bei Schritt {0} wegen Fehler gestoppt.',
+			tQueueErrorAt: 'Fehler bei Schritt {0}: {1}'
 		}
 	};
 
@@ -4989,11 +5152,11 @@ window.paceOptions = {
 		verifyUnmountLabel: "Unmount before",
 		confirmVerify: "Confirm partition verify",
 		confirmVerifyMsg: "Compare two partitions byte-by-byte (read-only)?",
-		tVerifyQueued: "Verify operation queued.",
-		tDropQueuedMoveCloneChip: "Move or clone chip dropped – configure and queue."
+		tVerifyQueued: "Verify operation added.",
+		tDropQueuedMoveCloneChip: "Move or clone chip dropped – configure and add."
 	});
 	translations.en = Object.assign({}, translations.en, {
-		ctxDiskMoveClone: "Queue disk move or clone",
+		ctxDiskMoveClone: "Disk move or clone",
 		dmTitle: "Move or clone disk",
 		dmSourceDevLabel: "Source disk (-D)",
 		dmTargetDevLabel: "Target disk (-d)",
@@ -5010,7 +5173,7 @@ window.paceOptions = {
 		dmStepDelayLabel: "Step delay seconds (-w)",
 		confirmDiskClone: "Confirm disk clone/move",
 		confirmDiskCloneMsg: "Clone all partitions from source disk to target disk?",
-		tDiskMigrationQueued: "Disk migration operation queued."
+		tDiskMigrationQueued: "Disk migration operation added."
 	});
 	translations.it = Object.assign({}, translations.it, {
 		topButtonsExplain: "Run partprobe aggiorna la tabella partizioni vista dal kernel, Analyze toolchain controlla i comandi richiesti/opzionali, Partition metadata carica geometria partizione e metadati filesystem della partizione selezionata.",
@@ -5058,11 +5221,11 @@ window.paceOptions = {
 		verifyUnmountLabel: "Smonta prima",
 		confirmVerify: "Conferma verifica partizione",
 		confirmVerifyMsg: "Confronto byte per byte tra due partizioni (sola lettura)?",
-		tVerifyQueued: "Operazione di verifica accodata.",
-		tDropQueuedMoveCloneChip: "Chip sposta/clona posizionato – configura e accoda."
+		tVerifyQueued: "Operazione di verifica aggiunta.",
+		tDropQueuedMoveCloneChip: "Chip sposta/clona posizionato – configura e aggiungi."
 	});
 	translations.it = Object.assign({}, translations.it, {
-		ctxDiskMoveClone: "Metti in coda sposta o clona disco",
+		ctxDiskMoveClone: "Sposta o clona disco",
 		dmTitle: "Sposta o clona disco",
 		dmSourceDevLabel: "Disco sorgente (-D)",
 		dmTargetDevLabel: "Disco destinazione (-d)",
@@ -5074,12 +5237,12 @@ window.paceOptions = {
 		dmVerifyLabel: "Verifica ogni partizione (-V)",
 		dmForceFsLabel: "Forza tipo filesystem (-f)",
 		dmExtraOptsLabel: "Opzioni partclone extra (-x)",
-		dmIncludeTailLabel: "Includi settori non allocati in coda (-T)",
+		dmIncludeTailLabel: "Includi settori non allocati finali (-T)",
 		dmUnmountLabel: "Smonta partizioni prima (-u)",
 		dmStepDelayLabel: "Pausa tra passi in secondi (-w)",
 		confirmDiskClone: "Conferma clone/spostamento disco",
 		confirmDiskCloneMsg: "Clonare tutte le partizioni dal disco sorgente al disco destinazione?",
-		tDiskMigrationQueued: "Operazione di migrazione disco accodata."
+		tDiskMigrationQueued: "Operazione di migrazione disco aggiunta."
 	});
 	translations.de = Object.assign({}, translations.de, {
 		topButtonsExplain: "Run partprobe aktualisiert die Kernel-Sicht auf die Partitionstabelle, Analyze toolchain prueft erforderliche/optionale Befehle, Partition metadata laedt Partitionsgeometrie und Dateisystem-Metadaten der gewaehlten Partition.",
@@ -5127,11 +5290,11 @@ window.paceOptions = {
 		verifyUnmountLabel: "Vorher aushaengen",
 		confirmVerify: "Partitionspruefung bestaetigen",
 		confirmVerifyMsg: "Zwei Partitionen byteweise vergleichen (nur lesend)?",
-		tVerifyQueued: "Pruefungsoperation in Queue aufgenommen.",
-		tDropQueuedMoveCloneChip: "Verschieben/Klonen-Chip abgelegt – konfigurieren und in Queue aufnehmen."
+		tVerifyQueued: "Pruefungsoperation hinzugefuegt.",
+		tDropQueuedMoveCloneChip: "Verschieben/Klonen-Chip abgelegt – konfigurieren und hinzufuegen."
 	});
 	translations.de = Object.assign({}, translations.de, {
-		ctxDiskMoveClone: "Datentrager verschieben oder klonen in Queue",
+		ctxDiskMoveClone: "Datentrager verschieben oder klonen",
 		dmTitle: "Datentrager verschieben oder klonen",
 		dmSourceDevLabel: "Quelldatentrager (-D)",
 		dmTargetDevLabel: "Zieldatentrager (-d)",
@@ -5148,7 +5311,7 @@ window.paceOptions = {
 		dmStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
 		confirmDiskClone: "Datentragerklon/-verschiebung bestaetigen",
 		confirmDiskCloneMsg: "Alle Partitionen vom Quelldatentrager auf den Zieldatentrager klonen?",
-		tDiskMigrationQueued: "Disk-Migrationserstellung in Queue aufgenommen."
+		tDiskMigrationQueued: "Disk-Migrationsoperation hinzugefuegt."
 	});
 	translations.en = Object.assign({}, translations.en, {
 		piExpTitle: "Export partition/disk to image",
@@ -5335,7 +5498,14 @@ window.paceOptions = {
 		analyzeHint: "Verifier les commandes requises/optionnelles de gestion disque",
 		metadataHint: "Charger geometrie et metadonnees de la partition selectionnee",
 		usbAllDevices: "Tous les peripheriques bloc",
-		usbOnlyDevices: "Peripheriques USB uniquement"
+		usbOnlyDevices: "Peripheriques USB uniquement",
+		tDone: "Termine",
+		tError: "Erreur",
+		tQueueApplying: "Application de {0} operation(s) en attente...",
+		tQueueAllDone: "Les {0} operation(s) appliquees avec succes.",
+		tQueueDiskWarning: "ATTENTION: Operation disque en cours. Ne pas interrompre l'alimentation ni deconnecter le stockage. Cela peut prendre plusieurs minutes.",
+		tQueueStoppedAt: "Arret a l'etape {0} suite a une erreur.",
+		tQueueErrorAt: "Erreur a l'etape {0}: {1}"
 	});
 	translations.es = Object.assign({}, translations.en, {
 		languageLabel: "Idioma",
@@ -5354,7 +5524,14 @@ window.paceOptions = {
 		analyzeHint: "Comprobar comandos requeridos/opcionales de gestion de discos",
 		metadataHint: "Cargar geometria y metadatos de la particion seleccionada",
 		usbAllDevices: "Todos los dispositivos de bloque",
-		usbOnlyDevices: "Solo dispositivos USB"
+		usbOnlyDevices: "Solo dispositivos USB",
+		tDone: "Hecho",
+		tError: "Error",
+		tQueueApplying: "Aplicando {0} operacion(es) pendiente(s)...",
+		tQueueAllDone: "Todas las {0} operacion(es) aplicadas con exito.",
+		tQueueDiskWarning: "ADVERTENCIA: Operacion de disco en curso. No interrumpir la alimentacion ni desconectar el almacenamiento. Puede tardar varios minutos.",
+		tQueueStoppedAt: "Detenido por error en el paso {0}.",
+		tQueueErrorAt: "Error en el paso {0}: {1}"
 	});
 
 	var state = {
@@ -5387,6 +5564,16 @@ window.paceOptions = {
 			return langMap[key];
 		}
 		return (translations.en && translations.en[key]) || key;
+	}
+
+	// Translate with positional placeholders: tf('key', arg0, arg1, ...)
+	// Replaces {0}, {1}, ... in the translated string.
+	function tf(key) {
+		var s = t(key);
+		for (var i = 1; i < arguments.length; i++) {
+			s = s.replace('{' + (i - 1) + '}', String(arguments[i]));
+		}
+		return s;
 	}
 
 	function clampNumber(v, minV, maxV) {
@@ -5610,7 +5797,7 @@ window.paceOptions = {
 		wrap.appendChild(toast);
 		setTimeout(function () {
 			if (toast.parentNode) toast.parentNode.removeChild(toast);
-		}, ttl || 5000);
+		}, ttl || 10000);
 	}
 
 	function showConfirmModal(title, message) {
@@ -5712,15 +5899,23 @@ window.paceOptions = {
 		'fs-mountpoint':   { title: 'Mountpoint',                body: 'Directory where the partition will be mounted. Example: <code>/var/media/ftp/usbdisk</code>.<br><br>On FritzBox, USB drives are normally under <code>/var/media/ftp/</code>. The directory must exist before mounting.' },
 		'fs-mount-opts':   { title: 'Mount options',             body: 'Options passed to the <code>mount</code> command.<br><br><code>rw</code> – read-write (default). <code>ro</code> – read-only.<br><code>noatime</code> – skip access-time updates (reduces writes on flash/SD).<br><code>nofail</code> – do not fail boot if device is absent.<br><code>uid=1000,gid=1000</code> – set owner for FAT/exFAT/NTFS (Linux permission-less filesystems).<br><br>Leave blank for kernel defaults.' },
 		/* Device map section */
-		'map-sel-part-num':  { title: 'Selected partition number', body: 'The number of the partition currently selected in the disk map. Read-only — auto-updated when you click a partition in the visual map.<br><br>Used by queue operations (Delete, Resize, Set flag, Set label, Rename) to identify which partition to act on.' },
+		'map-sel-part-num':  { title: 'Selected partition number', body: 'The number of the partition currently selected in the disk map. Read-only — auto-updated when you click a partition in the visual map.<br><br>Used by operations (Delete, Resize, Set flag, Set label, Rename) to identify which partition to act on.' },
 		'map-sel-part-path': { title: 'Selected partition path',   body: 'Full block device path of the selected partition, e.g. <code>/dev/sda1</code>. Read-only — auto-filled when you click a partition. Also auto-fills the Partition path field in the Filesystem operations section.' },
 		'map-new-start':     { title: 'New start sector',          body: 'First 512-byte sector of the new partition to create. Must lie within a free (unallocated) region on the disk.<br><br>Use multiples of 2048 (= 1 MiB boundary) for modern disks. The drag-and-drop interface fills this automatically.<br><br>Linked to the "New start size" field — changing one updates the other.' },
 		'map-new-start-h':   { title: 'New start size',            body: 'Human-readable offset of the partition start, e.g. <code>1 MiB</code>, <code>512 KiB</code>.<br><br>Synchronized with the raw sector field. Editing this updates the sector value automatically.' },
 		'map-new-end':       { title: 'New end sector',            body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector, and after it.<br><br>Together with the start sector this defines the partition size. The drag-and-drop interface fills this automatically.' },
 		'map-new-end-h':     { title: 'New end size',              body: 'Human-readable end position of the partition, e.g. <code>488 MiB</code>.<br><br>Synchronized with the raw sector field on the left. Editing this updates the sector value automatically.' },
 		'map-role':          { title: 'Role',                      body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions.<br><br><b>logical</b> – partition inside an extended container. Allows more than 4 partitions on MBR. Only valid if an extended partition exists.<br><br><b>extended</b> – container for logical partitions. Only one per MBR disk. Irrelevant on GPT (GPT supports up to 128 partitions, all treated as primary).' },
-		'map-fs-hint':       { title: 'Filesystem',                body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Queue create filesystem" in the Filesystem operations section after creating the partition.' },
+		'map-fs-hint':       { title: 'Filesystem',                body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
 		'map-part-name':     { title: 'Partition name',            body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
+		/* New partition modal */
+		'pnp-start':     { title: 'New start sector',     body: 'First 512-byte sector of the new partition to create. Must lie within a free (unallocated) region on the disk.<br><br>Use multiples of 2048 (= 1 MiB boundary) for modern disks. The drag-and-drop interface fills this automatically.<br><br>Linked to the "New start size" field — changing one updates the other.' },
+		'pnp-start-h':   { title: 'New start size',       body: 'Human-readable offset of the partition start, e.g. <code>1 MiB</code>, <code>512 KiB</code>.<br><br>Synchronized with the raw sector field. Editing this updates the sector value automatically.' },
+		'pnp-end':       { title: 'New end sector',       body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector, and after it.<br><br>Together with the start sector this defines the partition size. The drag-and-drop interface fills this automatically.' },
+		'pnp-end-h':     { title: 'New end size',         body: 'Human-readable end position of the partition, e.g. <code>488 MiB</code>.<br><br>Synchronized with the raw sector field on the left. Editing this updates the sector value automatically.' },
+		'pnp-role':      { title: 'Role',                 body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions.<br><br><b>logical</b> – partition inside an extended container. Allows more than 4 partitions on MBR. Only valid if an extended partition exists.<br><br><b>extended</b> – container for logical partitions. Only one per MBR disk. Irrelevant on GPT (GPT supports up to 128 partitions, all treated as primary).' },
+		'pnp-fs-hint':   { title: 'Filesystem',           body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
+		'pnp-part-name': { title: 'Partition name',       body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
 		/* Partclone export modal */
 		'pi-exp-source':     { title: 'Source partition/disk',     body: 'The block device to export, e.g. <code>/dev/sda1</code> for a partition or <code>/dev/sda</code> for a whole disk.<br><br>Auto-filled from the context menu selection.' },
 		'pi-exp-output':     { title: 'Output image file (-o)',     body: 'Full path for the output image file, e.g. <code>/var/media/ftp/USB_DISK/backup.img</code>.<br><br>If compression is selected the appropriate extension is appended automatically by the script (.gz, .bz2, .lz4, .zst).<br><br>Ensure the destination has sufficient free space (can be up to the partition size for non-sparse filesystems).' },
@@ -5847,6 +6042,14 @@ window.paceOptions = {
 			'i18nRoleLabel'             : 'map-role',
 			'i18nFsHintLabel'           : 'map-fs-hint',
 			'i18nPartNameLabel'         : 'map-part-name',
+			/* New partition modal */
+			'i18nPnpStartLabel'         : 'pnp-start',
+			'i18nPnpStartHLabel'        : 'pnp-start-h',
+			'i18nPnpEndLabel'           : 'pnp-end',
+			'i18nPnpEndHLabel'          : 'pnp-end-h',
+			'i18nPnpRoleLabel'          : 'pnp-role',
+			'i18nPnpFsHintLabel'        : 'pnp-fs-hint',
+			'i18nPnpPartNameLabel'      : 'pnp-part-name',
 			/* Partclone export modal */
 			'i18nPiExpSourceLabel'      : 'pi-exp-source',
 			'i18nPiExpOutputLabel'      : 'pi-exp-output',
@@ -5979,28 +6182,75 @@ window.paceOptions = {
 		el.scrollTop = el.scrollHeight;
 	}
 
+	/* Convert ANSI colour codes to HTML spans and append to element */
+	function appendAnsi(id, text) {
+		var el = document.getElementById(id);
+		if (!el) return;
+		/* Escape HTML entities first */
+		var safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+		/* Map SGR codes -> CSS classes */
+		var ANSI_MAP = {
+			'0':  '',
+			'1':  'ansi-bold',
+			'2':  'ansi-dim',
+			'31': 'ansi-red',   '1;31': 'ansi-bold ansi-red',
+			'32': 'ansi-green', '1;32': 'ansi-bold ansi-green',
+			'33': 'ansi-yellow','1;33': 'ansi-bold ansi-yellow',
+			'34': 'ansi-blue',  '1;34': 'ansi-bold ansi-blue',
+			'36': 'ansi-cyan',  '1;36': 'ansi-bold ansi-cyan',
+			'90': 'ansi-gray',  '1;90': 'ansi-bold ansi-gray'
+		};
+		var html = '';
+		var spanOpen = false;
+		var parts = safe.split(/\x1b\[([0-9;]*)m/);
+		for (var i = 0; i < parts.length; i++) {
+			if (i % 2 === 0) {
+				html += parts[i];
+			} else {
+				if (spanOpen) { html += '</span>'; spanOpen = false; }
+				var cls = ANSI_MAP[parts[i]];
+				if (cls === undefined) cls = '';
+				if (cls) { html += '<span class="' + cls + '">'; spanOpen = true; }
+			}
+		}
+		if (spanOpen) html += '</span>';
+		el.innerHTML += html;
+		el.scrollTop = el.scrollHeight;
+	}
+
+	function clearLogOutput() {
+		var el = document.getElementById('cmdOutput');
+		if (el) { el.textContent = ''; el.innerHTML = ''; }
+	}
+
 	function callApiStreaming(action, params, outputElId, stepIdx, totalSteps, stepLabel) {
+		var _snow = new Date();
+		var _sts = _snow.getFullYear() + '-' + String(_snow.getMonth()+1).padStart(2,'0') + '-' + String(_snow.getDate()).padStart(2,'0')
+				+ ' ' + String(_snow.getHours()).padStart(2,'0') + ':' + String(_snow.getMinutes()).padStart(2,'0') + ':' + String(_snow.getSeconds()).padStart(2,'0');
 		var sep = '\n' +
-			'\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n' +
-			'\u25ba Step ' + (stepIdx + 1) + '/' + totalSteps + ': ' + (stepLabel || action) + '\n' +
-			'\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
-		appendTo(outputElId, sep);
+			'\x1b[1;90m\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\x1b[0m\n' +
+			'\x1b[1;36m\u25ba Step ' + (stepIdx + 1) + '/' + totalSteps + ': ' + (stepLabel || action) + '\x1b[0m  \x1b[90m' + _sts + '\x1b[0m\n' +
+			'\x1b[90m\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\x1b[0m\n';
+		appendAnsi(outputElId, sep);
 		paceHourglassStart();
 		var jobParams = {};
 		for (var k in params) {
 			if (Object.prototype.hasOwnProperty.call(params, k)) jobParams[k] = params[k];
 		}
-		jobParams.job_action = action;
+		jobParams.job_cmd = action;
 		return callApi('start_job', jobParams)
 			.then(function (startRes) {
-				if (!startRes.success) throw new Error(startRes.message || 'start_job failed');
+				if (!startRes.success) {
+					paceHourglassStop();
+					return { done: true, success: false, rc: 1, message: startRes.message || 'start_job failed', text: '' };
+				}
 				var token = startRes.token;
 				var offset = 0;
-				return new Promise(function (resolve, reject) {
+				return new Promise(function (resolve) {
 					function poll() {
 						callApi('poll_job', { job_token: token, offset: String(offset) })
 							.then(function (pr) {
-								if (pr.text) appendTo(outputElId, pr.text);
+								if (pr.text) appendAnsi(outputElId, pr.text);
 								if (pr.offset !== undefined) offset = Number(pr.offset);
 								if (pr.done) {
 									paceHourglassStop();
@@ -6009,9 +6259,9 @@ window.paceOptions = {
 									setTimeout(poll, 500);
 								}
 							})
-							.catch(function (err) {
+							.catch(function (pollErr) {
 								paceHourglassStop();
-								reject(err);
+								resolve({ done: true, success: false, rc: 1, message: pollErr.message || String(pollErr), text: '' });
 							});
 					}
 					poll();
@@ -6019,7 +6269,7 @@ window.paceOptions = {
 			})
 			.catch(function (err) {
 				paceHourglassStop();
-				throw err;
+				return { done: true, success: false, rc: 1, message: err.message || String(err), text: '' };
 			});
 	}
 
@@ -6494,7 +6744,7 @@ window.paceOptions = {
 			var pre = '';
 			if (v(params.fs_type) === 'ext2' || v(params.fs_type) === 'ext3' || v(params.fs_type) === 'ext4') {
 				pre = 'mke2fs -F -t ' + v(params.fs_type) + (opts ? (' ' + opts) : '') + ' ' + v(params.partition);
-				if (v(params.label)) pre += '\ne2label -L ' + v(params.label) + ' ' + v(params.partition);
+				if (v(params.label)) pre += '\ne2label ' + v(params.partition) + ' ' + v(params.label);
 				return pre;
 			}
 			if (v(params.fs_type) === 'fat16') {
@@ -6522,7 +6772,7 @@ window.paceOptions = {
 			var lblTarget = v(params.partition);
 			var lblValue = v(params.label);
 			if (lblFstype === 'ext2' || lblFstype === 'ext3' || lblFstype === 'ext4') {
-				return 'e2label -L ' + lblValue + ' ' + lblTarget;
+				return 'e2label ' + lblTarget + ' ' + lblValue;
 			}
 			if (lblFstype === 'fat' || lblFstype === 'fat12' || lblFstype === 'fat16' || lblFstype === 'fat32' || lblFstype === 'vfat') {
 				return 'fatlabel ' + lblTarget + ' ' + lblValue;
@@ -7166,11 +7416,11 @@ var parsed = null;
 try {
 parsed = JSON.parse(txt);
 } catch (err) {
-showToast('Invalid JSON in parameter editor: ' + err.message, 'error', 6000);
+showToast('Invalid JSON in parameter editor: ' + err.message, 'error', 10000);
 throw err;
 }
 if (!parsed||typeof parsed!=='object'||Array.isArray(parsed)){
-showToast('Parameter editor must contain a JSON object.', 'error', 5500);
+showToast('Parameter editor must contain a JSON object.', 'error', 10000);
 throw new Error('Invalid JSON object');
 }
 
@@ -7242,7 +7492,7 @@ function showCommandPreviewModal(action, params, label, confirmTitle, confirmMes
 				var previewValue = getPreviewEditorValue();
 				var cmdErr = validateCommandPreviewSyntax(previewValue);
 				if (cmdErr) {
-					showToast(cmdErr, 'error', 5500);
+					showToast(cmdErr, 'error', 10000);
 					return;
 				}
 				cleanup(previewValue);
@@ -7258,7 +7508,7 @@ function showCommandPreviewModal(action, params, label, confirmTitle, confirmMes
 		for (var k in op.params) {
 			if (Object.prototype.hasOwnProperty.call(op.params, k)) paramsCopy[k] = op.params[k];
 		}
-		showCommandPreviewModal(op.action, paramsCopy, op.label, 'Edit queued operation', 'Edit parameters and numeric values; command preview updates automatically.')
+		showCommandPreviewModal(op.action, paramsCopy, op.label, 'Edit pending operation', 'Edit parameters and numeric values; command preview updates automatically.')
 			.then(function (previewText) {
 				if (previewText === null) return;
 				op.params = paramsCopy;
@@ -7266,7 +7516,7 @@ function showCommandPreviewModal(action, params, label, confirmTitle, confirmMes
 				renderQueue();
 				syncSelectionWithPreview();
 				renderMap();
-				showToast('Queued operation updated.', 'success', 4000);
+				showToast('Queued operation updated.', 'success', 10000);
 			});
 	}
 
@@ -7290,7 +7540,7 @@ function queueOp(action, params, label, commandPreview, quiet) {
 		syncSelectionWithPreview();
 		renderMap();
 		if (!quiet) {
-			showToast(t('tQueued') + ' ' + label, 'info', 4200);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
 		}
 	}
 
@@ -7674,7 +7924,7 @@ actionsWrap.appendChild(btnRemove);
 			state.selectedPart = null;
 			state.selectedComponent = null;
 			clearSelectedPartitionUi();
-			updateMapStatus('Selected partition is no longer available in queued preview.');
+			updateMapStatus('Selected partition is no longer available in pending preview.');
 		}
 	}
 
@@ -7749,6 +7999,12 @@ actionsWrap.appendChild(btnRemove);
 		refreshSectorHumanFields();
 		updateMapStatus(part ? ('Selected partition #' + part.number + ' [' + part.start + 's..' + part.end + 's].') : '');
 		renderMap();
+		/* Auto-set unmount selects based on current mount status */
+		var _partMounted = !!(part && part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-');
+		var _umVal = _partMounted ? 'yes' : 'no';
+		['mcUnmountBefore','dmUnmount','piExpUnmount','piImpUnmount','piNsUnmount','piNrUnmount'].forEach(function(id) {
+			var el = document.getElementById(id); if (el) el.value = _umVal;
+		});
 	}
 
 	function selectDisk(dev) {
@@ -7822,30 +8078,36 @@ actionsWrap.appendChild(btnRemove);
 			clearTimeout(state.contextMenuHideTimer);
 			state.contextMenuHideTimer = null;
 		}
-		state.contextTarget = { type: menuType === 'disk' ? 'disk' : 'partition', target: target };
+		state.contextTarget = { type: menuType === 'disk' ? 'disk' : menuType === 'free' ? 'free' : 'partition', target: target };
 		menu.innerHTML = '';
 
 		var items = [];
 		if (menuType === 'disk') {
 			items = [
 				{ id: 'select_disk',     label: 'Select disk' },
-				{ id: 'delete_all_parts', label: 'Queue delete all disk partitions' },
-				{ id: 'disk_move_clone', label: 'Queue disk move or clone' },
+				{ id: 'delete_all_parts', label: 'Delete all disk partitions' },
+				{ id: 'disk_move_clone', label: 'Disk move or clone' },
 				{ id: 'disk_img_export', label: 'Export disk to image file' },
 				{ id: 'disk_img_import', label: 'Restore disk from image file' },
 				{ id: 'disk_ddrescue',   label: 'Clone disk with ddrescue (data recovery)' }
+			];
+		} else if (menuType === 'free') {
+			items = [
+				{ id: 'free_create',     label: 'Create partition' },
+				{ id: 'free_img_import', label: 'Restore partition from image file' },
+				{ id: 'free_net_recv',   label: 'Receive partition from network' }
 			];
 		} else {
 			var part = target;
 			items = [
 				{ id: 'select', label: 'Select partition' },
 				{ id: 'meta', label: 'Load metadata' },
-				{ id: 'delete', label: 'Queue delete partition' },
-				{ id: 'rename', label: 'Queue rename partition' },
-				{ id: 'flag', label: 'Queue set flag' },
-				{ id: 'mkfs', label: 'Queue create filesystem' },
-				{ id: 'mount', label: part.mountpoint ? 'Queue remount' : 'Queue mount' },
-				{ id: 'umount', label: 'Queue unmount' },
+				{ id: 'delete', label: 'Delete partition' },
+				{ id: 'rename', label: 'Rename partition' },
+				{ id: 'flag', label: 'Set flag' },
+				{ id: 'mkfs', label: 'Create filesystem' },
+				{ id: 'mount', label: part.mountpoint ? 'Remount' : 'Mount' },
+				{ id: 'umount', label: 'Unmount' },
 				{ id: 'fsck_ro',    label: 'Filesystem check read-only' },
 				{ id: 'fsck_fix',   label: 'Filesystem check/repair' },
 				{ id: 'img_export', label: 'Export partition to image file' },
@@ -7906,6 +8168,14 @@ actionsWrap.appendChild(btnRemove);
 		showToast(t('tContextUnavailable'), 'warn');
 		return;
 		}
+		if (menuType === 'free') {
+			var freeSeg = target;
+			if (action === 'free_create') { showNewPartModal(freeSeg.start, freeSeg.end); return; }
+			if (action === 'free_img_import') { showPartcloneImportModal({ path: freeSeg.devPath, mountpoint: '' }, 'disk'); return; }
+			if (action === 'free_net_recv')   { showPartcloneNetRecvModal({ path: freeSeg.devPath, mountpoint: '' }); return; }
+			showToast(t('tContextUnavailable'), 'warn');
+			return;
+		}
 		var part = target;
 		selectPartition(part);
 		if (action === 'select') return;
@@ -7913,8 +8183,8 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'delete') { queueDeletePartition(); return; }
 		if (action === 'rename') { queueRenamePartition(); return; }
 		if (action === 'flag') { queueSetFlag(); return; }
-		if (action === 'mkfs') { queueMkfs(); return; }
-		if (action === 'mount') { queueMountPartition(); return; }
+		if (action === 'mkfs') { document.getElementById('fsTypeSelect').value = 'auto'; queueMkfs(); return; }
+		if (action === 'mount') { document.getElementById('fsTypeSelect').value = 'auto'; queueMountPartition(); return; }
 		if (action === 'umount') { queueUnmountPartition(); return; }
 		if (action === 'fsck_ro') { runFsck(false); return; }
 		if (action === 'fsck_fix') { runFsck(true); return; }
@@ -7978,10 +8248,23 @@ actionsWrap.appendChild(btnRemove);
 		};
 		map.appendChild(diskBlock);
 
-		legend.textContent = dev.path + ' | table=' + (dev.table || 'unknown') + ' | model=' + (dev.model || '-') + ' | size=' + humanBytes(total * logical);
-		if (dev.transport) legend.textContent += ' | transport=' + dev.transport;
-		if (dev.vendor) legend.textContent += ' | vendor=' + dev.vendor;
-		if (dev.serial) legend.textContent += ' | serial=' + dev.serial;
+/* When a partition is selected, show its device info in the legend
+                   even if the user is currently browsing a different disk. */
+                var legendDev = dev;
+                if (state.selectedPart && state.selectedPartDevice && state.selectedPartDevice !== String(dev.path || '')) {
+                        for (var _li = 0; _li < state.devices.length; _li++) {
+                                if (String(state.devices[_li].path || '') === state.selectedPartDevice) {
+                                        legendDev = state.devices[_li];
+                                        break;
+                                }
+                        }
+                }
+                var _lt = Number(legendDev.total_sectors || 0);
+                var _ll = Number(legendDev.logical_sector_size || 512);
+                legend.textContent = legendDev.path + ' | table=' + (legendDev.table || 'unknown') + ' | model=' + (legendDev.model || '-') + ' | size=' + humanBytes(_lt * _ll);
+                if (legendDev.transport) legend.textContent += ' | transport=' + legendDev.transport;
+                if (legendDev.vendor) legend.textContent += ' | vendor=' + legendDev.vendor;
+                if (legendDev.serial) legend.textContent += ' | serial=' + legendDev.serial;
 
 		// Pre-compute per-block layout geometry in a single forward pass so that:
 		// (a) free-space segments get a 4 px minimum making small leading gaps
@@ -8154,7 +8437,7 @@ actionsWrap.appendChild(btnRemove);
 
 					var leftHandle = document.createElement('div');
 					leftHandle.className = 'pcgi-resize-handle pcgi-resize-handle-left';
-					leftHandle.title = 'Drag left edge to queue move/resize';
+					leftHandle.title = 'Drag left edge to move/resize';
 					leftHandle.onmousedown = function (ev) {
 						ev.stopPropagation();
 						startResize(ev, dev, idx, 'left');
@@ -8162,7 +8445,7 @@ actionsWrap.appendChild(btnRemove);
 					block.appendChild(leftHandle);
 					var handle = document.createElement('div');
 					handle.className = 'pcgi-resize-handle';
-					handle.title = 'Drag to queue resize';
+					handle.title = 'Drag to resize';
 					handle.onmousedown = function (ev) {
 						ev.stopPropagation();
 						startResize(ev, dev, idx, 'right');
@@ -8189,6 +8472,12 @@ actionsWrap.appendChild(btnRemove);
 						hideContextMenu();
 						selectUnallocatedSegment(p);
 					};
+					block.oncontextmenu = function (ev) {
+						ev.preventDefault();
+						ev.stopPropagation();
+						selectUnallocatedSegment(p);
+						showContextMenu({ kind: 'free', start: p.start, end: p.end, devPath: String(dev.path || '') }, ev, 'free');
+					};
 					block.ondragover = function (ev) { ev.preventDefault(); };
 					block.ondrop = function (ev) {
 						ev.preventDefault();
@@ -8199,7 +8488,7 @@ actionsWrap.appendChild(btnRemove);
 							showNewPartModal(p.start, p.end);
 						} else if (data === 'chip-move-or-clone') {
 							updateMapStatus(t('tDropQueuedMoveCloneChip'));
-							showToast(t('tDropQueuedMoveCloneChip'), 'info', 4000);
+							showToast(t('tDropQueuedMoveCloneChip'), 'info', 10000);
 							var preselSrcDev  = state.selectedDevice || '';
 							var preselSrcPart = state.selectedPart   || null;
 							showMoveCloneModal(dev.path, p.start, p.end, preselSrcDev, preselSrcPart);
@@ -8487,25 +8776,25 @@ actionsWrap.appendChild(btnRemove);
 
 		if (isShrink && hasFilesystem) {
 			if (!fsCap.supported) {
-				showToast('Cannot shrink partition #' + part.number + ': filesystem ' + rawFsType + ' is not supported for resize.', 'error', 7000);
+				showToast('Cannot shrink partition #' + part.number + ': filesystem ' + rawFsType + ' is not supported for resize.', 'error', 10000);
 				return;
 			}
 			if (fsCap.hasTool === false) {
-				showToast('Cannot shrink partition #' + part.number + ': missing resize tool (' + fsCap.toolHint + ').', 'error', 7000);
+				showToast('Cannot shrink partition #' + part.number + ': missing resize tool (' + fsCap.toolHint + ').', 'error', 10000);
 				return;
 			}
 			if (!queueFs) {
 				queueFs = true;
-				showToast('Filesystem resize enabled automatically for shrink operation.', 'warn', 5500);
+				showToast('Filesystem resize enabled automatically for shrink operation.', 'warn', 10000);
 			}
 		}
 
 		if (!isShrink && hasFilesystem) {
 			if (!fsCap.supported) {
-				showToast('Warning: growing partition with filesystem ' + rawFsType + ' has no supported resize. Filesystem resize will be skipped.', 'warn', 6500);
+				showToast('Warning: growing partition with filesystem ' + rawFsType + ' has no supported resize. Filesystem resize will be skipped.', 'warn', 10000);
 				queueFs = false;
 			} else if (fsCap.hasTool === false) {
-				showToast('Warning: missing tool ' + fsCap.toolHint + '. Partition growth will be queued without filesystem resize.', 'warn', 6500);
+				showToast('Warning: missing tool ' + fsCap.toolHint + '. Partition growth will be added without filesystem resize.', 'warn', 10000);
 				queueFs = false;
 			}
 		}
@@ -8522,7 +8811,7 @@ actionsWrap.appendChild(btnRemove);
 
 		return showConfirmModal(
 			t('confirmAction'),
-			'Queue resize plan for partition #' + part.number + ' on ' + dev.path + '?'
+			'Resize partition #' + part.number + ' on ' + dev.path + '?'
 		).then(function (ok) {
 			if (!ok) return;
 
@@ -8610,7 +8899,7 @@ actionsWrap.appendChild(btnRemove);
 				);
 			}
 
-			showToast('Resize plan queued (' + (isShrink ? 'shrink' : 'grow') + ').', 'success', 2200);
+			showToast('Resize plan added (' + (isShrink ? 'shrink' : 'grow') + ').', 'success', 10000);
 		});
 	}
 
@@ -8672,7 +8961,7 @@ var srcEnd = Number(part && part.end || 0);
 var tgtStart = Number(targetStart || 0);
 var tgtEnd = Number(targetEnd || 0);
 if (moveRangesIntersect(srcStart, srcEnd, tgtStart, tgtEnd)) {
-showToast('Move blocked: target range intersects source partition range.', 'error', 4200);
+showToast('Move blocked: target range intersects source partition range.', 'error', 10000);
 return false;
 }
 return true;
@@ -8737,7 +9026,7 @@ function getChipSourceSelection(silent) {
 			sourcePath: String(state.selectedPart.path || '')
 		};
 	}
-	if (!silent) showToast(t('tNeedSourcePart'), 'warn', 3400);
+	if (!silent) showToast(t('tNeedSourcePart'), 'warn', 10000);
 	return null;
 }
 
@@ -8886,22 +9175,43 @@ function populateVerifyPartDropdown(devSelId, partSelId) {
 function showNewPartModal(dropStart, dropEnd) {
 	var modal    = document.getElementById('pcgiNewPartModal');
 	var titleEl  = document.getElementById('pcgiNewPartTitle');
-	var textEl   = document.getElementById('pcgiNewPartText');
 	var cancelBtn = document.getElementById('pcgiNewPartCancelBtn');
 	var quickBtn  = document.getElementById('pcgiNewPartQuickBtn');
 	var fsBtn     = document.getElementById('pcgiNewPartFsBtn');
 	if (!modal) return;
 
+	/* Populate modal sector fields and human-readable peers */
+	document.getElementById('pnpStartSector').value = String(dropStart);
+	document.getElementById('pnpEndSector').value   = String(dropEnd);
+	updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+	updateHumanFieldFromSector('pnpEndSector',   'pnpEndHuman');
+
+	/* Pre-fill role/fs/name from main form (or sensible defaults) */
+	var roleEl = document.getElementById('pnpRole');
+	var fsEl   = document.getElementById('pnpFsHint');
+	var nameEl = document.getElementById('pnpPartName');
+	if (roleEl) roleEl.value  = (document.getElementById('newPartRole') || {}).value || 'primary';
+	if (fsEl)   fsEl.value    = (document.getElementById('newFsHint')   || {}).value || '';
+	if (nameEl) nameEl.value  = (document.getElementById('newPartName') || {}).value || '';
+
+	/* Sync main form so queueCreatePartition* helpers can read from it */
 	document.getElementById('newStartSector').value = String(dropStart);
 	document.getElementById('newEndSector').value   = String(dropEnd);
 	refreshSectorHumanFields();
 
 	if (titleEl) titleEl.textContent = t('newPartAskTitle') || 'New partition';
-	if (textEl)  textEl.textContent  = (t('newPartAskText') || 'Create a filesystem on the new partition?') +
-	                                   '\n[' + dropStart + 's \u2013 ' + dropEnd + 's  (' + humanBytes((Number(dropEnd) - Number(dropStart) + 1) * getCurrentSectorSize()) + ')]';
 
 	modal.style.display = 'flex';
 	modal.setAttribute('aria-hidden', 'false');
+
+	function syncMainFormFromModal() {
+		document.getElementById('newStartSector').value = document.getElementById('pnpStartSector').value.trim();
+		document.getElementById('newEndSector').value   = document.getElementById('pnpEndSector').value.trim();
+		document.getElementById('newPartRole').value    = document.getElementById('pnpRole').value;
+		document.getElementById('newFsHint').value      = document.getElementById('pnpFsHint').value;
+		document.getElementById('newPartName').value    = document.getElementById('pnpPartName').value.trim();
+		refreshSectorHumanFields();
+	}
 
 	function cleanup() {
 		modal.style.display = 'none';
@@ -8912,8 +9222,8 @@ function showNewPartModal(dropStart, dropEnd) {
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
 	cancelBtn.onclick = cleanup;
-	quickBtn.onclick  = function () { cleanup(); updateMapStatus(t('tDropQueuedQuick')); queueCreatePartitionBasic(); };
-	fsBtn.onclick     = function () { cleanup(); updateMapStatus(t('tDropQueuedWithFs')); queueCreatePartition(); };
+	quickBtn.onclick  = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedQuick')); queueCreatePartitionBasic(); };
+	fsBtn.onclick     = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedWithFs')); queueCreatePartition(); };
 }
 
 // ── Verify partitions modal ───────────────────────────────────────────────────
@@ -8926,6 +9236,14 @@ function showVerifyModal() {
 	populateDevDropdown('verifyTargetDev');
 	populatePartDropdown('verifySourceDev', 'verifySourcePartNum');
 	populatePartDropdown('verifyTargetDev', 'verifyTargetPartNum');
+
+	/* Auto-set verify unmount based on currently selected partition */
+	var _vumEl = document.getElementById('verifyUnmount');
+	if (_vumEl) {
+		var _vp = state.selectedPart;
+		var _vmounted = !!((_vp) && _vp.mountpoint && String(_vp.mountpoint).trim() && String(_vp.mountpoint).trim() !== '-');
+		_vumEl.value = _vmounted ? 'yes' : 'no';
+	}
 
 	var cancelBtn = document.getElementById('pcgiVerifyCancelBtn');
 	var okBtn     = document.getElementById('pcgiVerifyOkBtn');
@@ -8966,7 +9284,7 @@ function showVerifyModal() {
 		.then(function (previewText) {
 			if (previewText === null) return;
 			queueOp('verify_partition', vParams, vLabel, previewText, false);
-			showToast(t('tVerifyQueued'), 'info', 2400);
+			showToast(t('tVerifyQueued'), 'info', 10000);
 		});
 	};
 }
@@ -9079,11 +9397,11 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 		var ddBs        = ddBsEl       ? String(ddBsEl.value       || '1M').trim(): '1M';
 
 		if (!srcDevPath || !srcPartNum) {
-			showToast(t('tNeedSourcePart'), 'warn', 3000);
+			showToast(t('tNeedSourcePart'), 'warn', 10000);
 			return;
 		}
 		if (!tStart || !tEnd || !/^\d+$/.test(tStart) || !/^\d+$/.test(tEnd)) {
-			showToast(t('tNeedStartEnd'), 'warn', 3000);
+			showToast(t('tNeedStartEnd'), 'warn', 10000);
 			return;
 		}
 
@@ -9109,7 +9427,7 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 		};
 
 		if (!srcPart) {
-			showToast(t('tNeedSourcePart'), 'warn', 3000);
+			showToast(t('tNeedSourcePart'), 'warn', 10000);
 			return;
 		}
 
@@ -9137,7 +9455,7 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 			.then(function (previewText) {
 				if (previewText === null) return;
 				queueOp('move_partition', moveParams, moveLabel, previewText, false);
-				showToast(t('tQueued') + ' ' + moveLabel, 'info', 2400);
+				showToast(t('tQueued') + ' ' + moveLabel, 'info', 10000);
 			});
 		} else {
 			var cloneParams = {
@@ -9163,7 +9481,7 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 			.then(function (previewText) {
 				if (previewText === null) return;
 				queueOp('clone_partition_dd', cloneParams, cloneLabel, previewText, false);
-				showToast(t('tQueued') + ' ' + cloneLabel, 'info', 2400);
+				showToast(t('tQueued') + ' ' + cloneLabel, 'info', 10000);
 			});
 		}
 	};
@@ -9235,7 +9553,7 @@ function enqueueCloneLikeOps(targetDevPath, sourceDevPath, part, targetStart, ta
 
 	if (!quiet) {
 		var kind = includeDeleteSource ? 'move' : 'clone';
-		showToast('Queued ' + kind + ' (' + mode + ') for source partition #' + srcPartNum + '.', 'info', 2600);
+		showToast('Queued ' + kind + ' (' + mode + ') for source partition #' + srcPartNum + '.', 'info', 10000);
 	}
 	return true;
 }
@@ -9266,7 +9584,7 @@ return showCommandPreviewModal('clone_partition_dd', cloneParams, cloneLabel, t(
 if (previewText === null) return;
 var enqueued = enqueueCloneLikeOps(targetDevPath, sourceDevPath, part, targetStart, targetEnd, false, true, mountpointOverride, mode);
 if (enqueued === false) return;
-showToast(t('tQueued') + ' ' + cloneLabel, 'info', 2400);
+showToast(t('tQueued') + ' ' + cloneLabel, 'info', 10000);
 });
 }
 
@@ -9277,7 +9595,7 @@ return false;
 var enqueued = enqueueCloneLikeOps(targetDevPath, sourceDevPath, part, targetStart, targetEnd, true, true, mountpointOverride, cloneMode);
 if (enqueued === false) return false;
 if (!quiet) {
-showToast('Relocate partition #' + part.number + ' queued.', 'info', 2600);
+showToast('Relocate partition #' + part.number + ' added.', 'info', 10000);
 }
 return true;
 }
@@ -9314,7 +9632,7 @@ if (previewText === null) return;
 if (!ensureMoveTargetDoesNotIntersectSource(part, targetStart, targetEnd, sourceDev, targetDevPath)) return;
 var enqueued = enqueueMovePartitionOps(targetDevPath, sourceDev, part, targetStart, targetEnd, previewText, true, mountpointOverride, mode);
 if (enqueued === false) return;
-showToast(t('tQueued') + ' ' + moveLabel, 'info', 2400);
+showToast(t('tQueued') + ' ' + moveLabel, 'info', 10000);
 });
 }
 
@@ -9344,7 +9662,7 @@ showCommandPreviewModal('delete_partition', deleteParams, deleteLabel, t('confir
 .then(function (previewText) {
 if (previewText === null) return;
 enqueueDeletePartitionOps(devPath, part, previewText, true);
-showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
+showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 });
 }
 
@@ -9446,8 +9764,9 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 	function onDeviceChange() {
 		var sel = document.getElementById('deviceSelect');
 		state.selectedDevice = sel ? sel.value : '';
-		state.selectedPart = null;
-		state.selectedComponent = null;
+		/* Keep selectedPart so switching disks doesn't lose the selection.
+		   Only clear it when a new partition on the current disk is explicitly
+		   selected, or when the user selects the disk block itself. */
 		renderDeviceStrip();
 		renderMap();
 	}
@@ -9490,7 +9809,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 				renderMapLoading(t('tMapError'));
 				updateMapStatus(t('tMapError') + ': ' + err.message);
 				logTo('cmdOutput', t('tMapError') + ': ' + err.message, false);
-				showToast(t('tMapError') + ': ' + err.message, 'error', 3500);
+				showToast(t('tMapError') + ': ' + err.message, 'error', 10000);
 			});
 	}
 
@@ -9684,7 +10003,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			).then(function (previewText) {
 				if (previewText === null) return;
 				queueOp('disk_migration', params, label, previewText, false);
-				showToast(t('tDiskMigrationQueued') || 'Disk migration queued.', 'success');
+				showToast(t('tDiskMigrationQueued') || 'Disk migration added.', 'success');
 			});
 		};
 
@@ -9746,7 +10065,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 		document.getElementById('piExpCompress').value = 'none';
 		document.getElementById('piExpForceFs').value = '';
 		document.getElementById('piExpVerify').value = 'no';
-		document.getElementById('piExpUnmount').value = 'yes';
+		document.getElementById('piExpUnmount').value = (partOrDevice && partOrDevice.mountpoint && String(partOrDevice.mountpoint).trim() && String(partOrDevice.mountpoint).trim() !== '-') ? 'yes' : 'no';
 		document.getElementById('piExpUseDd').value = 'no';
 		document.getElementById('piExpStepDelay').value = '1';
 		document.getElementById('piExpExtraOpts').value = '';
@@ -9799,7 +10118,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 		document.getElementById('piImpInput').value = '';
 		document.getElementById('piImpCompress').value = 'none';
 		document.getElementById('piImpVerify').value = 'no';
-		document.getElementById('piImpUnmount').value = 'yes';
+		document.getElementById('piImpUnmount').value = (partOrDevice && partOrDevice.mountpoint && String(partOrDevice.mountpoint).trim() && String(partOrDevice.mountpoint).trim() !== '-') ? 'yes' : 'no';
 		document.getElementById('piImpStepDelay').value = '1';
 		document.getElementById('piImpExtraOpts').value = '';
 
@@ -9851,8 +10170,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 		document.getElementById('piNsPort').value = '9000';
 		document.getElementById('piNsCompress').value = 'none';
 		document.getElementById('piNsForceFs').value = '';
-		document.getElementById('piNsUnmount').value = 'yes';
-		document.getElementById('piNsStepDelay').value = '1';
+			document.getElementById('piNsUnmount').value = (part && part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-') ? 'yes' : 'no';
 
 		var cancelBtn = document.getElementById('pcgiPiNsCancelBtn');
 		var okBtn = document.getElementById('pcgiPiNsOkBtn');
@@ -9901,8 +10219,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 		document.getElementById('piNrPort').value = '9000';
 		document.getElementById('piNrCompress').value = 'none';
 		document.getElementById('piNrVerify').value = 'no';
-		document.getElementById('piNrUnmount').value = 'yes';
-		document.getElementById('piNrStepDelay').value = '1';
+			document.getElementById('piNrUnmount').value = (part && part.mountpoint && String(part.mountpoint).trim() && String(part.mountpoint).trim() !== '-') ? 'yes' : 'no';
 
 		var cancelBtn = document.getElementById('pcgiPiNrCancelBtn');
 		var okBtn = document.getElementById('pcgiPiNrOkBtn');
@@ -9997,27 +10314,27 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 	}
 
 	function dispatchAjaxAction(action, params, label) {
-		var urlParams = new URLSearchParams();
-		urlParams.set('ajax', '1');
-		urlParams.set('action', action);
-		Object.keys(params).forEach(function(k) { urlParams.set(k, params[k]); });
-		var statusId = 'pcgiCmdOutput';
-		var el = document.getElementById(statusId);
-		if (el) el.textContent = 'Running: ' + label + ' ...';
-		fetch('/cgi-bin/disk-mgmt.cgi?' + urlParams.toString())
-			.then(function(r) { return r.text(); })
-			.then(function(text) {
-				var data;
-				try { data = parseAjaxJson(text); } catch(e) { data = { success: false, message: text }; }
-				var msg = (data && data.message) ? data.message : JSON.stringify(data);
-				if (data && data.success) {
-					showToast('Done: ' + label, 'success', 8000);
+		var ack = document.getElementById('ackToken').value.trim();
+		if (!state.dryRun && ack !== 'YES_I_UNDERSTAND') {
+			showToast(t('tNeedAck'), 'warn');
+			return;
+		}
+		params.ack = ack;
+		appendAnsi('cmdOutput', '\n\x1b[1;34m\u25b6 Running: ' + label + ' ...\x1b[0m\n');
+		callApiStreaming(action, params, 'cmdOutput', 0, 1, label)
+			.then(function (res) {
+				var msg = (res && res.message) ? res.message : JSON.stringify(res);
+				if (res && res.success) {
+					appendAnsi('cmdOutput', '\x1b[1;32m\u2714 ' + msg + '\x1b[0m\n');
+					showToast(t('tDone') + ': ' + label, 'success', 10000);
 				} else {
-					showToast('Error: ' + msg, 'error', 8000);
+					appendAnsi('cmdOutput', '\x1b[1;31m\u2718 ' + msg + '\x1b[0m\n');
+					showToast(t('tError') + ': ' + msg, 'error', 10000);
 				}
-				if (el) el.textContent = (data && data.success ? '✓ ' : '✗ ') + msg;
+				refreshDevices();
 			})
-			.catch(function(err) {
+			.catch(function (err) {
+				appendTo('cmdOutput', '\u2718 Network error: ' + err.message + '\n');
 				showToast('Network error: ' + err.message, 'error');
 			});
 	}
@@ -10043,7 +10360,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			return;
 		}
 
-		showConfirmModal(t('confirmDelete'), 'Queue deletion of ALL partitions on ' + baseDev.path + '?')
+		showConfirmModal(t('confirmDelete'), 'Delete ALL partitions on ' + baseDev.path + '?')
 			.then(function (ok) {
 				if (!ok) return;
 				parts.sort(function (a, b) {
@@ -10054,7 +10371,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 					var params = { device: baseDev.path, partnum: parts[j].number };
 					enqueueDeletePartitionOps(baseDev.path, parts[j], buildCommandPreview('delete_partition', params), true);
 				}
-				showToast('Queued delete-all partitions on ' + baseDev.path + '.', 'warn', 2800);
+				showToast('Queued delete-all partitions on ' + baseDev.path + '.', 'warn', 10000);
 			});
 	}
 
@@ -10117,7 +10434,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			{ partition: part, fs_type: document.getElementById('fsTypeSelect').value, label: label },
 			'Set filesystem label on ' + part,
 			t('confirmAction'),
-			'Filesystem label update will be queued.'
+			'Filesystem label update will be added.'
 		);
 	}
 
@@ -10133,7 +10450,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			{ device: state.selectedDevice, partnum: partnum, part_name: name },
 			'Set partition name p' + partnum + ' on ' + state.selectedDevice,
 			t('confirmAction'),
-			'Partition name update will be queued.'
+			'Partition name update will be added.'
 		);
 	}
 
@@ -10154,7 +10471,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			},
 			'Set partition flag ' + flagName + ' on p' + partnum,
 			t('confirmAction'),
-			'Partition flag update will be queued.'
+			'Partition flag update will be added.'
 		);
 	}
 
@@ -10229,7 +10546,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			{ partition: part, fs_type: resolvedFs, repair: mode, extra_opts: extra },
 			(repair ? 'Check/repair' : 'Check (read-only)') + ' filesystem on ' + part + ' [' + resolvedFs + ']',
 			repair ? t('confirmRepair') : t('confirmAction'),
-			repair ? t('confirmRepairMsg') : 'Filesystem check will be queued.'
+			repair ? t('confirmRepairMsg') : 'Filesystem check will be added.'
 		);
 	}
 
@@ -10304,13 +10621,18 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			if (!ok) return;
 			state.queueResolvedTargets = {};
 			document.getElementById('applyQueueBtn').disabled = true;
-			appendTo('cmdOutput', 'Applying ' + state.queue.length + ' queued operation(s)...\n');
+			var totalOps = state.queue.length;
+			var _now = new Date();
+			var _ts = _now.getFullYear() + '-' + String(_now.getMonth()+1).padStart(2,'0') + '-' + String(_now.getDate()).padStart(2,'0')
+					+ ' ' + String(_now.getHours()).padStart(2,'0') + ':' + String(_now.getMinutes()).padStart(2,'0') + ':' + String(_now.getSeconds()).padStart(2,'0');
+			var _header = '\x1b[1;34m' + _ts + '\x1b[0m  ';
+			appendAnsi('cmdOutput', _header + '\x1b[1m' + tf('tQueueApplying', totalOps) + '\x1b[0m\n');
 
 			var i = 0;
 			function runNext() {
 				if (i >= state.queue.length) {
-					appendTo('cmdOutput', '\n\u2714 All ' + state.queue.length + ' operation(s) applied successfully.\n');
-					showToast(t('tQueueApplied'), 'success', 2600);
+					appendAnsi('cmdOutput', '\n\x1b[1;32m\u2714 ' + tf('tQueueAllDone', totalOps) + '\x1b[0m\n');
+					showToast(t('tQueueApplied'), 'success', 10000);
 					state.queue = [];
 					renderQueue();
 					document.getElementById('applyQueueBtn').disabled = false;
@@ -10328,15 +10650,22 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 					params.command_preview = op.commandPreview;
 				}
 				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition" || op.action === "clone_partition_dd") {
-					appendTo('cmdOutput', 'WARNING: Disk resize operation is starting now. Do not interrupt power or disconnect storage. This operation may take several minutes.\n');
+					appendAnsi('cmdOutput', '\x1b[1;33m\u26a0 ' + t('tQueueDiskWarning') + '\x1b[0m\n');
 				}
 
 				callApiStreaming(op.action, params, 'cmdOutput', i, state.queue.length, op.label || op.action)
 					.then(function (res) {
-						appendTo('cmdOutput', '\n[Done] ' + (res.message || op.action) + ' (rc=' + (res.rc || 0) + ')\n');
-						if (!res.success) {
-							appendTo('cmdOutput', 'Queue stopped due to failure at step ' + (i + 1) + '.\n');
-							showToast('Queue stopped at step ' + (i + 1), 'error', 3400);
+						var stepSuccess = !!res.success;
+						if (!stepSuccess && op.action === 'check_filesystem' && Number(res.rc) === 1) {
+							stepSuccess = true;
+							if (!res.message || res.message === 'Filesystem check reported errors') {
+								res.message = 'Filesystem check completed';
+							}
+						}
+						appendAnsi('cmdOutput', '\n' + (stepSuccess ? '\x1b[1;32m\u2500\u2500 \u2714 ' : '\x1b[1;31m\u2500\u2500 \u2718 ') + (res.message || op.action) + ' (rc=' + (res.rc || 0) + ')\x1b[0m\n');
+						if (!stepSuccess) {
+							appendAnsi('cmdOutput', '\x1b[1;31m\u2718 ' + tf('tQueueStoppedAt', i + 1) + '\x1b[0m\n');
+							showToast(tf('tQueueStoppedAt', i + 1), 'error', 10000);
 							document.getElementById('applyQueueBtn').disabled = false;
 							return;
 						}
@@ -10345,8 +10674,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 						runNext();
 					})
 					.catch(function (err) {
-						appendTo('cmdOutput', 'Queue error at step ' + (i + 1) + ': ' + err.message + '\n');
-						showToast('Queue error: ' + err.message, 'error', 3600);
+						appendAnsi('cmdOutput', '\x1b[1;31m\u2718 ' + tf('tQueueErrorAt', i + 1, err.message) + '\x1b[0m\n');
+						showToast(tf('tQueueErrorAt', i + 1, err.message), 'error', 10000);
 						document.getElementById('applyQueueBtn').disabled = false;
 					});
 			}
@@ -10377,7 +10706,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			})
 			.catch(function (err) {
 				logTo('diagOutput', 'Diagnostics error: ' + err.message, true);
-				showToast('Diagnostics error: ' + err.message, 'error', 3300);
+				showToast('Diagnostics error: ' + err.message, 'error', 10000);
 				paceHourglassStop();
 				if (diagEl) diagEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			});
@@ -10480,12 +10809,12 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 			if (!res.success) throw new Error(res.message || 'Metadata load failed');
 			renderMetadata(res);
 			document.getElementById('metaStatus').textContent = t('tMetaLoaded');
-			showToast(t('tMetaLoaded'), 'success', 2200);
+			showToast(t('tMetaLoaded'), 'success', 10000);
 		}).catch(function (err) {
 			document.getElementById('metaStatus').textContent = 'Error: ' + err.message;
 			renderMetadata(null);
 			logTo('cmdOutput', 'Metadata error: ' + err.message, false);
-			showToast('Metadata error: ' + err.message, 'error', 3200);
+			showToast('Metadata error: ' + err.message, 'error', 10000);
 		});
 	}
 
@@ -10521,7 +10850,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 				if (missWrap) missWrap.style.display = 'none';
 				if (impact) impact.textContent = err.message;
 				logTo('toolsOutput', 'Analysis error: ' + err.message, true);
-				showToast('Tool analysis error: ' + err.message, 'error', 3200);
+				showToast('Tool analysis error: ' + err.message, 'error', 10000);
 			});
 	}
 
@@ -10695,6 +11024,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 	bindSectorHumanPair('resizeEndSector', 'resizeEndHuman');
 	bindSectorHumanPair('mcTargetStart', 'mcTargetStartNum');
 	bindSectorHumanPair('mcTargetEnd', 'mcTargetEndNum');
+	bindSectorHumanPair('pnpStartSector', 'pnpStartHuman');
+	bindSectorHumanPair('pnpEndSector',   'pnpEndHuman');
 	// Unit-selector changes should re-sync the numeric display from current sector value
 	(function () {
 		['mcTargetStartNum', 'mcTargetEndNum'].forEach(function (numId) {
