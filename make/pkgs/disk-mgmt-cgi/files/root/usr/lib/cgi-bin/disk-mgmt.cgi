@@ -849,6 +849,7 @@ action_create_partition() {
 	_part_role=$(cgi_param part_role)
 	_fs_hint=$(cgi_param fs_hint)
 	_part_name=$(cgi_param part_name)
+	_create_fs=$(cgi_param create_fs)
 
 	[ -n "$CMD_PARTED" ] || { emit_json_error "parted command not available"; return; }
 	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
@@ -883,21 +884,9 @@ action_create_partition() {
 		return
 	fi
 
-	# On msdos disk labels, parted only maps fat16/fat32/linux-swap fs-hints to
-	# correct type-byte values; other hints (ntfs, ext*, f2fs, exfat...) result in
-	# wrong type codes (e.g. 0x83=Linux shown as ext4). Omit the hint for those.
-	_mkpart_fs_hint="$_fs_hint"
-	_disk_label=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: 'NR==2 {print $6}')
-	if [ "$_disk_label" = "msdos" ]; then
-		case "$_mkpart_fs_hint" in
-			fat16|fat32|linux-swap) : ;;
-			*) _mkpart_fs_hint='' ;;
-		esac
-	fi
-
 	if dry_run_enabled; then
-		if [ -n "$_mkpart_fs_hint" ]; then
-			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_mkpart_fs_hint ${_start_sector}s ${_end_sector}s"
+		if [ -n "$_fs_hint" ]; then
+			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s"
 		else
 			_preview_cmd="parted -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s"
 		fi
@@ -907,14 +896,31 @@ parted -s $_device name <new_partnum> $_part_name"
 		fi
 		_preview_cmd="$_preview_cmd
 partprobe $_device"
+		if [ "$_create_fs" = "1" ] && [ -n "$_fs_hint" ]; then
+			case "$_fs_hint" in
+				ext2|ext3|ext4) _preview_cmd="$_preview_cmd
+mke2fs -F -t $_fs_hint ${_device}<new_partnum>" ;;
+				fat16) _preview_cmd="$_preview_cmd
+mkfs.fat -F 16 ${_device}<new_partnum>" ;;
+				fat32) _preview_cmd="$_preview_cmd
+mkfs.fat -F 32 ${_device}<new_partnum>" ;;
+				exfat) _preview_cmd="$_preview_cmd
+mkfs.exfat ${_device}<new_partnum>" ;;
+				ntfs)  _preview_cmd="$_preview_cmd
+mkntfs -F ${_device}<new_partnum>" ;;
+			esac
+		fi
 		emit_dry_run_result "partition creation" "$_preview_cmd"
 		return
 	fi
 
-	if [ -n "$_mkpart_fs_hint" ]; then
+	# Snapshot existing partition numbers before creation to identify the new one reliably
+	_parts_before=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: '/^[0-9]+:/ { print $1 }' | tr '\n' ' ')
+
+	if [ -n "$_fs_hint" ]; then
 		exec_cmd_c "Create partition on $_device" \
-			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_mkpart_fs_hint ${_start_sector}s ${_end_sector}s" \
-			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_mkpart_fs_hint" "${_start_sector}s" "${_end_sector}s"
+			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s" \
+			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_fs_hint" "${_start_sector}s" "${_end_sector}s"
 	else
 		exec_cmd_c "Create partition on $_device" \
 			"$CMD_PARTED -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s" \
@@ -922,11 +928,22 @@ partprobe $_device"
 	fi
 	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
+	# Determine new partition number by comparing before/after partition lists
+	_new_part=''
+	if [ "$_rc" -eq 0 ]; then
+		_parts_after=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: '/^[0-9]+:/ { print $1 }' | tr '\n' ' ')
+		for _pnum in $_parts_after; do
+			case " $_parts_before " in
+				*" $_pnum "*) : ;;
+				*) _new_part="$_pnum"; break ;;
+			esac
+		done
+	fi
+
 	if [ "$_rc" -eq 0 ] && [ -n "$_part_name" ]; then
 		if ! is_valid_label "$_part_name"; then
 			_out="$_out\nWarning: Partition name contains unsupported characters and was skipped"
 		else
-			_new_part=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: '/^[0-9]+:/ { n=$1 } END { print n }')
 			if is_valid_partnum "$_new_part"; then
 				exec_cmd_c "Set partition name on p$_new_part" \
 					"$CMD_PARTED -s $_device name $_new_part $_part_name" \
@@ -946,6 +963,82 @@ partprobe $_device"
 	fi
 
 	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+
+	# Optionally create filesystem on the new partition
+	if [ "$_rc" -eq 0 ] && [ "$_create_fs" = "1" ] && [ -n "$_fs_hint" ] && is_valid_partnum "$_new_part"; then
+		_new_part_dev=$(partition_path "$_device" "$_new_part")
+		# Wait briefly for the kernel to register the new node
+		_wait=0
+		while [ ! -b "$_new_part_dev" ] && [ "$_wait" -lt 5 ]; do
+			sleep 1; _wait=$((_wait+1))
+		done
+		if [ ! -b "$_new_part_dev" ]; then
+			_out="$_out\nWarning: Partition device $_new_part_dev not yet available, skipping mkfs"
+		else
+			case "$_fs_hint" in
+				ext2|ext3|ext4)
+					if [ -n "$CMD_MKE2FS" ]; then
+						exec_cmd_c "mke2fs create $_fs_hint on $_new_part_dev" \
+							"$CMD_MKE2FS -v -F -t $_fs_hint $_new_part_dev" \
+							"$CMD_MKE2FS" -v -F -t "$_fs_hint" "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkfs.$_fs_hint failed (rc=$EXEC_RC)"
+					else
+						_out="$_out\nWarning: mke2fs not available, skipping mkfs.$_fs_hint"
+					fi
+					;;
+				fat16)
+					if [ -n "$CMD_MKFS_FAT" ]; then
+						exec_cmd_c "mkfs.fat fat16 on $_new_part_dev" \
+							"$CMD_MKFS_FAT -v -F 16 $_new_part_dev" \
+							"$CMD_MKFS_FAT" -v -F 16 "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkfs.fat fat16 failed (rc=$EXEC_RC)"
+					else
+						_out="$_out\nWarning: mkfs.fat not available, skipping mkfs.fat16"
+					fi
+					;;
+				fat32)
+					if [ -n "$CMD_MKFS_FAT" ]; then
+						exec_cmd_c "mkfs.fat fat32 on $_new_part_dev" \
+							"$CMD_MKFS_FAT -v -F 32 $_new_part_dev" \
+							"$CMD_MKFS_FAT" -v -F 32 "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkfs.fat fat32 failed (rc=$EXEC_RC)"
+					else
+						_out="$_out\nWarning: mkfs.fat not available, skipping mkfs.fat32"
+					fi
+					;;
+				exfat)
+					if [ -n "$CMD_MKFS_EXFAT" ]; then
+						exec_cmd_c "mkfs.exfat on $_new_part_dev" \
+							"$CMD_MKFS_EXFAT $_new_part_dev" \
+							"$CMD_MKFS_EXFAT" "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkfs.exfat failed (rc=$EXEC_RC)"
+					else
+						_out="$_out\nWarning: mkfs.exfat not available, skipping mkfs.exfat"
+					fi
+					;;
+				ntfs)
+					if [ -n "$CMD_MKNTFS" ]; then
+						exec_cmd_c "mkntfs on $_new_part_dev" \
+							"$CMD_MKNTFS -q -F $_new_part_dev" \
+							"$CMD_MKNTFS" -q -F "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkntfs failed (rc=$EXEC_RC)"
+					else
+						_out="$_out\nWarning: mkntfs not available, skipping mkfs.ntfs"
+					fi
+					;;
+				*)
+					_out="$_out\nWarning: mkfs for '$_fs_hint' not supported in create_partition, skipping"
+					;;
+			esac
+			# Re-probe so kernel and parted detect the new filesystem type
+			run_partprobe "$_device"
+		fi
+	fi
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition created" "$_out"
@@ -6626,10 +6719,13 @@ window.paceOptions = {
 	}
 
 	function paceHourglassStart() {
-		if (!window.Pace || !Pace.bar || typeof Pace.bar.render !== 'function') return;
+		if (!window.Pace) return;
 		try {
-			Pace.stop();
-			Pace.bar.render();
+			if (typeof Pace.restart === 'function') {
+				Pace.restart();
+			} else if (typeof Pace.start === 'function') {
+				Pace.start();
+			}
 		} catch (e) {
 			// Ignore Pace rendering errors to keep operations functional.
 		}
@@ -9924,7 +10020,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var partName = document.getElementById('newPartName').value.trim();
 		queueOpWithConfirm(
 			'create_partition',
-			{ device: dev, start_sector: start, end_sector: end, part_role: role, fs_hint: fsHint, part_name: partName },
+			{ device: dev, start_sector: start, end_sector: end, part_role: role, fs_hint: fsHint, part_name: partName, create_fs: fsHint ? '1' : '0' },
 			'Create partition on ' + dev + ' [' + start + 's..' + end + 's] (with form Role/Filesystem/Name)',
 			t('confirmCreate'),
 			t('confirmCreateMsg')
