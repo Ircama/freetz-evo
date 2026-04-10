@@ -1,4 +1,35 @@
 #!/bin/sh
-export DRBL_SCRIPT_PATH=/usr/share/drbl
-export PATH="/usr/share/drbl/sbin:/usr/share/drbl/bin:$PATH"
-exec /usr/share/drbl/sbin/clonezilla "$@"
+
+if [ -d /mod/external/usr/share/drbl ]; then
+	DRBL_SCRIPT_PATH=/mod/external/usr/share/drbl
+else
+	DRBL_SCRIPT_PATH=/usr/share/drbl
+fi
+export DRBL_SCRIPT_PATH
+export PATH="$DRBL_SCRIPT_PATH/sbin:$DRBL_SCRIPT_PATH/bin:$PATH"
+# Default to the most advanced Clonezilla mode unless explicitly overridden.
+export OCS_USER_MODE_PRESET="${OCS_USER_MODE_PRESET:-developer}"
+
+pick_bash() {
+	for candidate in /bin/bash /mod/external/bin/bash; do
+		[ -x "$candidate" ] || continue
+		if "$candidate" -c 'test -n "$BASH_VERSION"' >/dev/null 2>&1; then
+			echo "$candidate"
+			return 0
+		fi
+	done
+	return 1
+}
+
+BASH_BIN="$(pick_bash)" || {
+	echo "ERROR: GNU bash not found (/bin/bash or /mod/external/bin/bash)." >&2
+	exit 127
+}
+
+if ! "$BASH_BIN" -c 'a=(); a+=(x); test "${a[0]}" = "x"' >/dev/null 2>&1; then
+	echo "ERROR: Clonezilla requires full GNU bash with array support." >&2
+	echo "Disable FREETZ_PACKAGE_BASH_MINIMAL and rebuild/redeploy." >&2
+	exit 126
+fi
+
+exec "$BASH_BIN" "$DRBL_SCRIPT_PATH/sbin/clonezilla" "$@"

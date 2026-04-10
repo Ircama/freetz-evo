@@ -1,0 +1,66 @@
+menu "util-linux libraries"
+
+config FREETZ_LIB_libblkid
+	bool "libblkid.so"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+	default n
+	select FREETZ_LIB_libuuid
+	help
+		The libblkid library is used to identify block devices (disks)
+		as to their content (e.g. filesystem type) as well as extracting
+		additional information such as filesystem labels/volume names,
+		unique identifiers/serial numbers, etc.
+
+		This is the modern upstream version from util-linux 2.41
+		(libblkid.so.1.1.0, soname libblkid.so.1), which provides
+		the full 112-function API including blkid_new_probe() and
+		other modern interfaces not present in the e2fsprogs variant.
+
+		Required by fsarchiver, parted, cryptsetup, and other tools
+		that use the modern libblkid API.
+
+config FREETZ_LIB_libmount
+	bool "libmount.so"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+	default n
+	select FREETZ_LIB_libblkid
+	help
+		The libmount library parses and manipulates mount tables and
+		mount options. Required by tools such as findmnt and mountpoint.
+
+config FREETZ_LIB_libsmartcols
+	bool "libsmartcols.so"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+	default n
+	help
+		The libsmartcols library provides table/column rendering used by
+		several util-linux tools (e.g. lsblk, losetup, cfdisk).
+
+config FREETZ_LIB_libfdisk
+	bool "libfdisk.so"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+	default n
+	select FREETZ_LIB_libblkid
+	select FREETZ_LIB_libuuid
+	help
+		The libfdisk library provides partition table parsing and editing
+		APIs used by fdisk/cfdisk-style tools.
+
+config FREETZ_LIB_liblastlog2
+	bool "liblastlog2.so"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+	default n
+	select FREETZ_LIB_libsqlite3
+	help
+		The liblastlog2 library is used for modern lastlog2 handling.
+		It depends on libsqlite3.
+
+comment "util-linux libuuid is not exposed here"
+	depends on !FREETZ_UTIL_LINUX_VERSION_2_27_1
+
+endmenu

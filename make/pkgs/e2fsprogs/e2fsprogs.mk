@@ -8,13 +8,9 @@ $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)
 ### CHANGES:=https://e2fsprogs.sourceforge.net/e2fsprogs-release.html
 ### CVSREPO:=https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
 
-$(PKG)_LIBNAMES_SHORT_ALL := blkid com_err e2p ext2fs ss uuid
+$(PKG)_LIBNAMES_SHORT_ALL := com_err e2p ext2fs ss uuid
 $(PKG)_LIBNAMES_SHORT :=
 $(PKG)_LIBVERSIONS :=
-ifeq ($(strip $(FREETZ_LIB_libblkid)),y)
-$(PKG)_LIBNAMES_SHORT += blkid
-$(PKG)_LIBVERSIONS += 1.0
-endif
 ifeq ($(strip $(FREETZ_LIB_libcom_err)),y)
 $(PKG)_LIBNAMES_SHORT += com_err
 $(PKG)_LIBVERSIONS += 2.1

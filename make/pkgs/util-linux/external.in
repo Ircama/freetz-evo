@@ -10,13 +10,27 @@ config EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX
 		
 		Version 2.41 (modern):
 		 /sbin/blkid-util-linux
+		 /sbin/fdisk-util-linux
+		 /sbin/sfdisk-util-linux
 		 /sbin/blockdev-util-linux
 		 /sbin/blockdev-ng
+		 /sbin/partx
+		 /sbin/addpart
+		 /sbin/delpart
+		 /sbin/resizepart
+		 /sbin/findfs
+		 /sbin/wipefs
 		 /sbin/cfdisk
 		 /sbin/lsblk
+		 /sbin/lsfd
 		 /sbin/findmnt
+		 /sbin/mountpoint
 		 /sbin/losetup-util-linux
 		 /sbin/mkswap-util-linux
 		 /sbin/swapon-util-linux
 		 /sbin/swapoff-util-linux
+		 /sbin/unshare-util-linux
+		 /sbin/uuidgen-util-linux
+		 /sbin/uuidparse
+		 /sbin/lastlog2
 

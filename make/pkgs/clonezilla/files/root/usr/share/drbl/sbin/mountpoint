@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Minimal mountpoint(1) replacement for systems where util-linux mountpoint is absent.
+# Supports the usage needed by Clonezilla scripts: mountpoint <path>
+
+target="$1"
+[ -n "$target" ] || exit 1
+
+resolved_target="$(readlink -f "$target" 2>/dev/null || echo "$target")"
+
+awk -v mp="$resolved_target" 'BEGIN{found=0} $2==mp{found=1} END{exit(found?0:1)}' /proc/mounts

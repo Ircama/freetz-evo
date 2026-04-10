@@ -1,4 +1,4 @@
-config FREETZ_PACKAGE_LLAMA_CPP
+menuconfig FREETZ_PACKAGE_LLAMA_CPP
 	bool "llama.cpp b8575 (LLM inference engine)"
 	select FREETZ_PACKAGE_HAS_LIBSTDCPP
 	default n
@@ -29,7 +29,7 @@ config FREETZ_PACKAGE_LLAMA_CPP
 
 if FREETZ_PACKAGE_LLAMA_CPP
 
-comment "Optional tools"
+menu "Optional tools"
 
 config FREETZ_PACKAGE_LLAMA_CPP_TOOL_BENCH
 	bool "llama-bench — performance benchmark"
@@ -89,7 +89,9 @@ config FREETZ_PACKAGE_LLAMA_CPP_TOOL_MTMD
 		Runs multimodal models (e.g. LLaVA) that accept both text
 		and image inputs. Requires a vision-capable GGUF model.
 
-comment "llama-server options"
+endmenu
+
+menu "llama-server options"
 
 config FREETZ_PACKAGE_LLAMA_CPP_SERVER_OPENSSL
 	bool "Enable HTTPS (OpenSSL) support in llama-server"
@@ -111,6 +113,8 @@ config FREETZ_PACKAGE_LLAMA_CPP_SERVER_WEBUI
 
 		Adds ~2 MB to the llama-server binary. Leave OFF if
 		storage is critical or you only use the API programmatically.
+
+endmenu
 
 endif
 

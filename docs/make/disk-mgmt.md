@@ -11,8 +11,11 @@
 
 - Graphical device and partition map (`print free` via `parted -m`)
 - Partition creation
+- Drag-and-drop chips for `New partition`, `New partition with filesystem`, `Move partition`, `Clone partition`
 - Partition deletion
 - Partition resize (with optional ext filesystem resize)
+- Partition clone workflow (unmount source, create target, clone with `ddrescue` fallback to `dd`, mount target)
+- Partition move workflow (clone workflow + source deletion)
 - Filesystem creation (`ext2/ext3/ext4`, `fat16/fat32/vfat`)
 - Filesystem checks (`e2fsck`, `fsck.fat`)
 - Filesystem label updates (`e2label`/`tune2fs`, `fatlabel`)
@@ -40,6 +43,13 @@ Below are the external commands that the CGI actually resolves and executes.
   - kernel partition table refresh: `partprobe <device>`
 - `lsblk`
   - partition path resolution: `lsblk -ln -o PATH,PARTN <device>`
+
+### 1b) Clone/move copy tools
+
+- `ddrescue` (preferred when available)
+  - block clone: `ddrescue -f -n <source_partition> <target_partition>`
+- `dd` (fallback when `ddrescue` is not available)
+  - block clone: `dd if=<source_partition> of=<target_partition> bs=1M`
 
 ### 2) FAT filesystem tools (dosfstools)
 
@@ -120,3 +130,16 @@ The CGI also validates:
 - labels and flags using character whitelists
 
 These checks reduce the risk of invalid or malicious command invocations.
+
+## Drag-and-drop workflow notes
+
+- `New partition`: drag into a free region for quick create with default values.
+- `New partition with filesystem`: drag into a free region to include Role, Filesystem and Partition name from the form.
+- `Move partition` chip: drag into a free region to queue an orchestrated move plan:
+  - unmount source partition,
+  - create target partition,
+  - clone source to target (`ddrescue` if available, otherwise `dd`),
+  - delete source partition,
+  - mount target partition.
+- `Clone partition` chip: same plan without deleting the source partition.
+- Classic drag remains available: drag partition edges for resize and drag a partition into free space for move planning.

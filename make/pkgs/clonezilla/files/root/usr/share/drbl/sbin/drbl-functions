@@ -2436,12 +2436,14 @@ check_DIA_set_ESC(){
   # (3) whiptail can go only with --
   local dia_="$1"
   # check DIA
-  if ! type $dia_ &>/dev/null; then
-     [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
-     echo "$dia_: command not found!"
-     [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
-     echo "Program terminated!!!"
-     exit 1
+    if ! type $dia_ &>/dev/null; then
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_WARNING
+      echo "$dia_: command not found!"
+      echo "Falling back to command-line prompts."
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+      ocs_prompt_mode="cmd"
+      DIA_ESC=""
+      return 0
   fi
   case "$dia_" in
     dialog|[Xgk]dialog) DIA_ESC="" ;;
@@ -2527,8 +2529,8 @@ ask_nic_dev() {
       -e|--enable-channel-bonding)
            enable_channel_bonding="yes"
            shift;;
-      -*)  echo "${0}: ${1}: invalid option in ask_nic_dev." | tee --append ${OCS_LOGFILE} >&2
-           echo "$msg_program_stop" | tee --append ${OCS_LOGFILE}
+      -*)  echo "${0}: ${1}: invalid option in ask_nic_dev." | tee -a ${OCS_LOGFILE} >&2
+           echo "$msg_program_stop" | tee -a ${OCS_LOGFILE}
            [ "$save_restore_error_log" = "yes" ] && copy_error_log
            exit 2 ;;
        *)  break ;;
@@ -3791,8 +3793,19 @@ turn_on_ipv4_forward() {
 } # end of turn_on_ipv4_forward
 #
 ask_if_beginner_or_expert_mode(){
-  local TMP mode
+  local TMP mode preset
   # ocs_user_mode is global variable
+  preset="$(echo "${OCS_USER_MODE_PRESET:-}" | tr '[:upper:]' '[:lower:]')"
+  case "$preset" in
+    beginner)
+      ocs_user_mode="beginner"
+      return 0
+      ;;
+    expert|developer)
+      ocs_user_mode="expert"
+      return 0
+      ;;
+  esac
   TMP="$(mktemp /tmp/menu-ocs.XXXXXX)"
   trap "[ -f "$TMP" ] && rm -f $TMP" HUP INT QUIT TERM EXIT
   $DIA --backtitle "$msg_nchc_free_software_labs" --title  \
@@ -3800,13 +3813,14 @@ ask_if_beginner_or_expert_mode(){
   0 0 0 \
   "Beginner"  "$msg_beginner_mode" \
   "Expert"    "$msg_expert_mode" \
+  "Developer" "$msg_expert_mode" \
   "Exit"      "$msg_exit. $msg_enter_cml" \
   2> $TMP
   mode="$(cat $TMP)"
   [ -e "$TMP" ] && rm -f $TMP
   case "$mode" in
     "Beginner") ocs_user_mode="beginner" ;;
-    "Expert")   ocs_user_mode="expert" ;;
+    "Expert"|"Developer")   ocs_user_mode="expert" ;;
     *)
       [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
       echo "$msg_program_stop!"

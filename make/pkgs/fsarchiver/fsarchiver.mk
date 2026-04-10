@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 0.8.9)
-$(PKG)_CATEGORY:=Disk Clone
+$(PKG)_CATEGORY:=Data Migration and Disaster Recovery
 $(PKG)_SOURCE:=fsarchiver-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=ade1d9d3c7de815c0b40b54e24e39b53d4a3b0add69d47f23b36fc2fd8f21843
 $(PKG)_SITE:=https://github.com/fdupoux/fsarchiver/releases/download/$($(PKG)_VERSION)

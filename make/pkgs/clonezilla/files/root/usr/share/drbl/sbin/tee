@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Compatibility wrapper: map GNU-style "tee --append" to BusyBox "tee -a".
+
+TEE_BIN="/usr/bin/tee"
+[ -x "$TEE_BIN" ] || TEE_BIN="/bin/tee"
+
+if [ "$1" = "--append" ]; then
+    shift
+    exec "$TEE_BIN" -a "$@"
+fi
+
+exec "$TEE_BIN" "$@"

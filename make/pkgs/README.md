@@ -1452,7 +1452,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>vermagic D1W0U (binary only)</u><a id='vermagic'></a>**<br>
     A tool dump .modinfo section and set vermagic variable of Linux Kernel Modules. It also supports (not tested) CRC dump and changes, including the vermagic string. The original work is from here: https://github.com/fanfuqiang/vc The extended code of this tool: https://github.com/D1W0U/vermagic
 
-# Disk Clone
+# Data Migration and Disaster Recovery
 
   * **[clonezilla 5.15.23 (script bundle)](../../docs/make/clonezilla.md)<a id='clonezilla'></a>**<br>
     Clonezilla script bundle for disk/partition cloning workflows. This package installs DRBL/Clonezilla scripts under /usr/share/drbl and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly).

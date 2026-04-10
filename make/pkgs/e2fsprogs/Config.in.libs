@@ -1,15 +1,5 @@
 menu "E2fsprogs libraries"
 
-	config FREETZ_LIB_libblkid
-		bool "libblkid.so"
-		default n
-		select FREETZ_LIB_libuuid
-		help
-			The libblkid library is used to identify block devices (disks)
-			as to their content (e.g. filesystem type) as well as extracting
-			additional information such as filesystem labels/volume names,
-			unique identifiers/serial numbers, etc.
-
 	config FREETZ_LIB_libcom_err
 		bool "libcom_err.so"
 		default n

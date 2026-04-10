@@ -21,7 +21,6 @@ E2FSPROGS_SUFFIX=""
 [ "$EXTERNAL_FREETZ_PACKAGE_E2FSPROGS_uuidd"        == "y" ] && EXTERNAL_FILES+=" /usr/sbin/uuidd${E2FSPROGS_SUFFIX}"
 [ "$EXTERNAL_FREETZ_PACKAGE_E2FSPROGS_uuidgen"      == "y" ] && EXTERNAL_FILES+=" /usr/sbin/uuidgen${E2FSPROGS_SUFFIX}"
 
-[ "$EXTERNAL_FREETZ_LIB_libblkid"   == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libblkid.so.1.0"
 [ "$EXTERNAL_FREETZ_LIB_libcom_err" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libcom_err.so.2.1"
 [ "$EXTERNAL_FREETZ_LIB_libe2p"     == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libe2p.so.2.3"
 [ "$EXTERNAL_FREETZ_LIB_libext2fs"  == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libext2fs.so.2.4"

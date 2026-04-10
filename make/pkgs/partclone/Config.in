@@ -1,9 +1,15 @@
 config FREETZ_PACKAGE_PARTCLONE
 	bool "partclone 0.3.31 (binary only)"
 	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libblkid
+	select FREETZ_LIB_libcom_err
+	select FREETZ_LIB_libext2fs
+	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libntfs
 	select FREETZ_LIB_libuuid
 	default n
 	help
 		Partclone provides block-level clone/restore/check tools.
-		This package installs the generic engines (dd/imager/restore/check)
-		and ntfsfixboot helper.
+		This package installs generic engines plus extended filesystem
+		backends (extfs, xfs, ntfs, btrfs, exfat, f2fs, fat, minix, apfs,
+		hfsp) and ncursesw support.

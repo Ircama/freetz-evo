@@ -52,6 +52,7 @@ menu "Database"
 endmenu ### "Database"
 
 menu "File systems"
+	source "make/pkgs/util-linux/Config.in.libs"
 	source "make/pkgs/e2fsprogs/Config.in.libs"
 	source "make/pkgs/fuse/Config.in.libs"
 	source "make/pkgs/ntfs/Config.in.libs"
