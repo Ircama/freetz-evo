@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS_mkfs_f2fs" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/mkfs.f2fs"
+[ "$EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS_fsck_f2fs" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/fsck.f2fs"

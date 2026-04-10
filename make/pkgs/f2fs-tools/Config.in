@@ -1,0 +1,26 @@
+config FREETZ_PACKAGE_F2FS_TOOLS
+	bool "f2fs-tools 1.9.0 (binary only)"
+	select FREETZ_LIB_libuuid
+	default n
+	help
+		Userspace tools to create, check and manage F2FS (Flash-Friendly
+		File System) filesystems.
+
+		Provides mkfs.f2fs and fsck.f2fs (v1.9.0).
+
+if FREETZ_PACKAGE_F2FS_TOOLS
+
+	config FREETZ_PACKAGE_F2FS_TOOLS_mkfs_f2fs
+		bool "mkfs.f2fs"
+		default y
+		help
+			Create an F2FS filesystem.
+
+	config FREETZ_PACKAGE_F2FS_TOOLS_fsck_f2fs
+		bool "fsck.f2fs"
+		default y
+		help
+			Check and repair an F2FS filesystem.
+
+
+endif # FREETZ_PACKAGE_F2FS_TOOLS

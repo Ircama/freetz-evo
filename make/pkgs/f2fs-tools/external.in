@@ -1,0 +1,27 @@
+config EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_F2FS_TOOLS
+	bool "f2fs-tools"
+	default n
+	help
+		external f2fs-tools file(s)
+
+menu "f2fs-tools"
+	depends on EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS
+
+	config EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS_mkfs_f2fs
+		bool "mkfs.f2fs"
+		depends on FREETZ_PACKAGE_F2FS_TOOLS_mkfs_f2fs
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/mkfs.f2fs
+
+	config EXTERNAL_FREETZ_PACKAGE_F2FS_TOOLS_fsck_f2fs
+		bool "fsck.f2fs"
+		depends on FREETZ_PACKAGE_F2FS_TOOLS_fsck_f2fs
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/fsck.f2fs
+
+endmenu
