@@ -37,6 +37,13 @@ CMD_DD=''
 CMD_PARTCLONE_DD=''
 CMD_PARTCLONE_INFO=''
 CMD_PARTCLONE_CHKIMG=''
+CMD_PARTITION_IMAGE=''
+
+# Streaming-mode globals (set by action_start_job; empty = non-streaming)
+STREAM_LOG=''
+STREAM_DONE=''
+EXEC_OUT=''
+EXEC_RC=0
 
 BACKEND_LOG_FILE='/tmp/disk-mgmt-backend.log'
 DRY_RUN='0'
@@ -178,6 +185,7 @@ resolve_tools() {
 	CMD_PARTCLONE_INFO=$(find_cmd partclone.info)
 	CMD_PARTCLONE_CHKIMG=$(find_cmd partclone.chkimg)
 	CMD_PARTITION_MIGRATION=$(find_cmd partition_migration.sh)
+	CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
 }
 
 run_tune2fs() {
@@ -454,6 +462,11 @@ emit_json_error() {
 emit_cmd_result() {
 	_success="$1"
 	_rc="$2"
+	if [ -n "$STREAM_LOG" ]; then
+		printf '\n── Result: %s | rc=%s ──\n%s\n' "$_success" "$2" "$3" >> "$STREAM_LOG"
+		printf '%s\n%s\n%s\n' "$_success" "$2" "$3" > "$STREAM_DONE"
+		return 0
+	fi
 	_msg=$(json_escape "$3")
 	_out=$(json_escape "$4")
 	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg\", \"output\": \"$_out\"}"
@@ -462,6 +475,12 @@ emit_cmd_result() {
 emit_cmd_result_with_target() {
 	_success="$1"
 	_rc="$2"
+	if [ -n "$STREAM_LOG" ]; then
+		_ecwt_extras="\"target_partnum\": \"$(json_escape "$5")\", \"target_partition\": \"$(json_escape "$6")\", \"target_device\": \"$(json_escape "$7")\", \"target_start_sector\": \"$(json_escape "$8")\", \"target_end_sector\": \"$(json_escape "$9")\""
+		printf '\n── Result: %s | rc=%s ──\n%s\n' "$_success" "$2" "$3" >> "$STREAM_LOG"
+		printf '%s\n%s\n%s\n%s\n' "$_success" "$2" "$3" "$_ecwt_extras" > "$STREAM_DONE"
+		return 0
+	fi
 	_msg=$(json_escape "$3")
 	_out=$(json_escape "$4")
 	_target_partnum=$(json_escape "$5")
@@ -470,6 +489,52 @@ emit_cmd_result_with_target() {
 	_target_start_sector=$(json_escape "$8")
 	_target_end_sector=$(json_escape "$9")
 	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg\", \"output\": \"$_out\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
+}
+
+# exec_cmd: run command with direct streaming output to STREAM_LOG (no capture).
+# Usage: exec_cmd LABEL DISPLAY_CMD actual_cmd [args...]
+# In streaming mode: output goes directly to STREAM_LOG in real time; EXEC_OUT is empty.
+# In normal mode: output captured to EXEC_OUT (like a normal subshell).
+exec_cmd() {
+	_ec_label="$1"; _ec_disp="$2"; shift 2
+	if [ -n "$STREAM_LOG" ]; then
+		printf '\n══════════════════════════════════════════════════\n▶ %s\n── cmd: %s\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
+		"$@" >> "$STREAM_LOG" 2>&1
+		EXEC_RC=$?
+		if [ "$EXEC_RC" -eq 0 ]; then
+			printf '── exit: %d (OK) ──────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+		else
+			printf '── exit: %d (FAILED) ──────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+		fi
+		EXEC_OUT=''
+	else
+		EXEC_OUT=$("$@" 2>&1)
+		EXEC_RC=$?
+	fi
+	return $EXEC_RC
+}
+
+# exec_cmd_c: like exec_cmd but ALWAYS captures output (EXEC_OUT is populated).
+# In streaming mode: output is also appended to STREAM_LOG after completion.
+# Use for short commands where output may be needed for branching/retry logic.
+exec_cmd_c() {
+	_ec_label="$1"; _ec_disp="$2"; shift 2
+	if [ -n "$STREAM_LOG" ]; then
+		printf '\n══════════════════════════════════════════════════\n▶ %s\n── cmd: %s\n' "$_ec_label" "$_ec_disp" >> "$STREAM_LOG"
+	fi
+	EXEC_OUT=$("$@" 2>&1)
+	EXEC_RC=$?
+	if [ -n "$STREAM_LOG" ] && [ -n "$EXEC_OUT" ]; then
+		printf '%s\n' "$EXEC_OUT" >> "$STREAM_LOG"
+	fi
+	if [ -n "$STREAM_LOG" ]; then
+		if [ "$EXEC_RC" -eq 0 ]; then
+			printf '── exit: %d (OK) ──────────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+		else
+			printf '── exit: %d (FAILED) ──────────────────────────\n' "$EXEC_RC" >> "$STREAM_LOG"
+		fi
+	fi
+	return $EXEC_RC
 }
 
 partition_path() {
@@ -828,11 +893,15 @@ partprobe $_device"
 	fi
 
 	if [ -n "$_fs_hint" ]; then
-		_out=$($CMD_PARTED -s "$_device" unit s mkpart "$_part_role" "$_fs_hint" "${_start_sector}s" "${_end_sector}s" 2>&1)
+		exec_cmd_c "Create partition on $_device" \
+			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s" \
+			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_fs_hint" "${_start_sector}s" "${_end_sector}s"
 	else
-		_out=$($CMD_PARTED -s "$_device" unit s mkpart "$_part_role" "${_start_sector}s" "${_end_sector}s" 2>&1)
+		exec_cmd_c "Create partition on $_device" \
+			"$CMD_PARTED -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s" \
+			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "${_start_sector}s" "${_end_sector}s"
 	fi
-	_rc=$?
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ] && [ -n "$_part_name" ]; then
 		if ! is_valid_label "$_part_name"; then
@@ -840,7 +909,10 @@ partprobe $_device"
 		else
 			_new_part=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: '/^[0-9]+:/ { n=$1 } END { print n }')
 			if is_valid_partnum "$_new_part"; then
-				$CMD_PARTED -s "$_device" name "$_new_part" "$_part_name" >/tmp/disk-mgmt-name.log 2>&1
+				exec_cmd_c "Set partition name on p$_new_part" \
+					"$CMD_PARTED -s $_device name $_new_part $_part_name" \
+					"$CMD_PARTED" -s "$_device" name "$_new_part" "$_part_name"
+				_out="$_out\n$EXEC_OUT"
 			fi
 		fi
 	fi
@@ -874,8 +946,10 @@ partprobe $_device"
 		return
 	fi
 
-	_out=$($CMD_PARTED -s "$_device" rm "$_partnum" 2>&1)
-	_rc=$?
+	exec_cmd_c "Delete partition $_partnum on $_device" \
+		"$CMD_PARTED -s $_device rm $_partnum" \
+		"$CMD_PARTED" -s "$_device" rm "$_partnum"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
 
 	if [ "$_rc" -eq 0 ]; then
@@ -915,22 +989,28 @@ partprobe $_device"
 		return
 	fi
 
-	_out=$($CMD_PARTED -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" 2>&1)
-	_rc=$?
+	exec_cmd_c "Resize partition p$_partnum on $_device" \
+		"$CMD_PARTED -s -f $_device unit s resizepart $_partnum ${_end_sector}s" \
+		"$CMD_PARTED" -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
 	# Some parted versions still require an explicit confirmation when shrinking.
 	# Retry with scripted confirmation so queued operations do not stop on rc=134.
 	if [ "$_rc" -ne 0 ]; then
 		case "$_out" in
 			*"Shrinking a partition can cause data loss"*|*"are you sure you want to continue"*)
-				_retry_out=$(printf 'Yes\nIgnore\nIgnore\nIgnore\n' | $CMD_PARTED ---pretend-input-tty -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes 2>&1)
-				_retry_rc=$?
+				exec_cmd_c "Resize partition (scripted-confirm retry)" \
+					"printf 'Yes\\nIgnore\\nIgnore\\nIgnore\\n' | $CMD_PARTED ---pretend-input-tty -f $_device unit s resizepart $_partnum ${_end_sector}s yes" \
+					/bin/sh -c "printf 'Yes\\nIgnore\\nIgnore\\nIgnore\\n' | $CMD_PARTED ---pretend-input-tty -f '$_device' unit s resizepart '$_partnum' '${_end_sector}s' yes 2>&1"
+				_retry_rc=$EXEC_RC; _retry_out="$EXEC_OUT"
 				if [ "$_retry_rc" -eq 0 ]; then
 					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out"
 					_rc=0
 				else
-					_retry_out2=$($CMD_PARTED -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes 2>&1)
-					_retry_rc2=$?
+					exec_cmd_c "Resize partition (trailing-yes retry)" \
+						"$CMD_PARTED -s -f $_device unit s resizepart $_partnum ${_end_sector}s yes" \
+						"$CMD_PARTED" -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes
+					_retry_rc2=$EXEC_RC; _retry_out2="$EXEC_OUT"
 					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out\n\nRetry with trailing yes rc=$_retry_rc2:\n$_retry_out2"
 					_rc=$_retry_rc2
 				fi
@@ -950,10 +1030,12 @@ partprobe $_device"
 			case "$_fstype" in
 				ext2|ext3|ext4)
 					if [ -n "$CMD_E2FSCK" ] && [ -n "$CMD_RESIZE2FS" ]; then
-						_ck=$($CMD_E2FSCK -f -p "$_ppath" 2>&1)
-						_ck_rc=$?
-						_rs=$($CMD_RESIZE2FS "$_ppath" 2>&1)
-						_rs_rc=$?
+						exec_cmd_c "e2fsck before FS resize" "$CMD_E2FSCK -f -p $_ppath" \
+							"$CMD_E2FSCK" -f -p "$_ppath"
+						_ck=$EXEC_OUT; _ck_rc=$EXEC_RC
+						exec_cmd_c "resize2fs grow to partition size" "$CMD_RESIZE2FS $_ppath" \
+							"$CMD_RESIZE2FS" "$_ppath"
+						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
 						_out="$_out\n\nFilesystem check rc=$_ck_rc:\n$_ck\n\nresize2fs rc=$_rs_rc:\n$_rs"
 					else
 						_out="$_out\n\nWarning: resize requested but e2fsprogs resize tools are not available"
@@ -961,8 +1043,9 @@ partprobe $_device"
 					;;
 				ntfs)
 					if [ -n "$CMD_NTFSRESIZE" ]; then
-						_rs=$($CMD_NTFSRESIZE -f "$_ppath" 2>&1)
-						_rs_rc=$?
+						exec_cmd_c "ntfsresize grow" "$CMD_NTFSRESIZE -f $_ppath" \
+							"$CMD_NTFSRESIZE" -f "$_ppath"
+						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
 						_out="$_out\n\nntfsresize rc=$_rs_rc:\n$_rs"
 					else
 						_out="$_out\n\nWarning: NTFS resize requested but ntfsresize is not available"
@@ -970,8 +1053,9 @@ partprobe $_device"
 					;;
 				fat|fat12|fat16|fat32|vfat)
 					if [ -n "$CMD_FATRESIZE" ]; then
-						_rs=$($CMD_FATRESIZE -vps max "$_ppath" 2>&1)
-						_rs_rc=$?
+						exec_cmd_c "fatresize grow" "$CMD_FATRESIZE -vps max $_ppath" \
+							"$CMD_FATRESIZE" -vps max "$_ppath"
+						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
 						_out="$_out\n\nfatresize rc=$_rs_rc:\n$_rs"
 					else
 						_out="$_out\n\nWarning: FAT resize requested but fatresize is not available"
@@ -1069,16 +1153,17 @@ _target_kib=$(safe_uint "$_target_kib")
 [ "$_target_kib" -gt 0 ] || { emit_json_error "Invalid target_kib for shrink"; return; }
 
 _cmd_ck="$CMD_E2FSCK -f -p $_partition"
-_ck=$($CMD_E2FSCK -f -p "$_partition" 2>&1)
+exec_cmd_c "e2fsck before shrink" "$_cmd_ck" "$CMD_E2FSCK" -f -p "$_partition"
+_ck="$EXEC_OUT"
 
 _cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition ${_target_kib}K"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_rs=$($CMD_RESIZE2FS "$@" "$_partition" "${_target_kib}K" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" $_extra_opts "$_partition" "${_target_kib}K"
 else
-_rs=$($CMD_RESIZE2FS "$_partition" "${_target_kib}K" 2>&1)
+exec_cmd_c "resize2fs shrink" "$_cmd_rs" "$CMD_RESIZE2FS" "$_partition" "${_target_kib}K"
 fi
-_rc=$?
+_rc=$EXEC_RC; _rs="$EXEC_OUT"
 _out="\$ $_cmd_ck
 $_ck
 
@@ -1087,12 +1172,12 @@ $_rs"
 else
 _cmd_rs="$CMD_RESIZE2FS ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_rs=$($CMD_RESIZE2FS "$@" "$_partition" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" $_extra_opts "$_partition"
 else
-_rs=$($CMD_RESIZE2FS "$_partition" 2>&1)
+exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" "$_partition"
 fi
-_rc=$?
+_rc=$EXEC_RC; _rs="$EXEC_OUT"
 _out="\$ $_cmd_rs
 $_rs"
 fi
@@ -1109,21 +1194,21 @@ _target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
 _cmd_rs="$CMD_NTFSRESIZE -f -s $_target_bytes ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_out=$($CMD_NTFSRESIZE -f -s "$_target_bytes" "$@" "$_partition" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -f -s "$_target_bytes" $_extra_opts "$_partition"
 else
-_out=$($CMD_NTFSRESIZE -f -s "$_target_bytes" "$_partition" 2>&1)
+exec_cmd_c "ntfsresize shrink" "$_cmd_rs" "$CMD_NTFSRESIZE" -f -s "$_target_bytes" "$_partition"
 fi
 else
 _cmd_rs="$CMD_NTFSRESIZE -f ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_out=$($CMD_NTFSRESIZE -f "$@" "$_partition" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -f $_extra_opts "$_partition"
 else
-_out=$($CMD_NTFSRESIZE -f "$_partition" 2>&1)
+exec_cmd_c "ntfsresize grow" "$_cmd_rs" "$CMD_NTFSRESIZE" -f "$_partition"
 fi
 fi
-_rc=$?
+_rc=$EXEC_RC; _out="$EXEC_OUT"
 _out="\$ $_cmd_rs
 $_out"
 if [ "$_rc" -eq 0 ]; then
@@ -1139,21 +1224,21 @@ _target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
 _cmd_rs="$CMD_FATRESIZE -vps ${_target_bytes} ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_out=$($CMD_FATRESIZE -vps "${_target_bytes}" "$@" "$_partition" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "fatresize shrink" "$_cmd_rs" "$CMD_FATRESIZE" -vps "${_target_bytes}" $_extra_opts "$_partition"
 else
-_out=$($CMD_FATRESIZE -vps "${_target_bytes}" "$_partition" 2>&1)
+exec_cmd_c "fatresize shrink" "$_cmd_rs" "$CMD_FATRESIZE" -vps "${_target_bytes}" "$_partition"
 fi
 else
 _cmd_rs="$CMD_FATRESIZE -vps max ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
-set -- $_extra_opts
-_out=$($CMD_FATRESIZE -vps max "$@" "$_partition" 2>&1)
+# shellcheck disable=SC2086
+exec_cmd_c "fatresize grow" "$_cmd_rs" "$CMD_FATRESIZE" -vps max $_extra_opts "$_partition"
 else
-_out=$($CMD_FATRESIZE -vps max "$_partition" 2>&1)
+exec_cmd_c "fatresize grow" "$_cmd_rs" "$CMD_FATRESIZE" -vps max "$_partition"
 fi
 fi
-_rc=$?
+_rc=$EXEC_RC; _out="$EXEC_OUT"
 _out="\$ $_cmd_rs
 $_out"
 if [ "$_rc" -eq 0 ]; then
@@ -1226,22 +1311,23 @@ fatlabel $_partition $_label"
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			[ -n "$CMD_MKE2FS" ] || { emit_json_error "mke2fs/e2fsprogs not available"; return; }
+			_cmd_mk="$CMD_MKE2FS -F -t $_fs_type ${_extra_opts:-}$_partition"
 			if [ -n "$_extra_opts" ]; then
-				set -- $_extra_opts
-				_out=$($CMD_MKE2FS -F -t "$_fs_type" "$@" "$_partition" 2>&1)
+				# shellcheck disable=SC2086
+				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -F -t "$_fs_type" $_extra_opts "$_partition"
 			else
-				_out=$($CMD_MKE2FS -F -t "$_fs_type" "$_partition" 2>&1)
+				exec_cmd_c "mke2fs create $_fs_type" "$_cmd_mk" "$CMD_MKE2FS" -F -t "$_fs_type" "$_partition"
 			fi
-			_rc=$?
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ]; then
 				if ! is_valid_label "$_label"; then
 					_out="$_out\nWarning: label skipped (invalid chars)"
 				elif [ -n "$CMD_E2LABEL" ]; then
-					_lbl_out=$($CMD_E2LABEL -L "$_label" "$_partition" 2>&1)
-					_out="$_out\n\nLabel:\n$_lbl_out"
+					exec_cmd_c "e2label set" "$CMD_E2LABEL -L $_label $_partition" "$CMD_E2LABEL" -L "$_label" "$_partition"
+					_out="$_out\n\nLabel:\n$EXEC_OUT"
 				elif [ -n "$CMD_TUNE2FS" ]; then
-					_lbl_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
-					_lbl_rc=$?
+					exec_cmd_c "tune2fs set label" "$CMD_TUNE2FS -L $_label $_partition" run_tune2fs -L "$_label" "$_partition"
+					_lbl_rc=$EXEC_RC; _lbl_out="$EXEC_OUT"
 					[ "$_lbl_rc" -eq 139 ] && _lbl_out="[tune2fs: Segmentation fault (SIGSEGV)]"
 					_out="$_out\n\nLabel:\n$_lbl_out"
 				fi
@@ -1249,30 +1335,32 @@ fatlabel $_partition $_label"
 			;;
 		fat16)
 			[ -n "$CMD_MKFS_FAT" ] || { emit_json_error "mkfs.fat not available"; return; }
+			_cmd_mk="$CMD_MKFS_FAT -F 16 ${_extra_opts:-}$_partition"
 			if [ -n "$_extra_opts" ]; then
-				set -- $_extra_opts
-				_out=$($CMD_MKFS_FAT -F 16 "$@" "$_partition" 2>&1)
+				# shellcheck disable=SC2086
+				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -F 16 $_extra_opts "$_partition"
 			else
-				_out=$($CMD_MKFS_FAT -F 16 "$_partition" 2>&1)
+				exec_cmd_c "mkfs.fat fat16" "$_cmd_mk" "$CMD_MKFS_FAT" -F 16 "$_partition"
 			fi
-			_rc=$?
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ] && [ -n "$CMD_FATLABEL" ]; then
-				_lbl_out=$($CMD_FATLABEL "$_partition" "$_label" 2>&1)
-				_out="$_out\n\nLabel:\n$_lbl_out"
+				exec_cmd_c "fatlabel set" "$CMD_FATLABEL $_partition $_label" "$CMD_FATLABEL" "$_partition" "$_label"
+				_out="$_out\n\nLabel:\n$EXEC_OUT"
 			fi
 			;;
 		fat32|vfat)
 			[ -n "$CMD_MKFS_FAT" ] || { emit_json_error "mkfs.fat not available"; return; }
+			_cmd_mk="$CMD_MKFS_FAT -F 32 ${_extra_opts:-}$_partition"
 			if [ -n "$_extra_opts" ]; then
-				set -- $_extra_opts
-				_out=$($CMD_MKFS_FAT -F 32 "$@" "$_partition" 2>&1)
+				# shellcheck disable=SC2086
+				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -F 32 $_extra_opts "$_partition"
 			else
-				_out=$($CMD_MKFS_FAT -F 32 "$_partition" 2>&1)
+				exec_cmd_c "mkfs.fat fat32" "$_cmd_mk" "$CMD_MKFS_FAT" -F 32 "$_partition"
 			fi
-			_rc=$?
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ] && [ -n "$CMD_FATLABEL" ]; then
-				_lbl_out=$($CMD_FATLABEL "$_partition" "$_label" 2>&1)
-				_out="$_out\n\nLabel:\n$_lbl_out"
+				exec_cmd_c "fatlabel set" "$CMD_FATLABEL $_partition $_label" "$CMD_FATLABEL" "$_partition" "$_label"
+				_out="$_out\n\nLabel:\n$EXEC_OUT"
 			fi
 			;;
 		exfat)
@@ -1284,23 +1372,28 @@ fatlabel $_partition $_label"
 				fi
 			fi
 			if [ -n "$_extra_opts" ]; then
-				set -- $_extra_opts
 				if [ -n "$_label" ]; then
-					_out=$($CMD_MKFS_EXFAT -n "$_label" "$@" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKFS_EXFAT -n $_label $_extra_opts $_partition"
+					# shellcheck disable=SC2086
+					exec_cmd_c "mkfs.exfat" "$_cmd_mk" "$CMD_MKFS_EXFAT" -n "$_label" $_extra_opts "$_partition"
 				else
-					_out=$($CMD_MKFS_EXFAT "$@" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKFS_EXFAT $_extra_opts $_partition"
+					# shellcheck disable=SC2086
+					exec_cmd_c "mkfs.exfat" "$_cmd_mk" "$CMD_MKFS_EXFAT" $_extra_opts "$_partition"
 				fi
 			else
 				if [ -n "$_label" ]; then
-					_out=$($CMD_MKFS_EXFAT -n "$_label" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKFS_EXFAT -n $_label $_partition"
+					exec_cmd_c "mkfs.exfat" "$_cmd_mk" "$CMD_MKFS_EXFAT" -n "$_label" "$_partition"
 				else
-					_out=$($CMD_MKFS_EXFAT "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKFS_EXFAT $_partition"
+					exec_cmd_c "mkfs.exfat" "$_cmd_mk" "$CMD_MKFS_EXFAT" "$_partition"
 				fi
 			fi
-			_rc=$?
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] && [ -n "$_label" ] && [ -n "$CMD_EXFATLABEL" ]; then
-				_lbl_out=$(run_exfat_label "$_partition" "$_label")
-				_lbl_rc=$?
+				exec_cmd_c "exfatlabel set" "run_exfat_label $_partition $_label" run_exfat_label "$_partition" "$_label"
+				_lbl_rc=$EXEC_RC; _lbl_out="$EXEC_OUT"
 				if [ "$_lbl_rc" -eq 0 ]; then
 					_out="$_out\n\nLabel:\n$_lbl_out"
 				else
@@ -1317,20 +1410,25 @@ fatlabel $_partition $_label"
 				fi
 			fi
 			if [ -n "$_extra_opts" ]; then
-				set -- $_extra_opts
 				if [ -n "$_label" ]; then
-					_out=$($CMD_MKNTFS -F -L "$_label" "$@" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKNTFS -F -L $_label $_extra_opts $_partition"
+					# shellcheck disable=SC2086
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F -L "$_label" $_extra_opts "$_partition"
 				else
-					_out=$($CMD_MKNTFS -F "$@" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKNTFS -F $_extra_opts $_partition"
+					# shellcheck disable=SC2086
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F $_extra_opts "$_partition"
 				fi
 			else
 				if [ -n "$_label" ]; then
-					_out=$($CMD_MKNTFS -F -L "$_label" "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKNTFS -F -L $_label $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F -L "$_label" "$_partition"
 				else
-					_out=$($CMD_MKNTFS -F "$_partition" 2>&1)
+					_cmd_mk="$CMD_MKNTFS -F $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -F "$_partition"
 				fi
 			fi
-			_rc=$?
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			;;
 	esac
 
@@ -1375,23 +1473,23 @@ action_check_filesystem() {
 			if [ "$_repair" = "yes" ]; then
 				_cmd_display="$CMD_E2FSCK -f -p ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_E2FSCK -f -p "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -f -p $_extra_opts "$_partition"
 				else
-					_out=$($CMD_E2FSCK -f -p "$_partition" 2>&1)
+					exec_cmd_c "e2fsck repair" "$_cmd_display" "$CMD_E2FSCK" -f -p "$_partition"
 				fi
 			else
 				_cmd_display="$CMD_E2FSCK -f -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_E2FSCK -f -n "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -f -n $_extra_opts "$_partition"
 				else
-					_out=$($CMD_E2FSCK -f -n "$_partition" 2>&1)
+					exec_cmd_c "e2fsck check" "$_cmd_display" "$CMD_E2FSCK" -f -n "$_partition"
 				fi
 			fi
-			_rc=$?
+			_rc=$EXEC_RC
 			_out="\$ $_cmd_display
-$_out"
+$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
 				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
 			else
@@ -1403,23 +1501,23 @@ $_out"
 			if [ "$_repair" = "yes" ]; then
 				_cmd_display="$CMD_FSCK_FAT -v -a ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_FSCK_FAT -v -a "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "fsck.fat repair" "$_cmd_display" "$CMD_FSCK_FAT" -v -a $_extra_opts "$_partition"
 				else
-					_out=$($CMD_FSCK_FAT -v -a "$_partition" 2>&1)
+					exec_cmd_c "fsck.fat repair" "$_cmd_display" "$CMD_FSCK_FAT" -v -a "$_partition"
 				fi
 			else
 				_cmd_display="$CMD_FSCK_FAT -v -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_FSCK_FAT -v -n "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "fsck.fat check" "$_cmd_display" "$CMD_FSCK_FAT" -v -n $_extra_opts "$_partition"
 				else
-					_out=$($CMD_FSCK_FAT -v -n "$_partition" 2>&1)
+					exec_cmd_c "fsck.fat check" "$_cmd_display" "$CMD_FSCK_FAT" -v -n "$_partition"
 				fi
 			fi
-			_rc=$?
+			_rc=$EXEC_RC
 			_out="\$ $_cmd_display
-$_out"
+$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ]; then
 				emit_cmd_result true "$_rc" "Filesystem check completed" "$_out"
 			else
@@ -1431,23 +1529,23 @@ $_out"
 			if [ "$_repair" = "yes" ]; then
 				_cmd_display="$CMD_FSCK_EXFAT ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_FSCK_EXFAT "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "fsck.exfat repair" "$_cmd_display" "$CMD_FSCK_EXFAT" $_extra_opts "$_partition"
 				else
-					_out=$($CMD_FSCK_EXFAT "$_partition" 2>&1)
+					exec_cmd_c "fsck.exfat repair" "$_cmd_display" "$CMD_FSCK_EXFAT" "$_partition"
 				fi
 			else
 				_cmd_display="$CMD_FSCK_EXFAT -n ${_opts_display}$_partition"
 				if [ -n "$_extra_opts" ]; then
-					set -- $_extra_opts
-					_out=$($CMD_FSCK_EXFAT -n "$@" "$_partition" 2>&1)
+					# shellcheck disable=SC2086
+					exec_cmd_c "fsck.exfat check" "$_cmd_display" "$CMD_FSCK_EXFAT" -n $_extra_opts "$_partition"
 				else
-					_out=$($CMD_FSCK_EXFAT -n "$_partition" 2>&1)
+					exec_cmd_c "fsck.exfat check" "$_cmd_display" "$CMD_FSCK_EXFAT" -n "$_partition"
 				fi
 			fi
-			_rc=$?
+			_rc=$EXEC_RC
 			_out="\$ $_cmd_display
-$_out"
+$EXEC_OUT"
 			if [ "$_rc" -eq 0 ] || [ "$_rc" -eq 1 ] || [ "$_rc" -eq 2 ]; then
 				emit_cmd_result true "$_rc" "exFAT check completed" "$_out"
 			else
@@ -1459,30 +1557,30 @@ $_out"
 				if [ "$_repair" = "yes" ]; then
 					_cmd_display="$CMD_NTFSFIX ${_opts_display}$_partition"
 					if [ -n "$_extra_opts" ]; then
-						set -- $_extra_opts
-						_out=$($CMD_NTFSFIX "$@" "$_partition" 2>&1)
+						# shellcheck disable=SC2086
+						exec_cmd_c "ntfsfix repair" "$_cmd_display" "$CMD_NTFSFIX" $_extra_opts "$_partition"
 					else
-						_out=$($CMD_NTFSFIX "$_partition" 2>&1)
+						exec_cmd_c "ntfsfix repair" "$_cmd_display" "$CMD_NTFSFIX" "$_partition"
 					fi
 				else
 					_cmd_display="$CMD_NTFSFIX -n ${_opts_display}$_partition"
 					if [ -n "$_extra_opts" ]; then
-						set -- $_extra_opts
-						_out=$($CMD_NTFSFIX -n "$@" "$_partition" 2>&1)
+						# shellcheck disable=SC2086
+						exec_cmd_c "ntfsfix check" "$_cmd_display" "$CMD_NTFSFIX" -n $_extra_opts "$_partition"
 					else
-						_out=$($CMD_NTFSFIX -n "$_partition" 2>&1)
+						exec_cmd_c "ntfsfix check" "$_cmd_display" "$CMD_NTFSFIX" -n "$_partition"
 					fi
 				fi
-				_rc=$?
+				_rc=$EXEC_RC
 				_out="\$ $_cmd_display
-$_out"
+$EXEC_OUT"
 				emit_cmd_result true "$_rc" "NTFS check completed" "$_out"
 			elif [ -n "$CMD_NTFSINFO" ]; then
 				_cmd_display="$CMD_NTFSINFO -m $_partition"
-				_out=$($CMD_NTFSINFO -m "$_partition" 2>&1)
-				_rc=$?
+				exec_cmd_c "ntfsinfo" "$_cmd_display" "$CMD_NTFSINFO" -m "$_partition"
+				_rc=$EXEC_RC
 				_out="\$ $_cmd_display
-$_out"
+$EXEC_OUT"
 				emit_cmd_result true "$_rc" "NTFS metadata report collected (ntfsfix unavailable)" "$_out"
 			else
 				emit_json_error "Neither ntfsfix nor ntfsinfo is available"
@@ -1527,11 +1625,11 @@ action_set_label() {
 	case "$_fs_type" in
 		ext2|ext3|ext4)
 			if [ -n "$CMD_E2LABEL" ]; then
-				_out=$($CMD_E2LABEL -L "$_label" "$_partition" 2>&1)
-				_rc=$?
+				exec_cmd_c "e2label set" "$CMD_E2LABEL -L $_label $_partition" "$CMD_E2LABEL" -L "$_label" "$_partition"
+				_rc=$EXEC_RC; _out="$EXEC_OUT"
 			elif [ -n "$CMD_TUNE2FS" ]; then
-				_out=$(run_tune2fs -L "$_label" "$_partition" 2>&1)
-				_rc=$?
+				exec_cmd_c "tune2fs set label" "$CMD_TUNE2FS -L $_label $_partition" run_tune2fs -L "$_label" "$_partition"
+				_rc=$EXEC_RC; _out="$EXEC_OUT"
 				[ "$_rc" -eq 139 ] && _out="[tune2fs: Segmentation fault (SIGSEGV)]" && _rc=1
 			else
 				emit_json_error "Neither e2label nor tune2fs is available"
@@ -1540,18 +1638,18 @@ action_set_label() {
 			;;
 		fat|fat12|fat16|fat32|vfat)
 			[ -n "$CMD_FATLABEL" ] || { emit_json_error "fatlabel not available"; return; }
-			_out=$($CMD_FATLABEL "$_partition" "$_label" 2>&1)
-			_rc=$?
+			exec_cmd_c "fatlabel set" "$CMD_FATLABEL $_partition $_label" "$CMD_FATLABEL" "$_partition" "$_label"
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			;;
 		exfat)
 			[ -n "$CMD_EXFATLABEL" ] || { emit_json_error "exfatlabel/tune.exfat not available"; return; }
-			_out=$(run_exfat_label "$_partition" "$_label")
-			_rc=$?
+			exec_cmd_c "exfatlabel set" "run_exfat_label $_partition $_label" run_exfat_label "$_partition" "$_label"
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			;;
 		ntfs)
 			[ -n "$CMD_NTFSLABEL" ] || { emit_json_error "ntfslabel not available"; return; }
-			_out=$($CMD_NTFSLABEL "$_partition" "$_label" 2>&1)
-			_rc=$?
+			exec_cmd_c "ntfslabel set" "$CMD_NTFSLABEL $_partition $_label" "$CMD_NTFSLABEL" "$_partition" "$_label"
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
 			;;
 		*)
 			emit_json_error "Unsupported or undetected filesystem type"
@@ -1587,8 +1685,10 @@ action_set_partition_name() {
 		return
 	fi
 
-	_out=$($CMD_PARTED -s "$_device" name "$_partnum" "$_part_name" 2>&1)
-	_rc=$?
+	exec_cmd_c "Set partition name to $_part_name" \
+		"$CMD_PARTED -s $_device name $_partnum $_part_name" \
+		"$CMD_PARTED" -s "$_device" name "$_partnum" "$_part_name"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition name updated" "$_out"
 	else
@@ -1622,8 +1722,10 @@ action_set_partition_flag() {
 		return
 	fi
 
-	_out=$($CMD_PARTED -s "$_device" set "$_partnum" "$_flag" "$_state" 2>&1)
-	_rc=$?
+	exec_cmd_c "Set partition flag $_flag=$_state on p$_partnum" \
+		"$CMD_PARTED -s $_device set $_partnum $_flag $_state" \
+		"$CMD_PARTED" -s "$_device" set "$_partnum" "$_flag" "$_state"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition flag updated" "$_out"
 	else
@@ -1733,7 +1835,8 @@ action_move_partition() {
 	fi
 
 	# shellcheck disable=SC2086
-	_out=$(
+	exec_cmd "Move partition (partition_migration.sh)" \
+		"$CMD_PARTITION_MIGRATION -d $_device -D $_source_device -p $_source_path -n $_source_partnum -S $_start_sector -E $_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay -M ${_umount_flag} ${_verify_flag}" \
 		"$CMD_PARTITION_MIGRATION" \
 			-d "$_device" \
 			-D "$_source_device" \
@@ -1749,10 +1852,9 @@ action_move_partition() {
 			${_verify_flag} \
 			${_fs_safe:+"-f"} ${_fs_safe} \
 			${_extra_safe:+"-x"} ${_extra_safe:+"$_extra_safe"} \
-			$_mount_args \
-		2>&1
-	)
-	_rc=$?
+			$_mount_args
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition moved successfully" "$_out"
@@ -1868,7 +1970,8 @@ action_clone_partition_dd() {
 	fi
 
 	# shellcheck disable=SC2086
-	_out=$(
+	exec_cmd "Clone partition (partition_migration.sh)" \
+		"$CMD_PARTITION_MIGRATION -d $_target_device -D $_source_device -p $_source_path -n $_source_partnum -S $_target_start_sector -E $_target_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay ${_umount_flag} ${_verify_flag}" \
 		"$CMD_PARTITION_MIGRATION" \
 			-d "$_target_device" \
 			-D "$_source_device" \
@@ -1883,10 +1986,9 @@ action_clone_partition_dd() {
 			${_verify_flag} \
 			${_fs_safe:+"-f"} ${_fs_safe} \
 			${_extra_safe:+"-x"} ${_extra_safe:+"$_extra_safe"} \
-			$_mount_args \
-		2>&1
-	)
-	_rc=$?
+			$_mount_args
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition cloned successfully" "$_out"
@@ -1928,20 +2030,303 @@ action_verify_partition() {
 		return
 	fi
 
-	_out=$(
+	# shellcheck disable=SC2086
+	exec_cmd "Verify partitions (partition_migration.sh -Z)" \
+		"$CMD_PARTITION_MIGRATION -p $_source_partition -Z $_compare_partition ${_umount_flag} -w $_step_delay" \
 		"$CMD_PARTITION_MIGRATION" \
 			-p "$_source_partition" \
 			-Z "$_compare_partition" \
 			${_umount_flag} \
-			-w "$_step_delay" \
-		2>&1
-	)
-	_rc=$?
+			-w "$_step_delay"
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partitions are identical" "$_out"
 	else
 		emit_cmd_result false "$_rc" "Partitions differ or comparison failed" "$_out"
+	fi
+}
+
+# ── Partclone image / network / ddrescue helpers ──────────────────────────────
+
+# Common param validation and script path resolution for partition_image.sh calls
+_action_partition_image_common() {
+	resolve_tools
+	CMD_PARTITION_IMAGE=$(find_command partition_image.sh)
+	[ -n "$CMD_PARTITION_IMAGE" ] || { emit_json_error "partition_image.sh not found in PATH"; return 1; }
+	return 0
+}
+
+action_partclone_export() {
+	_action_partition_image_common || return
+	_partition=$(cgi_param partition)
+	_output=$(cgi_param output_file)
+	_compress=$(cgi_param compression)
+	_force_fs=$(cgi_param force_fs)
+	_verify=$(cgi_param verify)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_extra_opts=$(cgi_param extra_opts)
+	_use_dd=$(cgi_param use_dd)
+	_dry_run=$(cgi_param dry_run)
+
+	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+	[ -n "$_output" ] || { emit_json_error "Output image file path required"; return; }
+	case "$_compress" in
+		none|gzip|gz|bzip2|bz2|lz4|zstd|'') ;;
+		*) emit_json_error "Invalid compression '${_compress}'"; return ;;
+	esac
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-e'
+	[ "$_unmount" = 'yes' ] && _flags="$_flags -u"
+	[ "$_verify"  = 'yes' ] && _flags="$_flags -V"
+	[ "$_use_dd"  = 'yes' ] && _flags="$_flags -c"
+
+	if dry_run_enabled; then
+		_preview="$CMD_PARTITION_IMAGE $_flags"
+		_preview="$_preview -p $_partition"
+		_preview="$_preview -o '$_output'"
+		[ -n "$_compress" ] && [ "$_compress" != 'none' ] && _preview="$_preview -z $_compress"
+		_preview="$_preview -w $_step_delay"
+		[ -n "$_force_fs" ]   && _preview="$_preview -f $_force_fs"
+		[ -n "$_extra_opts" ] && _preview="$_preview -x '$_extra_opts'"
+		_preview="$_preview -n"
+		emit_dry_run_result "partclone export" "$_preview"
+		return
+	fi
+
+	# shellcheck disable=SC2086
+	exec_cmd "Export partition (partition_image.sh)" \
+		"$CMD_PARTITION_IMAGE $_flags -p $_partition -o '$_output' -w $_step_delay" \
+		"$CMD_PARTITION_IMAGE" \
+			$_flags \
+			-p "$_partition" \
+			-o "$_output" \
+			${_compress:+-z "$_compress"} \
+			-w "$_step_delay" \
+			${_force_fs:+-f "$_force_fs"} \
+			${_extra_opts:+-x "$_extra_opts"}
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition export completed successfully" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Partition export failed" "$_out"
+	fi
+}
+
+action_partclone_import() {
+	_action_partition_image_common || return
+	_partition=$(cgi_param partition)
+	_input=$(cgi_param input_file)
+	_compress=$(cgi_param compression)
+	_verify=$(cgi_param verify)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_extra_opts=$(cgi_param extra_opts)
+	_dry_run=$(cgi_param dry_run)
+
+	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+	[ -n "$_input" ] || { emit_json_error "Input image file path required"; return; }
+	case "$_compress" in
+		none|gzip|gz|bzip2|bz2|lz4|zstd|'') ;;
+		*) emit_json_error "Invalid compression '${_compress}'"; return ;;
+	esac
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-i'
+	[ "$_unmount" = 'yes' ] && _flags="$_flags -u"
+	[ "$_verify"  = 'yes' ] && _flags="$_flags -V"
+
+	if dry_run_enabled; then
+		_preview="$CMD_PARTITION_IMAGE $_flags"
+		_preview="$_preview -p $_partition"
+		_preview="$_preview -o '$_input'"
+		[ -n "$_compress" ] && [ "$_compress" != 'none' ] && _preview="$_preview -z $_compress"
+		_preview="$_preview -w $_step_delay"
+		[ -n "$_extra_opts" ] && _preview="$_preview -x '$_extra_opts'"
+		_preview="$_preview -n"
+		emit_dry_run_result "partclone import" "$_preview"
+		return
+	fi
+
+	# shellcheck disable=SC2086
+	exec_cmd "Import (restore) partition (partition_image.sh)" \
+		"$CMD_PARTITION_IMAGE $_flags -p $_partition -o '$_input' -w $_step_delay" \
+		"$CMD_PARTITION_IMAGE" \
+			$_flags \
+			-p "$_partition" \
+			-o "$_input" \
+			${_compress:+-z "$_compress"} \
+			-w "$_step_delay" \
+			${_extra_opts:+-x "$_extra_opts"}
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition restore completed successfully" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Partition restore failed" "$_out"
+	fi
+}
+
+action_partclone_net_send() {
+	_action_partition_image_common || return
+	_partition=$(cgi_param partition)
+	_compress=$(cgi_param compression)
+	_force_fs=$(cgi_param force_fs)
+	_transport=$(cgi_param transport)
+	_host=$(cgi_param net_host)
+	_port=$(cgi_param net_port)
+	_multicast=$(cgi_param multicast)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_dry_run=$(cgi_param dry_run)
+
+	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+	case "$_compress" in none|gzip|gz|bzip2|bz2|lz4|zstd|'') ;; *) emit_json_error "Invalid compression"; return ;; esac
+	case "$_port" in ''|*[!0-9]*) _port='9000' ;; esac
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-N'
+	[ "$_unmount"   = 'yes' ] && _flags="$_flags -u"
+	[ "$_multicast" = 'yes' ] && _flags="$_flags -m"
+
+	if dry_run_enabled; then
+		_preview="$CMD_PARTITION_IMAGE $_flags"
+		_preview="$_preview -p $_partition"
+		[ -n "$_host" ] && _preview="$_preview -H $_host"
+		_preview="$_preview -P $_port"
+		[ -n "$_compress" ] && [ "$_compress" != 'none' ] && _preview="$_preview -z $_compress"
+		[ -n "$_force_fs" ]  && _preview="$_preview -f $_force_fs"
+		_preview="$_preview -w $_step_delay -n"
+		emit_dry_run_result "partclone network send" "$_preview"
+		return
+	fi
+
+	# shellcheck disable=SC2086
+	exec_cmd "Network send partition (partition_image.sh)" \
+		"$CMD_PARTITION_IMAGE $_flags -p $_partition -P $_port -w $_step_delay" \
+		"$CMD_PARTITION_IMAGE" \
+			$_flags \
+			-p "$_partition" \
+			${_host:+-H "$_host"} \
+			-P "$_port" \
+			${_compress:+-z "$_compress"} \
+			${_force_fs:+-f "$_force_fs"} \
+			-w "$_step_delay"
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Network send completed" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Network send failed" "$_out"
+	fi
+}
+
+action_partclone_net_recv() {
+	_action_partition_image_common || return
+	_partition=$(cgi_param partition)
+	_compress=$(cgi_param compression)
+	_transport=$(cgi_param transport)
+	_host=$(cgi_param net_host)
+	_port=$(cgi_param net_port)
+	_multicast=$(cgi_param multicast)
+	_verify=$(cgi_param verify)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_dry_run=$(cgi_param dry_run)
+
+	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+	[ -n "$_host" ] || { emit_json_error "Source host IP required"; return; }
+	case "$_compress" in none|gzip|gz|bzip2|bz2|lz4|zstd|'') ;; *) emit_json_error "Invalid compression"; return ;; esac
+	case "$_port" in ''|*[!0-9]*) _port='9000' ;; esac
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-R'
+	[ "$_unmount"   = 'yes' ] && _flags="$_flags -u"
+	[ "$_verify"    = 'yes' ] && _flags="$_flags -V"
+	[ "$_multicast" = 'yes' ] && _flags="$_flags -m"
+
+	if dry_run_enabled; then
+		_preview="$CMD_PARTITION_IMAGE $_flags"
+		_preview="$_preview -p $_partition"
+		_preview="$_preview -H $_host"
+		_preview="$_preview -P $_port"
+		[ -n "$_compress" ] && [ "$_compress" != 'none' ] && _preview="$_preview -z $_compress"
+		_preview="$_preview -w $_step_delay -n"
+		emit_dry_run_result "partclone network receive" "$_preview"
+		return
+	fi
+
+	# shellcheck disable=SC2086
+	exec_cmd "Network receive partition (partition_image.sh)" \
+		"$CMD_PARTITION_IMAGE $_flags -p $_partition -H $_host -P $_port -w $_step_delay" \
+		"$CMD_PARTITION_IMAGE" \
+			$_flags \
+			-p "$_partition" \
+			-H "$_host" \
+			-P "$_port" \
+			${_compress:+-z "$_compress"} \
+			-w "$_step_delay"
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Network receive completed" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Network receive failed" "$_out"
+	fi
+}
+
+action_partclone_ddrescue() {
+	_action_partition_image_common || return
+	_partition=$(cgi_param partition)
+	_output=$(cgi_param output_file)
+	_log_file=$(cgi_param log_file)
+	_retries=$(cgi_param retries)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_extra_opts=$(cgi_param extra_opts)
+	_dry_run=$(cgi_param dry_run)
+
+	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
+	[ -n "$_output" ] || { emit_json_error "Output image file path required"; return; }
+	case "$_retries" in ''|*[!0-9]*) _retries='3' ;; esac
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-G'
+	[ "$_unmount" = 'yes' ] && _flags="$_flags -u"
+
+	if dry_run_enabled; then
+		_preview="$CMD_PARTITION_IMAGE $_flags"
+		_preview="$_preview -p $_partition"
+		_preview="$_preview -o '$_output'"
+		[ -n "$_log_file" ] && _preview="$_preview -l '$_log_file'"
+		_preview="$_preview -r $_retries -w $_step_delay"
+		[ -n "$_extra_opts" ] && _preview="$_preview -x '$_extra_opts'"
+		_preview="$_preview -n"
+		emit_dry_run_result "ddrescue clone" "$_preview"
+		return
+	fi
+
+	# shellcheck disable=SC2086
+	exec_cmd "ddrescue clone (partition_image.sh -G)" \
+		"$CMD_PARTITION_IMAGE $_flags -p $_partition -o '$_output' -r $_retries -w $_step_delay" \
+		"$CMD_PARTITION_IMAGE" \
+			$_flags \
+			-p "$_partition" \
+			-o "$_output" \
+			${_log_file:+-l "$_log_file"} \
+			-r "$_retries" \
+			-w "$_step_delay" \
+			${_extra_opts:+-x "$_extra_opts"}
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "ddrescue completed successfully" "$_out"
+	else
+		emit_cmd_result false "$_rc" "ddrescue failed" "$_out"
 	fi
 }
 
@@ -2012,7 +2397,9 @@ action_disk_migration() {
 		return
 	fi
 
-	_out=$(
+	# shellcheck disable=SC2086
+	exec_cmd "Disk migration (disk_migration.sh)" \
+		"$CMD_DISK_MIGRATION -D $_source_device -d $_target_device -c $_clone_mode -a $_align_bytes -w $_step_delay $_flags" \
 		"$CMD_DISK_MIGRATION" \
 			-D "$_source_device" \
 			-d "$_target_device" \
@@ -2021,10 +2408,9 @@ action_disk_migration() {
 			-w "$_step_delay" \
 			${_flags} \
 			${_force_fs:+-f "$_force_fs"} \
-			${_extra_opts:+-x "$_extra_opts"} \
-		2>&1
-	)
-	_rc=$?
+			${_extra_opts:+-x "$_extra_opts"}
+	_rc=$EXEC_RC
+	_out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Disk migration completed successfully" "$_out"
@@ -2099,18 +2485,22 @@ $_preview_cmd"
 
 	if [ -n "$_fs_type" ] && [ "$_fs_type" != "auto" ]; then
 		if [ -n "$_mount_opts" ]; then
-			_out=$($CMD_MOUNT -t "$_fs_type" -o "$_mount_opts" "$_partition" "$_mountpoint" 2>&1)
+			_cmd_disp="$CMD_MOUNT -t $_fs_type -o $_mount_opts $_partition $_mountpoint"
+			exec_cmd_c "mount" "$_cmd_disp" "$CMD_MOUNT" -t "$_fs_type" -o "$_mount_opts" "$_partition" "$_mountpoint"
 		else
-			_out=$($CMD_MOUNT -t "$_fs_type" "$_partition" "$_mountpoint" 2>&1)
+			_cmd_disp="$CMD_MOUNT -t $_fs_type $_partition $_mountpoint"
+			exec_cmd_c "mount" "$_cmd_disp" "$CMD_MOUNT" -t "$_fs_type" "$_partition" "$_mountpoint"
 		fi
 	else
 		if [ -n "$_mount_opts" ]; then
-			_out=$($CMD_MOUNT -o "$_mount_opts" "$_partition" "$_mountpoint" 2>&1)
+			_cmd_disp="$CMD_MOUNT -o $_mount_opts $_partition $_mountpoint"
+			exec_cmd_c "mount" "$_cmd_disp" "$CMD_MOUNT" -o "$_mount_opts" "$_partition" "$_mountpoint"
 		else
-			_out=$($CMD_MOUNT "$_partition" "$_mountpoint" 2>&1)
+			_cmd_disp="$CMD_MOUNT $_partition $_mountpoint"
+			exec_cmd_c "mount" "$_cmd_disp" "$CMD_MOUNT" "$_partition" "$_mountpoint"
 		fi
 	fi
-	_rc=$?
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		_now=$(awk -v p="$_partition" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
@@ -2163,8 +2553,8 @@ action_unmount_partition() {
 		fi
 	fi
 
-	_out=$($CMD_UMOUNT "$_target" 2>&1)
-	_rc=$?
+	exec_cmd_c "Unmount $_target" "$CMD_UMOUNT $_target" "$CMD_UMOUNT" "$_target"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Unmount completed" "$_out"
@@ -2425,20 +2815,22 @@ action_reload_table() {
 		return
 	fi
 
-	_out=$($CMD_PARTPROBE "$_device" 2>&1)
-	_rc=$?
+	exec_cmd_c "Reload partition table (partprobe)" "$CMD_PARTPROBE $_device" \
+		"$CMD_PARTPROBE" "$_device"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 	if [ "$_rc" -eq 139 ]; then
 		# SIGSEGV with device arg: retry without argument
-		_out2=$($CMD_PARTPROBE 2>&1)
-		_rc2=$?
+		exec_cmd_c "Reload partition table (partprobe, no-arg retry)" "$CMD_PARTPROBE" "$CMD_PARTPROBE"
+		_rc2=$EXEC_RC; _out2="$EXEC_OUT"
 		_out="$_out\n[retry without device] rc=$_rc2\n$_out2"
 		[ "$_rc2" -eq 0 ] && _rc=0
 	fi
 	if [ "$_rc" -ne 0 ]; then
 		# Last resort: blockdev --rereadpt
 		if [ -n "$CMD_BLOCKDEV" ]; then
-			_out3=$("$CMD_BLOCKDEV" --rereadpt "$_device" 2>&1)
-			_rc3=$?
+			exec_cmd_c "Reload partition table (blockdev --rereadpt)" "$CMD_BLOCKDEV --rereadpt $_device" \
+				"$CMD_BLOCKDEV" --rereadpt "$_device"
+			_rc3=$EXEC_RC; _out3="$EXEC_OUT"
 			_out="$_out\n[blockdev --rereadpt] rc=$_rc3\n$_out3"
 			[ "$_rc3" -eq 0 ] && _rc=0
 		fi
@@ -2470,19 +2862,22 @@ action_smart_info() {
 	}
 
 	_smart_cmd_used="--xall"
-	_out=$($CMD_SMARTCTL --xall "$_device" 2>&1 | sed -n '1,220p')
-	_rc=$?
+	exec_cmd_c "SMART info (smartctl --xall)" "$CMD_SMARTCTL --xall $_device" \
+		/bin/sh -c "$CMD_SMARTCTL --xall '$_device' 2>&1 | sed -n '1,220p'"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
 	if _smart_needs_fallback "$_out" || { [ "$_rc" -ne 0 ] && ! _smart_has_info "$_out"; }; then
 		_smart_cmd_used='-d sat,auto -T permissive -x'
-		_out=$($CMD_SMARTCTL -d sat,auto -T permissive -x "$_device" 2>&1 | sed -n '1,220p')
-		_rc=$?
+		exec_cmd_c "SMART info (smartctl -d sat,auto)" "$CMD_SMARTCTL -d sat,auto -T permissive -x $_device" \
+			/bin/sh -c "$CMD_SMARTCTL -d sat,auto -T permissive -x '$_device' 2>&1 | sed -n '1,220p'"
+		_rc=$EXEC_RC; _out="$EXEC_OUT"
 	fi
 
 	if [ "$_rc" -ne 0 ] && ! _smart_has_info "$_out"; then
 		_smart_cmd_used='-d sat,auto -T permissive -i'
-		_out=$($CMD_SMARTCTL -d sat,auto -T permissive -i "$_device" 2>&1 | sed -n '1,220p')
-		_rc=$?
+		exec_cmd_c "SMART info (smartctl -i)" "$CMD_SMARTCTL -d sat,auto -T permissive -i $_device" \
+			/bin/sh -c "$CMD_SMARTCTL -d sat,auto -T permissive -i '$_device' 2>&1 | sed -n '1,220p'"
+		_rc=$EXEC_RC; _out="$EXEC_OUT"
 	fi
 
 	if [ -n "$_out" ] && { _smart_has_info "$_out" || [ "$_rc" -eq 0 ]; }; then
@@ -2503,8 +2898,9 @@ action_hdparm_info() {
 		return
 	fi
 
-	_out=$($CMD_HDPARM -I "$_device" 2>&1 | sed -n '1,220p')
-	_rc=$?
+	exec_cmd_c "hdparm identify $_device" "$CMD_HDPARM -I $_device" \
+		/bin/sh -c "$CMD_HDPARM -I '$_device' 2>&1 | sed -n '1,220p'"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
 	if [ -n "$_out" ]; then
 		emit_cmd_result true "$_rc" "hdparm identify collected" "$_out"
 	else
@@ -2523,12 +2919,14 @@ action_gpt_info() {
 	fi
 
 	if [ -n "$CMD_SGDISK" ]; then
-		_out=$($CMD_SGDISK -p "$_device" 2>&1 | sed -n '1,220p')
-		_rc=$?
+		exec_cmd_c "GPT info (sgdisk)" "$CMD_SGDISK -p $_device" \
+			/bin/sh -c "$CMD_SGDISK -p '$_device' 2>&1 | sed -n '1,220p'"
+		_rc=$EXEC_RC; _out="$EXEC_OUT"
 		_msg='sgdisk GPT summary collected'
 	elif [ -n "$CMD_GDISK" ]; then
-		_out=$($CMD_GDISK -l "$_device" 2>&1 | sed -n '1,220p')
-		_rc=$?
+		exec_cmd_c "GPT info (gdisk)" "$CMD_GDISK -l $_device" \
+			/bin/sh -c "$CMD_GDISK -l '$_device' 2>&1 | sed -n '1,220p'"
+		_rc=$EXEC_RC; _out="$EXEC_OUT"
 		_msg='gdisk GPT summary collected'
 	else
 		emit_json_error "Neither sgdisk nor gdisk is available"
@@ -2539,6 +2937,94 @@ action_gpt_info() {
 		emit_cmd_result true "$_rc" "$_msg" "$_out"
 	else
 		emit_cmd_result false "$_rc" "GPT summary failed" "$_out"
+	fi
+}
+
+# ── Streaming job management ──────────────────────────────────────────────────
+
+action_start_job() {
+	_real_action=$(cgi_param job_action)
+	[ -n "$_real_action" ] || { emit_json_error "job_action required"; return; }
+	_token="$(date +%s 2>/dev/null || echo 0)$$"
+	_token=$(printf '%s' "$_token" | tr -cd '0-9')
+	[ -n "$_token" ] || _token="0$$"
+	_slog="/tmp/disk-mgmt-job-${_token}.log"
+	_sdone="/tmp/disk-mgmt-job-${_token}.done"
+	_spid="/tmp/disk-mgmt-job-${_token}.pid"
+	printf '=== JOB START: %s === %s ===\n' "$_real_action" "$(date 2>/dev/null || :)" > "$_slog"
+	(
+		STREAM_LOG="$_slog"
+		STREAM_DONE="$_sdone"
+		ACTION="$_real_action"
+		case "$ACTION" in
+			create_partition)    action_create_partition ;;
+			delete_partition)    action_delete_partition ;;
+			resize_partition)    action_resize_partition ;;
+			resize_filesystem)   action_resize_filesystem ;;
+			create_filesystem)   action_create_filesystem ;;
+			check_filesystem)    action_check_filesystem ;;
+			set_label)           action_set_label ;;
+			set_partition_name)  action_set_partition_name ;;
+			set_partition_flag)  action_set_partition_flag ;;
+			move_partition)      action_move_partition ;;
+			clone_partition_dd)  action_clone_partition_dd ;;
+			verify_partition)    action_verify_partition ;;
+			disk_migration)      action_disk_migration ;;
+			partclone_export)    action_partclone_export ;;
+			partclone_import)    action_partclone_import ;;
+			partclone_net_send)  action_partclone_net_send ;;
+			partclone_net_recv)  action_partclone_net_recv ;;
+			partclone_ddrescue)  action_partclone_ddrescue ;;
+			mount_partition)     action_mount_partition ;;
+			unmount_partition)   action_unmount_partition ;;
+			reload_table)        action_reload_table ;;
+			smart_info)          action_smart_info ;;
+			hdparm_info)         action_hdparm_info ;;
+			gpt_info)            action_gpt_info ;;
+			*)
+				printf 'Unknown job action: %s\n' "$ACTION" >> "$STREAM_LOG"
+				printf 'false\n1\nUnknown job action: %s\n\n' "$ACTION" > "$STREAM_DONE"
+				;;
+		esac
+		[ -f "$STREAM_DONE" ] || printf 'true\n0\nCompleted\n\n' > "$STREAM_DONE"
+	) > /dev/null 2>&1 &
+	printf '%s\n' "$!" > "$_spid"
+	echo "{\"success\": true, \"token\": \"${_token}\"}"
+}
+
+action_poll_job() {
+	_token=$(cgi_param job_token)
+	[ -n "$_token" ] || { emit_json_error "job_token required"; return; }
+	_token=$(printf '%s' "$_token" | tr -cd '0-9')
+	[ -n "$_token" ] || { emit_json_error "invalid job_token"; return; }
+	_slog="/tmp/disk-mgmt-job-${_token}.log"
+	_sdone="/tmp/disk-mgmt-job-${_token}.done"
+	_offset=$(cgi_param offset)
+	case "$_offset" in ''|*[!0-9]*) _offset=0 ;; esac
+	_size=0
+	if [ -f "$_slog" ]; then
+		_size=$(wc -c < "$_slog" 2>/dev/null | tr -d ' ')
+		case "$_size" in ''|*[!0-9]*) _size=0 ;; esac
+	fi
+	_newtext=''
+	if [ "$_size" -gt "$_offset" ]; then
+		_newtext=$(tail -c "+$((_offset + 1))" "$_slog" 2>/dev/null || true)
+	fi
+	_done=false; _success=true; _rc=0; _msg=''; _extras=''
+	if [ -f "$_sdone" ]; then
+		_success=$(sed -n '1p' "$_sdone" 2>/dev/null); case "$_success" in true|false) : ;; *) _success=true ;; esac
+		_rc=$(sed -n '2p' "$_sdone" 2>/dev/null); case "$_rc" in ''|*[!0-9]*) _rc=0 ;; esac
+		_msg=$(sed -n '3p' "$_sdone" 2>/dev/null)
+		_extras=$(sed -n '4p' "$_sdone" 2>/dev/null)
+		_done=true
+		rm -f "$_slog" "$_sdone" "/tmp/disk-mgmt-job-${_token}.pid" 2>/dev/null
+	fi
+	_te=$(json_escape "$_newtext")
+	_me=$(json_escape "$_msg")
+	if [ "$_done" = "true" ] && [ -n "$_extras" ]; then
+		echo "{\"done\":true,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size,$_extras}"
+	else
+		echo "{\"done\":$_done,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size}"
 	fi
 }
 
@@ -2611,6 +3097,21 @@ EOF
 		disk_migration)
 			action_disk_migration
 			;;
+		partclone_export)
+			action_partclone_export
+			;;
+		partclone_import)
+			action_partclone_import
+			;;
+		partclone_net_send)
+			action_partclone_net_send
+			;;
+		partclone_net_recv)
+			action_partclone_net_recv
+			;;
+		partclone_ddrescue)
+			action_partclone_ddrescue
+			;;
 		mount_partition)
 			action_mount_partition
 			;;
@@ -2631,6 +3132,12 @@ EOF
 			;;
 		gpt_info)
 			action_gpt_info
+			;;
+		start_job)
+			action_start_job
+			;;
+		poll_job)
+			action_poll_job
 			;;
 		*)
 			emit_json_error "Unknown action"
@@ -3651,6 +4158,283 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		</div>
 	</div>
 </div>
+
+<!-- ── Partclone Export Modal ─────────────────────────────────────────────── -->
+<div id="pcgiPartcloneExportModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+		<h3 id="pcgiPiExpTitle" class="pcgi-modal-head">Export partition/disk to image</h3>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+			<div>
+				<label id="i18nPiExpSourceLabel">Source partition/disk</label>
+				<input id="piExpSource" type="text" readonly style="width:100%;background:#f5f5f5">
+			</div>
+			<div>
+				<label id="i18nPiExpOutputLabel">Output image file (-o)</label>
+				<input id="piExpOutput" type="text" placeholder="/var/media/ftp/backup.img" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiExpCompressLabel">Compression (-z)</label>
+				<select id="piExpCompress" style="width:100%">
+					<option value="none">none (raw)</option>
+					<option value="gzip">gzip (.gz)</option>
+					<option value="bzip2">bzip2 (.bz2)</option>
+					<option value="lz4">lz4 (.lz4)</option>
+					<option value="zstd">zstd (.zst)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiExpForceFsLabel">Force filesystem type (-f)</label>
+				<input id="piExpForceFs" type="text" placeholder="auto-detect if empty" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiExpVerifyLabel">Verify image after export (-V)</label>
+				<select id="piExpVerify" style="width:100%">
+					<option value="no">no</option>
+					<option value="yes">yes (partclone.chkimg)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiExpUnmountLabel">Unmount before export (-u)</label>
+				<select id="piExpUnmount" style="width:100%">
+					<option value="yes">yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiExpUseDdLabel">Use partclone.dd regardless (-c)</label>
+				<select id="piExpUseDd" style="width:100%">
+					<option value="no">no (auto-detect fs)</option>
+					<option value="yes">yes (raw dd mode)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiExpStepDelayLabel">Step delay seconds (-w)</label>
+				<input id="piExpStepDelay" type="number" min="0" step="1" value="1" style="width:100%">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nPiExpExtraOptsLabel">Extra options (-x)</label>
+				<input id="piExpExtraOpts" type="text" placeholder="e.g. --debug" style="width:100%">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiPiExpCancelBtn">Cancel</button>
+			<button type="button" id="pcgiPiExpOkBtn">Run export</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── Partclone Import Modal ─────────────────────────────────────────────── -->
+<div id="pcgiPartcloneImportModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+		<h3 id="pcgiPiImpTitle" class="pcgi-modal-head">Restore partition/disk from image</h3>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+			<div>
+				<label id="i18nPiImpTargetLabel">Target partition/disk</label>
+				<input id="piImpTarget" type="text" readonly style="width:100%;background:#f5f5f5">
+			</div>
+			<div>
+				<label id="i18nPiImpInputLabel">Input image file (-o)</label>
+				<input id="piImpInput" type="text" placeholder="/var/media/ftp/backup.img" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiImpCompressLabel">Compression (-z)</label>
+				<select id="piImpCompress" style="width:100%">
+					<option value="none">none (auto-detect from content)</option>
+					<option value="gzip">gzip</option>
+					<option value="bzip2">bzip2</option>
+					<option value="lz4">lz4</option>
+					<option value="zstd">zstd</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiImpVerifyLabel">Verify image before restore (-V)</label>
+				<select id="piImpVerify" style="width:100%">
+					<option value="no">no</option>
+					<option value="yes">yes (partclone.chkimg)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiImpUnmountLabel">Unmount before restore (-u)</label>
+				<select id="piImpUnmount" style="width:100%">
+					<option value="yes">yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiImpStepDelayLabel">Step delay seconds (-w)</label>
+				<input id="piImpStepDelay" type="number" min="0" step="1" value="1" style="width:100%">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nPiImpExtraOptsLabel">Extra options (-x)</label>
+				<input id="piImpExtraOpts" type="text" placeholder="e.g. --debug" style="width:100%">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiPiImpCancelBtn">Cancel</button>
+			<button type="button" id="pcgiPiImpOkBtn">Run restore</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── Partclone Network Send Modal ──────────────────────────────────────── -->
+<div id="pcgiPartcloneNetSendModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+		<h3 id="pcgiPiNsTitle" class="pcgi-modal-head">Send partition over network</h3>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+			<div>
+				<label id="i18nPiNsSourceLabel">Source partition</label>
+				<input id="piNsSource" type="text" readonly style="width:100%;background:#f5f5f5">
+			</div>
+			<div>
+				<label id="i18nPiNsTransportLabel">Mode</label>
+				<select id="piNsTransport" style="width:100%" onchange="piNsUpdateHostField()">
+					<option value="unicast">Unicast (netcat)</option>
+					<option value="multicast">Multicast (udp-sender)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNsHostLabel">Target host IP / Multicast group</label>
+				<input id="piNsHost" type="text" placeholder="e.g. 192.168.1.50 or 239.0.0.1" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiNsPortLabel">TCP/UDP port (-P)</label>
+				<input id="piNsPort" type="number" min="1" max="65535" value="9000" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiNsCompressLabel">Compression (-z)</label>
+				<select id="piNsCompress" style="width:100%">
+					<option value="none">none</option>
+					<option value="gzip">gzip</option>
+					<option value="lz4">lz4 (fast)</option>
+					<option value="zstd">zstd</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNsForceFsLabel">Force filesystem type (-f)</label>
+				<input id="piNsForceFs" type="text" placeholder="auto-detect if empty" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiNsUnmountLabel">Unmount before send (-u)</label>
+				<select id="piNsUnmount" style="width:100%">
+					<option value="yes">yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNsStepDelayLabel">Step delay seconds (-w)</label>
+				<input id="piNsStepDelay" type="number" min="0" step="1" value="1" style="width:100%">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiPiNsCancelBtn">Cancel</button>
+			<button type="button" id="pcgiPiNsOkBtn">Start send</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── Partclone Network Receive Modal ───────────────────────────────────── -->
+<div id="pcgiPartcloneNetRecvModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+		<h3 id="pcgiPiNrTitle" class="pcgi-modal-head">Receive partition from network</h3>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+			<div>
+				<label id="i18nPiNrTargetLabel">Target partition</label>
+				<input id="piNrTarget" type="text" readonly style="width:100%;background:#f5f5f5">
+			</div>
+			<div>
+				<label id="i18nPiNrTransportLabel">Mode</label>
+				<select id="piNrTransport" style="width:100%">
+					<option value="unicast">Unicast (netcat)</option>
+					<option value="multicast">Multicast (udp-receiver)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNrHostLabel">Source host IP / Multicast group</label>
+				<input id="piNrHost" type="text" placeholder="e.g. 192.168.1.10 or 239.0.0.1" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiNrPortLabel">TCP/UDP port (-P)</label>
+				<input id="piNrPort" type="number" min="1" max="65535" value="9000" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nPiNrCompressLabel">Compression (-z)</label>
+				<select id="piNrCompress" style="width:100%">
+					<option value="none">none</option>
+					<option value="gzip">gzip</option>
+					<option value="lz4">lz4 (fast)</option>
+					<option value="zstd">zstd</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNrVerifyLabel">Verify after receive (-V)</label>
+				<select id="piNrVerify" style="width:100%">
+					<option value="no">no</option>
+					<option value="yes">yes</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNrUnmountLabel">Unmount before receive (-u)</label>
+				<select id="piNrUnmount" style="width:100%">
+					<option value="yes">yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nPiNrStepDelayLabel">Step delay seconds (-w)</label>
+				<input id="piNrStepDelay" type="number" min="0" step="1" value="1" style="width:100%">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiPiNrCancelBtn">Cancel</button>
+			<button type="button" id="pcgiPiNrOkBtn">Start receive</button>
+		</div>
+	</div>
+</div>
+
+<!-- ── Ddrescue Modal ─────────────────────────────────────────────────────── -->
+<div id="pcgiDdrescueModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+		<h3 id="pcgiDrTitle" class="pcgi-modal-head">Clone with ddrescue (data recovery)</h3>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+			<div>
+				<label id="i18nDrSourceLabel">Source partition/disk</label>
+				<input id="drSource" type="text" readonly style="width:100%;background:#f5f5f5">
+			</div>
+			<div>
+				<label id="i18nDrOutputLabel">Output image file (-o)</label>
+				<input id="drOutput" type="text" placeholder="/var/media/ftp/rescue.img" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nDrLogLabel">ddrescue log file (-l)</label>
+				<input id="drLogFile" type="text" placeholder="auto: output.log" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nDrRetriesLabel">Max retry passes (-r)</label>
+				<input id="drRetries" type="number" min="0" step="1" value="3" style="width:100%">
+			</div>
+			<div>
+				<label id="i18nDrUnmountLabel">Unmount before (-u)</label>
+				<select id="drUnmount" style="width:100%">
+					<option value="yes">yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nDrStepDelayLabel">Step delay seconds (-w)</label>
+				<input id="drStepDelay" type="number" min="0" step="1" value="1" style="width:100%">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nDrExtraOptsLabel">Extra ddrescue options (-x)</label>
+				<input id="drExtraOpts" type="text" placeholder="e.g. -d -r3" style="width:100%">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiDrCancelBtn">Cancel</button>
+			<button type="button" id="pcgiDrOkBtn">Run ddrescue</button>
+		</div>
+	</div>
+</div>
+
 <hr class="pcgi-rule">
 <div class="pcgi-toolbar" style="margin-top: 4px;">
 	<input id="renamePartInput" type="text" placeholder="new partition name">
@@ -4366,6 +5150,174 @@ window.paceOptions = {
 		confirmDiskCloneMsg: "Alle Partitionen vom Quelldatentrager auf den Zieldatentrager klonen?",
 		tDiskMigrationQueued: "Disk-Migrationserstellung in Queue aufgenommen."
 	});
+	translations.en = Object.assign({}, translations.en, {
+		piExpTitle: "Export partition/disk to image",
+		piExpSourceLabel: "Source partition/disk",
+		piExpOutputLabel: "Output image file (-o)",
+		piExpCompressLabel: "Compression (-z)",
+		piExpForceFsLabel: "Force filesystem type (-f)",
+		piExpVerifyLabel: "Verify after export (-V)",
+		piExpUnmountLabel: "Unmount before export (-u)",
+		piExpUseDdLabel: "Use partclone.dd regardless (-c)",
+		piExpStepDelayLabel: "Step delay seconds (-w)",
+		piExpExtraOptsLabel: "Extra options (-x)",
+		piImpTitle: "Restore partition/disk from image",
+		piImpTargetLabel: "Target partition/disk",
+		piImpInputLabel: "Input image file (-o)",
+		piImpCompressLabel: "Compression (-z)",
+		piImpVerifyLabel: "Verify before restore (-V)",
+		piImpUnmountLabel: "Unmount before restore (-u)",
+		piImpStepDelayLabel: "Step delay seconds (-w)",
+		piImpExtraOptsLabel: "Extra options (-x)",
+		piNsTitle: "Send partition over network",
+		piNsSourceLabel: "Source partition",
+		piNsTransportLabel: "Mode",
+		piNsHostLabel: "Target host IP / Multicast group",
+		piNsPortLabel: "TCP/UDP port (-P)",
+		piNsCompressLabel: "Compression (-z)",
+		piNsForceFsLabel: "Force filesystem type (-f)",
+		piNsUnmountLabel: "Unmount before send (-u)",
+		piNsStepDelayLabel: "Step delay seconds (-w)",
+		piNrTitle: "Receive partition from network",
+		piNrTargetLabel: "Target partition",
+		piNrTransportLabel: "Mode",
+		piNrHostLabel: "Source host IP / Multicast group",
+		piNrPortLabel: "TCP/UDP port (-P)",
+		piNrCompressLabel: "Compression (-z)",
+		piNrVerifyLabel: "Verify after receive (-V)",
+		piNrUnmountLabel: "Unmount before receive (-u)",
+		piNrStepDelayLabel: "Step delay seconds (-w)",
+		drTitle: "Clone with ddrescue (data recovery)",
+		drSourceLabel: "Source partition/disk",
+		drOutputLabel: "Output image file (-o)",
+		drLogLabel: "ddrescue log file (-l)",
+		drRetriesLabel: "Max retry passes (-r)",
+		drUnmountLabel: "Unmount before (-u)",
+		drStepDelayLabel: "Step delay seconds (-w)",
+		drExtraOptsLabel: "Extra ddrescue options (-x)",
+		confirmPiExp: "Confirm image export",
+		confirmPiExpMsg: "Export partition/disk to image file? This is a read operation and safe.",
+		confirmPiImp: "Confirm image restore",
+		confirmPiImpMsg: "Restore partition/disk from image? ALL EXISTING DATA ON TARGET WILL BE OVERWRITTEN.",
+		confirmNsSend: "Confirm network send",
+		confirmNsSendMsg: "Send partition over network? Listening on specified port.",
+		confirmNrRecv: "Confirm network receive",
+		confirmNrRecvMsg: "Receive and restore partition from network? ALL EXISTING DATA ON TARGET WILL BE OVERWRITTEN.",
+		confirmDr: "Confirm ddrescue",
+		confirmDrMsg: "Run ddrescue clone to image file? The output file will be created/overwritten."
+	});
+	translations.it = Object.assign({}, translations.it, {
+		piExpTitle: "Esporta partizione/disco su immagine",
+		piExpSourceLabel: "Partizione/disco sorgente",
+		piExpOutputLabel: "File immagine di output (-o)",
+		piExpCompressLabel: "Compressione (-z)",
+		piExpForceFsLabel: "Forza tipo filesystem (-f)",
+		piExpVerifyLabel: "Verifica dopo export (-V)",
+		piExpUnmountLabel: "Smonta prima dell'export (-u)",
+		piExpUseDdLabel: "Usa partclone.dd comunque (-c)",
+		piExpStepDelayLabel: "Pausa tra passi in secondi (-w)",
+		piExpExtraOptsLabel: "Opzioni extra (-x)",
+		piImpTitle: "Ripristina partizione/disco da immagine",
+		piImpTargetLabel: "Partizione/disco destinazione",
+		piImpInputLabel: "File immagine di input (-o)",
+		piImpCompressLabel: "Compressione (-z)",
+		piImpVerifyLabel: "Verifica prima del ripristino (-V)",
+		piImpUnmountLabel: "Smonta prima del ripristino (-u)",
+		piImpStepDelayLabel: "Pausa tra passi in secondi (-w)",
+		piImpExtraOptsLabel: "Opzioni extra (-x)",
+		piNsTitle: "Invia partizione tramite rete",
+		piNsSourceLabel: "Partizione sorgente",
+		piNsTransportLabel: "Modalita",
+		piNsHostLabel: "IP host destinatario / Gruppo multicast",
+		piNsPortLabel: "Porta TCP/UDP (-P)",
+		piNsCompressLabel: "Compressione (-z)",
+		piNsForceFsLabel: "Forza tipo filesystem (-f)",
+		piNsUnmountLabel: "Smonta prima dell'invio (-u)",
+		piNsStepDelayLabel: "Pausa tra passi in secondi (-w)",
+		piNrTitle: "Ricevi partizione dalla rete",
+		piNrTargetLabel: "Partizione destinazione",
+		piNrTransportLabel: "Modalita",
+		piNrHostLabel: "IP host sorgente / Gruppo multicast",
+		piNrPortLabel: "Porta TCP/UDP (-P)",
+		piNrCompressLabel: "Compressione (-z)",
+		piNrVerifyLabel: "Verifica dopo ricezione (-V)",
+		piNrUnmountLabel: "Smonta prima della ricezione (-u)",
+		piNrStepDelayLabel: "Pausa tra passi in secondi (-w)",
+		drTitle: "Clone con ddrescue (recupero dati)",
+		drSourceLabel: "Partizione/disco sorgente",
+		drOutputLabel: "File immagine di output (-o)",
+		drLogLabel: "File log ddrescue (-l)",
+		drRetriesLabel: "Tentativi massimi di retry (-r)",
+		drUnmountLabel: "Smonta prima (-u)",
+		drStepDelayLabel: "Pausa tra passi in secondi (-w)",
+		drExtraOptsLabel: "Opzioni ddrescue extra (-x)",
+		confirmPiExp: "Conferma export immagine",
+		confirmPiExpMsg: "Esportare partizione/disco su file immagine? E un'operazione di lettura.",
+		confirmPiImp: "Conferma ripristino immagine",
+		confirmPiImpMsg: "Ripristinare partizione/disco dall'immagine? TUTTI I DATI SUL TARGET SARANNO SOVRASCRITTI.",
+		confirmNsSend: "Conferma invio di rete",
+		confirmNsSendMsg: "Inviare partizione tramite rete sulla porta specificata?",
+		confirmNrRecv: "Conferma ricezione di rete",
+		confirmNrRecvMsg: "Ricevere e ripristinare partizione dalla rete? TUTTI I DATI SUL TARGET SARANNO SOVRASCRITTI.",
+		confirmDr: "Conferma ddrescue",
+		confirmDrMsg: "Eseguire clone ddrescue su file immagine? Il file di output sara creato/sovrascritto."
+	});
+	translations.de = Object.assign({}, translations.de, {
+		piExpTitle: "Partition/Datentraeger als Image exportieren",
+		piExpSourceLabel: "Quellpartition/-datentraeger",
+		piExpOutputLabel: "Image-Datei Ausgabe (-o)",
+		piExpCompressLabel: "Komprimierung (-z)",
+		piExpForceFsLabel: "Dateisystemtyp erzwingen (-f)",
+		piExpVerifyLabel: "Nach Export pruefen (-V)",
+		piExpUnmountLabel: "Vor Export aushaengen (-u)",
+		piExpUseDdLabel: "partclone.dd immer verwenden (-c)",
+		piExpStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
+		piExpExtraOptsLabel: "Zusaetzliche Optionen (-x)",
+		piImpTitle: "Partition/Datentraeger aus Image wiederherstellen",
+		piImpTargetLabel: "Zielpartition/-datentraeger",
+		piImpInputLabel: "Image-Datei Eingabe (-o)",
+		piImpCompressLabel: "Komprimierung (-z)",
+		piImpVerifyLabel: "Vor Wiederherstellung pruefen (-V)",
+		piImpUnmountLabel: "Vor Wiederherstellung aushaengen (-u)",
+		piImpStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
+		piImpExtraOptsLabel: "Zusaetzliche Optionen (-x)",
+		piNsTitle: "Partition ueber Netzwerk senden",
+		piNsSourceLabel: "Quellpartition",
+		piNsTransportLabel: "Modus",
+		piNsHostLabel: "Ziel-IP / Multicast-Gruppe",
+		piNsPortLabel: "TCP/UDP-Port (-P)",
+		piNsCompressLabel: "Komprimierung (-z)",
+		piNsForceFsLabel: "Dateisystemtyp erzwingen (-f)",
+		piNsUnmountLabel: "Vor dem Senden aushaengen (-u)",
+		piNsStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
+		piNrTitle: "Partition vom Netzwerk empfangen",
+		piNrTargetLabel: "Zielpartition",
+		piNrTransportLabel: "Modus",
+		piNrHostLabel: "Quell-IP / Multicast-Gruppe",
+		piNrPortLabel: "TCP/UDP-Port (-P)",
+		piNrCompressLabel: "Komprimierung (-z)",
+		piNrVerifyLabel: "Nach Empfang pruefen (-V)",
+		piNrUnmountLabel: "Vor Empfang aushaengen (-u)",
+		piNrStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
+		drTitle: "Klon mit ddrescue (Datenrettung)",
+		drSourceLabel: "Quellpartition/-datentraeger",
+		drOutputLabel: "Image-Datei Ausgabe (-o)",
+		drLogLabel: "ddrescue-Protokolldatei (-l)",
+		drRetriesLabel: "Max. Wiederholungsversuche (-r)",
+		drUnmountLabel: "Vorher aushaengen (-u)",
+		drStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
+		drExtraOptsLabel: "Zusaetzliche ddrescue-Optionen (-x)",
+		confirmPiExp: "Image-Export bestaetigen",
+		confirmPiExpMsg: "Partition/Datentraeger als Image-Datei exportieren? Nur-Lese-Vorgang.",
+		confirmPiImp: "Image-Wiederherstellung bestaetigen",
+		confirmPiImpMsg: "Partition/Datentraeger aus Image wiederherstellen? ALLE DATEN AUF DEM ZIEL WERDEN UEBERSCHRIEBEN.",
+		confirmNsSend: "Netzwerksendung bestaetigen",
+		confirmNsSendMsg: "Partition ueber Netzwerk auf dem angegebenen Port senden?",
+		confirmNrRecv: "Netzwerkempfang bestaetigen",
+		confirmNrRecvMsg: "Partition vom Netzwerk empfangen und wiederherstellen? ALLE DATEN AUF DEM ZIEL WERDEN UEBERSCHRIEBEN.",
+		confirmDr: "ddrescue bestaetigen",
+		confirmDrMsg: "ddrescue-Klon in Image-Datei erstellen? Die Ausgabedatei wird erstellt/ueberschrieben."
+	});
 	translations.fr = Object.assign({}, translations.en, {
 		languageLabel: "Langue",
 		usbOnlyLabel: "Filtre peripheriques",
@@ -4768,7 +5720,51 @@ window.paceOptions = {
 		'map-new-end-h':     { title: 'New end size',              body: 'Human-readable end position of the partition, e.g. <code>488 MiB</code>.<br><br>Synchronized with the raw sector field on the left. Editing this updates the sector value automatically.' },
 		'map-role':          { title: 'Role',                      body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions.<br><br><b>logical</b> – partition inside an extended container. Allows more than 4 partitions on MBR. Only valid if an extended partition exists.<br><br><b>extended</b> – container for logical partitions. Only one per MBR disk. Irrelevant on GPT (GPT supports up to 128 partitions, all treated as primary).' },
 		'map-fs-hint':       { title: 'Filesystem',                body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Queue create filesystem" in the Filesystem operations section after creating the partition.' },
-		'map-part-name':     { title: 'Partition name',            body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' }
+		'map-part-name':     { title: 'Partition name',            body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
+		/* Partclone export modal */
+		'pi-exp-source':     { title: 'Source partition/disk',     body: 'The block device to export, e.g. <code>/dev/sda1</code> for a partition or <code>/dev/sda</code> for a whole disk.<br><br>Auto-filled from the context menu selection.' },
+		'pi-exp-output':     { title: 'Output image file (-o)',     body: 'Full path for the output image file, e.g. <code>/var/media/ftp/USB_DISK/backup.img</code>.<br><br>If compression is selected the appropriate extension is appended automatically by the script (.gz, .bz2, .lz4, .zst).<br><br>Ensure the destination has sufficient free space (can be up to the partition size for non-sparse filesystems).' },
+		'pi-exp-compress':   { title: 'Compression (-z)',           body: 'Compress the image stream on-the-fly to reduce file size.<br><br><b>none</b> – raw partclone image (fastest restore).<br><b>gzip</b> – good compression ratio, widely supported.<br><b>bzip2</b> – better compression, slower.<br><b>lz4</b> – very fast compression/decompression, lower ratio.<br><b>zstd</b> – modern, fast and strong compression (recommended if available).' },
+		'pi-exp-force-fs':   { title: 'Force filesystem type (-f)',  body: 'Override auto-detection of the filesystem type. Usually leave empty — partclone will detect the filesystem via blkid/lsblk and choose the correct binary (partclone.ext4, partclone.ntfs, etc.).<br><br>Set only if detection fails or if you want to force raw dd mode (set to <code>dd</code>).' },
+		'pi-exp-verify':     { title: 'Verify after export (-V)',    body: 'Run <code>partclone.chkimg</code> on the created image after export to validate its integrity.<br><br>Adds extra time proportional to image size. Highly recommended for important backups.' },
+		'pi-exp-unmount':    { title: 'Unmount before export (-u)',  body: 'Automatically unmount the source partition before starting the export.<br><br>Recommended to ensure a consistent filesystem snapshot. If the partition is in use and cannot be unmounted, the export may capture an inconsistent state.' },
+		'pi-exp-use-dd':     { title: 'Use partclone.dd always (-c)', body: 'Force use of <code>partclone.dd</code> regardless of the detected filesystem type.<br><br>This creates a raw sector-by-sector image (like <code>dd</code>) but with partclone metadata. Larger than a smart image but works for any filesystem including unknown or corrupted ones.' },
+		'pi-exp-step-delay': { title: 'Step delay seconds (-w)',     body: 'Pause in seconds between internal steps. Useful to reduce I/O pressure on slow devices like USB sticks or when the system is under load.<br><br>Set to 0 for fastest execution.' },
+		'pi-exp-extra-opts': { title: 'Extra options (-x)',          body: 'Additional flags passed directly to the partclone binary.<br><br>Example: <code>--debug</code> for verbose logging. Rarely needed. Consult <code>partclone --help</code> for available options.' },
+		/* Partclone import modal */
+		'pi-imp-target':     { title: 'Target partition/disk',      body: 'The block device to restore onto, e.g. <code>/dev/sda1</code>.<br><br>WARNING: all existing data on this partition will be overwritten. The target must be at least as large as the partition that was exported.' },
+		'pi-imp-input':      { title: 'Input image file (-o)',       body: 'Full path to the partclone image to restore from, e.g. <code>/var/media/ftp/USB_DISK/backup.img.gz</code>.<br><br>Can be a raw image or a compressed one — select the matching Compression option.' },
+		'pi-imp-compress':   { title: 'Compression (-z)',            body: 'Decompression to apply when reading the image.<br><br>Must match the compression used when the image was exported. Select <b>none</b> for uncompressed images.' },
+		'pi-imp-verify':     { title: 'Verify before restore (-V)',  body: 'Run <code>partclone.chkimg</code> on the source image before starting the restore, to confirm it is not corrupted.<br><br>Adds extra time but prevents writing a broken image to the target.' },
+		'pi-imp-unmount':    { title: 'Unmount before restore (-u)', body: 'Unmount the target partition before starting the restore. Required if the target is already mounted — writing to a mounted partition causes filesystem corruption.' },
+		'pi-imp-step-delay': { title: 'Step delay seconds (-w)',     body: 'Pause in seconds between internal steps. Set to 0 for fastest execution.' },
+		'pi-imp-extra-opts': { title: 'Extra options (-x)',          body: 'Additional flags passed directly to <code>partclone.restore</code>. Rarely needed.' },
+		/* Network send modal */
+		'pi-ns-source':      { title: 'Source partition',           body: 'The partition to stream over the network. Auto-filled from context menu selection.' },
+		'pi-ns-transport':   { title: 'Network mode',               body: '<b>Unicast (netcat)</b>: streams the partition image to a single receiver. The receiver must be waiting with netcat on the same port before you start sending.<br><br><b>Multicast (udp-sender)</b>: streams to multiple receivers simultaneously using <code>udp-sender</code> (DRBL/Clonezilla style). Requires <code>udp-sender</code> on sender and <code>udp-receiver</code> on all receivers.<br><br>For unicast, the receiver command is:<br><code>nc -l -p PORT | partclone.restore -d -s - -o /dev/sdX1</code><br>(or with decompression piped in between).' },
+		'pi-ns-host':        { title: 'Target host IP / Multicast group', body: 'For <b>unicast</b>: the IP or hostname of the receiving machine (netcat will connect to it).<br><br>For <b>multicast</b>: the multicast group address, e.g. <code>239.0.0.1</code>. All receivers that join this group will get the data.<br><br>Leave empty for unicast to make netcat listen on <em>this</em> machine instead of connecting outward.' },
+		'pi-ns-port':        { title: 'TCP/UDP port (-P)',           body: 'Network port to use for the transfer. Default: 9000.<br><br>Must match on sender and all receivers. Choose an unused port above 1024 to avoid conflicts with system services.' },
+		'pi-ns-compress':    { title: 'Compression (-z)',            body: 'Compress the data stream before sending over the network.<br><br><b>lz4</b> and <b>zstd</b> are recommended for network transfers — they are fast enough to not bottleneck even on fast LAN connections while reducing bandwidth usage.' },
+		'pi-ns-force-fs':    { title: 'Force filesystem type (-f)',  body: 'Override auto-detection of the filesystem type. Usually leave empty.' },
+		'pi-ns-unmount':     { title: 'Unmount before send (-u)',    body: 'Unmount the source partition before streaming. Recommended for consistent state.' },
+		'pi-ns-step-delay':  { title: 'Step delay seconds (-w)',     body: 'Pause in seconds between preparation steps. Set to 0 for fastest execution.' },
+		/* Network receive modal */
+		'pi-nr-target':      { title: 'Target partition',           body: 'The local partition to restore the received image onto. WARNING: all existing data will be overwritten.' },
+		'pi-nr-transport':   { title: 'Network mode',               body: 'Match the mode chosen on the sender side.<br><br><b>Unicast</b>: connect to or listen for the sender via netcat.<br><b>Multicast</b>: join a multicast group via udp-receiver.' },
+		'pi-nr-host':        { title: 'Source host IP / Multicast group', body: 'For <b>unicast</b>: the IP or hostname of the sending machine.<br><br>For <b>multicast</b>: the multicast rendezvous IP used by the sender, e.g. <code>239.0.0.1</code>.' },
+		'pi-nr-port':        { title: 'TCP/UDP port (-P)',           body: 'Must match the port configured on the sender. Default: 9000.' },
+		'pi-nr-compress':    { title: 'Compression (-z)',            body: 'Must match the compression used by the sender.' },
+		'pi-nr-verify':      { title: 'Verify after receive (-V)',   body: 'Run partition info check after restore to verify the received data is valid.' },
+		'pi-nr-unmount':     { title: 'Unmount before receive (-u)', body: 'Unmount the target partition before starting the receive/restore. Required if mounted.' },
+		'pi-nr-step-delay':  { title: 'Step delay seconds (-w)',     body: 'Pause in seconds between preparation steps.' },
+		/* Ddrescue modal */
+		'dr-source':         { title: 'Source partition/disk',       body: 'The damaged or source block device, e.g. <code>/dev/sda1</code> or <code>/dev/sda</code>.<br><br>ddrescue reads the source in multiple passes, skipping bad sectors and retrying them later, to maximise data recovery from failing drives.' },
+		'dr-output':         { title: 'Output image file (-o)',       body: 'Path for the output image file. Can be on any writable filesystem with enough free space.<br><br>If the file already exists and a log file is specified, ddrescue will resume from where it left off — this allows interrupted rescues to be continued safely.' },
+		'dr-log':            { title: 'ddrescue log file (-l)',        body: 'Path to the ddrescue domain log file. This file records which sectors have been read successfully and which have errors.<br><br>Strongly recommended: it allows you to resume an interrupted rescue operation. If empty, defaults to <code>&lt;output&gt;.log</code>.<br><br>Never delete the log file while a rescue is in progress or if you plan to continue later.' },
+		'dr-retries':        { title: 'Max retry passes (-r)',         body: 'Maximum number of retry passes for failed sectors. Default: 3.<br><br>Each pass makes additional attempts to read unreadable sectors. More passes recover more data but take more time and may stress the drive further.<br><br>Set to 0 to disable retries (first pass only). Set to -1 for unlimited retries.' },
+		'dr-unmount':        { title: 'Unmount before (-u)',           body: 'Unmount the source partition before running ddrescue. Recommended to avoid inconsistent reads on mounted filesystems.' },
+		'dr-step-delay':     { title: 'Step delay seconds (-w)',       body: 'Pause in seconds between preparation steps.' },
+		'dr-extra-opts':     { title: 'Extra ddrescue options (-x)',    body: 'Additional flags passed to <code>ddrescue</code>.<br><br>Examples:<br><code>-d</code> – use direct disc access (bypasses cache, slower but more reliable)<br><code>-r -1</code> – infinite retries<br><code>-S</code> – scrape mode (slower but recovers more from bad sectors)<br><code>-R</code> – reverse reading direction<br><br>Consult <code>man ddrescue</code> for the full list.' }
 	};
 
 	function showFieldHelp(key) {
@@ -4850,7 +5846,51 @@ window.paceOptions = {
 			'i18nNewEndHumanLabel'      : 'map-new-end-h',
 			'i18nRoleLabel'             : 'map-role',
 			'i18nFsHintLabel'           : 'map-fs-hint',
-			'i18nPartNameLabel'         : 'map-part-name'
+			'i18nPartNameLabel'         : 'map-part-name',
+			/* Partclone export modal */
+			'i18nPiExpSourceLabel'      : 'pi-exp-source',
+			'i18nPiExpOutputLabel'      : 'pi-exp-output',
+			'i18nPiExpCompressLabel'    : 'pi-exp-compress',
+			'i18nPiExpForceFsLabel'     : 'pi-exp-force-fs',
+			'i18nPiExpVerifyLabel'      : 'pi-exp-verify',
+			'i18nPiExpUnmountLabel'     : 'pi-exp-unmount',
+			'i18nPiExpUseDdLabel'       : 'pi-exp-use-dd',
+			'i18nPiExpStepDelayLabel'   : 'pi-exp-step-delay',
+			'i18nPiExpExtraOptsLabel'   : 'pi-exp-extra-opts',
+			/* Partclone import modal */
+			'i18nPiImpTargetLabel'      : 'pi-imp-target',
+			'i18nPiImpInputLabel'       : 'pi-imp-input',
+			'i18nPiImpCompressLabel'    : 'pi-imp-compress',
+			'i18nPiImpVerifyLabel'      : 'pi-imp-verify',
+			'i18nPiImpUnmountLabel'     : 'pi-imp-unmount',
+			'i18nPiImpStepDelayLabel'   : 'pi-imp-step-delay',
+			'i18nPiImpExtraOptsLabel'   : 'pi-imp-extra-opts',
+			/* Network send modal */
+			'i18nPiNsSourceLabel'       : 'pi-ns-source',
+			'i18nPiNsTransportLabel'    : 'pi-ns-transport',
+			'i18nPiNsHostLabel'         : 'pi-ns-host',
+			'i18nPiNsPortLabel'         : 'pi-ns-port',
+			'i18nPiNsCompressLabel'     : 'pi-ns-compress',
+			'i18nPiNsForceFsLabel'      : 'pi-ns-force-fs',
+			'i18nPiNsUnmountLabel'      : 'pi-ns-unmount',
+			'i18nPiNsStepDelayLabel'    : 'pi-ns-step-delay',
+			/* Network receive modal */
+			'i18nPiNrTargetLabel'       : 'pi-nr-target',
+			'i18nPiNrTransportLabel'    : 'pi-nr-transport',
+			'i18nPiNrHostLabel'         : 'pi-nr-host',
+			'i18nPiNrPortLabel'         : 'pi-nr-port',
+			'i18nPiNrCompressLabel'     : 'pi-nr-compress',
+			'i18nPiNrVerifyLabel'       : 'pi-nr-verify',
+			'i18nPiNrUnmountLabel'      : 'pi-nr-unmount',
+			'i18nPiNrStepDelayLabel'    : 'pi-nr-step-delay',
+			/* Ddrescue modal */
+			'i18nDrSourceLabel'         : 'dr-source',
+			'i18nDrOutputLabel'         : 'dr-output',
+			'i18nDrLogLabel'            : 'dr-log',
+			'i18nDrRetriesLabel'        : 'dr-retries',
+			'i18nDrUnmountLabel'        : 'dr-unmount',
+			'i18nDrStepDelayLabel'      : 'dr-step-delay',
+			'i18nDrExtraOptsLabel'      : 'dr-extra-opts'
 		};
 		Object.keys(labelMap).forEach(function(labelId) {
 			var el = document.getElementById(labelId);
@@ -4930,6 +5970,57 @@ window.paceOptions = {
 		return fetch(API_URL + '?' + qp.toString())
 			.then(function (r) { return r.text(); })
 			.then(parseAjaxJson);
+	}
+
+	function appendTo(id, text) {
+		var el = document.getElementById(id);
+		if (!el) return;
+		el.textContent += text;
+		el.scrollTop = el.scrollHeight;
+	}
+
+	function callApiStreaming(action, params, outputElId, stepIdx, totalSteps, stepLabel) {
+		var sep = '\n' +
+			'\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n' +
+			'\u25ba Step ' + (stepIdx + 1) + '/' + totalSteps + ': ' + (stepLabel || action) + '\n' +
+			'\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+		appendTo(outputElId, sep);
+		paceHourglassStart();
+		var jobParams = {};
+		for (var k in params) {
+			if (Object.prototype.hasOwnProperty.call(params, k)) jobParams[k] = params[k];
+		}
+		jobParams.job_action = action;
+		return callApi('start_job', jobParams)
+			.then(function (startRes) {
+				if (!startRes.success) throw new Error(startRes.message || 'start_job failed');
+				var token = startRes.token;
+				var offset = 0;
+				return new Promise(function (resolve, reject) {
+					function poll() {
+						callApi('poll_job', { job_token: token, offset: String(offset) })
+							.then(function (pr) {
+								if (pr.text) appendTo(outputElId, pr.text);
+								if (pr.offset !== undefined) offset = Number(pr.offset);
+								if (pr.done) {
+									paceHourglassStop();
+									resolve(pr);
+								} else {
+									setTimeout(poll, 500);
+								}
+							})
+							.catch(function (err) {
+								paceHourglassStop();
+								reject(err);
+							});
+					}
+					poll();
+				});
+			})
+			.catch(function (err) {
+				paceHourglassStop();
+				throw err;
+			});
 	}
 
 	function humanBytes(bytes) {
@@ -5622,6 +6713,104 @@ window.paceOptions = {
 			if (dmVer)  out += ' -V';
 			if (dmFs)   out += ' \\\n  -f ' + JSON.stringify(dmFs);
 			if (dmXtra) out += ' \\\n  -x ' + JSON.stringify(dmXtra);
+			return out;
+		}
+		if (action === 'partclone_export') {
+			var piSrc  = v(params.partition);
+			var piOut  = v(params.output_file || '');
+			var piComp = v(params.compression || 'none');
+			var piFs   = v(params.force_fs || '');
+			var piVer  = String(params.verify         || 'no') === 'yes';
+			var piUmnt = String(params.unmount_before || 'yes') === 'yes';
+			var piDd   = String(params.use_dd         || 'no') === 'yes';
+			var piDly  = v(params.step_delay || '1');
+			var piXtra = v(params.extra_opts || '');
+			var out = 'partition_image.sh -e';
+			if (piUmnt) out += ' -u';
+			if (piVer)  out += ' -V';
+			if (piDd)   out += ' -c';
+			out += ' \\\n  -p ' + JSON.stringify(piSrc);
+			out += ' \\\n  -o ' + JSON.stringify(piOut);
+			if (piComp && piComp !== 'none') out += ' \\\n  -z ' + piComp;
+			if (piFs)   out += ' \\\n  -f ' + JSON.stringify(piFs);
+			out += ' \\\n  -w ' + (/^\d+$/.test(piDly) ? piDly : '1');
+			if (piXtra) out += ' \\\n  -x ' + JSON.stringify(piXtra);
+			return out;
+		}
+		if (action === 'partclone_import') {
+			var piTgt  = v(params.partition);
+			var piIn   = v(params.input_file || '');
+			var piComp = v(params.compression || 'none');
+			var piVer  = String(params.verify         || 'no') === 'yes';
+			var piUmnt = String(params.unmount_before || 'yes') === 'yes';
+			var piDly  = v(params.step_delay || '1');
+			var piXtra = v(params.extra_opts || '');
+			var out = 'partition_image.sh -i';
+			if (piUmnt) out += ' -u';
+			if (piVer)  out += ' -V';
+			out += ' \\\n  -p ' + JSON.stringify(piTgt);
+			out += ' \\\n  -o ' + JSON.stringify(piIn);
+			if (piComp && piComp !== 'none') out += ' \\\n  -z ' + piComp;
+			out += ' \\\n  -w ' + (/^\d+$/.test(piDly) ? piDly : '1');
+			if (piXtra) out += ' \\\n  -x ' + JSON.stringify(piXtra);
+			return out;
+		}
+		if (action === 'partclone_net_send') {
+			var nsSrc  = v(params.partition);
+			var nsHost = v(params.net_host || '');
+			var nsPort = v(params.net_port || '9000');
+			var nsComp = v(params.compression || 'none');
+			var nsFs   = v(params.force_fs || '');
+			var nsUmnt = String(params.unmount_before || 'yes') === 'yes';
+			var nsMc   = String(params.multicast || 'no') === 'yes';
+			var nsDly  = v(params.step_delay || '1');
+			var out = 'partition_image.sh -N';
+			if (nsUmnt) out += ' -u';
+			if (nsMc)   out += ' -m';
+			out += ' \\\n  -p ' + JSON.stringify(nsSrc);
+			if (nsHost) out += ' \\\n  -H ' + JSON.stringify(nsHost);
+			out += ' \\\n  -P ' + nsPort;
+			if (nsComp && nsComp !== 'none') out += ' \\\n  -z ' + nsComp;
+			if (nsFs)   out += ' \\\n  -f ' + JSON.stringify(nsFs);
+			out += ' \\\n  -w ' + (/^\d+$/.test(nsDly) ? nsDly : '1');
+			return out;
+		}
+		if (action === 'partclone_net_recv') {
+			var nrTgt  = v(params.partition);
+			var nrHost = v(params.net_host || '');
+			var nrPort = v(params.net_port || '9000');
+			var nrComp = v(params.compression || 'none');
+			var nrVer  = String(params.verify         || 'no') === 'yes';
+			var nrUmnt = String(params.unmount_before || 'yes') === 'yes';
+			var nrMc   = String(params.multicast || 'no') === 'yes';
+			var nrDly  = v(params.step_delay || '1');
+			var out = 'partition_image.sh -R';
+			if (nrUmnt) out += ' -u';
+			if (nrVer)  out += ' -V';
+			if (nrMc)   out += ' -m';
+			out += ' \\\n  -p ' + JSON.stringify(nrTgt);
+			if (nrHost) out += ' \\\n  -H ' + JSON.stringify(nrHost);
+			out += ' \\\n  -P ' + nrPort;
+			if (nrComp && nrComp !== 'none') out += ' \\\n  -z ' + nrComp;
+			out += ' \\\n  -w ' + (/^\d+$/.test(nrDly) ? nrDly : '1');
+			return out;
+		}
+		if (action === 'partclone_ddrescue') {
+			var drSrc  = v(params.partition);
+			var drOut  = v(params.output_file || '');
+			var drLog  = v(params.log_file || '');
+			var drRet  = v(params.retries || '3');
+			var drUmnt = String(params.unmount_before || 'yes') === 'yes';
+			var drDly  = v(params.step_delay || '1');
+			var drXtra = v(params.extra_opts || '');
+			var out = 'partition_image.sh -G';
+			if (drUmnt) out += ' -u';
+			out += ' \\\n  -p ' + JSON.stringify(drSrc);
+			out += ' \\\n  -o ' + JSON.stringify(drOut);
+			if (drLog)  out += ' \\\n  -l ' + JSON.stringify(drLog);
+			out += ' \\\n  -r ' + (/^\d+$/.test(drRet) ? drRet : '3');
+			out += ' \\\n  -w ' + (/^\d+$/.test(drDly) ? drDly : '1');
+			if (drXtra) out += ' \\\n  -x ' + JSON.stringify(drXtra);
 			return out;
 		}
 		return '# preview unavailable for action: ' + v(action);
@@ -6639,9 +7828,12 @@ actionsWrap.appendChild(btnRemove);
 		var items = [];
 		if (menuType === 'disk') {
 			items = [
-				{ id: 'select_disk', label: 'Select disk' },
+				{ id: 'select_disk',     label: 'Select disk' },
 				{ id: 'delete_all_parts', label: 'Queue delete all disk partitions' },
-				{ id: 'disk_move_clone', label: 'Queue disk move or clone' }
+				{ id: 'disk_move_clone', label: 'Queue disk move or clone' },
+				{ id: 'disk_img_export', label: 'Export disk to image file' },
+				{ id: 'disk_img_import', label: 'Restore disk from image file' },
+				{ id: 'disk_ddrescue',   label: 'Clone disk with ddrescue (data recovery)' }
 			];
 		} else {
 			var part = target;
@@ -6654,8 +7846,13 @@ actionsWrap.appendChild(btnRemove);
 				{ id: 'mkfs', label: 'Queue create filesystem' },
 				{ id: 'mount', label: part.mountpoint ? 'Queue remount' : 'Queue mount' },
 				{ id: 'umount', label: 'Queue unmount' },
-				{ id: 'fsck_ro', label: 'Filesystem check read-only' },
-				{ id: 'fsck_fix', label: 'Filesystem check/repair' }
+				{ id: 'fsck_ro',    label: 'Filesystem check read-only' },
+				{ id: 'fsck_fix',   label: 'Filesystem check/repair' },
+				{ id: 'img_export', label: 'Export partition to image file' },
+				{ id: 'img_import', label: 'Restore partition from image file' },
+				{ id: 'net_send',   label: 'Send partition over network' },
+				{ id: 'net_recv',   label: 'Receive partition from network' },
+				{ id: 'ddrescue',   label: 'Clone with ddrescue (data recovery)' }
 			];
 		}
 
@@ -6703,10 +7900,12 @@ actionsWrap.appendChild(btnRemove);
 				showDiskMoveCloneModal(target);
 				return;
 			}
-			showToast(t('tContextUnavailable'), 'warn');
-			return;
+		if (action === 'disk_img_export') { showPartcloneExportModal(target, 'disk'); return; }
+		if (action === 'disk_img_import') { showPartcloneImportModal(target, 'disk'); return; }
+		if (action === 'disk_ddrescue')   { showDdrescueModal(target, 'disk'); return; }
+		showToast(t('tContextUnavailable'), 'warn');
+		return;
 		}
-
 		var part = target;
 		selectPartition(part);
 		if (action === 'select') return;
@@ -6719,6 +7918,11 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'umount') { queueUnmountPartition(); return; }
 		if (action === 'fsck_ro') { runFsck(false); return; }
 		if (action === 'fsck_fix') { runFsck(true); return; }
+		if (action === 'img_export') { showPartcloneExportModal(part, 'partition'); return; }
+		if (action === 'img_import') { showPartcloneImportModal(part, 'partition'); return; }
+		if (action === 'net_send')   { showPartcloneNetSendModal(part); return; }
+		if (action === 'net_recv')   { showPartcloneNetRecvModal(part); return; }
+		if (action === 'ddrescue')   { showDdrescueModal(part, 'partition'); return; }
 		showToast(t('tContextUnavailable'), 'warn');
 	}
 
@@ -8487,6 +9691,337 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 		modal.style.display = 'flex';
 	}
 
+	// ── Helpers for partclone / ddrescue modals ────────────────────────────────
+
+	function _piGetPartitionPath(partOrDevice, modeType) {
+		if (!partOrDevice) return '';
+		if (modeType === 'disk') {
+			return String(partOrDevice.path || '');
+		}
+		return String(partOrDevice.path || '');
+	}
+
+	function _piSetupModal(modalId, titleKey, titleDefault, sourceLabelId, sourceValue, cancelBtnId, okBtnId, onOk) {
+		var modal = document.getElementById(modalId);
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t(titleKey) || titleDefault;
+		var srcEl = document.getElementById(sourceLabelId);
+		if (srcEl) srcEl.value = sourceValue;
+		var cancelBtn = document.getElementById(cancelBtnId);
+		var okBtn = document.getElementById(okBtnId);
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+		document.addEventListener('keydown', onEsc);
+		if (okBtn) okBtn.onclick = function() { close(); onOk(); };
+		modal.style.display = 'flex';
+		// Sync i18n labels
+		modal.querySelectorAll('[id^="i18nPi"], [id^="i18nDr"]').forEach(function(el) {
+			var key = el.id.replace(/^i18n/, '').replace(/Label$/, '');
+			key = key.charAt(0).toLowerCase() + key.slice(1) + 'Label';
+			var translated = t(key);
+			if (translated && translated !== key) {
+				// preserve help buttons
+				var btn = el.querySelector('.pcgi-help-btn');
+				el.childNodes.forEach(function(n) { if (n.nodeType === 3) n.textContent = ''; });
+				if (!btn) { el.textContent = translated; } else {
+					el.textContent = translated;
+					el.appendChild(btn);
+				}
+			}
+		});
+	}
+
+	function showPartcloneExportModal(partOrDevice, modeType) {
+		var devPath = _piGetPartitionPath(partOrDevice, modeType);
+		if (!devPath) { showToast(t('tNoPartition'), 'warn'); return; }
+		var modal = document.getElementById('pcgiPartcloneExportModal');
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t('piExpTitle') || 'Export partition/disk to image';
+		document.getElementById('piExpSource').value = devPath;
+		document.getElementById('piExpOutput').value = '';
+		document.getElementById('piExpCompress').value = 'none';
+		document.getElementById('piExpForceFs').value = '';
+		document.getElementById('piExpVerify').value = 'no';
+		document.getElementById('piExpUnmount').value = 'yes';
+		document.getElementById('piExpUseDd').value = 'no';
+		document.getElementById('piExpStepDelay').value = '1';
+		document.getElementById('piExpExtraOpts').value = '';
+
+		var cancelBtn = document.getElementById('pcgiPiExpCancelBtn');
+		var okBtn = document.getElementById('pcgiPiExpOkBtn');
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		document.addEventListener('keydown', onEsc);
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+
+		if (okBtn) okBtn.onclick = function() {
+			var output = document.getElementById('piExpOutput').value.trim();
+			if (!output) { showToast('Output image file path required.', 'warn'); return; }
+			close();
+			var params = {
+				partition: devPath,
+				output_file: output,
+				compression: document.getElementById('piExpCompress').value,
+				force_fs: document.getElementById('piExpForceFs').value.trim(),
+				verify: document.getElementById('piExpVerify').value,
+				unmount_before: document.getElementById('piExpUnmount').value,
+				use_dd: document.getElementById('piExpUseDd').value,
+				step_delay: document.getElementById('piExpStepDelay').value
+			};
+			var xtra = document.getElementById('piExpExtraOpts').value.trim();
+			if (xtra) params.extra_opts = xtra;
+			var label = 'export ' + devPath + ' → ' + output;
+			showCommandPreviewModal('partclone_export', params, label,
+				t('confirmPiExp') || 'Confirm image export',
+				t('confirmPiExpMsg') || 'Export partition to image file?'
+			).then(function(previewText) {
+				if (previewText === null) return;
+				dispatchAjaxAction('partclone_export', params, label);
+			});
+		};
+
+		modal.style.display = 'flex';
+	}
+
+	function showPartcloneImportModal(partOrDevice, modeType) {
+		var devPath = _piGetPartitionPath(partOrDevice, modeType);
+		if (!devPath) { showToast(t('tNoPartition'), 'warn'); return; }
+		var modal = document.getElementById('pcgiPartcloneImportModal');
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t('piImpTitle') || 'Restore partition/disk from image';
+		document.getElementById('piImpTarget').value = devPath;
+		document.getElementById('piImpInput').value = '';
+		document.getElementById('piImpCompress').value = 'none';
+		document.getElementById('piImpVerify').value = 'no';
+		document.getElementById('piImpUnmount').value = 'yes';
+		document.getElementById('piImpStepDelay').value = '1';
+		document.getElementById('piImpExtraOpts').value = '';
+
+		var cancelBtn = document.getElementById('pcgiPiImpCancelBtn');
+		var okBtn = document.getElementById('pcgiPiImpOkBtn');
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		document.addEventListener('keydown', onEsc);
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+
+		if (okBtn) okBtn.onclick = function() {
+			var input = document.getElementById('piImpInput').value.trim();
+			if (!input) { showToast('Input image file path required.', 'warn'); return; }
+			close();
+			var params = {
+				partition: devPath,
+				input_file: input,
+				compression: document.getElementById('piImpCompress').value,
+				verify: document.getElementById('piImpVerify').value,
+				unmount_before: document.getElementById('piImpUnmount').value,
+				step_delay: document.getElementById('piImpStepDelay').value
+			};
+			var xtra = document.getElementById('piImpExtraOpts').value.trim();
+			if (xtra) params.extra_opts = xtra;
+			var label = 'restore ' + input + ' → ' + devPath;
+			showCommandPreviewModal('partclone_import', params, label,
+				t('confirmPiImp') || 'Confirm image restore',
+				t('confirmPiImpMsg') || 'Restore partition from image? DATA WILL BE OVERWRITTEN.'
+			).then(function(previewText) {
+				if (previewText === null) return;
+				dispatchAjaxAction('partclone_import', params, label);
+			});
+		};
+
+		modal.style.display = 'flex';
+	}
+
+	function showPartcloneNetSendModal(part) {
+		var devPath = part ? String(part.path || '') : '';
+		if (!devPath) { showToast(t('tNoPartition'), 'warn'); return; }
+		var modal = document.getElementById('pcgiPartcloneNetSendModal');
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t('piNsTitle') || 'Send partition over network';
+		document.getElementById('piNsSource').value = devPath;
+		document.getElementById('piNsTransport').value = 'unicast';
+		document.getElementById('piNsHost').value = '';
+		document.getElementById('piNsPort').value = '9000';
+		document.getElementById('piNsCompress').value = 'none';
+		document.getElementById('piNsForceFs').value = '';
+		document.getElementById('piNsUnmount').value = 'yes';
+		document.getElementById('piNsStepDelay').value = '1';
+
+		var cancelBtn = document.getElementById('pcgiPiNsCancelBtn');
+		var okBtn = document.getElementById('pcgiPiNsOkBtn');
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		document.addEventListener('keydown', onEsc);
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+
+		if (okBtn) okBtn.onclick = function() {
+			close();
+			var params = {
+				partition: devPath,
+				transport: document.getElementById('piNsTransport').value,
+				net_host: document.getElementById('piNsHost').value.trim(),
+				net_port: document.getElementById('piNsPort').value || '9000',
+				compression: document.getElementById('piNsCompress').value,
+				force_fs: document.getElementById('piNsForceFs').value.trim(),
+				unmount_before: document.getElementById('piNsUnmount').value,
+				multicast: document.getElementById('piNsTransport').value === 'multicast' ? 'yes' : 'no',
+				step_delay: document.getElementById('piNsStepDelay').value
+			};
+			var label = 'net-send ' + devPath + ' → :' + params.net_port;
+			showCommandPreviewModal('partclone_net_send', params, label,
+				t('confirmNsSend') || 'Confirm network send',
+				t('confirmNsSendMsg') || 'Send partition over network?'
+			).then(function(previewText) {
+				if (previewText === null) return;
+				dispatchAjaxAction('partclone_net_send', params, label);
+			});
+		};
+
+		modal.style.display = 'flex';
+	}
+
+	function showPartcloneNetRecvModal(part) {
+		var devPath = part ? String(part.path || '') : '';
+		if (!devPath) { showToast(t('tNoPartition'), 'warn'); return; }
+		var modal = document.getElementById('pcgiPartcloneNetRecvModal');
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t('piNrTitle') || 'Receive partition from network';
+		document.getElementById('piNrTarget').value = devPath;
+		document.getElementById('piNrTransport').value = 'unicast';
+		document.getElementById('piNrHost').value = '';
+		document.getElementById('piNrPort').value = '9000';
+		document.getElementById('piNrCompress').value = 'none';
+		document.getElementById('piNrVerify').value = 'no';
+		document.getElementById('piNrUnmount').value = 'yes';
+		document.getElementById('piNrStepDelay').value = '1';
+
+		var cancelBtn = document.getElementById('pcgiPiNrCancelBtn');
+		var okBtn = document.getElementById('pcgiPiNrOkBtn');
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		document.addEventListener('keydown', onEsc);
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+
+		if (okBtn) okBtn.onclick = function() {
+			var host = document.getElementById('piNrHost').value.trim();
+			if (!host) { showToast('Source host IP required.', 'warn'); return; }
+			close();
+			var params = {
+				partition: devPath,
+				transport: document.getElementById('piNrTransport').value,
+				net_host: host,
+				net_port: document.getElementById('piNrPort').value || '9000',
+				compression: document.getElementById('piNrCompress').value,
+				verify: document.getElementById('piNrVerify').value,
+				unmount_before: document.getElementById('piNrUnmount').value,
+				multicast: document.getElementById('piNrTransport').value === 'multicast' ? 'yes' : 'no',
+				step_delay: document.getElementById('piNrStepDelay').value
+			};
+			var label = 'net-recv ' + host + ':' + params.net_port + ' → ' + devPath;
+			showCommandPreviewModal('partclone_net_recv', params, label,
+				t('confirmNrRecv') || 'Confirm network receive',
+				t('confirmNrRecvMsg') || 'Receive and restore partition from network? DATA OVERWRITTEN.'
+			).then(function(previewText) {
+				if (previewText === null) return;
+				dispatchAjaxAction('partclone_net_recv', params, label);
+			});
+		};
+
+		modal.style.display = 'flex';
+	}
+
+	function showDdrescueModal(partOrDevice, modeType) {
+		var devPath = _piGetPartitionPath(partOrDevice, modeType);
+		if (!devPath) { showToast(t('tNoPartition'), 'warn'); return; }
+		var modal = document.getElementById('pcgiDdrescueModal');
+		if (!modal) return;
+		var titleEl = modal.querySelector('.pcgi-modal-head');
+		if (titleEl) titleEl.textContent = t('drTitle') || 'Clone with ddrescue (data recovery)';
+		document.getElementById('drSource').value = devPath;
+		document.getElementById('drOutput').value = '';
+		document.getElementById('drLogFile').value = '';
+		document.getElementById('drRetries').value = '3';
+		document.getElementById('drUnmount').value = 'yes';
+		document.getElementById('drStepDelay').value = '1';
+		document.getElementById('drExtraOpts').value = '';
+
+		var cancelBtn = document.getElementById('pcgiDrCancelBtn');
+		var okBtn = document.getElementById('pcgiDrOkBtn');
+		function close() { modal.style.display = 'none'; document.removeEventListener('keydown', onEsc); }
+		function onEsc(ev) { if (ev.key === 'Escape') close(); }
+		document.addEventListener('keydown', onEsc);
+		if (cancelBtn) cancelBtn.onclick = close;
+		modal.onclick = function(ev) { if (ev.target === modal) close(); };
+
+		if (okBtn) okBtn.onclick = function() {
+			var output = document.getElementById('drOutput').value.trim();
+			if (!output) { showToast('Output image file path required.', 'warn'); return; }
+			close();
+			var params = {
+				partition: devPath,
+				output_file: output,
+				log_file: document.getElementById('drLogFile').value.trim(),
+				retries: document.getElementById('drRetries').value || '3',
+				unmount_before: document.getElementById('drUnmount').value,
+				step_delay: document.getElementById('drStepDelay').value
+			};
+			var xtra = document.getElementById('drExtraOpts').value.trim();
+			if (xtra) params.extra_opts = xtra;
+			var label = 'ddrescue ' + devPath + ' → ' + output;
+			showCommandPreviewModal('partclone_ddrescue', params, label,
+				t('confirmDr') || 'Confirm ddrescue',
+				t('confirmDrMsg') || 'Run ddrescue clone to image file?'
+			).then(function(previewText) {
+				if (previewText === null) return;
+				dispatchAjaxAction('partclone_ddrescue', params, label);
+			});
+		};
+
+		modal.style.display = 'flex';
+	}
+
+	// piNsUpdateHostField: show/hide host label based on multicast mode
+	function piNsUpdateHostField() {
+		// unicast: show host (target IP), multicast: show multicast group
+		// Both use the same field, just update its placeholder via title bar
+	}
+
+	function dispatchAjaxAction(action, params, label) {
+		var urlParams = new URLSearchParams();
+		urlParams.set('ajax', '1');
+		urlParams.set('action', action);
+		Object.keys(params).forEach(function(k) { urlParams.set(k, params[k]); });
+		var statusId = 'pcgiCmdOutput';
+		var el = document.getElementById(statusId);
+		if (el) el.textContent = 'Running: ' + label + ' ...';
+		fetch('/cgi-bin/disk-mgmt.cgi?' + urlParams.toString())
+			.then(function(r) { return r.text(); })
+			.then(function(text) {
+				var data;
+				try { data = parseAjaxJson(text); } catch(e) { data = { success: false, message: text }; }
+				var msg = (data && data.message) ? data.message : JSON.stringify(data);
+				if (data && data.success) {
+					showToast('Done: ' + label, 'success', 8000);
+				} else {
+					showToast('Error: ' + msg, 'error', 8000);
+				}
+				if (el) el.textContent = (data && data.success ? '✓ ' : '✗ ') + msg;
+			})
+			.catch(function(err) {
+				showToast('Network error: ' + err.message, 'error');
+			});
+	}
+
 	function queueDeleteAllPartitions(devArg) {
 		var baseDev = devArg || getSelectedDeviceData();
 		if (!baseDev || !baseDev.path) {
@@ -8767,19 +10302,17 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 
 		showConfirmModal(t('confirmQueueApply'), t('confirmQueueApplyMsg')).then(function (ok) {
 			if (!ok) return;
-			paceHourglassStart();
 			state.queueResolvedTargets = {};
 			document.getElementById('applyQueueBtn').disabled = true;
-			logTo('cmdOutput', 'Applying ' + state.queue.length + ' queued operation(s)...', false);
+			appendTo('cmdOutput', 'Applying ' + state.queue.length + ' queued operation(s)...\n');
 
 			var i = 0;
 			function runNext() {
 				if (i >= state.queue.length) {
-					logTo('cmdOutput', t('tQueueApplied'), false);
+					appendTo('cmdOutput', '\n\u2714 All ' + state.queue.length + ' operation(s) applied successfully.\n');
 					showToast(t('tQueueApplied'), 'success', 2600);
 					state.queue = [];
 					renderQueue();
-					paceHourglassStop();
 					document.getElementById('applyQueueBtn').disabled = false;
 					refreshDevices();
 					return;
@@ -8795,17 +10328,15 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 					params.command_preview = op.commandPreview;
 				}
 				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition" || op.action === "clone_partition_dd") {
-					logTo("cmdOutput", "WARNING: Disk resize operation is starting now. Do not interrupt power or disconnect storage. This operation may take several minutes.", false);
+					appendTo('cmdOutput', 'WARNING: Disk resize operation is starting now. Do not interrupt power or disconnect storage. This operation may take several minutes.\n');
 				}
 
-				callApi(op.action, params)
+				callApiStreaming(op.action, params, 'cmdOutput', i, state.queue.length, op.label || op.action)
 					.then(function (res) {
-						var hdr = '[' + op.action + '] ' + (res.message || '');
-						logTo('cmdOutput', hdr + '\nrc=' + (res.rc || 0) + '\n' + (res.output || ''), false);
+						appendTo('cmdOutput', '\n[Done] ' + (res.message || op.action) + ' (rc=' + (res.rc || 0) + ')\n');
 						if (!res.success) {
-							logTo('cmdOutput', 'Queue stopped due to failure at step ' + (i + 1) + '.', false);
+							appendTo('cmdOutput', 'Queue stopped due to failure at step ' + (i + 1) + '.\n');
 							showToast('Queue stopped at step ' + (i + 1), 'error', 3400);
-							paceHourglassStop();
 							document.getElementById('applyQueueBtn').disabled = false;
 							return;
 						}
@@ -8814,9 +10345,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 						runNext();
 					})
 					.catch(function (err) {
-						logTo('cmdOutput', 'Queue error at step ' + (i + 1) + ': ' + err.message, false);
+						appendTo('cmdOutput', 'Queue error at step ' + (i + 1) + ': ' + err.message + '\n');
 						showToast('Queue error: ' + err.message, 'error', 3600);
-						paceHourglassStop();
 						document.getElementById('applyQueueBtn').disabled = false;
 					});
 			}
@@ -9128,6 +10658,11 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 2400);
 	window.showMoveCloneModal = showMoveCloneModal;
 	window.showVerifyModal = showVerifyModal;
 	window.showDiskMoveCloneModal = showDiskMoveCloneModal;
+	window.showPartcloneExportModal = showPartcloneExportModal;
+	window.showPartcloneImportModal = showPartcloneImportModal;
+	window.showPartcloneNetSendModal = showPartcloneNetSendModal;
+	window.showPartcloneNetRecvModal = showPartcloneNetRecvModal;
+	window.showDdrescueModal = showDdrescueModal;
 	window.queueDeletePartition = queueDeletePartition;
 	window.queueResizePartitionFromInputs = queueResizePartitionFromInputs;
 	window.queueMkfs = queueMkfs;
