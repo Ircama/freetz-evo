@@ -862,7 +862,7 @@ action_create_partition() {
 	[ -z "$_part_role" ] && _part_role='primary'
 
 	case "$_fs_hint" in
-		''|ext2|ext3|ext4|fat16|fat32|linux-swap|ntfs|xfs) : ;;
+		''|ext2|ext3|ext4|f2fs|fat16|fat32|linux-swap|ntfs|xfs) : ;;
 		*) emit_json_error "Invalid fs hint"; return ;;
 	esac
 
@@ -883,9 +883,21 @@ action_create_partition() {
 		return
 	fi
 
+	# On msdos disk labels, parted only maps fat16/fat32/linux-swap fs-hints to
+	# correct type-byte values; other hints (ntfs, ext*, f2fs, exfat...) result in
+	# wrong type codes (e.g. 0x83=Linux shown as ext4). Omit the hint for those.
+	_mkpart_fs_hint="$_fs_hint"
+	_disk_label=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: 'NR==2 {print $6}')
+	if [ "$_disk_label" = "msdos" ]; then
+		case "$_mkpart_fs_hint" in
+			fat16|fat32|linux-swap) : ;;
+			*) _mkpart_fs_hint='' ;;
+		esac
+	fi
+
 	if dry_run_enabled; then
-		if [ -n "$_fs_hint" ]; then
-			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s"
+		if [ -n "$_mkpart_fs_hint" ]; then
+			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_mkpart_fs_hint ${_start_sector}s ${_end_sector}s"
 		else
 			_preview_cmd="parted -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s"
 		fi
@@ -899,10 +911,10 @@ partprobe $_device"
 		return
 	fi
 
-	if [ -n "$_fs_hint" ]; then
+	if [ -n "$_mkpart_fs_hint" ]; then
 		exec_cmd_c "Create partition on $_device" \
-			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s" \
-			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_fs_hint" "${_start_sector}s" "${_end_sector}s"
+			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_mkpart_fs_hint ${_start_sector}s ${_end_sector}s" \
+			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_mkpart_fs_hint" "${_start_sector}s" "${_end_sector}s"
 	else
 		exec_cmd_c "Create partition on $_device" \
 			"$CMD_PARTED -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s" \
@@ -920,6 +932,15 @@ partprobe $_device"
 					"$CMD_PARTED -s $_device name $_new_part $_part_name" \
 					"$CMD_PARTED" -s "$_device" name "$_new_part" "$_part_name"
 				_out="$_out\n$EXEC_OUT"
+				if [ "$EXEC_RC" -ne 0 ]; then
+					# msdos labels don't support partition names — treat as non-fatal warning
+					case "$EXEC_OUT" in
+						*"do not support partition name"*|*"msdos disk"*)
+							_out="$_out\nWarning: Partition name skipped (not supported on msdos disk label)" ;;
+						*)
+							_rc=$EXEC_RC ;;
+					esac
+				fi
 			fi
 		fi
 	fi
@@ -3924,6 +3945,8 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<label id="i18nNewStartHumanLabel">New start size</label>
 		<input id="newStartHuman" type="text" placeholder="e.g. 1 MiB or 2048 KiB">
 	</div>
+</div>
+<div class="pcgi-inline-form" style="margin-top:4px">
 	<div>
 		<label id="i18nNewEndLabel">New end sector</label>
 		<input id="newEndSector" type="text" placeholder="e.g. 1023999">
@@ -3946,18 +3969,28 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<label id="i18nFsHintLabel">Filesystem</label>
 		<select id="newFsHint">
 			<option value="">(none)</option>
-			<option value="ext2">ext2</option>
-			<option value="ext3">ext3</option>
 			<option value="ext4">ext4</option>
-			<option value="fat16">fat16</option>
-			<option value="fat32">fat32</option>
+			<option value="ext3">ext3</option>
+			<option value="ext2">ext2</option>
+			<option value="f2fs">f2fs</option>
+			<option value="exfat">exfat</option>
 			<option value="ntfs">ntfs</option>
-			<option value="linux-swap">linux-swap</option>
+			<option value="fat32">fat32</option>
+			<option value="fat16">fat16</option>
 		</select>
 	</div>
+</div>
+<div class="pcgi-inline-form" style="margin-top:4px">
 	<div>
 		<label id="i18nPartNameLabel">Partition name</label>
 		<input id="newPartName" type="text" placeholder="optional">
+	</div>
+	<div>
+		<label id="i18nAlignLabel">Align to 2048 sectors</label>
+		<select id="newPartAlign">
+			<option value="yes" selected>yes (recommended)</option>
+			<option value="no">no</option>
+		</select>
 	</div>
 </div>
 
@@ -3977,7 +4010,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 <div id="pcgiNewPartModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:560px">
 		<h3 id="pcgiNewPartTitle" class="pcgi-modal-head">New partition</h3>
-		<div class="pcgi-inline-form" style="margin-top:8px">
+		<div class="pcgi-inline-form" style="margin-top:8px;grid-template-columns:repeat(2,1fr)">
 			<div>
 				<label id="i18nPnpStartLabel">New start sector</label>
 				<input id="pnpStartSector" type="text" placeholder="e.g. 2048">
@@ -4006,18 +4039,26 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				<label id="i18nPnpFsHintLabel">Filesystem</label>
 				<select id="pnpFsHint">
 					<option value="">(none)</option>
-					<option value="ext2">ext2</option>
-					<option value="ext3">ext3</option>
 					<option value="ext4">ext4</option>
-					<option value="fat16">fat16</option>
-					<option value="fat32">fat32</option>
+					<option value="ext3">ext3</option>
+					<option value="ext2">ext2</option>
+					<option value="f2fs">f2fs</option>
+					<option value="exfat">exfat</option>
 					<option value="ntfs">ntfs</option>
-					<option value="linux-swap">linux-swap</option>
+					<option value="fat32">fat32</option>
+					<option value="fat16">fat16</option>
 				</select>
 			</div>
-			<div>
+			<div style="grid-column:1/-1">
 				<label id="i18nPnpPartNameLabel">Partition name</label>
 				<input id="pnpPartName" type="text" placeholder="optional">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nPnpAlignLabel">Align to 2048 sectors</label>
+				<select id="pnpAlign">
+					<option value="yes" selected>yes (recommended)</option>
+					<option value="no">no</option>
+				</select>
 			</div>
 		</div>
 		<div class="pcgi-modal-actions" style="margin-top:12px">
@@ -4607,6 +4648,7 @@ cat <<'EOF'
 			<option value="ext4">ext4</option>
 			<option value="ext3">ext3</option>
 			<option value="ext2">ext2</option>
+			<option value="f2fs">f2fs</option>
 			<option value="exfat">exfat</option>
 			<option value="ntfs">ntfs</option>
 			<option value="fat32">fat32</option>
@@ -5537,6 +5579,8 @@ window.paceOptions = {
 	var state = {
 		devices: [],
 		selectedDevice: '',
+		selectedPartDevice: '',
+		partSelectionByDisk: {},
 		queue: [],
 		queueResolvedTargets: {},
 		selectedPart: null,
@@ -7932,7 +7976,7 @@ actionsWrap.appendChild(btnRemove);
 		var v = String(fs || '').toLowerCase();
 		if (!v) return '';
 		if (v === 'fat' || v === 'vfat') return 'fat32';
-		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'fat16' || v === 'fat32' || v === 'ntfs' || v === 'linux-swap') {
+		if (v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'f2fs' || v === 'exfat' || v === 'fat16' || v === 'fat32' || v === 'ntfs') {
 			return v;
 		}
 		return '';
@@ -7942,7 +7986,7 @@ actionsWrap.appendChild(btnRemove);
 		var v = String(fs || '').toLowerCase();
 		if (!v) return 'auto';
 		if (v === 'fat' || v === 'fat12' || v === 'vfat') return 'fat32';
-		if (v === 'fat16' || v === 'fat32' || v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'exfat' || v === 'ntfs') {
+		if (v === 'fat16' || v === 'fat32' || v === 'ext2' || v === 'ext3' || v === 'ext4' || v === 'f2fs' || v === 'exfat' || v === 'ntfs') {
 			return v;
 		}
 		return 'auto';
@@ -7996,6 +8040,13 @@ actionsWrap.appendChild(btnRemove);
 		document.getElementById('fsLabelInput').value = part ? (part.label || '') : '';
 		document.getElementById('mountpointInput').value = part && part.mountpoint ? part.mountpoint : '';
 		if (part) fillChipSourceFromSelection(part, state.selectedDevice);
+		/* Save selection to per-disk memory */
+		state.selectedPartDevice = part ? state.selectedDevice : '';
+		if (state.selectedDevice) {
+			state.partSelectionByDisk[state.selectedDevice] = part
+				? { part: part, component: state.selectedComponent }
+				: null;
+		}
 		refreshSectorHumanFields();
 		updateMapStatus(part ? ('Selected partition #' + part.number + ' [' + part.start + 's..' + part.end + 's].') : '');
 		renderMap();
@@ -8025,6 +8076,10 @@ actionsWrap.appendChild(btnRemove);
 
 	function selectUnallocatedSegment(seg) {
 		state.selectedPart = null;
+		/* Clear this disk's saved partition selection since user chose free space */
+		if (state.selectedDevice) {
+			state.partSelectionByDisk[state.selectedDevice] = null;
+		}
 		state.selectedComponent = seg ? {
 			kind: 'free',
 			start: Number(seg.start || 0),
@@ -9210,6 +9265,9 @@ function showNewPartModal(dropStart, dropEnd) {
 		document.getElementById('newPartRole').value    = document.getElementById('pnpRole').value;
 		document.getElementById('newFsHint').value      = document.getElementById('pnpFsHint').value;
 		document.getElementById('newPartName').value    = document.getElementById('pnpPartName').value.trim();
+		var _pnpAlignEl = document.getElementById('pnpAlign');
+		var _mainAlignEl = document.getElementById('newPartAlign');
+		if (_pnpAlignEl && _mainAlignEl) _mainAlignEl.value = _pnpAlignEl.value;
 		refreshSectorHumanFields();
 	}
 
@@ -9762,11 +9820,33 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	}
 
 	function onDeviceChange() {
+		var prevDevice = state.selectedDevice;
 		var sel = document.getElementById('deviceSelect');
 		state.selectedDevice = sel ? sel.value : '';
-		/* Keep selectedPart so switching disks doesn't lose the selection.
-		   Only clear it when a new partition on the current disk is explicitly
-		   selected, or when the user selects the disk block itself. */
+		/* Save current selection for the previous disk before switching */
+		if (prevDevice) {
+			state.partSelectionByDisk[prevDevice] = state.selectedPart
+				? { part: state.selectedPart, component: state.selectedComponent }
+				: null;
+		}
+		/* Restore selection for the new disk (null if none was ever saved) */
+		var saved = state.partSelectionByDisk[state.selectedDevice] || null;
+		state.selectedPart = saved ? saved.part : null;
+		state.selectedComponent = saved ? saved.component : null;
+		state.selectedPartDevice = state.selectedPart ? state.selectedDevice : '';
+		if (state.selectedPart) {
+			/* Repopulate form fields for the restored partition */
+			var rp = state.selectedPart;
+			document.getElementById('selectedPartNum').value = String(rp.number || '');
+			document.getElementById('selectedPartPath').value = rp.path || '';
+			document.getElementById('fsPartitionPath').value = rp.path || '';
+			document.getElementById('newStartSector').value = String(rp.start || '');
+			document.getElementById('newEndSector').value = String(rp.end || '');
+			document.getElementById('resizeEndSector').value = String(rp.end || '');
+			refreshSectorHumanFields();
+		} else {
+			clearSelectedPartitionUi();
+		}
 		renderDeviceStrip();
 		renderMap();
 	}
@@ -9813,6 +9893,18 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			});
 	}
 
+	function alignSectors(start, end, alignEl) {
+		var s = parseInt(start, 10);
+		var e = parseInt(end, 10);
+		var align = alignEl ? alignEl.value : 'yes';
+		if (align !== 'yes' || isNaN(s) || isNaN(e)) return { start: start, end: end };
+		var ALIGN = 2048;
+		s = Math.ceil(s / ALIGN) * ALIGN;
+		e = Math.floor((e + 1) / ALIGN) * ALIGN - 1;
+		if (e < s) e = s + ALIGN - 1;
+		return { start: String(s), end: String(e) };
+	}
+
 	function queueCreatePartition() {
 		var dev = state.selectedDevice;
 		if (dev === null || dev === '') {
@@ -9825,6 +9917,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			showToast(t('tNeedStartEnd'), 'warn');
 			return;
 		}
+		var aligned = alignSectors(start, end, document.getElementById('newPartAlign'));
+		start = aligned.start; end = aligned.end;
 		var role = document.getElementById('newPartRole').value;
 		var fsHint = document.getElementById('newFsHint').value;
 		var partName = document.getElementById('newPartName').value.trim();
@@ -9849,6 +9943,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			showToast(t('tNeedStartEnd'), 'warn');
 			return;
 		}
+		var aligned = alignSectors(start, end, document.getElementById('pnpAlign') || document.getElementById('newPartAlign'));
+		start = aligned.start; end = aligned.end;
 		queueOpWithConfirm(
 			'create_partition',
 			{ device: dev, start_sector: start, end_sector: end, part_role: 'primary', fs_hint: '', part_name: '' },
