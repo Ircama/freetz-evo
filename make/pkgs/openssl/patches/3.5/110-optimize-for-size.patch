@@ -1,6 +1,6 @@
 --- Configurations/10-main.conf
 +++ Configurations/10-main.conf
-@@ -2196,5 +2196,111 @@
+@@ -2197,5 +2197,111 @@
          inherit_from     => [ "vms-x86_64" ],
          cflags           => add("/POINTER_SIZE=64=ARGV"),
          pointer_size     => "64",

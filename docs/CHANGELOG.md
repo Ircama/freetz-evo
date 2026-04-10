@@ -73,8 +73,9 @@ Latest changes
     * cmake 4.3.1
     * file 5.47
     * meson 1.10.2
+    * openssl 3.5.6
     * pseudo 1.9.3-414ce2d
-    * python3 3.14.3
+    * python3 3.14.4
 
   - AVM sources:
 
@@ -89,10 +90,14 @@ Latest changes
     * BIND 9.11.37/9.20.21
     * CA-bundle 2026-03-19
     * Curl 8.12.1/8.19.0
+    * htop 1.0.3/3.5.0
     * ImageMagick 7.1.0-62/7.1.2-16
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * ldd 0.1/1.0.57
+    * Nano 9.0
     * Nmap 4.76/5.51/7.99
+    * OpenSSH 9.3p2/10.3p1
+    * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.20/3.5.6
     * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.1
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
@@ -108,7 +113,7 @@ Latest changes
     * FreeType 2.14.3
     * gettext 1.0
     * GLib2 2.32.4/2.88.0
-    * harfbuzz 13.2.1
+    * harfbuzz 14.1.0
     * libmaxminddb 1.13.3
     * libpng 1.6.56
     * libuv 1.44.2/1.52.1

@@ -236,7 +236,7 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
 
 ### FritzSmart
   * fritzsmart-gateway/
-    - deutschland: [FRITZ.Smart_Gateway-08.24-Release.image](https://download.avm.de/fritzsmart/fritzsmart-gateway/deutschland/fritz.os/FRITZ.Smart_Gateway-08.24-Release.image)
+    - deutschland: [FRITZ.Smart_Gateway-08.26-Release.image](https://download.avm.de/fritzsmart/fritzsmart-gateway/deutschland/fritz.os/FRITZ.Smart_Gateway-08.26-Release.image)
 
 ### FritzWlan
   * fritzmesh-set-1600/

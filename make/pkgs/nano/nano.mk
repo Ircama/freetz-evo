@@ -1,10 +1,10 @@
-$(call PKG_INIT_BIN, 8.7.1)
+$(call PKG_INIT_BIN, 9.0)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=76f0dcb248f2e2f1251d4ecd20fd30fb400a360a3a37c6c340e0a52c2d1cdedf
-$(PKG)_SITE:=https://www.nano-editor.org/dist/v8
+$(PKG)_HASH:=9f384374b496110a25b73ad5a5febb384783c6e3188b37063f677ac908013fde
+$(PKG)_SITE:=https://www.nano-editor.org/dist/v$(call GET_MAJOR_VERSION,$($(PKG)_VERSION),1)
 ### WEBSITE:=https://www.nano-editor.org/
 ### MANPAGE:=https://www.nano-editor.org/docs.php
-### CHANGES:=https://www.nano-editor.org/dist/v8/NEWS
+### CHANGES:=https://www.nano-editor.org/dist/v9/NEWS
 ### CVSREPO:=https://git.savannah.gnu.org/cgit/nano.git/
 ### STEWARD:=fda77
 
@@ -30,12 +30,10 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NANO_NANORC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NANO_WRAPPING_ROOT
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_NANO_MOUSE_CONTROL
 
-$(PKG)_CONFIGURE_OPTIONS += --without-slang
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpath
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NANO_MOUSE_CONTROL),--enable-mouse,--disable-mouse)
 $(PKG)_CONFIGURE_OPTIONS += --disable-speller
 $(PKG)_CONFIGURE_OPTIONS += --disable-extra
-$(PKG)_CONFIGURE_OPTIONS += --with-wordbounds
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NANO_UTF8),--enable-utf8,--disable-utf8)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NANO_TINY),--enable-tiny)
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_NANO_TINY),,$(if $(FREETZ_PACKAGE_NANO_HELP),--enable-help,--disable-help))

@@ -421,6 +421,7 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [source-files-FRITZ.Box_7412-vr9-06.87.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7412/source-files-FRITZ.Box_7412-vr9-06.87.tar.gz)
   * fritzbox-7430/
     - [source-files-FRITZ.Box_7430-07.27.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7430/source-files-FRITZ.Box_7430-07.27.tar.gz)
+    - [source-files-FRITZ.Box_7430-07.31.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7430/source-files-FRITZ.Box_7430-07.31.tar.gz)
   * fritzbox-7490/
     - [source-files-FRITZ.Box_7490-05.59.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7490/source-files-FRITZ.Box_7490-05.59.tar.gz)
     - [source-files-FRITZ.Box_7490-06.01.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7490/source-files-FRITZ.Box_7490-06.01.tar.gz)
