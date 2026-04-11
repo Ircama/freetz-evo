@@ -817,6 +817,11 @@ action_list_devices() {
 				if [ -z "$_plabel" ] && [ -n "$CMD_BLKID" ]; then
 					_plabel=$($CMD_BLKID -o value -s LABEL "$_ppath" 2>/dev/null | head -n 1)
 				fi
+				# parted may not detect filesystem type (e.g. freshly-created NTFS);
+				# fall back to blkid for a reliable reading.
+				if [ -z "$_pfs" ] && [ -n "$CMD_BLKID" ]; then
+					_pfs=$($CMD_BLKID -o value -s TYPE "$_ppath" 2>/dev/null | head -n 1)
+				fi
 				if [ "$_p_fs_size_bytes" -gt 0 ]; then
 					_p_used_pct=$(safe_uint "$(awk -v u="$_p_fs_used_bytes" -v s="$_p_fs_size_bytes" 'BEGIN { if (s > 0) printf "%.0f", (u * 100) / s; else print 0 }')")
 				fi
@@ -906,8 +911,7 @@ mkfs.fat -F 16 ${_device}<new_partnum>" ;;
 mkfs.fat -F 32 ${_device}<new_partnum>" ;;
 				exfat) _preview_cmd="$_preview_cmd
 mkfs.exfat ${_device}<new_partnum>" ;;
-				ntfs)  _preview_cmd="$_preview_cmd
-mkntfs -F ${_device}<new_partnum>" ;;
+				ntfs)  : ;; # parted mkpart with ntfs hint already creates the filesystem
 			esac
 		fi
 		emit_dry_run_result "partition creation" "$_preview_cmd"
@@ -1021,15 +1025,8 @@ mkntfs -F ${_device}<new_partnum>" ;;
 					fi
 					;;
 				ntfs)
-					if [ -n "$CMD_MKNTFS" ]; then
-						exec_cmd_c "mkntfs on $_new_part_dev" \
-							"$CMD_MKNTFS -q -F $_new_part_dev" \
-							"$CMD_MKNTFS" -q -F "$_new_part_dev"
-						_out="$_out\n$EXEC_OUT"
-						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkntfs failed (rc=$EXEC_RC)"
-					else
-						_out="$_out\nWarning: mkntfs not available, skipping mkfs.ntfs"
-					fi
+					# parted mkpart with ntfs hint already creates the filesystem; no mkntfs needed
+					_out="$_out\nNote: NTFS filesystem created by parted mkpart"
 					;;
 				*)
 					_out="$_out\nWarning: mkfs for '$_fs_hint' not supported in create_partition, skipping"
@@ -1419,9 +1416,9 @@ fatlabel $_partition $_label"
 				;;
 			ntfs)
 				if [ -n "$_label" ]; then
-					_preview_cmd="mkntfs -F -L $_label ${_extra_opts:-} $_partition"
+					_preview_cmd="mkntfs -f -v -L $_label ${_extra_opts:-} $_partition"
 				else
-					_preview_cmd="mkntfs -F ${_extra_opts:-} $_partition"
+					_preview_cmd="mkntfs -f -v ${_extra_opts:-} $_partition"
 				fi
 				;;
 		esac
@@ -3985,8 +3982,8 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	height: 34px;
 	border: 1px solid #c8d2de;
 	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.96);
-	box-shadow: 0 2px 12px rgba(17, 24, 39, 0.25);
+	background: transparent;
+	box-shadow: none;
 	z-index: 12000;
 }
 .pace .pace-activity:before {
@@ -4941,14 +4938,15 @@ EOF
 cat <<'EOF'
 <script>
 window.paceOptions = {
+	startOnPageLoad: false,
 	ajax: false,
 	document: false,
 	eventLag: false,
+	elements: false,
 	restartOnRequestAfter: false,
 	restartOnPushState: false
 };
 </script>
-<script src="/pace/pace.min.js"></script>
 <script src="/ace/ace.js"></script>
 <script>
 (function () {
@@ -6720,15 +6718,8 @@ window.paceOptions = {
 
 	function paceHourglassStart() {
 		if (!window.Pace) return;
-		try {
-			if (typeof Pace.restart === 'function') {
-				Pace.restart();
-			} else if (typeof Pace.start === 'function') {
-				Pace.start();
-			}
-		} catch (e) {
-			// Ignore Pace rendering errors to keep operations functional.
-		}
+		try { Pace.stop(); } catch (e) {}
+		try { Pace.bar.render(); } catch (e) {}
 	}
 
 	function paceHourglassStop() {
@@ -6903,7 +6894,7 @@ window.paceOptions = {
 				return pre;
 			}
 			if (v(params.fs_type) === 'ntfs') {
-				pre = 'mkntfs -F' + (v(params.label) ? (' -L ' + v(params.label)) : '') + (opts ? (' ' + opts) : '') + ' ' + v(params.partition);
+				pre = 'mkntfs -f -v' + (v(params.label) ? (' -L ' + v(params.label)) : '') + (opts ? (' ' + opts) : '') + ' ' + v(params.partition);
 				return pre;
 			}
 		}
@@ -11239,5 +11230,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	analyzeTools();
 })();
 </script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-center-radar.css">
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script>
 EOF
 
