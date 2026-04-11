@@ -2,6 +2,25 @@
 
 . /usr/lib/libmodcgi.sh
 
+# Override cgi_param to fix suffix-collision bug in the built-in implementation.
+# The upstream cgi_param uses  ${QUERY_STRING##*$key=}  (greedy ##), which matches
+# any parameter whose NAME ends with $key.  For example,  cgi_param device  would
+# return the value of  source_device  (or target_device) because the greedy ##
+# strips the longest *device= prefix, landing on the LAST occurrence.
+# Fix: prepend '&' to QUERY_STRING and use  ##*&$key=  so only a literal
+# '&<key>=' boundary can match, preventing suffix collisions.
+cgi_param() {
+	local _key="$1"
+	local _qs="&${QUERY_STRING}"
+	case "$_qs" in
+		*"&${_key}="*)
+			local _val="${_qs##*&${_key}=}"
+			_val="${_val%%&*}"
+			httpd -d "$_val"
+			;;
+	esac
+}
+
 CMD_PARTED=''
 CMD_PARTPROBE=''
 CMD_MKFS_FAT=''
@@ -112,6 +131,58 @@ safe_uint() {
 safe_bytes_uint() {
 	_v=${1%[bB]}
 	safe_uint "$_v"
+}
+
+# fat_fix_total_sectors <partition>
+# Patches FAT32 BPB total_sectors_32 (offset 32, 4 bytes LE) and its backup
+# when the BPB value exceeds the actual partition size. fatresize refuses with
+# "The file system is bigger than its volume!" in that case.
+# Outputs a description of what was done (empty if no fix needed).
+fat_fix_total_sectors() {
+	local _p="$1"
+	local _psec512 _dev _bps _pfat_sec _bpb_sec _b0 _b1 _b2 _b3 _hex _bbsec
+	# Partition size in 512-byte sectors via blockdev; fallback to sysfs
+	_psec512=$(blockdev --getsz "$_p" 2>/dev/null)
+	if [ -z "$_psec512" ] || [ "$_psec512" -le 0 ] 2>/dev/null; then
+		_dev=$(basename "$_p")
+		_psec512=$(cat /sys/class/block/"$_dev"/size 2>/dev/null)
+	fi
+	[ -z "$_psec512" ] || [ "$_psec512" -le 0 ] 2>/dev/null && return
+
+	# bytes_per_sector from BPB offset 11 (2 bytes LE).
+	# hexdump -v -e '/1 " %u"' prints each byte as decimal — BusyBox-portable.
+	_bps=$(dd if="$_p" bs=1 skip=11 count=2 2>/dev/null |
+		hexdump -v -e '/1 " %u"' 2>/dev/null |
+		awk '{print ($1+0) + ($2+0)*256}')
+	( [ -z "$_bps" ] || [ "$_bps" -le 0 ] ) 2>/dev/null && _bps=512
+
+	# Partition size in FAT sectors
+	_pfat_sec=$(awk -v p="$_psec512" -v b="$_bps" 'BEGIN { printf "%.0f", p * 512 / b }')
+
+	# total_sectors_32 from BPB offset 32 (4 bytes LE)
+	_bpb_sec=$(dd if="$_p" bs=1 skip=32 count=4 2>/dev/null |
+		hexdump -v -e '/1 " %u"' 2>/dev/null |
+		awk '{print ($1+0) + ($2+0)*256 + ($3+0)*65536 + ($4+0)*16777216}')
+	[ -z "$_bpb_sec" ] && return
+
+	if [ "$_bpb_sec" -gt "$_pfat_sec" ] 2>/dev/null; then
+		# Build little-endian 4-byte representation using octal printf (POSIX / BusyBox-safe).
+		_b0=$(( _pfat_sec        & 0xff ))
+		_b1=$(((_pfat_sec >>  8) & 0xff ))
+		_b2=$(((_pfat_sec >> 16) & 0xff ))
+		_b3=$(((_pfat_sec >> 24) & 0xff ))
+		_hex=$(printf "\\$(printf '%03o' "$_b0")\\$(printf '%03o' "$_b1")\\$(printf '%03o' "$_b2")\\$(printf '%03o' "$_b3")")
+		# Patch main boot sector at offset 32
+		printf '%s' "$_hex" | dd of="$_p" bs=1 seek=32 count=4 conv=notrunc 2>/dev/null
+		# Locate backup boot sector: BPB offset 50 (2 bytes LE) × bytes_per_sector
+		_bbsec=$(dd if="$_p" bs=1 skip=50 count=2 2>/dev/null |
+			hexdump -v -e '/1 " %u"' 2>/dev/null |
+			awk '{print ($1+0) + ($2+0)*256}')
+		if [ -n "$_bbsec" ] && [ "$_bbsec" -gt 0 ] 2>/dev/null; then
+			printf '%s' "$_hex" | dd of="$_p" bs=1 seek=$(( _bbsec * _bps + 32 )) count=4 conv=notrunc 2>/dev/null
+		fi
+		echo "BPB total_sectors_32 patched: $_bpb_sec -> $_pfat_sec (partition $_psec512 x 512 / $_bps)"
+	fi
 }
 
 normalize_mount_fs_type() {
@@ -822,8 +893,13 @@ action_list_devices() {
 				if [ -z "$_pfs" ] && [ -n "$CMD_BLKID" ]; then
 					_pfs=$($CMD_BLKID -o value -s TYPE "$_ppath" 2>/dev/null | head -n 1)
 				fi
-				if [ "$_p_fs_size_bytes" -gt 0 ]; then
-					_p_used_pct=$(safe_uint "$(awk -v u="$_p_fs_used_bytes" -v s="$_p_fs_size_bytes" 'BEGIN { if (s > 0) printf "%.0f", (u * 100) / s; else print 0 }')")
+				if [ "$_p_fs_used_bytes" -gt 0 ]; then
+					# used_pct = fs_used / disk_total × 100 (disk-absolute coord, float).
+					# JS converts to CSS% within the block by dividing by (p.size / total_sectors).
+					# This keeps pixel-width fixed on the map regardless of partition resize.
+					_disk_total_bytes=$(awk -v ts="$_total_sectors" -v ls="$_logical_size" 'BEGIN { printf "%.0f", ts * ls }')
+					_p_used_pct=$(awk -v u="$_p_fs_used_bytes" -v d="$_disk_total_bytes" \
+						'BEGIN { if (d > 0) printf "%.8f", (u * 100) / d; else print 0 }')
 				fi
 				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
 			fi
@@ -1171,6 +1247,14 @@ partprobe $_device"
 					;;
 				fat|fat12|fat16|fat32|vfat)
 					if [ -n "$CMD_FATRESIZE" ]; then
+						if [ -n "$CMD_FSCK_FAT" ]; then
+							exec_cmd_c "fsck.fat pre-repair" "$CMD_FSCK_FAT -v -a $_ppath" \
+								"$CMD_FSCK_FAT" -v -a "$_ppath"
+							_out="$_out\n\nfsck.fat pre-repair rc=$EXEC_RC:\n$EXEC_OUT"
+						fi
+						_fix_msg=$(fat_fix_total_sectors "$_ppath")
+						[ -n "$_fix_msg" ] && _out="$_out\n\n$_fix_msg"
+						[ -n "$STREAM_LOG" ] && printf '\033[1;33m\u26a0 WARNING: Disk write in progress \u2014 do NOT interrupt power or disconnect storage. This may take many minutes.\033[0m\n' >> "$STREAM_LOG"
 						exec_cmd_c "fatresize grow" "$CMD_FATRESIZE -vps max $_ppath" \
 							"$CMD_FATRESIZE" -vps max "$_ppath"
 						_rs=$EXEC_OUT; _rs_rc=$EXEC_RC
@@ -1337,6 +1421,22 @@ fi
 ;;
 fat|fat12|fat16|fat32|vfat)
 [ -n "$CMD_FATRESIZE" ] || { emit_json_error "fatresize not available"; return; }
+_pre_out=''
+# fatresize fails with "The file system is bigger than its volume!" when the FAT
+# BPB sector count slightly exceeds the partition size.  Run fsck.fat -a first
+# to correct the BPB; ignore the exit code (fsck.fat exits 1 even after fixing).
+if [ -n "$CMD_FSCK_FAT" ]; then
+_cmd_ck="$CMD_FSCK_FAT -v -a $_partition"
+exec_cmd_c "fsck.fat pre-repair" "$_cmd_ck" "$CMD_FSCK_FAT" -v -a "$_partition"
+_pre_out="\$ $_cmd_ck
+$EXEC_OUT
+
+"
+fi
+_fix_msg=$(fat_fix_total_sectors "$_partition")
+[ -n "$_fix_msg" ] && _pre_out="${_pre_out}${_fix_msg}
+"
+[ -n "$STREAM_LOG" ] && printf '\033[1;33m\u26a0 WARNING: Disk write in progress \u2014 do NOT interrupt power or disconnect storage. This may take many minutes.\033[0m\n' >> "$STREAM_LOG"
 if [ "$_direction" = "shrink" ]; then
 _target_bytes=$(safe_bytes_uint "$_target_bytes")
 [ "$_target_bytes" -gt 0 ] || { emit_json_error "Invalid target_bytes for shrink"; return; }
@@ -1348,6 +1448,21 @@ else
 exec_cmd_c "fatresize shrink" "$_cmd_rs" "$CMD_FATRESIZE" -vps "${_target_bytes}" "$_partition"
 fi
 else
+# Use explicit target_bytes for grow when available; fatresize 'max' can compute a
+# location outside the device due to a bug with hidden_sectors double-counting.
+_grow_target=''
+if [ -n "$_target_bytes" ] && [ "$_target_bytes" -gt 0 ] 2>/dev/null; then
+_grow_target=$(safe_bytes_uint "$_target_bytes")
+fi
+if [ -n "$_grow_target" ] && [ "$_grow_target" -gt 0 ]; then
+_cmd_rs="$CMD_FATRESIZE -vps ${_grow_target} ${_opts_display}$_partition"
+if [ -n "$_extra_opts" ]; then
+# shellcheck disable=SC2086
+exec_cmd_c "fatresize grow" "$_cmd_rs" "$CMD_FATRESIZE" -vps "${_grow_target}" $_extra_opts "$_partition"
+else
+exec_cmd_c "fatresize grow" "$_cmd_rs" "$CMD_FATRESIZE" -vps "${_grow_target}" "$_partition"
+fi
+else
 _cmd_rs="$CMD_FATRESIZE -vps max ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
@@ -1356,8 +1471,9 @@ else
 exec_cmd_c "fatresize grow" "$_cmd_rs" "$CMD_FATRESIZE" -vps max "$_partition"
 fi
 fi
+fi
 _rc=$EXEC_RC; _out="$EXEC_OUT"
-_out="\$ $_cmd_rs
+_out="${_pre_out}\$ $_cmd_rs
 $_out"
 if [ "$_rc" -eq 0 ]; then
 emit_cmd_result true "$_rc" "Filesystem resized" "$_out"
@@ -1964,8 +2080,8 @@ action_move_partition() {
 	esac
 
 	case "$_align_bytes" in
-		512|4096) : ;;
-		*) _align_bytes='4096' ;;
+		512|4096|1048576) : ;;
+		*) _align_bytes='1048576' ;;
 	esac
 
 	case "$_unmount_before" in
@@ -2008,6 +2124,20 @@ action_move_partition() {
 		_preview="$_preview -r"
 		emit_dry_run_result "partition move" "$_preview"
 		return
+	fi
+
+	# Validate target sector range against target disk capacity before invoking the script
+	_target_disk_sectors=''
+	if [ -r "/sys/block/${_device##*/}/size" ]; then
+		_target_disk_sectors=$(cat "/sys/block/${_device##*/}/size" 2>/dev/null)
+	elif [ -n "$CMD_BLOCKDEV" ]; then
+		_target_disk_sectors=$($CMD_BLOCKDEV --getsz "$_device" 2>/dev/null)
+	fi
+	if [ -n "$_target_disk_sectors" ] && [ "$_target_disk_sectors" -gt 0 ] 2>/dev/null; then
+		if [ "$_end_sector" -ge "$_target_disk_sectors" ] 2>/dev/null; then
+			emit_json_error "Target sector range end (${_end_sector}) exceeds target disk ${_device} capacity (${_target_disk_sectors} sectors). Check that the correct target device is selected."
+			return
+		fi
 	fi
 
 	# shellcheck disable=SC2086
@@ -2100,8 +2230,8 @@ action_clone_partition_dd() {
 	esac
 
 	case "$_align_bytes" in
-		512|4096) : ;;
-		*) _align_bytes='4096' ;;
+		512|4096|1048576) : ;;
+		*) _align_bytes='1048576' ;;
 	esac
 
 	case "$_unmount_before" in
@@ -2533,8 +2663,8 @@ action_disk_migration() {
 	[ "$_source_device" = "$_target_device" ] && { emit_json_error "Source and target device must be different"; return; }
 
 	case "$_align_bytes" in
-		512|4096) ;;
-		'') _align_bytes='4096' ;;
+		512|4096|1048576) ;;
+		'') _align_bytes='1048576' ;;
 		*) emit_json_error "Invalid alignment '${_align_bytes}'"; return ;;
 	esac
 	case "$_clone_mode" in
@@ -3462,6 +3592,7 @@ cat <<'EOF'
 	flex-wrap: wrap;
 	gap: 8px;
 	align-items: center;
+	margin-top: 12px;
 	margin-bottom: 10px;
 }
 .pcgi-device-strip {
@@ -4021,12 +4152,12 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 
 <div class="pcgi-inline-form" style="grid-template-columns:repeat(2,1fr)">
 	<div>
-		<label id="i18nSelPartNumLabel">Selected partition number</label>
-		<input id="selectedPartNum" type="text" readonly>
-	</div>
-	<div>
 		<label id="i18nSelPartPathLabel">Selected partition path</label>
 		<input id="selectedPartPath" type="text" readonly>
+	</div>
+	<div>
+		<label id="i18nSelPartNumLabel">Selected partition number</label>
+		<input id="selectedPartNum" type="text" readonly>
 	</div>
 </div>
 <div class="pcgi-inline-form" style="margin-top:4px">
@@ -4339,8 +4470,9 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 			<div>
 				<label id="i18nMcAlignmentLabel">Alignment (-a)</label>
 				<select id="mcAlignment" style="width:100%">
-					<option value="4096">4096 (4K – modern GPT/UEFI)</option>
-					<option value="512">512 (legacy MBR)</option>
+					<option value="1048576" selected>1048576 (1 MiB – modern, recommended)</option>
+					<option value="4096">4096 (4K – physical sector)</option>
+					<option value="512">512 (legacy)</option>
 				</select>
 			</div>
 			<div>
@@ -4868,9 +5000,14 @@ cat <<'EOF'
 <div class="pcgi-toolbar" style="margin-top:8px;">
 	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply pending operations</button>
 	<button type="button" onclick="clearQueue()">Clear queue</button>
-	<button type="button" onclick="clearLogOutput()" id="clearLogBtn" style="margin-left:auto">Clear log</button>
 </div>
-<pre id="cmdOutput" class="pcgi-log pcgi-ansi-log"></pre>
+<div style="position:relative">
+	<div style="position:absolute;top:4px;right:18px;z-index:10;display:flex;gap:3px;opacity:0.75">
+		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer">&#x2398;</button>
+		<button type="button" onclick="clearLogOutput()" id="clearLogBtn" title="Clear log" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer">&#x2715;</button>
+	</div>
+	<pre id="cmdOutput" class="pcgi-log pcgi-ansi-log"></pre>
+</div>
 EOF
 sec_end
 
@@ -5010,11 +5147,11 @@ window.paceOptions = {
 			chipClonePartitionSmart: 'Clone partition (smart)',
 			chipClonePartitionSector: 'Clone partition (sector-by-sector)',
 			workflowTitle: 'Disk management workflow',
-			workflow1: 'Refresh devices and choose one disk.',
-			workflow2: 'Drag New partition for quick create with defaults. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag Move or clone partition onto free space to open the move/clone form pre-filled with the selected partition. Drag the left or right partition edge to resize. Drag a partition to free space for smart move.',
-			workflow3: 'Add operations, review, then apply in order.',
-			workflow4: 'Run metadata view, filesystem checks, mount operations and diagnostics.',
-			dragHint: 'Drag New partition for quick create with default values. Drag New partition with filesystem to include Role, Filesystem and Partition name from the form above. Drag Move or clone partition onto free space to open the move/clone form pre-filled with the selected partition. Drag the left or right edge of a partition to resize. Drag a partition into free space for smart move.',
+			workflow1: 'Select a disk or a partition and use the context menu (right-click) to choose the available operations.',
+			workflow2: 'Drag \u201cMove or clone partition\u201d onto free space to pre-fill the form using the last selected partition as the source. Drag \u201cNew partition\u201d onto free space for quick creation with defaults. Drag the body of a partition onto free space for a smart move.',
+			workflow3: 'Resize, move and clone may take several minutes \u2014 do not interrupt execution.',
+			workflow4: 'Use metadata view, filesystem checks (fsck/repair), mount/unmount and diagnostics to inspect and maintain partitions.',
+			dragHint: 'Right-click on a disk or partition for context menu operations. Drag \u201cMove or clone partition\u201d onto free space to pre-fill the form from the selected partition. Drag \u201cNew partition\u201d onto free space for quick create with defaults. Drag a partition body into free space for smart move. Drag left/right edge to resize.',
 			missingCommandsLabel: 'Missing commands:',
 			languageLabel: 'Language',
 			usbOnlyLabel: 'Device filter',
@@ -5034,7 +5171,7 @@ window.paceOptions = {
 			toolAnalysisFailed: 'Toolchain status: analysis failed.',
 			confirmAction: 'Confirm action',
 			confirmQueueApply: 'Apply pending operations?',
-			confirmQueueApplyMsg: 'This will execute real disk operations in order. Continue?',
+			confirmQueueApplyMsg: 'The operations will run real disk commands in sequence. Some operations may take a long time \u2014 be prepared to wait without interrupting execution. Continue?',
 			confirmRepair: 'Confirm repair check',
 			confirmRepairMsg: 'Repair mode can modify filesystem structures. Continue?',
 			confirmDelete: 'Confirm partition deletion',
@@ -5105,11 +5242,11 @@ window.paceOptions = {
 			chipClonePartitionSmart: 'Clona partizione (smart)',
 			chipClonePartitionSector: 'Clona partizione (settore per settore)',
 			workflowTitle: 'Workflow gestione dischi',
-			workflow1: 'Aggiorna i dispositivi e scegli un disco.',
-			workflow2: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina Move or clone partition su spazio libero per aprire il form di spostamento/clonazione pre-compilato con la partizione selezionata. Trascina il bordo sinistro o destro di una partizione per il resize. Trascina una partizione su spazio libero per lo spostamento smart.',
-			workflow3: 'Aggiungi le operazioni, controlla, poi applica in ordine.',
-			workflow4: 'Usa vista metadati, controlli filesystem, mount e diagnostica.',
-			dragHint: 'Trascina Nuova partizione per creazione rapida con valori di default. Trascina Nuova partizione con filesystem per includere Role, Filesystem e Partition name dal form sopra. Trascina Move or clone partition su spazio libero per aprire il form pre-compilato con la partizione selezionata. Trascina il bordo sinistro o destro di una partizione per il resize. Trascina una partizione su spazio libero per lo spostamento smart.',
+			workflow1: 'Seleziona un disco o una partizione e usa il menu contestuale (tasto destro) per scegliere le operazioni consentite.',
+			workflow2: 'Trascina \u201cMove or clone partition\u201d su uno spazio libero per pre-compilare il form usando l\u2019ultima partizione selezionata come sorgente. Trascina \u201cNuova partizione\u201d sullo spazio libero per la creazione rapida con valori di default. Trascina il corpo di una partizione su spazio libero per lo spostamento smart.',
+			workflow3: 'Resize, spostamento e clonazione possono richiedere diversi minuti \u2014 non interrompere l\u2019esecuzione.',
+			workflow4: 'Usa vista metadati, controlli filesystem (fsck/riparazione), mount/unmount e diagnostica per ispezionare e manutenere le partizioni.',
+			dragHint: 'Tasto destro su disco o partizione per il menu contestuale. Trascina \u201cMove or clone partition\u201d su spazio libero per pre-compilare il form dalla partizione selezionata. Trascina \u201cNuova partizione\u201d su spazio libero per la creazione rapida. Trascina il corpo di una partizione su spazio libero per lo spostamento smart. Trascina il bordo sinistro/destro per il resize.',
 			missingCommandsLabel: 'Comandi mancanti:',
 			languageLabel: 'Lingua',
 			usbOnlyLabel: 'Filtro dispositivi',
@@ -5129,7 +5266,7 @@ window.paceOptions = {
 			toolAnalysisFailed: 'Stato toolchain: analisi fallita.',
 			confirmAction: 'Conferma azione',
 			confirmQueueApply: 'Applicare le operazioni pendenti?',
-			confirmQueueApplyMsg: 'Le operazioni eseguiranno comandi reali sul disco in sequenza. Continuare?',
+			confirmQueueApplyMsg: 'Le operazioni eseguiranno comandi reali sul disco in sequenza. Alcune operazioni possono richiedere parecchio tempo \u2014 occorre essere preparati ad attendere senza interrompere l\u2019esecuzione. Continuare?',
 			confirmRepair: 'Conferma controllo riparazione',
 			confirmRepairMsg: 'La modalita riparazione puo modificare il filesystem. Continuare?',
 			confirmDelete: 'Conferma eliminazione partizione',
@@ -6413,7 +6550,33 @@ window.paceOptions = {
 
 	function clearLogOutput() {
 		var el = document.getElementById('cmdOutput');
-		if (el) { el.textContent = ''; el.innerHTML = ''; }
+		if (el) el.innerHTML = '';
+	}
+
+	function copyLogToClipboard() {
+		var el = document.getElementById('cmdOutput');
+		if (!el) return;
+		var text = el.textContent || el.innerText || '';
+		// navigator.clipboard requires HTTPS; FritzBox runs HTTP, so always use execCommand fallback.
+		var ta = document.createElement('textarea');
+		ta.value = text;
+		ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;pointer-events:none';
+		document.body.appendChild(ta);
+		ta.focus();
+		ta.select();
+		try { document.execCommand('copy'); } catch (e) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text);
+			}
+		}
+		document.body.removeChild(ta);
+		// Brief 'Copied' feedback on the button
+		var btn = document.getElementById('copyLogBtn');
+		if (btn) {
+			var origHTML = btn.innerHTML;
+			btn.textContent = 'Copied';
+			setTimeout(function () { btn.innerHTML = origHTML; }, 1000);
+		}
 	}
 
 	function callApiStreaming(action, params, outputElId, stepIdx, totalSteps, stepLabel) {
@@ -6775,12 +6938,16 @@ window.paceOptions = {
 	}
 
 	function paceHourglassStart() {
+		var log = document.getElementById('cmdOutput');
+		if (log) log.style.cursor = 'wait';
 		if (!window.Pace) return;
 		try { Pace.stop(); } catch (e) {}
 		try { Pace.bar.render(); } catch (e) {}
 	}
 
 	function paceHourglassStop() {
+		var log = document.getElementById('cmdOutput');
+		if (log) log.style.cursor = '';
 		if (!window.Pace) return;
 		try {
 			Pace.stop();
@@ -8562,13 +8729,20 @@ actionsWrap.appendChild(btnRemove);
 				if (p.kind === 'partition') {
 					var fsUsed = Number(p.fs_used_bytes || 0);
 					var fsAvail = Number(p.fs_avail_bytes || 0);
-					var usedPct = Number(p.used_pct || 0);
-					// During shrink drag recompute usedPct relative to the current draw size
-					// so the filled bar stays at its real pixel width (incompressible) and
-					// only the unused (light) area shrinks.
+					// p.used_pct = fs_used/disk_total x 100 (disk-absolute coordinate, float).
+					// CSS% inside block = used_pct / (p.size / dev.total_sectors) = fs_used/partition_size x 100.
+					// Pixel width = (fs_used/disk_total) x map_px — stays fixed when partition is resized.
+					var partSectors = Number(p.size || 1);
+					var totalSectors = Number(dev.total_sectors || 1);
+					var usedPct;
 					if (draggingThis && drawSize > 0 && fsUsed > 0) {
+						// During drag recompute from bytes so bar stays pixel-fixed.
 						var drawBytesD = drawSize * logical;
 						usedPct = drawBytesD > 0 ? Math.min(100, (fsUsed / drawBytesD) * 100) : 100;
+					} else {
+						// Static: disk-relative used_pct / partition_fraction = block-relative CSS%.
+						var partFrac = partSectors / totalSectors;
+						usedPct = partFrac > 0 ? Number(p.used_pct || 0) / partFrac : 0;
 					}
 					block.title = '';
 					block.textContent = (p.name || p.label || p.fs || 'partition');
@@ -8598,14 +8772,18 @@ actionsWrap.appendChild(btnRemove);
 						fsUsedBar.style.width = Math.max(0, Math.min(100, usedPct)) + '%';
 						var fsUnusedBar = document.createElement('div');
 						fsUnusedBar.className = 'pcgi-part-fsbar-unused';
-						// Unused portion also computed from absolute bytes during drag.
+						// Unused bar: denominator = partition_size_bytes (disk-absolute).
+						// (fs_size - fs_used) / partition_size x 100 keeps pixel footprint fixed on disk map.
+						var partSizeBytes = partSectors * logical; // partSectors declared above
+						var fsSizeBytes = Number(p.fs_size_bytes || 0);
 						var fsUnusedPct;
 						if (draggingThis && drawSize > 0) {
 							var drawBytesD2 = drawSize * logical;
-							var fsUnusedBytes = Math.max(0, Number(p.fs_size_bytes || 0) - fsUsed);
+							var fsUnusedBytes = Math.max(0, fsSizeBytes - fsUsed);
 							fsUnusedPct = drawBytesD2 > 0 ? Math.min(100 - Math.max(0, Math.min(100, usedPct)), (fsUnusedBytes / drawBytesD2) * 100) : 0;
 						} else {
-							fsUnusedPct = 100 - Math.max(0, Math.min(100, usedPct));
+							var fsUnusedBytes2 = Math.max(0, fsSizeBytes - fsUsed);
+							fsUnusedPct = partSizeBytes > 0 ? Math.min(100 - Math.max(0, Math.min(100, usedPct)), (fsUnusedBytes2 / partSizeBytes) * 100) : 0;
 						}
 						fsUnusedBar.style.width = Math.max(0, fsUnusedPct) + '%';
 						fsBar.appendChild(fsUsedBar);
@@ -8711,10 +8889,25 @@ actionsWrap.appendChild(btnRemove);
 							showMoveCloneModal(dev.path, p.start, p.end, preselSrcDev, preselSrcPart);
 						} else if (data.indexOf('partition:') === 0) {
 							var pnum = data.split(':')[1];
+							var dragInfo = state.partitionDragInfo;
+							// Determine the TRUE source device from dragInfo (may differ from drop target)
+							var srcDevicePath = dragInfo ? String(dragInfo.devPath || dev.path) : String(dev.path);
+							// Find source device object
+							var srcDeviceObj = dev; // default: same disk as target
+							if (srcDevicePath !== String(dev.path || '')) {
+								for (var sd = 0; sd < state.devices.length; sd++) {
+									if (String(state.devices[sd].path || '') === srcDevicePath) {
+										srcDeviceObj = state.devices[sd];
+										break;
+									}
+								}
+							}
+							// Search the SOURCE device's partitions (not the target disk)
 							var moveSource = null;
-							for (var m = 0; m < dev.partitions.length; m++) {
-								if (dev.partitions[m].kind === 'partition' && String(dev.partitions[m].number) === String(pnum)) {
-									moveSource = dev.partitions[m];
+							var srcParts = srcDeviceObj.partitions || [];
+							for (var m = 0; m < srcParts.length; m++) {
+								if (srcParts[m].kind === 'partition' && String(srcParts[m].number) === String(pnum)) {
+									moveSource = srcParts[m];
 									break;
 								}
 							}
@@ -8724,10 +8917,8 @@ actionsWrap.appendChild(btnRemove);
                                 return;
                             }
                             var moveSize = Number(moveSource.size || 0);
-                            var dragInfo = state.partitionDragInfo;
                             var grabRatio = 0;
                             if (dragInfo &&
-                                String(dragInfo.devPath || '') === String(dev.path || '') &&
                                 (
                                     (String(dragInfo.partPath || '') && String(dragInfo.partPath || '') === String(moveSource.path || '')) ||
                                     (Number(dragInfo.partnum || 0) > 0 && Number(dragInfo.partnum || 0) === Number(moveSource.number || 0))
@@ -8747,20 +8938,20 @@ actionsWrap.appendChild(btnRemove);
                                 showToast(t('tMoveNoSpace'), 'error');
                                 return;
                             }
-                            if (Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
+                            if (srcDevicePath === String(dev.path || '') &&
+                                Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
                                 state.partitionDragInfo = null;
                                 showToast(t('tMoveSame'), 'warn');
                                 return;
                             }
                             state.partitionDragInfo = null;
 							queueMovePartitionWithConfirm(
-
 								dev.path,
 								moveSource,
 								targetStart,
 								targetEnd,
-								'Move p' + moveSource.number + ' on ' + dev.path + ' to [' + targetStart + 's..' + targetEnd + 's]',
-								dev.path,
+								'Move p' + moveSource.number + ' on ' + srcDevicePath + ' to [' + targetStart + 's..' + targetEnd + 's]',
+								srcDevicePath,
 								'',
 								'smart'
 							);
@@ -8791,8 +8982,8 @@ actionsWrap.appendChild(btnRemove);
 		var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
 		var minStart = 1;
 		var maxEnd = total - 1;
-		if (prevSeg) minStart = Number(prevSeg.end) + 1;
-		if (nextSeg) maxEnd = Number(nextSeg.start) - 1;
+		if (prevSeg) minStart = prevSeg.kind === 'free' ? Number(prevSeg.start) : Number(prevSeg.end) + 1;
+		if (nextSeg) maxEnd = nextSeg.kind === 'free' ? Number(nextSeg.end) : Number(nextSeg.start) - 1;
 		// The right edge must not move below the used filesystem area (data loss).
 		// 2048-sector alignment floor is always kept even with no filesystem.
 		var fsUsedBytes = Number(part.fs_used_bytes || 0);
@@ -9678,7 +9869,7 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 		var mountAfter  = mountAfterEl ? String(mountAfterEl.value || 'no')     : 'no';
 		var tMount      = mountEl      ? String(mountEl.value      || '').trim(): '';
 		var verify      = verifyEl     ? String(verifyEl.value     || 'no')     : 'no';
-		var align       = alignEl      ? String(alignEl.value      || '4096')   : '4096';
+		var align       = alignEl      ? String(alignEl.value      || '1048576')   : '1048576';
 		var unmount     = umountEl     ? String(umountEl.value     || 'yes')    : 'yes';
 		var forceFs     = forceFsEl    ? String(forceFsEl.value    || '').trim(): '';
 		var extra       = extraEl      ? String(extraEl.value      || '').trim(): '';
@@ -10051,53 +10242,11 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	}
 
 	function onDeviceChange() {
-		var prevDevice = state.selectedDevice;
 		var sel = document.getElementById('deviceSelect');
 		state.selectedDevice = sel ? sel.value : '';
-		/* Save current selection for the previous disk before switching */
-		if (prevDevice) {
-			state.partSelectionByDisk[prevDevice] = state.selectedPart
-				? { part: state.selectedPart, component: state.selectedComponent }
-				: null;
-		}
-		/* Restore selection for the new disk if one was saved; otherwise keep
-		 * the previous selectedPart/selectedPartDevice so drag source remains correct. */
-		var saved = state.partSelectionByDisk[state.selectedDevice] || null;
-		if (saved) {
-			state.selectedPart = saved.part;
-			state.selectedComponent = saved.component;
-			state.selectedPartDevice = state.selectedDevice;
-		} else if (!(state.selectedDevice in state.partSelectionByDisk)) {
-			/* Never visited this disk: keep selectedPart/selectedPartDevice from before */
-			state.selectedComponent = null;
-		} else {
-			/* Visited before and explicitly had no selection */
-			state.selectedPart = null;
-			state.selectedComponent = null;
-		}
-		if (state.selectedPart) {
-			/* Repopulate form fields for the restored partition */
-			var rp = state.selectedPart;
-			document.getElementById('selectedPartNum').value = String(rp.number || '');
-			document.getElementById('selectedPartPath').value = rp.path || '';
-			document.getElementById('fsPartitionPath').value = rp.path || '';
-			document.getElementById('newStartSector').value = String(rp.start || '');
-			document.getElementById('newEndSector').value = String(rp.end || '');
-			document.getElementById('resizeEndSector').value = String(rp.end || '');
-			refreshSectorHumanFields();
-		} else {
-			/* Switching to a disk with no saved partition selection:
-			 * clear only the sector/name fields; preserve selectedPartNum and
-			 * selectedPartPath so the last-selected partition remains visible. */
-			document.getElementById('newStartSector').value = '';
-			document.getElementById('newEndSector').value = '';
-			document.getElementById('resizeEndSector').value = '';
-			document.getElementById('newPartName').value = '';
-			document.getElementById('renamePartInput').value = '';
-			document.getElementById('flagNameInput').value = '';
-			document.getElementById('flagStateInput').value = 'off';
-			refreshSectorHumanFields();
-		}
+		/* Changing the viewed disk does not affect the current partition selection.
+		 * The global selectedPart/selectedPartDevice remain as-is; renderMap() will
+		 * highlight the selected partition on whichever disk it belongs to. */
 		renderDeviceStrip();
 		renderMap();
 	}
@@ -10305,7 +10454,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			var tgt    = (document.getElementById('dmTargetDevice') || {}).value || '';
 			var method = (document.getElementById('dmMethod')       || {}).value || 'smart';
 			var mode   = (document.getElementById('dmMode')         || {}).value || 'clone';
-			var align  = (document.getElementById('dmAlign')        || {}).value || '4096';
+			var align  = (document.getElementById('dmAlign')        || {}).value || '1048576';
 			var copyMbr  = (document.getElementById('dmCopyMbr')    || {}).value || 'yes';
 			var wipe     = (document.getElementById('dmWipeTarget') || {}).value || 'yes';
 			var verify   = (document.getElementById('dmVerify')     || {}).value || 'no';
@@ -11335,6 +11484,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.runFsck = runFsck;
 	window.clearQueue = clearQueue;
 	window.applyQueue = applyQueue;
+	window.clearLogOutput = clearLogOutput;
+	window.copyLogToClipboard = copyLogToClipboard;
 	window.runDiagnostics = runDiagnostics;
 	window.analyzeTools = analyzeTools;
 	window.loadPartitionMetadata = loadPartitionMetadata;

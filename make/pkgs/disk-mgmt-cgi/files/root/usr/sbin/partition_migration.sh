@@ -19,7 +19,7 @@ TARGET_MOUNT=""     # -t  mount point after operation    (required if -o)
 
 MOVE_MODE=0         # -M  flag: move (delete source after clone)
 CLONE_MODE="smart"  # -c  smart | dd
-ALIGN_BYTES=4096    # -a  512 | 4096
+ALIGN_BYTES=1048576 # -a  512 | 4096 | 1048576
 UMOUNT_BEFORE=0     # -u  flag: unmount before starting
 MOUNT_AFTER=0       # -o  flag: mount target when done
 PARTCLONE_EXTRA=""  # -x  extra options passed to partclone verbatim
@@ -63,6 +63,43 @@ align_up() {
     val=$1; mul=$2
     rem=$(( val % mul ))
     [ "$rem" -eq 0 ] && echo "$val" || echo $(( val - rem + mul ))
+}
+
+# Patch FAT BPB total_sectors_32 if it exceeds actual partition size.
+# Prevents partclone.vfat "out of boundary" read errors on partitions
+# whose superblock was not updated after a shrink (stale BPB).
+fat_fix_total_sectors() {
+    _p="$1"
+    _psec512=$(blockdev --getsz "$_p" 2>/dev/null)
+    if [ -z "$_psec512" ] || [ "$_psec512" -le 0 ] 2>/dev/null; then
+        _dev=$(basename "$_p")
+        _psec512=$(cat /sys/class/block/"$_dev"/size 2>/dev/null)
+    fi
+    [ -z "$_psec512" ] || [ "$_psec512" -le 0 ] 2>/dev/null && return
+    _bps=$(dd if="$_p" bs=1 skip=11 count=2 2>/dev/null |
+        hexdump -v -e '/1 " %u"' 2>/dev/null |
+        awk '{print ($1+0) + ($2+0)*256}')
+    ( [ -z "$_bps" ] || [ "$_bps" -le 0 ] ) 2>/dev/null && _bps=512
+    _pfat_sec=$(awk -v p="$_psec512" -v b="$_bps" 'BEGIN { printf "%.0f", p * 512 / b }')
+    _bpb_sec=$(dd if="$_p" bs=1 skip=32 count=4 2>/dev/null |
+        hexdump -v -e '/1 " %u"' 2>/dev/null |
+        awk '{print ($1+0) + ($2+0)*256 + ($3+0)*65536 + ($4+0)*16777216}')
+    [ -z "$_bpb_sec" ] && return
+    if [ "$_bpb_sec" -gt "$_pfat_sec" ] 2>/dev/null; then
+        _b0=$(( _pfat_sec        & 0xff ))
+        _b1=$(((_pfat_sec >>  8) & 0xff ))
+        _b2=$(((_pfat_sec >> 16) & 0xff ))
+        _b3=$(((_pfat_sec >> 24) & 0xff ))
+        _hex=$(printf "\\$(printf '%03o' "$_b0")\\$(printf '%03o' "$_b1")\\$(printf '%03o' "$_b2")\\$(printf '%03o' "$_b3")")
+        printf '%s' "$_hex" | dd of="$_p" bs=1 seek=32 count=4 conv=notrunc 2>/dev/null
+        _bbsec=$(dd if="$_p" bs=1 skip=50 count=2 2>/dev/null |
+            hexdump -v -e '/1 " %u"' 2>/dev/null |
+            awk '{print ($1+0) + ($2+0)*256}')
+        if [ -n "$_bbsec" ] && [ "$_bbsec" -gt 0 ] 2>/dev/null; then
+            printf '%s' "$_hex" | dd of="$_p" bs=1 seek=$(( _bbsec * _bps + 32 )) count=4 conv=notrunc 2>/dev/null
+        fi
+        echo "     ⚠️  FAT BPB patched: total_sectors ${_bpb_sec} → ${_pfat_sec}"
+    fi
 }
 
 # partition_path DEVICE PARTNUM
@@ -343,8 +380,8 @@ case "$CLONE_MODE" in
 esac
 
 case "$ALIGN_BYTES" in
-    512|4096) ;;
-    *) ERRORS="${ERRORS}\n    -a  invalid value '${ALIGN_BYTES}'. Allowed: 512 | 4096" ;;
+    512|4096|1048576) ;;
+    *) ERRORS="${ERRORS}\n    -a  invalid value '${ALIGN_BYTES}'. Allowed: 512 | 4096 | 1048576" ;;
 esac
 
 case "$STEP_DELAY" in
@@ -654,6 +691,13 @@ else
     echo "     ✔ Target partition resolved: ${TARGET_PART}  (partition ${TARGET_PARTNUM})"
 fi
 
+# Fix stale FAT BPB before partclone reads it (prevents "out of boundary" error)
+case "$FSTYPE" in
+    vfat|fat|fat12|fat16|fat32)
+        [ "$DRY_RUN" -eq 0 ] && fat_fix_total_sectors "$SOURCE_PART"
+        ;;
+esac
+
 # ==============================================================================
 # STEP 6 — DATA CLONE
 # ==============================================================================
@@ -666,6 +710,7 @@ echo "     Backend : ${PARTCLONE_BIN}"
 # shellcheck disable=SC2086
 run "$PARTCLONE_BIN" \
     --clone \
+    --overwrite \
     --quiet \
     --source "$SOURCE_PART" \
     --output "$TARGET_PART" \
