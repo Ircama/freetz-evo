@@ -5003,8 +5003,8 @@ cat <<'EOF'
 </div>
 <div style="position:relative">
 	<div style="position:absolute;top:4px;right:18px;z-index:10;display:flex;gap:3px;opacity:0.75">
-		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer">&#x2398;</button>
-		<button type="button" onclick="clearLogOutput()" id="clearLogBtn" title="Clear log" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer">&#x2715;</button>
+		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2398;</button>
+		<button type="button" onclick="clearLogOutput()" id="clearLogBtn" title="Clear log" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2715;</button>
 	</div>
 	<pre id="cmdOutput" class="pcgi-log pcgi-ansi-log"></pre>
 </div>
@@ -6551,6 +6551,10 @@ window.paceOptions = {
 	function clearLogOutput() {
 		var el = document.getElementById('cmdOutput');
 		if (el) el.innerHTML = '';
+		// hide buttons when log is cleared
+		var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn');
+		if (cb) cb.style.display = 'none';
+		if (cl) cl.style.display = 'none';
 	}
 
 	function copyLogToClipboard() {
@@ -6578,6 +6582,20 @@ window.paceOptions = {
 			setTimeout(function () { btn.innerHTML = origHTML; }, 1000);
 		}
 	}
+
+	// Show copy/clear log buttons as soon as the log has content
+	(function () {
+		var _logEl = document.getElementById('cmdOutput');
+		if (!_logEl || typeof MutationObserver === 'undefined') return;
+		var _obs = new MutationObserver(function () {
+			var hasContent = !!(_logEl.textContent || _logEl.innerText || '').trim();
+			var d = hasContent ? '' : 'none';
+			var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn');
+			if (cb) cb.style.display = d;
+			if (cl) cl.style.display = d;
+		});
+		_obs.observe(_logEl, { childList: true, subtree: true, characterData: true });
+	}());
 
 	function callApiStreaming(action, params, outputElId, stepIdx, totalSteps, stepLabel) {
 		var _snow = new Date();

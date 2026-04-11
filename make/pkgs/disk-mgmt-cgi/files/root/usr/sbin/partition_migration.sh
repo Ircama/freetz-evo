@@ -48,10 +48,19 @@ run() {
 
 step_pause() {
     [ "${STEP_DELAY:-0}" -le 0 ] && return
+    # Only show countdown if delay > 3 seconds; otherwise sleep silently
+    if [ "${STEP_DELAY:-0}" -le 3 ]; then
+        sleep "$STEP_DELAY"
+        return
+    fi
     remaining=$STEP_DELAY
     printf "⏳  Continuing in "
     while [ "$remaining" -gt 0 ]; do
-        printf "%d… " "$remaining"
+        if [ "$remaining" -eq 1 ]; then
+            printf "1 second… "
+        else
+            printf "%d seconds… " "$remaining"
+        fi
         sleep 1
         remaining=$(( remaining - 1 ))
     done
@@ -529,8 +538,24 @@ fi
 LENGTH=$(( END - START + 1 ))
 REM=$(( LENGTH % ALIGN_SECTORS ))
 if [ "$REM" -ne 0 ]; then
-    END=$(( END + ALIGN_SECTORS - REM ))
-    echo "⚠️   END adjusted to ${END} so that length is a multiple of ${ALIGN_SECTORS} sectors."
+    _end_up=$(( END + ALIGN_SECTORS - REM ))
+    # Try alignment upward first; if it would exceed disk capacity, align downward
+    _disk_sectors=''
+    if [ -r "/sys/block/${DEVICE##*/}/size" ]; then
+        _disk_sectors=$(cat "/sys/block/${DEVICE##*/}/size" 2>/dev/null)
+    fi
+    if [ -n "$_disk_sectors" ] && [ "$_disk_sectors" -gt 0 ] 2>/dev/null && \
+       [ "$_end_up" -ge "$_disk_sectors" ] 2>/dev/null; then
+        # Align downward: drop the remainder, then subtract one more unit if needed
+        _end_down=$(( END - REM ))
+        [ $(( (_end_down - START + 1) % ALIGN_SECTORS )) -ne 0 ] && \
+            _end_down=$(( _end_down - ((_end_down - START + 1) % ALIGN_SECTORS) ))
+        END=$_end_down
+        echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed disk bounds)."
+    else
+        END=$_end_up
+        echo "⚠️   END adjusted to ${END} so that length is a multiple of ${ALIGN_SECTORS} sectors."
+    fi
 else
     echo "     ✔ END ${END} yields an aligned length."
 fi
@@ -691,10 +716,38 @@ else
     echo "     ✔ Target partition resolved: ${TARGET_PART}  (partition ${TARGET_PARTNUM})"
 fi
 
-# Fix stale FAT BPB before partclone reads it (prevents "out of boundary" error)
+# Fix stale FAT BPB before partclone reads it (low-level TotSec32 patch)
 case "$FSTYPE" in
     vfat|fat|fat12|fat16|fat32)
         [ "$DRY_RUN" -eq 0 ] && fat_fix_total_sectors "$SOURCE_PART"
+        ;;
+esac
+
+# Pre-clone FAT repair: run dosfsck/fsck.fat on source if it is unmounted.
+# This repairs FAT table corruption (bad cluster chains, stale bitmaps) that
+# fat_fix_total_sectors cannot reach, preventing partclone "out of boundary".
+case "$FSTYPE" in
+    vfat|fat|fat12|fat16|fat32)
+        if [ "$DRY_RUN" -eq 0 ]; then
+            _src_mounted=0
+            mount 2>/dev/null | grep -q "^${SOURCE_PART}[[:space:]]" && _src_mounted=1
+            if [ "$_src_mounted" -eq 1 ]; then
+                echo "     ℹ  Source ${SOURCE_PART} is mounted — skipping pre-clone FAT repair."
+                echo "     ℹ  Use -u to unmount before cloning for a cleaner FAT state."
+            else
+                if command -v dosfsck >/dev/null 2>&1; then
+                    echo "     → Running pre-clone dosfsck auto-repair on ${SOURCE_PART}…"
+                    dosfsck -a "$SOURCE_PART" 2>&1 || true
+                    echo "     ✔ Pre-clone FAT repair finished."
+                elif command -v fsck.fat >/dev/null 2>&1; then
+                    echo "     → Running pre-clone fsck.fat auto-repair on ${SOURCE_PART}…"
+                    fsck.fat -a "$SOURCE_PART" 2>&1 || true
+                    echo "     ✔ Pre-clone FAT repair finished."
+                else
+                    echo "     ℹ  dosfsck/fsck.fat not found — pre-clone FAT repair skipped."
+                fi
+            fi
+        fi
         ;;
 esac
 
