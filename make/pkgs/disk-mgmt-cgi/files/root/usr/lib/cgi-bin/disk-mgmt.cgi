@@ -1382,6 +1382,7 @@ action_create_filesystem() {
 	_fs_type=$(cgi_param fs_type)
 	_label=$(cgi_param label)
 	_extra_opts=$(cgi_param extra_opts)
+	_full_format=$(cgi_param full_format)
 
 	is_valid_device "$_partition" || { emit_json_error "Invalid partition path"; return; }
 	is_valid_extra_opts "$_extra_opts" || { emit_json_error "Invalid extra options"; return; }
@@ -1527,23 +1528,25 @@ fatlabel $_partition $_label"
 					return
 				fi
 			fi
+			_ntfs_flag="-f"
+			[ "$_full_format" = "1" ] && _ntfs_flag="-F"
 			if [ -n "$_extra_opts" ]; then
 				if [ -n "$_label" ]; then
-					_cmd_mk="$CMD_MKNTFS -v -F -L $_label $_extra_opts $_partition"
+					_cmd_mk="$CMD_MKNTFS $_ntfs_flag -v -L $_label $_extra_opts $_partition"
 					# shellcheck disable=SC2086
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F -L "$_label" $_extra_opts "$_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" $_ntfs_flag -v -L "$_label" $_extra_opts "$_partition"
 				else
-					_cmd_mk="$CMD_MKNTFS -v -F $_extra_opts $_partition"
+					_cmd_mk="$CMD_MKNTFS $_ntfs_flag -v $_extra_opts $_partition"
 					# shellcheck disable=SC2086
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F $_extra_opts "$_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" $_ntfs_flag -v $_extra_opts "$_partition"
 				fi
 			else
 				if [ -n "$_label" ]; then
-					_cmd_mk="$CMD_MKNTFS -v -F -L $_label $_partition"
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F -L "$_label" "$_partition"
+					_cmd_mk="$CMD_MKNTFS $_ntfs_flag -v -L $_label $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" $_ntfs_flag -v -L "$_label" "$_partition"
 				else
-					_cmd_mk="$CMD_MKNTFS -v -F $_partition"
-					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" -v -F "$_partition"
+					_cmd_mk="$CMD_MKNTFS $_ntfs_flag -v $_partition"
+					exec_cmd_c "mkntfs" "$_cmd_mk" "$CMD_MKNTFS" $_ntfs_flag -v "$_partition"
 				fi
 			fi
 			_rc=$EXEC_RC; _out="$EXEC_OUT"
@@ -4159,6 +4162,49 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	</div>
 </div>
 
+<!-- Create filesystem modal -->
+<div id="pcgiMkfsModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:480px">
+		<h3 id="pcgiMkfsTitle" class="pcgi-modal-head">Create filesystem</h3>
+		<div class="pcgi-inline-form" style="margin-top:8px;grid-template-columns:repeat(2,1fr)">
+			<div style="grid-column:1/-1">
+				<label id="i18nMkfsPartPathLabel">Partition path</label>
+				<input id="mkfsPartPath" type="text" placeholder="/dev/sda1">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nMkfsFsTypeLabel">Filesystem type</label>
+				<select id="mkfsFsType">
+					<option value="ext4">ext4</option>
+					<option value="ext3">ext3</option>
+					<option value="ext2">ext2</option>
+					<option value="f2fs">f2fs</option>
+					<option value="exfat">exfat</option>
+					<option value="ntfs">ntfs</option>
+					<option value="fat32">fat32</option>
+					<option value="fat16">fat16</option>
+					<option value="vfat">vfat</option>
+				</select>
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nMkfsLabelLabel">Label (optional)</label>
+				<input id="mkfsLabel" type="text" placeholder="optional label">
+			</div>
+			<div style="grid-column:1/-1">
+				<label id="i18nMkfsExtraOptsLabel">Advanced options</label>
+				<input id="mkfsExtraOpts" type="text" placeholder="e.g. -E lazy_itable_init=0">
+			</div>
+			<div id="mkfsFullFormatRow" style="grid-column:1/-1;display:none">
+				<label id="i18nMkfsFullFmtLabel">Full format (write zeros, NTFS only)</label>
+				<input id="mkfsFullFormat" type="checkbox">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions" style="margin-top:12px">
+			<button type="button" id="pcgiMkfsCancelBtn">Cancel</button>
+			<button type="button" id="pcgiMkfsConfirmBtn">Create filesystem</button>
+		</div>
+	</div>
+</div>
+
 <!-- Verify partitions modal -->
 <div id="pcgiVerifyModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:500px">
@@ -5256,6 +5302,10 @@ window.paceOptions = {
 		usbOnlyDevices: "USB devices only",
 		chipMoveOrClone: "Move or clone partition",
 		chipVerifyPartition: "Verify partition",
+		mkfsModalTitle: "Create filesystem",
+		mkfsBtnCreate: "Create filesystem",
+		mkfsBtnCancel: "Cancel",
+		mkfsFullFmtLabel: "Full format (write zeros, NTFS only)",
 		newPartAskTitle: "New partition",
 		newPartAskText: "Create a filesystem on the new partition?",
 		mcTargetRangeHeading: "Target range",
@@ -5325,6 +5375,10 @@ window.paceOptions = {
 		usbOnlyDevices: "Solo dispositivi USB",
 		chipMoveOrClone: "Sposta o clona partizione",
 		chipVerifyPartition: "Verifica partizione",
+		mkfsModalTitle: "Crea filesystem",
+		mkfsBtnCreate: "Crea filesystem",
+		mkfsBtnCancel: "Annulla",
+		mkfsFullFmtLabel: "Formato completo (scrivi zeri, solo NTFS)",
 		newPartAskTitle: "Nuova partizione",
 		newPartAskText: "Creare un filesystem sulla nuova partizione?",
 		mcTargetRangeHeading: "Range target",
@@ -5394,6 +5448,10 @@ window.paceOptions = {
 		usbOnlyDevices: "Nur USB-Geraete",
 		chipMoveOrClone: "Partition verschieben oder klonen",
 		chipVerifyPartition: "Partition pruefen",
+		mkfsModalTitle: "Dateisystem erstellen",
+		mkfsBtnCreate: "Dateisystem erstellen",
+		mkfsBtnCancel: "Abbrechen",
+		mkfsFullFmtLabel: "Vollformat (Nullen schreiben, nur NTFS)",
 		newPartAskTitle: "Neue Partition",
 		newPartAskText: "Dateisystem auf der neuen Partition erstellen?",
 		mcTargetRangeHeading: "Zielbereich",
@@ -8631,8 +8689,25 @@ actionsWrap.appendChild(btnRemove);
 						} else if (data === 'chip-move-or-clone') {
 							updateMapStatus(t('tDropQueuedMoveCloneChip'));
 							showToast(t('tDropQueuedMoveCloneChip'), 'info', 10000);
-							var preselSrcDev  = state.selectedDevice || '';
-							var preselSrcPart = state.selectedPart   || null;
+							/* Use source captured at dragstart; fall back to current state */
+							var preselSrcDev = ev.dataTransfer.getData('text/x-src-dev') || state.selectedDevice || '';
+							var preselSrcPartNum = ev.dataTransfer.getData('text/x-src-part-num') || '';
+							var preselSrcPart = null;
+							if (preselSrcDev && preselSrcPartNum) {
+								for (var _sd = 0; _sd < state.devices.length; _sd++) {
+									if (String(state.devices[_sd].path || '') === preselSrcDev) {
+										var _sparts = state.devices[_sd].partitions || [];
+										for (var _sp = 0; _sp < _sparts.length; _sp++) {
+											if (_sparts[_sp].kind === 'partition' && String(_sparts[_sp].number || '') === preselSrcPartNum) {
+												preselSrcPart = _sparts[_sp]; break;
+											}
+										}
+										break;
+									}
+								}
+							} else {
+								preselSrcPart = state.selectedPart || null;
+							}
 							showMoveCloneModal(dev.path, p.start, p.end, preselSrcDev, preselSrcPart);
 						} else if (data.indexOf('partition:') === 0) {
 							var pnum = data.split(':')[1];
@@ -9371,6 +9446,75 @@ function showNewPartModal(dropStart, dropEnd) {
 	fsBtn.onclick     = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedWithFs')); queueCreatePartition(); };
 }
 
+// ── Create filesystem modal ──────────────────────────────────────────────────
+
+function showMkfsModal() {
+	var modal      = document.getElementById('pcgiMkfsModal');
+	var cancelBtn  = document.getElementById('pcgiMkfsCancelBtn');
+	var confirmBtn = document.getElementById('pcgiMkfsConfirmBtn');
+	var titleEl    = document.getElementById('pcgiMkfsTitle');
+	if (!modal) return;
+
+	/* Pre-fill from the inline form */
+	var partEl   = document.getElementById('mkfsPartPath');
+	var fsEl     = document.getElementById('mkfsFsType');
+	var lblEl    = document.getElementById('mkfsLabel');
+	var extEl    = document.getElementById('mkfsExtraOpts');
+	var fmtEl    = document.getElementById('mkfsFullFormat');
+	var fmtRow   = document.getElementById('mkfsFullFormatRow');
+	if (partEl) partEl.value = document.getElementById('fsPartitionPath').value.trim();
+	if (fsEl)   { fsEl.value = document.getElementById('fsTypeSelect').value; if (fsEl.value === 'auto') fsEl.value = 'ext4'; }
+	if (lblEl)  lblEl.value  = document.getElementById('fsLabelInput').value.trim();
+	if (extEl)  extEl.value  = document.getElementById('extraOptsInput').value.trim();
+	if (fmtEl)  fmtEl.checked = false;
+
+	function updateFullFormatVisibility() {
+		if (fmtRow) fmtRow.style.display = (fsEl && fsEl.value === 'ntfs') ? '' : 'none';
+	}
+	if (fsEl) fsEl.addEventListener('change', updateFullFormatVisibility);
+	updateFullFormatVisibility();
+
+	if (titleEl) titleEl.textContent = t('mkfsModalTitle') || 'Create filesystem';
+	if (confirmBtn) confirmBtn.textContent = t('mkfsBtnCreate') || 'Create filesystem';
+	if (cancelBtn)  cancelBtn.textContent  = t('mkfsBtnCancel') || 'Cancel';
+
+	modal.style.display = 'flex';
+	modal.setAttribute('aria-hidden', 'false');
+
+	function cleanup() {
+		modal.style.display = 'none';
+		modal.setAttribute('aria-hidden', 'true');
+		cancelBtn.onclick = confirmBtn.onclick = null;
+		if (fsEl) fsEl.removeEventListener('change', updateFullFormatVisibility);
+		document.removeEventListener('keydown', onEsc);
+	}
+	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
+	document.addEventListener('keydown', onEsc);
+	cancelBtn.onclick = cleanup;
+	confirmBtn.onclick = function () {
+		var part = (partEl ? partEl.value.trim() : '') || document.getElementById('fsPartitionPath').value.trim();
+		var fsType = fsEl ? fsEl.value : document.getElementById('fsTypeSelect').value;
+		var label  = lblEl ? lblEl.value.trim() : document.getElementById('fsLabelInput').value.trim();
+		var extra  = extEl ? extEl.value.trim()  : document.getElementById('extraOptsInput').value.trim();
+		var fullFmt = (fmtEl && fmtEl.checked && fsType === 'ntfs') ? '1' : '0';
+		if (!part) { showToast(t('tNeedPartPath'), 'warn'); return; }
+		if (!fsType || fsType === 'auto') { showToast(t('tNeedMkfsType'), 'warn'); return; }
+		/* Sync back to inline form */
+		document.getElementById('fsPartitionPath').value = part;
+		document.getElementById('fsTypeSelect').value    = fsType;
+		document.getElementById('fsLabelInput').value    = label;
+		document.getElementById('extraOptsInput').value  = extra;
+		cleanup();
+		queueOpWithConfirm(
+			'create_filesystem',
+			{ partition: part, fs_type: fsType, label: label, extra_opts: extra, full_format: fullFmt },
+			'Make filesystem ' + fsType + ' on ' + part,
+			t('confirmMkfs'),
+			t('confirmMkfsMsg')
+		);
+	};
+}
+
 // ── Verify partitions modal ───────────────────────────────────────────────────
 
 function showVerifyModal() {
@@ -9916,11 +10060,21 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				? { part: state.selectedPart, component: state.selectedComponent }
 				: null;
 		}
-		/* Restore selection for the new disk (null if none was ever saved) */
+		/* Restore selection for the new disk if one was saved; otherwise keep
+		 * the previous selectedPart/selectedPartDevice so drag source remains correct. */
 		var saved = state.partSelectionByDisk[state.selectedDevice] || null;
-		state.selectedPart = saved ? saved.part : null;
-		state.selectedComponent = saved ? saved.component : null;
-		state.selectedPartDevice = state.selectedPart ? state.selectedDevice : '';
+		if (saved) {
+			state.selectedPart = saved.part;
+			state.selectedComponent = saved.component;
+			state.selectedPartDevice = state.selectedDevice;
+		} else if (!(state.selectedDevice in state.partSelectionByDisk)) {
+			/* Never visited this disk: keep selectedPart/selectedPartDevice from before */
+			state.selectedComponent = null;
+		} else {
+			/* Visited before and explicitly had no selection */
+			state.selectedPart = null;
+			state.selectedComponent = null;
+		}
 		if (state.selectedPart) {
 			/* Repopulate form fields for the restored partition */
 			var rp = state.selectedPart;
@@ -9932,7 +10086,17 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			document.getElementById('resizeEndSector').value = String(rp.end || '');
 			refreshSectorHumanFields();
 		} else {
-			clearSelectedPartitionUi();
+			/* Switching to a disk with no saved partition selection:
+			 * clear only the sector/name fields; preserve selectedPartNum and
+			 * selectedPartPath so the last-selected partition remains visible. */
+			document.getElementById('newStartSector').value = '';
+			document.getElementById('newEndSector').value = '';
+			document.getElementById('resizeEndSector').value = '';
+			document.getElementById('newPartName').value = '';
+			document.getElementById('renamePartInput').value = '';
+			document.getElementById('flagNameInput').value = '';
+			document.getElementById('flagStateInput').value = 'off';
+			refreshSectorHumanFields();
 		}
 		renderDeviceStrip();
 		renderMap();
@@ -10581,28 +10745,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	}
 
 	function queueMkfs() {
-		var part = document.getElementById('fsPartitionPath').value.trim();
-		if (!part) {
-			showToast(t('tNeedPartPath'), 'warn');
-			return;
-		}
-		var fsType = document.getElementById('fsTypeSelect').value;
-		if (fsType === 'auto') {
-			showToast(t('tNeedMkfsType'), 'warn');
-			return;
-		}
-		queueOpWithConfirm(
-			'create_filesystem',
-			{
-				partition: part,
-				fs_type: fsType,
-				label: document.getElementById('fsLabelInput').value.trim(),
-				extra_opts: document.getElementById('extraOptsInput').value.trim()
-			},
-			'Make filesystem ' + fsType + ' on ' + part,
-			t('confirmMkfs'),
-			t('confirmMkfsMsg')
-		);
+		showMkfsModal();
 	}
 
 	function queueSetLabel() {
@@ -11112,6 +11255,12 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			if (state.selectedPart) {
 				ev.dataTransfer.setData('part-size', String(state.selectedPart.size || 0));
 			}
+			/* Capture source context at drag time (user may switch device before drop).
+			 * Use selectedPartDevice (device of last selected partition), not selectedDevice
+			 * (which may have changed when user navigated to the target disk). */
+			ev.dataTransfer.setData('text/x-src-dev', state.selectedPartDevice || state.selectedDevice || '');
+			ev.dataTransfer.setData('text/x-src-part-num',
+				state.selectedPart ? String(state.selectedPart.number || '') : '');
 		};
 		moveCloneChipEl.ondragend = function () {
 			state.mapDragActive = false;
