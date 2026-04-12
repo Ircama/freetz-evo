@@ -59,6 +59,7 @@ CMD_PARTCLONE_DD=''
 CMD_PARTCLONE_INFO=''
 CMD_PARTCLONE_CHKIMG=''
 CMD_PARTITION_IMAGE=''
+CMD_PARTITION_MIGRATION=''
 
 # Streaming-mode globals (set by action_start_job; empty = non-streaming)
 STREAM_LOG=''
@@ -251,52 +252,56 @@ find_cmd() {
 			echo "$_cmd_path"
 			return 0
 		fi
+		# Also search sbin directories that may not be in CGI PATH
+		for _dir in /mod/usr/sbin /mod/external/usr/sbin /usr/sbin /sbin; do
+			if [ -x "$_dir/$_cmd" ]; then
+				echo "$_dir/$_cmd"
+				return 0
+			fi
+		done
 	done
 	return 1
 }
 
-resolve_tools() {
-	[ -n "$CMD_PARTED" ] && return 0
-	CMD_PARTED=$(find_cmd parted)
-	CMD_PARTPROBE=$(find_cmd partprobe)
-	CMD_MKFS_FAT=$(find_cmd mkfs.fat)
-	CMD_FSCK_FAT=$(find_cmd fsck.fat)
-	CMD_FATLABEL=$(find_cmd fatlabel)
-	CMD_MKFS_EXFAT=$(find_cmd mkfs.exfat-ng mkfs.exfat mkexfatfs)
-	CMD_FSCK_EXFAT=$(find_cmd fsck.exfat-ng fsck.exfat exfatfsck)
-	CMD_EXFATLABEL=$(find_cmd exfatlabel-ng exfatlabel tune.exfat-ng tune.exfat)
-	CMD_MKE2FS=$(find_cmd mke2fs-ng mke2fs)
-	CMD_E2FSCK=$(find_cmd e2fsck-ng e2fsck)
-	CMD_RESIZE2FS=$(find_cmd resize2fs-ng resize2fs)
-	CMD_TUNE2FS=$(find_cmd tune2fs-ng tune2fs)
-	CMD_E2LABEL=$(find_cmd e2label-ng e2label)
-	CMD_DUMPE2FS=$(find_cmd dumpe2fs-ng dumpe2fs)
-	CMD_BADBLOCKS=$(find_cmd badblocks-ng badblocks)
-	CMD_GDISK=$(find_cmd gdisk)
-	CMD_CGDISK=$(find_cmd cgdisk)
-	CMD_SGDISK=$(find_cmd sgdisk)
-	CMD_FIXPARTS=$(find_cmd fixparts)
-	CMD_HDPARM=$(find_cmd hdparm)
-	CMD_SMARTCTL=$(find_cmd smartctl)
-	CMD_LSBLK=$(find_cmd lsblk)
-	CMD_BLKID=$(find_cmd blkid-util-linux blkid-ng blkid)
-	CMD_BLOCKDEV=$(find_cmd blockdev-ng blockdev-util-linux blockdev)
-	CMD_MKNTFS=$(find_cmd mkntfs)
-	CMD_NTFSFIX=$(find_cmd ntfsfix)
-	CMD_NTFSINFO=$(find_cmd ntfsinfo)
-	CMD_NTFSLABEL=$(find_cmd ntfslabel)
-	CMD_NTFSRESIZE=$(find_cmd ntfsresize)
-	CMD_FATRESIZE=$(find_cmd fatresize)
-	CMD_MOUNT=$(find_cmd mount)
-	CMD_UMOUNT=$(find_cmd umount)
-	CMD_DDRESCUE=$(find_cmd ddrescue)
-	CMD_DD=$(find_cmd dd)
-	CMD_PARTCLONE_DD=$(find_cmd partclone.dd)
-	CMD_PARTCLONE_INFO=$(find_cmd partclone.info)
-	CMD_PARTCLONE_CHKIMG=$(find_cmd partclone.chkimg)
-	CMD_PARTITION_MIGRATION=$(find_cmd partition_migration.sh)
-	CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
-}
+CMD_PARTED=$(find_cmd parted)
+CMD_PARTPROBE=$(find_cmd partprobe)
+CMD_MKFS_FAT=$(find_cmd mkfs.fat)
+CMD_FSCK_FAT=$(find_cmd fsck.fat)
+CMD_FATLABEL=$(find_cmd fatlabel)
+CMD_MKFS_EXFAT=$(find_cmd mkfs.exfat-ng mkfs.exfat mkexfatfs)
+CMD_FSCK_EXFAT=$(find_cmd fsck.exfat-ng fsck.exfat exfatfsck)
+CMD_EXFATLABEL=$(find_cmd exfatlabel-ng exfatlabel tune.exfat-ng tune.exfat)
+CMD_MKE2FS=$(find_cmd mke2fs-ng mke2fs)
+CMD_E2FSCK=$(find_cmd e2fsck-ng e2fsck)
+CMD_RESIZE2FS=$(find_cmd resize2fs-ng resize2fs)
+CMD_TUNE2FS=$(find_cmd tune2fs-ng tune2fs)
+CMD_E2LABEL=$(find_cmd e2label-ng e2label)
+CMD_DUMPE2FS=$(find_cmd dumpe2fs-ng dumpe2fs)
+CMD_BADBLOCKS=$(find_cmd badblocks-ng badblocks)
+CMD_GDISK=$(find_cmd gdisk)
+CMD_CGDISK=$(find_cmd cgdisk)
+CMD_SGDISK=$(find_cmd sgdisk)
+CMD_FIXPARTS=$(find_cmd fixparts)
+CMD_HDPARM=$(find_cmd hdparm)
+CMD_SMARTCTL=$(find_cmd smartctl)
+CMD_LSBLK=$(find_cmd lsblk)
+CMD_BLKID=$(find_cmd blkid-util-linux blkid-ng blkid)
+CMD_BLOCKDEV=$(find_cmd blockdev-ng blockdev-util-linux blockdev)
+CMD_MKNTFS=$(find_cmd mkntfs)
+CMD_NTFSFIX=$(find_cmd ntfsfix)
+CMD_NTFSINFO=$(find_cmd ntfsinfo)
+CMD_NTFSLABEL=$(find_cmd ntfslabel)
+CMD_NTFSRESIZE=$(find_cmd ntfsresize)
+CMD_FATRESIZE=$(find_cmd fatresize)
+CMD_MOUNT=$(find_cmd mount)
+CMD_UMOUNT=$(find_cmd umount)
+CMD_DDRESCUE=$(find_cmd ddrescue)
+CMD_DD=$(find_cmd dd)
+CMD_PARTCLONE_DD=$(find_cmd partclone.dd)
+CMD_PARTCLONE_INFO=$(find_cmd partclone.info)
+CMD_PARTCLONE_CHKIMG=$(find_cmd partclone.chkimg)
+CMD_PARTITION_MIGRATION=$(find_cmd partition_migration.sh)
+CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
 
 run_tune2fs() {
 	[ -n "$CMD_TUNE2FS" ] || return 127
@@ -1390,7 +1395,8 @@ if [ "$_direction" = "shrink" ]; then
 emit_dry_run_result "filesystem resize" "e2fsck -f -p $_partition
 resize2fs $_partition ${_target_kib}K"
 else
-emit_dry_run_result "filesystem resize" "resize2fs $_partition"
+emit_dry_run_result "filesystem resize" "e2fsck -f -p $_partition
+resize2fs $_partition"
 fi
 return
 ;;
@@ -1444,6 +1450,9 @@ $_ck
 \$ $_cmd_rs
 $_rs"
 else
+_cmd_ck="$CMD_E2FSCK -v -f -p $_partition"
+exec_cmd_c "e2fsck before grow" "$_cmd_ck" "$CMD_E2FSCK" -v -f -p "$_partition"
+_ck="$EXEC_OUT"
 _cmd_rs="$CMD_RESIZE2FS -p ${_opts_display}$_partition"
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
@@ -1452,7 +1461,10 @@ else
 exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p "$_partition"
 fi
 _rc=$EXEC_RC; _rs="$EXEC_OUT"
-_out="\$ $_cmd_rs
+_out="\$ $_cmd_ck
+$_ck
+
+\$ $_cmd_rs
 $_rs"
 fi
 if [ "$_rc" -eq 0 ]; then
@@ -4219,6 +4231,17 @@ cat <<'EOF'
 	cursor: ew-resize;
 	background: rgba(0, 0, 0, 0.18);
 }
+.pcgi-drag-landing {
+	position: absolute;
+	top: 2px;
+	bottom: 2px;
+	background: rgba(37, 99, 235, 0.45);
+	border: 2px dashed #2563eb;
+	border-radius: 3px;
+	pointer-events: none;
+	z-index: 5;
+	transition: left 0.05s, width 0.05s;
+}
 .pcgi-resize-handle-left {
 	left: 0;
 	right: auto;
@@ -4710,6 +4733,44 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiVerifyCancelBtn">Cancel</button>
 			<button type="button" id="pcgiVerifyOkBtn">Verify</button>
+		</div>
+	</div>
+</div>
+
+<!-- Mount partition modal -->
+<div id="pcgiMountModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:480px">
+		<h3 id="pcgiMountTitle" class="pcgi-modal-head">Mount partition</h3>
+		<div class="pcgi-inline-form" style="margin-top:8px;grid-template-columns:1fr">
+			<div>
+				<label id="i18nMountModalPartLabel">Partition</label>
+				<input id="mountModalPart" type="text" readonly style="background:#f5f5f5;font-family:monospace">
+			</div>
+			<div>
+				<label id="i18nMountModalMpLabel">Mountpoint</label>
+				<input id="mountModalMp" type="text" placeholder="/var/media/ftp/sda1">
+			</div>
+			<div>
+				<label id="i18nMountModalFsLabel">Filesystem type</label>
+				<select id="mountModalFs">
+					<option value="auto">auto (kernel detect)</option>
+					<option value="ext4">ext4</option>
+					<option value="ext3">ext3</option>
+					<option value="ext2">ext2</option>
+					<option value="ntfs">ntfs</option>
+					<option value="vfat">vfat</option>
+					<option value="exfat">exfat</option>
+					<option value="f2fs">f2fs</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nMountModalOptsLabel">Mount options (optional)</label>
+				<input id="mountModalOpts" type="text" placeholder="rw,noatime">
+			</div>
+		</div>
+		<div class="pcgi-modal-actions" style="margin-top:12px">
+			<button type="button" id="pcgiMountCancelBtn">Cancel</button>
+			<button type="button" id="pcgiMountOkBtn">Mount</button>
 		</div>
 	</div>
 </div>
@@ -5575,6 +5636,11 @@ window.paceOptions = {
 			confirmCloneMsg: 'Clone the selected source partition to the target free region?',
 			confirmMount: 'Confirm mount request',
 			confirmMountMsg: 'Mount the selected partition?',
+			mountModalTitle: 'Mount partition',
+			mountModalPartLabel: 'Partition',
+			mountModalMpLabel: 'Mountpoint',
+			mountModalFsLabel: 'Filesystem type',
+			mountModalOptsLabel: 'Mount options (optional)',
 			confirmUnmount: 'Confirm unmount request',
 			confirmUnmountMsg: 'Unmount the selected partition or mountpoint?',
 			tQueueEmpty: 'Operation queue is empty.',
@@ -5670,6 +5736,11 @@ window.paceOptions = {
 			confirmCloneMsg: 'Clonare la partizione sorgente selezionata verso lo spazio libero target?',
 			confirmMount: 'Conferma richiesta mount',
 			confirmMountMsg: 'Montare la partizione selezionata?',
+			mountModalTitle: 'Monta partizione',
+			mountModalPartLabel: 'Partizione',
+			mountModalMpLabel: 'Punto di mount',
+			mountModalFsLabel: 'Tipo filesystem',
+			mountModalOptsLabel: 'Opzioni mount (opzionale)',
 			confirmUnmount: 'Conferma richiesta unmount',
 			confirmUnmountMsg: 'Smontare la partizione o mountpoint selezionato?',
 			tQueueEmpty: 'La coda operazioni e vuota.',
@@ -5765,6 +5836,11 @@ window.paceOptions = {
 			confirmCloneMsg: 'Gewaehlte Quellpartition in den Ziel-Freiraum klonen?',
 			confirmMount: 'Mount-Anfrage bestaetigen',
 			confirmMountMsg: 'Gewaehlte Partition mounten?',
+			mountModalTitle: 'Partition mounten',
+			mountModalPartLabel: 'Partition',
+			mountModalMpLabel: 'Einhängepunkt',
+			mountModalFsLabel: 'Dateisystemtyp',
+			mountModalOptsLabel: 'Mount-Optionen (optional)',
 			confirmUnmount: 'Unmount-Anfrage bestaetigen',
 			confirmUnmountMsg: 'Partition oder Mountpoint unmounten?',
 			tQueueEmpty: 'Die Operationsliste ist leer.',
@@ -6361,7 +6437,11 @@ window.paceOptions = {
 		var dropSector = freeStart + Math.round(relRatio * freeSpan);
 		var grabOffset = Math.round(ratio * Math.max(0, size - 1));
 		var targetStart = dropSector - grabOffset;
-		return Math.floor(clampNumber(targetStart, minStart, maxStart));
+		targetStart = Math.floor(clampNumber(targetStart, minStart, maxStart));
+		// Snap to 8-sector (4096-byte) alignment
+		var aligned = Math.round(targetStart / 8) * 8;
+		aligned = clampNumber(aligned, minStart, maxStart);
+		return aligned;
 	}
 
 	function detectLanguage() {
@@ -6434,6 +6514,10 @@ window.paceOptions = {
 			i18nDmIncludeTailLabel: 'dmIncludeTailLabel',
 			i18nDmUnmountLabel: 'dmUnmountLabel',
 			i18nDmStepDelayLabel: 'dmStepDelayLabel',
+			i18nMountModalPartLabel: 'mountModalPartLabel',
+			i18nMountModalMpLabel: 'mountModalMpLabel',
+			i18nMountModalFsLabel: 'mountModalFsLabel',
+			i18nMountModalOptsLabel: 'mountModalOptsLabel',
 		};
 		for (var id in map) {
 			if (!Object.prototype.hasOwnProperty.call(map, id)) continue;
@@ -6494,6 +6578,12 @@ window.paceOptions = {
 		if (dmOkBtn)     dmOkBtn.textContent     = t('btnValidateQueue');
 		var dmTitleEl = document.getElementById('pcgiDmTitle');
 		if (dmTitleEl) dmTitleEl.textContent = t('dmTitle');
+		var mountCancelBtn = document.getElementById('pcgiMountCancelBtn');
+		var mountOkBtn     = document.getElementById('pcgiMountOkBtn');
+		var mountTitleEl   = document.getElementById('pcgiMountTitle');
+		if (mountCancelBtn) mountCancelBtn.textContent = t('btnCancel');
+		if (mountOkBtn)     mountOkBtn.textContent     = t('confirmMount') || 'Mount';
+		if (mountTitleEl)   mountTitleEl.textContent   = t('mountModalTitle');
 		updateToolchainToggleButton();
 		renderDeviceStrip();
 	}
@@ -9069,7 +9159,7 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'rename') { queueRenamePartition(); return; }
 		if (action === 'flag') { queueSetFlag(); return; }
 		if (action === 'mkfs') { document.getElementById('fsTypeSelect').value = 'auto'; queueMkfs(); return; }
-		if (action === 'mount') { document.getElementById('fsTypeSelect').value = 'auto'; queueMountPartition(); return; }
+		if (action === 'mount') { showMountModal(); return; }
 		if (action === 'umount') { queueUnmountPartition(); return; }
 		if (action === 'fsck_ro') { runFsck(false); return; }
 		if (action === 'fsck_fix') { runFsck(true); return; }
@@ -9374,9 +9464,41 @@ actionsWrap.appendChild(btnRemove);
 						// Do NOT call selectUnallocatedSegment here — it would clear state.selectedPart
 						showContextMenu({ kind: 'free', start: p.start, end: p.end, devPath: String(dev.path || '') }, ev, 'free');
 					};
-					block.ondragover = function (ev) { ev.preventDefault(); };
+					block.ondragover = function (ev) {
+						ev.preventDefault();
+						var dragInfo = state.partitionDragInfo;
+						if (!dragInfo) return;
+						var moveSize = Number(dragInfo.size || 0);
+						var targetStart = computeMoveDropTargetStart(ev, p, moveSize, Number(dragInfo.grabRatio || 0));
+						if (!isFinite(targetStart)) return;
+						var freeSpan = Number(p.end || 0) - Number(p.start || 0) + 1;
+						if (freeSpan <= 0) return;
+						var blockW = block.clientWidth;
+						var landLeft = Math.max(0, (targetStart - Number(p.start || 0)) / freeSpan * blockW);
+						var landW = Math.max(2, moveSize / freeSpan * blockW);
+						var preview = block._dragPreview;
+						if (!preview) {
+							preview = document.createElement('div');
+							preview.className = 'pcgi-drag-landing';
+							block.style.position = 'relative';
+							block.appendChild(preview);
+							block._dragPreview = preview;
+						}
+						preview.style.left = landLeft + 'px';
+						preview.style.width = landW + 'px';
+					};
+					block.ondragleave = function () {
+						if (block._dragPreview) {
+							block.removeChild(block._dragPreview);
+							block._dragPreview = null;
+						}
+					};
 					block.ondrop = function (ev) {
 						ev.preventDefault();
+						if (block._dragPreview) {
+							block.removeChild(block._dragPreview);
+							block._dragPreview = null;
+						}
 						state.mapDragActive = false;
 						hideHoverTooltip();
 						var data = ev.dataTransfer.getData('text/plain');
@@ -9793,6 +9915,17 @@ actionsWrap.appendChild(btnRemove);
 			);
 
 			if (queueFs && !isShrink) {
+				// e2fsck is mandatory before resize2fs grow; prepend a check step for ext fs.
+				if (fsType && fsType.indexOf('ext') === 0) {
+					var ck2Params = { partition: partitionPath, fs_type: fsType, repair: 'no', extra_opts: '' };
+					queueOp(
+						'check_filesystem',
+						ck2Params,
+						'Check filesystem (read-only) on ' + partitionPath + ' before grow',
+						buildCommandPreview('check_filesystem', ck2Params),
+						true
+					);
+				}
 				var fsAfterParams = {
 					partition: partitionPath,
 					fs_type: fsType,
@@ -11908,6 +12041,74 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		);
 	}
 
+	function showMountModal() {
+		var part = state.selectedPart;
+		var partPath = part ? String(part.path || '') : document.getElementById('fsPartitionPath').value.trim();
+		if (!partPath) {
+			showToast(t('tNeedPartPath'), 'warn');
+			return;
+		}
+
+		// Pre-compute default mountpoint: prefer label, then partition name, then basename
+		var defLabel = part ? (part.label || part.name || '') : '';
+		defLabel = defLabel.replace(/[^a-zA-Z0-9_\-.]/g, '_');
+		if (!defLabel) defLabel = partPath.replace(/.*\//, '');
+		var defMp = '/var/media/ftp/' + defLabel;
+
+		// Pre-fill fs type from partition info
+		var defFs = part ? (String(part.fs || '').toLowerCase().trim() || 'auto') : 'auto';
+		// Normalise to option values in the select
+		if (defFs === 'fat' || defFs === 'fat32' || defFs === 'fat16' || defFs === 'fat12') defFs = 'vfat';
+
+		var modal     = document.getElementById('pcgiMountModal');
+		var partEl    = document.getElementById('mountModalPart');
+		var mpEl      = document.getElementById('mountModalMp');
+		var fsEl      = document.getElementById('mountModalFs');
+		var optsEl    = document.getElementById('mountModalOpts');
+		var cancelBtn = document.getElementById('pcgiMountCancelBtn');
+		var okBtn     = document.getElementById('pcgiMountOkBtn');
+		if (!modal) { queueMountPartition(); return; }
+
+		partEl.value  = partPath;
+		mpEl.value    = defMp;
+		optsEl.value  = '';
+		// Select matching fs option, fallback to auto
+		var matched = false;
+		for (var oi = 0; oi < fsEl.options.length; oi++) {
+			if (fsEl.options[oi].value === defFs) { fsEl.selectedIndex = oi; matched = true; break; }
+		}
+		if (!matched) fsEl.value = 'auto';
+
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+
+		function cleanup() {
+			modal.style.display = 'none';
+			modal.setAttribute('aria-hidden', 'true');
+			cancelBtn.onclick = okBtn.onclick = null;
+			document.removeEventListener('keydown', onEsc);
+		}
+		function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
+		document.addEventListener('keydown', onEsc);
+		cancelBtn.onclick = cleanup;
+
+		okBtn.onclick = function () {
+			var pth  = partEl.value.trim();
+			var mp   = mpEl.value.trim();
+			var fs   = fsEl.value;
+			var opts = optsEl.value.trim();
+			cleanup();
+			if (!pth) { showToast(t('tNeedPartPath'), 'warn'); return; }
+			queueOpWithConfirm(
+				'mount_partition',
+				{ partition: pth, mountpoint: mp, fs_type: fs, mount_opts: opts },
+				'Mount ' + pth + (mp ? (' \u2192 ' + mp) : ''),
+				t('confirmMount'),
+				t('confirmMountMsg')
+			);
+		};
+	}
+
 	function queueMountPartition() {
 		var part = document.getElementById('fsPartitionPath').value.trim();
 		if (!part) {
@@ -12321,6 +12522,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			return;
 		}
 		if (ev.key === 'ArrowLeft') {
+			// Let browser handle Ctrl+Left (word navigation) inside text fields
+			if (ev.ctrlKey && (tag === 'input' || tag === 'textarea')) return;
 			ev.preventDefault();
 			if (ev.altKey) {
 				queueMoveSelectedByDirection('left');
@@ -12330,6 +12533,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			return;
 		}
 		if (ev.key === 'ArrowRight') {
+			// Let browser handle Ctrl+Right (word navigation) inside text fields
+			if (ev.ctrlKey && (tag === 'input' || tag === 'textarea')) return;
 			ev.preventDefault();
 			if (ev.altKey) {
 				queueMoveSelectedByDirection('right');
@@ -12438,6 +12643,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.queueRenamePartition = queueRenamePartition;
 	window.queueSetFlag = queueSetFlag;
 	window.queueMountPartition = queueMountPartition;
+	window.showMountModal = showMountModal;
 	window.queueUnmountPartition = queueUnmountPartition;
 	window.runFsck = runFsck;
 	window.clearQueue = clearQueue;
