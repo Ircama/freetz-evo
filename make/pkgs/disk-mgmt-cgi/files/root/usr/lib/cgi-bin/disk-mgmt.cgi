@@ -4548,14 +4548,14 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<!-- Global options -->
 		<div class="pcgi-inline-form" style="grid-template-columns:1fr 1fr;margin-bottom:8px">
 			<div>
-				<label>Partition table</label>
+				<label>Partition table <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('fritz-table-type')" title="Help">?</button></label>
 				<select id="fsSetupTableType">
 					<option value="gpt">GPT (recommended)</option>
 					<option value="msdos">msdos / MBR</option>
 				</select>
 			</div>
 			<div>
-				<label>Alignment</label>
+				<label>Alignment <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('fritz-align')" title="Help">?</button></label>
 				<select id="fsSetupAlign">
 					<option value="optimal" selected>optimal (1 MiB)</option>
 					<option value="2048">2048 sectors (1 MiB)</option>
@@ -4565,10 +4565,10 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 			</div>
 			<div style="grid-column:1/-1;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
 				<label style="display:flex;align-items:center;gap:6px;font-weight:normal">
-					<input type="checkbox" id="fsSetupDeleteAll" checked> Delete existing partitions first
+					<input type="checkbox" id="fsSetupDeleteAll" checked> Delete existing partitions first <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('fritz-delete-all')" title="Help">?</button>
 				</label>
 				<label style="display:flex;align-items:center;gap:6px;font-weight:normal">
-					<input type="checkbox" id="fsSetupMountAll" checked> Mount all partitions after creation
+					<input type="checkbox" id="fsSetupMountAll" checked> Mount all partitions after creation <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('fritz-mount-all')" title="Help">?</button>
 				</label>
 			</div>
 		</div>
@@ -4581,7 +4581,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 					<th style="padding:4px 6px;text-align:left">Name / label</th>
 					<th style="padding:4px 6px;text-align:left">Filesystem</th>
 					<th style="padding:4px 6px;text-align:left">Size</th>
-					<th style="padding:4px 6px;text-align:left">Mount point</th>
+					<th style="padding:4px 6px;text-align:left;min-width:160px">Mount point</th>
 					<th style="padding:4px 6px;width:2em"></th>
 				</tr>
 			</thead>
@@ -4594,7 +4594,6 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		</div>
 		<div class="pcgi-modal-actions" style="margin-top:12px">
 			<button type="button" id="pcgiFritzSetupCancelBtn">Cancel</button>
-			<button type="button" id="pcgiFritzSetupDryRunBtn">Dry-run preview</button>
 			<button type="button" id="pcgiFritzSetupRunBtn" style="background:#28a745;color:#fff">Run setup</button>
 		</div>
 	</div>
@@ -5331,7 +5330,7 @@ cat <<'EOF'
 <table class="pcgi-table" id="queueTable" style="table-layout:fixed;min-width:520px">
 	<colgroup>
 		<col style="width:2.6em">
-		<col style="width:9em">
+		<col style="width:12em">
 		<col style="width:28%">
 		<col style="width:37%">
 		<col style="width:7em">
@@ -6675,7 +6674,12 @@ window.paceOptions = {
 		'dr-retries':        { title: 'Max retry passes (-r)',         body: 'Maximum number of retry passes for failed sectors. Default: 3.<br><br>Each pass makes additional attempts to read unreadable sectors. More passes recover more data but take more time and may stress the drive further.<br><br>Set to 0 to disable retries (first pass only). Set to -1 for unlimited retries.' },
 		'dr-unmount':        { title: 'Unmount before (-u)',           body: 'Unmount the source partition before running ddrescue. Recommended to avoid inconsistent reads on mounted filesystems.' },
 		'dr-step-delay':     { title: 'Step delay seconds (-w)',       body: 'Pause in seconds between preparation steps.' },
-		'dr-extra-opts':     { title: 'Extra ddrescue options (-x)',    body: 'Additional flags passed to <code>ddrescue</code>.<br><br>Examples:<br><code>-d</code> – use direct disc access (bypasses cache, slower but more reliable)<br><code>-r -1</code> – infinite retries<br><code>-S</code> – scrape mode (slower but recovers more from bad sectors)<br><code>-R</code> – reverse reading direction<br><br>Consult <code>man ddrescue</code> for the full list.' }
+		'dr-extra-opts':     { title: 'Extra ddrescue options (-x)',    body: 'Additional flags passed to <code>ddrescue</code>.<br><br>Examples:<br><code>-d</code> – use direct disc access (bypasses cache, slower but more reliable)<br><code>-r -1</code> – infinite retries<br><code>-S</code> – scrape mode (slower but recovers more from bad sectors)<br><code>-R</code> – reverse reading direction<br><br>Consult <code>man ddrescue</code> for the full list.' },
+		/* Freetz EVO setup modal */
+		'fritz-table-type':  { title: 'Partition table',   body: '<b>GPT</b> – GUID Partition Table. Supports disks larger than 2 TiB, up to 128 partitions, and is required for UEFI boot. Recommended for all modern disks.<br><br><b>msdos / MBR</b> – Master Boot Record. Legacy format with max 4 primary partitions and 2 TiB disk limit. Use only for old BIOS-boot setups or very small disks.' },
+		'fritz-align':       { title: 'Alignment',         body: '<b>optimal (1 MiB)</b> – auto-computes 1 MiB alignment (2048 × 512-byte sectors). Best for SD cards, USB3 drives and SSDs. Recommended.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Equivalent to optimal on 512-byte drives.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB alignment for high-end NVMe SSDs.<br><br><b>no alignment</b> – use only for legacy recovery or debugging.' },
+		'fritz-delete-all':  { title: 'Delete existing partitions first', body: 'If checked, all existing partitions on the disk are removed before creating the new layout.<br><br>Each partition is deleted in reverse order (highest number first) via individual <em>delete_partition</em> operations. A fresh partition table of the chosen type is then written.<br><br>⚠ All data on the disk will be lost. Uncheck if you want to add partitions to an already-wiped disk.' },
+		'fritz-mount-all':   { title: 'Mount all partitions after creation', body: 'If checked, each enabled partition with a non-empty mount point is automatically mounted after it is created and formatted.<br><br>The mount point directory is created if it does not already exist.<br><br>Uncheck if you want to mount partitions manually or do not need them mounted immediately.' }
 	};
 
 	function showFieldHelp(key) {
@@ -8875,7 +8879,11 @@ actionsWrap.appendChild(btnRemove);
 				{ id: 'disk_move_clone',     label: 'Disk move or clone' },
 				{ id: 'disk_img_export',     label: 'Export disk to image file' },
 				{ id: 'disk_img_import',     label: 'Restore disk from image file' },
-				{ id: 'disk_ddrescue',       label: 'Clone disk with ddrescue (data recovery)' }
+				{ id: 'disk_ddrescue',       label: 'Clone disk with ddrescue (data recovery)' },
+				{ id: 'disk_smart',          label: 'SMART info (smartctl)' },
+				{ id: 'disk_hdparm',         label: 'Disk info (hdparm)' },
+				{ id: 'disk_gpt_info',       label: 'GPT info (sgdisk)' },
+				{ id: 'disk_badblocks',      label: 'Badblocks scan' }
 			];
 		} else if (menuType === 'free') {
 			items = [
@@ -8935,6 +8943,13 @@ actionsWrap.appendChild(btnRemove);
 		menu.style.top  = Math.max(0, Math.min(_my, (document.documentElement.scrollHeight || 9999) - 300)) + 'px';
 	}
 
+	function expandAdvancedInfo() {
+		var det = document.getElementById('advancedInfoDetails');
+		if (!det) return;
+		if (!det.open) det.open = true;
+		det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
 	function handleContextAction(action, target, menuType) {
 		if (menuType === 'disk') {
 			if (action === 'select_disk') { selectDisk(target); return; }
@@ -8945,6 +8960,10 @@ actionsWrap.appendChild(btnRemove);
 			if (action === 'disk_img_export') { showPartcloneExportModal(target, 'disk'); return; }
 			if (action === 'disk_img_import') { showPartcloneImportModal(target, 'disk'); return; }
 			if (action === 'disk_ddrescue')   { showDdrescueModal(target, 'disk'); return; }
+			if (action === 'disk_smart')     { selectDisk(target); expandAdvancedInfo(); runDiagnostics('smart_info');     return; }
+			if (action === 'disk_hdparm')    { selectDisk(target); expandAdvancedInfo(); runDiagnostics('hdparm_info');    return; }
+			if (action === 'disk_gpt_info')  { selectDisk(target); expandAdvancedInfo(); runDiagnostics('gpt_info');       return; }
+			if (action === 'disk_badblocks') { selectDisk(target); expandAdvancedInfo(); runDiagnostics('badblocks_scan'); return; }
 			showToast(t('tContextUnavailable'), 'warn');
 			return;
 		}
@@ -10126,7 +10145,6 @@ function showConvertLabelModal(diskTarget) {
 function showFritzSetupModal(diskTarget) {
 	var modal     = document.getElementById('pcgiFritzSetupModal');
 	var cancelBtn = document.getElementById('pcgiFritzSetupCancelBtn');
-	var dryBtn    = document.getElementById('pcgiFritzSetupDryRunBtn');
 	var runBtn    = document.getElementById('pcgiFritzSetupRunBtn');
 	var tbody     = document.getElementById('fsSetupPartBody');
 	var addBtn    = document.getElementById('fsSetupAddPartBtn');
@@ -10253,7 +10271,7 @@ function showFritzSetupModal(diskTarget) {
 		return rows;
 	}
 
-	function execSetup(dryRun) {
+	function execSetup() {
 		var rows = collectRows().filter(function(r) { return r.enabled && r.name; });
 		if (!rows.length) { showToast('No partitions configured', 'warn'); return; }
 
@@ -10262,11 +10280,46 @@ function showFritzSetupModal(diskTarget) {
 		var tableType = (document.getElementById('fsSetupTableType') || {value: 'gpt'}).value;
 		var alignSel  = (document.getElementById('fsSetupAlign') || {value: 'optimal'}).value;
 
+		// Warn if any configured mount point is already in use
+		var _warnMounts = [];
+		var _devs = state.devices || [];
+		for (var _di = 0; _di < _devs.length; _di++) {
+			var _dparts = _devs[_di].partitions || [];
+			for (var _dpi = 0; _dpi < _dparts.length; _dpi++) {
+				var _mp = (_dparts[_dpi].mountpoint || '').trim();
+				if (_mp && _mp !== '-') {
+					for (var _ri = 0; _ri < rows.length; _ri++) {
+						if (rows[_ri].mount && rows[_ri].mount === _mp)
+							_warnMounts.push(_mp);
+					}
+				}
+			}
+		}
+		if (_warnMounts.length)
+			showToast('⚠ Mount point(s) already in use: ' + _warnMounts.join(', '), 'warn', 8000);
+
 		var ops = [];
 
-		// Step 1: delete + create table
+		// Step 1: delete existing + create partition table
 		if (doDelete) {
-			ops.push({ action: 'delete_all_partitions', device: devPath, label: 'Delete all partitions on ' + devPath });
+			// Enumerate existing partitions and queue individual delete ops (in reverse order)
+			// so each goes to the backend as action_delete_partition — no unknown action used.
+			var _previewDev = buildPreviewDevice(diskTarget);
+			var _existParts = [];
+			for (var _pi = 0; _pi < (_previewDev.partitions || []).length; _pi++) {
+				var _pp = _previewDev.partitions[_pi];
+				if (_pp && _pp.kind === 'partition' && Number(_pp.number || 0) > 0)
+					_existParts.push(_pp);
+			}
+			_existParts.sort(function(a, b) { return Number(b.number || 0) - Number(a.number || 0); });
+			for (var _pi2 = 0; _pi2 < _existParts.length; _pi2++) {
+				ops.push({
+					action: 'delete_partition',
+					device: devPath,
+					partnum: _existParts[_pi2].number,
+					label: 'Delete partition p' + _existParts[_pi2].number + ' on ' + devPath
+				});
+			}
 			ops.push({ action: 'convert_table_label',  device: devPath, table_type: tableType, label: 'Create ' + tableType + ' partition table' });
 		}
 		var ALIGNN = Math.max(1, Math.ceil(1048576 / lss));
@@ -10306,12 +10359,6 @@ function showFritzSetupModal(diskTarget) {
 
 		cleanup();
 
-		if (dryRun) {
-			var preview = ops.map(function(o) { return (o.label || o.action); }).join('\n');
-			showToast('Dry-run:\n' + preview, 'info', 15000);
-			return;
-		}
-
 		// Queue all ops — user already confirmed via the modal
 		ops.forEach(function(op) {
 			var a = op.action;
@@ -10326,15 +10373,13 @@ function showFritzSetupModal(diskTarget) {
 		modal.style.display = 'none';
 		modal.setAttribute('aria-hidden', 'true');
 		if (cancelBtn) cancelBtn.onclick = null;
-		if (dryBtn)    dryBtn.onclick    = null;
 		if (runBtn)    runBtn.onclick    = null;
 		document.removeEventListener('keydown', onEsc);
 	}
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
 	if (cancelBtn) cancelBtn.onclick = cleanup;
-	if (dryBtn)    dryBtn.onclick    = function() { execSetup(true); };
-	if (runBtn)    runBtn.onclick    = function() { execSetup(false); };
+	if (runBtn)    runBtn.onclick    = function() { execSetup(); };
 }
 
 // ── Create filesystem modal ──────────────────────────────────────────────────

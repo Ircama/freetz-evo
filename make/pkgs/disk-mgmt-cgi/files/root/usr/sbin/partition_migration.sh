@@ -117,6 +117,35 @@ fat_fix_total_sectors() {
     fi
 }
 
+# Patch FAT BPB hidden_sectors field at offset 28 with the new partition start sector.
+# Required after clone/move to a different disk position: hidden_sectors must match
+# the new LBA start so that the FAT driver and fatresize locate the volume correctly.
+# Arguments: PARTITION_PATH  NEW_START_SECTOR_512
+fat_fix_hidden_sectors() {
+    _p="$1"
+    _new_start="$2"
+    [ -z "$_new_start" ] && return
+    _b0=$(( _new_start        & 0xff ))
+    _b1=$(((_new_start >>  8) & 0xff ))
+    _b2=$(((_new_start >> 16) & 0xff ))
+    _b3=$(((_new_start >> 24) & 0xff ))
+    _hhex=$(printf "\\$(printf '%03o' "$_b0")\\$(printf '%03o' "$_b1")\\$(printf '%03o' "$_b2")\\$(printf '%03o' "$_b3")")
+    printf '%s' "$_hhex" | dd of="$_p" bs=1 seek=28 count=4 conv=notrunc 2>/dev/null
+    # Also patch backup BPB (FAT32 only: backup sector index at offset 50)
+    _hbps=$(dd if="$_p" bs=1 skip=11 count=2 2>/dev/null |
+        hexdump -v -e '/1 " %u"' 2>/dev/null |
+        awk '{print ($1+0) + ($2+0)*256}')
+    ( [ -z "$_hbps" ] || [ "$_hbps" -le 0 ] ) 2>/dev/null && _hbps=512
+    _hbbsec=$(dd if="$_p" bs=1 skip=50 count=2 2>/dev/null |
+        hexdump -v -e '/1 " %u"' 2>/dev/null |
+        awk '{print ($1+0) + ($2+0)*256}')
+    if [ -n "$_hbbsec" ] && [ "$_hbbsec" -gt 0 ] 2>/dev/null; then
+        printf '%s' "$_hhex" | dd of="$_p" bs=1 seek=$(( _hbbsec * _hbps + 28 )) count=4 conv=notrunc 2>/dev/null
+    fi
+    echo "     ✔ FAT BPB hidden_sectors patched: → ${_new_start}"
+    unset _p _new_start _b0 _b1 _b2 _b3 _hhex _hbps _hbbsec
+}
+
 # partition_path DEVICE PARTNUM
 # Returns the partition device node, honouring mmcblk/nvme naming (pN suffix).
 partition_path() {
@@ -975,6 +1004,19 @@ case "$FSTYPE" in
 esac
 
 echo "     ✔ Integrity checks passed."
+
+# Patch FAT BPB hidden_sectors to match new partition start.
+# After clone/move the partition sits at a different LBA, so the original
+# hidden_sectors value (copied verbatim by partclone) is stale.
+case "$FSTYPE" in
+    vfat|fat|fat12|fat16|fat32)
+        if [ "$DRY_RUN" -eq 0 ]; then
+            fat_fix_hidden_sectors "$TARGET_PART" "$START"
+        else
+            echo "🔸  [DRY-RUN] fat_fix_hidden_sectors ${TARGET_PART} ${START}"
+        fi
+        ;;
+esac
 
 # ==============================================================================
 # STEP 8 — READ-ONLY VALIDATION MOUNT
