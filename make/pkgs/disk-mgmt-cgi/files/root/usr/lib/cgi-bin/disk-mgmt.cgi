@@ -947,7 +947,21 @@ action_list_devices() {
 					_p_used_pct=$(awk -v u="$_p_fs_used_bytes" -v d="$_disk_total_bytes" \
 						'BEGIN { if (d > 0) printf "%.8f", (u * 100) / d; else print 0 }')
 				fi
-				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
+				# Determine partition role (primary/logical/extended) for MBR disks.
+				# logical_sector numbers start at 5 for logical partitions on MBR.
+				# For primary/extended (1-4), lsblk PARTTYPE may reveal 0x5/0xf (extended).
+				_prole='primary'
+				if [ "$_table_type" = "msdos" ]; then
+					if [ "$_pnum" -ge 5 ]; then
+						_prole='logical'
+					elif [ -n "$CMD_LSBLK" ]; then
+						_ptype_hex=$($CMD_LSBLK -dn -o PARTTYPE "$_ppath" 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+						case "$_ptype_hex" in
+							0x5|0x0f|0xf|0x85) _prole='extended' ;;
+						esac
+					fi
+				fi
+				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"role\":\"$(json_escape "$_prole")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
 			fi
 		done <<EOF
 $_part_lines
@@ -1203,6 +1217,21 @@ mkfs.exfat ${_device}<new_partnum>" ;;
 			esac
 			# Re-probe so kernel and parted detect the new filesystem type
 			run_partprobe "$_device"
+		fi
+	fi
+
+	# Optionally mount the new partition
+	if [ "$_rc" -eq 0 ] && [ -n "$_mount_point" ] && [ -n "$_new_part" ] && is_valid_partnum "$_new_part"; then
+		_new_part_dev=$(partition_path "$_device" "$_new_part")
+		if is_valid_mountpoint "$_mount_point"; then
+			mkdir -p "$_mount_point" 2>/dev/null
+			if [ -d "$_mount_point" ] && [ -n "$CMD_MOUNT" ]; then
+				exec_cmd_c "Mount $_new_part_dev on $_mount_point" \
+					"$CMD_MOUNT $_new_part_dev $_mount_point" \
+					"$CMD_MOUNT" "$_new_part_dev" "$_mount_point"
+				_out="$_out\n$EXEC_OUT"
+				[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mount failed (rc=$EXEC_RC)"
+			fi
 		fi
 	fi
 
@@ -3589,7 +3618,9 @@ action_poll_job() {
 	fi
 	_newtext=''
 	if [ "$_size" -gt "$_offset" ]; then
-		_newtext=$(tail -c "+$((_offset + 1))" "$_slog" 2>/dev/null || true)
+		# Use printf x sentinel to preserve trailing newlines that $() would strip
+		_rawtext=$(tail -c "+$((_offset + 1))" "$_slog" 2>/dev/null; printf x) || true
+		_newtext="${_rawtext%x}"
 	fi
 
 	# Clean up AFTER reading final content
@@ -4258,6 +4289,54 @@ cat <<'EOF'
 	z-index: 5;
 	transition: left 0.05s, width 0.05s;
 }
+/* Extended partition container band */
+.pcgi-extended-band {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	background: rgba(234, 179, 8, 0.10);
+	border: 2px solid rgba(161, 117, 7, 0.55);
+	border-radius: 4px;
+	z-index: 0;
+	pointer-events: none;
+	box-sizing: border-box;
+}
+.pcgi-extended-label {
+	position: absolute;
+	top: 1px;
+	left: 3px;
+	font-size: 9px;
+	color: rgba(120, 80, 0, 0.8);
+	font-weight: bold;
+	white-space: nowrap;
+	pointer-events: none;
+	z-index: 6;
+	user-select: none;
+}
+/* Logical partition blocks get a bottom stripe */
+.pcgi-block.part.pcgi-logical::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: rgba(161, 117, 7, 0.7);
+	border-radius: 0 0 2px 2px;
+	pointer-events: none;
+}
+/* Extended partition block itself */
+.pcgi-block.part.pcgi-extended {
+	background: repeating-linear-gradient(
+		45deg,
+		rgba(234, 179, 8, 0.18) 0px,
+		rgba(234, 179, 8, 0.18) 4px,
+		rgba(255, 248, 220, 0.4) 4px,
+		rgba(255, 248, 220, 0.4) 8px
+	);
+	border-color: rgba(161, 117, 7, 0.7);
+	color: #5a3e00;
+}
 .pcgi-resize-handle-left {
 	left: 0;
 	right: auto;
@@ -4505,6 +4584,23 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 <div id="pcgiNewPartModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:600px">
 		<h3 id="pcgiNewPartTitle" class="pcgi-modal-head">New partition</h3>
+		<!-- Partition table selector — shown only when disk has no partitions yet -->
+		<div id="pnpTableRow" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px 10px;margin-bottom:10px">
+			<p id="pnpTableMsg" style="margin:0 0 6px;font-size:.9em">⚠️ This disk has no partition table yet. Choose a type before creating the first partition.</p>
+			<label id="i18nPnpTableLabel" style="font-weight:600">Partition table type</label>
+			<select id="pnpTableType" style="margin-top:4px">
+				<option value="gpt" selected>GPT – GUID Partition Table (recommended for &gt;2 TB, UEFI)</option>
+				<option value="msdos">msdos – MBR (legacy, max 4 primary, up to 2 TB)</option>
+				<option value="bsd">bsd – BSD disklabel</option>
+				<option value="loop">loop – raw partition</option>
+				<option value="atari">atari</option>
+				<option value="dvh">dvh – SGI/IRIX</option>
+				<option value="mac">mac – Apple partition map</option>
+				<option value="sun">sun – Solaris</option>
+			</select>
+		</div>
+		<!-- Validation warning -->
+		<div id="pnpWarnRow" style="display:none;background:#f8d7da;border:1px solid #f5c2c7;border-radius:4px;padding:6px 10px;margin-bottom:8px;font-size:.9em" id="pnpWarnRow"></div>
 		<div class="pcgi-inline-form" style="margin-top:8px;grid-template-columns:1fr 1.6em 1fr">
 			<div>
 				<label id="i18nPnpStartLabel">New start sector</label>
@@ -4524,7 +4620,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				<label id="i18nPnpEndHLabel">New end size</label>
 				<input id="pnpEndHuman" type="text" placeholder="e.g. 488 MiB">
 			</div>
-			<div>
+			<div id="pnpRoleRow">
 				<label id="i18nPnpRoleLabel">Role</label>
 				<select id="pnpRole">
 					<option value="primary">primary</option>
@@ -4533,7 +4629,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				</select>
 			</div>
 			<div></div><!-- spacer -->
-			<div>
+			<div id="pnpFsHintRow">
 				<label id="i18nPnpFsHintLabel">Filesystem</label>
 				<select id="pnpFsHint">
 					<option value="">(none)</option>
@@ -5692,6 +5788,9 @@ window.paceOptions = {
 			btnCancel: 'Cancel',
 			btnCreatePartition: 'Create partition',
 			btnClose: 'Close',
+			warnNoExtended: '\u26a0 No extended partition exists yet. Create one first (role: extended), then add logical partitions inside it.',
+			warnPrimaryInExtended: '\u26a0 Cannot create a primary partition inside an extended partition. Use role \u201clogical\u201d instead.',
+			pnpTableMsgText: '\u26a0\ufe0f This disk has no partition table yet. Choose a type before creating the first partition.',
 			btnValidateQueue: 'Validate and add',
 			tDone: 'Done',
 			tError: 'Error',
@@ -5793,6 +5892,9 @@ window.paceOptions = {
 			btnCancel: 'Annulla',
 			btnCreatePartition: 'Crea partizione',
 			btnClose: 'Chiudi',
+			warnNoExtended: '\u26a0 Nessuna partizione estesa presente. Creane prima una (ruolo: extended), poi aggiungi partizioni logiche al suo interno.',
+			warnPrimaryInExtended: '\u26a0 Non \u00e8 possibile creare una partizione primaria all\u2019interno di una partizione estesa. Usa il ruolo \u201clogical\u201d.',
+			pnpTableMsgText: '\u26a0\ufe0f Il disco non ha ancora una tabella delle partizioni. Scegli il tipo prima di creare la prima partizione.',
 			btnValidateQueue: 'Valida e aggiungi',
 			tDone: 'Fatto',
 			tError: 'Errore',
@@ -5894,6 +5996,9 @@ window.paceOptions = {
 			btnCancel: 'Abbrechen',
 			btnCreatePartition: 'Partition erstellen',
 			btnClose: 'Schliessen',
+			warnNoExtended: '\u26a0 Keine erweiterte Partition vorhanden. Zuerst eine anlegen (Rolle: extended), dann logische Partitionen darin erstellen.',
+			warnPrimaryInExtended: '\u26a0 Innerhalb einer erweiterten Partition kann keine primaere Partition erstellt werden. Rolle \u201elogical\u201c verwenden.',
+			pnpTableMsgText: '\u26a0\ufe0f Diese Disk hat noch keine Partitionstabelle. Bitte zuerst einen Typ auswaehlen.',
 			btnValidateQueue: 'Bestaetigen und hinzufuegen',
 			tDone: 'Fertig',
 			tError: 'Fehler',
@@ -7666,7 +7771,27 @@ window.paceOptions = {
 				base += '\nNEW_PARTNUM="$(parted -s -m ' + v(params.device) + ' unit s print | awk -F: \'/^[0-9]+:/{n=$1} END{print n}\')"';
 				base += '\nparted -s ' + v(params.device) + ' name "$NEW_PARTNUM" ' + v(params.part_name);
 			}
-			return base + '\npartprobe ' + v(params.device);
+			base += '\npartprobe ' + v(params.device);
+			if (v(params.create_fs) === '1' && fsHint) {
+				var lbl = v(params.part_label || '');
+				var lblOpt = lbl ? (' -L ' + lbl) : '';
+				var ext = /^ext[234]$/.test(fsHint);
+				var fat = /^fat(16|32)$/.test(fsHint);
+				var exfat = fsHint === 'exfat';
+				var ntfs = fsHint === 'ntfs';
+				var f2fs = fsHint === 'f2fs';
+				var partDev = v(params.device) + '${NEW_PARTNUM:-N}';
+				if (ext) base += '\nmke2fs -v -F -t ' + fsHint + (lbl ? ' -L ' + lbl : '') + ' ' + partDev;
+				else if (fat) base += '\nmkfs.fat -v -F ' + fsHint.replace('fat','') + (lbl ? ' -n ' + lbl : '') + ' ' + partDev;
+				else if (exfat) base += '\nmkfs.exfat' + (lbl ? ' -n ' + lbl : '') + ' ' + partDev;
+				else if (ntfs) base += '\n# parted mkpart creates NTFS; optionally: mkntfs -Q -f' + (lbl ? ' -L ' + lbl : '') + ' ' + partDev;
+				else if (f2fs) base += '\nmkfs.f2fs' + (lbl ? ' -l ' + lbl : '') + ' ' + partDev;
+			}
+			if (v(params.mount_point)) {
+				base += '\nmkdir -p ' + v(params.mount_point);
+				base += '\nmount ' + v(params.device) + '${NEW_PARTNUM:-N} ' + v(params.mount_point);
+			}
+			return base;
 		}
 		if (action === 'delete_partition') {
 			return 'parted -s ' + v(params.device) + ' rm ' + v(params.partnum) + '\npartprobe ' + v(params.device);
@@ -9300,6 +9425,46 @@ actionsWrap.appendChild(btnRemove);
 			blockLayouts.push({ leftPx: blLeft, widthPx: blWidth, drawStart: blStart, drawEnd: blEnd, drawSize: blSize });
 		}
 
+		// Identify extended partition (if any) and inject its band behind partition blocks.
+		// The band is position:absolute with z-index:0; partition blocks sit on top.
+		var _mapContainer = document.getElementById('partitionMap');
+		for (var _ei = 0; _ei < dev.partitions.length; _ei++) {
+			var _ep = dev.partitions[_ei];
+			if (_ep.kind !== 'partition') continue;
+			var _epRole = String(_ep.role || (_ep.number >= 5 ? 'logical' : 'primary'));
+			if (_epRole !== 'extended') continue;
+			var _eLay = blockLayouts[_ei];
+			// Compute span: from leftmost logical partition to rightmost (may extend beyond visual block due to min-width clamping)
+			var _eBandLeft  = _eLay.leftPx;
+			var _eBandWidth = _eLay.widthPx;
+			// Extend to cover all logical partitions within this extended range
+			var _eStart = Number(_ep.start || 0), _eEnd = Number(_ep.end || 0);
+			for (var _li2 = 0; _li2 < dev.partitions.length; _li2++) {
+				var _lp = dev.partitions[_li2];
+				if (_lp.kind !== 'partition') continue;
+				var _lpNum = Number(_lp.number || 0);
+				if (_lpNum < 5) continue;
+				var _lpStart = Number(_lp.start || 0), _lpEnd = Number(_lp.end || 0);
+				if (_lpStart >= _eStart && _lpEnd <= _eEnd) {
+					var _lLay = blockLayouts[_li2];
+					var _lRight = _lLay.leftPx + _lLay.widthPx;
+					var _eRight = _eBandLeft + _eBandWidth;
+					if (_lLay.leftPx < _eBandLeft) _eBandLeft = _lLay.leftPx;
+					if (_lRight > _eRight) _eBandWidth = _lRight - _eBandLeft;
+				}
+			}
+			var band = document.createElement('div');
+			band.className = 'pcgi-extended-band';
+			band.style.position = 'absolute';
+			band.style.left  = _eBandLeft  + 'px';
+			band.style.width = _eBandWidth + 'px';
+			var bandLabel = document.createElement('span');
+			bandLabel.className = 'pcgi-extended-label';
+			bandLabel.textContent = 'extended';
+			band.appendChild(bandLabel);
+			map.appendChild(band);
+		}
+
 		for (var i = 0; i < dev.partitions.length; i++) {
 			(function (idx) {
 				var p = dev.partitions[idx];
@@ -9341,6 +9506,11 @@ actionsWrap.appendChild(btnRemove);
 				}
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
+				if (p.kind === 'partition') {
+					var _pRole = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
+					if (_pRole === 'extended') block.className += ' pcgi-extended';
+					else if (_pRole === 'logical') block.className += ' pcgi-logical';
+				}
 				block.style.left = leftPx + 'px';
 				block.style.width = widthPx + 'px';
 				// Only highlight the individually selected partition/free segment.
@@ -10268,28 +10438,123 @@ function showNewPartModal(dropStart, dropEnd) {
 	updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
 	updateHumanFieldFromSector('pnpEndSector',   'pnpEndHuman');
 
-	/* Pre-fill role/fs/name from main form (or sensible defaults) */
-	var roleEl = document.getElementById('pnpRole');
+	/* Gather device/partition context */
+	var devPath = state.selectedDevice || '';
+	var devObj  = devPath ? getPreviewDeviceByPath(devPath) : null;
+	var tableType = String((devObj && devObj.table) || '').toLowerCase();
+	var allParts  = (devObj && devObj.partitions) ? devObj.partitions.filter(function(q){return q.kind==='partition';}) : [];
+	var isFirstPartition = (allParts.length === 0);
+	var isGPT   = (tableType === 'gpt');
+	var isMBR   = (tableType === 'msdos');
+
+	/* Find existing extended partition on MBR */
+	var extPart = null;
+	if (isMBR) {
+		for (var _xi = 0; _xi < allParts.length; _xi++) {
+			var _xp = allParts[_xi];
+			var _xRole = String(_xp.role || (Number(_xp.number||0) >= 5 ? 'logical' : 'primary'));
+			if (_xRole === 'extended') { extPart = _xp; break; }
+		}
+	}
+
+	/* Is the drop range inside an existing extended partition? */
+	var insideExtended = false;
+	if (extPart) {
+		var _extStart = Number(extPart.start || 0);
+		var _extEnd   = Number(extPart.end   || 0);
+		if (Number(dropStart) >= _extStart && Number(dropEnd) <= _extEnd) insideExtended = true;
+	}
+
+	/* --- Role selector visibility --- */
+	var roleRow = document.getElementById('pnpRoleRow');
+	var roleEl  = document.getElementById('pnpRole');
+	if (isGPT) {
+		// GPT: only primary, hide role row entirely
+		if (roleRow) roleRow.style.display = 'none';
+		if (roleEl) { roleEl.innerHTML = '<option value="primary">primary</option>'; roleEl.value = 'primary'; }
+	} else if (isMBR) {
+		if (roleRow) roleRow.style.display = '';
+		if (roleEl) {
+			// Rebuild options based on context
+			var opts = '<option value="primary">primary</option>';
+			// Show "logical" only if extended exists or we're inside extended range
+			if (extPart || insideExtended) opts += '<option value="logical">logical</option>';
+			// Show "extended" only if no extended yet and not inside extended range
+			if (!extPart && !insideExtended) opts += '<option value="extended">extended</option>';
+			roleEl.innerHTML = opts;
+			// Auto-select: if inside extended → logical; else primary
+			roleEl.value = insideExtended ? 'logical' : 'primary';
+		}
+	} else {
+		// Unknown/other table → show all options
+		if (roleRow) roleRow.style.display = '';
+		if (roleEl) {
+			roleEl.innerHTML = '<option value="primary">primary</option><option value="logical">logical</option><option value="extended">extended</option>';
+			roleEl.value = (document.getElementById('newPartRole') || {}).value || 'primary';
+		}
+	}
+
+	/* Pre-fill fs/name from main form */
 	var fsEl   = document.getElementById('pnpFsHint');
 	var nameEl = document.getElementById('pnpPartName');
-	if (roleEl) roleEl.value  = (document.getElementById('newPartRole') || {}).value || 'primary';
 	if (fsEl)   fsEl.value    = (document.getElementById('newFsHint')   || {}).value || '';
 	if (nameEl) nameEl.value  = (document.getElementById('newPartName') || {}).value || '';
 
-	/* Show/hide filesystem-dependent fields */
-	function _pnpToggleFsFields() {
-		var fsVal = fsEl ? fsEl.value : '';
-		var show = fsVal !== '';
+	/* --- Partition table row visibility (first partition) --- */
+	var tableRow = document.getElementById('pnpTableRow');
+	var tableMsg = document.getElementById('pnpTableMsg');
+	var tableTypeEl = document.getElementById('pnpTableType');
+	var needsTable = isFirstPartition && (!tableType || tableType === 'unknown' || tableType === 'loop' || tableType === '');
+	if (tableRow) tableRow.style.display = needsTable ? '' : 'none';
+	if (needsTable && tableMsg) tableMsg.textContent = t('pnpTableMsgText') || '⚠️ This disk has no partition table yet. Choose a type before creating the first partition.';
+
+	/* --- Warning row --- */
+	var warnRow = document.getElementById('pnpWarnRow');
+	function _pnpSetWarn(msg) {
+		if (!warnRow) return;
+		if (msg) { warnRow.textContent = msg; warnRow.style.display = ''; }
+		else     { warnRow.textContent = ''; warnRow.style.display = 'none'; }
+	}
+	_pnpSetWarn('');
+
+	/* --- Filesystem field: disabled for extended, enabled otherwise --- */
+	var fsHintRow = document.getElementById('pnpFsHintRow');
+	function _pnpToggleFsAndRole() {
+		var roleVal = roleEl ? roleEl.value : 'primary';
+		var fsVal   = fsEl  ? fsEl.value   : '';
+		// Extended partition: no filesystem
+		if (roleVal === 'extended') {
+			if (fsEl) { fsEl.value = ''; fsEl.disabled = true; }
+			if (fsHintRow) fsHintRow.style.opacity = '0.4';
+		} else {
+			if (fsEl) { fsEl.disabled = false; }
+			if (fsHintRow) fsHintRow.style.opacity = '';
+		}
+		// Filesystem-dependent fields
+		fsVal = fsEl ? fsEl.value : '';
+		var show = (fsVal !== '' && roleVal !== 'extended');
 		var lblRow = document.getElementById('pnpFsLabelRow');
 		var mntRow = document.getElementById('pnpMountRow');
 		if (lblRow) lblRow.style.display = show ? '' : 'none';
 		if (mntRow) mntRow.style.display = show ? '' : 'none';
+		// Validate logical without extended
+		if (roleVal === 'logical' && !extPart && !insideExtended) {
+			_pnpSetWarn(t('warnNoExtended') || '⚠ No extended partition exists yet. Create an extended partition first, then add logical partitions inside it.');
+		} else if (roleVal === 'primary' && insideExtended) {
+			_pnpSetWarn(t('warnPrimaryInExtended') || '⚠ Cannot create a primary partition inside an extended partition. Use role "logical" instead.');
+		} else {
+			_pnpSetWarn('');
+		}
+	}
+	if (roleEl) {
+		roleEl.removeEventListener('change', _pnpToggleFsAndRole);
+		roleEl.addEventListener('change', _pnpToggleFsAndRole);
 	}
 	if (fsEl) {
-		fsEl.removeEventListener('change', _pnpToggleFsFields);
-		fsEl.addEventListener('change', _pnpToggleFsFields);
+		fsEl.removeEventListener('change', _pnpToggleFsAndRole);
+		fsEl.addEventListener('change', _pnpToggleFsAndRole);
 	}
-	_pnpToggleFsFields();
+	_pnpToggleFsAndRole();
 
 	/* Sync main form so queueCreatePartition* helpers can read from it */
 	document.getElementById('newStartSector').value = String(dropStart);
@@ -10305,7 +10570,7 @@ function showNewPartModal(dropStart, dropEnd) {
 		document.getElementById('newStartSector').value = document.getElementById('pnpStartSector').value.trim();
 		document.getElementById('newEndSector').value   = document.getElementById('pnpEndSector').value.trim();
 		document.getElementById('newPartRole').value    = document.getElementById('pnpRole').value;
-		document.getElementById('newFsHint').value      = document.getElementById('pnpFsHint').value;
+		document.getElementById('newFsHint').value      = (roleEl && roleEl.value === 'extended') ? '' : document.getElementById('pnpFsHint').value;
 		document.getElementById('newPartName').value    = document.getElementById('pnpPartName').value.trim();
 		var _pnpAlignEl = document.getElementById('pnpAlign');
 		var _mainAlignEl = document.getElementById('newPartAlign');
@@ -10313,6 +10578,8 @@ function showNewPartModal(dropStart, dropEnd) {
 		// Store extra pnp params on state for use by queueCreatePartition
 		state._pnpFsLabel   = (document.getElementById('pnpFsLabel')   || {value: ''}).value.trim();
 		state._pnpMountPoint = (document.getElementById('pnpMountPoint') || {value: ''}).value.trim();
+		// Store chosen table type if we need to create it first
+		state._pnpNeedsTable = needsTable ? (tableTypeEl ? tableTypeEl.value : 'gpt') : null;
 		refreshSectorHumanFields();
 	}
 
@@ -10325,7 +10592,22 @@ function showNewPartModal(dropStart, dropEnd) {
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
 	cancelBtn.onclick = cleanup;
-	fsBtn.onclick     = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedWithFs')); queueCreatePartition(); };
+	fsBtn.onclick = function () {
+		// Validate before accepting
+		var _role = roleEl ? roleEl.value : 'primary';
+		if (_role === 'logical' && !extPart && !insideExtended) {
+			showToast(t('warnNoExtended') || 'Create an extended partition first.', 'warn', 5000);
+			return;
+		}
+		if (_role === 'primary' && insideExtended) {
+			showToast(t('warnPrimaryInExtended') || 'Cannot create primary inside extended.', 'warn', 5000);
+			return;
+		}
+		cleanup();
+		syncMainFormFromModal();
+		updateMapStatus(t('tDropQueuedWithFs'));
+		queueCreatePartition();
+	};
 }
 
 // ── Convert partition table modal ──────────────────────────────────────────
@@ -11433,9 +11715,36 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var partName = document.getElementById('newPartName').value.trim();
 		var partLabel = (state._pnpFsLabel || '').trim();
 		var mountPoint = (state._pnpMountPoint || '').trim();
-		var params = { device: dev, start_sector: start, end_sector: end, part_role: role, fs_hint: fsHint, part_name: partName, create_fs: fsHint ? '1' : '0' };
+		var params = { device: dev, start_sector: start, end_sector: end, part_role: role, fs_hint: role === 'extended' ? '' : fsHint, part_name: partName, create_fs: (fsHint && role !== 'extended') ? '1' : '0' };
 		if (partLabel) params.part_label = partLabel;
 		if (mountPoint) params.mount_point = mountPoint;
+		// If the disk had no partition table, prepend a convert_label op
+		if (state._pnpNeedsTable) {
+			var tableParams = { device: dev, table_type: state._pnpNeedsTable };
+			var tableLabel = 'Create ' + state._pnpNeedsTable.toUpperCase() + ' partition table on ' + dev;
+			// Recalculate lastUsable using the chosen table type (GPT needs 33 sector tail)
+			if (state._pnpNeedsTable === 'gpt') {
+				var _gptTail = 33;
+				var _gptLast = _totalSec > (_gptTail + 1) ? (_totalSec - 1 - _gptTail) : (_totalSec > 0 ? _totalSec - 1 : 0);
+				if (_gptLast > 0 && /^\d+$/.test(end) && parseInt(end, 10) > _gptLast) {
+					end = String(_gptLast);
+					params.end_sector = end;
+				}
+			}
+			var _savedTableType = state._pnpNeedsTable;
+			state._pnpNeedsTable = null;
+			// Show preview modal for the table creation; on confirm, also queue the partition
+			showCommandPreviewModal('convert_label', tableParams, tableLabel, t('confirmCreate'), t('confirmCreateMsg'))
+				.then(function (tablePreview) {
+					if (tablePreview === null) return;
+					queueOp('convert_label', tableParams, tableLabel, tablePreview);
+					// Queue the partition creation silently after confirming the table
+					var partPreview = buildCommandPreview('create_partition', params);
+					queueOp('create_partition', params, 'Create partition on ' + dev + ' [' + start + 's..' + end + 's]', partPreview);
+					showToast(t('tQueued') + ' ×2 (' + _savedTableType.toUpperCase() + ' table + partition)', 'info', 6000);
+				});
+			return;
+		}
 		queueOpWithConfirm(
 			'create_partition',
 			params,
