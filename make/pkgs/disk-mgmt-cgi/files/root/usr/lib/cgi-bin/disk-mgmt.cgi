@@ -1107,7 +1107,7 @@ mkfs.exfat ${_device}<new_partnum>" ;;
 						fi
 						# shellcheck disable=SC2086
 						exec_cmd_c "mke2fs create $_fs_hint on $_new_part_dev" \
-							"$CMD_MKE2FS -v -F -t $_fs_hint ${_lbl_opt}$_new_part_dev" \
+							"$CMD_MKE2FS -v -F -t $_fs_hint ${_lbl_opt:+$_lbl_opt }$_new_part_dev" \
 							"$CMD_MKE2FS" -v -F -t "$_fs_hint" ${_lbl_opt:+$_lbl_opt} "$_new_part_dev"
 						_out="$_out\n$EXEC_OUT"
 						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkfs.$_fs_hint failed (rc=$EXEC_RC)"
@@ -4265,6 +4265,16 @@ cat <<'EOF'
 .pcgi-ansi-log .ansi-cyan      { color: #22d3ee }
 .pcgi-ansi-log .ansi-gray      { color: #9ca3af }
 .pcgi-ansi-log .ansi-dim       { opacity: 0.7 }
+.pcgi-log-fullscreen {
+	position: fixed !important;
+	inset: 0 !important;
+	max-height: none !important;
+	height: 100% !important;
+	border-radius: 0 !important;
+	z-index: 9999;
+	font-size: 12px !important;
+}
+.pcgi-log-fsbody { overflow: hidden; }
 .pcgi-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -4595,6 +4605,10 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<div style="margin-top:6px">
 			<button type="button" id="fsSetupAddPartBtn" style="font-size:.85em">+ Add partition</button>
 		</div>
+		<!-- Live disk layout preview -->
+		<div style="margin:8px 0 2px;font-size:.8em;color:#666">Disk layout preview:</div>
+		<div id="fsSetupPreviewBar" style="display:flex;height:24px;border-radius:3px;overflow:hidden;border:1px solid #ccc;margin-bottom:4px"></div>
+		<div id="fsSetupPreviewLegend" style="display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.78em;margin-bottom:8px"></div>
 		<div class="pcgi-modal-actions" style="margin-top:12px">
 			<button type="button" id="pcgiFritzSetupCancelBtn">Cancel</button>
 			<button type="button" id="pcgiFritzSetupRunBtn" style="background:#28a745;color:#fff">Run setup</button>
@@ -5355,7 +5369,8 @@ cat <<'EOF'
 	<button type="button" onclick="clearQueue()">Clear queue</button>
 </div>
 <div style="position:relative">
-	<div style="position:absolute;top:4px;right:18px;z-index:10;display:flex;gap:3px;opacity:0.75">
+	<div id="cmdLogBtnBar" style="position:absolute;top:4px;right:18px;z-index:10;display:flex;gap:3px;opacity:0.75">
+		<button type="button" onclick="toggleLogFullscreen()" id="fsLogBtn" title="Fullscreen" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x26F6;</button>
 		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2398;</button>
 		<button type="button" onclick="clearLogOutput()" id="clearLogBtn" title="Clear log" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2715;</button>
 	</div>
@@ -6956,9 +6971,50 @@ window.paceOptions = {
 		var el = document.getElementById('cmdOutput');
 		if (el) el.innerHTML = '';
 		// hide buttons when log is cleared
-		var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn');
+		var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn'), fs = document.getElementById('fsLogBtn');
 		if (cb) cb.style.display = 'none';
 		if (cl) cl.style.display = 'none';
+		if (fs) fs.style.display = 'none';
+		// exit fullscreen if active
+		if (el && el.classList.contains('pcgi-log-fullscreen')) {
+			el.classList.remove('pcgi-log-fullscreen');
+			document.body.classList.remove('pcgi-log-fsbody');
+			if (fs) fs.title = 'Fullscreen';
+			var bar = document.getElementById('cmdLogBtnBar');
+			if (bar) { bar.style.position = 'absolute'; bar.style.zIndex = '10'; }
+			if (window._fsLogEscHandler) {
+				document.removeEventListener('keydown', window._fsLogEscHandler);
+				window._fsLogEscHandler = null;
+			}
+		}
+	}
+
+	function toggleLogFullscreen() {
+		var el = document.getElementById('cmdOutput');
+		var btn = document.getElementById('fsLogBtn');
+		var bar = document.getElementById('cmdLogBtnBar');
+		if (!el) return;
+		var isFs = el.classList.toggle('pcgi-log-fullscreen');
+		document.body.classList.toggle('pcgi-log-fsbody', isFs);
+		if (btn) btn.title = isFs ? 'Exit fullscreen' : 'Fullscreen';
+		if (bar) {
+			bar.style.position = isFs ? 'fixed' : 'absolute';
+			bar.style.zIndex = isFs ? '10000' : '10';
+		}
+		if (isFs) {
+			el.scrollTop = el.scrollHeight;
+			if (!window._fsLogEscHandler) {
+				window._fsLogEscHandler = function(e) {
+					if (e.key === 'Escape') toggleLogFullscreen();
+				};
+				document.addEventListener('keydown', window._fsLogEscHandler);
+			}
+		} else {
+			if (window._fsLogEscHandler) {
+				document.removeEventListener('keydown', window._fsLogEscHandler);
+				window._fsLogEscHandler = null;
+			}
+		}
 	}
 
 	function copyLogToClipboard() {
@@ -6987,16 +7043,17 @@ window.paceOptions = {
 		}
 	}
 
-	// Show copy/clear log buttons as soon as the log has content
+	// Show copy/clear/fullscreen log buttons as soon as the log has content
 	(function () {
 		var _logEl = document.getElementById('cmdOutput');
 		if (!_logEl || typeof MutationObserver === 'undefined') return;
 		var _obs = new MutationObserver(function () {
 			var hasContent = !!(_logEl.textContent || _logEl.innerText || '').trim();
 			var d = hasContent ? '' : 'none';
-			var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn');
+			var cb = document.getElementById('copyLogBtn'), cl = document.getElementById('clearLogBtn'), fs = document.getElementById('fsLogBtn');
 			if (cb) cb.style.display = d;
 			if (cl) cl.style.display = d;
+			if (fs) fs.style.display = d;
 		});
 		_obs.observe(_logEl, { childList: true, subtree: true, characterData: true });
 	}());
@@ -10231,7 +10288,7 @@ function showFritzSetupModal(diskTarget) {
 		delBtn.type = 'button';
 		delBtn.textContent = '×';
 		delBtn.style.cssText = 'padding:2px 6px;font-size:1em;cursor:pointer;background:#dc3545;color:#fff;border:none;border-radius:3px;';
-		delBtn.onclick = function() { tr.parentNode && tr.parentNode.removeChild(tr); };
+		delBtn.onclick = function() { tr.parentNode && tr.parentNode.removeChild(tr); drawSetupPreview(); };
 
 		tr.appendChild(cell(chk, 'text-align:center'));
 		tr.appendChild(cell(nameInp));
@@ -10267,7 +10324,9 @@ function showFritzSetupModal(diskTarget) {
 			if (_existing[r.name] || _existing[r.mount]) _clashing.push(r.name);
 		});
 		if (_clashing.length) {
-			warnEl.textContent = '⚠ Name(s) already present on another disk: ' + _clashing.join(', ') + '. Consider renaming (e.g. add _new suffix).';
+			warnEl.innerHTML = '⚠ Name(s) already present on another disk: <strong>' + _clashing.join(', ') + '</strong>.<br>' +
+				'Consider renaming both the partition name and the filesystem label (e.g. add a <code>_new</code> suffix) ' +
+				'to avoid conflicts with existing mount points.';
 			warnEl.style.display = '';
 		} else {
 			warnEl.style.display = 'none';
@@ -10276,10 +10335,48 @@ function showFritzSetupModal(diskTarget) {
 
 	if (addBtn) addBtn.onclick = function() {
 		if (tbody) tbody.appendChild(buildRow({ enabled: true, name: '', fs: 'ext4', sizeSec: 0, mount: '', desc: '' }));
+		drawSetupPreview();
 	};
 
 	modal.style.display = 'flex';
 	modal.setAttribute('aria-hidden', 'false');
+
+	// Live preview bar: shows proportional disk layout from current rows
+	var _FS_COLORS = { ext4:'#4caf50', ext3:'#8bc34a', ext2:'#cddc39', ntfs:'#2196f3', fat32:'#ff9800', fat16:'#ffb74d', exfat:'#9c27b0', vfat:'#ce93d8' };
+	function drawSetupPreview() {
+		var previewEl  = document.getElementById('fsSetupPreviewBar');
+		var legendEl   = document.getElementById('fsSetupPreviewLegend');
+		if (!previewEl) return;
+		var ALIGNN2 = Math.max(1, Math.ceil(1048576 / lss));
+		var rows2 = collectRows().filter(function(r) { return r.enabled && r.name; });
+		var usedSec = 0;
+		rows2.forEach(function(r) { usedSec += Math.max(ALIGNN2, r.sizeSec); });
+		var totalDisplay = totalSec > 0 ? totalSec : usedSec;
+		if (totalDisplay <= 0) { previewEl.innerHTML = ''; if (legendEl) legendEl.innerHTML = ''; return; }
+		var html = '', legendHtml = '';
+		rows2.forEach(function(r, i) {
+			var pct = Math.max(1, Math.round(Math.max(ALIGNN2, r.sizeSec) / totalDisplay * 1000) / 10);
+			var col = _FS_COLORS[r.fs] || '#607d8b';
+			var tip = r.name + ' (' + r.fs + ') ' + humanBytes(Math.max(ALIGNN2, r.sizeSec) * lss);
+			html += '<div style="width:' + pct + '%;background:' + col + ';display:flex;align-items:center;justify-content:center;overflow:hidden;color:#fff;font-size:10px;font-weight:600;white-space:nowrap;min-width:4px" title="' + tip + '">' + (pct > 5 ? r.name : '') + '</div>';
+			legendHtml += '<span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:10px;height:10px;background:' + col + ';border-radius:2px"></span>' + r.name + ' (' + humanBytes(Math.max(ALIGNN2, r.sizeSec) * lss) + ')</span>';
+		});
+		if (totalSec > 0 && usedSec < totalSec) {
+			var freePct = Math.max(1, Math.round((totalSec - usedSec) / totalSec * 1000) / 10);
+			html += '<div style="flex:1;background:#e0e0e0;min-width:4px" title="Unallocated ' + humanBytes((totalSec - usedSec) * lss) + '"></div>';
+			legendHtml += '<span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:10px;height:10px;background:#e0e0e0;border-radius:2px"></span>Free (' + humanBytes((totalSec - usedSec) * lss) + ')</span>';
+		}
+		previewEl.innerHTML = html;
+		if (legendEl) legendEl.innerHTML = legendHtml;
+	}
+
+	// Redraw preview on any size/name/fs/enabled change in the table
+	if (tbody) {
+		tbody.addEventListener('change', drawSetupPreview);
+		tbody.addEventListener('input', drawSetupPreview);
+	}
+
+	drawSetupPreview();
 
 	function collectRows() {
 		var rows = [];
@@ -10296,7 +10393,7 @@ function showFritzSetupModal(diskTarget) {
 				enabled: chkEl  ? chkEl.checked : true,
 				name:    nameEl ? nameEl.value.trim() : '',
 				fs:      fsEl   ? fsEl.value : 'ext4',
-				sizeSec: sizeEl ? (parseInt(sizeEl.getAttribute('data-sectors'), 10) || Math.floor(parseHumanBytes(sizeEl.value) / lss)) : 0,
+				sizeSec: sizeEl ? (sizeEl.value.trim() ? Math.floor(parseHumanBytes(sizeEl.value) / lss) || parseInt(sizeEl.getAttribute('data-sectors'), 10) || 0 : parseInt(sizeEl.getAttribute('data-sectors'), 10) || 0) : 0,
 				mount:   mntEl  ? mntEl.value.trim() : ''
 			});
 		}
@@ -10344,6 +10441,18 @@ function showFritzSetupModal(diskTarget) {
 					_existParts.push(_pp);
 			}
 			_existParts.sort(function(a, b) { return Number(b.number || 0) - Number(a.number || 0); });
+			// First unmount any mounted partitions (in reverse order too)
+			for (var _pu = 0; _pu < _existParts.length; _pu++) {
+				var _pup = _existParts[_pu];
+				var _pumpInfo = partitionMountInfo(_pup, devPath);
+				if (_pumpInfo.isMounted && _pumpInfo.partitionPath) {
+					ops.push({
+						action: 'unmount_partition',
+						partition: _pumpInfo.partitionPath,
+						label: 'Unmount ' + _pumpInfo.partitionPath
+					});
+				}
+			}
 			for (var _pi2 = 0; _pi2 < _existParts.length; _pi2++) {
 				ops.push({
 					action: 'delete_partition',
@@ -10359,6 +10468,11 @@ function showFritzSetupModal(diskTarget) {
 		else if (alignSel === '4096') ALIGNN = 4096;
 		else if (alignSel === 'no') ALIGNN = 1;
 
+		// Last usable sector: GPT reserves 33 sectors at tail, MBR has no reserved tail.
+		var _lastUsable = totalSec > 0
+			? (tableType === 'gpt' ? totalSec - 1 - 33 : totalSec - 1)
+			: 0;
+
 		// Partition numbers start at 1 after a fresh table.
 		// Helper: compute the block device node for partition number N.
 		function _fritzPartPath(dev, n) {
@@ -10369,8 +10483,20 @@ function showFritzSetupModal(diskTarget) {
 		var curSec = ALIGNN;
 		for (var ri = 0; ri < rows.length; ri++) {
 			var r = rows[ri];
+			// Skip partitions that start beyond the last usable sector (disk full)
+			if (_lastUsable > 0 && curSec > _lastUsable) {
+				showToast('⚠ Partition "' + r.name + '" does not fit on disk (out of space). Skipped.', 'warn', 8000);
+				_partIdx++;
+				continue;
+			}
 			var endSec = curSec + Math.max(ALIGNN, r.sizeSec) - 1;
 			endSec = Math.floor((endSec + 1) / ALIGNN) * ALIGNN - 1;
+			// Clamp to last usable sector — critical for the last partition and
+			// avoids "location outside device" errors from parted.
+			if (_lastUsable > 0 && endSec > _lastUsable) {
+				endSec = Math.floor((_lastUsable + 1) / ALIGNN) * ALIGNN - 1;
+				if (endSec > _lastUsable) endSec = _lastUsable;
+			}
 			ops.push({
 				action: 'create_partition',
 				device: devPath,
@@ -12297,8 +12423,10 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.runFsck = runFsck;
 	window.clearQueue = clearQueue;
 	window.applyQueue = applyQueue;
+	window.showFieldHelp = showFieldHelp;
 	window.clearLogOutput = clearLogOutput;
 	window.copyLogToClipboard = copyLogToClipboard;
+	window.toggleLogFullscreen = toggleLogFullscreen;
 	window.runDiagnostics = runDiagnostics;
 	window.analyzeTools = analyzeTools;
 	window.loadPartitionMetadata = loadPartitionMetadata;
