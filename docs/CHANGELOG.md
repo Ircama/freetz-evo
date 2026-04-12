@@ -71,6 +71,7 @@ Latest changes
     * autoconf 2.73
     * ca-bundle 2026-03-19
     * cmake 4.3.1
+    * dos2unix 7.5.5
     * file 5.47
     * meson 1.10.2
     * openssl 3.5.6
@@ -101,6 +102,7 @@ Latest changes
     * OpenVPN 2.4.12/2.5.11/2.6.19/2.7.1
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
+    * Stunnel 5.78
     * Tinyproxy 1.11.3
     * Tor 0.4.8.23
     * UnRAR 6.1.7/7.2.5
@@ -115,7 +117,7 @@ Latest changes
     * GLib2 2.32.4/2.88.0
     * harfbuzz 14.1.0
     * libmaxminddb 1.13.3
-    * libpng 1.6.56
+    * libpng 1.6.57
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.2
     * MbedTLS 2.7.19/2.28.10/3.6.6
