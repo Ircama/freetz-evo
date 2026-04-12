@@ -4411,10 +4411,12 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<input id="newPartName" type="text" placeholder="optional">
 	</div>
 	<div>
-		<label id="i18nAlignLabel">Align to 2048 sectors</label>
+		<label id="i18nAlignLabel">Alignment <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('map-align')" title="Help">?</button></label>
 		<select id="newPartAlign">
-			<option value="yes" selected>yes (recommended)</option>
-			<option value="no">no</option>
+			<option value="optimal" selected>optimal (1 MiB)</option>
+			<option value="2048">2048 sectors (1 MiB)</option>
+			<option value="4096">4096 sectors (2 MiB)</option>
+			<option value="no">no alignment</option>
 		</select>
 	</div>
 </div>
@@ -4542,6 +4544,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	<div class="pcgi-modal-box" style="max-width:680px">
 		<h3 class="pcgi-modal-head" id="pcgiFritzSetupTitle">Freetz EVO disk setup</h3>
 		<p id="pcgiFritzSetupDisk" style="margin:2px 0 6px;color:#888;font-size:.9em"></p>
+		<p id="pcgiFritzSetupWarn" style="display:none;background:#fff3cd;border:1px solid #ffc107;padding:6px 10px;border-radius:4px;margin:0 0 8px;font-size:.85em"></p>
 		<p style="background:#fff3cd;border:1px solid #ffc107;padding:8px 10px;border-radius:4px;margin:0 0 10px;font-size:.9em">
 			⚠️ <strong>All existing partitions will be erased</strong> if "Delete existing partitions" is checked.
 		</p>
@@ -6578,7 +6581,7 @@ window.paceOptions = {
 		'mc-tgt-size':     { title: 'Target range size',         body: 'Auto-calculated size of the defined sector range (end − start + 1), shown in human-readable units. Read-only.' },
 		'mc-method':       { title: 'Clone method',              body: '<b>Smart (filesystem-aware)</b> – partclone copies only used filesystem blocks. Much faster for partially-filled partitions. Supports ext2/3/4, NTFS, FAT, exFAT.<br><br><b>Sector-by-sector (dd)</b> – copies every sector regardless of content. Slower but works with any filesystem or raw data.' },
 		'mc-verify':       { title: 'Verify after clone (-V)',   body: '<b>no</b> – skip verification. Faster but no integrity confirmation.<br><br><b>yes (partclone.chkimg)</b> – runs a bit-exact check after cloning. Recommended when the target will replace the source.' },
-		'mc-align':        { title: 'Alignment (-a)',            body: '<b>4096 (4K)</b> – aligns partition boundaries to 4096-byte boundaries. Required for SSDs, 4K-sector drives and UEFI systems.<br><br><b>512 (legacy)</b> – use for old MBR disks with 512-byte physical sectors.' },
+		'mc-align':        { title: 'Alignment (-a)',            body: '<b>4096 bytes (4K)</b> – aligns to 4096-byte boundaries. Use for SSDs, NVMe drives, modern 4K-native HDDs and UEFI/GPT setups.<br><br><b>512 bytes (legacy)</b> – only for old MBR disks with 512-byte physical sectors.<br><br><em>Tip:</em> modern USB3 flash drives, SD cards and NAS targets all benefit from at least 4096-byte alignment; misalignment causes a 2–4× write-amplification penalty on NAND storage.' },
 		'mc-unmount':      { title: 'Unmount before (-u)',       body: '<b>yes</b> – unmounts source and target before starting. Strongly recommended to prevent data corruption.<br><br><b>no</b> – skips unmount. Only safe if the partitions are not in use.' },
 		'mc-mount-after':  { title: 'Mount after (-o)',          body: '<b>no</b> – leave the target partition unmounted after the operation.<br><br><b>yes</b> – automatically mount the target partition when done. Fill in the mountpoint field that appears.' },
 		'mc-tgt-mount':    { title: 'Target mountpoint (-t)',    body: 'Filesystem path where the target partition will be mounted. Example: <code>/var/media/ftp/backup</code>.<br><br>The directory must exist. Used only when Mount after = yes.' },
@@ -6591,7 +6594,7 @@ window.paceOptions = {
 		'dm-tgt-dev':      { title: 'Target disk (-d)',          body: 'The destination disk. For logical clone: must fit all used data. For physical clone: must be at least as large as used sectors on source. Cannot be the same disk as source.' },
 		'dm-mode':         { title: 'Operation (-M)',            body: '<b>Clone (preserve source)</b> – copies everything to target, source untouched. Use for backups or migrating while keeping the original.<br><br><b>Move (wipe source)</b> – clones the disk then wipes all source partitions. Irreversible.' },
 		'dm-method':       { title: 'Copy method (-P / -c)',     body: '<b>Logical – smart</b> – partclone, only used blocks. Fastest. Supports ext2/3/4, NTFS, FAT, exFAT.<br><br><b>Logical – dd</b> – every sector of each partition. Works with any filesystem.<br><br><b>Physical</b> – raw dd of the whole disk including MBR/GPT. Target must be equal or larger in size.' },
-		'dm-align':        { title: 'Alignment (-a)',            body: '<b>4096 bytes</b> – aligned for modern SSDs and GPT/UEFI systems.<br><br><b>512 bytes</b> – legacy MBR disks with 512-byte physical sectors.' },
+		'dm-align':        { title: 'Alignment (-a)',            body: '<b>4096 bytes (4K)</b> – aligns every partition to a 4096-byte boundary on the target. Best for SSDs, NVMe drives, modern 4K-native HDDs, and GPT/UEFI targets.<br><br><b>512 bytes (legacy)</b> – only for old MBR disks with 512-byte physical sectors.<br><br><em>Tip:</em> even if the source uses 512-byte sectors, USB3 SSDs and SD cards use 4K internal pages — misaligned writes cross page boundaries and cut write speed significantly.' },
 		'dm-copy-mbr':     { title: 'Copy MBR/GPT header (-B)', body: '<b>yes</b> – copies the partition table header from source to target, preserving disk UUID and metadata.<br><br><b>no</b> – creates a fresh partition table on target. Use when sizes differ or you want a clean table.' },
 		'dm-wipe':         { title: 'Wipe target partitions first (-W)', body: '<b>yes</b> – deletes all existing partitions on target before starting. Ensures a clean state. Recommended if the target has leftover partitions.<br><br><b>no</b> – no wipe. Use only if the target is already empty.' },
 		'dm-verify':       { title: 'Verify each partition (-V)', body: '<b>no</b> – skip verification. Faster.<br><br><b>yes</b> – after cloning each partition, runs partclone.chkimg to confirm bit-perfect copy. Strongly recommended for Move mode.' },
@@ -6630,7 +6633,7 @@ window.paceOptions = {
 		'pnp-part-name': { title: 'Partition name (GPT only)', body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
 		'pnp-fs-label':  { title: 'Filesystem label',     body: 'Volume label embedded in the filesystem itself and shown by file managers and mount tools.<br><br>Limits: ext2/3/4 max 16 chars; FAT max 11 chars (uppercase); NTFS max 32 chars; exFAT max 15 chars.<br><br>Only used when creating the filesystem ("With filesystem" button). Leave blank for no label.' },
 		'pnp-mount':     { title: 'Mount point',          body: 'Directory where the new partition will be automatically mounted after creation.<br><br>On FritzBox, USB drives are normally under <code>/var/media/ftp/</code>. The directory will be created if it does not exist.<br><br>Leave blank to skip automatic mounting.' },
-		'pnp-align':     { title: 'Alignment',            body: '<b>optimal</b> – automatically computes 1 MiB / logical_sector_size alignment. Gives 2048 sectors for 512-byte drives, 256 sectors for 4K-native drives. Recommended for all modern SD cards, USB3 drives and SSDs.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB alignment, ideal for SD cards and USB3 drives with 512-byte sectors.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB alignment for high-end NVMe SSDs whose erase blocks prefer 2 MiB boundaries.<br><br><b>no alignment</b> – use only if you need to match legacy geometries or are recovering partitions.' },
+		'pnp-align':     { title: 'Alignment',            body: '<b>optimal (1 MiB)</b> – automatically computes 1 MiB ÷ logical_sector_size: 2048 sectors on 512-byte drives, 256 sectors on 4K-native drives. Recommended for all modern media.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Ideal for SD cards (SD Association spec), USB2/USB3 flash drives, spinning HDDs, and legacy MSDOS/MBR disks. Compatible with virtually all operating systems.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB boundary for high-end NVMe SSDs and USB3 Gen2 SSDs with 2 MiB erase blocks.<br><br><b>no alignment</b> – no adjustment. Use only to match legacy disk geometries or to recover partitions. Avoid on flash/SSD storage as misaligned writes severely hurt write performance and longevity.<br><br><em>Recommendation by drive type:</em><br>• SD card / USB flash / spinning HDD → optimal or 2048 sectors<br>• USB3 SSD (SATA-in-USB) → optimal<br>• NVMe (via USB3 or internal) → optimal or 4096 sectors<br>• Legacy MSDOS/MBR (CHS geometry) → 2048 sectors' },
 		/* Partclone export modal */
 		'pi-exp-source':     { title: 'Source partition/disk',     body: 'The block device to export, e.g. <code>/dev/sda1</code> for a partition or <code>/dev/sda</code> for a whole disk.<br><br>Auto-filled from the context menu selection.' },
 		'pi-exp-output':     { title: 'Output image file (-o)',     body: 'Full path for the output image file, e.g. <code>/var/media/ftp/USB_DISK/backup.img</code>.<br><br>If compression is selected the appropriate extension is appended automatically by the script (.gz, .bz2, .lz4, .zst).<br><br>Ensure the destination has sufficient free space (can be up to the partition size for non-sparse filesystems).' },
@@ -6677,9 +6680,11 @@ window.paceOptions = {
 		'dr-extra-opts':     { title: 'Extra ddrescue options (-x)',    body: 'Additional flags passed to <code>ddrescue</code>.<br><br>Examples:<br><code>-d</code> – use direct disc access (bypasses cache, slower but more reliable)<br><code>-r -1</code> – infinite retries<br><code>-S</code> – scrape mode (slower but recovers more from bad sectors)<br><code>-R</code> – reverse reading direction<br><br>Consult <code>man ddrescue</code> for the full list.' },
 		/* Freetz EVO setup modal */
 		'fritz-table-type':  { title: 'Partition table',   body: '<b>GPT</b> – GUID Partition Table. Supports disks larger than 2 TiB, up to 128 partitions, and is required for UEFI boot. Recommended for all modern disks.<br><br><b>msdos / MBR</b> – Master Boot Record. Legacy format with max 4 primary partitions and 2 TiB disk limit. Use only for old BIOS-boot setups or very small disks.' },
-		'fritz-align':       { title: 'Alignment',         body: '<b>optimal (1 MiB)</b> – auto-computes 1 MiB alignment (2048 × 512-byte sectors). Best for SD cards, USB3 drives and SSDs. Recommended.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Equivalent to optimal on 512-byte drives.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB alignment for high-end NVMe SSDs.<br><br><b>no alignment</b> – use only for legacy recovery or debugging.' },
+		'fritz-align':       { title: 'Alignment',         body: '<b>optimal (1 MiB)</b> – auto-computes 1 MiB alignment (2048 × 512-byte sectors, 256 × 4K-sector drives). Best for SD cards, USB3 drives and SSDs. Recommended.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Ideal for SD cards (SD Association spec), USB2/USB3 flash drives, spinning HDDs, and legacy MSDOS/MBR disks.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB boundary for NVMe SSDs and USB3 Gen2 SSD enclosures with 2 MiB erase blocks.<br><br><b>no alignment</b> – no adjustment. Only for legacy recovery. Avoid on flash/SSD storage.<br><br><em>Recommendation by drive type:</em><br>• SD card / USB flash / HDD → optimal or 2048 sectors<br>• USB3 SSD enclosure → optimal<br>• NVMe (via USB3 or internal) → optimal or 4096 sectors<br>• Old MSDOS/MBR with CHS geometry → 2048 sectors' },
 		'fritz-delete-all':  { title: 'Delete existing partitions first', body: 'If checked, all existing partitions on the disk are removed before creating the new layout.<br><br>Each partition is deleted in reverse order (highest number first) via individual <em>delete_partition</em> operations. A fresh partition table of the chosen type is then written.<br><br>⚠ All data on the disk will be lost. Uncheck if you want to add partitions to an already-wiped disk.' },
-		'fritz-mount-all':   { title: 'Mount all partitions after creation', body: 'If checked, each enabled partition with a non-empty mount point is automatically mounted after it is created and formatted.<br><br>The mount point directory is created if it does not already exist.<br><br>Uncheck if you want to mount partitions manually or do not need them mounted immediately.' }
+		'fritz-mount-all':   { title: 'Mount all partitions after creation', body: 'If checked, each enabled partition with a non-empty mount point is automatically mounted after it is created and formatted.<br><br>The mount point directory is created if it does not already exist.<br><br>Uncheck if you want to mount partitions manually or do not need them mounted immediately.' },
+		/* Device map alignment */
+		'map-align':         { title: 'Alignment',         body: '<b>optimal (1 MiB)</b> – auto-computes partition boundary alignment as 1 MiB ÷ logical_sector_size: 2048 sectors on 512-byte drives, 256 sectors on 4K-native drives. The best default for all modern storage.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. The SD Association specification and virtually every OS tool (fdisk, parted, gdisk) default to this. Ideal for SD cards, USB2/USB3 flash drives, spinning HDDs and legacy MBR disks.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB boundary for NVMe SSDs (both internal and USB3 enclosures) and enterprise SSDs with 2 MiB physical erase blocks. Overkill for SD/USB flash but harmless.<br><br><b>no alignment</b> – disables boundary rounding entirely. Use only to recover or precisely reproduce legacy partition layouts. Never use on flash-based or NAND storage: misaligned writes cause read-modify-write cycles that reduce write speed by 2–4× and shorten device lifetime.<br><br><em>Quick reference:</em><br>• SD card / USB2 flash → 2048 or optimal<br>• USB3 flash / USB3 HDD → optimal<br>• USB3 SSD enclosure (SATA drive) → optimal<br>• USB3 NVMe SSD → optimal or 4096<br>• Internal NVMe / PCIe SSD → optimal or 4096<br>• Old spinning HDD with MSDOS/MBR → 2048' }
 	};
 
 	function showFieldHelp(key) {
@@ -10158,12 +10163,12 @@ function showFritzSetupModal(diskTarget) {
 	if (diskEl) diskEl.textContent = 'Device: ' + (devPath || '?') +
 		(totalSec ? '  —  ' + humanBytes(totalSec * lss) : '');
 
-	// Default partitions: NTFS_Data ~30%, MediaServer ~70%, FRITZBOX 2 GiB
+	// Default partitions: NTFS_Data ~50%, MediaServer ~50%, FRITZBOX 2 GiB
 	var ALIGN = Math.max(1, Math.ceil(1048576 / lss));
 	var fritzSec = Math.ceil(2 * 1024 * 1024 * 1024 / lss / ALIGN) * ALIGN;
 	// Available after GPT head (2048s min) + GPT tail (33s)
 	var avail = Math.max(0, totalSec - 2048 - 33 - fritzSec);
-	var ntfsSec  = Math.floor(avail * 0.30 / ALIGN) * ALIGN;
+	var ntfsSec  = Math.floor(avail * 0.50 / ALIGN) * ALIGN;
 	var msSec    = Math.max(ALIGN, Math.floor((avail - ntfsSec) / ALIGN) * ALIGN);
 
 	function secToHuman(s) {
@@ -10241,6 +10246,33 @@ function showFritzSetupModal(diskTarget) {
 		tbody.innerHTML = '';
 		defaultRows.forEach(function(r) { tbody.appendChild(buildRow(r)); });
 	}
+
+	// Warn immediately if default partition names clash with already-mounted filesystems.
+	(function() {
+		var warnEl = document.getElementById('pcgiFritzSetupWarn');
+		if (!warnEl) return;
+		var _existing = {};
+		var _devs = state.devices || [];
+		for (var _di = 0; _di < _devs.length; _di++) {
+			var _dparts = _devs[_di].partitions || [];
+			for (var _dpi = 0; _dpi < _dparts.length; _dpi++) {
+				var _pn = (_dparts[_dpi].part_name || _dparts[_dpi].name || '').trim();
+				var _mp = (_dparts[_dpi].mountpoint || '').trim();
+				if (_pn) _existing[_pn] = true;
+				if (_mp && _mp !== '-') _existing[_mp] = true;
+			}
+		}
+		var _clashing = [];
+		defaultRows.forEach(function(r) {
+			if (_existing[r.name] || _existing[r.mount]) _clashing.push(r.name);
+		});
+		if (_clashing.length) {
+			warnEl.textContent = '⚠ Name(s) already present on another disk: ' + _clashing.join(', ') + '. Consider renaming (e.g. add _new suffix).';
+			warnEl.style.display = '';
+		} else {
+			warnEl.style.display = 'none';
+		}
+	})();
 
 	if (addBtn) addBtn.onclick = function() {
 		if (tbody) tbody.appendChild(buildRow({ enabled: true, name: '', fs: 'ext4', sizeSec: 0, mount: '', desc: '' }));
@@ -10327,6 +10359,13 @@ function showFritzSetupModal(diskTarget) {
 		else if (alignSel === '4096') ALIGNN = 4096;
 		else if (alignSel === 'no') ALIGNN = 1;
 
+		// Partition numbers start at 1 after a fresh table.
+		// Helper: compute the block device node for partition number N.
+		function _fritzPartPath(dev, n) {
+			return /\d$/.test(dev) ? dev + 'p' + n : dev + n;
+		}
+		var _partIdx = 1;
+
 		var curSec = ALIGNN;
 		for (var ri = 0; ri < rows.length; ri++) {
 			var r = rows[ri];
@@ -10345,14 +10384,16 @@ function showFritzSetupModal(diskTarget) {
 				label: 'Create ' + r.name + ' (' + r.fs + ') ' + curSec + 's..' + endSec + 's'
 			});
 			if (doMount && r.mount) {
+				var _partNode = _fritzPartPath(devPath, _partIdx);
 				ops.push({
 					action: 'mount_partition',
-					partition: devPath + '?',  // placeholder — will be resolved after creation
+					partition: _partNode,
 					mountpoint: r.mount,
 					fs_type: 'auto',
-					label: 'Mount ' + r.name + ' → ' + r.mount
+					label: 'Mount ' + r.name + ' (' + _partNode + ') → ' + r.mount
 				});
 			}
+			_partIdx++;
 			curSec = endSec + 2;  // small gap before alignment
 			curSec = Math.ceil(curSec / ALIGNN) * ALIGNN;
 		}

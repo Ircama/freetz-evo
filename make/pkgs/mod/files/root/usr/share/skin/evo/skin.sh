@@ -64,7 +64,7 @@ skin_body_begin() {
 <div id="world">
 <div id="header">
 <div id="header-inner">
-<h1><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo">Freetz EVO<span class="evo-brand">-EVO</span></a>&nbsp;<a id="about" href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span></h1>
+<h1><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo">Freetz EVO</a>&nbsp;<a id="about" href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span></h1>
 <div id="header-right">
 EOF
 if [ -n "$_CGI_HELP" ]; then
@@ -652,7 +652,7 @@ skin_login_form() {
 	cat << EOF
 <div class="evo-lgwrap">
 <div class="evo-lgcard">
-<div class="evo-lglogo">Freetz<span class="evo-brand">-EVO</span></div>
+<div class="evo-lglogo">Freetz-EVO</div>
 <div class="evo-lghost">$(hostname -s | html)</div>
 <label class="evo-lglabel">$(lang de:"Benutzername" en:"Username" it:"Utente" fr:"Utilisateur" es:"Usuario")</label>
 <input type="text" class="evo-lginput" value="$MOD_HTTPD_USER" readonly>
