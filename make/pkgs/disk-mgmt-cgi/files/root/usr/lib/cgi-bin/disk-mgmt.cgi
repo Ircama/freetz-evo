@@ -9208,23 +9208,35 @@ actionsWrap.appendChild(btnRemove);
 			];
 		} else {
 			var part = target;
-			items = [
-				{ id: 'select', label: 'Select partition' },
-				{ id: 'meta', label: 'Load metadata' },
-				{ id: 'delete', label: 'Delete partition' },
-				{ id: 'rename', label: 'Rename partition' },
-				{ id: 'flag', label: 'Set flag' },
-				{ id: 'mkfs', label: 'Create filesystem' },
-				{ id: 'mount', label: part.mountpoint ? 'Remount' : 'Mount' },
-				{ id: 'umount', label: 'Unmount' },
-				{ id: 'fsck_ro',    label: 'Filesystem check read-only' },
-				{ id: 'fsck_fix',   label: 'Filesystem check/repair' },
-				{ id: 'img_export', label: 'Export partition to image file' },
-				{ id: 'img_import', label: 'Restore partition from image file' },
-				{ id: 'net_send',   label: 'Send partition over network' },
-				{ id: 'net_recv',   label: 'Receive partition from network' },
-				{ id: 'ddrescue',   label: 'Clone with ddrescue (data recovery)' }
-			];
+			var _ctxRole = String(part.role || (Number(part.number || 0) >= 5 ? 'logical' : 'primary'));
+			if (_ctxRole === 'extended') {
+				items = [
+					{ id: 'select',      label: 'Select partition' },
+					{ id: 'meta',        label: 'Load metadata' },
+					{ id: 'new_logical', label: 'New logical partition inside…' },
+					{ id: 'delete',      label: 'Delete partition' },
+					{ id: 'rename',      label: 'Rename partition' },
+					{ id: 'flag',        label: 'Set flag' }
+				];
+			} else {
+				items = [
+					{ id: 'select', label: 'Select partition' },
+					{ id: 'meta', label: 'Load metadata' },
+					{ id: 'delete', label: 'Delete partition' },
+					{ id: 'rename', label: 'Rename partition' },
+					{ id: 'flag', label: 'Set flag' },
+					{ id: 'mkfs', label: 'Create filesystem' },
+					{ id: 'mount', label: part.mountpoint ? 'Remount' : 'Mount' },
+					{ id: 'umount', label: 'Unmount' },
+					{ id: 'fsck_ro',    label: 'Filesystem check read-only' },
+					{ id: 'fsck_fix',   label: 'Filesystem check/repair' },
+					{ id: 'img_export', label: 'Export partition to image file' },
+					{ id: 'img_import', label: 'Restore partition from image file' },
+					{ id: 'net_send',   label: 'Send partition over network' },
+					{ id: 'net_recv',   label: 'Receive partition from network' },
+					{ id: 'ddrescue',   label: 'Clone with ddrescue (data recovery)' }
+				];
+			}
 		}
 
 		for (var i = 0; i < items.length; i++) {
@@ -9295,6 +9307,11 @@ actionsWrap.appendChild(btnRemove);
 			return;
 		}
 		var part = target;
+		if (action === 'new_logical') {
+			// Open new-partition modal inside the extended partition's range
+			showNewPartModal(Number(part.start || 0) + 1, Number(part.end || 0) - 1);
+			return;
+		}
 		selectPartition(part);
 		if (action === 'select') return;
 		if (action === 'meta') { loadPartitionMetadata(); return; }
@@ -9462,6 +9479,24 @@ actionsWrap.appendChild(btnRemove);
 			bandLabel.className = 'pcgi-extended-label';
 			bandLabel.textContent = 'extended';
 			band.appendChild(bandLabel);
+			// Allow click/contextmenu on the band label strip (above logical partitions)
+			// to select/operate on the extended partition itself.
+			(function(_bandEp) {
+				band.onclick = function(ev) {
+					ev.preventDefault(); ev.stopPropagation();
+					hideContextMenu();
+					selectPartition(_bandEp);
+				};
+				band.oncontextmenu = function(ev) {
+					ev.preventDefault(); ev.stopPropagation();
+					showContextMenu(_bandEp, ev, 'partition');
+				};
+				band.onmouseenter = function(ev) {
+					showHoverTooltip(ev, buildPartitionTooltipHtml(_bandEp, logical, 0, 0));
+				};
+				band.onmousemove = moveHoverTooltip;
+				band.onmouseleave = hideHoverTooltip;
+			})(_ep);
 			map.appendChild(band);
 		}
 
@@ -9504,12 +9539,16 @@ actionsWrap.appendChild(btnRemove);
 						draggingThis = true;
 					}
 				}
+				// Extended partition: skip normal block rendering — the band pre-pass already drew it.
+				if (p.kind === 'partition') {
+					var _pRole = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
+					if (_pRole === 'extended') return;
+				}
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
 				if (p.kind === 'partition') {
-					var _pRole = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
-					if (_pRole === 'extended') block.className += ' pcgi-extended';
-					else if (_pRole === 'logical') block.className += ' pcgi-logical';
+					var _pRole2 = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
+					if (_pRole2 === 'logical') block.className += ' pcgi-logical';
 				}
 				block.style.left = leftPx + 'px';
 				block.style.width = widthPx + 'px';
@@ -10468,12 +10507,18 @@ function showNewPartModal(dropStart, dropEnd) {
 	/* --- Role selector visibility --- */
 	var roleRow = document.getElementById('pnpRoleRow');
 	var roleEl  = document.getElementById('pnpRole');
+	var _pnpRoleSpacerEl = roleRow ? roleRow.nextElementSibling : null; // spacer <div> after roleRow
+	var _pnpFsHintRowEl  = document.getElementById('pnpFsHintRow');
 	if (isGPT) {
-		// GPT: only primary, hide role row entirely
-		if (roleRow) roleRow.style.display = 'none';
+		// GPT: only primary, hide role row entirely; expand filesystem field to full width
+		if (roleRow)        roleRow.style.display      = 'none';
+		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = 'none';
+		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '1 / -1';
 		if (roleEl) { roleEl.innerHTML = '<option value="primary">primary</option>'; roleEl.value = 'primary'; }
 	} else if (isMBR) {
-		if (roleRow) roleRow.style.display = '';
+		if (roleRow)        roleRow.style.display      = '';
+		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = '';
+		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '';
 		if (roleEl) {
 			// Rebuild options based on context
 			var opts = '<option value="primary">primary</option>';
@@ -10486,8 +10531,10 @@ function showNewPartModal(dropStart, dropEnd) {
 			roleEl.value = insideExtended ? 'logical' : 'primary';
 		}
 	} else {
-		// Unknown/other table → show all options
-		if (roleRow) roleRow.style.display = '';
+		// Unknown/other table → show all options; restore layout from GPT overrides
+		if (roleRow)        roleRow.style.display      = '';
+		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = '';
+		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '';
 		if (roleEl) {
 			roleEl.innerHTML = '<option value="primary">primary</option><option value="logical">logical</option><option value="extended">extended</option>';
 			roleEl.value = (document.getElementById('newPartRole') || {}).value || 'primary';
@@ -10535,8 +10582,8 @@ function showNewPartModal(dropStart, dropEnd) {
 		var show = (fsVal !== '' && roleVal !== 'extended');
 		var lblRow = document.getElementById('pnpFsLabelRow');
 		var mntRow = document.getElementById('pnpMountRow');
-		if (lblRow) lblRow.style.display = show ? '' : 'none';
-		if (mntRow) mntRow.style.display = show ? '' : 'none';
+		if (lblRow) lblRow.style.display = show ? 'block' : 'none';
+		if (mntRow) mntRow.style.display = show ? 'block' : 'none';
 		// Validate logical without extended
 		if (roleVal === 'logical' && !extPart && !insideExtended) {
 			_pnpSetWarn(t('warnNoExtended') || '⚠ No extended partition exists yet. Create an extended partition first, then add logical partitions inside it.');
