@@ -23,11 +23,16 @@ ALIGN_BYTES=1048576 # -a  512 | 4096 | 1048576
 UMOUNT_BEFORE=0     # -u  flag: unmount before starting
 MOUNT_AFTER=0       # -o  flag: mount target when done
 PARTCLONE_EXTRA=""  # -x  extra options passed to partclone verbatim
+PARTCLONE_LOGFILE="/tmp/partclone.log"  # -L  logfile path for partclone (empty = disable)
+SKIP_WRITE_ERROR=0  # -W  1=pass --skip_write_error to partclone (continue on write errors)
 STEP_DELAY=1        # -w  seconds to wait between steps (0 = none)
 VERIFY_CLONE=0      # -V  flag: run partclone.chkimg verify after clone
 FORCE_FSTYPE=""     # -f  force filesystem type (skip auto-detection)
 DRY_RUN=0           # -r  flag: simulate only, no writes
 COMPARE_PART=""     # -Z  compare mode: compare SOURCE_PART with this partition (read-only)
+CLONE_USED_DD_FALLBACK=0  # set to 1 internally if smart clone fails and dd fallback succeeds
+FAT_FSCK_PASSES=2   # -F  number of pre-clone fsck passes for FAT (0 = skip)
+DD_FALLBACK=1       # -b  1=retry with partclone.dd if smart clone fails, 0=disable
 
 # ==============================================================================
 # HELPER FUNCTIONS (defined before usage() so usage can call hr)
@@ -40,9 +45,10 @@ die() { echo "❌  FATAL: $*" >&2; exit 1; }
 run() {
     # Executes a command, or in dry-run mode prints it and returns 0.
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "🔸  [DRY-RUN] $*"
+        printf '\033[33m\U1F538  [DRY-RUN]\033[0m %s\n' "$*"
         return 0
     fi
+    printf '\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$*"
     "$@"
 }
 
@@ -236,8 +242,18 @@ DESCRIPTION
 
   -x OPTS       Extra options appended verbatim to the partclone command line.
                 Must be quoted if they contain spaces.
-                Example: -x "-L /tmp/partclone.log"
                 Example: -x "--debug"
+
+  -L FILE       Log file path for partclone (--logfile FILE).
+                Default: /tmp/partclone.log
+                Set to empty string to disable logging: -L ""
+                The log captures partclone's internal progress, errors and
+                bad-block events.  Useful for post-mortem analysis.
+
+  -W            Pass --skip_write_error to partclone: continue restoring even
+                when write errors occur (e.g. errno=5 / EIO on target).
+                The clone may be incomplete but avoids a hard abort on
+                intermittent I/O errors.
 
   -V            Verify clone integrity after step 6 using partclone.chkimg.
                 If partclone.chkimg is not available the step is skipped with
@@ -331,27 +347,31 @@ EOF
 # ARGUMENT PARSING
 # ==============================================================================
 
-while getopts ":d:D:p:n:S:E:t:Mc:a:uox:w:Vf:Z:rh" OPT; do
+while getopts ":d:D:p:n:S:E:t:Mc:a:uox:L:Ww:Vf:Z:F:b:rh" OPT; do
     case "$OPT" in
-        d)  DEVICE="$OPTARG"          ;;
-        D)  SOURCE_DEVICE="$OPTARG"   ;;
-        p)  SOURCE_PART="$OPTARG"     ;;
-        n)  SOURCE_PARTNUM="$OPTARG"  ;;
-        S)  START="$OPTARG"           ;;
-        E)  END="$OPTARG"             ;;
-        t)  TARGET_MOUNT="$OPTARG"    ;;
-        M)  MOVE_MODE=1               ;;
-        c)  CLONE_MODE="$OPTARG"      ;;
-        a)  ALIGN_BYTES="$OPTARG"     ;;
-        u)  UMOUNT_BEFORE=1           ;;
-        o)  MOUNT_AFTER=1             ;;
-        x)  PARTCLONE_EXTRA="$OPTARG" ;;
-        w)  STEP_DELAY="$OPTARG"      ;;
-        V)  VERIFY_CLONE=1            ;;
-        f)  FORCE_FSTYPE="$OPTARG"    ;;
-        Z)  COMPARE_PART="$OPTARG"    ;;
-        r)  DRY_RUN=1                 ;;
-        h)  usage; exit 0             ;;
+        d)  DEVICE="$OPTARG"               ;;
+        D)  SOURCE_DEVICE="$OPTARG"        ;;
+        p)  SOURCE_PART="$OPTARG"          ;;
+        n)  SOURCE_PARTNUM="$OPTARG"       ;;
+        S)  START="$OPTARG"                ;;
+        E)  END="$OPTARG"                  ;;
+        t)  TARGET_MOUNT="$OPTARG"         ;;
+        M)  MOVE_MODE=1                    ;;
+        c)  CLONE_MODE="$OPTARG"           ;;
+        a)  ALIGN_BYTES="$OPTARG"          ;;
+        u)  UMOUNT_BEFORE=1                ;;
+        o)  MOUNT_AFTER=1                  ;;
+        x)  PARTCLONE_EXTRA="$OPTARG"      ;;
+        L)  PARTCLONE_LOGFILE="$OPTARG"    ;;
+        W)  SKIP_WRITE_ERROR=1             ;;
+        w)  STEP_DELAY="$OPTARG"           ;;
+        V)  VERIFY_CLONE=1                 ;;
+        f)  FORCE_FSTYPE="$OPTARG"         ;;
+        Z)  COMPARE_PART="$OPTARG"         ;;
+        F)  FAT_FSCK_PASSES="$OPTARG"      ;;
+        b)  DD_FALLBACK="$OPTARG"          ;;
+        r)  DRY_RUN=1                      ;;
+        h)  usage; exit 0                  ;;
         :)  echo "❌  Option -${OPTARG} requires an argument." >&2
             echo "    Run with -h for help." >&2; exit 1 ;;
         ?)  echo "❌  Unknown option: -${OPTARG}" >&2
@@ -391,6 +411,15 @@ esac
 case "$ALIGN_BYTES" in
     512|4096|1048576) ;;
     *) ERRORS="${ERRORS}\n    -a  invalid value '${ALIGN_BYTES}'. Allowed: 512 | 4096 | 1048576" ;;
+esac
+
+case "$FAT_FSCK_PASSES" in
+    ''|*[!0-9]*) ERRORS="${ERRORS}\n    -F  '${FAT_FSCK_PASSES}' is not a valid non-negative integer." ;;
+esac
+
+case "$DD_FALLBACK" in
+    0|1) ;;
+    *) ERRORS="${ERRORS}\n    -b  invalid value '${DD_FALLBACK}'. Allowed: 0 | 1" ;;
 esac
 
 case "$STEP_DELAY" in
@@ -535,23 +564,36 @@ else
     echo "     ✔ START ${START} is already aligned."
 fi
 
+ORIG_END="$END"
 LENGTH=$(( END - START + 1 ))
 REM=$(( LENGTH % ALIGN_SECTORS ))
 if [ "$REM" -ne 0 ]; then
     _end_up=$(( END + ALIGN_SECTORS - REM ))
-    # Try alignment upward first; if it would exceed disk capacity, align downward
+    # Try alignment upward first; align downward if it would exceed disk capacity
+    # OR exceed the originally-requested END (= free-space boundary supplied by caller)
     _disk_sectors=''
     if [ -r "/sys/block/${DEVICE##*/}/size" ]; then
         _disk_sectors=$(cat "/sys/block/${DEVICE##*/}/size" 2>/dev/null)
     fi
-    if [ -n "$_disk_sectors" ] && [ "$_disk_sectors" -gt 0 ] 2>/dev/null && \
-       [ "$_end_up" -ge "$_disk_sectors" ] 2>/dev/null; then
+    _exceeds_disk=0
+    _exceeds_req=0
+    if [ -n "$_disk_sectors" ] && [ "$_disk_sectors" -gt 0 ] && [ "$_end_up" -ge "$_disk_sectors" ]; then
+        _exceeds_disk=1
+    fi
+    if [ "$_end_up" -gt "$ORIG_END" ]; then
+        _exceeds_req=1
+    fi
+    if [ "$_exceeds_disk" -eq 1 ] || [ "$_exceeds_req" -eq 1 ]; then
         # Align downward: drop the remainder, then subtract one more unit if needed
         _end_down=$(( END - REM ))
         [ $(( (_end_down - START + 1) % ALIGN_SECTORS )) -ne 0 ] && \
             _end_down=$(( _end_down - ((_end_down - START + 1) % ALIGN_SECTORS) ))
         END=$_end_down
-        echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed disk bounds)."
+        if [ "$_exceeds_disk" -eq 1 ]; then
+            echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed disk bounds)."
+        else
+            echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed requested range end ${ORIG_END})."
+        fi
     else
         END=$_end_up
         echo "⚠️   END adjusted to ${END} so that length is a multiple of ${ALIGN_SECTORS} sectors."
@@ -716,6 +758,18 @@ else
     echo "     ✔ Target partition resolved: ${TARGET_PART}  (partition ${TARGET_PARTNUM})"
 fi
 
+# Auto-unmount target if the OS mounted it automatically after partprobe
+# (common on FritzBox: udev mounts new vfat/ext partitions immediately)
+if [ "$DRY_RUN" -eq 0 ]; then
+    _tgt_mount=$(grep -s "^${TARGET_PART}[[:space:]]" /proc/mounts | awk '{print $2}' | head -n 1)
+    if [ -n "$_tgt_mount" ]; then
+        echo "⚠️   Target ${TARGET_PART} was auto-mounted at ${_tgt_mount} — unmounting before clone…"
+        run umount "$TARGET_PART" \
+            || die "Cannot unmount auto-mounted target ${TARGET_PART} at ${_tgt_mount}. Aborting."
+        echo "     ✔ Target unmounted."
+    fi
+fi
+
 # Fix stale FAT BPB before partclone reads it (low-level TotSec32 patch)
 case "$FSTYPE" in
     vfat|fat|fat12|fat16|fat32)
@@ -723,31 +777,54 @@ case "$FSTYPE" in
         ;;
 esac
 
-# Pre-clone FAT repair: run dosfsck/fsck.fat on source if it is unmounted.
-# This repairs FAT table corruption (bad cluster chains, stale bitmaps) that
-# fat_fix_total_sectors cannot reach, preventing partclone "out of boundary".
+# Pre-clone FAT repair: run dosfsck/fsck.fat (up to FAT_FSCK_PASSES times)
+# on unmounted source.  Controlled by -F (default 2, 0 = skip).
+_fat_fsck_cmd=""
 case "$FSTYPE" in
     vfat|fat|fat12|fat16|fat32)
-        if [ "$DRY_RUN" -eq 0 ]; then
-            _src_mounted=0
-            mount 2>/dev/null | grep -q "^${SOURCE_PART}[[:space:]]" && _src_mounted=1
-            if [ "$_src_mounted" -eq 1 ]; then
-                echo "     ℹ  Source ${SOURCE_PART} is mounted — skipping pre-clone FAT repair."
-                echo "     ℹ  Use -u to unmount before cloning for a cleaner FAT state."
-            else
-                if command -v dosfsck >/dev/null 2>&1; then
-                    echo "     → Running pre-clone dosfsck auto-repair on ${SOURCE_PART}…"
-                    dosfsck -a "$SOURCE_PART" 2>&1 || true
-                    echo "     ✔ Pre-clone FAT repair finished."
-                elif command -v fsck.fat >/dev/null 2>&1; then
-                    echo "     → Running pre-clone fsck.fat auto-repair on ${SOURCE_PART}…"
-                    fsck.fat -a "$SOURCE_PART" 2>&1 || true
-                    echo "     ✔ Pre-clone FAT repair finished."
-                else
-                    echo "     ℹ  dosfsck/fsck.fat not found — pre-clone FAT repair skipped."
-                fi
-            fi
+        if command -v dosfsck >/dev/null 2>&1; then
+            _fat_fsck_cmd="dosfsck"
+        elif command -v fsck.fat >/dev/null 2>&1; then
+            _fat_fsck_cmd="fsck.fat"
         fi
+        ;;
+esac
+
+if [ "$DRY_RUN" -eq 0 ] && [ -n "$_fat_fsck_cmd" ] && [ "${FAT_FSCK_PASSES:-2}" -gt 0 ] 2>/dev/null; then
+    _src_mounted=0
+    mount 2>/dev/null | grep -q "^${SOURCE_PART}[[:space:]]" && _src_mounted=1
+    if [ "$_src_mounted" -eq 1 ]; then
+        echo "     ℹ  Source ${SOURCE_PART} is mounted — skipping pre-clone FAT repair."
+        echo "     ℹ  Use -u to unmount before cloning for a cleaner FAT state."
+    else
+        _max_pass="${FAT_FSCK_PASSES:-2}"
+        _pass=1
+        while [ "$_pass" -le "$_max_pass" ]; do
+            echo "     → Pre-clone FAT repair pass ${_pass}/${_max_pass} ($_fat_fsck_cmd -a ${SOURCE_PART})…"
+            _fsck_out=$("$_fat_fsck_cmd" -a "$SOURCE_PART" 2>&1)
+            _fsck_rc=$?
+            echo "$_fsck_out"
+            # If no changes were made and no errors, no need for further passes
+            if ! echo "$_fsck_out" | grep -qi "changed\|fix\|corrupt\|error\|dirty"; then
+                echo "     ✔ FAT repair pass ${_pass}: no issues, stopping early."
+                break
+            fi
+            echo "     ✔ FAT repair pass ${_pass} finished (rc=${_fsck_rc})."
+            _pass=$(( _pass + 1 ))
+        done
+    fi
+elif [ "${FAT_FSCK_PASSES:-2}" -eq 0 ] 2>/dev/null; then
+    case "$FSTYPE" in
+        vfat|fat|fat12|fat16|fat32)
+            echo "     ℹ  Pre-clone FAT repair disabled (-F 0)."
+            ;;
+    esac
+fi
+
+# After FAT repair, re-apply BPB TotSec32 patch in case fsck rewrote it
+case "$FSTYPE" in
+    vfat|fat|fat12|fat16|fat32)
+        [ "$DRY_RUN" -eq 0 ] && fat_fix_total_sectors "$SOURCE_PART"
         ;;
 esac
 
@@ -761,14 +838,84 @@ echo "     Backend : ${PARTCLONE_BIN}"
 [ -n "$PARTCLONE_EXTRA" ] && echo "     Extra   : ${PARTCLONE_EXTRA}"
 
 # shellcheck disable=SC2086
-run "$PARTCLONE_BIN" \
-    --clone \
-    --overwrite \
-    --quiet \
-    --source "$SOURCE_PART" \
-    --output "$TARGET_PART" \
-    $PARTCLONE_EXTRA \
-    || die "partclone cloning failed. Source or target may be corrupt."
+# Build partclone flags for smart clone
+if [ "$DRY_RUN" -eq 0 ]; then
+    set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
+    [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
+    # shellcheck disable=SC2086
+    printf '\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$PARTCLONE_BIN $* $PARTCLONE_EXTRA"
+    "$PARTCLONE_BIN" "$@" $PARTCLONE_EXTRA
+    _pclone_rc=$?
+else
+    set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
+    [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
+    # shellcheck disable=SC2086
+    run "$PARTCLONE_BIN" "$@" $PARTCLONE_EXTRA
+    _pclone_rc=0
+fi
+
+# Check if partclone completed 100% despite a non-zero exit (e.g. fsync EIO).
+# Returns 0 (treat as success) ONLY if:
+#   - log shows 100.00% completed
+#   - AND no write errors (write protected, critical target error) are present
+# Returns 1 if writes actually failed (write protected, I/O errors during transfer).
+_pclone_check_completed() {
+    _rc="$1"
+    [ "$_rc" -eq 0 ] && return 0
+    [ -n "$PARTCLONE_LOGFILE" ] && [ -s "$PARTCLONE_LOGFILE" ] || return 1
+    grep -q "100\.00% completed" "$PARTCLONE_LOGFILE" 2>/dev/null || return 1
+    # If the log or dmesg indicates actual write failures (write protected, bad blocks
+    # written), do NOT treat as success — data on target may be incomplete.
+    if grep -qi "write.protect\|write error\|bad block\|critical.*error\|WRITE PROTECTED" \
+            "$PARTCLONE_LOGFILE" 2>/dev/null; then
+        echo "⚠️   partclone log shows 100% but also write errors — data on target may be incomplete."
+        return 1
+    fi
+    # fsync-only failure: data was written, kernel flush reported EIO (e.g. USB glitch at sync)
+    echo "⚠️   partclone exited with rc=${_rc} but log shows 100.00% completed."
+    if grep -q "fsync error" "$PARTCLONE_LOGFILE" 2>/dev/null; then
+        echo "     Cause: fsync error on target (errno=5/EIO — data written, kernel flush failed)."
+        echo "     Data transfer is complete. Consider -W (--skip_write_error) to suppress next time."
+    fi
+    return 0
+}
+
+if [ "$_pclone_rc" -ne 0 ] && _pclone_check_completed "$_pclone_rc"; then
+    _pclone_rc=0  # treat as success
+fi
+
+if [ "$_pclone_rc" -ne 0 ] && [ "$CLONE_MODE" = "smart" ] && [ "${DD_FALLBACK:-1}" = "1" ]; then
+    echo "⚠️   Smart clone (${PARTCLONE_BIN}) failed (rc=${_pclone_rc})."
+    if [ -n "$PARTCLONE_LOGFILE" ] && [ -s "$PARTCLONE_LOGFILE" ]; then
+        echo "     ── partclone log (${PARTCLONE_LOGFILE}) ──"
+        cat "$PARTCLONE_LOGFILE" | sed 's/^/     /'
+        echo "     ── end log ──"
+    fi
+    echo "     Retrying with byte-to-byte partclone.dd as fallback…"
+    if command -v partclone.dd >/dev/null 2>&1; then
+        # partclone.dd uses -s / -O / -q (different CLI from other partclone backends)
+        set -- -s "$SOURCE_PART" -O "$TARGET_PART" -q
+        [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
+        [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
+        # shellcheck disable=SC2086
+        run partclone.dd "$@" $PARTCLONE_EXTRA
+        _pclone_rc=$?
+        if ! _pclone_check_completed "$_pclone_rc"; then
+            [ "$_pclone_rc" -ne 0 ] && die "partclone.dd fallback also failed (rc=${_pclone_rc}). Source may be unreadable."
+        fi
+        _pclone_rc=0
+        echo "     ✔ Byte-to-byte fallback clone completed."
+        CLONE_USED_DD_FALLBACK=1
+    else
+        die "partclone.dd not found for fallback. Smart clone failed: rc=${_pclone_rc}."
+    fi
+elif [ "$_pclone_rc" -ne 0 ] && [ "$CLONE_MODE" = "smart" ]; then
+    die "partclone cloning failed (rc=${_pclone_rc}). dd fallback disabled (-b 0)."
+elif [ "$_pclone_rc" -ne 0 ]; then
+    die "partclone cloning failed (rc=${_pclone_rc}). Source or target may be corrupt."
+fi
 
 echo "     ✔ Data clone completed."
 

@@ -42,9 +42,10 @@ die()  { echo "❌  FATAL: $*" >&2; exit 1; }
 
 run() {
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "🔸  [DRY-RUN] $*"
+        printf '\033[33m\U1F538  [DRY-RUN]\033[0m %s\n' "$*"
         return 0
     fi
+    printf '\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$*"
     "$@"
 }
 

@@ -34,6 +34,8 @@ CMD_E2FSCK=''
 CMD_RESIZE2FS=''
 CMD_TUNE2FS=''
 CMD_E2LABEL=''
+CMD_DUMPE2FS=''
+CMD_BADBLOCKS=''
 CMD_GDISK=''
 CMD_CGDISK=''
 CMD_SGDISK=''
@@ -233,6 +235,8 @@ resolve_tools() {
 	CMD_RESIZE2FS=$(find_cmd resize2fs-ng resize2fs)
 	CMD_TUNE2FS=$(find_cmd tune2fs-ng tune2fs)
 	CMD_E2LABEL=$(find_cmd e2label-ng e2label)
+	CMD_DUMPE2FS=$(find_cmd dumpe2fs-ng dumpe2fs)
+	CMD_BADBLOCKS=$(find_cmd badblocks-ng badblocks)
 	CMD_GDISK=$(find_cmd gdisk)
 	CMD_CGDISK=$(find_cmd cgdisk)
 	CMD_SGDISK=$(find_cmd sgdisk)
@@ -731,6 +735,8 @@ action_analyze_tools() {
 	add_item "mke2fs/e2fsprogs" "$CMD_MKE2FS" "Create ext filesystem"
 	add_item "e2fsck/e2fsprogs" "$CMD_E2FSCK" "Check ext filesystem"
 	add_item "resize2fs/e2fsprogs" "$CMD_RESIZE2FS" "Resize ext filesystem"
+	add_item "dumpe2fs/e2fsprogs" "$CMD_DUMPE2FS" "Ext2/3/4 superblock/block group dump"
+	add_item "badblocks/e2fsprogs" "$CMD_BADBLOCKS" "Bad block scanner (ext2/3/4)"
 	add_item "gdisk" "$CMD_GDISK" "GPT interactive editor"
 	add_item "cgdisk" "$CMD_CGDISK" "GPT curses editor"
 	add_item "sgdisk" "$CMD_SGDISK" "GPT scriptable editor"
@@ -2048,6 +2054,9 @@ action_move_partition() {
 	_partclone_extra=$(cgi_param partclone_extra)
 	_step_delay=$(cgi_param step_delay)
 	_partclone_verify=$(cgi_param partclone_verify)
+	_fat_fsck_passes=$(cgi_param fat_fsck_passes)
+	_dd_fallback=$(cgi_param dd_fallback)
+	_skip_write_error=$(cgi_param skip_write_error)
 
 	[ -n "$_source_device" ] || _source_device="$_device"
 
@@ -2100,6 +2109,10 @@ action_move_partition() {
 
 	_extra_safe=$(printf '%s' "$_partclone_extra" | tr -d '"'"'"'`$;|<>&(){}\\')
 	_fs_safe=$(printf '%s' "$_force_fs" | tr -cd 'a-zA-Z0-9+._-')
+	_fat_fsck_passes_safe=$(printf '%s' "$_fat_fsck_passes" | tr -cd '0-9')
+	[ -z "$_fat_fsck_passes_safe" ] && _fat_fsck_passes_safe='2'
+	case "$_dd_fallback" in 0) _dd_fallback='0' ;; *) _dd_fallback='1' ;; esac
+	case "$_skip_write_error" in 1|yes|YES|true) _skip_write_flag='-W' ;; *) _skip_write_flag='' ;; esac
 
 	_mount_args=''
 	[ -n "$_target_mountpoint" ] && _mount_args="-o -t $_target_mountpoint"
@@ -2121,6 +2134,8 @@ action_move_partition() {
 		[ -n "$_fs_safe" ] && _preview="$_preview -f $_fs_safe"
 		[ -n "$_extra_safe" ] && _preview="$_preview -x '$_extra_safe'"
 		[ -n "$_target_mountpoint" ] && _preview="$_preview -o -t $_target_mountpoint"
+		_preview="$_preview -F $_fat_fsck_passes_safe -b $_dd_fallback"
+		[ -n "$_skip_write_flag" ] && _preview="$_preview -W"
 		_preview="$_preview -r"
 		emit_dry_run_result "partition move" "$_preview"
 		return
@@ -2142,7 +2157,7 @@ action_move_partition() {
 
 	# shellcheck disable=SC2086
 	exec_cmd "Move partition (partition_migration.sh)" \
-		"$CMD_PARTITION_MIGRATION -d $_device -D $_source_device -p $_source_path -n $_source_partnum -S $_start_sector -E $_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay -M ${_umount_flag} ${_verify_flag}" \
+		"$CMD_PARTITION_MIGRATION -d $_device -D $_source_device -p $_source_path -n $_source_partnum -S $_start_sector -E $_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay -M ${_umount_flag} ${_verify_flag} -F $_fat_fsck_passes_safe -b $_dd_fallback${_skip_write_flag:+ -W}" \
 		"$CMD_PARTITION_MIGRATION" \
 			-d "$_device" \
 			-D "$_source_device" \
@@ -2156,6 +2171,9 @@ action_move_partition() {
 			-M \
 			${_umount_flag} \
 			${_verify_flag} \
+			-F "$_fat_fsck_passes_safe" \
+			-b "$_dd_fallback" \
+			${_skip_write_flag} \
 			${_fs_safe:+"-f"} ${_fs_safe} \
 			${_extra_safe:+"-x"} ${_extra_safe:+"$_extra_safe"} \
 			$_mount_args
@@ -2193,6 +2211,9 @@ action_clone_partition_dd() {
 	_partclone_extra=$(cgi_param partclone_extra)
 	_step_delay=$(cgi_param step_delay)
 	_partclone_verify=$(cgi_param partclone_verify)
+	_fat_fsck_passes=$(cgi_param fat_fsck_passes)
+	_dd_fallback=$(cgi_param dd_fallback)
+	_skip_write_error=$(cgi_param skip_write_error)
 
 	[ -n "$_source_device" ] || _source_device="$_device"
 	[ -n "$_target_device" ] || _target_device="$_device"
@@ -2250,6 +2271,10 @@ action_clone_partition_dd() {
 
 	_extra_safe=$(printf '%s' "$_partclone_extra" | tr -d '"'"'"'`$;|<>&(){}\\')
 	_fs_safe=$(printf '%s' "$_force_fs" | tr -cd 'a-zA-Z0-9+._-')
+	_fat_fsck_passes_safe=$(printf '%s' "$_fat_fsck_passes" | tr -cd '0-9')
+	[ -z "$_fat_fsck_passes_safe" ] && _fat_fsck_passes_safe='2'
+	case "$_dd_fallback" in 0) _dd_fallback='0' ;; *) _dd_fallback='1' ;; esac
+	case "$_skip_write_error" in 1|yes|YES|true) _skip_write_flag='-W' ;; *) _skip_write_flag='' ;; esac
 
 	_mount_args=''
 	[ -n "$_target_mountpoint" ] && _mount_args="-o -t $_target_mountpoint"
@@ -2270,6 +2295,8 @@ action_clone_partition_dd() {
 		[ -n "$_fs_safe" ] && _preview="$_preview -f $_fs_safe"
 		[ -n "$_extra_safe" ] && _preview="$_preview -x '$_extra_safe'"
 		[ -n "$_target_mountpoint" ] && _preview="$_preview -o -t $_target_mountpoint"
+		_preview="$_preview -F $_fat_fsck_passes_safe -b $_dd_fallback"
+		[ -n "$_skip_write_flag" ] && _preview="$_preview -W"
 		_preview="$_preview -r"
 		emit_dry_run_result "partition clone ($_clone_flag)" "$_preview"
 		return
@@ -2277,7 +2304,7 @@ action_clone_partition_dd() {
 
 	# shellcheck disable=SC2086
 	exec_cmd "Clone partition (partition_migration.sh)" \
-		"$CMD_PARTITION_MIGRATION -d $_target_device -D $_source_device -p $_source_path -n $_source_partnum -S $_target_start_sector -E $_target_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay ${_umount_flag} ${_verify_flag}" \
+		"$CMD_PARTITION_MIGRATION -d $_target_device -D $_source_device -p $_source_path -n $_source_partnum -S $_target_start_sector -E $_target_end_sector -c $_clone_flag -a $_align_bytes -w $_step_delay ${_umount_flag} ${_verify_flag} -F $_fat_fsck_passes_safe -b $_dd_fallback${_skip_write_flag:+ -W}" \
 		"$CMD_PARTITION_MIGRATION" \
 			-d "$_target_device" \
 			-D "$_source_device" \
@@ -2290,6 +2317,9 @@ action_clone_partition_dd() {
 			-w "$_step_delay" \
 			${_umount_flag} \
 			${_verify_flag} \
+			-F "$_fat_fsck_passes_safe" \
+			-b "$_dd_fallback" \
+			${_skip_write_flag} \
 			${_fs_safe:+"-f"} ${_fs_safe} \
 			${_extra_safe:+"-x"} ${_extra_safe:+"$_extra_safe"} \
 			$_mount_args
@@ -3196,6 +3226,81 @@ action_smart_info() {
 	fi
 }
 
+action_smart_selftest_short() {
+	resolve_tools
+	_device=$(cgi_param device)
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	[ -n "$CMD_SMARTCTL" ] || { emit_json_error "smartctl not available"; return; }
+
+	if dry_run_enabled; then
+		emit_dry_run_result "SMART short self-test" "smartctl -t short $_device\n# wait for completion, then:\nsmartctl -l selftest $_device"
+		return
+	fi
+
+	exec_cmd_c "SMART start short self-test" "$CMD_SMARTCTL -t short $_device" \
+		"$CMD_SMARTCTL" -t short "$_device"
+	_start_rc=$EXEC_RC
+	_out="$EXEC_OUT"
+
+	if [ "$_start_rc" -ne 0 ] && ! echo "$_out" | grep -qiE 'Self-test|self test'; then
+		emit_cmd_result false "$_start_rc" "Failed to start SMART short self-test" "$_out"
+		return
+	fi
+
+	# Extract estimated duration from smartctl output
+	_wait_sec=120
+	_min=$(echo "$_out" | grep -oE '[0-9]+ minute' | grep -oE '[0-9]+' | head -1)
+	[ -n "$_min" ] && _wait_sec=$((_min * 60 + 15))
+	[ "$_wait_sec" -gt 600 ] && _wait_sec=600
+
+	# Poll until test completes or timeout
+	_elapsed=0
+	_interval=10
+	_max_wait=$((_wait_sec + 60))
+	while [ "$_elapsed" -lt "$_max_wait" ]; do
+		sleep "$_interval"
+		_elapsed=$((_elapsed + _interval))
+		_poll=$("$CMD_SMARTCTL" -l selftest "$_device" 2>&1)
+		if echo "$_poll" | grep -qE '#1.*Completed|#1.*Failed|#1.*Aborted|#1.*Interrupted'; then
+			break
+		fi
+		echo "$_poll" | grep -qE 'progress|remaining' || break
+	done
+
+	exec_cmd_c "SMART self-test results" "$CMD_SMARTCTL -l selftest $_device" \
+		"$CMD_SMARTCTL" -l selftest "$_device"
+	_full_out="$_out\n$EXEC_OUT"
+
+	if echo "$EXEC_OUT" | grep -qE 'Completed without error'; then
+		emit_cmd_result true 0 "SMART short self-test: Completed without error" "$_full_out"
+	elif echo "$EXEC_OUT" | grep -qE '#1.*Failed'; then
+		emit_cmd_result false 1 "SMART short self-test: FAILED" "$_full_out"
+	else
+		emit_cmd_result true "$EXEC_RC" "SMART short self-test results" "$_full_out"
+	fi
+}
+
+action_badblocks_scan() {
+	resolve_tools
+	_device=$(cgi_param device)
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	[ -n "$CMD_BADBLOCKS" ] || { emit_json_error "badblocks not available"; return; }
+
+	if dry_run_enabled; then
+		emit_dry_run_result "badblocks read-only scan" "badblocks -sv '$_device'"
+		return
+	fi
+
+	exec_cmd_c "badblocks read-only scan" "$CMD_BADBLOCKS -sv $_device" \
+		"$CMD_BADBLOCKS" -sv "$_device"
+	_rc=$EXEC_RC
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Badblocks scan: no bad blocks found" "$EXEC_OUT"
+	else
+		emit_cmd_result false "$_rc" "Badblocks scan: bad blocks detected or error" "$EXEC_OUT"
+	fi
+}
+
 action_hdparm_info() {
 	resolve_tools
 	_device=$(cgi_param device)
@@ -3301,6 +3406,8 @@ action_start_job() {
 			unmount_partition)   action_unmount_partition ;;
 			reload_table)        action_reload_table ;;
 			smart_info)          action_smart_info ;;
+			smart_selftest_short) action_smart_selftest_short ;;
+			badblocks_scan)      action_badblocks_scan ;;
 			hdparm_info)         action_hdparm_info ;;
 			gpt_info)            action_gpt_info ;;
 			*)
@@ -3461,6 +3568,12 @@ EOF
 			;;
 		smart_info)
 			action_smart_info
+			;;
+		smart_selftest_short)
+			action_smart_selftest_short
+			;;
+		badblocks_scan)
+			action_badblocks_scan
 			;;
 		hdparm_info)
 			action_hdparm_info
@@ -4502,6 +4615,28 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				<input id="mcPartcloneExtra" type="text" placeholder="e.g. --debug" style="width:100%">
 			</div>
 			<div>
+				<label id="i18nMcFsckPassesLabel">FAT pre-clone fsck passes (-F)</label>
+				<select id="mcFsckPasses" style="width:100%">
+					<option value="2" selected>2 (recommended)</option>
+					<option value="1">1</option>
+					<option value="0">0 (disabled)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nMcDdFallbackLabel">dd fallback on smart failure (-b)</label>
+				<select id="mcDdFallback" style="width:100%">
+					<option value="1" selected>yes (recommended)</option>
+					<option value="0">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nMcSkipWriteErrLabel">Skip write errors (-W)</label>
+				<select id="mcSkipWriteError" style="width:100%">
+					<option value="0" selected>no (abort on errors)</option>
+					<option value="1">yes (continue on write errors)</option>
+				</select>
+			</div>
+			<div>
 				<label id="i18nMcStepDelayLabel">Step delay seconds (-w)</label>
 				<input id="mcStepDelay" type="number" min="0" step="1" value="1" placeholder="1" style="width:100%">
 			</div>
@@ -4595,6 +4730,28 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				<select id="dmUnmount" style="width:100%">
 					<option value="yes">yes</option>
 					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nDmFsckPassesLabel">FAT pre-clone fsck passes (-F)</label>
+				<select id="dmFsckPasses" style="width:100%">
+					<option value="2" selected>2 (recommended)</option>
+					<option value="1">1</option>
+					<option value="0">0 (disabled)</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nDmDdFallbackLabel">dd fallback on smart failure (-b)</label>
+				<select id="dmDdFallback" style="width:100%">
+					<option value="1" selected>yes (recommended)</option>
+					<option value="0">no</option>
+				</select>
+			</div>
+			<div>
+				<label id="i18nDmSkipWriteErrLabel">Skip write errors (-W)</label>
+				<select id="dmSkipWriteError" style="width:100%">
+					<option value="0" selected>no (abort on errors)</option>
+					<option value="1">yes (continue on write errors)</option>
 				</select>
 			</div>
 			<div>
@@ -5032,6 +5189,8 @@ sec_begin "Disk Diagnostics (hdparm, SMART, GPT)"
 cat <<'EOF'
 <div class="pcgi-toolbar">
 	<button type="button" onclick="runDiagnostics('smart_info')">SMART information</button>
+	<button type="button" onclick="runDiagnostics('smart_selftest_short')" title="Start SMART short self-test on selected disk, poll until completion (~2 min)">SMART self-test</button>
+	<button type="button" onclick="runDiagnostics('badblocks_scan')" title="Read-only bad block scan on selected device (badblocks -sv). May take a long time on large disks.">Badblocks scan</button>
 	<button type="button" onclick="runDiagnostics('hdparm_info')">hdparm identify</button>
 	<button type="button" onclick="runDiagnostics('gpt_info')">GPT summary</button>
 	<button type="button" onclick="runDiagnostics('reload_table')" id="partprobeBtn" title="Reload kernel partition table after partition changes (uses partprobe or blockdev --rereadpt)">Run partprobe</button>
@@ -5465,6 +5624,12 @@ window.paceOptions = {
 		mcExtraOptsLabel: "Extra partclone options (-x)",
 		mcStepDelayLabel: "Step delay seconds (-w)",
 		mcDdBsLabel: "dd block size",
+		mcFsckPassesLabel: "FAT pre-clone fsck passes (-F)",
+		mcDdFallbackLabel: "dd fallback on smart failure (-b)",
+		mcSkipWriteErrLabel: "Skip write errors (-W)",
+		dmFsckPassesLabel: "FAT pre-clone fsck passes (-F)",
+		dmDdFallbackLabel: "dd fallback on smart failure (-b)",
+		dmSkipWriteErrLabel: "Skip write errors (-W)",
 		verifySourceDevLabel: "Source device (A)",
 		verifySourcePartLabel: "Source partition (A)",
 		verifyTargetDevLabel: "Compare device (B)",
@@ -5476,6 +5641,10 @@ window.paceOptions = {
 		tDropQueuedMoveCloneChip: "Move or clone chip dropped – configure and add."
 	});
 	translations.en = Object.assign({}, translations.en, {
+		ctxFreeCreate:     "Create partition",
+		ctxFreeMoveClone:  "Move or clone partition here",
+		ctxFreeRestore:    "Restore partition from image file",
+		ctxFreeReceive:    "Receive partition from network",
 		ctxDiskMoveClone: "Disk move or clone",
 		dmTitle: "Move or clone disk",
 		dmSourceDevLabel: "Source disk (-D)",
@@ -5538,6 +5707,12 @@ window.paceOptions = {
 		mcExtraOptsLabel: "Opzioni partclone extra (-x)",
 		mcStepDelayLabel: "Pausa tra passi in secondi (-w)",
 		mcDdBsLabel: "Dimensione blocco dd",
+		mcFsckPassesLabel: "Passate fsck FAT pre-clone (-F)",
+		mcDdFallbackLabel: "Fallback dd su errore smart (-b)",
+		mcSkipWriteErrLabel: "Ignora errori di scrittura (-W)",
+		dmFsckPassesLabel: "Passate fsck FAT pre-clone (-F)",
+		dmDdFallbackLabel: "Fallback dd su errore smart (-b)",
+		dmSkipWriteErrLabel: "Ignora errori di scrittura (-W)",
 		verifySourceDevLabel: "Dispositivo sorgente (A)",
 		verifySourcePartLabel: "Partizione sorgente (A)",
 		verifyTargetDevLabel: "Dispositivo da confrontare (B)",
@@ -5549,6 +5724,10 @@ window.paceOptions = {
 		tDropQueuedMoveCloneChip: "Chip sposta/clona posizionato – configura e aggiungi."
 	});
 	translations.it = Object.assign({}, translations.it, {
+		ctxFreeCreate:     "Crea partizione",
+		ctxFreeMoveClone:  "Sposta o clona partizione qui",
+		ctxFreeRestore:    "Ripristina partizione da immagine",
+		ctxFreeReceive:    "Ricevi partizione dalla rete",
 		ctxDiskMoveClone: "Sposta o clona disco",
 		dmTitle: "Sposta o clona disco",
 		dmSourceDevLabel: "Disco sorgente (-D)",
@@ -5611,6 +5790,12 @@ window.paceOptions = {
 		mcExtraOptsLabel: "Zusaetzliche partclone-Optionen (-x)",
 		mcStepDelayLabel: "Schritt-Pause in Sekunden (-w)",
 		mcDdBsLabel: "dd-Blockgroesse",
+		mcFsckPassesLabel: "FAT-Vorab-fsck-Durchgaenge (-F)",
+		mcDdFallbackLabel: "dd-Fallback bei Smart-Fehler (-b)",
+		mcSkipWriteErrLabel: "Schreibfehler ueberspringen (-W)",
+		dmFsckPassesLabel: "FAT-Vorab-fsck-Durchgaenge (-F)",
+		dmDdFallbackLabel: "dd-Fallback bei Smart-Fehler (-b)",
+		dmSkipWriteErrLabel: "Schreibfehler ueberspringen (-W)",
 		verifySourceDevLabel: "Quellgeraet (A)",
 		verifySourcePartLabel: "Quellpartition (A)",
 		verifyTargetDevLabel: "Vergleichsgeraet (B)",
@@ -5622,6 +5807,10 @@ window.paceOptions = {
 		tDropQueuedMoveCloneChip: "Verschieben/Klonen-Chip abgelegt – konfigurieren und hinzufuegen."
 	});
 	translations.de = Object.assign({}, translations.de, {
+		ctxFreeCreate:     "Partition erstellen",
+		ctxFreeMoveClone:  "Partition hierher verschieben oder klonen",
+		ctxFreeRestore:    "Partition aus Image wiederherstellen",
+		ctxFreeReceive:    "Partition aus Netzwerk empfangen",
 		ctxDiskMoveClone: "Datentrager verschieben oder klonen",
 		dmTitle: "Datentrager verschieben oder klonen",
 		dmSourceDevLabel: "Quelldatentrager (-D)",
@@ -6353,6 +6542,12 @@ window.paceOptions = {
 			'i18nDmIncludeTailLabel'    : 'dm-include-tail',
 			'i18nDmUnmountLabel'        : 'dm-unmount',
 			'i18nDmStepDelayLabel'      : 'dm-step-delay',
+			'i18nMcFsckPassesLabel'     : 'mc-fsck-passes',
+			'i18nMcDdFallbackLabel'     : 'mc-dd-fallback',
+			'i18nMcSkipWriteErrLabel'   : 'mc-skip-write-err',
+			'i18nDmFsckPassesLabel'     : 'dm-fsck-passes',
+			'i18nDmDdFallbackLabel'     : 'dm-dd-fallback',
+			'i18nDmSkipWriteErrLabel'   : 'dm-skip-write-err',
 			'i18nFsPartPathLabel'       : 'fs-part-path',
 			'i18nFsTypeLabel'           : 'fs-type',
 			'i18nFsLabelLabel'          : 'fs-label',
@@ -6906,7 +7101,7 @@ window.paceOptions = {
 	}
 
 	function showHoverTooltip(ev, html) {
-		if (state.dragCtx || state.mapDragActive) {
+		if (state.dragCtx || state.mapDragActive || state.contextMenuVisible) {
 			hideHoverTooltip();
 			return;
 		}
@@ -6918,7 +7113,7 @@ window.paceOptions = {
 	}
 
 	function moveHoverTooltip(ev) {
-		if (state.dragCtx || state.mapDragActive) {
+		if (state.dragCtx || state.mapDragActive || state.contextMenuVisible) {
 			hideHoverTooltip();
 			return;
 		}
@@ -7290,6 +7485,8 @@ window.paceOptions = {
 			return '# unsupported fs_type=' + fs + ' target=' + target;
 		}
 		if (action === 'smart_info') return 'smartctl --xall ' + v(params.device) + '\n# fallback: smartctl -d sat,auto -T permissive -x ' + v(params.device) + '\n# info-only fallback: smartctl -d sat,auto -T permissive -i ' + v(params.device);
+		if (action === 'smart_selftest_short') return 'smartctl -t short ' + v(params.device) + '\n# wait for completion (~2 min), then:\nsmartctl -l selftest ' + v(params.device);
+		if (action === 'badblocks_scan') return 'badblocks -sv ' + v(params.device) + '  # read-only scan, may take a long time on large disks';
 		if (action === 'hdparm_info') return 'hdparm -I ' + v(params.device);
 		if (action === 'gpt_info') return '# backend uses sgdisk -p or gdisk -l for ' + v(params.device);
 		if (action === 'reload_table') return 'partprobe ' + v(params.device);
@@ -8438,6 +8635,7 @@ actionsWrap.appendChild(btnRemove);
 
 	function hideContextMenu() {
 		var menu = document.getElementById('partContextMenu');
+		state.contextMenuVisible = false;
 		if (state.contextMenuHideTimer) {
 			clearTimeout(state.contextMenuHideTimer);
 			state.contextMenuHideTimer = null;
@@ -8459,6 +8657,7 @@ actionsWrap.appendChild(btnRemove);
 		var menu = document.getElementById('partContextMenu');
 		if (!menu || !target) return;
 		hideHoverTooltip();
+		state.contextMenuVisible = true;
 		if (state.contextMenuHideTimer) {
 			clearTimeout(state.contextMenuHideTimer);
 			state.contextMenuHideTimer = null;
@@ -8478,9 +8677,10 @@ actionsWrap.appendChild(btnRemove);
 			];
 		} else if (menuType === 'free') {
 			items = [
-				{ id: 'free_create',     label: 'Create partition' },
-				{ id: 'free_img_import', label: 'Restore partition from image file' },
-				{ id: 'free_net_recv',   label: 'Receive partition from network' }
+				{ id: 'free_create',      label: t('ctxFreeCreate') },
+				{ id: 'free_move_clone',  label: t('ctxFreeMoveClone') },
+				{ id: 'free_img_import',  label: t('ctxFreeRestore') },
+				{ id: 'free_net_recv',    label: t('ctxFreeReceive') }
 			];
 		} else {
 			var part = target;
@@ -8555,7 +8755,12 @@ actionsWrap.appendChild(btnRemove);
 		}
 		if (menuType === 'free') {
 			var freeSeg = target;
-			if (action === 'free_create') { showNewPartModal(freeSeg.start, freeSeg.end); return; }
+			if (action === 'free_create')     { showNewPartModal(freeSeg.start, freeSeg.end); return; }
+			if (action === 'free_move_clone') {
+				// Pass the currently selected partition as source (preserved — context menu no longer clears it)
+				showMoveCloneModal(freeSeg.devPath, freeSeg.start, freeSeg.end, state.selectedPartDevice || freeSeg.devPath, state.selectedPart);
+				return;
+			}
 			if (action === 'free_img_import') { showPartcloneImportModal({ path: freeSeg.devPath, mountpoint: '' }, 'disk'); return; }
 			if (action === 'free_net_recv')   { showPartcloneNetRecvModal({ path: freeSeg.devPath, mountpoint: '' }); return; }
 			showToast(t('tContextUnavailable'), 'warn');
@@ -8871,7 +9076,7 @@ actionsWrap.appendChild(btnRemove);
 					block.oncontextmenu = function (ev) {
 						ev.preventDefault();
 						ev.stopPropagation();
-						selectUnallocatedSegment(p);
+						// Do NOT call selectUnallocatedSegment here — it would clear state.selectedPart
 						showContextMenu({ kind: 'free', start: p.start, end: p.end, devPath: String(dev.path || '') }, ev, 'free');
 					};
 					block.ondragover = function (ev) { ev.preventDefault(); };
@@ -9474,6 +9679,9 @@ function getCloneChipOptions() {
 	var partcloneExtra = v('mcPartcloneExtra', '');
 	var stepDelay = v('mcStepDelay', '0');
 	if (!/^\d+$/.test(stepDelay)) stepDelay = '0';
+	var fsckPasses2 = v('mcFsckPasses', '2');
+	var ddFallback2 = v('mcDdFallback', '1');
+	var skipWriteErr2 = v('mcSkipWriteError', '0');
 	return {
 		dd_bs: ddBs,
 		target_mountpoint: targetMountpoint,
@@ -9482,7 +9690,10 @@ function getCloneChipOptions() {
 		unmount_before: unmountBefore,
 		force_fs: forceFs,
 		partclone_extra: partcloneExtra,
-		step_delay: stepDelay
+		step_delay: stepDelay,
+		fat_fsck_passes: fsckPasses2,
+		dd_fallback: ddFallback2,
+		skip_write_error: skipWriteErr2
 	};
 }
 
@@ -9893,6 +10104,9 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 		var extra       = extraEl      ? String(extraEl.value      || '').trim(): '';
 		var delay       = delayEl      ? String(delayEl.value      || '1').trim(): '1';
 		var ddBs        = ddBsEl       ? String(ddBsEl.value       || '1M').trim(): '1M';
+		var fsckPasses  = String((document.getElementById('mcFsckPasses')  || {value:'2'}).value || '2');
+		var ddFallback  = String((document.getElementById('mcDdFallback')  || {value:'1'}).value || '1');
+		var skipWriteErr = String((document.getElementById('mcSkipWriteError') || {value:'0'}).value || '0');
 
 		if (!srcDevPath || !srcPartNum) {
 			showToast(t('tNeedSourcePart'), 'warn', 10000);
@@ -9921,7 +10135,10 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 			target_mountpoint: tMount,
 			force_fs:         forceFs,
 			partclone_extra:  extra,
-			step_delay:       /^\d+$/.test(delay) ? delay : '1'
+			step_delay:       /^\d+$/.test(delay) ? delay : '1',
+			fat_fsck_passes:  fsckPasses,
+			dd_fallback:      ddFallback,
+			skip_write_error: skipWriteErr
 		};
 
 		if (!srcPart) {
@@ -9946,7 +10163,10 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 				unmount_before:    unmount,
 				force_fs:          forceFs,
 				partclone_extra:   extra,
-				step_delay:        extraOpts.step_delay
+				step_delay:        extraOpts.step_delay,
+				fat_fsck_passes:   fsckPasses,
+				dd_fallback:       ddFallback,
+				skip_write_error:  skipWriteErr
 			};
 			var moveLabel = 'Move partition (' + cloneMethod + ') #' + srcPartNum + ' from ' + srcDevPath + ' to ' + tgtDevPath + ' [' + tStart + 's..' + tEnd + 's]';
 			showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
@@ -9972,7 +10192,10 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 				unmount_before:      unmount,
 				force_fs:            forceFs,
 				partclone_extra:     extra,
-				step_delay:          extraOpts.step_delay
+				step_delay:          extraOpts.step_delay,
+				fat_fsck_passes:     fsckPasses,
+				dd_fallback:         ddFallback,
+				skip_write_error:    skipWriteErr
 			};
 			var cloneLabel = 'Clone partition (' + cloneMethod + ') #' + srcPartNum + ' from ' + srcDevPath + ' to ' + tgtDevPath + ' [' + tStart + 's..' + tEnd + 's]';
 			showCommandPreviewModal('clone_partition_dd', cloneParams, cloneLabel, t('confirmClone'), t('confirmCloneMsg'))
