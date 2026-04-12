@@ -509,7 +509,7 @@ is_valid_partnum() {
 
 is_valid_sector() {
 	case "$1" in
-		''|*[!0-9]*) return 1 ;;
+		''|*[!0-9%]*) return 1 ;;
 		*) return 0 ;;
 	esac
 }
@@ -985,6 +985,15 @@ action_create_partition() {
 	is_valid_sector "$_start_sector" || { emit_json_error "Invalid start sector"; return; }
 	is_valid_sector "$_end_sector" || { emit_json_error "Invalid end sector"; return; }
 
+	# Determine if start/end are percentage values; build parted position args accordingly.
+	_s_arg="${_start_sector}s"; _e_arg="${_end_sector}s"
+	_use_pct=0
+	case "$_start_sector" in *%) _s_arg="$_start_sector"; _use_pct=1 ;; esac
+	case "$_end_sector" in *%) _e_arg="$_end_sector"; _use_pct=1 ;; esac
+	# When using percentages, omit unit s so parted interprets them correctly.
+	_unit_arg='unit s'
+	[ "$_use_pct" -eq 1 ] && _unit_arg=''
+
 	case "$_part_role" in
 		primary|logical|extended|'') : ;;
 		*) emit_json_error "Invalid partition role"; return ;;
@@ -996,10 +1005,14 @@ action_create_partition() {
 		*) emit_json_error "Invalid fs hint"; return ;;
 	esac
 
-	if [ "$_start_sector" -ge "$_end_sector" ]; then
-		emit_json_error "Start sector must be lower than end sector"
-		return
-	fi
+	# Numeric comparison only makes sense for pure-integer (non-%) values
+	case "$_start_sector$_end_sector" in
+		*%*) : ;;
+		*) if [ "$_start_sector" -ge "$_end_sector" ]; then
+				emit_json_error "Start sector must be lower than end sector"
+				return
+			fi ;;
+	esac
 
 	_dev_base=$(basename "$_device" 2>/dev/null)
 	_logical_sector_size='512'
@@ -1008,10 +1021,13 @@ action_create_partition() {
 	fi
 	[ "$_logical_sector_size" -gt 0 ] || _logical_sector_size='512'
 	_min_start_sector=$(( (1048576 + _logical_sector_size - 1) / _logical_sector_size ))
-	if [ "$_start_sector" -lt "$_min_start_sector" ]; then
-		emit_json_error "Start sector too low. Use start sector >= $_min_start_sector to keep metadata/protective area and alignment."
-		return
-	fi
+	case "$_start_sector" in
+		*%) : ;; # skip numeric check for percentage values
+		*) if [ "$_start_sector" -lt "$_min_start_sector" ]; then
+				emit_json_error "Start sector too low. Use start sector >= $_min_start_sector to keep metadata/protective area and alignment."
+				return
+			fi ;;
+	esac
 
 	if dry_run_enabled; then
 		if [ -n "$_fs_hint" ]; then
@@ -1047,12 +1063,12 @@ mkfs.exfat ${_device}<new_partnum>" ;;
 
 	if [ -n "$_fs_hint" ]; then
 		exec_cmd_c "Create partition on $_device" \
-			"$CMD_PARTED -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s" \
-			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "$_fs_hint" "${_start_sector}s" "${_end_sector}s"
+			"$CMD_PARTED -s $_device $_unit_arg mkpart $_part_role $_fs_hint $_s_arg $_e_arg" \
+			"$CMD_PARTED" -s "$_device" $_unit_arg mkpart "$_part_role" "$_fs_hint" "$_s_arg" "$_e_arg"
 	else
 		exec_cmd_c "Create partition on $_device" \
-			"$CMD_PARTED -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s" \
-			"$CMD_PARTED" -s "$_device" unit s mkpart "$_part_role" "${_start_sector}s" "${_end_sector}s"
+			"$CMD_PARTED -s $_device $_unit_arg mkpart $_part_role $_s_arg $_e_arg" \
+			"$CMD_PARTED" -s "$_device" $_unit_arg mkpart "$_part_role" "$_s_arg" "$_e_arg"
 	fi
 	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
@@ -4555,8 +4571,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		</div>
 		<div class="pcgi-modal-actions" style="margin-top:12px">
 			<button type="button" id="pcgiNewPartCancelBtn">Cancel</button>
-			<button type="button" id="pcgiNewPartQuickBtn">Quick (no filesystem)</button>
-			<button type="button" id="pcgiNewPartFsBtn">With filesystem</button>
+			<button type="button" id="pcgiNewPartFsBtn">Create partition</button>
 		</div>
 	</div>
 </div>
@@ -5675,6 +5690,7 @@ window.paceOptions = {
 			deviceStripLabel: 'Devices:',
 			btnConfirm: 'Confirm',
 			btnCancel: 'Cancel',
+			btnCreatePartition: 'Create partition',
 			btnClose: 'Close',
 			btnValidateQueue: 'Validate and add',
 			tDone: 'Done',
@@ -5775,6 +5791,7 @@ window.paceOptions = {
 			deviceStripLabel: 'Dischi:',
 			btnConfirm: 'Conferma',
 			btnCancel: 'Annulla',
+			btnCreatePartition: 'Crea partizione',
 			btnClose: 'Chiudi',
 			btnValidateQueue: 'Valida e aggiungi',
 			tDone: 'Fatto',
@@ -5875,6 +5892,7 @@ window.paceOptions = {
 			deviceStripLabel: 'Datentraeger:',
 			btnConfirm: 'Bestaetigen',
 			btnCancel: 'Abbrechen',
+			btnCreatePartition: 'Partition erstellen',
 			btnClose: 'Schliessen',
 			btnValidateQueue: 'Bestaetigen und hinzufuegen',
 			tDone: 'Fertig',
@@ -6565,13 +6583,13 @@ window.paceOptions = {
 		var verifyCancelBtn = document.getElementById('pcgiVerifyCancelBtn');
 		var verifyOkBtn     = document.getElementById('pcgiVerifyOkBtn');
 		var newPartCancelBtn = document.getElementById('pcgiNewPartCancelBtn');
-		var newPartQuickBtn  = document.getElementById('pcgiNewPartQuickBtn');
 		var newPartFsBtn     = document.getElementById('pcgiNewPartFsBtn');
 		if (mcCancelBtn)     mcCancelBtn.textContent     = t('btnCancel');
 		if (mcOkBtn)         mcOkBtn.textContent         = t('btnValidateQueue');
 		if (verifyCancelBtn) verifyCancelBtn.textContent = t('btnCancel');
 		if (verifyOkBtn)     verifyOkBtn.textContent     = t('confirmVerify') || 'Verify';
 		if (newPartCancelBtn) newPartCancelBtn.textContent = t('btnCancel');
+		if (newPartFsBtn)     newPartFsBtn.textContent     = t('btnCreatePartition') || 'Create partition';
 		var dmCancelBtn = document.getElementById('pcgiDmCancelBtn');
 		var dmOkBtn     = document.getElementById('pcgiDmOkBtn');
 		if (dmCancelBtn) dmCancelBtn.textContent = t('btnCancel');
@@ -10241,7 +10259,6 @@ function showNewPartModal(dropStart, dropEnd) {
 	var modal    = document.getElementById('pcgiNewPartModal');
 	var titleEl  = document.getElementById('pcgiNewPartTitle');
 	var cancelBtn = document.getElementById('pcgiNewPartCancelBtn');
-	var quickBtn  = document.getElementById('pcgiNewPartQuickBtn');
 	var fsBtn     = document.getElementById('pcgiNewPartFsBtn');
 	if (!modal) return;
 
@@ -10302,13 +10319,12 @@ function showNewPartModal(dropStart, dropEnd) {
 	function cleanup() {
 		modal.style.display = 'none';
 		modal.setAttribute('aria-hidden', 'true');
-		cancelBtn.onclick = quickBtn.onclick = fsBtn.onclick = null;
+		cancelBtn.onclick = fsBtn.onclick = null;
 		document.removeEventListener('keydown', onEsc);
 	}
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
 	cancelBtn.onclick = cleanup;
-	quickBtn.onclick  = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedQuick')); queueCreatePartitionBasic(); };
 	fsBtn.onclick     = function () { cleanup(); syncMainFormFromModal(); updateMapStatus(t('tDropQueuedWithFs')); queueCreatePartition(); };
 }
 
@@ -11403,6 +11419,13 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			showToast(t('tNeedStartEnd'), 'warn');
 			return;
 		}
+		// Clamp end to the device's last usable sector before alignment
+		var _previewDev = dev ? getPreviewDeviceByPath(dev) : null;
+		var _totalSec = Number(_previewDev && _previewDev.total_sectors || 0);
+		var _tableType = String(_previewDev && _previewDev.table || '').toLowerCase();
+		var _resTail = _tableType === 'gpt' ? 33 : 0;
+		var _lastUsable = _totalSec > (_resTail + 1) ? (_totalSec - 1 - _resTail) : (_totalSec > 0 ? _totalSec - 1 : 0);
+		if (_lastUsable > 0 && /^\d+$/.test(end) && parseInt(end, 10) > _lastUsable) end = String(_lastUsable);
 		var aligned = alignSectors(start, end, document.getElementById('newPartAlign'));
 		start = aligned.start; end = aligned.end;
 		var role = document.getElementById('newPartRole').value;
