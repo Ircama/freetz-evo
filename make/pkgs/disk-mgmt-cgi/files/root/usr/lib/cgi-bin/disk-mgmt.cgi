@@ -1164,8 +1164,17 @@ mkfs.exfat ${_device}<new_partnum>" ;;
 					fi
 					;;
 				ntfs)
-					# parted mkpart with ntfs hint already creates the filesystem; no mkntfs needed
-					_out="$_out\nNote: NTFS filesystem created by parted mkpart"
+					# parted mkpart with ntfs hint creates a basic NTFS without a volume label.
+					# Re-run mkntfs to set the label (-Q = quick format, keeps existing data).
+					if [ -n "$CMD_MKNTFS" ] && [ -n "$_part_label" ] && is_valid_label "$_part_label"; then
+						exec_cmd_c "mkntfs set label on $_new_part_dev" \
+							"$CMD_MKNTFS -Q -f -L $_part_label $_new_part_dev" \
+							"$CMD_MKNTFS" -Q -f -L "$_part_label" "$_new_part_dev"
+						_out="$_out\n$EXEC_OUT"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkntfs failed (rc=$EXEC_RC), NTFS label not set"
+					else
+						_out="$_out\nNote: NTFS filesystem created by parted mkpart"
+					fi
 					;;
 				*)
 					_out="$_out\nWarning: mkfs for '$_fs_hint' not supported in create_partition, skipping"
@@ -2899,8 +2908,18 @@ $_preview_cmd"
 
 	_already=$(awk -v p="$_partition" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
 	if [ -n "$_already" ]; then
-		emit_cmd_result true 0 "Partition already mounted" "$_partition is already mounted on $_already"
-		return
+		if [ "$_already" = "$_mountpoint" ]; then
+			emit_cmd_result true 0 "Partition already mounted" "$_partition is already mounted on $_already"
+			return
+		fi
+		# Mounted at wrong path (e.g. udev automount) — unmount then remount at requested path
+		umount "$_already" 2>/dev/null
+		sleep 1
+		_still=$(awk -v p="$_partition" '$1 == p { print $2; exit }' /proc/mounts 2>/dev/null)
+		if [ -n "$_still" ]; then
+			emit_cmd_result true 0 "Partition already mounted" "$_partition is mounted on $_still (could not remount to $_mountpoint)"
+			return
+		fi
 	fi
 
 	mkdir -p "$_mountpoint" 2>/dev/null
@@ -6963,7 +6982,7 @@ window.paceOptions = {
 			}
 		}
 		if (spanOpen) html += '</span>';
-		el.innerHTML += html;
+		el.insertAdjacentHTML('beforeend', html);
 		el.scrollTop = el.scrollHeight;
 	}
 
