@@ -551,7 +551,7 @@ is_parted_scan_candidate() {
 	_base=$(basename "$_dev" 2>/dev/null)
 	[ -n "$_base" ] || return 1
 	case "$_base" in
-		loop*|ram*|fd*|sr*|mtd*|mtdblock*|dm-*)
+		ram*|fd*|sr*|mtd*|mtdblock*|dm-*)
 			return 1
 			;;
 	esac
@@ -820,7 +820,7 @@ action_list_devices() {
 		[ -e "$_sys" ] || continue
 		_name=$(basename "$_sys")
 		case "$_name" in
-			loop*|ram*|fd*|sr*|mtd*|dm-*)
+			ram*|fd*|sr*|mtd*|dm-*)
 				continue
 				;;
 		esac
