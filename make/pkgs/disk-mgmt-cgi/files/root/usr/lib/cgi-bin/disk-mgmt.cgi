@@ -8988,8 +8988,13 @@ actionsWrap.appendChild(btnRemove);
 			var intCursor = _normExtStart;
 			for (var j = 0; j < logicals.length; j++) {
 				var lp = logicals[j];
-				var lpStart = Math.max(_normExtStart, Math.floor(Number(lp.start || 0)));
-				var lpEnd   = Math.min(_normExtEnd,   Math.floor(Number(lp.end   || 0)));
+				// Do NOT clamp logical partitions to the extended boundary here.
+				// When the extended is being shrunk in the preview, clamping would
+				// falsely show logicals as compressed.  The drag resize already
+				// enforces minEnd = innerMaxEnd so the extended cannot be shrunk
+				// past its logicals during normal interaction.
+				var lpStart = Math.floor(Number(lp.start || 0));
+				var lpEnd   = Math.floor(Number(lp.end   || 0));
 				if (lpEnd < lpStart) continue;
 				// Gap before this logical = free space inside extended
 				if (lpStart > intCursor) {
@@ -10141,10 +10146,14 @@ actionsWrap.appendChild(btnRemove);
 			}
 			// Inner constraints: left edge must stay ≤ innermost logical start - 1 sector (EBR).
 			// Right edge must stay ≥ outermost logical end.
+			// Use the preview device so that pending-create logical partitions in the
+			// queue are also included in the constraint calculation.
+			var _innerPreview = buildPreviewDevice(dev);
+			var _innerParts = (_innerPreview && _innerPreview.partitions) ? _innerPreview.partitions : dev.partitions;
 			var innerMinStart = extEnd; // will be shrunk to smallest logical start
 			var innerMaxEnd   = extStart; // will be grown to largest logical end
-			for (var _ri3 = 0; _ri3 < dev.partitions.length; _ri3++) {
-				var _rp3 = dev.partitions[_ri3];
+			for (var _ri3 = 0; _ri3 < _innerParts.length; _ri3++) {
+				var _rp3 = _innerParts[_ri3];
 				if (_rp3.kind !== 'partition') continue;
 				var _r3Role = String(_rp3.role || '');
 				if (!_r3Role && Number(_rp3.number || 0) >= 5) _r3Role = 'logical';
@@ -10286,7 +10295,7 @@ actionsWrap.appendChild(btnRemove);
 		var v = String(fsType || '').toLowerCase();
 		if (!v || v === 'auto') return '';
 		if (v === 'fat' || v === 'fat12' || v === 'fat16' || v === 'fat32' || v === 'vfat') return 'fat';
-		if (v.indexOf('ext') === 0) return v;
+		if (v === 'ext2' || v === 'ext3' || v === 'ext4') return v;
 		if (v === 'ntfs') return 'ntfs';
 		return '';
 	}
@@ -10377,6 +10386,43 @@ actionsWrap.appendChild(btnRemove);
 		var queueFs = String(resizeFs || 'no') === 'yes';
 		var rawFsType = String(part.fs || '').toLowerCase().trim();
 		var hasFilesystem = !!(rawFsType && rawFsType !== 'unknown' && rawFsType !== '-');
+
+		// Detect extended partitions: they have no actual filesystem.
+		// Skip all FS resize logic; also block shrinking past any logical partition.
+		var _qrRole = String(part.role || '');
+		if (!_qrRole) {
+			var _qrNum = Number(part.number || 0);
+			if (_qrNum >= 5) _qrRole = 'logical';
+			else if (rawFsType === 'extended') _qrRole = 'extended';
+			else if (!rawFsType && String(part.flags || '').toLowerCase() === 'lba') _qrRole = 'extended';
+			else _qrRole = 'primary';
+		}
+		if (_qrRole === 'extended') {
+			hasFilesystem = false;
+			queueFs = false;
+			// Shrinking an extended partition past a logical partition would orphan
+			// or corrupt that logical.  Block the operation and inform the user.
+			if (isShrink) {
+				var _previewForCheck = buildPreviewDevice(dev);
+				var _chkParts = (_previewForCheck && _previewForCheck.partitions) ? _previewForCheck.partitions : (dev.partitions || []);
+				for (var _lchk = 0; _lchk < _chkParts.length; _lchk++) {
+					var _lp = _chkParts[_lchk];
+					if (!_lp || _lp.kind !== 'partition') continue;
+					var _lpRole = String(_lp.role || '');
+					if (!_lpRole && Number(_lp.number || 0) >= 5) _lpRole = 'logical';
+					if (_lpRole !== 'logical') continue;
+					if (Number(_lp.end || 0) > targetEnd) {
+						showToast(
+							'Cannot shrink extended partition past logical #' + _lp.number +
+							' (ends at ' + _lp.end + 's). Delete or move the logical first.',
+							'error', 10000
+						);
+						return;
+					}
+				}
+			}
+		}
+
 		var fsCap = hasFilesystem ? getFsResizeCapability(rawFsType, isShrink ? 'shrink' : 'grow') : { supported: true, hasTool: true, canResize: true, fsType: '', toolHint: '' };
 		var fsType = fsCap.fsType || normalizeFsTypeForResize(rawFsType);
 
