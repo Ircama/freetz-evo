@@ -1117,6 +1117,28 @@ ${CMD_MKNTFS:-mkntfs} -Q -f ${_device}<new_partnum>" ;;
 	fi
 	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
+	# parted may report "The closest location we can manage is Xs to Ys" when
+	# the requested start/end is off by 1 sector (e.g. logical partition EBR gap,
+	# or alignment rounding).  Auto-retry once with the corrected sectors.
+	if [ "$_rc" -ne 0 ]; then
+		_adj_s=$(printf '%s\n' "$_out" | sed -n 's/.*closest location we can manage is \([0-9]*\)s to \([0-9]*\)s.*/\1/p' | head -1)
+		_adj_e=$(printf '%s\n' "$_out" | sed -n 's/.*closest location we can manage is \([0-9]*\)s to \([0-9]*\)s.*/\2/p' | head -1)
+		if [ -n "$_adj_s" ] && [ -n "$_adj_e" ]; then
+			_adj_s_arg="${_adj_s}s"
+			_adj_e_arg="${_adj_e}s"
+			if [ -n "$_fs_hint" ]; then
+				exec_cmd_c "Create partition on $_device (adjusted to ${_adj_s_arg}..${_adj_e_arg})" \
+					"$CMD_PARTED -s $_device $_unit_arg mkpart $_part_role $_fs_hint $_adj_s_arg $_adj_e_arg" \
+					"$CMD_PARTED" -s "$_device" $_unit_arg mkpart "$_part_role" "$_fs_hint" "$_adj_s_arg" "$_adj_e_arg"
+			else
+				exec_cmd_c "Create partition on $_device (adjusted to ${_adj_s_arg}..${_adj_e_arg})" \
+					"$CMD_PARTED -s $_device $_unit_arg mkpart $_part_role $_adj_s_arg $_adj_e_arg" \
+					"$CMD_PARTED" -s "$_device" $_unit_arg mkpart "$_part_role" "$_adj_s_arg" "$_adj_e_arg"
+			fi
+			_rc=$EXEC_RC; _out="$EXEC_OUT"
+		fi
+	fi
+
 	# Determine new partition number by comparing before/after partition lists
 	_new_part=''
 	if [ "$_rc" -eq 0 ]; then
@@ -8977,7 +8999,9 @@ actionsWrap.appendChild(btnRemove);
 				lp.end   = lpEnd;
 				lp.size  = Math.max(1, lpEnd - lpStart + 1);
 				out.push(lp);
-				intCursor = lpEnd + 1;
+				// Leave 1 sector after each logical for the next logical's EBR.
+				// parted places the EBR at lpEnd+1, so the next usable start is lpEnd+2.
+				intCursor = lpEnd + 2;
 			}
 			// Trailing free space inside extended (after last logical, or entire if none)
 			if (intCursor <= _normExtEnd) {
@@ -10069,6 +10093,16 @@ actionsWrap.appendChild(btnRemove);
 		var part = dev.partitions[partIndex];
 		if (!part||part.kind!=='partition')return;
 
+		// Determine if this is an extended partition
+		var _rsRole = String(part.role || '');
+		if (!_rsRole) {
+			if (Number(part.number || 0) >= 5) _rsRole = 'logical';
+			else if (String(part.fs || '').toLowerCase() === 'extended') _rsRole = 'extended';
+			else if (!String(part.fs || '') && String(part.flags || '').toLowerCase() === 'lba') _rsRole = 'extended';
+			else _rsRole = 'primary';
+		}
+		var isExtended = (_rsRole === 'extended');
+
 		// Select the partition immediately so all form fields are populated
 		// even when the user starts dragging without a prior click.
 		selectPartition(part);
@@ -10079,36 +10113,99 @@ actionsWrap.appendChild(btnRemove);
 		if (!total)return;
 
 		var logical = Number(dev.logical_sector_size || 512);
-		var prevSeg = partIndex > 0 ? dev.partitions[partIndex - 1] : null;
-		var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
 		var minStart = 1;
 		var maxEnd = total - 1;
-		if (prevSeg) minStart = prevSeg.kind === 'free' ? Number(prevSeg.start) : Number(prevSeg.end) + 1;
-		if (nextSeg) maxEnd = nextSeg.kind === 'free' ? Number(nextSeg.end) : Number(nextSeg.start) - 1;
-		// The right edge must not move below the used filesystem area (data loss).
-		// 2048-sector alignment floor is always kept even with no filesystem.
-		var fsUsedBytes = Number(part.fs_used_bytes || 0);
-		var fsUsedMinSectors = (fsUsedBytes > 0 && logical > 0) ? Math.ceil(fsUsedBytes / logical) + 1 : 0;
-		var minEnd = Number(part.start) + Math.max(2048, fsUsedMinSectors);
-		if (minEnd > maxEnd) minEnd = Number(part.start);
-		var maxStart = Number(part.end) - 2048;
-		if (maxStart < minStart) maxStart = minStart;
 
-		state.dragCtx = {
-			dev: dev,
-			part: part,
-			partPath: String(part.path || ''),
-			edge: edge || 'right',
-			mapRect: rect,
-			total: total,
-			logical: logical,
-			minStart: minStart,
-			maxStart: maxStart,
-			currentStart: Number(part.start),
-			minEnd: minEnd,
-			maxEnd: maxEnd,
-			currentEnd: Number(part.end)
-		};
+		if (isExtended) {
+			// For the extended band, compute outer bounds from the disk/non-logical context:
+			// find the first non-inner item before and after the extended range.
+			var extStart = Number(part.start || 0);
+			var extEnd   = Number(part.end   || 0);
+			for (var _ri = 0; _ri < dev.partitions.length; _ri++) {
+				var _rp = dev.partitions[_ri];
+				var _rEnd = Number(_rp.end || 0);
+				// A segment is "outer-before" if it ends before extStart and is not inside extended.
+				if (_rEnd < extStart) {
+					var _boundary = _rp.kind === 'free' ? Number(_rp.start) : _rEnd + 1;
+					if (_boundary > minStart) minStart = _boundary;
+				}
+			}
+			for (var _ri2 = 0; _ri2 < dev.partitions.length; _ri2++) {
+				var _rp2 = dev.partitions[_ri2];
+				var _rStart2 = Number(_rp2.start || 0);
+				// A segment is "outer-after" if it starts after extEnd.
+				if (_rStart2 > extEnd) {
+					var _boundary2 = _rp2.kind === 'free' ? Number(_rp2.end) : _rStart2 - 1;
+					if (_boundary2 < maxEnd) maxEnd = _boundary2;
+				}
+			}
+			// Inner constraints: left edge must stay ≤ innermost logical start - 1 sector (EBR).
+			// Right edge must stay ≥ outermost logical end.
+			var innerMinStart = extEnd; // will be shrunk to smallest logical start
+			var innerMaxEnd   = extStart; // will be grown to largest logical end
+			for (var _ri3 = 0; _ri3 < dev.partitions.length; _ri3++) {
+				var _rp3 = dev.partitions[_ri3];
+				if (_rp3.kind !== 'partition') continue;
+				var _r3Role = String(_rp3.role || '');
+				if (!_r3Role && Number(_rp3.number || 0) >= 5) _r3Role = 'logical';
+				if (_r3Role !== 'logical') continue;
+				var _r3s = Number(_rp3.start || 0), _r3e = Number(_rp3.end || 0);
+				if (_r3s < innerMinStart) innerMinStart = _r3s;
+				if (_r3e > innerMaxEnd)   innerMaxEnd   = _r3e;
+			}
+			var hasLogicals = (innerMinStart < extEnd && innerMaxEnd > extStart);
+			// maxStart: extended left edge cannot go right past innermost logical − 1 EBR sector.
+			var maxStart = hasLogicals ? innerMinStart - 1 : Number(part.end) - 1;
+			if (maxStart < minStart) maxStart = minStart;
+			// minEnd: extended right edge cannot go left past outermost logical end.
+			var minEnd = hasLogicals ? innerMaxEnd : Number(part.start) + 1;
+			if (minEnd > maxEnd) minEnd = Number(part.start);
+
+			state.dragCtx = {
+				dev: dev,
+				part: part,
+				partPath: String(part.path || ''),
+				edge: edge || 'right',
+				mapRect: rect,
+				total: total,
+				logical: logical,
+				minStart: minStart,
+				maxStart: maxStart,
+				currentStart: Number(part.start),
+				minEnd: minEnd,
+				maxEnd: maxEnd,
+				currentEnd: Number(part.end)
+			};
+		} else {
+			var prevSeg = partIndex > 0 ? dev.partitions[partIndex - 1] : null;
+			var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
+			if (prevSeg) minStart = prevSeg.kind === 'free' ? Number(prevSeg.start) : Number(prevSeg.end) + 1;
+			if (nextSeg) maxEnd = nextSeg.kind === 'free' ? Number(nextSeg.end) : Number(nextSeg.start) - 1;
+			// The right edge must not move below the used filesystem area (data loss).
+			// 2048-sector alignment floor is always kept even with no filesystem.
+			var fsUsedBytes = Number(part.fs_used_bytes || 0);
+			var fsUsedMinSectors = (fsUsedBytes > 0 && logical > 0) ? Math.ceil(fsUsedBytes / logical) + 1 : 0;
+			var minEnd = Number(part.start) + Math.max(2048, fsUsedMinSectors);
+			if (minEnd > maxEnd) minEnd = Number(part.start);
+			var maxStart = Number(part.end) - 2048;
+			if (maxStart < minStart) maxStart = minStart;
+
+			state.dragCtx = {
+				dev: dev,
+				part: part,
+				partPath: String(part.path || ''),
+				edge: edge || 'right',
+				mapRect: rect,
+				total: total,
+				logical: logical,
+				minStart: minStart,
+				maxStart: maxStart,
+				currentStart: Number(part.start),
+				minEnd: minEnd,
+				maxEnd: maxEnd,
+				currentEnd: Number(part.end)
+			};
+		}
 
 		hideHoverTooltip();
 		hideContextMenu();
@@ -13127,6 +13224,39 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 							return;
 						}
 						queueRememberResolvedTarget(params, res);
+						// MBR renumbering: when a logical partition is deleted, the kernel
+						// renumbers all higher-numbered logical partitions on that device by -1.
+						// Patch subsequent queue items so their partition references stay valid.
+						if (op.action === 'delete_partition') {
+							var _delDev  = String(op.params.device || '');
+							var _delNum  = Number(op.params.partnum || 0);
+							if (_delDev && _delNum >= 5) {
+								var _delBase = _delDev.replace(/^.*\//, '');
+								for (var _qi = i + 1; _qi < state.queue.length; _qi++) {
+									var _qop = state.queue[_qi];
+									var _qDev = String((_qop.params && _qop.params.device) || '');
+									if (_qDev.replace(/^.*\//, '') !== _delBase) continue;
+									var _qNum = Number((_qop.params && _qop.params.partnum) || 0);
+									var _qPart = String((_qop.params && _qop.params.partition) || '');
+									if (_qNum > _delNum) {
+										_qop.params.partnum = String(_qNum - 1);
+										appendAnsi('cmdOutput',
+											'\x1b[0;33m  [renumber] Adjusted queued op "' + (_qop.label || _qop.action) +
+											'" partnum ' + _qNum + '\u2192' + (_qNum-1) + '\x1b[0m\n');
+									}
+									if (_qPart) {
+										var _qPartNum = Number(_qPart.replace(/^.*[^0-9]/, ''));
+										if (_qPartNum > _delNum) {
+											var _newPart = _qPart.replace(/([0-9]+)$/, String(_qPartNum - 1));
+											_qop.params.partition = _newPart;
+											appendAnsi('cmdOutput',
+												'\x1b[0;33m  [renumber] Adjusted queued op "' + (_qop.label || _qop.action) +
+												'" partition ' + _qPart + '\u2192' + _newPart + '\x1b[0m\n');
+										}
+									}
+								}
+							}
+						}
 						i++;
 						runNext();
 					})
