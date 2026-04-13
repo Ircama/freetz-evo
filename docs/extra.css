@@ -1,7 +1,6 @@
 /* ── Secondary sidebar (right-side TOC) ────────────────────────────── */
 /* Hidden by default and enabled only when JS marks body.toc-has-content */
 .md-sidebar--secondary.md-sidebar,
-.md-nav--secondary {
     display: none;
 }
 
@@ -279,6 +278,7 @@ body.toc-has-content .toc-toggle-btn {
     height: 1.1em;
     fill: currentColor;
 }
+*/
 
 /* General styles for navigation and typeset */
 .md-nav {
@@ -335,18 +335,22 @@ body.toc-has-content .toc-toggle-btn {
     color: var(--code-color);
 }
 
-.text-center {
-    text-align: center !important;
-}
-
 .md-typeset table:not([class]) th {
     color: var(--table-foreground);
     background-color: var(--table-background);
 }
 
+.md-grid {
+/*  max-width: 1440px; */
+    max-width: 1680px;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
 [data-md-color-primary="blue-grey"] {
     --md-primary-fg-color: #436584;
-}
 
 [data-md-color-scheme="default"] {
     --code-color: #0891b2;        /* teal — matches colorscheme-modern.css .part1 */

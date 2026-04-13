@@ -17,9 +17,10 @@ You can install the required packages (prerequisites) in the following ways:
   - none others
 
 ### Problematic distributions
+  - AArch64/ARM64 (host cross-compilation bitness issues)
   - Gentoo
   - NixOS
-  - Ubuntu 25.10
+  - Ubuntu 25.10+26.04 (uutils-coreutils clone)
   - WSL/WSL2
 
 ### All other distributions
@@ -56,37 +57,37 @@ sudo dnf -y update && sudo systemctl daemon-reload
 
   - Fedora 42/43 64-bit:
 ```
-sudo dnf -y install %%Fedora42%%
+sudo dnf -y install %%Fedora-42%%
 ```
 
   - Fedora 41 64-bit:
 ```
-sudo dnf -y install %%Fedora41%%
+sudo dnf -y install %%Fedora-41%%
 ```
 
   - Fedora 40 64-bit:
 ```
-sudo dnf -y install %%Fedora40%%
+sudo dnf -y install %%Fedora-40%%
 ```
 
   - Fedora 37/38/39 64-bit:
 ```
-sudo dnf -y install %%Fedora37%%
+sudo dnf -y install %%Fedora-37%%
 ```
 
   - Fedora 36 64-bit:
 ```
-sudo dnf -y install %%Fedora36%%
+sudo dnf -y install %%Fedora-36%%
 ```
 
   - Fedora 35 64-bit:
 ```
-sudo dnf -y install %%Fedora35%%
+sudo dnf -y install %%Fedora-35%%
 ```
 
   - Fedora 33/34 64-bit:
 ```
-sudo dnf -y install %%Fedora33%%
+sudo dnf -y install %%Fedora-33%%
 ```
 
   - If the following system runs 64-bit Linux, install additionally:
@@ -96,7 +97,7 @@ sudo yum -y install ncurses-devel.i686 glibc-devel.i686 libgcc.i686
 
   - Fedora ~20 32-bit:
 ```
-sudo yum -y install %%Fedora20%%
+sudo yum -y install %%Fedora-20%%
 ```
 
 ### Debian
@@ -110,17 +111,17 @@ sudo apt -y dist-upgrade
 
   - Debian 13 64-bit:
 ```
-sudo apt -y install %%Debian13%%
+sudo apt -y install %%Debian-13%%
 ```
 
   - Debian 12 64-bit:
 ```
-sudo apt -y install %%Debian12%%
+sudo apt -y install %%Debian-12%%
 ```
 
   - Debian 11 64-bit:
 ```
-sudo apt -y install %%Debian11%%
+sudo apt -y install %%Debian-11%%
 ```
 
 
@@ -178,7 +179,7 @@ sudo apt-get -y install %%Ubuntu23%%
 
   - Ubuntu 22 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu22%%
+sudo apt-get -y install %%Ubuntu-22%%
 ```
 
   - Ubuntu 20/21 64-bit:
@@ -191,17 +192,17 @@ sudo apt -y install libzstd-dev:i386 sqlite3:i386
 
   - Ubuntu 18/19 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu18%%
+sudo apt-get -y install %%Ubuntu-18%%
 ```
 
   - Ubuntu 15/16/17 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu15%%
+sudo apt-get -y install %%Ubuntu-15%%
 ```
 
   - Ubuntu 14 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu14%%
+sudo apt-get -y install %%Ubuntu-14%%
 ```
 Additionally, install manually:
 ```
@@ -232,17 +233,17 @@ sudo apt-get -y install libtool-bin
 
   - Ubuntu 13/14 32-bit:
 ```
-sudo apt-get -y install %%Ubuntu13%%
+sudo apt-get -y install %%Ubuntu-13%%
 ```
 
   - Ubuntu 10/11/12 32-bit:
 ```
-sudo apt-get -y install %%Ubuntu10%%
+sudo apt-get -y install %%Ubuntu-10%%
 ```
 
   - Ubuntu 9.04 32-bit (no automake 1.8, use "ecj" instead of "ecj-bootstrap"):
 ```
-sudo apt-get -y install %%Ubuntu09%%
+sudo apt-get -y install %%Ubuntu-09%%
 ```
 
 ### Mint

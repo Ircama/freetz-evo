@@ -98,7 +98,12 @@ detect_linux() {
 	NAME="$(echo $NAME | sed 's/"//g;s/ *Linux *//;s/ .*//;s/\..*//')"
 	VERSION="$(sed -rn 's/^VERSION=//p' /etc/os-release 2>/dev/null)"
 	VERSION="$(echo $VERSION | sed 's/"//g;s/ .*//;s/\..*//')"
-	echo "$NAME$VERSION"
+	MACHINE="$(uname -m)"
+	case "$MACHINE" in
+		aarch64)	MACHINE="AArch64" ;;
+		*)		MACHINE="" ;;
+	esac
+	echo "$NAME${MACHINE:+_$MACHINE}${VERSION:+-$VERSION}"
 }
 
 extract_nodejs_host_multilib() {
@@ -133,7 +138,7 @@ install_requisite() {
 	[ -z "$OSV" ] && echo 'Can not detect you Linux version, set it manually' && list_linux && exit 1
 
 	OSV="${OSV##*/}"
-	GENERIC="$(echo "$OSV" | sed 's/[0-9]*$//')"
+	GENERIC="${OSV%-*}"
 	[ ! -e "$PACKAGES/$OSV" ] && [ -e "$PACKAGES/$GENERIC" ] && OSV="$GENERIC"
 
 	[ ! -e "$PACKAGES/$OSV" ] && echo "Unsupported, file for your Linux version not found: $OSV" && list_linux && exit 1
@@ -173,19 +178,19 @@ show_usage() {
 	 - check
 	   Checks prerequisites and shows missing. Used by make, check return value.
 
-	 - list [linux+version]
+	 - list
 	   Lists supported linux distributions and versions.
 
-	 - show [linux+version]
-	   Shows packages to install with package-manager of 'linux+version'.
+	 - show [linux[_arch][-version]]
+	   Shows packages to install with package-manager.
 
-	 - install [-y] [linux+version]
-	   Installs packages by package-manager for 'linux+version'.
+	 - install [-y] [linux[_arch][-version]]
+	   Installs packages by package-manager.
 	   You will be asked for sudo password if you have no sufficent permissions.
 	   If sudo is not installed you need to have permissions to install packages.
 	   To install instantly and without question use the '-y' parameter.
 
-	Without 'linux+version' parameter, the current system will be detected.
+	Without 'linux[_arch][-version]' parameter, the current system will be detected.
 EOF
 	list_linux
 	exit 1

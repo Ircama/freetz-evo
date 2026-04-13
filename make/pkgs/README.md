@@ -434,7 +434,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Security](../../docs/make/iodine.md#security)
      - [Forwarding](../../docs/make/iodine.md#forwarding)
 
-  * **[iPerf3 3.3/3.20 (binary only)](../../docs/make/iperf.md)<a id='iperf'></a>**<br>
+  * **[iPerf3 3.3/3.21 (binary only)](../../docs/make/iperf.md)<a id='iperf'></a>**<br>
     iPerf3 is a tool for active measurements of the maximum achievable bandwidth on IP networks. It supports tuning of various parameters related to timing, buffers and protocols (TCP, UDP, SCTP with IPv4 and IPv6). For each test it reports the bandwidth, loss, and other parameters. S. https://github.com/esnet/iperf for more details.
 
   * **<u>IPsec-tools 0.7.2 - DEPRECATED</u><a id='ipsec-tools'></a>**<br>
@@ -1346,7 +1346,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Whois 5.6.6 (binary only)](../../docs/make/whois.md)<a id='whois'></a>**<br>
     Whois - client for the whois directory service.
 
-  * **[wireguard-tools 1.0.20250521](../../docs/make/wireguard.md)<a id='wireguard'></a>**<br>
+  * **[wireguard-tools 1.0.20260223](../../docs/make/wireguard.md)<a id='wireguard'></a>**<br>
     WireGuard is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPSec, while avoiding the massive headache. It intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it plans to be cross-platform and widely deployable. It is currently under heavy development, but already it might be regarded as the most secure, easiest to use, and simplest VPN solution in the industry.
      - [Hinweise](../../docs/make/wireguard.md#hinweise)
      - [Datendurchsatz](../../docs/make/wireguard.md#datendurchsatz)

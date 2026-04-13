@@ -19,9 +19,10 @@ You can install the required packages (prerequisites) in the following ways:
   - none others
 
 ### Problematic distributions
+  - AArch64/ARM64 (host cross-compilation bitness issues)
   - Gentoo
   - NixOS
-  - Ubuntu 25.10
+  - Ubuntu 25.10+26.04 (uutils-coreutils clone)
   - WSL/WSL2
 
 ### All other distributions

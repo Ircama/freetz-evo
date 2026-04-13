@@ -64,7 +64,7 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13.2
+    * ccache 4.13.3
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
@@ -73,6 +73,7 @@ Latest changes
     * cmake 4.3.1
     * dos2unix 7.5.5
     * file 5.47
+    * kconfig 7.0
     * meson 1.10.2
     * openssl 3.5.6
     * pseudo 1.9.3-414ce2d
@@ -84,7 +85,7 @@ Latest changes
     * zensical_httpserver.sh - run local zensical http server to develop docs
 
   - Patches:
-    * Still are some patches for Fritzos 8.2 not adapted for Fritzos 8.2x
+    * Still are some patches not yet adapted for Fritzos 8.2x
 
   - Packages:
     * Atop 2.12.1
@@ -93,6 +94,7 @@ Latest changes
     * Curl 8.12.1/8.19.0
     * htop 1.0.3/3.5.0
     * ImageMagick 7.1.0-62/7.1.2-16
+    * iPerf3 3.3/3.21
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12
     * ldd 0.1/1.0.57
     * Nano 9.0
@@ -106,6 +108,7 @@ Latest changes
     * Tinyproxy 1.11.3
     * Tor 0.4.8.23
     * UnRAR 6.1.7/7.2.5
+    * wireguard-tools 1.0.20260223
     * Whois 5.6.6
     * XZ 5.8.3
 

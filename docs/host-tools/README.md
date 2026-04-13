@@ -58,7 +58,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### K
 
-  * **[kconfig 6.19](kconfig-host.md)<a id='kconfig-host'></a>**<br>
+  * **[kconfig 7.0](kconfig-host.md)<a id='kconfig-host'></a>**<br>
 
 ### L
 
