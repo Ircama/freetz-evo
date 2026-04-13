@@ -1050,6 +1050,21 @@ action_create_partition() {
 	fi
 	[ "$_logical_sector_size" -gt 0 ] || _logical_sector_size='512'
 	_min_start_sector=$(( (1048576 + _logical_sector_size - 1) / _logical_sector_size ))
+	# Logical partitions on MBR must start at least 1 sector after the extended partition start.
+	# parted refuses start == extended_start for logical partitions.
+	if [ "$_part_role" = 'logical' ]; then
+		_ext_start_sector=$(
+			"$CMD_PARTED" -m -s "$_device" unit s print 2>/dev/null | awk -F: '
+				NR > 2 && ($5=="" || $5=="extended") && $7~/\blba\b/ { gsub(/s$/,"",$2); print $2+1; exit }
+				NR > 2 && $5=="extended" { gsub(/s$/,"",$2); print $2+1; exit }
+			'
+		)
+		if [ -n "$_ext_start_sector" ] && [ "$_ext_start_sector" -gt 0 ] 2>/dev/null; then
+			if [ "$_min_start_sector" -lt "$_ext_start_sector" ]; then
+				_min_start_sector=$_ext_start_sector
+			fi
+		fi
+	fi
 	case "$_start_sector" in
 		*%) : ;; # skip numeric check for percentage values
 		*) if [ "$_start_sector" -lt "$_min_start_sector" ]; then
@@ -8860,6 +8875,19 @@ actionsWrap.appendChild(btnRemove);
 		return parts.length + 1;
 	}
 
+	// Logical partitions on MBR are always numbered ≥5.
+	function getNextLogicalNumber(parts) {
+		var used = {};
+		for (var i = 0; i < parts.length; i++) {
+			var n = Number(parts[i].number || 0);
+			if (n > 0) used[n] = true;
+		}
+		for (var candidate = 5; candidate < 65535; candidate++) {
+			if (!used[candidate]) return candidate;
+		}
+		return parts.length + 1;
+	}
+
 	function normalizePreviewPartitions(parts, totalSectors) {
 		var out = [];
 		var maxSector = Math.max(1, Number(totalSectors || 0) - 1);
@@ -8995,7 +9023,10 @@ actionsWrap.appendChild(btnRemove);
 				var newStart = Number(params.start_sector || 0);
 				var newEnd = Number(params.end_sector || 0);
 				if (!isFinite(newStart) || !isFinite(newEnd) || newStart <= 0 || newEnd < newStart) continue;
-				var newNum = getNextPartitionNumber(partsOnly);
+				var newRole = String(params.part_role || 'primary');
+				var newNum = (newRole === 'logical')
+					? getNextLogicalNumber(partsOnly)
+					: getNextPartitionNumber(partsOnly);
 				partsOnly.push({
 					kind: 'partition',
 					number: newNum,
@@ -9008,6 +9039,7 @@ actionsWrap.appendChild(btnRemove);
 					flags: '',
 					label: '',
 					mountpoint: '',
+					role: newRole,
 					fs_size_bytes: 0,
 					fs_used_bytes: 0,
 					fs_avail_bytes: 0,
@@ -9388,7 +9420,7 @@ actionsWrap.appendChild(btnRemove);
 		}
 		if (menuType === 'free') {
 			var freeSeg = target;
-			if (action === 'free_create')     { showNewPartModal(freeSeg.start, freeSeg.end); return; }
+			if (action === 'free_create')     { showNewPartModal(freeSeg.start, freeSeg.end, freeSeg.devPath || ''); return; }
 			if (action === 'free_move_clone') {
 				// Pass the currently selected partition as source (preserved — context menu no longer clears it)
 				showMoveCloneModal(freeSeg.devPath, freeSeg.start, freeSeg.end, state.selectedPartDevice || freeSeg.devPath, state.selectedPart);
@@ -9627,10 +9659,10 @@ actionsWrap.appendChild(btnRemove);
 			bandLabel.className = 'pcgi-extended-label';
 			bandLabel.textContent = 'extended';
 			band.appendChild(bandLabel);
-			// Allow click/contextmenu on the band label strip (above logical partitions)
+			// Allow click/contextmenu/drag on the band label strip (above logical partitions)
 			// to select/operate on the extended partition itself.
-			// Also accept "new partition" chip drops on the band strip.
-			(function(_bandEp) {
+			// Also accept "new partition" chip drops, and provide resize handles.
+			(function(_bandEp, _bandEi) {
 				band.onclick = function(ev) {
 					ev.preventDefault(); ev.stopPropagation();
 					hideContextMenu();
@@ -9650,7 +9682,7 @@ actionsWrap.appendChild(btnRemove);
 					ev.preventDefault(); ev.stopPropagation();
 					var data = ev.dataTransfer ? ev.dataTransfer.getData('text/plain') : '';
 					if (data === 'new-partition') {
-						showNewPartModal(Number(_bandEp.start || 0) + 1, Number(_bandEp.end || 0) - 1);
+						showNewPartModal(Number(_bandEp.start || 0) + 1, Number(_bandEp.end || 0) - 1, String(dev.path || ''));
 					}
 				};
 				band.onmouseenter = function(ev) {
@@ -9658,7 +9690,18 @@ actionsWrap.appendChild(btnRemove);
 				};
 				band.onmousemove = moveHoverTooltip;
 				band.onmouseleave = hideHoverTooltip;
-			})(_ep);
+				// Resize handles on band edges so the extended partition can be resized
+				var _blh = document.createElement('div');
+				_blh.className = 'pcgi-resize-handle pcgi-resize-handle-left';
+				_blh.title = 'Drag to resize extended partition (left)';
+				_blh.onmousedown = function(ev) { ev.stopPropagation(); startResize(ev, dev, _bandEi, 'left'); };
+				band.appendChild(_blh);
+				var _brh = document.createElement('div');
+				_brh.className = 'pcgi-resize-handle';
+				_brh.title = 'Drag to resize extended partition (right)';
+				_brh.onmousedown = function(ev) { ev.stopPropagation(); startResize(ev, dev, _bandEi, 'right'); };
+				band.appendChild(_brh);
+			})(_ep, _ei);
 			map.appendChild(band);
 		}
 
@@ -9732,6 +9775,7 @@ actionsWrap.appendChild(btnRemove);
 						if (_fep.kind !== 'partition') continue;
 						var _fepRole = String(_fep.role || '');
 						if (!_fepRole && String(_fep.fs || '').toLowerCase() === 'extended') _fepRole = 'extended';
+						if (!_fepRole && !String(_fep.fs || '') && String(_fep.flags || '').toLowerCase() === 'lba') _fepRole = 'extended';
 						if (_fepRole !== 'extended') continue;
 						var _fepStart = Number(_fep.start || 0), _fepEnd = Number(_fep.end || 0);
 						if (_freeStart >= _fepStart && _freeEnd <= _fepEnd) {
@@ -9920,7 +9964,7 @@ actionsWrap.appendChild(btnRemove);
 						hideHoverTooltip();
 						var data = ev.dataTransfer.getData('text/plain');
 						if (data === 'new-partition') {
-							showNewPartModal(p.start, p.end);
+							showNewPartModal(p.start, p.end, String(dev.path || ''));
 						} else if (data === 'chip-move-or-clone') {
 							updateMapStatus(t('tDropQueuedMoveCloneChip'));
 							showToast(t('tDropQueuedMoveCloneChip'), 'info', 10000);
@@ -10708,7 +10752,7 @@ function updateVerifyInfo(side) {
 
 // ── New partition modal ───────────────────────────────────────────────────────
 
-function showNewPartModal(dropStart, dropEnd) {
+function showNewPartModal(dropStart, dropEnd, devPathHint) {
 	var modal    = document.getElementById('pcgiNewPartModal');
 	var titleEl  = document.getElementById('pcgiNewPartTitle');
 	var cancelBtn = document.getElementById('pcgiNewPartCancelBtn');
@@ -10734,8 +10778,27 @@ function showNewPartModal(dropStart, dropEnd) {
 	};
 
 	/* Gather device/partition context */
-	var devPath = state.selectedDevice || '';
+	var devPath = devPathHint || state.selectedDevice || '';
 	var devObj  = devPath ? getPreviewDeviceByPath(devPath) : null;
+	// Fallback: scan all devices to find one whose partition range contains dropStart/dropEnd.
+	// Needed when devPath is not yet set (e.g. drag-drop without prior selection).
+	if (!devObj) {
+		for (var _fdi = 0; _fdi < (state.devices || []).length; _fdi++) {
+			var _fdd = state.devices[_fdi];
+			var _fdparts = (_fdd && _fdd.partitions) || [];
+			for (var _fdpi = 0; _fdpi < _fdparts.length; _fdpi++) {
+				var _fdp = _fdparts[_fdpi];
+				if (_fdp.kind === 'partition' &&
+						Number(_fdp.start || 0) <= Number(dropStart) &&
+						Number(_fdp.end   || 0) >= Number(dropEnd)) {
+					devObj  = getPreviewDeviceByPath(String(_fdd.path || ''));
+					devPath = String(_fdd.path || '');
+					break;
+				}
+			}
+			if (devObj) break;
+		}
+	}
 	var tableType = String((devObj && devObj.table) || '').toLowerCase();
 	var allParts  = (devObj && devObj.partitions) ? devObj.partitions.filter(function(q){return q.kind==='partition';}) : [];
 	var isFirstPartition = (allParts.length === 0);
@@ -10751,6 +10814,7 @@ function showNewPartModal(dropStart, dropEnd) {
 			if (!_xRole) {
 				if (Number(_xp.number || 0) >= 5) _xRole = 'logical';
 				else if (String(_xp.fs || '').toLowerCase() === 'extended') _xRole = 'extended';
+				else if (!String(_xp.fs || '') && String(_xp.flags || '').toLowerCase() === 'lba') _xRole = 'extended';
 				else _xRole = 'primary';
 			}
 			if (_xRole === 'extended') { extPart = _xp; break; }
@@ -10763,6 +10827,32 @@ function showNewPartModal(dropStart, dropEnd) {
 		var _extStart = Number(extPart.start || 0);
 		var _extEnd   = Number(extPart.end   || 0);
 		if (Number(dropStart) >= _extStart && Number(dropEnd) <= _extEnd) insideExtended = true;
+		// Clamp start/end for logical partitions: MBR logical start must be > extended start.
+		// Also clamp Max button to extended end.
+		if (insideExtended) {
+			var _logMinStart = _extStart + 1;
+			if (Number(dropStart) < _logMinStart) {
+				dropStart = _logMinStart;
+				document.getElementById('pnpStartSector').value = String(dropStart);
+				updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+			}
+			if (Number(dropEnd) > _extEnd) {
+				dropEnd = _extEnd;
+				document.getElementById('pnpEndSector').value = String(dropEnd);
+				updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
+			}
+			// Update Min/Max buttons to reflect logical bounds
+			var _logMinBtn = document.getElementById('pnpStartMinBtn');
+			var _logMaxBtn = document.getElementById('pnpEndMaxBtn');
+			if (_logMinBtn) _logMinBtn.onclick = function() {
+				document.getElementById('pnpStartSector').value = String(_logMinStart);
+				updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+			};
+			if (_logMaxBtn) _logMaxBtn.onclick = function() {
+				document.getElementById('pnpEndSector').value = String(_extEnd);
+				updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
+			};
+		}
 	}
 
 	/* --- Role selector visibility --- */
