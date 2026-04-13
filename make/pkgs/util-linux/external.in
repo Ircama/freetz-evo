@@ -6,13 +6,13 @@ config EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX
 		externals the following file(s):
 		
 		Version 2.27.1 (legacy):
-		 /sbin/blkid-util-linux
+		 /sbin/blkid-ng
 		
 		Version 2.41 (modern):
-		 /sbin/blkid-util-linux
-		 /sbin/fdisk-util-linux
-		 /sbin/sfdisk-util-linux
-		 /sbin/blockdev-util-linux
+		 /sbin/blkid-ng
+		 /sbin/fdisk-ng
+		 /sbin/sfdisk-ng
+		 /sbin/blockdev-ng
 		 /sbin/blockdev-ng
 		 /sbin/partx
 		 /sbin/addpart
@@ -25,12 +25,12 @@ config EXTERNAL_FREETZ_PACKAGE_UTIL_LINUX
 		 /sbin/lsfd
 		 /sbin/findmnt
 		 /sbin/mountpoint
-		 /sbin/losetup-util-linux
-		 /sbin/mkswap-util-linux
-		 /sbin/swapon-util-linux
-		 /sbin/swapoff-util-linux
-		 /sbin/unshare-util-linux
-		 /sbin/uuidgen-util-linux
+		 /sbin/losetup-ng
+		 /sbin/mkswap-ng
+		 /sbin/swapon-ng
+		 /sbin/swapoff-ng
+		 /sbin/unshare-ng
+		 /sbin/uuidgen-ng
 		 /sbin/uuidparse
 		 /sbin/lastlog2
 

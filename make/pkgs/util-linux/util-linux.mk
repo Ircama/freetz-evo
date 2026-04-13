@@ -90,7 +90,7 @@ $(PKG)_BINARIES_WITH_SUFFIX:=$($(PKG)_BINARIES_WITH_SUFFIX_$($(PKG)_VERSION))
 $(PKG)_BINARIES_NO_SUFFIX:=$($(PKG)_BINARIES_NO_SUFFIX_$($(PKG)_VERSION))
 
 # Suffix to add to util-linux binaries that conflict with busybox
-$(PKG)_BINARIES_SUFFIX:=-util-linux
+$(PKG)_BINARIES_SUFFIX:=-ng
 
 $(PKG)_BINARIES_BUILD_DIR:=$($(PKG)_BINARIES:%=$($(PKG)_DIR)/%)
 $(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR:=$($(PKG)_BINARIES_WITH_SUFFIX:%=$($(PKG)_DEST_DIR)/sbin/%$($(PKG)_BINARIES_SUFFIX))
@@ -397,12 +397,10 @@ $($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX): $($(PKG)_DEST_DIR)/sbi
 	ln -sf $(notdir $<) $@
 endif
 
-ifeq ($(strip $(FREETZ_UTIL_LINUX_BLOCKDEV)),y)
-$($(PKG)_BLOCKDEV_NG_TARGET): $($(PKG)_BLOCKDEV_WITH_SUFFIX_TARGET)
-	ln -sf $(notdir $<) $@
-endif
+# blockdev is already installed as blockdev-ng via the with-suffix pattern rule.
+# No separate symlink needed.
 
-$(pkg)-precompiled: $($(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR) $($(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR) $(if $(strip $(FREETZ_UTIL_LINUX_SWAPON)),$($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX)) $(if $(strip $(FREETZ_UTIL_LINUX_BLOCKDEV)),$($(PKG)_BLOCKDEV_NG_TARGET)) $(if $(strip $(FREETZ_LIB_libblkid)),$($(PKG)_LIBBLKID_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libmount)),$($(PKG)_LIBMOUNT_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libsmartcols)),$($(PKG)_LIBSMARTCOLS_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libfdisk)),$($(PKG)_LIBFDISK_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_liblastlog2)),$($(PKG)_LIBLASTLOG2_TARGET_BINARY))
+$(pkg)-precompiled: $($(PKG)_BINARIES_WITH_SUFFIX_TARGET_DIR) $($(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR) $(if $(strip $(FREETZ_UTIL_LINUX_SWAPON)),$($(PKG)_DEST_DIR)/sbin/swapoff$($(PKG)_BINARIES_SUFFIX)) $(if $(strip $(FREETZ_LIB_libblkid)),$($(PKG)_LIBBLKID_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libmount)),$($(PKG)_LIBMOUNT_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libsmartcols)),$($(PKG)_LIBSMARTCOLS_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_libfdisk)),$($(PKG)_LIBFDISK_TARGET_BINARY)) $(if $(strip $(FREETZ_LIB_liblastlog2)),$($(PKG)_LIBLASTLOG2_TARGET_BINARY))
 
 $(pkg)-uninstall:
 	$(RM) $(UTIL_LINUX_BINARIES_WITH_SUFFIX_TARGET_DIR) $(UTIL_LINUX_BINARIES_NO_SUFFIX_TARGET_DIR)

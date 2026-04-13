@@ -42,17 +42,17 @@ if FREETZ_UTIL_LINUX_VERSION_2_41
 menu "Utilities selection"
 
 config FREETZ_UTIL_LINUX_BLKID
-	bool "blkid - identify block devices (renamed to blkid-util-linux)"
+	bool "blkid - identify block devices (renamed to blkid-ng)"
 	select FREETZ_LIB_libblkid
 	default y
 	help
 		blkid is used to identify block device attributes such as
 		filesystem type, UUID, LABEL, etc.
 		
-		Conflicts with busybox blkid, renamed to blkid-util-linux.
+		Conflicts with busybox blkid, renamed to blkid-ng.
 
 config FREETZ_UTIL_LINUX_FDISK
-	bool "fdisk - partition table manipulator (renamed to fdisk-util-linux)"
+	bool "fdisk - partition table manipulator (renamed to fdisk-ng)"
 	select FREETZ_LIB_libncursesw
 	select FREETZ_LIB_libfdisk
 	select FREETZ_LIB_libsmartcols
@@ -61,10 +61,10 @@ config FREETZ_UTIL_LINUX_FDISK
 		fdisk is a dialog-driven utility to create and manipulate partition
 		tables.
 
-		Conflicts with busybox fdisk, renamed to fdisk-util-linux.
+		Conflicts with busybox fdisk, renamed to fdisk-ng).
 
 config FREETZ_UTIL_LINUX_SFDISK
-	bool "sfdisk - scriptable partition table tool (renamed to sfdisk-util-linux)"
+	bool "sfdisk - scriptable partition table tool (renamed to sfdisk-ng)"
 	select FREETZ_LIB_libncursesw
 	select FREETZ_LIB_libfdisk
 	select FREETZ_LIB_libsmartcols
@@ -72,7 +72,7 @@ config FREETZ_UTIL_LINUX_SFDISK
 	help
 		sfdisk is a script-oriented partition table utility.
 
-		Conflicts with busybox sfdisk, renamed to sfdisk-util-linux.
+		Conflicts with busybox sfdisk, renamed to sfdisk-ng).
 
 config FREETZ_UTIL_LINUX_BLOCKDEV
 	bool "blockdev - call block-device ioctls (renamed to blockdev-ng)"
@@ -108,7 +108,7 @@ config FREETZ_UTIL_LINUX_WIPEFS
 		wipefs erases filesystem, RAID or partition-table signatures.
 
 config FREETZ_UTIL_LINUX_LOSETUP
-	bool "losetup - manage loop devices (renamed to losetup-util-linux)"
+	bool "losetup - manage loop devices (renamed to losetup-ng)"
 	select FREETZ_LIB_libsmartcols
 	default y
 	help
@@ -116,18 +116,18 @@ config FREETZ_UTIL_LINUX_LOSETUP
 		or block devices, to detach loop devices, and to query the
 		status of a loop device.
 		
-		Conflicts with busybox losetup, renamed to losetup-util-linux.
+		Conflicts with busybox losetup, renamed to losetup-ng.
 
 config FREETZ_UTIL_LINUX_MKSWAP
-	bool "mkswap - create swap area (renamed to mkswap-util-linux)"
+	bool "mkswap - create swap area (renamed to mkswap-ng)"
 	default y
 	help
 		mkswap sets up a Linux swap area on a device or in a file.
 		
-		Conflicts with busybox mkswap, renamed to mkswap-util-linux.
+		Conflicts with busybox mkswap, renamed to mkswap-ng.
 
 config FREETZ_UTIL_LINUX_SWAPON
-	bool "swapon/swapoff - enable/disable swap (renamed to *-util-linux)"
+	bool "swapon/swapoff - enable/disable swap (renamed to *-ng)"
 	select FREETZ_LIB_libblkid
 	select FREETZ_LIB_libmount
 	select FREETZ_LIB_libsmartcols
@@ -136,7 +136,7 @@ config FREETZ_UTIL_LINUX_SWAPON
 		swapon is used to activate swap areas.
 		swapoff is used to deactivate swap areas.
 		
-		Conflicts with busybox swapon, renamed to swapon-util-linux and swapoff-util-linux.
+		Conflicts with busybox swapon, renamed to swapon-ng and swapoff-ng.
 
 config FREETZ_UTIL_LINUX_LSBLK
 	bool "lsblk - list block devices"
@@ -191,21 +191,21 @@ config FREETZ_UTIL_LINUX_FINDMNT
 		Unique to util-linux (no busybox equivalent).
 
 config FREETZ_UTIL_LINUX_UNSHARE
-	bool "unshare - run program with unshared namespaces (renamed to unshare-util-linux)"
+	bool "unshare - run program with unshared namespaces (renamed to unshare-ng)"
 	default y
 	help
 		unshare runs a program with some namespaces unshared from the parent.
 
-		Can conflict with busybox unshare, renamed to unshare-util-linux.
+		Can conflict with busybox unshare, renamed to unshare-ng.
 
 config FREETZ_UTIL_LINUX_UUIDGEN
-	bool "uuidgen - create UUIDs (renamed to uuidgen-util-linux)"
+	bool "uuidgen - create UUIDs (renamed to uuidgen-ng)"
 	select FREETZ_LIB_libuuid
 	default y
 	help
 		uuidgen creates new UUID values.
 
-		Can conflict with busybox uuidgen, renamed to uuidgen-util-linux.
+		Can conflict with busybox uuidgen, renamed to uuidgen-ng.
 
 config FREETZ_UTIL_LINUX_UUIDPARSE
 	bool "uuidparse - parse and format UUIDs"

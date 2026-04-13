@@ -285,8 +285,8 @@ CMD_FIXPARTS=$(find_cmd fixparts)
 CMD_HDPARM=$(find_cmd hdparm)
 CMD_SMARTCTL=$(find_cmd smartctl)
 CMD_LSBLK=$(find_cmd lsblk)
-CMD_BLKID=$(find_cmd blkid-util-linux blkid-ng blkid)
-CMD_BLOCKDEV=$(find_cmd blockdev-ng blockdev-util-linux blockdev)
+CMD_BLKID=$(find_cmd blkid-ng blkid)
+CMD_BLOCKDEV=$(find_cmd blockdev-ng blockdev)
 CMD_MKNTFS=$(find_cmd mkntfs)
 CMD_NTFSFIX=$(find_cmd ntfsfix)
 CMD_NTFSINFO=$(find_cmd ntfsinfo)
@@ -954,11 +954,20 @@ action_list_devices() {
 				if [ "$_table_type" = "msdos" ]; then
 					if [ "$_pnum" -ge 5 ]; then
 						_prole='logical'
-					elif [ -n "$CMD_LSBLK" ]; then
-						_ptype_hex=$($CMD_LSBLK -dn -o PARTTYPE "$_ppath" 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
-						case "$_ptype_hex" in
-							0x5|0x0f|0xf|0x85) _prole='extended' ;;
-						esac
+					else
+						# First try lsblk PARTTYPE for extended detection
+						if [ -n "$CMD_LSBLK" ]; then
+							_ptype_hex=$($CMD_LSBLK -dn -o PARTTYPE "$_ppath" 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+							case "$_ptype_hex" in
+								0x5|0x0f|0xf|0x85) _prole='extended' ;;
+							esac
+						fi
+						# Fallback: parted flags field contains "extended" or "lba" type hint
+						if [ "$_prole" = 'primary' ]; then
+							case "$_pfs" in
+								extended) _prole='extended' ;;
+							esac
+						fi
 					fi
 				fi
 				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"role\":\"$(json_escape "$_prole")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
@@ -1045,26 +1054,26 @@ action_create_partition() {
 
 	if dry_run_enabled; then
 		if [ -n "$_fs_hint" ]; then
-			_preview_cmd="parted -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s"
+			_preview_cmd="$CMD_PARTED -s $_device unit s mkpart $_part_role $_fs_hint ${_start_sector}s ${_end_sector}s"
 		else
-			_preview_cmd="parted -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s"
+			_preview_cmd="$CMD_PARTED -s $_device unit s mkpart $_part_role ${_start_sector}s ${_end_sector}s"
 		fi
 		if [ -n "$_part_name" ]; then
 			_preview_cmd="$_preview_cmd
-parted -s $_device name <new_partnum> $_part_name"
+$CMD_PARTED -s $_device name <new_partnum> $_part_name"
 		fi
 		_preview_cmd="$_preview_cmd
-partprobe $_device"
+$CMD_PARTPROBE $_device"
 		if [ "$_create_fs" = "1" ] && [ -n "$_fs_hint" ]; then
 			case "$_fs_hint" in
 				ext2|ext3|ext4) _preview_cmd="$_preview_cmd
-mke2fs -F -t $_fs_hint ${_device}<new_partnum>" ;;
+$CMD_MKE2FS -F -t $_fs_hint ${_device}<new_partnum>" ;;
 				fat16) _preview_cmd="$_preview_cmd
-mkfs.fat -F 16 ${_device}<new_partnum>" ;;
+$CMD_MKFS_FAT -F 16 ${_device}<new_partnum>" ;;
 				fat32) _preview_cmd="$_preview_cmd
-mkfs.fat -F 32 ${_device}<new_partnum>" ;;
+$CMD_MKFS_FAT -F 32 ${_device}<new_partnum>" ;;
 				exfat) _preview_cmd="$_preview_cmd
-mkfs.exfat ${_device}<new_partnum>" ;;
+$CMD_MKFS_EXFAT ${_device}<new_partnum>" ;;
 				ntfs)  : ;; # parted mkpart with ntfs hint already creates the filesystem
 			esac
 		fi
@@ -1293,8 +1302,8 @@ action_resize_partition() {
 	is_valid_sector "$_end_sector" || { emit_json_error "Invalid end sector"; return; }
 
 	if dry_run_enabled; then
-		_preview_cmd="parted -s $_device unit s resizepart $_partnum ${_end_sector}s
-partprobe $_device"
+		_preview_cmd="$CMD_PARTED -s $_device unit s resizepart $_partnum ${_end_sector}s
+$CMD_PARTPROBE $_device"
 		_preview_cmd="$_preview_cmd
 # if shrink confirmation is requested, backend retries with scripted 'Yes'"
 		if [ "$_resize_fs" = "yes" ]; then
@@ -4289,22 +4298,29 @@ cat <<'EOF'
 	z-index: 5;
 	transition: left 0.05s, width 0.05s;
 }
-/* Extended partition container band */
+/* Extended partition container band — thin strip below disk block */
 .pcgi-extended-band {
 	position: absolute;
-	top: 0;
-	bottom: 0;
-	background: rgba(234, 179, 8, 0.10);
-	border: 2px solid rgba(161, 117, 7, 0.55);
-	border-radius: 4px;
-	z-index: 0;
-	pointer-events: none;
+	top: 22px;
+	height: 12px;
+	background: linear-gradient(180deg, rgba(234,179,8,0.22) 0%, rgba(234,179,8,0.10) 100%);
+	border: 1px solid rgba(161, 117, 7, 0.55);
+	border-radius: 3px;
+	z-index: 1;
 	box-sizing: border-box;
+	cursor: pointer;
+}
+/* Logical blocks inside extended sit below the strip */
+.pcgi-block.part.pcgi-logical,
+.pcgi-block.free.pcgi-logical {
+	top: 38px;
+	height: 44px;
 }
 .pcgi-extended-label {
 	position: absolute;
-	top: 1px;
-	left: 3px;
+	top: 0;
+	left: 4px;
+	line-height: 10px;
 	font-size: 9px;
 	color: rgba(120, 80, 0, 0.8);
 	font-weight: bold;
@@ -4570,14 +4586,14 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 
 <div class="pcgi-toolbar">
 	<span id="newPartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to create new partition">New partition</span>
-	<span id="verifyPartChip" class="pcgi-chip" style="cursor:pointer" title="Compare two partitions byte-by-byte (read-only)">Verify partition</span>
 	<span id="moveClonePartChip" class="pcgi-chip" draggable="true" title="Drag on a free segment to open move/clone configuration">Move or clone partition</span>
-	<span id="i18nDragHint" class="pcgi-small">Drag <strong>New partition</strong> to a free segment for quick create. Drag <strong>New partition with filesystem</strong> to include Role, Filesystem and Partition name from the form above. Drag <strong>Move or clone partition</strong> to a free segment to open the move/clone form pre-filled with the selected partition. Click <strong>Verify partition</strong> to compare two partitions. Drag the left or right edge of a partition to resize. Drag a partition to free space for smart move.</span>
+	<span id="i18nDragHint" class="pcgi-small">Drag <strong>New partition</strong> to a free segment for quick create. Drag <strong>New partition with filesystem</strong> to include Role, Filesystem and Partition name from the form above. Drag <strong>Move or clone partition</strong> to a free segment to open the move/clone form pre-filled with the selected partition. Drag the left or right edge of a partition to resize. Drag a partition to free space for smart move.</span>
 </div>
 
 <div class="pcgi-toolbar" style="margin-top: 8px;">
 	<button type="button" onclick="queueCreatePartition()" id="queueCreateBtn">Create partition</button>
 	<button type="button" onclick="queueDeletePartition()" id="queueDeleteBtn">Delete selected partition</button>
+	<button type="button" id="comparePartitionsBtn" onclick="showVerifyModal()" title="Compare two partitions byte-by-byte (read-only)">Compare partitions</button>
 </div>
 
 <!-- New partition question modal -->
@@ -4604,7 +4620,10 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<div class="pcgi-inline-form" style="margin-top:8px;grid-template-columns:1fr 1.6em 1fr">
 			<div>
 				<label id="i18nPnpStartLabel">New start sector</label>
-				<input id="pnpStartSector" type="text" placeholder="e.g. 2048">
+				<div style="display:flex;gap:4px">
+					<input id="pnpStartSector" type="text" placeholder="e.g. 2048" style="flex:1">
+					<button type="button" id="pnpStartMinBtn" title="Set to minimum (first sector of free region)" style="padding:2px 6px;font-size:11px;white-space:nowrap">Min</button>
+				</div>
 			</div>
 			<div style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;color:#888;font-size:1.1em;" title="Linked — sector ↔ size (editing one updates the other)">↔</div>
 			<div>
@@ -4613,7 +4632,10 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 			</div>
 			<div>
 				<label id="i18nPnpEndLabel">New end sector</label>
-				<input id="pnpEndSector" type="text" placeholder="e.g. 1023999">
+				<div style="display:flex;gap:4px">
+					<input id="pnpEndSector" type="text" placeholder="e.g. 1023999" style="flex:1">
+					<button type="button" id="pnpEndMaxBtn" title="Set to maximum (last sector of free region)" style="padding:2px 6px;font-size:11px;white-space:nowrap">Max</button>
+				</div>
 			</div>
 			<div style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;color:#888;font-size:1.1em;" title="Linked — sector ↔ size (editing one updates the other)">↔</div>
 			<div>
@@ -4643,7 +4665,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 					<option value="fat16">fat16</option>
 				</select>
 			</div>
-			<div style="grid-column:1/-1">
+			<div id="pnpPartNameRow" style="grid-column:1/-1">
 				<label id="i18nPnpPartNameLabel">Partition name (GPT only)</label>
 				<input id="pnpPartName" type="text" placeholder="optional (stored in GPT entry)">
 			</div>
@@ -4652,8 +4674,13 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 				<input id="pnpFsLabel" type="text" placeholder="optional (max 16 chars for ext4, 11 for FAT)">
 			</div>
 			<div id="pnpMountRow" style="grid-column:1/-1;display:none">
-				<label id="i18nPnpMountLabel">Mount point (after creation)</label>
-				<input id="pnpMountPoint" type="text" placeholder="e.g. /var/media/ftp/DATA">
+				<label id="i18nPnpMountLabel">Mount point</label>
+				<div style="display:flex;gap:8px;align-items:center">
+					<input id="pnpMountPoint" type="text" placeholder="e.g. /var/media/ftp/DATA" style="flex:1">
+					<label style="white-space:nowrap;font-size:12px;display:flex;align-items:center;gap:4px">
+						<input type="checkbox" id="pnpMountCheck" checked> <span id="i18nPnpMountCheckLabel">Mount after creation</span>
+					</label>
+				</div>
 			</div>
 			<div style="grid-column:1/-1">
 				<label id="i18nPnpAlignLabel">Alignment</label>
@@ -4814,28 +4841,22 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 
 <!-- Verify partitions modal -->
 <div id="pcgiVerifyModal" class="pcgi-modal" aria-hidden="true">
-	<div class="pcgi-modal-box" style="max-width:500px">
-		<h3 id="pcgiVerifyTitle" class="pcgi-modal-head">Verify partitions</h3>
-		<div class="pcgi-inline-form" style="margin-top:8px">
-			<div>
-				<label id="i18nVerifySourceDevLabel">Source device (A)</label>
-				<select id="verifySourceDev" onchange="populateVerifyPartDropdown('verifySourceDev','verifySourcePartNum')"></select>
+	<div class="pcgi-modal-box" style="max-width:540px">
+		<h3 id="pcgiVerifyTitle" class="pcgi-modal-head">Compare partitions</h3>
+		<div style="padding:4px 2px 8px">
+			<div style="margin-bottom:14px">
+				<label id="i18nVerifyPartALabel" style="font-weight:600;display:block;margin-bottom:4px">Partition A (source)</label>
+				<select id="verifyPartA" style="width:100%" onchange="updateVerifyInfo('A')"></select>
+				<div id="verifyInfoA" style="font-size:0.82em;color:#555;margin-top:3px;min-height:1.1em;font-family:monospace"></div>
 			</div>
-			<div>
-				<label id="i18nVerifySourcePartLabel">Source partition (A)</label>
-				<select id="verifySourcePartNum"></select>
+			<div style="margin-bottom:14px">
+				<label id="i18nVerifyPartBLabel" style="font-weight:600;display:block;margin-bottom:4px">Partition B (compare)</label>
+				<select id="verifyPartB" style="width:100%" onchange="updateVerifyInfo('B')"></select>
+				<div id="verifyInfoB" style="font-size:0.82em;color:#555;margin-top:3px;min-height:1.1em;font-family:monospace"></div>
 			</div>
-			<div>
-				<label id="i18nVerifyTargetDevLabel">Compare device (B)</label>
-				<select id="verifyTargetDev" onchange="populateVerifyPartDropdown('verifyTargetDev','verifyTargetPartNum')"></select>
-			</div>
-			<div>
-				<label id="i18nVerifyTargetPartLabel">Compare partition (B)</label>
-				<select id="verifyTargetPartNum"></select>
-			</div>
-			<div>
-				<label id="i18nVerifyUnmountLabel">Unmount before (-u)</label>
-				<select id="verifyUnmount">
+			<div style="display:flex;align-items:center;gap:10px;margin-top:2px">
+				<label id="i18nVerifyUnmountLabel" style="white-space:nowrap">Unmount before</label>
+				<select id="verifyUnmount" style="min-width:80px">
 					<option value="no">no</option>
 					<option value="yes">yes</option>
 				</select>
@@ -4843,7 +4864,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		</div>
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiVerifyCancelBtn">Cancel</button>
-			<button type="button" id="pcgiVerifyOkBtn">Verify</button>
+			<button type="button" id="pcgiVerifyOkBtn">Compare</button>
 		</div>
 	</div>
 </div>
@@ -6026,7 +6047,7 @@ window.paceOptions = {
 		usbAllDevices: "All block devices",
 		usbOnlyDevices: "USB devices only",
 		chipMoveOrClone: "Move or clone partition",
-		chipVerifyPartition: "Verify partition",
+		chipVerifyPartition: "Compare partitions",
 		mkfsModalTitle: "Create filesystem",
 		mkfsBtnCreate: "Create filesystem",
 		mkfsBtnCancel: "Cancel",
@@ -6059,14 +6080,12 @@ window.paceOptions = {
 		dmFsckPassesLabel: "FAT pre-clone fsck passes (-F)",
 		dmDdFallbackLabel: "dd fallback on smart failure (-b)",
 		dmSkipWriteErrLabel: "Skip write errors (-W)",
-		verifySourceDevLabel: "Source device (A)",
-		verifySourcePartLabel: "Source partition (A)",
-		verifyTargetDevLabel: "Compare device (B)",
-		verifyTargetPartLabel: "Compare partition (B)",
+		verifyPartALabel: "Partition A (source)",
+		verifyPartBLabel: "Partition B (compare)",
 		verifyUnmountLabel: "Unmount before",
-		confirmVerify: "Confirm partition verify",
+		confirmVerify: "Compare",
 		confirmVerifyMsg: "Compare two partitions byte-by-byte (read-only)?",
-		tVerifyQueued: "Verify operation added.",
+		tVerifyQueued: "Compare operation queued.",
 		tDropQueuedMoveCloneChip: "Move or clone chip dropped – configure and add."
 	});
 	translations.en = Object.assign({}, translations.en, {
@@ -6109,7 +6128,7 @@ window.paceOptions = {
 		usbAllDevices: "Tutti i dispositivi a blocchi",
 		usbOnlyDevices: "Solo dispositivi USB",
 		chipMoveOrClone: "Sposta o clona partizione",
-		chipVerifyPartition: "Verifica partizione",
+		chipVerifyPartition: "Confronta partizioni",
 		mkfsModalTitle: "Crea filesystem",
 		mkfsBtnCreate: "Crea filesystem",
 		mkfsBtnCancel: "Annulla",
@@ -6142,14 +6161,12 @@ window.paceOptions = {
 		dmFsckPassesLabel: "Passate fsck FAT pre-clone (-F)",
 		dmDdFallbackLabel: "Fallback dd su errore smart (-b)",
 		dmSkipWriteErrLabel: "Ignora errori di scrittura (-W)",
-		verifySourceDevLabel: "Dispositivo sorgente (A)",
-		verifySourcePartLabel: "Partizione sorgente (A)",
-		verifyTargetDevLabel: "Dispositivo da confrontare (B)",
-		verifyTargetPartLabel: "Partizione da confrontare (B)",
+		verifyPartALabel: "Partizione A (sorgente)",
+		verifyPartBLabel: "Partizione B (confronto)",
 		verifyUnmountLabel: "Smonta prima",
-		confirmVerify: "Conferma verifica partizione",
+		confirmVerify: "Confronta",
 		confirmVerifyMsg: "Confronto byte per byte tra due partizioni (sola lettura)?",
-		tVerifyQueued: "Operazione di verifica aggiunta.",
+		tVerifyQueued: "Operazione di confronto accodata.",
 		tDropQueuedMoveCloneChip: "Chip sposta/clona posizionato – configura e aggiungi."
 	});
 	translations.it = Object.assign({}, translations.it, {
@@ -6192,7 +6209,7 @@ window.paceOptions = {
 		usbAllDevices: "Alle Blockgeraete",
 		usbOnlyDevices: "Nur USB-Geraete",
 		chipMoveOrClone: "Partition verschieben oder klonen",
-		chipVerifyPartition: "Partition pruefen",
+		chipVerifyPartition: "Partitionen vergleichen",
 		mkfsModalTitle: "Dateisystem erstellen",
 		mkfsBtnCreate: "Dateisystem erstellen",
 		mkfsBtnCancel: "Abbrechen",
@@ -6225,14 +6242,12 @@ window.paceOptions = {
 		dmFsckPassesLabel: "FAT-Vorab-fsck-Durchgaenge (-F)",
 		dmDdFallbackLabel: "dd-Fallback bei Smart-Fehler (-b)",
 		dmSkipWriteErrLabel: "Schreibfehler ueberspringen (-W)",
-		verifySourceDevLabel: "Quellgeraet (A)",
-		verifySourcePartLabel: "Quellpartition (A)",
-		verifyTargetDevLabel: "Vergleichsgeraet (B)",
-		verifyTargetPartLabel: "Vergleichspartition (B)",
+		verifyPartALabel: "Partition A (Quelle)",
+		verifyPartBLabel: "Partition B (Vergleich)",
 		verifyUnmountLabel: "Vorher aushaengen",
-		confirmVerify: "Partitionspruefung bestaetigen",
+		confirmVerify: "Vergleichen",
 		confirmVerifyMsg: "Zwei Partitionen byteweise vergleichen (nur lesend)?",
-		tVerifyQueued: "Pruefungsoperation hinzugefuegt.",
+		tVerifyQueued: "Vergleichsoperation eingereiht.",
 		tDropQueuedMoveCloneChip: "Verschieben/Klonen-Chip abgelegt – konfigurieren und hinzufuegen."
 	});
 	translations.de = Object.assign({}, translations.de, {
@@ -6588,7 +6603,7 @@ window.paceOptions = {
 			i18nWorkflow3: 'workflow3',
 			i18nWorkflow4: 'workflow4',
 			newPartChip: 'chipNewPartition',
-			verifyPartChip: 'chipVerifyPartition',
+			comparePartitionsBtn: 'chipVerifyPartition',
 			moveClonePartChip: 'chipMoveOrClone',
 			i18nDragHint: 'dragHint',
 			i18nTopButtonsExplain: 'topButtonsExplain',
@@ -6618,10 +6633,8 @@ window.paceOptions = {
 			i18nMcExtraOptsLabel: 'mcExtraOptsLabel',
 			i18nMcStepDelayLabel: 'mcStepDelayLabel',
 			i18nMcDdBsLabel: 'mcDdBsLabel',
-			i18nVerifySourceDevLabel: 'verifySourceDevLabel',
-			i18nVerifySourcePartLabel: 'verifySourcePartLabel',
-			i18nVerifyTargetDevLabel: 'verifyTargetDevLabel',
-			i18nVerifyTargetPartLabel: 'verifyTargetPartLabel',
+			i18nVerifyPartALabel: 'verifyPartALabel',
+			i18nVerifyPartBLabel: 'verifyPartBLabel',
 			i18nVerifyUnmountLabel: 'verifyUnmountLabel',
 			i18nDmTitle: 'dmTitle',
 			i18nDmSourceDevLabel: 'dmSourceDevLabel',
@@ -6692,7 +6705,7 @@ window.paceOptions = {
 		if (mcCancelBtn)     mcCancelBtn.textContent     = t('btnCancel');
 		if (mcOkBtn)         mcOkBtn.textContent         = t('btnValidateQueue');
 		if (verifyCancelBtn) verifyCancelBtn.textContent = t('btnCancel');
-		if (verifyOkBtn)     verifyOkBtn.textContent     = t('confirmVerify') || 'Verify';
+		if (verifyOkBtn)     verifyOkBtn.textContent     = t('confirmVerify') || 'Compare';
 		if (newPartCancelBtn) newPartCancelBtn.textContent = t('btnCancel');
 		if (newPartFsBtn)     newPartFsBtn.textContent     = t('btnCreatePartition') || 'Create partition';
 		var dmCancelBtn = document.getElementById('pcgiDmCancelBtn');
@@ -6871,16 +6884,17 @@ window.paceOptions = {
 		'map-fs-hint':       { title: 'Filesystem',                body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
 		'map-part-name':     { title: 'Partition name',            body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
 		/* New partition modal */
-		'pnp-start':     { title: 'New start sector',     body: 'First 512-byte sector of the new partition to create. Must lie within a free (unallocated) region on the disk.<br><br>Use multiples of 2048 (= 1 MiB boundary) for modern disks. The drag-and-drop interface fills this automatically.<br><br>Linked to the "New start size" field — changing one updates the other.' },
+		'pnp-start':     { title: 'New start sector',     body: 'First sector of the new partition. Must lie within a free (unallocated) region on the disk.<br><br>Accepts a sector number (e.g. <code>2048</code>) or a <b>percentage</b> of the disk (e.g. <code>0%</code>, <code>25%</code>). Linked to the "New start size" field — changing one updates the other.<br><br>Click <b>Min</b> to reset to the first sector of the free region.' },
 		'pnp-start-h':   { title: 'New start size',       body: 'Human-readable offset of the partition start, e.g. <code>1 MiB</code>, <code>512 KiB</code>.<br><br>Synchronized with the raw sector field. Editing this updates the sector value automatically.' },
-		'pnp-end':       { title: 'New end sector',       body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector, and after it.<br><br>Together with the start sector this defines the partition size. The drag-and-drop interface fills this automatically.' },
+		'pnp-end':       { title: 'New end sector',       body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector.<br><br>Accepts a sector number (e.g. <code>1023999</code>) or a <b>percentage</b> of the disk (e.g. <code>50%</code>, <code>100%</code>).<br><br>Click <b>Max</b> to reset to the last sector of the free region.' },
 		'pnp-end-h':     { title: 'New end size',         body: 'Human-readable end position of the partition, e.g. <code>488 MiB</code>.<br><br>Synchronized with the raw sector field on the left. Editing this updates the sector value automatically.' },
 		'pnp-role':      { title: 'Role',                 body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions.<br><br><b>logical</b> – partition inside an extended container. Allows more than 4 partitions on MBR. Only valid if an extended partition exists.<br><br><b>extended</b> – container for logical partitions. Only one per MBR disk. Irrelevant on GPT (GPT supports up to 128 partitions, all treated as primary).' },
 		'pnp-fs-hint':   { title: 'Filesystem',           body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
 		'pnp-part-name': { title: 'Partition name (GPT only)', body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
 		'pnp-fs-label':  { title: 'Filesystem label',     body: 'Volume label embedded in the filesystem itself and shown by file managers and mount tools.<br><br>Limits: ext2/3/4 max 16 chars; FAT max 11 chars (uppercase); NTFS max 32 chars; exFAT max 15 chars.<br><br>Only used when creating the filesystem ("With filesystem" button). Leave blank for no label.' },
-		'pnp-mount':     { title: 'Mount point',          body: 'Directory where the new partition will be automatically mounted after creation.<br><br>On FritzBox, USB drives are normally under <code>/var/media/ftp/</code>. The directory will be created if it does not exist.<br><br>Leave blank to skip automatic mounting.' },
-		'pnp-align':     { title: 'Alignment',            body: '<b>optimal (1 MiB)</b> – automatically computes 1 MiB ÷ logical_sector_size: 2048 sectors on 512-byte drives, 256 sectors on 4K-native drives. Recommended for all modern media.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Ideal for SD cards (SD Association spec), USB2/USB3 flash drives, spinning HDDs, and legacy MSDOS/MBR disks. Compatible with virtually all operating systems.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB boundary for high-end NVMe SSDs and USB3 Gen2 SSDs with 2 MiB erase blocks.<br><br><b>no alignment</b> – no adjustment. Use only to match legacy disk geometries or to recover partitions. Avoid on flash/SSD storage as misaligned writes severely hurt write performance and longevity.<br><br><em>Recommendation by drive type:</em><br>• SD card / USB flash / spinning HDD → optimal or 2048 sectors<br>• USB3 SSD (SATA-in-USB) → optimal<br>• NVMe (via USB3 or internal) → optimal or 4096 sectors<br>• Legacy MSDOS/MBR (CHS geometry) → 2048 sectors' },
+		'pnp-mount':     { title: 'Mount point',          body: 'Directory where the new partition will be mounted.<br><br>On FritzBox, USB drives are normally under <code>/var/media/ftp/</code>. Auto-filled from the filesystem label. The directory will be created if it does not exist.<br><br>Leave blank to skip mounting.' },
+		'pnp-mount-check': { title: 'Mount after creation' },
+		'pnp-align':     { title: 'Alignment',            body: '<b>optimal (1 MiB)</b> – automatically computes 1 MiB ÷ logical_sector_size: 2048 sectors on 512-byte drives, 256 sectors on 4K-native drives. Recommended for all modern media including small SD cards.<br><br><b>2048 sectors (1 MiB)</b> – fixed 1 MiB boundary. Ideal for SD cards (SD Association spec mandates 4 MiB erase-block alignment even on small cards), USB2/USB3 flash drives, spinning HDDs, and legacy MSDOS/MBR disks. Compatible with virtually all operating systems.<br><br><b>4096 sectors (2 MiB)</b> – 2 MiB boundary for high-end NVMe SSDs and USB3 Gen2 SSDs with 2 MiB erase blocks.<br><br><b>no alignment</b> – no adjustment. Use only to match legacy disk geometries or to recover partitions. Avoid on flash/SSD storage as misaligned writes severely hurt write performance and longevity.<br><br><em>Note on SD cards:</em> The 1 MiB "waste" is negligible (0.003% on a 32 GB card) but misaligned partitions cause erase-block spanning, which dramatically reduces write speed and lifespan on flash memory — this applies to all SD cards regardless of size.<br><br><em>Recommendation by drive type:</em><br>• SD card (any size) / USB flash / spinning HDD → optimal or 2048 sectors<br>• USB3 SSD (SATA-in-USB) → optimal<br>• NVMe (via USB3 or internal) → optimal or 4096 sectors<br>• Legacy MSDOS/MBR (CHS geometry) → 2048 sectors' },
 		/* Partclone export modal */
 		'pi-exp-source':     { title: 'Source partition/disk',     body: 'The block device to export, e.g. <code>/dev/sda1</code> for a partition or <code>/dev/sda</code> for a whole disk.<br><br>Auto-filled from the context menu selection.' },
 		'pi-exp-output':     { title: 'Output image file (-o)',     body: 'Full path for the output image file, e.g. <code>/var/media/ftp/USB_DISK/backup.img</code>.<br><br>If compression is selected the appropriate extension is appended automatically by the script (.gz, .bz2, .lz4, .zst).<br><br>Ensure the destination has sufficient free space (can be up to the partition size for non-sparse filesystems).' },
@@ -6959,10 +6973,6 @@ window.paceOptions = {
 
 	function _injectHelpButtons() {
 		var labelMap = {
-			'i18nVerifySourceDevLabel'  : 'verify-src-dev',
-			'i18nVerifySourcePartLabel' : 'verify-src-part',
-			'i18nVerifyTargetDevLabel'  : 'verify-tgt-dev',
-			'i18nVerifyTargetPartLabel' : 'verify-tgt-part',
 			'i18nVerifyUnmountLabel'    : 'verify-unmount',
 			'i18nMcModeLabel'           : 'mc-mode',
 			'i18nMcSourceDevLabel'      : 'mc-src-dev',
@@ -7030,6 +7040,7 @@ window.paceOptions = {
 			'i18nPnpPartNameLabel'      : 'pnp-part-name',
 			'i18nPnpFsLabelLabel'       : 'pnp-fs-label',
 			'i18nPnpMountLabel'         : 'pnp-mount',
+			'i18nPnpMountCheckLabel'    : 'pnp-mount-check',
 			'i18nPnpAlignLabel'         : 'pnp-align',
 			/* Partclone export modal */
 			'i18nPiExpSourceLabel'      : 'pi-exp-source',
@@ -7772,6 +7783,10 @@ window.paceOptions = {
 				base += '\nparted -s ' + v(params.device) + ' name "$NEW_PARTNUM" ' + v(params.part_name);
 			}
 			base += '\npartprobe ' + v(params.device);
+			var _needsPartNum = (v(params.create_fs) === '1' && fsHint) || v(params.mount_point);
+			if (_needsPartNum && !v(params.part_name)) {
+				base += '\nNEW_PARTNUM="$(parted -s -m ' + v(params.device) + ' unit s print | awk -F: \'/^[0-9]+:/{n=$1} END{print n}\')"';
+			}
 			if (v(params.create_fs) === '1' && fsHint) {
 				var lbl = v(params.part_label || '');
 				var lblOpt = lbl ? (' -L ' + lbl) : '';
@@ -7780,7 +7795,7 @@ window.paceOptions = {
 				var exfat = fsHint === 'exfat';
 				var ntfs = fsHint === 'ntfs';
 				var f2fs = fsHint === 'f2fs';
-				var partDev = v(params.device) + '${NEW_PARTNUM:-N}';
+				var partDev = v(params.device) + '$NEW_PARTNUM';
 				if (ext) base += '\nmke2fs -v -F -t ' + fsHint + (lbl ? ' -L ' + lbl : '') + ' ' + partDev;
 				else if (fat) base += '\nmkfs.fat -v -F ' + fsHint.replace('fat','') + (lbl ? ' -n ' + lbl : '') + ' ' + partDev;
 				else if (exfat) base += '\nmkfs.exfat' + (lbl ? ' -n ' + lbl : '') + ' ' + partDev;
@@ -7789,7 +7804,7 @@ window.paceOptions = {
 			}
 			if (v(params.mount_point)) {
 				base += '\nmkdir -p ' + v(params.mount_point);
-				base += '\nmount ' + v(params.device) + '${NEW_PARTNUM:-N} ' + v(params.mount_point);
+				base += '\nmount ' + v(params.device) + '$NEW_PARTNUM ' + v(params.mount_point);
 			}
 			return base;
 		}
@@ -9208,7 +9223,12 @@ actionsWrap.appendChild(btnRemove);
 			];
 		} else {
 			var part = target;
-			var _ctxRole = String(part.role || (Number(part.number || 0) >= 5 ? 'logical' : 'primary'));
+			var _ctxRole = String(part.role || '');
+			if (!_ctxRole) {
+				if (Number(part.number || 0) >= 5) _ctxRole = 'logical';
+				else if (String(part.fs || '').toLowerCase() === 'extended') _ctxRole = 'extended';
+				else _ctxRole = 'primary';
+			}
 			if (_ctxRole === 'extended') {
 				items = [
 					{ id: 'select',      label: 'Select partition' },
@@ -9448,7 +9468,14 @@ actionsWrap.appendChild(btnRemove);
 		for (var _ei = 0; _ei < dev.partitions.length; _ei++) {
 			var _ep = dev.partitions[_ei];
 			if (_ep.kind !== 'partition') continue;
-			var _epRole = String(_ep.role || (_ep.number >= 5 ? 'logical' : 'primary'));
+			var _epRole = String(_ep.role || '');
+			// JS fallback: no role from backend → infer.
+			// Logical partitions are numbered ≥5 on MBR; extended is 1-4 with fs='extended'.
+			if (!_epRole) {
+				if (Number(_ep.number || 0) >= 5) _epRole = 'logical';
+				else if (String(_ep.fs || '').toLowerCase() === 'extended') _epRole = 'extended';
+				else _epRole = 'primary';
+			}
 			if (_epRole !== 'extended') continue;
 			var _eLay = blockLayouts[_ei];
 			// Compute span: from leftmost logical partition to rightmost (may extend beyond visual block due to min-width clamping)
@@ -9473,8 +9500,10 @@ actionsWrap.appendChild(btnRemove);
 			var band = document.createElement('div');
 			band.className = 'pcgi-extended-band';
 			band.style.position = 'absolute';
-			band.style.left  = _eBandLeft  + 'px';
-			band.style.width = _eBandWidth + 'px';
+			band.style.left   = _eBandLeft  + 'px';
+			band.style.width  = _eBandWidth + 'px';
+			band.style.top    = '22px';
+			band.style.height = '12px';
 			var bandLabel = document.createElement('span');
 			bandLabel.className = 'pcgi-extended-label';
 			bandLabel.textContent = 'extended';
@@ -9541,14 +9570,40 @@ actionsWrap.appendChild(btnRemove);
 				}
 				// Extended partition: skip normal block rendering — the band pre-pass already drew it.
 				if (p.kind === 'partition') {
-					var _pRole = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
+					var _pRole = String(p.role || '');
+					if (!_pRole) {
+						if (Number(p.number || 0) >= 5) _pRole = 'logical';
+						else if (String(p.fs || '').toLowerCase() === 'extended') _pRole = 'extended';
+						else _pRole = 'primary';
+					}
 					if (_pRole === 'extended') return;
 				}
 				var block = document.createElement('div');
 				block.className = 'pcgi-block ' + (p.kind === 'free' ? 'free' : 'part');
 				if (p.kind === 'partition') {
-					var _pRole2 = String(p.role || (Number(p.number || 0) >= 5 ? 'logical' : 'primary'));
+					var _pRole2 = String(p.role || '');
+					if (!_pRole2) {
+						if (Number(p.number || 0) >= 5) _pRole2 = 'logical';
+						else if (String(p.fs || '').toLowerCase() === 'extended') _pRole2 = 'extended';
+						else _pRole2 = 'primary';
+					}
 					if (_pRole2 === 'logical') block.className += ' pcgi-logical';
+				}
+				// Free space inside extended range also uses logical positioning
+				if (p.kind === 'free') {
+					var _freeStart = Number(p.start || 0), _freeEnd = Number(p.end || 0);
+					for (var _fei = 0; _fei < dev.partitions.length; _fei++) {
+						var _fep = dev.partitions[_fei];
+						if (_fep.kind !== 'partition') continue;
+						var _fepRole = String(_fep.role || '');
+						if (!_fepRole && String(_fep.fs || '').toLowerCase() === 'extended') _fepRole = 'extended';
+						if (_fepRole !== 'extended') continue;
+						var _fepStart = Number(_fep.start || 0), _fepEnd = Number(_fep.end || 0);
+						if (_freeStart >= _fepStart && _freeEnd <= _fepEnd) {
+							block.className += ' pcgi-logical';
+						}
+						break;
+					}
 				}
 				block.style.left = leftPx + 'px';
 				block.style.width = widthPx + 'px';
@@ -10458,8 +10513,62 @@ function populateMcTargetPartDropdown(preselectNum) {
 	}
 }
 
-function populateVerifyPartDropdown(devSelId, partSelId) {
-	populatePartDropdown(devSelId, partSelId);
+function buildVerifyPartDropdown(selId, preselectPath) {
+	var sel = document.getElementById(selId);
+	if (!sel) return;
+	sel.innerHTML = '';
+	for (var _bvi = 0; _bvi < state.devices.length; _bvi++) {
+		var _bvDev = state.devices[_bvi];
+		var _bvSs = Number(_bvDev.logical_sector_size || 512);
+		var _bvParts = _bvDev.partitions || [];
+		for (var _bvj = 0; _bvj < _bvParts.length; _bvj++) {
+			var _bvp = _bvParts[_bvj];
+			if (!_bvp || _bvp.kind !== 'partition') continue;
+			var _bvPath = String(_bvp.path || '');
+			if (!_bvPath) continue;
+			var _bvOpt = document.createElement('option');
+			_bvOpt.value = _bvPath;
+			var _bvDesc = _bvPath;
+			if (_bvp.size) _bvDesc += '  ' + humanBytes(Number(_bvp.size) * _bvSs);
+			if (_bvp.fs)   _bvDesc += '  [' + _bvp.fs + ']';
+			if (_bvp.label) _bvDesc += '  \u201c' + _bvp.label + '\u201d';
+			if (_bvp.mountpoint && String(_bvp.mountpoint).trim() && String(_bvp.mountpoint).trim() !== '-')
+				_bvDesc += '  (mounted)';
+			_bvOpt.textContent = _bvDesc;
+			sel.appendChild(_bvOpt);
+		}
+	}
+	if (preselectPath) sel.value = preselectPath;
+}
+
+function updateVerifyInfo(side) {
+	var selId  = side === 'A' ? 'verifyPartA' : 'verifyPartB';
+	var infoId = side === 'A' ? 'verifyInfoA' : 'verifyInfoB';
+	var sel  = document.getElementById(selId);
+	var info = document.getElementById(infoId);
+	if (!sel || !info) return;
+	var path = sel.value;
+	var found = null;
+	for (var _uvi = 0; _uvi < state.devices.length && !found; _uvi++) {
+		var _uvDev = state.devices[_uvi];
+		var _uvSs  = Number(_uvDev.logical_sector_size || 512);
+		var _uvParts = _uvDev.partitions || [];
+		for (var _uvj = 0; _uvj < _uvParts.length; _uvj++) {
+			var _uvp = _uvParts[_uvj];
+			if (_uvp.kind === 'partition' && String(_uvp.path || '') === path) {
+				found = { p: _uvp, ss: _uvSs }; break;
+			}
+		}
+	}
+	if (!found) { info.textContent = ''; return; }
+	var _p = found.p, _ss = found.ss;
+	var _parts = [];
+	if (_p.size) _parts.push(humanBytes(Number(_p.size) * _ss));
+	if (_p.fs)   _parts.push('FS: ' + _p.fs);
+	if (_p.label) _parts.push('Label: \u201c' + _p.label + '\u201d');
+	if (_p.mountpoint && String(_p.mountpoint).trim() && String(_p.mountpoint).trim() !== '-')
+		_parts.push('Mounted: ' + _p.mountpoint);
+	info.textContent = _parts.join('  \u2022  ');
 }
 
 // ── New partition modal ───────────────────────────────────────────────────────
@@ -10477,6 +10586,18 @@ function showNewPartModal(dropStart, dropEnd) {
 	updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
 	updateHumanFieldFromSector('pnpEndSector',   'pnpEndHuman');
 
+	/* Min/Max buttons reset to the free region boundaries */
+	var _minBtn = document.getElementById('pnpStartMinBtn');
+	var _maxBtn = document.getElementById('pnpEndMaxBtn');
+	if (_minBtn) _minBtn.onclick = function() {
+		document.getElementById('pnpStartSector').value = String(dropStart);
+		updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+	};
+	if (_maxBtn) _maxBtn.onclick = function() {
+		document.getElementById('pnpEndSector').value = String(dropEnd);
+		updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
+	};
+
 	/* Gather device/partition context */
 	var devPath = state.selectedDevice || '';
 	var devObj  = devPath ? getPreviewDeviceByPath(devPath) : null;
@@ -10491,7 +10612,12 @@ function showNewPartModal(dropStart, dropEnd) {
 	if (isMBR) {
 		for (var _xi = 0; _xi < allParts.length; _xi++) {
 			var _xp = allParts[_xi];
-			var _xRole = String(_xp.role || (Number(_xp.number||0) >= 5 ? 'logical' : 'primary'));
+			var _xRole = String(_xp.role || '');
+			if (!_xRole) {
+				if (Number(_xp.number || 0) >= 5) _xRole = 'logical';
+				else if (String(_xp.fs || '').toLowerCase() === 'extended') _xRole = 'extended';
+				else _xRole = 'primary';
+			}
 			if (_xRole === 'extended') { extPart = _xp; break; }
 		}
 	}
@@ -10515,10 +10641,16 @@ function showNewPartModal(dropStart, dropEnd) {
 		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = 'none';
 		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '1 / -1';
 		if (roleEl) { roleEl.innerHTML = '<option value="primary">primary</option>'; roleEl.value = 'primary'; }
+		// GPT: partition name is supported; show the field
+		var _pnpNameRowEl = document.getElementById('pnpPartNameRow');
+		if (_pnpNameRowEl) _pnpNameRowEl.style.display = '';
 	} else if (isMBR) {
 		if (roleRow)        roleRow.style.display      = '';
 		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = '';
 		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '';
+		// MBR: partition name field not applicable
+		var _pnpNameRowEl = document.getElementById('pnpPartNameRow');
+		if (_pnpNameRowEl) _pnpNameRowEl.style.display = 'none';
 		if (roleEl) {
 			// Rebuild options based on context
 			var opts = '<option value="primary">primary</option>';
@@ -10535,6 +10667,8 @@ function showNewPartModal(dropStart, dropEnd) {
 		if (roleRow)        roleRow.style.display      = '';
 		if (_pnpRoleSpacerEl)  _pnpRoleSpacerEl.style.display = '';
 		if (_pnpFsHintRowEl)   _pnpFsHintRowEl.style.gridColumn = '';
+		var _pnpNameRowElElse = document.getElementById('pnpPartNameRow');
+		if (_pnpNameRowElElse) _pnpNameRowElElse.style.display = '';
 		if (roleEl) {
 			roleEl.innerHTML = '<option value="primary">primary</option><option value="logical">logical</option><option value="extended">extended</option>';
 			roleEl.value = (document.getElementById('newPartRole') || {}).value || 'primary';
@@ -10584,6 +10718,8 @@ function showNewPartModal(dropStart, dropEnd) {
 		var mntRow = document.getElementById('pnpMountRow');
 		if (lblRow) lblRow.style.display = show ? 'block' : 'none';
 		if (mntRow) mntRow.style.display = show ? 'block' : 'none';
+		// Auto-fill mount point from label when showing
+		if (show) _pnpAutoFillMount();
 		// Validate logical without extended
 		if (roleVal === 'logical' && !extPart && !insideExtended) {
 			_pnpSetWarn(t('warnNoExtended') || '⚠ No extended partition exists yet. Create an extended partition first, then add logical partitions inside it.');
@@ -10601,6 +10737,26 @@ function showNewPartModal(dropStart, dropEnd) {
 		fsEl.removeEventListener('change', _pnpToggleFsAndRole);
 		fsEl.addEventListener('change', _pnpToggleFsAndRole);
 	}
+
+	/* Auto-fill mount point = /var/media/ftp/<label> when label changes */
+	var _pnpMountAutoFilled = true; // track if user has manually edited mount
+	function _pnpAutoFillMount() {
+		if (!_pnpMountAutoFilled) return;
+		var labelEl = document.getElementById('pnpFsLabel');
+		var mountEl = document.getElementById('pnpMountPoint');
+		if (!labelEl || !mountEl) return;
+		var lbl = labelEl.value.trim();
+		mountEl.value = lbl ? '/var/media/ftp/' + lbl : '';
+	}
+	var _fsLabelEl = document.getElementById('pnpFsLabel');
+	if (_fsLabelEl) {
+		_fsLabelEl.addEventListener('input', _pnpAutoFillMount);
+	}
+	var _mntPointEl = document.getElementById('pnpMountPoint');
+	if (_mntPointEl) {
+		_mntPointEl.addEventListener('input', function() { _pnpMountAutoFilled = false; });
+	}
+
 	_pnpToggleFsAndRole();
 
 	/* Sync main form so queueCreatePartition* helpers can read from it */
@@ -10624,7 +10780,8 @@ function showNewPartModal(dropStart, dropEnd) {
 		if (_pnpAlignEl && _mainAlignEl) _mainAlignEl.value = _pnpAlignEl.value;
 		// Store extra pnp params on state for use by queueCreatePartition
 		state._pnpFsLabel   = (document.getElementById('pnpFsLabel')   || {value: ''}).value.trim();
-		state._pnpMountPoint = (document.getElementById('pnpMountPoint') || {value: ''}).value.trim();
+		var _mntChk = document.getElementById('pnpMountCheck');
+		state._pnpMountPoint = (_mntChk && _mntChk.checked) ? (document.getElementById('pnpMountPoint') || {value: ''}).value.trim() : '';
 		// Store chosen table type if we need to create it first
 		state._pnpNeedsTable = needsTable ? (tableTypeEl ? tableTypeEl.value : 'gpt') : null;
 		refreshSectorHumanFields();
@@ -10717,9 +10874,9 @@ function showFritzSetupModal(diskTarget) {
 	if (diskEl) diskEl.textContent = 'Device: ' + (devPath || '?') +
 		(totalSec ? '  —  ' + humanBytes(totalSec * lss) : '');
 
-	// Default partitions: NTFS_Data ~50%, MediaServer ~50%, FRITZBOX 2 GiB
+	// Default partitions: NTFS_Data ~50%, MediaServer ~50%, FRITZBOX 4 GiB
 	var ALIGN = Math.max(1, Math.ceil(1048576 / lss));
-	var fritzSec = Math.ceil(2 * 1024 * 1024 * 1024 / lss / ALIGN) * ALIGN;
+	var fritzSec = Math.ceil(4 * 1024 * 1024 * 1024 / lss / ALIGN) * ALIGN;
 	// Available after GPT head (2048s min) + GPT tail (33s)
 	var avail = Math.max(0, totalSec - 2048 - 33 - fritzSec);
 	var ntfsSec  = Math.floor(avail * 0.50 / ALIGN) * ALIGN;
@@ -11121,12 +11278,29 @@ function showVerifyModal() {
 	var modal = document.getElementById('pcgiVerifyModal');
 	if (!modal) return;
 
-	populateDevDropdown('verifySourceDev');
-	populateDevDropdown('verifyTargetDev');
-	populatePartDropdown('verifySourceDev', 'verifySourcePartNum');
-	populatePartDropdown('verifyTargetDev', 'verifyTargetPartNum');
+	/* Build flat partition dropdowns */
+	var _curPath = state.selectedPart ? String(state.selectedPart.path || '') : '';
+	buildVerifyPartDropdown('verifyPartA', _curPath);
 
-	/* Auto-set verify unmount based on currently selected partition */
+	/* For B: auto-select any partition other than A */
+	var _bPath = '';
+	for (var _svi = 0; _svi < state.devices.length && !_bPath; _svi++) {
+		var _svDev = state.devices[_svi];
+		var _svParts = _svDev.partitions || [];
+		for (var _svj = 0; _svj < _svParts.length; _svj++) {
+			var _svp = _svParts[_svj];
+			if (_svp.kind === 'partition' && String(_svp.path || '') !== _curPath) {
+				_bPath = String(_svp.path || ''); break;
+			}
+		}
+	}
+	buildVerifyPartDropdown('verifyPartB', _bPath);
+
+	/* Update info strips */
+	updateVerifyInfo('A');
+	updateVerifyInfo('B');
+
+	/* Auto-set unmount based on selected partition mount state */
 	var _vumEl = document.getElementById('verifyUnmount');
 	if (_vumEl) {
 		var _vp = state.selectedPart;
@@ -11134,8 +11308,20 @@ function showVerifyModal() {
 		_vumEl.value = _vmounted ? 'yes' : 'no';
 	}
 
+	/* Translate modal labels */
+	var _verifTitleEl = document.getElementById('pcgiVerifyTitle');
+	if (_verifTitleEl) _verifTitleEl.textContent = t('chipVerifyPartition');
+	var _verifALbl = document.getElementById('i18nVerifyPartALabel');
+	if (_verifALbl) _verifALbl.textContent = t('verifyPartALabel') || 'Partition A (source)';
+	var _verifBLbl = document.getElementById('i18nVerifyPartBLabel');
+	if (_verifBLbl) _verifBLbl.textContent = t('verifyPartBLabel') || 'Partition B (compare)';
+	var _verifUmLbl = document.getElementById('i18nVerifyUnmountLabel');
+	if (_verifUmLbl) _verifUmLbl.textContent = t('verifyUnmountLabel') || 'Unmount before';
+
 	var cancelBtn = document.getElementById('pcgiVerifyCancelBtn');
 	var okBtn     = document.getElementById('pcgiVerifyOkBtn');
+	if (cancelBtn) cancelBtn.textContent = t('btnCancel');
+	if (okBtn)     okBtn.textContent     = t('confirmVerify') || 'Compare';
 
 	modal.style.display = 'flex';
 	modal.setAttribute('aria-hidden', 'false');
@@ -11143,23 +11329,23 @@ function showVerifyModal() {
 	function cleanup() {
 		modal.style.display = 'none';
 		modal.setAttribute('aria-hidden', 'true');
-		cancelBtn.onclick = okBtn.onclick = null;
+		if (cancelBtn) cancelBtn.onclick = null;
+		if (okBtn)     okBtn.onclick     = null;
 		document.removeEventListener('keydown', onEsc);
 	}
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
-	cancelBtn.onclick = cleanup;
-	okBtn.onclick = function () {
-		var srcDev  = document.getElementById('verifySourceDev');
-		var srcNum  = document.getElementById('verifySourcePartNum');
-		var cmpDev  = document.getElementById('verifyTargetDev');
-		var cmpNum  = document.getElementById('verifyTargetPartNum');
-		var umSel   = document.getElementById('verifyUnmount');
-		if (!srcDev || !srcNum || !cmpDev || !cmpNum) { cleanup(); return; }
-		var srcPath = srcDev.value.replace(/\/*$/, '') +
-		              (/[0-9]$/.test(srcDev.value) ? 'p' : '') + srcNum.value;
-		var cmpPath = cmpDev.value.replace(/\/*$/, '') +
-		              (/[0-9]$/.test(cmpDev.value) ? 'p' : '') + cmpNum.value;
+	if (cancelBtn) cancelBtn.onclick = cleanup;
+	if (okBtn) okBtn.onclick = function () {
+		var selA  = document.getElementById('verifyPartA');
+		var selB  = document.getElementById('verifyPartB');
+		var umSel = document.getElementById('verifyUnmount');
+		if (!selA || !selB || !selA.value || !selB.value) {
+			showToast('Select both partitions.', 'warn');
+			return;
+		}
+		var srcPath = selA.value;
+		var cmpPath = selB.value;
 		var unmount = umSel ? umSel.value : 'no';
 		var vParams = {
 			source_partition:  srcPath,
@@ -11167,7 +11353,7 @@ function showVerifyModal() {
 			unmount_before:    unmount,
 			step_delay:        '0'
 		};
-		var vLabel = 'Verify ' + srcPath + ' == ' + cmpPath;
+		var vLabel = 'Compare ' + srcPath + ' ≡ ' + cmpPath;
 		cleanup();
 		showCommandPreviewModal('verify_partition', vParams, vLabel, t('confirmVerify'), t('confirmVerifyMsg'))
 		.then(function (previewText) {
@@ -12958,9 +13144,9 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			hideHoverTooltip();
 		};
 	}
-	var verifyChipEl = document.getElementById('verifyPartChip');
-	if (verifyChipEl) {
-		verifyChipEl.onclick = showVerifyModal;
+	var comparePartBtnEl = document.getElementById('comparePartitionsBtn');
+	if (comparePartBtnEl) {
+		comparePartBtnEl.onclick = showVerifyModal;
 	}
 	document.getElementById('helpBtn').onclick = showHelpModal;
 	document.getElementById('pcgiHelpCloseBtn').onclick = hideHelpModal;
