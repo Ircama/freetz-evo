@@ -8867,7 +8867,9 @@ actionsWrap.appendChild(btnRemove);
 		// Detect MBR extended/logical layout: if any partition is 'extended'
 		// (by role, fs, or the LBA-extended flag), logical partitions inside it
 		// share the same sector range and must bypass the cursor-based gap check.
+		// Also capture the extended range so free blocks inside it can be generated.
 		var hasExtended = false;
+		var _normExtStart = -1, _normExtEnd = -1;
 		for (var _ei = 0; _ei < parts.length; _ei++) {
 			var _ep = parts[_ei];
 			if (!_ep || _ep.kind !== 'partition') continue;
@@ -8877,6 +8879,8 @@ actionsWrap.appendChild(btnRemove);
 			if (_erole === 'extended' || _efs === 'extended' ||
 					(!_efs && _eflg === 'lba')) {
 				hasExtended = true;
+				_normExtStart = Number(_ep.start || 0);
+				_normExtEnd   = Number(_ep.end   || 0);
 				break;
 			}
 		}
@@ -8895,8 +8899,7 @@ actionsWrap.appendChild(btnRemove);
 
 			// Logical partitions (MBR only) occupy sector ranges that overlap
 			// with the extended container, so they would be wrongly skipped by
-			// the cursor check below.  Collect them and append after the outer
-			// pass so blockLayouts can position them inside the extended band.
+			// the cursor check below.  Collect them for inner free-space generation.
 			if (hasExtended) {
 				var _pRole = String(p.role || '');
 				var _isLog = (_pRole === 'logical') ||
@@ -8927,10 +8930,31 @@ actionsWrap.appendChild(btnRemove);
 			out.push({ kind: 'free', start: cursor, end: maxSector, size: maxSector - cursor + 1 });
 		}
 
-		// Append logicals: they live inside the extended band and are positioned
-		// by blockLayouts relative to the extended partition, not the outer cursor.
-		for (var j = 0; j < logicals.length; j++) {
-			out.push(logicals[j]);
+		// Append logicals with free-space gaps between them inside the extended band.
+		// buildPreviewDevice only keeps kind='partition' items, so free blocks inside
+		// extended must be synthesised here from gaps between sorted logicals.
+		if (_normExtStart >= 0) {
+			logicals.sort(function(a, b) { return Number(a.start || 0) - Number(b.start || 0); });
+			var intCursor = _normExtStart;
+			for (var j = 0; j < logicals.length; j++) {
+				var lp = logicals[j];
+				var lpStart = Math.max(_normExtStart, Math.floor(Number(lp.start || 0)));
+				var lpEnd   = Math.min(_normExtEnd,   Math.floor(Number(lp.end   || 0)));
+				if (lpEnd < lpStart) continue;
+				// Gap before this logical = free space inside extended
+				if (lpStart > intCursor) {
+					out.push({ kind: 'free', start: intCursor, end: lpStart - 1, size: lpStart - intCursor });
+				}
+				lp.start = lpStart;
+				lp.end   = lpEnd;
+				lp.size  = Math.max(1, lpEnd - lpStart + 1);
+				out.push(lp);
+				intCursor = lpEnd + 1;
+			}
+			// Trailing free space inside extended (after last logical, or entire if none)
+			if (intCursor <= _normExtEnd) {
+				out.push({ kind: 'free', start: intCursor, end: _normExtEnd, size: _normExtEnd - intCursor + 1 });
+			}
 		}
 
 		return out;
@@ -9605,6 +9629,7 @@ actionsWrap.appendChild(btnRemove);
 			band.appendChild(bandLabel);
 			// Allow click/contextmenu on the band label strip (above logical partitions)
 			// to select/operate on the extended partition itself.
+			// Also accept "new partition" chip drops on the band strip.
 			(function(_bandEp) {
 				band.onclick = function(ev) {
 					ev.preventDefault(); ev.stopPropagation();
@@ -9614,6 +9639,19 @@ actionsWrap.appendChild(btnRemove);
 				band.oncontextmenu = function(ev) {
 					ev.preventDefault(); ev.stopPropagation();
 					showContextMenu(_bandEp, ev, 'partition');
+				};
+				band.ondragover = function(ev) {
+					var types = ev.dataTransfer ? (ev.dataTransfer.types || []) : [];
+					var hasText = false;
+					for (var _ti = 0; _ti < types.length; _ti++) { if (types[_ti] === 'text/plain') { hasText = true; break; } }
+					if (hasText) ev.preventDefault();
+				};
+				band.ondrop = function(ev) {
+					ev.preventDefault(); ev.stopPropagation();
+					var data = ev.dataTransfer ? ev.dataTransfer.getData('text/plain') : '';
+					if (data === 'new-partition') {
+						showNewPartModal(Number(_bandEp.start || 0) + 1, Number(_bandEp.end || 0) - 1);
+					}
 				};
 				band.onmouseenter = function(ev) {
 					showHoverTooltip(ev, buildPartitionTooltipHtml(_bandEp, logical, 0, 0));
