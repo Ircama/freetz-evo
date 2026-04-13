@@ -576,7 +576,7 @@ emit_json_error() {
 		return 0
 	fi
 	_msg=$(json_escape "$1")
-	echo "{\"success\": false, \"message\": \"$_msg\"}"
+	printf '%s\n' "{\"success\": false, \"message\": \"$_msg\"}"
 }
 
 emit_cmd_result() {
@@ -590,7 +590,7 @@ emit_cmd_result() {
 	fi
 	_msg_json=$(json_escape "$_msg")
 	_out_json=$(json_escape "$_detail")
-	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\"}"
+	printf '%s\n' "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\"}"
 }
 
 emit_cmd_result_with_target() {
@@ -610,7 +610,7 @@ emit_cmd_result_with_target() {
 	_target_device=$(json_escape "$7")
 	_target_start_sector=$(json_escape "$8")
 	_target_end_sector=$(json_escape "$9")
-	echo "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
+	printf '%s\n' "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
 }
 
 # exec_cmd: run command with direct streaming output to STREAM_LOG (no capture).
@@ -801,7 +801,7 @@ action_analyze_tools() {
 	add_item "partition_migration.sh" "$CMD_PARTITION_MIGRATION" "Partition migration/clone script"
 	add_item "ddrescue" "$CMD_DDRESCUE" "Safer block clone/copy"
 
-	echo "{\"success\": true, \"e2fsprogs_mode\": \"$e2_mode\", \"tools\": [$items]}"
+	printf '%s\n' "{\"success\": true, \"e2fsprogs_mode\": \"$e2_mode\", \"tools\": [$items]}"
 }
 
 action_list_devices() {
@@ -962,10 +962,16 @@ action_list_devices() {
 								0x5|0x0f|0xf|0x85) _prole='extended' ;;
 							esac
 						fi
-						# Fallback: parted flags field contains "extended" or "lba" type hint
+						# Fallback: parted fstype field says "extended", or flags="lba" with no
+						# fstype (Extended with LBA, type 0x0F — parted omits fstype for it).
 						if [ "$_prole" = 'primary' ]; then
 							case "$_pfs" in
 								extended) _prole='extended' ;;
+							esac
+						fi
+						if [ "$_prole" = 'primary' ] && [ -z "$_pfs" ]; then
+							case "$_pflags" in
+								lba) _prole='extended' ;;
 							esac
 						fi
 					fi
@@ -983,7 +989,7 @@ EOF
 		dev_json="$dev_json{\"name\":\"$(json_escape "$_name")\",\"path\":\"$(json_escape "$_dev")\",\"model\":\"$(json_escape "$_model")\",\"vendor\":\"$(json_escape "$_vendor")\",\"serial\":\"$(json_escape "$_serial")\",\"transport\":\"$(json_escape "$_transport")\",\"removable\":$_removable,\"table\":\"$(json_escape "$_table_type")\",\"logical_sector_size\":$_logical_size,\"total_sectors\":$_total_sectors,\"partitions\":[$_parts]}"
 	done
 
-	echo "{\"success\": true, \"devices\": [$dev_json]}"
+	printf '%s\n' "{\"success\": true, \"devices\": [$dev_json]}"
 }
 
 action_create_partition() {
@@ -1074,7 +1080,8 @@ $CMD_MKFS_FAT -F 16 ${_device}<new_partnum>" ;;
 $CMD_MKFS_FAT -F 32 ${_device}<new_partnum>" ;;
 				exfat) _preview_cmd="$_preview_cmd
 $CMD_MKFS_EXFAT ${_device}<new_partnum>" ;;
-				ntfs)  : ;; # parted mkpart with ntfs hint already creates the filesystem
+				ntfs)  _preview_cmd="$_preview_cmd
+${CMD_MKNTFS:-mkntfs} -Q -f ${_device}<new_partnum>" ;;
 			esac
 		fi
 		emit_dry_run_result "partition creation" "$_preview_cmd"
@@ -1208,16 +1215,21 @@ $CMD_MKFS_EXFAT ${_device}<new_partnum>" ;;
 					fi
 					;;
 				ntfs)
-					# parted mkpart with ntfs hint creates a basic NTFS without a volume label.
-					# Re-run mkntfs to set the label (-Q = quick format, keeps existing data).
-					if [ -n "$CMD_MKNTFS" ] && [ -n "$_part_label" ] && is_valid_label "$_part_label"; then
-						exec_cmd_c "mkntfs set label on $_new_part_dev" \
-							"$CMD_MKNTFS -Q -f -L $_part_label $_new_part_dev" \
-							"$CMD_MKNTFS" -Q -f -L "$_part_label" "$_new_part_dev"
+					# parted mkpart with ntfs hint only sets the partition type ID;
+					# it does NOT write a real NTFS filesystem. Always run mkntfs.
+					if [ -n "$CMD_MKNTFS" ]; then
+						_lbl_opt=''
+						if [ -n "$_part_label" ] && is_valid_label "$_part_label"; then
+							_lbl_opt="-L $_part_label"
+						fi
+						# shellcheck disable=SC2086
+						exec_cmd_c "mkntfs format $_new_part_dev" \
+							"$CMD_MKNTFS -Q -f ${_lbl_opt:+$_lbl_opt }$_new_part_dev" \
+							"$CMD_MKNTFS" -Q -f ${_lbl_opt:+$_lbl_opt} "$_new_part_dev"
 						_out="$_out\n$EXEC_OUT"
-						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkntfs failed (rc=$EXEC_RC), NTFS label not set"
+						[ "$EXEC_RC" -ne 0 ] && _out="$_out\nWarning: mkntfs failed (rc=$EXEC_RC)"
 					else
-						_out="$_out\nNote: NTFS filesystem created by parted mkpart"
+						_out="$_out\nWarning: mkntfs not available, NTFS filesystem not created — mount will fail"
 					fi
 					;;
 				*)
@@ -3308,7 +3320,7 @@ EOF
 			;;
 	esac
 
-	echo "{\"success\": true, \"partition\": \"$(json_escape "$_partition")\", \"device\": \"$(json_escape "$_device")\", \"partnum\": \"$(json_escape "$_partnum")\", \"partition_name\": \"$(json_escape "$_part_name")\", \"flags\": \"$(json_escape "$_part_flags")\", \"label\": \"$(json_escape "$_label")\", \"fstype\": \"$(json_escape "$_fstype")\", \"filesystem_type\": \"$(json_escape "$_fstype")\", \"mountpoint\": \"$(json_escape "$_mountpoint")\", \"mount_point\": \"$(json_escape "$_mountpoint")\", \"size_bytes\": $_size_bytes, \"fs_size_bytes\": $_fs_size_bytes, \"fs_used_bytes\": $_fs_used_bytes, \"fs_avail_bytes\": $_fs_avail_bytes, \"used_human\": \"$(json_escape "$_used_human")\", \"unused_human\": \"$(json_escape "$_unused_human")\", \"device_info\": {\"path\": \"$(json_escape "$_dev_path")\", \"model\": \"$(json_escape "$_dev_model")\", \"serial\": \"$(json_escape "$_dev_serial")\", \"size_bytes\": $_dev_size_bytes, \"partition_table\": \"$(json_escape "$_dev_partition_table")\", \"heads\": $_dev_heads, \"sectors_per_track\": $_dev_sectors_track, \"cylinders\": $_dev_cylinders, \"total_sectors\": $_dev_total_sectors, \"sector_size_bytes\": $_dev_sector_size_bytes}, \"sources\": [$_sources]}"
+	printf '%s\n' "{\"success\": true, \"partition\": \"$(json_escape "$_partition")\", \"device\": \"$(json_escape "$_device")\", \"partnum\": \"$(json_escape "$_partnum")\", \"partition_name\": \"$(json_escape "$_part_name")\", \"flags\": \"$(json_escape "$_part_flags")\", \"label\": \"$(json_escape "$_label")\", \"fstype\": \"$(json_escape "$_fstype")\", \"filesystem_type\": \"$(json_escape "$_fstype")\", \"mountpoint\": \"$(json_escape "$_mountpoint")\", \"mount_point\": \"$(json_escape "$_mountpoint")\", \"size_bytes\": $_size_bytes, \"fs_size_bytes\": $_fs_size_bytes, \"fs_used_bytes\": $_fs_used_bytes, \"fs_avail_bytes\": $_fs_avail_bytes, \"used_human\": \"$(json_escape "$_used_human")\", \"unused_human\": \"$(json_escape "$_unused_human")\", \"device_info\": {\"path\": \"$(json_escape "$_dev_path")\", \"model\": \"$(json_escape "$_dev_model")\", \"serial\": \"$(json_escape "$_dev_serial")\", \"size_bytes\": $_dev_size_bytes, \"partition_table\": \"$(json_escape "$_dev_partition_table")\", \"heads\": $_dev_heads, \"sectors_per_track\": $_dev_sectors_track, \"cylinders\": $_dev_cylinders, \"total_sectors\": $_dev_total_sectors, \"sector_size_bytes\": $_dev_sector_size_bytes}, \"sources\": [$_sources]}"
 }
 
 action_reload_table() {
@@ -3591,7 +3603,7 @@ action_start_job() {
 		[ -f "$STREAM_DONE" ] || printf 'true\n0\nCompleted\n\n' > "$STREAM_DONE"
 	) > /dev/null 2>&1 &
 	printf '%s\n' "$!" > "$_spid"
-	echo "{\"success\": true, \"token\": \"${_token}\"}"
+	printf '%s\n' "{\"success\": true, \"token\": \"${_token}\"}"
 }
 
 action_poll_job() {
@@ -3640,9 +3652,9 @@ action_poll_job() {
 	_te=$(json_escape "$_newtext")
 	_me=$(json_escape "$_msg")
 	if [ "$_done" = "true" ] && [ -n "$_extras" ]; then
-		echo "{\"done\":true,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size,$_extras}"
+		printf '%s\n' "{\"done\":true,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size,$_extras}"
 	else
-		echo "{\"done\":$_done,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size}"
+		printf '%s\n' "{\"done\":$_done,\"success\":$_success,\"rc\":$_rc,\"message\":\"$_me\",\"text\":\"$_te\",\"offset\":$_size}"
 	fi
 }
 
@@ -8851,6 +8863,24 @@ actionsWrap.appendChild(btnRemove);
 	function normalizePreviewPartitions(parts, totalSectors) {
 		var out = [];
 		var maxSector = Math.max(1, Number(totalSectors || 0) - 1);
+
+		// Detect MBR extended/logical layout: if any partition is 'extended'
+		// (by role, fs, or the LBA-extended flag), logical partitions inside it
+		// share the same sector range and must bypass the cursor-based gap check.
+		var hasExtended = false;
+		for (var _ei = 0; _ei < parts.length; _ei++) {
+			var _ep = parts[_ei];
+			if (!_ep || _ep.kind !== 'partition') continue;
+			var _erole = String(_ep.role || '');
+			var _efs   = String(_ep.fs   || '').toLowerCase();
+			var _eflg  = String(_ep.flags|| '').toLowerCase();
+			if (_erole === 'extended' || _efs === 'extended' ||
+					(!_efs && _eflg === 'lba')) {
+				hasExtended = true;
+				break;
+			}
+		}
+
 		var ordered = parts.slice().sort(function (a, b) {
 			if (Number(a.start || 0) === Number(b.start || 0)) {
 				return Number(a.number || 0) - Number(b.number || 0);
@@ -8859,8 +8889,21 @@ actionsWrap.appendChild(btnRemove);
 		});
 
 		var cursor = 1;
+		var logicals = [];
 		for (var i = 0; i < ordered.length; i++) {
 			var p = clonePartitionEntry(ordered[i]);
+
+			// Logical partitions (MBR only) occupy sector ranges that overlap
+			// with the extended container, so they would be wrongly skipped by
+			// the cursor check below.  Collect them and append after the outer
+			// pass so blockLayouts can position them inside the extended band.
+			if (hasExtended) {
+				var _pRole = String(p.role || '');
+				var _isLog = (_pRole === 'logical') ||
+					(!_pRole && p.kind === 'partition' && Number(p.number || 0) >= 5);
+				if (_isLog) { logicals.push(p); continue; }
+			}
+
 			var start = Math.max(1, Math.floor(Number(p.start || 0)));
 			var end = Math.max(start, Math.floor(Number(p.end || 0)));
 
@@ -8882,6 +8925,12 @@ actionsWrap.appendChild(btnRemove);
 
 		if (cursor <= maxSector) {
 			out.push({ kind: 'free', start: cursor, end: maxSector, size: maxSector - cursor + 1 });
+		}
+
+		// Append logicals: they live inside the extended band and are positioned
+		// by blockLayouts relative to the extended partition, not the outer cursor.
+		for (var j = 0; j < logicals.length; j++) {
+			out.push(logicals[j]);
 		}
 
 		return out;
@@ -9428,6 +9477,28 @@ actionsWrap.appendChild(btnRemove);
 		//     rather than overlapping them.
 		var blockLayouts = [];
 		var pixelCursor = 0;
+		// Pre-identify extended partition sector range so inner items (logical
+		// partitions, free space inside extended) can be positioned relative to
+		// the extended band instead of being constrained by the outer pixelCursor.
+		var _extSectorStart = -1, _extSectorEnd = -1, _extLayIdx = -1;
+		for (var _psi = 0; _psi < dev.partitions.length; _psi++) {
+			var _psp = dev.partitions[_psi];
+			if (_psp.kind !== 'partition') continue;
+			var _psRole = String(_psp.role || '');
+			if (!_psRole) {
+				if (Number(_psp.number || 0) < 5) {
+					if (String(_psp.fs || '').toLowerCase() === 'extended' ||
+						(!_psp.fs && String(_psp.flags || '').toLowerCase() === 'lba'))
+						_psRole = 'extended';
+				}
+			}
+			if (_psRole === 'extended') {
+				_extSectorStart = Number(_psp.start || 0);
+				_extSectorEnd   = Number(_psp.end   || 0);
+				_extLayIdx      = _psi;
+				break;
+			}
+		}
 		for (var bli = 0; bli < dev.partitions.length; bli++) {
 			var blp      = dev.partitions[bli];
 			var blStart  = Number(blp.start || 0);
@@ -9448,17 +9519,39 @@ actionsWrap.appendChild(btnRemove);
 			var blNatLeft  = Math.round((blStart / total) * mapWidth);
 			var blNatWidth = Math.max(1, Math.round((blSize  / total) * mapWidth));
 			var blMinWidth = (blp.kind === 'partition') ? 30 : 4;
-			var blWidth    = Math.max(blMinWidth, blNatWidth);
-			var blLeft     = Math.max(pixelCursor, blNatLeft);
-			if (blLeft < 0)         blLeft = 0;
-			if (blLeft >= mapWidth) blLeft = mapWidth - 1;
-			// Clamp right edge to mapWidth so the rightmost partition is never
-			// clipped by the container's overflow:hidden when a leading free
-			// segment minimum-width has shifted it right.
-			if (blLeft + blWidth > mapWidth) {
-				blWidth = Math.max(1, mapWidth - blLeft);
+			// Logical partitions and free space inside the extended range render
+			// ON TOP of the extended band (different CSS top), so they must be
+			// positioned relative to the extended band — NOT constrained by the
+			// outer pixelCursor which is already at mapWidth after the extended block.
+			var _isInExt = (bli !== _extLayIdx && _extLayIdx >= 0 &&
+				blStart >= _extSectorStart && blEnd <= _extSectorEnd);
+			var blLeft, blWidth;
+			if (_isInExt && blockLayouts[_extLayIdx]) {
+				var _extLay  = blockLayouts[_extLayIdx];
+				var _extPart = dev.partitions[_extLayIdx];
+				var _extSp   = Number(_extPart.start || 0);
+				var _extSz   = Math.max(1, Number(_extPart.size || 1));
+				blLeft  = _extLay.leftPx + Math.round(((blStart - _extSp) / _extSz) * _extLay.widthPx);
+				blWidth = Math.max(blMinWidth, Math.round((blSize / _extSz) * _extLay.widthPx));
+				if (blLeft < _extLay.leftPx) blLeft = _extLay.leftPx;
+				var _extRight = _extLay.leftPx + _extLay.widthPx;
+				if (blLeft + blWidth > _extRight) blWidth = Math.max(blMinWidth, _extRight - blLeft);
+				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
+				if (blLeft + blWidth > mapWidth) blWidth = Math.max(1, mapWidth - blLeft);
+				// Do NOT advance outer pixelCursor — inner items overlay the extended band.
+			} else {
+				blWidth = Math.max(blMinWidth, blNatWidth);
+				blLeft  = Math.max(pixelCursor, blNatLeft);
+				if (blLeft < 0)         blLeft = 0;
+				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
+				// Clamp right edge to mapWidth so the rightmost partition is never
+				// clipped by the container's overflow:hidden when a leading free
+				// segment minimum-width has shifted it right.
+				if (blLeft + blWidth > mapWidth) {
+					blWidth = Math.max(1, mapWidth - blLeft);
+				}
+				pixelCursor = blLeft + blWidth;
 			}
-			pixelCursor = blLeft + blWidth;
 			blockLayouts.push({ leftPx: blLeft, widthPx: blWidth, drawStart: blStart, drawEnd: blEnd, drawSize: blSize });
 		}
 
@@ -9470,10 +9563,12 @@ actionsWrap.appendChild(btnRemove);
 			if (_ep.kind !== 'partition') continue;
 			var _epRole = String(_ep.role || '');
 			// JS fallback: no role from backend → infer.
-			// Logical partitions are numbered ≥5 on MBR; extended is 1-4 with fs='extended'.
+			// Logical partitions are numbered ≥5 on MBR; extended is 1-4 with fs='extended'
+			// or with empty fs and 'lba' flag (Extended with LBA, type 0x0F).
 			if (!_epRole) {
 				if (Number(_ep.number || 0) >= 5) _epRole = 'logical';
 				else if (String(_ep.fs || '').toLowerCase() === 'extended') _epRole = 'extended';
+				else if (!_ep.fs && String(_ep.flags || '').toLowerCase() === 'lba') _epRole = 'extended';
 				else _epRole = 'primary';
 			}
 			if (_epRole !== 'extended') continue;
@@ -9574,6 +9669,7 @@ actionsWrap.appendChild(btnRemove);
 					if (!_pRole) {
 						if (Number(p.number || 0) >= 5) _pRole = 'logical';
 						else if (String(p.fs || '').toLowerCase() === 'extended') _pRole = 'extended';
+						else if (!p.fs && String(p.flags || '').toLowerCase() === 'lba') _pRole = 'extended';
 						else _pRole = 'primary';
 					}
 					if (_pRole === 'extended') return;
@@ -9585,6 +9681,7 @@ actionsWrap.appendChild(btnRemove);
 					if (!_pRole2) {
 						if (Number(p.number || 0) >= 5) _pRole2 = 'logical';
 						else if (String(p.fs || '').toLowerCase() === 'extended') _pRole2 = 'extended';
+						else if (!p.fs && String(p.flags || '').toLowerCase() === 'lba') _pRole2 = 'extended';
 						else _pRole2 = 'primary';
 					}
 					if (_pRole2 === 'logical') block.className += ' pcgi-logical';
@@ -10958,10 +11055,11 @@ function showFritzSetupModal(diskTarget) {
 		defaultRows.forEach(function(r) { tbody.appendChild(buildRow(r)); });
 	}
 
-	// Warn immediately if default partition names clash with already-mounted filesystems.
-	(function() {
+	// Clash-check: warn if any row name/mount collides with names already on other disks.
+	// Returns true if clashes exist. Also updates warning banner and Run button style.
+	var _setupHasClash = false;
+	function updateClashWarning() {
 		var warnEl = document.getElementById('pcgiFritzSetupWarn');
-		if (!warnEl) return;
 		var _existing = {};
 		var _devs = state.devices || [];
 		for (var _di = 0; _di < _devs.length; _di++) {
@@ -10973,19 +11071,35 @@ function showFritzSetupModal(diskTarget) {
 				if (_mp && _mp !== '-') _existing[_mp] = true;
 			}
 		}
+		var currentRows = collectRows ? collectRows() : defaultRows;
 		var _clashing = [];
-		defaultRows.forEach(function(r) {
-			if (_existing[r.name] || _existing[r.mount]) _clashing.push(r.name);
+		currentRows.forEach(function(r) {
+			if (r.name && (_existing[r.name] || (r.mount && _existing[r.mount])))
+				_clashing.push(r.name);
 		});
-		if (_clashing.length) {
-			warnEl.innerHTML = '⚠ Name(s) already present on another disk: <strong>' + _clashing.join(', ') + '</strong>.<br>' +
-				'Consider renaming both the partition name and the filesystem label (e.g. add a <code>_new</code> suffix) ' +
-				'to avoid conflicts with existing mount points.';
-			warnEl.style.display = '';
-		} else {
-			warnEl.style.display = 'none';
+		_setupHasClash = _clashing.length > 0;
+		if (warnEl) {
+			if (_setupHasClash) {
+				warnEl.innerHTML = '⚠ Name(s) already present on another disk: <strong>' + _clashing.join(', ') + '</strong>.<br>' +
+					'Consider renaming both the partition name and the filesystem label (e.g. add a <code>_new</code> suffix) ' +
+					'to avoid conflicts with existing mount points.';
+				warnEl.style.display = '';
+			} else {
+				warnEl.style.display = 'none';
+			}
 		}
-	})();
+		if (runBtn) {
+			if (_setupHasClash) {
+				runBtn.style.background = '#dc3545';
+				runBtn.style.color = '#fff';
+			} else {
+				runBtn.style.background = '#28a745';
+				runBtn.style.color = '#fff';
+			}
+		}
+		return _setupHasClash;
+	}
+	updateClashWarning();
 
 	if (addBtn) addBtn.onclick = function() {
 		if (tbody) tbody.appendChild(buildRow({ enabled: true, name: '', fs: 'ext4', sizeSec: 0, mount: '', desc: '' }));
@@ -11024,13 +11138,18 @@ function showFritzSetupModal(diskTarget) {
 		if (legendEl) legendEl.innerHTML = legendHtml;
 	}
 
-	// Redraw preview on any size/name/fs/enabled change in the table
+	// Redraw preview and re-check clashes on any change in the table
+	function drawAndCheckClash() {
+		drawSetupPreview();
+		updateClashWarning();
+	}
 	if (tbody) {
-		tbody.addEventListener('change', drawSetupPreview);
-		tbody.addEventListener('input', drawSetupPreview);
+		tbody.addEventListener('change', drawAndCheckClash);
+		tbody.addEventListener('input', drawAndCheckClash);
 	}
 
 	drawSetupPreview();
+	updateClashWarning(); // re-run now that collectRows() is defined
 
 	function collectRows() {
 		var rows = [];
@@ -11200,7 +11319,18 @@ function showFritzSetupModal(diskTarget) {
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
 	if (cancelBtn) cancelBtn.onclick = cleanup;
-	if (runBtn)    runBtn.onclick    = function() { execSetup(); };
+	if (runBtn) runBtn.onclick = function() {
+		if (_setupHasClash) {
+			showConfirmModal(
+				'⚠ Name conflict detected',
+				'One or more partition names or mount points already exist on another disk. ' +
+				'Overwriting them may compromise the correct operation of Freetz. ' +
+				'Proceed anyway?'
+			).then(function(ok) { if (ok) execSetup(); });
+		} else {
+			execSetup();
+		}
+	};
 }
 
 // ── Create filesystem modal ──────────────────────────────────────────────────
