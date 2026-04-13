@@ -1,0 +1,36 @@
+menuconfig FREETZ_PACKAGE_TPUT
+	bool "tput (ncurses terminal control)"
+	select FREETZ_LIB_libncurses
+	select FREETZ_SHARE_terminfo
+	default n
+	help
+		tput is a command-line utility from the ncurses package that queries
+		the terminfo database to provide terminal-dependent capabilities
+		(e.g. clear screen, set colors, get terminal size).
+
+		Common uses:
+		  tput cols     - number of columns
+		  tput lines    - number of lines
+		  tput clear    - clear screen
+		  tput bold     - enable bold
+		  tput sgr0     - reset attributes
+
+		https://invisible-island.net/ncurses/
+
+if FREETZ_PACKAGE_TPUT
+
+config FREETZ_PACKAGE_TPUT_infocmp
+	bool "infocmp (terminfo decompiler)"
+	default n
+	help
+		infocmp prints the capabilities of a terminal type, comparing or
+		printing terminfo descriptions. Useful for debugging terminal issues.
+
+config FREETZ_PACKAGE_TPUT_reset
+	bool "reset / clear"
+	default n
+	help
+		reset and clear are simple programs that emit terminal control
+		sequences. reset initializes the terminal, clear clears the screen.
+
+endif # FREETZ_PACKAGE_TPUT

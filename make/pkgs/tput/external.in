@@ -1,0 +1,6 @@
+config EXTERNAL_FREETZ_PACKAGE_TPUT
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TPUT
+	bool "tput"
+	default n
+	help
+		tput and related ncurses programs installed to external storage.
