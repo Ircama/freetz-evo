@@ -10198,8 +10198,52 @@ actionsWrap.appendChild(btnRemove);
 				currentEnd: Number(part.end)
 			};
 		} else {
-			var prevSeg = partIndex > 0 ? dev.partitions[partIndex - 1] : null;
-			var nextSeg = partIndex < dev.partitions.length - 1 ? dev.partitions[partIndex + 1] : null;
+			// Find the spatially adjacent neighbors in the same layout context (outer or
+			// inner-extended).  A simple index±1 lookup is WRONG after normalizePreviewPartitions
+			// because free blocks inside the extended partition are appended at the END of
+			// dev.partitions; for a primary partition that is the last outer entry, index+1
+			// would point to an inner-extended block, giving a bogus maxEnd < part.start and
+			// causing an immediate "Invalid end sector" error on any drag attempt.
+			// Solution: scan all segments and pick the one that ends nearest-before
+			// (prevSeg) or starts nearest-after (nextSeg) in sector space, considering only
+			// items in the same context (outer vs inner-extended).
+			var _rsExtStart2 = -1, _rsExtEnd2 = -1;
+			for (var _rsei2 = 0; _rsei2 < dev.partitions.length; _rsei2++) {
+				var _rsep2 = dev.partitions[_rsei2];
+				if (!_rsep2 || _rsep2.kind !== 'partition') continue;
+				var _rsep2Role = String(_rsep2.role || '');
+				if (!_rsep2Role) {
+					if (String(_rsep2.fs || '').toLowerCase() === 'extended') _rsep2Role = 'extended';
+					else if (!_rsep2.fs && String(_rsep2.flags || '').toLowerCase() === 'lba') _rsep2Role = 'extended';
+				}
+				if (_rsep2Role === 'extended') {
+					_rsExtStart2 = Number(_rsep2.start || 0);
+					_rsExtEnd2   = Number(_rsep2.end   || 0);
+					break;
+				}
+			}
+			// Logical partitions are inner; primary/extended are outer.
+			var _rsSelfInner = (_rsRole === 'logical');
+			var _rsCtxMatch = function(seg) {
+				if (_rsExtStart2 < 0) return true;
+				var ss = Number(seg.start || 0), se = Number(seg.end || 0);
+				var inner = (ss >= _rsExtStart2 && se <= _rsExtEnd2);
+				return _rsSelfInner ? inner : !inner;
+			};
+			var _partStart2 = Number(part.start || 0), _partEnd2 = Number(part.end || 0);
+			var prevSeg = null, nextSeg = null;
+			for (var _rsni = 0; _rsni < dev.partitions.length; _rsni++) {
+				var _rsn = dev.partitions[_rsni];
+				if (!_rsn || _rsn === part) continue;
+				if (!_rsCtxMatch(_rsn)) continue;
+				var _rsnE = Number(_rsn.end || 0), _rsnS = Number(_rsn.start || 0);
+				if (_rsnE < _partStart2) {
+					if (!prevSeg || _rsnE > Number(prevSeg.end || 0)) prevSeg = _rsn;
+				}
+				if (_rsnS > _partEnd2) {
+					if (!nextSeg || _rsnS < Number(nextSeg.start || 0)) nextSeg = _rsn;
+				}
+			}
 			if (prevSeg) minStart = prevSeg.kind === 'free' ? Number(prevSeg.start) : Number(prevSeg.end) + 1;
 			if (nextSeg) maxEnd = nextSeg.kind === 'free' ? Number(nextSeg.end) : Number(nextSeg.start) - 1;
 			// The right edge must not move below the used filesystem area (data loss).
