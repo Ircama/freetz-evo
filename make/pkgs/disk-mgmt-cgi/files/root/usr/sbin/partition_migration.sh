@@ -617,11 +617,26 @@ if [ "$REM" -ne 0 ]; then
         _end_down=$(( END - REM ))
         [ $(( (_end_down - START + 1) % ALIGN_SECTORS )) -ne 0 ] && \
             _end_down=$(( _end_down - ((_end_down - START + 1) % ALIGN_SECTORS) ))
-        END=$_end_down
-        if [ "$_exceeds_disk" -eq 1 ]; then
-            echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed disk bounds)."
+        # If downward alignment shrinks the slot below the source partition size,
+        # instead extend END upward past ORIG_END to fit the source.  The upstream
+        # caller provides ORIG_END as a free-space hint, not a hard disk limit — the
+        # real hard limit (DISK_SECTORS) is enforced in STEP 1.
+        _src_size_now=$(parted -s -m "$SOURCE_DEVICE" unit s print \
+            | awk -F: -v p="$SOURCE_PARTNUM" '$1 == p {gsub(/s/,"",$4); print $4}' 2>/dev/null)
+        if [ -n "$_src_size_now" ] && [ $(( _end_down - START + 1 )) -lt "$_src_size_now" ] && [ "$_exceeds_disk" -eq 0 ]; then
+            # Extend END to give exactly enough aligned space for the source
+            _end_needed=$(( START + _src_size_now - 1 ))
+            _rem2=$(( (_end_needed - START + 1) % ALIGN_SECTORS ))
+            [ "$_rem2" -ne 0 ] && _end_needed=$(( _end_needed + ALIGN_SECTORS - _rem2 ))
+            END=$_end_needed
+            echo "⚠️   END extended to ${END} (downward alignment would shrink slot below source size)."
         else
-            echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed requested range end ${ORIG_END})."
+            END=$_end_down
+            if [ "$_exceeds_disk" -eq 1 ]; then
+                echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed disk bounds)."
+            else
+                echo "⚠️   END adjusted DOWN to ${END} (upward alignment would exceed requested range end ${ORIG_END})."
+            fi
         fi
     else
         END=$_end_up
@@ -663,6 +678,29 @@ echo "     ✔ END ${END} is within disk bounds (${DISK_SECTORS} sectors)."
 
 # Detect partition table type here; reused in step 4
 PTTYPE=$(parted -s -m "$DEVICE" unit s print | awk -F: 'NR==2 {print $6}')
+# Also detect extended partition range (MBR only) for use in step 4.
+# EXT_START / EXT_END are set to the sector range of the first extended partition
+# found; they remain empty on GPT or when no extended partition exists.
+EXT_START=''
+EXT_END=''
+if [ "$PTTYPE" = "msdos" ]; then
+    _ext=$(parted -s -m "$DEVICE" unit s print \
+        | awk -F: 'NR>2 && ($5=="extended" || ($5=="" && index($7,"lba")>0)) {gsub(/s/,"",$2); gsub(/s/,"",$3); print $2" "$3; exit}')
+    if [ -n "$_ext" ]; then
+        EXT_START=$(echo "$_ext" | awk '{print $1}')
+        EXT_END=$(  echo "$_ext" | awk '{print $2}')
+    fi
+fi
+
+# Determine whether the target range falls inside the extended partition.
+# If yes it must be created as a logical partition (not primary).
+TGT_IS_LOGICAL=0
+if [ -n "$EXT_START" ] && [ -n "$EXT_END" ]; then
+    if [ "$START" -ge "$EXT_START" ] && [ "$END" -le "$EXT_END" ]; then
+        TGT_IS_LOGICAL=1
+    fi
+fi
+
 if [ "$PTTYPE" = "msdos" ]; then
     # On MBR disks only partition numbers 1-4 occupy primary/extended slots.
     # Logical partitions (numbers >= 5) live inside an extended partition and
@@ -670,9 +708,13 @@ if [ "$PTTYPE" = "msdos" ]; then
     EXISTING_PARTS=$(parted -s -m "$DEVICE" unit s print \
         | awk -F: 'NR>2 && $1 ~ /^[0-9]+$/ && int($1)+0 <= 4 {c++} END {print c+0}')
     echo "     Partition table : MBR/msdos  (${EXISTING_PARTS} primary partition(s) present)"
-    [ "$EXISTING_PARTS" -ge 4 ] && \
-        die "MBR disks support at most 4 primary partitions; ${DEVICE} already has ${EXISTING_PARTS}."
-    echo "     ✔ Room for one more primary partition."
+    if [ "$TGT_IS_LOGICAL" -eq 1 ]; then
+        echo "     ✔ Target range is inside extended partition — will create as logical (no primary slot used)."
+    else
+        [ "$EXISTING_PARTS" -ge 4 ] && \
+            die "MBR disks support at most 4 primary partitions; ${DEVICE} already has ${EXISTING_PARTS}."
+        echo "     ✔ Room for one more primary partition."
+    fi
 else
     echo "     Partition table : ${PTTYPE}"
 fi
@@ -708,10 +750,17 @@ if [ -n "$FORCE_FSTYPE" ]; then
     echo "     Filesystem forced: ${FSTYPE} (-f override)"
 else
     FSTYPE=$(detect_fs "$SOURCE_PART")
-    [ -z "$FSTYPE" ] && die "Could not detect filesystem type on ${SOURCE_PART} (tried blkid and lsblk)."
+    if [ -z "$FSTYPE" ]; then
+        if [ "$CLONE_MODE" = "smart" ]; then
+            echo "     ⚠ No filesystem detected on ${SOURCE_PART} — falling back to sector-by-sector copy (partclone.dd)."
+            CLONE_MODE="dd"
+        else
+            die "Could not detect filesystem type on ${SOURCE_PART} (tried blkid and lsblk)."
+        fi
+    fi
 fi
 
-echo "     Detected filesystem: ${FSTYPE}"
+echo "     Detected filesystem: ${FSTYPE:-<none, raw/unformatted>}"
 
 if [ "$CLONE_MODE" = "smart" ]; then
     case "$FSTYPE" in
@@ -748,10 +797,17 @@ fi
 step_pause
 echo "🏗️   [4/9] Creating new partition on ${DEVICE} (sectors ${START}–${END})…"
 
-# GPT partitions do not use role names; only MBR/msdos uses 'primary'
+# GPT partitions do not use role names; only MBR/msdos uses 'primary'/'logical'.
+# On MBR, if the target sector range falls inside the extended partition it must
+# be created as 'logical'; otherwise it is 'primary'.
 if [ "$PTTYPE" = "msdos" ]; then
-    run parted -s "$DEVICE" unit s mkpart primary "${START}s" "${END}s" \
-        || die "parted mkpart failed on ${DEVICE}."
+    if [ "$TGT_IS_LOGICAL" -eq 1 ]; then
+        run parted -s "$DEVICE" unit s mkpart logical "${START}s" "${END}s" \
+            || die "parted mkpart failed on ${DEVICE}."
+    else
+        run parted -s "$DEVICE" unit s mkpart primary "${START}s" "${END}s" \
+            || die "parted mkpart failed on ${DEVICE}."
+    fi
 else
     run parted -s "$DEVICE" unit s mkpart "" "${START}s" "${END}s" \
         || die "parted mkpart failed on ${DEVICE}."
@@ -870,9 +926,16 @@ echo "     Backend : ${PARTCLONE_BIN}"
 [ -n "$PARTCLONE_EXTRA" ] && echo "     Extra   : ${PARTCLONE_EXTRA}"
 
 # shellcheck disable=SC2086
-# Build partclone flags for smart clone
+# Build partclone flags.
+# partclone.dd (v0.3.x) does not accept --clone; other backends do.
+_pcdd_mode=0
+[ "$PARTCLONE_BIN" = "partclone.dd" ] && _pcdd_mode=1
 if [ "$DRY_RUN" -eq 0 ]; then
-    set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    if [ "$_pcdd_mode" -eq 1 ]; then
+        set -- --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    else
+        set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    fi
     [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
     [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
     # shellcheck disable=SC2086
@@ -880,7 +943,11 @@ if [ "$DRY_RUN" -eq 0 ]; then
     "$PARTCLONE_BIN" "$@" $PARTCLONE_EXTRA
     _pclone_rc=$?
 else
-    set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    if [ "$_pcdd_mode" -eq 1 ]; then
+        set -- --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    else
+        set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+    fi
     [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
     [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
     # shellcheck disable=SC2086
@@ -1030,7 +1097,10 @@ echo "🧪  [8/9] Validating target partition with a read-only test mount…"
 
 VALIDATE_DIR="/tmp/_partition_migration_verify_$$"
 
-if [ "$DRY_RUN" -eq 1 ]; then
+# Raw/unformatted partitions (FSTYPE empty) cannot be mounted — skip validation.
+if [ -z "$FSTYPE" ]; then
+    echo "     ℹ No filesystem on target (raw/unformatted) — skipping mount validation."
+elif [ "$DRY_RUN" -eq 1 ]; then
     echo "🔸  [DRY-RUN] mkdir -p ${VALIDATE_DIR}"
     echo "🔸  [DRY-RUN] mount -t ${FSTYPE} -o ro ${TARGET_PART} ${VALIDATE_DIR}"
     echo "🔸  [DRY-RUN] umount ${VALIDATE_DIR}"
