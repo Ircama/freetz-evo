@@ -2728,6 +2728,74 @@ action_move_partition() {
 	fi
 }
 
+action_move_partition_sfdisk() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+
+	_device=$(cgi_param device)
+	_partnum=$(cgi_param partnum)
+	_start=$(cgi_param start_sector)
+	_end=$(cgi_param end_sector)
+
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
+	is_valid_sector "$_start" || { emit_json_error "Invalid start sector"; return; }
+
+	# Get current dump to calculate size if end not provided
+	_dump=$("$CMD_SFDISK" --dump "$_device" 2>&1)
+	_rc=$?
+	if [ "$_rc" -ne 0 ]; then
+		emit_cmd_result false "$_rc" "Failed to read partition table" "$_dump"
+		return
+	fi
+
+	if [ -n "$_end" ] && is_valid_sector "$_end"; then
+		_size=$(( _end - _start + 1 ))
+	else
+		# Extract current size from dump (keep original size)
+		_size=$(printf '%s\n' "$_dump" | awk -v dev="$_device" -v pnum="$_partnum" '
+			/^\/dev\// || /^[A-Za-z0-9\/]*:/ {
+				node = $1
+				sub(/:$/, "", node)
+				suffix = node
+				sub(dev, "", suffix)
+				if (substr(suffix, 1, 1) == "p") suffix = substr(suffix, 2)
+				if (suffix == pnum) {
+					for (i = 1; i <= NF; i++) {
+						if ($i ~ /^size=/) {
+							v = $i; sub(/^size=/, "", v); gsub(/,/, "", v); print v+0; exit
+						}
+					}
+				}
+			}')
+		if [ -z "$_size" ] || [ "$_size" -le 0 ] 2>/dev/null; then
+			emit_json_error "Could not determine current partition size from dump"
+			return
+		fi
+	fi
+
+	if dry_run_enabled; then
+		emit_dry_run_result "sfdisk --move-data" \
+			"printf 'start=%d, size=%d\\n' $_start $_size | sfdisk-ng --move-data -N $_partnum --no-reread $_device
+partprobe $_device"
+		return
+	fi
+
+	_out=$(printf 'start=%d, size=%d\n' "$_start" "$_size" | \
+		"$CMD_SFDISK" --move-data -N "$_partnum" --no-reread "$_device" 2>&1)
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition p${_partnum} moved to sector ${_start} via sfdisk" "$_out"
+	else
+		emit_cmd_result false "$_rc" "sfdisk --move-data failed" "$_out"
+	fi
+}
+
 action_clone_partition_dd() {
 	resolve_tools
 	if ! require_ack; then
@@ -3954,6 +4022,7 @@ action_start_job() {
 			set_partition_flag)  action_set_partition_flag ;;
 			convert_table_label) action_convert_table_label ;;
 			move_partition)      action_move_partition ;;
+			move_partition_sfdisk) action_move_partition_sfdisk ;;
 			clone_partition_dd)  action_clone_partition_dd ;;
 			verify_partition)    action_verify_partition ;;
 			disk_migration)      action_disk_migration ;;
@@ -6246,6 +6315,20 @@ cat <<'EOF'
 	</div>
 </div>
 
+<div id="pcgiInputModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box">
+		<h3 id="pcgiInputTitle" class="pcgi-modal-head">Input</h3>
+		<div id="pcgiInputMessage" class="pcgi-modal-subtle"></div>
+		<input type="text" id="pcgiInputField" style="width:100%;box-sizing:border-box;margin:8px 0 4px;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-size:0.95em">
+		<textarea id="pcgiInputTextarea" style="width:100%;box-sizing:border-box;margin:8px 0 4px;padding:6px 8px;border:1px solid #ccc;border-radius:4px;font-size:0.875em;font-family:monospace;min-height:130px"></textarea>
+		<div id="pcgiInputError" style="color:#dc3545;font-size:0.85em;min-height:1.2em;margin-bottom:4px"></div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiInputCancelBtn">Cancel</button>
+			<button type="button" id="pcgiInputOkBtn">OK</button>
+		</div>
+	</div>
+</div>
+
 <div id="pcgiHelpModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box">
 		<h3 id="pcgiHelpTitle" class="pcgi-modal-head">Keyboard shortcuts and workflow</h3>
@@ -7392,6 +7475,74 @@ window.paceOptions = {
 		});
 	}
 
+	/*
+	 * showInputModal(title, messageHtml, opts) → Promise<string|null>
+	 *   opts.multiline    – use <textarea> instead of <input>
+	 *   opts.defaultValue – pre-filled value
+	 *   opts.placeholder  – placeholder text
+	 *   opts.allowEmpty   – if false (default), OK is disabled on empty input
+	 *   opts.validate(v)  – return error string or null
+	 * Returns the trimmed string the user entered, or null if cancelled.
+	 */
+	function showInputModal(title, messageHtml, opts) {
+		var o = opts || {};
+		var modal     = document.getElementById('pcgiInputModal');
+		var titleEl   = document.getElementById('pcgiInputTitle');
+		var msgEl     = document.getElementById('pcgiInputMessage');
+		var inputEl   = document.getElementById('pcgiInputField');
+		var taEl      = document.getElementById('pcgiInputTextarea');
+		var errEl     = document.getElementById('pcgiInputError');
+		var okBtn     = document.getElementById('pcgiInputOkBtn');
+		var cancelBtn = document.getElementById('pcgiInputCancelBtn');
+		if (!modal) return Promise.resolve(null);
+
+		titleEl.textContent = title || '';
+		msgEl.innerHTML     = messageHtml || '';
+		errEl.textContent   = '';
+
+		var multi = !!o.multiline;
+		inputEl.style.display = multi ? 'none' : '';
+		taEl.style.display    = multi ? ''     : 'none';
+
+		var activeEl = multi ? taEl : inputEl;
+		activeEl.value       = String(o.defaultValue !== undefined ? o.defaultValue : '');
+		activeEl.placeholder = String(o.placeholder || '');
+
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+		setTimeout(function () { activeEl.focus(); if (!multi) activeEl.select(); }, 40);
+
+		return new Promise(function (resolve) {
+			function cleanup(result) {
+				modal.style.display = 'none';
+				modal.setAttribute('aria-hidden', 'true');
+				okBtn.onclick = cancelBtn.onclick = null;
+				document.removeEventListener('keydown', onKey);
+				resolve(result);
+			}
+			function tryAccept() {
+				var val = activeEl.value;
+				if (!o.allowEmpty && !val.trim()) {
+					errEl.textContent = 'This field is required.';
+					activeEl.focus();
+					return;
+				}
+				if (o.validate) {
+					var err = o.validate(val.trim ? val.trim() : val);
+					if (err) { errEl.textContent = err; activeEl.focus(); return; }
+				}
+				cleanup(val);
+			}
+			function onKey(ev) {
+				if (ev.key === 'Escape') { cleanup(null); return; }
+				if (ev.key === 'Enter' && !multi) { ev.preventDefault(); tryAccept(); }
+			}
+			document.addEventListener('keydown', onKey);
+			okBtn.onclick     = tryAccept;
+			cancelBtn.onclick = function () { cleanup(null); };
+		});
+	}
+
 	function showHelpModal() {
 		var modal = document.getElementById('pcgiHelpModal');
 		if (!modal) return;
@@ -8497,6 +8648,14 @@ window.paceOptions = {
 		}
 		if (action === 'reorder_partitions') {
 			return 'sfdisk --reorder ' + v(params.device) + '\npartprobe ' + v(params.device);
+		}
+		if (action === 'move_partition_sfdisk') {
+			var _msDev = v(params.device);
+			var _msPnum = v(params.partnum);
+			var _msStart = v(params.start_sector);
+			var _msEnd = v(params.end_sector);
+			var _msSizeHint = _msEnd ? ', size=' + (Number(_msEnd) - Number(_msStart) + 1) : '';
+			return "printf 'start=" + _msStart + _msSizeHint + "\\n' | sfdisk --move-data -N " + _msPnum + ' --no-reread ' + _msDev + '\npartprobe ' + _msDev;
 		}
 		if (action === 'resize_filesystem') {
 			var fstype = v(params.fs_type).toLowerCase();
@@ -9669,7 +9828,7 @@ actionsWrap.appendChild(btnRemove);
 			var action = String(op.action || '');
 			var params = op.params || {};
 
-			if (action === 'delete_partition' || action === 'resize_partition' || action === 'resize_extended_start' || action === 'move_partition' || action === 'create_partition' || action === 'set_partition_name' || action === 'set_partition_flag') {
+			if (action === 'delete_partition' || action === 'resize_partition' || action === 'resize_extended_start' || action === 'move_partition' || action === 'move_partition_sfdisk' || action === 'create_partition' || action === 'set_partition_name' || action === 'set_partition_flag') {
 				if (String(params.device || '') !== String(dev.path || '')) continue;
 			}
 
@@ -9753,6 +9912,19 @@ actionsWrap.appendChild(btnRemove);
 						}
 					}
 				}
+				continue;
+			}
+
+			if (action === 'move_partition_sfdisk') {
+				var msSfdiskStart = Number(params.start_sector || 0);
+				var msSfdiskEnd = Number(params.end_sector || 0);
+				if (!isFinite(msSfdiskStart) || msSfdiskStart <= 0) continue;
+				var msSfdiskSize = msSfdiskEnd > msSfdiskStart
+					? Math.floor(msSfdiskEnd - msSfdiskStart + 1)
+					: Math.max(1, Number(targetPart.size || 1));
+				targetPart.start = Math.floor(msSfdiskStart);
+				targetPart.end = Math.floor(msSfdiskStart) + msSfdiskSize - 1;
+				targetPart.size = msSfdiskSize;
 				continue;
 			}
 
@@ -10049,7 +10221,8 @@ actionsWrap.appendChild(btnRemove);
 					{ id: 'ddrescue',         label: 'Clone with ddrescue (data recovery)' },
 					{ id: 'part_change_type', label: 'Change type-id (MBR, sfdisk)' },
 					{ id: 'part_change_uuid', label: 'Change partition UUID (GPT, sfdisk)' },
-					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' }
+					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' },
+					{ id: 'part_move_sfdisk', label: 'Move partition (sfdisk, overlap-safe)' }
 				];
 			}
 		}
@@ -10151,6 +10324,7 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'part_change_type') { queueChangePartType(part, state.selectedDevice); return; }
 		if (action === 'part_change_uuid') { queueChangePartUuid(part, state.selectedDevice); return; }
 		if (action === 'part_wipe_sigs')   { queueWipeSignatures(part.path, 'partition'); return; }
+		if (action === 'part_move_sfdisk') { queueSfdiskMovePartition(part, state.selectedDevice); return; }
 		showToast(t('tContextUnavailable'), 'warn');
 	}
 
@@ -11467,6 +11641,22 @@ actionsWrap.appendChild(btnRemove);
                 if (targetStart === oldStart) {
                         showToast(t('tMoveSame'), 'warn');
                         return Promise.resolve(false);
+                }
+
+                /* If the new range overlaps the current partition range, the
+                 * clone+delete path cannot be used.  Offer sfdisk --move-data
+                 * which handles overlapping relocations internally. */
+                var targetEnd = end; /* size stays the same for a pure relocation */
+                if (moveRangesIntersect(oldStart, end, targetStart, targetEnd)) {
+                        return showConfirmModal(
+                                'Use sfdisk --move-data (overlap-safe)?',
+                                'The target range [' + targetStart + 's\u2013' + targetEnd + 's] overlaps the current partition [' + oldStart + 's\u2013' + end + 's].\n\n' +
+                                'The standard clone+delete move requires disjoint ranges.\n' +
+                                'Use sfdisk --move-data instead (handles overlap internally)?'
+                        ).then(function (ok) {
+                                if (!ok) return false;
+                                return queueSfdiskMovePartition(part, dev.path, targetStart);
+                        });
                 }
 
                 return queueMovePartitionWithConfirm(
@@ -13964,29 +14154,43 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	function showRestorePtModal(devArg) {
 		var devPath = String(devArg && (devArg.path || devArg) || '');
 		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
-		var content = prompt('Paste sfdisk dump content to restore on ' + devPath + ':\n(leave empty to cancel)');
-		if (!content || !content.trim()) return;
-		var params = { device: devPath, content: content.trim() };
-		var label = 'Restore partition table on ' + devPath + ' (sfdisk restore)';
-		showCommandPreviewModal('restore_partition_table', params, label, 'Confirm restore', 'WARNING: This will overwrite the partition table on ' + devPath + '. All current partitions will be replaced!')
-		.then(function(previewText) {
-			if (previewText === null) return;
-			queueOp('restore_partition_table', params, label, previewText || buildCommandPreview('restore_partition_table', params), false);
-			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		showInputModal(
+			'Restore partition table on ' + devPath,
+			'Paste the <b>sfdisk --dump</b> output to restore on <code>' + devPath + '</code>.<br>' +
+			'<span style="color:#dc3545">WARNING: all current partitions will be replaced.</span>',
+			{ multiline: true, placeholder: '# partition table of /dev/...\nunit: sectors\n\n/dev/...', allowEmpty: false }
+		).then(function (content) {
+			if (content === null || !content.trim()) return;
+			var params = { device: devPath, content: content.trim() };
+			var label = 'Restore partition table on ' + devPath + ' (sfdisk restore)';
+			showCommandPreviewModal('restore_partition_table', params, label, 'Confirm restore', 'WARNING: This will overwrite the partition table on ' + devPath + '. All current partitions will be replaced!')
+			.then(function(previewText) {
+				if (previewText === null) return;
+				queueOp('restore_partition_table', params, label, previewText || buildCommandPreview('restore_partition_table', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
 		});
 	}
 
 	function queueChangeDiskUuid(devArg) {
 		var devPath = String(devArg && (devArg.path || devArg) || '');
 		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
-		var uuid = prompt('New disk UUID/ID for ' + devPath + ':\n(leave empty to generate a new random UUID)') || '';
-		var params = { device: devPath, uuid: uuid.trim() };
-		var label = 'Change disk UUID on ' + devPath + (params.uuid ? ' to ' + params.uuid : ' (new random)');
-		showCommandPreviewModal('change_disk_uuid', params, label, 'Confirm', 'Change the disk identifier (UUID/ID) on ' + devPath + '.')
-		.then(function(previewText) {
-			if (previewText === null) return;
-			queueOp('change_disk_uuid', params, label, previewText || buildCommandPreview('change_disk_uuid', params), false);
-			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		var currentDiskUuid = String(devArg && typeof devArg === 'object' ? (devArg.disk_uuid || '') : '');
+		showInputModal(
+			'Change disk UUID / ID on ' + devPath,
+			'Enter a new UUID (GPT) or ID (MBR) for <code>' + devPath + '</code>.<br>Leave empty to generate a new random value.' +
+			(currentDiskUuid ? '<br>Current: <code>' + currentDiskUuid + '</code>' : ''),
+			{ placeholder: 'e.g. 5C2A-F3D1  or  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', defaultValue: currentDiskUuid, allowEmpty: true }
+		).then(function (uuid) {
+			if (uuid === null) return;
+			var params = { device: devPath, uuid: uuid.trim() };
+			var label = 'Change disk UUID on ' + devPath + (params.uuid ? ' to ' + params.uuid : ' (new random)');
+			showCommandPreviewModal('change_disk_uuid', params, label, 'Confirm', 'Change the disk identifier (UUID/ID) on ' + devPath + '.')
+			.then(function(previewText) {
+				if (previewText === null) return;
+				queueOp('change_disk_uuid', params, label, previewText || buildCommandPreview('change_disk_uuid', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
 		});
 	}
 
@@ -14023,15 +14227,23 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var part = partArg || state.selectedPart;
 		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
 		var currentType = String(part.type_id || '');
-		var typeId = prompt('New type-id (hex, e.g. 83 for Linux, 82 for swap) for p' + part.number + ' on ' + devP + ':\n(current: ' + (currentType || 'unknown') + ')');
-		if (!typeId || !typeId.trim()) return;
-		var params = { device: devP, partnum: String(part.number), type_id: typeId.trim() };
-		var label = 'Change type-id of p' + part.number + ' on ' + devP + ' to ' + typeId.trim();
-		showCommandPreviewModal('change_mbr_type', params, label, 'Confirm', 'Change the partition type-id (MBR) for p' + part.number + '.')
-		.then(function(previewText) {
-			if (previewText === null) return;
-			queueOp('change_mbr_type', params, label, previewText || buildCommandPreview('change_mbr_type', params), false);
-			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		showInputModal(
+			'Change type-id for p' + part.number + ' on ' + devP,
+			'Enter the new hex partition type-id.<br>' +
+			'Common values: <b>83</b> Linux, <b>82</b> Swap, <b>8e</b> LVM, <b>fd</b> RAID, <b>0c</b> FAT32 LBA, <b>05</b>/<b>0f</b> Extended.' +
+			(currentType ? '<br>Current: <code>' + currentType + '</code>' : ''),
+			{ placeholder: '83', defaultValue: currentType, allowEmpty: false,
+			  validate: function (v) { return /^[0-9a-fA-F]{1,2}$/.test(v) ? null : 'Enter a 1–2 digit hex value (e.g. 83).'; } }
+		).then(function (typeId) {
+			if (typeId === null || !typeId.trim()) return;
+			var params = { device: devP, partnum: String(part.number), type_id: typeId.trim() };
+			var label = 'Change type-id of p' + part.number + ' on ' + devP + ' to ' + typeId.trim();
+			showCommandPreviewModal('change_mbr_type', params, label, 'Confirm', 'Change the partition type-id (MBR) for p' + part.number + '.')
+			.then(function(previewText) {
+				if (previewText === null) return;
+				queueOp('change_mbr_type', params, label, previewText || buildCommandPreview('change_mbr_type', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
 		});
 	}
 
@@ -14040,14 +14252,78 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var part = partArg || state.selectedPart;
 		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
 		var currentUuid = String(part.uuid || '');
-		var uuid = prompt('New UUID for p' + part.number + ' on ' + devP + ' (GPT):\n(leave empty to generate a new random UUID; current: ' + (currentUuid || 'none') + ')') || '';
-		var params = { device: devP, partnum: String(part.number), uuid: uuid.trim() };
-		var label = 'Change UUID of p' + part.number + ' on ' + devP + (params.uuid ? ' to ' + params.uuid : ' (new random)');
-		showCommandPreviewModal('change_part_uuid', params, label, 'Confirm', 'Change the partition UUID (GPT) for p' + part.number + ' on ' + devP + '.')
-		.then(function(previewText) {
-			if (previewText === null) return;
-			queueOp('change_part_uuid', params, label, previewText || buildCommandPreview('change_part_uuid', params), false);
-			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		showInputModal(
+			'Change partition UUID for p' + part.number + ' on ' + devP,
+			'Enter a new UUID for partition p' + part.number + ' (GPT only).<br>Leave empty to generate a new random UUID.' +
+			(currentUuid ? '<br>Current: <code>' + currentUuid + '</code>' : ''),
+			{ placeholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', defaultValue: currentUuid, allowEmpty: true }
+		).then(function (uuid) {
+			if (uuid === null) return;
+			var params = { device: devP, partnum: String(part.number), uuid: uuid.trim() };
+			var label = 'Change UUID of p' + part.number + ' on ' + devP + (params.uuid ? ' to ' + params.uuid : ' (new random)');
+			showCommandPreviewModal('change_part_uuid', params, label, 'Confirm', 'Change the partition UUID (GPT) for p' + part.number + ' on ' + devP + '.')
+			.then(function(previewText) {
+				if (previewText === null) return;
+				queueOp('change_part_uuid', params, label, previewText || buildCommandPreview('change_part_uuid', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
+		});
+	}
+
+	function queueSfdiskMovePartition(partArg, devPath, presetStart) {
+		var devP = String(devPath || state.selectedDevice || '');
+		var part = partArg || state.selectedPart;
+		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return Promise.resolve(false); }
+		if (!devP) { showToast(t('tNoDevice'), 'warn'); return Promise.resolve(false); }
+
+		var currentStart = Number(part.start || 0);
+		var currentSize  = Number(part.size  || 0);
+		var currentEnd   = Number(part.end   || (currentStart + currentSize - 1));
+
+		function doQueue(newStart) {
+			newStart = Number(newStart);
+			if (!isFinite(newStart) || newStart <= 0) { showToast('Invalid start sector.', 'warn'); return Promise.resolve(false); }
+			if (newStart === currentStart) { showToast(t('tMoveSame'), 'warn'); return Promise.resolve(false); }
+			var newEnd = newStart + currentSize - 1;
+			var params = {
+				device:       devP,
+				partnum:      String(part.number),
+				start_sector: String(newStart),
+				end_sector:   String(newEnd)
+			};
+			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (sfdisk --move-data, overlap-safe)';
+			return showCommandPreviewModal('move_partition_sfdisk', params, label,
+				'Confirm sfdisk move',
+				'Move partition p' + part.number + ' on ' + devP + ' to sector ' + newStart + ' using sfdisk --move-data.\n' +
+				'Unlike the standard move, overlapping source/target ranges are allowed.\n' +
+				'Data is moved in-place by sfdisk. Ensure no other process accesses this disk.')
+			.then(function(previewText) {
+				if (previewText === null) return null;
+				queueOp('move_partition_sfdisk', params, label, previewText || buildCommandPreview('move_partition_sfdisk', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
+		}
+
+		/* Called directly from drag (overlap detected) — skip input modal */
+		if (presetStart !== undefined && presetStart !== null) {
+			return doQueue(presetStart);
+		}
+
+		return showInputModal(
+			'Move p' + part.number + ' on ' + devP + ' (sfdisk --move-data)',
+			'Enter the new <b>start sector</b> for partition p' + part.number + '.<br>' +
+			'Current: start=<code>' + currentStart + '</code>  size=<code>' + currentSize + '</code>  end=<code>' + currentEnd + '</code><br>' +
+			'<span style="color:#5a7a00">Overlapping source/target ranges are allowed — sfdisk handles them internally.</span>',
+			{ defaultValue: String(currentStart), placeholder: String(currentStart), allowEmpty: false,
+			  validate: function (v) {
+				var n = parseInt(v, 10);
+				if (!isFinite(n) || n <= 0) return 'Enter a positive integer (sector number).';
+				return null;
+			  }
+			}
+		).then(function (newStartStr) {
+			if (newStartStr === null) return Promise.resolve(false);
+			return doQueue(parseInt(newStartStr.trim(), 10));
 		});
 	}
 
@@ -14415,7 +14691,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				if (op.commandPreview) {
 					params.command_preview = op.commandPreview;
 				}
-				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition" || op.action === "clone_partition_dd") {
+				if (op.action === "resize_partition" || op.action === "resize_filesystem" || op.action === "move_partition" || op.action === "move_partition_sfdisk" || op.action === "clone_partition_dd") {
 					appendAnsi('cmdOutput', '\x1b[1;33m\u26a0 ' + t('tQueueDiskWarning') + '\x1b[0m\n');
 				}
 
