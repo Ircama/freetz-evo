@@ -5707,6 +5707,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 <div class="pcgi-toolbar" style="margin-top: 4px;">
 	<input id="renamePartInput" type="text" placeholder="new partition name">
 	<button type="button" onclick="queueRenamePartition()" id="queueRenameBtn">Set partition name</button>
+	<button type="button" class="pcgi-help-btn" onclick="showFieldHelp('map-rename')" title="Help">?</button>
 </div>
 <hr class="pcgi-rule">
 <div class="pcgi-toolbar" style="margin-top: 4px;">
@@ -5717,6 +5718,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	</select>
 	<input id="flagNameInput" type="text" placeholder="flag name">
 	<button type="button" onclick="queueSetFlag()" id="queueFlagBtn">Set flag</button>
+	<button type="button" class="pcgi-help-btn" onclick="showFieldHelp('map-flag')" title="Help">?</button>
 </div>
 EOF
 sec_end
@@ -7142,6 +7144,8 @@ window.paceOptions = {
 		'map-role':          { title: 'Role',                      body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions (slots 1–4).<br><br><b>extended</b> – container for logical partitions. Occupies one of the 4 primary slots (slot 1–4). Only one per MBR disk; irrelevant on GPT.<br><br><b>logical</b> – partition inside an extended container. Always numbered ≥ 5. Logical partitions do <em>not</em> consume a primary slot — they live inside the extended partition, so you can have many without hitting the 4-slot limit.<br><br>On GPT all partitions share the same type; GPT supports up to 128 partitions with no primary/logical distinction.' },
 		'map-fs-hint':       { title: 'Filesystem',                body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
 		'map-part-name':     { title: 'Partition name',            body: 'Label stored in the GPT partition entry. Visible in gdisk, parted and Windows Disk Management.<br><br>Ignored on MBR disks. Optional — leave blank for an unnamed partition.' },
+		'map-rename':        { title: 'Set partition name  [parted: name N "label"]', body: 'Sets the GPT partition name (label) stored in the partition entry. This is <em>different</em> from the filesystem label — it lives in the partition table itself, not inside the filesystem.<br><br>Visible in gdisk, parted, and Windows Disk Management.<br><br><b>Only for GPT disks.</b> On MBR/msdos disks parted will return an error; use a filesystem label instead.<br><br>Leave blank to store an empty string.' },
+		'map-flag':          { title: 'Set partition flag  [parted: set N flag on|off]', body: 'Sets or clears a partition attribute flag in the partition table.<br><br><b>Common flags:</b><br>• <code>boot</code> – marks the active/bootable partition (MBR only; BIOS looks for this).<br>• <code>esp</code> – EFI System Partition (GPT; required for UEFI boot).<br>• <code>lba</code> – Extended with LBA (MBR extended partition type 0x0F; allows &gt;8 GiB extended).<br>• <code>msftdata</code> – Microsoft basic data (GPT; used by Windows for data partitions).<br>• <code>swap</code> – Linux swap area marker.<br>• <code>raid</code> – Linux software RAID member.<br>• <code>lvm</code> – Linux LVM physical volume.<br>• <code>hidden</code> – hides the partition from the OS (MBR type 0x1x).<br>• <code>diag</code> – diagnostic / recovery partition.<br>• <code>bios_grub</code> – BIOS boot partition for GRUB on GPT (required for non-UEFI GRUB installs).<br>• <code>pmbr_boot</code> – Protective MBR boot flag (GPT).<br><br>Set to <b>on</b> to add the flag, <b>off</b> to remove it.' },
 		/* New partition modal */
 		'pnp-start':     { title: 'New start sector',     body: 'First sector of the new partition. Must lie within a free (unallocated) region on the disk.<br><br>Accepts a sector number (e.g. <code>2048</code>) or a <b>percentage</b> of the disk (e.g. <code>0%</code>, <code>25%</code>). Linked to the "New start size" field — changing one updates the other.<br><br>Click <b>Min</b> to reset to the first sector of the free region.' },
 		'pnp-start-h':   { title: 'New start size',       body: 'Human-readable offset of the partition start, e.g. <code>1 MiB</code>, <code>512 KiB</code>.<br><br>Synchronized with the raw sector field. Editing this updates the sector value automatically.' },
@@ -9832,6 +9836,12 @@ actionsWrap.appendChild(btnRemove);
 			var blStart  = Number(blp.start || 0);
 			var blEnd    = Number(blp.end   || 0);
 			var blSize   = Number(blp.size  || Math.max(1, blEnd - blStart + 1));
+			// Keep original (pre-drag) dimensions to compute the correct pixelCursor
+			// advance for outer blocks that follow a right-edge drag.  Without this,
+			// a right-edge expansion of p1 pushes pixelCursor past all subsequent
+			// outer blocks, collapsing them to 1 px slivers.
+			var _blOrigStart = blStart, _blOrigEnd = blEnd, _blOrigSize = blSize;
+			var _blDraggedRight = false;
 			if (state.dragCtx && blp.kind === 'partition') {
 				var blDevPath  = String(state.dragCtx.dev && state.dragCtx.dev.path || '');
 				var blPartPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
@@ -9840,6 +9850,7 @@ actionsWrap.appendChild(btnRemove);
 						blStart = Number(state.dragCtx.currentStart || blStart);
 					} else {
 						blEnd = Number(state.dragCtx.currentEnd || blEnd);
+						_blDraggedRight = true;
 					}
 					blSize = Math.max(1, blEnd - blStart + 1);
 				}
@@ -9883,7 +9894,17 @@ actionsWrap.appendChild(btnRemove);
 				if (blLeft + blWidth > mapWidth) {
 					blWidth = Math.max(1, mapWidth - blLeft);
 				}
-				pixelCursor = blLeft + blWidth;
+				// When the current block is being dragged to the right (right-edge
+				// expand), advance pixelCursor using the ORIGINAL pre-drag width.
+				// Using the dragged width would push all subsequent outer blocks
+				// (free space, primary partitions) far to the right, collapsing them
+				// to 1-px slivers off-screen — the classic "p3 gets compressed" bug.
+				if (_blDraggedRight) {
+					var _origNatWidth = Math.max(blMinWidth, Math.max(1, Math.round((_blOrigSize / total) * mapWidth)));
+					pixelCursor = blLeft + _origNatWidth;
+				} else {
+					pixelCursor = blLeft + blWidth;
+				}
 			}
 			blockLayouts.push({ leftPx: blLeft, widthPx: blWidth, drawStart: blStart, drawEnd: blEnd, drawSize: blSize });
 		}
