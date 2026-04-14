@@ -67,9 +67,9 @@ name = "GitHub"
 [project.markdown_extensions.attr_list]
 [project.markdown_extensions.footnotes]
 [project.markdown_extensions.toc]
-title = "TOC"
+title = "On this page"
 permalink = "⚓︎"
-permalink_title = "Permalink"
+permalink_title = "Anchor link to this section"
 
 [project.markdown_extensions.def_list]
 
