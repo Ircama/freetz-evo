@@ -300,6 +300,7 @@ CMD_DD=$(find_cmd dd)
 CMD_PARTCLONE_DD=$(find_cmd partclone.dd)
 CMD_PARTCLONE_INFO=$(find_cmd partclone.info)
 CMD_PARTCLONE_CHKIMG=$(find_cmd partclone.chkimg)
+CMD_SFDISK=$(find_cmd sfdisk-ng sfdisk)
 CMD_PARTITION_MIGRATION=$(find_cmd partition_migration.sh)
 CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
 
@@ -798,6 +799,7 @@ action_analyze_tools() {
 	add_item "partclone.dd" "$CMD_PARTCLONE_DD" "Partclone raw copy engine"
 	add_item "partclone.info" "$CMD_PARTCLONE_INFO" "Partclone information utility"
 	add_item "partclone.chkimg" "$CMD_PARTCLONE_CHKIMG" "Partclone image verification utility"
+	add_item "sfdisk" "$CMD_SFDISK" "Scriptable partition table editor (extended-start resize)"
 	add_item "partition_migration.sh" "$CMD_PARTITION_MIGRATION" "Partition migration/clone script"
 	add_item "ddrescue" "$CMD_DDRESCUE" "Safer block clone/copy"
 
@@ -1454,6 +1456,107 @@ $CMD_PARTPROBE $_device"
 		emit_cmd_result true "$_rc" "Partition resized" "$_out"
 	else
 		emit_cmd_result false "$_rc" "Partition resize failed" "$_out"
+	fi
+}
+
+# Resize the START sector of an extended partition using sfdisk.
+# parted's resizepart only accepts a new END sector, so this action uses
+# sfdisk --dump / pipe-back to rewrite just the extended entry in the MBR.
+# The logical partitions inside are not touched; their EBR chain is intact.
+# Parameters: device, partnum, start_sector (new start, must be in free space)
+action_resize_extended_start() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+
+	_device=$(cgi_param device)
+	_partnum=$(cgi_param partnum)
+	_new_start=$(cgi_param start_sector)
+
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
+	is_valid_sector "$_new_start" || { emit_json_error "Invalid start sector"; return; }
+
+	# Build the partition path to match in the sfdisk dump (e.g. /dev/sda1, /dev/loop0p1)
+	_part_path=$(partition_path "$_device" "$_partnum")
+	[ -n "$_part_path" ] || { emit_json_error "Cannot determine partition path"; return; }
+
+	if dry_run_enabled; then
+		emit_dry_run_result "resize extended start" \
+			"$CMD_SFDISK --dump $_device | awk -v part='$_part_path' -v ns=$_new_start '...' | $CMD_SFDISK --no-reread $_device
+$CMD_PARTPROBE $_device"
+		return
+	fi
+
+	# Fetch current dump
+	_dump=$("$CMD_SFDISK" --dump "$_device" 2>&1)
+	_dump_rc=$?
+	if [ "$_dump_rc" -ne 0 ]; then
+		emit_cmd_result false "$_dump_rc" "sfdisk --dump failed" "$_dump"
+		return
+	fi
+
+	# Locate current start and size of the extended partition from the dump.
+	# sfdisk dump lines look like: /dev/sda1 : start= 2048, size= 479948, type=5, attrs="LBA"
+	_cur_start=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
+		$0 ~ "^"p"[[:space:]]*:" {
+			match($0, /start=[[:space:]]*([0-9]+)/, a); print a[1]+0
+		}')
+	_cur_size=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
+		$0 ~ "^"p"[[:space:]]*:" {
+			match($0, /size=[[:space:]]*([0-9]+)/, a); print a[1]+0
+		}')
+
+	# POSIX awk fallback (no match() with 3-arg)
+	if [ -z "$_cur_start" ] || [ -z "$_cur_size" ]; then
+		_cur_start=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
+			$0 ~ "^"p"[[:space:]]*:" {
+				for(i=1;i<=NF;i++) {
+					if ($i ~ /^start=/ || ($i == "start=" && $(i+1)+0 > 0)) {
+						gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
+						gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
+					}
+				}
+			}' | head -1)
+		_cur_size=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
+			$0 ~ "^"p"[[:space:]]*:" {
+				for(i=1;i<=NF;i++) {
+					if ($i ~ /^size=/ || ($i == "size=" && $(i+1)+0 > 0)) {
+						gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
+						gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
+					}
+				}
+			}' | head -1)
+	fi
+
+	[ -n "$_cur_start" ] && [ "$_cur_start" -gt 0 ] 2>/dev/null || { emit_json_error "Could not read current start from sfdisk dump"; return; }
+	[ -n "$_cur_size" ]  && [ "$_cur_size"  -gt 0 ] 2>/dev/null || { emit_json_error "Could not read current size from sfdisk dump"; return; }
+
+	# New size = old_end - new_start + 1  (preserve end sector)
+	_old_end=$(( _cur_start + _cur_size - 1 ))
+	_new_size=$(( _old_end - _new_start + 1 ))
+	[ "$_new_size" -gt 0 ] 2>/dev/null || { emit_json_error "Computed new size is non-positive"; return; }
+
+	# Rewrite only the matching partition line in the dump
+	_new_dump=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" -v ns="$_new_start" -v nz="$_new_size" '
+		$0 ~ "^"p"[[:space:]]*:" {
+			sub(/start=[[:space:]]*[0-9]+/, "start= "ns)
+			sub(/size=[[:space:]]*[0-9]+/,  "size= "nz)
+		}
+		{ print }
+	')
+
+	_out=$(printf '%s\n' "$_new_dump" | "$CMD_SFDISK" --no-reread "$_device" 2>&1)
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Extended partition start moved to ${_new_start}s" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Extended partition start resize failed" "$_out"
 	fi
 }
 
@@ -3608,6 +3711,7 @@ action_start_job() {
 			create_partition)    action_create_partition ;;
 			delete_partition)    action_delete_partition ;;
 			resize_partition)    action_resize_partition ;;
+			resize_extended_start) action_resize_extended_start ;;
 			resize_filesystem)   action_resize_filesystem ;;
 			create_filesystem)   action_create_filesystem ;;
 			check_filesystem)    action_check_filesystem ;;
@@ -7879,6 +7983,15 @@ window.paceOptions = {
 	function buildPartitionTooltipHtml(p, logical, fsUsed, fsAvail) {
 		var rows = '';
 		rows += tooltipKV('Number', p.number || '-');
+		/* Resolve role in the same way as the rest of the rendering code */
+		var _ttRole = String(p.role || '');
+		if (!_ttRole) {
+			if (Number(p.number || 0) >= 5) _ttRole = 'logical';
+			else if (String(p.fs || '').toLowerCase() === 'extended') _ttRole = 'extended';
+			else if (!p.fs && String(p.flags || '').toLowerCase() === 'lba') _ttRole = 'extended';
+			else _ttRole = 'primary';
+		}
+		rows += tooltipKV('Role', _ttRole);
 		rows += tooltipKV('Start', String(p.start || 0) + 's');
 		rows += tooltipKV('End', String(p.end || 0) + 's');
 		rows += tooltipKV('Size', humanBytes(Number(p.size || 0) * logical));
@@ -8118,6 +8231,12 @@ window.paceOptions = {
 				txt += '\n# backend will auto-detect filesystem and run ext/ntfs/fat resize tools when available';
 			}
 			return txt;
+		}
+		if (action === 'resize_extended_start') {
+			var dev = v(params.device);
+			var pnum = v(params.partnum);
+			var ns = v(params.start_sector);
+			return 'sfdisk --dump ' + dev + ' \\\n  | awk \'...(rewrite start=' + ns + ' for p' + pnum + ', adjust size)...\' \\\n  | sfdisk --no-reread ' + dev + '\npartprobe ' + dev;
 		}
 		if (action === 'resize_filesystem') {
 			var fstype = v(params.fs_type).toLowerCase();
@@ -9290,7 +9409,7 @@ actionsWrap.appendChild(btnRemove);
 			var action = String(op.action || '');
 			var params = op.params || {};
 
-			if (action === 'delete_partition' || action === 'resize_partition' || action === 'move_partition' || action === 'create_partition' || action === 'set_partition_name' || action === 'set_partition_flag') {
+			if (action === 'delete_partition' || action === 'resize_partition' || action === 'resize_extended_start' || action === 'move_partition' || action === 'create_partition' || action === 'set_partition_name' || action === 'set_partition_flag') {
 				if (String(params.device || '') !== String(dev.path || '')) continue;
 			}
 
@@ -9344,6 +9463,14 @@ actionsWrap.appendChild(btnRemove);
 				if (!isFinite(newEndSector) || newEndSector <= Number(targetPart.start || 0)) continue;
 				targetPart.end = Math.floor(newEndSector);
 				targetPart.size = Math.max(1, Number(targetPart.end) - Number(targetPart.start) + 1);
+				continue;
+			}
+
+			if (action === 'resize_extended_start') {
+				var newExtStart = Number(params.start_sector || 0);
+				if (!isFinite(newExtStart) || newExtStart <= 0 || newExtStart >= Number(targetPart.end || 0)) continue;
+				targetPart.start = Math.floor(newExtStart);
+				targetPart.size = Math.max(1, Number(targetPart.end) - targetPart.start + 1);
 				continue;
 			}
 
@@ -10005,12 +10132,10 @@ actionsWrap.appendChild(btnRemove);
 				};
 				band.onmousemove = moveHoverTooltip;
 				band.onmouseleave = hideHoverTooltip;
-				// Resize handles on band edges so the extended partition can be resized
-				var _blh = document.createElement('div');
-				_blh.className = 'pcgi-resize-handle pcgi-resize-handle-left';
-				_blh.title = 'Drag to resize extended partition (left)';
-				_blh.onmousedown = function(ev) { ev.stopPropagation(); startResize(ev, dev, _bandEi, 'left'); };
-				band.appendChild(_blh);
+				// Resize handles on band edges so the extended partition can be resized.
+				// Left-edge handle is intentionally omitted: parted's resizepart only accepts
+				// a new END sector and cannot move the extended partition start without
+				// destroying all logical partitions inside it.
 				var _brh = document.createElement('div');
 				_brh.className = 'pcgi-resize-handle';
 				_brh.title = 'Drag to resize extended partition (right)';
@@ -10595,7 +10720,18 @@ actionsWrap.appendChild(btnRemove);
 
 		if (d.edge === 'left') {
 			if (Number(d.currentStart) !== Number(d.part.start)) {
-				var p = queueMoveResizePlan(d.dev, d.part, Number(d.currentStart), document.getElementById('resizeFsSelect').value);
+				/* Detect extended partition to use sfdisk-based start resize */
+				var _oeRole = String(d.part.role || '');
+				if (!_oeRole) {
+					if (String(d.part.fs || '').toLowerCase() === 'extended') _oeRole = 'extended';
+					else if (!d.part.fs && String(d.part.flags || '').toLowerCase() === 'lba') _oeRole = 'extended';
+				}
+				var p;
+				if (_oeRole === 'extended') {
+					p = queueResizeExtendedStart(d.dev, d.part, Number(d.currentStart));
+				} else {
+					p = queueMoveResizePlan(d.dev, d.part, Number(d.currentStart), document.getElementById('resizeFsSelect').value);
+				}
 				document.getElementById('newStartSector').value = String(d.currentStart);
 				refreshSectorHumanFields();
 				if (p && typeof p.then === 'function') {
@@ -10996,9 +11132,36 @@ actionsWrap.appendChild(btnRemove);
 		});
 	}
 
+	function queueResizeExtendedStart(dev, part, newStart) {
+		if (!dev || !part) {
+			showToast(t('tContextUnavailable'), 'warn');
+			return Promise.resolve(false);
+		}
+		var targetStart = Number(newStart || 0);
+		if (!isFinite(targetStart) || targetStart <= 0) {
+			showToast('Invalid start sector for extended resize.', 'warn');
+			return Promise.resolve(false);
+		}
+		if (targetStart === Number(part.start || 0)) {
+			showToast(t('tMoveSame'), 'warn');
+			return Promise.resolve(false);
+		}
+		var resParams = {
+			device: dev.path,
+			partnum: part.number,
+			start_sector: targetStart
+		};
+		var resLabel = 'Resize extended p' + part.number + ' start to ' + targetStart + 's on ' + dev.path + ' (sfdisk)';
+		return showCommandPreviewModal('resize_extended_start', resParams, resLabel, 'Confirm', 'Rewrite extended partition start in MBR via sfdisk. Logical partitions are not moved.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('resize_extended_start', resParams, resLabel, previewText || buildCommandPreview('resize_extended_start', resParams), true);
+			showToast(t('tQueued') + ' ' + resLabel, 'info', 10000);
+		});
+	}
 
         function queueMoveResizePlan(dev, part, newStart, resizeFs) {
-                if (!dev || !part) {
+			if (!dev || !part) {
                         showToast(t('tContextUnavailable'), 'warn');
                         return Promise.resolve(false);
                 }
