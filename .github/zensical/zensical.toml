@@ -71,8 +71,6 @@ title = "TOC"
 permalink = "⚓︎"
 permalink_title = "Permalink"
 
-[project.markdown_extensions.fenced_code]
-
 [project.markdown_extensions.def_list]
 
 [project.markdown_extensions.md_in_html]
