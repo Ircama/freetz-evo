@@ -4580,24 +4580,26 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<input id="selectedPartNum" type="text" readonly>
 	</div>
 </div>
-<div class="pcgi-inline-form" style="margin-top:4px">
-	<div>
+<div class="pcgi-inline-form" style="margin-top:4px;display:flex;align-items:flex-end;gap:4px">
+	<div style="flex:1;min-width:0">
 		<label id="i18nNewStartLabel">New start sector</label>
-		<input id="newStartSector" type="text" placeholder="e.g. 2048">
+		<input id="newStartSector" type="text" placeholder="e.g. 2048" style="width:100%;box-sizing:border-box">
 	</div>
-	<div>
+	<span style="flex:0 0 auto;padding-bottom:8px;color:#888;font-size:11px">&#x2194;</span>
+	<div style="flex:1;min-width:0">
 		<label id="i18nNewStartHumanLabel">New start size</label>
-		<input id="newStartHuman" type="text" placeholder="e.g. 1 MiB or 2048 KiB">
+		<input id="newStartHuman" type="text" placeholder="e.g. 1 MiB or 2048 KiB" style="width:100%;box-sizing:border-box">
 	</div>
 </div>
-<div class="pcgi-inline-form" style="margin-top:4px">
-	<div>
+<div class="pcgi-inline-form" style="margin-top:4px;display:flex;align-items:flex-end;gap:4px">
+	<div style="flex:1;min-width:0">
 		<label id="i18nNewEndLabel">New end sector</label>
-		<input id="newEndSector" type="text" placeholder="e.g. 1023999">
+		<input id="newEndSector" type="text" placeholder="e.g. 1023999" style="width:100%;box-sizing:border-box">
 	</div>
-	<div>
+	<span style="flex:0 0 auto;padding-bottom:8px;color:#888;font-size:11px">&#x2194;</span>
+	<div style="flex:1;min-width:0">
 		<label id="i18nNewEndHumanLabel">New end size</label>
-		<input id="newEndHuman" type="text" placeholder="e.g. 488 MiB">
+		<input id="newEndHuman" type="text" placeholder="e.g. 488 MiB" style="width:100%;box-sizing:border-box">
 	</div>
 </div>
 <div class="pcgi-inline-form" style="margin-top:4px">
@@ -5749,13 +5751,16 @@ cat <<'EOF'
 		<label id="i18nFsLabelLabel">Label</label>
 		<input id="fsLabelInput" type="text" placeholder="optional label">
 	</div>
-	<div>
-		<label id="i18nResizeEndLabel">Resize partition to sector</label>
-		<input id="resizeEndSector" type="text" placeholder="new end sector">
-	</div>
-	<div>
-		<label id="i18nResizeEndHumanLabel">Resize target size</label>
-		<input id="resizeEndHuman" type="text" placeholder="e.g. 8 GiB">
+	<div style="grid-column:1/-1;display:flex;align-items:flex-end;gap:4px">
+		<div style="flex:1;min-width:0">
+			<label id="i18nResizeEndLabel">Resize partition to sector</label>
+			<input id="resizeEndSector" type="text" placeholder="new end sector" style="width:100%;box-sizing:border-box">
+		</div>
+		<span style="flex:0 0 auto;padding-bottom:8px;color:#888;font-size:11px">&#x2194;</span>
+		<div style="flex:1;min-width:0">
+			<label id="i18nResizeEndHumanLabel">Resize target size</label>
+			<input id="resizeEndHuman" type="text" placeholder="e.g. 8 GiB" style="width:100%;box-sizing:border-box">
+		</div>
 	</div>
 	<div>
 		<label id="i18nResizeFsLabel">Resize filesystem too</label>
@@ -9349,6 +9354,18 @@ actionsWrap.appendChild(btnRemove);
 				targetPart.start = Math.floor(moveStart);
 				targetPart.end = Math.floor(moveEnd);
 				targetPart.size = Math.max(1, Number(targetPart.end) - Number(targetPart.start) + 1);
+				/* If the new location falls inside an extended partition, promote role to logical */
+				if (targetPart.role !== 'logical') {
+					for (var _mvei = 0; _mvei < partsOnly.length; _mvei++) {
+						var _mvext = partsOnly[_mvei];
+						if (_mvext && _mvext.role === 'extended' &&
+								Number(_mvext.start) <= targetPart.start &&
+								targetPart.end <= Number(_mvext.end)) {
+							targetPart.role = 'logical';
+							break;
+						}
+					}
+				}
 				continue;
 			}
 
