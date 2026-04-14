@@ -301,6 +301,7 @@ CMD_PARTCLONE_DD=$(find_cmd partclone.dd)
 CMD_PARTCLONE_INFO=$(find_cmd partclone.info)
 CMD_PARTCLONE_CHKIMG=$(find_cmd partclone.chkimg)
 CMD_SFDISK=$(find_cmd sfdisk-ng sfdisk)
+CMD_WIPEFS=$(find_cmd wipefs)
 CMD_PARTITION_MIGRATION=$(find_cmd partition_migration.sh)
 CMD_PARTITION_IMAGE=$(find_cmd partition_image.sh)
 
@@ -800,6 +801,7 @@ action_analyze_tools() {
 	add_item "partclone.info" "$CMD_PARTCLONE_INFO" "Partclone information utility"
 	add_item "partclone.chkimg" "$CMD_PARTCLONE_CHKIMG" "Partclone image verification utility"
 	add_item "sfdisk" "$CMD_SFDISK" "Scriptable partition table editor (extended-start resize)"
+	add_item "wipefs" "$CMD_WIPEFS" "Wipe filesystem/partition signatures"
 	add_item "partition_migration.sh" "$CMD_PARTITION_MIGRATION" "Partition migration/clone script"
 	add_item "ddrescue" "$CMD_DDRESCUE" "Safer block clone/copy"
 
@@ -877,6 +879,48 @@ action_list_devices() {
 		_parts=''
 		first_part=1
 		_part_lines=$(printf '%s\n' "$_map" | sed -n '3,$p')
+
+		# Augment partition data with sfdisk -J: UUIDs and type-IDs (GPT/MBR).
+		_disk_uuid=''
+		if [ -n "$CMD_SFDISK" ]; then
+			_sfdisk_j=$("$CMD_SFDISK" -J "$_dev" 2>/dev/null)
+			if [ -n "$_sfdisk_j" ]; then
+				_disk_uuid=$(printf '%s\n' "$_sfdisk_j" | awk '
+					/"id"[^:]*:/ {
+						v = $0
+						sub(/.*"id"[^:]*:[[:space:]]*"/, "", v)
+						sub(/".*/, "", v)
+						print v; exit
+					}')
+				eval $(printf '%s\n' "$_sfdisk_j" | awk -v dev="$_dev" '
+					/"node"[^:]*:/ {
+						v = $0
+						sub(/.*"node"[^:]*:[[:space:]]*"/, "", v)
+						sub(/".*/, "", v)
+						node = v
+						suffix = substr(node, length(dev)+1)
+						if (substr(suffix,1,1) == "p") suffix = substr(suffix, 2)
+						pnum = int(suffix)
+					}
+					/"uuid"[^:]*:/ && pnum > 0 {
+						v = $0
+						sub(/.*"uuid"[^:]*:[[:space:]]*"/, "", v)
+						sub(/".*/, "", v)
+						printf "_s_uuid_%d=\"%s\"\n", pnum, v
+					}
+					/"type"[^:]*:/ && pnum > 0 {
+						v = $0
+						sub(/.*"type"[^:]*:[[:space:]]*"/, "", v)
+						sub(/"[,]?.*/, "", v)
+						printf "_s_type_%d=\"%s\"\n", pnum, v
+					}
+				')
+			fi
+		fi
+
+		# Augment partition data with sfdisk -J: adds UUIDs and type GUIDs
+		# (GPT) or hex type-IDs (MBR) without replacing the parted-based listing.
+
 		while IFS= read -r _line; do
 			[ -n "$_line" ] || continue
 			_line=${_line%;}
@@ -978,7 +1022,13 @@ action_list_devices() {
 						fi
 					fi
 				fi
-				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"role\":\"$(json_escape "$_prole")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
+				# Retrieve sfdisk-augmented UUID and type-id.
+				_p_uuid=''; _p_type_id=''
+				if [ -n "$CMD_SFDISK" ]; then
+					eval "_p_uuid=\"\${_s_uuid_${_pnum}:-}\""
+					eval "_p_type_id=\"\${_s_type_${_pnum}:-}\""
+				fi
+				_parts="$_parts{\"kind\":\"partition\",\"number\":$_pnum,\"start\":$_pstart,\"end\":$_pend,\"size\":$_psize,\"path\":\"$(json_escape "$_ppath")\",\"fs\":\"$(json_escape "$_pfs")\",\"name\":\"$(json_escape "$_pname")\",\"flags\":\"$(json_escape "$_pflags")\",\"label\":\"$(json_escape "$_plabel")\",\"mountpoint\":\"$(json_escape "$_mountpoint")\",\"role\":\"$(json_escape "$_prole")\",\"uuid\":\"$(json_escape "$_p_uuid")\",\"type_id\":\"$(json_escape "$_p_type_id")\",\"fs_size_bytes\":$_p_fs_size_bytes,\"fs_used_bytes\":$_p_fs_used_bytes,\"fs_avail_bytes\":$_p_fs_avail_bytes,\"used_pct\":$_p_used_pct}"
 			fi
 		done <<EOF
 $_part_lines
@@ -988,7 +1038,7 @@ EOF
 			dev_json="$dev_json,"
 		fi
 		first_dev=0
-		dev_json="$dev_json{\"name\":\"$(json_escape "$_name")\",\"path\":\"$(json_escape "$_dev")\",\"model\":\"$(json_escape "$_model")\",\"vendor\":\"$(json_escape "$_vendor")\",\"serial\":\"$(json_escape "$_serial")\",\"transport\":\"$(json_escape "$_transport")\",\"removable\":$_removable,\"table\":\"$(json_escape "$_table_type")\",\"logical_sector_size\":$_logical_size,\"total_sectors\":$_total_sectors,\"partitions\":[$_parts]}"
+		dev_json="$dev_json{\"name\":\"$(json_escape "$_name")\",\"path\":\"$(json_escape "$_dev")\",\"model\":\"$(json_escape "$_model")\",\"vendor\":\"$(json_escape "$_vendor")\",\"serial\":\"$(json_escape "$_serial")\",\"transport\":\"$(json_escape "$_transport")\",\"removable\":$_removable,\"table\":\"$(json_escape "$_table_type")\",\"disk_uuid\":\"$(json_escape "$_disk_uuid")\",\"logical_sector_size\":$_logical_size,\"total_sectors\":$_total_sectors,\"partitions\":[$_parts]}"
 	done
 
 	printf '%s\n' "{\"success\": true, \"devices\": [$dev_json]}"
@@ -1557,6 +1607,183 @@ $CMD_PARTPROBE $_device"
 		emit_cmd_result true "$_rc" "Extended partition start moved to ${_new_start}s" "$_out"
 	else
 		emit_cmd_result false "$_rc" "Extended partition start resize failed" "$_out"
+	fi
+}
+
+action_backup_partition_table() {
+	resolve_tools
+	_device=$(cgi_param device)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	_dump=$("$CMD_SFDISK" --dump "$_device" 2>&1)
+	_rc=$?
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition table backed up" "$_dump"
+	else
+		emit_cmd_result false "$_rc" "Backup failed" "$_dump"
+	fi
+}
+
+action_restore_partition_table() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_device=$(cgi_param device)
+	_content=$(cgi_param content)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	[ -n "$_content" ] || { emit_json_error "No dump content provided"; return; }
+	if dry_run_enabled; then
+		emit_dry_run_result "restore partition table" "echo '<dump>' | sfdisk --no-reread $_device
+partprobe $_device"
+		return
+	fi
+	_out=$(printf '%s\n' "$_content" | "$CMD_SFDISK" --no-reread "$_device" 2>&1)
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition table restored" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Restore failed" "$_out"
+	fi
+}
+
+action_change_mbr_type() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_device=$(cgi_param device)
+	_partnum=$(cgi_param partnum)
+	_type_id=$(cgi_param type_id)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
+	[ -n "$_type_id" ] || { emit_json_error "type_id is required"; return; }
+	if dry_run_enabled; then
+		emit_dry_run_result "change MBR type" "sfdisk --part-type $_device $_partnum $_type_id
+partprobe $_device"
+		return
+	fi
+	_out=$("$CMD_SFDISK" --part-type "$_device" "$_partnum" "$_type_id" 2>&1)
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition type changed to $_type_id" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Type change failed" "$_out"
+	fi
+}
+
+action_change_part_uuid() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_device=$(cgi_param device)
+	_partnum=$(cgi_param partnum)
+	_uuid=$(cgi_param uuid)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
+	if dry_run_enabled; then
+		_u="${_uuid:-<new-random-uuid>}"
+		emit_dry_run_result "change partition UUID" "sfdisk --part-uuid $_device $_partnum $_u
+partprobe $_device"
+		return
+	fi
+	if [ -z "$_uuid" ]; then
+		_out=$("$CMD_SFDISK" --part-uuid "$_device" "$_partnum" 2>&1)
+	else
+		_out=$("$CMD_SFDISK" --part-uuid "$_device" "$_partnum" "$_uuid" 2>&1)
+	fi
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partition UUID changed" "$_out"
+	else
+		emit_cmd_result false "$_rc" "UUID change failed" "$_out"
+	fi
+}
+
+action_change_disk_uuid() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_device=$(cgi_param device)
+	_uuid=$(cgi_param uuid)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	if dry_run_enabled; then
+		_u="${_uuid:-<new-random-uuid>}"
+		emit_dry_run_result "change disk UUID" "sfdisk --disk-id $_device $_u
+partprobe $_device"
+		return
+	fi
+	if [ -z "$_uuid" ]; then
+		_out=$("$CMD_SFDISK" --disk-id "$_device" 2>&1)
+	else
+		_out=$("$CMD_SFDISK" --disk-id "$_device" "$_uuid" 2>&1)
+	fi
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Disk UUID changed" "$_out"
+	else
+		emit_cmd_result false "$_rc" "UUID change failed" "$_out"
+	fi
+}
+
+action_wipe_signatures() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_target=$(cgi_param partition)
+	[ -z "$_target" ] && _target=$(cgi_param device)
+	[ -n "$CMD_WIPEFS" ] || { emit_json_error "wipefs command not available"; return; }
+	is_valid_device "$_target" || { emit_json_error "Invalid device/partition"; return; }
+	if dry_run_enabled; then
+		emit_dry_run_result "wipe signatures" "wipefs -a $_target"
+		return
+	fi
+	_out=$("$CMD_WIPEFS" -a "$_target" 2>&1)
+	_rc=$?
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Signatures wiped on $_target" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Wipe failed" "$_out"
+	fi
+}
+
+action_reorder_partitions() {
+	resolve_tools
+	if ! require_ack; then
+		emit_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"
+		return
+	fi
+	_device=$(cgi_param device)
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	if dry_run_enabled; then
+		emit_dry_run_result "reorder partitions" "sfdisk --reorder $_device
+partprobe $_device"
+		return
+	fi
+	_out=$("$CMD_SFDISK" --reorder "$_device" 2>&1)
+	_rc=$?
+	[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+	if [ "$_rc" -eq 0 ]; then
+		emit_cmd_result true "$_rc" "Partitions reordered on $_device" "$_out"
+	else
+		emit_cmd_result false "$_rc" "Reorder failed (already ordered?)" "$_out"
 	fi
 }
 
@@ -3712,6 +3939,13 @@ action_start_job() {
 			delete_partition)    action_delete_partition ;;
 			resize_partition)    action_resize_partition ;;
 			resize_extended_start) action_resize_extended_start ;;
+			backup_partition_table)  action_backup_partition_table ;;
+			restore_partition_table) action_restore_partition_table ;;
+			change_mbr_type)     action_change_mbr_type ;;
+			change_part_uuid)    action_change_part_uuid ;;
+			change_disk_uuid)    action_change_disk_uuid ;;
+			wipe_signatures)     action_wipe_signatures ;;
+			reorder_partitions)  action_reorder_partitions ;;
 			resize_filesystem)   action_resize_filesystem ;;
 			create_filesystem)   action_create_filesystem ;;
 			check_filesystem)    action_check_filesystem ;;
@@ -8000,6 +8234,8 @@ window.paceOptions = {
 		rows += tooltipKV('Flags', p.flags || '-');
 		rows += tooltipKV('Label', p.label || '-');
 		rows += tooltipKV('Path', p.path || '-');
+		if (p.uuid) rows += tooltipKV('UUID', p.uuid);
+		if (p.type_id) rows += tooltipKV('Type ID', p.type_id);
 		rows += tooltipKV('Used', humanBytes(fsUsed));
 		rows += tooltipKV('Unused', humanBytes(fsAvail));
 		if (p.mountpoint) rows += tooltipKV('Mounted at', p.mountpoint);
@@ -8020,6 +8256,7 @@ window.paceOptions = {
 		rows += tooltipKV('Sector size', logical + ' B');
 		rows += tooltipKV('Total sectors', total > 0 ? String(total) : '-');
 		rows += tooltipKV('Disk size', total > 0 ? humanBytes(total * logical) : '-');
+		if (dev && dev.disk_uuid) rows += tooltipKV('Disk UUID/ID', dev.disk_uuid);
 		return '<div class="pcgi-hover-tooltip-grid">' + rows + '</div>';
 	}
 
@@ -8237,6 +8474,29 @@ window.paceOptions = {
 			var pnum = v(params.partnum);
 			var ns = v(params.start_sector);
 			return 'sfdisk --dump ' + dev + ' \\\n  | awk \'...(rewrite start=' + ns + ' for p' + pnum + ', adjust size)...\' \\\n  | sfdisk --no-reread ' + dev + '\npartprobe ' + dev;
+		}
+		if (action === 'backup_partition_table') {
+			return 'sfdisk --dump ' + v(params.device);
+		}
+		if (action === 'restore_partition_table') {
+			return "echo '<dump>' | sfdisk --no-reread " + v(params.device) + '\npartprobe ' + v(params.device);
+		}
+		if (action === 'change_mbr_type') {
+			return 'sfdisk --part-type ' + v(params.device) + ' ' + v(params.partnum) + ' ' + v(params.type_id) + '\npartprobe ' + v(params.device);
+		}
+		if (action === 'change_part_uuid') {
+			var _puuid = v(params.uuid) || '<new-random-uuid>';
+			return 'sfdisk --part-uuid ' + v(params.device) + ' ' + v(params.partnum) + ' ' + _puuid + '\npartprobe ' + v(params.device);
+		}
+		if (action === 'change_disk_uuid') {
+			var _duuid = v(params.uuid) || '<new-random-uuid>';
+			return 'sfdisk --disk-id ' + v(params.device) + ' ' + _duuid + '\npartprobe ' + v(params.device);
+		}
+		if (action === 'wipe_signatures') {
+			return 'wipefs -a ' + (v(params.partition) || v(params.device));
+		}
+		if (action === 'reorder_partitions') {
+			return 'sfdisk --reorder ' + v(params.device) + '\npartprobe ' + v(params.device);
 		}
 		if (action === 'resize_filesystem') {
 			var fstype = v(params.fs_type).toLowerCase();
@@ -9737,7 +9997,12 @@ actionsWrap.appendChild(btnRemove);
 				{ id: 'disk_smart',          label: 'SMART info (smartctl)' },
 				{ id: 'disk_hdparm',         label: 'Disk info (hdparm)' },
 				{ id: 'disk_gpt_info',       label: 'GPT info (sgdisk)' },
-				{ id: 'disk_badblocks',      label: 'Badblocks scan' }
+				{ id: 'disk_badblocks',      label: 'Badblocks scan' },
+				{ id: 'disk_backup_pt',      label: 'Backup partition table (sfdisk)' },
+				{ id: 'disk_restore_pt',     label: 'Restore partition table (sfdisk)' },
+				{ id: 'disk_change_uuid',    label: 'Change disk UUID/ID (sfdisk)' },
+				{ id: 'disk_wipe_sigs',      label: 'Wipe disk signatures (wipefs)' },
+				{ id: 'disk_reorder',        label: 'Reorder partitions (sfdisk)' }
 			];
 		} else if (menuType === 'free') {
 			items = [
@@ -9756,30 +10021,35 @@ actionsWrap.appendChild(btnRemove);
 			}
 			if (_ctxRole === 'extended') {
 				items = [
-					{ id: 'select',      label: 'Select partition' },
-					{ id: 'meta',        label: 'Load metadata' },
-					{ id: 'new_logical', label: 'New logical partition inside…' },
-					{ id: 'delete',      label: 'Delete partition' },
-					{ id: 'rename',      label: 'Rename partition' },
-					{ id: 'flag',        label: 'Set flag' }
+					{ id: 'select',           label: 'Select partition' },
+					{ id: 'meta',             label: 'Load metadata' },
+					{ id: 'new_logical',      label: 'New logical partition inside…' },
+					{ id: 'delete',           label: 'Delete partition' },
+					{ id: 'rename',           label: 'Rename partition' },
+					{ id: 'flag',             label: 'Set flag' },
+					{ id: 'part_change_type', label: 'Change type-id (MBR, sfdisk)' },
+					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' }
 				];
 			} else {
 				items = [
-					{ id: 'select', label: 'Select partition' },
-					{ id: 'meta', label: 'Load metadata' },
-					{ id: 'delete', label: 'Delete partition' },
-					{ id: 'rename', label: 'Rename partition' },
-					{ id: 'flag', label: 'Set flag' },
-					{ id: 'mkfs', label: 'Create filesystem' },
-					{ id: 'mount', label: part.mountpoint ? 'Remount' : 'Mount' },
-					{ id: 'umount', label: 'Unmount' },
-					{ id: 'fsck_ro',    label: 'Filesystem check read-only' },
-					{ id: 'fsck_fix',   label: 'Filesystem check/repair' },
-					{ id: 'img_export', label: 'Export partition to image file' },
-					{ id: 'img_import', label: 'Restore partition from image file' },
-					{ id: 'net_send',   label: 'Send partition over network' },
-					{ id: 'net_recv',   label: 'Receive partition from network' },
-					{ id: 'ddrescue',   label: 'Clone with ddrescue (data recovery)' }
+					{ id: 'select',           label: 'Select partition' },
+					{ id: 'meta',             label: 'Load metadata' },
+					{ id: 'delete',           label: 'Delete partition' },
+					{ id: 'rename',           label: 'Rename partition' },
+					{ id: 'flag',             label: 'Set flag' },
+					{ id: 'mkfs',             label: 'Create filesystem' },
+					{ id: 'mount',            label: part.mountpoint ? 'Remount' : 'Mount' },
+					{ id: 'umount',           label: 'Unmount' },
+					{ id: 'fsck_ro',          label: 'Filesystem check read-only' },
+					{ id: 'fsck_fix',         label: 'Filesystem check/repair' },
+					{ id: 'img_export',       label: 'Export partition to image file' },
+					{ id: 'img_import',       label: 'Restore partition from image file' },
+					{ id: 'net_send',         label: 'Send partition over network' },
+					{ id: 'net_recv',         label: 'Receive partition from network' },
+					{ id: 'ddrescue',         label: 'Clone with ddrescue (data recovery)' },
+					{ id: 'part_change_type', label: 'Change type-id (MBR, sfdisk)' },
+					{ id: 'part_change_uuid', label: 'Change partition UUID (GPT, sfdisk)' },
+					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' }
 				];
 			}
 		}
@@ -9835,6 +10105,11 @@ actionsWrap.appendChild(btnRemove);
 			if (action === 'disk_hdparm')    { selectDisk(target); expandAdvancedInfo(); runDiagnostics('hdparm_info');    return; }
 			if (action === 'disk_gpt_info')  { selectDisk(target); expandAdvancedInfo(); runDiagnostics('gpt_info');       return; }
 			if (action === 'disk_badblocks') { selectDisk(target); expandAdvancedInfo(); runDiagnostics('badblocks_scan'); return; }
+			if (action === 'disk_backup_pt')   { queueBackupPartitionTable(target); return; }
+			if (action === 'disk_restore_pt')  { showRestorePtModal(target); return; }
+			if (action === 'disk_change_uuid') { queueChangeDiskUuid(target); return; }
+			if (action === 'disk_wipe_sigs')   { queueWipeSignatures(target.path, 'disk'); return; }
+			if (action === 'disk_reorder')     { queueReorderPartitions(target); return; }
 			showToast(t('tContextUnavailable'), 'warn');
 			return;
 		}
@@ -9873,6 +10148,9 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'net_send')   { showPartcloneNetSendModal(part); return; }
 		if (action === 'net_recv')   { showPartcloneNetRecvModal(part); return; }
 		if (action === 'ddrescue')   { showDdrescueModal(part, 'partition'); return; }
+		if (action === 'part_change_type') { queueChangePartType(part, state.selectedDevice); return; }
+		if (action === 'part_change_uuid') { queueChangePartUuid(part, state.selectedDevice); return; }
+		if (action === 'part_wipe_sigs')   { queueWipeSignatures(part.path, 'partition'); return; }
 		showToast(t('tContextUnavailable'), 'warn');
 	}
 
@@ -10132,10 +10410,7 @@ actionsWrap.appendChild(btnRemove);
 				};
 				band.onmousemove = moveHoverTooltip;
 				band.onmouseleave = hideHoverTooltip;
-				// Resize handles on band edges so the extended partition can be resized.
-				// Left-edge handle is intentionally omitted: parted's resizepart only accepts
-				// a new END sector and cannot move the extended partition start without
-				// destroying all logical partitions inside it.
+				// Right-edge handle (child of band): end-sector resize via parted resizepart.
 				var _brh = document.createElement('div');
 				_brh.className = 'pcgi-resize-handle';
 				_brh.title = 'Drag to resize extended partition (right)';
@@ -10143,6 +10418,22 @@ actionsWrap.appendChild(btnRemove);
 				band.appendChild(_brh);
 			})(_ep, _ei);
 			map.appendChild(band);
+			// Left-edge overlay appended directly to map (not to band) so it sits on
+			// top of the free/logical blocks that share the same X position and would
+			// otherwise intercept mouse events before the inline handle can fire.
+			(function(_blhEi, _blhDev) {
+				var _blhLay = blockLayouts[_blhEi];
+				if (!_blhLay) return;
+				var _blhOvl = document.createElement('div');
+				_blhOvl.className = 'pcgi-resize-handle pcgi-resize-handle-left';
+				_blhOvl.title = 'Drag to resize extended partition start (sfdisk)';
+				_blhOvl.style.top    = '22px';
+				_blhOvl.style.height = '60px';
+				_blhOvl.style.zIndex = '25';
+				_blhOvl.style.left   = _blhLay.leftPx + 'px';
+				_blhOvl.onmousedown  = function(ev) { ev.stopPropagation(); startResize(ev, _blhDev, _blhEi, 'left'); };
+				map.appendChild(_blhOvl);
+			})(_ei, dev);
 		}
 
 		for (var i = 0; i < dev.partitions.length; i++) {
@@ -13655,6 +13946,109 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				appendTo('cmdOutput', '\u2718 Network error: ' + err.message + '\n');
 				showToast('Network error: ' + err.message, 'error');
 			});
+	}
+
+	function queueBackupPartitionTable(devArg) {
+		var devPath = String(devArg && (devArg.path || devArg) || '');
+		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
+		var params = { device: devPath };
+		var label = 'Backup partition table on ' + devPath + ' (sfdisk --dump)';
+		showCommandPreviewModal('backup_partition_table', params, label, 'Backup partition table', 'Read and display the partition table dump (non-destructive).')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('backup_partition_table', params, label, previewText || buildCommandPreview('backup_partition_table', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function showRestorePtModal(devArg) {
+		var devPath = String(devArg && (devArg.path || devArg) || '');
+		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
+		var content = prompt('Paste sfdisk dump content to restore on ' + devPath + ':\n(leave empty to cancel)');
+		if (!content || !content.trim()) return;
+		var params = { device: devPath, content: content.trim() };
+		var label = 'Restore partition table on ' + devPath + ' (sfdisk restore)';
+		showCommandPreviewModal('restore_partition_table', params, label, 'Confirm restore', 'WARNING: This will overwrite the partition table on ' + devPath + '. All current partitions will be replaced!')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('restore_partition_table', params, label, previewText || buildCommandPreview('restore_partition_table', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function queueChangeDiskUuid(devArg) {
+		var devPath = String(devArg && (devArg.path || devArg) || '');
+		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
+		var uuid = prompt('New disk UUID/ID for ' + devPath + ':\n(leave empty to generate a new random UUID)') || '';
+		var params = { device: devPath, uuid: uuid.trim() };
+		var label = 'Change disk UUID on ' + devPath + (params.uuid ? ' to ' + params.uuid : ' (new random)');
+		showCommandPreviewModal('change_disk_uuid', params, label, 'Confirm', 'Change the disk identifier (UUID/ID) on ' + devPath + '.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('change_disk_uuid', params, label, previewText || buildCommandPreview('change_disk_uuid', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function queueWipeSignatures(targetPath, kind) {
+		var path = String(targetPath || '');
+		if (!path) { showToast(kind === 'disk' ? t('tNoDevice') : t('tNoPartition'), 'warn'); return; }
+		var params = {};
+		if (kind === 'disk') params.device = path;
+		else params.partition = path;
+		var label = 'Wipe filesystem/partition signatures on ' + path + ' (wipefs -a)';
+		showCommandPreviewModal('wipe_signatures', params, label, 'Confirm wipe', 'WARNING: All filesystem signatures on ' + path + ' will be erased. The data is not deleted but the partition/filesystem will no longer be recognized.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('wipe_signatures', params, label, previewText || buildCommandPreview('wipe_signatures', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function queueReorderPartitions(devArg) {
+		var devPath = String(devArg && (devArg.path || devArg) || '');
+		if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
+		var params = { device: devPath };
+		var label = 'Reorder partitions on ' + devPath + ' (sfdisk --reorder)';
+		showCommandPreviewModal('reorder_partitions', params, label, 'Confirm reorder', 'Renumber partitions in disk order on ' + devPath + '. Partition numbers will change, which may affect /etc/fstab entries.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('reorder_partitions', params, label, previewText || buildCommandPreview('reorder_partitions', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function queueChangePartType(partArg, devPath) {
+		var devP = String(devPath || state.selectedDevice || '');
+		var part = partArg || state.selectedPart;
+		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
+		var currentType = String(part.type_id || '');
+		var typeId = prompt('New type-id (hex, e.g. 83 for Linux, 82 for swap) for p' + part.number + ' on ' + devP + ':\n(current: ' + (currentType || 'unknown') + ')');
+		if (!typeId || !typeId.trim()) return;
+		var params = { device: devP, partnum: String(part.number), type_id: typeId.trim() };
+		var label = 'Change type-id of p' + part.number + ' on ' + devP + ' to ' + typeId.trim();
+		showCommandPreviewModal('change_mbr_type', params, label, 'Confirm', 'Change the partition type-id (MBR) for p' + part.number + '.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('change_mbr_type', params, label, previewText || buildCommandPreview('change_mbr_type', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
+	}
+
+	function queueChangePartUuid(partArg, devPath) {
+		var devP = String(devPath || state.selectedDevice || '');
+		var part = partArg || state.selectedPart;
+		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
+		var currentUuid = String(part.uuid || '');
+		var uuid = prompt('New UUID for p' + part.number + ' on ' + devP + ' (GPT):\n(leave empty to generate a new random UUID; current: ' + (currentUuid || 'none') + ')') || '';
+		var params = { device: devP, partnum: String(part.number), uuid: uuid.trim() };
+		var label = 'Change UUID of p' + part.number + ' on ' + devP + (params.uuid ? ' to ' + params.uuid : ' (new random)');
+		showCommandPreviewModal('change_part_uuid', params, label, 'Confirm', 'Change the partition UUID (GPT) for p' + part.number + ' on ' + devP + '.')
+		.then(function(previewText) {
+			if (previewText === null) return;
+			queueOp('change_part_uuid', params, label, previewText || buildCommandPreview('change_part_uuid', params), false);
+			showToast(t('tQueued') + ' ' + label, 'info', 10000);
+		});
 	}
 
 	function queueDeleteAllPartitions(devArg) {
