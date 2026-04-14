@@ -119,6 +119,7 @@ Latest changes
     * gettext 1.0
     * GLib2 2.32.4/2.88.0
     * harfbuzz 14.1.0
+    * libexif 0.6.26
     * libmaxminddb 1.13.3
     * libpng 1.6.57
     * libuv 1.44.2/1.52.1

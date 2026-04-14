@@ -83,12 +83,12 @@ Content: [FOS-Release](#fos-release) - [FOS-Labor](#fos-labor) - [FOS-Inhaus](#f
 
 ### FOS-Labor
   - HWR 233: [FRITZ.Box_6591_Cable-08.24-130621-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/6591Cable/FRITZ.Box_6591_Cable-08.24-130621-LabBETA.image)
-  - HWR 236: [FRITZ.Box_7530-08.24-131398-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-131398-LabBETA.image)
+  - HWR 236: [FRITZ.Box_7530-08.24-131638-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-131638-LabBETA.image)
   - HWR 239: [FRITZ.Box_7583-07.39-103075-LabBETA.image](http://download.example.com/labor/MOVE21/7583/FRITZ.Box_7583-07.39-103075-LabBETA.image)
   - HWR 240: [FRITZ.Repeater_600-08.20.image](http://download.avm.de/fritzwlan/fritzrepeater-600/deutschland/fritz.os/FRITZ.Repeater_600-08.20.image)
-  - HWR 241: [FRITZ.Repeater_2400-08.24-130928-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/2400/FRITZ.Repeater_2400-08.24-130928-LabBETA.image)
-  - HWR 244: [FRITZ.Repeater_1200-08.24-130929-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/1200/FRITZ.Repeater_1200-08.24-130929-LabBETA.image)
-  - HWR 246: [FRITZ.Repeater_3000-08.24-130930-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/3000/FRITZ.Repeater_3000-08.24-130930-LabBETA.image)
+  - HWR 241: [FRITZ.Repeater_2400-08.24-131247-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/2400/FRITZ.Repeater_2400-08.24-131247-LabBETA.image)
+  - HWR 244: [FRITZ.Repeater_1200-08.24-131244-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/1200/FRITZ.Repeater_1200-08.24-131244-LabBETA.image)
+  - HWR 246: [FRITZ.Repeater_3000-08.24-131250-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/3000/FRITZ.Repeater_3000-08.24-131250-LabBETA.image)
   - HWR 247: [FRITZ.Box_7520-08.24-130232-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/7520/FRITZ.Box_7520-08.24-130232-LabBETA.image)
   - HWR 252: [FRITZ.Box_6660_Cable-08.24-130622-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/6660Cable/FRITZ.Box_6660_Cable-08.24-130622-LabBETA.image)
   - HWR 253: [FRITZ.Repeater_6000-08.24-130931-LabBETA.image](http://download.example.com/labor/Smart24P2NL1/6000/FRITZ.Repeater_6000-08.24-130931-LabBETA.image)
@@ -106,7 +106,7 @@ Content: [FOS-Release](#fos-release) - [FOS-Labor](#fos-labor) - [FOS-Inhaus](#f
 ### FOS-Inhaus
   - HWR 226: [FRITZ.Box_7590-08.24-130849-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7590/FRITZ.Box_7590-08.24-130849-Inhaus.image)
   - HWR 229: [FRITZ.Powerline_1260E-08.10-126210-Inhaus.image](http://download.example.com/inhaus/Smart24P2/1260E/FRITZ.Powerline_1260E-08.10-126210-Inhaus.image)
-  - HWR 236: [FRITZ.Box_7530-08.24-131396-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-131396-Inhaus.image)
+  - HWR 236: [FRITZ.Box_7530-08.24-131636-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/7530/FRITZ.Box_7530-08.24-131636-Inhaus.image)
   - HWR 240: [FRITZ.Repeater_600-08.24-130210-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/600/FRITZ.Repeater_600-08.24-130210-Inhaus.image)
   - HWR 241: [FRITZ.Repeater_2400-08.24-131245-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/2400/FRITZ.Repeater_2400-08.24-131245-Inhaus.image)
   - HWR 244: [FRITZ.Repeater_1200-08.24-131242-Inhaus.image](http://download.example.com/inhaus/Smart24P2NL1/1200/FRITZ.Repeater_1200-08.24-131242-Inhaus.image)

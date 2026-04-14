@@ -566,7 +566,7 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
 
 ### FritzSmart
   * fritzsmart-gateway/
-    - [source-files-FRITZ.Smart_Gateway-08.24.tar.gz](https://osp.avm.de/fritzsmart/fritzsmart-gateway/source-files-FRITZ.Smart_Gateway-08.24.tar.gz)
+    - [source-files-FRITZ.Smart_Gateway-08.26.tar.gz](https://osp.avm.de/fritzsmart/fritzsmart-gateway/source-files-FRITZ.Smart_Gateway-08.26.tar.gz)
 
 ### FritzWlan
   * fritzmesh-set-1600/
