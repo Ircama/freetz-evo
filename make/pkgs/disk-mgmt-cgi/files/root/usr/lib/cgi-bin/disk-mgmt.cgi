@@ -4755,6 +4755,189 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	</div>
 </div>
 
+<!-- Move Partition modal — opened by body-drag drop onto free space -->
+<div id="pcgiMovePartModal" class="pcgi-modal" aria-hidden="true">	<div class="pcgi-modal-box" style="max-width:680px;width:96vw">
+		<h3 class="pcgi-modal-head">Move partition</h3>
+		<!-- hidden context: free-region bounds for Min/Max buttons -->
+		<input type="hidden" id="mpFreeStart">
+		<input type="hidden" id="mpFreeEnd">
+
+		<!-- Row 1: Source -->
+		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Source</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+			<div>
+				<label>Source device <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-src-dev')" title="Help">?</button></label>
+				<input id="mpSrcDevice" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+			<div>
+				<label>Source partition <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-src-part')" title="Help">?</button></label>
+				<input id="mpSrcPartition" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+		</div>
+
+		<!-- Row 2: Target device -->
+		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Target</div>
+		<div>
+			<label>Target device <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-tgt-dev')" title="Help">?</button></label>
+			<select id="mpTargetDevice" style="width:100%"></select>
+		</div>
+
+		<!-- Row 3: Target start sector -->
+		<div style="margin:8px 0 0">
+			<label>Target start sector <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-start')" title="Help">?</button></label>
+			<div style="display:flex;gap:4px;align-items:center">
+				<input id="mpTargetStart" type="number" min="0" step="1" style="flex:1;min-width:0;font-family:monospace">
+				<span style="color:#888;font-size:11px" title="Linked: changing start shifts end by the same delta">↔</span>
+				<input id="mpTargetStartHuman" type="text" readonly tabindex="-1" style="width:120px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
+				<button type="button" id="mpStartMinBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to first sector of free region (end shifts accordingly)">Min</button>
+			</div>
+		</div>
+
+		<!-- Row 4: Target end sector -->
+		<div style="margin:6px 0 0">
+			<label>Target end sector <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-end')" title="Help">?</button></label>
+			<div style="display:flex;gap:4px;align-items:center">
+				<input id="mpTargetEnd" type="number" min="0" step="1" style="flex:1;min-width:0;font-family:monospace">
+				<span style="color:#888;font-size:11px">↔</span>
+				<input id="mpTargetEndHuman" type="text" readonly tabindex="-1" style="width:120px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
+				<button type="button" id="mpEndMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to last sector of free region">Max</button>
+			</div>
+		</div>
+
+		<!-- Size display -->
+		<div style="margin:4px 0 8px;display:flex;align-items:center;gap:8px">
+			<span style="font-size:11px;color:#666">Size:</span>
+			<input id="mpTargetSizeDisplay" type="text" readonly tabindex="-1" style="background:#f5f7fa;font-family:monospace;cursor:default;width:220px" placeholder="---">
+		</div>
+
+		<!-- Row 5: clone_mode, dd_bs, partclone_verify -->
+		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Clone options</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+			<div>
+				<label>Clone mode <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-clone-mode')" title="Help">?</button></label>
+				<select id="mpCloneMode" style="width:100%">
+					<option value="smart" selected>Smart (filesystem-aware)</option>
+					<option value="sector">Sector-by-sector (dd)</option>
+				</select>
+			</div>
+			<div>
+				<label>dd block size <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-dd-bs')" title="Help">?</button></label>
+				<input id="mpDdBs" type="text" value="1M" placeholder="1M" style="width:100%">
+			</div>
+			<div>
+				<label>Verify after clone <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-verify')" title="Help">?</button></label>
+				<select id="mpVerify" style="width:100%">
+					<option value="no" selected>no</option>
+					<option value="yes">yes (partclone.chkimg)</option>
+				</select>
+			</div>
+		</div>
+
+		<!-- Row 6: target_mountpoint, align_bytes -->
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+			<div>
+				<label>Mount point after move <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-tgt-mount')" title="Help">?</button></label>
+				<input id="mpTargetMount" type="text" placeholder="empty = do not mount" style="width:100%">
+			</div>
+			<div>
+				<label>Alignment <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-align')" title="Help">?</button></label>
+				<select id="mpAlignBytes" style="width:100%">
+					<option value="1048576" selected>1048576 bytes (1 MiB – recommended)</option>
+					<option value="4096">4096 bytes (4 KiB – physical sector)</option>
+					<option value="512">512 bytes (legacy MBR)</option>
+				</select>
+			</div>
+		</div>
+
+		<!-- Row 7: unmount_before, force_fs -->
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+			<div>
+				<label>Unmount before <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-unmount')" title="Help">?</button></label>
+				<select id="mpUnmountBefore" style="width:100%">
+					<option value="yes" selected>yes (recommended)</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label>Force filesystem type <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-force-fs')" title="Help">?</button></label>
+				<input id="mpForceFs" type="text" placeholder="empty = auto-detect" style="width:100%">
+			</div>
+		</div>
+
+		<!-- Row 8: partclone_extra, step_delay -->
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+			<div>
+				<label>Extra partclone options <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-extra')" title="Help">?</button></label>
+				<input id="mpPartcloneExtra" type="text" placeholder="e.g. --debug  (empty = none)" style="width:100%">
+			</div>
+			<div>
+				<label>Step delay (seconds) <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('mp-step-delay')" title="Help">?</button></label>
+				<input id="mpStepDelay" type="number" min="0" step="1" value="1" placeholder="1" style="width:100%">
+			</div>
+		</div>
+
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiMpCancelBtn">Cancel</button>
+			<button type="button" id="pcgiMpOkBtn" style="background:#1e88e5;color:#fff">Review &amp; Queue →</button>
+		</div>
+	</div>
+</div>
+
+<!-- Resize Partition modal — opened by edge-drag or "Resize partition" button -->
+<div id="pcgiResizePartModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:560px;width:96vw">
+		<h3 id="pcgiRpTitle" class="pcgi-modal-head">Resize partition</h3>
+		<!-- hidden context for Min/Max buttons -->
+		<input type="hidden" id="rpMinEnd">
+		<input type="hidden" id="rpMaxEnd">
+		<input type="hidden" id="rpPartStart">
+
+		<!-- Row 1: device + partition number (read-only) -->
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+			<div>
+				<label>Device <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('rp-device')" title="Help">?</button></label>
+				<input id="rpDevice" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+			<div>
+				<label>Partition number <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('rp-partnum')" title="Help">?</button></label>
+				<input id="rpPartnum" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+		</div>
+
+		<!-- Row 2: new end sector + size + Min/Max -->
+		<div style="margin:8px 0 0">
+			<label>New end sector <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('rp-end')" title="Help">?</button></label>
+			<div style="display:flex;gap:4px;align-items:center">
+				<input id="rpEndSector" type="number" min="0" step="1" style="flex:1;min-width:0;font-family:monospace">
+				<span style="color:#888;font-size:11px">↔</span>
+				<input id="rpEndHuman" type="text" readonly tabindex="-1" style="width:130px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="size">
+				<button type="button" id="rpEndMinBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to minimum safe end (start + 2048s or used FS data)">Min</button>
+				<button type="button" id="rpEndMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to maximum (end of available free space)">Max</button>
+			</div>
+		</div>
+
+		<!-- Partition size display (start…end) -->
+		<div style="margin:4px 0 8px;display:flex;align-items:center;gap:8px">
+			<span style="font-size:11px;color:#666">New size:</span>
+			<input id="rpSizeDisplay" type="text" readonly tabindex="-1" style="background:#f5f7fa;font-family:monospace;cursor:default;width:260px" placeholder="---">
+		</div>
+
+		<!-- Row 3: resize_fs -->
+		<div style="margin:4px 0 0">
+			<label>Resize filesystem <button type="button" class="pcgi-help-btn" onclick="showFieldHelp('rp-resize-fs')" title="Help">?</button></label>
+			<select id="rpResizeFs" style="width:100%">
+				<option value="no">no  – resize partition table entry only</option>
+				<option value="yes">yes  – also resize filesystem (ext/NTFS/FAT)</option>
+			</select>
+		</div>
+
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiRpCancelBtn">Cancel</button>
+			<button type="button" id="pcgiRpOkBtn" style="background:#1e88e5;color:#fff">Review &amp; Queue →</button>
+		</div>
+	</div>
+</div>
+
 <!-- Convert partition table modal -->
 <div id="pcgiConvertLabelModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:480px">
@@ -6905,6 +7088,26 @@ window.paceOptions = {
 		'mc-extra-opts':   { title: 'Extra partclone options (-x)', body: 'Additional flags passed directly to partclone. Leave empty unless needed.<br><br><code>--debug</code> – verbose output.<br><code>--rescue</code> – continue past read errors (damaged disks).<br><code>--check</code> – force filesystem check before cloning.' },
 		'mc-step-delay':   { title: 'Step delay seconds (-w)',   body: 'Seconds to wait between major steps (unmount → clone → verify → mount). Allows the kernel to settle after partition table changes.<br><br><b>0</b> – no delay. <b>1</b> – default. <b>3–5</b> – use if you see "device busy" errors.' },
 		'mc-dd-bs':        { title: 'dd block size',             body: 'I/O block size for the sector-by-sector method.<br><br><b>1M</b> – default, good balance of speed and memory.<br><b>4M</b> – faster on large high-throughput disks.<br><b>512</b> – sector-exact, slowest, maximum compatibility.' },
+		/* Resize Partition modal — rp-* keys */
+		'rp-device':     { title: 'Device  [JSON: device | option: parted device arg]',     body: 'The block device that contains the partition to resize, e.g. <code>/dev/sda</code> or <code>/dev/loop0</code>.<br><br>Passed as the first argument to <code>parted resizepart</code>. Read-only – set automatically from the partition map selection.' },
+		'rp-partnum':    { title: 'Partition number  [JSON: partnum | option: parted resizepart N]', body: 'The partition number as known by parted, e.g. <b>2</b> for <code>/dev/sda2</code>. Used in the <code>parted … resizepart N end</code> command.<br><br>Read-only – set automatically from the partition map selection.' },
+		'rp-end':        { title: 'New end sector  [JSON: end_sector | option: parted resizepart N <end>s]', body: 'The new last sector (inclusive) of the partition after resizing.<br><br>Moving this value <b>left</b> shrinks the partition; moving it <b>right</b> grows it.<br><br>Click <b>Min</b> to set the smallest safe end (partition start + 2048 sectors, or end of used filesystem data — whichever is larger).<br><br>Click <b>Max</b> to extend to the end of the available free region (or disk).<br><br>Linked to the size display on the right.' },
+		'rp-resize-fs':  { title: 'Resize filesystem  [JSON: resize_fs | option: internal – runs e2fsck/resize2fs, ntfsresize or fatresize]', body: '<b>yes</b> – after resizing the partition entry, the backend auto-detects the filesystem and runs the appropriate resize tool:<br>• <b>ext2/3/4</b>: <code>e2fsck -f</code> then <code>resize2fs</code><br>• <b>NTFS</b>: <code>ntfsresize -f</code><br>• <b>FAT/vFAT</b>: <code>fatresize</code><br><br><b>no</b> – only the partition table entry is updated; the filesystem is left at its original size. Use this when you intend to resize the filesystem separately.<br><br>⚠ For <em>shrink</em> operations, filesystem resize is enabled automatically to prevent data loss.' },
+		/* Move Partition (body-drag) modal — mp-* keys */
+		'mp-src-dev':      { title: 'Source device  [JSON: source_device | option: -D]', body: 'The disk containing the partition being moved. Filled automatically from the drag and is read-only here.' },
+		'mp-src-part':     { title: 'Source partition  [JSON: source_partition / source_partnum | option: -p / -n]', body: '<code>source_partition</code> is the block-device path (e.g. <code>/dev/loop0p2</code>).<br><code>source_partnum</code> is the partition number used by parted.<br><br>Both are filled automatically from the drag.' },
+		'mp-tgt-dev':      { title: 'Target device  [JSON: device | option: -d]', body: 'The disk where the partition will be placed after the move. Can be the same disk (relocate to another position) or a different disk (migrate to another drive). The destination range must have enough free space.' },
+		'mp-start':        { title: 'Target start sector  [JSON: start_sector | option: -S]', body: 'First sector of the new partition location on the target disk.<br><br>Changing this value also shifts the end sector by the same delta, preserving the partition size.<br><br>Click <b>Min</b> to snap to the beginning of the current free region.' },
+		'mp-end':          { title: 'Target end sector  [JSON: end_sector | option: -E]', body: 'Last sector (inclusive) of the new partition location.<br><br>Together with start_sector this defines the destination range. The range must be at least as large as the used filesystem data inside the partition.<br><br>Click <b>Max</b> to fill the entire available free region.' },
+		'mp-clone-mode':   { title: 'Clone mode  [JSON: clone_mode | option: -c smart|sector]', body: '<b>smart</b> – filesystem-aware copy via partclone: only used blocks are transferred. Much faster for partially-filled partitions. Supports ext2/3/4, NTFS, FAT, exFAT. Falls back to dd if partclone is unavailable.<br><br><b>sector</b> – byte-for-byte copy with dd. Works for any filesystem or raw content, but copies every sector including empty ones.' },
+		'mp-dd-bs':        { title: 'dd block size  [JSON: dd_bs | used as: dd bs=]', body: 'I/O block size for the <code>dd</code> command, used in sector mode and as the fallback in smart mode.<br><br><b>1M</b> – default; good balance of speed and memory use.<br><b>4M</b> – faster on large high-throughput drives (USB3, NVMe).<br><b>512</b> – sector-exact; use only for debugging.' },
+		'mp-verify':       { title: 'Verify after clone  [JSON: partclone_verify | option: -V]', body: '<b>no</b> – skip verification. Faster.<br><br><b>yes (partclone.chkimg)</b> – runs <code>partclone.chkimg</code> on the TARGET partition after cloning to confirm bit-exact integrity. Adds time proportional to partition size but provides strong assurance. Recommended for important data.<br><br>⚠ Only active in <em>smart</em> mode; ignored in sector mode.' },
+		'mp-tgt-mount':    { title: 'Mount point after move  [JSON: target_mountpoint | option: -t]', body: 'Filesystem path where the moved partition will be mounted after the operation completes. Leave empty to skip mounting.<br><br>Example: <code>/var/media/ftp/DATA</code>. The directory is created if it does not exist.' },
+		'mp-align':        { title: 'Alignment  [JSON: align_bytes | option: -a]', body: '<b>1048576 (1 MiB)</b> – aligns the new partition to 1 MiB boundaries. Recommended for all modern storage (USB, SD card, NVMe, SSD, HDD).<br><br><b>4096 (4 KiB)</b> – aligns to physical sector boundaries. Use for 4K-native drives when strict block alignment is required.<br><br><b>512 (legacy)</b> – only for old MBR disks with 512-byte physical sectors where 1 MiB alignment wastes too much space.' },
+		'mp-unmount':      { title: 'Unmount before  [JSON: unmount_before | option: -u]', body: '<b>yes</b> – unmounts both source and target partitions before starting. Strongly recommended to prevent data corruption and filesystem inconsistency.<br><br><b>no</b> – skips unmount. Only safe if neither partition is mounted or being actively written to.' },
+		'mp-force-fs':     { title: 'Force filesystem type  [JSON: force_fs | option: -f]', body: 'Overrides auto-detection of the filesystem type. Leave blank to use <code>blkid</code>/<code>parted</code> detection (recommended in most cases).<br><br>Only needed when detection is wrong. Valid values: <code>ext4</code>, <code>ext3</code>, <code>ext2</code>, <code>ntfs</code>, <code>fat32</code>, <code>fat16</code>, <code>exfat</code>.' },
+		'mp-extra':        { title: 'Extra partclone options  [JSON: partclone_extra | option: -x]', body: 'Additional flags passed verbatim to partclone. Leave empty unless you need advanced control.<br><br>Useful values:<br><code>--debug</code> – verbose per-block output.<br><code>--rescue</code> – continue despite read errors (useful for partially damaged partitions).<br><code>--check</code> – force filesystem check before cloning.' },
+		'mp-step-delay':   { title: 'Step delay (seconds)  [JSON: step_delay | option: -w]', body: 'Seconds to pause between major pipeline steps (unmount → clone → verify → mount). Gives the kernel and partition table time to settle after changes.<br><br><b>0</b> – no delay (fastest). <b>1</b> – default safe value. <b>3–5</b> – use if you encounter "device busy" errors, especially on FritzBox with slow USB hubs.' },
 		/* Disk Move/Clone modal */
 		'dm-src-dev':      { title: 'Source disk (-D)',          body: 'The entire disk to clone or move. All its partitions are processed in order. The disk should be unmounted for safety.' },
 		'dm-tgt-dev':      { title: 'Target disk (-d)',          body: 'The destination disk. For logical clone: must fit all used data. For physical clone: must be at least as large as used sectors on source. Cannot be the same disk as source.' },
@@ -7482,14 +7685,47 @@ window.paceOptions = {
 		updateHumanFieldFromSector('resizeEndSector', 'resizeEndHuman');
 		updateHumanFieldFromSector('mcTargetStart', 'mcTargetStartNum');
 		updateHumanFieldFromSector('mcTargetEnd', 'mcTargetEndNum');
+		updateHumanFieldFromSector('mpTargetStart', 'mpTargetStartHuman');
+		updateHumanFieldFromSector('mpTargetEnd', 'mpTargetEndHuman');
+		updateHumanFieldFromSector('rpEndSector', 'rpEndHuman');
 		state.sectorSyncLock = false;
 		updateMcTargetSize();
+		updateMpTargetSize();
+		updateRpSizeDisplay();
 	}
 
 	function updateMcTargetSize() {
 		var startEl = document.getElementById('mcTargetStart');
 		var endEl   = document.getElementById('mcTargetEnd');
 		var sizeEl  = document.getElementById('mcTargetSizeDisplay');
+		if (!sizeEl) return;
+		var s = startEl ? String(startEl.value || '').trim() : '';
+		var e = endEl   ? String(endEl.value   || '').trim() : '';
+		if (!/^\d+$/.test(s) || !/^\d+$/.test(e)) { sizeEl.value = ''; return; }
+		var sectors = Number(e) - Number(s) + 1;
+		if (sectors <= 0) { sizeEl.value = ''; return; }
+		var ss = getCurrentSectorSize();
+		sizeEl.value = sectors + ' s  (' + humanBytes(sectors * ss) + ')';
+	}
+
+	function updateMpTargetSize() {
+		var startEl = document.getElementById('mpTargetStart');
+		var endEl   = document.getElementById('mpTargetEnd');
+		var sizeEl  = document.getElementById('mpTargetSizeDisplay');
+		if (!sizeEl) return;
+		var s = startEl ? String(startEl.value || '').trim() : '';
+		var e = endEl   ? String(endEl.value   || '').trim() : '';
+		if (!/^\d+$/.test(s) || !/^\d+$/.test(e)) { sizeEl.value = ''; return; }
+		var sectors = Number(e) - Number(s) + 1;
+		if (sectors <= 0) { sizeEl.value = ''; return; }
+		var ss = getCurrentSectorSize();
+		sizeEl.value = sectors + ' s  (' + humanBytes(sectors * ss) + ')';
+	}
+
+	function updateRpSizeDisplay() {
+		var startEl = document.getElementById('rpPartStart');
+		var endEl   = document.getElementById('rpEndSector');
+		var sizeEl  = document.getElementById('rpSizeDisplay');
 		if (!sizeEl) return;
 		var s = startEl ? String(startEl.value || '').trim() : '';
 		var e = endEl   ? String(endEl.value   || '').trim() : '';
@@ -10087,15 +10323,14 @@ actionsWrap.appendChild(btnRemove);
                                 return;
                             }
                             state.partitionDragInfo = null;
-							queueMovePartitionWithConfirm(
+							showMovePartModal(
 								dev.path,
 								moveSource,
+								srcDevicePath,
 								targetStart,
 								targetEnd,
-								'Move p' + moveSource.number + ' on ' + srcDevicePath + ' to [' + targetStart + 's..' + targetEnd + 's]',
-								srcDevicePath,
-								'',
-								'smart'
+								Number(p.start || 0),
+								Number(p.end   || 0)
 							);
 						}
 					};
@@ -10334,7 +10569,7 @@ actionsWrap.appendChild(btnRemove);
 				finishResize();
 			}
 		} else if (Number(d.currentEnd) !== Number(d.part.end)) {
-			var p2 = queueResizePlan(d.dev, d.part, Number(d.currentEnd), document.getElementById('resizeFsSelect').value);
+			var p2 = queueResizePlan(d.dev, d.part, Number(d.currentEnd), document.getElementById('resizeFsSelect').value, d.minEnd, d.maxEnd);
 			document.getElementById('resizeEndSector').value = String(d.currentEnd);
 			document.getElementById('newEndSector').value = String(d.currentEnd);
 			refreshSectorHumanFields();
@@ -10420,7 +10655,95 @@ actionsWrap.appendChild(btnRemove);
 		return null;
 	}
 
-	function queueResizePlan(dev, part, newEnd, resizeFs) {
+	// showResizePartModal: shows the Resize Partition form + command-preview chain.
+	// Returns a Promise resolving to { confirmed: true, end_sector, resize_fs }
+	// or null if the user cancelled at either step.
+	function showResizePartModal(dev, part, initialEnd, minEnd, maxEnd, initialResizeFs) {
+		return new Promise(function (resolve) {
+			var modal = document.getElementById('pcgiResizePartModal');
+			if (!modal) { resolve(null); return; }
+
+			var ss = getCurrentSectorSize();
+
+			// ── Populate read-only fields ────────────────────────────────────
+			document.getElementById('rpDevice').value  = String(dev.path || '');
+			document.getElementById('rpPartnum').value = '#' + part.number + '  (' + (part.path || '') + ')';
+
+			// ── Hidden bounds + editable sector ─────────────────────────────
+			document.getElementById('rpPartStart').value = String(part.start || '0');
+			document.getElementById('rpMinEnd').value    = String(minEnd);
+			document.getElementById('rpMaxEnd').value    = String(maxEnd);
+			document.getElementById('rpEndSector').value = String(initialEnd);
+
+			// ── Resize-FS dropdown ───────────────────────────────────────────
+			var rfsSel = document.getElementById('rpResizeFs');
+			if (rfsSel) rfsSel.value = (String(initialResizeFs || 'no') === 'yes') ? 'yes' : 'no';
+
+			refreshSectorHumanFields();
+
+			modal.style.display = 'flex';
+			modal.setAttribute('aria-hidden', 'false');
+
+			var cancelBtn = document.getElementById('pcgiRpCancelBtn');
+			var okBtn     = document.getElementById('pcgiRpOkBtn');
+			var minBtn    = document.getElementById('rpEndMinBtn');
+			var maxBtn    = document.getElementById('rpEndMaxBtn');
+			var endEl     = document.getElementById('rpEndSector');
+
+			function cleanup() {
+				modal.style.display = 'none';
+				modal.setAttribute('aria-hidden', 'true');
+				cancelBtn.onclick = null;
+				okBtn.onclick     = null;
+				minBtn.onclick    = null;
+				maxBtn.onclick    = null;
+				endEl.oninput     = null;
+				document.removeEventListener('keydown', onEsc);
+			}
+			function onEsc(ev) { if (ev.key === 'Escape') { cleanup(); resolve(null); } }
+			document.addEventListener('keydown', onEsc);
+
+			minBtn.onclick = function () {
+				endEl.value = document.getElementById('rpMinEnd').value;
+				refreshSectorHumanFields();
+			};
+			maxBtn.onclick = function () {
+				endEl.value = document.getElementById('rpMaxEnd').value;
+				refreshSectorHumanFields();
+			};
+			endEl.oninput = function () { refreshSectorHumanFields(); };
+
+			cancelBtn.onclick = function () { cleanup(); resolve(null); };
+
+			okBtn.onclick = function () {
+				var confirmedEnd = parseInt(endEl.value, 10);
+				if (!isFinite(confirmedEnd) || confirmedEnd <= 0) {
+					showToast('Invalid end sector.', 'warn');
+					return;
+				}
+				var confirmedResizeFs = rfsSel ? rfsSel.value : 'no';
+
+				var rpParams = {
+					device:     String(dev.path || ''),
+					partnum:    String(part.number || ''),
+					end_sector: String(confirmedEnd),
+					resize_fs:  confirmedResizeFs
+				};
+				var rpLabel = 'Resize p' + part.number + ' on ' + dev.path +
+				              ' → end=' + confirmedEnd + 's';
+
+				cleanup();
+				showCommandPreviewModal('resize_partition', rpParams, rpLabel,
+				                        t('confirmAction'), t('cmdPreviewHint'))
+				.then(function (previewText) {
+					if (previewText === null) { resolve(null); return; }
+					resolve({ confirmed: true, end_sector: confirmedEnd, resize_fs: confirmedResizeFs });
+				});
+			};
+		});
+	}
+
+	function queueResizePlan(dev, part, newEnd, resizeFs, _rpMinEnd, _rpMaxEnd) {
 		if (!dev || !part) {
 			showToast(t('tContextUnavailable'), 'warn');
 			return;
@@ -10517,11 +10840,24 @@ actionsWrap.appendChild(btnRemove);
 		var mountpoint = isMounted ? String(part.mountpoint).trim() : '';
 		var partitionPath = String(part.path || '');
 
-		return showConfirmModal(
-			t('confirmAction'),
-			'Resize partition #' + part.number + ' on ' + dev.path + '?'
-		).then(function (ok) {
-			if (!ok) return;
+		// Compute bounds for the resize modal (used by Min/Max buttons).
+		// Callers may pass explicit bounds (e.g. from drag context); fall back to
+		// conservative estimates when they don't.
+		var fsUsedBytes = Number(part.fs_used_bytes || 0);
+		var fsUsedMinSectors = (fsUsedBytes > 0 && logical > 0) ? Math.ceil(fsUsedBytes / logical) + 1 : 0;
+		var rpMinEnd = isFinite(Number(_rpMinEnd)) ? Number(_rpMinEnd) : (start + Math.max(2048, fsUsedMinSectors));
+		var rpMaxEnd = isFinite(Number(_rpMaxEnd)) ? Number(_rpMaxEnd) : (Number(dev.total_sectors || 0) - 1);
+
+		return showResizePartModal(dev, part, targetEnd, rpMinEnd, rpMaxEnd, queueFs ? 'yes' : 'no')
+		.then(function (result) {
+			if (!result || !result.confirmed) return;
+
+			// Apply confirmed values from modal (user may have adjusted end/resize_fs).
+			targetEnd  = result.end_sector;
+			isShrink   = targetEnd < oldEnd;
+			queueFs    = (result.resize_fs === 'yes') && hasFilesystem && !!fsType;
+			targetBytes = Math.max(1, (targetEnd - start + 1) * logical);
+			targetKib   = Math.max(1, Math.floor(targetBytes / 1024));
 
 			var umParams = { partition: partitionPath };
 			queueOp(
@@ -12054,6 +12390,7 @@ function enqueueCloneLikeOps(targetDevPath, sourceDevPath, part, targetStart, ta
 		// MOVE: single call to partition_migration.sh with -M flag
 		var moveParams = {
 			device:            targetDevPath,
+			partnum:           srcPartNum,    /* used by buildPreviewDevice to locate the partition */
 			source_device:     sourceDevPath,
 			source_partition:  srcPartPath,
 			source_partnum:    srcPartNum,
@@ -12142,6 +12479,177 @@ if (!quiet) {
 showToast('Relocate partition #' + part.number + ' added.', 'info', 10000);
 }
 return true;
+}
+
+/* showMovePartModal ─────────────────────────────────────────────────────────
+ * Opens the dedicated "Move partition" modal populated from a body-drag drop
+ * event, letting the user review and edit all parameters before the
+ * command-preview confirmation modal is shown.
+ *
+ * freeStart/freeEnd = bounds of the free segment that was the drop target
+ *                     (used for Min / Max buttons).
+ */
+function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targetEnd, freeStart, freeEnd) {
+	var modal = document.getElementById('pcgiMovePartModal');
+	if (!modal) {
+		// Graceful fallback when modal is not in DOM.
+		queueMovePartitionWithConfirm(targetDevPath, srcPart, targetStart, targetEnd,
+			'Move p' + srcPart.number + ' on ' + srcDevPath +
+			' to [' + targetStart + 's..' + targetEnd + 's]',
+			srcDevPath, '', 'smart');
+		return;
+	}
+
+	var ss = getCurrentSectorSize();
+	var partSize = Number(srcPart.size ||
+	               (Number(srcPart.end) - Number(srcPart.start) + 1));
+
+	// ── Row 1: source info (read-only) ──────────────────────────────────────
+	document.getElementById('mpSrcDevice').value    = srcDevPath || '';
+	document.getElementById('mpSrcPartition').value =
+		(srcPart.path || '') + '  (#' + srcPart.number +
+		', ' + humanBytes(partSize * ss) + ')';
+
+	// ── Row 2: target device dropdown ───────────────────────────────────────
+	populateDevDropdown('mpTargetDevice', targetDevPath || state.selectedDevice || '');
+
+	// ── Rows 3-4: target sectors ─────────────────────────────────────────────
+	var startEl = document.getElementById('mpTargetStart');
+	var endEl   = document.getElementById('mpTargetEnd');
+	startEl.value = String(targetStart);
+	endEl.value   = String(targetEnd);
+	document.getElementById('mpFreeStart').value = String(freeStart);
+	document.getElementById('mpFreeEnd').value   = String(freeEnd);
+
+	// ── Rows 5-8: option defaults from mc modal where available ─────────────
+	var cloneOpts = getCloneChipOptions();
+	document.getElementById('mpCloneMode').value      = 'smart';
+	document.getElementById('mpDdBs').value           = cloneOpts.dd_bs             || '1M';
+	document.getElementById('mpVerify').value         = cloneOpts.partclone_verify   || 'no';
+	document.getElementById('mpTargetMount').value    = cloneOpts.target_mountpoint  || '';
+	document.getElementById('mpAlignBytes').value     = cloneOpts.align_bytes        || '1048576';
+	document.getElementById('mpUnmountBefore').value  = cloneOpts.unmount_before     || 'yes';
+	document.getElementById('mpForceFs').value        = cloneOpts.force_fs           || '';
+	document.getElementById('mpPartcloneExtra').value = cloneOpts.partclone_extra    || '';
+	document.getElementById('mpStepDelay').value      = cloneOpts.step_delay         || '1';
+
+	refreshSectorHumanFields();
+
+	// ── Min / Max buttons ────────────────────────────────────────────────────
+	var prevStart = Number(targetStart);
+
+	document.getElementById('mpStartMinBtn').onclick = function () {
+		var fs = Number(document.getElementById('mpFreeStart').value || freeStart);
+		var delta = fs - Number(startEl.value || fs);
+		endEl.value   = String(Number(endEl.value) + delta);
+		startEl.value = String(fs);
+		prevStart = fs;
+		refreshSectorHumanFields();
+	};
+	document.getElementById('mpEndMaxBtn').onclick = function () {
+		var fe = Number(document.getElementById('mpFreeEnd').value || freeEnd);
+		endEl.value = String(fe);
+		refreshSectorHumanFields();
+	};
+
+	// ── Linked start→end translation ─────────────────────────────────────────
+	// Editing start shifts end by the same delta, preserving partition size.
+	// Handlers are reattached each time the modal opens.
+	startEl.oninput = function () {
+		var newStart = Number(startEl.value);
+		if (isFinite(newStart) && isFinite(prevStart) && startEl.value !== '') {
+			endEl.value = String(Number(endEl.value) + (newStart - prevStart));
+		}
+		if (isFinite(Number(startEl.value))) prevStart = Number(startEl.value);
+		refreshSectorHumanFields();
+	};
+	endEl.oninput = refreshSectorHumanFields;
+
+	// ── Show modal ───────────────────────────────────────────────────────────
+	modal.style.display = 'flex';
+	modal.setAttribute('aria-hidden', 'false');
+
+	var cancelBtn = document.getElementById('pcgiMpCancelBtn');
+	var okBtn     = document.getElementById('pcgiMpOkBtn');
+
+	function cleanup() {
+		modal.style.display = 'none';
+		modal.setAttribute('aria-hidden', 'true');
+		cancelBtn.onclick = null;
+		okBtn.onclick     = null;
+		startEl.oninput   = null;
+		endEl.oninput     = null;
+		document.removeEventListener('keydown', onEsc);
+	}
+	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
+	document.addEventListener('keydown', onEsc);
+	cancelBtn.onclick = cleanup;
+
+	okBtn.onclick = function () {
+		var tgtDev = String(
+			(document.getElementById('mpTargetDevice') || {value:''}).value ||
+			targetDevPath).trim();
+		var tStart = Number(startEl.value);
+		var tEnd   = Number(endEl.value);
+
+		if (!isFinite(tStart) || !isFinite(tEnd) || tStart <= 0 || tEnd < tStart) {
+			showToast(t('tNeedStartEnd'), 'warn', 10000);
+			return;
+		}
+
+		var cloneMode  = String((document.getElementById('mpCloneMode')      || {value:'smart'}).value   || 'smart');
+		var ddBs       = String((document.getElementById('mpDdBs')           || {value:'1M'}).value      || '1M').trim() || '1M';
+		var pcVerify   = String((document.getElementById('mpVerify')         || {value:'no'}).value       || 'no');
+		var tMount     = String((document.getElementById('mpTargetMount')     || {value:''}).value         || '').trim();
+		var alignBytes = String((document.getElementById('mpAlignBytes')      || {value:'1048576'}).value || '1048576');
+		var unmount    = String((document.getElementById('mpUnmountBefore')   || {value:'yes'}).value      || 'yes');
+		var forceFs    = String((document.getElementById('mpForceFs')         || {value:''}).value         || '').trim();
+		var extra      = String((document.getElementById('mpPartcloneExtra')  || {value:''}).value         || '').trim();
+		var delay      = String((document.getElementById('mpStepDelay')       || {value:'1'}).value        || '1').trim();
+		if (!/^\d+$/.test(delay)) delay = '1';
+
+		cleanup();
+
+		if (!ensureMoveTargetDoesNotIntersectSource(srcPart, tStart, tEnd, srcDevPath, tgtDev)) return;
+
+		// 'partnum' is required by buildPreviewDevice to locate the partition
+		// and update its displayed position after the op is queued.
+		var moveParams = {
+			device:            tgtDev,
+			partnum:           String(srcPart.number || ''),
+			source_device:     srcDevPath,
+			source_partnum:    String(srcPart.number || ''),
+			source_partition:  String(srcPart.path   || ''),
+			start_sector:      String(tStart),
+			end_sector:        String(tEnd),
+			clone_mode:        cloneMode,
+			dd_bs:             ddBs,
+			partclone_verify:  cloneMode === 'smart' ? pcVerify : 'no',
+			target_mountpoint: tMount,
+			align_bytes:       alignBytes,
+			unmount_before:    unmount,
+			force_fs:          forceFs,
+			partclone_extra:   extra,
+			step_delay:        delay
+		};
+		var moveLabel = 'Move p' + srcPart.number + ' on ' + srcDevPath +
+		                ' to [' + tStart + 's..' + tEnd + 's]';
+
+		// applyParamEditors (inside the preview modal) updates moveParams
+		// in-place before closing, so the queued op always reflects edits.
+		showCommandPreviewModal('move_partition', moveParams, moveLabel,
+		                        t('confirmMove'), t('confirmMoveMsg'))
+		.then(function (previewText) {
+			if (previewText === null) return;
+			var qStart = Number(moveParams.start_sector);
+			var qEnd   = Number(moveParams.end_sector);
+			var qDev   = String(moveParams.device || tgtDev);
+			if (!ensureMoveTargetDoesNotIntersectSource(srcPart, qStart, qEnd,
+			                                            srcDevPath, qDev)) return;
+			queueOp('move_partition', moveParams, moveLabel, previewText, false);
+			showToast(t('tQueued') + ' ' + moveLabel, 'info', 10000);
+		});
+	};
 }
 
 function queueMovePartitionWithConfirm(targetDevPath, part, targetStart, targetEnd, label, sourceDevPath, mountpointOverride, cloneMode) {
@@ -13003,7 +13511,13 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			return;
 		}
 
-		queueResizePlan(dev, part, Number(endSector), document.getElementById('resizeFsSelect').value);
+		var logical = Number(dev.logical_sector_size || 512);
+		var fsUsedBytes = Number(part.fs_used_bytes || 0);
+		var fsUsedMinSectors = (fsUsedBytes > 0 && logical > 0) ? Math.ceil(fsUsedBytes / logical) + 1 : 0;
+		var rpMinEnd = Number(part.start || 0) + Math.max(2048, fsUsedMinSectors);
+		var rpMaxEnd = Number(dev.total_sectors || 0) - 1;
+
+		queueResizePlan(dev, part, Number(endSector), document.getElementById('resizeFsSelect').value, rpMinEnd, rpMaxEnd);
 	}
 
 	function queueMkfs() {
@@ -13684,6 +14198,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.onDeviceChange = onDeviceChange;
 	window.queueCreatePartition = queueCreatePartition;
 	window.showMoveCloneModal = showMoveCloneModal;
+	window.showMovePartModal    = showMovePartModal;
+	window.showResizePartModal  = showResizePartModal;
 	window.showVerifyModal = showVerifyModal;
 	window.showDiskMoveCloneModal = showDiskMoveCloneModal;
 	window.showPartcloneExportModal = showPartcloneExportModal;

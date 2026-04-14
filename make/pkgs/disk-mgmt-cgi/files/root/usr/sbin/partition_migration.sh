@@ -664,8 +664,11 @@ echo "     ✔ END ${END} is within disk bounds (${DISK_SECTORS} sectors)."
 # Detect partition table type here; reused in step 4
 PTTYPE=$(parted -s -m "$DEVICE" unit s print | awk -F: 'NR==2 {print $6}')
 if [ "$PTTYPE" = "msdos" ]; then
+    # On MBR disks only partition numbers 1-4 occupy primary/extended slots.
+    # Logical partitions (numbers >= 5) live inside an extended partition and
+    # do not consume a primary slot, so they must be excluded from the count.
     EXISTING_PARTS=$(parted -s -m "$DEVICE" unit s print \
-        | awk -F: 'NR>2 && $1 ~ /^[0-9]+$/ {c++} END {print c+0}')
+        | awk -F: 'NR>2 && $1 ~ /^[0-9]+$/ && int($1)+0 <= 4 {c++} END {print c+0}')
     echo "     Partition table : MBR/msdos  (${EXISTING_PARTS} primary partition(s) present)"
     [ "$EXISTING_PARTS" -ge 4 ] && \
         die "MBR disks support at most 4 primary partitions; ${DEVICE} already has ${EXISTING_PARTS}."
