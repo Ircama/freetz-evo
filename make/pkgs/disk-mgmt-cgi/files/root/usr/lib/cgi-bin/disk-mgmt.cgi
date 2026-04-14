@@ -4378,6 +4378,13 @@ cat <<'EOF'
 	z-index: 6;
 	user-select: none;
 }
+/* Logical partition blocks — teal, distinct from primary (blue) and extended (amber) */
+.pcgi-block.part.pcgi-logical {
+	background: linear-gradient(180deg, #80cbc4 0%, #4db6ac 100%);
+}
+.pcgi-block.part.pcgi-logical:hover {
+	background: linear-gradient(180deg, #9ad5cf 0%, #60c2b8 100%);
+}
 /* Logical partition blocks get a bottom stripe */
 .pcgi-block.part.pcgi-logical::after {
 	content: '';
