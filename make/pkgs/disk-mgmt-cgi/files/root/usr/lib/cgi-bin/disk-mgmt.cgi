@@ -9615,7 +9615,12 @@ actionsWrap.appendChild(btnRemove);
 				var _extLay  = blockLayouts[_extLayIdx];
 				var _extPart = dev.partitions[_extLayIdx];
 				var _extSp   = Number(_extPart.start || 0);
-				var _extSz   = Math.max(1, Number(_extPart.size || 1));
+				// Use drawSize (post-drag sector count) instead of the static partition
+				// size so that the scale factor widthPx/drawSize ≈ mapWidth/total stays
+				// correct while dragging the extended edge.  Without this, the ratio
+				// widthPx(dragged) / size(original) compresses logical partitions
+				// proportionally when the extended is shrunk mid-drag.
+				var _extSz   = Math.max(1, _extLay.drawSize);
 				blLeft  = _extLay.leftPx + Math.round(((blStart - _extSp) / _extSz) * _extLay.widthPx);
 				blWidth = Math.max(blMinWidth, Math.round((blSize / _extSz) * _extLay.widthPx));
 				if (blLeft < _extLay.leftPx) blLeft = _extLay.leftPx;
