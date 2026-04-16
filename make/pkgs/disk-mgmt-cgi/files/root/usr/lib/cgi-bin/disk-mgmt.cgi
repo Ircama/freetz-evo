@@ -1787,6 +1787,24 @@ partprobe $_device"
 	fi
 }
 
+action_verify_partitions() {
+        resolve_tools
+        _device=$(cgi_param device)
+        [ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
+        is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+        if dry_run_enabled; then
+                emit_dry_run_result "verify partitions" "sfdisk --verify $_device"
+                return
+        fi
+        _out=$("$CMD_SFDISK" --verify "$_device" 2>&1)
+        _rc=$?
+        if [ "$_rc" -eq 0 ]; then
+                emit_cmd_result true "$_rc" "Partition table verified OK on $_device" "$_out"
+        else
+                emit_cmd_result false "$_rc" "Partition table verification failed on $_device" "$_out"
+        fi
+}
+
 action_resize_filesystem() {
 resolve_tools
 if ! require_ack; then
@@ -4014,6 +4032,7 @@ action_start_job() {
 			change_disk_uuid)    action_change_disk_uuid ;;
 			wipe_signatures)     action_wipe_signatures ;;
 			reorder_partitions)  action_reorder_partitions ;;
+			verify_partitions)   action_verify_partitions ;;
 			resize_filesystem)   action_resize_filesystem ;;
 			create_filesystem)   action_create_filesystem ;;
 			check_filesystem)    action_check_filesystem ;;
@@ -5288,6 +5307,82 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiMpCancelBtn">Cancel</button>
 			<button type="button" id="pcgiMpOkBtn" style="background:#1e88e5;color:#fff">Review &amp; Queue →</button>
+		</div>
+	</div>
+</div>
+
+<!-- sfdisk Move Partition modal — opened by "Move p# (sfdisk --move-data)" -->
+<div id="pcgiSfdiskMoveModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:620px;width:96vw">
+		<h3 class="pcgi-modal-head">Move partition (sfdisk --move-data)</h3>
+
+		<!-- Section: Source (read-only) -->
+		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Source</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+			<div>
+				<label>Partition</label>
+				<input id="smPartition" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+			<div>
+				<label>Device</label>
+				<input id="smDevice" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+		</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px">
+			<div>
+				<label>Current start</label>
+				<input id="smCurStart" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+			<div>
+				<label>Current end</label>
+				<input id="smCurEnd" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+			<div>
+				<label>Size</label>
+				<input id="smCurSize" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+			</div>
+		</div>
+
+		<!-- Section: Target -->
+		<div style="margin:10px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Target</div>
+		<div>
+			<label>New start sector</label>
+			<div style="display:flex;gap:4px;align-items:center">
+				<input id="smNewStart" type="number" min="1" step="1" style="flex:1;min-width:0;font-family:monospace">
+				<input id="smNewStartHuman" type="text" readonly tabindex="-1" style="width:110px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
+			</div>
+		</div>
+		<div style="margin-top:6px">
+			<label>Resulting end / delta from current</label>
+			<input id="smNewEndDisplay" type="text" readonly tabindex="-1" style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace" placeholder="---">
+		</div>
+
+		<!-- Section: Options -->
+		<div style="margin:10px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Options</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+			<div>
+				<label>Unmount before move</label>
+				<select id="smUnmountBefore" style="width:100%">
+					<option value="yes" selected>yes (recommended)</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+			<div>
+				<label>Remount after move</label>
+				<select id="smRemountAfter" style="width:100%">
+					<option value="yes" selected>yes</option>
+					<option value="no">no</option>
+				</select>
+			</div>
+		</div>
+		<div id="smMountPointRow" style="margin-top:6px">
+			<label>Mount point after move</label>
+			<input id="smMountPoint" type="text" placeholder="empty = do not mount" style="width:100%;box-sizing:border-box">
+		</div>
+
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiSmCancelBtn">Cancel</button>
+			<button type="button" id="pcgiSmOkBtn" style="background:#1e88e5;color:#fff">Review &amp; Queue →</button>
 		</div>
 	</div>
 </div>
@@ -7175,6 +7270,7 @@ window.paceOptions = {
 		toolStatus: null,
 		language: 'en',
 		usbOnly: false,
+		deviceFilter: '0',
 		contextTarget: null,
 		contextMenuHideTimer: null,
 		dryRun: false,
@@ -8649,6 +8745,9 @@ window.paceOptions = {
 		if (action === 'reorder_partitions') {
 			return 'sfdisk --reorder ' + v(params.device) + '\npartprobe ' + v(params.device);
 		}
+		if (action === 'verify_partitions') {
+			return 'sfdisk --verify ' + v(params.device);
+		}
 		if (action === 'move_partition_sfdisk') {
 			var _msDev = v(params.device);
 			var _msPnum = v(params.partnum);
@@ -9399,7 +9498,7 @@ function showCommandPreviewModal(action, params, label, confirmTitle, confirmMes
 		var previewText = buildCommandPreview(action, params);
 		state.previewEditContext = { action: action, params: params };
 		title.textContent = (confirmTitle || t('cmdPreviewTitle')) + ': ' + label;
-		text.textContent = confirmMessage || t('cmdPreviewHint');
+		text.innerHTML = confirmMessage || t('cmdPreviewHint');
 		var opRefLabel = summarizeOperationLabel(label, action);
 		paramsLabel.textContent = 'Parameters for operation: ' + opRefLabel + ' (editable JSON). You can tune sectors, sizes and options before queueing.';
 		setPreviewEditorValue(previewText);
@@ -10174,7 +10273,8 @@ actionsWrap.appendChild(btnRemove);
 				{ id: 'disk_restore_pt',     label: 'Restore partition table (sfdisk)' },
 				{ id: 'disk_change_uuid',    label: 'Change disk UUID/ID (sfdisk)' },
 				{ id: 'disk_wipe_sigs',      label: 'Wipe disk signatures (wipefs)' },
-				{ id: 'disk_reorder',        label: 'Reorder partitions (sfdisk)' }
+				{ id: 'disk_reorder',        label: 'Reorder partitions (sfdisk)' },
+				{ id: 'disk_verify',         label: 'Verify partitions (sfdisk)' }
 			];
 		} else if (menuType === 'free') {
 			items = [
@@ -10283,6 +10383,7 @@ actionsWrap.appendChild(btnRemove);
 			if (action === 'disk_change_uuid') { queueChangeDiskUuid(target); return; }
 			if (action === 'disk_wipe_sigs')   { queueWipeSignatures(target.path, 'disk'); return; }
 			if (action === 'disk_reorder')     { queueReorderPartitions(target); return; }
+			if (action === 'disk_verify')      { queueVerifyPartitions(target); return; }
 			showToast(t('tContextUnavailable'), 'warn');
 			return;
 		}
@@ -10310,7 +10411,7 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'meta') { loadPartitionMetadata(); return; }
 		if (action === 'delete') { queueDeletePartition(); return; }
 		if (action === 'rename') { queueRenamePartition(); return; }
-		if (action === 'flag') { queueSetFlag(); return; }
+		if (action === 'flag') { showSetFlagModal(part, state.selectedDevice || ''); return; }
 		if (action === 'mkfs') { document.getElementById('fsTypeSelect').value = 'auto'; queueMkfs(); return; }
 		if (action === 'mount') { showMountModal(); return; }
 		if (action === 'umount') { queueUnmountPartition(); return; }
@@ -10438,12 +10539,19 @@ actionsWrap.appendChild(btnRemove);
 			// outer blocks, collapsing them to 1 px slivers.
 			var _blOrigStart = blStart, _blOrigEnd = blEnd, _blOrigSize = blSize;
 			var _blDraggedRight = false;
+			var _blDraggedLeft  = false;
 			if (state.dragCtx && blp.kind === 'partition') {
 				var blDevPath  = String(state.dragCtx.dev && state.dragCtx.dev.path || '');
 				var blPartPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
 				if (blDevPath === String(dev.path || '') && blPartPath && blPartPath === String(blp.path || '')) {
 					if (state.dragCtx.edge === 'left') {
 						blStart = Number(state.dragCtx.currentStart || blStart);
+						_blDraggedLeft = true;
+					} else if (state.dragCtx.edge === 'move') {
+						// Body-drag move preview: both edges shift by the same delta.
+						blStart = Number(state.dragCtx.currentStart);
+						blEnd   = Number(state.dragCtx.currentEnd);
+						blSize  = Math.max(1, blEnd - blStart + 1);
 					} else {
 						blEnd = Number(state.dragCtx.currentEnd || blEnd);
 						_blDraggedRight = true;
@@ -10453,6 +10561,18 @@ actionsWrap.appendChild(btnRemove);
 			}
 			var blNatLeft  = Math.round((blStart / total) * mapWidth);
 			var blNatWidth = Math.max(1, Math.round((blSize  / total) * mapWidth));
+			// During a left-edge drag of an extended partition, the free block immediately
+			// preceding it must visually shrink so that pixelCursor advances to the new
+			// dragged start position (not the original one), allowing the extended block
+			// to render at its new position without being clamped by the old pixelCursor.
+			if (blp.kind === 'free' && state.dragCtx && state.dragCtx.edge === 'left') {
+				var _dlOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
+				var _dlCurStart  = Number(state.dragCtx.currentStart || _dlOrigStart);
+				if (_dlCurStart < _dlOrigStart && blEnd + 1 === _dlOrigStart) {
+					var _dlCapPx = Math.round((_dlCurStart / total) * mapWidth) - blNatLeft;
+					blNatWidth = Math.max(4, _dlCapPx);
+				}
+			}
 			var blMinWidth = (blp.kind === 'partition') ? 30 : 4;
 			// Logical partitions and free space inside the extended range render
 			// ON TOP of the extended band (different CSS top), so they must be
@@ -10463,16 +10583,13 @@ actionsWrap.appendChild(btnRemove);
 			var blLeft, blWidth;
 			if (_isInExt && blockLayouts[_extLayIdx]) {
 				var _extLay  = blockLayouts[_extLayIdx];
-				var _extPart = dev.partitions[_extLayIdx];
-				var _extSp   = Number(_extPart.start || 0);
-				// Use drawSize (post-drag sector count) instead of the static partition
-				// size so that the scale factor widthPx/drawSize ≈ mapWidth/total stays
-				// correct while dragging the extended edge.  Without this, the ratio
-				// widthPx(dragged) / size(original) compresses logical partitions
-				// proportionally when the extended is shrunk mid-drag.
-				var _extSz   = Math.max(1, _extLay.drawSize);
-				blLeft  = _extLay.leftPx + Math.round(((blStart - _extSp) / _extSz) * _extLay.widthPx);
-				blWidth = Math.max(blMinWidth, Math.round((blSize / _extSz) * _extLay.widthPx));
+				// Use absolute sector→pixel for inner blocks so that logical partitions
+				// stay pixel-stable during a left-edge drag of the extended partition.
+				// The relative formula leftPx + ((blStart-drawStart)/drawSize)*widthPx is
+				// mathematically equivalent but accumulates ±2px integer rounding per
+				// render frame, causing the logical block to visually shift right/left.
+				blLeft  = Math.round((blStart / total) * mapWidth);
+				blWidth = Math.max(blMinWidth, Math.round((blSize  / total) * mapWidth));
 				if (blLeft < _extLay.leftPx) blLeft = _extLay.leftPx;
 				var _extRight = _extLay.leftPx + _extLay.widthPx;
 				if (blLeft + blWidth > _extRight) blWidth = Math.max(blMinWidth, _extRight - blLeft);
@@ -10481,7 +10598,10 @@ actionsWrap.appendChild(btnRemove);
 				// Do NOT advance outer pixelCursor — inner items overlay the extended band.
 			} else {
 				blWidth = Math.max(blMinWidth, blNatWidth);
-				blLeft  = Math.max(pixelCursor, blNatLeft);
+				// During a left-drag, the extended block's new start is to the LEFT of where
+				// pixelCursor is (the free block was capped above, but use blNatLeft as a
+				// safety net so the extended block never gets stuck at the old position).
+				blLeft  = _blDraggedLeft ? blNatLeft : Math.max(pixelCursor, blNatLeft);
 				if (blLeft < 0)         blLeft = 0;
 				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
 				// Clamp right edge to mapWidth so the rightmost partition is never
@@ -10490,14 +10610,17 @@ actionsWrap.appendChild(btnRemove);
 				if (blLeft + blWidth > mapWidth) {
 					blWidth = Math.max(1, mapWidth - blLeft);
 				}
-				// When the current block is being dragged to the right (right-edge
-				// expand), advance pixelCursor using the ORIGINAL pre-drag width.
-				// Using the dragged width would push all subsequent outer blocks
-				// (free space, primary partitions) far to the right, collapsing them
-				// to 1-px slivers off-screen — the classic "p3 gets compressed" bug.
+				// Advance pixelCursor using the ORIGINAL pre-drag right edge so that
+				// subsequent outer blocks (free space, primary partitions) are not displaced:
+				// • right-drag: blWidth grew; use original width to avoid pushing next block right.
+				// • left-drag:  blLeft shrank but blWidth grew by same amount; the right edge
+				//   (_blOrigEnd) is physically unchanged — pin pixelCursor to it.
 				if (_blDraggedRight) {
 					var _origNatWidth = Math.max(blMinWidth, Math.max(1, Math.round((_blOrigSize / total) * mapWidth)));
 					pixelCursor = blLeft + _origNatWidth;
+				} else if (_blDraggedLeft) {
+					// Pin to the pixel position of the original right edge (blEnd never changed).
+					pixelCursor = Math.max(blLeft + blMinWidth, Math.round((_blOrigEnd + 1) / total * mapWidth));
 				} else {
 					pixelCursor = blLeft + blWidth;
 				}
@@ -10541,6 +10664,13 @@ actionsWrap.appendChild(btnRemove);
 					if (_lLay.leftPx < _eBandLeft) _eBandLeft = _lLay.leftPx;
 					if (_lRight > _eRight) _eBandWidth = _lRight - _eBandLeft;
 				}
+			}
+			// Pin the band's right edge to the layout drawEnd so that floating-point
+			// rounding in widthPx (which grows as the left edge is dragged) does not
+			// cause the visible right side to jitter ±1–2 px on every render frame.
+			var _eBandFixedRight = Math.round((_eLay.drawEnd + 1) / total * mapWidth);
+			if (_eBandFixedRight > _eBandLeft) {
+				_eBandWidth = _eBandFixedRight - _eBandLeft;
 			}
 			var band = document.createElement('div');
 			band.className = 'pcgi-extended-band';
@@ -10592,17 +10722,17 @@ actionsWrap.appendChild(btnRemove);
 				band.appendChild(_brh);
 			})(_ep, _ei);
 			map.appendChild(band);
-			// Left-edge overlay appended directly to map (not to band) so it sits on
-			// top of the free/logical blocks that share the same X position and would
-			// otherwise intercept mouse events before the inline handle can fire.
+			// Left-edge overlay for extended partition only: appended to map (not band)
+			// so it floats on top of free/logical blocks at the same X position that
+			// would otherwise intercept mousedown before the inline handle can fire.
 			(function(_blhEi, _blhDev) {
 				var _blhLay = blockLayouts[_blhEi];
 				if (!_blhLay) return;
 				var _blhOvl = document.createElement('div');
 				_blhOvl.className = 'pcgi-resize-handle pcgi-resize-handle-left';
-				_blhOvl.title = 'Drag to resize extended partition start (sfdisk)';
+				_blhOvl.title = 'Drag to resize extended partition (left)';
 				_blhOvl.style.top    = '22px';
-				_blhOvl.style.height = '60px';
+				_blhOvl.style.height = '12px';
 				_blhOvl.style.zIndex = '25';
 				_blhOvl.style.left   = _blhLay.leftPx + 'px';
 				_blhOvl.onmousedown  = function(ev) { ev.stopPropagation(); startResize(ev, _blhDev, _blhEi, 'left'); };
@@ -10764,37 +10894,123 @@ actionsWrap.appendChild(btnRemove);
 						fsBar.appendChild(fsUnusedBar);
 						block.appendChild(fsBar);
 					}
-					block.draggable = true;
-                    block.ondragstart = function (ev) {
-                        state.mapDragActive = true;
-                        var blockRect = block.getBoundingClientRect();
-                        var grabPx = (ev.clientX || 0) - blockRect.left;
-                        grabPx = clampNumber(grabPx, 0, Math.max(1, blockRect.width));
-                        state.partitionDragInfo = {
-                            devPath: String(dev.path || ''),
-                            partnum: Number(p.number || 0),
-                            partPath: String(p.path || ''),
-                            size: Number(p.size || 0),
-                            grabRatio: blockRect.width > 0 ? (grabPx / blockRect.width) : 0
+					/* ── Body drag: mousedown-based continuous move (sfdisk --move-data) ── */
+                    (function(_bdDev, _bdPart, _bdBlock) {
+                        var _bdMapEl = document.getElementById('partitionMap');
+                        _bdBlock.addEventListener('click', function(_bde) {
+                            if (_bdBlock._suppressNextClick) {
+                                _bdBlock._suppressNextClick = false;
+                                _bde.stopImmediatePropagation();
+                                _bde.preventDefault();
+                            }
+                        }, true);
+                        _bdBlock.onmousedown = function(_bdev) {
+                            if (_bdev.button !== 0) return;
+                            /* Don't steal mousedown from resize handles */
+                            var _tCls = String((_bdev.target || {}).className || '');
+                            if (_tCls.indexOf('pcgi-resize-handle') !== -1) return;
+                            var _startX = _bdev.clientX;
+                            var _dragging = false;
+                            var _mapRect = _bdMapEl.getBoundingClientRect();
+                            var _total = Number(_bdDev.total_sectors || 0);
+                            function _onMove(_m) {
+                                var _dx = _m.clientX - _startX;
+                                if (!_dragging&&Math.abs(_dx)<4)return;
+                                if (!_dragging){
+                                    _dragging = true;
+                                    state.mapDragActive = true;
+                                    hideHoverTooltip();
+                                    hideContextMenu();
+                                    _bdBlock.style.zIndex = '50';
+                                    _bdBlock.style.opacity = '0.8';
+                                    _bdBlock.style.transition = 'none';
+                                }
+                                _bdBlock.style.transform = 'translateX(' + _dx + 'px)';
+                            }
+                            function _onUp(_u) {
+                                document.removeEventListener('mousemove', _onMove);
+                                document.removeEventListener('mouseup', _onUp);
+                                state.mapDragActive = false;
+                                if (!_dragging) {
+                                    _bdBlock.style.transform = '';
+                                    _bdBlock.style.zIndex = '';
+                                    _bdBlock.style.opacity = '';
+                                    _bdBlock.style.transition = '';
+                                    return;
+                                }
+                                _bdBlock._suppressNextClick = true;
+                                setTimeout(function() { _bdBlock._suppressNextClick = false; }, 200);
+                                if (!_total||!_mapRect.width) {
+                                    _bdBlock.style.transform = '';
+                                    _bdBlock.style.zIndex = '';
+                                    _bdBlock.style.opacity = '';
+                                    _bdBlock.style.transition = '';
+                                    return;
+                                }
+                                var _dx = _u.clientX - _startX;
+                                var _deltaSec = Math.round((_dx / _mapRect.width) * _total);
+                                var _oldStart = Number(_bdPart.start || 0);
+                                var _newStart = _oldStart + _deltaSec;
+                                _newStart = Math.round(_newStart / 8) * 8;
+                                if (_newStart < 0) _newStart = 0;
+                                if (_newStart === _oldStart) {
+                                    _bdBlock.style.transform = '';
+                                    _bdBlock.style.zIndex = '';
+                                    _bdBlock.style.opacity = '';
+                                    _bdBlock.style.transition = '';
+                                    return;
+                                }
+                                /* Pin partition at dragged position via dragCtx before any modal opens.
+                                 * renderMap() destroys _bdBlock (removing its CSS transform) and
+                                 * paints a new element at _newStart — no snap-back visible. */
+                                var _mvSize = Number(_bdPart.size || Math.max(1, Number(_bdPart.end||0) - _oldStart + 1));
+                                state.dragCtx = {
+                                    dev: _bdDev, part: _bdPart, partPath: String(_bdPart.path || ''),
+                                    edge: 'move',
+                                    currentStart: _newStart,
+                                    currentEnd:   _newStart + _mvSize - 1
+                                };
+                                renderMap(); /* destroys old _bdBlock; partition now rendered at _newStart */
+                                /* Same-disk move: detect cross-type (primary↔logical) by checking extended range */
+                                var _ctExtS = -1, _ctExtE = -1;
+                                for (var _cti = 0; _cti < _bdDev.partitions.length; _cti++) {
+                                    var _ctp = _bdDev.partitions[_cti];
+                                    if (!_ctp||_ctp.kind!=='partition')continue;
+                                    var _ctR = String(_ctp.role || '');
+                                    if (!_ctR){
+                                        if (String(_ctp.fs || '').toLowerCase() === 'extended') _ctR = 'extended';
+                                        else if (!String(_ctp.fs||'')&&String(_ctp.flags||'').toLowerCase()==='lba')_ctR='extended';
+                                    }
+                                    if (_ctR === 'extended') { _ctExtS = Number(_ctp.start || 0); _ctExtE = Number(_ctp.end || 0); break; }
+                                }
+                                var _ctSrcInExt = (_ctExtS >= 0 && _oldStart >= _ctExtS && Number(_bdPart.end || 0) <= _ctExtE);
+                                var _ctTgtInExt = (_ctExtS >= 0 && _newStart >= _ctExtS && (_newStart + _mvSize - 1) <= _ctExtE);
+                                if (_ctSrcInExt !== _ctTgtInExt) {
+                                    /* Cross-type: state.dragCtx kept alive until showMovePartModal closes */
+                                    var _ctFreeStart = _newStart, _ctFreeEnd = _newStart + _mvSize - 1;
+                                    for (var _ctfi = 0; _ctfi < _bdDev.partitions.length; _ctfi++) {
+                                        var _ctfp = _bdDev.partitions[_ctfi];
+                                        if (_ctfp.kind === 'free' && Number(_ctfp.start || 0) <= _newStart && Number(_ctfp.end || 0) >= _newStart) {
+                                            _ctFreeStart = Number(_ctfp.start || 0); _ctFreeEnd = Number(_ctfp.end || 0); break;
+                                        }
+                                    }
+                                    showMovePartModal(String(_bdDev.path || ''), _bdPart, String(_bdDev.path || ''),
+                                        _newStart, _newStart + _mvSize - 1, _ctFreeStart, _ctFreeEnd);
+                                } else {
+                                    /* Same-type: clear dragCtx once modal chain resolves (cancel or queue) */
+                                    var _p = queueSfdiskMovePartition(_bdPart, String(_bdDev.path || ''), _newStart);
+                                    function _clearMoveCtx() { state.dragCtx = null; renderMap(); }
+                                    if (_p && typeof _p.then === 'function') {
+                                        _p.then(_clearMoveCtx, _clearMoveCtx);
+                                    } else {
+                                        _clearMoveCtx();
+                                    }
+                                }
+                            }
+                            document.addEventListener('mousemove', _onMove);
+                            document.addEventListener('mouseup', _onUp);
                         };
-                        hideHoverTooltip();
-                        ev.dataTransfer.setData('text/plain', 'partition:' + p.number);
-                        ev.dataTransfer.setData('part-size', String(p.size || 0));
-                    };
-                    block.ondragend = function () {
-                        state.mapDragActive = false;
-                        state.partitionDragInfo = null;
-                        hideHoverTooltip();
-                    };
-
-					var leftHandle = document.createElement('div');
-					leftHandle.className = 'pcgi-resize-handle pcgi-resize-handle-left';
-					leftHandle.title = 'Drag left edge to move/resize';
-					leftHandle.onmousedown = function (ev) {
-						ev.stopPropagation();
-						startResize(ev, dev, idx, 'left');
-					};
-					block.appendChild(leftHandle);
+                    })(dev, p, block);
 					var handle = document.createElement('div');
 					handle.className = 'pcgi-resize-handle';
 					handle.title = 'Drag to resize';
@@ -10932,34 +11148,94 @@ actionsWrap.appendChild(btnRemove);
                             ) {
                                 grabRatio = Number(dragInfo.grabRatio || 0);
                             }
+                            /* Determine context: extended partition range on target disk */
+                            var _extS = -1, _extE = -1;
+                            for (var _ei2 = 0; _ei2 < dev.partitions.length; _ei2++) {
+                                var _ec = dev.partitions[_ei2];
+                                if (!_ec || _ec.kind !== 'partition') continue;
+                                var _ecR = String(_ec.role || '');
+                                if (!_ecR) {
+                                    if (String(_ec.fs || '').toLowerCase() === 'extended') _ecR = 'extended';
+                                    else if (!String(_ec.fs || '') && String(_ec.flags || '').toLowerCase() === 'lba') _ecR = 'extended';
+                                }
+                                if (_ecR === 'extended') { _extS = Number(_ec.start || 0); _extE = Number(_ec.end || 0); break; }
+                            }
+                            var _targetInExt = (_extS >= 0 && Number(p.start || 0) >= _extS && Number(p.end || 0) <= _extE);
+                            var _srcRole = String(moveSource.role || '');
+                            if (!_srcRole && Number(moveSource.number || 0) >= 5) _srcRole = 'logical';
+                            var _srcIsLogical = (_srcRole === 'logical');
+                            var _sameDisk = (srcDevicePath === String(dev.path || ''));
+                            var _sameType = _sameDisk && (_srcIsLogical === _targetInExt);
                             var targetStart = computeMoveDropTargetStart(ev, p, moveSize, grabRatio);
                             if (!isFinite(targetStart)) {
-                                state.partitionDragInfo = null;
-                                showToast(t('tMoveNoSpace'), 'error');
+                                /* Free slot too small for partition. sfdisk can still move if same disk/type. */
+                                if (_sameType) {
+                                    var _st = ev.currentTarget || ev.target;
+                                    var _sr = _st && _st.getBoundingClientRect ? _st.getBoundingClientRect() : null;
+                                    var _sx = _sr && _sr.width > 0 ? (_sr.width > 0 ? clampNumber((ev.clientX || 0) - _sr.left, 0, _sr.width) : 0) : 0;
+                                    var _span = Number(p.end || 0) - Number(p.start || 0);
+                                    var _drop = Number(p.start || 0) + Math.round((_sr && _sr.width > 0 ? _sx / _sr.width : 0) * _span);
+                                    var _sfdiskStart = Math.max(0, _drop - Math.round(grabRatio * Math.max(0, moveSize - 1)));
+                                    state.partitionDragInfo = null;
+                                    if (_sfdiskStart === Number(moveSource.start || 0)) { showToast(t('tMoveSame'), 'warn'); return; }
+                                    queueSfdiskMovePartition(moveSource, srcDevicePath, _sfdiskStart);
+                                } else {
+                                    state.partitionDragInfo = null;
+                                    showToast(t('tMoveNoSpace'), 'error');
+                                }
                                 return;
                             }
                             var targetEnd = targetStart + moveSize - 1;
                             if (targetEnd > Number(p.end || 0)) {
+                                /* Overflow: check for partial self-overlap on same disk */
+                                if (_sameDisk &&
+                                    targetEnd <= Number(moveSource.end || 0) &&
+                                    moveRangesIntersect(Number(moveSource.start || 0), Number(moveSource.end || 0), targetStart, targetEnd)) {
+                                    var _ovMs = moveSource, _ovSp = srcDevicePath, _ovTs = targetStart;
+                                    state.partitionDragInfo = null;
+                                    if (_sameType) {
+                                        queueSfdiskMovePartition(_ovMs, _ovSp, _ovTs);
+                                    } else {
+                                        showConfirmModal(
+                                            'Use sfdisk --move-data (overlap-safe)?',
+                                            'The new position [' + _ovTs + 's–' + (_ovTs + moveSize - 1) + 's] partially overlaps the current partition [' + _ovMs.start + 's–' + _ovMs.end + 's].\n\n' +
+                                            'Use sfdisk --move-data instead (handles overlap internally)?'
+                                        ).then(function(ok) { if (!ok) return; queueSfdiskMovePartition(_ovMs, _ovSp, _ovTs); });
+                                    }
+                                    return;
+                                }
                                 state.partitionDragInfo = null;
                                 showToast(t('tMoveNoSpace'), 'error');
                                 return;
                             }
-                            if (srcDevicePath === String(dev.path || '') &&
-                                Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
+                            if (_sameDisk && Number(moveSource.start) === targetStart && Number(moveSource.end) === targetEnd) {
                                 state.partitionDragInfo = null;
                                 showToast(t('tMoveSame'), 'warn');
                                 return;
                             }
                             state.partitionDragInfo = null;
-							showMovePartModal(
-								dev.path,
-								moveSource,
-								srcDevicePath,
-								targetStart,
-								targetEnd,
-								Number(p.start || 0),
-								Number(p.end   || 0)
-							);
+                            if (_sameType) {
+                                /* Same disk, same partition type: sfdisk --move-data (no free slot needed) */
+                                queueSfdiskMovePartition(moveSource, srcDevicePath, targetStart);
+                            } else {
+                                /* Keep source partition at target position while modal is open */
+                                state.dragCtx = {
+                                    dev: srcDeviceObj, part: moveSource, partPath: String(moveSource.path || ''),
+                                    edge: 'move',
+                                    currentStart: targetStart,
+                                    currentEnd: targetEnd
+                                };
+                                renderMap();
+                                showMovePartModal(
+                                    dev.path,
+                                    moveSource,
+                                    srcDevicePath,
+                                    targetStart,
+                                    targetEnd,
+                                    Number(p.start || 0),
+                                    Number(p.end   || 0)
+                                );
+                            }
 						}
 					};
 				}
@@ -11192,11 +11468,8 @@ actionsWrap.appendChild(btnRemove);
 					else if (!d.part.fs && String(d.part.flags || '').toLowerCase() === 'lba') _oeRole = 'extended';
 				}
 				var p;
-				if (_oeRole === 'extended') {
-					p = queueResizeExtendedStart(d.dev, d.part, Number(d.currentStart));
-				} else {
-					p = queueMoveResizePlan(d.dev, d.part, Number(d.currentStart), document.getElementById('resizeFsSelect').value);
-				}
+				/* Only extended partitions have a left-edge resize handle */
+				p = queueResizeExtendedStart(d.dev, d.part, Number(d.currentStart));
 				document.getElementById('newStartSector').value = String(d.currentStart);
 				refreshSectorHumanFields();
 				if (p && typeof p.then === 'function') {
@@ -11641,22 +11914,6 @@ actionsWrap.appendChild(btnRemove);
                 if (targetStart === oldStart) {
                         showToast(t('tMoveSame'), 'warn');
                         return Promise.resolve(false);
-                }
-
-                /* If the new range overlaps the current partition range, the
-                 * clone+delete path cannot be used.  Offer sfdisk --move-data
-                 * which handles overlapping relocations internally. */
-                var targetEnd = end; /* size stays the same for a pure relocation */
-                if (moveRangesIntersect(oldStart, end, targetStart, targetEnd)) {
-                        return showConfirmModal(
-                                'Use sfdisk --move-data (overlap-safe)?',
-                                'The target range [' + targetStart + 's\u2013' + targetEnd + 's] overlaps the current partition [' + oldStart + 's\u2013' + end + 's].\n\n' +
-                                'The standard clone+delete move requires disjoint ranges.\n' +
-                                'Use sfdisk --move-data instead (handles overlap internally)?'
-                        ).then(function (ok) {
-                                if (!ok) return false;
-                                return queueSfdiskMovePartition(part, dev.path, targetStart);
-                        });
                 }
 
                 return queueMovePartitionWithConfirm(
@@ -13262,6 +13519,11 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		startEl.oninput   = null;
 		endEl.oninput     = null;
 		document.removeEventListener('keydown', onEsc);
+		/* Clear move-preview dragCtx when the modal closes (cancel / ESC) */
+		if (state.dragCtx && state.dragCtx.edge === 'move') {
+			state.dragCtx = null;
+			renderMap();
+		}
 	}
 	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
 	document.addEventListener('keydown', onEsc);
@@ -13508,10 +13770,33 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	function refreshDevices() {
 		renderMapLoading(t('tMapLoading'));
 		updateMapStatus(t('tMapLoading'));
-		return callApi('list_devices', { usb_only: state.usbOnly ? '1' : '0' })
+		var _apiParams = { usb_only: state.usbOnly ? '1' : '0' };
+		return callApi('list_devices', _apiParams)
 			.then(function (data) {
 				if (!data.success) throw new Error(data.message || 'Map load failed');
-				state.devices = data.devices || [];
+				var _allDevices = data.devices || [];
+
+				/* Apply client-side filter (loop / virtual / usb) */
+				var _filter = state.deviceFilter || '0';
+				if (_filter === 'usb') {
+					state.devices = _allDevices.filter(function(d) {
+						return String(d.transport || '').toLowerCase().indexOf('usb') >= 0 ||
+							(String(d.name || '').match(/^sd[a-z]/) && String(d.transport || '') === '');
+					});
+				} else if (_filter === 'loop') {
+					state.devices = _allDevices.filter(function(d) { return /^loop/.test(d.name || ''); });
+				} else if (_filter === 'virtual') {
+					state.devices = _allDevices.filter(function(d) {
+						var m = String(d.model || '') + String(d.vendor || '');
+						return /msft virtual|virtualbox|vmware|vbox|vhd/i.test(m) || /^loop/.test(d.name);
+					});
+				} else {
+					state.devices = _allDevices;
+				}
+
+				/* Rebuild filter dropdown based on what device types exist in _allDevices */
+				_rebuildDeviceFilterSelect(_allDevices, _filter);
+
 				var sel = document.getElementById('deviceSelect');
 				sel.innerHTML = '';
 				for (var i = 0; i < state.devices.length; i++) {
@@ -13545,6 +13830,41 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				logTo('cmdOutput', t('tMapError') + ': ' + err.message, false);
 				showToast(t('tMapError') + ': ' + err.message, 'error', 10000);
 			});
+	}
+
+	function _rebuildDeviceFilterSelect(allDevices, currentFilter) {
+		var sel = document.getElementById('usbOnlySelect');
+		if (!sel) return;
+		/* Detect which categories are present */
+		var hasUsb   = allDevices.some(function(d) { return String(d.transport||'').toLowerCase().indexOf('usb') >= 0; });
+		var hasLoop  = allDevices.some(function(d) { return /^loop/.test(d.name||''); });
+		var hasVirt  = allDevices.some(function(d) {
+			var m = String(d.model||'') + String(d.vendor||'');
+			return /msft virtual|virtualbox|vmware|vbox|vhd/i.test(m);
+		});
+		var prev = currentFilter || sel.value || '0';
+		/* Build options list */
+		var opts = [{ value: '0', label: 'All block devices' }];
+		if (hasUsb)   opts.push({ value: 'usb',     label: 'USB devices only' });
+		if (hasLoop)  opts.push({ value: 'loop',    label: 'Loopback devices only' });
+		if (hasVirt)  opts.push({ value: 'virtual', label: 'Virtual disks only' });
+		/* Only rebuild if set of values changed (avoid disrupting focused dropdown) */
+		var existing = [];
+		for (var i = 0; i < sel.options.length; i++) existing.push(sel.options[i].value);
+		var newVals = opts.map(function(o){return o.value;});
+		if (existing.join(',') === newVals.join(',')) {
+			sel.value = prev;
+			return;
+		}
+		sel.innerHTML = '';
+		opts.forEach(function(o) {
+			var opt = document.createElement('option');
+			opt.value = o.value;
+			opt.textContent = o.label;
+			sel.appendChild(opt);
+		});
+		/* Restore previous selection if still valid */
+		sel.value = newVals.indexOf(prev) >= 0 ? prev : '0';
 	}
 
 	function alignSectors(start, end, alignEl) {
@@ -14222,6 +14542,19 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		});
 	}
 
+	function queueVerifyPartitions(devArg) {
+		var devPath = String(devArg && (devArg.path || devArg) || '');
+                if (!devPath) { showToast(t('tNoDevice'), 'warn'); return; }
+                var params = { device: devPath };
+                var label = 'Verify partitions on ' + devPath + ' (sfdisk --verify)';
+                showCommandPreviewModal('verify_partitions', params, label, 'Confirm verify', 'Check whether partitions on ' + devPath + ' seem correct (sfdisk --verify).')
+                .then(function(previewText) {
+                        if (previewText === null) return;
+                        queueOp('verify_partitions', params, label, previewText || buildCommandPreview('verify_partitions', params), false);
+                        showToast(t('tQueued') + ' ' + label, 'info', 10000);
+                });
+        }
+
 	function queueChangePartType(partArg, devPath) {
 		var devP = String(devPath || state.selectedDevice || '');
 		var part = partArg || state.selectedPart;
@@ -14270,19 +14603,117 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		});
 	}
 
+	function showSfdiskMoveModal(partObj, devPathStr, presetStartVal, isMounted, mountpointStr, partPathStr, logSectorSize) {
+		var modal = document.getElementById('pcgiSfdiskMoveModal');
+		if (!modal)returnPromise.resolve(null);
+		var currentStart = Number(partObj.start || 0);
+		var currentSize  = Number(partObj.size  || 0);
+		var currentEnd   = Number(partObj.end   || (currentStart + currentSize - 1));
+		var _lss = Number(logSectorSize || 512);
+		function _sh(sectors) {
+			var bytes = sectors * _lss;
+			var u = ['B','KiB','MiB','GiB','TiB'], i = 0;
+			while (bytes >= 1024 && i < u.length - 1) { bytes /= 1024; i++; }
+			return (i === 0 ? bytes : bytes.toFixed(1)) + ' ' + u[i];
+		}
+		/* Populate read-only source fields */
+		document.getElementById('smPartition').value = partPathStr || String(partObj.path || '');
+		document.getElementById('smDevice').value    = devPathStr || '';
+		document.getElementById('smCurStart').value  = currentStart + 's  (' + _sh(currentStart) + ' from start)';
+		document.getElementById('smCurEnd').value    = currentEnd   + 's  (' + _sh(currentEnd)   + ' from start)';
+		document.getElementById('smCurSize').value   = currentSize  + 's  (' + _sh(currentSize)  + ')';
+		/* Target start */
+		var smNewStart  = document.getElementById('smNewStart');
+		var smNewStartH = document.getElementById('smNewStartHuman');
+		var smNewEndD   = document.getElementById('smNewEndDisplay');
+		var startDefault = (presetStartVal !== undefined && presetStartVal !== null) ? Number(presetStartVal) : currentStart;
+		smNewStart.value = startDefault;
+		function updateTargetDisplay() {
+			var ns = parseInt(smNewStart.value, 10);
+			if (!isFinite(ns)||ns<=0){smNewStartH.value='';smNewEndD.value='';return;}
+			var ne = ns + currentSize - 1;
+			var dir = ns < currentStart ? '\u2190 left '  + _sh(currentStart - ns) :
+			          ns > currentStart ? '\u2192 right ' + _sh(ns - currentStart) : '(no change)';
+			smNewStartH.value = _sh(ns) + '  ' + dir;
+			smNewEndD.value   = 'end: ' + ne + 's  (' + _sh(ne) + ' from start)';
+		}
+		smNewStart.addEventListener('input', updateTargetDisplay);
+		updateTargetDisplay();
+		/* Options */
+		var smUnmount = document.getElementById('smUnmountBefore');
+		var smRemount = document.getElementById('smRemountAfter');
+		var smMpRow   = document.getElementById('smMountPointRow');
+		var smMp      = document.getElementById('smMountPoint');
+		smUnmount.value = isMounted ? 'yes' : 'no';
+		smRemount.value = isMounted ? 'yes' : 'no';
+		smMp.value      = mountpointStr || '';
+		function updateMpVisibility() {
+			smMpRow.style.display = smRemount.value === 'yes' ? '' : 'none';
+		}
+		smRemount.addEventListener('change', updateMpVisibility);
+		updateMpVisibility();
+		/* Show modal */
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+		setTimeout(function() { smNewStart.focus(); smNewStart.select(); }, 50);
+		return new Promise(function(resolve) {
+			function cleanup() {
+				modal.style.display = 'none';
+				modal.setAttribute('aria-hidden', 'true');
+				smNewStart.removeEventListener('input', updateTargetDisplay);
+				smRemount.removeEventListener('change', updateMpVisibility);
+				document.getElementById('pcgiSmOkBtn').onclick = null;
+				document.getElementById('pcgiSmCancelBtn').onclick = null;
+				document.removeEventListener('keydown', escListener);
+			}
+			function onOk() {
+				var ns = parseInt(smNewStart.value, 10);
+				if (!isFinite(ns)||ns<=0){showToast('Enteravalidpositivesectornumber.','warn');return;}
+				var result = {
+					newStart:   ns,
+					doUnmount:  smUnmount.value === 'yes',
+					doRemount:  smRemount.value === 'yes',
+					mountPoint: smMp.value.trim() || mountpointStr || ''
+				};
+				cleanup();
+				resolve(result);
+			}
+			function onCancel() { cleanup(); resolve(null); }
+			function escListener(e) { if (e.key === 'Escape' && modal.style.display !== 'none') onCancel(); }
+			document.getElementById('pcgiSmOkBtn').onclick = onOk;
+			document.getElementById('pcgiSmCancelBtn').onclick = onCancel;
+			document.addEventListener('keydown', escListener);
+		});
+	}
+
 	function queueSfdiskMovePartition(partArg, devPath, presetStart) {
 		var devP = String(devPath || state.selectedDevice || '');
 		var part = partArg || state.selectedPart;
 		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return Promise.resolve(false); }
-		if (!devP) { showToast(t('tNoDevice'), 'warn'); return Promise.resolve(false); }
+		if (!devP){showToast(t('tNoDevice'),'warn');returnPromise.resolve(false);}
 
 		var currentStart = Number(part.start || 0);
 		var currentSize  = Number(part.size  || 0);
 		var currentEnd   = Number(part.end   || (currentStart + currentSize - 1));
+		var _partPath    = String(part.path || '');
+		var _isMounted   = !!(part.mountpoint && String(part.mountpoint).trim());
+		var _mountpoint  = _isMounted ? String(part.mountpoint).trim() : '';
+		var _devData;
+		for (var _ddi = 0; _ddi < state.devices.length; _ddi++) {
+			if (String(state.devices[_ddi].path || '') === devP) { _devData = state.devices[_ddi]; break; }
+		}
+		_devData = _devData || {};
+		var _lss = Number(_devData.logical_sector_size || 512);
+		function _sh(sectors) {
+			var bytes = sectors * _lss;
+			var u = ['B','KiB','MiB','GiB','TiB'], i = 0;
+			while (bytes >= 1024 && i < u.length - 1) { bytes /= 1024; i++; }
+			return (i === 0 ? bytes : bytes.toFixed(1)) + ' ' + u[i];
+		}
 
-		function doQueue(newStart) {
+		function doQueue(newStart, doUnmount, doRemount, mountPoint) {
 			newStart = Number(newStart);
-			if (!isFinite(newStart) || newStart <= 0) { showToast('Invalid start sector.', 'warn'); return Promise.resolve(false); }
+			if (!isFinite(newStart)||newStart<=0){showToast('Invalidstartsector.','warn');returnPromise.resolve(false);}
 			if (newStart === currentStart) { showToast(t('tMoveSame'), 'warn'); return Promise.resolve(false); }
 			var newEnd = newStart + currentSize - 1;
 			var params = {
@@ -14291,41 +14722,62 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				start_sector: String(newStart),
 				end_sector:   String(newEnd)
 			};
-			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (sfdisk --move-data, overlap-safe)';
+			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (sfdisk --move-data)';
+			var confirmMsg =
+				'<table style="width:100%;border-collapse:collapse;font-size:0.9em;margin-bottom:8px">' +
+				'<thead><tr>' +
+				'<th style="text-align:left;padding:3px 8px;background:#e8e8e8"></th>' +
+				'<th style="text-align:right;padding:3px 6px;background:#e8e8e8">Before</th>' +
+				'<th style="text-align:right;padding:3px 6px;background:#e8e8e8">After</th>' +
+				'</tr></thead><tbody>' +
+				'<tr><td style="padding:3px 8px">Start</td>' +
+				'<td style="text-align:right;padding:2px 6px;font-family:monospace">' + currentStart + 's</td>' +
+				'<td style="text-align:right;padding:2px 6px;font-family:monospace;color:#1a6b1a;font-weight:bold">' + newStart + 's</td></tr>' +
+				'<tr><td style="padding:3px 8px">End</td>' +
+				'<td style="text-align:right;padding:2px 6px;font-family:monospace">' + currentEnd + 's</td>' +
+				'<td style="text-align:right;padding:2px 6px;font-family:monospace;color:#1a6b1a">' + newEnd + 's</td></tr>' +
+				'<tr><td style="padding:3px 8px">Size</td>' +
+				'<td style="text-align:right;padding:2px 6px">' + currentSize + 's (' + _sh(currentSize) + ')</td>' +
+				'<td style="text-align:right;padding:2px 6px">' + currentSize + 's (' + _sh(currentSize) + ')</td></tr>' +
+				'</tbody></table>' +
+				'<p style="margin:6px 0;font-size:0.88em;color:#555">Overlapping source / target ranges are allowed — sfdisk moves data in-place.<br>' +
+				'Ensure no other process accesses this disk during the operation.</p>';
 			return showCommandPreviewModal('move_partition_sfdisk', params, label,
-				'Confirm sfdisk move',
-				'Move partition p' + part.number + ' on ' + devP + ' to sector ' + newStart + ' using sfdisk --move-data.\n' +
-				'Unlike the standard move, overlapping source/target ranges are allowed.\n' +
-				'Data is moved in-place by sfdisk. Ensure no other process accesses this disk.')
+				'Confirm sfdisk move', confirmMsg)
 			.then(function(previewText) {
 				if (previewText === null) return null;
+				var _remountAt = mountPoint || _mountpoint;
+				/* Queue umount before move if requested */
+				if (doUnmount && _partPath) {
+					var _umParams = { partition: _partPath };
+					queueOp('unmount_partition', _umParams,
+						'Unmount ' + _partPath + ' before move',
+						buildCommandPreview('unmount_partition', _umParams), true);
+				}
 				queueOp('move_partition_sfdisk', params, label, previewText || buildCommandPreview('move_partition_sfdisk', params), false);
+				/* Queue remount after move if requested */
+				if (doRemount && _partPath && _remountAt) {
+					var _mParams = {
+						partition: _partPath,
+						mountpoint: _remountAt,
+						fs_type: mapFsTypeSelectValue(part.fs || ''),
+						mount_opts: ''
+					};
+					queueOp('mount_partition', _mParams,
+						'Remount ' + _partPath + ' on ' + _remountAt + ' after move',
+						buildCommandPreview('mount_partition', _mParams), true);
+				}
 				showToast(t('tQueued') + ' ' + label, 'info', 10000);
 			});
 		}
 
-		/* Called directly from drag (overlap detected) — skip input modal */
-		if (presetStart !== undefined && presetStart !== null) {
-			return doQueue(presetStart);
-		}
-
-		return showInputModal(
-			'Move p' + part.number + ' on ' + devP + ' (sfdisk --move-data)',
-			'Enter the new <b>start sector</b> for partition p' + part.number + '.<br>' +
-			'Current: start=<code>' + currentStart + '</code>  size=<code>' + currentSize + '</code>  end=<code>' + currentEnd + '</code><br>' +
-			'<span style="color:#5a7a00">Overlapping source/target ranges are allowed — sfdisk handles them internally.</span>',
-			{ defaultValue: String(currentStart), placeholder: String(currentStart), allowEmpty: false,
-			  validate: function (v) {
-				var n = parseInt(v, 10);
-				if (!isFinite(n) || n <= 0) return 'Enter a positive integer (sector number).';
-				return null;
-			  }
-			}
-		).then(function (newStartStr) {
-			if (newStartStr === null) return Promise.resolve(false);
-			return doQueue(parseInt(newStartStr.trim(), 10));
-		});
+		return showSfdiskMoveModal(part, devP, presetStart, _isMounted, _mountpoint, _partPath, _lss)
+			.then(function(result) {
+				if (!result)returnPromise.resolve(false);
+				return doQueue(result.newStart, result.doUnmount, result.doRemount, result.mountPoint);
+			});
 	}
+
 
 	function queueDeleteAllPartitions(devArg) {
 		var baseDev = devArg || getSelectedDeviceData();
@@ -14425,6 +14877,129 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			t('confirmAction'),
 			'Partition name update will be added.'
 		);
+	}
+
+	function showSetFlagModal(partArg, devPathArg) {
+		var part = partArg || state.selectedPart;
+		var devP = String(devPathArg || state.selectedDevice || '');
+		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
+		if (!devP) { showToast(t('tNoDevice'), 'warn'); return; }
+
+		/* Parse currently active flags from the partition object */
+		var _activeFlags = {};
+		var _rawFlags = String(part.flags || '').toLowerCase();
+		_rawFlags.split(/[,\s]+/).forEach(function(f) { if (f) _activeFlags[f] = true; });
+
+		/* Known flags: [name, description, applicability] */
+		var _knownFlags = [
+			['boot',     'Bootable / active (MBR)',          'MBR'],
+			['esp',      'EFI System Partition (GPT)',        'GPT'],
+			['bios_grub','BIOS boot partition for GRUB (GPT)','GPT'],
+			['pmbr_boot','Protective MBR boot flag (GPT)',    'GPT'],
+			['lba',      'Extended with LBA (MBR 0x0F)',      'MBR'],
+			['msftdata', 'Microsoft basic data (GPT)',         'GPT'],
+			['swap',     'Linux swap area',                    ''],
+			['raid',     'Linux software RAID member',         ''],
+			['lvm',      'Linux LVM physical volume',          ''],
+			['hidden',   'Hidden partition (MBR)',             'MBR'],
+			['diag',     'Diagnostic / recovery partition',   '']
+		];
+
+		/* Build modal DOM dynamically */
+		var _overlay = document.createElement('div');
+		_overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center';
+
+		var _dlg = document.createElement('div');
+		_dlg.style.cssText = 'background:#fff;border-radius:6px;box-shadow:0 4px 24px rgba(0,0,0,0.3);padding:20px 24px;min-width:340px;max-width:480px;width:90%';
+
+		var _title = document.createElement('div');
+		_title.style.cssText = 'font-size:1.1em;font-weight:bold;margin-bottom:12px;border-bottom:1px solid #ddd;padding-bottom:8px';
+		_title.textContent = 'Set partition flag — p' + part.number + ' on ' + devP;
+
+		var _sub = document.createElement('div');
+		_sub.style.cssText = 'font-size:0.85em;color:#555;margin-bottom:12px';
+		_sub.textContent = 'Active flags: ' + (_rawFlags || '(none)');
+
+		var _grid = document.createElement('div');
+		_grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px';
+
+		/* Map from flag name to current checkbox state */
+		var _checkboxes = {};
+		var _origState  = {};
+		_knownFlags.forEach(function(row) {
+			var fname = row[0], fdesc = row[1], fhint = row[2];
+			var isOn = !!_activeFlags[fname];
+			_origState[fname] = isOn;
+			var _lbl = document.createElement('label');
+			_lbl.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em;padding:3px 4px;border-radius:3px;';
+			if (isOn) _lbl.style.background = '#eafaea';
+			var _cb = document.createElement('input');
+			_cb.type = 'checkbox';
+			_cb.checked = isOn;
+			_cb.dataset.flag = fname;
+			_cb.onchange = function() {
+				_lbl.style.background = _cb.checked ? '#eafaea' : '';
+			};
+			_checkboxes[fname] = _cb;
+			var _span = document.createElement('span');
+			_span.style.cssText = 'flex:1';
+			_span.title = fhint ? 'Typically GPT or MBR: ' + fhint : '';
+			_span.innerHTML = '<b>' + fname + '</b>' + (fhint ? ' <span style="color:#888;font-size:0.82em">(' + fhint + ')</span>' : '') + '<br><span style="color:#666;font-size:0.82em">' + fdesc + '</span>';
+			_lbl.appendChild(_cb);
+			_lbl.appendChild(_span);
+			_grid.appendChild(_lbl);
+		});
+
+		var _foot = document.createElement('div');
+		_foot.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:4px';
+
+		var _cancelBtn = document.createElement('button');
+		_cancelBtn.textContent = 'Cancel';
+		_cancelBtn.style.cssText = 'padding:5px 16px;cursor:pointer';
+
+		var _applyBtn = document.createElement('button');
+		_applyBtn.textContent = 'Apply';
+		_applyBtn.style.cssText = 'padding:5px 16px;background:#2a6c2a;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold';
+
+		_foot.appendChild(_cancelBtn);
+		_foot.appendChild(_applyBtn);
+
+		_dlg.appendChild(_title);
+		_dlg.appendChild(_sub);
+		_dlg.appendChild(_grid);
+		_dlg.appendChild(_foot);
+		_overlay.appendChild(_dlg);
+		document.body.appendChild(_overlay);
+
+		function _close() { document.body.removeChild(_overlay); }
+		_cancelBtn.onclick = _close;
+		_overlay.onclick = function(e) { if (e.target === _overlay) _close(); };
+
+		function _onEsc(e) { if (e.key === 'Escape') { _close(); document.removeEventListener('keydown', _onEsc); } }
+		document.addEventListener('keydown', _onEsc);
+
+		_applyBtn.onclick = function() {
+			_close();
+			document.removeEventListener('keydown', _onEsc);
+			var _queued = 0;
+			_knownFlags.forEach(function(row) {
+				var fname = row[0];
+				var _newOn = !!_checkboxes[fname].checked;
+				if (_newOn === _origState[fname]) return; /* no change */
+				var _fstate = _newOn ? 'on' : 'off';
+				var _params = { device: devP, partnum: String(part.number), flag: fname, state: _fstate };
+				var _label = 'Set flag ' + fname + ' ' + _fstate + ' on p' + part.number + ' (' + devP + ')';
+				showCommandPreviewModal('set_partition_flag', _params, _label, 'Confirm', '')
+				.then(function(_lp, _lf, _ls) { return function(previewText) {
+					if (previewText === null) return;
+					queueOp('set_partition_flag', _lp, 'Set flag ' + _lf + ' ' + _ls + ' on p' + part.number,
+						previewText || buildCommandPreview('set_partition_flag', _lp), false);
+					showToast(t('tQueued') + ' ' + 'Set flag ' + _lf + ' ' + _ls, 'info', 10000);
+				};} (_params, fname, _fstate));
+				_queued++;
+			});
+			if (_queued === 0) showToast('No flag changes to apply.', 'info');
+		};
 	}
 
 	function queueSetFlag() {
@@ -15032,7 +15607,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		analyzeTools();
 	};
 	document.getElementById('usbOnlySelect').onchange = function () {
-		state.usbOnly = this.value === '1';
+		state.deviceFilter = this.value;
+		state.usbOnly = (this.value === 'usb');
 		refreshDevices();
 	};
 	document.getElementById('ackToken').addEventListener('change', updateSafetySectionVisibility);
@@ -15135,6 +15711,55 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	}());
 	refreshSectorHumanFields();
 	_injectHelpButtons();
+
+	/* ── URL parameter: ?unlock=1  pre-fills YES_I_UNDERSTAND ── */
+	(function() {
+		var _qp = new URLSearchParams(window.location.search);
+		if (_qp.get('unlock') === '1' || _qp.get('ack') === 'YES_I_UNDERSTAND') {
+			var _ack = document.getElementById('ackToken');
+			if (_ack) {
+				_ack.value = 'YES_I_UNDERSTAND';
+				updateSafetySectionVisibility();
+			}
+		}
+		/* URL parameter: ?filter=usb|loop|virtual|0  pre-selects device filter */
+		var _fv = _qp.get('filter');
+		if (_fv && /^(0|usb|loop|virtual)$/.test(_fv)) {
+			state.deviceFilter = _fv;
+			state.usbOnly = (_fv === 'usb');
+			var _fs = document.getElementById('usbOnlySelect');
+			if (_fs) {
+				/* Select matching option if it exists; dropdown may be rebuilt after load */
+				for (var _i = 0; _i < _fs.options.length; _i++) {
+					if (_fs.options[_i].value === _fv) { _fs.value = _fv; break; }
+				}
+			}
+		}
+	}());
+
+	/* ── Auto-focus first interactive element when any modal becomes visible ── */
+	(function() {
+		var _obs = new MutationObserver(function(muts) {
+			muts.forEach(function(m) {
+				if (m.type !== 'attributes' || m.attributeName !== 'style') return;
+				var el = m.target;
+				if (!el || !el.classList || !el.classList.contains('pcgi-modal')) return;
+				if (el.style.display !== 'flex' && el.style.display !== 'block') return;
+				var focusable = el.querySelector(
+					'input:not([readonly]):not([type=hidden]):not([disabled]),' +
+					'select:not([disabled]),' +
+					'textarea:not([readonly]):not([disabled])'
+				) || el.querySelector('button:not([disabled])');
+				if (focusable) {
+					setTimeout(function() { try { focusable.focus(); } catch(e){} }, 40);
+				}
+			});
+		});
+		document.querySelectorAll('.pcgi-modal').forEach(function(m) {
+			_obs.observe(m, { attributes: true, attributeFilter: ['style'] });
+		});
+	}());
+
 	refreshDevices();
 	analyzeTools();
 })();

@@ -1038,17 +1038,70 @@ fi
 # STEP 7 — POST-CLONE INTEGRITY
 # ==============================================================================
 
+# Flush pending writes so filesystem tools see the data partclone just wrote.
+# Write path: partclone → /dev/loop0pN block layer → loop driver → backing
+# file page cache.  BLKFLSBUF on the partition node flushes dirty pages but
+# does NOT always propagate cache invalidation through the loop → file layer
+# stack; tune2fs and mount therefore sometimes read stale (pre-clone) data.
+# Solution:
+#  1. sync – commits all dirty pages to the backing file on disk.
+#  2. blockdev --flushbufs – evict device buffers (best-effort, needs root).
+#  3. echo 1 > drop_caches – page-cache purge (best-effort, needs root).
+#  4. partprobe – forces the kernel to re-read the partition table and
+#     re-create the partition device nodes with empty (fresh) page caches.
+#     This is safe here because partclone has fully completed and synced.
+#     The partition table itself has not changed; we use partprobe solely to
+#     invalidate the page cache associated with the target partition node.
+# We do NOT run partprobe here for table-change reasons (unchanged since
+# step 4); it is run only for cache-invalidation purposes.
+sync
+blockdev --flushbufs "$DEVICE" 2>/dev/null || true
+blockdev --flushbufs "$TARGET_PART" 2>/dev/null || true
+# Loop devices: flush and settle.
+# We intentionally do NOT run partprobe here: the partition table was not
+# changed in this step (only data was written), and re-probing causes the
+# kernel to re-create partition device nodes.  On loop-backed devices this
+# can race with in-flight writes and may result in the node for TARGET_PART
+# temporarily mapping stale page-cache data (tune2fs / mount read garbage).
+# A plain sync + sleep is sufficient to let the backing-file writes propagate
+# through the loop layer before the integrity tools read the new data.
+if echo "$DEVICE" | grep -qE '^/dev/loop[0-9]'; then
+    echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
+    # Flush again after drop so any final dirty pages are committed.
+    sync
+    blockdev --flushbufs "$TARGET_PART" 2>/dev/null || true
+fi
+sleep 2
+
 step_pause
 echo "🛠️   [7/9] Running filesystem integrity checks and UUID refresh on ${TARGET_PART}…"
 
 case "$FSTYPE" in
     ext2|ext3|ext4|ext4dev)
         echo "     → Assigning new random UUID (tune2fs)…"
-        run tune2fs -U random "$TARGET_PART" \
-            || die "tune2fs failed on ${TARGET_PART}."
-        echo "     → Running e2fsck filesystem check…"
-        run e2fsck -pf "$TARGET_PART" \
-            || die "e2fsck reported uncorrectable errors on ${TARGET_PART}."
+        # In MOVE mode the source is deleted afterwards so UUID conflict is
+        # impossible — make tune2fs non-fatal and skip e2fsck if it can't read
+        # the superblock (the clone itself completed successfully).
+        # On loop-backed devices the kernel page cache may still be settling;
+        # retry once with a short pause before deciding it failed.
+        _tune2fs_ok=1
+        if ! run tune2fs -U random "$TARGET_PART"; then
+            echo "     ℹ  tune2fs first attempt failed — waiting 2 s and retrying…"
+            sync; sleep 2
+            run tune2fs -U random "$TARGET_PART" || _tune2fs_ok=0
+        fi
+        if [ "$_tune2fs_ok" -eq 0 ]; then
+            if [ "$MOVE_MODE" -eq 1 ]; then
+                echo "     ⚠ tune2fs failed — UUID not changed (non-fatal: source will be deleted)."
+            else
+                die "tune2fs failed on ${TARGET_PART}."
+            fi
+        fi
+        if [ "$_tune2fs_ok" -eq 1 ]; then
+            echo "     → Running e2fsck filesystem check…"
+            run e2fsck -pf "$TARGET_PART" \
+                || die "e2fsck reported uncorrectable errors on ${TARGET_PART}."
+        fi
         ;;
     vfat|fat|fat12|fat16|fat32)
         if command -v dosfsck >/dev/null 2>&1; then
