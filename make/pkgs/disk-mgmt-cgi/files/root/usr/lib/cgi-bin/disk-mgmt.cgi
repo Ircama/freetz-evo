@@ -3991,6 +3991,27 @@ action_gpt_info() {
 	fi
 }
 
+action_sfdisk_geometry() {
+	resolve_tools
+	_device=$(cgi_param device)
+	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
+	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk not available"; return; }
+
+	if dry_run_enabled; then
+		emit_dry_run_result "sfdisk geometry" "sfdisk -g $_device"
+		return
+	fi
+
+	exec_cmd_c "sfdisk geometry $_device" "$CMD_SFDISK -g $_device" \
+		/bin/sh -c "$CMD_SFDISK -g '$_device' 2>&1"
+	_rc=$EXEC_RC; _out="$EXEC_OUT"
+	if [ -n "$_out" ]; then
+		emit_cmd_result true "$_rc" "sfdisk geometry collected" "$_out"
+	else
+		emit_cmd_result false "$_rc" "sfdisk geometry failed" "$_out"
+	fi
+}
+
 # ── Streaming job management ──────────────────────────────────────────────────
 
 # Remove stale job files older than 1 hour
@@ -4058,6 +4079,7 @@ action_start_job() {
 			badblocks_scan)      action_badblocks_scan ;;
 			hdparm_info)         action_hdparm_info ;;
 			gpt_info)            action_gpt_info ;;
+			sfdisk_geometry)     action_sfdisk_geometry ;;
 			*)
 				printf 'Unknown job action: %s\n' "$ACTION" >> "$STREAM_LOG"
 				printf 'false\n1\nUnknown job action: %s\n\n' "$ACTION" > "$STREAM_DONE"
@@ -4230,6 +4252,9 @@ EOF
 			;;
 		gpt_info)
 			action_gpt_info
+			;;
+		sfdisk_geometry)
+			action_sfdisk_geometry
 			;;
 		start_job)
 			action_start_job
@@ -4461,13 +4486,17 @@ cat <<'EOF'
 	box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
 	padding: 14px;
 	width: min(720px, calc(100vw - 40px));
+	min-height: 120px;
 	max-height: calc(100vh - 40px);
 	overflow: auto;
+	resize: vertical;
 }
 .pcgi-modal-head {
 	font-size: 16px;
 	font-weight: 700;
 	margin: 0 0 8px;
+	cursor: move;
+	user-select: none;
 }
 .pcgi-modal-actions {
 	display: flex;
@@ -8960,6 +8989,7 @@ window.paceOptions = {
 		if (action === 'badblocks_scan') return 'badblocks -sv ' + v(params.device) + '  # read-only scan, may take a long time on large disks';
 		if (action === 'hdparm_info') return 'hdparm -I ' + v(params.device);
 		if (action === 'gpt_info') return '# backend uses sgdisk -p or gdisk -l for ' + v(params.device);
+		if (action === 'sfdisk_geometry') return 'sfdisk -g ' + v(params.device);
 		if (action === 'reload_table') return 'partprobe ' + v(params.device);
 		if (action === 'verify_partition') {
 			var vpA = v(params.source_partition);
@@ -10274,7 +10304,8 @@ actionsWrap.appendChild(btnRemove);
 				{ id: 'disk_change_uuid',    label: 'Change disk UUID/ID (sfdisk)' },
 				{ id: 'disk_wipe_sigs',      label: 'Wipe disk signatures (wipefs)' },
 				{ id: 'disk_reorder',        label: 'Reorder partitions (sfdisk)' },
-				{ id: 'disk_verify',         label: 'Verify partitions (sfdisk)' }
+				{ id: 'disk_verify',         label: 'Verify partitions (sfdisk)' },
+			{ id: 'disk_geometry',        label: 'Partition table geometry (sfdisk -g)' }
 			];
 		} else if (menuType === 'free') {
 			items = [
@@ -10384,6 +10415,7 @@ actionsWrap.appendChild(btnRemove);
 			if (action === 'disk_wipe_sigs')   { queueWipeSignatures(target.path, 'disk'); return; }
 			if (action === 'disk_reorder')     { queueReorderPartitions(target); return; }
 			if (action === 'disk_verify')      { queueVerifyPartitions(target); return; }
+			if (action === 'disk_geometry')    { selectDisk(target); expandAdvancedInfo(); runDiagnostics('sfdisk_geometry'); return; }
 			showToast(t('tContextUnavailable'), 'warn');
 			return;
 		}
@@ -10565,7 +10597,9 @@ actionsWrap.appendChild(btnRemove);
 			// preceding it must visually shrink so that pixelCursor advances to the new
 			// dragged start position (not the original one), allowing the extended block
 			// to render at its new position without being clamped by the old pixelCursor.
-			if (blp.kind === 'free' && state.dragCtx && state.dragCtx.edge === 'left') {
+			// The same logic applies for a body-drag move ('move' edge) going leftward.
+			if (blp.kind === 'free' && state.dragCtx &&
+					(state.dragCtx.edge === 'left' || state.dragCtx.edge === 'move')) {
 				var _dlOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
 				var _dlCurStart  = Number(state.dragCtx.currentStart || _dlOrigStart);
 				if (_dlCurStart < _dlOrigStart && blEnd + 1 === _dlOrigStart) {
@@ -10598,10 +10632,14 @@ actionsWrap.appendChild(btnRemove);
 				// Do NOT advance outer pixelCursor — inner items overlay the extended band.
 			} else {
 				blWidth = Math.max(blMinWidth, blNatWidth);
+				// 'move' leftward: blNatLeft is now to the LEFT of pixelCursor.
+				// Like _blDraggedLeft, bypass the pixelCursor clamp.
+				var _blMovedLeft = (state.dragCtx && state.dragCtx.edge === 'move' &&
+					blNatLeft < Math.max(pixelCursor, 0));
 				// During a left-drag, the extended block's new start is to the LEFT of where
 				// pixelCursor is (the free block was capped above, but use blNatLeft as a
 				// safety net so the extended block never gets stuck at the old position).
-				blLeft  = _blDraggedLeft ? blNatLeft : Math.max(pixelCursor, blNatLeft);
+				blLeft  = (_blDraggedLeft || _blMovedLeft) ? blNatLeft : Math.max(pixelCursor, blNatLeft);
 				if (blLeft < 0)         blLeft = 0;
 				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
 				// Clamp right edge to mapWidth so the rightmost partition is never
@@ -10613,12 +10651,12 @@ actionsWrap.appendChild(btnRemove);
 				// Advance pixelCursor using the ORIGINAL pre-drag right edge so that
 				// subsequent outer blocks (free space, primary partitions) are not displaced:
 				// • right-drag: blWidth grew; use original width to avoid pushing next block right.
-				// • left-drag:  blLeft shrank but blWidth grew by same amount; the right edge
+				// • left-drag / move-left: blLeft shrank but blWidth is the same; the right edge
 				//   (_blOrigEnd) is physically unchanged — pin pixelCursor to it.
 				if (_blDraggedRight) {
 					var _origNatWidth = Math.max(blMinWidth, Math.max(1, Math.round((_blOrigSize / total) * mapWidth)));
 					pixelCursor = blLeft + _origNatWidth;
-				} else if (_blDraggedLeft) {
+				} else if (_blDraggedLeft || _blMovedLeft) {
 					// Pin to the pixel position of the original right edge (blEnd never changed).
 					pixelCursor = Math.max(blLeft + blMinWidth, Math.round((_blOrigEnd + 1) / total * mapWidth));
 				} else {
@@ -10801,6 +10839,14 @@ actionsWrap.appendChild(btnRemove);
 						else _pRole2 = 'primary';
 					}
 					if (_pRole2 === 'logical') block.className += ' pcgi-logical';
+				// During a 'move' drag: if a primary/ext partition moves INTO the extended range,
+				// show it with logical colouring so the user has visual feedback before committing.
+				if (draggingThis && (_pRole2 === 'primary') && state.dragCtx &&
+						state.dragCtx.edge === 'move' && _extSectorStart >= 0 &&
+						Number(state.dragCtx.currentStart) >= _extSectorStart &&
+						Number(state.dragCtx.currentEnd || 0) <= _extSectorEnd) {
+					block.className += ' pcgi-logical';
+				}
 				}
 				// Free space inside extended range also uses logical positioning
 				if (p.kind === 'free') {
@@ -11215,8 +11261,21 @@ actionsWrap.appendChild(btnRemove);
                             }
                             state.partitionDragInfo = null;
                             if (_sameType) {
-                                /* Same disk, same partition type: sfdisk --move-data (no free slot needed) */
-                                queueSfdiskMovePartition(moveSource, srcDevicePath, targetStart);
+                                /* Same disk, same type: animate target position while operation runs. */
+                                state.dragCtx = {
+                                    dev: srcDeviceObj, part: moveSource, partPath: String(moveSource.path || ''),
+                                    edge: 'move',
+                                    currentStart: targetStart,
+                                    currentEnd:   targetStart + moveSize - 1
+                                };
+                                renderMap();
+                                var _chipMoveP = queueSfdiskMovePartition(moveSource, srcDevicePath, targetStart);
+                                var _chipDone  = function () { state.dragCtx = null; renderMap(); };
+                                if (_chipMoveP && typeof _chipMoveP.then === 'function') {
+                                    _chipMoveP.then(_chipDone, _chipDone);
+                                } else {
+                                    setTimeout(_chipDone, 0);
+                                }
                             } else {
                                 /* Keep source partition at target position while modal is open */
                                 state.dragCtx = {
@@ -11241,6 +11300,28 @@ actionsWrap.appendChild(btnRemove);
 				}
 				map.appendChild(block);
 			})(i);
+		}
+		// During a body-drag move, render a ghost "unallocated" block at the original sector range.
+		// This visually fills the hole left by the partition being dragged to its new position.
+		if (state.dragCtx && state.dragCtx.edge === 'move' &&
+				state.dragCtx.dev && String(state.dragCtx.dev.path || '') === String(dev.path || '') &&
+				state.dragCtx.part) {
+			var _ghostPart   = state.dragCtx.part;
+			var _ghostStart  = Number(_ghostPart.start || 0);
+			var _ghostEnd    = Number(_ghostPart.end   || 0);
+			var _ghostSize   = Math.max(1, _ghostEnd - _ghostStart + 1);
+			var _ghostLeft   = Math.round((_ghostStart / total) * mapWidth);
+			var _ghostWidth  = Math.max(4, Math.round((_ghostSize  / total) * mapWidth));
+			if (_ghostLeft + _ghostWidth > mapWidth) _ghostWidth = Math.max(4, mapWidth - _ghostLeft);
+			var _ghostInExt  = (_extSectorStart >= 0 && _ghostStart >= _extSectorStart && _ghostEnd <= _extSectorEnd);
+			var ghostBlock   = document.createElement('div');
+			ghostBlock.className = 'pcgi-block free' + (_ghostInExt ? ' pcgi-logical' : '') + ' pcgi-ghost-origin';
+			ghostBlock.style.left         = _ghostLeft  + 'px';
+			ghostBlock.style.width        = _ghostWidth + 'px';
+			// ghostBlock.style.opacity      = '0.1';
+			ghostBlock.style.pointerEvents = 'none';
+			ghostBlock.title = 'Original position (moving)';
+			map.appendChild(ghostBlock);
 		}
 	}
 
@@ -15735,6 +15816,45 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				}
 			}
 		}
+	}());
+
+	/* ── Make all modals draggable by their header ── */
+	(function() {
+		function initDraggableModal(modal) {
+			var box = modal.querySelector('.pcgi-modal-box');
+			var head = modal.querySelector('.pcgi-modal-head');
+			if (!box || !head) return;
+			var _tx = 0, _ty = 0; /* accumulated translate offsets in px */
+			head.addEventListener('mousedown', function(e) {
+				if (e.button !== 0) return;
+				e.preventDefault();
+				var _sx = e.clientX - _tx;
+				var _sy = e.clientY - _ty;
+				function _move(em) {
+					_tx = em.clientX - _sx;
+					_ty = em.clientY - _sy;
+					box.style.transform = 'translate(' + _tx + 'px,' + _ty + 'px)';
+				}
+				function _up() {
+					document.removeEventListener('mousemove', _move);
+					document.removeEventListener('mouseup', _up);
+				}
+				document.addEventListener('mousemove', _move);
+				document.addEventListener('mouseup', _up);
+			});
+			/* Reset position each time the modal is re-opened */
+			new MutationObserver(function(muts) {
+				muts.forEach(function(m) {
+					if (m.attributeName !== 'style') return;
+					var d = modal.style.display;
+					if (d === 'flex' || d === 'block') {
+						_tx = 0; _ty = 0;
+						box.style.transform = '';
+					}
+				});
+			}).observe(modal, { attributes: true, attributeFilter: ['style'] });
+		}
+		document.querySelectorAll('.pcgi-modal').forEach(initDraggableModal);
 	}());
 
 	/* ── Auto-focus first interactive element when any modal becomes visible ── */
