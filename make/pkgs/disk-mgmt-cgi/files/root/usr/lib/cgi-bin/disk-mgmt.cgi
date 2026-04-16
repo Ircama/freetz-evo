@@ -10632,10 +10632,13 @@ actionsWrap.appendChild(btnRemove);
 				// Do NOT advance outer pixelCursor — inner items overlay the extended band.
 			} else {
 				blWidth = Math.max(blMinWidth, blNatWidth);
-				// 'move' leftward: blNatLeft is now to the LEFT of pixelCursor.
-				// Like _blDraggedLeft, bypass the pixelCursor clamp.
+				// 'move' leftward: the partition moved left (origStart > currentStart).
+				// Like _blDraggedLeft, bypass the pixelCursor clamp and pin pixelCursor
+				// to the original right edge so subsequent blocks are not displaced.
+				// NOTE: blNatLeft has already been overridden to currentStart, so we must
+				// compare _blOrigStart (pre-override) against the dragged currentStart.
 				var _blMovedLeft = (state.dragCtx && state.dragCtx.edge === 'move' &&
-					blNatLeft < Math.max(pixelCursor, 0));
+					_blOrigStart > Number(state.dragCtx.currentStart || _blOrigStart));
 				// During a left-drag, the extended block's new start is to the LEFT of where
 				// pixelCursor is (the free block was capped above, but use blNatLeft as a
 				// safety net so the extended block never gets stuck at the old position).
@@ -11301,27 +11304,43 @@ actionsWrap.appendChild(btnRemove);
 				map.appendChild(block);
 			})(i);
 		}
-		// During a body-drag move, render a ghost "unallocated" block at the original sector range.
-		// This visually fills the hole left by the partition being dragged to its new position.
+		// During a body-drag move, render a ghost "unallocated" block at the VACATED sector
+		// range — i.e. only the portion of the original extent that was genuinely freed:
+		//   • leftward drag : trailing portion  [currentEnd+1 … origEnd]
+		//   • rightward drag: leading portion   [origStart   … currentStart-1]
 		if (state.dragCtx && state.dragCtx.edge === 'move' &&
 				state.dragCtx.dev && String(state.dragCtx.dev.path || '') === String(dev.path || '') &&
 				state.dragCtx.part) {
-			var _ghostPart   = state.dragCtx.part;
-			var _ghostStart  = Number(_ghostPart.start || 0);
-			var _ghostEnd    = Number(_ghostPart.end   || 0);
-			var _ghostSize   = Math.max(1, _ghostEnd - _ghostStart + 1);
-			var _ghostLeft   = Math.round((_ghostStart / total) * mapWidth);
-			var _ghostWidth  = Math.max(4, Math.round((_ghostSize  / total) * mapWidth));
-			if (_ghostLeft + _ghostWidth > mapWidth) _ghostWidth = Math.max(4, mapWidth - _ghostLeft);
-			var _ghostInExt  = (_extSectorStart >= 0 && _ghostStart >= _extSectorStart && _ghostEnd <= _extSectorEnd);
-			var ghostBlock   = document.createElement('div');
-			ghostBlock.className = 'pcgi-block free' + (_ghostInExt ? ' pcgi-logical' : '') + ' pcgi-ghost-origin';
-			ghostBlock.style.left         = _ghostLeft  + 'px';
-			ghostBlock.style.width        = _ghostWidth + 'px';
-			// ghostBlock.style.opacity      = '0.1';
-			ghostBlock.style.pointerEvents = 'none';
-			ghostBlock.title = 'Original position (moving)';
-			map.appendChild(ghostBlock);
+			var _gOrigStart = Number(state.dragCtx.part.start || 0);
+			var _gOrigEnd   = Number(state.dragCtx.part.end   || 0);
+			var _gCurStart  = Number(state.dragCtx.currentStart);
+			var _gCurEnd    = Number(state.dragCtx.currentEnd);
+			var _gVacStart, _gVacEnd;
+			if (_gCurStart < _gOrigStart) {
+				// Moved left: vacated area is the trailing part of the original position.
+				_gVacStart = _gCurEnd + 1;
+				_gVacEnd   = _gOrigEnd;
+			} else {
+				// Moved right (or same): vacated area is the leading part.
+				_gVacStart = _gOrigStart;
+				_gVacEnd   = _gCurStart - 1;
+			}
+			if (_gVacEnd >= _gVacStart) {
+				var _gSize    = _gVacEnd - _gVacStart + 1;
+				var _gLeft    = Math.round((_gVacStart / total) * mapWidth);
+				var _gWidth   = Math.max(4, Math.round((_gSize  / total) * mapWidth));
+				if (_gLeft + _gWidth > mapWidth) _gWidth = Math.max(4, mapWidth - _gLeft);
+				var _gInExt   = (_extSectorStart >= 0 && _gVacStart >= _extSectorStart && _gVacEnd <= _extSectorEnd);
+				var _gBlock   = document.createElement('div');
+				_gBlock.className     = 'pcgi-block free' + (_gInExt ? ' pcgi-logical' : '');
+				_gBlock.style.left    = _gLeft  + 'px';
+				_gBlock.style.width   = _gWidth + 'px';
+				_gBlock.style.zIndex  = '1';
+				_gBlock.style.pointerEvents = 'none';
+				_gBlock.textContent   = 'unallocated';
+				_gBlock.title         = 'Unallocated (original position)';
+				map.appendChild(_gBlock);
+			}
 		}
 	}
 
