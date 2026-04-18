@@ -9829,6 +9829,37 @@ actionsWrap.appendChild(btnRemove);
 		return parts.length + 1;
 	}
 
+	function resolvePreviewPartitionRole(parts, targetPart) {
+		if (!targetPart) return 'primary';
+		var explicitRole = String(targetPart.role || '');
+		var fsType = String(targetPart.fs || '').toLowerCase();
+		var flagStr = String(targetPart.flags || '').toLowerCase();
+		if (explicitRole === 'extended' || fsType === 'extended' || (!fsType && flagStr === 'lba')) {
+			return 'extended';
+		}
+
+		var start = Number(targetPart.start || 0);
+		var end = Number(targetPart.end || 0);
+		if (!isFinite(start) || !isFinite(end) || start <= 0 || end < start) {
+			return explicitRole || (Number(targetPart.number || 0) >= 5 ? 'logical' : 'primary');
+		}
+
+		for (var i = 0; i < parts.length; i++) {
+			var p = parts[i];
+			if (!p || p === targetPart || p.kind !== 'partition') continue;
+			var role = String(p.role || '');
+			var partFs = String(p.fs || '').toLowerCase();
+			var partFlags = String(p.flags || '').toLowerCase();
+			var isExtended = (role === 'extended' || partFs === 'extended' || (!partFs && partFlags === 'lba'));
+			if (!isExtended) continue;
+			if (Number(p.start || 0) <= start && end <= Number(p.end || 0)) {
+				return 'logical';
+			}
+		}
+
+		return 'primary';
+	}
+
 	function normalizePreviewPartitions(parts, totalSectors) {
 		var out = [];
 		var maxSector = Math.max(1, Number(totalSectors || 0) - 1);
@@ -10029,18 +10060,7 @@ actionsWrap.appendChild(btnRemove);
 				targetPart.start = Math.floor(moveStart);
 				targetPart.end = Math.floor(moveEnd);
 				targetPart.size = Math.max(1, Number(targetPart.end) - Number(targetPart.start) + 1);
-				/* If the new location falls inside an extended partition, promote role to logical */
-				if (targetPart.role !== 'logical') {
-					for (var _mvei = 0; _mvei < partsOnly.length; _mvei++) {
-						var _mvext = partsOnly[_mvei];
-						if (_mvext && _mvext.role === 'extended' &&
-								Number(_mvext.start) <= targetPart.start &&
-								targetPart.end <= Number(_mvext.end)) {
-							targetPart.role = 'logical';
-							break;
-						}
-					}
-				}
+				targetPart.role = resolvePreviewPartitionRole(partsOnly, targetPart);
 				continue;
 			}
 
@@ -10054,6 +10074,7 @@ actionsWrap.appendChild(btnRemove);
 				targetPart.start = Math.floor(msSfdiskStart);
 				targetPart.end = Math.floor(msSfdiskStart) + msSfdiskSize - 1;
 				targetPart.size = msSfdiskSize;
+				targetPart.role = resolvePreviewPartitionRole(partsOnly, targetPart);
 				continue;
 			}
 
@@ -10575,7 +10596,12 @@ actionsWrap.appendChild(btnRemove);
 			if (state.dragCtx && blp.kind === 'partition') {
 				var blDevPath  = String(state.dragCtx.dev && state.dragCtx.dev.path || '');
 				var blPartPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
-				if (blDevPath === String(dev.path || '') && blPartPath && blPartPath === String(blp.path || '')) {
+				var blPartNum  = Number(state.dragCtx.part && state.dragCtx.part.number || 0);
+				var blPartOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
+				var blMatchesDragged = (blPartPath && blPartPath === String(blp.path || '')) ||
+					(blPartNum > 0 && blPartNum === Number(blp.number || 0)) ||
+					(blPartOrigStart > 0 && blPartOrigStart === Number(blp.start || 0));
+				if (blDevPath === String(dev.path || '') && blMatchesDragged) {
 					if (state.dragCtx.edge === 'left') {
 						blStart = Number(state.dragCtx.currentStart || blStart);
 						_blDraggedLeft = true;
@@ -10639,10 +10665,23 @@ actionsWrap.appendChild(btnRemove);
 				// compare _blOrigStart (pre-override) against the dragged currentStart.
 				var _blMovedLeft = (state.dragCtx && state.dragCtx.edge === 'move' &&
 					_blOrigStart > Number(state.dragCtx.currentStart || _blOrigStart));
+				// Cross-type move (logical→primary or primary→logical): the block was
+				// originally inside the extended band (where it did NOT advance
+				// pixelCursor) and is now rendered in the outer area.  In this case:
+				//  • blLeft MUST use blNatLeft (bypass pixelCursor — which by the time
+				//    logicals are processed may be at mapWidth, collapsing the block).
+				//  • pixelCursor must NOT advance — this is a preview ghost, not an
+				//    actual outer partition that owns cursor space.
+				// This applies to both left-moves (target before extended) and
+				// right-moves (target after extended).
+				var _blCrossTypeMove = (
+					_extSectorStart >= 0 &&
+					_blOrigStart >= _extSectorStart && _blOrigEnd <= _extSectorEnd &&
+					(blStart < _extSectorStart || blEnd > _extSectorEnd));
 				// During a left-drag, the extended block's new start is to the LEFT of where
 				// pixelCursor is (the free block was capped above, but use blNatLeft as a
 				// safety net so the extended block never gets stuck at the old position).
-				blLeft  = (_blDraggedLeft || _blMovedLeft) ? blNatLeft : Math.max(pixelCursor, blNatLeft);
+				blLeft  = (_blDraggedLeft || _blMovedLeft || _blCrossTypeMove) ? blNatLeft : Math.max(pixelCursor, blNatLeft);
 				if (blLeft < 0)         blLeft = 0;
 				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
 				// Clamp right edge to mapWidth so the rightmost partition is never
@@ -10656,7 +10695,9 @@ actionsWrap.appendChild(btnRemove);
 				// • right-drag: blWidth grew; use original width to avoid pushing next block right.
 				// • left-drag / move-left: blLeft shrank but blWidth is the same; the right edge
 				//   (_blOrigEnd) is physically unchanged — pin pixelCursor to it.
-				if (_blDraggedRight) {
+				if (_blCrossTypeMove) {
+					// Don't advance — this block is a preview ghost, not an actual outer partition.
+				} else if (_blDraggedRight) {
 					var _origNatWidth = Math.max(blMinWidth, Math.max(1, Math.round((_blOrigSize / total) * mapWidth)));
 					pixelCursor = blLeft + _origNatWidth;
 				} else if (_blDraggedLeft || _blMovedLeft) {
@@ -10816,7 +10857,11 @@ actionsWrap.appendChild(btnRemove);
 				if (state.dragCtx && p.kind === 'partition' &&
 						String(state.dragCtx.dev && state.dragCtx.dev.path || '') === String(dev.path || '')) {
 					var dragPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
-					if (dragPath && dragPath === pPath) {
+					var dragNum = Number(state.dragCtx.part && state.dragCtx.part.number || 0);
+					var dragOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
+					if ((dragPath && dragPath === pPath) ||
+						(dragNum > 0 && dragNum === pNum) ||
+						(dragOrigStart > 0 && dragOrigStart === pStart)) {
 						draggingThis = true;
 					}
 				}
@@ -10842,13 +10887,21 @@ actionsWrap.appendChild(btnRemove);
 						else _pRole2 = 'primary';
 					}
 					if (_pRole2 === 'logical') block.className += ' pcgi-logical';
-				// During a 'move' drag: if a primary/ext partition moves INTO the extended range,
+				// During a 'move' drag: if a primary partition moves INTO the extended range,
 				// show it with logical colouring so the user has visual feedback before committing.
 				if (draggingThis && (_pRole2 === 'primary') && state.dragCtx &&
 						state.dragCtx.edge === 'move' && _extSectorStart >= 0 &&
 						Number(state.dragCtx.currentStart) >= _extSectorStart &&
 						Number(state.dragCtx.currentEnd || 0) <= _extSectorEnd) {
 					block.className += ' pcgi-logical';
+				}
+				// Converse: if a logical partition is dragged OUT of the extended range,
+				// render it as a primary block (remove logical positioning).
+				if (draggingThis && (_pRole2 === 'logical') && state.dragCtx &&
+						state.dragCtx.edge === 'move' && _extSectorStart >= 0 &&
+						(Number(state.dragCtx.currentStart) < _extSectorStart ||
+						 Number(state.dragCtx.currentEnd || 0) > _extSectorEnd)) {
+					block.className = block.className.replace(' pcgi-logical', '');
 				}
 				}
 				// Free space inside extended range also uses logical positioning
@@ -11316,7 +11369,13 @@ actionsWrap.appendChild(btnRemove);
 			var _gCurStart  = Number(state.dragCtx.currentStart);
 			var _gCurEnd    = Number(state.dragCtx.currentEnd);
 			var _gVacStart, _gVacEnd;
-			if (_gCurStart < _gOrigStart) {
+			// When the original and new positions don't overlap at all (e.g. cross-type
+			// move logical↔primary), the entire original extent is vacated.
+			var _gNoOverlap = (_gCurEnd < _gOrigStart || _gCurStart > _gOrigEnd);
+			if (_gNoOverlap) {
+				_gVacStart = _gOrigStart;
+				_gVacEnd   = _gOrigEnd;
+			} else if (_gCurStart < _gOrigStart) {
 				// Moved left: vacated area is the trailing part of the original position.
 				_gVacStart = _gCurEnd + 1;
 				_gVacEnd   = _gOrigEnd;
@@ -13611,7 +13670,7 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 	var cancelBtn = document.getElementById('pcgiMpCancelBtn');
 	var okBtn     = document.getElementById('pcgiMpOkBtn');
 
-	function cleanup() {
+	function hideModalUi() {
 		modal.style.display = 'none';
 		modal.setAttribute('aria-hidden', 'true');
 		cancelBtn.onclick = null;
@@ -13619,6 +13678,9 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		startEl.oninput   = null;
 		endEl.oninput     = null;
 		document.removeEventListener('keydown', onEsc);
+	}
+	function cleanup() {
+		hideModalUi();
 		/* Clear move-preview dragCtx when the modal closes (cancel / ESC) */
 		if (state.dragCtx && state.dragCtx.edge === 'move') {
 			state.dragCtx = null;
@@ -13652,9 +13714,16 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		var delay      = String((document.getElementById('mpStepDelay')       || {value:'1'}).value        || '1').trim();
 		if (!/^\d+$/.test(delay)) delay = '1';
 
-		cleanup();
+		/* Only hide the modal UI — keep dragCtx alive so the map continues
+		 * to show the partition at its dragged (target) position while the
+		 * command-preview modal is open.  dragCtx is cleared below once
+		 * queueOp has been called (or the user cancels the preview). */
+		hideModalUi();
 
-		if (!ensureMoveTargetDoesNotIntersectSource(srcPart, tStart, tEnd, srcDevPath, tgtDev)) return;
+		if (!ensureMoveTargetDoesNotIntersectSource(srcPart, tStart, tEnd, srcDevPath, tgtDev)) {
+			if (state.dragCtx && state.dragCtx.edge === 'move') { state.dragCtx = null; renderMap(); }
+			return;
+		}
 
 		// 'partnum' is required by buildPreviewDevice to locate the partition
 		// and update its displayed position after the op is queued.
@@ -13684,12 +13753,16 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		showCommandPreviewModal('move_partition', moveParams, moveLabel,
 		                        t('confirmMove'), t('confirmMoveMsg'))
 		.then(function (previewText) {
-			if (previewText === null) return;
+			/* Clear dragCtx now — queueOp's renderMap (with the queued op) will
+			 * paint the partition at the target position via buildPreviewDevice.
+			 * If the user cancelled the preview, re-render to restore original. */
+			if (state.dragCtx && state.dragCtx.edge === 'move') { state.dragCtx = null; }
+			if (previewText === null) { renderMap(); return; }
 			var qStart = Number(moveParams.start_sector);
 			var qEnd   = Number(moveParams.end_sector);
 			var qDev   = String(moveParams.device || tgtDev);
 			if (!ensureMoveTargetDoesNotIntersectSource(srcPart, qStart, qEnd,
-			                                            srcDevPath, qDev)) return;
+			                                            srcDevPath, qDev)) { renderMap(); return; }
 			queueOp('move_partition', moveParams, moveLabel, previewText, false);
 			showToast(t('tQueued') + ' ' + moveLabel, 'info', 10000);
 		});
