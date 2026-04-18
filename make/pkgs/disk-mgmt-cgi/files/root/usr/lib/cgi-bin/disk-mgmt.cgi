@@ -15899,6 +15899,21 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		});
 	}());
 
+	/* ── Accessibility fix ────────────────────────────────────────────────────
+	 * display:none already hides modals from assistive technology.
+	 * The redundant aria-hidden attribute causes Chrome "Blocked aria-hidden"
+	 * warnings when a focused button is inside the closing modal.
+	 * Remove it from all modals and prevent JS from re-adding it.
+	 */
+	document.querySelectorAll('.pcgi-modal[aria-hidden]').forEach(function(m) {
+		m.removeAttribute('aria-hidden');
+		var _origSetAttr = HTMLElement.prototype.setAttribute;
+		m.setAttribute = function(attr, val) {
+			if (attr === 'aria-hidden') return;
+			return _origSetAttr.call(this, attr, val);
+		};
+	});
+
 	refreshDevices();
 	analyzeTools();
 })();

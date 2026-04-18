@@ -30,9 +30,7 @@ VERIFY_CLONE=0      # -V  flag: run partclone.chkimg verify after clone
 FORCE_FSTYPE=""     # -f  force filesystem type (skip auto-detection)
 DRY_RUN=0           # -r  flag: simulate only, no writes
 COMPARE_PART=""     # -Z  compare mode: compare SOURCE_PART with this partition (read-only)
-CLONE_USED_DD_FALLBACK=0  # set to 1 internally if smart clone fails and dd fallback succeeds
 FAT_FSCK_PASSES=2   # -F  number of pre-clone fsck passes for FAT (0 = skip)
-DD_FALLBACK=1       # -b  1=retry with partclone.dd if smart clone fails, 0=disable
 
 # ==============================================================================
 # HELPER FUNCTIONS (defined before usage() so usage can call hr)
@@ -398,7 +396,8 @@ while getopts ":d:D:p:n:S:E:t:Mc:a:uox:L:Ww:Vf:Z:F:b:rh" OPT; do
         f)  FORCE_FSTYPE="$OPTARG"         ;;
         Z)  COMPARE_PART="$OPTARG"         ;;
         F)  FAT_FSCK_PASSES="$OPTARG"      ;;
-        b)  DD_FALLBACK="$OPTARG"          ;;
+        b)  : # legacy flag, accepted for backward compat but ignored
+            ;;
         r)  DRY_RUN=1                      ;;
         h)  usage; exit 0                  ;;
         :)  echo "❌  Option -${OPTARG} requires an argument." >&2
@@ -444,11 +443,6 @@ esac
 
 case "$FAT_FSCK_PASSES" in
     ''|*[!0-9]*) ERRORS="${ERRORS}\n    -F  '${FAT_FSCK_PASSES}' is not a valid non-negative integer." ;;
-esac
-
-case "$DD_FALLBACK" in
-    0|1) ;;
-    *) ERRORS="${ERRORS}\n    -b  invalid value '${DD_FALLBACK}'. Allowed: 0 | 1" ;;
 esac
 
 case "$STEP_DELAY" in
@@ -927,14 +921,19 @@ echo "     Backend : ${PARTCLONE_BIN}"
 
 # shellcheck disable=SC2086
 # Build partclone flags.
-# partclone.dd (v0.3.x) does not accept --clone; other backends do.
+# partclone.dd (v0.3.x) does not accept --dev-to-dev; other backends do.
+# IMPORTANT: --dev-to-dev (-b) performs a direct device-to-device copy that
+# writes raw filesystem data to the target.  Do NOT use --clone (-c) here:
+# --clone writes partclone's own image format (header + sparse blocks),
+# which is NOT a mountable filesystem and causes "Bad magic number" /
+# "wrong fs type" errors from tune2fs, e2fsck, and mount.
 _pcdd_mode=0
 [ "$PARTCLONE_BIN" = "partclone.dd" ] && _pcdd_mode=1
 if [ "$DRY_RUN" -eq 0 ]; then
     if [ "$_pcdd_mode" -eq 1 ]; then
         set -- --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
     else
-        set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+        set -- --dev-to-dev --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
     fi
     [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
     [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
@@ -946,7 +945,7 @@ else
     if [ "$_pcdd_mode" -eq 1 ]; then
         set -- --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
     else
-        set -- --clone --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
+        set -- --dev-to-dev --overwrite --quiet --source "$SOURCE_PART" --output "$TARGET_PART"
     fi
     [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
     [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
@@ -985,35 +984,14 @@ if [ "$_pclone_rc" -ne 0 ] && _pclone_check_completed "$_pclone_rc"; then
     _pclone_rc=0  # treat as success
 fi
 
-if [ "$_pclone_rc" -ne 0 ] && [ "$CLONE_MODE" = "smart" ] && [ "${DD_FALLBACK:-1}" = "1" ]; then
-    echo "⚠️   Smart clone (${PARTCLONE_BIN}) failed (rc=${_pclone_rc})."
+if [ "$_pclone_rc" -ne 0 ]; then
+    echo "⚠️   partclone (${PARTCLONE_BIN}) failed (rc=${_pclone_rc})."
     if [ -n "$PARTCLONE_LOGFILE" ] && [ -s "$PARTCLONE_LOGFILE" ]; then
         echo "     ── partclone log (${PARTCLONE_LOGFILE}) ──"
-        cat "$PARTCLONE_LOGFILE" | sed 's/^/     /'
+        sed 's/^/     /' < "$PARTCLONE_LOGFILE"
         echo "     ── end log ──"
     fi
-    echo "     Retrying with byte-to-byte partclone.dd as fallback…"
-    if command -v partclone.dd >/dev/null 2>&1; then
-        # partclone.dd uses -s / -O / -q (different CLI from other partclone backends)
-        set -- -s "$SOURCE_PART" -O "$TARGET_PART" -q
-        [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
-        [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
-        # shellcheck disable=SC2086
-        run partclone.dd "$@" $PARTCLONE_EXTRA
-        _pclone_rc=$?
-        if ! _pclone_check_completed "$_pclone_rc"; then
-            [ "$_pclone_rc" -ne 0 ] && die "partclone.dd fallback also failed (rc=${_pclone_rc}). Source may be unreadable."
-        fi
-        _pclone_rc=0
-        echo "     ✔ Byte-to-byte fallback clone completed."
-        CLONE_USED_DD_FALLBACK=1
-    else
-        die "partclone.dd not found for fallback. Smart clone failed: rc=${_pclone_rc}."
-    fi
-elif [ "$_pclone_rc" -ne 0 ] && [ "$CLONE_MODE" = "smart" ]; then
-    die "partclone cloning failed (rc=${_pclone_rc}). dd fallback disabled (-b 0)."
-elif [ "$_pclone_rc" -ne 0 ]; then
-    die "partclone cloning failed (rc=${_pclone_rc}). Source or target may be corrupt."
+    die "partclone cloning failed (rc=${_pclone_rc}). Check source device and try again."
 fi
 
 echo "     ✔ Data clone completed."
@@ -1046,61 +1024,50 @@ fi
 # Solution:
 #  1. sync – commits all dirty pages to the backing file on disk.
 #  2. blockdev --flushbufs – evict device buffers (best-effort, needs root).
-#  3. echo 1 > drop_caches – page-cache purge (best-effort, needs root).
-#  4. partprobe – forces the kernel to re-read the partition table and
-#     re-create the partition device nodes with empty (fresh) page caches.
-#     This is safe here because partclone has fully completed and synced.
-#     The partition table itself has not changed; we use partprobe solely to
-#     invalidate the page cache associated with the target partition node.
-# We do NOT run partprobe here for table-change reasons (unchanged since
-# step 4); it is run only for cache-invalidation purposes.
+#  3. echo 3 > drop_caches – full purge: pagecache + dentries + inodes.
+#     echo 1 (clean pages only) is insufficient: dirty pages written by
+#     partclone survive it and continue to look stale.
+#
+# IMPORTANT: Do NOT run partprobe here.  The partition table has not changed
+# since step 4 — only data *within* the partition was written by partclone.
+# Re-probing the partition table on MBR disks with logical partitions causes
+# the kernel to re-walk the EBR chain and may assign different partition
+# numbers, making TARGET_PART (/dev/loop0pN) point to wrong sectors.
+# This manifests as "Bad magic number in super-block" from tune2fs/mount
+# even though partclone completed successfully.
 sync
 blockdev --flushbufs "$DEVICE" 2>/dev/null || true
 blockdev --flushbufs "$TARGET_PART" 2>/dev/null || true
-# Loop devices: flush and settle.
-# We intentionally do NOT run partprobe here: the partition table was not
-# changed in this step (only data was written), and re-probing causes the
-# kernel to re-create partition device nodes.  On loop-backed devices this
-# can race with in-flight writes and may result in the node for TARGET_PART
-# temporarily mapping stale page-cache data (tune2fs / mount read garbage).
-# A plain sync + sleep is sufficient to let the backing-file writes propagate
-# through the loop layer before the integrity tools read the new data.
+# Loop devices need aggressive cache invalidation: the write path goes
+# through the backing file's page cache, and subsequent reads may hit
+# stale cached pages unless we drop them.
 if echo "$DEVICE" | grep -qE '^/dev/loop[0-9]'; then
-    echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
-    # Flush again after drop so any final dirty pages are committed.
+    # echo 3: drops pagecache + dentries + inodes (more thorough than echo 1).
+    echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
     sync
+    blockdev --flushbufs "$DEVICE" 2>/dev/null || true
     blockdev --flushbufs "$TARGET_PART" 2>/dev/null || true
 fi
-sleep 2
+sleep 3
 
 step_pause
 echo "🛠️   [7/9] Running filesystem integrity checks and UUID refresh on ${TARGET_PART}…"
 
 case "$FSTYPE" in
     ext2|ext3|ext4|ext4dev)
+        # e2fsck MUST run before tune2fs: tune2fs -U refuses to operate on a
+        # filesystem that has not been freshly checked ("This operation
+        # requires a freshly checked filesystem").
+        echo "     → Running e2fsck filesystem check…"
+        run e2fsck -fy "$TARGET_PART" \
+            || die "e2fsck reported uncorrectable errors on ${TARGET_PART}."
         echo "     → Assigning new random UUID (tune2fs)…"
-        # In MOVE mode the source is deleted afterwards so UUID conflict is
-        # impossible — make tune2fs non-fatal and skip e2fsck if it can't read
-        # the superblock (the clone itself completed successfully).
-        # On loop-backed devices the kernel page cache may still be settling;
-        # retry once with a short pause before deciding it failed.
-        _tune2fs_ok=1
         if ! run tune2fs -U random "$TARGET_PART"; then
-            echo "     ℹ  tune2fs first attempt failed — waiting 2 s and retrying…"
-            sync; sleep 2
-            run tune2fs -U random "$TARGET_PART" || _tune2fs_ok=0
-        fi
-        if [ "$_tune2fs_ok" -eq 0 ]; then
             if [ "$MOVE_MODE" -eq 1 ]; then
                 echo "     ⚠ tune2fs failed — UUID not changed (non-fatal: source will be deleted)."
             else
-                die "tune2fs failed on ${TARGET_PART}."
+                die "tune2fs -U random failed on ${TARGET_PART}."
             fi
-        fi
-        if [ "$_tune2fs_ok" -eq 1 ]; then
-            echo "     → Running e2fsck filesystem check…"
-            run e2fsck -pf "$TARGET_PART" \
-                || die "e2fsck reported uncorrectable errors on ${TARGET_PART}."
         fi
         ;;
     vfat|fat|fat12|fat16|fat32)
@@ -1166,8 +1133,28 @@ else
         umount "$VALIDATE_DIR" || die "Cannot unmount validation directory."
         rmdir  "$VALIDATE_DIR" 2>/dev/null
     else
-        rmdir  "$VALIDATE_DIR" 2>/dev/null
-        die "Target ${TARGET_PART} is NOT mountable. Data may be corrupt. Source is untouched."
+        # On loop-backed devices the page cache may still be trailing; give it
+        # one more flush cycle before giving up.
+        _mount_ok=0
+        if echo "$DEVICE" | grep -qE '^/dev/loop[0-9]'; then
+            echo "     ℹ️  Initial mount failed on loop device — flushing and retrying in 4 s…"
+            sync
+            blockdev --flushbufs "$DEVICE"      2>/dev/null || true
+            blockdev --flushbufs "$TARGET_PART" 2>/dev/null || true
+            echo 3 > /proc/sys/vm/drop_caches   2>/dev/null || true
+            sync
+            sleep 4
+            if mount -t "$FSTYPE" -o ro "$TARGET_PART" "$VALIDATE_DIR"; then
+                echo "     ✔ Target mounted read-only on retry. Filesystem is accessible."
+                umount "$VALIDATE_DIR" || die "Cannot unmount validation directory."
+                rmdir  "$VALIDATE_DIR" 2>/dev/null
+                _mount_ok=1
+            fi
+        fi
+        if [ "$_mount_ok" -eq 0 ]; then
+            rmdir  "$VALIDATE_DIR" 2>/dev/null
+            die "Target ${TARGET_PART} is NOT mountable. Data may be corrupt. Source is untouched."
+        fi
     fi
 fi
 
