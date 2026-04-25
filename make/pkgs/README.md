@@ -531,7 +531,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[mini-snmpd 1.6 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
     This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
 
-  * **[Minicom 2.10 (binary only)](../../docs/make/minicom.md)<a id='minicom'></a>**<br>
+  * **[Minicom 2.11.1 (binary only)](../../docs/make/minicom.md)<a id='minicom'></a>**<br>
     Minicom is a menu driven communications program. It emulates ANSI and VT102 terminals. It has a dialing directory and auto zmodem download. NOTE: Minicom will expect its configurations in "/var/tmp/flash/minicom/" which has to be created before the first run of the binary by "mkdir -p  /var/tmp/flash/minicom/". To save this and after any change of minicom's configurations you will have to write it to flash with "modsave".
 
   * **[minidlna 1.3.3](../../docs/make/minidlna.md)<a id='minidlna'></a>**<br>
@@ -1166,7 +1166,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>spawn-fcgi 1.6.3 (binary only) - DEPRECATED</u><a id='spawn-fcgi'></a>**<br>
     Spawns FastCGI processes
 
-  * **[SQLite 3.40.1/3.47.1/3.50.4 (binary only)](../../docs/make/sqlite.md)<a id='sqlite'></a>**<br>
+  * **[SQLite 3.40.1/3.47.1/3.53.0 (binary only)](../../docs/make/sqlite.md)<a id='sqlite'></a>**<br>
     SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
 
   * **<u>squashfs3: squashfs-tools 3.4</u><a id='squashfs3'></a>**<br>
@@ -1387,7 +1387,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[autotools (autoconf) 2.72](../../docs/make/autotools.md)<a id='autotools'></a>**<br>
     autoconf is a tool for producing configure scripts for building, installing and packaging software on computer systems where a Posix shell is available.
 
-  * **[binutils-tools: Binutils 2.45.1 (binary only)](../../docs/make/binutils-tools.md)<a id='binutils-tools'></a>**<br>
+  * **[binutils-tools: Binutils 2.46.0 (binary only)](../../docs/make/binutils-tools.md)<a id='binutils-tools'></a>**<br>
     Collection of essential tools for analyzing and manipulating ELF binaries. Size of all binaries and libraries: ~1.5MB (uncompressed: ~4.5MB)
      - [Available Tools](../../docs/make/binutils-tools.md#available-tools)
      - [Inspecting Binaries](../../docs/make/binutils-tools.md#inspecting-binaries)
@@ -1528,7 +1528,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[HPLIP 3.14.6 (binary only) - DEPRECATED](../../docs/make/hplip.md)<a id='hplip'></a>**<br>
     HPLIP - HP Linux Imaging and Printing
 
-  * **[Iptables 1.4.11.1/1.4.21/1.6.2/1.8.12 (binary only)](../../docs/make/iptables.md)<a id='iptables'></a>**<br>
+  * **[Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13 (binary only)](../../docs/make/iptables.md)<a id='iptables'></a>**<br>
     Netfilter/iptables Netfilter is the set of hooks within the Linux kernel for intercepting and manipulating network packets. The best-known component on top of netfilter is the firewall which filters packets, but the hooks are also used by a component which performs network address translation, and by another which provides ipchains backwards compatibility. These components are usually Loadable Kernel Modules. iptables is the name of the user space tool by which administrators create rules for the packet filtering and NAT modules. While technically iptables is merely the tool which controls the packet filtering and NAT components within the kernel, the name iptables is often used to refer to the entire infrastructure, including netfilter, connection tracking and NAT, as well as the tool itself. iptables is a standard part of all modern Linux distributions.
      - [Current state (largely broken)](../../docs/make/iptables.md#current-state-largely-broken)
      - [What is iptables and who needs it?](../../docs/make/iptables.md#what-is-iptables-and-who-needs-it)

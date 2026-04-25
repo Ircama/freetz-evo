@@ -1,13 +1,13 @@
-$(call PKG_INIT_BIN, 2.45.1)
-$(PKG)_LIB_VERSION:=$($(PKG)_VERSION)
+$(call PKG_INIT_BIN, 2.46.0)
+$(PKG)_LIB_VERSION:=2.46.0.20260210
 $(PKG)_SOURCE:=binutils-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5
+$(PKG)_HASH:=d75a94f4d73e7a4086f7513e67e439e8fcdcbb726ffe63f4661744e6256b2cf2
 $(PKG)_SITE:=@GNU/binutils
 ### WEBSITE:=https://www.gnu.org/software/binutils/
 ### MANPAGE:=https://sourceware.org/binutils/docs/
 ### CHANGES:=https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob_plain;f=binutils/NEWS
 ### CVSREPO:=https://sourceware.org/git/binutils-gdb.git
-### STEWARD:=Ircama
+### STEWARD:=fda77
 
 $(PKG)_CATEGORY:=Debug helpers
 
@@ -23,7 +23,7 @@ $(PKG)_SEL_DIR:=$($(PKG)_SEL_BIN:%=$($(PKG)_DEST_DIR)/usr/bin/%)
 $(PKG)_EXCLUDED:=$(filter-out $($(PKG)_SEL_DIR),$($(PKG)_DST_DIR))
 
 $(PKG)_LIBRARIES_SHORT := libbfd                           libctf           libctf-nobfd           libsframe           libopcodes
-$(PKG)_LIBRARIES_NAME  := libbfd-$($(PKG)_LIB_VERSION).so  libctf.so.0.0.0  libctf-nobfd.so.0.0.0  libsframe.so.2.0.0  libopcodes-$($(PKG)_LIB_VERSION).so
+$(PKG)_LIBRARIES_NAME  := libbfd-$($(PKG)_LIB_VERSION).so  libctf.so.0.0.0  libctf-nobfd.so.0.0.0  libsframe.so.3.0.0  libopcodes-$($(PKG)_LIB_VERSION).so
 $(PKG)_LIBRARIES_DIR   := bfd                              libctf           libctf                 libsframe           opcodes
 $(PKG)_LIBRARIES_BUILD_DIR:=$(join $($(PKG)_LIBRARIES_DIR:%=$($(PKG)_DIR)/%/.libs/),$($(PKG)_LIBRARIES_NAME))
 $(PKG)_LIBRARIES_TARGET_DIR:=$($(PKG)_LIBRARIES_NAME:%=$($(PKG)_TARGET_LIBDIR)/%)

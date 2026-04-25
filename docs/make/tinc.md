@@ -1,4 +1,4 @@
-# Tinc 1.0.36/1.1pre18
+# tinc 1.0.37/1.1pre18
   - Homepage: [https://www.tinc-vpn.org/](https://www.tinc-vpn.org/)
   - Manpage: [https://www.tinc-vpn.org/docs/](https://www.tinc-vpn.org/docs/)
   - Changelog: [http://www.tinc-vpn.org/news/](http://www.tinc-vpn.org/news/)

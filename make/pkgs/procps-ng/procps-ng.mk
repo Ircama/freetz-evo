@@ -1,12 +1,12 @@
-$(call PKG_INIT_BIN, 4.0.5)
+$(call PKG_INIT_BIN, 4.0.6)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=c2e6d193cc78f84cd6ddb72aaf6d5c6a9162f0470e5992092057f5ff518562fa
+$(PKG)_HASH:=67bea6fbc3a42a535a0230c9e891e5ddfb4d9d39422d46565a2990d1ace15216
 $(PKG)_SITE:=@SF/procps-ng/Production
 ### WEBSITE:=https://gitlab.com/procps-ng/procps
 ### MANPAGE:=https://linux.die.net/man/1/ps
 ### CHANGES:=https://gitlab.com/procps-ng/procps/-/tags
 ### CVSREPO:=https://gitlab.com/procps-ng/procps
-### STEWARD:=Ircama
+### STEWARD:=fda77
 
 $(PKG)_BINARIES_SRC_DIR             := ps        top .    .      .      .  .   .     .     .     .    .       .     .     .     .     .      .   
 $(PKG)_BINARIES_ALL                 := ps        top free uptime vmstat w pmap pgrep pkill pidof pwdx slabtop tload watch skill snice sysctl kill

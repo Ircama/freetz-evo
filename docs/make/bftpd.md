@@ -1,4 +1,4 @@
-# Bftpd 6.2
+# Bftpd 6.6
   - Homepage: [https://bftpd.sourceforge.net/](https://bftpd.sourceforge.net/)
   - Manpage: [https://bftpd.sourceforge.net/documents.html](https://bftpd.sourceforge.net/documents.html)
   - Changelog: [https://bftpd.sourceforge.net/downloads/CHANGELOG](https://bftpd.sourceforge.net/downloads/CHANGELOG)

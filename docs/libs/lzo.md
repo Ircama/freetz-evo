@@ -1,4 +1,6 @@
 # LZO (liblzo2.so) 2.10
+  - Homepage: [https://www.oberhumer.com/opensource/lzo/](https://www.oberhumer.com/opensource/lzo/)
+  - Changelog: [https://www.oberhumer.com/opensource/lzo/download/](https://www.oberhumer.com/opensource/lzo/download/)
   - Library: [master/make/libs/lzo/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/lzo/)
   - Steward: -
 

@@ -1,4 +1,4 @@
-# Mosquitto 2.0.22
+# Mosquitto 2.0.22 - DEPRECATED
   - Homepage: [https://www.mosquitto.org/](https://www.mosquitto.org/)
   - Manpage: [https://www.mosquitto.org/documentation/](https://www.mosquitto.org/documentation/)
   - Changelog: [https://mosquitto.org/blog/](https://mosquitto.org/blog/)

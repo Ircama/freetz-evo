@@ -1,4 +1,4 @@
-# SQLite 3.40.1/3.47.1/3.50.4 (binary only)
+# SQLite 3.40.1/3.47.1/3.53.0 (binary only)
   - Homepage: [https://www.sqlite.org](https://www.sqlite.org)
   - Manpage: [https://www.sqlite.org/docs.html](https://www.sqlite.org/docs.html)
   - Changelog: [https://www.sqlite.org/changes.html](https://www.sqlite.org/changes.html)
@@ -6,18 +6,23 @@
   - Package: [master/make/pkgs/sqlite/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/sqlite/)
   - Steward: -
 
-## Source
-- Version: 3.50.4
-- Source URL: https://www.sqlite.org/2025/sqlite-autoconf-3500400.tar.gz
-- Hash: a3db587a1b92ee5ddac2f66b3edb41b26f9c867275782d46c3a088977d6a5b18
+## Source variants
+
+- `abandon`: `3.40.1` from `https://www.sqlite.org/2022/sqlite-autoconf-3400100.tar.gz` (`2c5dea207fa508d765af1ef620b637dcb06572afa6f01f0815bd5bbf864b33d9`)
+- `stable`: `3.47.1` from `https://www.sqlite.org/2024/sqlite-autoconf-3470100.tar.gz` (`416a6f45bf2cacd494b208fdee1beda509abda951d5f47bc4f2792126f01b452`)
+- `current`: `3.53.0` from `https://www.sqlite.org/2026/sqlite-autoconf-3530000.tar.gz` (`851e9b38192fe2ceaa65e0baa665e7fa06230c3d9bd1a6a9662d02380d73365a`)
 
 ## Build Notes
-SQLite 3.50.4 uses autosetup (Tcl-based) instead of GNU autotools for configuration. This affects the available configure options:
-- Unsupported options like `--cache-file`, `--target`, `--disable-nls` are ignored or cause errors.
-- The build system creates files directly in the source directory (e.g., `sqlite3`, `libsqlite3.so`) rather than in `.libs/`. The `make install` then copies them to the staging directory, from where Freetz installs them to the target root filesystem.
-- Installation uses `/usr/local` prefix by default, requiring adjustments in `sqlite.mk` for staging paths.
+
+Freetz EVO keeps three selectable SQLite tracks and merges them with the current upstream package layout:
+
+- `3.40.1` remains the oldest compatibility branch.
+- `3.47.1` is preserved locally as the last `stable` branch.
+- `3.53.0` becomes the `current` upstream branch.
+
+The older `3.40.1` and `3.47.1` builds still use the classic libtool `.libs/` output layout, while `3.53.0` emits the CLI and shared library directly in the source root. The local patch set still adds the pthread/GNU-source flags expected by Freetz, relaxes `-Ofast` to `-O2`, and preserves the cross-build compatibility fixes carried in this tree.
 
 ## Externalization
 Both the SQLite CLI (`sqlite3`) and the library (`libsqlite3.so`) can be externalized:
 - Binary: `/usr/bin/sqlite3` (~328 KB)
-- Library: `/usr/lib/freetz/libsqlite3.so.0` (symlink to `libsqlite3.so.3.50.4`, ~1.3 MB)
+- Library: `/usr/lib/freetz/libsqlite3.so.x.x.x` with the exact SONAME depending on the selected branch (`0.8.6` for the old tracks, `3.53.0` for the current track)

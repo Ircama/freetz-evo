@@ -1,4 +1,4 @@
-# pseudo 1.9.3-414ce2d
+# pseudo 1.9.5
   - Homepage: [https://www.yoctoproject.org/software-item/pseudo/](https://www.yoctoproject.org/software-item/pseudo/)
   - Manpage: [https://manpages.debian.org/testing/pseudo/pseudo.1.en.html](https://manpages.debian.org/testing/pseudo/pseudo.1.en.html)
   - Changelog: [https://git.yoctoproject.org/pseudo/log/?h=master](https://git.yoctoproject.org/pseudo/log/?h=master)

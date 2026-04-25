@@ -150,12 +150,12 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
   * fritzbox-7520-B/
     - deutschland: [FRITZ.Box_7520_B-08.21.image](https://download.avm.de/fritzbox/fritzbox-7520-B/deutschland/fritz.os/FRITZ.Box_7520_B-08.21.image)
   * fritzbox-7530/
-    - belgium: [FRITZ.Box_7530-08.21.image](https://download.avm.de/fritzbox/fritzbox-7530/belgium/fritz.os/FRITZ.Box_7530-08.21.image)
-    - deutschland: [FRITZ.Box_7530-08.21.image](https://download.avm.de/fritzbox/fritzbox-7530/deutschland/fritz.os/FRITZ.Box_7530-08.21.image)
-    - other: [FRITZ.Box_7530-08.21.image](https://download.avm.de/fritzbox/fritzbox-7530/other/fritz.os/FRITZ.Box_7530-08.21.image)
+    - belgium: [FRITZ.Box_7530-08.25.image](https://download.avm.de/fritzbox/fritzbox-7530/belgium/fritz.os/FRITZ.Box_7530-08.25.image)
+    - deutschland: [FRITZ.Box_7530-08.25.image](https://download.avm.de/fritzbox/fritzbox-7530/deutschland/fritz.os/FRITZ.Box_7530-08.25.image)
+    - other: [FRITZ.Box_7530-08.25.image](https://download.avm.de/fritzbox/fritzbox-7530/other/fritz.os/FRITZ.Box_7530-08.25.image)
   * fritzbox-7530-ax/
-    - deutschland: [FRITZ.Box_7530_AX-08.20.image](https://download.avm.de/fritzbox/fritzbox-7530-ax/deutschland/fritz.os/FRITZ.Box_7530_AX-08.20.image)
-    - other: [FRITZ.Box_7530_AX-08.20.image](https://download.avm.de/fritzbox/fritzbox-7530-ax/other/fritz.os/FRITZ.Box_7530_AX-08.20.image)
+    - deutschland: [FRITZ.Box_7530_AX-08.25.image](https://download.avm.de/fritzbox/fritzbox-7530-ax/deutschland/fritz.os/FRITZ.Box_7530_AX-08.25.image)
+    - other: [FRITZ.Box_7530_AX-08.25.image](https://download.avm.de/fritzbox/fritzbox-7530-ax/other/fritz.os/FRITZ.Box_7530_AX-08.25.image)
   * fritzbox-7560/
     - deutschland: [FRITZ.Box_7560-07.30.image](https://download.avm.de/fritzbox/fritzbox-7560/deutschland/fritz.os/FRITZ.Box_7560-07.30.image)
     - other: [FRITZ.Box_7560-07.30.image](https://download.avm.de/fritzbox/fritzbox-7560/other/fritz.os/FRITZ.Box_7560-07.30.image)
@@ -197,14 +197,14 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
     - deutschland: [fritz.powerline_1000E_v2_3_00_00_tr069_3.image](https://download.avm.de/fritzpowerline/fritzpowerline-1000e-v2/deutschland/fritz.os/fritz.powerline_1000E_v2_3_00_00_tr069_3.image)
     - other: [fritz.powerline_1000E_v2_3_00_00_tr069_3.image](https://download.avm.de/fritzpowerline/fritzpowerline-1000e-v2/other/fritz.os/fritz.powerline_1000E_v2_3_00_00_tr069_3.image)
   * fritzpowerline-1210/
-    - deutschland: [fritz.powerline_1210_cm9_2130_02_tr069_1.image](https://download.avm.de/fritzpowerline/fritzpowerline-1210/deutschland/fritz.os/fritz.powerline_1210_cm9_2130_02_tr069_1.image)
-    - other: [fritz.powerline_1210_cm9_2130_02_tr069_1.image](https://download.avm.de/fritzpowerline/fritzpowerline-1210/other/fritz.os/fritz.powerline_1210_cm9_2130_02_tr069_1.image)
+    - deutschland: [fritz.powerline_1210_cm9_3_00_00_tr069_2.image](https://download.avm.de/fritzpowerline/fritzpowerline-1210/deutschland/fritz.os/fritz.powerline_1210_cm9_3_00_00_tr069_2.image)
+    - other: [fritz.powerline_1210_cm9_3_00_00_tr069_2.image](https://download.avm.de/fritzpowerline/fritzpowerline-1210/other/fritz.os/fritz.powerline_1210_cm9_3_00_00_tr069_2.image)
   * fritzpowerline-1220/
-    - deutschland: [fritz.powerline_1220_cm9_2130_02_tr069_7.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220/deutschland/fritz.os/fritz.powerline_1220_cm9_2130_02_tr069_7.image)
-    - other: [fritz.powerline_1220_cm9_2130_02_tr069_7.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220/other/fritz.os/fritz.powerline_1220_cm9_2130_02_tr069_7.image)
+    - deutschland: [fritz.powerline_1220_cm9_3_00_00_tr069_7.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220/deutschland/fritz.os/fritz.powerline_1220_cm9_3_00_00_tr069_7.image)
+    - other: [fritz.powerline_1220_cm9_3_00_00_tr069_7.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220/other/fritz.os/fritz.powerline_1220_cm9_3_00_00_tr069_7.image)
   * fritzpowerline-1220e/
-    - deutschland: [fritz.powerline_1220E_cm9_2130_02_tr069_38.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220e/deutschland/fritz.os/fritz.powerline_1220E_cm9_2130_02_tr069_38.image)
-    - other: [fritz.powerline_1220E_cm9_2130_02_tr069_38.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220e/other/fritz.os/fritz.powerline_1220E_cm9_2130_02_tr069_38.image)
+    - deutschland: [fritz.powerline_1220E_cm9_3_00_00_tr069_38.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220e/deutschland/fritz.os/fritz.powerline_1220E_cm9_3_00_00_tr069_38.image)
+    - other: [fritz.powerline_1220E_cm9_3_00_00_tr069_38.image](https://download.avm.de/fritzpowerline/fritzpowerline-1220e/other/fritz.os/fritz.powerline_1220E_cm9_3_00_00_tr069_38.image)
   * fritzpowerline-1240-ax/
     - deutschland: [FRITZ.Powerline_1240_AX.275.08.20.image](https://download.avm.de/fritzpowerline/fritzpowerline-1240-ax/deutschland/fritz.os/FRITZ.Powerline_1240_AX.275.08.20.image)
     - other: [FRITZ.Powerline_1240_AX.275.08.20.image](https://download.avm.de/fritzpowerline/fritzpowerline-1240-ax/other/fritz.os/FRITZ.Powerline_1240_AX.275.08.20.image)

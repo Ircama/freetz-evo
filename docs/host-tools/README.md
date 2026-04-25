@@ -18,7 +18,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ca-bundle 2026-03-19](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
-  * **[cmake 4.3.1](cmake-host.md)<a id='cmake-host'></a>**<br>
+  * **[cmake 4.3.2](cmake-host.md)<a id='cmake-host'></a>**<br>
 
   * **[config a2287c3](config-host.md)<a id='config-host'></a>**<br>
 
@@ -78,7 +78,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[make 4.4.1](make-host.md)<a id='make-host'></a>**<br>
 
-  * **[meson 1.10.2](meson-host.md)<a id='meson-host'></a>**<br>
+  * **[meson 1.11.1](meson-host.md)<a id='meson-host'></a>**<br>
 
   * **[mklibs 0.1.45](mklibs-host.md)<a id='mklibs-host'></a>**<br>
 
@@ -110,7 +110,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[prelink 20131005](prelink-host.md)<a id='prelink-host'></a>**<br>
 
-  * **[pseudo 1.9.3-414ce2d](pseudo-host.md)<a id='pseudo-host'></a>**<br>
+  * **[pseudo 1.9.5](pseudo-host.md)<a id='pseudo-host'></a>**<br>
 
   * **[python2 2.7.18](python2-host.md)<a id='python2-host'></a>**<br>
 
@@ -154,7 +154,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-04-09](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-04-24](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

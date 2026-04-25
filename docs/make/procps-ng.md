@@ -1,10 +1,10 @@
-# procps-ng 4.0.5 (binaries only)
+# procps-ng 4.0.6 (binaries only)
   - Homepage: [https://gitlab.com/procps-ng/procps](https://gitlab.com/procps-ng/procps)
   - Manpage: [https://linux.die.net/man/1/ps](https://linux.die.net/man/1/ps)
   - Changelog: [https://gitlab.com/procps-ng/procps/-/tags](https://gitlab.com/procps-ng/procps/-/tags)
   - Repository: [https://gitlab.com/procps-ng/procps](https://gitlab.com/procps-ng/procps)
   - Package: [master/make/pkgs/procps-ng/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/procps-ng/)
-  - Steward: [@Ircama](https://github.com/Ircama)
+  - Steward: [@fda77](https://github.com/fda77)
 
 ## Overview
 
@@ -103,21 +103,6 @@ All commands are installed with the suffix full (e.g., psfull, topfull) to avoid
   - Run a command repeatedly at intervals
   - Example: `watchfull -n 1 'psfull aux'`
 
-## Installation
-
-1. Enable the package in menuconfig:
-   ```
-   make menuconfig
-   ```
-   Navigate to: `Packages > Process utilities > procps-ng (full binaries)`
-
-2. Select individual binaries you want to include (or select all)
-
-3. Compile the firmware:
-   ```
-   make
-   ```
-
 ## Usage Examples
 
 ### Basic Process Monitoring
@@ -193,19 +178,6 @@ The procps-full versions provide many more options and features compared to Busy
 | Signal handling | Basic | All signals supported |
 | Kernel parameters | - | Full sysctl support |
 
-## Externalization
-
-To save flash memory, you can externalize these binaries to USB storage:
-
-1. Enable externalization in menuconfig:
-   ```
-   Advanced options > External > Freetz-NG packages
-   ```
-
-2. Select: `procps-ng (full binaries) - externalization`
-
-3. The binaries will be stored on USB and symlinked to `/usr/bin/`
-
 ## Size Considerations
 
 Individual binary sizes (stripped):
@@ -228,38 +200,9 @@ Choose only the binaries you need to minimize flash usage.
 - Static linking increases binary sizes compared to shared libraries
 - Some features may not work on older kernels
 
-## Troubleshooting
-
-### Command not found
-Make sure the binary is selected in menuconfig and the firmware was rebuilt.
-
-### Permission denied
-Ensure binaries have execute permissions:
-```bash
-chmod +x /usr/bin/*full
-```
-
-### Externalization not working
-Check that USB storage is properly mounted and external directory is configured.
-
 ## See Also
 
 - [htop](htop.md) - Interactive process viewer (alternative to topfull)
 - [lsof](lsof.md) - List open files
 - [strace](strace.md) - Trace system calls
 
-## Version History
-
-- **4.0.4** (Current)
-  - Initial Freetz-NG integration
-  - 18 binaries with "full" suffix
-  - Externalization support
-
-## Contributing
-
-Report issues or improvements to the [Freetz-NG repository](https://github.com/Ircama/freetz-ng).
-
-## License
-
-procps-ng is licensed under GPL-2.0 and LGPL-2.1.
-See the [official repository](https://gitlab.com/procps-ng/procps) for details.
