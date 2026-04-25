@@ -7477,6 +7477,23 @@ window.paceOptions = {
 		return aligned;
 	}
 
+	function findContainingFreeSegment(dev, rangeStart, rangeEnd) {
+		var start = Number(rangeStart || 0);
+		var end = Number(rangeEnd || 0);
+		if (!dev || !dev.partitions || !isFinite(start) || !isFinite(end) || end < start) {
+			return null;
+		}
+		for (var i = 0; i < dev.partitions.length; i++) {
+			var seg = dev.partitions[i];
+			if (!seg || seg.kind !== 'free') continue;
+			var segStart = Number(seg.start || 0);
+			var segEnd = Number(seg.end || 0);
+			if (!isFinite(segStart) || !isFinite(segEnd) || segEnd < segStart) continue;
+			if (start >= segStart && end <= segEnd) return seg;
+		}
+		return null;
+	}
+
 	function detectLanguage() {
 		var browser = (navigator.language || 'en').toLowerCase();
 		if (browser.indexOf('fr') === 0) return 'fr';
@@ -11172,15 +11189,25 @@ actionsWrap.appendChild(btnRemove);
                                     _bdBlock.style.transition = '';
                                     return;
                                 }
+								var _mvSize = Number(_bdPart.size || Math.max(1, Number(_bdPart.end||0) - _oldStart + 1));
+								var _newEnd = _newStart + _mvSize - 1;
+								var _targetFreeSeg = findContainingFreeSegment(_bdDev, _newStart, _newEnd);
+								if (!_targetFreeSeg) {
+									_bdBlock.style.transform = '';
+									_bdBlock.style.zIndex = '';
+									_bdBlock.style.opacity = '';
+									_bdBlock.style.transition = '';
+									showToast(t('tMoveNoSpace'), 'error', 10000);
+									return;
+								}
                                 /* Pin partition at dragged position via dragCtx before any modal opens.
                                  * renderMap() destroys _bdBlock (removing its CSS transform) and
                                  * paints a new element at _newStart — no snap-back visible. */
-                                var _mvSize = Number(_bdPart.size || Math.max(1, Number(_bdPart.end||0) - _oldStart + 1));
                                 state.dragCtx = {
                                     dev: _bdDev, part: _bdPart, partPath: String(_bdPart.path || ''),
                                     edge: 'move',
                                     currentStart: _newStart,
-                                    currentEnd:   _newStart + _mvSize - 1
+									currentEnd:   _newEnd
                                 };
                                 renderMap(); /* destroys old _bdBlock; partition now rendered at _newStart */
                                 /* Same-disk move: detect cross-type (primary↔logical) by checking extended range */
@@ -11196,21 +11223,16 @@ actionsWrap.appendChild(btnRemove);
                                     if (_ctR === 'extended') { _ctExtS = Number(_ctp.start || 0); _ctExtE = Number(_ctp.end || 0); break; }
                                 }
                                 var _ctSrcInExt = (_ctExtS >= 0 && _oldStart >= _ctExtS && Number(_bdPart.end || 0) <= _ctExtE);
-                                var _ctTgtInExt = (_ctExtS >= 0 && _newStart >= _ctExtS && (_newStart + _mvSize - 1) <= _ctExtE);
+								var _ctTgtInExt = (_ctExtS >= 0 && _newStart >= _ctExtS && _newEnd <= _ctExtE);
                                 if (_ctSrcInExt !== _ctTgtInExt) {
                                     /* Cross-type: state.dragCtx kept alive until showMovePartModal closes */
-                                    var _ctFreeStart = _newStart, _ctFreeEnd = _newStart + _mvSize - 1;
-                                    for (var _ctfi = 0; _ctfi < _bdDev.partitions.length; _ctfi++) {
-                                        var _ctfp = _bdDev.partitions[_ctfi];
-                                        if (_ctfp.kind === 'free' && Number(_ctfp.start || 0) <= _newStart && Number(_ctfp.end || 0) >= _newStart) {
-                                            _ctFreeStart = Number(_ctfp.start || 0); _ctFreeEnd = Number(_ctfp.end || 0); break;
-                                        }
-                                    }
                                     showMovePartModal(String(_bdDev.path || ''), _bdPart, String(_bdDev.path || ''),
-                                        _newStart, _newStart + _mvSize - 1, _ctFreeStart, _ctFreeEnd);
+										_newStart, _newEnd,
+										Number(_targetFreeSeg.start || _newStart),
+										Number(_targetFreeSeg.end || _newEnd));
                                 } else {
                                     /* Same-type: clear dragCtx once modal chain resolves (cancel or queue) */
-                                    var _p = queueSfdiskMovePartition(_bdPart, String(_bdDev.path || ''), _newStart);
+									var _p = queueSfdiskMovePartition(_bdPart, String(_bdDev.path || ''), _newStart, { requireFreeTarget: true });
                                     function _clearMoveCtx() { state.dragCtx = null; renderMap(); }
                                     if (_p && typeof _p.then === 'function') {
                                         _p.then(_clearMoveCtx, _clearMoveCtx);
@@ -11379,43 +11401,14 @@ actionsWrap.appendChild(btnRemove);
                             var _sameDisk = (srcDevicePath === String(dev.path || ''));
                             var _sameType = _sameDisk && (_srcIsLogical === _targetInExt);
                             var targetStart = computeMoveDropTargetStart(ev, p, moveSize, grabRatio);
-                            if (!isFinite(targetStart)) {
-                                /* Free slot too small for partition. sfdisk can still move if same disk/type. */
-                                if (_sameType) {
-                                    var _st = ev.currentTarget || ev.target;
-                                    var _sr = _st && _st.getBoundingClientRect ? _st.getBoundingClientRect() : null;
-                                    var _sx = _sr && _sr.width > 0 ? (_sr.width > 0 ? clampNumber((ev.clientX || 0) - _sr.left, 0, _sr.width) : 0) : 0;
-                                    var _span = Number(p.end || 0) - Number(p.start || 0);
-                                    var _drop = Number(p.start || 0) + Math.round((_sr && _sr.width > 0 ? _sx / _sr.width : 0) * _span);
-                                    var _sfdiskStart = Math.max(0, _drop - Math.round(grabRatio * Math.max(0, moveSize - 1)));
-                                    state.partitionDragInfo = null;
-                                    if (_sfdiskStart === Number(moveSource.start || 0)) { showToast(t('tMoveSame'), 'warn'); return; }
-                                    queueSfdiskMovePartition(moveSource, srcDevicePath, _sfdiskStart);
-                                } else {
-                                    state.partitionDragInfo = null;
-                                    showToast(t('tMoveNoSpace'), 'error');
-                                }
-                                return;
-                            }
+							if (!isFinite(targetStart)) {
+								state.partitionDragInfo = null;
+								showToast(t('tMoveNoSpace'), 'error');
+								return;
+							}
                             var targetEnd = targetStart + moveSize - 1;
-                            if (targetEnd > Number(p.end || 0)) {
-                                /* Overflow: check for partial self-overlap on same disk */
-                                if (_sameDisk &&
-                                    targetEnd <= Number(moveSource.end || 0) &&
-                                    moveRangesIntersect(Number(moveSource.start || 0), Number(moveSource.end || 0), targetStart, targetEnd)) {
-                                    var _ovMs = moveSource, _ovSp = srcDevicePath, _ovTs = targetStart;
-                                    state.partitionDragInfo = null;
-                                    if (_sameType) {
-                                        queueSfdiskMovePartition(_ovMs, _ovSp, _ovTs);
-                                    } else {
-                                        showConfirmModal(
-                                            'Use sfdisk --move-data (overlap-safe)?',
-                                            'The new position [' + _ovTs + 's–' + (_ovTs + moveSize - 1) + 's] partially overlaps the current partition [' + _ovMs.start + 's–' + _ovMs.end + 's].\n\n' +
-                                            'Use sfdisk --move-data instead (handles overlap internally)?'
-                                        ).then(function(ok) { if (!ok) return; queueSfdiskMovePartition(_ovMs, _ovSp, _ovTs); });
-                                    }
-                                    return;
-                                }
+							var _targetFreeSeg = findContainingFreeSegment(dev, targetStart, targetEnd);
+							if (!_targetFreeSeg) {
                                 state.partitionDragInfo = null;
                                 showToast(t('tMoveNoSpace'), 'error');
                                 return;
@@ -11435,7 +11428,7 @@ actionsWrap.appendChild(btnRemove);
                                     currentEnd:   targetStart + moveSize - 1
                                 };
                                 renderMap();
-                                var _chipMoveP = queueSfdiskMovePartition(moveSource, srcDevicePath, targetStart);
+								var _chipMoveP = queueSfdiskMovePartition(moveSource, srcDevicePath, targetStart, { requireFreeTarget: true });
                                 var _chipDone  = function () { state.dragCtx = null; renderMap(); };
                                 if (_chipMoveP && typeof _chipMoveP.then === 'function') {
                                     _chipMoveP.then(_chipDone, _chipDone);
@@ -11457,8 +11450,8 @@ actionsWrap.appendChild(btnRemove);
                                     srcDevicePath,
                                     targetStart,
                                     targetEnd,
-                                    Number(p.start || 0),
-                                    Number(p.end   || 0)
+									Number(_targetFreeSeg.start || targetStart),
+									Number(_targetFreeSeg.end   || targetEnd)
                                 );
                             }
 						}
@@ -13819,6 +13812,11 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 			showToast(t('tNeedStartEnd'), 'warn', 10000);
 			return;
 		}
+		var tgtPreviewDev = getPreviewDeviceByPath(tgtDev);
+		if (!findContainingFreeSegment(tgtPreviewDev, tStart, tEnd)) {
+			showToast(t('tMoveNoSpace'), 'error', 10000);
+			return;
+		}
 
 		var cloneMode  = String((document.getElementById('mpCloneMode')      || {value:'smart'}).value   || 'smart');
 		var ddBs       = String((document.getElementById('mpDdBs')           || {value:'1M'}).value      || '1M').trim() || '1M';
@@ -14976,7 +14974,8 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		});
 	}
 
-	function queueSfdiskMovePartition(partArg, devPath, presetStart) {
+	function queueSfdiskMovePartition(partArg, devPath, presetStart, opts) {
+		var options = opts || {};
 		var devP = String(devPath || state.selectedDevice || '');
 		var part = partArg || state.selectedPart;
 		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return Promise.resolve(false); }
@@ -15006,6 +15005,13 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			if (!isFinite(newStart)||newStart<=0){showToast('Invalidstartsector.','warn');returnPromise.resolve(false);}
 			if (newStart === currentStart) { showToast(t('tMoveSame'), 'warn'); return Promise.resolve(false); }
 			var newEnd = newStart + currentSize - 1;
+			if (options.requireFreeTarget) {
+				var _previewMoveDev = getPreviewDeviceByPath(devP);
+				if (!findContainingFreeSegment(_previewMoveDev, newStart, newEnd)) {
+					showToast(t('tMoveNoSpace'), 'error', 10000);
+					return Promise.resolve(false);
+				}
+			}
 			var params = {
 				device:       devP,
 				partnum:      String(part.number),
