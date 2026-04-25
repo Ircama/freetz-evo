@@ -1,6 +1,6 @@
-$(call PKG_INIT_BIN, 5.2.10)
+$(call PKG_INIT_BIN, 5.3.1)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=a3e57be03f965abcf2ed17125b61ee2bd55a1223fe9226fa1978f3002a93427d
+$(PKG)_HASH:=338d89c7842381b350e359f63d6595aa36d2472b22d8b6f02294d6ddcfd9ecb1
 $(PKG)_SITE:=https://github.com/Novik/ruTorrent/archive/refs/tags
 ### WEBSITE:=https://github.com/Novik/ruTorrent
 ### MANPAGE:=https://github.com/Novik/ruTorrent/wiki
