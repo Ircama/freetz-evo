@@ -10725,13 +10725,12 @@ actionsWrap.appendChild(btnRemove);
 			}
 			var blNatLeft  = Math.round((blStart / total) * mapWidth);
 			var blNatWidth = Math.max(1, Math.round((blSize  / total) * mapWidth));
-			// During a left-edge drag of an extended partition, the free block immediately
-			// preceding it must visually shrink so that pixelCursor advances to the new
-			// dragged start position (not the original one), allowing the extended block
-			// to render at its new position without being clamped by the old pixelCursor.
-			// The same logic applies for a body-drag move ('move' edge) going leftward.
-			if (blp.kind === 'free' && state.dragCtx &&
-					(state.dragCtx.edge === 'left' || state.dragCtx.edge === 'move')) {
+			// During a left-edge resize, the free block immediately preceding the dragged
+			// partition must visually shrink so that pixelCursor advances to the new start
+			// position. Do NOT do this for body-drag moves: a move-left preview can split
+			// the original free span into left and right visible pieces around the moved
+			// partition, and shrinking the whole block would erase the right-hand piece.
+			if (blp.kind === 'free' && state.dragCtx && state.dragCtx.edge === 'left') {
 				var _dlOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
 				var _dlCurStart  = Number(state.dragCtx.currentStart || _dlOrigStart);
 				if (_dlCurStart < _dlOrigStart && blEnd + 1 === _dlOrigStart && blStart <= _dlCurStart) {
@@ -11498,8 +11497,15 @@ actionsWrap.appendChild(btnRemove);
 			if (_gVacEnd >= _gVacStart) {
 				var _gSize    = _gVacEnd - _gVacStart + 1;
 				var _gLeft    = Math.round((_gVacStart / total) * mapWidth);
-				var _gWidth   = Math.max(4, Math.round((_gSize  / total) * mapWidth));
-				if (_gLeft + _gWidth > mapWidth) _gWidth = Math.max(4, mapWidth - _gLeft);
+				var _gRight   = Math.round(((_gVacEnd + 1) / total) * mapWidth);
+				if (_gLeft < 0) _gLeft = 0;
+				if (_gLeft >= mapWidth) _gLeft = mapWidth - 1;
+				if (_gRight <= _gLeft) _gRight = _gLeft + 1;
+				if (_gRight > mapWidth) _gRight = mapWidth;
+				// Anchor the ghost block to the exact sector boundaries so it shares
+				// the same right/left edge as the adjacent rendered blocks and never
+				// leaves a rounded gap during move-left previews.
+				var _gWidth   = Math.max(1, _gRight - _gLeft);
 				var _gInExt   = (_extSectorStart >= 0 && _gVacStart >= _extSectorStart && _gVacEnd <= _extSectorEnd);
 				var _gBlock   = document.createElement('div');
 				_gBlock.className     = 'pcgi-block free' + (_gInExt ? ' pcgi-logical' : '');
