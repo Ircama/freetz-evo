@@ -2757,11 +2757,16 @@ action_move_partition_sfdisk() {
 	_partnum=$(cgi_param partnum)
 	_start=$(cgi_param start_sector)
 	_end=$(cgi_param end_sector)
+	_align_bytes=$(cgi_param align_bytes)
 
 	[ -n "$CMD_SFDISK" ] || { emit_json_error "sfdisk command not available"; return; }
 	is_valid_device "$_device" || { emit_json_error "Invalid device"; return; }
 	is_valid_partnum "$_partnum" || { emit_json_error "Invalid partition number"; return; }
 	is_valid_sector "$_start" || { emit_json_error "Invalid start sector"; return; }
+	case "$_align_bytes" in
+		''|0|512|4096|1048576) : ;;
+		*) emit_json_error "Invalid alignment"; return ;;
+	esac
 
 	# Get current dump to calculate size if end not provided
 	_dump=$("$CMD_SFDISK" --dump "$_device" 2>&1)
@@ -2794,6 +2799,21 @@ action_move_partition_sfdisk() {
 			emit_json_error "Could not determine current partition size from dump"
 			return
 		fi
+	fi
+
+	if [ -n "$_align_bytes" ] && [ "$_align_bytes" -gt 0 ] 2>/dev/null; then
+		_dev_base=$(basename "$_device" 2>/dev/null)
+		_logical_sector_size='512'
+		if [ -n "$_dev_base" ] && [ -r "/sys/class/block/$_dev_base/queue/logical_block_size" ]; then
+			_logical_sector_size=$(safe_uint "$(cat "/sys/class/block/$_dev_base/queue/logical_block_size" 2>/dev/null)")
+		fi
+		[ "$_logical_sector_size" -gt 0 ] || _logical_sector_size='512'
+		_align_sectors=$(( ($_align_bytes + _logical_sector_size - 1) / _logical_sector_size ))
+		[ "$_align_sectors" -gt 0 ] || _align_sectors=1
+		if [ $(( _start % _align_sectors )) -ne 0 ]; then
+			_start=$(( ( (_start + _align_sectors - 1) / _align_sectors ) * _align_sectors ))
+		fi
+		_end=$(( _start + _size - 1 ))
 	fi
 
 	if dry_run_enabled; then
@@ -5406,33 +5426,33 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 
 <!-- sfdisk Move Partition modal — opened by "Move p# (sfdisk --move-data)" -->
 <div id="pcgiSfdiskMoveModal" class="pcgi-modal" aria-hidden="true">
-	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
+	<div class="pcgi-modal-box" style="max-width:800px;width:96vw">
 		<h3 class="pcgi-modal-head">Move partition (sfdisk --move-data)</h3>
 
 		<!-- Section: Source (read-only) -->
 		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Source</div>
-		<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+		<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
 			<div>
 				<label>Partition</label>
-				<input id="smPartition" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+				<input id="smPartition" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace">
 			</div>
 			<div>
 				<label>Device</label>
-				<input id="smDevice" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+				<input id="smDevice" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace">
 			</div>
 		</div>
-		<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px">
+		<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:6px">
 			<div>
 				<label>Current start</label>
-				<input id="smCurStart" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+				<input id="smCurStart" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace">
 			</div>
 			<div>
 				<label>Current end</label>
-				<input id="smCurEnd" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+				<input id="smCurEnd" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace">
 			</div>
 			<div>
 				<label>Size</label>
-				<input id="smCurSize" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace">
+				<input id="smCurSize" type="text" readonly style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace">
 			</div>
 		</div>
 
@@ -5442,14 +5462,14 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 			<label>New start sector</label>
 			<div style="display:flex;gap:4px;align-items:center">
 				<input id="smNewStart" type="number" min="1" step="1" style="flex:1;min-width:0;font-family:monospace">
-				<input id="smNewStartHuman" type="text" readonly tabindex="-1" style="width:110px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
+				<input id="smNewStartHuman" type="text" readonly tabindex="-1" style="width:240px;min-width:160px;max-width:240px;box-sizing:border-box;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
 				<button type="button" id="smStartMinBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to earliest valid start sector">Min</button>
 				<button type="button" id="smStartMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to latest valid start sector">Max</button>
 			</div>
 		</div>
 		<div style="margin-top:6px">
 			<label>Resulting end / delta from current</label>
-			<input id="smNewEndDisplay" type="text" readonly tabindex="-1" style="background:#f5f7fa;cursor:default;width:100%;font-family:monospace" placeholder="---">
+			<input id="smNewEndDisplay" type="text" readonly tabindex="-1" style="background:#f5f7fa;cursor:default;width:100%;box-sizing:border-box;min-width:0;font-family:monospace" placeholder="---">
 		</div>
 
 		<!-- Section: Options -->
@@ -5469,6 +5489,15 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 					<option value="no">no</option>
 				</select>
 			</div>
+		</div>
+		<div style="margin-top:6px">
+			<label>Alignment</label>
+			<select id="smAlignment" style="width:100%">
+				<option value="1048576" selected>1048576 bytes (1 MiB - recommended)</option>
+				<option value="4096">4096 bytes (4 KiB - physical sector)</option>
+				<option value="512">512 bytes (legacy)</option>
+				<option value="0">no alignment</option>
+			</select>
 		</div>
 		<div id="smMountPointRow" style="margin-top:6px">
 			<label>Mount point after move</label>
@@ -7670,6 +7699,23 @@ window.paceOptions = {
 			minStart: Number(closest[0]),
 			maxStart: Number(closest[1])
 		};
+	}
+
+	function getAlignSectorsForBytes(alignBytes, logicalSectorSize) {
+		var bytes = Number(alignBytes || 0);
+		var lss = Number(logicalSectorSize || 512);
+		if (!isFinite(bytes) || bytes <= 0) return 0;
+		if (!isFinite(lss) || lss <= 0) lss = 512;
+		return Math.max(1, Math.ceil(bytes / lss));
+	}
+
+	function getAlignmentLabelForBytes(alignBytes) {
+		var value = String(alignBytes || '0');
+		if (value === '1048576') return '1 MiB';
+		if (value === '4096') return '4 KiB';
+		if (value === '512') return '512 B';
+		if (value === '0') return 'none';
+		return value + ' bytes';
 	}
 
 	function detectLanguage() {
@@ -15209,8 +15255,9 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var smNewEndD   = document.getElementById('smNewEndDisplay');
 		var smStartMinBtn = document.getElementById('smStartMinBtn');
 		var smStartMaxBtn = document.getElementById('smStartMaxBtn');
+		var smAlign = document.getElementById('smAlignment');
 		var startDefault = (presetStartVal !== undefined && presetStartVal !== null) ? Number(presetStartVal) : currentStart;
-		var validBounds = getSfdiskMoveStartBounds(previewDev, partObj, startDefault);
+		var validBounds = null;
 		function isAllowedTargetStart(ns) {
 			var startNum = Number(ns);
 			if (!isFinite(startNum) || startNum <= 0) return false;
@@ -15219,9 +15266,62 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 		var lastValidStart = isAllowedTargetStart(startDefault) ? startDefault : currentStart;
 		smNewStart.value = lastValidStart;
-		if (validBounds) {
-			smNewStart.min = String(validBounds.minStart);
-			smNewStart.max = String(validBounds.maxStart);
+		if (smAlign) smAlign.value = '1048576';
+		function getActiveAlignSectors() {
+			return getAlignSectorsForBytes(smAlign ? smAlign.value : 0, _lss);
+		}
+		function computeAlignedBounds(referenceStart) {
+			var rawBounds = getSfdiskMoveStartBounds(previewDev, partObj, referenceStart);
+			if (!rawBounds) return null;
+			var alignSectors = getActiveAlignSectors();
+			if (!alignSectors) {
+				return {
+					minStart: rawBounds.minStart,
+					maxStart: rawBounds.maxStart,
+					alignSectors: 0
+				};
+			}
+			var minAligned = Math.ceil(Number(rawBounds.minStart) / alignSectors) * alignSectors;
+			var maxAligned = Math.floor(Number(rawBounds.maxStart) / alignSectors) * alignSectors;
+			if (!isFinite(minAligned) || !isFinite(maxAligned) || maxAligned < minAligned) return null;
+			return {
+				minStart: minAligned,
+				maxStart: maxAligned,
+				alignSectors: alignSectors
+			};
+		}
+		function refreshAlignedBounds(referenceStart) {
+			validBounds = computeAlignedBounds(referenceStart);
+			if (validBounds) {
+				smNewStart.min = String(validBounds.minStart);
+				smNewStart.max = String(validBounds.maxStart);
+			} else {
+				smNewStart.removeAttribute('min');
+				smNewStart.removeAttribute('max');
+			}
+			if (smStartMinBtn) smStartMinBtn.disabled = !(validBounds && isFinite(validBounds.minStart));
+			if (smStartMaxBtn) smStartMaxBtn.disabled = !(validBounds && isFinite(validBounds.maxStart));
+		}
+		function normalizeStartForAlignment(ns, referenceStart) {
+			var startNum = Number(ns);
+			if (!isFinite(startNum) || startNum <= 0) return { ok: false };
+			if (startNum === currentStart) return { ok: true, value: currentStart, rounded: false };
+			var bounds = computeAlignedBounds(referenceStart !== undefined ? referenceStart : startNum);
+			if (!bounds) return { ok: false };
+			if (!bounds.alignSectors) return { ok: true, value: startNum, rounded: false };
+			var up = Math.ceil(startNum / bounds.alignSectors) * bounds.alignSectors;
+			var down = Math.floor(startNum / bounds.alignSectors) * bounds.alignSectors;
+			var candidates = [];
+			if (up >= bounds.minStart && up <= bounds.maxStart) candidates.push(up);
+			if (down >= bounds.minStart && down <= bounds.maxStart && down !== up) candidates.push(down);
+			if (!candidates.length) return { ok: false };
+			candidates.sort(function(a, b) {
+				var da = Math.abs(a - startNum);
+				var db = Math.abs(b - startNum);
+				if (da !== db) return da - db;
+				return a - b;
+			});
+			return { ok: true, value: candidates[0], rounded: candidates[0] !== startNum };
 		}
 		function syncSfdiskMovePreview(ns) {
 			var startNum = Number(ns);
@@ -15254,12 +15354,30 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 		function revertToLastValidTargetStart() {
 			smNewStart.value = String(lastValidStart);
+			refreshAlignedBounds(lastValidStart);
 			updateTargetDisplay();
 		}
-		function validateTargetStartInput(showAlert) {
+		function validateTargetStartInput(showAlert, showAlignInfo) {
+			var rawStart = parseInt(smNewStart.value, 10);
+			var normalized = normalizeStartForAlignment(rawStart, rawStart);
+			if (!normalized.ok) {
+				revertToLastValidTargetStart();
+				if (showAlert) {
+					showToast(t('tMoveNoSpace'), 'error', 10000);
+					setTimeout(function() { try { smNewStart.focus(); smNewStart.select(); } catch (_e) {} }, 0);
+				}
+				return false;
+			}
+			if (normalized.rounded) {
+				smNewStart.value = String(normalized.value);
+				if (showAlignInfo) {
+					showToast('Start sector aligned to ' + normalized.value + 's (' + getAlignmentLabelForBytes(smAlign ? smAlign.value : '0') + ').', 'info', 6000);
+				}
+			}
 			var ns = parseInt(smNewStart.value, 10);
 			if (isAllowedTargetStart(ns)) {
 				lastValidStart = ns;
+				refreshAlignedBounds(ns);
 				updateTargetDisplay();
 				syncSfdiskMovePreview(ns);
 				return true;
@@ -15271,34 +15389,46 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			}
 			return false;
 		}
-		function onStartChange() { validateTargetStartInput(true); }
+		function onStartChange() { validateTargetStartInput(true, true); }
 		function onStartInput() {
 			updateTargetDisplay();
 			var ns = parseInt(smNewStart.value, 10);
-			if (isAllowedTargetStart(ns)) syncSfdiskMovePreview(ns);
+			if (!isFinite(ns) || ns <= 0) return;
+			var normalized = normalizeStartForAlignment(ns, ns);
+			if (normalized.ok) refreshAlignedBounds(normalized.value);
+			if (normalized.ok && normalized.value === ns && isAllowedTargetStart(ns)) syncSfdiskMovePreview(ns);
+		}
+		function onAlignChange() {
+			if (!validateTargetStartInput(false, true)) {
+				revertToLastValidTargetStart();
+				syncSfdiskMovePreview(lastValidStart);
+				showToast('No aligned start is available in this local range.', 'warn', 8000);
+			}
 		}
 		smNewStart.addEventListener('input', onStartInput);
 		smNewStart.addEventListener('change', onStartChange);
+		if (smAlign) smAlign.addEventListener('change', onAlignChange);
 		if (smStartMinBtn) {
-			smStartMinBtn.disabled = !(validBounds && isFinite(validBounds.minStart));
 			smStartMinBtn.onclick = function () {
 				if (!validBounds || !isFinite(validBounds.minStart)) return;
 				smNewStart.value = String(validBounds.minStart);
 				lastValidStart = validBounds.minStart;
+				refreshAlignedBounds(validBounds.minStart);
 				updateTargetDisplay();
 				syncSfdiskMovePreview(validBounds.minStart);
 			};
 		}
 		if (smStartMaxBtn) {
-			smStartMaxBtn.disabled = !(validBounds && isFinite(validBounds.maxStart));
 			smStartMaxBtn.onclick = function () {
 				if (!validBounds || !isFinite(validBounds.maxStart)) return;
 				smNewStart.value = String(validBounds.maxStart);
 				lastValidStart = validBounds.maxStart;
+				refreshAlignedBounds(validBounds.maxStart);
 				updateTargetDisplay();
 				syncSfdiskMovePreview(validBounds.maxStart);
 			};
 		}
+		refreshAlignedBounds(lastValidStart);
 		updateTargetDisplay();
 		syncSfdiskMovePreview(lastValidStart);
 		/* Options */
@@ -15325,6 +15455,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				modal.setAttribute('aria-hidden', 'true');
 				smNewStart.removeEventListener('input', onStartInput);
 				smNewStart.removeEventListener('change', onStartChange);
+				if (smAlign) smAlign.removeEventListener('change', onAlignChange);
 				smRemount.removeEventListener('change', updateMpVisibility);
 				if (smStartMinBtn) smStartMinBtn.onclick = null;
 				if (smStartMaxBtn) smStartMaxBtn.onclick = null;
@@ -15338,6 +15469,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				if (!isFinite(ns)||ns<=0){showToast('Enteravalidpositivesectornumber.','warn');return;}
 				var result = {
 					newStart:   ns,
+					alignBytes: smAlign ? String(smAlign.value || '0') : '0',
 					doUnmount:  smUnmount.value === 'yes',
 					doRemount:  smRemount.value === 'yes',
 					mountPoint: smMp.value.trim() || mountpointStr || ''
@@ -15379,7 +15511,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			return (i === 0 ? bytes : bytes.toFixed(1)) + ' ' + u[i];
 		}
 
-		function doQueue(newStart, doUnmount, doRemount, mountPoint) {
+		function doQueue(newStart, alignBytes, doUnmount, doRemount, mountPoint) {
 			newStart = Number(newStart);
 			if (!isFinite(newStart)||newStart<=0){showToast('Invalidstartsector.','warn');returnPromise.resolve(false);}
 			if (newStart === currentStart) { showToast(t('tMoveSame'), 'warn'); return Promise.resolve(false); }
@@ -15395,8 +15527,10 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				device:       devP,
 				partnum:      String(part.number),
 				start_sector: String(newStart),
-				end_sector:   String(newEnd)
+				end_sector:   String(newEnd),
+				align_bytes:  String(alignBytes || '0')
 			};
+			var alignSummary = getAlignmentLabelForBytes(alignBytes || '0');
 			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (sfdisk --move-data)';
 			var confirmMsg =
 				'<table style="width:100%;border-collapse:collapse;font-size:0.9em;margin-bottom:8px">' +
@@ -15414,6 +15548,9 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				'<tr><td style="padding:3px 8px">Size</td>' +
 				'<td style="text-align:right;padding:2px 6px">' + currentSize + 's (' + _sh(currentSize) + ')</td>' +
 				'<td style="text-align:right;padding:2px 6px">' + currentSize + 's (' + _sh(currentSize) + ')</td></tr>' +
+				'<tr><td style="padding:3px 8px">Alignment</td>' +
+				'<td style="text-align:right;padding:2px 6px">-</td>' +
+				'<td style="text-align:right;padding:2px 6px">' + alignSummary + '</td></tr>' +
 				'</tbody></table>' +
 				'<p style="margin:6px 0;font-size:0.88em;color:#555">Overlapping source / target ranges are allowed — sfdisk moves data in-place.<br>' +
 				'Ensure no other process accesses this disk during the operation.</p>';
@@ -15449,7 +15586,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		return showSfdiskMoveModal(part, devP, presetStart, _isMounted, _mountpoint, _partPath, _lss)
 			.then(function(result) {
 				if (!result)returnPromise.resolve(false);
-				return doQueue(result.newStart, result.doUnmount, result.doRemount, result.mountPoint);
+				return doQueue(result.newStart, result.alignBytes, result.doUnmount, result.doRemount, result.mountPoint);
 			});
 	}
 
