@@ -5406,7 +5406,7 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 
 <!-- sfdisk Move Partition modal — opened by "Move p# (sfdisk --move-data)" -->
 <div id="pcgiSfdiskMoveModal" class="pcgi-modal" aria-hidden="true">
-	<div class="pcgi-modal-box" style="max-width:620px;width:96vw">
+	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
 		<h3 class="pcgi-modal-head">Move partition (sfdisk --move-data)</h3>
 
 		<!-- Section: Source (read-only) -->
@@ -5443,6 +5443,8 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 			<div style="display:flex;gap:4px;align-items:center">
 				<input id="smNewStart" type="number" min="1" step="1" style="flex:1;min-width:0;font-family:monospace">
 				<input id="smNewStartHuman" type="text" readonly tabindex="-1" style="width:110px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
+				<button type="button" id="smStartMinBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to earliest valid start sector">Min</button>
+				<button type="button" id="smStartMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to latest valid start sector">Max</button>
 			</div>
 		</div>
 		<div style="margin-top:6px">
@@ -7494,6 +7496,16 @@ window.paceOptions = {
 		return null;
 	}
 
+	function getPreviewPartRole(seg) {
+		var role = String(seg && seg.role || '');
+		if (!role) {
+			if (String(seg && seg.fs || '').toLowerCase() === 'extended') role = 'extended';
+			else if (!String(seg && seg.fs || '') && String(seg && seg.flags || '').toLowerCase() === 'lba') role = 'extended';
+			else if (Number(seg && seg.number || 0) >= 5) role = 'logical';
+		}
+		return role;
+	}
+
 	function isRangeAvailableForSfdiskMove(dev, rangeStart, rangeEnd, sourcePart) {
 		var start = Number(rangeStart || 0);
 		var end = Number(rangeEnd || 0);
@@ -7509,38 +7521,36 @@ window.paceOptions = {
 		var srcNum = Number(sourcePart && sourcePart.number || 0);
 		var srcStart = Number(sourcePart && sourcePart.start || 0);
 		var srcEnd = Number(sourcePart && sourcePart.end || (srcStart > 0 ? srcStart + Number(sourcePart && sourcePart.size || 0) - 1 : 0));
+		var srcRole = '';
 		var extStart = -1, extEnd = -1;
 
-		function getPartRole(seg) {
-			var role = String(seg && seg.role || '');
-			if (!role) {
-				if (String(seg && seg.fs || '').toLowerCase() === 'extended') role = 'extended';
-				else if (!String(seg && seg.fs || '') && String(seg && seg.flags || '').toLowerCase() === 'lba') role = 'extended';
-				else if (Number(seg && seg.number || 0) >= 5) role = 'logical';
-			}
-			return role;
-		}
+		srcRole = getPreviewPartRole(sourcePart);
 
 		for (var i = 0; i < dev.partitions.length; i++) {
 			var extSeg = dev.partitions[i];
 			if (!extSeg || extSeg.kind !== 'partition') continue;
-			if (getPartRole(extSeg) === 'extended') {
+			if (getPreviewPartRole(extSeg) === 'extended') {
 				extStart = Number(extSeg.start || 0);
 				extEnd = Number(extSeg.end || 0);
 				break;
 			}
 		}
 
-		if (extStart >= 0 && srcStart > 0 && srcEnd >= srcStart) {
+		if (extStart >= 0 && extEnd >= extStart && srcRole !== 'extended' && srcStart > 0 && srcEnd >= srcStart) {
 			var sourceInExt = (srcStart >= extStart && srcEnd <= extEnd);
 			var targetInExt = (start >= extStart && end <= extEnd);
-			if (sourceInExt !== targetInExt) return false;
+			var targetHitsExtended = moveRangesIntersect(extStart, extEnd, start, end);
+			if (sourceInExt) {
+				if (!targetInExt) return false;
+			} else if (targetHitsExtended) {
+				return false;
+			}
 		}
 
 		for (var j = 0; j < dev.partitions.length; j++) {
 			var seg = dev.partitions[j];
 			if (!seg || seg.kind !== 'partition') continue;
-			if (getPartRole(seg) === 'extended') continue;
+			if (getPreviewPartRole(seg) === 'extended') continue;
 			var segPath = String(seg.path || '');
 			var segNum = Number(seg.number || 0);
 			var segStart = Number(seg.start || 0);
@@ -7551,6 +7561,115 @@ window.paceOptions = {
 			if (moveRangesIntersect(seg.start, seg.end, start, end)) return false;
 		}
 		return true;
+	}
+
+	function getSfdiskMoveStartBounds(dev, sourcePart, referenceStart) {
+		if (!dev || !dev.partitions || !sourcePart) return null;
+		var total = Number(dev.total_sectors || 0);
+		if (!isFinite(total) || total <= 0) return null;
+		var srcPath = String(sourcePart.path || '');
+		var srcNum = Number(sourcePart.number || 0);
+		var srcStart = Number(sourcePart.start || 0);
+		var refStart = Number(referenceStart || srcStart);
+		var srcEnd = Number(sourcePart.end || (srcStart > 0 ? srcStart + Number(sourcePart.size || 0) - 1 : 0));
+		var size = Number(sourcePart.size || (srcEnd >= srcStart ? srcEnd - srcStart + 1 : 0));
+		var srcRole = getPreviewPartRole(sourcePart);
+		var extStart = -1, extEnd = -1;
+		var maxStart = total - size;
+		var blockers = [];
+		var domains = [];
+		var validStarts = [];
+
+		function subtractForbidden(intervals, forbiddenStart, forbiddenEnd) {
+			var result = [];
+			for (var ii = 0; ii < intervals.length; ii++) {
+				var interval = intervals[ii];
+				var left = Number(interval[0]);
+				var right = Number(interval[1]);
+				if (forbiddenEnd < left || forbiddenStart > right) {
+					result.push(interval);
+					continue;
+				}
+				if (forbiddenStart > left) result.push([left, forbiddenStart - 1]);
+				if (forbiddenEnd < right) result.push([forbiddenEnd + 1, right]);
+			}
+			return result;
+		}
+
+		if (!isFinite(size) || size <= 0 || maxStart < 1) return null;
+
+		for (var i = 0; i < dev.partitions.length; i++) {
+			var seg = dev.partitions[i];
+			if (!seg || seg.kind !== 'partition') continue;
+			var role = getPreviewPartRole(seg);
+			if (role === 'extended') {
+				extStart = Number(seg.start || 0);
+				extEnd = Number(seg.end || 0);
+				continue;
+			}
+			var segPath = String(seg.path || '');
+			var segNum = Number(seg.number || 0);
+			var segStart = Number(seg.start || 0);
+			var sameSource = (srcPath && segPath === srcPath) ||
+				(srcNum > 0 && segNum === srcNum) ||
+				(srcStart > 0 && segStart === srcStart);
+			if (sameSource) continue;
+			blockers.push([Number(seg.start || 0), Number(seg.end || 0)]);
+		}
+
+		if (extStart >= 0 && extEnd >= extStart && srcRole !== 'extended') {
+			var sourceInExt = (srcStart >= extStart && srcEnd <= extEnd);
+			if (sourceInExt) {
+				domains.push([extStart, extEnd - size + 1]);
+			} else {
+				domains.push([1, Math.min(maxStart, extStart - size)]);
+				domains.push([extEnd + 1, maxStart]);
+			}
+		} else {
+			domains.push([1, maxStart]);
+		}
+
+		blockers.sort(function(a, b) { return Number(a[0]) - Number(b[0]); });
+
+		for (var di = 0; di < domains.length; di++) {
+			var domainStart = Math.max(1, Number(domains[di][0]));
+			var domainEnd = Math.min(maxStart, Number(domains[di][1]));
+			var intervals = [];
+			if (isFinite(domainStart) && isFinite(domainEnd) && domainEnd >= domainStart) {
+				intervals.push([domainStart, domainEnd]);
+			}
+			for (var bi = 0; bi < blockers.length && intervals.length; bi++) {
+				var blockStart = Number(blockers[bi][0]);
+				var blockEnd = Number(blockers[bi][1]);
+				intervals = subtractForbidden(intervals, blockStart - size + 1, blockEnd);
+			}
+			for (var vi = 0; vi < intervals.length; vi++) validStarts.push(intervals[vi]);
+		}
+
+		if (!validStarts.length) return null;
+		validStarts.sort(function(a, b) { return Number(a[0]) - Number(b[0]); });
+		for (var si = 0; si < validStarts.length; si++) {
+			if (refStart >= Number(validStarts[si][0]) && refStart <= Number(validStarts[si][1])) {
+				return {
+					minStart: Number(validStarts[si][0]),
+					maxStart: Number(validStarts[si][1])
+				};
+			}
+		}
+		var closest = validStarts[0];
+		var bestDistance = Math.min(Math.abs(refStart - Number(closest[0])), Math.abs(refStart - Number(closest[1])));
+		for (var ci = 1; ci < validStarts.length; ci++) {
+			var candidate = validStarts[ci];
+			var distance = Math.min(Math.abs(refStart - Number(candidate[0])), Math.abs(refStart - Number(candidate[1])));
+			if (distance < bestDistance) {
+				closest = candidate;
+				bestDistance = distance;
+			}
+		}
+		return {
+			minStart: Number(closest[0]),
+			maxStart: Number(closest[1])
+		};
 	}
 
 	function detectLanguage() {
@@ -13848,6 +13967,7 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 
 	// ── Row 2: target device dropdown ───────────────────────────────────────
 	populateDevDropdown('mpTargetDevice', targetDevPath || state.selectedDevice || '');
+	var targetDevEl = document.getElementById('mpTargetDevice');
 
 	// ── Rows 3-4: target sectors ─────────────────────────────────────────────
 	var startEl = document.getElementById('mpTargetStart');
@@ -13870,6 +13990,38 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 	document.getElementById('mpStepDelay').value      = cloneOpts.step_delay         || '1';
 
 	refreshSectorHumanFields();
+	function syncMovePreviewFromFields() {
+		var previewTargetDev = String((targetDevEl || { value: '' }).value || targetDevPath || '').trim();
+		var previewStart = Number(startEl.value);
+		var previewEnd = Number(endEl.value);
+		var sourceDev = getPreviewDeviceByPath(srcDevPath) || { path: srcDevPath };
+		var dragPath = String(state.dragCtx && (state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path)) || '');
+		var dragNum = Number(state.dragCtx && state.dragCtx.part && state.dragCtx.part.number || 0);
+		var sameDragPart = !!(state.dragCtx && state.dragCtx.edge === 'move' && (
+			(String(srcPart.path || '') && dragPath === String(srcPart.path || '')) ||
+			(Number(srcPart.number || 0) > 0 && dragNum === Number(srcPart.number || 0))
+		));
+
+		if (previewTargetDev !== String(srcDevPath || '').trim()) {
+			if (sameDragPart) {
+				state.dragCtx = null;
+				renderMap();
+			}
+			return;
+		}
+		if (!isFinite(previewStart) || !isFinite(previewEnd) || previewStart <= 0 || previewEnd < previewStart) {
+			return;
+		}
+		state.dragCtx = {
+			dev: sourceDev,
+			part: srcPart,
+			partPath: String(srcPart.path || ''),
+			edge: 'move',
+			currentStart: previewStart,
+			currentEnd: previewEnd
+		};
+		renderMap();
+	}
 
 	// ── Min / Max buttons ────────────────────────────────────────────────────
 	var prevStart = Number(targetStart);
@@ -13881,11 +14033,13 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		startEl.value = String(fs);
 		prevStart = fs;
 		refreshSectorHumanFields();
+		syncMovePreviewFromFields();
 	};
 	document.getElementById('mpEndMaxBtn').onclick = function () {
 		var fe = Number(document.getElementById('mpFreeEnd').value || freeEnd);
 		endEl.value = String(fe);
 		refreshSectorHumanFields();
+		syncMovePreviewFromFields();
 	};
 
 	// ── Linked start→end translation ─────────────────────────────────────────
@@ -13898,8 +14052,15 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		}
 		if (isFinite(Number(startEl.value))) prevStart = Number(startEl.value);
 		refreshSectorHumanFields();
+		syncMovePreviewFromFields();
 	};
-	endEl.oninput = refreshSectorHumanFields;
+	endEl.oninput = function () {
+		refreshSectorHumanFields();
+		syncMovePreviewFromFields();
+	};
+	startEl.onchange = syncMovePreviewFromFields;
+	endEl.onchange = syncMovePreviewFromFields;
+	if (targetDevEl) targetDevEl.onchange = syncMovePreviewFromFields;
 
 	// ── Show modal ───────────────────────────────────────────────────────────
 	modal.style.display = 'flex';
@@ -13914,7 +14075,10 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		cancelBtn.onclick = null;
 		okBtn.onclick     = null;
 		startEl.oninput   = null;
+		startEl.onchange  = null;
 		endEl.oninput     = null;
+		endEl.onchange    = null;
+		if (targetDevEl) targetDevEl.onchange = null;
 		document.removeEventListener('keydown', onEsc);
 	}
 	function cleanup() {
@@ -15043,7 +15207,10 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var smNewStart  = document.getElementById('smNewStart');
 		var smNewStartH = document.getElementById('smNewStartHuman');
 		var smNewEndD   = document.getElementById('smNewEndDisplay');
+		var smStartMinBtn = document.getElementById('smStartMinBtn');
+		var smStartMaxBtn = document.getElementById('smStartMaxBtn');
 		var startDefault = (presetStartVal !== undefined && presetStartVal !== null) ? Number(presetStartVal) : currentStart;
+		var validBounds = getSfdiskMoveStartBounds(previewDev, partObj, startDefault);
 		function isAllowedTargetStart(ns) {
 			var startNum = Number(ns);
 			if (!isFinite(startNum) || startNum <= 0) return false;
@@ -15052,6 +15219,30 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 		var lastValidStart = isAllowedTargetStart(startDefault) ? startDefault : currentStart;
 		smNewStart.value = lastValidStart;
+		if (validBounds) {
+			smNewStart.min = String(validBounds.minStart);
+			smNewStart.max = String(validBounds.maxStart);
+		}
+		function syncSfdiskMovePreview(ns) {
+			var startNum = Number(ns);
+			if (!isAllowedTargetStart(startNum)) return;
+			state.dragCtx = {
+				dev: previewDev || { path: devPathStr },
+				part: partObj,
+				partPath: String(partObj.path || ''),
+				edge: 'move',
+				currentStart: startNum,
+				currentEnd: startNum + currentSize - 1
+			};
+			renderMap();
+		}
+		function clearSfdiskMovePreview() {
+			if (!state.dragCtx || state.dragCtx.edge !== 'move') return;
+			if (String(state.dragCtx.dev && state.dragCtx.dev.path || '') !== String(devPathStr || '')) return;
+			if (String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '') !== String(partObj.path || '')) return;
+			state.dragCtx = null;
+			renderMap();
+		}
 		function updateTargetDisplay() {
 			var ns = parseInt(smNewStart.value, 10);
 			if (!isFinite(ns)||ns<=0){smNewStartH.value='';smNewEndD.value='';return;}
@@ -15070,6 +15261,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			if (isAllowedTargetStart(ns)) {
 				lastValidStart = ns;
 				updateTargetDisplay();
+				syncSfdiskMovePreview(ns);
 				return true;
 			}
 			revertToLastValidTargetStart();
@@ -15080,9 +15272,35 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			return false;
 		}
 		function onStartChange() { validateTargetStartInput(true); }
-		smNewStart.addEventListener('input', updateTargetDisplay);
+		function onStartInput() {
+			updateTargetDisplay();
+			var ns = parseInt(smNewStart.value, 10);
+			if (isAllowedTargetStart(ns)) syncSfdiskMovePreview(ns);
+		}
+		smNewStart.addEventListener('input', onStartInput);
 		smNewStart.addEventListener('change', onStartChange);
+		if (smStartMinBtn) {
+			smStartMinBtn.disabled = !(validBounds && isFinite(validBounds.minStart));
+			smStartMinBtn.onclick = function () {
+				if (!validBounds || !isFinite(validBounds.minStart)) return;
+				smNewStart.value = String(validBounds.minStart);
+				lastValidStart = validBounds.minStart;
+				updateTargetDisplay();
+				syncSfdiskMovePreview(validBounds.minStart);
+			};
+		}
+		if (smStartMaxBtn) {
+			smStartMaxBtn.disabled = !(validBounds && isFinite(validBounds.maxStart));
+			smStartMaxBtn.onclick = function () {
+				if (!validBounds || !isFinite(validBounds.maxStart)) return;
+				smNewStart.value = String(validBounds.maxStart);
+				lastValidStart = validBounds.maxStart;
+				updateTargetDisplay();
+				syncSfdiskMovePreview(validBounds.maxStart);
+			};
+		}
 		updateTargetDisplay();
+		syncSfdiskMovePreview(lastValidStart);
 		/* Options */
 		var smUnmount = document.getElementById('smUnmountBefore');
 		var smRemount = document.getElementById('smRemountAfter');
@@ -15102,11 +15320,14 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		setTimeout(function() { smNewStart.focus(); smNewStart.select(); }, 50);
 		return new Promise(function(resolve) {
 			function cleanup() {
+				clearSfdiskMovePreview();
 				modal.style.display = 'none';
 				modal.setAttribute('aria-hidden', 'true');
-				smNewStart.removeEventListener('input', updateTargetDisplay);
+				smNewStart.removeEventListener('input', onStartInput);
 				smNewStart.removeEventListener('change', onStartChange);
 				smRemount.removeEventListener('change', updateMpVisibility);
+				if (smStartMinBtn) smStartMinBtn.onclick = null;
+				if (smStartMaxBtn) smStartMaxBtn.onclick = null;
 				document.getElementById('pcgiSmOkBtn').onclick = null;
 				document.getElementById('pcgiSmCancelBtn').onclick = null;
 				document.removeEventListener('keydown', escListener);
