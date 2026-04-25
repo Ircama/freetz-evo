@@ -5008,10 +5008,74 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 	50% { transform: scale(1.05); opacity: 1; }
 	100% { transform: scale(0.9); opacity: 0.7; }
 }
+/* ── Mermaid flowchart modal ────────────────────────────────────────────── */
+#pcgiMermaidModal .pcgi-modal-box {
+	width: min(980px, calc(100vw - 24px));
+	max-height: calc(100vh - 32px);
+	display: flex;
+	flex-direction: column;
+}
+#pcgiMermaidWrap {
+	flex: 1;
+	overflow: auto;
+	background: #fafcff;
+	border: 1px solid #c8d6e5;
+	border-radius: 6px;
+	padding: 12px;
+	min-height: 180px;
+	position: relative;
+}
+#pcgiMermaidWrap svg {
+	max-width: 100%;
+	height: auto;
+	display: block;
+	margin: 0 auto;
+}
+#pcgiMermaidSrc {
+	width: 100%;
+	box-sizing: border-box;
+	font-family: monospace;
+	font-size: 12px;
+	border: 1px solid #b8c8da;
+	border-radius: 4px;
+	padding: 8px;
+	background: #f5f8fb;
+	color: #1a2a3a;
+	resize: vertical;
+	min-height: 140px;
+	margin-top: 8px;
+}
+#pcgiMermaidError {
+	color: #c0392b;
+	font-size: 12px;
+	margin-top: 6px;
+	display: none;
+}
+.pcgi-mermaid-toolbar {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	margin-bottom: 8px;
+	flex-wrap: wrap;
+}
+.pcgi-mermaid-legend {
+	font-size: 11px;
+	color: #4f5b67;
+	margin-bottom: 6px;
+}
+.pcgi-mermaid-copy-ok {
+	color: #217a3c;
+	font-size: 11px;
+	margin-left: 4px;
+	opacity: 0;
+	transition: opacity 0.4s;
+}
+.pcgi-mermaid-copy-ok.show { opacity: 1; }
 </style>
 
 <div class="pcgi-toolbar">
 	<button type="button" onclick="refreshDevices()" id="refreshMapBtn">Refresh map</button>
+	<button type="button" onclick="showMermaidModal()" id="mermaidFlowchartBtn" title="Show disk layout as hierarchical diagram">&#x25A6; Disk Map</button>
 	<span id="i18nDeviceStripLabel"><b>Devices:</b></span>
 	<span id="mapStatus" class="pcgi-small"></span>
 </div>
@@ -6459,6 +6523,45 @@ cat <<'EOF'
 		<div id="pcgiHelpText" class="pcgi-help-list"></div>
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiHelpCloseBtn">Close</button>
+		</div>
+	</div>
+</div>
+
+<!-- Mermaid flowchart modal -->
+<div id="pcgiMermaidModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box">
+		<h3 class="pcgi-modal-head" id="pcgiMermaidTitle">Disk layout — Mermaid flowchart</h3>
+		<div class="pcgi-mermaid-legend" id="pcgiMermaidLegend"></div>
+		<div class="pcgi-mermaid-toolbar">
+			<button type="button" id="pcgiMermaidRegenBtn">&#x21BA; Regenerate</button>
+			<button type="button" id="pcgiMermaidCopyBtn">&#x2398; Copy source</button>
+			<span class="pcgi-mermaid-copy-ok" id="pcgiMermaidCopyOk">Copied!</span>
+			<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+				<input type="checkbox" id="pcgiMermaidShowSrc"> Show source
+			</label>
+			<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+				Theme:
+				<select id="pcgiMermaidTheme" style="font-size:12px;padding:1px 4px">
+					<option value="default">Default</option>
+					<option value="neutral">Neutral</option>
+					<option value="dark">Dark</option>
+					<option value="forest">Forest</option>
+					<option value="base">Base</option>
+				</select>
+			</label>
+			<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+				Layout:
+				<select id="pcgiMermaidDir" style="font-size:12px;padding:1px 4px">
+					<option value="TB">Top → Bottom</option>
+					<option value="LR">Left → Right</option>
+				</select>
+			</label>
+		</div>
+		<div id="pcgiMermaidWrap"><div id="pcgiMermaidSvg"></div></div>
+		<div id="pcgiMermaidError"></div>
+		<textarea id="pcgiMermaidSrc" spellcheck="false" style="display:none"></textarea>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiMermaidCloseBtn">Close</button>
 		</div>
 	</div>
 </div>
@@ -10593,6 +10696,7 @@ actionsWrap.appendChild(btnRemove);
 			var _blOrigStart = blStart, _blOrigEnd = blEnd, _blOrigSize = blSize;
 			var _blDraggedRight = false;
 			var _blDraggedLeft  = false;
+			var _blDraggedMoveRight = false; // partition dragged rightward (same-type body-drag)
 			if (state.dragCtx && blp.kind === 'partition') {
 				var blDevPath  = String(state.dragCtx.dev && state.dragCtx.dev.path || '');
 				var blPartPath = String(state.dragCtx.partPath || (state.dragCtx.part && state.dragCtx.part.path) || '');
@@ -10610,6 +10714,8 @@ actionsWrap.appendChild(btnRemove);
 						blStart = Number(state.dragCtx.currentStart);
 						blEnd   = Number(state.dragCtx.currentEnd);
 						blSize  = Math.max(1, blEnd - blStart + 1);
+						// Track direction so pixelCursor can be handled correctly below.
+						_blDraggedMoveRight = (_blOrigStart < Number(state.dragCtx.currentStart));
 					} else {
 						blEnd = Number(state.dragCtx.currentEnd || blEnd);
 						_blDraggedRight = true;
@@ -10628,7 +10734,7 @@ actionsWrap.appendChild(btnRemove);
 					(state.dragCtx.edge === 'left' || state.dragCtx.edge === 'move')) {
 				var _dlOrigStart = Number(state.dragCtx.part && state.dragCtx.part.start || 0);
 				var _dlCurStart  = Number(state.dragCtx.currentStart || _dlOrigStart);
-				if (_dlCurStart < _dlOrigStart && blEnd + 1 === _dlOrigStart) {
+				if (_dlCurStart < _dlOrigStart && blEnd + 1 === _dlOrigStart && blStart <= _dlCurStart) {
 					var _dlCapPx = Math.round((_dlCurStart / total) * mapWidth) - blNatLeft;
 					blNatWidth = Math.max(4, _dlCapPx);
 				}
@@ -10681,7 +10787,7 @@ actionsWrap.appendChild(btnRemove);
 				// During a left-drag, the extended block's new start is to the LEFT of where
 				// pixelCursor is (the free block was capped above, but use blNatLeft as a
 				// safety net so the extended block never gets stuck at the old position).
-				blLeft  = (_blDraggedLeft || _blMovedLeft || _blCrossTypeMove) ? blNatLeft : Math.max(pixelCursor, blNatLeft);
+				blLeft  = (_blDraggedLeft || _blMovedLeft || _blCrossTypeMove || _blDraggedMoveRight) ? blNatLeft : Math.max(pixelCursor, blNatLeft);
 				if (blLeft < 0)         blLeft = 0;
 				if (blLeft >= mapWidth) blLeft = mapWidth - 1;
 				// Clamp right edge to mapWidth so the rightmost partition is never
@@ -10703,6 +10809,11 @@ actionsWrap.appendChild(btnRemove);
 				} else if (_blDraggedLeft || _blMovedLeft) {
 					// Pin to the pixel position of the original right edge (blEnd never changed).
 					pixelCursor = Math.max(blLeft + blMinWidth, Math.round((_blOrigEnd + 1) / total * mapWidth));
+				} else if (_blDraggedMoveRight) {
+					// Moved right: pin cursor back to the ORIGINAL right edge so that all
+					// intermediate blocks (between old and new position) render at their
+					// natural positions and are not pushed rightward by the dragged block.
+					pixelCursor = Math.round((_blOrigEnd + 1) / total * mapWidth);
 				} else {
 					pixelCursor = blLeft + blWidth;
 				}
@@ -15989,9 +16100,308 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 
 	refreshDevices();
 	analyzeTools();
+	/* Expose helpers needed by the Mermaid diagram module */
+	window._pcgi_getSelectedDeviceData = getSelectedDeviceData;
+	window._pcgi_buildPreviewDevice    = buildPreviewDevice;
+	window._pcgi_humanBytes            = humanBytes;
 })();
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-center-radar.css">
 <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+(function(){
+	'use strict';
+
+	/* ── Mermaid helpers ──────────────────────────────────────────────────── */
+	var _mermaidReady = false;
+	var _mermaidInitDone = false;
+
+	function _initMermaid(theme) {
+		theme = theme || 'default';
+		if (typeof mermaid === 'undefined') return;
+		mermaid.initialize({
+			startOnLoad: false,
+			theme: theme,
+			flowchart: { htmlLabels: true, curve: 'basis' },
+			fontSize: 13
+		});
+		_mermaidReady = true;
+		_mermaidInitDone = true;
+	}
+
+	function _hb(bytes) {
+		return window._pcgi_humanBytes ? window._pcgi_humanBytes(bytes) : (Math.round(bytes / 1048576) + ' MiB');
+	}
+
+	function _safeId(str) {
+		return 'n' + String(str || '').replace(/[^A-Za-z0-9]/g, '_');
+	}
+
+	function _esc(str) {
+		/* Escape Mermaid label special chars, keep <br/> as literal. */
+		return String(str || '').replace(/["#{}|<>]/g, function(c) {
+			var map = {'"': '&quot;', '#': '&#35;', '{': '&#123;', '}': '&#125;', '|': '&#124;', '<': '&lt;', '>': '&gt;'};
+			return map[c] || c;
+		});
+	}
+
+	/*
+	 * buildMermaidDiagram(dev, dir)
+	 * Generates a Mermaid flowchart string from a device object
+	 * (same structure as state.devices[] / buildPreviewDevice output).
+	 */
+	function buildMermaidDiagram(dev, dir) {
+		dir = dir || 'TB';
+		var logical = Number(dev.logical_sector_size || 512);
+		var total   = Number(dev.total_sectors || 0);
+		var table   = String(dev.table || 'unknown');
+		var model   = String(dev.model || '');
+		var devPath = String(dev.path || dev.name || '');
+		var parts   = dev.partitions || [];
+
+		/* Find extended partition (MBR only) */
+		var extPart = null;
+		for (var i = 0; i < parts.length; i++) {
+			var _p = parts[i];
+			if (_p.kind !== 'partition') continue;
+			var _r = String(_p.role || '');
+			if (!_r) {
+				if (String(_p.fs || '').toLowerCase() === 'extended') _r = 'extended';
+				else if (!String(_p.fs || '') && String(_p.flags || '').toLowerCase() === 'lba') _r = 'extended';
+			}
+			if (_r === 'extended') { extPart = _p; break; }
+		}
+		var extStart = extPart ? Number(extPart.start || 0) : -1;
+		var extEnd   = extPart ? Number(extPart.end   || 0) : -1;
+
+		var lines = [];
+		lines.push('flowchart ' + dir);
+		lines.push('');
+		/* Disk root node */
+		var diskLabel = _esc(devPath);
+		if (total > 0) diskLabel += '<br/>' + total + ' sectors';
+		if (total > 0 && logical > 0) diskLabel += '<br/>' + _hb(total * logical);
+		if (table) diskLabel += '<br/>' + _esc(table.toUpperCase());
+		if (model) diskLabel += '<br/>' + _esc(model);
+		lines.push('    DISK["' + diskLabel + '"]');
+		lines.push('');
+
+		/* Extended node (if present) */
+		if (extPart) {
+			var extSz = Number(extPart.size || Math.max(1, extEnd - extStart + 1));
+			var extLabel = 'p' + extPart.number + ' Extended';
+			if (String(extPart.flags || '').toLowerCase() === 'lba') extLabel += ' (LBA)';
+			extLabel += '<br/>' + extStart + ' &#x2014; ' + extEnd;
+			extLabel += '<br/>' + extSz + ' s';
+			if (logical > 0) extLabel += '<br/>~' + _hb(extSz * logical);
+			lines.push('    EXT["' + _esc(extLabel) + '"]');
+			lines.push('    DISK --> EXT');
+			lines.push('');
+		}
+
+		var freeOuterCount = 0, freeInnerCount = 0;
+
+		for (var j = 0; j < parts.length; j++) {
+			var p = parts[j];
+			var pStart = Number(p.start || 0);
+			var pEnd   = Number(p.end   || 0);
+			var pSize  = Number(p.size  || Math.max(1, pEnd - pStart + 1));
+			var isInner = (extPart && pStart >= extStart && pEnd <= extEnd);
+
+			if (p.kind === 'free') {
+				var szStr = pSize + ' s';
+				if (logical > 0 && pSize * logical >= 1024 * 1024)
+					szStr += '<br/>~' + _hb(pSize * logical);
+				if (isInner) {
+					freeInnerCount++;
+					var fiId = 'FI' + freeInnerCount;
+					lines.push('    ' + fiId + '(["Free space<br/>' + pStart + ' &#x2014; ' + pEnd + '<br/>' + _esc(szStr) + '"])');
+					lines.push('    EXT --> ' + fiId);
+				} else {
+					freeOuterCount++;
+					var foId = 'FO' + freeOuterCount;
+					lines.push('    ' + foId + '(["Free space<br/>' + pStart + ' &#x2014; ' + pEnd + '<br/>' + _esc(szStr) + '"])');
+					lines.push('    DISK --> ' + foId);
+				}
+				lines.push('');
+				continue;
+			}
+
+			if (p.kind !== 'partition') continue;
+
+			var pRole = String(p.role || '');
+			if (!pRole) {
+				if (Number(p.number || 0) >= 5) pRole = 'logical';
+				else if (String(p.fs || '').toLowerCase() === 'extended') pRole = 'extended';
+				else if (!String(p.fs || '') && String(p.flags || '').toLowerCase() === 'lba') pRole = 'extended';
+				else pRole = 'primary';
+			}
+			if (pRole === 'extended') continue; /* already rendered above */
+
+			var nodeId = _safeId('P' + (p.number || j));
+			var lbl = 'p' + (p.number || '?');
+			if (pRole === 'logical') lbl += ' Logical';
+			if (p.name || p.label) lbl += ' &quot;' + _esc(p.name || p.label) + '&quot;';
+			if (p.fs && pRole !== 'logical') lbl += '<br/>' + _esc(p.fs);
+			else if (p.fs) lbl += '  ' + _esc(p.fs);
+			lbl += '<br/>' + pStart + ' &#x2014; ' + pEnd;
+			lbl += '<br/>' + pSize + ' s';
+			if (logical > 0) lbl += '<br/>~' + _hb(pSize * logical);
+			if (p.flags) lbl += '<br/>[' + _esc(p.flags) + ']';
+
+			lines.push('    ' + nodeId + '["' + _esc(lbl) + '"]');
+			if (isInner) {
+				lines.push('    EXT --> ' + nodeId);
+			} else {
+				lines.push('    DISK --> ' + nodeId);
+			}
+			lines.push('');
+		}
+
+		/* Style classes */
+		lines.push('    classDef free fill:#f0f4f8,stroke:#8aa,stroke-dasharray:4 3,color:#444');
+		lines.push('    classDef primary fill:#bbdefb,stroke:#1565c0,color:#0d2340');
+		lines.push('    classDef logical fill:#b2dfdb,stroke:#00695c,color:#003330');
+		lines.push('    classDef extended fill:#fff9c4,stroke:#f57f17,color:#3e2000');
+		lines.push('    classDef disk fill:#cfd8dc,stroke:#37474f,color:#0a1929,font-weight:bold');
+		lines.push('');
+		lines.push('    class DISK disk');
+		if (extPart) lines.push('    class EXT extended');
+
+		/* Assign free/primary/logical classes */
+		var foC = 0, fiC = 0;
+		for (var k = 0; k < parts.length; k++) {
+			var pk = parts[k];
+			var pkStart = Number(pk.start || 0), pkEnd = Number(pk.end || 0);
+			var pkInner = (extPart && pkStart >= extStart && pkEnd <= extEnd);
+			if (pk.kind === 'free') {
+				if (pkInner) { fiC++; lines.push('    class FI' + fiC + ' free'); }
+				else         { foC++; lines.push('    class FO' + foC + ' free'); }
+			} else if (pk.kind === 'partition') {
+				var pkRole = String(pk.role || '');
+				if (!pkRole) {
+					if (Number(pk.number || 0) >= 5) pkRole = 'logical';
+					else if (String(pk.fs || '').toLowerCase() === 'extended' || (!String(pk.fs || '') && String(pk.flags || '').toLowerCase() === 'lba')) pkRole = 'extended';
+					else pkRole = 'primary';
+				}
+				if (pkRole !== 'extended') {
+					lines.push('    class ' + _safeId('P' + (pk.number || k)) + ' ' + pkRole);
+				}
+			}
+		}
+
+		return lines.join('\n');
+	}
+
+	/* ── showMermaidModal ─────────────────────────────────────────────────── */
+	window.showMermaidModal = function() {
+		var modal  = document.getElementById('pcgiMermaidModal');
+		var svgDiv = document.getElementById('pcgiMermaidSvg');
+		var srcTA  = document.getElementById('pcgiMermaidSrc');
+		var errDiv = document.getElementById('pcgiMermaidError');
+		var legend = document.getElementById('pcgiMermaidLegend');
+		var themeEl = document.getElementById('pcgiMermaidTheme');
+		var dirEl  = document.getElementById('pcgiMermaidDir');
+		var showSrcCb = document.getElementById('pcgiMermaidShowSrc');
+		if (!modal) return;
+
+		var baseDev = window._pcgi_getSelectedDeviceData ? window._pcgi_getSelectedDeviceData() : null;
+		var dev     = (baseDev && window._pcgi_buildPreviewDevice) ? window._pcgi_buildPreviewDevice(baseDev) : null;
+
+		if (!dev) {
+			svgDiv.innerHTML = '<p style="color:#888;padding:20px">No device selected.</p>';
+			errDiv.style.display = 'none';
+			legend.textContent = '';
+			modal.style.display = 'flex';
+			modal.setAttribute('aria-hidden', 'false');
+			return;
+		}
+
+		var logical = Number(dev.logical_sector_size || 512);
+		var total   = Number(dev.total_sectors || 0);
+		legend.textContent = (dev.path || '') +
+			(total > 0 ? '  •  ' + total + ' sectors  (' + _hb(total * logical) + ')' : '') +
+			(dev.table ? '  •  ' + dev.table.toUpperCase() : '') +
+			(dev.model ? '  •  ' + dev.model : '');
+
+		function render() {
+			var dir   = dirEl  ? String(dirEl.value  || 'TB') : 'TB';
+			var theme = themeEl ? String(themeEl.value || 'default') : 'default';
+			var src   = buildMermaidDiagram(dev, dir);
+			srcTA.value = src;
+
+			errDiv.style.display = 'none';
+			svgDiv.innerHTML = '';
+
+			if (typeof mermaid === 'undefined') {
+				errDiv.textContent = 'Mermaid library not loaded (check internet access).';
+				errDiv.style.display = 'block';
+				return;
+			}
+
+			if (!_mermaidInitDone || (themeEl && themeEl.dataset.lastTheme !== theme)) {
+				_initMermaid(theme);
+				if (themeEl) themeEl.dataset.lastTheme = theme;
+			}
+
+			var uid = 'mm' + Date.now();
+			mermaid.render(uid, src).then(function(res) {
+				svgDiv.innerHTML = res.svg;
+				errDiv.style.display = 'none';
+			}).catch(function(err) {
+				svgDiv.innerHTML = '';
+				errDiv.textContent = 'Render error: ' + (err && err.message ? err.message : String(err));
+				errDiv.style.display = 'block';
+			});
+		}
+
+		render();
+
+		/* Toolbar wiring (idempotent — reassign each open) */
+		document.getElementById('pcgiMermaidRegenBtn').onclick = render;
+
+		if (themeEl) themeEl.onchange = render;
+		if (dirEl)   dirEl.onchange   = render;
+
+		if (showSrcCb) {
+			showSrcCb.onchange = function() {
+				srcTA.style.display = showSrcCb.checked ? 'block' : 'none';
+			};
+			srcTA.style.display = showSrcCb.checked ? 'block' : 'none';
+		}
+
+		document.getElementById('pcgiMermaidCopyBtn').onclick = function() {
+			var okSpan = document.getElementById('pcgiMermaidCopyOk');
+			var text   = srcTA.value;
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(function() {
+					okSpan.classList.add('show');
+					setTimeout(function() { okSpan.classList.remove('show'); }, 1800);
+				});
+			} else {
+				srcTA.style.display = 'block';
+				if (showSrcCb) showSrcCb.checked = true;
+				srcTA.select();
+				document.execCommand('copy');
+				okSpan.classList.add('show');
+				setTimeout(function() { okSpan.classList.remove('show'); }, 1800);
+			}
+		};
+
+		function closeModal() {
+			modal.style.display = 'none';
+			modal.setAttribute('aria-hidden', 'true');
+			document.removeEventListener('keydown', _onEsc);
+		}
+		function _onEsc(ev) { if (ev.key === 'Escape') closeModal(); }
+		document.addEventListener('keydown', _onEsc);
+		document.getElementById('pcgiMermaidCloseBtn').onclick = closeModal;
+
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+	};
+})();
+</script>
 EOF
 
