@@ -20,6 +20,14 @@ In this tree, the BitTorrent stack is split into three parts:
 2. `rtorrent-cgi` web configuration interface and setup wizard.
 3. `rutorrent` optional full-featured web UI for daily use.
 
+## Current packaged versions
+
+- `rtorrent`: `0.16.10`
+- `libtorrent-rakshasa`: `0.16.10`
+- `rutorrent`: `5.3.1`
+
+For ruTorrent-specific packaging details and the preserved Freetz overlays, see [rutorrent.md](rutorrent.md).
+
 ## Source-based behavior map
 
 Main files that define the current behavior:
