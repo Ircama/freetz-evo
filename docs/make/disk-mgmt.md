@@ -1,6 +1,5 @@
 # Disk Management (disk-mgmt)
   - Package: [master/make/pkgs/disk-mgmt-cgi/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/disk-mgmt-cgi/)
-  - Steward: -
   - CGI: `/usr/lib/cgi-bin/disk-mgmt.cgi`
   - Init script: `/etc/init.d/rc.disk-mgmt`
   - Configuration URL: `http://fritz.box:81/cgi-bin/conf/disk-mgmt`
