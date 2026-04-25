@@ -11126,6 +11126,40 @@ actionsWrap.appendChild(btnRemove);
 					/* ── Body drag: mousedown-based continuous move (sfdisk --move-data) ── */
                     (function(_bdDev, _bdPart, _bdBlock) {
                         var _bdMapEl = document.getElementById('partitionMap');
+						var _dragFreeGhost = null;
+						var _origLeftPx = parseFloat(_bdBlock.style.left || '0') || 0;
+						var _origWidthPx = Math.max(1, Math.round(_bdBlock.getBoundingClientRect().width || parseFloat(_bdBlock.style.width || '0') || 1));
+						var _ghostClass = 'pcgi-block free' + (/\bpcgi-logical\b/.test(String(_bdBlock.className || '')) ? ' pcgi-logical' : '');
+
+						function _clearDragFreeGhost() {
+							if (_dragFreeGhost && _dragFreeGhost.parentNode) {
+								_dragFreeGhost.parentNode.removeChild(_dragFreeGhost);
+							}
+							_dragFreeGhost = null;
+						}
+
+						function _updateDragFreeGhost(_dx) {
+							var _vacWidth = Math.min(Math.abs(_dx), _origWidthPx);
+							if (!isFinite(_vacWidth) || _vacWidth < 1) {
+								_clearDragFreeGhost();
+								return;
+							}
+							var _vacLeft = _dx >= 0
+								? _origLeftPx
+								: _origLeftPx + Math.max(0, _origWidthPx - _vacWidth);
+							if (!_dragFreeGhost) {
+								_dragFreeGhost = document.createElement('div');
+								_dragFreeGhost.className = _ghostClass;
+								_dragFreeGhost.style.zIndex = '1';
+								_dragFreeGhost.style.pointerEvents = 'none';
+								_dragFreeGhost.textContent = 'unallocated';
+								_dragFreeGhost.title = 'Unallocated (drag preview)';
+								_bdMapEl.appendChild(_dragFreeGhost);
+							}
+							_dragFreeGhost.style.left = _vacLeft + 'px';
+							_dragFreeGhost.style.width = _vacWidth + 'px';
+						}
+
                         _bdBlock.addEventListener('click', function(_bde) {
                             if (_bdBlock._suppressNextClick) {
                                 _bdBlock._suppressNextClick = false;
@@ -11155,11 +11189,13 @@ actionsWrap.appendChild(btnRemove);
                                     _bdBlock.style.transition = 'none';
                                 }
                                 _bdBlock.style.transform = 'translateX(' + _dx + 'px)';
+								_updateDragFreeGhost(_dx);
                             }
                             function _onUp(_u) {
                                 document.removeEventListener('mousemove', _onMove);
                                 document.removeEventListener('mouseup', _onUp);
                                 state.mapDragActive = false;
+								_clearDragFreeGhost();
                                 if (!_dragging) {
                                     _bdBlock.style.transform = '';
                                     _bdBlock.style.zIndex = '';
@@ -14897,6 +14933,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var currentStart = Number(partObj.start || 0);
 		var currentSize  = Number(partObj.size  || 0);
 		var currentEnd   = Number(partObj.end   || (currentStart + currentSize - 1));
+		var previewDev   = getPreviewDeviceByPath(devPathStr);
 		var _lss = Number(logSectorSize || 512);
 		function _sh(sectors) {
 			var bytes = sectors * _lss;
@@ -14915,7 +14952,14 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var smNewStartH = document.getElementById('smNewStartHuman');
 		var smNewEndD   = document.getElementById('smNewEndDisplay');
 		var startDefault = (presetStartVal !== undefined && presetStartVal !== null) ? Number(presetStartVal) : currentStart;
-		smNewStart.value = startDefault;
+		function isAllowedTargetStart(ns) {
+			var startNum = Number(ns);
+			if (!isFinite(startNum) || startNum <= 0) return false;
+			if (startNum === currentStart) return true;
+			return !!findContainingFreeSegment(previewDev, startNum, startNum + currentSize - 1);
+		}
+		var lastValidStart = isAllowedTargetStart(startDefault) ? startDefault : currentStart;
+		smNewStart.value = lastValidStart;
 		function updateTargetDisplay() {
 			var ns = parseInt(smNewStart.value, 10);
 			if (!isFinite(ns)||ns<=0){smNewStartH.value='';smNewEndD.value='';return;}
@@ -14925,7 +14969,27 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			smNewStartH.value = _sh(ns) + '  ' + dir;
 			smNewEndD.value   = 'end: ' + ne + 's  (' + _sh(ne) + ' from start)';
 		}
+		function revertToLastValidTargetStart() {
+			smNewStart.value = String(lastValidStart);
+			updateTargetDisplay();
+		}
+		function validateTargetStartInput(showAlert) {
+			var ns = parseInt(smNewStart.value, 10);
+			if (isAllowedTargetStart(ns)) {
+				lastValidStart = ns;
+				updateTargetDisplay();
+				return true;
+			}
+			revertToLastValidTargetStart();
+			if (showAlert) {
+				showToast(t('tMoveNoSpace'), 'error', 10000);
+				setTimeout(function() { try { smNewStart.focus(); smNewStart.select(); } catch (_e) {} }, 0);
+			}
+			return false;
+		}
+		function onStartChange() { validateTargetStartInput(true); }
 		smNewStart.addEventListener('input', updateTargetDisplay);
+		smNewStart.addEventListener('change', onStartChange);
 		updateTargetDisplay();
 		/* Options */
 		var smUnmount = document.getElementById('smUnmountBefore');
@@ -14949,12 +15013,14 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				modal.style.display = 'none';
 				modal.setAttribute('aria-hidden', 'true');
 				smNewStart.removeEventListener('input', updateTargetDisplay);
+				smNewStart.removeEventListener('change', onStartChange);
 				smRemount.removeEventListener('change', updateMpVisibility);
 				document.getElementById('pcgiSmOkBtn').onclick = null;
 				document.getElementById('pcgiSmCancelBtn').onclick = null;
 				document.removeEventListener('keydown', escListener);
 			}
 			function onOk() {
+				if (!validateTargetStartInput(true)) return;
 				var ns = parseInt(smNewStart.value, 10);
 				if (!isFinite(ns)||ns<=0){showToast('Enteravalidpositivesectornumber.','warn');return;}
 				var result = {
