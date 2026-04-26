@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_TRGUING_WEB" == "y" ] && EXTERNAL_FILES+=" /usr/mww/trguing /usr/share/transmission-web-home/trguing"
+[ "$EXTERNAL_FREETZ_PACKAGE_TRGUING_WEB" == "y" ] && EXTERNAL_FILES+=" /usr/mww/trguing"

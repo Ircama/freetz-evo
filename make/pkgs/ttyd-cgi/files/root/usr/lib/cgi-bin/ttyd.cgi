@@ -1,6 +1,16 @@
 #!/bin/sh
 
 . /usr/lib/libmodcgi.sh
+
+case "$QUERY_STRING" in
+  start*)
+    ACTION_RESULT="started"
+    ;;
+  stop*)
+    ACTION_RESULT="stopped"
+    ;;
+esac
+
 [ -r /etc/options.cfg ] && . /etc/options.cfg
 
 check "$TTYD_READONLY" "yes:readonly" "*:readwrite"
@@ -426,6 +436,19 @@ document.addEventListener('keydown', function(e) {
 /* ── Window resize ────────────────────────────────────────────── */
 var _rft;
 window.addEventListener('resize', function() {
+
+if [ -n "$ACTION_RESULT" ]; then
+  cat << EOF
+<script>
+(function() {
+  if (window.history && window.history.replaceState) {
+    var cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+})();
+</script>
+EOF
+fi
   clearTimeout(_rft);
   _rft = setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
 });

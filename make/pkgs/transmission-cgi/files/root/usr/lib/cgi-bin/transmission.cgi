@@ -58,7 +58,7 @@ TRANSMISSION_TRGUING_URL="${TRANSMISSION_WEB_UI_URL}trguing/index.html"
 TRANSMISSION_TRANSMISSIONIC_URL="${TRANSMISSION_WEB_UI_URL}transmissionic/index.html"
 TRANSMISSION_WEB_CONTROL_URL="${TRANSMISSION_WEB_UI_URL}transmission-web-control/index.html"
 
-TRANSMISSION_BUILTIN_WEBDIR="$(first_existing_webdir "/mod/external/usr/share/transmission-web-home" "/usr/share/transmission-web-home")"
+TRANSMISSION_BUILTIN_WEBDIR="$(first_existing_webdir "/usr/share/transmission-web-home" "/mod/external/usr/share/transmission-web-home")"
 TRANSMISSION_FLOOD_WEBDIR="$(first_existing_webdir "/usr/mww/transmission-flood" "/mod/external/usr/mww/transmission-flood")"
 TRANSMISSION_TRGUING_WEBDIR="$(first_existing_webdir "/usr/mww/trguing" "/mod/external/usr/mww/trguing")"
 TRANSMISSION_TRANSMISSIONIC_WEBDIR="$(first_existing_webdir "/usr/mww/transmissionic" "/mod/external/usr/mww/transmissionic")"
@@ -309,7 +309,7 @@ en:"Leave user name and password empty if no password protection required."
 </p>
 
 <p>
-<input type='hidden' id='webdir' name='webdir' value="$(html "${TRANSMISSION_BUILTIN_WEBDIR:-/mod/external/usr/share/transmission-web-home}")">
+<input type='hidden' id='webdir' name='webdir' value="$(html "${TRANSMISSION_BUILTIN_WEBDIR:-/usr/share/transmission-web-home}")">
 EOF
 
 sec_end

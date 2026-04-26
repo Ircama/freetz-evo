@@ -35,6 +35,26 @@ stripAllSpaces() {
 	echo "${1// /}"
 }
 
+ensure_transmission_frontend_links() {
+	local web_root="$1"
+	local frontend
+	local link_target
+
+	[ -d "$web_root" ] || return 0
+
+	for frontend in transmission-flood trguing transmissionic transmission-web-control; do
+		[ -e "/usr/mww/$frontend" ] || [ -e "/mod/external/usr/mww/$frontend" ] || continue
+		link_target="../../mww/$frontend"
+		if [ -L "$web_root/$frontend" ]; then
+			[ "$(readlink "$web_root/$frontend")" = "$link_target" ] && continue
+			rm -f "$web_root/$frontend"
+		elif [ -e "$web_root/$frontend" ]; then
+			continue
+		fi
+		ln -s "$link_target" "$web_root/$frontend"
+	done
+}
+
 resolve_transmission_webdir() {
 	local configured_webdir="$1"
 	local candidate
@@ -44,7 +64,7 @@ resolve_transmission_webdir() {
 		/usr/mww/trguing|/mod/external/usr/mww/trguing|\
 		/usr/mww/transmissionic|/mod/external/usr/mww/transmissionic|\
 		/usr/mww/transmission-web-control|/mod/external/usr/mww/transmission-web-control)
-			for candidate in /mod/external/usr/share/transmission-web-home /usr/share/transmission-web-home; do
+			for candidate in /usr/share/transmission-web-home /mod/external/usr/share/transmission-web-home; do
 				if [ -d "$candidate" ] && [ -r "$candidate/index.html" ]; then
 					printf '%s\n' "$candidate"
 					return 0
@@ -73,6 +93,7 @@ start() {
 	TRANSMISSION_FINISHDIR=$(trim "$TRANSMISSION_FINISHDIR")
 	TRANSMISSION_WEBDIR=$(trim "$TRANSMISSION_WEBDIR")
 	TRANSMISSION_WEBDIR=$(resolve_transmission_webdir "$TRANSMISSION_WEBDIR")
+	ensure_transmission_frontend_links "$TRANSMISSION_WEBDIR"
 	TRANSMISSION_WATCHDIR=$(trim "$TRANSMISSION_WATCHDIR")
 
 	checkNotEmpty "$TRANSMISSION_CONFIGDIR" 'TRANSMISSION_CONFIGDIR'

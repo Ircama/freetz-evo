@@ -20,14 +20,3 @@ config EXTERNAL_FREETZ_PACKAGE_PARTCLONE
 			 /usr/sbin/partclone.ntfs
 			 /usr/sbin/partclone.btrfs
 			 /usr/sbin/partclone.minix
-			 /usr/sbin/partclone.ext2
-			 /usr/sbin/partclone.ext3
-			 /usr/sbin/partclone.ext4
-			 /usr/sbin/partclone.ext4dev
-			 /usr/sbin/partclone.hfs+
-			 /usr/sbin/partclone.hfsplus
-			 /usr/sbin/partclone.fat12
-			 /usr/sbin/partclone.fat16
-			 /usr/sbin/partclone.fat32
-			 /usr/sbin/partclone.vfat
-			 /usr/sbin/partclone.ntfsreloc

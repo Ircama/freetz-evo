@@ -5,4 +5,3 @@ config EXTERNAL_FREETZ_PACKAGE_TRANSMISSION_FLOOD
 	help
 		externals the following file(s):
 		 /usr/mww/transmission-flood
-		 /usr/share/transmission-web-home/transmission-flood

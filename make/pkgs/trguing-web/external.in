@@ -5,4 +5,3 @@ config EXTERNAL_FREETZ_PACKAGE_TRGUING_WEB
 	help
 		externals the following file(s):
 		 /usr/mww/trguing
-		 /usr/share/transmission-web-home/trguing

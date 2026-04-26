@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_TRANSMISSION_WEB_CONTROL" == "y" ] && EXTERNAL_FILES+=" /usr/mww/transmission-web-control /usr/share/transmission-web-home/transmission-web-control"
+[ "$EXTERNAL_FREETZ_PACKAGE_TRANSMISSION_WEB_CONTROL" == "y" ] && EXTERNAL_FILES+=" /usr/mww/transmission-web-control"

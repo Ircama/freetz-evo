@@ -3,6 +3,15 @@
 . /usr/lib/libmodcgi.sh
 . /usr/lib/libmodredir.sh
 
+case "$QUERY_STRING" in
+	start*)
+		ACTION_RESULT="started"
+		;;
+	stop*)
+		ACTION_RESULT="stopped"
+		;;
+esac
+
 check "$MINIDLNA_RESCAN_ON_START" yes:rescan_on_start
 check "$MINIDLNA_INOTIFY" yes:inotify
 check "$MINIDLNA_ENABLE_TIVO" yes:enable_tivo
@@ -19,6 +28,19 @@ cat << EOF
 </ul>
 EOF
 sec_end
+
+if [ -n "$ACTION_RESULT" ]; then
+	cat << EOF
+<script>
+(function() {
+	if (window.history && window.history.replaceState) {
+		var cleanUrl = window.location.pathname;
+		window.history.replaceState({}, document.title, cleanUrl);
+	}
+})();
+</script>
+EOF
+fi
 
 sec_begin "$(lang de:"Konfiguration" en:"Configuration" it:"Configurazione" fr:"Configuration" es:"Configuración")"
 MINIDLNA_AVAILABLE_NIFS=$(ifconfig | sed -rne 's,^([a-zA-Z.][a-zA-Z0-9]*) .*,\1,p')

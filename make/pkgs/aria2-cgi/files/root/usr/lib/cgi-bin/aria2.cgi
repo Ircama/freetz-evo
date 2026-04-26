@@ -3,6 +3,15 @@
 # Source CGI helper library
 . /usr/lib/libmodcgi.sh
 
+case "$QUERY_STRING" in
+	start*)
+		ACTION_RESULT="started"
+		;;
+	stop*)
+		ACTION_RESULT="stopped"
+		;;
+esac
+
 # ===========================================================================
 # AJAX Handler
 # ===========================================================================
@@ -534,3 +543,16 @@ function createBasedir() {
 }
 </script>
 EOF
+
+if [ -n "$ACTION_RESULT" ]; then
+	cat << EOF
+<script>
+(function() {
+	if (window.history && window.history.replaceState) {
+		var cleanUrl = window.location.pathname;
+		window.history.replaceState({}, document.title, cleanUrl);
+	}
+})();
+</script>
+EOF
+fi

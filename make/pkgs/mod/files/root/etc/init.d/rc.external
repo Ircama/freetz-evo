@@ -146,8 +146,6 @@ start() {
 	[ -r /etc/options.cfg ] && . /etc/options.cfg
 	[ "$EXTERNAL_DYNAMIC" == "y" ] && local SRC_DIR="${EXTERNAL_LINK}" || local SRC_DIR=""
 	for pkg in $(cat /mod/etc/external.pkg); do
-		status="$(/mod/etc/init.d/rc.$pkg status 2>/dev/null)"
-		[ -n "$status" -a "$status" != "stopped" ] && continue
 		for src in \
 		  ${SRC_DIR}/etc/default.$pkg \
 		  ${SRC_DIR}/etc/init.d/rc.$pkg \
