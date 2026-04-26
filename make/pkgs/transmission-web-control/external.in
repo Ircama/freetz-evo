@@ -5,3 +5,4 @@ config EXTERNAL_FREETZ_PACKAGE_TRANSMISSION_WEB_CONTROL
 	help
 		externals the following file(s):
 		 /usr/mww/transmission-web-control
+		 /usr/share/transmission-web-home/transmission-web-control

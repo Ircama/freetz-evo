@@ -4976,7 +4976,8 @@ cat <<'EOF'
 /* Hide the framework Applica / Default (submit) buttons;
    disk-mgmt manages all actions via its own JavaScript flow. */
 input[type="submit"], button[type="submit"] { display: none !important; }
-details#advancedInfoDetails > summary.pcgi-sec-summary {
+details#advancedInfoDetails > summary.pcgi-sec-summary,
+details#partitionOpsDetails > summary.pcgi-sec-summary {
 	cursor: pointer;
 	user-select: none;
 	padding: 4px 0;
@@ -5108,6 +5109,16 @@ details#advancedInfoDetails > summary.pcgi-sec-summary {
 <div id="pcgiHoverTooltip" class="pcgi-hover-tooltip"></div>
 
 <div id="partContextMenu" class="pcgi-context-menu"></div>
+EOF
+sec_end
+
+cat <<'EOF'
+<details id="partitionOpsDetails">
+<summary class="pcgi-sec-summary">Partition and filesystem operations</summary>
+EOF
+
+sec_begin "Partition operations"
+cat <<'EOF'
 
 <div class="pcgi-inline-form" style="grid-template-columns:repeat(2,1fr)">
 	<div>
@@ -6423,6 +6434,10 @@ cat <<'EOF'
 </div>
 EOF
 sec_end
+
+cat <<'EOF'
+</details>
+EOF
 
 sec_begin "Operation queue"
 cat <<'EOF'
@@ -16547,6 +16562,20 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				}
 			}
 		}
+	}());
+
+	/* ── Hoist modals out of collapsible details ───────────────────────────
+	 * Partition/filesystem controls can live inside a <details>, but their
+	 * position:fixed modals must not. If a modal stays under a closed
+	 * <details>, the browser hides it completely and move/resize flows break.
+	 */
+	(function() {
+		var host = document.body || document.documentElement;
+		if (!host) return;
+		var modals = document.querySelectorAll('#partitionOpsDetails .pcgi-modal');
+		modals.forEach(function(modal) {
+			host.appendChild(modal);
+		});
 	}());
 
 	/* ── Make all modals draggable by their header ── */

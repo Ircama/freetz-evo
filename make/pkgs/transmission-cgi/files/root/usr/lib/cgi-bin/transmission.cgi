@@ -3,6 +3,15 @@
 . /usr/lib/libmodcgi.sh
 [ -r /etc/options.cfg ] && . /etc/options.cfg
 
+case "$QUERY_STRING" in
+	start*)
+		ACTION_RESULT="started"
+		;;
+	stop*)
+		ACTION_RESULT="stopped"
+		;;
+esac
+
 select "$TRANSMISSION_LOGLEVEL" info:loginfo debug:logdebug "*":logerror
 select "$TRANSMISSION_PEERENCRYPTIONMODE" \
 	ENCRYPTION_REQUIRED:requireencryption \
@@ -304,3 +313,14 @@ en:"Leave user name and password empty if no password protection required."
 EOF
 
 sec_end
+
+if [ -n "$ACTION_RESULT" ]; then
+	cat << EOF
+<script>
+(function() {
+	var cleanUrl = window.location.pathname;
+	window.location.replace(cleanUrl);
+})();
+</script>
+EOF
+fi

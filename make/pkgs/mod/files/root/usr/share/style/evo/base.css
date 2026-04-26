@@ -1342,11 +1342,11 @@ body.dark-mode .evo-drawer-logout > a {
 }
 
 /* ==========================================================================
-   Scroll navigation buttons (goto-top / goto-bottom) — EVO skin only.
-   Rendered directly in <body>, outside #world, so overflow:hidden on #world
-   never clips them.  Each button is independently positioned: top-right and
-   bottom-right of the viewport.
-   ========================================================================== */
+	Scroll navigation buttons (goto-top / goto-bottom) — EVO skin only.
+	Rendered directly in <body>, outside #world, so overflow:hidden on #world
+	never clips them. Desktop keeps them near the viewport edges; the mobile
+	bottom-bar layout stacks them inside the central work area.
+	========================================================================== */
 .evo-scroll-btn {
 	position: fixed;
 	right: 1rem;
@@ -1400,16 +1400,27 @@ body.dark-mode .evo-scroll-btn {
 		color: var(--evo-accent-dark);
 	}
 }
-/* Mobile: avoid overlap with sticky header (top) and fixed bottom nav bar */
-@media (max-width: 600px) {
-	#evo-scroll-top {
-		top: 3.5rem; /* clears the ~42 px sticky header */
-	}
-	#evo-scroll-bot {
-		bottom: 4.5rem;
-	}
+/* Mobile bottom-bar layout: keep scroll buttons inside the central work area,
+   not anchored over the sticky header or fixed bottom navigation bar. */
+@media (max-width: 600px), (max-height: 480px) and (orientation: landscape) {
 	.evo-scroll-btn {
 		right: 0.6rem;
+	}
+	body:not(.evo-topnav) #evo-scroll-top,
+	body:not(.evo-topnav) #evo-scroll-bot {
+		bottom: auto;
+	}
+	body:not(.evo-topnav) #evo-scroll-top {
+		top: calc(50vh - 44px);
+	}
+	body:not(.evo-topnav) #evo-scroll-bot {
+		top: calc(50vh + 8px);
+	}
+	body.evo-topnav #evo-scroll-top {
+		top: 3.5rem;
+	}
+	body.evo-topnav #evo-scroll-bot {
+		bottom: 4.5rem;
 	}
 }
 

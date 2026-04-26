@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI" == "y" ] && EXTERNAL_FILES+=" /usr/mww/transmissionic"
+[ "$EXTERNAL_FREETZ_PACKAGE_TRANSMISSIONIC_WEBUI" == "y" ] && EXTERNAL_FILES+=" /usr/mww/transmissionic /usr/share/transmission-web-home/transmissionic"
