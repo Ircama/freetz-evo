@@ -4822,6 +4822,13 @@ cat <<'EOF'
 	z-index: 5;
 	transition: left 0.05s, width 0.05s;
 }
+.pcgi-no-text-select,
+.pcgi-no-text-select * {
+	-webkit-user-select: none !important;
+	-moz-user-select: none !important;
+	-ms-user-select: none !important;
+	user-select: none !important;
+}
 /* Extended partition container band — thin strip below disk block */
 .pcgi-extended-band {
 	position: absolute;
@@ -5309,7 +5316,7 @@ cat <<'EOF'
 
 <!-- Move Partition modal — opened by body-drag drop onto free space -->
 <div id="pcgiMovePartModal" class="pcgi-modal" aria-hidden="true">	<div class="pcgi-modal-box" style="max-width:680px;width:96vw">
-		<h3 class="pcgi-modal-head">Move partition</h3>
+		<h3 class="pcgi-modal-head">Move partition (via partition_migration.sh)</h3>
 		<!-- hidden context: free-region bounds for Min/Max buttons -->
 		<input type="hidden" id="mpFreeStart">
 		<input type="hidden" id="mpFreeEnd">
@@ -5435,10 +5442,10 @@ cat <<'EOF'
 	</div>
 </div>
 
-<!-- sfdisk Move Partition modal — opened by "Move p# (sfdisk --move-data)" -->
+<!-- sfdisk Move Partition modal — opened by "Move p# (via sfdisk --move-data)" -->
 <div id="pcgiSfdiskMoveModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:800px;width:96vw">
-		<h3 class="pcgi-modal-head">Move partition (sfdisk --move-data)</h3>
+		<h3 class="pcgi-modal-head">Move partition (via sfdisk --move-data)</h3>
 
 		<!-- Section: Source (read-only) -->
 		<div style="margin:8px 0 4px;font-size:11px;font-weight:600;color:#4a6080">Source</div>
@@ -5788,7 +5795,7 @@ cat <<'EOF'
 <!-- Move / Clone configuration modal -->
 <div id="pcgiMoveCloneModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:780px;width:96vw">
-		<h3 id="pcgiMoveCloneTitle" class="pcgi-modal-head">Move or clone partition</h3>
+		<h3 id="pcgiMoveCloneTitle" class="pcgi-modal-head">Move or clone partition (via partition_migration.sh)</h3>
 		<div id="mcTargetInfo" class="pcgi-modal-subtle" style="margin-bottom:6px"></div>
 
 		<!-- Source + Target devices/partitions — 2-column grid -->
@@ -10972,6 +10979,8 @@ actionsWrap.appendChild(btnRemove);
 						blSize  = Math.max(1, blEnd - blStart + 1);
 						// Track direction so pixelCursor can be handled correctly below.
 						_blDraggedMoveRight = (_blOrigStart < Number(state.dragCtx.currentStart));
+					} else if (state.dragCtx.edge === 'clone') {
+						// Clone preview must leave the source partition geometry untouched.
 					} else {
 						blEnd = Number(state.dragCtx.currentEnd || blEnd);
 						_blDraggedRight = true;
@@ -11228,7 +11237,7 @@ actionsWrap.appendChild(btnRemove);
 					if ((dragPath && dragPath === pPath) ||
 						(dragNum > 0 && dragNum === pNum) ||
 						(dragOrigStart > 0 && dragOrigStart === pStart)) {
-						draggingThis = true;
+						draggingThis = (state.dragCtx.edge !== 'clone');
 					}
 				}
 				// Extended partition: skip normal block rendering — the band pre-pass already drew it.
@@ -11362,19 +11371,76 @@ actionsWrap.appendChild(btnRemove);
 						fsBar.appendChild(fsUnusedBar);
 						block.appendChild(fsBar);
 					}
-					/* ── Body drag: mousedown-based continuous move (sfdisk --move-data) ── */
+					/* ── Body drag: mousedown-based continuous move (via sfdisk --move-data) ── */
                     (function(_bdDev, _bdPart, _bdBlock) {
                         var _bdMapEl = document.getElementById('partitionMap');
 						var _dragFreeGhost = null;
+						var _dragCloneGhost = null;
 						var _origLeftPx = parseFloat(_bdBlock.style.left || '0') || 0;
 						var _origWidthPx = Math.max(1, Math.round(_bdBlock.getBoundingClientRect().width || parseFloat(_bdBlock.style.width || '0') || 1));
 						var _ghostClass = 'pcgi-block free' + (/\bpcgi-logical\b/.test(String(_bdBlock.className || '')) ? ' pcgi-logical' : '');
+						var _cloneGhostClass = 'pcgi-block part' + (/\bpcgi-logical\b/.test(String(_bdBlock.className || '')) ? ' pcgi-logical' : '');
+
+						function _isCloneModifier(_ev) {
+							return !!(_ev && (_ev.ctrlKey || _ev.metaKey));
+						}
 
 						function _clearDragFreeGhost() {
 							if (_dragFreeGhost && _dragFreeGhost.parentNode) {
 								_dragFreeGhost.parentNode.removeChild(_dragFreeGhost);
 							}
 							_dragFreeGhost = null;
+						}
+
+						function _clearDragCloneGhost() {
+							if (_dragCloneGhost && _dragCloneGhost.parentNode) {
+								_dragCloneGhost.parentNode.removeChild(_dragCloneGhost);
+							}
+							_dragCloneGhost = null;
+						}
+
+						function _updateDragCloneGhost(_dx) {
+							if (!_bdMapEl) return;
+							if (!_dragCloneGhost) {
+								_dragCloneGhost = document.createElement('div');
+								_dragCloneGhost.className = _cloneGhostClass;
+								_dragCloneGhost.style.pointerEvents = 'none';
+								_dragCloneGhost.style.zIndex = '55';
+								_dragCloneGhost.style.opacity = '0.9';
+								_dragCloneGhost.style.border = '2px dashed #2563eb';
+								_dragCloneGhost.style.boxSizing = 'border-box';
+								_dragCloneGhost.style.background = 'rgba(37, 99, 235, 0.18)';
+								_dragCloneGhost.style.color = '#1e3a8a';
+								_dragCloneGhost.style.fontStyle = 'italic';
+								_dragCloneGhost.style.left = _origLeftPx + 'px';
+								_dragCloneGhost.style.width = _origWidthPx + 'px';
+								_dragCloneGhost.textContent = 'clone';
+								_bdMapEl.appendChild(_dragCloneGhost);
+							}
+							_dragCloneGhost.style.transform = 'translateX(' + _dx + 'px)';
+						}
+
+						function _resetBodyDragVisuals() {
+							_clearDragFreeGhost();
+							_clearDragCloneGhost();
+							_bdBlock.style.transform = '';
+							_bdBlock.style.zIndex = '';
+							_bdBlock.style.opacity = '';
+							_bdBlock.style.transition = '';
+						}
+
+						function _setTextSelectionSuppressed(_enabled) {
+							var _root = document.body || document.documentElement;
+							if (!_root) return;
+							if (_enabled) {
+								_root.classList.add('pcgi-no-text-select');
+								if (window.getSelection) {
+									var _sel = window.getSelection();
+									if (_sel && _sel.removeAllRanges) _sel.removeAllRanges();
+								}
+							} else {
+								_root.classList.remove('pcgi-no-text-select');
+							}
 						}
 
 						function _updateDragFreeGhost(_dx) {
@@ -11411,6 +11477,7 @@ actionsWrap.appendChild(btnRemove);
                             /* Don't steal mousedown from resize handles */
                             var _tCls = String((_bdev.target || {}).className || '');
                             if (_tCls.indexOf('pcgi-resize-handle') !== -1) return;
+							_bdev.preventDefault();
                             var _startX = _bdev.clientX;
                             var _dragging = false;
                             var _mapRect = _bdMapEl.getBoundingClientRect();
@@ -11421,52 +11488,78 @@ actionsWrap.appendChild(btnRemove);
                                 if (!_dragging){
                                     _dragging = true;
                                     state.mapDragActive = true;
+								_setTextSelectionSuppressed(true);
                                     hideHoverTooltip();
                                     hideContextMenu();
-                                    _bdBlock.style.zIndex = '50';
-                                    _bdBlock.style.opacity = '0.8';
                                     _bdBlock.style.transition = 'none';
                                 }
-                                _bdBlock.style.transform = 'translateX(' + _dx + 'px)';
-								_updateDragFreeGhost(_dx);
+								if (_isCloneModifier(_m)) {
+									_bdBlock.style.transform = '';
+									_bdBlock.style.zIndex = '';
+									_bdBlock.style.opacity = '';
+									_clearDragFreeGhost();
+									_updateDragCloneGhost(_dx);
+									updateMapStatus('Clone preview: #' + _bdPart.number);
+								} else {
+									_clearDragCloneGhost();
+									_bdBlock.style.zIndex = '50';
+									_bdBlock.style.opacity = '0.8';
+									_bdBlock.style.transform = 'translateX(' + _dx + 'px)';
+									_updateDragFreeGhost(_dx);
+									updateMapStatus('Move preview: #' + _bdPart.number);
+								}
                             }
                             function _onUp(_u) {
                                 document.removeEventListener('mousemove', _onMove);
                                 document.removeEventListener('mouseup', _onUp);
                                 state.mapDragActive = false;
-								_clearDragFreeGhost();
+							_setTextSelectionSuppressed(false);
                                 if (!_dragging) {
-                                    _bdBlock.style.transform = '';
-                                    _bdBlock.style.zIndex = '';
-                                    _bdBlock.style.opacity = '';
-                                    _bdBlock.style.transition = '';
+									_resetBodyDragVisuals();
+									updateMapStatus('');
                                     return;
                                 }
+								var _cloneDrag = _isCloneModifier(_u);
                                 _bdBlock._suppressNextClick = true;
                                 setTimeout(function() { _bdBlock._suppressNextClick = false; }, 200);
                                 if (!_total||!_mapRect.width) {
-                                    _bdBlock.style.transform = '';
-                                    _bdBlock.style.zIndex = '';
-                                    _bdBlock.style.opacity = '';
-                                    _bdBlock.style.transition = '';
+									_resetBodyDragVisuals();
+									updateMapStatus('');
                                     return;
                                 }
                                 var _dx = _u.clientX - _startX;
+								_resetBodyDragVisuals();
                                 var _deltaSec = Math.round((_dx / _mapRect.width) * _total);
                                 var _oldStart = Number(_bdPart.start || 0);
                                 var _newStart = _oldStart + _deltaSec;
                                 _newStart = Math.round(_newStart / 8) * 8;
                                 if (_newStart < 0) _newStart = 0;
                                 if (_newStart === _oldStart) {
-                                    _bdBlock.style.transform = '';
-                                    _bdBlock.style.zIndex = '';
-                                    _bdBlock.style.opacity = '';
-                                    _bdBlock.style.transition = '';
+									updateMapStatus('');
                                     return;
                                 }
 								var _mvSize = Number(_bdPart.size || Math.max(1, Number(_bdPart.end||0) - _oldStart + 1));
 								var _newEnd = _newStart + _mvSize - 1;
 								var _targetFreeSeg = findContainingFreeSegment(_bdDev, _newStart, _newEnd);
+									if (_cloneDrag) {
+										if (!_targetFreeSeg) {
+											showToast(t('tMoveNoSpace'), 'error', 10000);
+											updateMapStatus('');
+											return;
+										}
+										state.dragCtx = {
+											dev: _bdDev,
+											part: _bdPart,
+											partPath: String(_bdPart.path || ''),
+											edge: 'clone',
+											currentStart: _newStart,
+											currentEnd: _newEnd
+										};
+										renderMap();
+										updateMapStatus('');
+										showMoveCloneModal(String(_bdDev.path || ''), _newStart, _newEnd, String(_bdDev.path || ''), _bdPart, 'clone');
+										return;
+									}
 								var _sfdiskRangeOk = isRangeAvailableForSfdiskMove(_bdDev, _newStart, _newEnd, _bdPart);
                                 /* Pin partition at dragged position via dragCtx before any modal opens.
                                  * renderMap() destroys _bdBlock (removing its CSS transform) and
@@ -11487,19 +11580,13 @@ actionsWrap.appendChild(btnRemove);
 								var _ctTgtInExt = (_ctExtS >= 0 && _newStart >= _ctExtS && _newEnd <= _ctExtE);
 								if (_ctSrcInExt !== _ctTgtInExt) {
 									if (!_targetFreeSeg) {
-										_bdBlock.style.transform = '';
-										_bdBlock.style.zIndex = '';
-										_bdBlock.style.opacity = '';
-										_bdBlock.style.transition = '';
 										showToast(t('tMoveNoSpace'), 'error', 10000);
+										updateMapStatus('');
 										return;
 									}
 								} else if (!_sfdiskRangeOk) {
-									_bdBlock.style.transform = '';
-									_bdBlock.style.zIndex = '';
-									_bdBlock.style.opacity = '';
-									_bdBlock.style.transition = '';
 									showToast(t('tMoveNoSpace'), 'error', 10000);
+									updateMapStatus('');
 									return;
 								}
 								state.dragCtx = {
@@ -11509,6 +11596,7 @@ actionsWrap.appendChild(btnRemove);
 									currentEnd:   _newEnd
 								};
 								renderMap(); /* destroys old _bdBlock; partition now rendered at _newStart */
+								updateMapStatus('');
                                 if (_ctSrcInExt !== _ctTgtInExt) {
                                     /* Cross-type: state.dragCtx kept alive until showMovePartModal closes */
                                     showMovePartModal(String(_bdDev.path || ''), _bdPart, String(_bdDev.path || ''),
@@ -11817,6 +11905,38 @@ actionsWrap.appendChild(btnRemove);
 				_gBlock.textContent   = 'unallocated';
 				_gBlock.title         = 'Unallocated (original position)';
 				map.appendChild(_gBlock);
+			}
+		}
+		if (state.dragCtx && state.dragCtx.edge === 'clone' &&
+				state.dragCtx.dev && String(state.dragCtx.dev.path || '') === String(dev.path || '') &&
+				state.dragCtx.part) {
+			var _cPart = state.dragCtx.part;
+			var _cStart = Number(state.dragCtx.currentStart || 0);
+			var _cEnd = Number(state.dragCtx.currentEnd || 0);
+			if (_cEnd >= _cStart) {
+				var _cLeft = Math.round((_cStart / total) * mapWidth);
+				var _cRight = Math.round(((_cEnd + 1) / total) * mapWidth);
+				if (_cLeft < 0) _cLeft = 0;
+				if (_cLeft >= mapWidth) _cLeft = mapWidth - 1;
+				if (_cRight <= _cLeft) _cRight = _cLeft + 1;
+				if (_cRight > mapWidth) _cRight = mapWidth;
+				var _cWidth = Math.max(1, _cRight - _cLeft);
+				var _cInExt = (_extSectorStart >= 0 && _cStart >= _extSectorStart && _cEnd <= _extSectorEnd);
+				var _cBlock = document.createElement('div');
+				_cBlock.className = 'pcgi-block part' + (_cInExt ? ' pcgi-logical' : '');
+				_cBlock.style.left = _cLeft + 'px';
+				_cBlock.style.width = _cWidth + 'px';
+				_cBlock.style.zIndex = '45';
+				_cBlock.style.pointerEvents = 'none';
+				_cBlock.style.opacity = '0.9';
+				_cBlock.style.border = '2px dashed #2563eb';
+				_cBlock.style.boxSizing = 'border-box';
+				_cBlock.style.background = 'rgba(37, 99, 235, 0.18)';
+				_cBlock.style.color = '#1e3a8a';
+				_cBlock.style.fontStyle = 'italic';
+				_cBlock.textContent = 'clone';
+				_cBlock.title = 'Clone preview';
+				map.appendChild(_cBlock);
 			}
 		}
 	}
@@ -13675,10 +13795,14 @@ function showVerifyModal() {
 
 // ── Move / Clone modal ────────────────────────────────────────────────────────
 
-function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSourceDev, preselectSourcePart) {
+function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSourceDev, preselectSourcePart, presetMode) {
 	var modal    = document.getElementById('pcgiMoveCloneModal');
 	var infoEl   = document.getElementById('mcTargetInfo');
 	if (!modal) return;
+	var modeEl   = document.getElementById('mcMode');
+	if (modeEl && (presetMode === 'clone' || presetMode === 'move')) {
+		modeEl.value = presetMode;
+	}
 
 	// Populate source device/partition
 	populateDevDropdown('mcSourceDevice', preselectSourceDev || state.selectedDevice || '');
@@ -13722,9 +13846,23 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 		cancelBtn.onclick = okBtn.onclick = null;
 		document.removeEventListener('keydown', onEsc);
 	}
-	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
+	function clearCloneDragPreview() {
+		if (state.dragCtx && state.dragCtx.edge === 'clone') {
+			state.dragCtx = null;
+			renderMap();
+		}
+	}
+	function onEsc(ev) {
+		if (ev.key === 'Escape') {
+			cleanup();
+			clearCloneDragPreview();
+		}
+	}
 	document.addEventListener('keydown', onEsc);
-	cancelBtn.onclick = cleanup;
+	cancelBtn.onclick = function () {
+		cleanup();
+		clearCloneDragPreview();
+	};
 
 	okBtn.onclick = function () {
 		var srcDevSel   = document.getElementById('mcSourceDevice');
@@ -13846,8 +13984,10 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 			var moveLabel = 'Move partition (' + cloneMethod + ') #' + srcPartNum + ' from ' + srcDevPath + ' to ' + tgtDevPath + ' [' + tStart + 's..' + tEnd + 's]';
 			showCommandPreviewModal('move_partition', moveParams, moveLabel, t('confirmMove'), t('confirmMoveMsg'))
 			.then(function (previewText) {
-				if (previewText === null) return;
+				if (state.dragCtx && state.dragCtx.edge === 'clone') state.dragCtx = null;
+				if (previewText === null) { renderMap(); return; }
 				queueOp('move_partition', moveParams, moveLabel, previewText, false);
+				renderMap();
 				showToast(t('tQueued') + ' ' + moveLabel, 'info', 10000);
 			});
 		} else {
@@ -13875,8 +14015,10 @@ function showMoveCloneModal(targetDevPath, targetStart, targetEnd, preselectSour
 			var cloneLabel = 'Clone partition (' + cloneMethod + ') #' + srcPartNum + ' from ' + srcDevPath + ' to ' + tgtDevPath + ' [' + tStart + 's..' + tEnd + 's]';
 			showCommandPreviewModal('clone_partition_dd', cloneParams, cloneLabel, t('confirmClone'), t('confirmCloneMsg'))
 			.then(function (previewText) {
-				if (previewText === null) return;
+				if (state.dragCtx && state.dragCtx.edge === 'clone') state.dragCtx = null;
+				if (previewText === null) { renderMap(); return; }
 				queueOp('clone_partition_dd', cloneParams, cloneLabel, previewText, false);
+				renderMap();
 				showToast(t('tQueued') + ' ' + cloneLabel, 'info', 10000);
 			});
 		}
@@ -15546,7 +15688,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				align_bytes:  String(alignBytes || '0')
 			};
 			var alignSummary = getAlignmentLabelForBytes(alignBytes || '0');
-			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (sfdisk --move-data)';
+			var label = 'Move p' + part.number + ' on ' + devP + ' to start=' + newStart + 's (via sfdisk --move-data)';
 			var confirmMsg =
 				'<table style="width:100%;border-collapse:collapse;font-size:0.9em;margin-bottom:8px">' +
 				'<thead><tr>' +
