@@ -12,6 +12,25 @@ check "$TRANSMISSION_USEBLOCKLIST" yes:useblocklist
 check "$TRANSMISSION_USEDHT" yes:usedht
 check "$TRANSMISSION_USEUTP" yes:useutp
 
+first_existing_webdir() {
+	for candidate in "$@"; do
+		if [ -d "$candidate" ] && [ -r "$candidate/index.html" ]; then
+			printf '%s\n' "$candidate"
+			return 0
+		fi
+	done
+	return 1
+}
+
+render_detected_webui() {
+	local url="$1"
+	local label="$2"
+
+	cat << EOF
+<li><a href="${url}" target="_blank">${label}</a></li>
+EOF
+}
+
 
 sec_begin "$(lang de:"Starttyp" en:"Start type")"
 cgi_print_radiogroup_service_starttype "enabled" "$TRANSMISSION_ENABLED" "" "" 0
@@ -20,43 +39,55 @@ sec_end
 sec_begin "$(lang de:"Installierte Web-Interfaces" en:"Installed Web Interfaces")"
 
 WEBUI_FOUND="no"
+TRANSMISSION_WEB_HOST="${HTTP_HOST%%:*}"
+[ -n "$TRANSMISSION_WEB_HOST" ] || TRANSMISSION_WEB_HOST="${SERVER_NAME:-fritz.box}"
+TRANSMISSION_RPCPORT_DISPLAY="${TRANSMISSION_RPCPORT:-9091}"
+TRANSMISSION_BUILTIN_WEB_URL="http://${TRANSMISSION_WEB_HOST}:${TRANSMISSION_RPCPORT_DISPLAY}/"
+TRANSMISSION_WEB_UI_URL="http://${TRANSMISSION_WEB_HOST}:${TRANSMISSION_RPCPORT_DISPLAY}/transmission/web/"
+TRANSMISSION_FLOOD_URL="${TRANSMISSION_WEB_UI_URL}transmission-flood/index.html"
+TRANSMISSION_TRGUING_URL="${TRANSMISSION_WEB_UI_URL}trguing/index.html"
+TRANSMISSION_TRANSMISSIONIC_URL="${TRANSMISSION_WEB_UI_URL}transmissionic/index.html"
+TRANSMISSION_WEB_CONTROL_URL="${TRANSMISSION_WEB_UI_URL}transmission-web-control/index.html"
+
+TRANSMISSION_BUILTIN_WEBDIR="$(first_existing_webdir "/mod/external/usr/share/transmission-web-home" "/usr/share/transmission-web-home")"
+TRANSMISSION_FLOOD_WEBDIR="$(first_existing_webdir "/usr/mww/transmission-flood" "/mod/external/usr/mww/transmission-flood")"
+TRANSMISSION_TRGUING_WEBDIR="$(first_existing_webdir "/usr/mww/trguing" "/mod/external/usr/mww/trguing")"
+TRANSMISSION_TRANSMISSIONIC_WEBDIR="$(first_existing_webdir "/usr/mww/transmissionic" "/mod/external/usr/mww/transmissionic")"
+TRANSMISSION_WEB_CONTROL_WEBDIR="$(first_existing_webdir "/usr/mww/transmission-web-control" "/mod/external/usr/mww/transmission-web-control")"
 
 cat << EOF
-<p><small>$(lang de:"Folgende statische Web-Interfaces wurden erkannt:" en:"The following static web interfaces were detected:")</small></p>
 <ul>
 EOF
 
-if [ -d "/usr/mww/transmission-flood" ] || [ -d "/mod/external/usr/mww/transmission-flood" ]; then
+
+if [ -n "$TRANSMISSION_BUILTIN_WEBDIR" ]; then
 	WEBUI_FOUND="yes"
-	cat << EOF
-<li><a href="/transmission-flood/" target="_blank">flood-for-transmission</a></li>
-EOF
+	render_detected_webui "$TRANSMISSION_WEB_UI_URL" "Transmission Web Interface"
 fi
 
-if [ -d "/usr/mww/trguing" ] || [ -d "/mod/external/usr/mww/trguing" ]; then
+if [ -n "$TRANSMISSION_FLOOD_WEBDIR" ]; then
 	WEBUI_FOUND="yes"
-	cat << EOF
-<li><a href="/trguing/" target="_blank">TrguiNG web</a></li>
-EOF
+	render_detected_webui "$TRANSMISSION_FLOOD_URL" "flood-for-transmission"
 fi
 
-if [ -d "/usr/mww/transmissionic" ] || [ -d "/mod/external/usr/mww/transmissionic" ]; then
+if [ -n "$TRANSMISSION_TRGUING_WEBDIR" ]; then
 	WEBUI_FOUND="yes"
-	cat << EOF
-<li><a href="/transmissionic/" target="_blank">Transmissionic web UI</a></li>
-EOF
+	render_detected_webui "$TRANSMISSION_TRGUING_URL" "TrguiNG web"
 fi
 
-if [ -d "/usr/mww/transmission-web-control" ] || [ -d "/mod/external/usr/mww/transmission-web-control" ]; then
+if [ -n "$TRANSMISSION_TRANSMISSIONIC_WEBDIR" ]; then
 	WEBUI_FOUND="yes"
-	cat << EOF
-<li><a href="/transmission-web-control/" target="_blank">transmission-web-control</a></li>
-EOF
+	render_detected_webui "$TRANSMISSION_TRANSMISSIONIC_URL" "Transmissionic web UI"
+fi
+
+if [ -n "$TRANSMISSION_WEB_CONTROL_WEBDIR" ]; then
+	WEBUI_FOUND="yes"
+	render_detected_webui "$TRANSMISSION_WEB_CONTROL_URL" "transmission-web-control"
 fi
 
 if [ "$WEBUI_FOUND" = "no" ]; then
 	cat << EOF
-<li><em>$(lang de:"Kein statisches Transmission-Web-Interface installiert" en:"No static transmission web interface installed")</em></li>
+<li><em>$(lang de:"Kein Transmission-Web-Interface installiert" en:"No transmission web interface installed")</em></li>
 EOF
 fi
 
@@ -269,9 +300,7 @@ en:"Leave user name and password empty if no password protection required."
 </p>
 
 <p>
-<label for='webdir'>$(lang de:"Web-Home Verzeichnis" en:"Web-Home Directory"): </label>
-<input disabled type='text' id='webdir' size='40' maxlength='255' value="$(html "$TRANSMISSION_WEBDIR")">
-</p>
+<input type='hidden' id='webdir' name='webdir' value="$(html "${TRANSMISSION_BUILTIN_WEBDIR:-/mod/external/usr/share/transmission-web-home}")">
 EOF
 
 sec_end

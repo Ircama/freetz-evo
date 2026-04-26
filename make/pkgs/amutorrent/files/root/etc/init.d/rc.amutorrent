@@ -1,0 +1,156 @@
+#!/bin/sh
+
+DAEMON=amutorrent
+DAEMON_BIN=node
+DAEMON_LONG_NAME='aMUTorrent'
+PID_FILE=/var/run/$DAEMON.pid
+APP_STATE_DIR=/mod/etc/amutorrent
+APP_DATA_DIR=$APP_STATE_DIR/data
+APP_LOG_DIR=$APP_STATE_DIR/logs
+. /etc/init.d/modlibrc
+
+config() {
+	[ -r /mod/etc/default.amutorrent/amutorrent.cfg ] && . /mod/etc/default.amutorrent/amutorrent.cfg
+	[ -r /mod/etc/conf/amutorrent.cfg ] && . /mod/etc/conf/amutorrent.cfg
+	[ -r /mod/etc/conf/rtorrent.cfg ] && . /mod/etc/conf/rtorrent.cfg
+}
+
+is_running() {
+	if [ -f "$PID_FILE" ]; then
+		local pid
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			return 0
+		fi
+	fi
+	pgrep -f "${AMUTORRENT_APPDIR:-/usr/lib/amutorrent}/server/server.js" >/dev/null 2>&1 && return 0
+	return 1
+}
+
+start() {
+	config
+
+	if [ ! -x /usr/bin/node ]; then
+		echo "Starting $DAEMON_LONG_NAME ... failed: /usr/bin/node not found."
+		exit 1
+	fi
+
+	if [ ! -d "$AMUTORRENT_APPDIR" ] || [ ! -f "$AMUTORRENT_APPDIR/server/server.js" ]; then
+		echo "Starting $DAEMON_LONG_NAME ... failed: application files missing under $AMUTORRENT_APPDIR."
+		exit 1
+	fi
+
+	if is_running; then
+		echo "Starting $DAEMON_LONG_NAME ... failed: already running."
+		exit 1
+	fi
+
+	mkdir -p "$APP_DATA_DIR/geoip" "$APP_LOG_DIR" || {
+		echo "Starting $DAEMON_LONG_NAME ... failed: cannot create state directories."
+		exit 1
+	}
+
+	if [ ! -L "$AMUTORRENT_APPDIR/server/data" ] || [ ! -L "$AMUTORRENT_APPDIR/server/logs" ]; then
+		echo "Starting $DAEMON_LONG_NAME ... failed: expected writable data/log symlinks are missing."
+		exit 1
+	fi
+
+	local rtorrent_enabled=false
+	local rtorrent_mode="${AMUTORRENT_RTORRENT_MODE:-scgi}"
+	local rtorrent_host="${AMUTORRENT_RTORRENT_HOST:-127.0.0.1}"
+	local rtorrent_port="${AMUTORRENT_RTORRENT_PORT:-${RTORRENT_SCGI_PORT:-16891}}"
+	local rtorrent_socket="${AMUTORRENT_RTORRENT_SOCKET_PATH:-${RTORRENT_SCGI_SOCKET:-}}"
+
+	[ "$AMUTORRENT_RTORRENT_ENABLED" = 'yes' ] && rtorrent_enabled=true
+
+	echo -n "Starting $DAEMON_LONG_NAME ... "
+	start-stop-daemon -S -b -m -p "$PID_FILE" -- \
+		env \
+			NODE_ENV=production \
+			PORT="${AMUTORRENT_PORT:-4000}" \
+			BIND_ADDRESS="${AMUTORRENT_BIND:-0.0.0.0}" \
+			RTORRENT_ENABLED="$rtorrent_enabled" \
+			RTORRENT_MODE="$rtorrent_mode" \
+			RTORRENT_HOST="$rtorrent_host" \
+			RTORRENT_PORT="$rtorrent_port" \
+			RTORRENT_SOCKET_PATH="$rtorrent_socket" \
+			/bin/sh -c "cd \"$AMUTORRENT_APPDIR\" && exec /usr/bin/node \"$AMUTORRENT_APPDIR/server/server.js\" >>\"$APP_LOG_DIR/service.out.log\" 2>>\"$APP_LOG_DIR/service.err.log\""
+	if [ $? -ne 0 ]; then
+		echo 'failed.'
+		exit 1
+	fi
+	echo 'done.'
+}
+
+stop() {
+	config
+
+	echo -n "Stopping $DAEMON_LONG_NAME ... "
+
+	local pid=''
+	if [ -f "$PID_FILE" ]; then
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			kill "$pid" 2>/dev/null || true
+		else
+			pid=''
+		fi
+	fi
+
+	if [ -z "$pid" ]; then
+		pid=$(pgrep -f "${AMUTORRENT_APPDIR:-/usr/lib/amutorrent}/server/server.js" | head -n 1)
+		[ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+	fi
+
+	local timeout=10
+	while [ $timeout -gt 0 ]; do
+		if ! is_running; then
+			break
+		fi
+		sleep 1
+		timeout=$((timeout - 1))
+	done
+
+	if is_running; then
+		pid=$(pgrep -f "${AMUTORRENT_APPDIR:-/usr/lib/amutorrent}/server/server.js" | head -n 1)
+		[ -n "$pid" ] && kill -9 "$pid" 2>/dev/null || true
+	fi
+
+	rm -f "$PID_FILE"
+
+	if is_running; then
+		echo 'failed.'
+		exit 1
+	fi
+
+	echo 'done.'
+}
+
+case $1 in
+	""|load)
+		modreg daemon $DAEMON
+		modlib_start $AMUTORRENT_ENABLED
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

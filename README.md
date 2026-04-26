@@ -50,7 +50,6 @@ The authentication layer has been updated to support a **form-based session logi
 | **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)**, backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. | EVO only |
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
-| **aMUTorrent** 3.5.0 | Static web frontend compatible with Transmission-style RPC backends. | EVO only |
 | **flood-for-transmission** 1.0.1 | Static Transmission frontend integrated as selectable option in the Transmission package menu. | EVO only |
 | **transmission-web-control** (commit snapshot) | Static Transmission Web frontend. | EVO only |
 | **Transmissionic web UI** 1.8.0 | Static Transmission frontend integrated in the Transmission package menu. | EVO only |

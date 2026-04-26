@@ -1,0 +1,22 @@
+		<script>
+			(function() {
+				var loginUrl = '/cgi-bin/conf/rtorrent?subpage=rutorrent/';
+				var xhr = null;
+				try {
+					xhr = new XMLHttpRequest();
+					xhr.open('GET', './conf/freetz_config.php?auth_ping=1', false);
+					xhr.send(null);
+					if (xhr.status >= 200 && xhr.status < 300) {
+						return;
+					}
+					if (xhr.status === 403 && xhr.responseText) {
+						var data = JSON.parse(xhr.responseText);
+						if (data && data.login_url) {
+							loginUrl = data.login_url;
+						}
+					}
+				} catch (e) {
+				}
+				window.location.replace(loginUrl);
+			})();
+		</script>

@@ -22,6 +22,9 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	mkdir -p $(TRGUING_WEB_DEST_DIR)/usr/mww/trguing
 	$(call COPY_USING_TAR,$(TRGUING_WEB_DIR),$(TRGUING_WEB_DEST_DIR)/usr/mww/trguing,.)
+	find $(TRGUING_WEB_DEST_DIR)/usr/mww/trguing -type f -name '*.js' -exec sed -i 's|\.\./rpc|../../rpc|g' {} +
+	mkdir -p $(TRGUING_WEB_DEST_DIR)/usr/share/transmission-web-home
+	ln -sfn ../../mww/trguing $(TRGUING_WEB_DEST_DIR)/usr/share/transmission-web-home/trguing
 	@touch $@
 
 $(pkg):
@@ -33,5 +36,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -r $(TRGUING_WEB_DEST_DIR)/usr/mww/trguing
+	$(RM) $(TRGUING_WEB_DEST_DIR)/usr/share/transmission-web-home/trguing
 
 $(PKG_FINISH)

@@ -1,5 +1,9 @@
 DAEMON=rtorrent
 DAEMON_BIN=rtorrent
+# modlibrc's pidof-based status is not reliable for rtorrent because manual
+# starts can show up as "{rtorrent main}" on the box. Keep the daemon name for
+# framework compatibility, but use explicit process scanning below.
+DAEMON_CHECK="$DAEMON_BIN"
 PID_FILE=/var/run/$DAEMON.pid
 . /etc/init.d/modlibrc
 
@@ -17,17 +21,23 @@ echoFailedAndExit() {
 	[ -n "$1" ] && exit $1 || exit 1
 }
 
+find_rtorrent_pids() {
+	{
+		pgrep -x rtorrent 2>/dev/null || true
+		pgrep -f '(^|/)(rtorrent)([[:space:]]|$)' 2>/dev/null || true
+		ps | awk '
+			(($0 ~ /(^|[[:space:]\/])rtorrent([[:space:]]|$)/) || ($0 ~ /[{]rtorrent([[:space:]}]|$)/)) &&
+			$0 !~ /awk/ &&
+			$0 !~ /pgrep/ &&
+			$0 !~ /rc\.rtorrent/ {
+				print $1
+			}'
+	} | sort -u | sed '/^$/d'
+}
+
 # Check if daemon is already running
 is_running() {
-	if [ -f "$PID_FILE" ]; then
-		local pid=$(cat "$PID_FILE" 2>/dev/null)
-		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-			return 0
-		fi
-	fi
-	# Also check by process name
-	pgrep -x rtorrent >/dev/null 2>&1 && return 0
-	return 1
+	find_rtorrent_pids | grep -q .
 }
 
 # Boot monitor: keep rtorrent alive for a short window after boot start.
@@ -347,8 +357,38 @@ stop() {
 	
 	echo ''  # newline
 	echo -n ' - Terminating process ... '
-	# Use start-stop-daemon to stop the process
-	start-stop-daemon -K -p "$PID_FILE" -s TERM -R 10 || true
+	local pid=""
+	local pids=""
+	local stopped="no"
+
+	pids="$(find_rtorrent_pids)"
+	if [ -n "$pids" ]; then
+		for pid in $pids; do
+			kill -TERM "$pid" 2>/dev/null || true
+		done
+		stopped="yes"
+	fi
+
+	if [ "$stopped" = "yes" ]; then
+		local timeout=10
+		while [ $timeout -gt 0 ] && is_running; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+	fi
+
+	if is_running; then
+		killall rtorrent 2>/dev/null || true
+		sleep 1
+	fi
+
+	if is_running; then
+		pids="$(find_rtorrent_pids)"
+		for pid in $pids; do
+			kill -KILL "$pid" 2>/dev/null || true
+		done
+		sleep 1
+	fi
 	
 	# Clean up PID file
 	rm -f "$PID_FILE" 2>/dev/null
@@ -360,12 +400,26 @@ stop() {
 	fi
 	rm -f /tmp/rtorrent-rpc.socket 2>/dev/null
 	
+	if is_running; then
+		echo 'failed.'
+		return 1
+	fi
+
 	echo 'done.'
 }
 
 # Override modlibrc's stop_post to avoid spurious "failed" message
 stop_post() {
 	return 0
+}
+
+status() {
+	if is_running; then
+		echo 'running'
+		return 0
+	fi
+	echo 'stopped'
+	return 3
 }
 
 case $1 in
@@ -418,19 +472,20 @@ case $1 in
 	unload)
 		modunreg daemon $DAEMON
 		modunreg cgi 'rtorrent'
-		modlib_stop
+		stop
 		;;
 	start)
-		modlib_start
+		start
 		;;
 	stop)
 		stop
 		;;
 	restart)
-		modlib_restart
+		stop
+		start
 		;;
 	status)
-		modlib_status
+		status
 		;;
 	*)
 		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2

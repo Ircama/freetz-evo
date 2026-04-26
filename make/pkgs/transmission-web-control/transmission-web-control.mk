@@ -20,6 +20,9 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	mkdir -p $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/mww/transmission-web-control
 	$(call COPY_USING_TAR,$(TRANSMISSION_WEB_CONTROL_DIR),$(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/mww/transmission-web-control,--exclude='*.md' --exclude='screenshot.png' --exclude='snap-*.png' .)
+	find $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/mww/transmission-web-control -type f -name '*.js' -exec sed -i 's|\.\./rpc|../../rpc|g' {} +
+	mkdir -p $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/share/transmission-web-home
+	ln -sfn ../../mww/transmission-web-control $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/share/transmission-web-home/transmission-web-control
 	@touch $@
 
 $(pkg):
@@ -31,5 +34,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -r $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/mww/transmission-web-control
+	$(RM) $(TRANSMISSION_WEB_CONTROL_DEST_DIR)/usr/share/transmission-web-home/transmission-web-control
 
 $(PKG_FINISH)

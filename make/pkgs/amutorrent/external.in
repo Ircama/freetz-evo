@@ -4,4 +4,6 @@ config EXTERNAL_FREETZ_PACKAGE_AMUTORRENT
 	default n
 	help
 		externals the following file(s):
+		 /usr/lib/amutorrent
+		 /usr/lib/cgi-bin/amutorrent.cgi
 		 /usr/mww/amutorrent

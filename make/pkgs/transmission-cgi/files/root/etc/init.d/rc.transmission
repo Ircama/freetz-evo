@@ -35,6 +35,33 @@ stripAllSpaces() {
 	echo "${1// /}"
 }
 
+resolve_transmission_webdir() {
+	local configured_webdir="$1"
+	local candidate
+
+	case "$configured_webdir" in
+		/usr/mww/transmission-flood|/mod/external/usr/mww/transmission-flood|\
+		/usr/mww/trguing|/mod/external/usr/mww/trguing|\
+		/usr/mww/transmissionic|/mod/external/usr/mww/transmissionic|\
+		/usr/mww/transmission-web-control|/mod/external/usr/mww/transmission-web-control)
+			for candidate in /mod/external/usr/share/transmission-web-home /usr/share/transmission-web-home; do
+				if [ -d "$candidate" ] && [ -r "$candidate/index.html" ]; then
+					printf '%s\n' "$candidate"
+					return 0
+				fi
+			done
+			;;
+		*)
+			if [ -n "$configured_webdir" ]; then
+				printf '%s\n' "$configured_webdir"
+				return 0
+			fi
+			;;
+	esac
+
+	return 1
+}
+
 start() {
 	echo -n 'Starting transmission daemon ... '
 	[ -r /etc/options.cfg ] && . /etc/options.cfg
@@ -45,6 +72,7 @@ start() {
 	TRANSMISSION_INCOMPLETEDIR=$(trim "$TRANSMISSION_INCOMPLETEDIR")
 	TRANSMISSION_FINISHDIR=$(trim "$TRANSMISSION_FINISHDIR")
 	TRANSMISSION_WEBDIR=$(trim "$TRANSMISSION_WEBDIR")
+	TRANSMISSION_WEBDIR=$(resolve_transmission_webdir "$TRANSMISSION_WEBDIR")
 	TRANSMISSION_WATCHDIR=$(trim "$TRANSMISSION_WATCHDIR")
 
 	checkNotEmpty "$TRANSMISSION_CONFIGDIR" 'TRANSMISSION_CONFIGDIR'

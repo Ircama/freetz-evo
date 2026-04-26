@@ -14,6 +14,8 @@ program     gawk
 program     gcc
 program     gettext
 program     git
+program     node                   FREETZ_PACKAGE_AMUTORRENT
+program     npm                    FREETZ_PACKAGE_AMUTORRENT
 program     glib-genmarshal        FREETZ_LIB_libglib_2
 program     grep
 program     hexdump                FREETZ_TYPE_FIRMWARE_DETECT_LATEST
@@ -28,6 +30,7 @@ program     mktemp
 program     nc                     FREETZ_TYPE_FIRMWARE_DETECT_LATEST
 program     patch
 program     perl
+program     python3                FREETZ_PACKAGE_NODEJS FREETZ_PACKAGE_AMUTORRENT
 program     pkg-config
 program     readlink
 program     realpath

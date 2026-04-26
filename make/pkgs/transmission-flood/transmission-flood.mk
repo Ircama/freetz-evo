@@ -18,6 +18,9 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	mkdir -p $(TRANSMISSION_FLOOD_DEST_DIR)/usr/mww/transmission-flood
 	$(call COPY_USING_TAR,$(TRANSMISSION_FLOOD_DIR),$(TRANSMISSION_FLOOD_DEST_DIR)/usr/mww/transmission-flood,.)
+	find $(TRANSMISSION_FLOOD_DEST_DIR)/usr/mww/transmission-flood -type f -name '*.js' -exec sed -i 's|\.\./rpc|../../rpc|g' {} +
+	mkdir -p $(TRANSMISSION_FLOOD_DEST_DIR)/usr/share/transmission-web-home
+	ln -sfn ../../mww/transmission-flood $(TRANSMISSION_FLOOD_DEST_DIR)/usr/share/transmission-web-home/transmission-flood
 	@touch $@
 
 $(pkg):
@@ -29,5 +32,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -r $(TRANSMISSION_FLOOD_DEST_DIR)/usr/mww/transmission-flood
+	$(RM) $(TRANSMISSION_FLOOD_DEST_DIR)/usr/share/transmission-web-home/transmission-flood
 
 $(PKG_FINISH)

@@ -58,3 +58,4 @@ util-linux
 wget
 xz
 zlib-ng-devel
+python3

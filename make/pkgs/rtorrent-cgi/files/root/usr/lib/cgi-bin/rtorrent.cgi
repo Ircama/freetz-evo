@@ -725,7 +725,9 @@ fi
 
 # Check if aMUTorrent is installed
 AMUTORRENT_INSTALLED="no"
-if [ -d "/usr/mww/amutorrent" ] || [ -d "/mod/external/usr/mww/amutorrent" ]; then
+
+if { [ -d "/usr/mww/amutorrent" ] || [ -d "/mod/external/usr/mww/amutorrent" ]; } && \
+	{ [ -x "/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/external/usr/lib/cgi-bin/amutorrent.cgi" ]; }; then
 	AMUTORRENT_INSTALLED="yes"
 fi
 

@@ -309,9 +309,15 @@ endif
 		echo "ERROR: ruTorrent plugins directory not found!"; \
 		exit 1; \
 	fi
-	# Copy Freetz-specific configuration and user profile
-	@if [ -d "$(RUTORRENT_PKG_MAKE_DIR)/files/root/usr/mww/rutorrent" ]; then \
-		cp -a $(RUTORRENT_PKG_MAKE_DIR)/files/root/usr/mww/rutorrent/* $(RUTORRENT_PKG_RUTORRENT_WEBDIR)/; \
+	# Copy Freetz-specific runtime helpers without overriding upstream index.html.
+	@for overlay in conf index.php php-info.php rtorrent_xmlrpc_proxy.php share; do \
+		if [ -e "$(RUTORRENT_PKG_MAKE_DIR)/files/root/usr/mww/rutorrent/$$overlay" ]; then \
+			cp -a $(RUTORRENT_PKG_MAKE_DIR)/files/root/usr/mww/rutorrent/$$overlay $(RUTORRENT_PKG_RUTORRENT_WEBDIR)/; \
+		fi; \
+	done
+	@if ! grep -q "auth_ping=1" $(RUTORRENT_PKG_RUTORRENT_WEBDIR)/index.html 2>/dev/null; then \
+		sed -i '/cache-control/r $(RUTORRENT_PKG_MAKE_DIR)/files/index.auth-guard.html' \
+			$(RUTORRENT_PKG_RUTORRENT_WEBDIR)/index.html; \
 	fi
 	# Fix permissions for ruTorrent share directory
 	# Ensure torrents directory has world-writable permissions so webserver can write torrents

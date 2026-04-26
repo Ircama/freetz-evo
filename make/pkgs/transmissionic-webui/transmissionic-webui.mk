@@ -22,6 +22,13 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	mkdir -p $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/mww/transmissionic
 	$(call COPY_USING_TAR,$(TRANSMISSIONIC_WEBUI_DIR)/web,$(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/mww/transmissionic,.)
+	for js_file in $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/mww/transmissionic/js/app*.js; do \
+		[ -f "$$js_file" ] || continue; \
+		sed -i 's/host:"localhost"/host:window.location.hostname||"localhost"/' "$$js_file"; \
+		sed -i 's/port:9091/port:parseInt(window.location.port,10)||9091/' "$$js_file"; \
+	done
+	mkdir -p $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/share/transmission-web-home
+	ln -sfn ../../mww/transmissionic $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/share/transmission-web-home/transmissionic
 	@touch $@
 
 $(pkg):
@@ -33,5 +40,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -r $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/mww/transmissionic
+	$(RM) $(TRANSMISSIONIC_WEBUI_DEST_DIR)/usr/share/transmission-web-home/transmissionic
 
 $(PKG_FINISH)

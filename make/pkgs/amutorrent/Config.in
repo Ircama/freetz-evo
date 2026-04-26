@@ -1,8 +1,21 @@
 config FREETZ_PACKAGE_AMUTORRENT
-	bool "aMUTorrent 3.5.0 (frontend statico)"
+	depends on FREETZ_USER_LEVEL_DEVELOPER
+	depends on FREETZ_TARGET_GCC_13_MIN
+	depends on FREETZ_OPENSSL_VERSION_30 || FREETZ_OPENSSL_VERSION_35
+	bool "aMUTorrent 3.5.0"
 	default n
 	help
-		aMUTorrent frontend statico installato in /usr/mww/amutorrent.
-		Richiede un backend RPC compatibile (es. Transmission) configurato a runtime.
+		Installa aMUTorrent come servizio Node.js completo, con frontend compilato
+		sul sistema host e backend Express/WebSocket eseguito sul target.
 
-		Accesso: http://fritz.box:81/amutorrent/
+		Il bootstrap preconfigura rTorrent locale via SCGI diretto verso
+		127.0.0.1:${RTORRENT_SCGI_PORT:-16891} quando disponibile.
+
+		La pagina http://fritz.box:81/amutorrent/ effettua un redirect verso la
+		porta del servizio (4000 di default) e mostra una pagina diagnostica se
+		il daemon non e' in esecuzione.
+
+		Selezionando questo pacchetto viene abilitato automaticamente anche il
+		runtime target Node.js, che resta nascosto fuori dalla developer mode.
+
+		Richiede i programmi host node e npm per il build.

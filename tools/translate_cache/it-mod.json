@@ -524,6 +524,13 @@
     "timestamp": "2026-02-16T14:18:22Z",
     "translation": "Frequenze di clock"
   },
+  "deepl:Close window": {
+    "github_user": "Ircama",
+    "original": "Close window",
+    "service": "deepl",
+    "timestamp": "2026-03-21T20:50:47Z",
+    "translation": "Chiudi finestra"
+  },
   "deepl:Compilation date": {
     "github_user": "Ircama",
     "original": "Compilation date",
@@ -1357,6 +1364,13 @@
     "timestamp": "2026-02-16T14:18:30Z",
     "translation": "Identificare la versione del firmware inattiva all'avvio"
   },
+  "deepl:If the action does not complete in the browser, run this in CLI:": {
+    "github_user": "Ircama",
+    "original": "If the action does not complete in the browser, run this in CLI:",
+    "service": "deepl",
+    "timestamp": "2026-03-15T18:18:51Z",
+    "translation": "Se l'azione non viene completata nel browser, eseguirla in CLI:"
+  },
   "deepl:Impulse noise protection (INP)": {
     "github_user": "Ircama",
     "original": "Impulse noise protection (INP)",
@@ -1910,6 +1924,13 @@
     "timestamp": "2026-02-16T14:19:06Z",
     "translation": "Le password non corrispondono!"
   },
+  "deepl:Path": {
+    "github_user": "Ircama",
+    "original": "Path",
+    "service": "deepl",
+    "timestamp": "2026-03-21T20:50:02Z",
+    "translation": "Percorso"
+  },
   "deepl:Path for wtmp": {
     "github_user": "Ircama",
     "original": "Path for wtmp",
@@ -2425,8 +2446,8 @@
     "github_user": "Ircama",
     "original": "Starting",
     "service": "deepl",
-    "timestamp": "2026-02-16T14:18:52Z",
-    "translation": "Avvio"
+    "timestamp": "2026-04-26T02:48:26Z",
+    "translation": "Attivazione di"
   },
   "deepl:Starting external services": {
     "github_user": "Ircama",
@@ -2516,8 +2537,8 @@
     "github_user": "Ircama",
     "original": "Stopping",
     "service": "deepl",
-    "timestamp": "2026-02-16T14:18:52Z",
-    "translation": "Fermarsi"
+    "timestamp": "2026-04-26T02:47:53Z",
+    "translation": "Interruzione di"
   },
   "deepl:Stopping AVM services, part 1": {
     "github_user": "Ircama",
@@ -3568,26 +3589,5 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "con i pulsanti"
-  },
-  "deepl:If the action does not complete in the browser, run this in CLI:": {
-    "original": "If the action does not complete in the browser, run this in CLI:",
-    "translation": "Se l'azione non viene completata nel browser, eseguirla in CLI:",
-    "timestamp": "2026-03-15T18:18:51Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Path": {
-    "original": "Path",
-    "translation": "Percorso",
-    "timestamp": "2026-03-21T20:50:02Z",
-    "service": "deepl",
-    "github_user": "Ircama"
-  },
-  "deepl:Close window": {
-    "original": "Close window",
-    "translation": "Chiudi finestra",
-    "timestamp": "2026-03-21T20:50:47Z",
-    "service": "deepl",
-    "github_user": "Ircama"
   }
 }
