@@ -2,11 +2,12 @@ config FREETZ_PACKAGE_AMUTORRENT
 	depends on FREETZ_USER_LEVEL_DEVELOPER
 	depends on FREETZ_TARGET_GCC_13_MIN
 	depends on FREETZ_OPENSSL_VERSION_30 || FREETZ_OPENSSL_VERSION_35
-	bool "aMUTorrent 3.5.0"
+	bool "aMUTorrent 3.5.0 - DEVELOPER"
 	default n
 	help
-		Installa aMUTorrent come servizio Node.js completo, con frontend compilato
-		sul sistema host e backend Express/WebSocket eseguito sul target.
+		Pacchetto sperimentale per sviluppatori: installa aMUTorrent come servizio
+		Node.js completo, con frontend compilato sul sistema host e backend
+		Express/WebSocket eseguito sul target.
 
 		Il bootstrap preconfigura rTorrent locale via SCGI diretto verso
 		127.0.0.1:${RTORRENT_SCGI_PORT:-16891} quando disponibile.
@@ -17,5 +18,9 @@ config FREETZ_PACKAGE_AMUTORRENT
 
 		Selezionando questo pacchetto viene abilitato automaticamente anche il
 		runtime target Node.js, che resta nascosto fuori dalla developer mode.
+
+		Nota: sul target il porting Node.js non e' ancora considerato funzionante;
+		per questo il pacchetto resta in developer mode, disabilitato di default,
+		e non dovrebbe essere considerato pronto per uso normale.
 
 		Richiede i programmi host node e npm per il build.

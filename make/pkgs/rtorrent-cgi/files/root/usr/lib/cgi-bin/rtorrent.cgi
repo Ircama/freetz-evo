@@ -726,8 +726,10 @@ fi
 # Check if aMUTorrent is installed
 AMUTORRENT_INSTALLED="no"
 
-if { [ -d "/usr/mww/amutorrent" ] || [ -d "/mod/external/usr/mww/amutorrent" ]; } && \
-	{ [ -x "/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/external/usr/lib/cgi-bin/amutorrent.cgi" ]; }; then
+if { [ -f "/usr/lib/amutorrent/server/server.js" ] || [ -f "/mod/external/usr/lib/amutorrent/server/server.js" ]; } && \
+	{ [ -d "/usr/mww/amutorrent" ] || [ -d "/mod/external/usr/mww/amutorrent" ]; } && \
+	{ [ -f "/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/usr/lib/cgi-bin/amutorrent.cgi" ] || [ -x "/mod/external/usr/lib/cgi-bin/amutorrent.cgi" ]; } && \
+	{ [ -x "/etc/init.d/rc.amutorrent" ] || [ -x "/mod/etc/init.d/rc.amutorrent" ] || [ -x "/mod/external/etc/init.d/rc.amutorrent" ]; }; then
 	AMUTORRENT_INSTALLED="yes"
 fi
 
@@ -1866,7 +1868,7 @@ if [ "$AMUTORRENT_INSTALLED" = "yes" ]; then
 <strong>$(lang de:"aMUTorrent Web-Interface" en:"aMUTorrent Web Interface"):</strong> <a href="/amutorrent/" target="_blank" style="color: #007bff; font-weight: bold;">/amutorrent/</a>
 </p>
 <p>
-<small style="color: #666;">$(lang de:"aMUTorrent ist ein alternatives Web-Frontend und benötigt einen laufenden RPC-Backend-Dienst (z. B. Transmission)." en:"aMUTorrent is an alternative web frontend and requires a running RPC backend service (e.g. Transmission).")</small>
+<small style="color: #666;">$(lang de:"aMUTorrent ist ein experimentelles Developer-Paket, bleibt standardmäßig deaktiviert und hängt vom Node.js-Port auf dem Target ab, der derzeit noch nicht als funktionsfähig gilt." en:"aMUTorrent is an experimental developer-only package, stays disabled by default, and depends on the target Node.js port, which is not yet considered working.")</small>
 </p>
 EOF
 	sec_end

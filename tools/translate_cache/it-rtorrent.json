@@ -1223,5 +1223,12 @@
     "timestamp": "2026-03-31T06:54:02Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:aMUTorrent is an experimental developer-only package, stays disabled by default, and depends on the target Node.js port, which is not yet considered working.": {
+    "original": "aMUTorrent is an experimental developer-only package, stays disabled by default, and depends on the target Node.js port, which is not yet considered working.",
+    "translation": "aMUTorrent è un pacchetto sperimentale per soli sviluppatori, rimane disabilitato per impostazione predefinita e dipende dalla porta Node.js di destinazione, che non è ancora considerata funzionante.",
+    "timestamp": "2026-04-26T07:59:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
