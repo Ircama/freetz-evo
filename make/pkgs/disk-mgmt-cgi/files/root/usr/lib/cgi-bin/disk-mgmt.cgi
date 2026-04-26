@@ -10796,12 +10796,15 @@ actionsWrap.appendChild(btnRemove);
 			{ id: 'disk_geometry',        label: 'Partition table geometry (sfdisk -g)' }
 			];
 		} else if (menuType === 'free') {
+			var hasSelectedPartition = !!(state.selectedPart && state.selectedComponent && state.selectedComponent.kind === 'partition');
 			items = [
 				{ id: 'free_create',      label: t('ctxFreeCreate') },
-				{ id: 'free_move_clone',  label: t('ctxFreeMoveClone') },
 				{ id: 'free_img_import',  label: t('ctxFreeRestore') },
 				{ id: 'free_net_recv',    label: t('ctxFreeReceive') }
 			];
+			if (hasSelectedPartition) {
+				items.splice(1, 0, { id: 'free_move_clone',  label: t('ctxFreeMoveClone') });
+			}
 		} else {
 			var part = target;
 			var _ctxRole = String(part.role || '');
@@ -10911,6 +10914,10 @@ actionsWrap.appendChild(btnRemove);
 			var freeSeg = target;
 			if (action === 'free_create')     { showNewPartModal(freeSeg.start, freeSeg.end, freeSeg.devPath || ''); return; }
 			if (action === 'free_move_clone') {
+				if (!(state.selectedPart && state.selectedComponent && state.selectedComponent.kind === 'partition')) {
+					showToast(t('tContextUnavailable'), 'warn');
+					return;
+				}
 				// Pass the currently selected partition as source (preserved — context menu no longer clears it)
 				showMoveCloneModal(freeSeg.devPath, freeSeg.start, freeSeg.end, state.selectedPartDevice || freeSeg.devPath, state.selectedPart);
 				return;
