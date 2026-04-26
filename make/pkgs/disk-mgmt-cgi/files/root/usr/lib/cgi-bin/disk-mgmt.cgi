@@ -5236,26 +5236,42 @@ cat <<'EOF'
 			<div>
 				<label id="i18nPnpStartLabel">New start sector</label>
 				<div style="display:flex;gap:4px">
-					<input id="pnpStartSector" type="text" placeholder="e.g. 2048" style="flex:1">
+					<input id="pnpStartSector" type="number" min="0" step="1" placeholder="sector" style="flex:1;min-width:0;font-family:monospace">
 					<button type="button" id="pnpStartMinBtn" title="Set to minimum (first sector of free region)" style="padding:2px 6px;font-size:11px;white-space:nowrap">Min</button>
 				</div>
 			</div>
 			<div style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;color:#888;font-size:1.1em;" title="Linked — sector ↔ size (editing one updates the other)">↔</div>
 			<div>
 				<label id="i18nPnpStartHLabel">New start size</label>
-				<input id="pnpStartHuman" type="text" placeholder="e.g. 1 MiB">
+				<div style="display:flex;gap:4px;align-items:center">
+					<input id="pnpStartHuman" type="number" min="0" step="0.001" placeholder="0" style="flex:1;min-width:0;font-family:monospace">
+					<select id="pnpStartHumanUnit" style="width:58px;padding:2px 2px">
+						<option value="MiB" selected>MiB</option>
+						<option value="GiB">GiB</option>
+						<option value="TiB">TiB</option>
+						<option value="KiB">KiB</option>
+					</select>
+				</div>
 			</div>
 			<div>
 				<label id="i18nPnpEndLabel">New end sector</label>
 				<div style="display:flex;gap:4px">
-					<input id="pnpEndSector" type="text" placeholder="e.g. 1023999" style="flex:1">
+					<input id="pnpEndSector" type="number" min="0" step="1" placeholder="sector" style="flex:1;min-width:0;font-family:monospace">
 					<button type="button" id="pnpEndMaxBtn" title="Set to maximum (last sector of free region)" style="padding:2px 6px;font-size:11px;white-space:nowrap">Max</button>
 				</div>
 			</div>
 			<div style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;color:#888;font-size:1.1em;" title="Linked — sector ↔ size (editing one updates the other)">↔</div>
 			<div>
 				<label id="i18nPnpEndHLabel">New end size</label>
-				<input id="pnpEndHuman" type="text" placeholder="e.g. 488 MiB">
+				<div style="display:flex;gap:4px;align-items:center">
+					<input id="pnpEndHuman" type="number" min="0" step="0.001" placeholder="0" style="flex:1;min-width:0;font-family:monospace">
+					<select id="pnpEndHumanUnit" style="width:58px;padding:2px 2px">
+						<option value="MiB" selected>MiB</option>
+						<option value="GiB">GiB</option>
+						<option value="TiB">TiB</option>
+						<option value="KiB">KiB</option>
+					</select>
+				</div>
 			</div>
 			<div id="pnpRoleRow">
 				<label id="i18nPnpRoleLabel">Role</label>
@@ -7467,6 +7483,7 @@ window.paceOptions = {
 		previewEditContext: null,
 		mapDragActive: false,
 		partitionDragInfo: null,
+		createPartPreview: null,
 		sectorSyncLock: false
 	};
 
@@ -8133,9 +8150,9 @@ window.paceOptions = {
 		'map-rename':        { title: 'Set partition name  [parted: name N "label"]', body: 'Sets the GPT partition name (label) stored in the partition entry. This is <em>different</em> from the filesystem label — it lives in the partition table itself, not inside the filesystem.<br><br>Visible in gdisk, parted, and Windows Disk Management.<br><br><b>Only for GPT disks.</b> On MBR/msdos disks parted will return an error; use a filesystem label instead.<br><br>Leave blank to store an empty string.' },
 		'map-flag':          { title: 'Set partition flag  [parted: set N flag on|off]', body: 'Sets or clears a partition attribute flag in the partition table.<br><br><b>Common flags:</b><br>• <code>boot</code> – marks the active/bootable partition (MBR only; BIOS looks for this).<br>• <code>esp</code> – EFI System Partition (GPT; required for UEFI boot).<br>• <code>lba</code> – Extended with LBA (MBR extended partition type 0x0F; allows &gt;8 GiB extended).<br>• <code>msftdata</code> – Microsoft basic data (GPT; used by Windows for data partitions).<br>• <code>swap</code> – Linux swap area marker.<br>• <code>raid</code> – Linux software RAID member.<br>• <code>lvm</code> – Linux LVM physical volume.<br>• <code>hidden</code> – hides the partition from the OS (MBR type 0x1x).<br>• <code>diag</code> – diagnostic / recovery partition.<br>• <code>bios_grub</code> – BIOS boot partition for GRUB on GPT (required for non-UEFI GRUB installs).<br>• <code>pmbr_boot</code> – Protective MBR boot flag (GPT).<br><br>Set to <b>on</b> to add the flag, <b>off</b> to remove it.' },
 		/* New partition modal */
-		'pnp-start':     { title: 'New start sector',     body: 'First sector of the new partition. Must lie within a free (unallocated) region on the disk.<br><br>Accepts a sector number (e.g. <code>2048</code>) or a <b>percentage</b> of the disk (e.g. <code>0%</code>, <code>25%</code>). Linked to the "New start size" field — changing one updates the other.<br><br>Click <b>Min</b> to reset to the first sector of the free region.' },
+		'pnp-start':     { title: 'New start sector',     body: 'First sector of the new partition. Must lie within a free (unallocated) region on the disk.<br><br>Accepts a sector number only (e.g. <code>2048</code>). Linked to the "New start size" field — changing one updates the other.<br><br>Click <b>Min</b> to reset to the first sector of the free region.' },
 		'pnp-start-h':   { title: 'New start size',       body: 'Human-readable offset of the partition start, e.g. <code>1 MiB</code>, <code>512 KiB</code>.<br><br>Synchronized with the raw sector field. Editing this updates the sector value automatically.' },
-		'pnp-end':       { title: 'New end sector',       body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector.<br><br>Accepts a sector number (e.g. <code>1023999</code>) or a <b>percentage</b> of the disk (e.g. <code>50%</code>, <code>100%</code>).<br><br>Click <b>Max</b> to reset to the last sector of the free region.' },
+		'pnp-end':       { title: 'New end sector',       body: 'Last sector (inclusive) of the new partition. Must be within the same free region as the start sector.<br><br>Accepts a sector number only (e.g. <code>1023999</code>).<br><br>Click <b>Max</b> to reset to the last sector of the free region.' },
 		'pnp-end-h':     { title: 'New end size',         body: 'Human-readable end position of the partition, e.g. <code>488 MiB</code>.<br><br>Synchronized with the raw sector field on the left. Editing this updates the sector value automatically.' },
 		'pnp-role':      { title: 'Role',                 body: '<b>primary</b> – standard MBR partition. MBR supports max 4 primary partitions (slots 1–4).<br><br><b>extended</b> – container for logical partitions. Occupies one of the 4 primary slots (slot 1–4). Only one per MBR disk; irrelevant on GPT.<br><br><b>logical</b> – partition inside an extended container. Always numbered ≥ 5. Logical partitions do <em>not</em> consume a primary slot — they live inside the extended partition, so you can have many without hitting the 4-slot limit.<br><br>On GPT all partitions share the same type; GPT supports up to 128 partitions with no primary/logical distinction.' },
 		'pnp-fs-hint':   { title: 'Filesystem',           body: 'Filesystem type hint stored in the partition table entry. Does <em>not</em> create a filesystem — only sets the partition type flag visible to tools like parted or fdisk.<br><br>To actually format the partition, use "Create filesystem" in the Filesystem operations section after creating the partition.' },
@@ -9973,6 +9990,9 @@ renderMap();
 }
 
 function queueOp(action, params, label, commandPreview, quiet) {
+		if (String(action || '') === 'create_partition') {
+			clearCreatePartitionPreview(true);
+		}
 
 		state.queue.push({ action: action, params: params, label: label, commandPreview: commandPreview || '' });
 		renderQueue();
@@ -10334,8 +10354,9 @@ actionsWrap.appendChild(btnRemove);
 		return out;
 	}
 
-	function buildPreviewDevice(dev) {
+	function buildPreviewDevice(dev, options) {
 		if (!dev) return null;
+		var previewOpts = options || {};
 
 		var preview = {};
 		for (var dk in dev) {
@@ -10470,8 +10491,84 @@ actionsWrap.appendChild(btnRemove);
 			}
 		}
 
+		if (!previewOpts.skipCreatePreview) {
+			var createPreview = state.createPartPreview || null;
+			if (createPreview && String(createPreview.device || '') === String(dev.path || '')) {
+				var previewStart = Number(createPreview.start_sector || 0);
+				var previewEnd = Number(createPreview.end_sector || 0);
+				if (isFinite(previewStart) && isFinite(previewEnd) && previewStart > 0 && previewEnd >= previewStart) {
+					var previewDev = {
+						partitions: normalizePreviewPartitions(partsOnly, Number(dev.total_sectors || 0))
+					};
+					if (findContainingFreeSegment(previewDev, previewStart, previewEnd)) {
+						var previewRole = String(createPreview.part_role || 'primary');
+						var previewNum = (previewRole === 'logical') ? getNextLogicalNumber(partsOnly) : getNextPartitionNumber(partsOnly);
+						partsOnly.push({
+							kind: 'partition',
+							number: previewNum,
+							start: Math.floor(previewStart),
+							end: Math.floor(previewEnd),
+							size: Math.max(1, Math.floor(previewEnd - previewStart + 1)),
+							path: buildPartitionPath(dev.path, previewNum),
+							fs: previewRole === 'extended' ? '' : String(createPreview.fs_hint || ''),
+							name: String(createPreview.part_name || ''),
+							flags: '',
+							label: '',
+							mountpoint: '',
+							role: previewRole,
+							fs_size_bytes: 0,
+							fs_used_bytes: 0,
+							fs_avail_bytes: 0,
+							used_pct: 0
+						});
+					}
+				}
+			}
+		}
+
 		preview.partitions = normalizePreviewPartitions(partsOnly, Number(dev.total_sectors || 0));
 		return preview;
+	}
+
+	function clearCreatePartitionPreview(skipRender) {
+		if (!state.createPartPreview) return;
+		state.createPartPreview = null;
+		if (!skipRender) renderMap();
+	}
+
+	function syncCreatePartitionPreviewFromForm() {
+		var devPath = String(state.selectedDevice || '').trim();
+		var start = String((document.getElementById('newStartSector') || { value: '' }).value || '').trim();
+		var end = String((document.getElementById('newEndSector') || { value: '' }).value || '').trim();
+		if (!devPath || !/^\d+$/.test(start) || !/^\d+$/.test(end)) {
+			clearCreatePartitionPreview();
+			return;
+		}
+		var startNum = Number(start);
+		var endNum = Number(end);
+		if (!isFinite(startNum) || !isFinite(endNum) || startNum <= 0 || endNum < startNum) {
+			clearCreatePartitionPreview();
+			return;
+		}
+		var baseDev = getDeviceByPath(devPath);
+		if (!baseDev) {
+			clearCreatePartitionPreview();
+			return;
+		}
+		var previewDev = buildPreviewDevice(baseDev, { skipCreatePreview: true });
+		if (!findContainingFreeSegment(previewDev, startNum, endNum)) {
+			clearCreatePartitionPreview();
+			return;
+		}
+		state.createPartPreview = {
+			device: devPath,
+			start_sector: String(startNum),
+			end_sector: String(endNum),
+			part_role: String((document.getElementById('newPartRole') || { value: 'primary' }).value || 'primary'),
+			fs_hint: String((document.getElementById('newFsHint') || { value: '' }).value || ''),
+			part_name: String((document.getElementById('newPartName') || { value: '' }).value || '').trim()
+		};
+		renderMap();
 	}
 
 	function syncSelectionWithPreview() {
@@ -10551,6 +10648,7 @@ actionsWrap.appendChild(btnRemove);
 	}
 
 	function selectPartition(part) {
+		clearCreatePartitionPreview(true);
 		state.selectedPart = part;
 		state.selectedComponent = part ? {
 			kind: 'partition',
@@ -10593,6 +10691,7 @@ actionsWrap.appendChild(btnRemove);
 	}
 
 	function selectDisk(dev) {
+		clearCreatePartitionPreview(true);
 		state.selectedPart = null;
 		state.selectedComponent = dev ? { kind: 'disk', path: String(dev.path || '') } : null;
 		document.getElementById('selectedPartNum').value = '';
@@ -10609,6 +10708,7 @@ actionsWrap.appendChild(btnRemove);
 	}
 
 	function selectUnallocatedSegment(seg) {
+		clearCreatePartitionPreview(true);
 		state.selectedPart = null;
 		/* Clear this disk's saved partition selection since user chose free space */
 		if (state.selectedDevice) {
@@ -12929,6 +13029,10 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 	var titleEl  = document.getElementById('pcgiNewPartTitle');
 	var cancelBtn = document.getElementById('pcgiNewPartCancelBtn');
 	var fsBtn     = document.getElementById('pcgiNewPartFsBtn');
+	var pnpStartSectorEl = document.getElementById('pnpStartSector');
+	var pnpEndSectorEl = document.getElementById('pnpEndSector');
+	var pnpStartHumanEl = document.getElementById('pnpStartHuman');
+	var pnpEndHumanEl = document.getElementById('pnpEndHuman');
 	if (!modal) return;
 
 	/* Populate modal sector fields and human-readable peers */
@@ -12936,17 +13040,21 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 	document.getElementById('pnpEndSector').value   = String(dropEnd);
 	updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
 	updateHumanFieldFromSector('pnpEndSector',   'pnpEndHuman');
+	var _effectiveFreeStart = Number(dropStart || 0);
+	var _effectiveFreeEnd = Number(dropEnd || 0);
 
 	/* Min/Max buttons reset to the free region boundaries */
 	var _minBtn = document.getElementById('pnpStartMinBtn');
 	var _maxBtn = document.getElementById('pnpEndMaxBtn');
 	if (_minBtn) _minBtn.onclick = function() {
-		document.getElementById('pnpStartSector').value = String(dropStart);
+		document.getElementById('pnpStartSector').value = String(_effectiveFreeStart);
 		updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+		syncModalPreviewFromModal();
 	};
 	if (_maxBtn) _maxBtn.onclick = function() {
-		document.getElementById('pnpEndSector').value = String(dropEnd);
+		document.getElementById('pnpEndSector').value = String(_effectiveFreeEnd);
 		updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
+		syncModalPreviewFromModal();
 	};
 
 	/* Gather device/partition context */
@@ -13002,13 +13110,15 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 		// Clamp start/end for logical partitions: MBR logical start must be > extended start.
 		// Also clamp Max button to extended end.
 		if (insideExtended) {
-			var _logMinStart = _extStart + 1;
-			if (Number(dropStart) < _logMinStart) {
-				dropStart = _logMinStart;
+			_effectiveFreeStart = Math.max(_effectiveFreeStart, _extStart + 1);
+			_effectiveFreeEnd = Math.min(_effectiveFreeEnd, _extEnd);
+			dropStart = _effectiveFreeStart;
+			dropEnd = _effectiveFreeEnd;
+			if (Number(document.getElementById('pnpStartSector').value || 0) < _effectiveFreeStart) {
 				document.getElementById('pnpStartSector').value = String(dropStart);
 				updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
 			}
-			if (Number(dropEnd) > _extEnd) {
+			if (Number(document.getElementById('pnpEndSector').value || 0) > _effectiveFreeEnd) {
 				dropEnd = _extEnd;
 				document.getElementById('pnpEndSector').value = String(dropEnd);
 				updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
@@ -13017,12 +13127,14 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 			var _logMinBtn = document.getElementById('pnpStartMinBtn');
 			var _logMaxBtn = document.getElementById('pnpEndMaxBtn');
 			if (_logMinBtn) _logMinBtn.onclick = function() {
-				document.getElementById('pnpStartSector').value = String(_logMinStart);
+				document.getElementById('pnpStartSector').value = String(_effectiveFreeStart);
 				updateHumanFieldFromSector('pnpStartSector', 'pnpStartHuman');
+				syncModalPreviewFromModal();
 			};
 			if (_logMaxBtn) _logMaxBtn.onclick = function() {
-				document.getElementById('pnpEndSector').value = String(_extEnd);
+				document.getElementById('pnpEndSector').value = String(_effectiveFreeEnd);
 				updateHumanFieldFromSector('pnpEndSector', 'pnpEndHuman');
+				syncModalPreviewFromModal();
 			};
 		}
 	}
@@ -13184,15 +13296,53 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 		refreshSectorHumanFields();
 	}
 
+	function syncModalPreviewFromModal() {
+		syncMainFormFromModal();
+		syncCreatePartitionPreviewFromForm();
+	}
+
+	function bindModalPreviewEvents() {
+		if (pnpStartSectorEl) pnpStartSectorEl.oninput = syncModalPreviewFromModal;
+		if (pnpEndSectorEl) pnpEndSectorEl.oninput = syncModalPreviewFromModal;
+		if (pnpStartHumanEl) pnpStartHumanEl.oninput = syncModalPreviewFromModal;
+		if (pnpEndHumanEl) pnpEndHumanEl.oninput = syncModalPreviewFromModal;
+		if (roleEl) roleEl.addEventListener('change', syncModalPreviewFromModal);
+		if (fsEl) fsEl.addEventListener('change', syncModalPreviewFromModal);
+		if (nameEl) nameEl.oninput = syncModalPreviewFromModal;
+	}
+
+	function unbindModalPreviewEvents() {
+		if (pnpStartSectorEl) pnpStartSectorEl.oninput = null;
+		if (pnpEndSectorEl) pnpEndSectorEl.oninput = null;
+		if (pnpStartHumanEl) pnpStartHumanEl.oninput = null;
+		if (pnpEndHumanEl) pnpEndHumanEl.oninput = null;
+		if (roleEl) roleEl.removeEventListener('change', syncModalPreviewFromModal);
+		if (fsEl) fsEl.removeEventListener('change', syncModalPreviewFromModal);
+		if (nameEl) nameEl.oninput = null;
+	}
+
+	syncMainFormFromModal();
+	syncCreatePartitionPreviewFromForm();
+	bindModalPreviewEvents();
+
 	function cleanup() {
 		modal.style.display = 'none';
 		modal.setAttribute('aria-hidden', 'true');
 		cancelBtn.onclick = fsBtn.onclick = null;
+		unbindModalPreviewEvents();
 		document.removeEventListener('keydown', onEsc);
 	}
-	function onEsc(ev) { if (ev.key === 'Escape') cleanup(); }
+	function onEsc(ev) {
+		if (ev.key === 'Escape') {
+			cleanup();
+			clearCreatePartitionPreview();
+		}
+	}
 	document.addEventListener('keydown', onEsc);
-	cancelBtn.onclick = cleanup;
+	cancelBtn.onclick = function () {
+		cleanup();
+		clearCreatePartitionPreview();
+	};
 	fsBtn.onclick = function () {
 		// Validate before accepting
 		var _role = roleEl ? roleEl.value : 'primary';
@@ -13204,8 +13354,8 @@ function showNewPartModal(dropStart, dropEnd, devPathHint) {
 			showToast(t('warnPrimaryInExtended') || 'Cannot create primary inside extended.', 'warn', 5000);
 			return;
 		}
-		cleanup();
 		syncMainFormFromModal();
+		cleanup();
 		updateMapStatus(t('tDropQueuedWithFs'));
 		queueCreatePartition();
 	};
@@ -14557,7 +14707,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		 * The global selectedPart/selectedPartDevice remain as-is; renderMap() will
 		 * highlight the selected partition on whichever disk it belongs to. */
 		renderDeviceStrip();
-		renderMap();
+		syncCreatePartitionPreviewFromForm();
 	}
 
 	function refreshDevices() {
@@ -16673,13 +16823,22 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	bindSectorHumanPair('mcTargetEnd', 'mcTargetEndNum');
 	bindSectorHumanPair('pnpStartSector', 'pnpStartHuman');
 	bindSectorHumanPair('pnpEndSector',   'pnpEndHuman');
+	['newStartSector', 'newEndSector', 'newPartRole', 'newFsHint', 'newPartName'].forEach(function(id) {
+		var el = document.getElementById(id);
+		if (!el) return;
+		el.addEventListener('input', syncCreatePartitionPreviewFromForm);
+		el.addEventListener('change', syncCreatePartitionPreviewFromForm);
+	});
 	// Unit-selector changes should re-sync the numeric display from current sector value
 	(function () {
-		['mcTargetStartNum', 'mcTargetEndNum'].forEach(function (numId) {
+		['mcTargetStartNum', 'mcTargetEndNum', 'pnpStartHuman', 'pnpEndHuman'].forEach(function (numId) {
 			var unitSel = document.getElementById(numId + 'Unit');
 			if (unitSel) unitSel.addEventListener('change', function () {
 				// Re-derive the numeric display from the current sector value
-				var sectorId = numId === 'mcTargetStartNum' ? 'mcTargetStart' : 'mcTargetEnd';
+				var sectorId =
+					numId === 'mcTargetStartNum' ? 'mcTargetStart' :
+					numId === 'mcTargetEndNum' ? 'mcTargetEnd' :
+					numId === 'pnpStartHuman' ? 'pnpStartSector' : 'pnpEndSector';
 				updateHumanFieldFromSector(sectorId, numId);
 			});
 		});
