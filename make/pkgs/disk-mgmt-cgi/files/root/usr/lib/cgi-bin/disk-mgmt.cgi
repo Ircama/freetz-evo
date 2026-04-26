@@ -14715,6 +14715,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		 * highlight the selected partition on whichever disk it belongs to. */
 		renderDeviceStrip();
 		syncCreatePartitionPreviewFromForm();
+		renderMap();
 	}
 
 	function refreshDevices() {
