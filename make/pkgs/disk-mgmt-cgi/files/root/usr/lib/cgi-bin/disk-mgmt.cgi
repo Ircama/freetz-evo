@@ -5359,7 +5359,8 @@ cat <<'EOF'
 				<input id="mpTargetEnd" type="number" min="0" step="1" style="flex:1;min-width:0;font-family:monospace">
 				<span style="color:#888;font-size:11px">↔</span>
 				<input id="mpTargetEndHuman" type="text" readonly tabindex="-1" style="width:120px;background:#f5f7fa;cursor:default;font-family:monospace" placeholder="offset">
-				<button type="button" id="mpEndMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Set to last sector of free region">Max</button>
+				<button type="button" id="mpMoveMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Move to last sector of free region (start shifts accordingly)">Max</button>
+				<button type="button" id="mpEndMaxBtn" style="padding:2px 6px;font-size:11px;white-space:nowrap" title="Expand target end to last sector of free region">Expand to Max</button>
 			</div>
 		</div>
 
@@ -14235,6 +14236,15 @@ function showMovePartModal(targetDevPath, srcPart, srcDevPath, targetStart, targ
 		endEl.value   = String(Number(endEl.value) + delta);
 		startEl.value = String(fs);
 		prevStart = fs;
+		refreshSectorHumanFields();
+		syncMovePreviewFromFields();
+	};
+	document.getElementById('mpMoveMaxBtn').onclick = function () {
+		var fe = Number(document.getElementById('mpFreeEnd').value || freeEnd);
+		var delta = fe - Number(endEl.value || fe);
+		startEl.value = String(Number(startEl.value || 0) + delta);
+		endEl.value   = String(fe);
+		prevStart = Number(startEl.value || prevStart);
 		refreshSectorHumanFields();
 		syncMovePreviewFromFields();
 	};
