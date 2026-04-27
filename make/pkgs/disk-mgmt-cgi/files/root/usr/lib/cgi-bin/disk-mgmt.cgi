@@ -4524,6 +4524,24 @@ cat <<'EOF'
 	justify-content: flex-end;
 	margin-top: 12px;
 }
+.pcgi-modal-form-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px 20px;
+	padding: 10px 0;
+}
+.pcgi-modal-form-grid > div {
+	min-width: 0;
+}
+.pcgi-modal-form-grid label {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.pcgi-modal-form-grid input,
+.pcgi-modal-form-grid select {
+	box-sizing: border-box;
+	max-width: 100%;
+}
 .pcgi-modal-subtle {
 	font-size: 12px;
 	color: #4f5b67;
@@ -6094,7 +6112,7 @@ cat <<'EOF'
 <div id="pcgiPartcloneExportModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
 		<h3 id="pcgiPiExpTitle" class="pcgi-modal-head">Export partition/disk to image</h3>
-		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+		<div class="pcgi-modal-form-grid">
 			<div>
 				<label id="i18nPiExpSourceLabel">Source partition/disk</label>
 				<input id="piExpSource" type="text" readonly style="width:100%;background:#f5f5f5">
@@ -6158,7 +6176,7 @@ cat <<'EOF'
 <div id="pcgiPartcloneImportModal" class="pcgi-modal" aria-hidden="true">
 	<div class="pcgi-modal-box" style="max-width:700px;width:96vw">
 		<h3 id="pcgiPiImpTitle" class="pcgi-modal-head">Restore partition/disk from image</h3>
-		<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;padding:10px 0">
+		<div class="pcgi-modal-form-grid">
 			<div>
 				<label id="i18nPiImpTargetLabel">Target partition/disk</label>
 				<input id="piImpTarget" type="text" readonly style="width:100%;background:#f5f5f5">
