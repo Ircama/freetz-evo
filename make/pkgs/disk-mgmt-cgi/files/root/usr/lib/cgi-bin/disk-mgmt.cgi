@@ -14711,10 +14711,14 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var sel = document.getElementById('deviceSelect');
 		state.selectedDevice = sel ? sel.value : '';
 		/* Changing the viewed disk does not affect the current partition selection.
-		 * The global selectedPart/selectedPartDevice remain as-is; renderMap() will
-		 * highlight the selected partition on whichever disk it belongs to. */
+		 * The global selectedPart/selectedPartDevice remain as-is so cross-disk
+		 * move/clone workflows keep their source partition.
+		 *
+		 * Do not resync the create-partition preview here: newStartSector/
+		 * newEndSector are also populated when selecting a partition or free span on
+		 * another disk, and reusing them on the newly viewed disk creates a ghost
+		 * preview partition that does not really exist there. */
 		renderDeviceStrip();
-		syncCreatePartitionPreviewFromForm();
 		renderMap();
 	}
 
