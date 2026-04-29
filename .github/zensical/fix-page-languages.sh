@@ -3,11 +3,18 @@ set -euo pipefail
 
 site_dir="${1:-.github/zensical/site}"
 news_html="${site_dir%/}/NEWS/index.html"
+nav_probe_html="${site_dir%/}/REPO_README/index.html"
 
 if [[ ! -f "$news_html" ]]; then
 	echo "NEWS page not found: $news_html" >&2
 	exit 1
 fi
+
+# Zensical builds the NEWS navigation label from the German source title.
+# Rewrite that label across the generated site so the sidebar/header nav stays consistent.
+while IFS= read -r -d '' html_file; do
+	perl -0pi -e 's|(<a href="[^"]*NEWS/" class="md-nav__link">\s*.*?<span class="md-ellipsis">\s*)Neuigkeiten(\s*</span>)|$1Upstream Freetz-NG News$2|gs' "$html_file"
+done < <(find "$site_dir" -type f -name '*.html' -print0)
 
 perl -0pi -e 's/<html lang="[^"]+"/<html lang="de"/' "$news_html"
 
@@ -142,3 +149,10 @@ grep -q '<a class="headerlink notranslate"' "$news_html" || {
 	echo "Failed to mark NEWS header anchors as non-translatable" >&2
 	exit 1
 }
+
+if [[ -f "$nav_probe_html" ]]; then
+	perl -0ne 'exit((/<a href="[^"]*NEWS\/" class="md-nav__link">.*?<span class="md-ellipsis">\s*Upstream Freetz-NG News\s*<\/span>/s)?0:1)' "$nav_probe_html" || {
+		echo "Failed to update NEWS navigation label across the generated site" >&2
+		exit 1
+	}
+fi
