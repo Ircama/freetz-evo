@@ -27,8 +27,11 @@ if ! grep -q 'rel="alternate" hreflang="de"' "$news_html"; then
 	perl -0pi -e 's|(<link rel="canonical" href="([^"]+)">\n)|$1      <link rel="alternate" hreflang="de" href="$2">\n|' "$news_html"
 fi
 
+perl -0pi -e 's|\s*<script type="application/ld\+json">\s*\{"":"https://schema\.org","":"WebPage","name":"[^"]+","inLanguage":"de-DE"\}\s*</script>\n?||g' "$news_html"
+perl -0pi -e 's|(<script type="application/ld\+json">\s*\{"\@context":"https://schema\.org","\@type":"WebPage","name":")[^"]+(","inLanguage":"de-DE"\}\s*</script>)|$1Upstream Freetz-NG News$2|g' "$news_html"
+
 if ! grep -q '"@context":"https://schema.org".*"inLanguage":"de-DE"' "$news_html"; then
-	perl -0pi -e 's|(\n\s*</head>)|      <script type="application/ld+json">\n        {"\@context":"https://schema.org","\@type":"WebPage","name":"Neuigkeiten","inLanguage":"de-DE"}\n      </script>\n$1|' "$news_html"
+	perl -0pi -e 's|(\n\s*</head>)|      <script type="application/ld+json">\n        {"\@context":"https://schema.org","\@type":"WebPage","name":"Upstream Freetz-NG News","inLanguage":"de-DE"}\n      </script>\n$1|' "$news_html"
 fi
 
 # The generated theme chrome is English and appears before the NEWS article.
@@ -43,6 +46,15 @@ perl -0pi -e '
 ' "$news_html"
 
 perl -0pi -e 's|<article class="md-content__inner md-typeset"[^>]*>|<article class="md-content__inner md-typeset" lang="de" translate="yes">|' "$news_html"
+
+perl -0pi -e '
+	s|<h1 id="neuigkeiten">Neuigkeiten|<h1 id="upstream-freetz-ng-news" lang="en" translate="no">Upstream Freetz-NG News|;
+	s|href="#neuigkeiten"|href="#upstream-freetz-ng-news"|g;
+' "$news_html"
+
+if ! grep -q 'not Freetz-EVO release notes' "$news_html"; then
+	perl -0pi -e 's|(<h1 id="upstream-freetz-ng-news"[^>]*>.*?</h1>\n)|$1<p lang="en" translate="no"><strong>Note:</strong> These entries are copied from upstream <a href="https://github.com/Freetz-NG/freetz-ng">Freetz-NG</a>. They are not Freetz-EVO release notes and may refer to upstream-only tags, discussions, or changes.</p>\n<p lang="en" translate="no">For an English machine translation, open the <a href="https://ircama-github-io.translate.goog/freetz-evo/NEWS/?_x_tr_sl=de&amp;_x_tr_tl=en&amp;_x_tr_hl=it&amp;_x_tr_pto=wapp">Google Translate version</a>.</p>\n|s' "$news_html"
+fi
 
 perl -0pi -e '
 	s|<a href="([^"]*NEWS\.md)" title="Edit this page" class="md-content__button md-icon" rel="edit">|<a href="$1" title="Edit this page" class="md-content__button md-icon notranslate" rel="edit" lang="en" translate="no">|;
@@ -91,6 +103,21 @@ grep -q '"inLanguage":"de-DE"' "$news_html" || {
 
 grep -q '<article class="md-content__inner md-typeset" lang="de" translate="yes">' "$news_html" || {
 	echo "Failed to mark NEWS article language as German" >&2
+	exit 1
+}
+
+grep -q '<h1 id="upstream-freetz-ng-news" lang="en" translate="no">Upstream Freetz-NG News' "$news_html" || {
+	echo "Failed to update NEWS page title" >&2
+	exit 1
+}
+
+grep -q 'not Freetz-EVO release notes' "$news_html" || {
+	echo "Failed to add NEWS upstream notice" >&2
+	exit 1
+}
+
+grep -q 'ircama-github-io.translate.goog/freetz-evo/NEWS/' "$news_html" || {
+	echo "Failed to add NEWS Google Translate link" >&2
 	exit 1
 }
 
