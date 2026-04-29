@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pyopenssl
 $(PKG)_HASH:=f293934e52936f2e3413b89c6ce36df66a0b34ae1ea3a053b8c5020ff2f513fc
 ### WEBSITE:=https://github.com/pyca/pyopenssl
 ### CVSREPO:=https://github.com/pyca/pyopenssl
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-cryptography

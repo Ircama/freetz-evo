@@ -7,6 +7,7 @@ $(PKG)_HASH:=d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f
 ### MANPAGE:=https://pyyaml.org/wiki/PyYAMLDocumentation
 ### CHANGES:=https://github.com/yaml/pyyaml/blob/main/CHANGES
 ### CVSREPO:=https://github.com/yaml/pyyaml
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

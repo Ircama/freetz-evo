@@ -7,6 +7,7 @@ $(PKG)_HASH:=9ad8fa5937ab05218e2b6a4cff30295ad35afd2f83ac592e68c0d871bb0fdbc4
 ### MANPAGE:=https://pillow.readthedocs.io/
 ### CHANGES:=https://pillow.readthedocs.io/en/stable/releasenotes/
 ### CVSREPO:=https://github.com/python-pillow/Pillow
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

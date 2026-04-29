@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pyspeex-noise
 $(PKG)_HASH:=6fdb16e59d7a353690661c71e35e2c91972419bfd79dfe37db66ead0e95e7827
 ### WEBSITE:=https://github.com/rhasspy/pyspeex-noise
 ### CVSREPO:=https://github.com/rhasspy/pyspeex-noise
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

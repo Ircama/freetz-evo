@@ -1,5 +1,6 @@
 $(call PKG_INIT_BIN, 3.10.7)
 ### WEBSITE:=https://github.com/ijl/orjson
+### STEWARD:=Ircama
 ### NOTE:=This package installs a pure-Python compatibility shim.
 
 $(PKG)_DEPENDS_ON += python3

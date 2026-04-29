@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://nodejs.org/dist/v$($(PKG)_VERSION)
 ### MANPAGE:=https://nodejs.org/docs/latest/api/
 ### CHANGES:=https://github.com/nodejs/node/releases
 ### CVSREPO:=https://github.com/nodejs/node
+### STEWARD:=Ircama
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/out/Release/node
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/node

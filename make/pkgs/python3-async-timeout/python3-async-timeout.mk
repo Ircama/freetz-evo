@@ -6,6 +6,7 @@ $(PKG)_HASH:=d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3
 ### WEBSITE:=https://github.com/aio-libs/async-timeout
 ### CHANGES:=https://github.com/aio-libs/async-timeout/blob/master/CHANGES.rst
 ### CVSREPO:=https://github.com/aio-libs/async-timeout
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

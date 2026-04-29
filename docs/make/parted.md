@@ -4,8 +4,7 @@
   - Changelog: [https://git.savannah.gnu.org/cgit/parted.git/tree/NEWS](https://git.savannah.gnu.org/cgit/parted.git/tree/NEWS)
   - Repository: [https://git.savannah.gnu.org/cgit/parted.git](https://git.savannah.gnu.org/cgit/parted.git)
   - Package: [master/make/pkgs/parted/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/parted/)
-  - Steward: -
-
+  - Steward: Ircama
 GNU Parted is a command-line partition editor.
 
 Typical tools included by this package:

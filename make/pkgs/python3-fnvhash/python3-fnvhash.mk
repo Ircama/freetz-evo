@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/f/fnvhash
 $(PKG)_HASH:=0c7e885f44c8f06de07f442befebc590ee9ca0cc88846681f608496284ce9cd5
 ### WEBSITE:=https://github.com/znerol/py-fnvhash
 ### CVSREPO:=https://github.com/znerol/py-fnvhash
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

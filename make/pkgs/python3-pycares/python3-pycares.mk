@@ -6,6 +6,7 @@ $(PKG)_HASH:=5a3c249c830432631439815f9a818463416f2a8cbdb1e988e78757de9ae75081
 ### WEBSITE:=https://github.com/saghul/pycares
 ### CHANGES:=https://github.com/saghul/pycares/releases
 ### CVSREPO:=https://github.com/saghul/pycares
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

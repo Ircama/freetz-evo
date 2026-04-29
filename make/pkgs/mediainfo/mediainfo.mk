@@ -8,6 +8,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/MediaInfo-$($(PKG)_VERSION)
 ### CHANGES:=https://github.com/MediaArea/MediaInfo/releases
 ### CVSREPO:=https://github.com/MediaArea/MediaInfo
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 MEDIAINFOLIB_VERSION:=25.10
 

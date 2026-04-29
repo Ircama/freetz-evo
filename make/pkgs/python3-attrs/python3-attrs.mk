@@ -7,6 +7,7 @@ $(PKG)_HASH:=d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
 ### MANPAGE:=https://www.attrs.org/en/stable/
 ### CHANGES:=https://github.com/python-attrs/attrs/blob/main/CHANGELOG.md
 ### CVSREPO:=https://github.com/python-attrs/attrs
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

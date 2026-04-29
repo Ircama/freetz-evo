@@ -6,6 +6,7 @@ $(PKG)_HASH:=7382b95189546f375c174f53a5fa873cef91c4b8005faa05cc5b3beea9c4f1c5
 ### WEBSITE:=https://grpc.io/
 ### CHANGES:=https://github.com/grpc/grpc/releases
 ### CVSREPO:=https://github.com/grpc/grpc
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

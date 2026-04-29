@@ -7,6 +7,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/udpcast-$($(PKG)_VERSION)
 ### WEBSITE:=https://udpcast.linux.lu/
 ### MANPAGE:=https://manpages.debian.org/udpcast
 ### CHANGES:=https://tracker.debian.org/pkg/udpcast
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES:=udp-sender udp-receiver
 $(PKG)_BINARIES_BUILD_DIR:=$(addprefix $($(PKG)_DIR)/,$($(PKG)_BINARIES))

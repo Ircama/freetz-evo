@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$($(PKG)_VE
 ### CHANGES:=https://github.com/rakshasa/rtorrent/releases
 ### CVSREPO:=https://github.com/rakshasa/rtorrent
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 # libTorrent by rakshasa
 # (distinct from libtorrent-rasterbar used by qBittorrent/Deluge)

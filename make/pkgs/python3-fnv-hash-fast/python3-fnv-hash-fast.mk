@@ -6,6 +6,7 @@ $(PKG)_HASH:=a09feefad2c827192dc4306826df3ffb7c6288f25ab7976d4588fdae9cbb7661
 ### WEBSITE:=https://github.com/bluetooth-devices/fnv-hash-fast
 ### CHANGES:=https://github.com/bluetooth-devices/fnv-hash-fast/releases
 ### CVSREPO:=https://github.com/bluetooth-devices/fnv-hash-fast
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

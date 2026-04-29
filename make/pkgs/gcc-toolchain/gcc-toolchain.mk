@@ -3,6 +3,7 @@ $(PKG)_CONDITIONAL:=y
 $(PKG)_CATEGORY:=Debug helpers
 $(PKG)_DEPENDS_ON += patchelf-target-host
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 # Package definition for GCC toolchain on target device
 

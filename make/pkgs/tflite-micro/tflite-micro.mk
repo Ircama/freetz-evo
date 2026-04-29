@@ -24,7 +24,7 @@ $(PKG)_SOURCE_DOWNLOAD_NAME:=$(pkg)-$($(PKG)_VERSION).tar.gz
 ### MANPAGE:=https://www.tensorflow.org/lite/microcontrollers
 ### CHANGES:=https://github.com/tensorflow/tflite-micro/commits/main
 ### CVSREPO:=https://github.com/tensorflow/tflite-micro
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_BUILD_PREREQ := python3
 

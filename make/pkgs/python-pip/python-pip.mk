@@ -7,6 +7,7 @@ $(PKG)_HASH:=40ee07eac6674b8d60fce2bbabc148cf0e2f1408c167683f110fd608b8d6f416
 ### MANPAGE:=https://pip.pypa.io/en/stable/
 ### CHANGES:=https://pip.pypa.io/en/stable/news/
 ### CVSREPO:=https://github.com/pypa/pip
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python
 

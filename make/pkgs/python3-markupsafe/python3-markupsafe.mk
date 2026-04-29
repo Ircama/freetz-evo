@@ -7,6 +7,7 @@ $(PKG)_HASH:=722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698
 ### MANPAGE:=https://markupsafe.palletsprojects.com/
 ### CHANGES:=https://markupsafe.palletsprojects.com/en/latest/changes/
 ### CVSREPO:=https://github.com/pallets/markupsafe
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

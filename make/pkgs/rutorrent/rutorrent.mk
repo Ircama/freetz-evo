@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://github.com/Novik/ruTorrent/archive/refs/tags
 ### CHANGES:=https://github.com/Novik/ruTorrent/releases
 ### CVSREPO:=https://github.com/Novik/ruTorrent
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 # ruTorrent unpacked directory
 RUTORRENT_DIR:=$(SOURCE_DIR)/ruTorrent-$($(PKG)_VERSION)

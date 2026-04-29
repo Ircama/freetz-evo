@@ -3,15 +3,14 @@
   - Changelog: [https://github.com/got3nks/amutorrent/releases](https://github.com/got3nks/amutorrent/releases)
   - Repository: [https://github.com/got3nks/amutorrent](https://github.com/got3nks/amutorrent)
   - Package: [master/make/pkgs/amutorrent/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/amutorrent/)
-  - Steward: -
-
+  - Steward: Ircama
 | | |
 |---|---|
 | **Homepage** | [github.com/got3nks/amutorrent](https://github.com/got3nks/amutorrent) |
 | **Changelog** | [github.com/got3nks/amutorrent/releases](https://github.com/got3nks/amutorrent/releases) |
 | **Repository** | [github.com/got3nks/amutorrent](https://github.com/got3nks/amutorrent) |
 | **Package** | [`make/pkgs/amutorrent/`](../../make/pkgs/amutorrent/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

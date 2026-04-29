@@ -7,6 +7,7 @@ $(PKG)_HASH:=5a60d3780149e13b7a6ff7ad6526b38846354d11a15e21068e57073e29e19bed
 ### MANPAGE:=https://cryptography.io/en/latest/
 ### CHANGES:=https://cryptography.io/en/latest/changelog/
 ### CVSREPO:=https://github.com/pyca/cryptography
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += openssl python3 python3-cffi
 $(PKG)_DEPENDS_ON += python3-six

@@ -7,6 +7,7 @@ $(PKG)_HASH:=cd79f3367bd74b317dda655dc8fcfa304d9eb6e4fb06b7168c5cf27f96e0cd62
 ### MANPAGE:=https://lxml.de/tutorial.html
 ### CHANGES:=https://lxml.de/changes-5.3.0.html
 ### CVSREPO:=https://github.com/lxml/lxml
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

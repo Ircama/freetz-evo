@@ -3,7 +3,7 @@
   - Changelog: [https://github.com/ggml-org/llama.cpp/releases](https://github.com/ggml-org/llama.cpp/releases)
   - Repository: [https://github.com/ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)
   - Package: [master/make/pkgs/llama-cpp/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/llama-cpp/)
-  - Steward: [@Ircama](https://github.com/Ircama)
+  - Steward: Ircama
 
 | | |
 |---|---|
@@ -11,7 +11,7 @@
 | **Changelog** | [github.com/ggml-org/llama.cpp/releases](https://github.com/ggml-org/llama.cpp/releases) |
 | **Repository** | [github.com/ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) |
 | **Package** | [`make/pkgs/llama-cpp/`](../../make/pkgs/llama-cpp/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

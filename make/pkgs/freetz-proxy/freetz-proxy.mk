@@ -1,4 +1,5 @@
 $(call PKG_INIT_BIN, 0.1)
+### STEWARD:=Ircama
 $(PKG)_BINARY:=$($(PKG)_DIR)/freetz_proxy
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/www/cgi-bin/freetz_proxy
 # Symlink in the AVM "all" OEM cgi-bin so the web server can find the CGI

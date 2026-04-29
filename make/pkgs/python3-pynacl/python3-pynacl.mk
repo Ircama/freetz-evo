@@ -6,6 +6,7 @@ $(PKG)_HASH:=018494d6d696ae03c7e656e5e74cdfd8ea1326962cc401bcf018f1ed8436811c
 ### WEBSITE:=https://github.com/pyca/pynacl
 ### CHANGES:=https://github.com/pyca/pynacl/releases
 ### CVSREPO:=https://github.com/pyca/pynacl
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-cffi

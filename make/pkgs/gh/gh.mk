@@ -10,6 +10,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/cli-$($(PKG)_VERSION)
 ### CHANGES:=https://github.com/cli/cli/releases
 ### CVSREPO:=https://github.com/cli/cli
 ### SUPPORT:=ircama
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/bin/gh
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/gh

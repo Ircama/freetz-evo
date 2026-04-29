@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/i/ifaddr
 $(PKG)_HASH:=cc0cbfcaabf765d44595825fb96a99bb12c79716b73b44330ea38ee2b0c4aed4
 ### WEBSITE:=https://github.com/pydron/ifaddr
 ### CVSREPO:=https://github.com/pydron/ifaddr
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/h/httpx
 $(PKG)_HASH:=75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc
 ### WEBSITE:=https://github.com/encode/httpx
 ### CVSREPO:=https://github.com/encode/httpx
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-certifi

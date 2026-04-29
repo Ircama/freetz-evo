@@ -6,7 +6,7 @@
 | **Changelog** | [github.com/johman10/flood-for-transmission/releases](https://github.com/johman10/flood-for-transmission/releases) |
 | **Repository** | [github.com/johman10/flood-for-transmission](https://github.com/johman10/flood-for-transmission) |
 | **Package** | [`make/pkgs/transmission-flood/`](../../make/pkgs/transmission-flood/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

@@ -7,6 +7,7 @@ $(PKG)_HASH:=447700a657182d60338bab09fdb27518f8856aecd80ae4c6bdddb67ff5da44ef
 ### MANPAGE:=https://www.pycryptodome.org/src/api
 ### CHANGES:=https://www.pycryptodome.org/src/changelog
 ### CVSREPO:=https://github.com/Legrandin/pycryptodome/
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

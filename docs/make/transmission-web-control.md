@@ -6,7 +6,7 @@
 | **Changelog** | [github.com/nurzico/transmission-web-control/commits/master](https://github.com/nurzico/transmission-web-control/commits/master) |
 | **Repository** | [github.com/nurzico/transmission-web-control](https://github.com/nurzico/transmission-web-control) |
 | **Package** | [`make/pkgs/transmission-web-control/`](../../make/pkgs/transmission-web-control/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/h/hass-nabucasa
 $(PKG)_HASH:=7bfaca35cf854197cdecfd2c1e41b263e3224e1abafbb58457552021bbbed6fc
 ### WEBSITE:=https://github.com/NabuCasa/hass-nabucasa
 ### CVSREPO:=https://github.com/NabuCasa/hass-nabucasa
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-aiohttp

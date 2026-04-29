@@ -6,6 +6,7 @@ $(PKG)_HASH:=e81268da0baa880431b68b1308ab7257eb33f356e57a5f9b1f915dfb13dd1387
 ### WEBSITE:=https://github.com/AbstractUmbra/audioop
 ### CHANGES:=https://github.com/AbstractUmbra/audioop/releases
 ### CVSREPO:=https://github.com/AbstractUmbra/audioop
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/m/mashumaro
 $(PKG)_HASH:=de1d8b1faffee58969c7f97e35963a92480a38d4c9858e92e0721efec12258ed
 ### WEBSITE:=https://github.com/Fatal1ty/mashumaro
 ### CVSREPO:=https://github.com/Fatal1ty/mashumaro
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3 python3-typing-extensions
 

@@ -7,6 +7,7 @@ $(PKG)_HASH:=483a201202b73495f00dbc83796c6ae63137a9bdade074f7648b3e32613412dd
 ### MANPAGE:=https://numpy.org/doc/stable/
 ### CHANGES:=https://numpy.org/doc/stable/release.html
 ### CVSREPO:=https://github.com/numpy/numpy
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += meson-host

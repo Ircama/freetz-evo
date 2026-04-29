@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/Thomas-Tsai/partclone/archive/refs/tags
 ### MANPAGE:=https://partclone.org/
 ### CHANGES:=https://github.com/Thomas-Tsai/partclone/releases
 ### CVSREPO:=https://github.com/Thomas-Tsai/partclone
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES:=partclone.info partclone.dd partclone.restore partclone.chkimg partclone.imager partclone.ntfsfixboot partclone.extfs partclone.xfs partclone.hfsp partclone.apfs partclone.fat partclone.exfat partclone.f2fs partclone.ntfs partclone.btrfs partclone.minix
 $(PKG)_BINARIES_BUILD_DIR:=$(addprefix $($(PKG)_DIR)/src/,$($(PKG)_BINARIES))

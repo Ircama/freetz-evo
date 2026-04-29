@@ -4,9 +4,7 @@
   - Changelog: [https://github.com/Studio-42/elFinder/releases](https://github.com/Studio-42/elFinder/releases)
   - Repository: [https://github.com/Studio-42/elFinder](https://github.com/Studio-42/elFinder)
   - Package: [master/make/pkgs/elfinder/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/elfinder/)
-  - Steward: -
-  - Maintainer: [@Ircama](https://github.com/Ircama)
-
+  - Steward: Ircama
 elFinder is a full-featured web-based file manager for the FritzBox, inspired by the Finder application in Mac OS X. It provides a familiar drag-and-drop interface to browse, upload, download, copy, move, rename, archive and manage files on the FritzBox storage via a browser.
 
 ## Features

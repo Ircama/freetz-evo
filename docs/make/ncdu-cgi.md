@@ -1,6 +1,6 @@
 # ncdu CGI (disk usage web UI)
   - Package: [master/make/pkgs/ncdu-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ncdu-cgi/)
-  - Steward: -
+  - Steward: Ircama
   - Depends on: `ncdu`
   - CGI: `/usr/lib/cgi-bin/ncdu.cgi`
   - Configuration URL: `http://fritz.box:81/cgi-bin/conf/ncdu`

@@ -6,6 +6,7 @@ $(PKG)_HASH:=db5d78d9fb0de8686fbad1c1c2d168ed52efb6e8bf8774ae26226e5034a46dae
 ### WEBSITE:=https://github.com/closeio/ciso8601
 ### CHANGES:=https://github.com/closeio/ciso8601/releases
 ### CVSREPO:=https://github.com/closeio/ciso8601
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

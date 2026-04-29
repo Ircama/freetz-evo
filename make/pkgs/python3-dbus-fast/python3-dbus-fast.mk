@@ -6,6 +6,7 @@ $(PKG)_HASH:=e1d3ee49a4a81524d7caaa2d5a31fc71075a1c977b661df958cee24bef86b8fe
 ### WEBSITE:=https://github.com/Bluetooth-Devices/dbus-fast
 ### CHANGES:=https://github.com/Bluetooth-Devices/dbus-fast/releases
 ### CVSREPO:=https://github.com/Bluetooth-Devices/dbus-fast
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

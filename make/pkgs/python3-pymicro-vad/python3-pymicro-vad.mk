@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pymicro-vad
 $(PKG)_HASH:=51d188b3d02e5612a72f1c2a190d0c183daaeaf4bb012b83e1e458b9d104db8c
 ### WEBSITE:=https://github.com/rhasspy/pymicro-vad
 ### CVSREPO:=https://github.com/rhasspy/pymicro-vad
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

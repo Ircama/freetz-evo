@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/t/typing-extensions
 $(PKG)_HASH:=0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466
 ### WEBSITE:=https://github.com/python/typing_extensions
 ### CVSREPO:=https://github.com/python/typing_extensions
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

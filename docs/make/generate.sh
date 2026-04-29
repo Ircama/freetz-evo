@@ -37,6 +37,7 @@ echo "$PKGS" | sed 's/##.*//g' | uniq | while read cat; do
 			case "$lnk" in
 				X)	lnk="" ;;
 				"")	lnk="-" ;;
+				Ircama)	lnk="Ircama" ;;
 				*)	[ "$lnk" != "${lnk/:\/\//}" ] && lnk="\[$lnk\]($lnk)" || lnk="\[@$lnk\](https://github.com/$lnk)" ;; #"
 			esac
 			[ -n "$lnk" ] && sed "2i\  - Steward: $lnk" -i "$MDPWD/$pkg.md"

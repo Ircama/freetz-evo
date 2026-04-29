@@ -6,7 +6,7 @@
 | **Changelog** | [github.com/6c65726f79/Transmissionic/releases](https://github.com/6c65726f79/Transmissionic/releases) |
 | **Repository** | [github.com/6c65726f79/Transmissionic](https://github.com/6c65726f79/Transmissionic) |
 | **Package** | [`make/pkgs/transmissionic-webui/`](../../make/pkgs/transmissionic-webui/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

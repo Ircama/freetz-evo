@@ -7,6 +7,7 @@ $(PKG)_HASH:=dd2ce779fa0b5f5889a6d9e00fbbbc39f58e247e52d31044272648fe16ff1dbf
 ### MANPAGE:=https://pyav.basswood-io.com/docs/stable/
 ### CHANGES:=https://github.com/PyAV-Org/PyAV/releases
 ### CVSREPO:=https://github.com/PyAV-Org/PyAV
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

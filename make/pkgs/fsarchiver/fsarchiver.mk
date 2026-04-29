@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://github.com/fdupoux/fsarchiver/releases/download/$($(PKG)_VE
 ### MANPAGE:=https://www.fsarchiver.org/
 ### CHANGES:=https://github.com/fdupoux/fsarchiver/releases
 ### CVSREPO:=https://github.com/fdupoux/fsarchiver
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/fsarchiver
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/fsarchiver

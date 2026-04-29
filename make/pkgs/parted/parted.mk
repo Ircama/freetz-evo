@@ -7,6 +7,7 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### MANPAGE:=https://www.gnu.org/software/parted/manual/
 ### CHANGES:=https://git.savannah.gnu.org/cgit/parted.git/tree/NEWS
 ### CVSREPO:=https://git.savannah.gnu.org/cgit/parted.git
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES_ALL := parted partprobe
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))

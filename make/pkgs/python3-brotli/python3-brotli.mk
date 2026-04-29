@@ -6,6 +6,7 @@ $(PKG)_HASH:=81de08ac11bcb85841e440c13611c00b67d3bf82698314928d0b676362546724
 ### WEBSITE:=https://github.com/google/brotli
 ### CHANGES:=https://github.com/google/brotli/releases
 ### CVSREPO:=https://github.com/google/brotli
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

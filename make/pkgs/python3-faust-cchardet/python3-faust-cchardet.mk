@@ -6,6 +6,7 @@ $(PKG)_HASH:=f89386297cde0c8e0f5e21464bc2d6d0e4a4fc1b1d77cdb238ca24d740d872e0
 ### WEBSITE:=https://github.com/faust-streaming/cChardet
 ### CHANGES:=https://github.com/faust-streaming/cChardet/releases
 ### CVSREPO:=https://github.com/faust-streaming/cChardet
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

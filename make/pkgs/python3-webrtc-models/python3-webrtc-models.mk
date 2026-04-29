@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/w/webrtc-models
 $(PKG)_HASH:=559c743e5cc3bcc8133be1b6fb5e8492a9ddb17151129c21cbb2e3f2a1166526
 ### WEBSITE:=https://github.com/home-assistant-libs/webrtc-models
 ### CVSREPO:=https://github.com/home-assistant-libs/webrtc-models
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3 python3-mashumaro python3-orjson
 

@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://dev.yorhel.nl/download
 ### MANPAGE:=https://linux.die.net/man/1/ncdu
 ### CHANGES:=https://dev.yorhel.nl/ncdu/changes
 ### CVSREPO:=https://code.blicky.net/yorhel/ncdu
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/ncdu
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ncdu

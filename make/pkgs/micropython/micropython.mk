@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://github.com/micropython/micropython/releases/download/v$($(P
 ### MANPAGE:=https://docs.micropython.org/en/latest/
 ### CHANGES:=https://github.com/micropython/micropython/releases
 ### CVSREPO:=https://github.com/micropython/micropython
+### STEWARD:=Ircama
 
 # Main interpreter binary (unix port)
 $(PKG)_BINARY:=$($(PKG)_DIR)/ports/unix/build-freetz/micropython

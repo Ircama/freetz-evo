@@ -7,6 +7,7 @@ $(PKG)_HASH:=795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902
 ### MANPAGE:=https://github.com/kjd/idna#readme
 ### CHANGES:=https://github.com/kjd/idna/blob/master/HISTORY.rst
 ### CVSREPO:=https://github.com/kjd/idna
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

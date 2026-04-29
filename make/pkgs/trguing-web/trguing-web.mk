@@ -6,7 +6,7 @@ $(PKG)_SITE:=https://github.com/openscopeproject/TrguiNG/releases/download/v$($(
 ### WEBSITE:=https://github.com/openscopeproject/TrguiNG
 ### CHANGES:=https://github.com/openscopeproject/TrguiNG/releases
 ### CVSREPO:=https://github.com/openscopeproject/TrguiNG
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += transmission
 

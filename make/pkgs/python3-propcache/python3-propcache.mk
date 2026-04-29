@@ -6,6 +6,7 @@ $(PKG)_HASH:=f48107a8c637e80362555f37ecf49abe20370e557cc4ab374f04ec4423c97c3d
 ### WEBSITE:=https://github.com/aio-libs/propcache
 ### CHANGES:=https://github.com/aio-libs/propcache/releases
 ### CVSREPO:=https://github.com/aio-libs/propcache
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

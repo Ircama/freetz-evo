@@ -4,15 +4,14 @@
   - Changelog: [https://github.com/tensorflow/tflite-micro/commits/main](https://github.com/tensorflow/tflite-micro/commits/main)
   - Repository: [https://github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro)
   - Package: [master/make/pkgs/tflite-micro/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tflite-micro/)
-  - Steward: -
-
+  - Steward: Ircama
 | | |
 |---|---|
 | **Homepage** | [github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro) |
 | **Changelog** | [CHANGELOG.md](https://github.com/tensorflow/tflite-micro/blob/main/CHANGELOG.md) |
 | **Repository** | [github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro) |
 | **Package** | [`make/pkgs/tflite-micro/`](../../make/pkgs/tflite-micro/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

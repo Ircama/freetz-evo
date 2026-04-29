@@ -6,6 +6,7 @@ $(PKG)_HASH:=006535e22fed944aec17bef6e8725472476194743c87bd233e912eb463f8ff05
 ### WEBSITE:=https://github.com/alecthomas/voluptuous
 ### CHANGES:=https://github.com/alecthomas/voluptuous/releases
 ### CVSREPO:=https://github.com/alecthomas/voluptuous
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

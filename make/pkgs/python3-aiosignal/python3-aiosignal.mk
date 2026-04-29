@@ -6,6 +6,7 @@ $(PKG)_HASH:=f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7
 ### WEBSITE:=https://github.com/aio-libs/aiosignal
 ### CHANGES:=https://github.com/aio-libs/aiosignal/releases
 ### CVSREPO:=https://github.com/aio-libs/aiosignal
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-frozenlist

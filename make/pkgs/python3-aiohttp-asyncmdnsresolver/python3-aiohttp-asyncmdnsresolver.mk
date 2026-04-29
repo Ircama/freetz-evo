@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/a/aiohttp-asyncmdnsr
 $(PKG)_HASH:=8c65d4b08b42c8a260717a2766bd5967a1d437cee852a9b21f3928b5171a7c81
 ### WEBSITE:=https://github.com/aio-libs/aiohttp-asyncmdnsresolver
 ### CVSREPO:=https://github.com/aio-libs/aiohttp-asyncmdnsresolver
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-aiohttp

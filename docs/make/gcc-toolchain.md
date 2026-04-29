@@ -1,8 +1,6 @@
 # GCC (Native Compiler for On-Device Compilation)
   - Package: [master/make/pkgs/gcc-toolchain/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gcc-toolchain/)
-  - Steward: -
-  - Maintainer: [@Ircama](https://github.com/Ircama)
-
+  - Steward: Ircama
 This package provides a complete GCC toolchain for on-device compilation, enabling software development directly on the router/device.
 
 ## Features

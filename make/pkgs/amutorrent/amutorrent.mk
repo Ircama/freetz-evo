@@ -7,7 +7,7 @@ $(PKG)_TARBALL_STRIP_COMPONENTS := 1
 ### WEBSITE:=https://github.com/got3nks/amutorrent
 ### CHANGES:=https://github.com/got3nks/amutorrent/releases
 ### CVSREPO:=https://github.com/got3nks/amutorrent
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += nodejs python3-host
 

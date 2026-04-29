@@ -7,6 +7,7 @@ $(PKG)_HASH:=c4037d8a277c89b320abe636d59f91e6d0922d08a05b60e85e53b296613346d8
 ### MANPAGE:=https://pip.pypa.io/en/stable/
 ### CHANGES:=https://pip.pypa.io/en/stable/news/
 ### CVSREPO:=https://github.com/pypa/pip
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools

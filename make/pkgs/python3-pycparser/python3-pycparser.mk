@@ -6,6 +6,7 @@ $(PKG)_HASH:=600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29
 ### WEBSITE:=https://github.com/eliben/pycparser
 ### CHANGES:=https://github.com/eliben/pycparser/blob/main/CHANGES
 ### CVSREPO:=https://github.com/eliben/pycparser
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

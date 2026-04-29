@@ -7,7 +7,7 @@ $(PKG)_TARBALL_STRIP_COMPONENTS := 1
 ### WEBSITE:=https://github.com/johman10/flood-for-transmission
 ### CHANGES:=https://github.com/johman10/flood-for-transmission/releases
 ### CVSREPO:=https://github.com/johman10/flood-for-transmission
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += transmission
 

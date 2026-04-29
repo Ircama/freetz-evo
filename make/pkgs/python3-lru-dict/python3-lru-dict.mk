@@ -6,6 +6,7 @@ $(PKG)_HASH:=cc518ff2d38cc7a8ab56f9a6ae557f91e2e1524b57ed8e598e97f45a2bd708fc
 ### WEBSITE:=https://github.com/amitdev/lru-dict
 ### CHANGES:=https://github.com/amitdev/lru-dict/releases
 ### CVSREPO:=https://github.com/amitdev/lru-dict
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

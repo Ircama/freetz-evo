@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/tsl0922/ttyd/archive/refs/tags
 ### MANPAGE:=https://github.com/tsl0922/ttyd/blob/main/man/ttyd.1
 ### CHANGES:=https://github.com/tsl0922/ttyd/releases
 ### CVSREPO:=https://github.com/tsl0922/ttyd
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/ttyd
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ttyd

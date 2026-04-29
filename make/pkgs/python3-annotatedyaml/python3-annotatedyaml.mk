@@ -6,6 +6,7 @@ $(PKG)_HASH:=f9a49952994ef1952ca17d27bb6478342eb1189d2c28e4c0ddbbb32065471fb0
 ### WEBSITE:=https://github.com/home-assistant-libs/annotatedyaml
 ### CHANGES:=https://github.com/home-assistant-libs/annotatedyaml/releases
 ### CVSREPO:=https://github.com/home-assistant-libs/annotatedyaml
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

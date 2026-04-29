@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://deb.debian.org/debian/pool/main/d/dialog
 ### WEBSITE:=https://invisible-island.net/dialog/
 ### CHANGES:=https://invisible-island.net/dialog/CHANGES.html
 ### CVSREPO:=https://invisible-island.net/cgi-bin/cvsweb.cgi/dialog-snapshots/
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/dialog
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/dialog

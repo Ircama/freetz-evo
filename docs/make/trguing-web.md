@@ -6,7 +6,7 @@
 | **Changelog** | [github.com/openscopeproject/TrguiNG/releases](https://github.com/openscopeproject/TrguiNG/releases) |
 | **Repository** | [github.com/openscopeproject/TrguiNG](https://github.com/openscopeproject/TrguiNG) |
 | **Package** | [`make/pkgs/trguing-web/`](../../make/pkgs/trguing-web/) |
-| **Maintainer** | @Ircama |
+| **Steward** | Ircama |
 
 ---
 

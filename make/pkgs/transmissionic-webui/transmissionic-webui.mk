@@ -6,7 +6,7 @@ $(PKG)_SITE:=https://github.com/6c65726f79/Transmissionic/releases/download/v$($
 ### WEBSITE:=https://github.com/6c65726f79/Transmissionic
 ### CHANGES:=https://github.com/6c65726f79/Transmissionic/releases
 ### CVSREPO:=https://github.com/6c65726f79/Transmissionic
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += transmission
 

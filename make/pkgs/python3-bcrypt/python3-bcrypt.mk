@@ -6,6 +6,7 @@ $(PKG)_HASH:=433c410c2177057705da2a9f2cd01dd157493b2a7ac14c8593a16b3dab6b6bfb
 ### WEBSITE:=https://github.com/pyca/bcrypt/
 ### CHANGES:=https://github.com/pyca/bcrypt/releases
 ### CVSREPO:=https://github.com/pyca/bcrypt
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

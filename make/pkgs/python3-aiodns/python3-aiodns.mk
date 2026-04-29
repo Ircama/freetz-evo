@@ -6,6 +6,7 @@ $(PKG)_HASH:=17be26a936ba788c849ba5fd20e0ba69d8c46e6273e846eb5430eae2630ce5b1
 ### WEBSITE:=https://github.com/saghul/aiodns
 ### CHANGES:=https://github.com/saghul/aiodns/releases
 ### CVSREPO:=https://github.com/saghul/aiodns
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-pycares

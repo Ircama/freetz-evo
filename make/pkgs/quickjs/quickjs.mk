@@ -9,6 +9,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/quickjs-$($(PKG)_GIT_COMMIT)
 ### MANPAGE:=https://bellard.org/quickjs/quickjs.html
 ### CHANGES:=https://github.com/bellard/quickjs/commits/master/
 ### CVSREPO:=https://github.com/bellard/quickjs/
+### STEWARD:=Ircama
 
 $(PKG)_BINARY_QJS:=$($(PKG)_DIR)/qjs
 $(PKG)_TARGET_BINARY_QJS:=$($(PKG)_DEST_DIR)/usr/bin/qjs

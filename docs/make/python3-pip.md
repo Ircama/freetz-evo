@@ -4,6 +4,6 @@
   - Changelog: [https://pip.pypa.io/en/stable/news/](https://pip.pypa.io/en/stable/news/)
   - Repository: [https://github.com/pypa/pip](https://github.com/pypa/pip)
   - Package: [master/make/pkgs/python3-pip/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-pip/)
-  - Steward: -
+  - Steward: Ircama
   - Maintainer: -
 

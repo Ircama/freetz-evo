@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://ftp.gnu.org/gnu/autoconf
 ### CHANGES:=https://ftp.gnu.org/gnu/autoconf/
 ### CVSREPO:=https://git.savannah.gnu.org/git/autoconf.git
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/bin/autoconf
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/autoconf

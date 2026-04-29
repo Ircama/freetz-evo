@@ -7,6 +7,7 @@ $(PKG)_HASH:=7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9
 ### MANPAGE:=https://setuptools.pypa.io/en/latest/
 ### CHANGES:=https://setuptools.pypa.io/en/latest/history.html
 ### CVSREPO:=https://github.com/pypa/setuptools
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

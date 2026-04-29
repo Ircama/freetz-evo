@@ -6,6 +6,7 @@ $(PKG)_HASH:=53b1ea6ca88ebd4420379c330aea57e258408dd0df9af0992e5de2078dc9f5d5
 ### WEBSITE:=https://github.com/aio-libs/yarl
 ### CHANGES:=https://github.com/aio-libs/yarl/releases
 ### CVSREPO:=https://github.com/aio-libs/yarl
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-idna

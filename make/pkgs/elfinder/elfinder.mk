@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://github.com/Studio-42/elFinder/archive/refs/tags
 ### CHANGES:=https://github.com/Studio-42/elFinder/releases
 ### CVSREPO:=https://github.com/Studio-42/elFinder
 ### SUPPORT:=Ircama
+### STEWARD:=Ircama
 
 # elFinder unpacked directory
 ELFINDER_DIR:=$(SOURCE_DIR)/elFinder-$($(PKG)_VERSION)

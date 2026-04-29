@@ -4,14 +4,12 @@
   - Changelog: [https://github.com/rakshasa/rtorrent/releases](https://github.com/rakshasa/rtorrent/releases)
   - Repository: [https://github.com/rakshasa/rtorrent](https://github.com/rakshasa/rtorrent)
   - Package: [master/make/pkgs/rtorrent/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rtorrent/)
-  - Steward: -
-
+  - Steward: Ircama
 - rTorrent homepage: [https://github.com/rakshasa/rtorrent](https://github.com/rakshasa/rtorrent)
 - rTorrent wiki/manpage: [https://github.com/rakshasa/rtorrent/wiki](https://github.com/rakshasa/rtorrent/wiki)
 - rTorrent releases: [https://github.com/rakshasa/rtorrent/releases](https://github.com/rakshasa/rtorrent/releases)
 - Freetz package path: [master/make/pkgs/rtorrent/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rtorrent/)
-- Maintainer: [@Ircama](https://github.com/Ircama)
-
+- Steward: Ircama
 ## What is included
 
 In this tree, the BitTorrent stack is split into three parts:

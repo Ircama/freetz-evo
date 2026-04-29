@@ -6,6 +6,7 @@ $(PKG)_HASH:=3ede829ed8d842f6cd48fc7081d7a41001a56f1f38603f9d49bf3020d59a31ad
 ### WEBSITE:=https://github.com/aio-libs/frozenlist
 ### CHANGES:=https://github.com/aio-libs/frozenlist/releases
 ### CVSREPO:=https://github.com/aio-libs/frozenlist
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

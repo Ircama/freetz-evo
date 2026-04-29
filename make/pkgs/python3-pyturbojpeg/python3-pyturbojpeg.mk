@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pyturbojpeg
 $(PKG)_HASH:=aaf0305aa9627ce7fdb8f592eb5e0fce804e1bd87db49900bcf78d7d5138eb88
 ### WEBSITE:=https://github.com/lilohuang/PyTurboJPEG
 ### CVSREPO:=https://github.com/lilohuang/PyTurboJPEG
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-numpy

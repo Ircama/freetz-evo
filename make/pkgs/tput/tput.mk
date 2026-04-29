@@ -5,6 +5,7 @@ $(PKG)_SITE:=@GNU/ncurses,https://invisible-island.net/archives/ncurses
 ### WEBSITE:=https://invisible-island.net/ncurses/
 ### MANPAGE:=https://invisible-island.net/ncurses/announce.html
 ### CHANGES:=https://invisible-island.net/ncurses/NEWS.html
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += ncurses ncurses-host
 

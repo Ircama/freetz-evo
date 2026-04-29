@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/h/h11
 $(PKG)_HASH:=4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1
 ### WEBSITE:=https://github.com/python-hyper/h11
 ### CVSREPO:=https://github.com/python-hyper/h11
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

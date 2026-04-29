@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/h/httpcore
 $(PKG)_HASH:=6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8
 ### WEBSITE:=https://github.com/encode/httpcore
 ### CVSREPO:=https://github.com/encode/httpcore
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-certifi

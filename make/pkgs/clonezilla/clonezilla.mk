@@ -9,6 +9,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/clonezilla-$($(PKG)_VERSION)
 ### MANPAGE:=https://clonezilla.org/clonezilla-live.php
 ### CHANGES:=https://github.com/stevenshiau/clonezilla/tags
 ### CVSREPO:=https://github.com/stevenshiau/clonezilla
+### STEWARD:=Ircama
 
 $(PKG)_TARGET_SUPPORT_STAMP:=$($(PKG)_DIR)/.compiled
 $(PKG)_TARGET_DRBL_DIR:=$($(PKG)_DEST_DIR)/usr/share/drbl

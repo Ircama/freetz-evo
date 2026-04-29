@@ -6,6 +6,7 @@ $(PKG)_HASH:=1ae6b62897110aa7c79ea2f5dd38d1abca6db663687c0b1ad9aed6f6bae3d9d6
 ### WEBSITE:=https://github.com/jawah/charset_normalizer
 ### CHANGES:=https://github.com/jawah/charset_normalizer/releases
 ### CVSREPO:=https://github.com/jawah/charset_normalizer
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

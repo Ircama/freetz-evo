@@ -6,6 +6,7 @@ $(PKG)_HASH:=ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
 ### WEBSITE:=https://github.com/benjaminp/six
 ### CHANGES:=https://github.com/benjaminp/six/blob/main/CHANGES
 ### CVSREPO:=https://github.com/benjaminp/six
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

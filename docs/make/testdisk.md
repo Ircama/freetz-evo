@@ -3,8 +3,7 @@
   - Changelog: [https://github.com/cgsecurity/testdisk/releases](https://github.com/cgsecurity/testdisk/releases)
   - Repository: [https://github.com/cgsecurity/testdisk](https://github.com/cgsecurity/testdisk)
   - Package: [master/make/pkgs/testdisk/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/testdisk/)
-  - Steward: -
-
+  - Steward: Ircama
 testdisk provides partition and file recovery tools for damaged or
 accidentally modified storage media.
 

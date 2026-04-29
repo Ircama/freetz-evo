@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/g/grpcio-status
 $(PKG)_HASH:=47e7fa903549c5881344f1cba23c814b5f69d09233541036eb25642d32497c8e
 ### WEBSITE:=https://grpc.io/
 ### CVSREPO:=https://github.com/grpc/grpc
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-grpcio

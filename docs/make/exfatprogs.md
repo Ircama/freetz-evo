@@ -1,7 +1,6 @@
 # exfatprogs 1.3.2 (binary only)
   - Package: [master/make/pkgs/exfatprogs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/exfatprogs/)
-  - Steward: -
-
+  - Steward: Ircama
 exfatprogs provides user-space utilities for exFAT filesystem creation,
 consistency checks, labels, and tuning operations.
 

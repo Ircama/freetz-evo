@@ -6,6 +6,7 @@ $(PKG)_HASH:=c3f9d0113123803ccadfdf3f0faa505bc78e6a72d1cc4806cbd719826e943558
 ### WEBSITE:=https://github.com/aio-libs/aiohappyeyeballs
 ### CHANGES:=https://github.com/aio-libs/aiohappyeyeballs/releases
 ### CVSREPO:=https://github.com/aio-libs/aiohappyeyeballs
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

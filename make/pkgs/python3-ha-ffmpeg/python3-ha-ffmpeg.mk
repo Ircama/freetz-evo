@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/h/ha-ffmpeg
 $(PKG)_HASH:=80e4a77b3eda73df456ec9cc3295a898ed7cbb8cd2d59798f10e8c10a8e6c401
 ### WEBSITE:=https://github.com/home-assistant-libs/ha-ffmpeg
 ### CVSREPO:=https://github.com/home-assistant-libs/ha-ffmpeg
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-async-timeout

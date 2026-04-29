@@ -7,6 +7,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/gddrescue-$($(PKG)_VERSION)
 ### WEBSITE:=https://www.gnu.org/software/ddrescue/
 ### MANPAGE:=https://www.gnu.org/software/ddrescue/manual/ddrescue_manual.html
 ### CHANGES:=https://ftp.gnu.org/gnu/ddrescue/
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES:=ddrescue ddrescuelog
 $(PKG)_BINARIES_BUILD_DIR:=$(addprefix $($(PKG)_DIR)/,$($(PKG)_BINARIES))

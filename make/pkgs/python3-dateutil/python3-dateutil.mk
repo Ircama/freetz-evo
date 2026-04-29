@@ -6,6 +6,7 @@ $(PKG)_HASH:=37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3
 ### WEBSITE:=https://github.com/dateutil/dateutil
 ### CHANGES:=https://dateutil.readthedocs.io/en/stable/changelog.html
 ### CVSREPO:=https://github.com/dateutil/dateutil
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-six

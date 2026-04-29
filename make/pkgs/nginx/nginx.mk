@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://nginx.org/download
 ### MANPAGE:=https://nginx.org/en/docs/
 ### CHANGES:=https://nginx.org/en/CHANGES
 ### CVSREPO:=https://github.com/nginx/nginx
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/objs/nginx
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/nginx

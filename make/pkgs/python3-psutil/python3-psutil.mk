@@ -6,6 +6,7 @@ $(PKG)_HASH:=0746f5f8d406af344fd547f1c8daa5f5c33dbc293bb8d6a16d80b4bb88f59372
 ### WEBSITE:=https://github.com/giampaolo/psutil
 ### CHANGES:=https://github.com/giampaolo/psutil/releases
 ### CVSREPO:=https://github.com/giampaolo/psutil
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

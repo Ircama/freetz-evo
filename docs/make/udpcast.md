@@ -3,8 +3,7 @@
   - Manpage: [https://manpages.debian.org/udpcast](https://manpages.debian.org/udpcast)
   - Changelog: [https://tracker.debian.org/pkg/udpcast](https://tracker.debian.org/pkg/udpcast)
   - Package: [master/make/pkgs/udpcast/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/udpcast/)
-  - Steward: -
-
+  - Steward: Ircama
 udpcast is a multicast transfer tool used for one-to-many disk/image
 distribution in cloning scenarios.
 

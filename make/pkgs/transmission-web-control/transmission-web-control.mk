@@ -9,7 +9,7 @@ $(PKG)_TARBALL_STRIP_COMPONENTS := 1
 ### WEBSITE:=https://github.com/nurzico/transmission-web-control
 ### CHANGES:=https://github.com/nurzico/transmission-web-control/commits/master
 ### CVSREPO:=https://github.com/nurzico/transmission-web-control
-### STEWARD:=
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += transmission
 

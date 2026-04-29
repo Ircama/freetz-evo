@@ -10,6 +10,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/fatresize-$($(PKG)_GIT_COMMIT)
 ### MANPAGE:=https://github.com/ya-mouse/fatresize/blob/master/README
 ### CHANGES:=https://github.com/ya-mouse/fatresize/commits/master
 ### CVSREPO:=https://github.com/ya-mouse/fatresize
+### STEWARD:=Ircama
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/fatresize
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/fatresize

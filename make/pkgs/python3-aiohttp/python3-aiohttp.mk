@@ -6,6 +6,7 @@ $(PKG)_HASH:=a949eee43d3782f2daae4f4a2819b2cb9b0c5d3b7f7a927067cc84dafdbb9f88
 ### WEBSITE:=https://github.com/aio-libs/aiohttp
 ### CHANGES:=https://github.com/aio-libs/aiohttp/releases
 ### CVSREPO:=https://github.com/aio-libs/aiohttp
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-aiohappyeyeballs

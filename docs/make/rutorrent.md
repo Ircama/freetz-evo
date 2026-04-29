@@ -5,6 +5,7 @@
 - ruTorrent: `5.3.1`
 - Upstream release: `v5.3.1`
 - Package recipe: `make/pkgs/rutorrent/rutorrent.mk`
+- Steward: Ircama
 
 ## Package role in this tree
 

@@ -7,6 +7,7 @@ $(PKG)_HASH:=1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824
 ### MANPAGE:=https://cffi.readthedocs.io/en/latest/
 ### CHANGES:=https://cffi.readthedocs.io/en/latest/whatsnew.html
 ### CVSREPO:=https://github.com/python-cffi/cffi
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-setuptools-host

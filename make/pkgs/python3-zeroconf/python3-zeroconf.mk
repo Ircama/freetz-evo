@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/z/zeroconf
 $(PKG)_HASH:=03fcca123df3652e23d945112d683d2f605f313637611b7d4adf31056f681702
 ### WEBSITE:=https://github.com/python-zeroconf/python-zeroconf
 ### CVSREPO:=https://github.com/python-zeroconf/python-zeroconf
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3 python3-ifaddr
 

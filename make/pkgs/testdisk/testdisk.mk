@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/cgsecurity/testdisk/archive/refs/tags
 ### CHANGES:=https://github.com/cgsecurity/testdisk/releases
 ### CVSREPO:=https://github.com/cgsecurity/testdisk
 ### SUPPORT:=ircama
+### STEWARD:=Ircama
 
 $(PKG)_BINARIES_ALL := testdisk photorec fidentify
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))

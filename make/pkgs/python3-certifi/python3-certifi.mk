@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/c/certifi
 $(PKG)_HASH:=47c09d31ccf2acf0be3f701ea53595ee7e0b8fa08801c6624be771df09ae7b43
 ### WEBSITE:=https://github.com/certifi/python-certifi
 ### CVSREPO:=https://github.com/certifi/python-certifi
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 

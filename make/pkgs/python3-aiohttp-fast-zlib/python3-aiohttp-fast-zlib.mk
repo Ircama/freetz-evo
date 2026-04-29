@@ -5,6 +5,7 @@ $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/a/aiohttp-fast-zlib
 $(PKG)_HASH:=963a09de571b67fa0ef9cb44c5a32ede5cb1a51bc79fc21181b1cddd56b58b28
 ### WEBSITE:=https://github.com/bluetooth-devices/aiohttp-fast-zlib
 ### CVSREPO:=https://github.com/bluetooth-devices/aiohttp-fast-zlib
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += python3-aiohttp

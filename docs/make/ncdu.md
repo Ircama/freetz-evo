@@ -4,8 +4,7 @@
   - Changelog: [https://dev.yorhel.nl/ncdu/changes](https://dev.yorhel.nl/ncdu/changes)
   - Repository: [https://code.blicky.net/yorhel/ncdu](https://code.blicky.net/yorhel/ncdu)
   - Package: [master/make/pkgs/ncdu/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ncdu/)
-  - Steward: -
-
+  - Steward: Ircama
 `ncdu` (NCurses Disk Usage) is a fast terminal disk usage analyzer.
 It scans directory trees and provides an interactive ncurses UI to find the biggest files/directories quickly.
 

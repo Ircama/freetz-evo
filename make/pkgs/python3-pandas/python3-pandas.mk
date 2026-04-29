@@ -7,6 +7,7 @@ $(PKG)_HASH:=4186a699674af418f655dbd420ed87f50d56b4cd6603784279d9eef6627823c8
 ### MANPAGE:=https://pandas.pydata.org/docs/
 ### CHANGES:=https://pandas.pydata.org/docs/whatsnew/
 ### CVSREPO:=https://github.com/pandas-dev/pandas
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += meson-host

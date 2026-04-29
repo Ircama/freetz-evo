@@ -6,6 +6,7 @@ $(PKG)_HASH:=ec6652a1bee61c53a3e5776b6049172c53b6aaba34f18c9ad04f82712bac623d
 ### WEBSITE:=https://github.com/aio-libs/multidict
 ### CHANGES:=https://github.com/aio-libs/multidict/releases
 ### CVSREPO:=https://github.com/aio-libs/multidict
+### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3
 
