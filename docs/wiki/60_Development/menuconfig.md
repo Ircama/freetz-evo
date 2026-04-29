@@ -1,71 +1,68 @@
-# Menükonfiguration pflegen
+# Maintaining Menu Configuration
 
-Einer der ersten Schritte jedes ***Freetz***-Benutzers ist die Auswahl
-der gewünschten Firmware (FW)-Konfiguration mit `make menuconfig`. Die
-Menükonfiguration (MK) ist mithin die primäre Benutzerschnittstelle
-neben der Linux-Shell für alle Nicht-Entwickler. Fehler und
-Unstimmigkeiten, welche dort auftauchen, können bestenfalls zu
-Verwirrung und Fragen im [IPPF
-Freetz-Forum](http://www.ip-phone-forum.de/forumdisplay.php?f=525)
-führen, aber auch zu seltsamen Warnungen auf der Konsole nach dem
-Speichern der Konfiguration, zu fehlenden oder überflüssigen
-FW-Bestandteilen oder schlimmstenfalls zu Freetz-Boxen, die nicht mehr
-booten oder in Reboot-Schleifen festhängen. In jedem Fall entsteht
-Support-Aufwand. Am billigsten sind, gemäß dem agilen Mantra "fail
-early", jedoch Fehler, die frühestmöglich bemerkt werden oder am besten
-gar nicht erst entstehen. Die Pflege der Menükonfiguration ist ein
-wichtiger Qualitäts-Baustein unseres Projektes.
+One of the first steps for every ***Freetz*** user is selecting the
+desired firmware configuration with `make menuconfig`. Menu configuration
+is therefore the primary user interface for all non-developers, besides
+the Linux shell. Errors and inconsistencies appearing there can, at best,
+lead to confusion and questions in the
+[IPPF Freetz forum](http://www.ip-phone-forum.de/forumdisplay.php?f=525).
+They can also lead to strange console warnings after saving the
+configuration, missing or unnecessary firmware components, or in the worst
+case to Freetz boxes that no longer boot or get stuck in reboot loops. In
+every case, support effort is created. Following the agile mantra "fail
+early", the cheapest errors are those noticed as early as possible, or
+preferably avoided entirely. Maintaining the menu configuration is an
+important quality component of our project.
 
-### Einstieg
+### Getting Started
 
-Pflichtlektüre jedes Entwicklers, bevor er zum ersten Mal die MK anpaßt,
-sollte die tools/kconfig/kconfig-language.txt
-sein. Dort werden Syntax-Features und deren Gebrauch grundlegend
-erklärt. Die Beschreibung entstammt der Dokumentation des
+Required reading for every developer before changing menu configuration
+for the first time should be `tools/kconfig/kconfig-language.txt`. It
+explains syntax features and their use. The description comes from the
+documentation of the
 [Linux-Kernels](http://kernel.org), welchem wir
-(und auch andere quelloffene Projekte) diese Art der MK und die dazu
-notwendigen Werkzeuge entlehnt haben.
+(and other open-source projects) borrowed this type of menu configuration
+and the required tools from.
 
-Die wichtigste Dateien und *Make*-Targets, mit welchen wir es im
-Folgenden zu tun haben werden, sind
+The most important files and *make* targets involved below are:
 
 -   Config.in
-    -   enthält das Hauptgerüst der MK
-    -   ist in der *Kconfig*-Sprache geschrieben
-    -   inkludiert hierarchisch (Baumstruktur) mittels
-        `source`-Direktive weitere MK-Definitionen, welche ebenfalls
-        Namen wie *Config.in, externals.in* o.ä. tragen
-    -   wird zukünftig (Trunk-Merge steht kurz bevor) als Ganzes, also
-        mit allen Includes, gepuffert in *Config.in.cache*, um
-        Ladezeiten beim Aufruf von `make menuconfig` zu verringern.
+    -   contains the main framework of the menu configuration
+    -   is written in the *Kconfig* language
+    -   hierarchically includes further menu configuration definitions in
+        a tree structure using the `source` directive; these definitions
+        also have names such as *Config.in*, *externals.in*, and similar
+    -   will in the future, the trunk merge is imminent, be cached as a
+        whole with all includes in *Config.in.cache* to reduce load times
+        when calling `make menuconfig`
 -   *.config*
-    -   enthält die vom Benutzer erstellte FW-Konfiguration als
-        maßgebliche Vorausstzung für folgende Builds
-    -   ist als Kopie in der FW unter */etc/.config* enthalten, sofern
-        das nicht in der MK vor dem Build deselektiert wird
-    -   ist eines der primären Debugging-Werkzeuge, wenn Benutzer Fehler
-        mit einer bestimmten Konfiguration melden
-    -   kann, sollte aber nicht manuell editiert werden
+    -   contains the firmware configuration created by the user and is the
+        decisive prerequisite for subsequent builds
+    -   is included as a copy in the firmware under */etc/.config* unless
+        this is deselected in menu configuration before the build
+    -   is one of the primary debugging tools when users report errors
+        with a specific configuration
+    -   can be edited manually, but should not be
 -   *tools/kconfig/mconf*
-    -   ist das Binary, welches von `make menuconfig` aufgerufen wird,
-        um die MK anzuzeigen und zu speichern
-    -   wird mittels `make tools` bzw. `make kconfig-host` automatisch
-        gebaut, sobald es benötigt wird
-    -   hat auch ein *Make*-Target `menuconfig-single`, welches die KM
-        als Baumstruktur ohne Unterseiten darstellt (manchmal nett, wenn
-        man die Gesamtstruktur sehen bzw. bearbeiten möchte)
+    -   is the binary called by `make menuconfig` to display and save the
+        menu configuration
+    -   is built automatically with `make tools` or `make kconfig-host` as
+        soon as it is needed
+    -   also has a *make* target `menuconfig-single`, which shows the menu
+        configuration as a tree structure without subpages; sometimes nice
+        when you want to see or edit the overall structure
 -   *tools/kconfig/conf*
-    -   ist die Kommandozeilenversion von *mconf*
-    -   hat mehr Features
-    -   wird ebenfalls mittels `make tools` bzw. `make kconfig-host`
-        automatisch gebaut, sobald es benötigt wird
-    -   wird von den *Make*-Targets `config`, `oldconfig`,
+    -   is the command-line version of *mconf*
+    -   has more features
+    -   is also built automatically with `make tools` or
+        `make kconfig-host` as soon as it is needed
+    -   is used by the *make* targets `config`, `oldconfig`,
         `oldnoconfig`, `defconfig`, `allnoconfig`, `allyesconfig`,
         ` randconfig`, `listnewconfig`, `config-clean-deps` und
         `config-clean-deps-keep-busybox` benutzt
-    -   zeigt folgende Hilfe an, wenn ohne Parameter aufgerufen (klappt
-        Stand 15.10.2011 im Trunk, nicht in älteren Stable-Versionen,
-        also frühestens ab *Freetz 1.2*):
+    -   shows the following help when called without parameters; this
+        works in trunk as of 2011-10-15, not in older stable versions, so
+        earliest with *Freetz 1.2*:
 
         ```
 			Usage: tools/kconfig/conf [option] <kconfig-file>
@@ -84,18 +81,16 @@ Folgenden zu tun haben werden, sind
           --randconfig            New config with random answer to all options
         ```
 
-Siehe vorerst
-Ticket #1532 "enhancement: Warnings im Zusammenhang mit neuem Kconfig (menuconfig) (closed: fixed)"
-, insbes. Kommentare Nr.
+For now, see ticket #1532, "enhancement: warnings related to new Kconfig
+(menuconfig) (closed: fixed)", especially these comments:
 
--   **Ticket #1532 "Kommentar 10 für Ticket #1532":
-    Erklärung einer Warnung mit Vorschlägen zur Problembehebung**
+-   **Ticket #1532 "comment 10 for ticket #1532": explanation of a
+    warning with suggestions for fixing the problem**
 
-    > Diese *unmet dependencies* behebt am besten jeder so, wie der
-    > gerade drauf stößt. Es sind ja nur Warnings, aber die sind auch
-    > wichtig, damit wir Unsauberkeiten aus den *Config.in* heraus
-    > bekommen. Das ist also gut für die Projekthygiene. Ich gebe mal
-    > ein Beispiel:
+    > These *unmet dependencies* are best fixed by whoever happens to
+    > encounter them. They are only warnings, but they are important so we
+    > can get unclean parts out of the *Config.in* files. That is good for
+    > project hygiene. Here is an example:
     >
 	> ```
 	>	 warning: (FREETZ_PACKAGE_AUTOFS_NFS && FREETZ_PACKAGE_NFSROOT)
@@ -104,26 +99,23 @@ Ticket #1532 "enhancement: Warnings im Zusammenhang mit neuem Kconfig (menuconfi
 	>	      FREETZ_KERNEL_VERSION_2_6_32)
     > ```
     >
-    > Aha, hier hat also jemand (ich) NFS-Root ausgewählt. Klar, daß
-    > dazu auch das NFS-Kernelmodul ausgewählt werden muß. Jetzt hat
-    > dieser Jemand aber bspw. eine 7270_v1 mit Kernel 2.6.19.2. Das
-    > Problem liegt auf der Hand: Entweder sollte beim NFS-Modul dieser
-    > Kernel mit in die Dependencies-Liste, oder für diesen Kernel
-    > sollten alle NFS-relevanten Sachen deaktiviert werden. Alles
-    > andere ist ein Widerspruch, und der wird moniert von *Kconfig*.
-    > Was in diesem Fall sachlich zutreffend ist, weiß ich momentan
-    > nicht, dafür war ich zu lange zu weit weg von der Entwicklung.
+    > So someone, me, selected NFS-Root. Of course, the NFS kernel module
+    > must also be selected for that. But this someone has, for example, a
+    > 7270_v1 with kernel 2.6.19.2. The problem is obvious: either this
+    > kernel should be added to the dependency list for the NFS module, or
+    > all NFS-related things should be disabled for this kernel. Everything
+    > else is a contradiction and is flagged by *Kconfig*. What is
+    > factually correct in this case, I do not currently know; I have been
+    > too far away from development for too long.
 
 <!-- -->
 
--   **Ticket #1532 "Kommentar 24 für Ticket #1532":
-    Liste aktueller Warnungen mit Erläuterungen zu Ursachen und
-    möglichen Lösungen**
--   **Ticket #1532 "Kommentar 31 für Ticket #1532":
-    konkretes Beispiel einer von Alexander Kriegisch eingecheckten
-    Problembehebung**
+-   **Ticket #1532 "comment 24 for ticket #1532": list of current
+    warnings with explanations of causes and possible solutions**
+-   **Ticket #1532 "comment 31 for ticket #1532": concrete example of a
+    fix checked in by Alexander Kriegisch**
 
-    > Ich versuche es einfach statt in Prosa mal schematisch:
+    > Instead of prose, I will just try it schematically:
     > :-)
     >
     > ::: {.code}
@@ -137,25 +129,23 @@ Ticket #1532 "enhancement: Warnings im Zusammenhang mit neuem Kconfig (menuconfi
     >         depends on FREETZ_TYPE_FON_WLAN_7240 || ...
     > :::
     >
-    > Das sieht mir sauber genug aus, obwohl das "if
-    > FREETZ_HAS_AVM_WEBDAV" - da gebe ich Dir recht - in Deinem
-    > Sinne doppelt ist. Aber es sagt dafür genauer, was Du wirklich tun
-    > willst (man kann die Konfigurationsanweisung diesmal wirklich wie
-    > Prosa lesen): Wähle den Remove-Patch aus, falls es überhaupt etwas
-    > zu entfernen gibt. Ich denke, das macht es hinreichend klar und
-    > dokumentiert nochmals, was gewollt ist. Zudem vermeidet es die
-    > Warnung nach dem Speichern der Konfiguration. Ohne das *If* würde
-    > die Warnung erscheinen.
+    > This looks clean enough to me, even though the `if
+    > FREETZ_HAS_AVM_WEBDAV`, I agree with you there, is duplicated in
+    > your sense. But it says more precisely what you really want to do;
+    > this time the configuration statement can truly be read like prose:
+    > select the remove patch if there is anything to remove at all. I
+    > think that makes it sufficiently clear and documents once again what
+    > is intended. It also avoids the warning after saving the
+    > configuration. Without the *if*, the warning would appear.
 
 <!-- -->
 
--   **Ticket #1532 "Kommentar 54 für Ticket #1532":
-    verallgemeintertes "Kochrezept" zur Problembehebung bei
-    Remove-Patches**
+-   **Ticket #1532 "comment 54 for ticket #1532": generalized recipe for
+    fixing problems with remove patches**
 
-    > Ich weise nochmals auf meinen Kommentar \#31 hin, aus dem man im
-    > Grunde sehr schön ablesen kann, wie einfach, elegant und lesbar
-    > man viele Situationen beheben kann:
+    > I point once again to my comment #31, from which one can basically
+    > see very nicely how simply, elegantly, and readably many situations
+    > can be fixed:
     >
     > ::: {.code}
     >     FREETZ_PACKAGE_FOO
@@ -168,60 +158,57 @@ Ticket #1532 "enhancement: Warnings im Zusammenhang mit neuem Kconfig (menuconfi
     >         depends on FREETZ_TYPE_A || FREETZ_TYPE_B || ...
     > :::
     >
-    > **Kochrezept für Remove-Patches (RP):**
+    > **Recipe for remove patches (RP):**
     >
-    > -   Automatische RP-Auswahl absichern durch
+    > -   Secure automatic RP selection with
     >     `if FREETZ_HAS_AVM_MY_FEATURE`
-    > -   RP-Sichtbarkeit abhängig machen durch
+    > -   Make RP visibility depend on
     >     `depends on FREETZ_HAS_AVM_MY_FEATURE`
-    > -   Durch RP entfernbares Feature abhängig machen von Hardware
-    >     oder Firmware usw. durch `depends on FREETZ_TYPE_A`
+    > -   Make the feature removable by the RP depend on hardware or
+    >     firmware and so on with `depends on FREETZ_TYPE_A`
 
 <!-- -->
 
--   **Ticket #1532 "Kommentar 55 für Ticket #1532":
-    weitere Erläuterungen zur Umsetzung des Kochrezepts**
+-   **Ticket #1532 "comment 55 for ticket #1532": further explanations
+    for implementing the recipe**
 
     > Replying to oliver:
     >
-    > > Wo ist der Sinn darin eine dependency herauszunehmen, die (bis
-    > > auf wenige Fälle) richtig ist?
+    > > What is the point of removing a dependency that is correct, except
+    > > for a few cases?
     >
-    > Jetzt habe ich mir den ersten Patch
-    > doch schnell mal angeschaut. Es ist weder korrekt, sie so drin zu
-    > lassen, wenn sie auch nur in wenigen Fällen falsch ist, noch, sie
-    > ersatzlos zu streichen, wenn unsinnige Optionen dafür in neuen,
-    > falschen Fällen angezeigt werden. Was hingegen Sinn (und etwas
-    > Mühe) machen würde, wäre, mein Kochrezept anzuwenden und neue
-    > Variablen FREETZ_HAS_AVM_AURA_USB, FREETZ_HAS_AVM_PRINTSERV
-    > und FREETZ_HAS_AVM_RUNCLOCK anzulegen. Die könnte
-    > FREETZ_HAS_USB_HOST ja von mir aus in den Fällen, wo es keine
-    > gegenteiligen Erkenntnisse gibt, automatisch auswählen. Sobald
-    > aber auch nur eine einzige Ausnahme bekannt ist, ist eine
-    > Box-Liste beim jeweiligen FREETZ_HAS_AVM_\* zu hinterlegen. Die
-    > Remove-Patches sollten immer von FREETZ_HAS_AVM_\* abhängen,
-    > nie von einem billigen Ersatz der nur *fast* immer funktioniert.
+    > I quickly looked at the first patch after all. It is neither correct
+    > to leave the dependency in if it is wrong in even a few cases, nor to
+    > remove it without replacement if nonsensical options are then shown
+    > in new, wrong cases. What would make sense, although it takes some
+    > effort, would be applying my recipe and creating new variables
+    > `FREETZ_HAS_AVM_AURA_USB`, `FREETZ_HAS_AVM_PRINTSERV`, and
+    > `FREETZ_HAS_AVM_RUNCLOCK`. As far as I am concerned,
+    > `FREETZ_HAS_USB_HOST` could automatically select them in cases where
+    > there are no contrary findings. But as soon as even one exception is
+    > known, a box list must be stored for the respective `FREETZ_HAS_AVM_*`.
+    > Remove patches should always depend on `FREETZ_HAS_AVM_*`, never on a
+    > cheap substitute that works *almost* always.
     >
-    > Das ist keine Kritik i.S.v. "das hättest Du aber vorher wissen
-    > sollen", denn die Erkenntnisse sind ja relativ neu und m.E. ein
-    > Segen des neuen *Kconfig*. Ich will durch meine Hinweise den
-    > anderen Entwicklern Hilfe zur Selbsthilfe geben.
+    > This is not criticism in the sense of "you should have known that
+    > beforehand", because these insights are relatively new and, in my
+    > opinion, a blessing of the new *Kconfig*. With my notes, I want to
+    > give other developers help for self-help.
     >
-    > Ergänzung: Es ist auch sowas vorstellbar:
+    > Addition: something like this is also conceivable:
     >
     > ::: {.code}
     >     FREETZ_HAS_AVM_MY_FEATURE
     >         depends on FREETZ_HAS_USB_HOST && !(FREETZ_TYPE_A || FREETZ_TYPE_B)
     > :::
     >
-    > So hält man die Boxen-Liste klein, indem man einfach klar sagt,
-    > was Sache ist. Es ist wieder fast wie Prosa lesbar: "Zeig das
-    > AVM-Feature X an, wenn die Box einen USB-Host hat, außer in den
-    > Ausnahmefällen A und B."
+    > This keeps the box list small by simply stating clearly what is the
+    > case. It is again almost readable like prose: "Show AVM feature X if
+    > the box has a USB host, except in exception cases A and B."
 
-### Syntax-Fehler in MK-Dateien finden
+### Find Syntax Errors in Menu Configuration Files
 
-Wir sehen einen Fehler wie diesen:
+We see an error like this:
 
 ```
 	$ make menuconfig
@@ -232,17 +219,16 @@ Wir sehen einen Fehler wie diesen:
 	make: *** [menuconfig] Error 1
 ```
 
-Gemäß Beschreibung in
-Changeset r8466
-gibt es zwei Wege, bei einem von `make menuconfig` angezeigten
-Syntax-Fehler schnell die fehlerhafte Stelle zu finden:
+According to the description in changeset r8466, there are two ways to
+quickly find the faulty location when `make menuconfig` reports a syntax
+error:
 
-1.  In `Config.cache.in` direkt zu der Fehlerzeile 4950 springen, die
-    auf der Konsole angezeigt wurde. Von dort aus rückwärts(!) suchen
-    nach `INCLUDE_BEGIN` - voilà, dort steht der Dateiname, wo die
-    fehlerhafte MK zu finden ist.
-2.  `make menuconfig-nocache` aufrufen und die problematische Datei
-    (*make/davfs2/Config.in*) direkt von der Konsole ablesen:
+1.  In `Config.cache.in`, jump directly to the error line shown on the
+    console, line 4950 in the example. From there, search backwards for
+    `INCLUDE_BEGIN`; there is the filename containing the faulty menu
+    configuration.
+2.  Call `make menuconfig-nocache` and read the problematic file,
+    *make/davfs2/Config.in*, directly from the console:
 
     ```
 		$ make menuconfig-nocache
@@ -269,46 +255,45 @@ Syntax-Fehler schnell die fehlerhafte Stelle zu finden:
 		make: *** [menuconfig-nocache] Error 1
     ```
 
-### Syntax-Hervorhebung für MK-Dateien
+### Syntax Highlighting for Menu Configuration Files
 
-Gemäß tools/developer/kconfig.pygments.patch
-habe ich (Alexander Kriegisch, kriegaex) zunächst einen sog.
+According to `tools/developer/kconfig.pygments.patch`, I, Alexander
+Kriegisch, kriegaex, first built a so-called
 [Lexer](http://de.wikipedia.org/wiki/Lexikalischer_Scanner)
-für [Pygments](http://pygments.org) gebaut (siehe
-auch
-[Pygments-Doku](http://pygments.org/docs/lexerdevelopment/)),
-welcher es ermöglicht, MK-Dateien mit Syntax-Hervorhebung zu versehen.
-*Pygments* wird von
+for [Pygments](http://pygments.org), see also the
+[Pygments documentation](http://pygments.org/docs/lexerdevelopment/),
+which makes it possible to provide syntax highlighting for menu
+configuration files. *Pygments* is used automatically by
 [Trac](http://trac.edgewall.org), also dem System,
-auf welchem unser Wiki und der Repository Browser basieren, automatisch
-benutzt, sofern es installiert ist.
+the system on which our wiki and repository browser are based, if it is
+installed.
 
-*Trac* erkennt den MIME-Typ einer Datei aber nur aufgrund der Endung
-(also z.B. *.py, .sh, .pl, .c, .h*) oder aufgrund Infos wie
+However, *Trac* recognizes a file's MIME type only from the extension,
+for example `*.py`, `.sh`, `.pl`, `.c`, `.h`, or from information such as
 [Shebang](http://de.wikipedia.org/wiki/Shebang)
-oder *Vi-/Emacs*-Header, und das ist ein Problem bei MK-Dateien, da es
-keine standardisierte Dateiendung im Allgemeinen und auch nicht bei uns
-im Projekt gibt. Unsere einzige Chance ist es, den Wildwuchs an
-Dateinamen (z.B. *Config.in, external.in, standard-modules.in,
-external.in.libs*) so im Zaum zu halten, daß man mit [Regex
-Matching](http://de.wikipedia.org/wiki/Regul%C3%A4rer_Ausdruck)
-die entsprechenden Dateien identifizieren kann. Das ist Stand heute
-möglich, allerdings beherrscht *Trac* von Haus aus kein Regex Matching,
-weswegen tools/developer/mime_map_patterns.trac.patch
-notwendig wird. *(Anm.: Bevor es Patch 2 gab, war es notwendig, in SVN
-die Eigenschaft `svn:mime-type` für jede MK-Datei manuell zu setzen, was
-inzwischen zum Glück obsolet ist, aber auch nicht schaden würde.)*
+or *Vi/Emacs* headers. This is a problem for menu configuration files,
+because there is no standardized file extension in general, nor in our
+project. Our only chance is to keep the proliferation of file names, for
+example *Config.in*, *external.in*, *standard-modules.in*,
+*external.in.libs*, under control enough that the corresponding files can
+be identified with
+[regex matching](http://de.wikipedia.org/wiki/Regul%C3%A4rer_Ausdruck).
+This is possible today, but *Trac* does not support regex matching out of
+the box, so `tools/developer/mime_map_patterns.trac.patch` becomes
+necessary. Note: before patch 2 existed, it was necessary in SVN to set
+the property `svn:mime-type` manually for each menu configuration file.
+Fortunately this is now obsolete, although it would not hurt either.
 
-Auf unserem Webserver sind beide Patches nebst der notwendigen
-Konfiguration in `trac.ini` aktiv, so daß MK-Dateien aus dem
-SVN-Repository automatisch mit Syntax-Hervorhebung versehen werden.
+On our web server, both patches are active together with the required
+configuration in `trac.ini`, so menu configuration files from the SVN
+repository are automatically syntax-highlighted.
 
-Noch ein kleiner Tip: Wie man Syntax Highlighting im *Trac*-Wiki direkt
-in Code-Blocks einsetzt, sieht man hier direkt im Artikel für MK- und
-Shell-Code: Entweder man erwähnt am Anfang des Code-Blocks mit führendem
-Shebang den MIME-Typ (`text/x-kconfig`, übrigens selbst erfunden und
-kein allgemeiner Standard) oder das in `trac.ini` konfigurierte
-Schlüsselwort `kconfig`, also in etwa so:
+One small tip: how to use syntax highlighting directly in code blocks in
+the *Trac* wiki can be seen in this article for menu configuration and
+shell code. Either mention the MIME type at the beginning of the code
+block with a leading shebang, `text/x-kconfig`, incidentally invented by
+us and not a general standard, or use the keyword `kconfig` configured in
+`trac.ini`, roughly like this:
 
 ```
 	{{{
@@ -317,7 +302,7 @@ Schlüsselwort `kconfig`, also in etwa so:
 	}}}
 ```
 
-Oder so:
+Or like this:
 
 ```
 	{{{

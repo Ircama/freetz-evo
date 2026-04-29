@@ -1,29 +1,24 @@
-# Häufige selbständige Reboots
+# Frequent Spontaneous Reboots
 
-Wenn die Box mehrmals wöchentlich (oder gar täglich) ohne erkennbaren
-Grund neu durchstartet, kann das durchaus daran liegen, dass es ihr zu
-heiß geworden ist. Wozu oft mehrere Dinge beitragen, sodass es sich
-nicht unbedingt als Grund aufdrängt: Werden die Reboots z.B. nach der
-De-Installation eines Paketes seltener, kann der Grund sein, dass die
-CPU weniger beansprucht wird (ja, es gibt einige Pakete, die recht viel
-tun - Tor ist ein Beispiel dafür,
-siehe [IPPF
-Thread](http://www.ip-phone-forum.de/showpost.php?p=1171014&postcount=2))
-- und der "Peak" von daher erst später auftritt.
+If the box reboots several times per week, or even daily, without an
+obvious reason, overheating may be the cause. Several factors can
+contribute, so it is not always obvious. For example, if the reboots
+become less frequent after uninstalling a package, the CPU may simply be
+under less load. Some packages do quite a lot; Tor is one example, see
+the [IPPF thread](http://www.ip-phone-forum.de/showpost.php?p=1171014&postcount=2).
+In that case, the temperature peak may just occur later.
 
-Es schadet also keinesfalls, die Umgebung um die Box einer kleinen
-Prüfung zu unterziehen: Steht sie vielleicht direkt auf einem anderen,
-heißen Gerät (Router, oder was auch immer)? Eine Positionsänderung kann
-hier Wunder wirken.
+It is worth checking the box's surroundings. Is it standing directly on
+another hot device, such as another router? Moving it to a different
+position can work wonders.
 
-### Weiterführende Links
+### Further Links
 
 -   [IPPF
     Thread](http://www.ip-phone-forum.de/showpost.php?p=1171014&postcount=2)
-    zum Thema "Tor heizt ein" (hohe CPU-Last, Reboots)
--   [noch ein IPPF
+    about "Tor heats things up" (high CPU load, reboots)
+-   [Another IPPF
     Thread](http://www.ip-phone-forum.de/showthread.php?t=172138)
-    zum Thema "selbständige Reboots" mit "Hardware-Lösung"
-    (Kühlkörper)
+    about spontaneous reboots with a hardware solution (heat sink)
 
 

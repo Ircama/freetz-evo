@@ -1,84 +1,77 @@
 # Freetz Linux
 
-### Freetz Linux unter VirtualBox
+### Freetz Linux under VirtualBox
 
-1. VirtualBox starten, Datei → Appliance importieren auswählen und dem
-Dialog folgen. Als Image die gerade runtergeladene freetz-linux Datei
-angeben.
-2. Der Import dauert einen Augenblick. Danach noch mit **Ändern** die
-Einstellungen kontrollieren.
+1. Start VirtualBox, choose File -> Import Appliance, and follow the
+dialog. Select the Freetz Linux file you just downloaded as the image.
+2. The import takes a moment. Afterwards, use **Change** to check the
+settings.
 
-### Freetz Linux unter VMWare
+### Freetz Linux under VMware
 
-Je nach dem, in welchem VMware Produkt Freetz Linux nachher laufen soll,
-habe ich zwei Wege ausprobiert. Folgende Tools sind dabei hilfreich
-(aber nicht alle für beide Wege notwendig):
+Depending on which VMware product should run Freetz Linux later, I tried
+two approaches. These tools are helpful, though not all of them are
+needed for both approaches:
 
 -   [Freetz-Linux](http://www.ip-phone-forum.de/showpost.php?p=1400234&postcount=1)
-    selbst
+    itself
 -   [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 -   [VMWare OVF
     Tool](http://www.vmware.com/support/developer/ovf/)
--   [Notepad++](http://notepad-plus-plus.org/) als
-    guter Editor
+-   [Notepad++](http://notepad-plus-plus.org/) as a good editor
 -   [VMware vCenter Converter
     standalone](http://downloads.vmware.com/de/d/info/infrastructure_operations_management/vmware_vcenter_converter_standalone/5_0)
 
-### Freetz Linux unter VMware ESXi V4.1 Hypervisor (funktioniert auch mit vSphere Hypervisor 5.5)
+### Freetz Linux under VMware ESXi V4.1 Hypervisor (also works with vSphere Hypervisor 5.5)
 
-1. VirtualBox starten, Datei → Appliance importieren auswählen und dem Dialog folgen ...
-2. Der Import dauert einen Augenblick. Danach Datei → Appliance
-   exportieren auswählen und dem Dialog folgen\
-   → Speicherort und Dateinamen wählen. Dabei die Dateiendung von *.ova in
-   *.ovf abändern.
-Die OVF Version sollte auf 1.0 eingestellt werden.
-3. Die unter anderem enstandene *.ovf Datei in einen Texteditor laden
+1. Start VirtualBox, choose File -> Import Appliance, and follow the dialog.
+2. The import takes a moment. Afterwards, choose File -> Export Appliance
+    and follow the dialog.\
+    Select storage location and filename, changing the file extension from
+    `*.ova` to `*.ovf`.
+The OVF version should be set to 1.0.
+3. Load the generated `*.ovf` file into a text editor.
 4. <vssd:VirtualSystemType>virtualbox-2.2</vssd:VirtualSystemType>
-abändern in <vssd:VirtualSystemType>vmx-07</vssd:VirtualSystemType>
-und die *.ovf Datei speichern\
-→ vmx-07 tituliert VM Version 7 (z.B. für ESXi V4.1), ältere VM
-Versionen sollten mit vmx-04 zurecht kommen
-5. vSphere Client starten, zum ESXi Hypervisor verbinden.
-6. Datei → OVF-Vorlage bereitstellen. Dem Dialog folgen und gewünschte
-Einstellungen machen. Importvorgang abwarten.
-7a. Virtuelle Maschine starten.
-7b. Wer beim Systemstart einen Segmentation Fault Fehler bekommt:\
-→ VM ausschalten, in den Optionen der VM-Einstellungen
-Paravirtualisierung aktivieren und die VM erneut starten.
+change to <vssd:VirtualSystemType>vmx-07</vssd:VirtualSystemType>
+and save the `*.ovf` file.\
+`vmx-07` denotes VM version 7, for example ESXi V4.1. Older VM versions
+should work with `vmx-04`.
+5. Start the vSphere Client and connect to the ESXi hypervisor.
+6. Choose File -> Deploy OVF Template. Follow the dialog, make the desired
+settings, and wait for the import to finish.
+7a. Start the virtual machine.
+7b. If you get a segmentation fault during system startup, shut down the
+VM, enable paravirtualization in the VM settings, and start the VM again.
 
-### Freetz Linux unter VMware Player V2.5
+### Freetz Linux under VMware Player V2.5
 
-1. VirtualBox starten, Datei → Appliance importieren auswählen und dem
-Dialog folgen ...
-2. Der Import dauert einen Augenblick. Danach Datei → Appliance
-exportieren auswählen und dem Dialog folgen\
-→ Speicherort und Dateinamen wählen. Dabei die Dateiendung von *.ova in
-*.ovf abändern.
-3. Die unter anderem enstandene *.ovf Datei in einen Texteditor laden
+1. Start VirtualBox, choose File -> Import Appliance, and follow the dialog.
+2. The import takes a moment. Afterwards, choose File -> Export Appliance
+and follow the dialog.\
+Select storage location and filename, changing the file extension from
+`*.ova` to `*.ovf`.
+3. Load the generated `*.ovf` file into a text editor.
 4. <vssd:VirtualSystemType>virtualbox-2.2</vssd:VirtualSystemType>
-abändern in <vssd:VirtualSystemType>vmx-07</vssd:VirtualSystemType>
-und die *.ovf Datei speichern\
-→ vmx-07 tituliert VM Version 7 (z.B. für ESXi V4.1), ältere VM
-Versionen sollten mit vmx-04 zurecht kommen
-5. Kommandozeile öffnen (Windows: Start → Ausführen → cmd [ENTER])
-6. In das OVFTool Verzeichnis wechseln und die VM wie folgt
-konvertieren\
-→ ovftool [*.ovf Datei] [*.vmx Datei]
-7. VMware Player starten und die VM laden.
+change to <vssd:VirtualSystemType>vmx-07</vssd:VirtualSystemType>
+and save the `*.ovf` file.\
+`vmx-07` denotes VM version 7, for example ESXi V4.1. Older VM versions
+should work with `vmx-04`.
+5. Open a command prompt: Windows -> Start -> Run -> `cmd` -> Enter.
+6. Change into the OVFTool directory and convert the VM like this:\
+`ovftool [*.ovf file] [*.vmx file]`
+7. Start VMware Player and load the VM.
 
-Die in Szenario 2 erzeugte *.vmx Datei kann ebenfalls genutzt werden
-auf dem ESXi Hypervisor und manuell über den Datenspeicherbrowser in die
-Bestandsliste aufgenommen werden. Dabei bitte den oben erwähnten Hinweis
-zum Segmentation Fault berücksichtigen.
-Evtl. ist die Erzeugung der *.vmx und *.vmdk Dateien sowieso sinnvoll,
-um sich das konvertierte Freetz-Linux so wegspeichern zu können.
+The `*.vmx` file created in scenario 2 can also be used on the ESXi
+hypervisor and manually added to the inventory through the datastore
+browser. Keep the segmentation fault note above in mind. Creating the
+`*.vmx` and `*.vmdk` files may be useful anyway so you can store the
+converted Freetz Linux.
 
-Zur Information:\
-Den oben aufgeführten VMware vCenter Converter standalone habe ich nur
-einmal bei einem ESXi Hypervisor benutzen müssen, da keiner der beiden
-beschriebenen Wege funktioniert hat.
+For information: I only had to use the VMware vCenter Converter
+standalone listed above once on an ESXi hypervisor because neither of the
+two described methods worked.
 
-Und noch ein paar Screenshots passend zu den Hinweisen oben:
+Here are some screenshots matching the notes above:
 
 [![convert command line](../../screenshots/222_md.jpg)](../../screenshots/222.jpg)
 
@@ -97,52 +90,42 @@ Und noch ein paar Screenshots passend zu den Hinweisen oben:
 
 
 
-### Freetz Linux unter Virtual PC
+### Freetz Linux under Virtual PC
 
-Getestet habe ich unter Windows XP x86 mit Virtual PC 2007 sowie Windows
-7 x86_64 Windows Virtual PC.
-Folgende Tools sind dabei hilfreich:
+I tested this under Windows XP x86 with Virtual PC 2007 and under Windows
+7 x86_64 with Windows Virtual PC. These tools are helpful:
 
--   [Freetz-Linux](http://www.ip-phone-forum.de/showpost.php?p=1400234&postcount=1) selbst
+-   [Freetz-Linux](http://www.ip-phone-forum.de/showpost.php?p=1400234&postcount=1) itself
 -   [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
--   [Virtual PC 2007](http://www.microsoft.com/downloads/de-de/details.aspx?FamilyID=04d26402-3199-48a3-afa2-2dc0b40a73b6) (für Windows XP)
--   [Windows Virtual C](http://www.microsoft.com/windows/virtual-pc/) (für Windows 7 ... XP-Mode nicht erforderlich)
+-   [Virtual PC 2007](http://www.microsoft.com/downloads/de-de/details.aspx?FamilyID=04d26402-3199-48a3-afa2-2dc0b40a73b6) for Windows XP
+-   [Windows Virtual PC](http://www.microsoft.com/windows/virtual-pc/) for Windows 7; XP mode is not required
 
-1a. VirtualBox starten, Datei → Appliance importieren auswählen und dem
-Dialog folgen ... Der Import dauert einen Augenblick.
-1b. VirtualBox beenden\
-2. Folgende Kommandos absetzen, um die zwei Festplatten zu
-kovertieren:\
-→ VBoxManage.exe clonehd freetz-linux-1.2.1-disk1.vmdk freetz.vhd
----format VHD\
-→ VBoxManage.exe clonehd freetz-linux-1.2.1-disk2.vmdk freetz2.vhd
----format VHD\
-3a. Virtual PC starten und einen neuen virtuellen Computer anlegen
-(Details siehe Screenshot).
-3b. Den neuen virtuellen PC starten.
-4. Höchstwahrscheinlich wird die Grafikauflösung etc. nicht ordentlich
-erkannt (siehe Screenshot). Wenn dem so ist, weiter bei 5.
-5. Virtuelle Maschine neu starten (Tastenkombination [Alt
-GR]+[ENTF])\
-6. Während der Bootmanager Grub aktiv ist, [ESC] drücken, um ins Menu
-zu gelangen.
-7a. Taste [e] drücken beim ersten Menueintrag. Nochmal Taste [e]
-drücken bei den Kernel Bootparametern.
-→ Folgende Bootoptionen hinzufügen: vga=791 noreplace-paravirt\
-7b. [RETURN] drücken\
-7c. [b] drücken, um Ubuntu zu starten\
-8. Daraufhin sollte der gewohnte Ubuntu Bildschirm erscheinen und
-Freetz-Linux bis zum Konsolenlogin starten\
-9. Die manuellen Eingaben nun festigen in der Grub Konfiguration.
-Folgendes Kommando absetzen:\
-→ sudo nano /boot/grub/menu.lst\
-→ Recht weit unten in der Datei die Optionen ergänzen, die beim ersten
-Booten benutzt wurden\
-→ Mit [STRG]+[O] speichern und [STRG]+[X] beenden\
-10. Virtuelle Maschine neu starten, um zu sehen, ob die Werte fest
-übernommen wurden.
+1a. Start VirtualBox, choose File -> Import Appliance, and follow the
+dialog. The import takes a moment.
+1b. Exit VirtualBox.\
+2. Run these commands to convert the two hard disks:\
+`VBoxManage.exe clonehd freetz-linux-1.2.1-disk1.vmdk freetz.vhd --format VHD`\
+`VBoxManage.exe clonehd freetz-linux-1.2.1-disk2.vmdk freetz2.vhd --format VHD`\
+3a. Start Virtual PC and create a new virtual computer; see the screenshot
+for details.
+3b. Start the new virtual PC.
+4. Most likely, the graphics resolution and similar settings are not
+detected correctly; see the screenshot. If so, continue with step 5.
+5. Restart the virtual machine with the key combination [Alt Gr]+[Del].\
+6. While the Grub boot manager is active, press [Esc] to reach the menu.
+7a. Press [e] on the first menu entry. Press [e] again on the kernel boot
+parameters. Add these boot options: `vga=791 noreplace-paravirt`.\
+7b. Press [Return].\
+7c. Press [b] to start Ubuntu.\
+8. The usual Ubuntu screen should appear and Freetz Linux should start up
+to the console login.\
+9. Make the manual entries persistent in the Grub configuration. Run:\
+`sudo nano /boot/grub/menu.lst`\
+Near the bottom of the file, add the options used during the first boot.\
+Save with [Ctrl]+[O] and exit with [Ctrl]+[X].\
+10. Restart the virtual machine to check whether the values were saved.
 
-Und noch ein paar Screenshots passend zu den Hinweisen oben:
+Here are some screenshots matching the notes above:
 
 [![vpc2007_convert.jpg](../../screenshots/230_md.jpg)](../../screenshots/230.jpg)
 

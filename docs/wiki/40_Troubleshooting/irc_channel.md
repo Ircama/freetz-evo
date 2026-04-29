@@ -1,19 +1,14 @@
 # IRC
 
-Wer den direkten Kontakt zur Zweirad und Fritz-Community sucht, kann
-das über IRC tun. Dazu benötigt man lediglich einen
-[Web-Browser](http://webchat.freenode.net/) oder IRC-Client.
-Der IRC-Kanal ("Chatraum") nennt sich **##fritzbox** und befindet
-sich im Freenode (IRC-Server).
-Auf ##fritzbox werden verschiedenste Themen diskutiert.
-Auch wenn das Topic vermuten lässt dass es sich um einen
-englischsprachigen Kanal handelt, wird sich fast nur auf
-deutsch unterhalten. Das hängt davon ab wie schnell es
-dem neu eingetretenen auffällt.
-Die Regeln des Admins sind unbedingt zu befolgen da sonst
-ein mute droht.
+Anyone looking for direct contact with the Zweirad and Fritz community
+can use IRC. All you need is a [web browser](http://webchat.freenode.net/)
+or an IRC client. The IRC channel is called **##fritzbox** and is hosted
+on Freenode. Many different topics are discussed there. Although the
+topic may suggest an English-speaking channel, most conversation is in
+German; this may depend on how quickly a newcomer notices it. Follow the
+administrator's rules, otherwise you may be muted.
 
-**Zugangsdaten:**
+**Access data:**
 
 ```
 	Server="chat.freenode.net"
@@ -21,48 +16,47 @@ ein mute droht.
 	Channel="##fritzbox"
 ```
 
- * Grundsätzlich: Bitte einfach Eure Fragen stellen, Antworten können manchmal dauern (siehe "IRC Netiquette").
+ * In general: simply ask your questions. Answers may take a while; see
+	 "IRC Netiquette".
 
 ### IRC Netiquette
 
-Auch im IRC gibt es "Benimmregeln" und die Einhaltung sollten helfen
-dieses Kommunikationsmedium (effektiv) zu nutzen. Schliesslich hat man
-Fragen, die man gerne beantwortet haben möchte. Die
-[Benimmregeln](http://channel.debian.de/netiquette/ch-rules.html)
-aus dem "Netiquette & HOWTO für #debian.de" sind nicht verpflichtend,
-geben aber einige Hinweise, wie man "Fettnäpfchen" vermeiden kann.
+IRC also has rules of conduct. Following them helps you use this medium
+effectively; after all, you have questions and would like answers. The
+[rules of conduct](http://channel.debian.de/netiquette/ch-rules.html)
+from "Netiquette & HOWTO for #debian.de" are not mandatory, but they give
+useful hints for avoiding common mistakes.
 
 ### Troubleshooting IRC
 
  - Unauthorized connection
-> Falls es Probleme beim Verbinden gibt (z.B. Fehlermeldung:
-> "Unauthorized connection"), so kann man versuchen einen alternativen
-> IRC-Server zu verwenden.
-> Tipp: Einen IRC-Server aus dem eigenen Land verwenden! Eine Übersicht
-> aller Server im Freenode gibt es
-> [hier](http://freenode.net/irc_servers.shtml).
+> If there are problems connecting, for example the error message
+> "Unauthorized connection", try using an alternative IRC server.
+> Tip: use an IRC server from your own country. An overview of all
+> Freenode servers is available
+> [here](http://freenode.net/irc_servers.shtml).
 
-### Konfiguration Chatzilla-Plugin in Firefox
+### Configure the Chatzilla Plugin in Firefox
 
 [![IRC Chatzilla Window](../../screenshots/25_md.jpg)](../../screenshots/25.jpg)
 
 
-Ebenfalls kann das Chatzilla-Plugin für den Firefox genutzt werden
+The Chatzilla plugin for Firefox can also be used
 ([Download](https://addons.mozilla.org/de/firefox/addon/16)).
 
-Einstellen des Chatzilla-Plugins:
+Configuring the Chatzilla plugin:
 
-1. Chatzilla installieren
-2. Unter **Chatzilla** ⇒ **Einstellungen** ⇒ **Globale Einstellungen**
-   ⇒ **Allgemein** einen **Benutzernamen** und einen **Nick** vergeben.
-3. Chatzilla wieder beenden
-4. Nun diesen Link anklicken:
+1. Install Chatzilla.
+2. Under **Chatzilla** -> **Settings** -> **Global Settings** ->
+	**General**, enter a **username** and **nick**.
+3. Close Chatzilla again.
+4. Click this link:
    [irc://chat.freenode.net/##fritzbox](irc://chat.freenode.net/##fritzbox)
-5. Chatzilla sollte sich nun im Fritzbox-Chat mit Eurem neu vergebenen
-   Nick einloggen (siehe Bild oben)
-6. Dann unter **IRC** den Haken bei **Chanel beim starten** aktivieren
+5. Chatzilla should now log into the Fritzbox chat with the newly assigned
+	nick; see the image above.
+6. Under **IRC**, enable **Channel at startup**.
 
-Ab sofort verbindet man sich automatisch mit jedem Start von Chatzilla
-zu ##fritzbox.
+From now on, Chatzilla connects to `##fritzbox` automatically whenever it
+starts.
 
 

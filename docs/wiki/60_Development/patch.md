@@ -1,21 +1,20 @@
-# Aufbau eines Patches
+# Structure of a Patch
 
-Ein Patch ist eine Datei im Textformat, die für gewöhnlich die Endung
-.patch (manchmal auf .diff) hat und eine Liste von Unterschieden
-zwischen zwei Version einer Datei enthält. Patches enthalten nur
-Unterschiede in Textdateien. Unterschiede in Binärdateien können nicht
-gepatched werden.
+A patch is a text-format file, usually with the extension `.patch`
+sometimes `.diff`, containing a list of differences between two versions
+of a file. Patches contain only differences in text files. Differences in
+binary files cannot be patched.
 
-Zu Beginn eines Patch kann ein Kommentar stehen, der beschreibt wo der
-Patch herkommt, wer daran mitgewirkt hat, welches Problem er löst usw.
-Der eigentliche Beginn der Unterschiede wird durch `---` gekennzeichnet.
-Für gewöhnlich enthält ein Patch 3 Zeilen Kontext vor und nach jeder
-geänderten Zeile. Diese dienen als Referenz, so dass der Patch auch noch
-angewendet werden kann falls an der zu patchenden Datei eine Änderung
-vorgenommen wurde und die Zeilennummern nicht mehr korrekt sind.
+At the beginning of a patch there may be a comment describing where the
+patch comes from, who contributed to it, which problem it solves, and so
+on. The actual beginning of the differences is marked by `---`. Usually,
+a patch contains three lines of context before and after each changed
+line. These serve as a reference so the patch can still be applied even if
+the file to be patched has changed and the line numbers are no longer
+correct.
 
 ```
-Dieser Patch ist ein Beispiel und fügt menuconfig einen neuen Eintrag hinzu.
+This patch is an example and adds a new entry to menuconfig.
 
 Index: make/Config.in
 ===================================================================
@@ -31,44 +30,41 @@ Index: make/Config.in
  source make/openntpd/Config.in
 ```
 
-In den meisten Fällen lauten die 2 Dateinamen (hier make/Config.in)
-gleich, manchmal Unterscheiden sie sich in der Endung (.orig), je
-nachdem wie der Patch erstellt wurde. Im Beispiel ist also eine Änderung
-an der Datei make/Config.in beschrieben. Konkret wurde hier ein neues
-Paket *newpackage* geschrieben und soll jetzt dem menuconfig hinzugefügt
-werden. Die fünfte Zeile des Patches enthält Informationen darüber wo
-sich der zu patchende Abschnitt (hunk) in der Datei befindet und wie
-viele Textzeilen der Patch verändert. Im Beispiel beginnt der Patch ab
-Zeile 51 und fügt eine Zeile (7-6=1), gekennzeichnet durch ein `+`,
-hinzu. Man könnte also das gleiche Ergebnis erreichen, wenn man die
-Datei make/Config.in in einem Texteditor öffnet und die Zeile
-`source make/newpackage/Config.in` an der beschriebenen Stelle
-hinzufügt.
+In most cases, the two file names, here `make/Config.in`, are the same.
+Sometimes they differ by extension, for example `.orig`, depending on how
+the patch was created. The example therefore describes a change to
+`make/Config.in`. Specifically, a new package named *newpackage* was
+written and should now be added to menuconfig. The fifth line of the patch
+contains information about where the section to be patched, the hunk, is
+located in the file and how many text lines the patch changes. In the
+example, the patch starts at line 51 and adds one line, `7-6=1`, marked by
+`+`. The same result could be achieved by opening `make/Config.in` in a
+text editor and adding the line `source make/newpackage/Config.in` at the
+described location.
 
-### Erzeugen eines Patches
+### Creating a Patch
 
-Man hat eine Datei (Config.in) geändert und difft sie gegen SVN:
+If you changed a file, `Config.in`, diff it against SVN:
 
 ```
  svn diff Config.in > Config.patch
 ```
 
-Alle Änderungen im Verzeichnis + Unterverzeichnisse:
+All changes in the directory and subdirectories:
 
 ```
 svn diff > all.patch
 ```
 
-Falls man neue Dateien angelegt hat müssen diese erst dem SVN
-hinzugefügt werden:
+If new files were created, they must first be added to SVN:
 
 ```
-svn add Datei- oder Verzeichnisname
+svn add file-or-directory-name
 ```
 
-### Patch anwenden oder rückgängig machen
+### Apply or Revert a Patch
 
-Patch anwenden:
+Apply a patch:
 
 ```
 $ patch -p0 < Config.patch
@@ -76,7 +72,7 @@ patching file Config.in
 $
 ```
 
-Patch rückgängig machen:
+Revert a patch:
 
 ```
 $ patch -Rp0 < Config.patch
@@ -84,7 +80,7 @@ patching file Config.in
 $
 ```
 
-Falls ihr so etwas seht:
+If you see something like this:
 
 ```
 $ patch -p0 < Config.patch
@@ -93,28 +89,28 @@ Hunk #1 FAILED at 1.
 1 out of 1 hunk FAILED -- saving rejects to file Config.in.rej
 ```
 
-Dann passt der Patch nicht mehr und muss erneuert werden.
+then the patch no longer fits and must be renewed.
 
--   TODO (evtl. aus dem
+-   TODO, possibly copy from the
     [ippf-Wiki](http://wiki.ip-phone-forum.de/software:ds-mod:howtos#patches_in_den_ds-mod_einspielen)
-    kopieren)
+    .
 
-### Wie finde ich die zu patchende Stelle?
+### How Do I Find the Place to Patch?
 
-Auf diese Frage muss man primär antworten: Es kommt darauf an, worum es
-geht. Weil das aber hier im Wiki natürlich nicht so befriedigend ist,
-folgen ein paar Tipps von RalfFriedl am konkreten Beispiel von crond
-bzw. dem Frotend dazu, nämlich dem crontab-Fenster im Freetz WebGUI.
+The primary answer to this question is: it depends on what it is about.
+Because that is not very satisfying in the wiki, here are a few tips from
+RalfFriedl using the concrete example of `crond` and its frontend, the
+crontab window in the Freetz WebGUI.
 
-Da cron nicht ein extra Paket ist, sondern zum Freetz Basis-System
-gehört, liegen die Dateien für cron unter dem Verzeichnis
-"make/mod/root/files". Wenn es ein eigenes Paket wäre, z.B. inetd,
-wären die Dateien unter "make/inetd/files/root".
+Because cron is not a separate package but belongs to the Freetz base
+system, the files for cron are under `make/mod/root/files`. If it were a
+separate package, for example `inetd`, the files would be under
+`make/inetd/files/root`.
 
-Im folgenden geht es darum, wie man die Web-Oberfläche von crontab
-ändert und dann patcht. Am einfachsten findet man die Datei, wenn man
-nach einem Text sucht, der sonst hoffentlich selten vorkommt,
-"crontab" scheint hier ein guter Wert zu sein.
+The following explains how to change the crontab web interface and then
+patch it. The easiest way to find the file is to search for text that
+hopefully occurs rarely elsewhere. `crontab` seems to be a good value
+here.
 
 ```
 $ grep -r crontab make 2> /dev/null | fgrep -v /.svn/
@@ -127,52 +123,47 @@ make/mod/files/root/etc/default.mod/crontab.def:CAPTION='Freetz: crontab'
 make/mod/files/root/etc/default.mod/crontab.def:CONFIG_FILE='/tmp/flash/mod/crontab'
 ```
 
-Das suchen in "make" ist nur für den Fall, dass man nicht sicher ist,
-in welchem Verzeichnis sich die Dateien befinden. Wenn man weiss, daß
-cron zum Hauptsystem gehört, kann man direkt in "make/mod/files"
-suchen, dann geht es schneller. Die Umleitung "2\> /dev/null"
-unterdrückt Fehlermeldungen wegen nicht gefundener Dateien/Links.
+Searching in `make` is only necessary if you are not sure which directory
+contains the files. If you know that cron belongs to the base system, you
+can search directly in `make/mod/files`, which is faster. The redirection
+`2> /dev/null` suppresses error messages caused by missing files or links.
 
-Die Ergebnisse in Dateien mit "/.svn/" im Pfad sind hier nicht von
-Bedeutung.
+Results in files with `/.svn/` in the path are not relevant here.
 
-Der Text "crontab" kommt also in den Dateien rc.crond und crontab.def
-vor. Das sagt uns leider noch nicht, was man machen muss, um eine Hilfe
-auf die Seite zu bringen. Also suchen wir einmal nach "Hosts", weil
-auf der Hosts-Seite schon eine Hilfe da ist.
+The text `crontab` occurs in the files `rc.crond` and `crontab.def`. That
+does not yet tell us what needs to be done to add help to the page. So we
+search for `Hosts`, because the Hosts page already has help text.
 
 ```
 $ grep -r Hosts make 2> /dev/null | fgrep -v /.svn/
 ...
 make/mod/files/root/etc/default.mod/hosts.def:CAPTION='Freetz: hosts'
 root/etc/init.d/rc.mod:         modreg file 'exhosts' 'Hosts' 1 "$deffile"
-... und noch viele andere Treffer
+... and many other matches
 ```
 
-Die Definitionsdatei, aus der der Text "hosts" kommt, ist also
-make/mod/files/root/etc/default.mod/hosts.def. Schauen wir uns also mal
-die Datei an:
+The definition file from which the text `hosts` comes is therefore
+`make/mod/files/root/etc/default.mod/hosts.def`. So let us look at the
+file:
 
 ```
 $ cat make/mod/files/root/etc/default.mod/hosts.def
 CAPTION='Freetz: hosts'
 DESCRIPTION='Syntax: &lt;ip&gt; &lt;mac&gt; &lt;interface&gt; &lt;host&gt; [&lt;aliases|#description&gt;]<br>
 ($(lang de:"z.B.: 10.0.0.1 * * www.local mfh1 # Mein Server" en:"e.g. 10.0.0.1 * * www.local mfh1 # my server")) *=&quot;$(lang de:"nicht definiert" en:"not defined")&quot;'
-... der Rest ist hier nicht von Bedeutung
+... the rest is not relevant here
 ```
 
-Wir sehen also, dass die Beschreibung aus dem Eintrag DESCRIPTION kommt,
-der in der Datei make/mod/files/root/etc/default.mod/crontab.def nicht
-vorhanden ist. Man muss also in der Datei
-make/mod/files/root/etc/default.mod/crontab.def einen Eintrag
-DESCRIPTION anlegen.
+We can see that the description comes from the `DESCRIPTION` entry, which
+is not present in `make/mod/files/root/etc/default.mod/crontab.def`. So a
+`DESCRIPTION` entry must be created in
+`make/mod/files/root/etc/default.mod/crontab.def`.
 
-Wenn man will, dass mehrere Sprachen mit \$(lang ...) unterstützt
-werden, dann muss man auch sicherstellen, dass die Datei in der
-passenden Liste hinterlegt ist. Dies ist die datei ".language" im
-Verzeichnis make/\<Paket\>/files.
+If multiple languages should be supported with `$(lang ...)`, make sure
+the file is also listed in the appropriate list. This is the `.language`
+file in the directory `make/<package>/files`.
 
-Die Datei sieht so aus:
+The file looks like this:
 
 ```
 $ cat .language
@@ -189,21 +180,19 @@ files
 }
 ```
 
-Wir sehen hier, dass alle Dateien etc/default.mod/\*.def schon
-inkludiert werden und kein weiterer Eintrag notwendig ist.
+Here we can see that all files `etc/default.mod/*.def` are already
+included and no further entry is necessary.
 
-Die geänderte Datei ist in diesem Fall nur
-make/mod/files/root/etc/default.mod/crontab.def und es geht weiter wie
-unten beschrieben.
+In this case, the only changed file is
+`make/mod/files/root/etc/default.mod/crontab.def`; continue as described
+below.
 
-Hintergrundinfos finden sich in diesem
+Background information can be found in this
 [IPPF-Thread](http://www.ip-phone-forum.de/showthread.php?p=1274104#post1274104).
 
 ### Links
 
-[Wikipedia Artikel zu diff
-(Englisch)](http://en.wikipedia.org/wiki/Diff)
-[Wikipedia Artikel zu patch
-(Englisch)](http://en.wikipedia.org/wiki/Patch_(Unix))
+[Wikipedia article about diff](http://en.wikipedia.org/wiki/Diff)
+[Wikipedia article about patch](http://en.wikipedia.org/wiki/Patch_(Unix))
 
 

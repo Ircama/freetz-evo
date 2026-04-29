@@ -1,294 +1,281 @@
-# ADAM2-Bootloader
+# ADAM2 Bootloader
 
-ADAM2 ist ein Bootloader von Texas Intruments, der ähnliche Aufgaben
-übernimmt wie ein BIOS beim PC. ADAM2 wurde in abgewandelter Form von
-AVM in frühen FRITZBox-Modellen mit Kernel 2.4 eingesetzt, und wich noch
-vor Einführung des Kernels 2.6 der aus Nutzersicht nahezu
-funktionsgleichen Eigenentwicklung EVA. Wegen der vielen Parallelen
-können beide Varianten als "der Bootloader" betrachtet werden, und
-müssen nur in Einzelfällen unterschieden werden.
+ADAM2 is a bootloader from Texas Instruments that performs tasks similar
+to a PC BIOS. ADAM2 was used by AVM in modified form in early FRITZ!Box
+models with kernel 2.4, and even before kernel 2.6 was introduced it gave
+way to AVM's own development EVA, which from a user perspective is almost
+functionally identical. Because of the many parallels, both variants can
+be regarded as "the bootloader" and only need to be distinguished in
+individual cases.
 
-Die Aufgaben des Bootloaders sind:
+The bootloader's tasks are:
 
--   die Hardware zu initialisieren
--   das Flash zu erkennen
--   das RAM zu erkennen und zu prüfen
--   die Partitionierung und grundlegende Werkseinstellungen zu verwalten
--   eine Serielle Konsole bereitzustellen
--   einen kleinen FTP-Server bereitzustellen (für Recovery)
--   das Environment im TFFS zu verwalten
--   das installierte Kernel zu booten
+-   initialize the hardware
+-   detect the flash
+-   detect and test the RAM
+-   manage partitioning and basic factory settings
+-   provide a serial console
+-   provide a small FTP server (for recovery)
+-   manage the environment in TFFS
+-   boot the installed kernel
 
-### Bootloader-Backup anlegen
+### Creating a Bootloader Backup
 
-Wer will kann sich ein Bootloader-Backup anlegen sollte sich aber
-dringend merken von \*genau welcher\* Box das war (MAC-Adresse). Mehr
-dazu um nächsten Abschnitt.
+Anyone who wants to can create a bootloader backup, but should urgently
+remember \*exactly which\* box it came from (MAC address). More about
+that in the next section.
 
-Die Grösse des Bootloaders wird in der Environment-Variable `mtd2`
-gespeichert, die fest im Bootloader selbst eingestellt ist.
+The size of the bootloader is stored in the environment variable `mtd2`,
+which is set permanently in the bootloader itself.
 
-Aus Linux heraus hat diese Partition oft eine von `2` abweichende Nummer
-die man mit folgendem Befehl ausfindig macht:
+From Linux, this partition often has a number other than `2`, which can
+be found with the following command:
 
 ```
 	cat /proc/mtd
 ```
 
-Eine der dort genannten Partitionen nennt sich `bootloader` oder
-`urlader`. Mit deren Nummer (hier z.B. `3`) liesst man dann die
-zugehörige `mtdblock` Device aus:
+One of the partitions listed there is called `bootloader` or `urlader`.
+With its number, here for example `3`, the corresponding `mtdblock`
+device can then be read:
 
 ```
 	cat /dev/mtdblock3 > bootloader.bin
 ```
 
-Siehe auch 'Flash-Partitionen im laufenden Betrieb sichern'.
+See also 'Backing Up Flash Partitions While Running'.
 
-ADAM2 ist immer 64KB gross, EVA bei älteren Modellen 64KB, bei neueren
-Modellen 128KB oder 256KB. Beim IAD 7570 ist die `mtd2` Partition zwar
-256KB, die oberen 128KB sind jedoch leer (0xFF). Dies könnte auf eine
-geplante (aber technisch nicht durchführbare) zweite Instanz des
-Bootloaders deuten. Die Grösse des Bootloader sollte unbedingt beim
-Entwickeln von Aliens beachtet werden. Ein nicht angepasstes `install`
-Script für 64KB Bootloader zerstört einen 128KB Bootloader ohne
-Vorwarnung! Das gilt dann auch für das AVM Webinteface - die Box wird
-vorhersagbar zum Brick.
+ADAM2 is always 64KB, EVA is 64KB on older models and 128KB or 256KB on
+newer models. On the IAD 7570, the `mtd2` partition is 256KB, but the
+upper 128KB are empty (0xFF). This could indicate a planned, but
+technically impractical, second bootloader instance. The bootloader size
+must absolutely be taken into account when developing aliens. An
+unadjusted `install` script for 64KB bootloaders destroys a 128KB
+bootloader without warning. This also applies to the AVM web interface;
+the box will predictably become a brick.
 
-Daher, wer Aliens entwickelt ohne das Environment des Zielgerätes
-geprüft und mit dem `install` Script verglichen zu haben gefährdet
-Geräte. Auch im Trunk sollten daher solche riskanten Experimente nur mit
-Aufwand freischaltbar sein (implementiert: neuer nicht per GUI
-aktivierbarer "Real Developer" Risiko-Modus).
+Therefore, anyone developing aliens without checking the environment of
+the target device and comparing it with the `install` script puts devices
+at risk. Such risky experiments should therefore also be unlockable in
+trunk only with effort (implemented: new non-GUI-activatable "Real
+Developer" risk mode).
 
-### Bootloader überschreiben
+### Overwriting the Bootloader
 
-Kurz: **NEIN!**
+Short answer: **NO!**
 
-Der Bootloader enthält zahlreiche Informationen die eine Box einmalig
-machen, bei vielen WLAN-Modellen auch Kalibrierung ohne die das Gerät
-nicht mehr das selbe ist.
+The bootloader contains many pieces of information that make a box
+unique; on many WLAN models it also contains calibration data without
+which the device is no longer the same.
 
-Eine Übertragung ist daher grober Unfug. Auch wenn man diese Angaben
-korrekt anpassen würde gibt es ein noch fataleres Problem:
+Transferring it is therefore gross nonsense. Even if these details were
+adjusted correctly, there is an even more fatal problem:
 
-Selbst gleiche Modelle wurden je nach Verfügbarkeit mit
-unterschiedlichen Flash- und RAM-Chips bestückt, besonders bei RAM auch
-mit Bausteinen mit erheblich abweichenden Eigenschaften (wie Anzahl der
-Banks und Timing etc.). Diese Unterschiede werden durch undokumentierte
-Konfiguration im Bootloader gesichert. Bootloader-Updates von AVM
-übertragen diese Information.
+Even identical models were equipped with different flash and RAM chips
+depending on availability, especially RAM chips with significantly
+different characteristics such as number of banks, timing, and so on.
+These differences are stored by undocumented configuration in the
+bootloader. AVM bootloader updates transfer this information.
 
-**Ein Bootloader ist auch zwischen gleichen Modellen nicht gefahrlos
-übertragbar!.**
+**A bootloader cannot be transferred safely even between identical
+models.**
 
-Ohne RAM funktioniert auch ein intakter Bootloader nicht ⇒ Brick.
+Without RAM, even an intact bootloader does not work ⇒ brick.
 
-Um die oben erstellte Sicherung \*auf genau die selbe Box\*
-zurückzuspielen \*wäre\* dies der Weg:
+To restore the backup created above \*to exactly the same box\*, this
+\*would\* be the way:
 
 ```
 	cat bootloader.bin > /dev/mtdblock3
 ```
 
-Selbst dann besteht Brickgefahr. Die MTD Treiber blockieren nicht das
-OS. Greift ein anderer Prozess währenddessen z.B. über die ADAM2 API auf
-das Environment zu hängt sich das System eventuell während des Schreib-
-oder Löschvorgangs auf ⇒ Brick.
+Even then there is a brick risk. The MTD drivers do not block the OS. If
+another process accesses the environment during this, for example through
+the ADAM2 API, the system may hang during the write or erase operation ⇒
+brick.
 
-Grundsätzlich sollte man daher den Bootloader nur mit geeigneter AVM
-Firmware schreiben oder wenn man über Werkzeuge zum debricken (EJTAG)
-verfügt.
+In principle, the bootloader should therefore be written only with
+suitable AVM firmware or when tools for debricking (EJTAG) are available.
 
-### Bootloader-Befehle
+### Bootloader Commands
 
--   Die über die Serielle Konsole nutzbaren Befehle findet man im
+-   Commands usable through the serial console can be found in the
     [ADAM2
     Shell](http://www.wehavemorefun.de/fritzbox/ADAM2_Shell)
-    Artikel
--   Die per FTP nutzbaren Befehle findet man im
+    article.
+-   Commands usable through FTP can be found in the
     [TinyFTP](http://www.wehavemorefun.de/fritzbox/TinyFTP)
-    Artikel
+    article.
 
-Bei einigen Modellen wurde aus Sicherheitsgründen die ADAM2 Shell
-entfernt. Dies betrifft keine im freien Handel befindliches Geräte, nur
-Providermodelle wie die FRITZBox Cable.
+On some models, the ADAM2 shell was removed for security reasons. This
+does not affect devices sold through regular retail channels, only
+provider models such as the FRITZ!Box Cable.
 
-Per FTP sind nur Modelle mit mindestens einem LAN-Port erreichbar (und
-recoverbar). Daher eignen sich Modelle ohne LAN (einige Repeater) nicht
-zum Experimentieren oder Freetzen. Grobe Faustregel: Wenn AVM eine
-Recovery bereitstellt ist ein Gerät perfekt zum Freetzen geeignet. Dies
-gilt nicht automatisch für von kleineren Providern bereitgestellte
-Geräte! Diese können sogenannte "Provider Additive" enthalten die
-einen Werksreset überstehen. Neuere Recoveries verweigern bei solchen
-Geräten ihre Funktion, ältere Recoveries zerstören das Additiv (ohne
-"vor Ort" Hilfe des Providers irreparabel). Dies dürfte der Grund sein
-warum AVM die [7570
+Through FTP, only models with at least one LAN port can be reached and
+recovered. Models without LAN, such as some repeaters, are therefore not
+suitable for experiments or for Freetz. Rough rule of thumb: if AVM
+provides a recovery, the device is perfectly suitable for Freetz. This
+does not automatically apply to devices provided by smaller providers.
+They may contain so-called "Provider Additives" that survive a factory
+reset. Newer recoveries refuse to operate on such devices; older
+recoveries destroy the additive, irreparably without on-site help from
+the provider. This is probably why AVM removed the [7570
 Recovery](ftp://ftp.avm.de/fritz.box/fritzbox.fon_wlan_7570/x_misc/english/)
-vom FTP-Server entfernte.
+from the FTP server.
 
-Für AVM Speedports gab es nur werksinterne Recoveries für den
-Telekom-Service. Diese wurden leider nie veröffentlicht.
+For AVM Speedports there were only factory-internal recoveries for
+Telekom service. Unfortunately, these were never published.
 
-**Achtung: Im Netz kursieren auch defekte Speedport (sp2fr) Recoveries
-die jeden Speedport bricken!**
+**Warning: defective Speedport (sp2fr) recoveries that brick every
+Speedport are also circulating on the net.**
 
-Speedports lassen sich mit geringem Aufwand auch sauber mit Freetz
-recovern. Achtung: Howtos, Forenpostings und Windows Tools die MTD3/4
-clean empfehlen sind entweder uralt oder ein stümperhafter
-Faulheitshack! Details zu den teilweise fatalen Folgen dieser fossilen
-Unsitte folgen.
+Speedports can also be recovered cleanly with Freetz with little effort.
+Warning: how-tos, forum posts, and Windows tools recommending MTD3/4
+clean are either ancient or a botched laziness hack. Details about the
+partly fatal consequences of this fossil bad habit follow.
 
-### Bootloader-Quelltext
+### Bootloader Source Code
 
-ADAM2 wurde vielen Abnehmern von TI-Chips bereitgestellt und war
-eigentlich nie quelloffen. Jeder Hersteller von Geräten modifizierte ihn
-dann nach eigenen Bedürfnissen und hielt den Quelltext geschlossen, so
-auch AVM. Auch Linksys nutzte eine modifizierte ADAM2 Version, leakte
-den Quelltext aber versehentlich in einem wag54g Tarball. Damit änderte
-sich nicht der proprietäre Status von ADAM2, er wurde aber zumindest in
-der Linksys Variante "Visible Source" und kann
-[hier](http://gpl.back2roots.org/source/WAG54GV2/src/Adam2/)
-gestöbert werden. Diese Variante ist aber nur sehr beschränkt für die
-FRITZBox aussagekräftig.
+ADAM2 was supplied to many buyers of TI chips and was never actually open
+source. Each device manufacturer then modified it according to its own
+needs and kept the source code closed, including AVM. Linksys also used a
+modified ADAM2 version, but accidentally leaked the source code in a
+wag54g tarball. That did not change ADAM2's proprietary status, but at
+least the Linksys variant became "Visible Source" and can be browsed
+[here](http://gpl.back2roots.org/source/WAG54GV2/src/Adam2/). This
+variant is, however, only of very limited significance for the FRITZ!Box.
 
-Der Quelltext der AVM Variante von ADAM2 wurde nie veröffentlicht.
-Lediglich die [ADAM2
+The source code of AVM's ADAM2 variant was never published. Only the
+[ADAM2
 API](http://gpl.back2roots.org/source/fritzbox/ALL_4.06/GPL-release_kernel/linux/drivers/adam2/)
-zum Erreichen des Environments war quelloffen.
+for reaching the environment was open source.
 
-Der Nachfolger EVA basiert nicht auf ADAM2 und ist ein kompletter
-funktionskompatibler Rewrite. Im Gegensatz zu ADAM2 unterstützt EVA
-direkt komprimierte Kernels und wurde bisher auf mindestens 8
-Architekturen portiert. ADAM2 kam nur auf AR7-Modellen mit Kernel 2.4
-zum Einsatz. Alle von Freetz erzeugte Firmware benötigt Kernel 2.6 und
-EVA.
+The successor EVA is not based on ADAM2 and is a complete,
+function-compatible rewrite. Unlike ADAM2, EVA directly supports
+compressed kernels and has so far been ported to at least 8
+architectures. ADAM2 was used only on AR7 models with kernel 2.4. All
+firmware generated by Freetz requires kernel 2.6 and EVA.
 
-### Aufbau des Bootloaders
+### Bootloader Structure
 
-Am Anfang eines jeden MIPS-Bootloaders befindet sich eine 8-Byte
-"Signatur". In Wirklichkeit handelt es sich um Assembler-Code zur
-Initialisierung des MIPS-Kerns die MIPS netterweise bittet nicht zu
-ändern. Diese Befehlssequenz löscht 2 Hälften eines Debug-Registers
-(Watchpoint Exception bei "Berührung" einer Adresse) die im
-Normalbetrieb nicht genutzt werden und eignen sich auch wegen der Länge
-hervorragend als zuverlässige Signatur. Siehe in diesem
-[Quelltext](http://gpl.back2roots.org/source/WAG54GV2/src/Adam2/src/avreset.S)
-den Kommentar "First thing: clear watch regs".
+At the beginning of every MIPS bootloader there is an 8-byte
+"signature". In reality, it is assembler code for initializing the MIPS
+core, which MIPS kindly asks not to change. This instruction sequence
+clears two halves of a debug register (watchpoint exception when
+"touching" an address) that are not used in normal operation, and because
+of its length it is also excellently suited as a reliable signature. See
+the comment "First thing: clear watch regs" in this
+[source](http://gpl.back2roots.org/source/WAG54GV2/src/Adam2/src/avreset.S).
 
-Für Litte Endian Modelle (AR7, UR8) assembliert dies zur Hexfolge
-`00 90 80 40 00 98 80 40` die immer am Anfang von `mtd2` (also vom
-gesamten Flash) zu finden ist. Bei Big Endian Modellen (AR9, AR10, VR9,
-Fusiv) entspricht es der 32-bit gespiegelten Hexfolge
-`40 80 90 00 40 80 98 00` und es befinden sich grundsätzlich weitere
-Daten davor. Dies ist eine bis zu 1024 Bytes grosse
-[Vektortabelle](https://dev.openwrt.org/browser/trunk/package/uboot-ifxmips/files/cpu/mips/danube/start.S)
-oder Kalt- und Warmstartvektoren und Code zur Initialisierung der
-[hier ab Zeile
-44](http://code.metager.de/source/xref/denx/u-boot/arch/mips/cpu/mips32/start.S#44)
-genannten EBU-Einheit. Beim AR9, AR10 und VR9 sind dies 24 Bytes (Offset
-0x18), beim Fusiv die vollen 1024 Bytes (Offset 0x400). Diese Bytes
-gehören natürlich zum Bootloader, die beiden "Signatur-Befehle"
-verschieben sich dadurch lediglich.
+For Little Endian models (AR7, UR8), this assembles to the hex sequence
+`00 90 80 40 00 98 80 40`, which is always found at the beginning of
+`mtd2`, meaning the entire flash. On Big Endian models (AR9, AR10, VR9,
+Fusiv), it corresponds to the 32-bit mirrored hex sequence
+`40 80 90 00 40 80 98 00`, and additional data is always located before
+it. This is a
+[vector table](https://dev.openwrt.org/browser/trunk/package/uboot-ifxmips/files/cpu/mips/danube/start.S)
+of up to 1024 bytes, or cold and warm start vectors and code for
+initializing the EBU unit mentioned
+[here from line
+44](http://code.metager.de/source/xref/denx/u-boot/arch/mips/cpu/mips32/start.S#44).
+On AR9, AR10, and VR9 this is 24 bytes (offset 0x18), on Fusiv the full
+1024 bytes (offset 0x400). These bytes naturally belong to the
+bootloader; the two "signature instructions" merely shift as a result.
 
-Zum Ausmaskieren von ARM Bootloadern sind diese Signaturen nicht
-geeignet, da ARM Assembler andere Häufigkeitsverteilungen hat. Ein
-zuverlässiger Detektor muss also zuerst ARM Code erkennen. Zum Erkennen
-von Puma5 (ARM1176BE) Bootloadern gibt es auch eine zuverlässige
-Assemblersequenz aus der Lowlevel-Initialisierung. Siehe in
-[diesem](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/cpu/arm1176/puma5/puma5.h)
-und
-[diesem](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/board/tnetc550/lowlevel_init.S)
-Quelltext den Kommentar "Unlock CFG MMR region". Dies assembliert zu
-Code der die Hexfolge `08 61 1A 38 83 E7 0B 13 08 61 1A 3C` enthält.
-Diese Signatur ist leider nicht am Anfang des Bootloaders zu finden. Bei
-der 6360 mit EVA 2070 befindet sie sich an Offset 0xF1AC, also noch in
-den ersten 64KB von Puma5 EVA. Leider stehen keine Recoveries zum Testen
-der Signatur zur Verfügung. Mit Puma5 EVA oder [U-Boot
-Code](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/board/tnetc550/lowlevel_init.o)
-funktioniert sie einwandfrei.
+These signatures are not suitable for masking out ARM bootloaders,
+because ARM assembler has different frequency distributions. A reliable
+detector must therefore first recognize ARM code. There is also a
+reliable assembler sequence from low-level initialization for detecting
+Puma5 (ARM1176BE) bootloaders. See the comment "Unlock CFG MMR region"
+in
+[this](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/cpu/arm1176/puma5/puma5.h)
+and
+[this](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/board/tnetc550/lowlevel_init.S)
+source. It assembles to code containing the hex sequence
+`08 61 1A 38 83 E7 0B 13 08 61 1A 3C`. Unfortunately, this signature is
+not found at the beginning of the bootloader. On the 6360 with EVA 2070
+it is at offset 0xF1AC, still within the first 64KB of Puma5 EVA.
+Unfortunately, no recoveries are available to test the signature. It
+works perfectly with Puma5 EVA or [U-Boot
+code](http://gpl.back2roots.org/source/puma5/netgear/CMD31T_GPL/ti/psp_uboot/src/u-boot-1.2.0/board/tnetc550/lowlevel_init.o).
 
-Ungeachtet des Offsets erkennt man EVA am 32-bit Wert `0x00000002` oder
-`0x00000003` im jeweiligen Endian an Offset 0x580. Dies ist die Version
-(fast immer 2, bei brandaktuellen Modellen auch 3) der EVA
-[Urlader-Konfig](http://www.wehavemorefun.de/fritzbox/ADAM2#Urlader-Konfig)
-in der Teile der Grundeinstellungen im Werk eingetragen werden. Da
-EVA-Images in Firmware keine Konfiguration enthalten ist der Wert dort
-`0xFFFFFFFF`. Auch ADAM2 enthielt Teile dieser Einstellungen, jedoch
-einkompiliert ohne festen Offset.
+Regardless of offset, EVA can be recognized by the 32-bit value
+`0x00000002` or `0x00000003`, in the respective endian, at offset 0x580.
+This is the version (almost always 2, also 3 on very recent models) of
+the EVA
+[Urlader configuration](http://www.wehavemorefun.de/fritzbox/ADAM2#Urlader-Konfig),
+where parts of the basic settings are entered at the factory. Since EVA
+images in firmware contain no configuration, the value there is
+`0xFFFFFFFF`. ADAM2 also contained parts of these settings, but compiled
+in without a fixed offset.
 
-In beiden Bootloadern sind 8 Default-MAC-Adressen `00:04:0E:FF:FF:01` -
-`00:04:0E:FF:FF:08` einkompiliert, die Mindestanforderung für eine
-Kommunikation, sollte die Urlader-Konfig defekt oder noch nicht
-vorhanden sein. Seit Entwicklung des [VoIP Gateway
-5188](http://www.wehavemorefun.de/fritzbox/5188) findet man
-in EVA auch das Environment der zweiten CPU fest einkompiliert, da diese
-über kein eigenes Flash und daher auch kein TFFS und Environment verfügt
-und über NFSRoot bootet. Environment-Variablen können intern nicht nur
-per Name angesprochen werden sondern auch per numerischem Index. Dazu
-wurde eine Liste numerisch ansprechbarer Variablen einkompiliert die
-immer mit `AutoMDIX` anfängt. Bei älteren ADAM2 Urladern endet die Liste
-nach der letzten Variable (z.B. `wlan_key`), bei neueren ADAM2 und EVA
-mit `zuende`. Diese Tabelle ist quelloffen, da sie auch die
-Namenstabelle des TFFS ist, siehe "\#if defined(URLADER)" und
-"_TFFS_Name_Table" in
+Both bootloaders have 8 default MAC addresses compiled in,
+`00:04:0E:FF:FF:01` - `00:04:0E:FF:FF:08`, the minimum requirement for
+communication if the Urlader configuration is defective or not yet
+present. Since development of the [VoIP Gateway
+5188](http://www.wehavemorefun.de/fritzbox/5188), EVA also contains the
+environment of the second CPU compiled in, because that CPU has no flash
+of its own and therefore no TFFS or environment and boots through
+NFSRoot. Environment variables can internally be addressed not only by
+name but also by numeric index. For this purpose, a list of numerically
+addressable variables was compiled in and always starts with `AutoMDIX`.
+In older ADAM2 bootloaders the list ends after the last variable, for
+example `wlan_key`; in newer ADAM2 and EVA it ends with `zuende`. This
+table is open source because it is also the TFFS name table; see
+"\#if defined(URLADER)" and "_TFFS_Name_Table" in
 [tffs.h](http://gpl.back2roots.org/source/fritzbox/7270_5.05/GPL-release_kernel/linux/include/linux/tffs.h).
 
-In allen Recoveries finden sich Fragmente von mindestens einem
-Bootloader. In den Anfängen der FRITZBox wurde identische Firmware für
-mehrere Modelle umbenannt, die Bootloader jedes dieser Modelle waren
-jedoch noch nicht harmonisiert. Entsprechend findet man in Recoveries
-aus dieser Zeit multiple Bootloader-Signaturen, da der modellspezifische
-Teil mehrfach enthalten war, die modellübergreifende Teil jedoch nicht.
+All recoveries contain fragments of at least one bootloader. In the early
+days of the FRITZ!Box, identical firmware was renamed for several models,
+but the bootloaders of those models had not yet been harmonized.
+Accordingly, multiple bootloader signatures are found in recoveries from
+that period, because the model-specific part was included multiple times,
+but the cross-model part was not.
 
-Grundsätzlich ist die Extraktion eines funktionierenden Bootloaders aus
-einer Recovery nicht möglich, da der Bootloader aus in der Recovery
-enthaltenen Codefragmenten und auf der Box befindlichen
-Werkseinstellungen intelligent zusammengebaut wird. Für die
-Modellforschung ist die Auffindbarkeit der Fragmente und deren
-Grundeinstellungen jedoch interessant. Von 436 analysierten Recoveries
-waren etwa 14% ADAM2-MIPSLE, 50% EVA-MIPSLE und die restlichen 36%
-EVA-MIPSBE. Bei allen Proben genügte die Auswertung der letzten 256 KB
-des mit 7zip isolierbaren `.data` Segments jeder Recovery.exe.
+In principle, extracting a working bootloader from a recovery is not
+possible, because the bootloader is intelligently assembled from code
+fragments contained in the recovery and factory settings located on the
+box. For model research, however, the ability to locate the fragments and
+their basic settings is interesting. Of 436 analyzed recoveries, about
+14% were ADAM2-MIPSLE, 50% EVA-MIPSLE, and the remaining 36% EVA-MIPSBE.
+For all samples, analyzing the last 256 KB of the `.data` segment of each
+recovery.exe, isolatable with 7zip, was sufficient.
 
-Bei der Umstellung auf Kernel 2.6 mussten einige Modelle auf EVA
-umgestellt werden. Daher enthalten einige Firmware-Updates ein
-`urlader.image` und passende Programme zur Aktualisierung. In den
-Anfängen gab es auch einige ADAM2-Updates, in denen der Dateiname
-Modell- und Versionsinformation wie
-`urlader.Fritz_Box_4MB.97.adam2.image` enthielt. Im Gegensatz zu den
-Fragmenten in Recoveries sind diese immer "fixed-size" Bootloader mit
-Leerbereichen für zu übertragende Konfiguration.
+During the switch to kernel 2.6, some models had to be switched to EVA.
+Therefore some firmware updates contain a `urlader.image` and matching
+programs for updating. In the beginning there were also a few ADAM2
+updates whose filename contained model and version information, such as
+`urlader.Fritz_Box_4MB.97.adam2.image`. Unlike the fragments in
+recoveries, these are always fixed-size bootloaders with empty areas for
+configuration to be transferred.
 
-In ADAM2 ist die Version des Urladers als Integer in der Form
-`urlader-version \x00 99 \x00` einkompiliert, bevor es diese Variable
-gab in der Form `$ProjectRevision: 1.24 $`, auch mit mehrstelliger
-Version wie in
-[diesem](http://www.akk.org/~enrik/fbox/OLD/boot-06.01.116.txt)
-Bootlog. Bei EVA findet man die Version mit bis zu 3 Bytes Abstand vor
-oder hinter der Zeichenfolge `%d.%s` und es muss 1000 hinzugezählt
-werden. Ein zusätzliches `M` signalisiert eine modifizierte Variante. In
-neueren Recoveries findet man zudem einen `.eva` Dateinamen, z.B. für
-die 7360v2 mit EVA 2717M den String `1717M.eva`. In 436 analysierten
-Recoveries wurden ADAM2 der Versionen 1.20, 1.24, 50 bis 99 und EVA der
-Versionen 1124 bis 2970 entdeckt (Stand 2014-01). Bei 5 EVA 1190
-Recoveries 04.30/31 funktioniert die Versionserkennung nicht, die Nummer
-ist dort irgendwo ab Offset 0xF000 relativ zur Signatur zu finden. Diese
-müssen per MD5 erkannt werden.
+In ADAM2, the bootloader version is compiled in as an integer in the form
+`urlader-version \x00 99 \x00`; before that variable existed, it appeared
+as `$ProjectRevision: 1.24 $`, also with multi-digit versions as in
+[this](http://www.akk.org/~enrik/fbox/OLD/boot-06.01.116.txt) boot log.
+In EVA, the version is found up to 3 bytes before or after the character
+sequence `%d.%s`, and 1000 must be added. An additional `M` indicates a
+modified variant. Newer recoveries also contain a `.eva` filename, for
+example the string `1717M.eva` for the 7360v2 with EVA 2717M. In 436
+analyzed recoveries, ADAM2 versions 1.20, 1.24, 50 to 99 and EVA
+versions 1124 to 2970 were discovered (as of 2014-01). For 5 EVA 1190
+recoveries 04.30/31, version detection does not work; the number is
+somewhere from offset 0xF000 relative to the signature. These must be
+recognized by MD5.
 
-Der älteste in Firmware gefundene Bootloader, ADAM2 Version 1.24, wurde
-in der bisher ältesten bekannten Firmware fritz.box_sl.05.01.63.image
-vom 30. April 2004 (1 Monat nach Vorstellung der ersten FRITZBox auf der
-CeBIT) entdeckt. 4 englische Bootloader der Version 1.20 sind neuer.
-Durch getrennte Weiterentwicklung je Modell können ADAM2 Versionen nicht
-kalendarisch sortiert werden. Der älteste in Firmware gefundene EVA
-Bootloader Version 1124 befindet sich in einer frühen 7170 Recovery.
-EVA-Versionen lassen sich auch erst ab etwa 1600 modellübergreifend
-kalendarisch sortieren.
+The oldest bootloader found in firmware, ADAM2 version 1.24, was
+discovered in the oldest known firmware so far,
+fritz.box_sl.05.01.63.image from 30 April 2004, one month after the
+first FRITZ!Box was presented at CeBIT. Four English bootloaders of
+version 1.20 are newer. Because development was separate per model,
+ADAM2 versions cannot be sorted chronologically. The oldest EVA
+bootloader version found in firmware, version 1124, is in an early 7170
+recovery. EVA versions can only be sorted chronologically across models
+from around 1600 onward.
 
-Recoveries enthalten zwei weitere leicht zu findende Versionsangaben für
-den Programmteil. Über die enthaltenen Firmwarekomponenten sagen sie
-nichts aus. Je 2 Beispiele:
+Recoveries contain two additional easy-to-find version details for the
+program part. They say nothing about the contained firmware components.
+Two examples each:
 
 -   FW 3.37:
     `AVM Berlin recover-tool-version:[RECOVER:53][IO_CSP:11] compiled at Feb 18 2005 on 14:24:36`
@@ -299,45 +286,44 @@ nichts aus. Je 2 Beispiele:
 -   FW 6.01:
     `[AVM Berlin Wizard Base Project, $ProjectRevision: 1.63 $, $Date: 2011/07/04 11:49:20Z $, kompiliert am Jul  8 2013 um 11:45:45]`
 
-Wie man sieht werden die Komponenten GUI (Wizard), Recover- und I/O-Teil
-getrennt entwickelt und kompiliert. Eine heutige Recovery besteht also
-aus mindestens 6 Projekten. Auf älteren FRITZBox CDs (z.B. 3020)
-befindet sich eine recover.exe ohne integrierte Firmware (etwa 100KB)
-der noch ein externes Image bereitgestellt werden musste. Das Programm
-nennt sich `ar7recover` und stammt vom Februar 2004, 1 Monat vor
-Vorstellung der ersten FRITZBox. Dies dürfte wohl die älteste
-veröffentlichte Recovery-Lösung von AVM sein.
+As can be seen, the GUI (Wizard), recovery, and I/O components are
+developed and compiled separately. A modern recovery therefore consists
+of at least 6 projects. On older FRITZ!Box CDs, for example 3020, there
+is a recover.exe without integrated firmware (about 100KB) that still
+required an external image. The program is called `ar7recover` and dates
+from February 2004, one month before the first FRITZ!Box was presented.
+This is probably AVM's oldest published recovery solution.
 
-Jede Recovery erkennt eine Box an der Urlader-Variable `HWRevision`. Da
-der Urlader keinen Zugriff auf den vollständigen Namen eines Modells hat
-enthält jede Recovery eine Liste aller bis zum Erstellungsdatum
-bekannten HWRevisions und deren Modellnamen. Die Liste befindet sich im
-mit `7zip` isolierbaren `.rdata` Segment, bei älteren Recoveries bis
-etwa 04.43 ist sie im `.data` Segment oder nicht vorhanden (bisher nur
-bei einer 03.14). Zweck der Liste ist die menschenlesbare Anzeige des
-gefundenen Modells in der GUI, unabhängig davon ob die Recovery passt.
+Every recovery identifies a box using the Urlader variable `HWRevision`.
+Since the Urlader has no access to the full model name, each recovery
+contains a list of all HWRevisions known up to its creation date and
+their model names. The list is located in the `.rdata` segment isolatable
+with `7zip`; in older recoveries up to about 04.43, it is in the `.data`
+segment or absent (so far only in one 03.14). The purpose of the list is
+the human-readable display of the detected model in the GUI, regardless
+of whether the recovery matches.
 
-Die Liste ist bis zu 3 KB gross und fängt immer mit dem String `unknown`
-an, gefolgt von nullterminierten Paaren HWR / Boxname, mit 32-bit
-Padding je String. Der letzte Eintrag ist immer die `FRITZ!Box SL` und
-ihre HWR `F`. Einige Listen ordnen `unknown` die HWR `K` zu, bei anderen
-folgt direkt der erste Modellname. Die Zuordnungpaare sind leider nicht
-konsistent. So enthält die Liste auch 2 aufeinanderfolgende Namen oder
-Nummern, aber auch Firmennamen wie AVM und Telekom. Sie muss also
-intelligent interpretiert werden. Obwohl die HWR-Liste auch in aktuellen
-Recoveries enhalten ist pflegt AVM sie seit HWR 190 nicht weiter.
-Recoveries höherer Werte haben zusätzlich den Zuordnungseintrag für das
-unterstützte Modell im `.data` Segment, die HWR gefolgt von mehreren
-Nullbytes gefolgt vom Namen. Da bei allen neueren Recoveries das `.data`
-Segment mit der nullterminierten HWR anfängt kann diese als Suchstring
-in den letzten 256 KB des Segments genutzt werden. Ob und wie bei diesen
-Recoveries Fremdmodelle mit HWR \> 190 erkannt werden muss noch geprüft
-werden.
+The list is up to 3 KB and always starts with the string `unknown`,
+followed by null-terminated HWR / box-name pairs, with 32-bit padding per
+string. The last entry is always `FRITZ!Box SL` and its HWR `F`. Some
+lists assign HWR `K` to `unknown`; in others, the first model name
+follows directly. Unfortunately, the assignment pairs are not consistent.
+The list contains, for example, two consecutive names or numbers, but
+also company names such as AVM and Telekom. It therefore has to be
+interpreted intelligently. Although the HWR list is also included in
+current recoveries, AVM has not maintained it since HWR 190. Recoveries
+with higher values additionally contain the assignment entry for the
+supported model in the `.data` segment: the HWR followed by several null
+bytes followed by the name. Since in all newer recoveries the `.data`
+segment starts with the null-terminated HWR, this can be used as a search
+string in the last 256 KB of the segment. Whether and how foreign models
+with HWR \> 190 are recognized in these recoveries still has to be
+checked.
 
-Bei der Analyse von 419 Recoveries mit obigem Wissen wurde die
-Häufigkeitsverteilung ermittelt. Um Konsistenzfehler auszumaskieren
-enthält die Liste nur Zuordnungen die in mindesten 5 Recoveries gefunden
-wurden. Die Zähler für HWR \> 190 wurden zuvor mit 10 multipliziert.
+When analyzing 419 recoveries with the above knowledge, the frequency
+distribution was determined. To mask out consistency errors, the list
+contains only assignments found in at least 5 recoveries. The counters
+for HWR \> 190 were previously multiplied by 10.
 
 ```
 	Count	HWR	Box-Name
@@ -487,62 +473,57 @@ wurden. Die Zähler für HWR \> 190 wurden zuvor mit 10 multipliziert.
 	30	203	FRITZ!Box 7362 SL
 ```
 
-Die HWR am Anfang des `.data` Segments ist Teil einer Struktur, die in
-jeder Recovery mit Kernel 2.6 zu finden ist. Bei neueren Recoveries
-findet sie sich an Offset 0, bei älteren an Offset 64 (0x40). Sie
-Struktur enthält die unterstützte HWR an Offset 0, die Sprache an Offset
-16 (0x10) und die mit Leerzeichen getrennte Liste der unterstützten
-Brandings an Offset 32 (0x20). Dies ist sehr nützlich da z.B. EWE
-Recoveries nicht am Dateinamen erkennbar sind. Ein vierter String dessen
-genauer Zweck noch unklar ist fängt normalerweise an Offset 0x30 an und
-verschiebt sich um jeweils 8 Bytes wenn der Brandings-String länger als
-8 Bytes ist. Bei Congstar (und vermutlich auch Telekom) Recoveries
-enthält er `tcom`, bei allen anderen enthält er unabhängig von Sprache
-und Anbieter immer `avm`.
+The HWR at the beginning of the `.data` segment is part of a structure
+found in every recovery with kernel 2.6. In newer recoveries it is found
+at offset 0, in older ones at offset 64 (0x40). The structure contains
+the supported HWR at offset 0, the language at offset 16 (0x10), and the
+space-separated list of supported brandings at offset 32 (0x20). This is
+very useful because, for example, EWE recoveries are not recognizable by
+filename. A fourth string whose exact purpose is still unclear normally
+starts at offset 0x30 and shifts by 8 bytes each time the branding string
+is longer than 8 bytes. In Congstar, and presumably also Telekom,
+recoveries it contains `tcom`; in all others, independent of language and
+provider, it always contains `avm`.
 
-In allen Kernel 2.4 Recoveries befindet sich am Ende des `.data`
-Segments eine Reihe von mit einem oder mehreren Nullbytes terminierten
-Strings. Dies ist eine 2- oder 3-stellige Zahl unbekannten Zwecks
-(leider nicht die HWR) oder der String `IE`, der optionale String `en`
-oder `de` und die Firmwareversion in punktierter Schreibweise (z.B.
-`29.04.01`) mit dem optionalen Zusatz `-prerelease-<checkpoint>`.
-Dahinter steht der optionale String `avm` oder `freenet`, gefolgt von
-der optionalen Liste der unterstützten Brandings. Lediglich die älteste
-bekannte Recovery mit integrierter Firmware (03.14) enthält diese
-Information nicht. Sie ist deutsch und kannte noch kein Branding. Die
-HWR muss bei Kernel 2.4 Recoveries aus dem Urlader ermittelt werden.
+In all kernel 2.4 recoveries, a series of strings terminated by one or
+more null bytes is located at the end of the `.data` segment. This is a
+2- or 3-digit number of unknown purpose (unfortunately not the HWR) or
+the string `IE`, the optional string `en` or `de`, and the firmware
+version in dotted notation, for example `29.04.01`, with the optional
+suffix `-prerelease-<checkpoint>`. After that comes the optional string
+`avm` or `freenet`, followed by the optional list of supported brandings.
+Only the oldest known recovery with integrated firmware (03.14) does not
+contain this information. It is German and did not yet know branding. For
+kernel 2.4 recoveries, the HWR must be determined from the Urlader.
 
-Der Vergleich der ermittelten Brandings mit den /etc Defaults bestätigt
-die Zuverlässigkeit obiger Methoden, sowohl bei Release- als auch bei
-Labor-Recoveries. Es existieren allerdings 2 Labor-Recoveries die einen
-falschen Bootloader enthalten. Die Datei
-`FRITZ.Box_2110.04.47-9457.recover-image.exe` enthält einen HWR 130
-Bootloader einer nie auf den Markt gekommenen 2121, die Datei
-`fritz.box_fon_wlan_7050.04.50.B.telnet.recover-image.exe` den HWR 94
-Bootloader einer 7170.
+Comparing the detected brandings with the `/etc` defaults confirms the
+reliability of the above methods, both for release and lab recoveries.
+However, there are 2 lab recoveries containing a wrong bootloader. The
+file `FRITZ.Box_2110.04.47-9457.recover-image.exe` contains an HWR 130
+bootloader of a 2121 that never reached the market; the file
+`fritz.box_fon_wlan_7050.04.50.B.telnet.recover-image.exe` contains the
+HWR 94 bootloader of a 7170.
 
-### Bootloader und Freetz
+### Bootloader and Freetz
 
-Da Freetz EVA benötigt sind einige Modelle schon vom Bootloader her
-nicht für Freetz geeignet. Grundsätzlich sollte jede Box vor dem
-Freetzen mit Originalfirmware aktualisiert werden. Dies aktualisiert
-ggf. auch den Bootloader. Für einige ältere Modelle ist evtl. ein
-[Zwischenupdate](ftp://service.avm.de/Zwischenupdate/)
-notwendig.
+Since Freetz requires EVA, some models are unsuitable for Freetz already
+because of the bootloader. In principle, every box should be updated with
+original firmware before applying Freetz. This may also update the
+bootloader. For some older models, an
+[intermediate update](ftp://service.avm.de/Zwischenupdate/) may be
+necessary.
 
-Für folgende Modelle existiert kein EVA Update:
+No EVA update exists for the following models:
 
--   FRITZBox (alle Versionen)
--   FRITZBox SL
--   FRITZBox 2030
--   FRITZBox Fon (Deutsch A/CH Annex A+B) - mit Tricks evtl. deutsch
-    oder englisch aktualisierbar
--   FRITZBox Fon ata (alle Versionen)
--   FRITZBox Fon WLAN (Deutsch A/CH Annex A+B) - mit Tricks evtl.
-    deutsch oder englisch aktualisierbar
+-   FRITZ!Box (all versions)
+-   FRITZ!Box SL
+-   FRITZ!Box 2030
+-   FRITZ!Box Fon (German A/CH Annex A+B) - possibly updatable to German
+    or English with tricks
+-   FRITZ!Box Fon ata (all versions)
+-   FRITZ!Box Fon WLAN (German A/CH Annex A+B) - possibly updatable to
+    German or English with tricks
 
-Für einige dieser Modelle könnte Freetz ein EVA Update einer anderen Box
-Alien patchen. Bei der FRITZBox SL und 2030 mit 2MB Flash und 8MB RAM
-wird es wohl nie Freetz geben.
-
-
+For some of these models, Freetz could patch an EVA update from another
+box as an alien. For the FRITZ!Box SL and 2030 with 2MB flash and 8MB
+RAM, there will probably never be Freetz.

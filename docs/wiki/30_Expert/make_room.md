@@ -1,53 +1,45 @@
-# Platz sparen im Dateisystem der FritzBox
+# Saving Space in the FRITZ!Box Filesystem
 
-### Vorwort und Motivation
+### Foreword and Motivation
 
-Dass der Speicherplatz im Dateisystem der FritzBox - insbesondere bei
-den heute noch verbreiteten "kleinen" Routern wie der 5050 oder der
-7050 - begrenzt ist, dürfte jedem Modder klar sein, der schon einmal
-entsprechende Fehlermeldungen von `fwmod` während des Zusammenbauens der
-Firmware (FW) gesehen hat und daraufhin anfangen mußte zu überlegen,
-welche Freetz-Pakete er weglässt. Diskutiert wird über dieses Problem
-bspw. im IPPF-Thread [7050 zu eng: DS-Mod-Teile manuell auf
-externe Platte
-auslagern](http://www.ip-phone-forum.de/showthread.php?t=132936),
-aber auch woanders.
+Every modder who has ever seen corresponding `fwmod` error messages while
+assembling firmware (FW), and then had to start thinking about which
+Freetz packages to leave out, knows that space in the FRITZ!Box
+filesystem is limited, especially on still common "small" routers such
+as the 5050 or 7050. This problem is discussed, for example, in the IPPF
+thread [7050 too tight: manually move DS-Mod parts to an external
+drive](http://www.ip-phone-forum.de/showthread.php?t=132936), and also
+elsewhere.
 
-Ohne ein hier ein fertiges "Abspeck-Werkzeug" präsentieren zu wollen,
-möchte ich an dieser Stelle einfach mal übersichtshalber zusammenfassen,
-welche Mittel und Wege mir derzeit einfallen würden, wenn ich Platz
-sparen müsste auf meiner Box. Es geht darum, Hilfe zur Selbsthilfe zu
-leisten und ein paar Gedanken mit auf den Weg zu geben, um es jedem zu
-ermöglichen, die ihm am erfolgversprechendsten erscheinenden Wege weiter
-zu verfolgen. Weder erhebt diese kleine Übersicht Anspruch auf
-Vollständigkeit noch auf absolute Korrektheit oder Praxiserprobtheit.
-Mit meiner 7170 habe ich momentan keine Platzprobleme, da ich auch nicht
-der Typ bin, der "alles" auf seiner Box laufen haben möchte - übrigens
-schon der erste und mit effektivste Weg zum Sparen: nicht übertriebene,
-aber angemessene Bescheidenheit und Konzentration aufs Notwendige.
+Without presenting a finished "slimming tool" here, I would simply like
+to summarize, for clarity, the means and methods that currently come to
+mind if I had to save space on my box. The goal is to provide help for
+self-help and a few ideas so everyone can pursue the paths that seem most
+promising to them. This small overview claims neither completeness nor
+absolute correctness or practical proof. I currently have no space
+problems with my 7170, because I am also not the type who wants to run
+"everything" on the box. Incidentally, that is already the first and one
+of the most effective ways to save space: not exaggerated, but
+appropriate modesty and concentration on what is necessary.
 
-### Bestandsaufnahme: Wo stecken die Platzfresser?
+### Inventory: Where Are the Space Hogs?
 
-Bevor wir darüber nachdenken, an welchen Ecken wir sparen können,
-sollten wir uns zunächst einen Überblick darüber verschaffen, wo am
-meisten Platz verbraucht wird. Im zweiten Schritt unterscheiden wir dann
-zwischen notwendigen und überflüssigen Platzfressern, im Folgenden PFs
-genannt. Schließlich gehen wir nach dem
-[Pareto-Prinzip](http://de.wikipedia.org/wiki/Pareto-Verteilung#Pareto-Prinzip)
-vor, um mit überschaubarem Aufwand einen möglichst hohen Effekt zu
-erzielen.
+Before we think about where we can save, we should first get an overview
+of where the most space is used. In the second step, we distinguish
+between necessary and unnecessary space hogs, called SHs below. Finally,
+we proceed according to the
+[Pareto principle](http://de.wikipedia.org/wiki/Pareto-Verteilung#Pareto-Prinzip)
+to achieve the greatest possible effect with manageable effort.
 
-### Schritt 1: Untersuchung Original-Firmware
+### Step 1: Examine the Original Firmware
 
-Welche Dateien verbrauchen am meisten Platz in der Original-Firmware?
-Dazu schauen wir uns am einfachsten nach einem `make` das Verzeichnis
-an, in welchem die entpackten Firmware-Dateien abgelegt sind:
-`build/original/filesystem`. Mit folgendem Befehl durchsuchen wir das
-Verzeichnis nach Dateien (`find -type f`) und übergeben all diese
-Dateien dem `ls`-Befehl, um diesen dazu veranlassen, sie nach ihrer
-Größe absteigend zu sortieren. Als Beispiel diene hier die AVM-FW
-29.04.29 für die Box vom Typ 7170. (Der Übersicht halber lasse ich
-unwichtige Spalten der Ergebnisliste weg.)
+Which files consume the most space in the original firmware? The easiest
+way to check this after a `make` is to look at the directory where the
+unpacked firmware files are stored: `build/original/filesystem`. With the
+following command we search the directory for files (`find -type f`) and
+pass all those files to `ls`, causing it to sort them by size in
+descending order. As an example, here is AVM firmware 29.04.29 for the
+7170. For clarity, I omit unimportant columns from the result list.
 
 ```
 	$ cd build/original/filesystem
@@ -86,42 +78,36 @@ unwichtige Spalten der Ergebnisliste weg.)
 	 102472 sbin/fdisk
 ```
 
-Jetzt kann man anfangen zu überlegen, was wohl verzichtbar wäre. Eine
-Busybox oder den DSL-Daemon wegzulassen, ergibt keinen Sinn - eher
-schon, bei der Busybox auf unnötige Applets zu verzichten. Mancher mag
-sich überlegen, dass er die WLAN-Bestandteile nicht braucht, stattdessen
-vielleicht lieber mehr Platz für OpenVPN schaffen möchte. Das ist nur
-ein Beispiel und unabhängig davon, ob die Box ohne die WLAN-Binaries
-überhaupt sauber startet (Kommentar: Das WLAN-Modul, tiap.ko, lässt sich
-ohne Probleme entfernen). Wenn man die Dateien weglässt, sollte man z.B.
-dafür sorgen, daß die entsprechenden Dienste deaktiviert werden oder in
-den entsprechenden Startskripten ggf. Dinge zur Sicherheit
-auskommentiert werden. Bei anderen Programmen fällt die Entscheidung
-wieder leichter: `fdisk` braucht man beispielsweise im Normalfall nicht,
-solange man nicht mit `mkfs.ext2` ein Dateisystem anlegen möchte. Ein
-bisschen sparen kann man also, indem man es weglässt, vielleicht die
-entscheidenden KB, damit eine andere Erweiterung auf die Box passt. Für
-andere Kandidaten wie die
-libtr069 gibt es bei den
-kleinen Boxen sogar schon Schalter in der
-Menükonfiguration von
-Freetz, um sie wegzulassen. Im Allgemeinen untersucht man die
-Startdateien unter `/etc/init.d`, um herauszufinden, ob und wann eine
-bestimmte Datei geladen wird. Bei benötigten Bibliotheken ist die
-Analyse etwas schwieriger, aber auch möglich.
+Now you can start thinking about what might be dispensable. Leaving out
+Busybox or the DSL daemon makes no sense; it makes more sense to omit
+unnecessary applets from Busybox. Some may consider not needing the WLAN
+components and instead wanting more space for OpenVPN. That is only an
+example, independent of whether the box starts cleanly without the WLAN
+binaries. Comment: the WLAN module, `tiap.ko`, can be removed without
+problems. If files are omitted, the corresponding services should be
+disabled or, if necessary, things should be commented out in the relevant
+startup scripts for safety. With other programs, the decision is easier:
+normally `fdisk` is not needed unless you want to create a filesystem
+with `mkfs.ext2`. So a little space can be saved by leaving it out,
+perhaps the decisive kilobytes that let another extension fit onto the
+box. For other candidates such as `libtr069`, the small boxes already
+have switches in the Freetz menu configuration to omit them. In general,
+inspect the startup files under `/etc/init.d` to find out whether and
+when a particular file is loaded. For required libraries, the analysis is
+somewhat more difficult, but also possible.
 
-### Schritt 2: Untersuchung Mod-Firmware
+### Step 2: Examine the Mod Firmware
 
-Das Gleiche, was wir gerade für die Original-Firmware gemacht haben, tun
-wir nun für die nach unseren Wünschen konfigurierte Mod-Firmware. Selbst
-wenn diese evtl. nicht erfolgreich gebaut werden konnte, weil z.B. der
-Platz nicht genügte, sehen wir doch das erzeugte Dateisystem unter
-`build/modified/filesystem`. Es folgt ein Beispiel von meiner 7170 mit
-Mod-Version ds-0.2.9_26-14.2 und, grob gesprochen, folgenden
-aktivierten Optionen und Erweiterungen: 1&1-Branding, keine Hilfetexte
-und Assistenten, Original-Kernel, Bftp, Callmonitor, Cifsmount, Dropbear
-(nur Server), MC, Mini_fo, Samba, Screen, Syslogd-CGI, WoL-CGI, Lua,
-Matrixtunnel. Das sieht dann so aus:
+We now do the same thing we just did for the original firmware with the
+mod firmware configured according to our wishes. Even if it perhaps could
+not be built successfully because, for example, there was not enough
+space, we can still see the generated filesystem under
+`build/modified/filesystem`. The following example is from my 7170 with
+mod version ds-0.2.9_26-14.2 and, roughly speaking, these enabled
+options and extensions: 1&1 branding, no help texts and assistants,
+original kernel, Bftp, Callmonitor, Cifsmount, Dropbear (server only),
+MC, Mini_fo, Samba, Screen, Syslogd-CGI, WoL-CGI, Lua, Matrixtunnel. It
+looks like this:
 
 ```
 	$ cd build/modified/filesystem
@@ -171,11 +157,11 @@ Matrixtunnel. Das sieht dann so aus:
 	 102472 sbin/fdisk
 ```
 
-Wir erkennen: Samba, MC und Screen scheinen recht groß zu sein, aber so
-richtig übersichtlich ist das Ganze nicht, denn die zuvor analysierten
-Dateien der Original-Firmware sind ja immer noch in der Liste. Wenn wir
-nur die exklusiv im Mod vorkommenden sehen wollen, müssen wir erst ein
-bißchen aussieben:
+We can see that Samba, MC, and Screen seem quite large, but the whole
+thing is not really clear yet because the files from the original
+firmware analyzed earlier are still in the list. If we want to see only
+those that occur exclusively in the mod, we first have to filter a
+little:
 
 ```
 	$ cd build
@@ -211,53 +197,49 @@ bißchen aussieben:
 	  10684 lib/modules/2.6.13.1-ohio/kernel/net/ipv4/netfilter/ipt_LOG.ko
 ```
 
-Wir sehen Verschiedenes: *Samba* ist tatsächlich ein Platzfresser, wenn
-man *smbd* und *nmbd* zusammenzählt. *MC* mit *ncurses* ist auch nicht
-zu verachten - evtl. könnten wir wenigstens die Hilfedatei *mc.hlp*
-weglassen. Allerdings muß man bei textlastigen Dateien wie der MC-Hilfe
-aufpassen und die Erwartungen nicht zu hoch schrauben: **Unsere
-Vergleiche hinken im Grunde alle, denn wir müßten uns die Dateien
-LZMA-komprimiert anschauen, um einen Eindruck davon zu erhalten, wieviel
-Platz sie in einem SquashFS auf der Box wirklich brauchen würden.
-Textdateien z.B. sind extrem stark komprimierbar. Sie also wegzulassen,
-bringt oft weniger als erhofft.**
+We see several things: *Samba* is indeed a space hog when *smbd* and
+*nmbd* are counted together. *MC* with *ncurses* is also not to be
+ignored; perhaps we could at least leave out the help file *mc.hlp*.
+However, with text-heavy files such as the MC help, expectations should
+not be too high: **all our comparisons are basically flawed, because we
+would have to look at the files LZMA-compressed to get an impression of
+how much space they would actually need in SquashFS on the box. Text
+files, for example, are extremely compressible. Leaving them out often
+saves less than hoped.**
 
-Was noch auffällt, sind diverse *Netfilter*-Bibliotheken, die wohl mit
-in die Firmware kopiert wurden, als ich mal testweise *Iptables*
-kompiliert habe. Offensichtlich bleibt dabei so Manches übrig, das gar
-nicht hinein gehört in die FW, weil es längst abgewählt wurde. Das gilt
-übrigens auch für so manche Shared Library und diverse Kernelmodule.
-Also hier bitte aufpassen und kontrollieren, evtl. mal die
-entsprechenden Verzeichnisse leeren oder, falls man nicht weiß, wo man
-hinfassen soll, mal neu aufsetzen und mit korrekt eingestellter
-Konfiguration (Datei `.config`) von vorne anfangen.
+What also stands out are various *Netfilter* libraries that were probably
+copied into the firmware when I once compiled *Iptables* as a test.
+Obviously, quite a few things remain that do not belong in the firmware
+anymore because they have long since been deselected. This also applies
+to some shared libraries and various kernel modules. So please pay
+attention and check; perhaps empty the corresponding directories, or if
+you do not know where to touch, start over with a correctly set
+configuration file (`.config`).
 
-### Schritt 3: Vorher-Nachher-Vergleich existierender Dateien
+### Step 3: Before-and-After Comparison of Existing Files
 
-Wir haben uns bisher alte und neue Dateien angeschaut, aber nicht
-geprüft, ob sich gleichnamige, in beiden FW-Versionen vorhandene Dateien
-evtl. signifikant in der Größe geändert haben. Auch das kann uns evtl.
-Hinweise darauf geben, wo man noch sparen kann, wenngleich vermutlich in
-geringerem Umfang. Aber wer den Heller nicht ehrt, ...
+So far we have looked at old and new files, but have not checked whether
+files with the same names that exist in both firmware versions have
+possibly changed significantly in size. This can also give hints about
+where space can still be saved, although probably to a lesser extent. But
+every little bit counts.
 
-Das folgende Shell-Skript mag etwas verwirrend sein, und optimal
-programmiert ist es sicher nicht, aber es dient seinem Zweck. (Ich kann
-übrigens nicht mit *Awk* umgehen, sonst wäre das Ganze vermutlich
-übersichtlicher geworden.) Was es tut, ist Folgendes:
+The following shell script may be a little confusing and is certainly not
+programmed optimally, but it serves its purpose. I cannot use *awk*, by
+the way, otherwise the whole thing would probably have become clearer.
+What it does is this:
 
--   zwei Dateilisten generieren (wie oben schon gesehen)
--   in beiden Listen auftauchende Dateinamen herausfiltern (d.h. übrig
-    lassen)
--   ein weiteres Shell-Skript erzeugen und ausführbar machen
--   das Shell-Skript ausführen
--   Das Skript selbst gibt für alle gemeinsamen Dateien die
-    Größendifferenz (neu minus alt) in Bytes und den Pfadnamen aus.
--   Die Ergebnisliste wird aufsteigend sortiert und gefiltert (Dateien
-    ohne Unterschied in der Größe werden eliminiert).
--   Uns interessieren dann die Dateien mit den größten absoluten
-    Unterschieden. Negative Werte bedeuten dabei Platzersparnis
-    gegenüber der Original-Firmware, positive zusätzlich beanspruchten
-    Speicherplatz.
+-   generate two file lists, as already seen above
+-   filter out file names that appear in both lists, that is, keep them
+-   generate another shell script and make it executable
+-   execute the shell script
+-   the script itself outputs, for all common files, the size difference
+    (new minus old) in bytes and the path name
+-   the result list is sorted ascending and filtered; files without a
+    size difference are eliminated
+-   we are then interested in the files with the largest absolute
+    differences. Negative values mean space saved compared with the
+    original firmware; positive values mean additional space used.
 
 ```
 	$ cd build
@@ -282,153 +264,140 @@ programmiert ist es sicher nicht, aber es dient seinem Zweck. (Ich kann
     183108 bin/busybox
 ```
 
-Wir erkennen in diesem Fall nichts Aufregendes: Die *uClibc* wurde ca.
-12 KB kleiner, die *Busybox* allerdings um ca. 180 KB größer. Das ist
-doch nicht zu vernachlässigen. Allerdings kann die *Busybox* damit auch
-mehr als das Original.
+In this case we see nothing exciting: *uClibc* became about 12 KB
+smaller, while *Busybox* became about 180 KB larger. That is not
+negligible. However, Busybox can also do more than the original.
 
-War das jetzt umsonst? Nein! Denn wenn wir das Gleiche mal bei der
-7050-FW machen, sehen wir, daß dort die *libgcc_s*, wenn sie denn in
-der Konfiguration ausgewählt und somit ersetzt wurde, von 215 auf knappe
-60 KB schrumpft (siehe
-[dort](http://www.ip-phone-forum.de/showpost.php?p=840715&postcount=17)).
-Das liegt daran, daß in dieser FW-Version das Original - wohl
-versehentlich - nicht gestrippt oder gar mit zusätzlicher
-Debug-Information freigegeben wurde. Ergo: Wer eine FW modifiziert und
-Platz sparen möchte, sollte tunlichst auch auf scheinbare Kleinigkeiten
-achten.
+Was that useless? No. If we do the same with the 7050 firmware, we see
+that *libgcc_s*, if selected in the configuration and therefore replaced,
+shrinks from 215 KB to just under 60 KB; see
+[there](http://www.ip-phone-forum.de/showpost.php?p=840715&postcount=17).
+This is because in that firmware version the original was apparently
+released by mistake without being stripped, or even with additional debug
+information. Therefore, anyone modifying firmware and wanting to save
+space should also pay attention to seemingly small details.
 
-### Weitere Spartricks
+### More Space-Saving Tricks
 
-### Auslagerung von Dateien
+### Moving Files Out
 
-Eine Möglichkeit mit viel Potential ist das Auslagern von Dateien,
-entweder auf direkt zugreifbare USB-Datenträger (Speicherstift,
-Festplatte) oder auf Netzlaufwerke, die mittels NFS, Cifsmount oder
-Smbmount beim Hochfahren der Box eingebunden werden, so daß die erst
-nach dem Einbinden (Mounten) benötigten Dateien direkt vom externen
-Speicher bzw. übers Netz geladen werden können. Damit kann man eine
-Firmware in `build/modified` bauen, die eigentlich zu groß ist für ein
-Image und abbricht beim Bauen, welche man jedoch hinterher so verändert,
-daß große Dateien durch Symlinks auf die zu mountenden Speicher ersetzt
-werden. Die entnommenen Dateien werden entsprechend bereitgestellt, das
-ausgedünnte `build/modified` im zweiten Durchgang erfolgreich zu einem
-Image verbaut. Die Startskripten der FW wurden vorher ebenfalls
-entsprechend angepaßt.
+One option with great potential is moving files out, either to directly
+accessible USB storage devices such as sticks or hard drives, or to
+network drives mounted while the box boots using NFS, Cifsmount, or
+Smbmount, so that files needed only after mounting can be loaded directly
+from external storage or over the network. This allows firmware to be
+built in `build/modified` that is actually too large for an image and
+would abort during building, but which is then changed so large files are
+replaced by symlinks to the storage to be mounted. The removed files are
+provided accordingly, and the thinned-out `build/modified` is
+successfully built into an image on the second pass. The startup scripts
+of the firmware were also adjusted beforehand accordingly.
 
-*Update 05.10.2007:* Bereits seit ds26-15.1 ist das Paket
+*Update 2007-10-05:* Since ds26-15.1, the package
 [Downloader-CGI](http://www.ip-phone-forum.de/showthread.php?t=134934)
-Bestandteil des DS-Mod. Es erleichtert das automatische Herunterladen
-von Dateien beim Start der Box.
+has been part of DS-Mod. It makes automatic downloading of files at box
+startup easier.
 
-### Komprimierte Binaries und Nutzdaten
+### Compressed Binaries and Payload Data
 
-Eine häufig geäußerte Idee im IPPF ist, man könne doch beispielsweise
-einen EXE-Packer verwenden, um die Binaries zu verkleinern. Das ist
-**ziemlich sinnlos** und kostet nur unnötig Rechenzeit, denn das
-SquashFS (Dateisystem der Boxen) ist bereits so extrem gut komprimiert,
-daß eine weitere Kompression gar nicht zum Tragen kommen würde (siehe
-[dort](http://www.ip-phone-forum.de/showthread.php?p=832868&highlight=lzma#post832868)).
-Warum das manchmal dazu führt, daß eine scheinbar große weggelassene
-Datenmenge kaum Ersparnisse bei der FW-Größe bringt, sofern es sich um
-gut komprimierbare Daten handelt, erkläre ich [in diesem
-Beitrag](http://www.ip-phone-forum.de/showthread.php?p=844325&highlight=lzma#post844325).
+An often voiced idea in IPPF is that one could use an EXE packer, for
+example, to shrink binaries. This is **rather pointless** and only costs
+unnecessary CPU time, because SquashFS, the filesystem of the boxes, is
+already compressed so extremely well that further compression would not
+really take effect; see
+[there](http://www.ip-phone-forum.de/showthread.php?p=832868&highlight=lzma#post832868).
+Why this sometimes leads to an apparently large amount of omitted data
+barely saving firmware size, if the data is highly compressible, is
+explained [in this
+post](http://www.ip-phone-forum.de/showthread.php?p=844325&highlight=lzma#post844325).
 
-### Ältere bzw. alternative Software-Versionen
+### Older or Alternative Software Versions
 
-Oft wird im [IPPF](http://www.ip-phone-forum.de/)
-gefragt, weshalb beispielsweise der *Midnight Commander (mc-4.5.0)* oder
-*Samba 2.0.10* so alte Stände haben. Das hängt teilweise einfach damit
-zusammen, daß die alten Versionen vom Leistungsumfang her ausreichen,
-dafür aber viel kleiner sind als die neueren Versionen mit mehr
-Features. Im Falle des *MC* kommt noch dazu, daß neuere Versionen gegen
-Bibliotheken gelinkt sind, welche über das, was die *uClibC* als
-*libc*-Ersatz bietet, ein wenig hinaus gehen und das Ersetzen
-entsprechender Aufrufe durch eigene Makros einen großen Aufwand bedeuten
-würde.
+People often ask in [IPPF](http://www.ip-phone-forum.de/) why, for
+example, *Midnight Commander (mc-4.5.0)* or *Samba 2.0.10* are such old
+versions. This is partly simply because the old versions are sufficient
+in functionality, but much smaller than newer versions with more
+features. In the case of *MC*, newer versions are also linked against
+libraries that go a little beyond what *uClibC* offers as a *libc*
+replacement, and replacing corresponding calls with custom macros would
+mean a lot of effort.
 
-Weitere Sparmöglichkeiten bestehen in der Suche nach Alternativen zu
-bekannten Softwarepaketen. Beispiele:
+Further saving opportunities consist of looking for alternatives to known
+software packages. Examples:
 
--   *Matrixssl* ist kleiner als *OpenSSL*, genügt aber oft, z.B. um
-    einen HTTPS-Tunnel zu bauen. Nur wenn auf SSL-Bibliotheken
-    aufsetzende Software wie *OpenVPN* nicht mit *Matrixssl*
-    funktionieren, man aber glaubt, diese zu brauchen, bleibt keine
-    Wahl.
--   *Deco* ist kleiner als *MC*, dafür aber auch wesentlich weniger
-    leistungsfähig.
--   Die *Rudi-Shell* ist phantastisch klein, kann aber sehr viel. Sie
-    führt beliebige Shell-Skripten aus, hat eine Befehlshistorie, kann
-    Dateien von und zur Box transferieren (sogar komprimiert) und taugt
-    sogar zum Remote-Flashen der Box. Mittels *Matrixtunnel* wird sie
-    ein funktional (nicht komfortmäßig) vollwertiger Ersatz für *SSH*
-    bei weit geringerem Platzbedarf und ohne die Notwendigkeit, einen
-    SSH-Zugang zu haben, was hinter manchen Firewalls einfach nicht
-    erlaubt ist, weil es nur einen Web-Proxy für HTTP und HTTPS gibt.
-    Rudi + Matrixtunnel genügt dies. Einen *vi* kann Rudi zwar nicht
-    remote bedienbar machen, aber dafür kann man ja einfach Dateien hin
-    und her übertragen. Lokal bequem editieren, zurück auf die Box -
-    fertig!
--   *Cifsmount* stellt Verbindungen zu Windows- und Samba-Freigaben her,
-    ist aber deutlich kleiner als *Smbmount*.
--   *Mini_fo* kleiner als *UnionFS*, läuft aber sehr stabil (bisher
-    keine mir bekannten Fehlermeldungen dazu im Forum). Dafür kann man
-    einen *Mini_fo*-Mount nicht über NFS exportieren, aber wer braucht
-    das schon? Außerdem gibt es Samba, damit geht es.
--   *Perl* oder *PHP* würden die FritzBox ressourcentechnisch
-    überlasten - *Lua* nicht. *Lua* ist eine sehr schlanke und dabei
-    einfach zu lernende und leistungsfähige Skriptsprache, nicht nur für
-    CGI. *Update 05.10.2007:* Inzwischen habe ich gelernt, daß Apache +
-    PHP, die man jetzt auch per Freetz bauen kann, sehr wohl stabil und
-    performant auf der FritzBox laufen, aber der Platzverbrauch ist
-    enorm. Und ums Platzsparen geht es ja hier.
--   A propos CGI-Handling: *Haserl* ist klein und leistet alles, was ich
-    auf der Box brauche. Da brauche ich nicht einmal *Lua*, und manchmal
-    verzichte ich sogar auf Haserl, weil es ein Shellskript tut.
+-   *Matrixssl* is smaller than *OpenSSL* but is often sufficient, for
+    example to build an HTTPS tunnel. Only if software based on SSL
+    libraries, such as *OpenVPN*, does not work with *Matrixssl* and you
+    believe you need it, is there no choice.
+-   *Deco* is smaller than *MC*, but also significantly less powerful.
+-   The *Rudi Shell* is fantastically small but can do a lot. It executes
+    arbitrary shell scripts, has a command history, can transfer files to
+    and from the box, even compressed, and is even suitable for remotely
+    flashing the box. Together with *Matrixtunnel*, it becomes a
+    functionally, though not comfortably, full replacement for *SSH* with
+    far lower space requirements and without the need for SSH access,
+    which behind some firewalls is simply not allowed because there is
+    only a web proxy for HTTP and HTTPS. Rudi + Matrixtunnel is enough
+    for that. Rudi cannot make *vi* remotely controllable, but files can
+    simply be transferred back and forth instead. Edit locally in comfort,
+    send back to the box, done.
+-   *Cifsmount* connects to Windows and Samba shares but is significantly
+    smaller than *Smbmount*.
+-   *Mini_fo* is smaller than *UnionFS* but runs very stably; so far I do
+    not know of any error reports about it in the forum. A *Mini_fo*
+    mount cannot be exported via NFS, but who needs that? Besides, there
+    is Samba, and that works.
+-   *Perl* or *PHP* would overload the FritzBox in terms of resources;
+    *Lua* would not. *Lua* is a very lean, easy-to-learn, and powerful
+    scripting language, not only for CGI. *Update 2007-10-05:* I have
+    since learned that Apache + PHP, which can now also be built with
+    Freetz, can indeed run stably and performantly on the FritzBox, but
+    the space consumption is enormous. And saving space is what this is
+    about.
+-   Speaking of CGI handling: *Haserl* is small and provides everything I
+    need on the box. I do not even need *Lua* for that, and sometimes I
+    even skip Haserl because a shell script is enough.
 
-### Firmware-Patches aus Menuconfig
+### Firmware Patches from Menuconfig
 
-Schon seit langer Zeit gibt es Firmware-Patches, die nicht benötigte
-Original-Bestandteile aus dem FW-Image entfernen und Platz für
-Zusatz-Pakete schaffen. Dabei muß jeder selbst entscheiden, ob er
-Hilfetexte und Assistenten für die AVM-Weboberfläche, den
-Original-AVM-Webserver selbst (durch BusyBox-httpd ersetzbar), UPnP,
-DSL, VoIP, Kindersicherung usw. benötigt.
+For a long time there have been firmware patches that remove unneeded
+original components from the firmware image and create room for
+additional packages. Everyone has to decide for themselves whether they
+need help texts and assistants for the AVM web interface, the original
+AVM web server itself (replaceable by BusyBox httpd), UPnP, DSL, VoIP,
+parental controls, and so on.
 
-Wer z.B. seine Box als reinen IP-Client betreibt, der über einen
-weiteren vorgeschalteten Router die Internet-Verbindung bekommt und auch
-keine PPoE-Anmeldung benötigt, kann viel Platz sparen mit einem
-entsprechenden Patch, welcher *dsld* plus Zubehör aus der Firmware
-entfernt. Normalanwender benutzen die Box als DSL-Router und können den
-Patch dann eben nicht anwenden.
+For example, anyone running their box purely as an IP client that gets
+internet access through an upstream router and does not need PPPoE login
+can save a lot of space with a corresponding patch that removes *dsld*
+and accessories from the firmware. Normal users use the box as a DSL
+router and then cannot apply that patch.
 
-Beispiel Webserver: Auf den AVM-Webserver kann man nach heutigem
-Wissensstand problemlos verzichten und stattdessen den kleineren und
-ressourcenschonenderen *httpd* verwenden, der für Freetz ohnehin benutzt
-wird. Leider wurde der AVM-Server bei neueren Firmwares (Neue
-AVM-Weboberflächen seit etwa Mitte-Ende 2007) anders realisiert, sodass
-der *httpd*-Ersatz nicht mehr möglich ist.
+Example web server: according to current knowledge, the AVM web server
+can be dispensed with without problems and replaced by the smaller,
+more resource-friendly *httpd*, which is used by Freetz anyway.
+Unfortunately, in newer firmwares with the new AVM web interfaces since
+around mid to late 2007, the AVM server was implemented differently, so
+the *httpd* replacement is no longer possible.
 
-Beispiel UPnP: Wer nicht mit Client-Programmen (z.B. von AVM) den Status
-der Box per Universal Plug'n'Play (UPnP) abfragt - mir persönlich
-genügt die Web-Oberfläche vollkommen - oder Client-Programmen erlauben
-möchte, dynamisch die Firmware-Einstellungen zu verändern (d.h. Löcher
-hinein zu bohren), kann auch die entsprechenden Bestandteile (`igdd`
-u.a. Dateien) weglassen. Das spart zum einen Platz im Firmware-Image,
-zum anderen läuft ein Prozess weniger. Das Weglassen von UPnP macht
-jedoch das Versenden der Faxe mit FritzFax nicht möglich. Wer darauf
-verzichten kann, kann UPnP abwählen.
+Example UPnP: anyone who does not query the box status with client
+programs, for example from AVM, via Universal Plug'n'Play (UPnP) - the
+web interface is completely sufficient for me personally - or does not
+want to allow client programs to dynamically change firmware settings,
+that is, drill holes into them, can also omit the corresponding
+components (`igdd` and other files). This saves space in the firmware
+image, and one less process runs. Omitting UPnP makes sending faxes with
+FritzFax impossible, however. Anyone who can do without that can deselect
+UPnP.
 
-### Schlußwort
+### Closing Words
 
-Das soll es fürs Erste gewesen sein. Wie eingangs gesagt: Es gibt sicher
-noch diverse weitere Sparmöglichkeiten. Anregungen werden gern in diese
-Seite von mir eingepflegt. In diesem Sinne:
+That should be enough for now. As said at the beginning, there are surely
+many other saving opportunities. I will gladly add suggestions to this
+page. With that in mind:
 
-**Geiz ist nicht geil, sondern dumm - aber *sinnvoll* sparen ist
-hilfreich.**
+**Cheapskating is not cool, it is stupid; but *sensible* saving is
+helpful.**
 
 [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
-
-

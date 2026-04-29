@@ -1,66 +1,64 @@
-# WLAN von LAN trennen mit iptables
+# Separate WLAN from LAN with iptables
 
-Diese Anleitung erklärt, wie man den Zugriff vom WLAN der FRZITZBox
-beschränken kann, um z. B. das WLAN für jeden zugänglich zu machen, ohne
-das interne LAN oder die FRITZBox selbst zu gefährden.
+This guide explains how to restrict access from the FRITZ!Box WLAN, for
+example to make WLAN available to everyone without putting the internal
+LAN or the FRITZ!Box itself at risk.
 
-### FRITZBox Einstellung
+### FRITZ!Box Setting
 
-Zuerst muss im FRITZBox-Webinterface unter *System →
-Netzwerkeinstellungen → IP-Adressen* die Option *"Alle Computer
-befinden sich im selben IP-Netzwerk"* deaktiviert sein (siehe auch
-[Screenshot](/screenshots/48 "Einstellungen für separate Netzwerke (Fritz!Box 7050)")).
-Dabei werden nicht nur die Netze getrennt, es entsteht auch ein neues
-Interface *wlan*.
+First, in the FRITZ!Box web interface under *System -> Network Settings
+-> IP Addresses*, disable the option *"All computers are located in the
+same IP network"*; see also the
+[screenshot](/screenshots/48 "Settings for separate networks (Fritz!Box 7050)").
+This not only separates the networks, it also creates a new interface
+named *wlan*.
 
 ### iptables
 
-Jetzt können die Regeln für iptables gesetzt werden. Dies sind einfache
-Befehle, die auf der Kommandozeile per *telnet* oder *ssh* ausgeführt
-werden. Sollen sie dauerhaft bestehen bleiben, kann man sie z.B. einfach
-in die `/var/flash/debug.cfg` schreiben.
+Now the iptables rules can be set. These are simple commands executed on
+the command line through *telnet* or *ssh*. If they should survive a
+reboot, place them for example in `/var/flash/debug.cfg`.
 
-### Netzwerk sichern
+### Secure the Network
 
 ```
     iptables -A FORWARD -i wlan -o dsl -j ACCEPT
     iptables -A FORWARD -i wlan -j DROP
 ```
 
-Damit wird das interne Netz geschützt, die Box selbst jedoch nicht.
+This protects the internal network, but not the box itself.
 
 ```
     iptables -A INPUT -i wlan -p tcp -j DROP
     iptables -A INPUT -i wlan -p udp -j DROP
 ```
 
-Jetzt ist auch der Zugriff per TCP/UDP auf die Box blockiert, sie
-antwortet dennoch auf Pings.
+Now TCP/UDP access to the box is also blocked, though it still answers
+pings.
 
-### Zugriffe erlauben
+### Allow Access
 
-Allerdings ist jetzt auch der DNS-Server nicht mehr erreichbar und die
-Computer im WLAN können keine Domainnamen (z. B. *www.wikipedia.org*
-anstatt 145.97.39.155) mehr aufrufen.
+However, the DNS server is no longer reachable either, and computers in
+the WLAN can no longer resolve domain names, for example *www.wikipedia.org*
+instead of `145.97.39.155`.
 
-Die Regeln werden von iptables der Reihe nach abgearbeitet. Die Option
-**-A** in den vorigen Befehlen steht für *append*, d. h. die Regeln
-wurden am *Ende der Liste* eingefügt.
+iptables processes rules in order. The **-A** option in the commands
+above means *append*, so the rules were inserted at the *end of the list*.
 
-Mit **-I** (für *insert*) kann man nun Regeln an den *Beginn der Liste*
-setzen, um Ausnahmen für bestimmte Dienste einzurichten, z. B. für den
-DNS-Server via TCP und UDP.
+With **-I** for *insert*, rules can be placed at the *beginning of the
+list* to create exceptions for specific services, for example DNS via TCP
+and UDP.
 
 ```
     iptables -I INPUT -i wlan -p tcp --dport 53 -j ACCEPT
     iptables -I INPUT -i wlan -p udp --dport 53 -j ACCEPT
 ```
 
-Danach können Computer im WLAN wie gewohnt die Internetverbindung
-benutzen ohne Zugriff auf das Webinterface der Box oder Computer im LAN
-zu haben.
+Afterwards, computers in the WLAN can use the internet connection as
+usual without having access to the box's web interface or to computers in
+the LAN.
 
-Der Zugriff auf die Box lässt sich beliebig nach dem Schema
+Access to the box can be extended as needed using this pattern:
 
 ```
     iptables -I INPUT -i wlan -p <Protokoll> --dport <Port> -j ACCEPT
@@ -68,7 +66,7 @@ Der Zugriff auf die Box lässt sich beliebig nach dem Schema
 
 erweitern.
 
-### Beispiele
+### Examples
 
 ```
     # ssh

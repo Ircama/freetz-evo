@@ -1,57 +1,46 @@
-# Was mache ich, wenn sich meine Box nicht Freetzen lässt
+# What Should I Do If My Box Cannot Be Freetzed?
 
-Falls etwas schief gegangen ist bitte nicht verzweifeln und ganz in Ruhe
-die folgenden Punkte abarbeiten. Denn durch Freetz kann man eine Box
-zwar ins Nirvana schicken aber nicht zerstören (zumindestens sind uns
-bis dato noch keine Fälle bekannt in denen Freetz eine Box zerstört
-hätte):
+If something went wrong, do not panic. Work through the following points
+calmly. Freetz can send a box into the void, but it should not destroy it
+completely; at least no cases were known at the time of writing in which
+Freetz actually destroyed a box.
 
-### FAQ's lesen und Tickets durchsuchen
+### Read the FAQs and Search Tickets
 
-Als erstes durchstöbert ihr die bekannten Fehlermeldungen auf der
-FAQ-Seite
-und durchsucht die offenen Tickets.
+First, browse the known error messages on the FAQ page and search the
+open tickets.
 
-### Suchfunktion des IPPF benutzen
+### Use the IPPF Search Function
 
-Wenn die FAQs nicht weiter helfen konnten, nachsehen ob die
-[Suchfunktion vom
+If the FAQs did not help, check whether the
+[IPPF search
 IPPF](http://www.ip-phone-forum.de/search.php) einen
-passenden Thread zu dem aufgetretenen Fehler hat. Falls sich auch hier
-nichts findet, geht's mit dem nächsten Punkt weiter.
+has a matching thread for the error. If nothing can be found there either,
+continue with the next point.
 
-### Einen neuen Thread im IPPF eröffnen
+### Open a New Thread in IPPF
 
-Folgende Punkte sollten beim Eröffnen eines neuen Threads beachtet
-werden:
+When opening a new thread, keep these points in mind:
 
-1. Ein *aussagekräftiges Thema* wählen und im
+1. Choose a *meaningful subject* and open the thread in the
 [IP-Phone-Forum](http://www.ip-phone-forum.de/newthread.php?do=newthread&f=525)
-den Thread aufmachen.
-2. Die Konfigurationsdatei
-.config
-aus dem Freetz-Linux herunterladen und an das Posting anhängen. Wo und
-Wie man diese Datei findet, steht auch in den
-FAQ's.
-3. Folgendes sollte in deinem Posting enthalten sein:
-> a.) Bezeichnung der FritzBox (z.B. 7170)\
-> b.) Verwendete Freetz-Version (Freetz-2.0, stable-branch oder trunk,
-> revision)\
-> c.) Welche Firmware/Labor-Version wolltest Du benutzen?\
-> d.) Welche Firmware war vor dem Flashen auf der Box?\
-> e.) Wurde während des Bauvorgangs eine Fehlermeldung angezeigt? (mit
-> Kontext posten, nicht nur eine Zeile!)\
+.
+2. Download the `.config` configuration file from Freetz-Linux and attach
+	it to the post. The FAQs also explain where and how to find this file.
+3. Include the following in your post:
+> a.) FRITZ!Box model, for example 7170\
+> b.) Freetz version used, such as Freetz 2.0, stable branch, trunk, or revision\
+> c.) Which firmware or lab version did you want to use?\
+> d.) Which firmware was on the box before flashing?\
+> e.) Did an error message appear during the build? Post it with context,
+> not only one line.\
 
-Hierzu ist es ratsam aufgetretene Fehler im PuTTY zu markieren und den
-ganzen Inhalt als TXT oder als \[code\] **Fehlertext** [code](/code) im
-neu eröffnenten Thread zu integrieren. Beim Inhalt des Fehlertextes
-solltet ihr frei nach dem Motto "zuviel ist besser als zu wenig"
-verfahren.
+It is advisable to mark the errors in PuTTY and include the full content
+as a text file or inside `[code]error text[/code]` in the new thread. For
+error output, follow the rule: too much is better than too little.
 
-Hinweis: Wenn möglich bitte keine Screenshots posten.
+Note: avoid posting screenshots if possible.
 
-**Wichtig:** Auf jeden Fall musst du die
-.config
-an den neuen Thread anhängen.
+**Important:** always attach the `.config` file to the new thread.
 
 

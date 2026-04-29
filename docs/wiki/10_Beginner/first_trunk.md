@@ -1,258 +1,242 @@
-# Wie baue ich meinen ersten trunk?
+# How Do I Build My First Trunk?
 
-### Beschreibung für ein Trunk-Image inkl. Samba und VSFTP
+### Description for a Trunk Image Including Samba and VSFTP
 
-Diese Anweisung ist für alle die geschrieben die zum ersten Mal Ihre
-Fritzbox mit einem FREETZ-Trunk (Entwickler-Version) modifizieren
-wollen.
+These instructions are written for everyone who wants to modify their
+FRITZ!Box with a FREETZ trunk, the developer version, for the first time.
 
-### Trunk-Image bauen
+### Build a Trunk Image
 
-Das Vorgehen um ein Trunk-Image zu bauen stimmt bis zum Punkt **Freetz
-Sourcen auschecken** mit den Schritten aus dem
-Newbie-Tutorial überein. Deshalb steigt diese
-Anleitung erst an dieser Stelle ein. Falls ihr euch unsicher seid, dann
-geht das Tutorial nochmal bis zu 'Freetz Sourcen auschecken' durch.
+The procedure for building a trunk image is identical to the steps in the
+newbie tutorial up to **check out Freetz sources**. Therefore, this guide
+starts at that point. If you are unsure, go through the tutorial again up
+to "check out Freetz sources".
 
-Der Befehl zum Auschecken sieht nun etwas anders aus. Folgender Befehl
-ist jetzt einzugeben:
+The checkout command now looks a little different. Enter the following
+command:
 
 ```
 	git clone https://github.com/Freetz-NG/freetz-ng ~/freetz-ng
 ```
 
 
-Sollte dies nicht starten, so kann es sein das die Netzwerkverbindung
-nicht funktioniert. In diesem Fall sollte ein **ping 192.168.XXX.1**
-über die Konsole Aufschluss geben, ob die Netzwerkverbindung
-funktioniert. Nun sollten die Freetz Quellen runtergeladen werden.
-Danach wechselt man in das Freetz Verzeichnis mit **cd freetz-trunk**
-und gibt dann ein **make menuconfig** ein.
+If this does not start, the network connection may not be working. In that
+case, a **ping 192.168.XXX.1** from the console should show whether the
+network connection works. The Freetz sources should now be downloaded.
+Afterwards, change into the Freetz directory with **cd freetz-trunk** and
+enter **make menuconfig**.
 
 [![auschecken von Freetz](../../screenshots/72_md.png)](../../screenshots/72.png)
 
-Nach dieser Eingabe solltet Ihr folgendes Bild sehen:
+After this input, you should see the following screen:
 
 [![menuconfig](../../screenshots/73_md.png)](../../screenshots/73.png)
 
-Dies ist wieder die Konfigurations-Oberfläche des Freetz-Buildsystems.
-Dort wählt ihr den jeweiligen Router und die gewünschten Pakete aus. Für
-dieses HowTo haben wir beispielhaft die 7270_v2 gewählt. Als erstes
-aktivieren wir die erweiterte Ansicht (**Level of user
-competence**→**Advanced**) auf der ersten Seite. Danach sollten in einem
-Freetz-Image folgende Patches ausgewählt werden:\
-**Unter Firmware language:**
+This is again the configuration interface of the Freetz build system.
+Select the respective router and desired packages there. For this how-to,
+we use the 7270_v2 as an example. First, activate the advanced view on the
+first page, **Level of user competence** -> **Advanced**. Then select the
+following patches for a Freetz image:\
+**Under Firmware language:**
 
--   Auswählen ob ihr eine Firmware de oder en Firmware erstellen wollt.
-    (Achtung: Die Auswahl muss zur vorhandenen Box passen.)
+-   Select whether you want to create German or English firmware.
+	Warning: the selection must match the existing box.
 
-**Unter Other patches:**
+**Under Other patches:**
 
 -   **FREETZMOUNT**
 -   **Automount Filesystems**
     -   **NTFS**
 
-**Unter Removal patches**
+**Under Removal patches:**
 
--   **Remove ftpd (NEW)** (ein FTP-Programm auf der Box reicht)
+-   **Remove ftpd (NEW)**; one FTP program on the box is enough.
 
 [![Patches](../../screenshots/187_md.png)](../../screenshots/187.png)
 
-**Unter Packages/Standard packages:**
+**Under Packages/Standard packages:**
 
--   **Samba suite** (Server der den Zugriff auf die USB Medien an der FB
-    von Windows erlaubt). Die Haken bei den beiden Unterpunkten von
-    Samba smbd und nmbd müssen gesetzt werden.
--   **VSFTP** (FTP-Server). Hier bitte keine weiteren Haken bei den
-    Unterpunkten setzen.
+-   **Samba suite**, a server that allows Windows access to USB media on
+	the FRITZ!Box. The check marks for the two Samba sub-items `smbd` and
+	`nmbd` must be set.
+-   **VSFTP**, FTP server. Do not set any further check marks for its
+	sub-items.
 
 [![Patch : SAMB und VSFTP](../../screenshots/186_md.png)](../../screenshots/186.png)
 
-**Unter Packages/ Web interfaces:**
+**Under Packages/Web interfaces:**
 
--   **AVM-firewall** (Web-Oberfläche zum Administrieren der von AVM dem
-    User vorenthaltene integrierten Firewall)
+-   **AVM-firewall**, a web interface for administering the integrated
+	firewall that AVM withholds from the user.
 -   **spindown-cgi 0.2**
 -   **Syslogd CGI 0.2.3**
 
 [![Patche : Web interfaces](../../screenshots/185_md.png)](../../screenshots/185.png)
 
-**Unter Web Interface:**
+**Under Web Interface:**
 
--   **Favicons (none) ---→** einen Favicon auswählen. (Das ist das Bild
-    was als Lesezeichen im Browser angezeigt wird)
+-   **Favicons (none) --->** select a favicon. This is the image displayed
+	as a bookmark in the browser.
 
 [![Patch : Advanced options](../../screenshots/188_md.png)](../../screenshots/188.png)
 
 [![Screenshot](../../screenshots/228_md.png)](../../screenshots/228.png)
 
-Weitere Pakete und Patches incl. der Beschreibungen findet ihr auf der
-Paketseite
+Further packages and patches, including their descriptions, can be found
+on the package page.
 
-Nachdem alle Pakete und Patches ausgewählt sind, beendet man die
-Konfiguration und gibt auf der Kommandozeile der Shell Konsole **make**
-ein. Nun solltet ihr ein solches Bild sehen:
+After selecting all packages and patches, exit the configuration and enter
+**make** on the shell command line. You should now see a screen like this:
 
-[![make ausführen](../../screenshots/189_md.png)](../../screenshots/189.png)
+[![Run make](../../screenshots/189_md.png)](../../screenshots/189.png)
 
-Nun startet wieder der Erstellungsvorgang. Der Ablauf ist identisch zum
-ersten Image. Das erstellte Image wird wiederum im Unterordner
-**images** des Freetz Verzeichnisses abgelegt.
+The build process starts again. The flow is identical to the first image.
+The created image is again placed in the **images** subdirectory of the
+Freetz directory.
 
-Die Abschlussmeldung sieht wie folgt aus:
+The final message looks like this:
 
-[![make ist fertig](../../screenshots/190_md.png)](../../screenshots/190.png)
-
+[![make is finished](../../screenshots/190_md.png)](../../screenshots/190.png)
 
 
-Die Schritte **Image auf den PC kopieren** und Flash-Vorgang sind wieder
-identisch zum Newbie-Tutorial.
 
-### Samba einrichten
+The steps **copy image to the PC** and the flashing process are again
+identical to the newbie tutorial.
 
-Samba muß zunächst eingerichtet werden. Hierfür geht man auf
-**Pakete/Samba**. Starttyp auf **automatisch** stellen und Netbios Name
-vergeben. Wichtig ist der Haken bei **Bevorzugter Master**, weil er den
-Standard Samba-Server der FritzBox ersetzt.
+### Configure Samba
+
+Samba must first be configured. Go to **Packages/Samba**. Set startup type
+to **automatic** and assign a NetBIOS name. The check mark at
+**Preferred master** is important because it replaces the FRITZ!Box's
+standard Samba server.
 
 [![Freetz-WebIF](../../screenshots/192_md.jpg)](../../screenshots/192.jpg)
 
 
-Den Rest kann man so lassen und klickt auf **Samba Freigaben**.
+The rest can be left as is; click **Samba shares**.
 
 [![Freetz-WebIF](../../screenshots/193_md.jpg)](../../screenshots/193.jpg)
 
-Wir haben hier nun 2 Freigaben auf der USB-HDD der FB beispielhaft
-erstellt, ein für **Gast** und die zweite für **Familie**. Hier eine
-kurze Beschreibung der Parameter anhand der ersten Freigabe:
+Here, as an example, we have created two shares on the USB HDD of the
+FRITZ!Box: one for **guest** and the second for **family**. A short
+description of the parameters using the first share:
 
-- **/var/media/ftp/uStor01** dies ist der interner Pfad auf die Festplatte\
-- **/Videos** das ist das Freigegebenes Verzeichnis\
-- **hdd1** Name der Freigabe der in der Windows-Netzwerkumgebung als Freigabe angezeigt wird.
-- **1** Gast-Zugang erlaubt, kein Benutzername und Passwort nötig\
-- **0** Schreib-Lesezugriff aktiviert\
-- **-** Grund für das - ????? (Muß rein, Begründung folgt !)\
-- **Videos** Kommentar
+- **/var/media/ftp/uStor01** is the internal path to the hard disk.\
+- **/Videos** is the shared directory.\
+- **hdd1** is the share name shown in the Windows network environment.
+- **1** allows guest access; no username and password required.\
+- **0** enables read-write access.\
+- **-** reason for the dash: unknown; it must be present, explanation to
+	follow.\
+- **Videos** comment.
 
-**Beispiel:**
+**Example:**
 
 ```
 	/var/media/ftp/uStor01/Videos hdd1 1 0 - Videos
 ```
 
-Da wir als Netbiosname **fritz** vergeben hatte, lautet der Zugriff von
-Windows auf die Freigabe\
-fritz\hdd1 .
-Jetzt noch unter **Dienste** den Samba Server starten und dann sollte es
-funktionieren.
+Because we assigned **fritz** as the NetBIOS name, Windows accesses the
+share as `fritz\hdd1`. Now start the Samba server under **Services**, and
+it should work.
 
 
-### FTP-Freigaben einrichten (Freetz-Trunk)
+### Configure FTP Shares (Freetz Trunk)
 
-**Achtung! Diese Beschreibung beruht auf einem Trunk-Image.
-FTP-Freigaben für Freetz-1.1.x-Images werden später erklärt**
+**Warning: this description is based on a trunk image. FTP shares for
+Freetz 1.1.x images will be explained later.**
 
-Als erstes muss eine Order-Struktur auf der USB-Platte erzeugt werden.
-Dazu einfach euren USB-Stick oder Festplatte im Fat32 formatieren (NTFS
-würde auch gehen wird hier aber nicht näher beschrieben).
-Eure Platte sollte dann wie folgt aussehen :
+First, a folder structure must be created on the USB disk. Simply format
+your USB stick or hard disk as FAT32. NTFS would also work, but is not
+described in more detail here. Your disk should then look like this:
 
 [![Screenshot](../../screenshots/81_md.jpg)](../../screenshots/81.jpg)
 
-Wenn das der Fall sein sollte könnt ihr den Stick (wir gehen im weiteren
-Verlauf dieser Beschreibung von einem Stick aus) an eure FritzBox
-stecken.
-Nun wird, wenn noch nicht unter der Samba-Einrichtung erfolgt, die
-AVM-Lösungen von FTP abgeschaltet:
+If that is the case, connect the stick to your FRITZ!Box. In the rest of
+this description, we assume a stick. Now, if not already done while
+configuring Samba, disable AVM's FTP solutions:
 
--   fritz.box → Einstellungen → Erweiterte Einstellungen → USB-Geräte →
-    USB-Speicher(Speicher(NAS)
--   USB-Speicher FTP-Zugriff aktivieren → Häkchen weg
--   USB-Netzwerkspeicher aktivieren → Häkchen weg
+-   fritz.box → Settings → Advanced settings → USB devices →
+	USB storage/storage (NAS)
+-   Enable USB storage FTP access -> remove check mark
+-   Enable USB network storage -> remove check mark
 
-Das sollte nun so aussehen:
+It should now look like this:
 
 [![Screenshot](../../screenshots/82_md.jpg)](../../screenshots/82.jpg)
 
-Nun wechseln wir ins Freetz-Interface:
+Now switch to the Freetz interface:
 [http://fritz.box:81/](http://fritz.box:81/) und
-geben dort unter : ---> Dienste ---> vsftp folgende Sachen ein:
+enter the following under Services -> vsftp:
 
--   Starttyp : Automatisch
--   Zugriff : Haken setzen bei **Lokale Benutzer** und **chroot jail**
-    (alle anderen Haken raus)
--   Zusätzliche Konfigurationsoptionen (für Experten) :
+-   Startup type: Automatic
+-   Access: set check marks for **Local users** and **chroot jail**;
+	remove all other check marks.
+-   Additional configuration options for experts:
     **user_config_dir=/var/media/ftp/uStor01/vsftp_user_conf**
--   Logging : **/var/media/ftp/uStor01/vsftpd.log** (kann man
-    aktivieren, muß man aber nicht).
+-   Logging: **/var/media/ftp/uStor01/vsftpd.log**; can be enabled but is
+	not required.
 
 
-Die ganzen Eingaben sollten nun mit dem Drücken des Button
-**Übernehmen** übernommen werden. Das sollte dann wie folgt aussehen:
+Apply all entries by pressing **Apply**. It should then look like this:
 
 [![Freetz-WebIF](../../screenshots/194_md.jpg)](../../screenshots/194.jpg)
 
 [![Screenshot](../../screenshots/84_md.jpg)](../../screenshots/84.jpg)
 
-Nun wenden wir uns der AVM-Firewall zu:
+Now turn to the AVM firewall:
 
--   [--->Pakete ---> AVM-Firewall und dort den Pkt. Forwarding). Hier
-    muß noch der FTP-Port freigegeben werden (siehe Bilder).
+-   Go to Packages -> AVM-Firewall and the Forwarding item. The FTP port
+	still has to be opened here; see the screenshots.
 
 [![Screenshot](../../screenshots/85_md.jpg)](../../screenshots/85.jpg)
 
-Nach eingabe der Zahlen (siehe Oben) einfach auf **Hinzufügen** drücken
-und das Ergenbins sollte wie Folgt aussehen:
+After entering the numbers, see above, simply press **Add** and the result
+should look as follows:
 
 [![Screenshot](../../screenshots/86_md.jpg)](../../screenshots/86.jpg)
 
-Um diese Einstellung nun endgültig zu speichern einfach den Haken
-(Blinkendes Kästchen) setzen und den Reeboot der Box abwarten.
-Nachdem die Box nun wieder gestartet ist öffnen wir nochmals in der
-Freetz-Weboberfläche den Reiter **Dienste** und aktivieren den Dienst
-**telnetd**. Dieser muß gestartet sein um im nächsten Schritt dieser
-Anweisung die FTP-User einrichten zu können. Es wird nicht empfohlen
-diesen Dienst auf automatisch zu setzen sondern ihn bei Bedarf manuell
-zu starten.
+To finally save this setting, simply set the check mark, the blinking box,
+and wait for the box to reboot. After the box has started again, open the
+**Services** tab in the Freetz web interface once more and activate the
+**telnetd** service. It must be started to configure the FTP users in the
+next step. It is not recommended to set this service to automatic; start
+it manually when needed.
 
-Nun verlassen wir für's erste die Web-Oberfläche und nähern uns der
-Kommandozeilenebene der FritzBox ! Dazu benötigen wir als erstes das
-Programm [Putty](http://putty.softonic.de/) welches
-wir uns aus dem Netz laden und auf dem PC installieren. Dieser Schritt
-ist nur für Windows-User nötig. Linux-User können eine Telnet-Sitzung
-wie gewohnt starten.
-Putty kann man hier als Freeware laden
-:[Download](http://putty.softonic.de/) und wird wie
-folgt eingestellt:
+For now, leave the web interface and move to the FRITZ!Box command line.
+For this, Windows users first need
+[PuTTY](http://putty.softonic.de/), which must be downloaded and
+installed on the PC. This step is needed only for Windows users. Linux
+users can start a Telnet session as usual. PuTTY can be downloaded as
+freeware here: [Download](http://putty.softonic.de/) and is configured as
+follows:
 
 [![Screenshot](../../screenshots/87_md.jpg)](../../screenshots/87.jpg)
 
-Nach drücken von **Open** und Eingabe folgender Daten **login:root** und
-**Password:freetz** solltet ihr folgendes Bild sehen:
+After pressing **Open** and entering **login: root** and **password:
+freetz**, you should see this screen:
 
 [![Screenshot](../../screenshots/88_md.jpg)](../../screenshots/88.jpg)
 
 
 
 
-### Einrichten von Benutzern
+### Create Users
 
-Der Befehl ist wie folgt aufgebaut:
-`adduser -h '''Verzeichnis''' '''Benutzername'''`
+The command is structured like this:
+`adduser -h '''directory''' '''username'''`
 
-> **Verzeichnis**: Ordner auf dem Stick, der dem Benutzer zugeordnet
-> werden soll, z.B. **/var/media/ftp/uStor01/**
-> **Benutzername**: Name des Benutzers
+> **Directory**: folder on the stick that should be assigned to the user,
+> for example **/var/media/ftp/uStor01/**
+> **Username**: name of the user
 
-Beim Erstellen des Benutzers wird danach gleich das Passwort abgefragt.
-Dieses muss zweimal eingegeben werden, und es wird dabei nichts am
-Bildschirm angezeigt, auch keine Sterne.
-Erzeugen wollen wir nun einen User **Paul** und eine Userin **Mary**
-welche auf die Ordner **hdd1**(Paul) und **hdd2**(Mary) (siehe Samba)
-FTP-Zugriff erhalten sollen. Weiterhin wird hier ein User **Gast** mit
-nur Leserechten auf dem Ordner **hdd1** erzeugt.
-Hierzu werden nun folgende Befehle in Putty eingegeben (Bitte auf Groß
-und Kleinschreibung achten):
+When creating the user, the password is requested immediately. It must be
+entered twice; nothing is shown on screen, not even asterisks. We now want
+to create a user **Paul** and a user **Mary**, who should receive FTP
+access to the folders **hdd1** for Paul and **hdd2** for Mary; see Samba.
+Additionally, a user **Guest** with read-only rights to folder **hdd1** is
+created. Enter the following commands in PuTTY; pay attention to upper and
+lower case:
 
 ```
 	/var/mod/root # adduser -h /var/media/ftp/uStor01/hdd1 paul
@@ -264,29 +248,21 @@ und Kleinschreibung achten):
 	Password for paul changed by root
 ```
 
-Die Meldung `Operation not permitted` kommt, wenn es sich um ein
-Dateisystem mit FAT oder NTFS handelt.
-Das selbe machen wir nun nochmals für Marry und Gast:
+The message `Operation not permitted` appears when the filesystem is FAT
+or NTFS. Now do the same again for Mary and guest:
 
 ```
 	adduser -h /var/media/ftp/uStor01/hdd2 mary
 	adduser -h /var/media/ftp/uStor01/hdd1 gast
 ```
 
-Wenn man das Paßwort ändern will, verwendet man dazu den Befehl
-`passwd `**`Benutzername`**. Man wird dann wieder zweimal nach dem neuen
-Paßwort gefragt.
-Einen Benutzer löschen kann man mit dem Befehl
-`deluser `**`Benutzername`**.
-In jedem Fall müssen die Änderungen mit dem Befehl **modsave all**
-wieder gespeichert werden.
-Anzeigen kann man die Datei mit dem Befehl **cat /var/tmp/passwd**.
-Anzeigen und Ändern ist auch möglich über die
-Rudi-Shell von Freetz. Diese
-ist nur verfügbar, wenn die
-Sicherheitsstufe
-auf 0 gesetzt ist.
-Wenn alles Richtig gelaufen ist, sollte folgendes in der passwd stehen:
+To change a password, use the command `passwd `**`username`**. You are
+again asked twice for the new password. A user can be deleted with
+`deluser `**`username`**. In every case, changes must be saved again with
+**modsave all**. The file can be displayed with **cat /var/tmp/passwd**.
+Displaying and changing is also possible through the Freetz Rudi shell.
+This is available only when the security level is set to 0. If everything
+went correctly, `passwd` should contain the following:
 
 ```
 	root:x:0:0:root:/mod/root:/bin/sh
@@ -297,7 +273,7 @@ Wenn alles Richtig gelaufen ist, sollte folgendes in der passwd stehen:
 	gast:x:1002:1002:Linux User,,,:/var/media/ftp/uStor01/hdd1:/bin/sh
 ```
 
-Nun melden wir uns noch mit folgendem Befehl von der Putty Konsole ab:
+Now log out from the PuTTY console with this command:
 
 ```
 	exit
@@ -306,95 +282,92 @@ Nun melden wir uns noch mit folgendem Befehl von der Putty Konsole ab:
 
 
 
-### Rechtevergabe für FTP-User
+### Assign Rights for FTP Users
 
-> Ob ein Neuer FTP-User Schreibrechte erhalten soll oder nur lesen
-> können soll wird wie folgt geregelt:\
-> Jeder Benutzer erhält eine Datei mit seinem Dateinamen im Ordner
-> **/var/media/ftp/uStor01/vsftp_user_conf/**, die festlegt, ob er
-> Schreibrechte hat oder nicht.
+> Whether a new FTP user should receive write rights or read-only access
+> is controlled as follows:\
+> Each user receives a file with their filename in the folder
+> **/var/media/ftp/uStor01/vsftp_user_conf/**, which determines whether
+> the user has write rights or not.
 
-Inhalt der Datei :
+File content:
 
-> **write_enable=yes**(User hat Schreibrechte / siehe Paul und Mary)\
-> **write_enable=no**(User hat **keine** Schreibrechte / siehe Gast)
+> **write_enable=yes**: user has write rights; see Paul and Mary.\
+> **write_enable=no**: user has **no** write rights; see guest.
 
-Über diese Benutzerdateien ist es auch möglich einzelne FTP-Befehle
-([Liste](http://en.wikipedia.org/wiki/List_of_FTP_commands))
-für Benutzer zu verbieten. Hierzu fügt man folgende Zeile in die Datei
-ein und entfernt die Befehle die der User nicht ausführen darf:
+These user files also make it possible to forbid individual FTP commands
+([list](http://en.wikipedia.org/wiki/List_of_FTP_commands)) for users.
+Add the following line to the file and remove the commands the user is not
+allowed to execute:
 
 ```
 	cmds_allowed=ABOR,ACCT,ALLO,APPE,AUTH,CDUP,CWD,DELE,EPRT,EPSV,FEAT,HELP,LIST,MDTM,MKD,MODE,NLST,NOOP,OPTS,PASS,PASV,PBSZ,PORT,PROT,PWD,QUIT,REIN,REST,RETR,RMD,RNFR,RNTO,SITE,SMNT,STAT,STOR,STOU,STRU,SYST,TYPE,USER
 ```
 
-**Beispiel:** Mary darf Dateien auf den FTP kopieren und Verzeichnisse
-anlegen, jedoch diese nicht wieder löschen. Also muß folgendes in der
-Datei stehen:
+**Example:** Mary may copy files to FTP and create directories, but may
+not delete them again. Therefore, the following must be in the file:
 
 ```
 	cmds_allowed=ABOR,ACCT,ALLO,APPE,AUTH,CDUP,CWD,EPRT,EPSV,FEAT,HELP,LIST,MDTM,MKD,MODE,NLST,NOOP,OPTS,PASS,PASV,PBSZ,PORT,PROT,PWD,QUIT,REIN,REST,RETR,RNFR,RNTO,SITE,SMNT,STAT,STOR,STOU,STRU,SYST,TYPE,USER
 ```
 
-> **DELE** (Delete file), **RMD** (Remove a directory) wurden aus dem
-> oben angegebenen String gelöscht.
+> **DELE** (Delete file), **RMD** (Remove a directory) were removed from
+> the string above.
 > \
 > \
-> Sollte etwas immer noch nicht gehen, dann den Router einfach nochmal
-> neu starten.
+> If something still does not work, simply restart the router again.
 
 
 
 
-### Image für einen Speedport bauen
+### Build an Image for a Speedport
 
-Speedports lassen sich aufgrund einer Software-Sperre leider nicht per
-AVM-Webinterface flashen. Nutze die Freetz-Tools recover-eva oder
-push_firmware oder die GUI-Programme aus dem Forum wie z.B das
-[ruKernelTool](http://rukerneltool.rainerullrich.de/index.html).
-Dieses funktioniert sehr gut und ist einfach in der Bedienung.
+Unfortunately, Speedports cannot be flashed through the AVM web interface
+because of a software lock. Use the Freetz tools `recover-eva` or
+`push_firmware`, or GUI programs from the forum such as
+[ruKernelTool](http://rukerneltool.rainerullrich.de/index.html). It works
+very well and is easy to use.
 
-### Welche Speedports lassen sich mit Freetz modifizieren?
+### Which Speedports Can Be Modified with Freetz?
 
 -   W501V
 -   W701V
 -   W900V
 -   W920V
 
-### Umbau eines W701V
+### Converting a W701V
 
-1.) Freetz-Linux wie es oben beschrieben ist starten
-2.) Wir arbeiten alle Schritte ab wie im [HowTo](first_trunk.html)
-beschrieben, jedoch bei Boxtyp wählen wir die 7170 und stellen unter
-Alien hardware type den W701V aus.
+1. Start Freetz Linux as described above.
+2. Work through all steps as described in the [how-to](first_trunk.html),
+but select 7170 as box type and set W701V under Alien hardware type.
 
 [![Speedport_Trunk_2](../../screenshots/196_md.png)](../../screenshots/196.png)
 
 [![Speedport_Trunk_3](../../screenshots/197_md.png)](../../screenshots/197.png)
 
-3.) Samba und VSFTP bringen nur was bei einem W920V (7570), da dieser
-einen USB-Port hat. Alle anderen Schritte in dem
-[HowTo](first_trunk.html) passen jedoch auch bei einem Speedport.
+3. Samba and VSFTP are useful only on a W920V (7570), because it has a USB
+port. All other steps in the [how-to](first_trunk.html), however, also
+apply to a Speedport.
 
-4.) Das erstellte Image sollte sich als normales FW-Update in die Box
-laden lassen. Sollte die Box den Update verweigern (war bei meinem W701V
-der Fall) bleibt Euch nur der Weg über das
-[ruKernelTool](http://rukerneltool.rainerullrich.de/index.html).
-Dann sind jedoch alle Zugangsdaten sowie alle Einstellungen verloren.
-Die Box macht in diesem Fall quasi einen Werksreset.
+4. The created image should be loadable into the box as a normal firmware
+update. If the box refuses the update, which happened with my W701V, the
+only remaining way is through
+[ruKernelTool](http://rukerneltool.rainerullrich.de/index.html). In that
+case, however, all access data and settings are lost. The box effectively
+performs a factory reset.
 
-**Ergebnis:**
+**Result:**
 
 [![Speedport_Trunk_1](../../screenshots/195_md.png)](../../screenshots/195.png)
 
-### Umbau eines W501V
+### Converting a W501V
 
-Der W501V läßt sich direkt als Boxtyp auswählen
+The W501V can be selected directly as the box type.
 
-### Umbau eines W920V
+### Converting a W920V
 
-Boxtyp: 7570 VDSL\
-Alientyp: W920V
+Box type: 7570 VDSL\
+Alien type: W920V
 
 [![Speedport_Trunk_4](../../screenshots/198_md.png)](../../screenshots/198.png)
 

@@ -412,7 +412,7 @@ $(if $(FREETZ_PACKAGE_PYTHON3_COMPRESS_PYC), \
    - ❌ Wrong: `make zip`
    - ✅ Correct: `make zip-precompiled` or `make zip-recompile`. Always use `make help` for instructions.
    
-   See *00_FAQ/FAQ.en.md* in the Wiki for the **description of the make options**.
+   See *00_FAQ/FAQ.md* in the Wiki for the **description of the make options**.
 
 2. **Package not registered in build system**
    - Missing from `make/pkgs/Config.in.generated` (auto-generated, don't edit manually)
@@ -455,7 +455,7 @@ make -n PACKAGE-precompiled  # Dry run to check make logic
 | `PACKAGE-dirclean` | Complete clean, re-extract source | Reset to pristine state |
 | `PACKAGE-uninstall` | Remove from staging | Testing removal |
 
-See *00_FAQ/FAQ.en.md* in the Wiki.
+See *00_FAQ/FAQ.md* in the Wiki.
 
 ### Problem: While loop in makefile doesn't modify files
 
@@ -954,25 +954,25 @@ grep TOOLS_INIT make/host-tools/tools-host/tools-host.mk
 The following wiki documents provide detailed information on Freetz-NG development:
 
 ### Package Development
-- **[Package Development Start](../wiki/60_Development/package_development_start.en.md)** - Getting started with your first package
-- **[Package Development Basics](../wiki/60_Development/package_development_basics.en.md)** - Fundamental concepts and persistent settings
-- **[Package Development Makefiles](../wiki/60_Development/package_development_makefiles.en.md)** - Makefile conventions and macros
-- **[Package Development Advanced](../wiki/60_Development/package_development_advanced.en.md)** - Multi-binary packages and patterns
-- **[Shell Coding Conventions](../wiki/60_Development/shell_coding_conventions.en.md)** - Shell scripting standards
+- **[Package Development Start](../wiki/60_Development/package_development_start.md)** - Getting started with your first package
+- **[Package Development Basics](../wiki/60_Development/package_development_basics.md)** - Fundamental concepts and persistent settings
+- **[Package Development Makefiles](../wiki/60_Development/package_development_makefiles.md)** - Makefile conventions and macros
+- **[Package Development Advanced](../wiki/60_Development/package_development_advanced.md)** - Multi-binary packages and patterns
+- **[Shell Coding Conventions](../wiki/60_Development/shell_coding_conventions.md)** - Shell scripting standards
 
 ### Specific Topics
-- **[STARTLEVEL of Packages](../wiki/60_Development/startlevel_of_packages.en.md)** - Package initialization order (00-99)
+- **[STARTLEVEL of Packages](../wiki/60_Development/startlevel_of_packages.md)** - Package initialization order (00-99)
 - **[Device Table](../wiki/60_Development/device_table.md)** - Creating device nodes on-the-fly
 - **[Patch Format](../wiki/60_Development/patch.md)** - Creating and applying patches
-- **[Package Configuration](../wiki/60_Development/package_development_config.en.md)** - modconf and modsave commands
+- **[Package Configuration](../wiki/60_Development/package_development_config.md)** - modconf and modsave commands
 
 ### Troubleshooting
 - **[Make Fail Strategies](../wiki/40_Troubleshooting/make_fail.md)** - dirclean, precompiled, recompile strategies
 
 ### Examples
-- **[Package Example 1](../wiki/60_Development/package_development_pkgexample1.en.md)** - Simple binary package
-- **[Package Example 2](../wiki/60_Development/package_development_pkgexample2.en.md)** - Package with patches
-- **[Package Example 3](../wiki/60_Development/package_development_pkgexample3.en.md)** - Package with library dependencies
+- **[Package Example 1](../wiki/60_Development/package_development_pkgexample1.md)** - Simple binary package
+- **[Package Example 2](../wiki/60_Development/package_development_pkgexample2.md)** - Package with patches
+- **[Package Example 3](../wiki/60_Development/package_development_pkgexample3.md)** - Package with library dependencies
 
 **Tip**: Always consult these documents when implementing complex features or troubleshooting build issues.
 
@@ -2016,7 +2016,7 @@ If you previously built firmware with the old version and now need to update:
 
 | Library | Files Modified | What Changed |
 |---------|---------------|--------------|
-| **iconv/libiconv** | `make/pkgs/iconv/Config.in.libs`<br>`make/pkgs/iconv/iconv.mk`<br>`docs/make/iconv.md`<br>`docs/wiki/60_Development/coding_guide.en.md` | Added automatic version selection: 1.13.1 (ABANDON) for uClibc 0.9.28<br>Added multiple download URLs for reliability<br>Updated documentation and coding guide |
+| **iconv/libiconv** | `make/pkgs/iconv/Config.in.libs`<br>`make/pkgs/iconv/iconv.mk`<br>`docs/make/iconv.md`<br>`docs/wiki/60_Development/coding_guide.md` | Added automatic version selection: 1.13.1 (ABANDON) for uClibc 0.9.28<br>Added multiple download URLs for reliability<br>Updated documentation and coding guide |
 | **sqlite3** | `make/pkgs/sqlite/sqlite.mk` | **FIXED** LIB_VERSION to differentiate: 0.8.6 (ABANDON) vs 3.50.4 (CURRENT) |
 
 ### Total Changes

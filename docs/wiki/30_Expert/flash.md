@@ -1,80 +1,78 @@
-# Flash Partitionierung
+# Flash Partitioning
 
-Im Flash der Fritzbox befinden sich bei jedem Modell folgende
-funktionale Einheiten:
+The flash of every FRITZ!Box model contains the following functional
+units:
 
--   Bootloader: ADAM2 / EVA (+ Werkseinstellungen)
+-   Bootloader: ADAM2 / EVA (+ factory settings)
 -   Kernel: Linux 2.4.17_mvl21-malta-mips_fp_le, 2.6.13.1-ar7/ohio
-    oder höher *(gzip oder lzma komprimiert)*
--   Dateisystem:
+    or higher *(gzip or lzma compressed)*
+-   Filesystem:
     [SquashFS](http://de.wikipedia.org/wiki/Squashfs)
-    *(gzip oder lzma)* oder
+    *(gzip or lzma)* or
     [YAFFS2](http://de.wikipedia.org/wiki/YAFFS2)
--   Konfigurations-Dateien + Environment: TFFS
+-   Configuration files + environment: TFFS
 
-Bei der Flash Einteilung der Fritzboxen entstanden über die Jahre einige
-"Geschmacksrichtungen". Das Grundkonzept entspringt TI und deren ADAM2
-Bootloader, der die Partitionstabellen verwaltet. Unabhängig von der
-Reihenfolge im Speicher wurde festgelegt dass `mtd0` das root
-Dateisystem enthalten soll, `mtd1` das Kernel, `mtd2` ADAM2 selbst und
-`mtd3` die Konfiguration. Letztere muss häufig geschrieben werden und
-trotzdem fehlerfrei sein und nutzt dabei das Flash ab. Um dies sicherer
-zu gestalten entwickelte AVM das TFFS, das durch doppelte "Pufferung"
-zwei gleich grosse Partitionen `mtd3` und `mtd4` benötigt.
+Over the years, several "flavors" of flash layout evolved for
+FRITZ!Boxes. The basic concept comes from TI and its ADAM2 bootloader,
+which manages the partition tables. Regardless of the order in memory, it
+was defined that `mtd0` should contain the root filesystem, `mtd1` the
+kernel, `mtd2` ADAM2 itself, and `mtd3` the configuration. The latter has
+to be written frequently, must nevertheless remain error-free, and wears
+out the flash in the process. To make this safer, AVM developed TFFS,
+which uses double buffering and therefore needs two equally sized
+partitions, `mtd3` and `mtd4`.
 
-ADAM2 bzw später AVM's funktionsgleicher Ersatz EVA wird ab Werk
-installiert und wurde nur in eher seltenen Sonderfällen aktualisiert.
-Ein Firmware Update aktualisiert dagegen immer Kernel und root
-Dateisystem, beim ursprünglichen Konzept mit den enthaltenen Dateien
-`filesystem.image` für `mtd0` und `kernel.image` für `mtd1`.
+ADAM2, and later AVM's functionally equivalent replacement EVA, is
+installed at the factory and was updated only in rather rare special
+cases. A firmware update, on the other hand, always updates the kernel and
+root filesystem; in the original concept this was done with the included
+files `filesystem.image` for `mtd0` and `kernel.image` for `mtd1`.
 
-Uber die Jahre stellte sich heraus dass der Platzbedarf für Kernel und
-Dateisystem kaum dauerhaft vorhersagbar ist und dass die Partitionierung
-gar eine Hürde wurde da beide Komponenten verschieden stark wuchsen. Es
-entstanden einige trickreiche Abwandelungen die diese Barriere
-aushebelten. Ab Kernel 2.6 verzichtete man dann ganz auf die Trennung um
-die Problematik zu umgehen. Bei neuen Modellen mit im Vergleich fast
-unbegrenztem NAND-Flash führte man die Trennung wieder ein.
+Over the years, it became clear that the space requirements for kernel
+and filesystem are hardly predictable in the long term, and that
+partitioning itself became an obstacle because both components grew at
+different rates. Several clever variations were created to bypass this
+barrier. Starting with kernel 2.6, the separation was then abandoned
+entirely to avoid the problem. On newer models with, by comparison,
+almost unlimited NAND flash, the separation was reintroduced.
 
-**Achtung:** Alle in diesem Artikel genannten mtd Nummern beziehen sich
-auf die im Environment gespeicherten Partitionstabellen. Die Nummern der
-im Linux erreichbaren mtd Devices werden vom Kernel vergeben und weichen
-oft von den ADAM2/EVA Numerierung ab!
+**Warning:** all `mtd` numbers mentioned in this article refer to the
+partition tables stored in the environment. The numbers of the `mtd`
+devices reachable from Linux are assigned by the kernel and often differ
+from the ADAM2/EVA numbering.
 
-Um aus dem Linux heraus auf das Environment zugreifen zu können gibt es
-die ADAM2 API, die je nach Kernel Version an verschiedenen Stellen in
-/proc erreichbar ist.
+To access the environment from Linux, there is the ADAM2 API, reachable in
+different places under `/proc` depending on the kernel version.
 
-Um die Environment mtd Tabelle unter Kernel 2.4 zu lesen kann
+To read the environment `mtd` table under kernel 2.4, use:
 
 ```
 	cat /proc/sys/dev/adam2/environment | grep mtd
 ```
 
-abgerufen werden. Ab Kernel 2.6 muss es so aussehen:
+Starting with kernel 2.6, it must look like this:
 
 ```
 	cat /proc/sys/urlader/environment | grep mtd
 ```
 
-Die Liste aller Linux mtd Devices erhält man mit:
+The list of all Linux `mtd` devices is obtained with:
 
 ```
 	cat /proc/mtd
 ```
 
-Da die Linux Partitionen von den MTD Treibern im Kernel ermittelt werden
-weichen Nummerierung und Größen teilweise erheblich von der
-Partitionierung im Environment ab.
+Because the Linux partitions are determined by the MTD drivers in the
+kernel, numbering and sizes sometimes differ considerably from the
+partitioning in the environment.
 
-Im Folgenden werden alle verwendeten Partitionsschemata einzeln
-beleuchtet.
+The following sections examine all partition schemes used.
 
 ### Hidden SquashFS
 
 [![Flash Legende](../../screenshots/55_md.png)](../../screenshots/55.png)
 
-Folgende Firmware verwendet Hidden SquashFS im NOR-Flash mit Kernel 2.4:
+The following firmware uses Hidden SquashFS in NOR flash with kernel 2.4:
 
 -   2 MB Flash
     -   Fritzbox SL (03.48 bis 03.73)
@@ -91,15 +89,15 @@ Folgende Firmware verwendet Hidden SquashFS im NOR-Flash mit Kernel 2.4:
     -   Fritzbox Fon WLAN (03.42 bis 04.27, auch int)
     -   Fritzbox Fon WLAN 7050 (03.58 bis 4.01)
 
-Das Hidden SquashFS beginnt direkt hinter dem Kernel (256 Byte Padding)
-und enthält vor allem Treiber. Es wird während des Bootvorgangs im
-Startskript `rc.S` gemounted. Der Kernel und das Hidden SquashFS
-befinden sich in `kernel.image`, das root Dateisystem in
-`filesystem.image`. Diese Technik wurde verwendet um proprietäre
-Binär-Module von TI vom root Dateisystem zu separieren. Das Hidden
-SquashFS enthält Dateien wie `avalanche_cpmac.o`, `avalanche_usb.o`,
-`tiatm.o` ohne jegliche Unterverzeichnisse und wird nach
-`/lib/modules/2.4.17_mvl21-malta-mips_fp_le/kernel/hidden` gemountet.
+The Hidden SquashFS starts directly after the kernel, with 256 bytes of
+padding, and mainly contains drivers. It is mounted during boot in the
+startup script `rc.S`. The kernel and Hidden SquashFS are in
+`kernel.image`, while the root filesystem is in `filesystem.image`. This
+technique was used to separate proprietary binary modules from TI from
+the root filesystem. The Hidden SquashFS contains files such as
+`avalanche_cpmac.o`, `avalanche_usb.o`, and `tiatm.o` without any
+subdirectories and is mounted at
+`/lib/modules/2.4.17_mvl21-malta-mips_fp_le/kernel/hidden`.
 
 [![Flash Hidden Squashfs](../../screenshots/56_md.png)](../../screenshots/56.png)
 
@@ -107,7 +105,7 @@ SquashFS enthält Dateien wie `avalanche_cpmac.o`, `avalanche_usb.o`,
 
 [![Flash Legende](../../screenshots/55_md.png)](../../screenshots/55.png)
 
-Folgende Firmware verwendet Contiguous SquashFS im NOR-Flash mit Kernel
+The following firmware uses Contiguous SquashFS in NOR flash with kernel
 2.4:
 
 -   2 MB Flash
@@ -116,14 +114,13 @@ Folgende Firmware verwendet Contiguous SquashFS im NOR-Flash mit Kernel
 -   4 MB Flash
     -   Fritzbox Fon WLAN 7050 (04.03-Beta bis 04.26, auch int)
 
-Beim Contiguous SquashFS fängt das root Dateisystem direkt nach dem
-Kernel an (256 Byte Padding). Da das root Dateisystem nun über `mtd0`
-und `mtd1` verteilt liegt, muss es im Firmware Update auch
-dementsprechend auf die Dateien `kernel.image` (Kernel + Anfang des root
-Dateisystems) und `filesystem.image` (Rest des root Dateisystems)
-aufgeteilt werden. Diese Technik wurde verwendet um ohne
-Umpartitionierung Platz für das wachsende root Dateisystem aus der
-Kernel Partition zu borgen.
+With Contiguous SquashFS, the root filesystem starts directly after the
+kernel, with 256 bytes of padding. Since the root filesystem is now spread
+across `mtd0` and `mtd1`, the firmware update must split it accordingly
+between `kernel.image`, kernel plus beginning of the root filesystem, and
+`filesystem.image`, the rest of the root filesystem. This technique was
+used to borrow space for the growing root filesystem from the kernel
+partition without repartitioning.
 
 [![Flash Contiguous](../../screenshots/57_md.png)](../../screenshots/57.png)
 
@@ -131,20 +128,18 @@ Kernel Partition zu borgen.
 
 [![Flash Legende](../../screenshots/55_md.png)](../../screenshots/55.png)
 
-Folgende Firmware verwendet Hidden Root im NOR- oder Serial-Flash mit
-Kernel 2.6:
+The following firmware uses Hidden Root in NOR or serial flash with kernel
+2.6:
 
--   alle Firmware ab Kernel 2.6.13.1 die kein NAND Root nutzt
+-   all firmware from kernel 2.6.13.1 onward that does not use NAND Root
 
-Bei Hidden Root befindet sich das root Dateisystem --- ähnlich wie bei
-Contiguous SquashFS --- direkt
-hinter dem Kernel (256 Byte Padding). Diese Boxen kann man daran
-erkennen, dass die Start- und End-Adresse von `mtd0` in der mtd Tabelle
-gleich 0 und die Datei `filesystem.image` im Firmware Update leer ist.
-`kernel.image` enthält sowohl den Kernel als auch das root Dateisystem.
-Diese Technik wurde verwendet um ohne Behinderung durch
-Partitionsgrenzen den vorhandenen Platz dynamisch zwischen Kernel und
-root Dateisystem aufzuteilen.
+With Hidden Root, the root filesystem, similar to Contiguous SquashFS, is
+located directly behind the kernel, with 256 bytes of padding. These boxes
+can be recognized by the start and end address of `mtd0` both being 0 in
+the `mtd` table and by `filesystem.image` being empty in the firmware
+update. `kernel.image` contains both the kernel and the root filesystem.
+This technique was used to dynamically divide the available space between
+kernel and root filesystem without being constrained by partition borders.
 
 [![Flash Hidden Root](../../screenshots/58_md.png)](../../screenshots/58.png)
 
@@ -152,7 +147,7 @@ root Dateisystem aufzuteilen.
 
 [![Flash Legende](../../screenshots/55_md.png)](../../screenshots/55.png)
 
-Folgende Modelle verwenden NAND Root mit Kernel 2.6:
+The following models use NAND Root with kernel 2.6:
 
 -   Fritzbox 3272
 -   Fritzbox 3370
@@ -162,165 +157,154 @@ Folgende Modelle verwenden NAND Root mit Kernel 2.6:
 -   Fritzbox 7362 SL
 -   Fritzbox 7490
 
-Alle bisher genannten Partitionsschemata basieren auf parallelem oder
-seriellem NOR-Flash mit vorhersagbarem Speicherplatz.
+All partition schemes mentioned so far are based on parallel or serial NOR
+flash with predictable storage space.
 [NAND-Flash](https://de.wikipedia.org/wiki/NAND-Flash)
-kann dagegen bereits ab Werk Fehler aufweisen und daher nur mit
-Fehlererkennungsmechanismen zuverlässig genutzt werden. Dies erfordert
-spezielle Controller oder Dateisysteme die Listen defekter Blöcke
-verwalten. Der Speicherplatz ist also nicht mehr zwingend durchgehend
-nutzbar und kann nicht mehr ohne Intelligenz geschrieben werden ohne die
-Liste defekter Blöcke zu zerstören (was sehr dumm wäre).
+can already contain errors from the factory and can therefore be used
+reliably only with error-detection mechanisms. This requires special
+controllers or filesystems that manage lists of defective blocks. The
+storage space is therefore no longer necessarily continuously usable and
+can no longer be written without intelligence, unless one wants to destroy
+the list of defective blocks, which would be very unwise.
 
-Bei Modellen die NAND nur als Datenspeicher für den NAS nutzen (z.B. die
-7390) ist das kein Problem. Dieser Speicher wird nur intelligent aus
-Linux heraus angesprochen und enthält normalerweise keine Systemteile.
-Alle Partitionen die über den Bootloader recovered werden liegen im
-NOR-Flash.
+On models that use NAND only as data storage for the NAS, for example the
+7390, this is not a problem. This storage is addressed intelligently only
+from Linux and normally contains no system components. All partitions that
+are recovered through the bootloader are located in NOR flash.
 
-Modelle bei denen auch das System im NAND-Flash liegt haben nur noch ein
-kleines serielles NOR-Flash für den Bootloader `mtd2` und zwei TFFS
-Partitionen `mtd3` und `mtd4`. Alle weiteren Partitionen befinden sich
-im NAND-Flash. Da es bei NAND keinen Platzmangel gibt wurden je 2
-Partitionen für Kernel und Dateisystem vorhesehen. Dies hat den Vorteil
-aus dem kaufenden System heraus aktualisieren zu können (hot flashable).
-Dabei werden die beiden jeweils nicht in Betrieb befindlichen
-Partitionen geschrieben, als aktiv markiert, und das System
-neugestartet. Beim nächsten Update wechselt der Vorgang wieder die
-aktiven Partitionen. Das Kernel befindet sich auf `mtd1`, das
-Dateisystem wieder getrennt auf `mtd0`. Welche beiden Partitionen damit
-gemeint sind definiert die EVA Variable `linux_fs_start`.
+Models where the system itself is also in NAND flash only have a small
+serial NOR flash for the bootloader `mtd2` and two TFFS partitions, `mtd3`
+and `mtd4`. All other partitions are in NAND flash. Since NAND does not
+have a space problem, two partitions each were provided for kernel and
+filesystem. This has the advantage that the running system can be updated,
+that is, it is hot flashable. The two partitions not currently in use are
+written, marked active, and the system is restarted. On the next update,
+the process switches the active partitions again. The kernel is on `mtd1`,
+the filesystem is again separate on `mtd0`. Which two partitions are meant
+is defined by the EVA variable `linux_fs_start`.
 
 [![Screenshot](../../screenshots/277_md.png)](../../screenshots/277.png)
 
-Um unabhängig vom verwendeten Dateisystem die Vorteile des effizient
-komprimierbaren SquashFS weiter nutzen zu können entschied sich AVM für
-ein interessantes Konzept. Auf die Filesystem-Partition wird ein
-minimales Wrapper-System installiert, das nur aus 190 inodes und dem
-eigentlichen System `filesystem_core.squashfs` besteht. Letzteres wird
-als Loop-Device als / gemountet. Dies benötigt natürlich mehr
-RAM-Speicher, hat aber zusätzlich den Vorteil schneller zu sein und das
-NAND-Flash erheblich weniger zu beanspruchen.
+To continue using the advantages of efficiently compressible SquashFS
+independently of the filesystem used, AVM chose an interesting concept. A
+minimal wrapper system is installed on the filesystem partition; it
+consists of only 190 inodes and the actual system
+`filesystem_core.squashfs`. The latter is mounted as `/` via a loop
+device. This naturally requires more RAM, but has the additional advantage
+of being faster and putting significantly less strain on the NAND flash.
 
-Die beiden (sehr spartanischen) TFFS Partitionen im NOR-Flash dienen nur
-der Werkseinrichtung, EVA und der Recovery. Im Betrieb wird eine neue
-Config-Partition im NAND-Flash verwendet, die YAFFS2 zur Speicherung der
-Konfiguration nutzt.
+The two very sparse TFFS partitions in NOR flash serve only factory setup,
+EVA, and recovery. During operation, a new config partition in NAND flash
+is used, using YAFFS2 to store the configuration.
 
-Diese "NAND Root" Modelle erforderten auch einen komplett überdachten
-Mechanismus zur Aktualisierung und zur Recovery.
+These "NAND Root" models also required a completely redesigned mechanism
+for updating and recovery.
 
 WIP
 
-### Dateisystem
+### Filesystem
 
-Grundsätzlich enthält jedes FRITZ!OS basierte Firmware-Image mindestens
-ein
+Basically, every FRITZ!OS-based firmware image contains at least one
 [SquashFS](http://de.wikipedia.org/wiki/Squashfs)
-Dateisystem. Dieses ist nahezu immer lzma oder gzip komprimiert, selten
-auch unkomprimiert. Modelle mit Hidden SquashFS enthalten 2 Dateisysteme
-nebeneinander in der Firmware, bei Modellen mit NAND Root sind es 2
-ineinander verschachtelte Dateisysteme.
+filesystem. It is almost always compressed with lzma or gzip, and only
+rarely uncompressed. Models with Hidden SquashFS contain two filesystems
+side by side in the firmware; models with NAND Root contain two nested
+filesystems.
 
-Ein SquashFS Image enthält einen immer unkomprimierten Superblock, der
-mit der Signatur `sqsh` für Big Endian oder `hsqs` für Little Endian
-anfängt. Diese Unterscheidung ist sehr wichtig, da alle weiteren Daten
-den jeweiligen Endian nutzen. Der Superblock kann mit jeder Variante mit
-`unsquashfs -s` gelesen werden. Leider gibt es viele Varianten von
-SquashFS, keinen globalen Standard und kein Werkzeug das für alle
-Varianten funktioniert. Auf der FRITZBox 3 SquashFS Generationen
-verwendet, Version 1 bis 3. Diese Versionsnummer wird im Superblock als
-`versionmajor` gespeichert. `versionminor` dient als Ersatz für das
-vergessene Feld zur Angabe der Kompressionsart. 0 und 1 bedeutet gzip
-Kompression die jedes Standard `unsquashfs` unterstützt - 76 ist bei der
-FRITZBox der häufigste Wert, der lzma Kompression symbolisiert. Da dies
-kein Standard ist baut Freetz `tools/unsquashfs3-lzma`. Um es nicht mit
-einer reinen Versionsnummer zu verwechseln hat sich sie Schreibweise mit
-':' zur Trennumg von major/minor eingebürgert - z.B. `3:76`.
+A SquashFS image contains an always-uncompressed superblock that starts
+with the signature `sqsh` for big endian or `hsqs` for little endian.
+This distinction is very important because all further data uses the
+respective endian format. The superblock can be read with any variant
+using `unsquashfs -s`. Unfortunately, there are many SquashFS variants, no
+global standard, and no tool that works for all variants. FRITZ!Box uses
+three SquashFS generations, versions 1 to 3. This version number is stored
+in the superblock as `versionmajor`. `versionminor` serves as a substitute
+for the forgotten field specifying the compression type. 0 and 1 mean gzip
+compression, which every standard `unsquashfs` supports. 76 is the most
+common value on the FRITZ!Box and represents lzma compression. Because
+this is not a standard, Freetz builds `tools/unsquashfs3-lzma`. To avoid
+confusing it with a plain version number, the notation with `:` separating
+major and minor has become established, for example `3:76`.
 
-Bei der Analyse von 1800 verschiedenen unmodifizierten Firmware-, Labor-
-und Recovery-Images ergab sich folgende Verteilung:
+Analysis of 1800 different unmodified firmware, lab, and recovery images
+showed this distribution:
 
--   1:0 - SquashFS 1, gzip komprimiert - ca. 0,1%
--   2:0 - SquashFS 2, gzip komprimiert - ca. 0,5%
--   2:1 - SquashFS 2, gzip komprimiert - ca. 8%
--   2:76 - SquashFS 2, lzma komprimiert - ca. 23%
--   3:0 - SquashFS 3, gzip komprimiert - ca. 12,2%
--   3:76 - SquashFS 3, lzma komprimiert - ca. 56,5%
+-   1:0 - SquashFS 1, gzip compressed - approx. 0.1%
+-   2:0 - SquashFS 2, gzip compressed - approx. 0.5%
+-   2:1 - SquashFS 2, gzip compressed - approx. 8%
+-   2:76 - SquashFS 2, lzma compressed - approx. 23%
+-   3:0 - SquashFS 3, gzip compressed - approx. 12.2%
+-   3:76 - SquashFS 3, lzma compressed - approx. 56.5%
 
-Die als 3:0 genannten Images sind die `filesystem.image` und die darin
-enthaltenen `filesystem_core.squashfs` der NAND-Root Modelle, die beide
-gzip komprimiert sind. Es gibt auch neuere SquashFS 4 Varianten die auch
-`xz` Kompression unterstützen. Auf der FRITZBox kamen diese jedoch
-bisher nicht zum Einsatz.
+The images listed as 3:0 are the `filesystem.image` and the contained
+`filesystem_core.squashfs` of NAND Root models; both are gzip compressed.
+There are also newer SquashFS 4 variants that support `xz` compression,
+but they have not yet been used on the FRITZ!Box.
 
-Auch Recoveries enthalten das SquashFS in binärer Form, in der `.data`
-Sektion die leicht mit 7zip isolierbar ist. Darin kann man nach den
-beiden Signaturen suchen und Fehlfunde mit nicht plausiblen major/minor
-Werten ausmaskieren. Die Grösse des SquashFS steht normalerweise im
-Superblock als `bytesused`, der Wert kann jedoch auch 0 sein. Dies ist
-nicht wirklich ein Problem, da ein SquashFS nicht durch überflüssige
-Daten am Ende gestört wird.
+Recoveries also contain SquashFS in binary form, in the `.data` section,
+which can easily be isolated with 7zip. There one can search for the two
+signatures and mask out false matches with implausible major/minor values.
+The size of the SquashFS is normally in the superblock as `bytesused`, but
+the value can also be 0. This is not really a problem, because a SquashFS
+is not disturbed by superfluous data at the end.
 
-Es gibt einen (ca 5%) Anteil (leider auch 3 neuerer) Recoveries die eine
-Extraktion nicht ermöglichen. So wurden runlength encoded Firmwareteile
-entdeckt die auf überoptimierende Compiler hindeuten. In einigen älteren
-Recoveries mit Contiguous SquashFS befindet sich die SquashFS Signatur
-am Ende des `.data` Segments, das beschnittene SquashFS befindet sich
-also nicht automatisch auffindbar vor dem Kernel. In beiden Fällen ist
-das extrahierte Datenmaterial dann unbrauchbar.
+There is a share of recoveries, about 5%, unfortunately including three
+newer ones, that do not allow extraction. Run-length encoded firmware
+parts were found, pointing to over-optimizing compilers. In some older
+recoveries with Contiguous SquashFS, the SquashFS signature is at the end
+of the `.data` segment, so the truncated SquashFS is not automatically
+findable before the kernel. In both cases, the extracted data material is
+unusable.
 
-Recoveries mit Contiguous SquashFS (bisher sind 10 bekannt) lassen sich
-mit Kenntnis von Position und Länge des größeren SquashFS-Teils
-extrahieren, runlength encoded Recoveries nur mit `bsdiff` generierten
-Binärpatches des extrahierten Datenmaterials. Letztere sind recht klein
-(1,5-3,5KB), lassen sich aber nur erstellen wenn eine Firmware oder ein
-Partitionsdump der selben Version existiert. Dumps sehr alter Versionen
-sind nur schwer erstellbar, da sie zum Einspielen meist einen älteren
-Bootloader benötigen.
+Recoveries with Contiguous SquashFS, ten are known so far, can be
+extracted if the position and length of the larger SquashFS part are
+known. Run-length encoded recoveries can be extracted only with binary
+patches generated by `bsdiff` from the extracted data material. The latter
+are quite small, 1.5-3.5 KB, but can be created only if firmware or a
+partition dump of the same version exists. Dumps of very old versions are
+difficult to create because flashing them usually requires an older
+bootloader.
 
 ### Kernel
 
-Das FRITZ!OS Kernel ist immer komprimiert. Hierbei kommen 3 Techniken
-zum Einsatz, die vom installierten Bootloader abhängen.
+The FRITZ!OS kernel is always compressed. Three techniques are used,
+depending on the installed bootloader.
 
-Alle Kernels die auf ADAM2 lauffähig sind fangen mit der Hexfolge
-`42 FA ED FE` an (0xFEEDFA42), die ADAM2 Signatur für MIPS-LE. Da ADAM2
-noch keine eingebaute Unterstützung für komprimierte Kernels hatte
-enthalten diese einen `zimage` Dekompressor ([TI Avalanche
+All kernels that can run on ADAM2 begin with the hex sequence
+`42 FA ED FE` (0xFEEDFA42), the ADAM2 signature for MIPS-LE. Since ADAM2
+did not yet have built-in support for compressed kernels, these contain a
+`zimage` decompressor ([TI Avalanche
 Inflater](http://gpl.back2roots.org/source/fritzbox/ALL_4.06/GPL-release_kernel/linux/arch/mips/mips-boards/ti_avalanche/inflater/),
-8,5-12,5 KB) vor dem eigentlichen gzip komprimierten Kernel. Man erkennt
-diesen auch am String `zimage` innerhalb der ersten 13 KB des Kernels.
-Der Anfang der Kerneldaten ist durch die gzip Signatur `1F 8B 08`
-auffindbar. ADAM2-Kernels sind auch auf EVA lauffähig.
+8.5-12.5 KB) before the actual gzip-compressed kernel. It can also be
+recognized by the string `zimage` within the first 13 KB of the kernel.
+The beginning of the kernel data can be found by the gzip signature
+`1F 8B 08`. ADAM2 kernels can also run on EVA.
 
-Alle Kernels die EVA benötigen fangen mit der Hexfolge `81 12 ED FE` an,
-unabhängig vom Endian. Eine zweite Signatur ab Offset 12 (0x0C)
-signalisiert die Art der Kompression der folgenden Kerneldaten. Die
-Hexfolge `01 02 5A 07` bedeutet `lzma`, die Folge `10 20 5A 70` bedeutet
-`zlib` Kompression, auch hier unabhängig vom Endian.
+All kernels that require EVA begin with the hex sequence `81 12 ED FE`,
+independent of endian. A second signature starting at offset 12 (0x0C)
+signals the type of compression used for the following kernel data. The
+hex sequence `01 02 5A 07` means `lzma`; `10 20 5A 70` means `zlib`
+compression, again independent of endian.
 
-Bei der Analyse von 1800 verschiedenen unmodifizierten Firmware-, Labor-
-und Recovery-Images ergab sich folgende Verteilung:
+Analysis of 1800 different unmodified firmware, lab, and recovery images
+showed this distribution:
 
--   zimage - gzip komprimiertes Kernel 2.4 für ADAM2 oder EVA - ca.
+-   zimage - gzip-compressed kernel 2.4 for ADAM2 or EVA - approx.
     10,2%
--   zlib - roher zlib Stream mit Kernel 2.6 für EVA - ca. 0,1%
--   lzma - lzma Stream mit Kernel 2.4 oder 2.6 für EVA - ca. 89,5%
+-   zlib - raw zlib stream with kernel 2.6 for EVA - approx. 0.1%
+-   lzma - lzma stream with kernel 2.4 or 2.6 for EVA - approx. 89.5%
 
-EVA wurde also bereits unter Kernel 2.4 eingeführt. Von allen
-untersuchten Kernel 2.4 Proben waren etwa 75% zimage komprimiert, der
-Rest benötigt bereits EVA wegen lzma. Alle Kernel 2.6 Firmware benötigt
-EVA.
+EVA was therefore already introduced under kernel 2.4. Of all examined
+kernel 2.4 samples, about 75% were `zimage` compressed; the rest already
+requires EVA because of lzma. All kernel 2.6 firmware requires EVA.
 
-Mit den beiden Signaturen lassen sich ADAM2- und EVA-Kernels in
-Recoveries finden. Durch Prüfen der 3 Kompressions-Signaturen können
-Fehlfunde ausmaskiert werden. Wie beim SquashFS funktioniert dies bei
-runlength encoded Recoveries (bisher sind 11 bekannt) nur mit `bsdiff`
-generierten Binärpatches des extrahierten Datenmaterials. Interessant
-ist, dass die Patches für das Kernel 3x grösser sind als die Patches für
-das sehr viel umfangreichere SquashFS. Hier besteht offensichtlich noch
-Forschungsbedarf.
+The two signatures can be used to find ADAM2 and EVA kernels in
+recoveries. Checking the three compression signatures allows false matches
+to be masked out. As with SquashFS, this works for run-length encoded
+recoveries, eleven are known so far, only with binary patches generated
+by `bsdiff` from the extracted data material. Interestingly, the patches
+for the kernel are three times larger than the patches for the much larger
+SquashFS. More research is clearly needed here.
 
 ### Weblinks
 

@@ -1,18 +1,21 @@
-# UI-Module und ctlmgr_ctl
+# UI Modules and ctlmgr_ctl
 
-Mit dem `ctlmgr_ctl` können interne Variablen von AVM angezeigt und bearbeitet werden die unter `/var/flash/` zumeist in Textdateien gespeichert sind.
-Manche dieser Variablen sind nicht, nicht mehr oder nur mit einem anderen Branding im Webinterface zu sehen.
-Dies ist keine öffentliche und dokumentierte Schnittstelle und verhält sich teilweise sehr eigenwillig.
-Manche Werte sind nicht änderbar oder andere akzeptieren nur gewisse Wertebereiche.
-Andere lösen ein Ereignis aus und kehren zu ihrem Wert zurück.
-Es kann auch Werte geben die man besser nicht ändern sollte.
-Vor dem Experimentieren sollte man unbedingt eine Konfigurationsicherung erstellen.
+`ctlmgr_ctl` can display and edit internal AVM variables, which are
+usually stored in text files under `/var/flash/`. Some of these variables
+are not visible in the web interface, are no longer visible there, or are
+visible only with a different branding. This is not a public documented
+interface and can behave rather idiosyncratically. Some values cannot be
+changed, while others accept only certain value ranges. Some trigger an
+event and then return to their old value. There may also be values that
+are better left unchanged. Always create a configuration backup before
+experimenting.
 
 
 ### Module
 
-Die Module sind Kategorien wie zum Beispiel `wlan`, `env` oder `tr069` die oft einzlene Konfigurationsdateien repräsentieren.
-<br>Um alle Module des Gerätes anzuzeigen:
+Modules are categories such as `wlan`, `env`, or `tr069`; they often
+represent individual configuration files.
+<br>To display all modules on the device:
 ```
 $ ctlmgr_ctl u | sed '1,2d'
 
@@ -26,8 +29,10 @@ move
 ```
 
 ### Keys
-Die Keys sind die Variablen eines Modules. Diese beginnen mit `settings/` und manche alternativ mit `status/`.
-<br>Um alle Keys eines Modules anzuzeigen:
+
+Keys are the variables of a module. They begin with `settings/`; some
+alternatively begin with `status/`.
+<br>To display all keys of a module:
 ```
 $ ctlmgr_ctl u  tr064
 
@@ -40,16 +45,17 @@ check_sid=error
 doupdate_require_auth=1
 ```
 
-### Alle Variablen
-Listet alle Module mit allen Keys und den gesetzten Werten auf.
-Dieser Befehl braucht gut 1 Minute und speichert die Ausgabe zusätzlich in `uimods.txt`.
+### All Variables
+
+Lists all modules with all keys and their configured values. This command
+takes about one minute and also saves the output in `uimods.txt`.
 
 ```
 for x in $(ctlmgr_ctl u | sed '1,2d'); do echo; ctlmgr_ctl u $x; done | tee uimods.txt
 ```
 
 
-### Variable lesen
+### Read a Variable
 
 ```
 $ ctlmgr_ctl r  tr064 settings/username
@@ -57,7 +63,7 @@ $ ctlmgr_ctl r  tr064 settings/username
 dslf-config
 ```
 
-oder 
+or
 
 ```
 $ ctlmgr_ctl r -v  tr064 settings/username
@@ -65,7 +71,7 @@ $ ctlmgr_ctl r -v  tr064 settings/username
 tr064:settings/username = dslf-config
 ```
 
-### Variable schreiben
+### Write a Variable
 
 ```
 $ ctlmgr_ctl w  tr064 settings/username dslf-config
@@ -81,9 +87,9 @@ $ ctlmgr_ctl w -v  tr064 settings/username dslf-config
 tr064:settings/username = dslf-config
 ```
 
-### Mehrere Variablen
+### Multiple Variables
 
-Lesen:
+Read:
 ```
 $ ctlmgr_ctl r  tr064 settings/enabled  tr064 settings/username
 
@@ -97,7 +103,7 @@ $ ctlmgr_ctl r -v  tr064 settings/enabled  tr064 settings/username
 tr064:settings/enabled = 0
 tr064:settings/username = dslf-config
 ```
-Schreiben:
+Write:
 ```
 $ctlmgr_ctl w  tr064 settings/enabled 0  tr064 settings/username dslf-config
 
@@ -114,14 +120,14 @@ tr064:settings/username = dslf-config
 
 ### Listen
 
-Anzahl Elemente einer Liste ausgeben:
+Output the number of elements in a list:
 ```
 $ ctlmgr_ctl r boxusers settings/user/count
 
 2
 ```
 
-Alle Elemente einer Liste anzeigen:
+Display all elements of a list:
 ```
 $ ctlmgr_ctl l boxusers settings/user/list
 
@@ -129,7 +135,7 @@ $ ctlmgr_ctl l boxusers settings/user/list
   user1
 ```
 
-Ausgewählte Variablen aller Elemente lesen:
+Read selected variables of all elements:
 ```
 $ ctlmgr_ctl l boxusers "settings/user/list(UID,name,box_admin_rights)"
 
@@ -137,21 +143,21 @@ $ ctlmgr_ctl l boxusers "settings/user/list(UID,name,box_admin_rights)"
   user1   boxuser10       horst   0
 ```
 
-Eine Variable eines Elementes lesen:
+Read one variable of one element:
 ```
 $ ctlmgr_ctl r boxusers settings/user0/UID
 
 boxuser11
 ```
 
-Nächstes freies Element anzeigen:
+Display the next free element:
 ```
 $ ctlmgr_ctl r boxusers settings/user/newid
 
 user2
 ```
 
-Ein neues Element anlegen:
+Create a new element:
 ```
 $ ctlmgr_ctl w  boxusers settings/user2/enabled 0  boxusers settings/user2/name horst  boxusers settings/user2/box_admin_rights 3  boxusers settings/user2/password aciouasvdtn
 
@@ -161,7 +167,7 @@ horst
 ****
 ```
 
-Ein Element löschen:
+Delete an element:
 ```
 $ ctlmgr_ctl del  boxusers boxusers:command/user2
 

@@ -1,79 +1,73 @@
-# Erstellen einer GUI für Pakete in Freetz
+# Creating a GUI for Packages in Freetz
 
 ### Motivation
 
-Ein großer Faktor für den Erfolg von Freetz ist die Tatsache, dass die
-Pakete dort über eine GUI zu konfigurieren sind. Über den Aufbau und die
-Vorgehensweise zur Erstellen einer solchen GUI soll es in diesem Beitrag
-gehen. Als Grundlage nehmen wir ein virtuelles Paket mit Namen "hugo"
-an, um einen Bezug zu haben
+A major factor in Freetz's success is that packages can be configured
+through a GUI. This article explains the structure and procedure for
+creating such a GUI. As a basis and reference point, we assume a virtual
+package named `hugo`.
 
-### Grundlagen
+### Basics
 
-Bevor man sich Gedanken über die GUI machen kann, sind ein paar
-grundlegende Dinge über die Art und Weise zu sagen, wie in Freetz Pakete
-funktionieren. Als grundlegende Information sei auf die [Doku
-von
-Daniel](http://www.ip-phone-forum.de/showthread.php?t=90425)
-verwiesen, hier soll das ganze nur kurz wiedergegeben werden (ich hoffe
-das "fast wortwörtliche direkte Kopieren" aus dem Thread von Daniel
-ist mir hier erlaubt):
+Before thinking about the GUI, a few basic things need to be said about
+how packages work in Freetz. For basic information, see
+[Daniel's documentation](http://www.ip-phone-forum.de/showthread.php?t=90425).
+Only a short summary is repeated here; I hope the almost verbatim copying
+from Daniel's thread is allowed.
 
-### Eigene Pakete
+### Custom Packages
 
-An ein Paket stellen sich folgende Anforderungen:
+A package has the following requirements:
 
--   rc Skript:
+-   rc script:
     `etc/init.d/rc.<paketname> [start|stop|load|unload|restart|status]`
 
-Wenn konfigurierbar:
+If configurable:
 
--   Default Konfiguration: `etc/default.<paketname>/<paketname>.cfg`
--   Optional: cgi Skript für die Weboberfläche:
+-   Default configuration: `etc/default.<paketname>/<paketname>.cfg`
+-   Optional: CGI script for the web interface:
     `usr/lib/cgi-bin/<paketname>.cgi`
--   Optional: Extra cgi Skripte in `usr/lib/cgi-bin/<paketname>/`
+-   Optional: extra CGI scripts in `usr/lib/cgi-bin/<paketname>/`
 
-Sonstige Default Dateien sollten auch ins Verzeichnis
-etc/default.\<paketname\>/ gepackt werden.
+Other default files should also be placed in the directory
+`etc/default.<paketname>/`.
 
 -   `/mod/etc/init.d/rc.<paketname>`
 -   `/mod/etc/default.<paketname>/*`
 -   `/mod/usr/lib/cgi-bin/<paketname>.cgi`
 -   `/mod/usr/lib/cgi-bin/<paketname>/*`
 
-sind immer gültig (sofern im Paket enthalten) und werden bei statischen
-Paketen über Symlinks realisiert. Binaries sollten nach `bin`, `sbin`,
-`usr/bin` oder `usr/sbin`, damit sie sowohl in statischen als auch
-dynamischen Paketen aufrufbar sind (die PATH Variable enthält auch
-`/mod/bin`, `/mod/sbin`, `/mod/usr/bin` und `/mod/usr/sbin`). Libraries
-funktionieren mit statischen wie auch dynamischen Paketen in lib
-(`LD_LIBRARY_PATH=/mod/lib` ⇒ Library wird in `/lib` und `/mod/lib`
-gesucht)
+are always valid, if included in the package, and are realized through
+symlinks for static packages. Binaries should go into `bin`, `sbin`,
+`usr/bin`, or `usr/sbin` so they can be called from both static and
+dynamic packages. The `PATH` variable also contains `/mod/bin`,
+`/mod/sbin`, `/mod/usr/bin`, and `/mod/usr/sbin`. Libraries work for both
+static and dynamic packages in `lib`; with `LD_LIBRARY_PATH=/mod/lib`, the
+library is searched in `/lib` and `/mod/lib`.
 
-Benötigt ein Daemon eines Paketes eine Konfigurationsdatei (z.B.
-`hugo.conf`), die für diesen Daemon spezifisch ist, so wird sie in der
-Regel im rc Skript vor dem Starten des Daemons erzeugt. Ich habe dafür
-folgende Konvention gewählt (ist aber kein muss), welche am Beispiel der
-`bftpd.conf` erläutert ist:
+If a package daemon needs a configuration file specific to that daemon,
+for example `hugo.conf`, it is usually generated in the rc script before
+starting the daemon. I chose the following convention, though it is not
+mandatory; it is explained using `bftpd.conf` as an example:
 
-1.  Suche nach Skript `/tmp/flash/hugo_conf`, welches die `hugo.conf`
-    als Ausgabe hat; existiert? → goto 3.
-2.  Führe Skript `/etc/default.hugo/hugo_conf` aus, die Ausgabe ergibt
-    wie bei 1. die `hugo.conf` (meistens ist dies der Fall)
-3.  Existiert `/tmp/flash/hugo.conf.extra`? → füge sie an die in 1.
-    oder 2. generierte `hugo.conf` an
+1.  Search for script `/tmp/flash/hugo_conf`, which outputs `hugo.conf`.
+    If it exists, go to step 3.
+2.  Run script `/etc/default.hugo/hugo_conf`; as in step 1, its output is
+    `hugo.conf`, usually this is the case.
+3.  If `/tmp/flash/hugo.conf.extra` exists, append it to the `hugo.conf`
+    generated in step 1 or 2.
 
-Das sollte alle Möglichkeiten des "Feintunings" offen lassen. 3. macht
-nicht immer Sinn, darum ist es optional. Wäre schön, wenn jeder, der ein
-Paket erstellt, die Konventionen einhält. Das Skript `hugo_conf` muss
-stets mit exportierten Variablen aus `/mod/etc/conf/hugo.cfg` aufgerufen
-werden. So wird die `hugo.conf` je nach Paket-Konfiguration individuell
-erstellt.
+This should leave all fine-tuning possibilities open. Step 3 does not
+always make sense, so it is optional. It would be nice if everyone
+creating a package followed the conventions. The script `hugo_conf` must
+always be called with exported variables from `/mod/etc/conf/hugo.cfg`.
+This way, `hugo.conf` is created individually depending on the package
+configuration.
 
-### Konfiguration
+### Configuration
 
-Jedes Paket besitzt ein Konfigurationsdatei
-`/mod/etc/conf/<paketname>.cfg`, welche wie folgt aufgebaut ist:
+Each package has a configuration file
+`/mod/etc/conf/<paketname>.cfg`, structured as follows:
 
 ```
   export <PAKETNAME>_OPTION1='bla'
@@ -81,52 +75,50 @@ Jedes Paket besitzt ein Konfigurationsdatei
   ...
 ```
 
-Sie enthält alle Optionen, die auch übers Webinterface eingestellt
-werden können und ist in Shell Syntax. Damit kann die aktuelle
-Konfiguration mit
+It contains all options that can also be set through the web interface and
+uses shell syntax. The current configuration can therefore be loaded with:
 
 ```
   . /mod/etc/conf/<paketname>.cfg
 ```
 
-eingelesen werden. In der Datei
-`/mod/etc/default.<paketname>/<paketname>.cfg` sind die default
-Einstellungen gespeichert. Beim Speichern werden nur die sich von den
-Defaults unterscheidenden Variablen in die `/tmp/flash/<paketname>.diff`
-transferiert und mit dem ganzen Verzeichnis `/tmp/flash/` ins tffs
-abgelegt. Die Basis-Konfiguration hat den Paketnamen 'mod'. Die
-Befehle dazu sind:
+The default settings are stored in
+`/mod/etc/default.<paketname>/<paketname>.cfg`. When saving, only the
+variables that differ from the defaults are transferred into
+`/tmp/flash/<paketname>.diff` and stored in TFFS together with the whole
+`/tmp/flash/` directory. The base configuration has the package name
+`mod`. The commands for this are:
 
 ```
       modconf load <paketname>
-      # -> erzeugt die Datei /mod/etc/conf/<paketname>.cfg aus den Defaults und der <paketname>.diff
+    # -> creates /mod/etc/conf/<paketname>.cfg from the defaults and <paketname>.diff
 
 
       modconf save <paketname>
-      # -> erzeugt die Datei <paketname>.diff aus den Defaults und der /mod/etc/conf/<paketname>.cfg
+    # -> creates <paketname>.diff from the defaults and /mod/etc/conf/<paketname>.cfg
 
       modsave
-      # -> ruft unter anderem für alle Pakete 'modconf save' auf und speichert das Verzeichnis /tmp/flash ins tffs
+    # -> among other things, calls 'modconf save' for all packages and saves /tmp/flash to TFFS
 
       modsave flash
-      # -> speichert nur das Verzeichnis /tmp/flash ins tffs
+    # -> saves only /tmp/flash to TFFS
 ```
 
-Das dauerhafte Abschalten des Webinterfaces geht damit so (Variable
-MOD_HTTPD in der Basis-Konfiguration 'mod'):
+This is how to permanently disable the web interface, using variable
+`MOD_HTTPD` in the base configuration `mod`:
 
 ```
-  vi /mod/etc/conf/mod.cfg  # -> MOD_HTTPD='yes' durch MOD_HTTPD='no' ersetzen
-  modconf save mod  # nun ist mod.diff up-to-date
-  modsave flash  # damit ist mod.diff im tffs
+    vi /mod/etc/conf/mod.cfg  # -> replace MOD_HTTPD='yes' with MOD_HTTPD='no'
+    modconf save mod  # mod.diff is now up to date
+    modsave flash  # mod.diff is now in TFFS
 
   # oder
 
-  vi /mod/etc/conf/mod.cfg  # -> MOD_HTTPD='yes' durch MOD_HTTPD='no' ersetzen
-  modsave  # erzeugt alle diff Dateien neu und speichert ins tffs
+    vi /mod/etc/conf/mod.cfg  # -> replace MOD_HTTPD='yes' with MOD_HTTPD='no'
+    modsave  # recreates all diff files and saves them to TFFS
 ```
 
-Soviel zur Veranschaulichung. Komfortabler ist folgendes:
+That much for illustration. The following is more convenient:
 
 ```
   modconf set mod MOD_HTTPD=no
@@ -139,36 +131,35 @@ Soviel zur Veranschaulichung. Komfortabler ist folgendes:
   modsave
 ```
 
-### Wie funktioniert das mit der GUI?
+### How Does This Work with the GUI?
 
-Im vorigen Abschnitt wurde beschrieben, welche Dateien es gibt und wie
-ich die Werte von Variablen direkt von der Shell aus ändern kann. Die
-Freetz GUI's basieren auf dem Konzept des
+The previous section described which files exist and how variable values
+can be changed directly from the shell. Freetz GUIs are based on the
+concept of
 [Proccgi](http://www.fpx.de/fp/Software/ProcCGI.html)
-von Frank Pilhofer. Hierzu bedienen sie sich Umgebungsvariablen, die wie
-oben beschrieben dem Muster `<Paketname>_<Variablenname>` folgen. In den
-HTML-Seiten der GUI werden Input-Felder mit dem Tag
-`name="<Variablenname>"` versehen. Diese Felder korrespondieren dann mit
-den Variablen. Alle GUI-Seiten sind in einen Rahmen-Formular von Freetz
-untergebracht, das über den Button "Übernehmen" diese Variablen
-ausliest und der Umgebungsvariable zuweist.
+by Frank Pilhofer. They use environment variables that follow the pattern
+`<Paketname>_<Variablenname>` as described above. In the HTML pages of
+the GUI, input fields are given the tag `name="<Variablenname>"`. These
+fields then correspond to the variables. All GUI pages are embedded in a
+Freetz wrapper form whose `Apply` button reads these variables and assigns
+them to the environment variables.
 
-### Ein Beispiel
+### An Example
 
-Ich hoffe, ein kleines Beispiel macht das deutlicher, unser "Paket"
-heisst wie schon gesagt "hugo". Als erstes legen wir das "default"
-Verzeichnis und die hugo.cfg Datei an.
+I hope a small example makes this clearer. As already mentioned, our
+"package" is named `hugo`. First, create the `default` directory and the
+`hugo.cfg` file.
 
 ```
     mkdir /mod/etc/default.hugo
     touch /mod/etc/default.hugo/hugo.cfg
 ```
 
-Im "default" Verzeichnis des Paketes `/etc/default.hugo/hugo.cfg`
-werden die benutzten Variablen über einen export definiert und zugleich
-auch mit einem "default-Wert" belegt. Wenn man später also im
-Webinterface auf "Standard" klickt, werden die dort festgelegten Werte
-aus der GUI übernommen. So eine Datei sähe dann in etwa so aus:
+In the package's `default` directory, `/etc/default.hugo/hugo.cfg`, the
+used variables are defined with `export` and at the same time assigned a
+default value. Later, when `Default` is clicked in the web interface, the
+values defined there are taken over by the GUI. Such a file would look
+roughly like this:
 
 ```
     export HUGO_ACTION='ACCEPT'
@@ -177,46 +168,45 @@ aus der GUI übernommen. So eine Datei sähe dann in etwa so aus:
     export HUGO_ENABLED='no'
 ```
 
-Damit sind die Variablen `ACTION`, `CHAIN`, `DESTINATION`, `ENABLED`,
-etc. definiert. Diese Variablennamen werden in der GUI, einem
-"cgi-File" belegt (per Eingabe oder auch per javascript).
+This defines the variables `ACTION`, `CHAIN`, `DESTINATION`, `ENABLED`,
+and so on. These variable names are assigned in the GUI, a CGI file, by
+input or JavaScript.
 
-Der entsprechende Abschnitt dazu im Code
+The corresponding section in the code:
 
 ```
     <p>DESTINATION: <input type="text" name="destination" value="$(html "$HUGO_DESTINATION")"></p>
 ```
 
-man sieht hier auch, dass dieses "cgi"-File Shellauswertung nutzt, um
-im HTML-Code den Wert von "DESTINATION" als Vorbelegung nutzt.
+This also shows that the CGI file uses shell evaluation to use the value
+of `DESTINATION` as the preset value in the HTML code.
 
-Beim "Übernehmen" werden diese Variablen mit den "default-Variablen"
-verglichen und beim Abweichen direkt resetfest im Flash abgespeichert.
+When `Apply` is pressed, these variables are compared with the default
+variables and, if they differ, are saved directly to flash in a way that
+survives resets.
 
-Gibt man hier nun in das Feld "Blabla" ein, erzeugt das "Übernehmen"
-die Datei `/var/tmp/flash/hugo.diff` mit diesem Inhalt:
+If `Blabla` is entered in the field, `Apply` creates the file
+`/var/tmp/flash/hugo.diff` with this content:
 
 ```
     export HUGO_DESTINATION='Blabla'
 ```
 
-die mit `modsave` auch gleich gesichert wird. Auch wird aus der
-Zusammenführung der default-Werte und der geänderten Werte im
-*diff*-file die aktuelle Datei `/mod/etc/conf/hugo.cfg` erstellt, die
-für jede Variable den aktuellen Wert zuweist (das alles macht übrigens
-das cgi `/usr/mww/cgi-bin/save.cgi`, der beim Abschicken des Formulars
-aufgerufen wird).
+This is also saved immediately with `modsave`. The current file
+`/mod/etc/conf/hugo.cfg` is also created by merging the default values and
+the changed values in the diff file; it assigns the current value to each
+variable. Incidentally, all of this is done by the CGI
+`/usr/mww/cgi-bin/save.cgi`, which is called when the form is submitted.
 
-hat man also die `hugo.cfg` Datei im "default" Verzeichnis fertig
-gestellt, so kopiert man diese nach `/mod/etc/conf`
+Once the `hugo.cfg` file in the `default` directory is complete, copy it
+to `/mod/etc/conf`:
 
 ```
     modconf load hugo
 ```
 
-Jetzt kommt die GUI Programmierung dran. Die Datei `hugo.cgi` wird im
-Verzeichnis `/mod/usr/lib/cgi-bin/` angelegt und sollte ungefähr so
-aussehen.
+Now comes GUI programming. Create `hugo.cgi` in
+`/mod/usr/lib/cgi-bin/`; it should look roughly like this:
 
 ```
     #!/bin/sh
@@ -224,7 +214,7 @@ aussehen.
     PATH=/bin:/usr/bin:/sbin:/usr/sbin
     . /usr/lib/libmodcgi.sh
 
-    # setzt auto_chk oder man_chk auf ' checked', je nach Wert von HUGO_ENABLED
+    # sets auto_chk or man_chk to ' checked', depending on HUGO_ENABLED
     check "$HUGO_ENABLED" yes:auto "*":man
 
     sec_begin 'Activation'
@@ -237,7 +227,7 @@ aussehen.
     EOF
     sec_end
 
-    sec_begin 'hugo Überschrift'
+    sec_begin 'hugo heading'
     cat << EOF
     ...
     <p>DESTINATION: <input type="text" name="destination" value="$(html "$HUGO_DESTINATION")"></p>
@@ -246,40 +236,39 @@ aussehen.
     sec_end
 ```
 
-Wollen wir eine zusätzliche Datei fest ins Flash speichern, so müssen
-wir diese mit `modreg file` registrieren und eine Datei namens
-`hugo_file.def` im Verzeichnis `/mod/etc/default.hugo` anlegen. Inhalt
-muss so aussehen:
+If an additional file should be stored permanently in flash, register it
+with `modreg file` and create a file named `hugo_file.def` in
+`/mod/etc/default.hugo`. Its content must look like this:
 
 ```
-    CAPTION='Überschrift'
-    DESCRIPTION='Beschreibung dieser Datei. Bla bla bla...'
+    CAPTION='Heading'
+    DESCRIPTION='Description of this file. Blah blah blah...'
     CONFIG_FILE='/tmp/flash/hugo_file'
     CONFIG_SAVE='modsave flash;'
     CONFIG_TYPE='text'
 ```
 
-(Falls die zu bearbeitende Datei zunächst generiert werden muss, kann
-die nötige Anweisung in `CONFIG_PREPARE` angegeben werden.)
+If the file to be edited must first be generated, the required command can
+be specified in `CONFIG_PREPARE`.
 
-Der Daemon, der unsere Arbeiten ausführt, heisst `rc.hugo` und wird
-unter `/mod/etc/init.d` angelegt. Die ersten Zeilen müssen so aussehen:
+The daemon that performs our work is called `rc.hugo` and is created
+under `/mod/etc/init.d`. The first lines must look like this:
 
 ```
     #!/bin/sh
 
     DAEMON=hugo
 
-    # Liest Paketkonfiguration ein und definiert einige Hilsfunktionen
+    # Reads package configuration and defines some helper functions
     . /etc/init.d/modlibrc
 
     start() {
-             # HIER KOMMEN DIE VERARBEITUNGEN REIN
+             # PROCESSING GOES HERE
              echo "Starting hugo..."
     }
 
     stop() {
-             # HIER KOMMEN DIE VERARBEITUNGEN REIN
+             # PROCESSING GOES HERE
              echo "Stopping hugo..."
     }
 
@@ -302,10 +291,10 @@ unter `/mod/etc/init.d` angelegt. Die ersten Zeilen müssen so aussehen:
                     fi
                     ;;
          ""|load)
-                    # CGI registrieren
-                    modreg cgi $DAEMON Bezeichnung
-                    # File registrieren (wird resetfest ins flash gespeichert)
-                    # modreg file <pkg> <id> <title> <sec-level>  <desc-file (ohne Pfad und .def-Endung)>
+                    # Register CGI
+                    modreg cgi $DAEMON Label
+                    # Register file (stored permanently in flash)
+                    # modreg file <pkg> <id> <title> <sec-level>  <desc-file (without path and .def extension)>
                     modreg file 'hugo' 'config' 'HUGO: File' 0 "hugo_file"
 
                     if [ "$HUGO_ENABLED" != "yes" ]; then
@@ -331,18 +320,17 @@ unter `/mod/etc/init.d` angelegt. Die ersten Zeilen müssen so aussehen:
     exit 0
 ```
 
-Jetzt löschen den cache und bauen wir den Menüpunkt "hugo" in das
-Webmenü ein.
+Now clear the cache and add the menu item `hugo` to the web menu.
 
 ```
     rm /var/mod/var/cache/menu/packages
     modreg cgi hugo hugo
 ```
 
-**TIPP:** Wenn man ein CGI entwickelt, sollte man seine Arbeiten auf
-einen angeschlossenen USB-Stick ablegen und die entsprechenden Dateien
-ins RAM von Freetz kopieren bzw. Softlinks setzen. Hier ein Beispiel für
-ein kleines Script, welches die Dateien temporär ins RAM kopiert.
+**TIP:** When developing a CGI, store the work on a connected USB stick
+and copy the corresponding files into Freetz RAM or create symlinks. Here
+is an example of a small script that temporarily copies the files into
+RAM.
 
 ```
     #!/bin/sh

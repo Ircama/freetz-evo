@@ -1,40 +1,39 @@
-# Freetz in Presse und Web
+# Freetz in the Press and on the Web
 
--   CHIP online, 11.09.2010, [Freetz: Neue FritzBox-Software
+-   CHIP online, 2010-09-11, [Freetz: Neue FritzBox-Software
     erstellen](http://www.chip.de/artikel/FritzBox-Tuning-Tools-fuer-den-beliebten-Router-2_44607741.html)
--   CHIP online, [Gratis-eBook: Das große inoffizielle
+-   CHIP online, [Free eBook: Das große inoffizielle
     FRITZ!Box
     Handbuch](http://www.chip.de/downloads/Gratis-eBook-Das-grosse-inoffizielle-FRITZ-Box-Handbuch_44607201.html)
--   CHIP Ausgabe 2/2010, FritzBox zum Server aufbohren
--   c't Ausgabe 17/2009, S. 61, Fritzens neue Tricks
+-   CHIP issue 2/2010, "FritzBox zum Server aufbohren"
+-   c't issue 17/2009, p. 61, "Fritzens neue Tricks"
     [http://www.ctmagazin.de/0917061](http://www.ctmagazin.de/0917061)
--   Tecchannel vom 18.06.09, [Alternative Fritz!Box-Firmware
+-   Tecchannel, 2009-06-18, [Alternative Fritz!Box-Firmware
     Freetz 1.1 ist
     fertig\...](http://www.tecchannel.de/server/news/2019728/alternative_fritzbox_firmware_freetz_download_kostenlos/)
--   c't Ausgabe 4/2009, S. 172, Hotline: DNS-Server im WLAN nachrüsten
+-   c't issue 4/2009, p. 172, Hotline: DNS-Server im WLAN nachrüsten
     [http://www.heise.de/ct/faq/hotline/09/04/04.shtml](http://www.heise.de/ct/faq/hotline/09/04/04.shtml)
--   PC Magazin Ausgabe 12/2008, Free Fritz! Eigene FritzBox-Firmware mit
-    Freetz!\
-    dreiseitiger Bericht über Freetz (freetz-stable-1.0).
--   PC-Welt, 27.06.2008 [Fritz!Box: Neue Features
+-   PC Magazin issue 12/2008, "Free Fritz! Eigene FritzBox-Firmware mit
+    Freetz!"\
+    Three-page report about Freetz (`freetz-stable-1.0`).
+-   PC-Welt, 2008-06-27, [Fritz!Box: Neue Features
     durch\...](http://www.pcwelt.de/index.cfm?pid=1636&pk=168634)\
-    Bezugnehmend auf die TecChannel-Meldung
--   Techchannel, 27.06.2008 [Fritz!Box: Neue Firmware selbst
+    Referring to the TecChannel report.
+-   Techchannel, 2008-06-27, [Fritz!Box: Neue Firmware selbst
     gebaut\...](http://www.tecchannel.de/server/linux/1763341/)\
-    Teil 6 des Specials über AVM-Router und deren
-    Modifikationsmöglichkeiten
--   Fon-Blog, 09.06.2008: [AVM (Fritzbox) öffnet
+    Part 6 of the special about AVM routers and their modification options.
+-   Fon-Blog, 2008-06-09: [AVM (Fritzbox) öffnet
     sich\....](http://blog.fon.com/de/archive/technology/wlantechnology-avm-fritzbox-affnet-sich.html)\
-    Meldung zur Freigabe von freetz-1.0, bezugnehmend auf Heise-Meldung
--   Heise.de, 09.06.2008: [Freie Router-Erweiterung für AVMs
+    Report about the release of `freetz-1.0`, referring to the Heise report.
+-   Heise.de, 2008-06-09: [Freie Router-Erweiterung für AVMs
     Fritzboxen](http://www.heise.de/newsticker/Freie-Router-Erweiterung-fuer-AVMs-Fritzboxen--/meldung/109180)\
-    Meldung zur Freigabe der Version freetz-1.0
--   PC-Welt, 20.11.2007: [DS-Mod: Hohe Schule für
+    Report about the release of version `freetz-1.0`.
+-   PC-Welt, 2007-11-20: [DS-Mod: Hohe Schule für
     Firmware-Mods](http://www.pcwelt.de/start/dsl_voip/dsl/praxis/98946/dsl_router_per_firmware_update_aufbohren/index3.html)\
-    Bericht über ds26, den Vorgänger von Freetz, im Rahmen des Themas
-    "Router-Tuning" zu verschiedenen Router-Modellen
--   Neue FritzBox-Firmware selbst bauen mit Freetz: [Das
-    inoffizielle Fritz!Box Handbuch (E.F.
+    Report about ds26, the predecessor of Freetz, as part of an article on
+    router tuning for various router models.
+-   Building new FritzBox firmware yourself with Freetz: [Das
+    inoffizielle Fritz!Box Handbuch (E. F.
     Engelhardt)](http://www.amazon.de/Das-inoffizielle-FritzBox-Handbuch-Engelhardt/dp/377236487X/ref=sr_1_1?ie=UTF8&s=books&qid=1239272581&sr=8-1)
 
 

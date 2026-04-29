@@ -1,25 +1,23 @@
 # FreetzConf 2011
 
-Zum ersten Mal seit Bestehen des Projekts treffen sich die
-Freetz-Entwickler
+For the first time since the project was founded, the Freetz developers
+met
 
--   am 12. und 13. November 2011
+-   on November 12 and 13, 2011
 -   in Frankfurt am Main
--   im Hackerspace des Frankfurter Chaos Computer Clubs (vgl.
-    [Ankündigung](http://ccc-ffm.de/2011/11/freetzconf-2011/)),
+-   in the hackerspace of the Frankfurt Chaos Computer Club; see the
+    [announcement](http://ccc-ffm.de/2011/11/freetzconf-2011/),
 
-der uns freundlicherweise Räumlichkeiten zur Verfügung stellt, in denen
-wir uns kennenlernen, gemeinsam arbeiten und über die Zukunft von Freetz
-reden können.
+which kindly provided rooms where we could get to know each other, work
+together, and talk about the future of Freetz.
 
-Ankündigung Chaos Computer Club Frankfurt e.V.
-[Entwicklertreffen "FreetzConf 2011″ im
-Hackquarter](http://ccc-ffm.de/2011/11/freetzconf-2011/) Die
-Veranstaltung ist **nicht öffentlich**, Teilnahme nur auf Einladung.
-Sollte jemand aktuell noch nicht eingeladen sein, aber gern teilnehmen
-wollen, weil er vergessen wurde und/oder vorhat, in irgendeiner Form zum
-Projekt beizutragen, so möge er sich bitte im
+Announcement by Chaos Computer Club Frankfurt e.V.:
+[Developer meeting "FreetzConf 2011" at Hackquarter](http://ccc-ffm.de/2011/11/freetzconf-2011/).
+The event is **not public**; participation is by invitation only. If
+someone has not been invited yet but would like to participate because
+they were forgotten and/or intend to contribute to the project in some
+way, they should contact olistudent or kriegaex by private message in
 [IPPF](http://www.ip-phone-forum.de/forumdisplay.php?f=525)
-per PN an olistudent oder kriegaex wenden.
+.
 
 

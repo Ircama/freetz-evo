@@ -1,94 +1,91 @@
-# Rechner im Netz herunterfahren
+# Shut Down Computers on the Network
 
-Mit den Freetz-Paketen wol und callmonitor existieren einfach zu
-konfigurierende Möglichkeiten, einen Rechner im Netz mittels
-Mobiltelefon oder Freetz-Webinterface zu starten. Ebenso einfach
-bedienbar ist das Herunterfahren eines Rechners hinter einer Fritzbox.
-Die Konfiguration ist keine Hexerei, es funktioniert sowohl für Linux-
-als auch Windows-Rechner.
+With the Freetz packages `wol` and `callmonitor`, it is easy to start a
+computer on the network by mobile phone or through the Freetz web
+interface. Shutting down a computer behind a FRITZ!Box can be just as
+simple. The configuration is not difficult and works for both Linux and
+Windows computers.
 
-### Voraussetzungen
+### Requirements
 
--   Fritzbox mit den Paketen "dropbear" (inklusive ssh-client) und
-    "callmonitor"
+-   FRITZ!Box with the packages `dropbear`, including the SSH client, and
+    `callmonitor`
 
-### Konfiguration der Fritzbox
+### Configure the FRITZ!Box
 
-### Keys erzeugen
+### Generate Keys
 
--   Auf Fritzbox einloggen, Ordner erstellen und Public Keys erzeugen:
+-   Log in to the FRITZ!Box, create a directory, and generate keys:
     ```
 		mkdir /var/tmp/flash/ssh
 		cd /var/tmp/flash/ssh
 		dropbearkey -t rsa -f rsakey_box
     ```
 
--   Public Key extrahieren:
+-   Extract the public key:
     ```
 		dropbearkey -y -f rsakey_box | grep ssh > rsakey_box.pub
     ```
 
-### Konfiguration der Fritzbox für herunterzufahrenden Linux-Rechner
+### Configure the FRITZ!Box for a Linux Computer to Shut Down
 
--   Auf Fritzbox Datei (etwa
-    /var/tmp/flash/ssh/shutdown_linuxrechner.sh) mit folgendem Inhalt
-    erzeugen (Manche Distributionen verhindern in der
-    Standardeinstellung, dass der Benutzer "root" sich einloggen kann.
-    Ändere dies oder, ersetze "root" am besten durch einen Benutzer,
-    der aus Sicherheitsgründen nur die Rechte zum Herunterfahren des
-    Rechners hat):
+-   On the FRITZ!Box, create a file such as
+    `/var/tmp/flash/ssh/shutdown_linuxrechner.sh` with the following
+    content. Some distributions prevent user `root` from logging in by
+    default. Change that setting, or preferably replace `root` with a user
+    that, for security reasons, only has permission to shut down the
+    computer.
 
 ```
 		ssh -i /var/tmp/flash/ssh/rsakey_box root@<ip_rechner> "shutdown -h now"
 ```
 
--   Füge als abschließende Konfigurationsmaßnahme auf der Fritzbox
-    folgende Zeile zu den Listenern des Callmonitors hinzu:
+-   As the final configuration step on the FRITZ!Box, add this line to the
+    Callmonitor listeners:
 
 ```
 		in:request ^<abgangsrufnummer> ^<eingangsrufnummer> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_linuxrechner.sh
 ```
 
-### Konfiguration der Fritzbox für herunterzufahrenden Windows-Rechner
+### Configure the FRITZ!Box for a Windows Computer to Shut Down
 
--   Auf Fritzbox Datei (etwa
-    /var/tmp/flash/ssh/shutdown_windowsrechner.sh) mit folgendem Inhalt
-    erzeugen, \<benutzername\> durch den Windows-Benutzernamen ersetzen:
+-   On the FRITZ!Box, create a file such as
+    `/var/tmp/flash/ssh/shutdown_windowsrechner.sh` with the following
+    content. Replace `<benutzername>` with the Windows user name:
     ```
 		ssh -i /var/tmp/flash/ssh/rsakey_box <benutzername>@<ip_rechner> "shutdown -s"
     ```
 
--   Folgende Zeile zu den Listenern des Callmonitors hinzufügen:
+-   Add this line to the Callmonitor listeners:
 
     ```
 		in:request ^<abgangsrufnummer> ^<eingangsrufnummer> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_windowsrechner.sh
     ```
 
-### Konfiguration des herunterzufahrenden Linux-Rechners
+### Configure the Linux Computer to Shut Down
 
--   Public-Key (ja genau, jenen den wir vorhin extrahiert haben) von
-    Fritzbox auf Zielrechner kopieren und authorisieren (evt. root durch
-    /home/\<benutzername\> ersetzen, dann auch dafür sorgen, dass dieser
-    Benutzer die Rechte hat, den Rechner runterzufahren):
+-   Copy the public key, the one extracted earlier, from the FRITZ!Box to
+    the target computer and authorize it. Replace `root` with
+    `/home/<benutzername>` if necessary, and make sure that this user is
+    allowed to shut down the computer:
     ```
 		cat rsakey_box.pub >> /root/.ssh/authorized_keys
     ```
 
--   OpenSSH-Server installieren und starten.
+-   Install and start the OpenSSH server.
 
-### Konfiguration des herunterzufahrenden Windows-Rechners (getestet unter Windows XP)
+### Configure the Windows Computer to Shut Down (Tested on Windows XP)
 
--   Public-Key von Fritzbox auf Zielrechner kopieren, in
-    "authorized_keys" umbenennen und im Ordner c:\\Dokumente und
-    Einstellungen\\benutzername\\.ssh\\ ablegen. Auf dem Rechner des
-    Autors musste der Ordner (des vorangestellten Punktes wegen) im
-    Terminal angelegt werden (mkdir .ssh).
+-   Copy the public key from the FRITZ!Box to the target computer, rename
+    it to `authorized_keys`, and place it in
+    `c:\\Dokumente und Einstellungen\\benutzername\\.ssh\\`. On the
+    author's computer, the folder had to be created in the terminal with
+    `mkdir .ssh` because of the leading dot.
 
--   [Openssh](http://sshwindows.sourceforge.net/)
-    installieren.
+-   Install [OpenSSH](http://sshwindows.sourceforge.net/).
 
--   Konfigurationsdatei c:\\programme\\openssh\\etc\\sshd_config
-    anpassen. Folgende Werte korrigieren:
+-   Adjust the configuration file `c:\\programme\\openssh\\etc\\sshd_config`.
+    Correct these values:
 
     ```
 		StrictModes no
@@ -97,19 +94,17 @@ als auch Windows-Rechner.
 		AuthorizedKeysFile  .ssh/authorized_keys
 	```
 
-Nun kann der Rechner mittels Anrufen der im Listener des Callmonitors
-eingegebenen Rufnummer gestartet werden. Es funktioniert auch über das
-Freetz-Webinterface, Extras, Testanruf.
+The computer can now be shut down by calling the phone number configured
+in the Callmonitor listener. It also works through the Freetz web
+interface under Extras, Test call.
 
-### Bemerkungen
+### Notes
 
--   Der herunterzufahrende Rechner muss in /mod/root/.ssh/known_hosts
-    eingetragen sein. Am einfachsten erreichst du das dadurch, dass du
-    dich einmal von der Fritzbox aus mit dem Rechner über ssh
-    verbindest.
+-   The computer to be shut down must be listed in
+    `/mod/root/.ssh/known_hosts`. The easiest way to achieve that is to
+    connect once from the FRITZ!Box to the computer through SSH.
 
--   Damit die erstellten Dateien nicht durch einen Neustart der Fritzbox
-    verlorengehen, muss noch der Befehl "modsave flash" ausgeführt
-    werden.
+-   To make sure the created files are not lost after a FRITZ!Box reboot,
+    run `modsave flash`.
 
 

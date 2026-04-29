@@ -1,43 +1,41 @@
-# Eigene Programme kompilieren
+# Compile Your Own Programs
 
-Nachdem die Toolchain heruntergeladen oder gebaut wurde, kann sie
-verwendet werden, um eigene Programme, oder solche, die noch nicht als
-Paket zur Verfügung stehen, zu übersetzen.
+After the toolchain has been downloaded or built, it can be used to
+compile your own programs, or programs that are not yet available as
+packages.
 
-Den MIPS-Compiler zum Pfad hinzufügen:
+Add the MIPS compiler to the path:
 
 ```
 	export PATH=/pfad/zu/freetz/toolchain/target/bin:$PATH
 ```
 
-Optionen für `./configure`:
+Options for `./configure`:
 
 ```
 	./configure --build=i386-linux-gnu --target=mipsel-linux --host=mipsel-linux
 ```
 
-(i386-linux-gnu ist nicht unbedingt notwendig, nur beschwert sich
-`configure`, wenn es nicht angegeben ist. Auf 64-Bit-Plattformen oder
-Nicht-Intel-Architekturen muß es natürlich anders heißen.)
+(`i386-linux-gnu` is not strictly required, but `configure` complains if
+it is not specified. On 64-bit platforms or non-Intel architectures, the
+value must of course be different.)
 
-Statisches Linken der Binaries, damit sie keine separaten Libraries
-benutzen, sondern sie gleich enthalten (funktioniert aber nicht bei
-jeder Software):
+Static linking of binaries, so they include the required libraries
+instead of using separate ones. This does not work with every program:
 
 ```
 	LDFLAGS=-static ./configure ...
 ```
 
-Statisch gelinkte Binaries sind einfacher zu installieren, weil sie eben
-alles enthalten - aber dadurch sind sie größer, und wenn sie mit anderen
-Programmen gemeinsam genutzte Funktionalität haben, verschwenden sie
-Speicherplatz. Außerdem müssen sie separat upgedatet werden, wenn z.B.
-in einer Library eine Sicherheitslücke gepatcht wurde. Es ist also am
-besten, statische Binaries nur zum Testen, oder wenn es anders nicht
-geht, zu verwenden.
+Statically linked binaries are easier to install because they contain
+everything they need. However, they are larger, and if they duplicate
+functionality shared with other programs, they waste storage space. They
+also need to be updated separately when, for example, a security issue in
+a library is patched. It is best to use static binaries only for testing
+or when there is no practical alternative.
 
-In manchen Fällen ist es ratsam die CC-Variable explizit zu setzen. Auch
-die Angabe der *CFLAGS* kann nicht schaden:
+In some cases it is advisable to set the `CC` variable explicitly. It can
+also help to specify `CFLAGS`:
 
 ```
 	./configure ... CC="mipsel-linux-gcc" CFLAGS="-Os -pipe -march=4kc -Wa,--trap"

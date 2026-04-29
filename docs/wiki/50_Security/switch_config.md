@@ -1,7 +1,6 @@
-# Konfiguration des eingebauten Switches
+# Configuration of the Built-in Switch
 
-(für unterstützte Modelle siehe
-unten)
+For supported models, see below.
 
 For 7390 read this
 [post](http://www.ip-phone-forum.de/showthread.php?t=287518&p=2185822&viewfull=1#post2185822).
@@ -13,126 +12,110 @@ and
 [3](http://www.ip-phone-forum.de/showthread.php?t=275391),
 and possible others.
 
-### Vorwort
+### Foreword
 
-Einige Modelle aus der FritzBox-Familie besitzen nicht nur einen
-LAN-Port, sondern gleich vier, z.B. die 7170. Da ich selber nur die 7170
-"persönlich" kenne, möge man die nachfolgenden Worte in erster Linie
-als Anleitung/Beschreibung für dieses Modell verstehen, andere Boxen
-bitte ergänzen.
+Some models from the FRITZ!Box family have not just one LAN port, but
+four, for example the 7170. Since I personally know only the 7170, please
+understand the following primarily as instructions and a description for
+that model; please add information for other boxes.
 
-Im Normalbetrieb der 7170 arbeiten die vier Ports wie ein normaler
+In normal operation of the 7170, the four ports work like a normal
 [Switch](http://de.wikipedia.org/wiki/Switch_(Computertechnik)),
-d.h. alle angeschlossenen Geräte befinden sich im gleichen Subnetz und
-können direkt miteinander kommunizieren. Mit Hilfe der Originalfirmware
-von AVM ist es aber auch möglich, den LAN 1-Port als WAN-Port zu nutzen
-(im Webinterface *"Internetzugang via LAN 1"* auswählen), z.B. wenn
-man die Box an einem Kabelmodem o.ä. betreiben will. Dazu wird der Port
-von den verbleibenden drei Ports getrennt und wird als separates
-WAN-Netzwerkgerät von der Firmware entsprechend konfiguriert.
+meaning all connected devices are in the same subnet and can communicate
+directly with each other. With AVM's original firmware, it is also
+possible to use the LAN 1 port as a WAN port, by selecting *"internet
+access via LAN 1"* in the web interface, for example when operating the
+box behind a cable modem or similar. For this, the port is separated from
+the remaining three ports and configured by the firmware as a separate WAN
+network device.
 
-Das ist möglich, da in der FritzBox ein konfigurierbarer 5-Port-Switch
-eingebaut ist: vier der Ports sind als LAN 1 bis 4 nach außen geführt,
-am fünften hängt die eigentliche FritzBox, sprich die CPU. Leider bietet
-AVM im Webinterface keine Möglichkeit, die Ports weitergehend
-individuell zu konfigurieren. Da dies in bestimmten Fällen aber sehr
-hilfreich wäre, entstand das kleine Tool
-[cpmaccfg](http://www.heimpold.de/dsmod/). Es kann
-via Telnet/SSH-Zugang auf der FritzBox ausgeführt - oder aber mit
-Freetz direkt in das Firmware-Image
-eingebunden werden.
+This is possible because the FRITZ!Box contains a configurable 5-port
+switch: four ports are exposed as LAN 1 to 4, and the fifth is connected
+to the actual FRITZ!Box, meaning the CPU. Unfortunately, AVM's web
+interface offers no way to configure the ports individually beyond that.
+Because this would be very helpful in certain cases, the small tool
+[cpmaccfg](http://www.heimpold.de/dsmod/) was created. It can be run on
+the FRITZ!Box via Telnet/SSH access, or integrated directly into the
+firmware image with Freetz.
 
-AVM hat die Schnittstelle für die Switchkonfiguration in den
-Linux-Netzwerkkartentreiber (*avm_cpmac*) eingebunden, offenbar gibt es
-da eine "alte" und eine "neue" Version dieser Schnittstelle. Während
-die alte noch sehr weitgehenden Zugriff auf den Switch erlaubt und es
-ermöglicht, das volle Potential des Switches auszuschöpfen, ist die neue
-etwas "abstrakter" gehalten, was dazu führt, dass man nur noch
-zwischen verschiedenen vordefinierten Konfigurationen auswählen kann.
-Wer vollen Zugriff braucht, kann aber die alte Schnittstelle durch
-Hinzufügen von 2 Zeilen Kernelquellcode wieder aktivieren. In Freetz
-passiert dies beim Einbinden von `cpmaccfg` automatisch, wenn in
-menuconfig `replace kernel`
-ausgewählt wird.
+AVM integrated the interface for switch configuration into the Linux
+network-card driver, *avm_cpmac*. Apparently there is an "old" and a
+"new" version of this interface. The old one still allows very extensive
+access to the switch and makes it possible to exploit the full potential
+of the switch. The new one is somewhat more abstract, which means only
+different predefined configurations can be selected. Anyone needing full
+access can reactivate the old interface by adding two lines of kernel
+source code. In Freetz this happens automatically when `cpmaccfg` is
+included, if `replace kernel` is selected in `menuconfig`.
 
-Das Tool cpmaccfg funktioniert auch beim Speedport W900V.
+The `cpmaccfg` tool also works on the Speedport W900V.
 
-### Vordefinierte Switch-Konfigurationen
+### Predefined Switch Configurations
 
-AVM selbst hat im Kernelmodul schon verschiedene vordefinierte
-Konfigurationen hinterlegt, eine ist davon ist die bereits erwähnte
-Variante "Internetzugang via LAN 1", intern als ATA-Modus bezeichnet.
-Hier ein Überblick über alle vordefinierten Modi:
+AVM itself already stored several predefined configurations in the kernel
+module. One of them is the previously mentioned variant "internet access
+via LAN 1", internally called ATA mode. Here is an overview of all
+predefined modes:
 
--   **normal**: alle vier Ports arbeiten wie ein normaler Switch, der
-    Kernel verwendet eth0 als Netzwerkinterface (jenachdem, ob "Alle
-    Computer befinden sich im selben Subnetz" angekreuzt ist, wird
-    *eth0* noch mit den WLAN-Interfaces zu einem "lan"-Interface
-    zusammengebridged)
--   **ata**: LAN 1 kommt im Kernel als "wan" an, die drei anderen
-    Ports als "eth0" (eventuelle Einbindung von *eth0* in Bridge wie
-    im Normalmodus)
--   **split**: jedem Port wird ein einzelnes Interface zugeordnet, also
-    "eth0", "eth1"...
--   **split_ata**: wie split, jedoch bekommt LAN 1 die Bezeichnung
-    "wan"
--   **all_ports**: im Grunde wie normal, genauer Sinn & Zweck noch
-    unbekannt (eventuell für Boxen mit mehr als 4 Ports gedacht?)
--   **special**: siehe unten
+-   **normal**: all four ports work like a normal switch. The kernel uses
+  `eth0` as the network interface. Depending on whether "All computers
+  are in the same subnet" is checked, `eth0` is also bridged together
+  with the WLAN interfaces into a `lan` interface.
+-   **ata**: LAN 1 appears in the kernel as `wan`, the other three ports
+  as `eth0`; possible integration of `eth0` into a bridge as in normal
+  mode.
+-   **split**: each port is assigned a separate interface, such as `eth0`,
+  `eth1`, and so on.
+-   **split_ata**: like split, but LAN 1 is named `wan`.
+-   **all_ports**: basically like normal; exact purpose still unknown,
+  possibly intended for boxes with more than four ports.
+-   **special**: see below.
 
-Richtig Sinn ergibt das Wechseln des Modus natürlich nur, wenn man das
-Häkchen bei *"Alle Computer befinden sich im selben Subnetz"*
-[nicht]{.underline} setzt, weil sonst alle verfügbaren Devices in eine
-Bridge gesteckt werden.
-**UPDATE:** Es funktioniert ebenfalls sauber im
-"ethmode=ethmode_bridge" da dann die Devices aus der
-"Bridge"-Sektion genommen werden (und eben **nicht** aus der
-"eth"-Sektion).
-Im "Eth-Bridge"-Modus werden diese "einzelnen" "realen" ethX dann
-jeweils in die angegebene Bridge intergiert. Ist ganz praktisch wenn man
-das USB Device ("usbrndis") mal zu einem der 4 Ports zuordnen möchte.
-Der Trick dabei ist das konfigurierte ethx-IF in der "eth"-Sektion
-auch in der Bridge-Sektion aufgeführt sind.
+Changing the mode really makes sense only if the check mark for *"All
+computers are in the same subnet"* is [not]{.underline} set, because
+otherwise all available devices are put into a bridge. **UPDATE:** It also
+works cleanly in `ethmode=ethmode_bridge`, because then the devices are
+taken from the `Bridge` section and **not** from the `eth` section. In
+`Eth-Bridge` mode, these individual real `ethX` devices are then
+integrated into the specified bridge. This is quite practical if the USB
+device, `usbrndis`, should be assigned to one of the four ports. The trick
+is that the configured `ethx` interface in the `eth` section is also
+listed in the bridge section.
 
-Beispiel:\
-Man möchte LAN1 und LAN4 als eth2 und LAN2 und LAN3 als eth0
-konfigurieren.
-Dann hat man in der "eth-Sektion" eth0 und eth2 und in der
-Bridge-Sektion z.B. die Bridge lan (mit if eth0) und Bridge xnet (mit if
-eth2)\
-Hat man beides in der ar7.cfg sauber stehen kann man problemlos zwichen
-"ethmode=ethmode_bridge" und "ethmode=ethmode_router"
-("AVM-deutsch: "alle Computer befinden sich im selben Netzwerk")
-umschalten (Haken setzen oder auch nicht). Und eben jetzt kann man im
-"ethmode=ethmode_bridge" z.B. der Bridge "xnet" die Interfaces eth2
-und usbrndis zuordnen. Wie genau die ar7.cfg konfiguriert wird steht
-weiter unten in diesem Artikel.
+Example: configure LAN1 and LAN4 as `eth2`, and LAN2 and LAN3 as `eth0`.
+Then the `eth` section contains `eth0` and `eth2`, and the bridge section
+contains, for example, bridge `lan` with interface `eth0` and bridge
+`xnet` with interface `eth2`. If both are correctly present in `ar7.cfg`,
+it is easy to switch between `ethmode=ethmode_bridge` and
+`ethmode=ethmode_router`, AVM wording: "all computers are in the same
+network", by setting or clearing the check mark. In
+`ethmode=ethmode_bridge`, for example, interfaces `eth2` and `usbrndis`
+can now be assigned to bridge `xnet`. Exactly how `ar7.cfg` is configured
+is explained further below in this article.
 
-Den aktuellen Modus kann man mit Hilfe von `cpmaccfg gsm` abfragen,
-setzen ist mit `cpmaccfg ssm <zielmodus>` möglich.
+The current mode can be queried with `cpmaccfg gsm`; it can be set with
+`cpmaccfg ssm <target-mode>`.
 
-### Modus "special"
+### Mode `special`
 
-Mit einem gepatchtem Kernel ist auch möglich, eigene individuelle
-Port-Konfigurationen zu erstellen. Dazu dient der Modus "special", der
-quasi als Platzhalter für eine Konfiguration im Kernel vorhanden ist.
-Dieser Platzhalter muss zunächst mittels `cpmaccfg ssms ...` gefüllt
-werden, anschließend kann mit `cpmaccfg ssm special` auf diese
-Konfiguration umgeschaltet werden.
+With a patched kernel, it is also possible to create custom individual
+port configurations. The `special` mode is used for this; it exists in
+the kernel as a placeholder for a configuration. This placeholder must
+first be filled with `cpmaccfg ssms ...`; afterwards,
+`cpmaccfg ssm special` can switch to this configuration.
 
-### Patch des Standard-Modus
+### Patch the Default Mode
 
-Die Nutzung des Special-Modus hat den Nachteil, dass die Modus erst
-während des Startvorganges der Box aktiviert werden muss. Bei einer
-Änderung des standardmäßig in der Box verwendeten Modus, wie z.B.
-`NORMAL` oder `ATA`, wird der Switch automatisch beim Starten der Box
-passend aufgeteilt.
+Using special mode has the disadvantage that the mode must be activated
+only during the box startup process. If the mode used by default in the
+box, such as `NORMAL` or `ATA`, is changed, the switch is automatically
+split appropriately when the box starts.
 
-Für diese Änderung ist es notwendig, den gewünschten Modus in der Datei
-`linux-2.6.19.2/drivers/net/avm_cpmac/cpphy_adm6996.c` zu patchen. Das
-folgende Beispiel beschreibt die Aufteilung des Switch in die beiden
-Interface eth0 mit LAN1 und LAN2 sowie eth1 mit LAN3 und LAN4. Der
-folgende Patch wurde für eine 7270 mit Firmware 76 erstellt.
+For this change, the desired mode must be patched in
+`linux-2.6.19.2/drivers/net/avm_cpmac/cpphy_adm6996.c`. The following
+example describes splitting the switch into the two interfaces `eth0`
+with LAN1 and LAN2, and `eth1` with LAN3 and LAN4. The following patch
+was created for a 7270 with firmware 76.
 
 ```
   --- linux-2.6.19.2/drivers/net/avm_cpmac/cpphy_adm6996.c_orig   2009-06-08 13:59:52.000000000 +0200
@@ -153,48 +136,47 @@ folgende Patch wurde für eine 7270 mit Firmware 76 erstellt.
                                            { {"wan",  0x21},
 ```
 
-Den Patch in das Verzeichnis `/make/linux/patches/2.6.19.2` oder ggf.
-Unterordner wie z.B. `7270_04.76` kopieren.
+Copy the patch into `/make/linux/patches/2.6.19.2` or, if applicable,
+into a subdirectory such as `7270_04.76`.
 
 ```
   make menuconfig
 ```
 
-Box konfigurieren und die Option "Replace Kernel" auswählen
+Configure the box and select the option "Replace Kernel".
 
-Bestehenden Kernel löschen:
+Delete the existing kernel:
 
 ```
   make kernel-dirclean
 ```
 
-Kernel-Sourcen bereitstellen und Patchen
+Prepare and patch the kernel sources:
 
 ```
   make kernel-source
 ```
 
-Hier kann noch kontrolliert werden, ob der Patch korrekt durchgeführt
-wird. z.B.:
+Here you can check whether the patch is applied correctly, for example:
 
 ```
   applying patch file make/linux/patches/2.6.19.2/7270_04.76/990-cpmac.patch
   patching file linux-2.6.19.2/drivers/net/avm_cpmac/cpphy_adm6996.c
 ```
 
-Dann noch das Image erstellen:
+Then create the image:
 
 ```
   make
 ```
 
-### Anpassungen in der ar7.cfg
+### Adjustments in ar7.cfg
 
-Die Anpassungen der ar7.cfg stellen sicher, dass die Änderungen auch bei
-verschiedenen Konfiguationsänderungen, wie z.B. Aus- und Einschalten des
-Wlan bestehen und und automatisch konfiguriert werden und bleiben.
+Adjusting `ar7.cfg` ensures that the changes survive various
+configuration changes, such as switching WLAN off and on, and that they
+are automatically configured and remain configured.
 
-Kopie der ar7.cfg erstellen und diese bearbeiten:
+Create a copy of `ar7.cfg` and edit it:
 
 ```
   cd /var/tmp
@@ -202,30 +184,28 @@ Kopie der ar7.cfg erstellen und diese bearbeiten:
   vi ar7.cfg
 ```
 
-Box muss sich im Modus "Router" befinden, dies wird mit der Option
-`ethmode` in der ar7.cfg eingestellt.
+The box must be in `Router` mode; this is set with the `ethmode` option
+in `ar7.cfg`.
 
 ```
   ethmode = ethmode_router;
 ```
 
-Dann muss noch der Bereich `ethinterfaces` verändert werden.
+Then the `ethinterfaces` section must be changed.
 
-Bei der Konfiguration ist folgendes zu beachten. Nur den dort
-vorhandenen wird eine IP-Adresse zugewiesen. Alle anderen Interfaces
-existieren zwar und können über ifconfig abgefragt oder ggf. manuell
-konfiguriert werden.
+When configuring, note the following: only interfaces listed there receive
+an IP address. All other interfaces do exist and can be queried with
+`ifconfig` or configured manually if necessary.
 
-Bei den Devices kann über die Option "interfaces" Bridges automatisch
-gebildet werden. Das folgende Beispiel beschreibt die Konfiguration
-zweier Devices intern und extern.
+For devices, bridges can be formed automatically using the `interfaces`
+option. The following example describes the configuration of two devices,
+`intern` and `extern`.
 
-Das Device `extern` wird aus dem Interface "eth1" mit der Adresse
-192.168.1.1 gebildet, das Device `intern` aus eth0 und den verschiedenen
-WLan-Interfaces mit der Adresse 192.168.0.1.
-**UPDATE**: Wie ihr seht funktioniert das "bridgen" bereits auch
-sauber in der eth-Sektion! (und AVM hat es ja auch selber mit dem
-wlan-IF so gemacht)
+The device `extern` is formed from interface `eth1` with address
+192.168.1.1. The device `intern` is formed from `eth0` and the various
+WLAN interfaces with address 192.168.0.1. **UPDATE:** As you can see,
+bridging already works cleanly in the `eth` section as well, and AVM did
+the same with the WLAN interface.
 
 ```
         ethinterfaces {
@@ -261,17 +241,17 @@ wlan-IF so gemacht)
         }
 ```
 
-Dann die bestehende `ar7.cfg` durch die veränderte Datei überschreiben:
+Then overwrite the existing `ar7.cfg` with the modified file:
 
 ```
     cat /var/tmp/ar7.cfg > /var/flash/ar7.cfg
 ```
 
-Dann die Änderungen mit einen Reboot oder `ar7cfgchanged` aktivieren.
+Then activate the changes with a reboot or `ar7cfgchanged`.
 
-Ergänzung:\
-Auch der special Modus kann über die ar7.cfg konfiguriert werden.
-Als Beispiel ein Ausschnitt aus einer Alice Konfiguration)
+Addition:\
+The special mode can also be configured through `ar7.cfg`. As an example,
+here is an excerpt from an Alice configuration:
 
 ```
   cpmacspecial {
@@ -281,7 +261,7 @@ Als Beispiel ein Ausschnitt aus einer Alice Konfiguration)
     }
 ```
 
-und ein Anderes mit "split" Interfaces\
+and another one with `split` interfaces:
 
 ```
 	cpmacspecial {
@@ -291,88 +271,83 @@ und ein Anderes mit "split" Interfaces\
 	}
 ```
 
-Der Syntax:
+Syntax:
 
 ```
 	modus = portmapping[, ...]
 
 	modus =: normalcfg|atacfg
 	portmapping =: "netdevname,portnum[,...]"
-	netdevname =: wan|eth[0-3]) (aber
-	vielleicht auch eigener Namen)
-	portnum =: [1-4] (so vielen wie es auf das
-	Gerät gibt)
+  netdevname =: wan|eth[0-3]) (but perhaps also custom names)
+  portnum =: [1-4] (as many as the device has)
 ```
 
 ### Beispiel
 
-Die vier Ports sollen in zwei Gruppen aufgeteilt werden: LAN 1 und LAN 2
-sollen für das interne Netz zur Verfügung stehen (als eth0), LAN 3 und
-LAN 4 werden zwei
+The four ports should be divided into two groups: LAN 1 and LAN 2 should
+be available for the internal network, as `eth0`; LAN 3 and LAN 4 are
+connected to two
 [Freifunk](http://www.freifunk.net/)-Router
-angeschlossen, die zusammen in einem separaten Subnetz stecken (als
-*eth1*), vom internen LAN also getrennt sein sollen.
+routers that together are in a separate subnet, as *eth1*, and should
+therefore be separated from the internal LAN.
 
-Ruft man `cpmaccfg` ohne weitere Parameter auf, erscheint eine knappe
-Übersicht über Kommandos und Parameter. Damit ermittelt man, welche
-*PORTMASK* für die jeweiligen Interfaces zu verwenden ist. Diese
-Portmaske ergibt sich aus der Logischen-Oder-Verknüpfung der jeweiligen
-Portkonstanten. Das sind folgende Werte: LAN 1 = 0x01, LAN 2 = 0x02, LAN
-3 = 0x04, LAN 4 = 0x08 und der CPU-Port ist 0x20.
+Calling `cpmaccfg` without further parameters displays a brief overview of
+commands and parameters. This is used to determine which *PORTMASK* to use
+for the respective interfaces. This port mask is the logical OR of the
+respective port constants. The values are: LAN 1 = 0x01, LAN 2 = 0x02,
+LAN 3 = 0x04, LAN 4 = 0x08, and the CPU port is 0x20.
 
-Für das obige Beispiel muss also folgender Befehl aufgerufen werden:
+For the example above, the following command must be called:
 
 ```
 	cpmaccfg ssms eth0 0x23 eth1 0x2c
 ```
 
-Man beachte, dass in beiden Portmasken der CPU-Port eingeschlossen
-wurde. Macht man dies nicht, entsteht zwar das Interface, es "sieht"
-aber keinen Traffic (noch nicht probiert, zu überprüfen).
+Note that the CPU port is included in both port masks. If this is not
+done, the interface is created, but it does not "see" any traffic; not yet
+tried, needs verification.
 
-Anschließen kann mit `cpmaccfg ssm special` diese Konfiguration
-aktiviert werden.
+Afterwards, this configuration can be activated with
+`cpmaccfg ssm special`.
 
-### Sicherheits-Warnung
+### Security Warning
 
-Beim Booten startet die Box immer im Modus **normal**, d.h.: wie und wo
-man auch immer die Umschaltung in den gewünschten Modus realisiert (z.B.
-per `debug.cfg` oder in einem Freetz Startup-Skript), es existiert immer
-eine gewisse Zeitspanne, in der sich alle vier Ports im gleichen "Layer
-2-Subnetz" befinden. Erst nachdem die Umschaltung erfolgt ist, befinden
-sich die Ports in getrennten "Layer 2-Netzen". Erst dann muss eine
-Kommunikation über Layer 3 (IP-Ebene) erfolgen, wo eventuelle
-iptables-Regeln greifen (oder halt die interne AVM-Firewall).
+During boot, the box always starts in **normal** mode. That means wherever
+and however the switch to the desired mode is implemented, for example via
+`debug.cfg` or in a Freetz startup script, there is always a certain time
+span during which all four ports are in the same layer 2 subnet. Only
+after switching do the ports reside in separate layer 2 networks. Only
+then must communication happen through layer 3, the IP layer, where any
+iptables rules apply, or the internal AVM firewall.
 
-Schon bevor der Kernel bootet, wird der Switch vom Bootloader als
-normaler Switch konfiguriert. Die Konfiguration im Kernel umzustellen
-verkürzt die Zeitspanne etwas, beseitigt aber nicht das grundsätzliche
-Problem.
+Even before the kernel boots, the bootloader configures the switch as a
+normal switch. Changing the configuration in the kernel shortens the time
+span somewhat, but does not eliminate the basic problem.
 
-Da für den Bootloader keine Quelltexte frei verfügbar sind, wäre ein
-Anpassung schwierig.
+Because no source code is freely available for the bootloader, adapting it
+would be difficult.
 
-### Kompatibilität
+### Compatibility
 
--   **FB 7170, Speedports W900V, W701V** Diese Boxen haben einen
-    eingebauten Switch (ADM6996), `cpmaccfg` funktioniert.
--   **7270/3270** Tantos-Switches: cpmaccfg funktioniert
+-   **FB 7170, Speedports W900V, W701V** These boxes have a built-in
+  switch (ADM6996), and `cpmaccfg` works.
+-   **7270/3270** Tantos switches: `cpmaccfg` works
     ([Beweis](http://www.ip-phone-forum.de/showpost.php?p=1599909&postcount=23))
 -   **Alice IAD 5130, Alice IAD WLAN 3331, FB 5140/3170/2170**
-    funktionieren ebenfalls problemlos (jeweilige akt. Firmware)
-    (cpmaccfg ebenso).
--   **5124** sollte ebenfalls sauber funktionieren
--   **7050** Kein Switch-Baustein vorhanden, es handelt sich um richtige
-    Netzwerkinterfaces.
--   **7320** wie 7050/5050 Boxen. Es sind reale Netz-IF (eth0 & eth1)
-    welche auch getrennt koniguriert werden können (und das sogar
-    permanent in der ar7.cfg im Bridgemode).
+  also work without problems with their current firmware; `cpmaccfg`
+  also works.
+-   **5124** should also work cleanly.
+-   **7050** No switch component is present; these are real network
+  interfaces.
+-   **7320** like 7050/5050 boxes. These are real network interfaces,
+  `eth0` and `eth1`, which can also be configured separately, even
+  permanently in `ar7.cfg` in bridge mode.
 
-### Änderungen 7270v2 vs. 7270v3
+### Changes 7270v2 vs. 7270v3
 
-Bei der 7270v3/3270v3 hat sich der CPU Port von Bit5 auf Bit0 verschoben
-und die Interface Ports sind um eins nach links gerückt. Für das obige
-Beispiel muss also folgender Befehl auf der 7270v3 aufgerufen werden:
+On the 7270v3/3270v3, the CPU port moved from bit 5 to bit 0, and the
+interface ports moved one bit to the left. For the example above, the
+following command must therefore be called on the 7270v3:
 
 ```
 	cpmaccfg ssms eth0 0x07 eth1 0x19

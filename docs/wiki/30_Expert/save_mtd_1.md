@@ -1,40 +1,36 @@
-# Flash-Partitionen im laufenden Betrieb sichern
+# Back Up Flash Partitions During Operation
 
-Dieser Artikel baut auf dem Artikel
-Flash-Partitionierung auf. Ihn vorher zu lesen,
-schadet also nicht.
+This article builds on the article about flash partitioning. Reading it
+first will not hurt.
 
-Die überarbeitete Version des Artikels füllt einige Lücken bzgl. der
-Frage nach der Numerierung von Devices. Dafür gebührt unser Dank
+The revised version of the article fills some gaps regarding the numbering
+of devices. For that, our thanks go to
 [Oliver
 (olistudent)](http://www.ip-phone-forum.de/member.php?u=58639).
 
-Wie man Partitionen direkt über den Urlader/Bootloader sichert, findet
-sich weiter unten.
+How to back up partitions directly through the Urlader/bootloader is
+described further below.
 
 ### Motivation
 
-Ich habe noch nie mit dem ADAM2-Bootloader via FTP
-gearbeitet und werde das auch vermutlich erst dann tun, wenn es
-notwendig ist oder höchstens mal, um vorher zu üben. Um aber für den
-Notfall gerüstet zu sein, wollte ich in der Lage sein, nicht nur Backups
-von Kernel und Dateisystem zu ziehen, sondern auch eine Sicherungskopie
-vom Bootloader selbst machen können - alles idealerweise, ohne ADAM2
-selbst zu benutzen, also einfach im laufenden Betrieb über
-Shell-Skripten. Dieser Artikel beschreibt, wie das geht.
+I have never worked with the ADAM2 bootloader via FTP and will probably
+do so only when necessary, or at most beforehand for practice. But to be
+prepared for an emergency, I wanted to be able not only to make backups of
+kernel and filesystem, but also to create a backup copy of the bootloader
+itself, ideally without using ADAM2 directly, simply during operation via
+shell scripts. This article describes how that works.
 
-### Voraussetzungen
+### Requirements
 
-Ich habe eine FritzBox Fon WLAN 7170, darf mich also zu den gut
-ausgestatteten AVM-Kunden zählen, weil die 7170 momentan das Modell mit
-dem größten Flash-Speicher und den umfangreichsten
-Anschlussmöglichkeiten ist. Ich schreibe das nicht, um Werbung zu
-machen, sondern um klar zu machen, dass das Folgende nicht 1:1 für alle
-anderen Boxen gelten muss und dies vermutlich auch nicht tut.
-Insbesondere Zahlenwerte sind auf die Verhältnisse der anderen Boxen
-anzupassen.
+I have a FRITZ!Box Fon WLAN 7170, so I may count myself among the
+well-equipped AVM customers, because the 7170 is currently the model with
+the largest flash memory and the most extensive connection options. I do
+not write this as advertising, but to make clear that the following does
+not necessarily apply one-to-one to all other boxes, and probably does
+not. In particular, numeric values must be adapted to the conditions of
+other boxes.
 
-Die Box hat folgende Merkmale:
+The box has the following characteristics:
 
 ```
     {
@@ -46,28 +42,27 @@ Die Box hat folgende Merkmale:
 
     # Kernel: Linux fritz.box 2.6.13.1-ohio #1 Sat Jan 27 12:00:36 CET 2007 mips unknown
     # Firmware: 29.04.29 ds-0.2.9     -->  _26-13
-    # Flash-Partitionierung:
+	# Flash partitioning:
     # mtd0    0x90000000,0x90000000   -->  Hidden Root, 0 KB
     # mtd1    0x90010000,0x90780000   -->  Kernel + Filesystem, 7.616 KB
-    # mtd2    0x90000000,0x90010000   -->  ADAM2 Bootloader, 64 KB
-    # mtd3    0x90780000,0x907C0000   -->  TFFS für Konfig-Daten, 256 KB
-    # mtd4    0x907C0000,0x90800000   -->  Kopie TFFS (Double Buffering), 256 KB
+	# mtd2    0x90000000,0x90010000   -->  ADAM2 bootloader, 64 KB
+	# mtd3    0x90780000,0x907C0000   -->  TFFS for config data, 256 KB
+	# mtd4    0x907C0000,0x90800000   -->  TFFS copy (double buffering), 256 KB
 ```
 
-Die Anmerkungen hinter den Pfeilen wurden manuell eingefügt.
+The notes after the arrows were added manually.
 
-### Lösungsweg
+### Solution
 
-Wenn wir uns das Pseudo-Dateisystem `/dev/` anschauen, erkennen wir
-schnell, dass es folgende Geräte (Devices) gibt, die offenbar mit
-unserer Aufgabe im Zusammenhang stehen:
+Looking at the pseudo-filesystem `/dev/`, we quickly see the following
+devices that apparently relate to our task:
 
 -   `/dev/mtd0/` bis `/dev/mtd10`
 -   `/dev/mtdblock0` bis `/dev/mtdblock10`
 
-Worin besteht nun der Unterschied zwischen diesen Geräten? Es scheint,
-als seien sie alle doppelt vorhanden unter verschiedenen Namen. In
-gewissem Sinne stimmt das auch, und weshalb das so ist, sehen wir hier:
+What is the difference between these devices? It looks as if they all
+exist twice under different names. In a sense that is true, and we can see
+why here:
 
 ```
     ls -l /dev/mtd*
@@ -80,192 +75,181 @@ gewissem Sinne stimmt das auch, und weshalb das so ist, sehen wir hier:
     # ...
 ```
 
-Die jeweils ersten Buchstaben des File Mode bringen es an den Tag: Die
-`mtd*` sind zeichenorientierte Geräte (Character Devices, Kürzel "c"),
-`mtdblock*` sind blockorientierte Geräte (Block Devices, Kürzel "b").
-Man könnte also sagen, es gibt zwei unterschiedliche Sichten auf den
-Flash-Speicher: Zum einen kann man ihn als kontinuierlichen Zeichenstrom
-sehen, zum anderen als Gerät mit blockweisem Direktzugriff (wie eine
-Festplatte). Genaueres gibt es in der
+The first letters of the file mode reveal it: `mtd*` are character
+devices, abbreviation `c`; `mtdblock*` are block devices, abbreviation
+`b`. In other words, there are two different views of flash memory: on
+the one hand as a continuous character stream, on the other as a device
+with block-wise direct access, like a hard disk. More details are in
 [Wikipedia](http://de.wikipedia.org/wiki/Ger%C3%A4tedatei).
 
-Für den Zweck unserer Sicherheitskopie ist es im Grunde herzlich egal,
-wie diese zustande kommt (Zeichen für Zeichen oder blockweise), solange
-sich am Ende nur eine komplette Datei pro Flash-Partition auf unserer
-Festplatte befindet. Ich habe beide Varianten ausprobiert und bin bei
-beiden auf noch ungeklärte Phänomene gestoßen, aber mit den Block
-Devices funktionieren die Datensicherungen besser, wie wir sehen werden.
+For the purpose of the backup, it basically does not matter how it is
+created, character by character or block-wise, as long as we end up with
+one complete file per flash partition on the hard disk. I tried both
+variants and encountered unexplained phenomena with both, but backups work
+better with the block devices, as we will see.
 
-Für die weiteren Erklärungen gehe ich davon aus, daß ein Mount Point
-`/var/fritz` existiert, der einen größeren Datenspeicher darstellt. Bei
-mir ist das eine über *smbmount* angebundene Windows-Freigabe, es
-könnten aber auch USB-Sticks oder -Festplatten in Frage kommen. Genügend
-freien RAM-Speicher auf der Box vorausgesetzt, kann man die Kopien auch
-irgendwo unterhalb von `/var` zwischenspeichern und via FTP oder SCP
-abtransportieren.
+For the following explanations, I assume there is a mount point
+`/var/fritz` representing larger storage. In my case, this is a Windows
+share mounted via *smbmount*, but USB sticks or hard disks are also
+possible. If there is enough free RAM on the box, the copies can also be
+stored temporarily somewhere below `/var` and then transferred away via
+FTP or SCP.
 
-### Kopien von Block Devices (mtdblock\*)
+### Copies of Block Devices (`mtdblock*`)
 
-Ich hatte erwartet, mit folgendem Befehl den ADAM2-Bootloader, welcher
-sich nach Konfiguration laut Urlader (s.o.) ja in Partition `mtd2`
-befinden soll, sichern zu können:
+I expected to be able to back up the ADAM2 bootloader, which according to
+the Urlader configuration above should be in partition `mtd2`, with the
+following command:
 
 ```
     cat /dev/mtdblock2 > /var/fritz/adam2
 ```
 
-Doch weit gefehlt, was finde ich auf meiner Festplatte? Eine Datei der
-Größe 7.798.784 Bytes, das sind genau 7.616 KB und somit exakt die Größe
-der eigentlich unter `mtd1` beheimateten Kombination aus Kernel und
-direkt daran anschließendem Dateisystem. Das Ganze scheint mit der
-Zählweise zusammenzuhängen, denn es ergibt sich folgendes Bild:
+But no such luck. What do I find on my hard disk? A file of size
+7,798,784 bytes, exactly 7,616 KB and therefore exactly the size of the
+combination of kernel and directly following filesystem that actually
+resides under `mtd1`. The whole thing seems related to numbering, because
+this picture emerges:
 
 ```
 	  ------------ ----------- ---------- ----------------------------------------------------------
-	  Blockgerät   Partition   Größe      Beschreibung
+	  Block device Partition   Size       Description
 	  mtdblock0    ----        ----       *Endlosschleife beim Auslesen*
-	  mtdblock1    mtd0        6.966 KB   SquashFS-Filesystem ohne Kernel (hinterer Teil von mtd1)
-	  mtdblock2    mtd1        7.616 KB   Kernel + SquashFS-Filesystem
-	  mtdblock3    mtd2        64 KB      ADAM2 Bootloader ("Urlader")
-	  mtdblock4    mtd3        256 KB     TFFS für Konfig-Daten
-	  mtdblock5    mtd4        256 KB     Kopie TFFS (Double Buffering)
-	  mtdblock6    (mtd5)      1.664 KB   (Vorbereitet für) JFFS2
-	  mtdblock7    (mtd6)      5.952 KB   (Vorbereitet für) Kernel ohne JFFS2
+	  mtdblock1    mtd0        6.966 KB   SquashFS filesystem without kernel (rear part of mtd1)
+	  mtdblock2    mtd1        7.616 KB   Kernel + SquashFS filesystem
+	  mtdblock3    mtd2        64 KB      ADAM2 bootloader ("Urlader")
+	  mtdblock4    mtd3        256 KB     TFFS for config data
+	  mtdblock5    mtd4        256 KB     TFFS copy (double buffering)
+	  mtdblock6    (mtd5)      1.664 KB   (Prepared for) JFFS2
+	  mtdblock7    (mtd6)      5.952 KB   (Prepared for) kernel without JFFS2
 	  ------------ ----------- ---------- ----------------------------------------------------------
 ```
 
-Die weiteren drei `mtdblock`-Geräte ergeben Ausgaben der Länge null.
+The other three `mtdblock` devices produce output of length zero.
 
-Zusammenfassend kann man sagen: Will man eine Kopie der **Partition
-`mtd[n]`** haben, muß man offenbar das **Blockgerät `mtdblock[n+1]`**
-benutzen.
+In summary: to get a copy of **partition `mtd[n]`**, one apparently has
+to use the **block device `mtdblock[n+1]`**.
 
-Anmerkung von
+Note from
 [maceis](http://www.ip-phone-forum.de/member.php?u=95502)
 (29.12.2011):
 
-> *Diese Verschiebung kann ich bei meiner neuen 7270_v3 nicht
-> feststellen. `cat /dev/mtdblock1` ergibt bei mir eine Datei, die aufs
-> kB genau so groß ist, wie der Kernel. `cat /dev/mtdblock2` ist 128 kB
-> groß. Das deckt sich mit den Ausgaben von `cat /proc/mtd` und
-> `cat /proc/partitions`. Der Platz für den Urlader ist also
-> offensichtlich größer geworden. (Warum?)*
+> *I cannot observe this shift on my new 7270_v3. `cat /dev/mtdblock1`
+> gives me a file exactly as large as the kernel, down to the KB.
+> `cat /dev/mtdblock2` is 128 KB. This matches the output of
+> `cat /proc/mtd` and `cat /proc/partitions`. The space for the Urlader
+> has therefore apparently become larger. Why?*
 
-Antwort von [Alexander Kriegisch
+Answer from [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
 (06.01.2012):
 
-> *Ich sehe die Verschiebung aktuell auch nicht mehr auf meinen beiden
-> Boxen. Das hängt wohl mit Firmware- bzw. Urladerversionen zusammen,
-> kann also nicht pauschal für alle Geräte gesagt werden. Der Artikel
-> ist ja auch schon ziemlich alt, und damals war es eben so. Zur Größe
-> des Urladers: Tja, auch hier ändern sich offenbar die Zeiten. Während
-> z.B. die 7170 und die 7270_v1 sowie alle älteren Modelle 64 kB
-> Urladergröße hatten, sind es bei der [7270_v2/3 128
-> kB](http://www.wehavemorefun.de/fritzbox/index.php/7270#Environment).
-> Bei ganz neuen Boxen schließe ich auch 256 kB nicht aus, da müßte ich
-> mal nachforschen, ich habe nur die älteren Geräte.*
+> *I also no longer see the shift on my two boxes at the moment. This is
+> probably related to firmware or Urlader versions and cannot be stated
+> generally for all devices. The article is already quite old, and back
+> then it was like that. As for the size of the Urlader: times apparently
+> change here too. While, for example, the 7170, 7270_v1, and all older
+> models had a 64 KB Urlader, the [7270_v2/3 have 128
+> KB](http://www.wehavemorefun.de/fritzbox/index.php/7270#Environment).
+> I would not rule out 256 KB on very new boxes either; I would have to
+> investigate, I only have older devices.*
 
-### Kopien von Character Devices (mtd\*)
+### Copies of Character Devices (`mtd*`)
 
-Jetzt wird es richtig verwirrend, denn bei den Zeichengeräten taucht
-jede Partition zweimal hintereinander auf, allerdings nicht bis ganz zu
-Ende, da es ja bei der laufenden Nummer 10 aufhört:
+Now it gets really confusing, because each partition appears twice in a
+row among the character devices, although not all the way to the end
+because numbering stops at 10:
 
 ```
 	  -------------- ----------- ---------- ----------------------------------------------------------
-	  Zeichengerät   Partition   Größe      Beschreibung
+	  Character dev. Partition   Size       Description
 	  mtd0/1         ----        ----       *Endlosschleife beim Auslesen*
-	  mtd2/3         mtd0        6.966 KB   SquashFS-Filesystem ohne Kernel (hinterer Teil von mtd1)
-	  mtd4/5         mtd1        7.616 KB   Kernel + SquashFS-Filesystem
-	  mtd6/7         mtd2        64 KB      ADAM2 Bootloader ("Urlader")
-	  mtd8/9         mtd3        256 KB     TFFS für Konfig-Daten
-	  mtd10(/11)     mtd4        256 KB     Kopie TFFS (Double Buffering)
-	  (mtd12/13)     (mtd5)      1.664 KB   (Vorbereitet für) JFFS2
-	  (mtd14/15)     (mtd6)      5.952 KB   (Vorbereitet für) Kernel ohne JFFS2
+	  mtd2/3         mtd0        6.966 KB   SquashFS filesystem without kernel (rear part of mtd1)
+	  mtd4/5         mtd1        7.616 KB   Kernel + SquashFS filesystem
+	  mtd6/7         mtd2        64 KB      ADAM2 bootloader ("Urlader")
+	  mtd8/9         mtd3        256 KB     TFFS for config data
+	  mtd10(/11)     mtd4        256 KB     TFFS copy (double buffering)
+	  (mtd12/13)     (mtd5)      1.664 KB   (Prepared for) JFFS2
+	  (mtd14/15)     (mtd6)      5.952 KB   (Prepared for) kernel without JFFS2
 	  -------------- ----------- ---------- ----------------------------------------------------------
 ```
 
-Die eingeklammerten Zeichengeräte in der ersten Spalte würde es geben,
-wenn `/sbin/makedevs` sie beim Hochfahren anlegen würde. In
-`/etc/device.table` müßte dazu Folgendes geändert werden, um die Devices
-bis `mtd15` zu erhalten:
+The character devices in parentheses in the first column would exist if
+`/sbin/makedevs` created them during boot. To obtain devices up to
+`mtd15`, the following would have to be changed in `/etc/device.table`:
 
 ```
-	# Aktuelle Einstellung bei AVM und in Freetz
+	# Current setting at AVM and in Freetz
 	/dev/mtd        c       640     0       0       90      0       0       1       11
 
-	# Geänderte Einstellung (siehe letzte Spalte)
+	# Changed setting (see last column)
 	/dev/mtd        c       640     0       0       90      0       0       1       16
 ```
 
-> *Zitat [Oliver
+> *Quote from [Oliver
 > (olistudent)](http://www.ip-phone-forum.de/member.php?u=58639):
-> "In der original Firmware hört das auch bei 10 auf. Da hab ich das
-> halt so übernommen."*
+> "In the original firmware it also stops at 10. I simply adopted it that
+> way."*
 
-Verständlich, würde ich sagen. Es kann ja jeder für sich ändern, falls
-er glaubt, die Geräte zu brauchen.
+Understandable, I would say. Everyone can change it for themselves if they
+believe they need the devices.
 
-Der Grund für die Doppelung ist übrigens, daß die Geräte mit den geraden
-Nummern Lese-Schreib-Zugriff bieten, die mit den ungeraden
-Nur-Lese-Zugriff.
+The reason for the duplication, by the way, is that devices with even
+numbers offer read-write access, while those with odd numbers offer
+read-only access.
 
-Hier lautet die Formel: Will man eine Kopie der **Partition `mtd(n)`**
-haben, benutzt man das **Zeichengerät `mtd(2n+2)`** - oder wahlweise
-`mtd(2n+3)`.
+Here the formula is: to get a copy of **partition `mtd(n)`**, use the
+**character device `mtd(2n+2)`**, or alternatively `mtd(2n+3)`.
 
-### Ein (gefährlicher?) Tip, ohne Gewähr
+### A Possibly Dangerous Tip, Without Warranty
 
-Im
+In the
 [OpenWRT-Forum](http://forum.openwrt.org/viewtopic.php?pid=18281#p18281)
-ist nachzulesen, daß man auf diese Weise den Bootloader im laufenden
-Betrieb überschreiben könne *(Konjunktiv beachten, ich kenne keinen hier
-im Forum, der es getestet hat):*
+you can read that the bootloader can supposedly be overwritten this way
+during operation. Note the conditional wording; I do not know anyone here
+in the forum who has tested it:
 
 ```
-    # Annahme 1: neuer Bootloader liegt schon unter /var/adam2_new
-    # Annahme 2: /dev/mtdblock3 entspricht Bootloader-Partition mtd2
+	# Assumption 1: the new bootloader is already under /var/adam2_new
+	# Assumption 2: /dev/mtdblock3 corresponds to bootloader partition mtd2
 
-    # So nicht: cp /var/adam2_new /dev/mtdblock3/
+	# Not like this: cp /var/adam2_new /dev/mtdblock3/
     cat /var/adam2_new > /dev/mtdblock3
 
     reboot
 ```
 
-**Update (`cat` statt `cp`, s.o.):** Wie unter 'ADAM2
-überschreiben' nachzulesen, klappt das, wie mehrfach
-bestätigt wurde und wie AVM auch vormacht in FW-Updates.
+**Update (`cat` instead of `cp`, see above):** As described under
+"Overwrite ADAM2", this works, as has been confirmed several times and as
+AVM also demonstrates in firmware updates.
 
-Wer will es versuchen? Falls es schief geht und man den Bootloader
-löscht statt überschreibt oder das neue Image Mist ist, darf man das
-Paket an AVM schon fertig machen :-/, sofern man nicht glücklicher
-Besitzer eines
+Who wants to try it? If it goes wrong and the bootloader is deleted
+instead of overwritten, or the new image is bad, you can start preparing
+the parcel for AVM, unless you are the lucky owner of a
 [JTAG-Kabels](http://feadispace.fe.funpic.de/FBF7050/)
-(siehe auch
+(see also
 [OpenWrt.org](http://wiki.openwrt.org/OpenWrtDocs/Customizing/Hardware/JTAG_Cable))
-mit passender Software ist. Falls man versehentlich "nur" eine andere
-Partition überschreibt, sollte ein Recover reichen.
+with suitable software. If you accidentally overwrite "only" another
+partition, recovery should be enough.
 
-### Wege, sich schnell einen Überblick zu verschaffen
+### Ways to Quickly Get an Overview
 
-Was ich schon lange beschreiben wollte, da ich es zum Zeitpunkt der
-Urfassung dieses Artikels noch nicht wusste, aber später durch
-voneinander unabhängige Hinweise von [Sedat
+What I had wanted to describe for a long time, because I did not know it
+when the original version of this article was written but later learned
+through independent hints from [Sedat
 (dileks)](http://www.ip-phone-forum.de/member.php?u=95274)
-und [Enrik
+and [Enrik
 (enrik)](http://www.ip-phone-forum.de/member.php?u=58906)
-gelernt habe, ist, daß es sehr viel einfacher gewesen wäre, obige
-Tabellen bzgl. Partitionen und Block Devices zu erstellen, hätte ich
-folgende Befehle gekannt, die jeder auf seinem Boxtyp ausführen sollte,
-um sich einen Überblick zu verschaffen, denn die Partitionen sind nicht
-überall gleich groß und haben nicht überall die gleiche Nummerierung.
-Beispielsweise ist der Urlader unter Kernel 2.4 unter `/dev/mtdblock/2`
-zu finden und befindet sich unter Kernel 2.6 unter `/dev/mtdblock3`
-(andere Nummer, eine Verzeichnisebene höher). Das ist wichtig zu wissen,
-wenn man z.B. ein Downgrade auf eine ältere Firmwareversion vorhat, die
-auch auf einen älteren Kernel und Bootloader aufsetzt. Es bringt ja
-nichts, Letzteren in die falsche Partition zu schreiben.
+is that it would have been much easier to create the tables above for
+partitions and block devices if I had known the following commands. Anyone
+should run them on their box type to get an overview, because the
+partitions are not the same size everywhere and do not have the same
+numbering everywhere. For example, under kernel 2.4 the Urlader is found
+under `/dev/mtdblock/2`, while under kernel 2.6 it is under
+`/dev/mtdblock3`, a different number and one directory level higher. This
+is important to know if, for example, you plan to downgrade to an older
+firmware version that is also based on an older kernel and bootloader.
+Writing the latter to the wrong partition achieves nothing.
 
 ### /proc/partitions
 
@@ -286,10 +270,11 @@ nichts, Letzteren in die falsche Partition zu schreiben.
            8     1      63984 sda1
 ```
 
-Hier sieht man sehr schön die Größen der einzelnen Partitionen samt
-Device Major/Minor (wer's braucht) und passenden Block-Device-Namen.
+Here you can clearly see the sizes of the individual partitions together
+with device major/minor numbers, for those who need them, and matching
+block device names.
 
-Auf einer 7270 sieht das etwas anders aus:
+On a 7270 this looks somewhat different:
 
 ```
 	$ cat /proc/partitions
@@ -304,7 +289,7 @@ Auf einer 7270 sieht das etwas anders aus:
 	  31     5       8192 mtdblock5
 ```
 
-Hier scheint mtdblock2 wirklich der Bootloader zu sein.
+Here, `mtdblock2` really seems to be the bootloader.
 
 ### /proc/mtd
 
@@ -322,12 +307,11 @@ Hier scheint mtdblock2 wirklich der Bootloader zu sein.
 	mtd7: 005e0000 00010000 "Kernel without jffs2"
 ```
 
-In dieser alternativen Darstellung mit in Hexadezimal-Schreibweise
-angegebener Partitionsgröße sieht man noch als Kommentar eine
-Beschreibung, die Auskunft darüber gibt, wofür die einzelnen Partitionen
-tatsächlich vorgesehen sind. Sehr einfach, sehr praktisch.
+In this alternative view, with partition sizes shown in hexadecimal
+notation, the comment also contains a description indicating what each
+partition is actually intended for. Very simple, very practical.
 
-Und auch hier wieder die 7270:
+And here again the 7270:
 
 ```
 	$ cat /proc/mtd
@@ -341,62 +325,56 @@ Und auch hier wieder die 7270:
 	mtd5: 00800000 00010000 "reserved"
 ```
 
-#### Backup von Urlader, Kernel und Dateisystem
+#### Backup of Urlader, Kernel, and Filesystem
 
-Wie man bei einer Kernel-2.6-Firmware konkret und effizient
-`urlader.image` und `kernel.image` übers Netzwerk wegsichert, beschreibe
-ich im
+How to back up `urlader.image` and `kernel.image` efficiently over the
+network on kernel 2.6 firmware is described by me in the
 [Forum](http://www.ip-phone-forum.de/showthread.php?p=954170#post954170).
 
-### Anmerkungen zur 7270v3 mit 2.6er Kernel (mit Version 74.04.88 getestet)
+### Notes on the 7270v3 with 2.6 Kernel (Tested with Version 74.04.88)
 
-Das in den letzten Absätzen angegebene Layout für die 7270 mit obiger
-Firmware kann ich noch um folgende Informationen zur letzten „Partition"
-ergänzen. Die in „/proc/mtd" als "reserved" angegebene „mtd5" enthält
-den gesamten Bereich von „mtd0" bis „mtd4" hintereinander. Darauf
-gebracht hat mich die Größe von 16 MiB (0x800000). Hat man in Freetz das
-Programm „dd" mit den Funktionen „if" und „of" (beides ist auszuwählen
-im Menuconfig; getestet mit Freetz 1.2) integriert, läßt sich auf
-einfache Weise eine vollständige Sicherheitskopie ziehen und
-zurückspielen:
+I can add the following information about the last "partition" to the
+layout for the 7270 with the firmware mentioned above. The `mtd5` shown
+as `reserved` in `/proc/mtd` contains the complete area from `mtd0` to
+`mtd4` consecutively. The size of 16 MiB (0x800000) led me to this. If
+the program `dd` with the functions `if` and `of` is integrated in
+Freetz, both must be selected in menuconfig; tested with Freetz 1.2, a
+complete backup can easily be created and restored:
 
 ```
 	$ dd if=/dev/mtdblock5 of=/var/media/ftp/uStor00/mtd5.bak
 ```
 
-Wiederherstellen geht dann umgekehrt:
+Restoring works in reverse:
 
 ```
 	$ dd of=/dev/mtdblock5 if=/var/media/ftp/uStor00/mtd5.bak
 ```
 
-Das Programm „cat" ist zum Sichern ebenso geeignet, hier muß dann die
-Ausgabe in die Zieldatei umgeleitet werden. Der erste eingesteckte
-USB-Speicher ist für gewöhnlich als „/var/media/ftp/uStor00" eingehängt,
-das kann natürlich im Einzelfall anders heißen. Mit „bzip2" kann man es
-bei Bedarf noch geringfügig komprimieren. Für die Kopien habe ich ein
-Skript auf dem USB-Speicher liegen, daß regelmäßig eine solche Kopie per
-Cron anfertigt.
+The program `cat` is equally suitable for backing up; its output must then
+be redirected into the target file. The first inserted USB storage device
+is usually mounted as `/var/media/ftp/uStor00`, though of course this can
+be different in individual cases. With `bzip2`, it can be slightly
+compressed if needed. For the copies, I have a script on the USB storage
+device that regularly creates such a copy via cron.
 
-Getestet habe ich das auch: als der Router in einer Reboot-Schleife
-hing, habe ich durch das Zurückspielen einer solchen Kopie erfolgreich
-einen früheren Zustand wiederhergestellt.
+I have tested this too: when the router was stuck in a reboot loop, I
+successfully restored an earlier state by replaying such a copy.
 
-Beachte, daß AVM das Layout in künftigen Versionen ohne weiteres wieder
-ändern kann, tippe also niemals ohne eigene Prüfung einfach die
-Befehlszeilen oben ab. [Christoph
+Note that AVM can easily change the layout again in future versions, so
+never simply type the command lines above without checking for yourself.
+[Christoph
 Franzen](http://www.ip-phone-forum.de/member.php?u=121255)
 
 ### Zusammenfassung
 
-Wer Kopien seiner Flash-Partitionen haben möchte, macht das im laufenden
-Betrieb am besten, indem er das passende Block Device auswählt (Vorsicht
-bei der verschobenen Numerierung!) und mittels `cat` die Daten auf ein
-externes Medium wegsichert. *ADAM2* benötigt man hierfür jedenfalls
-nicht zwingend, es geht auch so. Am besten kontrolliert man anhand der
-sich ergebenden Dateigrößen, ob man die richtigen Partitionen erwischt
-hat. Der Bootloader hat immer 64 KB, das TFFS 256 KB, der Rest hängt von
-der Box und der Firmware-Version ab.
+Anyone who wants copies of their flash partitions should do this during
+operation by selecting the appropriate block device, be careful with
+shifted numbering, and using `cat` to save the data to an external medium.
+*ADAM2* is not strictly required for this; it works without it. It is best
+to check the resulting file sizes to see whether the correct partitions
+were captured. The bootloader is always 64 KB, TFFS is 256 KB, and the
+rest depends on the box and firmware version.
 
 [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)

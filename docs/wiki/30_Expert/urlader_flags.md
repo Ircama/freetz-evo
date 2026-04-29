@@ -1,49 +1,42 @@
-# Einstellungen speichern im Urlader-Environment
+# Store Settings in the Urlader Environment
 
-### Vorwort und Motivation
+### Foreword and Motivation
 
-Es kann von Vorteil sein, während des Boot-Prozesses oder evtl. auch
-danach noch gewisse Schalter (engl. flags) abfragen zu können, ohne
-deswegen gleich auf `/var/flash/debug.cfg` zugreifen zu müssen. Dafür
-gibt es folgende Gründe:
+It can be useful to query certain switches, or flags, during the boot
+process or possibly afterwards without immediately having to access
+`/var/flash/debug.cfg`. There are several reasons for this:
 
--   Die Character Devices unter `/var/flash` sind erst nach Ablauf von
-    `/etc/init.d/rc.S` verfügbar, weil sie in diesem Skript erst mittels
-    `mknod` erzeugt werden - speziell `debug.cfg` übrigens erst separat
-    am Ende des Skripts.
--   Gewisse Funktionalitäten würden wir gerne aufrufen, ***bevor***
-    *`rc.S`* läuft. Bestes Beispiel sind Root-Mounts, z.B. das
-    Freetz-Paket mini_fo,
-    dessen Init-Skript sich in `/etc/inittab` vor `rc.S` einträgt.
-    Würden wir jetzt gerne einen Schalter haben, der das Laden von
-    `mini_fo` verhindern kann, hätten wir ein Problem.
+-   The character devices under `/var/flash` are available only after
+	`/etc/init.d/rc.S` has run, because they are created in that script
+	with `mknod`. In particular, `debug.cfg` is created separately only at
+	the end of the script.
+-   We would like to call certain functionality ***before*** `rc.S` runs.
+	The best example is root mounts, such as the Freetz package `mini_fo`,
+	whose init script registers itself in `/etc/inittab` before `rc.S`. If
+	we wanted a switch to prevent loading `mini_fo`, we would have a
+	problem.
 
-### Lösungsmöglichkeiten
+### Possible Solutions
 
-Kein Problem ohne Lösung. Wir könnten innerhalb von `rc.mini_fo` selbst
-`mknod` verwenden, um `debug.cfg` temporär zugreifbar zu machen und nach
-Abfragen der gewünschten Information wieder aufräumen mit `rm`, damit
-später `rc.S` nicht irritiert wird beim erneuten Erzeugen des Nodes. Es
-gibt tatsächlich ein Paket
-(NFS-Root), welches diese Technik
-verwendet, um auf AVM-Konfigurationsdaten aus dem TFFS zuzugreifen,
-zusätzlich aber auch noch Informationen von woanders einholt, und zwar
-aus dem sog. Bootloader Environment (Urlader-Umgebungsvariablen). Schon
-seit 15.0 greifen auch zwei (noch) undokumentierte Logging-Werkzeuge des
-DS-Mod, Inotify-Tools und
-*Dmesg-Recording*, auf diese Umgebungsvariablen zu, die beiden Letzteren
-sogar über ein kleines, funktional auf bestimmte Anwendungsfälle
-eingegrenztes Shell-API, das ich mir habe einfallen lassen. Dazu später
-mehr.
+No problem without a solution. Inside `rc.mini_fo` itself, we could use
+`mknod` to make `debug.cfg` temporarily accessible, then clean up with
+`rm` after querying the desired information so that `rc.S` is not confused
+later when creating the node again. There is in fact a package,
+NFS-Root, that uses this technique to access AVM configuration data from
+the TFFS. It also obtains information from another place: the so-called
+bootloader environment, the Urlader environment variables. Since 15.0,
+two still-undocumented DS-Mod logging tools, Inotify Tools and
+*Dmesg Recording*, also access these environment variables. The latter two
+even do so through a small shell API I came up with, functionally limited
+to certain use cases. More about that later.
 
 ### Bootloader Environment
 
-Der Urlader (engl. bootloader), je nach Version auch bekannt unter
-ADAM2 oder EVA, besitzt ein sog. Environment, also
-einen kleinen Speicherbereich für globale Einstellungen, welche absolut
-erforderlich sind, damit die Box überhaupt funktioniert. Das ist ja
-bekannt, aber zur Auffrischung nochmals die (mit "\#" anonymisierte)
-Ausgabe, generiert auf meiner 7170 mit Kernel 2.6:
+The Urlader, English bootloader, also known depending on version as ADAM2
+or EVA, has a so-called environment, a small storage area for global
+settings that are absolutely required for the box to work at all. This is
+well known, but as a refresher here is the output generated on my 7170
+with kernel 2.6, anonymized with `#`:
 
 ```
 	$ cat /proc/sys/urlader/environment
@@ -89,159 +82,144 @@ Ausgabe, generiert auf meiner 7170 mit Kernel 2.6:
 	wlan_cal        ####,####,####,####,####,####,####,####,####
 ```
 
-Das Schöne an diesem Environment ist, dass es nicht nur lesbar, sondern
-auch (teilweise) beschreibbar ist. Das wird gern verwendet, um
-Anpassungen am Annex oder am Branding vorzunehmen, insbesondere bei
-OEM-Boxen, deren Besitzer gern eine vollwertige FritzBox daraus machen
-möchten, um die entsprechenden Original-Firmware oder Freetz darauf zu
-installieren, bzw. auch, um eine deutsche Box im Ausland lauffähig zu
-machen oder umgekehrt.
+The nice thing about this environment is that it is not only readable but
+also partly writable. This is often used to adjust annex or branding,
+especially on OEM boxes whose owners want to turn them into full
+FRITZ!Boxes in order to install the corresponding original firmware or
+Freetz, or to make a German box work abroad or vice versa.
 
-Es ist bei den allermeisten Werten im Environment absolut nicht ratsam,
-sie für andere Zwecke zu missbrauchen, aber es gibt eine oben gar nicht
-sichtbare Variable, die dafür geschaffen wurde, dem Linux-Kernel
-Parameter für den Boot-Vorgang mitzugeben. Diese Parameter werden später
-weitergereicht an die Startskripte, aber auch gleichzeitig persistent
-gespeichert und sind somit ideal geeignet, um Werte von dort abzufragen.
+For most values in the environment, abusing them for other purposes is
+absolutely not advisable. But there is a variable, not visible above, that
+was created to pass parameters to the Linux kernel for the boot process.
+These parameters are later passed on to the startup scripts and are also
+stored persistently, making them ideally suited for querying values from
+there.
 
-### Variable "kernel_args"
+### The `kernel_args` Variable
 
-Die Variable, von der hier die Rede ist, heißt `kernel_args`, fasst
-maximal 64 Zeichen an Informationen und sollte daher mit Bedacht
-verwendet werden. Man kann folgendermaßen etwas hinein schreiben:
+The variable discussed here is called `kernel_args`. It holds at most 64
+characters of information and should therefore be used carefully. You can
+write something into it like this:
 
 ```
     echo "kernel_args tea=Darjeeling quality=FTGFOP1" > /proc/sys/urlader/environment
 ```
 
-Damit würden wir ein eigens dafür entworfenes (leider fiktives)
-Startskript der FritzBox anweisen, beim Hochfahren der Box Tee zu
-kochen, und zwar Darjeeling der Qualitätsstufe FTGFOP1 (Finest Tippy
-Golden Flowery Orange Pekoe 1).
+This would instruct a specially designed, unfortunately fictional,
+FRITZ!Box startup script to brew tea while the box boots, specifically
+Darjeeling of quality grade FTGFOP1, Finest Tippy Golden Flowery Orange
+Pekoe 1.
 
-Wenn man sich jetzt das Environment nochmals anzeigen lässt, findet man
-plötzlich dort die Variable `kernel_args` vor:
+If you display the environment again now, the variable `kernel_args`
+suddenly appears there:
 
 ```
     $ cat /proc/sys/urlader/environment | grep kernel_args
     kernel_args     tea=Darjeeling quality=FTGFOP1
 ```
 
-Mit ein bisschen Zeichenketten-Manipulation können wir den Wert von
-`kernel_args` isolieren und dann weiter zerlegen in unsere beiden
-Schlüssel-Werte-Paare. Darauf will ich an dieser Stelle nicht weiter
-eingehen, das sind Grundlagen der Shell-Programmierung.
+With a bit of string manipulation, we can isolate the value of
+`kernel_args` and then split it further into our two key-value pairs. I
+will not go into this further here; it is basic shell programming.
 
-Jedoch wichtig zu wissen ist, wie man während des Boot-Vorgangs an diese
-Variable heran kommt. Die Antwort hängt davon ab, zu welchem Zeitpunkt
-man den Zugriff benötigt. Sofern das virtuelle Dateisystem unter `/proc`
-bereits zugreifbar, das sog. *procfs* also bereits ins Root-Dateisystem
-per `mount` eingehängt wurde, können wir so vorgehen wie oben gezeigt.
-Andernfalls müssen wir zunächst mittels
+It is important, however, to know how to access this variable during the
+boot process. The answer depends on the point in time when access is
+needed. If the virtual filesystem under `/proc`, the so-called *procfs*,
+is already accessible and has therefore already been mounted into the root
+filesystem with `mount`, we can proceed as shown above. Otherwise, we must
+first mount *procfs* ourselves with:
 
 ```
     [ -e /proc/mounts ] || mount proc
 ```
 
-*procfs* selbst einhängen, falls es noch nicht da ist. Nach Benutzung
-loswerden können wir es entsprechend über `umount proc`
+After use, it can be removed again with `umount proc`.
 
-### Kernel_Args-API
+### Kernel_Args API
 
-Für einfache, auf Debugging oder Logging ausgerichtete Anwendungsfälle,
-die innerhalb von `kernel_args` auskommen mit den Werten
+For simple use cases focused on debugging or logging that can make do
+inside `kernel_args` with the values:
 
--   aktiv/ja,
--   inaktiv/nein,
--   Countdown-Zähler \> 0,
+-   active/yes,
+-   inactive/no,
+-   countdown counter \> 0,
 
-gibt es das Shell-Skript `kernel_args`, welches man mit
-`. /usr/bin/kernel_args` in ein laufendes Skript inkludieren und
-daraufhin auf verschiedene vorgefertigte Funktionen zur Manipulation von
-innerhalb der Bootloader-Variablen `kernel_args` gespeicherten
-Schlüssel-Werte-Paaren zugreifen kann. Das Skript ist in den enthaltenen
-Kommentarzeilen gut dokumentiert, daher hier nur eine kurze Auflistung
-der aktuell (ds26-15.2) verfügbaren Funktionen:
+there is the shell script `kernel_args`. It can be included in a running
+script with `. /usr/bin/kernel_args`, after which several ready-made
+functions are available to manipulate key-value pairs stored inside the
+bootloader variable `kernel_args`. The script is well documented in its
+comments, so here is only a short list of functions currently available
+in ds26-15.2:
 
--   **ka_mountProc:** `/proc` mounten, falls notwendig
--   **ka_getArgs:** `kernel_args` komplett auslesen
--   **ka_getKeyValuePair:** Schlüssel-Wert-Paar zu geg. Schlüssel
-    ermitteln
--   **ka_isValidName:** Schlüsselnamen auf Validität prüfen
--   **ka_isValidValue:** Wert auf Validität (y, n, Zahl \> 0) prüfen
--   **ka_getValue:** Wert zu einem Schlüssel ermitteln
--   **ka_setValue:** Wer zu einem Schlüssel setzen
--   **ka_removeVariable:** Schlüssel-Wert-Paar löschen
--   **ka_removeVariableNoUpdate:** wie oben, aber nur neuen Wert von
-    `kernel_args` nach angenommener Entfernung eines Paares anzeigen,
-    nicht direkt ins Environment schreiben
--   **ka_isPositiveInteger:** Hilfsfunktion zum Prüfen numerischer
-    Werte
--   **ka_isActiveVariable:** Prüfen, ob Wert \> 0 oder "y" (aktiv)
--   **ka_decreaseValue:** Positiven Ganzzahlwert um 1 vermindern. Falls
-    er 0 werden würde, Wert durch "n" (inaktiv) ersetzen
+-   **ka_mountProc:** mount `/proc` if necessary
+-   **ka_getArgs:** read the complete `kernel_args`
+-   **ka_getKeyValuePair:** determine the key-value pair for a given key
+-   **ka_isValidName:** check key names for validity
+-   **ka_isValidValue:** check value validity, `y`, `n`, or number \> 0
+-   **ka_getValue:** determine the value for a key
+-   **ka_setValue:** set the value for a key
+-   **ka_removeVariable:** delete a key-value pair
+-   **ka_removeVariableNoUpdate:** as above, but only display the new
+	value of `kernel_args` after assumed removal of a pair, without
+	writing directly to the environment
+-   **ka_isPositiveInteger:** helper function to check numeric values
+-   **ka_isActiveVariable:** check whether the value is \> 0 or `y`, active
+-   **ka_decreaseValue:** reduce a positive integer value by 1. If it
+	would become 0, replace the value with `n`, inactive
 
-### Countdown-Trick
+### Countdown Trick
 
-Gerade die letzten beiden Aufrufe ermöglichen ein hilfreiches Konstrukt
-beim Entwickeln von Startskripten: Man kann eine Variable z.B. auf 5
-setzen und bei jedem Startvorgang um 1 vermindern, bis sie nach fünf
-Durchläufen auf "n" (inaktiv) gesetzt wird. Abhängig davon könnte man
-den weiteren Verlauf eines Skripts beeinflussen, es also fortsetzen oder
-vorzeitig beenden. Sollte im weiteren Verlauf des Skripts also ein
-Fehler auftauchen, der den Startvorgang der Box torpediert, so daß man
-nicht mehr an sie heran kommt ohne Recover, wäre dieser Countdown eine
-praktische Hilfe, denn spätestens beim sechsten Anlauf würde ja die
-fehlerhafte Funktion nicht mehr aktiviert sein und die Box normal weiter
-gestartet werden. Wir retten uns hiermit also vor uns selbst und ziehen
-uns an den eigenen Haaren aus dem Sumpf! ;-)
+The last two calls in particular enable a helpful construct when
+developing startup scripts: set a variable to 5, for example, and reduce
+it by 1 on each boot until it is set to `n`, inactive, after five runs.
+Depending on that, the further course of a script could be influenced: it
+could continue or terminate early. If an error occurs later in the script
+that torpedoes the box startup so the box can no longer be reached without
+recovery, this countdown is a practical aid. By the sixth attempt at the
+latest, the faulty function would no longer be activated and the box would
+continue booting normally. We are saving ourselves from ourselves here and
+pulling ourselves out of the swamp by our own hair. ;-)
 
-### Grenzen des kernel_args-API
+### Limits of the kernel_args API
 
-Sobald wir andere Arten von Werten in `kernel_args` speichern wollen,
-z.B. etwas wie `my_path=/usr/bin/my_script`, versagt das API in der
-momentanen Version seinen Dienst, weil es ja nur die Werte "y", "n",
-positive Ganzzahl zulässt. Aber oben steht ja, wie man auch damit
-umgehen kann durch Direktzugriff. Eines Tages erweitere ich vielleicht
-auch das API.
+As soon as we want to store other types of values in `kernel_args`, for
+example something like `my_path=/usr/bin/my_script`, the current API no
+longer helps because it allows only the values `y`, `n`, and positive
+integers. But direct access, as shown above, can still handle this. Maybe
+one day I will extend the API as well.
 
-### Mögliche Anwendungsfälle
+### Possible Use Cases
 
-**Root-Mounts:** Dienste wie `mini_fo` zur virtuellen Überlagerung des
-Root-Dateisystems durch eine RAM-Disk oder einen externen Speicher, um
-Schreibzugriffe zu ermöglichen oder *NFS-Root*, also der vollständige
-Ersatz des Root-Dateisystems durch einen voll beschreibbaren und
-größenmäßig quasi unbegrenzten Netzwerk-Mount könnten von Schaltern im
-Bootloader Environment profitieren, weil man sie bei Bedarf ein- und
-ausschalten könnte. (Anm.: NFS-Root zum \[De-\]Aktivieren tatsächlich
-einen Eintrag in kernel_args, allerdings ohne API. Zusätzlich wird der
-zu mountende NFS-Pfad in einer anderen Bootloader-Variablen Namens
-`nfsroot` abgelegt, die der Linux-Kernel sowieso kennt und die wir quasi
-missbrauchen.)
+**Root mounts:** Services such as `mini_fo`, which virtually overlays the
+root filesystem with a RAM disk or external storage to enable write
+access, or *NFS-Root*, the complete replacement of the root filesystem
+with a fully writable and practically unlimited network mount, could
+benefit from switches in the bootloader environment because they could be
+enabled and disabled as needed. Note: NFS-Root actually uses an entry in
+`kernel_args` for enabling and disabling, though without the API. In
+addition, the NFS path to be mounted is stored in another bootloader
+variable named `nfsroot`, which the Linux kernel knows anyway and which we
+more or less misuse.
 
-**Debugging/Logging:** Bei Bedarf zuschaltebare Funktionen, um
-Dateizugriffe beim Booten zu protokollieren, um z.B. festzustellen,
-welchen Binaries beim Starten *nicht* angerührt werden und die man
-deshalb via Downloader-CGI auslagern könnte, um Platz für mehr früher
-benötigte DS-Mod-Pakete zu schaffen, oder um das Kernel-Log in eine
-Datei zu sichern, bevor der Ringpuffer überläuft und der Anfang verloren
-geht, sind Beispiele für weitere sinnvolle Anwendungsbereiche von
-`kernel_args`, ob nun mit oder ohne API. Der Entwickler braucht keine
-Debug-Version seiner FW zu flashen, um etwas zu probieren, sondern er
-baut die notwendigen Dinge fest in seine FW ein, macht den Start aber
-abhängig von einem oder mehreren Schaltern (Berücksichtigung in den
-Init-Skripten). Sehr bequem!
+**Debugging/logging:** Functions that can be enabled on demand to log file
+accesses during boot, for example to determine which binaries are *not*
+touched during startup and can therefore be outsourced through the
+Downloader CGI to free space for DS-Mod packages needed earlier, or to
+save the kernel log to a file before the ring buffer overflows and the
+beginning is lost, are further sensible areas of use for `kernel_args`,
+with or without the API. The developer does not need to flash a debug
+version of the firmware to try something; instead, the necessary parts are
+built permanently into the firmware, but their startup depends on one or
+more switches considered in the init scripts. Very convenient.
 
-Weitere Schweinereien überlasse ich Eurer geschätzten Phantasie.
+Further mischief is left to your valued imagination.
 
-Diskussionen zum Thema bitte unter
+Please discuss the topic at
 [http://www.ip-phone-forum.de/showthread.php?t=134976](http://www.ip-phone-forum.de/showthread.php?t=134976),
-wo zu Beginn noch die Rede davon ist, die Variable *SerialNumber* zu
-verwenden, um Werte dort zu speichern. Allerdings hat sich später
-herausgestellt, daß man diese Variable zwar dem Anschein nach ändern
-kann, die Änderungen aber einen Neustart der Box nicht überleben. Also
-bitte nicht verwirren lassen, "state of the art" ist momentan
-`kernel_args`.
+where the beginning still talks about using the variable *SerialNumber*
+to store values there. Later, however, it turned out that this variable
+can apparently be changed, but the changes do not survive a box restart.
+So do not be confused: the current state of the art is `kernel_args`.
 
 [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)

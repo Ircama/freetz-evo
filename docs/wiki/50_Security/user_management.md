@@ -1,84 +1,83 @@
-# Benutzerverwaltung
+# User Management
 
-### Benutzer anlegen
+### Create a User
 
-Nehmen wir an, der neue Benutzer soll *picard* heißen. Benutzer *root*
-macht dann Folgendes:
+Assume the new user should be named *picard*. User *root* then does the
+following:
 
 ### Freetz
 
 ```
-    # Benutzer hinzufügen
+    # Add user
     adduser picard
-    # in buffer speichern ???
-    # Persistent speichern
+    # Save to buffer ???
+    # Save persistently
     modsave flash
 ```
 
 ### ds-mod
 
 ```
-    # Benutzer hinzufügen
+    # Add user
     echo "picard:*" >> /tmp/flash/shadow.save
-    # Persistent speichern
+    # Save persistently
     modsave flash
-    # Alle Benutzer neu laden, fehlende Heimverzeichnisse erzeugen
+    # Reload all users, create missing home directories
     modpasswd load
-    # Paßwort vergeben (wird automatisch persistent gespeichert)
+    # Assign password (saved persistently automatically)
     modpasswd picard
     # Test
     login picard
 ```
 
-### Benutzer löschen
+### Delete a User
 
-Jetzt der umgekehrte Weg - Benutzer *picard* soll wieder weg. Benutzer
-*root* macht dann Folgendes:
+Now the reverse case: user *picard* should be removed again. User *root*
+does the following:
 
 ### Freetz
 
 ```
-    # Benutzer löschen
+    # Delete user
     deluser picard
-    # Persistent speichern
+    # Save persistently
     modsave flash
 ```
 
 ### ds-mod
 
 ```
-    # Heimverzeichnis löschen
+    # Delete home directory
     rm -rf /mod/home/picard
-    # Temporäre Datei mit gelöschtem Benutzer erzeugen
+    # Create temporary file without the deleted user
     grep -v '^picard:' /tmp/flash/shadow.save > /tmp/deleted-user
-    # Benutzerdatei überschreiben
+    # Overwrite user file
     mv /tmp/deleted-user /tmp/flash/shadow.save
-    # Persistent speichern
+    # Save persistently
     modsave flash
-    # Alle Benutzer neu laden (jetzt einen weniger)
+    # Reload all users (now one fewer)
     modpasswd load
-    # Test (schlägt mit "Login incorrect" bei PW-Eingabe fehl)
+    # Test (fails with "Login incorrect" when entering the password)
     login picard
 ```
 
-### Manuelle Anpassungen
+### Manual Adjustments
 
-Um z.B. die UID anzupassen geht man nach dem erfolgreichen Anlegen wie
-oben beschrieben, wie folgt vor:
+To adjust the UID, for example, first create the user successfully as
+described above, then proceed as follows:
 
--   Datei /tmp/passwd bearbeiten
+-   Edit `/tmp/passwd`
 -   modsave flash
 -   modsave
 
-### Besonderheiten
+### Special Cases
 
 ### Dropbear
 
-In Freetz akzeptiert Dropbear standardmäßig nur Logins des Benutzers
-`root`. Wer auch Anmeldungen anderer Benutzer ermöglichen will, muss auf
-der Freetz-Weboberfläche die Option "Login nur für root erlauben"
-deaktivieren. Das Entfernen des Patches
-`make/dropbear/patches/100-root-login-only.patch` ist - anders als in
-früheren Versionen - nicht mehr nötig.
+In Freetz, Dropbear accepts only logins by user `root` by default. To
+allow logins by other users, disable the option "allow login only for
+root" in the Freetz web interface. Unlike older versions, removing the
+patch `make/dropbear/patches/100-root-login-only.patch` is no longer
+necessary.
 
 

@@ -1,21 +1,17 @@
-# Kernel konfigurieren und kompilieren
+# Configure and Compile the Kernel
 
-Vorraussetzung ist eine Toolchain (siehe 'Cross-Compiler / Toolchain
-erstellen'). Sollten jemals
-Probleme mit nicht vorhandenen Verzeichnissen auftauchen, so kann ein
-`make world` Abhilfe schaffen. In der Regel sollte das aber nicht nötig
-sein.
+A toolchain is required; see `Cross-Compiler / Toolchain erstellen`. If
+problems with missing directories ever occur, `make world` can help. In
+normal cases, this should not be necessary.
 
-1.  Der Boxtyp (Type) sollte richtig gewählt sein, da nur der Kernel für
-    die entsprechende Box kompiliert wird
-2.  `make kernel-dirclean` Löscht den aktuell entpackten Source Tree des
-    Kernels (wir werden von komplett sauberen Kernel Sourcen
-    kompilieren; wer das nicht will, kann es mit `make kernel-clean`
-    versuchen)
-3.  `make kernel-menuconfig` Die Konfiguration des Kernels wird danach
-    wieder nach `./make/linux/Config.<kernel-ref>` zurückgespeichert
-4.  `make kernel-precompiled` Nun werden der Kernel und die Kernel
-    Module kompiliert:
+1.  Select the correct box type, because only the kernel for the
+    corresponding box is compiled.
+2.  `make kernel-dirclean` deletes the currently unpacked kernel source
+    tree. This means compiling from completely clean kernel sources. If
+    you do not want that, try `make kernel-clean` instead.
+3.  `make kernel-menuconfig` opens kernel configuration. The configuration
+    is saved back to `./make/linux/Config.<kernel-ref>` afterwards.
+4.  `make kernel-precompiled` compiles the kernel and kernel modules:
     -   `./kernel/kernel-<kernel-ref>.bin`
     -   `./kernel/modules-<kernel-ref>/`
 

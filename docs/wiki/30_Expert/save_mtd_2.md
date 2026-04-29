@@ -1,87 +1,78 @@
-# Flash-Partitionen von außen mit FTP sichern
+# Back Up Flash Partitions Externally with FTP
 
-Dieser Artikel baut auf dem Artikel
-Flash-Partitionierung auf. Ihn vorher zu lesen,
-schadet also nicht. Mein herzlicher Dank für einige der Informationen zu
-diesem Artikel gebührt Enrik Berkhan, der sich hier immer vornehm
-zurückhält, aber sooo viel weiß.
-:-)
+This article builds on the article about flash partitioning. Reading it
+first will not hurt. My heartfelt thanks for some of the information in
+this article go to Enrik Berkhan, who always keeps a low profile here but
+knows so much. :-)
 
 ### Motivation
 
-Im verwandten Artikel 'Flash-Partitionen im laufenden Betrieb
-sichern' habe ich erklärt, wie man direkt von
-der Konsole (SSH, Telnet, Rudi-Shell) auf der FritzBox aus über
-entsprechende Linux-Block- bzw. -Character-Devices Datensicherungen
-vornehmen kann. Das gleiche geht auch "von außen", also ohne
-Shell-Zugriff von der Box, indem man per FTP den Urlader - neudeutsch
-Bootloader - kontaktiert. Früher hieß der Urlader
-ADAM2, heute EVA bei den aktuellen
-Kernel-2.6-Firmwares (obwohl die Login-Daten immer noch wie früher sind,
-wie wir gleich sehen werden).
+In the related article "Back up flash partitions while running", I
+explained how to create backups directly from the FRITZ!Box console, via
+SSH, Telnet, or Rudi shell, using the corresponding Linux block or
+character devices. The same can also be done "from outside", without
+shell access on the box, by contacting the Urlader, in modern terms the
+bootloader, via FTP. The Urlader used to be called ADAM2; in current
+kernel 2.6 firmware it is called EVA, although the login data is still the
+same as before, as we will see shortly.
 
-Diese Methode ist auch dann anwendbar, wenn die Box nicht mehr sauber
-hochfährt oder man kein Telnet auf der Box mit Original-Firmware hat
-bzw. man es nicht schafft, es zu aktivieren.
+This method can also be used if the box no longer boots cleanly, if there
+is no Telnet access on the box with original firmware, or if enabling
+Telnet fails.
 
-### Voraussetzungen
+### Requirements
 
-Wir brauchen eine FritzBox mit Kernel 2.6 und EVA-Urlader, denn seit
-älteren Versionen könnten die FTP-Befehle sich mehr oder weniger stark
-verändert haben. Das weiß ich aber nicht genau. Es geht auch ein
-entsprechendes OEM-Gerät, also z.B. Speedport W501V, W701V, W900V.
+We need a FRITZ!Box with kernel 2.6 and EVA Urlader, because with older
+versions the FTP commands may have changed more or less significantly. I
+do not know that exactly. A corresponding OEM device also works, for
+example Speedport W501V, W701V, or W900V.
 
-Außerdem benötigen wir ein **Linux**-System (auch eine virtuelle
-Maschine, z.B. VMware, geht) mit installiertem
-Standard-Kommandozeilen-Client *ftp* (bei mir das Debian-Paket *ftp
-0.17-16*) oder aber mit
-[NcFTP](http://en.wikipedia.org/wiki/Ncftp) 3.2.0
-(bei mir Debian-Paket *ncftp 2:3.2.0-1*).
+In addition, we need a **Linux** system, also possible as a virtual
+machine such as VMware, with the standard command-line client `ftp`
+installed, in my case Debian package `ftp 0.17-16`, or with
+[NcFTP](http://en.wikipedia.org/wiki/Ncftp) 3.2.0, in my case Debian
+package `ncftp 2:3.2.0-1`.
 
-Alternativ funktioniert die beschriebene Prozedur mit NcFTP 3.2.0 auch
-unter **Windows mit Cygwin**. Dort klappt es aber nicht mit dem
-Standard-FTP-Client, mit dem Windows-FTP schon gar nicht.
+Alternatively, the described procedure with NcFTP 3.2.0 also works under
+**Windows with Cygwin**. There it does not work with the standard FTP
+client, and certainly not with Windows FTP.
 
-Des weiteren sollte die Boot-IP der Box bekannt sein. Kennt man sie
-nicht und kommt man nicht über eine Konsole (SSH, Telnet, Rudi-Shell,
-Nano-Shell) an Informationen aus der Box, so kann man sie mittels `ping`
-herausfinden, indem man verschiedene IP-Adressen "anpingt" direkt nach
-dem Aus- und Einschalten/-stecken der Box. Folgende IPs werden häufig
-verwendet:
+The boot IP of the box should also be known. If it is unknown and no
+information can be obtained from the box through a console, SSH, Telnet,
+Rudi shell, or nano shell, it can be found with `ping` by pinging
+different IP addresses immediately after switching the box off and on, or
+unplugging and reconnecting it. These IPs are often used:
 
 -   192.168.178.1 (allermeistens)
 -   169.254.1.1
 -   192.168.2.1
 -   192.168.2.254
 
-Die normale und einfache Methode, die Boot-IP herauszufinden, ist diese:
+The normal and simple method to find the boot IP is this:
 
 ```
 	cat /proc/sys/urlader/environment | grep my_ipaddress
 ```
 
-Man sollte dafür sorgen, dass Personal Firewalls ausgeschaltet sind,
-evtl. auch andere Sicherheitspakete, die den Netzwerkverkehr behindern
-könnten. Spätestens, wenn es mit aktiven Programmen nicht geht, sollte
-man sie ausschalten, auch wenn man sich einbildet, alles sei richtig
-eingestellt und daran könne es nicht liegen. Ganz ausschalten, nicht nur
-inaktiv setzen!
+Make sure personal firewalls are disabled, and possibly other security
+packages that could interfere with network traffic as well. If it does
+not work while such programs are active, disable them at the latest then,
+even if you believe everything is configured correctly and they cannot be
+the cause. Disable them completely, not just set them inactive.
 
-Außerdem ist es hilfreich, dass der Rechner, von dem aus man die
-Ping-Versuche unternimmt und die Verbindung per FTP initiieren möchte,
-im gleichen Subnetz (z.B. 192.168.178.0/24 bzw. Netzmaske 255.255.255.0)
-ist wie die Box, und zwar bzgl. der Adresse, die man gerade testet. Dass
-übrigens der Ping von Windows aus funktioniert, bedeutet noch lange
-nicht, dass man dann aus VMware heraus auch Verbindung aufnehmen kann.
-Wirklich von dort probieren, wo man später arbeiten möchte.
+It is also helpful if the computer from which you try the pings and start
+the FTP connection is in the same subnet as the box, for example
+192.168.178.0/24 or netmask 255.255.255.0, with respect to the address
+being tested. The fact that ping works from Windows does not necessarily
+mean that a connection also works from VMware. Really test from the place
+where you intend to work later.
 
-Verbindungsversuche benötigen evtl. mehrere Anläufe, also wenn ein Ping
-oder ein FTP-Connect nach drei, vier Sekunden nach Anschalten der Box
-noch nicht geklappt hat, am besten aus- und wieder einschalten, bis der
-Ping oder FTP-Connect funktioniert. Unter Windows sollte man ggf. auch
-noch das Media Sensing ausschalten, indem man folgendes als Textdatei
-`mediasensing-aus.reg` speichert und doppelklickt, um es danach in die
-Windows-Registry eintragen zu lassen:
+Connection attempts may require several tries. If a ping or FTP connect
+has not worked three or four seconds after switching on the box, it is
+best to switch it off and on again until ping or FTP connect works. Under
+Windows, it may also be necessary to disable Media Sensing by saving the
+following as a text file named `mediasensing-aus.reg` and double-clicking
+it to add it to the Windows registry:
 
 ```
 	Windows Registry Editor Version 5.00
@@ -91,13 +82,13 @@ Windows-Registry eintragen zu lassen:
 	"DisableDHCPMediaSense"=dword:00000001
 ```
 
-Evtl. sollte man nach dem Ausschalten einen Windows-Neustart machen.
-AVMs Recover-Werkzeug macht das jedenfalls, aber vielleicht geht es auch
-ohne. Man kann das Mediasensing dauerhaft ausgeschaltet lassen, sofern
-man den betreffenden Rechner nicht ständig an verschiedenen Netzwerken
-ein- und ausstöpselt und das Mediasensing für unterschiedliche
-DHCP-Server benötigt (z.B. Notebook abwechselnd im Büro und zu Hause).
-Sollte man es doch wieder einschalten wollen, geht das so:
+A Windows restart may be needed after disabling it. AVM's recovery tool
+does that, at least, but perhaps it also works without restarting. Media
+Sensing can remain permanently disabled as long as the computer is not
+constantly plugged into and unplugged from different networks where Media
+Sensing is needed for different DHCP servers, for example a notebook used
+alternately in the office and at home. If you do want to enable it again,
+use this:
 
 ```
 	Windows Registry Editor Version 5.00
@@ -107,51 +98,43 @@ Sollte man es doch wieder einschalten wollen, geht das so:
 	"DisableDHCPMediaSense"=dword:00000000
 ```
 
-### Allgemeine Informationen zur Datensicherung
+### General Backup Information
 
-Das im Folgenden gezeigte Vorgehen ist immer das gleiche, auch wenn
-unterschiedliche Kommandozeilen-Clients verwendet werden. Man kann das
-Ganze auch manuell im Dialog im FTP-Client durchführen, und außer den
-genannten Clients funktionieren vermutlich noch einige andere. Passiven
-Datentransfer sollten sie aber beherrschen, und Garantien gebe ich
-sowieso nicht. ;-)
-Die von mir getesteten Programme sollten ein Gelingen aber wesentlich
-wahrscheinlicher machen.
+The procedure shown below is always the same, even when different command
+line clients are used. The whole process can also be done manually in the
+FTP client dialog, and besides the clients named here, several others
+will probably work. They should support passive data transfer, though, and
+I do not give any guarantees anyway. ;-) The programs I tested should make
+success much more likely.
 
-Eine Seltsamkeit gibt es, auf die ich gleich hinweisen möchte: Immer
-nach dem Download einer `mtd`-Partition
-muß man manuell einmal Strg-C (engl. Ctrl-C) an der Kommandozeile des
-FTP-Clients eingeben, damit der Client weiter läuft bzw. terminiert. Aus
-irgendeinem Grund wird das Ende eines GET-Downloads nicht erkannt, was
-wohl dem Urlader zuzuschreiben ist. Am besten kontrolliert man in einer
-zweiten Konsole am Client, ob die Größe der
-Download-Datei noch wächst. Nach ein
-paar Sekunden sollte das nicht mehr der Fall sein. Die Urlader- und
-TFFS-Partitionen sind sowieso fast augenblicklich heruntergeladen, nur
-bei `mtd1`, der Partition für Kernel + Dateisystem der Box, dauert es
-ein bißchen länger, geht aber auch sehr schnell. Dabei gelten folgende
-Dateigrößen:
+There is one oddity to point out right away: after downloading each `mtd`
+partition, you must manually press Ctrl-C once at the FTP client's command
+line so the client continues or terminates. For some reason, the end of a
+GET download is not detected, probably because of the Urlader. It is best
+to check in a second console on the client whether the download file is
+still growing. After a few seconds it should no longer do so. The Urlader
+and TFFS partitions are downloaded almost instantly anyway; only `mtd1`,
+the partition for kernel plus filesystem of the box, takes a little
+longer, but still completes quickly. These file sizes apply:
 
--   Dateisystem + Kernel (`mtd1`):
-    -   7.616 KB = 7.798.784 Bytes bei 8-MB-Boxen
-    -   3.520 KB = 3.604.480 Bytes bei 4-MB-Boxen
-    -   1.472 KB = 1.507.328 Bytes bei 2-MB-Boxen (theoretisch, diese
-        Boxen haben momentan noch alte Urlader)
--   Urlader/Bootloader/EVA (mtd2): immer 64 KB = 65.536 Bytes
--   TFFS1 (mtd3): immer 256 KB = 262.144 Bytes
--   TFFS2 (mtd4): immer 256 KB = 262.144 Bytes
+-   Filesystem + kernel (`mtd1`):
+    -   7.616 KB = 7.798.784 bytes on 8 MB boxes
+    -   3.520 KB = 3.604.480 bytes on 4 MB boxes
+    -   1.472 KB = 1.507.328 bytes on 2 MB boxes; theoretical, these
+        boxes currently still have old Urladers
+-   Urlader/bootloader/EVA (`mtd2`): always 64 KB = 65.536 bytes
+-   TFFS1 (`mtd3`): always 256 KB = 262.144 bytes
+-   TFFS2 (`mtd4`): always 256 KB = 262.144 bytes
 
-`mtd1-4` summiert ergeben immer genau 8 bzw. 4 bzw. 2 MB, also die
-Speichergröße der jeweiligen Box.
+The sum of `mtd1-4` is always exactly 8, 4, or 2 MB, matching the memory
+size of the respective box.
 
-### Sicherung mit Linux-Standard-FTP (ftp)
+### Backup with Linux Standard FTP (`ftp`)
 
-Folgenden Code am besten in eine Skript-Datei eintragen und von dort
-ausführen wegen der Mehrzeiligkeit. Dabei die passende IP-Adresse
-eintragen und nach dem vollständigen
-Download jeder Partition jeweils einmal
-Strg-C drücken, damit die folgende heruntergeladen wird bzw. am Ende die
-FTP-Sitzung beendet wird.
+Because of the multiple lines, it is best to put the following code into a
+script file and run it from there. Enter the appropriate IP address and,
+after each partition has fully downloaded, press Ctrl-C once so the next
+partition is downloaded, or so the FTP session is ended at the end.
 
 ```
     (
@@ -170,16 +153,14 @@ FTP-Sitzung beendet wird.
     ) | ftp -n -p
 ```
 
-Im Anschluß sollten sich im aktuellen Verzeichnis vier Dateien von
-`mtd1` bis `mtd4` befinden.
+Afterwards, the current directory should contain four files, `mtd1` to
+`mtd4`.
 
-### Sicherung mit Linux-NcFTP (ncftpget)
+### Backup with Linux NcFTP (`ncftpget`)
 
-Auch hier wieder die IP-Adresse ersetzen. Das Skript jeweils einmal für
-jede der vier Partitionen von `mtd1` bis `mtd4` aufrufen, alles auf
-einmal geht hier nicht. Aber Strg-C am Ende des
-Downloads ist auch hier zum Beenden
-erforderlich.
+Replace the IP address here as well. Run the script once for each of the
+four partitions from `mtd1` to `mtd4`; all at once does not work here.
+Ctrl-C at the end of the download is also required here to finish.
 
 ```
 	ncftpget \
@@ -191,45 +172,41 @@ erforderlich.
 		ftp://192.168.178.1/mtd1
 ```
 
-### Sicherung mit Cygwin-NcFTP (ncftpget)
+### Backup with Cygwin NcFTP (`ncftpget`)
 
-Das funktioniert genauso wie unter Linux mit der gleichnamigen
-Anwendung, siehe oben.
+This works the same way as under Linux with the application of the same
+name; see above.
 
 ### Uploads via FTP
 
-Analog hierzu kann man auch mit `ftp` bzw. `ncftpput` Uploads machen,
-allerdings sollte man das im Normalfall nur für `mtd1` (Kernel +
-Dateisystem) machen, und dafür gibt es in ds26-15.2 bereits ein bequemes
-Skript Namens `tools/push_firmware.sh` (ab 15.3 entfällt die Endung
-`.sh`), welches unter Linux und Windows + Cygwin läuft und genaus das
-tut.
+Analogously, uploads can also be done with `ftp` or `ncftpput`. Normally,
+however, this should only be done for `mtd1`, kernel plus filesystem. For
+that, ds26-15.2 already provides the convenient script
+`tools/push_firmware.sh`; starting with 15.3 the `.sh` extension is
+omitted. It runs under Linux and Windows + Cygwin and does exactly that.
 
-Das doppelt gepufferte TFFS - dort werden die Einstellungen der
-Firmware, sowohl vom Hersteller als auch von Freetz, gespeichert -
-sollte man nur im Notfall und immer nur auf genau die Box zurück
-spielen, von der es stammt, denn es enthält einen Teil der Identität der
-Box. Das hat sich seit dem Übergang von ADAM2 auf EVA zwar relativiert,
-weil der wichtigste Teil der Angaben direkt in den Bootloader gewandert
-ist - siehe [Artikel von Enrik zu
-EVA](http://wehavemorefun.de/fritzbox/index.php/EVA) - aber
-man sollte trotzdem damit aufpassen.
+The double-buffered TFFS, where firmware settings from both the
+manufacturer and Freetz are stored, should only be restored in an
+emergency and only to exactly the box from which it came, because it
+contains part of the box identity. This has become somewhat less critical
+since the transition from ADAM2 to EVA because the most important part of
+the data moved directly into the bootloader; see
+[Enrik's article about EVA](http://wehavemorefun.de/fritzbox/index.php/EVA).
+Nevertheless, handle it carefully.
 
-Was viel brisanter geworden ist, ist ein Überschreiben des Urladers,
-denn er enthält seit dem Übergang auf EVA wirklich wichtige
-box-individuelle Daten. Außerdem lässt er sich sowieso nicht via FTP
-überschreiben, weil er während der FTP-Sitzung ja gerade aktiv ist. Im
-Artikel ADAM-Bootloader wird beschrieben, wie man
-den Urlader direkt im laufenden Betrieb von der Konsole auf der Box aus
-überschreiben kann, aber dort steht nicht, wie man die box-individuellen
-Daten dort ins Image bekommt. Sie sollten also tunlichst bereits drin
-sein oder man sollte sich die Update-Prozedur aus den Original-Firmwares
-(z.B. 06.04.33, darin steckt ein Bootloader samt Update-Programm)
-anschauen und sich o.g. Artikel von Enrik durchlesen.
+What has become much more sensitive is overwriting the Urlader, because
+since the transition to EVA it contains truly important box-specific data.
+In addition, it cannot be overwritten via FTP anyway because it is active
+during the FTP session. The ADAM bootloader article describes how the
+Urlader can be overwritten directly during operation from the console on
+the box, but it does not explain how to get the box-specific data into the
+image. It should therefore already be there, or one should examine the
+update procedure from the original firmware, for example 06.04.33, which
+contains a bootloader together with an update program, and read Enrik's
+article mentioned above.
 
- **Ich
-kann nur dringendst davon abraten, den Urlader zu überschreiben, das
-sollte auch nie notwendig sein!!!**
+**I can only very strongly advise against overwriting the Urlader; it
+should never be necessary!!!**
 
 
 [Alexander Kriegisch

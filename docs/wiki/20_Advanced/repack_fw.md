@@ -1,16 +1,15 @@
-# Entpacken und Packen von Firmware-Images
+# Unpacking and Packing Firmware Images
 
-Wenn man ein Firmware-Image entpacken, ändern und wieder packen möchte,
-geht das wie folgt (nach Anleitung von [Alexander
-Kriegisch](http://www.ip-phone-forum.de/member.php?u=117253)
-- in [diesem
-Forums-Thread](http://www.ip-phone-forum.de/showthread.php?t=175974):
+If you want to unpack, change, and repack a firmware image, proceed as
+follows. This is based on a guide by
+[Alexander Kriegisch](http://www.ip-phone-forum.de/member.php?u=117253)
+in [this forum thread](http://www.ip-phone-forum.de/showthread.php?t=175974).
 
-### Tools und Syntax
+### Tools and Syntax
 
-Am einfachsten ist es, Freetz als Infrastruktur zu benutzen, und zwar
-das Skript `fwmod` aus dem Freetz-Hauptverzeichnis. Wenn man es ohne
-Parameter aufruft, verrät es wie es benutzt werden möchte:
+The easiest approach is to use Freetz as infrastructure, specifically the
+`fwmod` script from the Freetz main directory. When called without
+parameters, it shows how it expects to be used:
 
 ```
 	$ ./fwmod
@@ -34,50 +33,45 @@ Parameter aufruft, verrät es wie es benutzt werden möchte:
 		<aux_fw>   3rd firmware name (e.g. to borrow missing files)
 ```
 
-Man braucht also einmal den Aufruf mit `-u` zum Entpacken, dann nach der
-Modifikation den mit `-p` zum erneuten Packen.
+You therefore need one call with `-u` to unpack, and after modifying the
+firmware another call with `-p` to pack it again.
 
-### Vorgehensweise
+### Procedure
 
-Im Folgenden wird davon ausgegangen, dass sich der Benutzer im
-Hauptverzeichnis des frisch ausgepackten oder ausgecheckten Freetz
-befindet und das zu modifizierende Firmware-Image bereits in dieses
-Verzeichnis heruntergeladen hat. Dann sind folgende Schritte
-auszuführen:
+The following assumes that the user is in the main directory of a freshly
+unpacked or checked-out Freetz tree, and that the firmware image to be
+modified has already been downloaded into this directory. Then perform
+these steps:
 
-1.  Zunächst muss man eine passende Konfigurationsdatei *.config*
-    erzeugen, damit beim Packen später das Skript *fwmod* die
-    erforderlichen Informationen findet. Dazu ruft man einmal *make
-    menuconfig* auf, wählt die richtige Hardware (z.B. 7170) aus und
-    verlässt die Konfiguration, wobei man die Frage nach dem Abspeichern
-    bejaht.
-2.  Bevor man *fwmod* erstmals aufrufen kann, müssen einige Werkzeuge
-    gebaut werden, die später indirekt aufgerufen werden, um die
-    Firmware zu entpacken und später wieder zusammenzubauen: *make
-    tools*. Das kann ein Weilchen (einige Minuten) dauern.
-    Internet-Downloads via *wget* müssen dazu funktionieren.
-3.  Jetzt entpackt man das von AVM heruntergeladene Firmware-Image in
-    ein Verzeichnis, das hier beispielhaft *unpacked_firmware* genannt
-    wird:
+1.  First, create a suitable `.config` configuration file so that `fwmod`
+	can find the required information when packing later. Run
+	`make menuconfig` once, select the correct hardware, for example 7170,
+	and leave the configuration, answering yes when asked whether to save.
+2.  Before `fwmod` can be called for the first time, a few tools must be
+	built. They will later be called indirectly to unpack and rebuild the
+	firmware: `make tools`. This can take a while, several minutes.
+	Internet downloads via `wget` must work.
+3.  Now unpack the firmware image downloaded from AVM into a directory
+	named `unpacked_firmware` in this example:
 
     ```
 		./fwmod -u -d unpacked_firmware FRITZ.Box_Fon_WLAN_7170.29.04.59.image
     ```
 
-4.  Unter *unpacked_firmware/original/filesystem* modifiziert man dann
-    das Dateisystem der Firmware.
-5.  Zum guten Schluss packt man dann wieder das Firmware-Image:\
+4.  Then modify the firmware filesystem under
+	`unpacked_firmware/original/filesystem`.
+5.  Finally, pack the firmware image again:\
 
     ```
 		./fwmod -p -d unpacked_firmware FRITZ.Box_Fon_WLAN_7170.29.04.59.image
     ```
 
-Das ist also der gleiche Aufruf wie vorher, nur mit `-p` statt `-u`. Den
-Namen des Original-Images muss man leider mit angeben, obwohl das Image
-zum Packen nicht benötigt wird. Das ist eine kleine Schwäche des Skripts
-`fwmod`.
+This is the same call as before, only with `-p` instead of `-u`.
+Unfortunately, the name of the original image must be specified even
+though the image is not needed for packing. This is a small weakness of
+the `fwmod` script.
 
-6.  Nach einer Weile steht am Ende der Skript-Ausgabe so etwas wie
+6.  After a while, the end of the script output looks something like this:
 
     ```
 		creating filesystem image
@@ -89,53 +83,48 @@ zum Packen nicht benötigt wird. Das ist eine kleine Schwäche des Skripts
 		FINISHED
     ```
 
-**Anmerkungen zu den Freetz-Versionen bis einschließlich 1.1:**
+**Notes for Freetz versions up to and including 1.1:**
 
--   Bei diesen Versionen muss den beiden `fwmod`-Aufrufen folgender
-    fakeroot-Teil vorangestellt werden `tools/build/bin/fakeroot -- `
-    (fwmod hat es erwartet in fakeroot-Umgebung aufgerufen zu werden und
-    hat sich selbst um diese noch nicht gekümmert)
--   Bei Fehlermeldung
-    `` fakeroot: preload library `libfakeroot.so' not found, aborting. ``
-    hilft ein vorangestelltes LD_PATH_PRELOAD:
+-   In these versions, both `fwmod` calls must be prefixed with this
+	fakeroot part: `tools/build/bin/fakeroot -- `. `fwmod` expected to be
+	called in a fakeroot environment and did not yet set that up itself.
+-   If the error
+	`` fakeroot: preload library `libfakeroot.so' not found, aborting. ``
+	appears, prefixing the call with `LD_PATH_PRELOAD` helps:
 
     ```
 		LD_PATH_PRELOAD=tools/build/lib/libfakeroot.so tools/build/bin/fakeroot -- ./fwmod ...
     ```
 
-### Verwendung von fwmod im "no freetz"-Modus
+### Using fwmod in "no freetz" Mode
 
-Seit trunk Changeset r13796
-ist es möglich fwmod im quasi "no freetz"-Modus zu verwenden. Vom
-Ablauf her entspricht dieser Modus dem Bauen einer freetz-modifizierten
-Firmware. In diesem Modus wird jedoch keine einzige freetz-Änderung
-vorgenommen. Stattdessen wird ein Hook aufgerufen, in dem man eigene
-Modifikationen der Firmware implementieren und automatisiert ausführen
-lassen kann. Konkret gehe man wie folgt vor:
+Since trunk changeset r13796, `fwmod` can be used in a quasi "no freetz"
+mode. The flow is the same as building firmware modified by Freetz. In
+this mode, however, no Freetz modification is made at all. Instead, a hook
+is called in which custom firmware modifications can be implemented and
+executed automatically. Proceed as follows:
 
-1.  Man rufe `make menuconfig` auf, schalte den Experten-Modus ein
-    ("Level of User Competence" = Expert), wähle die richtige Hardware
-    (z.B. 7390) aus und aktiviere anschließend unter "Firmware
-    packaging (fwmod) options" die Option "Skip modifying unpacked
-    firmware, adding Freetz stuff". Der letzte Schritt entspricht dem
-    Aktivieren des "no freetz"-Modus. Seit Fritz!OS-6.5x empfiehlt es
-    sich weiterhin die Option "Sign image" (ebenfalls unter "Firmware
-    packaging (fwmod) options" zu finden) zu aktivieren (s. dazu den
-    [Signieren von
-    Firmware](http://trac_freetz_org/wiki/help/howtos/development/sign_image)-Artikel).
-2.  Die eigenen Mods der Firmware sind in dem Script
+1.  Run `make menuconfig`, enable expert mode, `Level of User Competence`
+	= Expert, select the correct hardware, for example 7390, and then
+	enable `Skip modifying unpacked firmware, adding Freetz stuff` under
+	`Firmware packaging (fwmod) options`. This last step enables "no
+	freetz" mode. Since Fritz!OS 6.5x, it is also recommended to enable
+	`Sign image`, also found under `Firmware packaging (fwmod) options`;
+	see the
+	[Signing Firmware](http://trac_freetz_org/wiki/help/howtos/development/sign_image)
+	article.
+2.  Implement your own firmware modifications in the script
     [fwmod_custom](http://trac_freetz_org/browser/trunk/fwmod_custom)
-    in der Funktion
+	in the function
     [all_no_freetz](http://trac_freetz_org/browser/trunk/fwmod_custom?rev=13796#L14)
-    zu implementieren. Das entpackte Root-Dateisystem steht dabei unter
-    `./filesystem` zur Verfügung. fwmod_custom enthält bereits einige
-    auskommentierte Beispiele: [restore telnet
+	. The unpacked root filesystem is available under `./filesystem`.
+	`fwmod_custom` already contains some commented-out examples:
+	[restore telnet
     support](http://trac_freetz_org/browser/trunk/fwmod_custom?rev=13796#L17),
     [restore debug.cfg
     support](http://trac_freetz_org/browser/trunk/fwmod_custom?rev=13796#L25).
-3.  Anschließend rufe man `make` auf. Das entpackte,
-    fwmod_custom-modifizierte, wieder zusammengepackte und ggf.
-    signierte Image ist unter `images/` zu finden.
+3.  Then run `make`. The unpacked, `fwmod_custom`-modified, repacked, and
+	possibly signed image can be found under `images/`.
 
     ```
 		STEP 1: UNPACK

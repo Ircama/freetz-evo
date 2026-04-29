@@ -1,121 +1,98 @@
-# Ablauf eines Firmware-Updates
+# Firmware Update Flow
 
-Bei einem Firmware-Update über das AVM-Web-Interface passiert in etwa
-Folgendes (kein Anspruch auf Vollständigkeit):
+During a firmware update through the AVM web interface, roughly the
+following happens. This description does not claim to be complete.
 
--   Die Steuerung des gesamten Vorgangs übernimmt das Binary
-    `/usr/www/cgi-bin/firmwarecfg`. Es wird vom Webserver aufgerufen.
--   `firmwarecfg` ruft zunächst das Shell-Skript
-    `/bin/prepare_fwupgrade` auf, um diverse Dienste zu stoppen und
-    somit Platz im RAM für das Firmware-Archiv zu schaffen. Auch Spuren
-    von evtl. früheren Updates in der RAM-Disk (`/var`) werden gelöscht.
-    `prepare_fwupgrade` wird entweder mit dem Parameter *start* oder mit
-    *start_from_internet* aufgerufen, je nachdem, ob ein Update von
-    der AVM-Seite geladen werden soll oder von Festplatte. Der
-    Unterschied besteht v.a. darin, daß der DSL-Daemon `dsld` im zweiten
-    Fall zunächst nicht gestoppt wird.
--   Nachdem nun ein Großteil der Aktivitäten der FritzBox stillgelegt
-    ist, wird das Firmware-Image in die RAM-Disk übertragen und dort
-    mittels tar entpackt. Dabei wird die digitale Signatur des Pakets
-    geprüft. Falls sie nicht korrekt verifiziert werden kann oder fehlt,
-    wird später die bekannte Meldung über eine nicht freigegebene
-    Firmware im Web-Interface angezeigt. Zunächst wird der Benutzer des
-    Web-Interfaces via Rückmeldung von `firmwarecfg` aber einfach nur
-    gefragt, ob er trotzdem die Firmware installieren möchte. Nehmen wir
-    an, er bejaht das.
--   Die wichtigsten Dateien des entpackten Firmware-Archivs liegen nun
-    unter
+-   The whole process is controlled by the binary
+    `/usr/www/cgi-bin/firmwarecfg`, which is called by the web server.
+-   `firmwarecfg` first calls the shell script `/bin/prepare_fwupgrade`
+    to stop several services and free RAM for the firmware archive. Traces
+    of possible earlier updates in the RAM disk (`/var`) are also removed.
+    `prepare_fwupgrade` is called with either *start* or
+    *start_from_internet*, depending on whether the update should be loaded
+    from AVM's site or from disk. The main difference is that the DSL
+    daemon `dsld` is not stopped at first in the second case.
+-   After most FRITZ!Box activity has been shut down, the firmware image is
+    transferred to the RAM disk and unpacked there with `tar`. During this
+    step, the package's digital signature is checked. If it cannot be
+    verified correctly, or if it is missing, the familiar warning about
+    unapproved firmware is shown later in the web interface. At first, the
+    web-interface user is simply asked by `firmwarecfg` whether the
+    firmware should be installed anyway. Assume the user confirms.
+-   The most important files from the unpacked firmware archive are now:
     -   `/var/install`
     -   `/var/tmp/kernel.image`
     -   `/var/tmp/filesystem.image`
--   Die letzten beiden Dateien liegen nur vor, wenn es sich um ein
-    "echtes" Update und nicht um ein Pseudo-Update, z.B. zum
-    Aktivieren von Telnet oder zur Installation einer Software wie dem
-    *LCR Updater* handelt. `filesystem.image` hat in vielen Fällen die
-    Länge null, weil in `kernel.image` alle benötigten Daten fürs
-    Flashen enthalten sind.
--   Ein zweites Mal wird `/bin/prepare_fwupgrade` aufgerufen, dieses Mal
-    mit dem Parameter *end*. Jetzt werden endgültig die verbleibenden
-    Dienste gestoppt, die noch während des Updates stören könnten, indem
-    sie z.B. auf den Flash-Speicher zugreifen.
--   Jetzt wird das mit dem Firmware-Image entpackte Shell-Skript
-    `/var/install` aufgerufen. Darin passiert eine ganze Menge, z.B.:
--   Es werden diverse Prüfungen durchgeführt, die bestimmen, auf welchem
-    Stand die Box momentan ist, wie der Flash-Bereich partitioniert ist
-    und was zu tun ist in Vorbereitung aufs Update. Je nachdem, was das
-    Skript herausfindet über die Situation, gibt es am Ende einen der
-    folgenden Werte zurück:
-    -   *INSTALL_SUCCESS_NO_REBOOT (0)* - alles okay, Neustart der
-        Box nicht erforderlich. Dieser Wert sollte nur zurückgegeben
-        werden, wenn an Dateisystem und Kernel im Flash nichts geändert
-        wird.
-    -   *INSTALL_SUCCESS_REBOOT = 1* - der Standardwert bei
-        "richtigen" Firmware-Updates. Alles okay, Box neu starten.
-    -   *INSTALL_WRONG_HARDWARE = 2* - Installation zurückweisen, weil
-        etwas an der Hardware nicht zum Firmware-Image paßt (Problem mit
-        dem Annex, falscher OEM).
-    -   *INSTALL_KERNEL_CHECKSUM = 3* - fehlerhafte Kernel-Checksumme.
-        Falls die beiden Image-Dateien (Kernel und Filesystem)
-        existieren, werden ihre CRC-Checksummen durch Aufruf des
-        ebenfalls in AVM-Paketen enthaltenen `/var/chksum` geprüft. Sind
-        die Checksummen - nicht Verwechseln mit der o.g. Signatur -
-        nicht in Ordnung, findet kein Update statt.
-    -   *INSTALL_FILESYSTEM_CHECKSUM = 4* - siehe voriger Punkt.
-    -   *INSTALL_URLADER_CHECKSUM = 5* - würde bedeuten, dass der zu
-        installierende neue Urlader eine falsche Checksumme hat.
-        Meistens enthalten Firmware-Updates jedoch keinen neuen Urlader.
-    -   *INSTALL_OTHER_ERROR = 6* - sonstiger Fehler.
-    -   *INSTALL_FIRMWARE_VERSION = 7* - Problem mit der aktuellen
-        Firmware-Version. Entweder kann die aktuelle Version aus
-        irgendeinem Grund nicht festgestellt werden oder der
-        Versionssprung ist zu groß, weil noch jemand eine Uralt-Version
-        installiert hat und zunächst ein Zwischen-Update auf eine andere
-        Version ebötigt, um anschließend die neue einspielen zu können.
-    -   *INSTALL_DOWNGRADE_NEEDED = 8* - es wird versucht, eine
-        Firmware mit niedrigerer Versionsnummer zu installieren.
-        Normalerweise blockieren aktuelle Firmwares das, weswegen man
-        den Umweg über ein Recover bzw. einen manuellen Downgrade machen
-        muss, um diese Hürde zu nehmen. (Man könnte auch einfach die
-        Prüfung in diesem Skript auskommentieren.)
--   Das Skript hat auch einen Schalter *-f*, welcher es dazu veranlaßt,
-    eine beliebige Firmware-Versionsnummer zu akzeptieren und somit ggf.
-    auch einen Downgrade durchzuführen. Allerdings lässt sich der
-    Schalter übers Web-Interface meines Wissens nicht setzen. Vermutlich
-    wird er von den AVM-Recovery-Tools benutzt. Verbunden mit dem Setzen
-    dieses Schalters ist, dass das gerade besprochene Install-Skript
-    auch die Einstellungen im Flash löscht und somit die Box auf die
-    Werkseinstellungen zurücksetzt. Grundsätzlich könnte man Letzteres
-    durch Auskommentieren im Skript verhindern, aber es macht oft genug
-    Sinn, es so zu lassen. Ein Downgrade bedeutet nun einmal, dass evtl.
-    vorhandene Einstellungen für Features einer neuen Firmware-Version
-    von einer älteren nicht richtig interpretiert werden könnten und
-    somit schlimmstenfalls die Box schon beim Starten hängen bleiben und
-    endgültig zum Recover-Fall werden würde.
--   Zum Schluß werden ggf. noch einige Spezialitäten abgehandelt, z.B.
-    Entfernen veralteter Einstellungen oder Konvertierung alter
-    Wahlregeln.
--   Das Skript schreibt während des Ablaufs parallel auch noch ein
-    weiteres Skript nach `/var/post_install`, welches anschließend über
-    `init reboot` indirekt vom führenden Prozeß `firmwarecfg` aufgerufen
-    wird, sofern nicht einer der Fehler-Rückgabewerte dies verhindert.
-    `post_install` wiederum setzt für den Flash-Vorgang notwendige
-    Umgebungsvariablen und lädt das im Firmware-Image enthaltene Modul
-    `/var/flash_update.o` (Kernel 2.4) bzw. `/var/flash_update.ko`
-    (Kernel 2.6).
--   Übrigens gibt es auch standardmäßig ein `/var/post_install`, das
-    beim Systemstart aus `/var.tar` extrahiert wird und vor jedem Reboot
-    aufgerufen wird. Der Aufruf-Mechanismus über `/etc/inittab` ist der
-    gleiche, der Inhalt des Skripts jedoch völlig anders als in der
-    Spezialversion vor dem Flashen.
--   Jetzt erfolgt der eigentliche Flash-Vorgang (falls notwendig).
+-   The last two files exist only for a "real" update, not for a pseudo
+    update such as enabling Telnet or installing software like the
+    *LCR Updater*. In many cases `filesystem.image` has length zero
+    because `kernel.image` contains all data required for flashing.
+-   `/bin/prepare_fwupgrade` is called a second time, now with parameter
+    *end*. The remaining services that could interfere with the update,
+    for example by accessing flash storage, are stopped for good.
+-   The shell script `/var/install`, unpacked from the firmware image, is
+    called. It does quite a lot, for example:
+-   It performs checks that determine the current state of the box, how
+    the flash area is partitioned, and what needs to be done to prepare
+    the update. Depending on what the script finds, it returns one of
+    these values at the end:
+    -   *INSTALL_SUCCESS_NO_REBOOT (0)*: everything is okay, no reboot is
+        required. This should be returned only if neither filesystem nor
+        kernel in flash is changed.
+    -   *INSTALL_SUCCESS_REBOOT = 1*: the standard value for real firmware
+        updates. Everything is okay, reboot the box.
+    -   *INSTALL_WRONG_HARDWARE = 2*: reject installation because the
+        hardware does not match the firmware image, for example wrong
+        Annex or wrong OEM.
+    -   *INSTALL_KERNEL_CHECKSUM = 3*: invalid kernel checksum. If the two
+        image files, kernel and filesystem, exist, their CRC checksums are
+        verified by calling `/var/chksum`, which is also included in AVM
+        packages. If the checksums are invalid, not to be confused with the
+        signature mentioned above, no update takes place.
+    -   *INSTALL_FILESYSTEM_CHECKSUM = 4*: see the previous point.
+    -   *INSTALL_URLADER_CHECKSUM = 5*: would mean that the new Urlader to
+        be installed has a wrong checksum. Firmware updates usually do not
+        contain a new Urlader.
+    -   *INSTALL_OTHER_ERROR = 6*: other error.
+    -   *INSTALL_FIRMWARE_VERSION = 7*: problem with the current firmware
+        version. Either the current version cannot be detected for some
+        reason, or the version jump is too large because an ancient version
+        is installed and an intermediate update is needed first.
+    -   *INSTALL_DOWNGRADE_NEEDED = 8*: an attempt is being made to install
+        firmware with a lower version number. Current firmware normally
+        blocks this, so a recovery or manual downgrade is required to get
+        around it. Another option would be to comment out the check in the
+        script.
+-   The script also has a switch *-f*, which makes it accept any firmware
+    version number and can therefore perform a downgrade. As far as known,
+    this switch cannot be set through the web interface. It is probably
+    used by AVM's recovery tools. Using this switch also makes the install
+    script delete the settings in flash, resetting the box to factory
+    defaults. In principle this could be prevented by commenting it out in
+    the script, but often it makes sense to keep it. A downgrade means that
+    existing settings for features of a newer firmware version may be
+    interpreted incorrectly by an older firmware, which in the worst case
+    could make the box hang during startup and require recovery.
+-   At the end, special cases are handled if necessary, for example
+    removing obsolete settings or converting old dialing rules.
+-   During the process, the script also writes another script to
+    `/var/post_install`. This is later called indirectly by the leading
+    process `firmwarecfg` through `init reboot`, unless one of the error
+    return values prevents it. `post_install` sets environment variables
+    needed for flashing and loads the module contained in the firmware
+    image: `/var/flash_update.o` for kernel 2.4 or `/var/flash_update.ko`
+    for kernel 2.6.
+-   There is also a standard `/var/post_install`, extracted from
+    `/var.tar` during system startup and called before every reboot. The
+    call mechanism through `/etc/inittab` is the same, but the script
+    content is completely different from the special pre-flash version.
+-   The actual flash process now happens, if necessary.
 
-Nach dem eventuellen Reboot hat man ggf. eine nagelneue Firmware auf der
-Box, andernfalls die gewünschte nachinstallierte Funktionalität. Was
-`/var/install` macht und welchen Return-Wert es liefert, ist
-grundsätzlich für jeden Firmware-Bastler frei entscheidbar. Die anderen
-Rahmenbedingungen sind so, wie ich es eben beschrieben habe.
+After the possible reboot, the box either runs a new firmware or has the
+desired additional functionality installed. What `/var/install` does and
+which return value it provides is fundamentally up to each firmware
+builder. The other framework conditions are as described above.
 
-[Alexander Kriegisch
-(kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
+[Alexander Kriegisch (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
 
 

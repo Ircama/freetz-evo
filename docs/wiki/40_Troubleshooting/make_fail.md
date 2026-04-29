@@ -1,21 +1,21 @@
-# Troubleshooting Build-Abbruch
+# Troubleshooting Build Aborts
 
-Sollte während des Build-Prozesses ein Abbruch auftreten, so kann man versuchen diese Strategien anzuwenden:
+If the build process aborts, try these strategies:
 
- * Einzelnes Paketes erneut erstellen:
+ * Rebuild a single package:
 ```
-	$ make iptables-dirclean     <--- Sourceverzeichnis eines problematischen Package löschen (hier: iptables)
-	weiter mit
-	$ make iptables-precompiled  <--- Versuchen problematisches Package von Anfang neu zu bauen
-```
-
- * Von Anfang neu bauen:
-```
-	$ make dirclean          <--- Source-Verzeichnisse aller bisher erstellter Software löschen
-	weiter mit
-	$ make                   <--- Versuchen problematische Software von Anfang neu zu bauen
+	$ make iptables-dirclean     <--- Delete the source directory of a problematic package (iptables here)
+	then continue with
+	$ make iptables-precompiled  <--- Try rebuilding the problematic package from scratch
 ```
 
-Bei Nichterfolg können Wiki, Forum und IRC genutzt werden, um das Problem weiter zu behandeln.
+ * Rebuild from the beginning:
+```
+	$ make dirclean          <--- Delete source directories of all software built so far
+	then continue with
+	$ make                   <--- Try rebuilding the problematic software from scratch
+```
+
+If this does not help, use the wiki, forum, and IRC to investigate the problem further.
 
 

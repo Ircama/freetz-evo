@@ -1,40 +1,38 @@
-# Addon Paket installieren
+# Installing Addon Packages
 
-Pakete, die noch nicht in Freetz integriert sind, können als sogenanntes
-*Addon Paket* installiert werden. Dazu das gewünschte Paket **vor** dem
-Erstellen des Image herunterladen und nach `./addon` entpacken.
-Folgendes Beispiel geht davon aus, dass man sich im Verzeichnis des
-entpackten Freetz befindet:
+Packages that are not yet integrated into Freetz can be installed as
+so-called *addon packages*. Download the desired package **before**
+creating the image and unpack it into `./addon`. The following example
+assumes that you are in the unpacked Freetz directory:
 
 ```
 tar -C addon -xjvf /pfad/zu/addon-paket-0.1-freetz.tar.bz2
 ```
 
-Danach muss das Paket in der Liste `./addon/static.pkg` in eine neue
-Zeile eingetragen werden (im obigen Beispiel: `addon-paket-0.1`). Addon
-Pakete werden nach den integrierten Paketen in der Reihenfolge des
-Auftretens in `./addon/static.pkg` gestartet.
+After that, add the package to `./addon/static.pkg` on a new line. In
+the example above, that entry would be `addon-paket-0.1`. Addon packages
+are started after the integrated packages, in the order in which they
+appear in `./addon/static.pkg`.
 
-Hinweis: Falls es sich bei dem Addon Paket um eine andere Version eines
-bereits integrierten Pakets handelt, so sollte das ursprüngliche Paket
-in `make menuconfig` unter *Package selection* deaktiviert werden, um
-Versionskonflikte zu vermeiden.
+Note: if the addon package is another version of a package that is
+already integrated, disable the original package in `make menuconfig`
+under *Package selection* to avoid version conflicts.
 
 
-### Erweiterung ab r15856 / 3dda64565e
+### Extension since r15856 / 3dda64565e
 
-Es können ```addon/*.pkg``` zum aktivieren verwendet werden. Dies hat den
-Vorteil dass man die ```.pkg``` mit ins Addon-Archiv packen kann, und dadurch
-keine anderen Addons deaktiviert werden.<br>
-Auch kann man so leichter Updates verteilen, wenn die Versionsnummer nicht
-in Dateinamen der ```.pkg``` steht
+Files matching `addon/*.pkg` can be used for activation. This has the
+advantage that the `.pkg` file can be included in the addon archive, so
+other addons are not disabled.<br>
+It also makes updates easier to distribute when the version number is not
+part of the `.pkg` filename.
 
-Beispiel mit zwei Addons:
-- Verzeichnis ```addon/ding-v1/```, Datei ```addon/ding.pkg``` mit ```ding-v1``` darin
-- Verzeichnis ```addon/dong-v1/```, Datei ```addon/dong.pkg``` mit ```dong-v1``` darin
+Example with two addons:
+- Directory `addon/ding-v1/`, file `addon/ding.pkg` containing `ding-v1`
+- Directory `addon/dong-v1/`, file `addon/dong.pkg` containing `dong-v1`
 
-Update von einem Addon:
-- Verzeichnis ```addon/ding-v2/```, Datei ```addon/ding.pkg``` mit ```ding-v2``` darin
+Updating one addon:
+- Directory `addon/ding-v2/`, file `addon/ding.pkg` containing `ding-v2`
 
-Es wird so automatisch die alte Version des Addons deaktiviert und die neue aktiviert.
+This automatically disables the old addon version and activates the new one.
 

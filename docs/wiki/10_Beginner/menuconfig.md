@@ -1,129 +1,103 @@
-# Konfiguration
+# Configuration
 
-Zum Konfigurieren von Freetz kommt das Programm *conf/mconf* zum
-Einsatz, welches dem ein oder anderen vielleicht von der Konfiguration
-des Linux Kernels bekannt ist. Die
+Freetz is configured with *conf/mconf*, which some users may already know
+from Linux kernel configuration. The
 [ncurses](http://de.wikipedia.org/wiki/Ncurses)
-Variante *mconf* kann mit dem Kommando `make menuconfig` aufgerufen
-werden.
+variant *mconf* can be started with `make menuconfig`.
 
-Eine Hilfe zu den einzelnen Punkten kann übrigens direkt in *menuconfig*
-durch Eingabe von "?" aufgerufen werden.
+Help for individual menu items can be opened directly in *menuconfig* by
+pressing `?`.
 
 [![Freetz menuconfig](../../screenshots/53_md.png)](../../screenshots/53.png)
 
 ### General
 
--   **Hardware Type**: Hier muss der Typ deiner Box gewählt werden.
-    Standard ist "Fon WLAN 7170". Mit diesem Typ erstellte Images
-    können nur auf die jeweilige Fritzbox hochgeladen werden. Abhängig
-    vom Typ werden die Download URL
-    der originalen Firmware auf dem [AVM FTP
-    Server](ftp://ftp.avm.de/) und Parameter zum Erstellen
-    des modifizierten Images, wie größe des Flash etc., automatisch
-    gesetzt. Der Typ "Custom" macht diese "Custom options" sichtbar,
-    wobei man hier gut mit seiner Box vertraut sein sollte.
--   **Version**: Für manche Fritzboxen (Typen) stellt AVM auch
-    internationale Versionen der Firmware bereit, die aber auch nur auf
-    internationalen Fritzboxen laufen. Internationale Fritzboxen gibt es
-    für den Österreichischen / Schweizer Markt "a-ch" und das Englisch
-    sprachige Ausland "en". Standard ist die für den Deutschen Markt
-    bestimmte Version "de".
--   **Beta/Labor/VPN**: Ist eine Beta Version für die gewählte Fritzbox
-    (Typ) verfügbar, so kann diese mit dieser Option zum Testen
-    ausgewählt werden. An die Betas sollten sich nur Profis wagen, da
-    Freetz hiermit meist nicht reibungslos bzw. garnicht funktioniert.
--   **Compile image for "alien" hardware** : Zur Erstellung eines
-    Images für andere Hardware, als oben ausgewählt. Wer damit nichts
-    anfangen kann, wählt es einfach nicht aus
-    :-)
--   **Firmware language**: AVM stellt die Original-Firmware meist in
-    mehreren Sprachen zur Verfügung - einfach die gewünschte auswählen.
-    *Hat keinen Einfluss auf die von Freetz modifizierten Dinge (dazu
-    siehe unten), sondern nur auf die
-    Original-Firmware.*
--   **Replace kernel**: Den AVM-Kernel durch einen "selbstgebauten"
-    ersetzen. Wiederum eine Sache für Profis
-    :-)
--   **Show advanced options**: Ob die "erweiterten Optionen" (siehe
-    unter Mod) angezeigt werden sollen.
--   **Branding**: Siehe unten.
--   **Annex**: Bei einigen internationalen Firmwares von AVM gibt es
-    verschiedene Firmware Versionen für Annex A und Annex B.
+-   **Hardware Type**: Select the type of your box here. The default is "Fon WLAN 7170".
+    Images created for this type can only be uploaded to the matching
+    FRITZ!Box. Depending on the type, the download URL of the original
+    firmware on the [AVM FTP server](ftp://ftp.avm.de/) and parameters
+    for creating the modified image, such as flash size, are set
+    automatically. The type "Custom" makes the custom options visible;
+    use it only if you know your box well.
+-   **Version**: For some FRITZ!Box models, AVM also provides international
+    firmware versions, but these run only on international FRITZ!Boxes.
+    International boxes exist for the Austrian/Swiss market (`a-ch`) and
+    for English-speaking markets (`en`). The default is the German-market
+    version (`de`).
+-   **Beta/Labor/VPN**: If a beta version is available for the selected
+    FRITZ!Box type, it can be selected here for testing. Betas should be
+    used only by experienced users, because Freetz may not work smoothly,
+    or at all, with them.
+-   **Compile image for "alien" hardware**: Creates an image for hardware
+    other than the hardware selected above. If you do not know what this
+    means, leave it disabled.
+-   **Firmware language**: AVM usually provides the original firmware in
+    several languages. Select the desired one. *This affects only the
+    original firmware, not the parts modified by Freetz; see below.*
+-   **Replace kernel**: Replace the AVM kernel with a self-built one. This
+    is also for experienced users.
+-   **Show advanced options**: Controls whether advanced options, described
+    under Mod, are shown.
+-   **Branding**: See below.
+-   **Annex**: Some international AVM firmware versions have different
+    firmware builds for Annex A and Annex B.
 
 ### Brandings
 
-Brandings sind von bestimmten Providern vorgenommene Änderungen an der
-Firmware. Das aktuelle Branding der Box ist unabhängig von der Firmware.
-Die modifizierte Firmware muss mindestens das aktuelle Branding der Box
-enthalten. Tipp für Anfänger: Zunächst keine Brandings entfernen. Der
-Platzersparnis trägt es nur geringfühgig bei; Images ohne das aktuelle
-Branding werden aber von der Box nicht akzeptiert.
+Brandings are firmware changes made by specific providers. The current
+branding of the box is independent of the firmware. The modified firmware
+must contain at least the box's current branding. Beginner tip: do not
+remove any branding at first. It saves only a small amount of space, but
+images without the current branding are not accepted by the box.
 
--   **1und1**: Gibt an, ob das 1und1 Branding in der modifizierten
-    Firmware erhalten bleiben soll.
--   **avm**: Gibt an, ob das avm Branding in der modifizierten Firmware
-    erhalten bleiben soll.
--   **avme**: Gibt an, ob das avme Branding in der modifizierten
-    Firmware erhalten bleiben soll. Dieses Branding existiert nur bei
-    internationalen nicht-Deutschen Firmware Versionen.
--   **aol**: Gibt an, ob das aol Branding in der modifizierten Firmware
-    erhalten bleiben soll.
--   **arcor**: Gibt an, ob das arcor Branding in der modifizierten
-    Firmware erhalten bleiben soll.
--   **freenet**: Gibt an, ob das freenet Branding in der modifizierten
-    Firmware erhalten bleiben soll.
+-   **1und1**: Indicates whether the `1und1` branding should remain in the
+    modified firmware.
+-   **avm**: Indicates whether the `avm` branding should remain.
+-   **avme**: Indicates whether the `avme` branding should remain. This
+    branding exists only for international non-German firmware versions.
+-   **aol**: Indicates whether the `aol` branding should remain.
+-   **arcor**: Indicates whether the `arcor` branding should remain.
+-   **freenet**: Indicates whether the `freenet` branding should remain.
 
-Changeset r2700 wurde die Logik der
-Brandingauswahl umgekehrt. Ausgewählte Brandings werden ab jetzt
-entfernt.
+With changeset r2700, the branding selection logic was reversed. Selected
+brandings are now removed.
 
 ### Mod
 
--   **Language**: Die Auswahl der Sprache bezieht sich nur auf die
-    Konfigurations-Webseiten von Freetz, nicht auf die der originalen
-    Firmware. Es sind noch nicht alle Pakete in Englischer Sprache
-    verfügbar. Standard ist Deutsch.
--   **Patches**: Siehe patches für
-    eine aktuelle Übersicht.
--   **Package selection**: Auswahl der für Freetz verfügbaren Pakete /
-    CGI Erweiterungen. Siehe Pakete
-    für Details.
+-   **Language**: This language selection applies only to the Freetz
+    configuration web pages, not to the original firmware web pages. Not
+    all packages are available in English yet. The default is German.
+-   **Patches**: See patches for a current overview.
+-   **Package selection**: Selection of packages and CGI extensions
+    available for Freetz. See packages for details.
 -   **Advanced options**
-    -   **Override firmware source**: Falls die in der Konfiguration von
-        Freetz hinterlegte Firmware Version des gewählten Typs nicht
-        mehr auf dem FTP Server existiert, kann die
-        Download URL mit dieser
-        Option angepasst werden:
-        -   **Firmware site**: z.B.:
+    -   **Override firmware source**: If the firmware version stored in
+        the Freetz configuration for the selected type no longer exists on
+        the FTP server, adjust the download URL with this option:
+        -   **Firmware site**, for example:
             `ftp://ftp.avm.de/fritz.box/fritzbox.fon_wlan_7050/firmware`
-        -   **Firmware source**: z.B.:
+        -   **Firmware source**, for example:
             `fritz.box_fon_wlan_7050.14.04.01.image`
-    -   **Default Security level**: Wertebereich von 0 bis 2. Legt den
-        standardmäßigen Security Level fest, welcher aktiviert wird,
-        sofern kein anderer Wert auf der Box gespeichert ist. Standard
-        ist 2 (alle Restriktionen aktiviert)
-    -   **Verbosity level**: Wertebereich von 0 bis 2. Je höher die
-        Zahl, desto mehr Meldungen werden beim Erstellen der Firmware
-        ausgegeben. Standard ist 0.
-    -   **Favicon**: Auswahl von kleinen Icons, die im Browser neben der
-        URL der Fritzbox dargestellt werden. "none" installiert keine
-        Favicons.
-    -   **Add Freetz version to subversion string**: Fügt der im
-        Web-Interface angezeigten (AVM-) Firmware-Version die
-        Freetz-Version hinzu
-    -   **Squashfs blocksize**: Die Blockgröße beeinflußt die
-        Kompression des Images und die Zugriffszeit auf Dateien. Je
-        größer die Blockgröße, desto besser die Kompression, jedoch wird
-        die Zugriffszeit auf Dateien des Squashfs Images möglicherweise
-        schlechter.
-    -   **BusyBox options**: Listenauswahl aller Tools welche in die
-        BusyBox integriert werden sollen.
-    -   **Kernel modules**: Zusätzliche Kernelmodule. Jegliche Auswahl
-        ist optional.
-    -   **Shared libraries**: Zusätzliche Laufzeitbibliotheken. Jegliche
-        Auswahl ist optional.
-    -   **Compiler options**: Wer hier etwas ändert muss wissen was er
-        tut.
+    -   **Default Security level**: Value range from 0 to 2. Defines the
+        default security level used when no other value is stored on the
+        box. The default is 2, with all restrictions enabled.
+    -   **Verbosity level**: Value range from 0 to 2. The higher the
+        number, the more messages are printed while creating the firmware.
+        The default is 0.
+    -   **Favicon**: Selection of small icons shown next to the FRITZ!Box
+        URL in the browser. `none` installs no favicons.
+    -   **Add Freetz version to subversion string**: Adds the Freetz
+        version to the AVM firmware version shown in the web interface.
+    -   **Squashfs blocksize**: The block size affects image compression
+        and file access time. A larger block size improves compression,
+        but can make access to files in the SquashFS image slower.
+    -   **BusyBox options**: List selection of all tools to integrate into
+        BusyBox.
+    -   **Kernel modules**: Additional kernel modules. Every selection is
+        optional.
+    -   **Shared libraries**: Additional runtime libraries. Every selection
+        is optional.
+    -   **Compiler options**: Change these only if you know what you are
+        doing.
 
 

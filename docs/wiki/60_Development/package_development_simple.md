@@ -1,104 +1,85 @@
-# Wie baue ich ein eigenes Paket für Freetz?
+# How Do I Build My Own Package for Freetz?
 
-Anmerkung: Dieser Beitrag Beitrag vermischt zwei verschiedenen
-Fragestellungen:
+Note: this article mixes two different questions:
 
--   Wie schreibe ich mein erstes Programm?
--   Wie integriere ich ein vorhandenes Programm als Package in Freetz?
+-   How do I write my first program?
+-   How do I integrate an existing program as a package in Freetz?
 
-Die zweite Frage wird schon an anderer Stelle behandelt. Wenn Interesse
-an der ersten Frage besteht, sollte man das entsprechend aufteilen.
-Normalerweise werden eher fertige Programme in Freetz integriert und
-nicht welche, die komplett neu geschrieben werden. Als Grundlage für ein
-komplexeres Programm ist möglicherweise [GNU
-Hello](http://ftp.gnu.org/gnu/hello/hello-2.3.tar.gz) besser
-geeignet, da hier auch mit automake eine cofigure-Datei erstellt wird.
-(ralf)
+The second question is already covered elsewhere. If there is interest in
+the first question, it should be split out accordingly. Usually, finished
+programs are integrated into Freetz rather than being written completely
+from scratch. [GNU Hello](http://ftp.gnu.org/gnu/hello/hello-2.3.tar.gz)
+may be a better basis for a more complex program because it also creates a
+`configure` file with automake. (ralf)
 
-Da dies mein erster Wiki-Eintrag ist, möchte ich Euch um Nachsicht
-bitten, wenn nicht gleich alles so aussieht wie es sein sollte.
+Because this is my first wiki entry, please bear with me if not
+everything looks exactly as it should yet.
 
-Um für Freetz ein Paket selbst zu erstellen, musste ich erst einmal ein
-geeignetes "Projekt" finden, für das es auch Sourcecode gibt, der sich
-für die Fritzbox überhaupt kompilieren lässt.
+To create a package for Freetz myself, I first had to find a suitable
+"project" with source code that could actually be compiled for the
+FRITZ!Box.
 
-Bei der Suche stieß ich auf den [HTTP Tunnel
-Server](http://www.nocrew.org/software/httptunnel.html). Mit
-*httptunnel* kann man TCP-Verbindungen über das http-Protokoll tunneln
-und damit von überall sogar durch sehr restriktive Proxies Zugriff zu
-seiner Fritzbox bekommen. Näheres dazu ist
-[hier](http://linuxwiki.de/HttpTunnel) nachzulesen.
+During the search, I found the
+[HTTP Tunnel Server](http://www.nocrew.org/software/httptunnel.html).
+With *httptunnel*, TCP connections can be tunneled over HTTP, allowing
+access to the FRITZ!Box even through very restrictive proxies. More about
+this can be read [here](http://linuxwiki.de/HttpTunnel).
 
-Die Evolution meiner Erfahrungen, bereichert um zahlreiche hilfreiche
-Tipps und Hinweise der Linux-Gurus und Entwickler hier im Forum könnt
-Ihr in [diesem
-Thread](http://www.ip-phone-forum.de/showthread.php?t=167980)
-nachlesen, wo auch der richtige Platz für weitere Fragen und Diskussion
-ist.
+The evolution of my experience, enriched by many helpful tips and notes
+from Linux experts and developers in the forum, can be read in
+[this thread](http://www.ip-phone-forum.de/showthread.php?t=167980),
+which is also the right place for further questions and discussion.
 
-Folgende Umgebung habe ich zum Bau des Pakets verwendet:
+I used the following environment to build the package:
 
--   Fritzbox 7170 mit Freetz-1.0
--   StinkyLinux 1.06 in einer VM auf einem Macbook
+-   FRITZ!Box 7170 with Freetz 1.0
+-   StinkyLinux 1.06 in a VM on a MacBook
 
-Es gibt aber auch noch andere Umgebungen, um FW bzw. Freetz-Pakete zu
-bauen, welche hier nachzulesen sind.
+There are other environments for building firmware or Freetz packages;
+they are described elsewhere.
 
-In den HowTos gibt es einige wichtige
-Informationen darüber, was man mit *Make*-Targets wie
-menuconfig, *toolchain*,
-*precompiled*, *recover* usw. erreichen kann beim Bau einer
-Freetz-Firmware. Die Infos dort sind
-durchaus lesenswert, wenn man besser verstehen will, was genau beim Bau
-einer FW bzw. eines neuen Pakets für Freetz abläuft, wenngleich ich
-diese Infos auch erst hinterher gelesen habe (mea culpa).
+The how-tos contain important information about what *make* targets such
+as `menuconfig`, `toolchain`, `precompiled`, `recover`, and others do
+while building Freetz firmware. That information is worth reading if you
+want to understand exactly what happens when building firmware or a new
+Freetz package, even though I only read it afterwards (mea culpa).
 
-Eine sehr gute Anleitung ist
-hier zu
-finden.
+A very good guide can be found elsewhere.
 
-Es gibt ein kleines [Demo Package (demopackagea)]{.underline}. Weiteres
-dazu hier:
+There is a small [demo package (demopackagea)]{.underline}. More about it:
 
-DemoPackageA Ein
-Demo-Package "Hello World" ---- [Forum-Beitrag incl.
-Download](http://www.ip-phone-forum.de/showthread.php?t=177052)
+DemoPackageA, a "Hello World" demo package:
+[forum post including download](http://www.ip-phone-forum.de/showthread.php?t=177052).
 
-[Kurz-Anleitung um ein bestehendes Package anzupassen]{.underline}
+[Short guide for adapting an existing package]{.underline}
 
--   Annahme es ist ein Build-System vorhanden. Dies kann das oben
-    genannte StinkyLinux, in dem Freetz ausgecheckt wurde, sein. Alle
-    hier genannten Verzeichnisse sind im Freetz-Ordner, dieser wird im
-    folgenden Kurz-Anleitung mit "/" Symbolisiert.
--   Es gibt ein kompaktes Package mit dem Namen: "Empty". Hierbei
-    handelt es sich um ein konkretes Package, das man als Vorlage nutzen
-    kann. Dies einfach mal ansehen. ("freetz.ordner"/make/empty/\* ).
--   Einen kurzen prägnanten Namen für das eigene Package ausdenken.
--   In dem Verzeichnis "make" einen Ordner erstellen. Dieser Ordner
-    sollte so heißen wie das Package, dieser wird im folgenden
-    Package-Ordner genannt.
--   Von dem "Empty-Package" die Datei "empty.mk" in den
-    Package-Ordner übernehmen (und natürlich umbenennen. Der Name dieser
-    Datei bestimmt den Namen des Packages).
--   Die Datei "package.mk" muss auch Inhaltlich angepasst werden. (In
-    der Datei sollte kein "empty" (CASE-LESS) mehr stehen). Die
-    Version sollte man auf "0.0.01" ändern. Der SITE-Eintrag ist nicht
-    relevant, solange sich die Datei im Verzeichnis /dl befindet. Wenn
-    man später die Datei zum Download
-    anbietet, muß hier der entsprechende Wert eingetragen werden.
--   Die Dateien "Config.in" und "Makefile.in" anpassen, aber nicht
-    umbenennen.
--   Damit das Package über "make menuconfig" gefunden werden kann muss
-    in der Datei /make/Config.in das eigene Package eingetragen werden
-    (Wie z.B. das Package empty eingetragen ist). Für ein neues Package
-    ist erstmal der Bereich "Testing" angemessen.
--   make menuconfig aufrufen und das Package auswählen.
--   Jetzt kennt Freetz das Package, es muss aber noch erstellt werden.
-    Dieses Mini-Package besteht aus zwei Dateien (pluginName.c und
-    Makefile)
--   Erstelle einen Ordner (egal wo wird gleich wieder gelöscht) der Name
-    des Orders muss "pluginName-Version" lauten. (Version=0.0.01)
--   Erstelle in diesem Ordner die Datei "pluginName.c" mit dem Inhalt:
+-   Assume a build system exists. This can be the StinkyLinux mentioned
+    above with Freetz checked out. All directories mentioned here are
+    inside the Freetz folder, which is represented by `/` in this short
+    guide.
+-   There is a compact package named `empty`. This is a real package that
+    can be used as a template. Take a look at it:
+    `freetz.folder/make/empty/*`.
+-   Think of a short, clear name for your package.
+-   Create a directory inside `make`. This directory should have the same
+    name as the package; below it is called the package directory.
+-   Copy `empty.mk` from the `empty` package into the package directory
+    and rename it. The name of this file determines the package name.
+-   Adapt `package.mk` as well. It should no longer contain `empty` in any
+    capitalization. Set the version to `0.0.01`. The `SITE` entry is not
+    relevant as long as the file is in `/dl`. If the file is offered for
+    download later, the corresponding value must be entered here.
+-   Adapt `Config.in` and `Makefile.in`, but do not rename them.
+-   To make the package visible through `make menuconfig`, add it to
+    `/make/Config.in`, similar to how package `empty` is listed. For a
+    new package, the `Testing` section is appropriate at first.
+-   Run `make menuconfig` and select the package.
+-   Freetz now knows the package, but it still needs to be built. This
+    mini package consists of two files, `pluginName.c` and `Makefile`.
+-   Create a directory anywhere; it will be deleted again shortly. The
+    directory name must be `pluginName-Version`, for example version
+    `0.0.01`.
+-   Create `pluginName.c` in this directory with this content:
     ::: {.code}
         /*  "plugin_name".c Version:0.0.01  */
         #include <stdio.h>
@@ -108,7 +89,7 @@ Download](http://www.ip-phone-forum.de/showthread.php?t=177052)
         }
     :::
 
--   Erstelle in diesem Ordner die Date Makefile mit dem Inhalt:
+-   Create the file `Makefile` in this directory with this content:
 
     ```
     BINARY=plugin_name
@@ -122,13 +103,13 @@ Download](http://www.ip-phone-forum.de/showthread.php?t=177052)
         $(RM) $(BINARY) $(OBJS)
     ```
 
--   wechsle eine Verzeichnisebende runter
--   erstelle ein tgz Archiv (der Ordner kann danach gelöscht werden)(tar
-    cfz plugin-0.0.01.tgz plugin-0.0.01)
--   kopiere das tgz Archiv in das Verzeichnis /dl
--   Jetzt kann das Package mittels make Packagename-precompiled das
-    erste Mal erzeugt werden (aus: "/")
+-   Change one directory level down.
+-   Create a `tgz` archive; the directory can be deleted afterwards:
+    `tar cfz plugin-0.0.01.tgz plugin-0.0.01`.
+-   Copy the `tgz` archive into `/dl`.
+-   The package can now be built for the first time with
+    `make Packagename-precompiled` from `/`.
 
-to be continued...
+To be continued...
 
 

@@ -1,145 +1,111 @@
-# Signieren von Firmware
+# Signing Firmware
 
-Beim Signieren von Firmware handelt es sich um einen Vorgang, bei dem
-die Firmware mit einer [digitalen
-Signatur](https://de.wikipedia.org/wiki/Digitale_Signatur)
-versehen wird. Der Einsatzzweck dieser Signatur beschränkt sich aktuell
-auf die Überprüfung, ob die Firmware bzw. nachladbare Teile davon
-(=AVM-Plugins) aus einer vertrauenswürdigen Quelle stammen und damit
-geflasht bzw. nachgeladen und eingebunden werden dürfen. In Bezug auf
-die Firmware ist dieser Mechanismus erst seit Fritz!OS-6.5x von AVM
-scharf geschaltet. Seit dieser Version kann über das
-Standard-Web-Interface von AVM nur noch eine aus einer
-vertrauenswürdigen und zum Flash-Zeitpunkt der auf der Box laufenden
-Firmware bekannten Quelle geflasht werden.
+Signing firmware means adding a
+[digital signature](https://de.wikipedia.org/wiki/Digitale_Signatur) to
+the firmware. This signature is currently used to verify whether the
+firmware, or loadable parts of it such as AVM plugins, comes from a
+trusted source and may therefore be flashed, loaded, and integrated. For
+firmware images, AVM enforced this mechanism starting with Fritz!OS 6.5x.
+Since then, the standard AVM web interface can flash only firmware from a
+trusted source known to the firmware version running on the box at flash
+time.
 
-Um zu verstehen, was der letzte Satz konkret bedeutet, sei kurz auf die
-Grundprinzipien des digitalen Signierens eingegangen (für tiefgehende
-Informationen sei auf zahlreiche Artikeln im Internet verwiesen, z.B.
-auf
-[diesen](https://de.wikipedia.org/wiki/Digitale_Signatur)
-Wikipedia-Artikel).
+To understand what that last sentence means, it helps to review the basic
+principles of digital signing. For deeper information, see any of the many
+articles on the internet, for example this
+[Wikipedia article](https://de.wikipedia.org/wiki/Digitale_Signatur).
 
-Im Rahmen des digitalen Signierens sind im wesentlichen folgende
-Schritte/Sachverhalte von Bedeutung:
+Digital signing mainly involves these steps and facts:
 
--   Die Erzeugung eines aus einem privaten und aus einem öffentlichen
-    Schlüssel bestehenden Schlüsselpaars. Der private Schlüssel wird
-    dabei mit einem Passwort versehen, sodass der Schlüssel nur von der
-    Person verwendet werden kann, die im Besitz des Schlüssels ist und
-    das Passwort dazu kennt.
--   Der private Schlüssel aus dem Schlüsselpaar wird vom Absender einer
-    digitalen Nachricht verwendet und dient dem Zweck, diese digitale
-    Nachricht mit einer digitalen Signatur zu versehen.
--   Die digitale Signatur ermöglicht es dem Empfänger der Nachricht mit
-    Hilfe des öffentlichen Schlüssels (auch Verifikationsschlüssel
-    genannt) die nicht-abstreitbare Urheberschaft und Integrität der
-    Nachricht zu prüfen.
+-   A key pair is generated, consisting of a private key and a public key.
+    The private key is protected by a password so it can only be used by a
+    person who has both the key and its password.
+-   The sender of a digital message uses the private key from the key pair
+    to attach a digital signature to that message.
+-   The digital signature lets the recipient verify authorship and
+    integrity of the message with the public key, also called the
+    verification key.
 
-Für unseren Anwendungsfall bedeutet es nun folgendes:
+For this use case, that means:
 
--   Die digitale Nachricht ist das Firmware-Image.
--   Der Absender der Nachricht ist die Quelle, aus der das
-    Firmware-Image stammt. Die Quelle muss im Besitz des gesamten
-    Schlüsselpaars sein (also beider Schlüssel) und das Passwort kennen,
-    mit dem der private Schlüssel geschützt ist.
--   Der Empfänger der Nachricht ist die zum Zeitpunkt des Flash-Vorgangs
-    auf der Box laufende Firmware-Version. Diese muss im Besitz des
-    öffentlichen Schlüssels (des Verifikationsschlüssels) sein.
+-   The digital message is the firmware image.
+-   The sender is the source from which the firmware image comes. The
+    source must have the full key pair, both keys, and know the password
+    protecting the private key.
+-   The recipient is the firmware version running on the box at the time
+    of flashing. It must have the public key, the verification key.
 
-Ein (digital signiertes) Firmware-Image wird also dann als "aus einer
-vertrauenswürdigen Quelle stammend" eingestuft, wenn der öffentliche
-Schlüssel dieser Quelle der auf der Box laufenden Firmware bekannt ist
-und der Signatur-Prüfungsvorgang bestanden wird.
+A digitally signed firmware image is classified as coming from a trusted
+source if the public key for that source is known to the firmware running
+on the box and the signature verification succeeds.
 
-Der private, der geheime Schlüssel, mit dem AVM die Original-Images
-signiert, liegt uns aus verständlichen Gründen nicht vor (und wenn dies
-auch anders wäre, müssten wir auch noch das Passwort dazu kennen). Damit
-bleibt uns nichts anderes übrig, als es zu versuchen, ein
-selbstsigniertes Image zu erzeugen und die auf der Box laufende Firmware
-dazu zu zwingen dieses zu akzeptieren. Dabei sind folgende Hürden zu
-überwinden:
+For understandable reasons, we do not have AVM's private secret key used
+to sign original images. Even if we did, we would also need its password.
+Therefore, the only option is to create a self-signed image and make the
+firmware running on the box accept it. Two hurdles need to be overcome:
 
--   Der aus mathematischer/technischer Sicht schwierigste Teil besteht
-    darin, es zu verstehen, worin genau nun ein Signiervorgang bzw. ein
-    Signatur-Prüfungsvorgang in der AVM-Firmware besteht?
-    Glücklicherweise hat der (im IPPF-Forum sehr gut bekannte)
-    Entwickler
-    [PeterPawn](https://github.com/PeterPawn)
-    diesbezüglich eine super Arbeit geleistet und im Rahmen seines
-    [YourFritz-Projektes](https://github.com/PeterPawn/YourFritz)
-    alles
-    [dokumentiert](http://www.ip-phone-forum.de/showthread.php?t=286213)
-    und den entsprechenden
-    [Quellcode](https://github.com/PeterPawn/YourFritz/tree/master/signimage)
-    zu Verfügung gestellt, der inzwischen auch in Freetz eingebaut ist.
--   Wie oben schon mehrfach erwähnt, damit ein signiertes Image den
-    Prüfungsvorgang besteht, muss die auf der Box laufende Firmware den
-    öffentlichen Schlüssel der Quelle kennen. Dies ist für unser
-    selbstsigniertes Image natürlich nicht der Fall. D.h. wir müssen es
-    irgendwie schaffen, unseren öffentlichen Schlüssel auf die Box
-    einzuschleusen. Haben wir dies einmal geschafft, so kann jedes
-    weitere selbstsignierte Image über das reguläre AVM-Web-Interface
-    geflasht werden, vorausgesetzt man verwendet genau dasselbe
-    Schlüsselpaar zum Signieren und vergisst es nicht, den öffentlichen
-    Schlüssel in jedes neue Image mitaufzunehmen.
+-   The mathematically and technically difficult part is understanding
+    exactly what signing and signature verification mean inside AVM
+    firmware. Fortunately,
+    [PeterPawn](https://github.com/PeterPawn), a developer well known in
+    the IPPF forum, did excellent work in his
+    [YourFritz project](https://github.com/PeterPawn/YourFritz): he
+    [documented](http://www.ip-phone-forum.de/showthread.php?t=286213)
+    the mechanism and provided the corresponding
+    [source code](https://github.com/PeterPawn/YourFritz/tree/master/signimage),
+    which has since been integrated into Freetz.
+-   As mentioned above, a signed image passes verification only if the
+    firmware running on the box knows the source's public key. That is
+    naturally not true for a self-signed image. Somehow, the public key
+    must be smuggled onto the box. Once that has been achieved, every
+    further self-signed image can be flashed through the regular AVM web
+    interface, provided exactly the same key pair is used for signing and
+    the public key is included in every new image.
 
-Diese zweite Aufgabe ist streng genommen nicht ganz trivial. Es ist
-geplant, einen eigenen Artikel zu diesem Thema zu verfassen. An dieser
-Stelle seien stichwortartig mögliche Lösungen angedeutet:
+Strictly speaking, the second task is not trivial. A separate article on
+that topic was planned. Possible approaches include:
 
--   Ein Downgrade (mittels Recovery) auf eine ältere Firmware-Version,
-    die noch unsignierte Images akzeptiert hat. Aus dieser älteren
-    Firmware-Version heraus muss dann eine jüngere Firmware-Version
-    geflasht werden, die unseren öffentlichen Schlüssel enthält.
--   Hat man zufälligerweise einen Telnet-Zugang auf die Box, so kann
-    mittels der "drüber mounten"-Methode (`mount -o bind ... ...`)
-    eines der AVM-Schlüssel temporär durch den eigenen ersetzt werden.
--   Bei NOR-Boxen kann ein den öffentlichen Schlüssel enthaltendes Image
-    mittels
-    [push_firmware](http://trac_freetz_org/browser/trunk/tools/push_firmware)
-    auf die Box gebracht werden.
--   Bei NAND-Boxen kann ein den öffentlichen Schlüssel enthaltendes
-    Image mittels der
-    [eva-to-memory-Methode](https://github.com/PeterPawn/YourFritz/blob/master/eva_tools/eva_to_memory)
-    auf die Box gebracht werden.
+-   Downgrade, by recovery, to an older firmware version that still
+    accepted unsigned images. From that older firmware version, flash a
+    newer firmware version containing the custom public key.
+-   If Telnet access to the box happens to be available, temporarily
+    replace one of AVM's keys with your own using the bind-mount method,
+    `mount -o bind ... ...`.
+-   On NOR boxes, an image containing the public key can be transferred to
+    the box with
+    [push_firmware](http://trac_freetz_org/browser/trunk/tools/push_firmware).
+-   On NAND boxes, an image containing the public key can be transferred
+    with the
+    [eva-to-memory method](https://github.com/PeterPawn/YourFritz/blob/master/eva_tools/eva_to_memory).
 
-### Konkrete Anwendung in Freetz
+### Concrete Use in Freetz
 
--   Man aktiviere die Experten-Ansicht in Freetz ("Level of User
-    Competence" = Expert).
--   Unter "Firmware packaging (fwmod) options" aktiviere man die
-    Option "Sign image" und gebe das Passwort für den privaten
-    Schlüssel direkt dadrunter ein (das Passwort wird aus der ins Image
-    kopierten Version der .config entfernt).
--   Anschließend baue man ganz normal eine Freetz-Firmware.
+-   Enable expert view in Freetz, `Level of User Competence` = Expert.
+-   Under `Firmware packaging (fwmod) options`, enable `Sign image` and
+    enter the password for the private key directly below it. The password
+    is removed from the `.config` copy included in the image.
+-   Build Freetz firmware normally.
 
-Durch das Aktivieren dieser Optionen wird folgendes bewirkt:
+Enabling these options has these effects:
 
--   Handelt es um den allerersten Durchlauf, bei dem ein
-    selbstsigniertes Image erzeugt werden soll, so werden die zum
-    Signieren benötigten Dateien erzeugt und im Homeverzeichnis des
-    Users unter den Namen mit folgendem Präfix abgelegt:
-    `.freetz.image_signing`. Diese Dateien sind vom User zu sichern und
-    von dem Zeitpunkt an beim Bauen/Signieren aller weiteren Images zu
-    verwenden. Oder andersrum ausgedrückt - es macht keinen Sinn, sich
-    diese Dateien immer wieder aufs Neue erzeugen zu lassen, da man dann
-    jedes Mal aufs Neue das Problem lösen muss "wie bringt man den neu
-    erzeugten öffentlichen Schlüssel auf die Box". Dies ist auch der
-    Grund, warum die Dateien im Homeverzeichnis des Users abgelegt
-    werden und nicht in dem Freetz-Build-Verzeichnis selbst (hat man
-    mehrere Build-Verzeichnisse für verschiedene Boxen wird dadurch für
-    jede Box dasselbe Schlüsselpaar verwendet). Es sei nochmal darauf
-    hingewiesen, dass diese Dateien vom User zu sichern sind und z.B.
-    bei einem Build-System-Wechsel manuell auf das neue System zu
-    kopieren sind.
--   Liegen die Dateien dagegen vor, so werden sie einfach verwendet. Der
-    öffentliche Schlüssel wird dabei in einem speziellen Format mit ins
-    Image unter dem Namen `/etc/avm_firmware_public_key9` aufgenommen
-    (bzgl. des Formats s. die detaillierte Beschreibung von PeterPawn).
--   Hat man es geschafft und der eigene öffentliche Schlüssel befindet
-    sich auf der Box, so kann jedes weitere mit genau demselben
-    Schlüsselpaar signierte Image über das AVM-Web-Interface geflasht
-    werden.
+-   If this is the very first run creating a self-signed image, the files
+    needed for signing are generated and stored in the user's home
+    directory with this prefix: `.freetz.image_signing`. The user must
+    back up these files and use them from then on when building and
+    signing all later images. In other words, it makes no sense to
+    regenerate these files every time, because each new key would require
+    solving the problem of how to get the newly generated public key onto
+    the box again. This is also why the files are placed in the user's
+    home directory rather than in the Freetz build directory itself. If
+    several build directories are used for different boxes, each box still
+    uses the same key pair. These files must be backed up by the user and,
+    for example after changing build systems, copied manually to the new
+    system.
+-   If the files already exist, they are simply used. The public key is
+    included in the image in a special format under the name
+    `/etc/avm_firmware_public_key9`; see PeterPawn's detailed description
+    for the format.
+-   Once your public key is on the box, every further image signed with
+    exactly the same key pair can be flashed through the AVM web interface.
 
 

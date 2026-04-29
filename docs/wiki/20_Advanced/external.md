@@ -2,137 +2,115 @@
 
 [![external menuconfig page](../../screenshots/118_md.jpg)](../../screenshots/118.jpg)
 
-Entstanden aus diesem Thread im IPPF:
+Created from this IPPF thread:
 [http://www.ip-phone-forum.de/showthread.php?t=160920](http://www.ip-phone-forum.de/showthread.php?t=160920)
 
-Mit "External" kann dem Platzproblem im Flash der Fritzboxen
-entgegengewirkt werden, man kann also ein größeres Image als das Flash
-zulassen würde installieren. Hierzu werden Packages, Librarys als auch
-benutzerdefinierte Dateien aus dem Image "externalisiert" oder
-ausgelagert. Bei Boxen mit USB-Host bietet sich hierzu ein
-angeschlossener USB-Stick an. Bei älteren Boxen können unter
-Zuhilfenahme des
-Downloader-CGIs die Dateien
-von einem FTP- oder HTTP-Server in den RAM nachgeladen werden.
-Alternativ können die Dateien auch per
-autofs eingebunden werden.
-Mit External kann man die Meldung 'Filesystem image too big' vermeiden.
+"External" helps with the flash-space problem on FRITZ!Boxes. It allows
+installing an image larger than the flash would normally permit. Packages,
+libraries, and user-defined files are "externalized" or moved out of the
+image. On boxes with USB host support, a connected USB stick is a good
+place for them. On older boxes, the Downloader CGI can load the files into
+RAM from an FTP or HTTP server. Alternatively, the files can be mounted
+through autofs. External can avoid the message `Filesystem image too big`.
 
- Der Pfad
-zu den external-Dateien kann im Webinterface unter Freetz →
-Einstellungen → external konfiguriert werden.
+The path to the external files can be configured in the web interface
+under Freetz -> Settings -> external.
 
-In diesem dürfen sich keine andere Dateien befinden, dies könnte zu
+No other files may be present there, because that could lead to
 [Fehlern](http://www.ip-phone-forum.de/showthread.php?p=1469406#post1469406)
-führen.
+.
 
- Es
-können nur Pakete ausgelagert werden, die zur Installation ausgewählt
-wurden.
+Only packages selected for installation can be externalized.
 
 
-## Konfiguration
+## Configuration
 
-zu finden im menuconfig unter "Advanced Options" → "External"
+Available in `menuconfig` under "Advanced Options" -> "External".
 
 ### Prepare files for Downloader
 
-Diese Option ist nur zu sehen, wenn das Downloader-CGI zur Installation
-ausgewählt wurde.
-Es werden hiermit beim make-Prozess Pakete für den späteren
-Download erstellt.
-Näheres hierzu beim
-Downloader-CGI.
+This option is visible only if the Downloader CGI was selected for
+installation. It creates packages during the `make` process for later
+download. See the Downloader CGI for more details.
 
 ### Keep subdirectories
 
-Die Verzeichnisstruktur der ausgelagerten Dateien wird beibehalten. Dies
-hat den Vorteil dass eine gleichlautende Datei an verschiedenen Stellen
-im Image ausgelagert werden kann. Ein Nachteil ist, dass das händische
-Kopieren auf die Box umständlicher ist.
+The directory structure of the externalized files is preserved. This has
+the advantage that files with the same name in different locations in the
+image can be externalized. The disadvantage is that manually copying the
+files to the box is more cumbersome.
 
 ### Create file for upload
 
-Alle ausgelagerten Dateien werden in eine Datei gepackt, die mittels
-Freetz-Webinterface auf die Box geladen werden kann. Die Datei ist im
-Verzeichnis .*image* zu finden und trägt den gleiche Namen wie das
-erstellte Image, weist aber die Endung ".external" auf.
+All externalized files are packed into one file that can be uploaded to
+the box through the Freetz web interface. The file is found in the
+`images` directory and has the same name as the created image, but with
+the extension `.external`.
 
 ### own files
 
-Hier können noch zusätzliche Dateien zum auslagern angegeben werden. Es
-ist der Pfad auf der Fritzbox anzugeben! Wenn es mehr als eine Datei
-ist, sind diese mit einem Leerzeichen voneinander zu trennen.
+Additional files to externalize can be specified here. Enter the path on
+the FRITZ!Box. If there is more than one file, separate them with spaces.
 
-## Auswahl
+## Selection
 
 ### packages
 
-Hier können verschiedene "binary-only" Packages zum auslagern
-ausgewählt werden. Es sollten alle unproblematisch sein.
+Various "binary-only" packages can be selected for externalization here.
+They should all be unproblematic.
 
 ### services
 
-Hier können verschiedene automatisch startende Packages zum auslagern
-ausgewählt werden.
+Various automatically starting packages can be selected for
+externalization here.
 
- Diese
-werden erst geladen wenn der USB-Stick verfügbar ist und die Option zum
-automatischen Starten von ausgelagerten Diensten im Webinterface
-aktiviert ist.
+They are loaded only when the USB stick is available and the option to
+automatically start externalized services is enabled in the web interface.
 
 ### libraries
 
-Hier können verschieden Libraries zum auslagern ausgewählt werden.
+Various libraries can be selected for externalization here.
 
- Zu
-beachten ist, dass Programme, die gegen diese gelinkt sind, erst
-gestartet werden können, wenn die Datei auf der Box geladen ist. Also
-vorher bitte die Abhängigkeiten prüfen.
+Note that programs linked against these libraries can start only after the
+file has been loaded on the box. Check dependencies first.
 
 ## Installation
 
-Die Dateien, die für external ausgewählt wurden, müssen auf der Box
-verfügbar gemacht werden.
+Files selected for externalization must be made available on the box.
 
-Im Falle eines USB-Sticks sollte man bei der Konfiguration die Option
-"Create file for upload" auswählen. Die damit erzeugte Datei kann man
-über das installierte Freetz Webinterface System" → "Firmware-Update"
-→ Option "external-Datei hochladen" auf die Box kopieren.
+When using a USB stick, select "Create file for upload" during
+configuration. The generated file can be copied to the box through the
+installed Freetz web interface: System -> Firmware update -> "upload
+external file".
 
-Wenn man einen FTP/HTTP-Server oder einen NFS-Server verwendet, muß man
-selbst dafür sorgen, daß die Box auf die Dateien zugreifen kann.
+When using an FTP/HTTP server or an NFS server, make sure yourself that
+the box can access the files.
 
-## Automatisches starten/stoppen von Diensten
+## Automatically Start/Stop Services
 
-Dies kann im Webinterface unter `Einstellungen` konfiguriert werden.
-Dienste die hier eingetragen sind erscheinen im Webinterface nur solange
-der Datenträger mit den ausgelagerten Dateien zur Verfügung steht.
-Ansonsten müssten die Optionen selbsterklärend sein. Hier noch ein
-Screenshot davon:
+This can be configured in the web interface under `Settings`. Services
+entered here appear in the web interface only while the storage medium
+with the externalized files is available. The other options should be
+self-explanatory. Here is a screenshot:
 
 [![external_services](../../screenshots/175_md.jpg)](../../screenshots/175.jpg)
 
-Unter `Logdateien` wird im Webinterface die `/var/log/external.log`
-angezeigt.
-In dieser bedeutet in den "Waiting" Zeilen jeder Punk, dass 1 Sekunde
-gewartet wurde. Falls es also "tausende" Punkte sind, behindert
-irgendetwas das saubere hochfahren der Box, vermutlich ein Timer in der
-rc.custom oder debug.cfg.
+Under `Log files`, the web interface shows `/var/log/external.log`. In
+the "Waiting" lines, each dot means one second of waiting. If there are
+"thousands" of dots, something is preventing a clean boot, probably a
+timer in `rc.custom` or `debug.cfg`.
 
-## Firmware-build-Prozess und Update
+## Firmware Build Process and Update
 
-Beim Firmware-build werden zwei Dateien erzeugt: xxx.image → die
-eigentliche Firmware-Image xxx.external → Die Dateien, die
-externalisiert werden sollen
+The firmware build creates two files: `xxx.image`, the actual firmware
+image, and `xxx.external`, the files to be externalized.
 
-Beide Dateien sind im Ordner \[images\] zu finden. Bei der
-external-Datei handelt es sich um eine gepackte tar-Datei, die beim
-Upload übers Freetz-Webinterface automatisch ins Zielverzeichnis
-entpackt wird. Es wird empfohlen, erst die external hochzuladen
-\[Freetz-WebIf → System → Firmware-Update\] und danach erst die
-Firmware. So stehen die external-Pakete der aktualisierten Firmware
-schon zur Verfügung.
+Both files are found in the `images` folder. The external file is a
+packed tar file that is automatically unpacked into the target directory
+when uploaded through the Freetz web interface. It is recommended to
+upload the external file first, through Freetz WebIF -> System -> Firmware
+update, and only then upload the firmware. This way the external packages
+for the updated firmware are already available.
 [![external_services](../../screenshots/176_md.png)](../../screenshots/176.png)
 
 
