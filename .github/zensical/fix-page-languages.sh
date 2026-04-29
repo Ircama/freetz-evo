@@ -55,7 +55,7 @@ perl -0pi -e '
 ' "$news_html"
 
 if ! grep -q 'not Freetz-EVO release notes' "$news_html"; then
-	perl -0pi -e 's|(<h1 id="upstream-freetz-ng-news"[^>]*>.*?</h1>\n)|$1<p lang="en" translate="no"><strong>Note:</strong> These entries come from upstream <a href="https://github.com/Freetz-NG/freetz-ng">Freetz-NG</a>. They refer to upstream-only tags, discussions, or changes.</p>\n<p lang="en" translate="no">For an English translation, open the <a href="https://ircama-github-io.translate.goog/freetz-evo/NEWS/?_x_tr_sl=de&amp;_x_tr_tl=en&amp;_x_tr_hl=it&amp;_x_tr_pto=wapp">Google Translate version</a>.</p>\n|s' "$news_html"
+	perl -0pi -e 's|(<h1 id="upstream-freetz-ng-news"[^>]*>.*?</h1>\n)|$1<p lang="en" translate="no"><strong>Note:</strong> These entries come from upstream <a href="https://github.com/Freetz-NG/freetz-ng">Freetz-NG</a>. They are not Freetz-EVO release notes and may refer to upstream-only tags, discussions, or changes.</p>\n<p lang="en" translate="no">For an English translation, open the <a href="https://ircama-github-io.translate.goog/freetz-evo/NEWS/?_x_tr_sl=de&amp;_x_tr_tl=en&amp;_x_tr_hl=it&amp;_x_tr_pto=wapp">Google Translate version</a>.</p>\n|s' "$news_html"
 fi
 
 perl -0pi -e '
