@@ -15,7 +15,39 @@ if ! grep -q 'http-equiv="content-language" content="de"' "$news_html"; then
 	perl -0pi -e 's|(<meta charset="utf-8">\n)|$1      <meta http-equiv="content-language" content="de">\n      <meta name="language" content="de">\n|' "$news_html"
 fi
 
-perl -0pi -e 's/<article class="md-content__inner md-typeset">/<article class="md-content__inner md-typeset" lang="de">/' "$news_html"
+if ! grep -q 'name="DC.language" content="de"' "$news_html"; then
+	perl -0pi -e 's|(<meta name="language" content="de">\n)|$1      <meta name="DC.language" content="de">\n|' "$news_html"
+fi
+
+if ! grep -q 'property="og:locale" content="de_DE"' "$news_html"; then
+	perl -0pi -e 's|(<meta name="DC.language" content="de">\n)|$1      <meta property="og:locale" content="de_DE">\n|' "$news_html"
+fi
+
+if ! grep -q 'rel="alternate" hreflang="de"' "$news_html"; then
+	perl -0pi -e 's|(<link rel="canonical" href="([^"]+)">\n)|$1      <link rel="alternate" hreflang="de" href="$2">\n|' "$news_html"
+fi
+
+if ! grep -q '"@context":"https://schema.org".*"inLanguage":"de-DE"' "$news_html"; then
+	perl -0pi -e 's|(\n\s*</head>)|      <script type="application/ld+json">\n        {"\@context":"https://schema.org","\@type":"WebPage","name":"Neuigkeiten","inLanguage":"de-DE"}\n      </script>\n$1|' "$news_html"
+fi
+
+# The generated theme chrome is English and appears before the NEWS article.
+# Mark it as non-translatable so language detectors weigh the German content.
+perl -0pi -e '
+	s|<div data-md-component="skip">|<div data-md-component="skip" lang="en" translate="no" class="notranslate">|;
+	s|<div data-md-component="announce">|<div data-md-component="announce" lang="en" translate="no" class="notranslate">|;
+	s|<header class="md-header md-header--shadow" data-md-component="header">|<header class="md-header md-header--shadow notranslate" data-md-component="header" lang="en" translate="no">|;
+	s|<div class="md-search" data-md-component="search" role="dialog" aria-label="Search">|<div class="md-search notranslate" data-md-component="search" role="dialog" aria-label="Search" lang="en" translate="no">|;
+	s|<div class="(md-sidebar(?![^"]*notranslate)[^"]*)"([^>]*)>|<div class="$1 notranslate"$2 lang="en" translate="no">|g;
+	s|<footer class="md-footer">|<footer class="md-footer notranslate" lang="en" translate="no">|;
+' "$news_html"
+
+perl -0pi -e 's|<article class="md-content__inner md-typeset"[^>]*>|<article class="md-content__inner md-typeset" lang="de" translate="yes">|' "$news_html"
+
+perl -0pi -e '
+	s|<a href="([^"]*NEWS\.md)" title="Edit this page" class="md-content__button md-icon" rel="edit">|<a href="$1" title="Edit this page" class="md-content__button md-icon notranslate" rel="edit" lang="en" translate="no">|;
+	s|<a class="headerlink" href="([^"]+)" title="Anchor link to this section">|<a class="headerlink notranslate" href="$1" title="Anchor link to this section" lang="en" translate="no">|g;
+' "$news_html"
 
 grep -q '<html lang="de" class="no-js">' "$news_html" || {
 	echo "Failed to mark NEWS page HTML language as German" >&2
@@ -27,7 +59,47 @@ grep -q 'http-equiv="content-language" content="de"' "$news_html" || {
 	exit 1
 }
 
-grep -q '<article class="md-content__inner md-typeset" lang="de">' "$news_html" || {
+grep -q 'name="DC.language" content="de"' "$news_html" || {
+	echo "Failed to add NEWS DC.language metadata" >&2
+	exit 1
+}
+
+grep -q 'property="og:locale" content="de_DE"' "$news_html" || {
+	echo "Failed to add NEWS Open Graph locale metadata" >&2
+	exit 1
+}
+
+grep -q 'rel="alternate" hreflang="de"' "$news_html" || {
+	echo "Failed to add NEWS hreflang alternate link" >&2
+	exit 1
+}
+
+grep -q '"@context":"https://schema.org"' "$news_html" || {
+	echo "Failed to add NEWS structured data context" >&2
+	exit 1
+}
+
+grep -q '"@type":"WebPage"' "$news_html" || {
+	echo "Failed to add NEWS structured data page type" >&2
+	exit 1
+}
+
+grep -q '"inLanguage":"de-DE"' "$news_html" || {
+	echo "Failed to add NEWS structured language metadata" >&2
+	exit 1
+}
+
+grep -q '<article class="md-content__inner md-typeset" lang="de" translate="yes">' "$news_html" || {
 	echo "Failed to mark NEWS article language as German" >&2
+	exit 1
+}
+
+grep -q '<header class="md-header md-header--shadow notranslate" data-md-component="header" lang="en" translate="no">' "$news_html" || {
+	echo "Failed to mark NEWS theme chrome as non-translatable" >&2
+	exit 1
+}
+
+grep -q '<a class="headerlink notranslate"' "$news_html" || {
+	echo "Failed to mark NEWS header anchors as non-translatable" >&2
 	exit 1
 }

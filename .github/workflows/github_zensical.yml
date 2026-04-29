@@ -49,7 +49,15 @@ jobs:
           test -f "$ENGLISH_HTML"
           grep -q '<html lang="de" class="no-js">' "$NEWS_HTML"
           grep -q 'http-equiv="content-language" content="de"' "$NEWS_HTML"
-          grep -q '<article class="md-content__inner md-typeset" lang="de">' "$NEWS_HTML"
+          grep -q 'name="DC.language" content="de"' "$NEWS_HTML"
+          grep -q 'property="og:locale" content="de_DE"' "$NEWS_HTML"
+          grep -q 'rel="alternate" hreflang="de"' "$NEWS_HTML"
+          grep -q '"@context":"https://schema.org"' "$NEWS_HTML"
+          grep -q '"@type":"WebPage"' "$NEWS_HTML"
+          grep -q '"inLanguage":"de-DE"' "$NEWS_HTML"
+          grep -q '<article class="md-content__inner md-typeset" lang="de" translate="yes">' "$NEWS_HTML"
+          grep -q '<header class="md-header md-header--shadow notranslate" data-md-component="header" lang="en" translate="no">' "$NEWS_HTML"
+          grep -q '<a class="headerlink notranslate"' "$NEWS_HTML"
           grep -q '<html lang="en" class="no-js">' "$ENGLISH_HTML"
       - name: Verify syntax highlighting markup
         run: |
