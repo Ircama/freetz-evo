@@ -58,6 +58,11 @@ jobs:
           grep -q '"inLanguage":"de-DE"' "$NEWS_HTML"
           grep -q '<article class="md-content__inner md-typeset" lang="de" translate="yes">' "$NEWS_HTML"
           grep -q '<h1 id="upstream-freetz-ng-news" lang="en" translate="no">Upstream Freetz-NG News' "$NEWS_HTML"
+          grep -q '<title>Upstream Freetz-NG News - Freetz-EVO Documentation</title>' "$NEWS_HTML"
+          if grep -Eq '^[[:space:]]*Neuigkeiten[[:space:]]*$' "$NEWS_HTML"; then
+            echo "Detected stale NEWS index label"
+            exit 1
+          fi
           grep -q 'not Freetz-EVO release notes' "$NEWS_HTML"
           grep -q 'ircama-github-io.translate.goog/freetz-evo/NEWS/' "$NEWS_HTML"
           grep -q '<header class="md-header md-header--shadow notranslate" data-md-component="header" lang="en" translate="no">' "$NEWS_HTML"

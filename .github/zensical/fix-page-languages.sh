@@ -50,10 +50,12 @@ perl -0pi -e 's|<article class="md-content__inner md-typeset"[^>]*>|<article cla
 perl -0pi -e '
 	s|<h1 id="neuigkeiten">Neuigkeiten|<h1 id="upstream-freetz-ng-news" lang="en" translate="no">Upstream Freetz-NG News|;
 	s|href="#neuigkeiten"|href="#upstream-freetz-ng-news"|g;
+	s|Neuigkeiten - Freetz-EVO Documentation|Upstream Freetz-NG News - Freetz-EVO Documentation|g;
+	s|(\n\s*)Neuigkeiten(\s*\n)|$1Upstream Freetz-NG News$2|g;
 ' "$news_html"
 
 if ! grep -q 'not Freetz-EVO release notes' "$news_html"; then
-	perl -0pi -e 's|(<h1 id="upstream-freetz-ng-news"[^>]*>.*?</h1>\n)|$1<p lang="en" translate="no"><strong>Note:</strong> These entries are copied from upstream <a href="https://github.com/Freetz-NG/freetz-ng">Freetz-NG</a>. They are not Freetz-EVO release notes and may refer to upstream-only tags, discussions, or changes.</p>\n<p lang="en" translate="no">For an English machine translation, open the <a href="https://ircama-github-io.translate.goog/freetz-evo/NEWS/?_x_tr_sl=de&amp;_x_tr_tl=en&amp;_x_tr_hl=it&amp;_x_tr_pto=wapp">Google Translate version</a>.</p>\n|s' "$news_html"
+	perl -0pi -e 's|(<h1 id="upstream-freetz-ng-news"[^>]*>.*?</h1>\n)|$1<p lang="en" translate="no"><strong>Note:</strong> These entries come from upstream <a href="https://github.com/Freetz-NG/freetz-ng">Freetz-NG</a>. They refer to upstream-only tags, discussions, or changes.</p>\n<p lang="en" translate="no">For an English translation, open the <a href="https://ircama-github-io.translate.goog/freetz-evo/NEWS/?_x_tr_sl=de&amp;_x_tr_tl=en&amp;_x_tr_hl=it&amp;_x_tr_pto=wapp">Google Translate version</a>.</p>\n|s' "$news_html"
 fi
 
 perl -0pi -e '
@@ -110,6 +112,16 @@ grep -q '<h1 id="upstream-freetz-ng-news" lang="en" translate="no">Upstream Free
 	echo "Failed to update NEWS page title" >&2
 	exit 1
 }
+
+grep -q '<title>Upstream Freetz-NG News - Freetz-EVO Documentation</title>' "$news_html" || {
+	echo "Failed to update NEWS browser title" >&2
+	exit 1
+}
+
+if grep -Eq '^[[:space:]]*Neuigkeiten[[:space:]]*$' "$news_html"; then
+	echo "Failed to update NEWS generated index labels" >&2
+	exit 1
+fi
 
 grep -q 'not Freetz-EVO release notes' "$news_html" || {
 	echo "Failed to add NEWS upstream notice" >&2
