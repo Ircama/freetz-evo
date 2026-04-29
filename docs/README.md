@@ -1,13 +1,17 @@
 # Welcome to Freetz-EVO
-**Freetz-EVO** is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) with over 50 new packages and libraries, including: a [Disk Management Web UI](make/disk-mgmt.md) comparable to GParted + Clonezilla (with a full Disk Tools ecosystem: parted, partclone, ddrescue, e2fsprogs, dosfstools, exfatprogs, ntfs-3g, gptfdisk, fatresize, smartmontools, hdparm, clonezilla, testdisk, fsarchiver, udpcast), rTorrent/ruTorrent, aria2/AriaNg, Nginx, PHP 8.4/8.5, Python 3.14, Node.js, QuickJS, MicroPython, llama.cpp, elFinder web file manager, ncdu, ttyd web terminal, GCC on-device compilation, 58 Python 3 modules, AI translation for foreign languages, a fully responsive mobile-ready EVO skin, form-based session login with hardened cookies, a freetz_proxy HTTPS reverse proxy, an advanced GitHub Action CI, and many more. See the [full README](REPO_README.md) for the complete list.<br>
+**Freetz-EVO** is an actively synchronized fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) for building enhanced firmware images for AVM FRITZ!Box devices. It keeps Freetz-NG as the technical base while adding EVO-only packages, package fixes, a responsive web interface, hardened session login, reverse-proxy tooling, and stronger build/test workflows.
+
+Compared with the current Freetz-NG mirror, this tree adds 103 package makefiles and 8 libraries, modifies 22 packages and 5 libraries, and carries substantial documentation and tooling work. The EVO additions focus on practical device use: disk management and recovery, download/torrent workflows, richer web frontends, modern runtime stacks, Python module packaging, browser-based administration tools, and selected AI/ML tooling. See the [full README](REPO_README.md) for the complete overview.
+
+The wiki and technical documentation have been reviewed and are now maintained in English, including the package documentation under [Packages](make/README.md). Start here for build prerequisites, installation, supported firmware/device information, package and library listings, generated source/download views, and project history.<br>
 Watch important changes and [NEWS](NEWS.md) about Freetz-EVO.<br>
 Talk about everything around Freetz-EVO at [DISCUSSIONS](https://github.com/Ircama/freetz-evo/discussions).<br>
-Check list of supported devices and [FIRMWARES](FIRMWARES.md).<br>
+Check the list of supported devices and [FIRMWARES](FIRMWARES.md).<br>
 Read [CHANGELOG](CHANGELOG.md) for all improvements and additions.<br>
 For download and quickstart instructions go to [README](REPO_README.md).<br>
 These [PREREQUISITES](prerequisites/README.md) are mandatory to build an image.<br>
 How to [INSTALL](INSTALL.md) a firmware image to the device.<br>
-Things you could do to [SUPPORT](SUPPORT.md) Freetz-EVO.<br>
+Things you can do to [SUPPORT](SUPPORT.md) Freetz-EVO.<br>
 Why the [ADDONS](ADDONS.md) of the "Digitale Elite" are not supported here.<br>
 Show current [STATS](stats/README.md) of Freetz-EVO.<br>
 
@@ -32,7 +36,7 @@ Show current [STATS](stats/README.md) of Freetz-EVO.<br>
 [GitLab](https://gitlab.com/Freetz-NG/freetz-ng/commits/master) (Mirror)<br>
 [Bitbucket](https://bitbucket.org/Freetz-NG/freetz-ng/commits/branch/master) (Mirror)<br>
 
-### [Wiki](wiki/README.md) (abandon)
+### [Wiki](wiki/README.md)
 
 [//]: # ( WikiDYN )
 
