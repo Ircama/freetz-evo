@@ -64,7 +64,7 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13.4
+    * ccache 4.13.5
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
@@ -96,7 +96,7 @@ Latest changes
     * Curl 8.12.1/8.19.0
     * Git 2.26.2/2.53.0
     * htop 1.0.3/3.5.0
-    * ImageMagick 7.1.0-62/7.1.2-19
+    * ImageMagick 7.1.0-62/7.1.2-21
     * iPerf3 3.3/3.21
     * LCD4linux 63fffafb
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13
@@ -106,7 +106,7 @@ Latest changes
     * Nmap 4.76/5.51/7.99
     * OpenSSH 9.3p2/10.3p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.20/3.5.6
-    * OpenVPN 2.4.12/2.5.11/2.6.20/2.7.2
+    * OpenVPN 2.4.12/2.5.11/2.6.20/2.7.3
     * procps-ng 4.0.6
     * Python 3.14.3
     * sslh 2.2.4/2.3.1
@@ -124,12 +124,12 @@ Latest changes
     * XZ 5.8.3
 
   - Libraries:
-    * expat 2.7.5
+    * expat 2.7.5/2.8.0
     * file 5.47
     * FreeType 2.14.3
     * gettext 1.0
     * GLib2 2.32.4/2.88.0
-    * harfbuzz 14.1.0
+    * harfbuzz 14.2.0
     * libcap 2.49/2.78
     * libcap-ng 0.9.3
     * libexif 0.6.26
