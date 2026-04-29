@@ -19,36 +19,35 @@ to it later. It was introduced in Freetz trunk
 Changeset r2636
 by whoopie. It is smaller than the aforementioned *screen*.
 
-### Bedienung
+### Usage
 
-Erstellen einer neuen dtach-Session am Beispiel von
-[mcabber](mcabber.md):
+Create a new dtach session, using [mcabber](mcabber.md) as an example:
 
 ```
 dtach -c /tmp/mcabber.dtach mcabber
 ```
 
-Erstellen einer neuen dtach-Session, aber direkt wieder die Session
-verlassen bzw. im Hintergrund starten:
+Create a new dtach session but immediately leave the session again, or
+start it in the background:
 
 ```
 dtach -n /tmp/mcabber.dtach mcabber
 ```
 
-Mit "*Strg + *" kann man die Session verlassen.
+Use "*Ctrl + *" to leave the session.
 
-Wieder in die Session "einklinken":
+Attach to the session again:
 
 ```
 dtach -a /tmp/mcabber.dtach
 ```
 
-### Weiterführende Links
+### Further Links
 
--   [Sourceforge-Projektseite
-    (Englisch)](http://dtach.sourceforge.net)
+-   [Sourceforge project page
+    (English)](http://dtach.sourceforge.net)
 -   [Wikipedia
-    (Englisch)](http://en.wikipedia.org/wiki/Dtach)
+    (English)](http://en.wikipedia.org/wiki/Dtach)
 -   [Thread for discussion in
     IP-Phone-Forum.de](http://www.ip-phone-forum.de/showthread.php?t=176923)
 

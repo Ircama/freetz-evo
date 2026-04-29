@@ -11,32 +11,30 @@
 > Unix) systems, such as wireless routers."
 > [http://matt.ucc.asn.au/dropbear/dropbear.html](http://matt.ucc.asn.au/dropbear/dropbear.html)
 
-Dropbear ist ein SSH Server und Client + SCP. Es gibt zwei Pakete:
-dropbear Server, Client und scp - sowie ein auf den dropbear Server
-beschränktes Paket. Dropbear wurde so modifiziert, dass nur root Logins
-erlaubt sind.
+Dropbear is an SSH server and client plus SCP. There are two packages:
+the Dropbear server, client, and scp package, and a package limited to
+the Dropbear server. Dropbear has been modified so that only root logins
+are allowed.
 
-### Grundbegriffe
+### Basic Terms
 
--   **SSH** (Secure Shell): ermöglicht eine Verbindung zwischen zwei
-    Rechnern (als sichere Alternative zu z.B. telnet). Dabei baut ein
-    *SSH-Client (z.B. PuTTY, OpenSSH, Dropbear)* eine verschlüsselte
-    Verbindung zu einem *SSH-Server (z.B. OpenSSH, Dropbear)* nach einer
-    erfolgreichen Authentifizierung auf.
-    Die Howtos beziehen sich größtenteils auf 2 SSH-Clients:
-    1.  OpenSSH für [Windows (über eine
-        Cygwin-Installation](http://www.cygwin.com/)) oder
-        [Linux und andere
-        Betriebssysteme](http://www.openssh.com/de/)
-    2.  [Putty mit Puttygen für Windows und
+-   **SSH** (Secure Shell): enables a connection between two computers,
+    as a secure alternative to telnet, for example. An *SSH client (for
+    example PuTTY, OpenSSH, Dropbear)* establishes an encrypted
+    connection to an *SSH server (for example OpenSSH, Dropbear)* after
+    successful authentication.
+    The how-tos mainly refer to two SSH clients:
+    1.  OpenSSH for [Windows via a Cygwin
+        installation](http://www.cygwin.com/) or [Linux and other
+        operating systems](http://www.openssh.com/de/)
+    2.  [PuTTY with PuTTYgen for Windows and
         Linux](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)
--   **SCP** (Secure Copy): ermöglicht verschlüsselte Übertragung von
-    Dateien zwischen zwei Rechnern. Dabei baut ein *SCP-Client (z.B.
-    PSCP, OpenSSH, Dropbear)* eine verschlüsselte Verbindung zu einem
-    *SCP-Server (z.B. OpenSSH, Dropbear)* über SSH auf.
--   **Password-based Authentication**: SSH-Verbindung kommt zustande,
-    nachdem sich der (SSH-)Client mit einem Passwort authentifiziert
-    hat.
+-   **SCP** (Secure Copy): enables encrypted transfer of files between
+    two computers. An *SCP client (for example PSCP, OpenSSH, Dropbear)*
+    establishes an encrypted connection to an *SCP server (for example
+    OpenSSH, Dropbear)* via SSH.
+-   **Password-based Authentication**: the SSH connection is established
+    after the SSH client authenticates itself with a password.
 
     ``` 
     # ssh user@host
@@ -47,11 +45,10 @@ erlaubt sind.
     file_to_copy     100%     20KB/s     00:10
     ```
 
--   **Public Key Authentication**: SSH-Verbindung kommt zustande,
-    nachdem sich der (SSH-)Client mit einem *Private Key (geheimen
-    Schlüssel)* gegenüber einem auf dem (SSH-)Server abgelegten *Public
-    Key (öffentlichen Schlüssel)* authentifiziert hat. Ein Vorteil ist,
-    dass man zur Anmeldung kein Passwort mehr eingeben muss.
+-   **Public Key Authentication**: the SSH connection is established
+    after the SSH client authenticates itself with a *private key (secret
+    key)* against a *public key* stored on the SSH server. One advantage
+    is that no password has to be entered at login.
 
     ``` 
     # ssh user@host
@@ -62,23 +59,22 @@ erlaubt sind.
     file_to_copy     100%     20KB/s     00:10
     ```
 
--   **Host-based Authentication**: SSH definiert auch eine optionale
-    Host-basierte Authentifizierung. Diese wird jedoch selten verwendet
-    und von dropbear nicht unterstützt.
+-   **Host-based Authentication**: SSH also defines optional host-based
+    authentication. However, it is rarely used and is not supported by
+    Dropbear.
 
-### Web-Config
+### Web Config
 
-[![Dropbear Konfiguration](../screenshots/201_md.png)](../screenshots/201.png)
+[![Dropbear configuration](../screenshots/201_md.png)](../screenshots/201.png)
 
--   *Starttyp*: wahlweise bei Systemstart (**automatisch**) oder
-    **manuell**
--   *Authorized keys*: Liste bekannter Public Keys für die Public Key
-    Authentication. Entspricht in der Syntax und Funktion genau der
-    Datei `~/.ssh/authorized_keys` bei einer normalen Unix-Installation.
-    Weitere Details sind
-    [hier](http://www.lrz.de/services/security/ssh/)
-    beschrieben. Das Format der *Authorized keys* im Web-GUI sollte (für
-    root) so aussehen (hier durch ... abgekürzt):
+-   *Start type*: either at system startup (**automatic**) or **manual**.
+-   *Authorized keys*: list of known public keys for public key
+    authentication. In syntax and function, this corresponds exactly to
+    the `~/.ssh/authorized_keys` file in a normal Unix installation.
+    Further details are described
+    [here](http://www.lrz.de/services/security/ssh/). The format of the
+    *Authorized keys* in the web GUI should look like this for root,
+    abbreviated here with ...:
 
     ``` 
     ---root
@@ -87,280 +83,269 @@ erlaubt sind.
 
 <!-- -->
 
--   *Port des SSH-Servers* (default: 22): Änderung des Standardports hat
-    zur Folge, dass bei SSH-Clients explizit der Port angegeben werden
-    muss.
--   *Passwort Login*: **aktiviert** oder **deaktiviert** Password-based
-    Authentication. Sollte deaktiviert werden, wenn Public Key
-    Authentication verwendet wird.
--   *Zusätzliche Kommandozeilen-Optionen*: Dropbear wird mit bestimmten
-    Optionen gestartet. Übersicht über Optionen mit
-    `dropbear -?`
+-   *SSH server port* (default: 22): changing the default port means SSH
+    clients must explicitly specify the port.
+-   *Password login*: **enables** or **disables** password-based
+    authentication. It should be disabled when public key authentication
+    is used.
+-   *Additional command-line options*: Dropbear is started with specific
+    options. An overview of options is available with `dropbear -?`.
 
-### SSH-Zugang mit Passwort (Password-based Authentication)
+### SSH Access with Password (Password-based Authentication)
 
-Das ist die Standardeinstellung im Dropbear. Ohne weitere Einstellungen
-kann die Fritzbox folgendermaßen über SSH erreicht werden:
+This is the default setting in Dropbear. Without additional settings, the
+FritzBox can be reached via SSH as follows:
 
-### Zugang mit OpenSSH
+### Access with OpenSSH
 
 ```
 # ssh root@fritz.box
 root@fritz.box's password: freetz
 ```
 
-### Zugang mit Putty
+### Access with PuTTY
 
-1.  Einstellungen setzen
+1.  Set the options:
     `Session/Host` Name: `fritz.box`
-    `Session/Port: 22` (bzw. die Einstellung unter *Pakete* →
-    *Dropbear*)
+    `Session/Port: 22`, or the setting under *Packages* -> *Dropbear*
     `Session/Protocol: SSH`
     `Connection/Data/Auto-login username: root`
-2.  Einstellungen speichern (optional)
-    bei *Session* → *Saved Sessions* beliebigen Namen (z.B. *fritzbox
-    ssh*) eingeben und *Save* drücken. Ab sofort kann dann per
-    Doppelklick auf den Namen die Verbindung aufgebaut werden (oder die
-    Einstellungen mit *Load* geladen werden)
+2.  Save settings (optional):
+    under *Session* -> *Saved Sessions*, enter any name, for example
+    *fritzbox ssh*, and press *Save*. From now on, the connection can be
+    established by double-clicking the name, or the settings can be
+    loaded with *Load*.
 3.  *Open*
 4.  `root@fritz.box's password: fritzbox`
 
-**Wichtig:** Bei den neuen freetz Paketen ist das Standard root Passwort
-nicht mehr fritzbox, sondern freetz und muss nach dem ersten Einloggen
-geändert werden.
+**Important:** In the newer freetz packages, the default root password is
+no longer fritzbox, but freetz, and must be changed after the first login.
 
-### SSH-Zugang ohne Passwort (Public Key Authentication)
+### SSH Access Without Password (Public Key Authentication)
 
-### Zugang mit OpenSSH
+### Access with OpenSSH
 
-1.  `ssh-keygen`, alle Abfragen mit Enter bestätigen
-2.  `cat ~/.ssh/id_rsa.pub`
-3.  Ausgabe von `cat` kopieren
-    *Vorsicht: Je nach verwendeter Kommandozeile können Zeilenumbrüche
-    mitkopiert werden, welche mit Hilfe eines Editors (Key in Editor
-    kopieren, Zeilenumbrüche entfernen, Key wieder kopieren) entfernt
-    werden sollten.*
-4.  Webinterface von Freetz öffnen, nach *Einstellungen* → *Authorized
-    keys* wechseln
-5.  vorher kopierten Key einfügen, *Übernehmen*
-6.  nun sind die serverseitigen Einstellungen abgeschlossen. Es gibt nun
-    2 Möglichkeiten zum Einloggen:
-    -   [Zugang vom selben PC und User, unter dem `ssh-keygen`
-        ausgeführt worden ist]
+1.  Run `ssh-keygen`, confirming all prompts with Enter.
+2.  Run `cat ~/.ssh/id_rsa.pub`.
+3.  Copy the output of `cat`.
+    *Caution: depending on the command line used, line breaks can be
+    copied as well. They should be removed with the help of an editor
+    (copy key into editor, remove line breaks, copy key again).*
+4.  Open the Freetz web interface and switch to *Settings* -> *Authorized
+    keys*.
+5.  Insert the previously copied key and click *Apply*.
+6.  The server-side settings are now complete. There are now two ways to
+    log in:
+    -   [Access from the same PC and user under which `ssh-keygen` was
+        run]
         `ssh root@fritz.box`
-    -   [Zugang von anderen PC oder User als `ssh-keygen` ausgeführt
-        worden ist]
-        Wurde `ssh-keygen` als *user1@pc1* ausgeführt, man möchte jetzt
-        jedoch als *user2@pc2* Zugang über SSH auf die Fritzbox
-        erhalten, liegt das Problem darin, dass Dropbear *user2@pc2*
-        nicht kennen kann. Deshalb braucht user2 einen Ausweis, den
-        `ssh-keygen` standardmäßig im Heimatverzeichnis von user1
-        `~/.ssh/id_rsa` ablegt und user2 zugänglich gemacht werden muss.
-        `id_rsa` kann dann beliebig umbenannt werden. Zum Einloggen über
-        SSH auf die Fritzbox kann nun über
-        `ssh -i PfadZumIdentityFile root@fritz.box` erfolgen (z.B.
-        `ssh -i id_rsa root@fritz.box`).
-        Soll es jedoch genauso einfach gehen wie für *user1@pc1*, muss
-        einfach nur für jede Konstellation (*user1@pc2*, *user2@pc1*,
-        ...) ssh-keygen genutzt werden um neue Schlüsselpaare zu
-        erzeugen. Die öffentlichen Schlüssel davon (i.d.R. `id_rsa.pub`)
-        sind dann wieder in Freetz einzutragen. Jeder Schlüssel in eine
-        eigene Zeile. Es können quasi unendlich viele Schlüssel
-        aufgelistet werden.
+    -   [Access from another PC or user than the one under which
+        `ssh-keygen` was run]
+        If `ssh-keygen` was run as *user1@pc1*, but access to the
+        FritzBox via SSH is now desired as *user2@pc2*, the problem is
+        that Dropbear cannot know *user2@pc2*. Therefore user2 needs an
+        identity file, which `ssh-keygen` stores by default in user1's
+        home directory as `~/.ssh/id_rsa`, and this must be made
+        accessible to user2. `id_rsa` can then be renamed as desired.
+        Login to the FritzBox via SSH can then be done with
+        `ssh -i PathToIdentityFile root@fritz.box`, for example
+        `ssh -i id_rsa root@fritz.box`.
+        If it should be just as simple as for *user1@pc1*, simply use
+        ssh-keygen for each constellation (*user1@pc2*, *user2@pc1*, ...)
+        to create new key pairs. The public keys from them, usually
+        `id_rsa.pub`, must then be entered in Freetz again. Each key goes
+        on its own line. In practice, an almost unlimited number of keys
+        can be listed.
 
-### Zugang mit Putty
+### Access with PuTTY
 
-1.  `puttygen` starten
+1.  Start `puttygen`.
 2.  *Key/Generate Key Pair*
-3.  Maus über die leere Fläche bewegen
-4.  aus der Box *Public Key for pasting into ...* Key komplett kopieren
-5.  *Save Private Key*, Warnung übergehen und in einem beliebigem
-    Verzeichnis mit beliebigem Namen speichern
-6.  Freetz Webinterface öffnen, nach *Einstellungen* → *Authorized keys*
-    wechseln
-7.  vorher kopierten Key einfügen, *Übernehmen*
-8.  `putty` starten
-9.  Einstellungen setzen
+3.  Move the mouse over the empty area.
+4.  Copy the complete key from the *Public Key for pasting into ...* box.
+5.  *Save Private Key*, skip the warning, and save it in any directory
+    with any name.
+6.  Open the Freetz web interface and switch to *Settings* -> *Authorized
+    keys*.
+7.  Insert the previously copied key and click *Apply*.
+8.  Start `putty`.
+9.  Set the options:
     *Session/Host Name: fritz.box
-    Session/Port: 22* (bzw. die Einstellung unter *Pakete*, *Dropbear*)
+    Session/Port: 22*, or the setting under *Packages*, *Dropbear*
     *Session/Protocol: SSH*
     *Connection/Data/Auto-login username: root*
-    *Connection/SSH/Auth/Private key file for authentication: Pfad zum
-    vorher gespeichertem Private Key*
-10. Einstellungen speichern (optional)
-    bei *Session* → *Saved Sessions* beliebigen Namen (z.B. *fritzbox
-    ssh*) eingeben und *Save* drücken. Ab sofort kann dann per
-    Doppelklick auf den Namen die Verbindung aufgebaut werden (oder die
-    Einstellungen mit *Load* geladen werden)
+    *Connection/SSH/Auth/Private key file for authentication: path to the
+    previously saved private key*
+10. Save settings (optional):
+    under *Session* -> *Saved Sessions*, enter any name, for example
+    *fritzbox ssh*, and press *Save*. From now on, the connection can be
+    established by double-clicking the name, or the settings can be
+    loaded with *Load*.
 11. *Open*
 
-### Zugang zur Fritzbox von außerhalb
+### Access to the FritzBox from Outside
 
-Um den SSH-Port von außen zu erreichen muß "lediglich" eine
-Portweiterleitung eingerichtet werden. Leider verbietet mittlerweile das
-AVM-Webinterface eine Weiterleitung auf die Box selbst. Es gibt aber ein
-CGI-Paket namens AVM-Firewall, welches diese Restriktionen nicht hat:
+To reach the SSH port from outside, "only" a port forward has to be set
+up. Unfortunately, the AVM web interface now forbids forwarding to the
+box itself. However, there is a CGI package named AVM-Firewall that does
+not have these restrictions:
 
-1.  Paket CGI/AVM-Firewall mitinstallieren
-2.  im Menüpunkt AVM-Firewall im Freetz-Webinterface unter Ansicht
-    "Port Forwarding" auswählen
-3.  netterweise ist das was wir wollen schon voreingestellt: tcp
-    0.0.0.0:22 0.0.0.0:22, also ein Forwarding von Port 22 auf Port 22
-4.  die Buttons Hinzufügen und dann Übernehmen anklicken
-5.  den dsld, unter AVM-Dienste zu finden, neustarten
+1.  Install the CGI/AVM-Firewall package as well.
+2.  In the AVM-Firewall menu item in the Freetz web interface, select
+    the "Port Forwarding" view.
+3.  Conveniently, what we want is already preset: tcp 0.0.0.0:22
+    0.0.0.0:22, meaning a forwarding from port 22 to port 22.
+4.  Click the Add button and then Apply.
+5.  Restart dsld, found under AVM services.
 
-Es kann Sinn machen Dropbear auf anderen Ports lauschen zu lassen, z.B.
-um aus restriktiven Netzen herauszukommen. Dafür bieten sich Port
-80(HTTP) und 443(HTTPS) an, da diese am notwendigsten sind. Wenn die
-auch zu sind, ist Port 53(DNS) noch einen Versuch wert. Es können
-alternativ oder zusätzlich zur obrigen Regel noch weitere für andere
-Ports hinzugefügt werden. Hierzu den gewünschten Port in die obere,
-etwas unglücklich, mit "(Start-)Port" Beschriftete Box eintragen.
+It can make sense to let Dropbear listen on other ports, for example to
+get out of restrictive networks. Ports 80 (HTTP) and 443 (HTTPS) are
+suitable because they are usually the most necessary. If those are also
+closed, port 53 (DNS) is still worth a try. Additional rules for other
+ports can be added alternatively or in addition to the rule above. Enter
+the desired port in the upper field, somewhat unfortunately labeled
+"(Start-)Port".
 
-### Zugang zum Webinterface der Fritzbox oder anderen Diensten im Heimnetz von außerhalb (z.B. hinter einem Proxy)
+### Access to the FritzBox Web Interface or Other Services in the Home Network from Outside, for Example Behind a Proxy
 
-***Achtung, das Tunneln durch Proxies in Firmennetzen kann u.a. zur
-Abmahnung oder sogar zur Kündigung führen. Entsprechende
-Betriebsvereinbarungen bzw. Vertragsbestandteile sind unbedingt zu
-berücksichtigen. Das Befolgen dieser Tipps erfolgt auf eigene Gefahr!***
+***Attention: tunneling through proxies in company networks can, among
+other things, lead to a warning or even termination. Corresponding works
+agreements or contractual components must absolutely be observed.
+Following these tips is at your own risk!***
 
-Wer von unterwegs Zugriff auf die Freetz-Oberfläche (Freetz-GUI) bzw.
-die AVM-Oberfläche (AVM-GUI) benötigt, kann dafür ebenfalls PuTTY
-verwenden (analog auch andere SSH-Tools).
+Anyone who needs access to the Freetz interface (Freetz GUI) or the AVM
+interface (AVM GUI) while on the road can also use PuTTY for this; other
+SSH tools work analogously.
 
-In Putty trägt man unter Proxy den Proxy ein. Unter Tunnels folgendes
-(für das Freetz-GUI):
+In PuTTY, enter the proxy under Proxy. Under Tunnels, enter the following
+for the Freetz GUI:
 
 ```
-Source Port: 1081 {ein beliebiger, freier, lokaler Port}
-Destination: 192.168.178.1:81 {die IP der Box im LAN)
+Source Port: 1081 {any free local port}
+Destination: 192.168.178.1:81 {the IP of the box in the LAN)
 ```
 
-Nach dem Hinzufügen erscheint im PuTTY-Fenster unter "Forwarded
+After adding it, this appears in the PuTTY window under "Forwarded
 Ports":
 
 ```
 L1081 192.168.178.1:81
 ```
 
-Entsprechend kann man sich das für das AVM-GUI (Port 80) einrichten:
+The same can be configured for the AVM GUI (port 80):
 
 ```
-Source Port: 1080 {ein beliebiger, freier, lokaler Port}
-Destination: 192.168.178.1:80 {die IP der Box im LAN)
+Source Port: 1080 {any free local port}
+Destination: 192.168.178.1:80 {the IP of the box in the LAN)
 ```
 
-Nach dem Starten der SSH-Session und dem Login ruft man dann das
-Freetz-GUI so auf:
+After starting the SSH session and logging in, call the Freetz GUI like
+this:
 
 ```
 http://localhost:1081/
 ```
 
-... und das AVM-GUI so:
+... and the AVM GUI like this:
 
 ```
 http://localhost:1080/
 ```
 
-Anmerkung:
+Note:
 
-Damit der Zugriff auf das AVM-GUI (Port 80) funktioniert, muss man den
-Referer unterbinden. Unter Firefox ist dazu der Wert für
+For access to the AVM GUI (port 80) to work, the Referer must be
+suppressed. In Firefox, set the value for
 [network.http.sendRefererHeader](http://kb.mozillazine.org/Network.http.sendRefererHeader)
-unter about:config auf 0 (Null) zu setzen. Inwieweit dies auch für das
-Freetz-GUI (Port 81) nötig ist, müsste noch ausgiebiger getestet werden.
-Wer den Referer nicht benötigt, schaltet ihn wie oben beschrieben besser
-ab.
+to 0 (zero) under about:config. To what extent this is also necessary for
+the Freetz GUI (port 81) would need to be tested more thoroughly. Anyone
+who does not need the Referer should disable it as described above.
 
-Es lassen sich auch Weiterleitungen auf beliebige Maschinen und Dienste
-im Lan schalten. Z.B. Remotedesktopverbindung für eine Maschine im LAN:
+Forwarding to arbitrary machines and services in the LAN can also be
+configured. For example, a remote desktop connection for a machine in the
+LAN:
 
 ```
-Source Port: 3399 {ein beliebiger, freier, lokaler Port}
-Destination: 192.168.178.21:3389 (die IP der gewünschten Maschine im LAN; statische DHCP-Leases sind hier vorteilhaft)
+Source Port: 3399 {any free local port}
+Destination: 192.168.178.21:3389 (the IP of the desired machine in the LAN; static DHCP leases are advantageous here)
 ```
 
-im Remotedesktopclient dann:
+Then in the remote desktop client:
 
 ```
 localhost:3399
 ```
 
-Noch mehr Spass bereitet die Tunneloption "Dynamic": Hier muss nur
-noch der lokale, frei wählbare Quellport (z.B. 8888) angegeben werden.
-Solange die SSH-Session offen ist, steht dann ein SOCKS-Proxy auf dem
-angegebenen Port. Wenn man den Browser oder andere Programme mit diesem
-Proxy konfiguriert (localhost:8888 in diesem Beispiel), lässt sich so
-der gesamte Netzverkehr durch den Tunnel schieben. Das wird durch den
-geringen Upstream üblicher DSL-Anschlüsse zwar etwas langsam, führt den
-Netzverkehr aber sicher aus einem unsicheren Netz wie z.B. einem freien
-WLAN heraus.
+The "Dynamic" tunnel option is even more fun: only the local, freely
+selectable source port, for example 8888, must be specified. As long as
+the SSH session is open, a SOCKS proxy is available on the specified
+port. If the browser or other programs are configured with this proxy
+(localhost:8888 in this example), all network traffic can be pushed
+through the tunnel. Due to the low upstream of typical DSL connections,
+this becomes somewhat slow, but it routes network traffic securely out of
+an insecure network such as a public WLAN.
 
-### Zugang zu anderen Rechnern mit der Fritzbox
+### Access to Other Computers with the FritzBox
 
-**Anmerkung**: In der folgenden Beschreibung wird der Host-Key, der für
-den Server benötigt wird, gleichzeitig als Benutzer-Key (für den
-Benutzer root) genutzt. Üblicher wäre es, dafür einen eignen
-Benutzer-Key anzulegen.
+**Note**: In the following description, the host key required for the
+server is also used as the user key for the root user. It would be more
+usual to create a separate user key for this.
 
-Freetz legt automatisch beim ersten Systemstart einen RSA und DSS
-private key für die Fritzbox an. Diese liegen in `/var/mod/etc/ssh/` in
-`dss_host_key` und `rsa_host_key` (als symlinks zu `/tmp/flash`). Um nun
-auf einen anderen Rechner per public Key authentication zugreifen zu
-können, ist erst einmal der public Key nötig, den man mit
-`# dropbearkey -f /tmp/flash/rsa_host_key -y` zB für den RSA key, auf
-dem Terminal ausgegeben bekommt. Diesen dann in die `authorized_keys`
-Datei des anderen Rechners kopieren, wie es bei SSH üblich ist.
+On first system startup, Freetz automatically creates an RSA and DSS
+private key for the FritzBox. They are located in `/var/mod/etc/ssh/` as
+`dss_host_key` and `rsa_host_key` (as symlinks to `/tmp/flash`). To be
+able to access another computer via public key authentication, the public
+key is first required. It can be output to the terminal with, for example,
+`# dropbearkey -f /tmp/flash/rsa_host_key -y` for the RSA key. Then copy
+it into the `authorized_keys` file of the other computer, as usual with
+SSH.
 
-Der nachfolgende Befehl kopiert den RSA key auf das Remote-System mit
-der IP 192.168.178.2 für den User:user01 in die Datei
-~/.ssh/authorized_keys
+The following command copies the RSA key to the remote system with IP
+192.168.178.2 for user user01 into the file ~/.ssh/authorized_keys:
 
 ```
 # dropbearkey -f /tmp/flash/rsa_host_key -y | ssh user01@192.168.178.2 'umask 077; cat >> .ssh/authorized_keys'
 ```
 
-Für einen Login ohne Passwort Angabe, muss das Keyfile wie im Beispiel
-als Parameter angegeben werden.
+For login without entering a password, the key file must be specified as
+a parameter as in the example.
 
 ```
 # ssh -i /tmp/flash/rsa_host_key user@machine
 ```
 
-Dies liefert dann einen passwortlosen Login auf 'machine' wenn dort
-vorher der public key hin kopiert wurde.
+This then provides a passwordless login to 'machine' if the public key
+was copied there beforehand.
 
-### mögliche Anwendung von ssh
+### Possible Use of ssh
 
--   Ausführen eines auf der Fritzbox abgelegten Skriptes
-    `ssh root@fritz.box [command]` bzw.
-    `ssh -i identityfile root@fritz.box [command]` (z.B.
-    `ssh root@fritz.box '/var/tmp/flash/testscript.sh'` zum Ausführen
-    von `/var/tmp/flash/testscript.sh`)
+-   Execute a script stored on the FritzBox:
+    `ssh root@fritz.box [command]` or
+    `ssh -i identityfile root@fritz.box [command]`, for example
+    `ssh root@fritz.box '/var/tmp/flash/testscript.sh'` to execute
+    `/var/tmp/flash/testscript.sh`.
 
-### mögliche Probleme
+### Possible Problems
 
--   Sollte die Verbindung nach korrekter Passwortangabe auf Modellen mit
-    4MB Flash Speicher abbrechen und auch Telnet Login scheitern ist es
-    wahrschinlich das das Kernel ohne pty devices gebaut ist. Hier hilft
-    die Aktivierung des Menüpunktes *Replace Kernel*. Getestet mit FBF
-    5140 FW 43.04.67-freetz-1.1.3.
--   *folgende Fehlermeldung nach Anmeldung mit `ssh root@fritz.box`:
+-   If the connection breaks after entering the correct password on
+    models with 4 MB flash memory and telnet login also fails, it is
+    likely that the kernel was built without pty devices. Enabling the
+    *Replace Kernel* menu item helps here. Tested with FBF 5140 FW
+    43.04.67-freetz-1.1.3.
+-   *The following error message after logging in with `ssh root@fritz.box`:
     `Permission denied (publickey).`
-    Falls man sich mit einem Passwort einloggen möchte, muss
-    Password-Based Authentication aktiviert sein, was unter dem
-    Menüpunkt* Pakete *→* Dropbear *unter* Passwort Login*,* Aktiviert
-    *einstellen kann.*
--   *folgende Warnung nach Anmeldung mit `ssh root@fritz.box`: [br]
-    `The authenticity of host 'fritz.box (<deine Fritzbox IP>)'
+    If you want to log in with a password, password-based authentication
+    must be enabled. This can be configured under the menu item* Packages
+    *->* Dropbear *under* Password Login*,* Enabled*.*
+-   *The following warning after logging in with `ssh root@fritz.box`: [br]
+    `The authenticity of host 'fritz.box (<your FritzBox IP>)'
     can't be established.` [[BR?]
     `RSA key fingerprint is XX:XX:...:XX:XX.`
     `Are you sure you want to continue connecting (yes/no)?`
-    Einfach mit* yes *bestätigen. Wird genau dann gefragt, wenn man sich
-    zum ersten Mal mit dem User auf die Fritzbox verbindet (bzw. der
-    Host in* ~/.ssh/known_hosts *nicht bekannt ist).*
--   *folgende Warnung nach Anmeldung mit* ssh root@...*:*
+    Simply confirm with* yes*. This is asked exactly when connecting to
+    the FritzBox for the first time with the user, or when the host is not
+    known in* ~/.ssh/known_hosts*.*
+-   *The following warning after logging in with* ssh root@...*:*
 
     ``` 
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -375,32 +360,29 @@ vorher der public key hin kopiert wurde.
     ...
     ```
 
-    Einfach die *~/.ssh/known_hosts* löschen (wird automatisch neu
-    angelegt), oder die *~/.ssh/known_hosts* öffnen und entsprechende
-    Zeile, wo *fritz.box* erwähnt wird, löschen. Beim nächsten
-    Verbindungsversuch erscheint die oben erwähnte Warnung über eine
-    Unsicherheit über die Authentizität des Hosts, einfach mit *yes*
-    bestätigen.
+    Simply delete *~/.ssh/known_hosts*; it will be created automatically
+    again. Alternatively, open *~/.ssh/known_hosts* and delete the
+    corresponding line where *fritz.box* is mentioned. On the next
+    connection attempt, the warning mentioned above about uncertainty over
+    the authenticity of the host appears; simply confirm with *yes*.
 
-### Verbindungsaufbau beschleunigen
+### Speeding Up Connection Establishment
 
-Wem der Aufbau einer Verbindung zu Dropbear nicht schnell genug geht,
-hier ein paar Tipps: (Bei meiner Fritzbox 7050 hat es in letzter Zeit 5
-bis 6 Sekunden gedauert; Hauptursache sind laut einigen Einträgen auf
-der Dropbear-Mailingliste wohl die aufwendigen Berechnungen bei
-Schlüsselaustausch.)
+If establishing a connection to Dropbear is not fast enough, here are a
+few tips. On my FritzBox 7050, it has recently taken 5 to 6 seconds; the
+main cause, according to some entries on the Dropbear mailing list, seems
+to be the expensive calculations during key exchange.
 
--   Nutzt man OpenSSH als Client, gibt es die Möglichkeit, eine
-    bestehende Verbindung für weitere Zugriffe (ssh, scp) zu nutzen:
-    Siehe die Optionen ControlMaster, ControlPath, ControlPersist;
+-   If OpenSSH is used as the client, there is the option of using an
+    existing connection for further access (ssh, scp): see the options
+    ControlMaster, ControlPath, ControlPersist;
     [http://www.debian-administration.org/articles/290](http://www.debian-administration.org/articles/290)
 
 <!-- -->
 
--   In `/etc/profile` wird die Datei `/etc/init.d/rc.conf` gelesen, was
-    recht lange dauert. Als Alternative kann man deren Cache-Version
-    `/var/env.cache` lesen, die in `rc.mod` erstellt wird.
+-   `/etc/profile` reads the file `/etc/init.d/rc.conf`, which takes quite
+    a long time. As an alternative, its cache version `/var/env.cache`,
+    created in `rc.mod`, can be read.
 
-Mit diesen beiden Maßnahmen verbinde ich mich nun (beim zweiten bis
-n-ten Mal) in Sekundenbruchteilen mit meiner Fritzbox.
-
+With these two measures, I now connect to my FritzBox in fractions of a
+second, from the second through the nth time.

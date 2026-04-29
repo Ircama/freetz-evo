@@ -6,63 +6,55 @@
   - Package: [master/make/pkgs/privoxy/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/privoxy/)
   - Steward: [@fda77](https://github.com/fda77)
 
-[Privoxy](http://www.privoxy.org) ist ein HTTP
-Proxy mit umfangreichen Filtermöglichkeiten zum **Schutz der
-Privatsphäre** und zum Filtern von Webseiten-Inhalten: Privoxy
-**entfernt Werbung und Popups**, bietet eine vollständig konfigurierbare
-**Zugriffskontrolle** auf das Internet ("Kindersicherung") sowie die
-Verwaltung und Kontrolle von Cookies.
+[Privoxy](http://www.privoxy.org) is an HTTP proxy with extensive filter
+options for **protecting privacy** and filtering website content: Privoxy
+**removes ads and popups**, offers fully configurable **access control**
+for the internet ("parental controls"), and manages and controls cookies.
 
-Das Privoxy Paket enthält neben einem vorkompilierten Privoxy mitsamt
-Standardkonfiguration vordefinierte Standard-Filter sowie ein
-Webfrontend zur Konfiguration. Das nachstehende Bild zeigt die Version
-ab Revision 2938 (neu hinzugekommen sind die Optionen
-enable-remote-toggle und enforce-blocks)
+In addition to a precompiled Privoxy with default configuration, the
+Privoxy package contains predefined standard filters and a web frontend
+for configuration. The image below shows the version starting with
+revision 2938; the options enable-remote-toggle and enforce-blocks were
+newly added.
 
 [![Privoxy Configuration since Rev. 2938](../screenshots/11_md.png)](../screenshots/11.png)
 
-### Filter und Aktionen
+### Filters and Actions
 
-Eine detailierte Beschreibung der mächtigen und umfangreichen
-Filter-Funktionen liefert das [Privoxy
-Benutzerhandbuch](http://www.privoxy.org/user-manual/) in den
-Kapiteln [Filter
+The [Privoxy user manual](http://www.privoxy.org/user-manual/) provides a
+detailed description of the powerful and extensive filter functions in
+the chapters [Filter
 Files](http://www.privoxy.org/user-manual/filter-file.html)
-und [Actions
+and [Actions
 Files](http://www.privoxy.org/user-manual/actions-file.html)
-(englisch).
+(English).
 
-### Zugriffskontrolle
+### Access Control
 
-Die Privoxy Zugriffskontrolle ist über das Freetz Webinterface
-steuerbar. Eine detailierte Beschreibung dazu findet man ebenfalls im
-[Privoxy
-Benutzerhandbuch](http://www.privoxy.org/user-manual/) im
-Kapitel
-[Zugriffskontrolle](http://www.privoxy.org/user-manual/config.html#ACCESS-CONTROL)
-(englisch).
+Privoxy access control can be controlled through the Freetz web
+interface. A detailed description can also be found in the
+[Privoxy user manual](http://www.privoxy.org/user-manual/) in the chapter
+[Access Control](http://www.privoxy.org/user-manual/config.html#ACCESS-CONTROL)
+(English).
 
-### Privoxy und Tor
+### Privoxy and Tor
 
-Privoxy ist auch ideal für die Verwendung zusammen mit
-[Tor](tor.md), um anonym und sicher im Internet surfen zu
-können.
+Privoxy is also ideal for use together with [Tor](tor.md), in order to
+browse the internet anonymously and securely.
 
-Dazu muss in der Privoxy Konfiguration der Port und der IP-Adresse des
-Tor Proxy Servers angeben werden. Wenn der Tor Proxy auf der selben
-Fritzbox läuft, so kann man z.B. *127.0.0.1:9050* eintragen.
+For this, the port and IP address of the Tor proxy server must be entered
+in the Privoxy configuration. If the Tor proxy runs on the same Fritzbox,
+for example, *127.0.0.1:9050* can be entered.
 
-### Transparenter Proxy
+### Transparent Proxy
 
-In manchen Fällen ist es gewünscht, dass jeglicher Webtraffic durch den
-Proxy geleitet wird und so ohne Konfiguration auf dem Client-PC zu
-filtern. Dazu wird zusätzlich [Iptables](iptables.md) mit den
-Modulen **ip_tables**, **iptable_filter**, **x_tables**,
-**xt_tcpudp**, **ipt_REDIRECT**, **ip_nat** und **iptable_nat**
-benötigt.
+In some cases it is desirable for all web traffic to be routed through
+the proxy and filtered without configuration on the client PC. This also
+requires [Iptables](iptables.md) with the modules **ip_tables**,
+**iptable_filter**, **x_tables**, **xt_tcpudp**, **ipt_REDIRECT**,
+**ip_nat**, and **iptable_nat**.
 
-Um die Umleitung zu aktivieren folgendes ausführen (Konsole oder
-rc.custom):
+To activate the redirect, run the following (console or rc.custom):
 
 ```
 modprobe ip_tables
@@ -76,15 +68,14 @@ iptables -t nat -A PREROUTING -p tcp -i lan --dport 80 -j REDIRECT --to 8118
 [ -z "$(grep accept-intercepted-requests /var/mod/etc/privoxy/config)" ] && echo "accept-intercepted-requests 1" >> /var/mod/etc/privoxy/config
 ```
 
-### Werbefilter
+### Ad Filter
 
-Um den Privoxy als Werbefilter zu nutzen ist es notwendig eine aktuelle
-und gute Filterliste zu haben. Um die Daten nicht selbst pflegen zu
-müssen ist es hilfreich beispielsweise auf die Filterlisten des
-Firefox-Plugins AdBlockPlus zuzugreifen.
-Da diese Listen ziemlich groß sind, wird es im Flashspeicher der
-Fritz.Box etwas eng. Deswegen ist es nützliche die Listen beim Start der
-Fritz.Box neu zu laden.
+To use Privoxy as an ad filter, it is necessary to have an up-to-date and
+good filter list. To avoid maintaining the data yourself, it is helpful,
+for example, to use the filter lists of the Firefox plugin AdBlockPlus.
+Since these lists are quite large, things get a little tight in the flash
+memory of the Fritz.Box. Therefore, it is useful to reload the lists when
+the Fritz.Box starts.
 
 ```
 URL="http://adblockplus.mozdev.org/easylist/easylist.txt"
@@ -105,7 +96,7 @@ echo "{ -block +handle-as-image }" >> ${ACTION}
 sed '/^@@.*/!d;s/^@@//g;/$.*image.*/!d;s/$.*image.*//g;/#/d;s/././g;s/?/?/g;s/*/.*/g;s/(/(/g;s/)/)/g;s/[/[/g;s/]/]/g;s/^/[/&:?=_]/g;s/^||/./g;s/^|/^/g;s/|$/$/g;/|/d' ${FILE} >> ${ACTION}
 ```
 
-Nähere Infos unter:
+More information at:
 [http://andrwe.org/doku.php/scripting/bash/privoxy-blocklist](http://andrwe.org/doku.php/scripting/bash/privoxy-blocklist)
 
 If you want to store the action and filter file external in stead of
@@ -126,14 +117,12 @@ modsave
 
 ### Installation
 
-Das Paket kann während der
-[Freetz-Installation](../help/howtos/common/install.html) einfach
-mit ausgewählt werden, und wird somit Bestandteil der selbstgebauten
-Firmware.
+The package can simply be selected during
+[Freetz installation](../help/howtos/common/install.html), making it part
+of the self-built firmware.
 
-### Diskussion
+### Discussion
 
-Fragen und Anmerkungen zu diesem Paket werden in [diesem
-Thread](http://www.ip-phone-forum.de/showthread.php?t=115778)
-diskutiert.
+Questions and comments about this package are discussed in [this
+thread](http://www.ip-phone-forum.de/showthread.php?t=115778).
 

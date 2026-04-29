@@ -7,35 +7,33 @@
 
 `"PPTP Client is a Linux, FreeBSD, NetBSD and OpenBSD client for the proprietary Microsoft Point-to-Point Tunneling Protocol, PPTP. Allows connection to a PPTP based Virtual Private Network (VPN)."`
 
-Viele Firmen setzen den PPTP-Server von Microsoft ein. Mit dem Client
-kann man ein Verbindung zu diesem VPN über das **Point-to-Point
-Tunneling Protocol** (**PPTP**) aufbauen
+Many companies use Microsoft's PPTP server. With this client, a
+connection to such a VPN can be established via the **Point-to-Point
+Tunneling Protocol** (**PPTP**).
 
- * Das
-PPTP-Package benötigt "replace kernel".
+ * The PPTP package requires "replace kernel".
 
-### PPTP Konfiguration
+### PPTP Configuration
 
-**Hostname**: `VPN-Server `(Beispiel vpn.tolledomain.de)
-**Benutzername**: `VPN-Benutzername `(Bei Windows bitte Domäne so
-schreiben → DOMÄNE/user oder DOMÄNEuser, nicht DOMÄNEuser)
+**Hostname**: `VPN server` (example: vpn.tolledomain.de)
+**Username**: `VPN username` (with Windows, write the domain like this:
+DOMAIN/user or DOMAINuser, not DOMAINuser)
 **Servername**: `PPTP`
 
 ### IP Routing
 
-Aktivieren und in das Textfeld das Firmennetz samt Subnetzmaske
-reinschreiben (z.B. 10.0.0.0 255.255.255.0)
+Enable it and write the company network, including subnet mask, into the
+text field (for example 10.0.0.0 255.255.255.0).
 
-Die Änderungen übernehmen und nochmal auf die Seite. Jetzt auf
-`PPPD: chap-secrets bearbeiten` klicken und dort folgendes eintragen:
+Apply the changes and open the page again. Now click
+`PPPD: edit chap-secrets` and enter the following there:
 `VPN-Username PPTP VPN-Password *`
-*Wichtig*: VPN-Username und VPN-Password sind durch eure Sachen zu
-ersetzen!
+*Important*: replace VPN-Username and VPN-Password with your own values.
 
-Danach unter Dienste das PPTP-Package starten und per SSH von der
-Fritzbox einen Rechner im Firmennetz anpingen.
+After that, start the PPTP package under Services and, via SSH from the
+Fritzbox, ping a computer in the company network.
 
-Routing/NAT infos folgen
+Routing/NAT information to follow.
 
 Screenshot?
 

@@ -3,9 +3,9 @@
   - Package: [master/make/pkgs/ca-bundle/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ca-bundle/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Das CA-bundle ist ein Paket von root CA (Certificate Authority) Zertifikaten.
+The CA bundle is a package of root CA (Certificate Authority) certificates.
 <br>
- * Damit kann die Glaubwürdigkeiten von HTTPS Zertifikaten geprüft werden.
- * Als Benutzer ```root``` nutzen die Programme ```wget``` und ```curl``` diese Zertifikate automatisch.
- * Anderen Benutzer oder Programmen muss die Datei ```/mod/etc/ssl/certs/ca-bundle.crt``` bekannt gemacht werden.
+ * It can be used to verify the trustworthiness of HTTPS certificates.
+ * When run as user ```root```, the programs ```wget``` and ```curl``` use these certificates automatically.
+ * Other users or programs must be told about the file ```/mod/etc/ssl/certs/ca-bundle.crt```.
 

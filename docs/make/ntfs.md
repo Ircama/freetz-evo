@@ -1,7 +1,4 @@
 # NTFS-3G 2022.10.3 (binary only)
-  - Homepage: [https://github.com/tuxera/ntfs-3g](https://github.com/tuxera/ntfs-3g)
-  - Changelog: [https://github.com/tuxera/ntfs-3g/releases](https://github.com/tuxera/ntfs-3g/releases)
-  - Repository: [https://github.com/tuxera/ntfs-3g](https://github.com/tuxera/ntfs-3g)
   - Package: [master/make/pkgs/ntfs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ntfs/)
   - Steward: -
 

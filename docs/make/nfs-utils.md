@@ -6,21 +6,19 @@
   - Package: [master/make/pkgs/nfs-utils/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/nfs-utils/)
   - Steward: -
 
-Die NFS-Utils erweitern Freetz um einen NFS Server inklusive
-Administrationswebinterface (siehe [nfsd-cgi](nfsd.md)) für die
-Konfigdateien `Exports`, `allow_hosts` und `deny_hosts`.
+The NFS utils extend Freetz with an NFS server including an
+administration web interface (see [nfsd-cgi](nfsd.md)) for the
+configuration files `Exports`, `allow_hosts`, and `deny_hosts`.
 
-### Hinweise
+### Notes
 
--   Exports funktionieren nur richtig mit ext2, ext3 oder ReiserFS
-    Dateisystemen.
--   Squashfs und tmpfs/ramfs (/var) können nicht über NFS exportiert
-    werden
--   Wenn keine Verbindung zustande kommt kann das an einer falschen NFS
-    Version des Clients liegen. Beheben kann man das mit dem
-    zusätzlichen mount Parameter `-o nfsvers=3`.
+-   Exports work correctly only with ext2, ext3, or ReiserFS filesystems.
+-   Squashfs and tmpfs/ramfs (/var) cannot be exported over NFS.
+-   If no connection is established, this may be due to the wrong NFS
+    version on the client. This can be fixed with the additional mount
+    parameter `-o nfsvers=3`.
 
-### Referenzen
+### References
 
 -   [http://www.ip-phone-forum.de/showthread.php?p=1609992](http://www.ip-phone-forum.de/showthread.php?p=1609992)
 -   [http://de.wikipedia.org/wiki/Network_File_System](http://de.wikipedia.org/wiki/Network_File_System)

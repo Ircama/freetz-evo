@@ -2,12 +2,12 @@
   - Package: [master/make/pkgs/fstyp/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/fstyp/)
   - Steward: -
 
-**fstyp** erlaubt es einem Anwender, den Dateisystem-Typ eines
-eingebundenen oder auch nicht eingebundenen Dateisystems zu ermitteln.
+**fstyp** allows a user to determine the filesystem type of a mounted
+or unmounted filesystem.
 
-In Freetz wird fstyp von freetzmount genutzt, um das Dateisystem zu
-erkennen und korrekt zu mounten.
-Hinweis: Bei Verwendung der Option "mount-by-Label" wird das ganze
-durch **blkid** erledigt (und fstyp wird hierfür überflüssig). Hat aber
-den Nachteil, dass das Image etliche Kilobyte größer wird.
+In Freetz, fstyp is used by freetzmount to detect the filesystem and
+mount it correctly.
+Note: when the "mount-by-label" option is used, all of this is handled
+by **blkid** instead, making fstyp unnecessary for this purpose. The
+drawback is that the image becomes several kilobytes larger.
 

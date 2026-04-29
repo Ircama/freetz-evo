@@ -6,9 +6,10 @@
   - Package: [master/make/pkgs/minisatip/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/minisatip/)
   - Steward: -
 
-Dieses Package stellt einen SAT>IP Server im Netzwerk bereit.<br>
+This package provides a SAT>IP server on the network.<br>
 <br>
 
-Dies ist auf der Fritz!Box nützlich, um die Tuner von Repeater DVB-C, 6490 und 6590 als "normale" SAT>IP Server zu verwenden.
-Es entfallen somit AVM's Beschränkungen wie maximale Streams pro IP-Adresse.
+This is useful on the Fritz!Box for using the tuners of Repeater DVB-C,
+6490, and 6590 devices as "normal" SAT>IP servers.
+This avoids AVM restrictions such as maximum streams per IP address.
 

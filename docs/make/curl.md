@@ -6,14 +6,13 @@
   - Package: [master/make/pkgs/curl/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/curl/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**[cURL](http://curl.haxx.se/)** ist ein Programm,
-um einzelne Dateien aus dem Internet zu transferieren - wobei nicht mit
-einem Browser (wie Firefox o.ä.), sondern von der Kommandozeile
-gearbeitet wird. Dabei unterstützt *cURL* die Protokolle
+**[cURL](http://curl.haxx.se/)** is a program
+for transferring individual files from the internet, not with a browser
+such as Firefox but from the command line. *cURL* supports the protocols
 [HTTP](http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol),
 [HTTPS](http://de.wikipedia.org/wiki/Hypertext_Transfer_Protocol_Secure),
 [FTP](http://de.wikipedia.org/wiki/File_Transfer_Protocol),
 [FTPS](http://de.wikipedia.org/wiki/FTP_%C3%BCber_SSL),
 [LDAP](http://de.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol),
-und einige andere.
+and several others.
 

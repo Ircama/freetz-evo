@@ -6,47 +6,45 @@
   - Package: [master/make/pkgs/jamvm/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/jamvm/)
   - Steward: -
 
-**[JamVM](http://jamvm.sourceforge.net/)** ist eine
-neue [Java Virtual
-Machine](http://en.wikipedia.org/wiki/Java_Virtual_Machine),
-die der JVM Spezifikation Version 2 (blue book) entspricht. Im
-[Vergleich mit den meisten anderen
-VM's](http://bugblogger.com/java-vms-compared-160/) (frei
-und kommerziell) ist *JamVM* extrem klein ("stripped executables" für
-PowerPC nur ~160K, und für Intel 140K). Dennoch unterstützt es, anders
-als andere "kleine" VMs (z.B. KVM) die vollständige Spezifikation, und
-enthält Support für "object finalisation", Soft/Weak/Phantom
-Referenzen, class-unloading, das [Java Native
+**[JamVM](http://jamvm.sourceforge.net/)** is a
+new [Java Virtual
+Machine](http://en.wikipedia.org/wiki/Java_Virtual_Machine)
+that conforms to version 2 of the JVM specification (blue book). Compared
+with [most other
+VMs](http://bugblogger.com/java-vms-compared-160/), both free and
+commercial, *JamVM* is extremely small (stripped executables are only
+about 160K for PowerPC and 140K for Intel). Unlike other "small" VMs such
+as KVM, however, it still supports the full specification and includes
+support for object finalization, soft/weak/phantom references, class
+unloading, the [Java Native
 Interface](http://de.wikipedia.org/wiki/Java_Native_Interface)
-(JNI) und die Reflection API.
+(JNI), and the Reflection API.
 
-JamVM nutzt die [GNU
-Classpath](http://de.wikipedia.org/wiki/GNU_Classpath) Java
-Class Library. Eine Reihe von Klassen sind Referenz-Klassen, die für
-eine spezielle VM angepasst werden müssen. Diese werden zusammen mit
-*JamVM* gebündelt.
+JamVM uses the [GNU
+Classpath](http://de.wikipedia.org/wiki/GNU_Classpath) Java class
+library. A number of classes are reference classes that must be adapted
+for a specific VM. These are bundled together with *JamVM*.
 
- * **Anmerkung:**
-*JamVM* wird nicht mit der Class Library von Suns oder IBMs JVMs
-funktionieren.
+ * **Note:**
+*JamVM* will not work with the class library from Sun's or IBM's JVMs.
 
-Da die normale Klassenbiliothek (glibj.zip) über 9 MB groß ist wird
-standardmäßig nur eine reduzierte Version (mini.jar) installiert.
-Deshalb muss jamvm folgendermaßen aufgerufen werden um z.B. die Datei
-Hello.class im aktuellen Verzeichnis aufzurufen:
+Because the normal class library (glibj.zip) is over 9 MB in size, only a
+reduced version (mini.jar) is installed by default. Therefore, jamvm must
+be called as follows to run, for example, the file Hello.class in the
+current directory:
 
 ```
 jamvm -Xbootclasspath/a:/usr/share/classpath/mini.jar Hello
 ```
 
-### Weiterführende Links
+### Further Links
 
 -   [JavaVM
     Homepage](http://jamvm.sourceforge.net/)
--   [Vergleich verschiedener
+-   [Comparison of different
     JVMs](http://bugblogger.com/java-vms-compared-160/)
 -   [List of
     JVMs](http://en.wikipedia.org/wiki/List_of_Java_virtual_machines)
--   [freie Java
-    Implementierungen](http://en.wikipedia.org/wiki/Free_Java_implementations)
+-   [free Java
+    implementations](http://en.wikipedia.org/wiki/Free_Java_implementations)
 

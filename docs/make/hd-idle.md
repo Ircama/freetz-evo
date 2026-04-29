@@ -2,15 +2,14 @@
   - Package: [master/make/pkgs/hd-idle/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hd-idle/)
   - Steward: -
 
-**[hd-idle](http://hd-idle.sourceforge.net/)** ist
-ein Tool, um externe Festplatten nach einer festgelegten "Idle-Zeit"
-(also "Nix-Tun") herunterzufahren ("Spin-Down"). Da die meisten
-externen IDE-Festplatten-Gehäuse das Setzen eines "Idle-Timers" nicht
-erlauben, wird ein Utility wie *hd-idle* (oder das mit Freetz ebenfalls
-verfügbare *[spindown-CGI](spindown.md)*) benötigt, um den Job
-zu erledigen.
+**[hd-idle](http://hd-idle.sourceforge.net/)** is
+a tool for spinning down external hard disks after a configured idle
+time. Because most external IDE hard-disk enclosures do not allow an
+idle timer to be set directly, a utility such as *hd-idle* (or the
+*[spindown-CGI](spindown.md)* package also available in Freetz) is
+needed for this job.
 
-Es gibt, herstellerabhängig 3 verschiedene Powermodes:
+Depending on the manufacturer, there are three different power modes:
 
 ```
 active/idle (normal operation)

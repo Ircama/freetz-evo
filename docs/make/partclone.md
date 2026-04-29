@@ -4,6 +4,7 @@
   - Changelog: [https://github.com/Thomas-Tsai/partclone/releases](https://github.com/Thomas-Tsai/partclone/releases)
   - Repository: [https://github.com/Thomas-Tsai/partclone](https://github.com/Thomas-Tsai/partclone)
   - Package: [master/make/pkgs/partclone/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/partclone/)
+  - Steward: -
 
 partclone provides block-level imaging/restore/check tools often used by
 disk cloning workflows.

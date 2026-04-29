@@ -2,14 +2,11 @@
   - Package: [master/make/pkgs/mcabber/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mcabber/)
   - Steward: -
 
-**[mcabber](http://mcabber.com/)** ist ein
-textbasierter
+**[mcabber](http://mcabber.com/)** is a text-based
 [Jabber](http://de.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol)
-Client, der auf
-[ncurses](http://de.wikipedia.org/wiki/Ncurses)
-aufbaut.
+client based on [ncurses](http://de.wikipedia.org/wiki/Ncurses).
 
-*mcabber* unterstützt u.a.
+Among other things, *mcabber* supports:
 
 -   SSL/GnuTLS
 -   [OpenPGP](http://en.wikipedia.org/wiki/OpenPGP)
@@ -18,15 +15,15 @@ aufbaut.
 -   [ASpell](http://en.wikipedia.org/wiki/Aspell)
 -   External action triggers
 
-### Weiterführende Links
+### Further Links
 
 -   [mcabber Homepage](http://mcabber.com/)
 -   [mcabber
     Mirror](http://nerim.lilotux.net/mcabber/)
--   [Vergleich von IM
-    Clients](http://en.wikipedia.org/wiki/Comparison_of_instant_messaging_clients)
-    (Englisch)
--   [Anleitung aus dem Forum um die Fritzbox über Jabber zu
-    steuern](http://www.ip-phone-forum.de/showthread.php?p=1552715)
+-   [Comparison of IM
+    clients](http://en.wikipedia.org/wiki/Comparison_of_instant_messaging_clients)
+    (English)
+-   [Forum guide for controlling the Fritzbox via
+    Jabber](http://www.ip-phone-forum.de/showthread.php?p=1552715)
 
 

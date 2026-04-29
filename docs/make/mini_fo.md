@@ -4,24 +4,21 @@
 
 [![Mini_fo Webinterface](../screenshots/205_md.png)](../screenshots/205.png)
 
-**mini_fo** ist ein Overlay-Dateisystem vergleichbar mit
-[UnionFS](http://de.wikipedia.org/wiki/UnionFS),
-welches von diversen Live-Distributionen (z.B. Knoppix) bekannt ist.
-Vereinfacht ausgedrückt, lässt sich damit ein schreibgeschütztes
-Dateisystem beschreibbar machen. Natürlich kann man auf dem
-schreibgeschützten Medium nicht wirklich (physisch) schreiben:
-Änderungen werden an anderer Stelle gespeichert, was aber für den
-Anwender derart transparent geschieht, dass er davon eigentlich nichts
-merkt - sondern wirklich den Eindruck eines einzelnen, beschreibbaren
-Mediums hat.
+**mini_fo** is an overlay filesystem comparable to
+[UnionFS](http://de.wikipedia.org/wiki/UnionFS), known from various live
+distributions, for example Knoppix. Put simply, it can make a read-only
+filesystem writable. Of
+course, it is not possible to really (physically) write to the read-only
+medium: changes are stored elsewhere, but this happens so transparently
+for the user that they essentially do not notice it and really have the
+impression of a single writable medium.
 
-### Konfiguration (Webinterface)
+### Configuration (Web Interface)
 
-Das Paket wird über das Webinterface konfiguriert. Hierbei kann der
-Speicherort für die Änderungen ausgewählt werden. Entweder RAM
-(flüchtig) oder JFFS2 (reboot resistent). Bei Auswahl der Option JFFS2
-muss genügend freier Speicherplatz verfügbar sein (die Daten werden gzip
-komprimiert abgespeichert):
+The package is configured through the web interface. The storage location
+for changes can be selected there: either RAM (volatile) or JFFS2
+(reboot-resistant). If the JFFS2 option is selected, enough free space
+must be available; the data is stored gzip-compressed:
 
 ```
 root@fritz:/var/mod/root# df /dev/mtdblock5
@@ -29,26 +26,26 @@ Filesystem           1K-blocks      Used Available Use% Mounted on
 /dev/mtdblock5            3200      2612       588  82% /sto
 ```
 
-Das Paket kann nur durch einen Reboot de-/aktiviert werden.
+The package can only be deactivated or activated by rebooting.
 
-### Konfiguration (per Hand)
+### Configuration (Manually)
 
-**mini_fo** ist ein Kernel-Modul, das man entweder ohne Argumente mit
-insmod lädt...
+**mini_fo** is a kernel module that can either be loaded without
+arguments using insmod...
 
 ```
  insmod mini_fo
 ```
 
-...oder in der Freetz-Oberfläche in Modules einträgt, damit es beim
-Start geladen wird:
+...or entered under Modules in the Freetz interface so that it is loaded
+at startup:
 
 ```
  mini_fo
 ```
 
-Ist es aktiv steht der mount-type 'mini_fo' zur Verfügung. Um
-/usr/www beschreibbar zu machen genügt diese Zeile in rc.custom:
+Once it is active, the mount type 'mini_fo' is available. To make
+/usr/www writable, this line in rc.custom is sufficient:
 
 ```
 mkdir -p /tmp/usrwww /tmp/usrwww-sto && 
@@ -56,35 +53,33 @@ mkdir -p /tmp/usrwww /tmp/usrwww-sto &&
  mount -t mini_fo -o base=/tmp/usrwww,sto=/tmp/usrwww-sto minifo /usr/www
 ```
 
-Im Pfad /tmp/usrwww-sto befinden sich dann jegliche Änderungen.
+All changes are then located in the path /tmp/usrwww-sto.
 
-### Mögliche Nebeneffekte
+### Possible Side Effects
 
-Ein Firmware-Update kann evtl. mit geladenem mini_fo Modul scheitern
-(getestet mit 7170 4.8x). Es gibt dann keine Fehlermeldung aber die Box
-hängt vor dem Herunterfahren und der Flash-Vorgang kommt nie zustande.
-Wenn dies passiert sollte man vor einer Firmware-Aktualisierung ohne
-mini_fo booten. Aktueller Trunk zeigt das Phenomen nicht.
+A firmware update may fail with the mini_fo module loaded (tested with
+7170 4.8x). There is then no error message, but the box hangs before
+shutting down and the flashing process never happens. If this happens,
+boot without mini_fo before a firmware update. Current trunk does not
+show this phenomenon.
 
-Wird mini_fo auf einer Box ohne JFFS2-Partition betrieben fängt es auch
-Schreibzugriffe auf /data ab, zumindest bis ein USB-Stick gemountet ist.
-In /sto/mini_fo taucht dann data/tam/config und data/tam/rec/ mit dem
-Datum 2000 (also vor Zeitsync) auf. Dieser Nebeneffekt ermöglicht es
-Anrufbeantworter ohne JFFS2-Partition und ohne USB-Stick zu testen, z.B.
-zur Weiterleitung per Email mit anschließender Löschung. Dabei sollte
-man die Aufnahmelänge begrenzen damit der RAM-Speicher nicht
-versehentlich aufgebraucht werden kann. Speichert mini_fo im RAM gehen
-allerdings bei einem Neustart alle derart definierten Anrufbeantworter
-verloren.
+If mini_fo is operated on a box without a JFFS2 partition, it also
+intercepts write accesses to /data, at least until a USB stick is
+mounted. In /sto/mini_fo, data/tam/config and data/tam/rec/ then appear
+with the date 2000, before time synchronization. This side effect makes
+it possible to test answering machines without a JFFS2 partition and
+without a USB stick, for example for forwarding by email followed by
+deletion. The recording length should be limited so the RAM memory cannot
+accidentally be exhausted. However, if mini_fo stores in RAM, all
+answering machines defined in this way are lost on restart.
 
-Bei Modellen der Generation 7170 zeigten sich Watchdog initiierte
-Rebootschleifen (ca. 2-4min) bei aktiviertem WLAN mit Verschlüsselung im
-DSL-Modem Modus (also Default nach Werksreset). Rebootgrund in crash.log
-ist dann ein dsld Watchdog Timeout. Ohne WPA Verschlüsselung oder im
-IP-Client Modus zeigt sich das Phenomen nicht. Offensichtlich werden
-Semaphoren die dsld zur Verwaltung von Shared Memory in /var/tmp/csem
-ablegt teilweise in /sto abgefragt und der Mechanismus empfindlich
-gestört.
+On 7170-generation models, watchdog-initiated reboot loops (about 2-4
+minutes) occurred when WLAN encryption was enabled in DSL modem mode,
+which is the default after a factory reset. The reboot reason in
+crash.log is then a dsld watchdog timeout. Without WPA encryption or in
+IP client mode, this phenomenon does not appear. Apparently, semaphores
+that dsld stores in /var/tmp/csem to manage shared memory are partly
+queried in /sto, sensitively disrupting the mechanism.
 
 ### Restore original file
 
@@ -100,11 +95,11 @@ So for example a modified */usr/sbin/blkid* is stored as
 If you remove the latter one, the original one will reappear in your
 file system.
 
-### Weiterführende Links
+### Further Links
 
--   [diesen
-    Thread](http://www.ip-phone-forum.de/showthread.php?t=111226)
-    im Forum.
+-   [this
+  thread](http://www.ip-phone-forum.de/showthread.php?t=111226)
+  in the forum.
 -   [mini_fo project
     page](http://www.denx.de/twiki/bin/view/Know/MiniFOHome).
 

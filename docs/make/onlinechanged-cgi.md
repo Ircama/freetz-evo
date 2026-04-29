@@ -3,36 +3,36 @@
   - Steward: -
 <br>
 
-AVM-Firmwares beinhalten einen Mechanismus, welcher dafür sorgt, daß
+AVM firmware contains a mechanism which ensures that
 
- * beim Start der Box (Parameter $1 hat den Wert "start"),
- * bei der Trennung der Internet-Verbindung (Parameter $1 hat den Wert "offline") und auch
- * beim Neuaufbau der Internet-Verbindung (Parameter $1 hat den Wert "online") 
+ * when the box starts (parameter $1 has the value "start"),
+ * when the internet connection is disconnected (parameter $1 has the value "offline"), and also
+ * when the internet connection is re-established (parameter $1 has the value "online"),
 
-jeweils das Skript /bin/onlinechanged aufgerufen wird, welches wiederum weitere Skripten unterhalb der Verzeichnisse /etc/onlinechanged und
-/var/tmp/onlinechanged, sofern vorhanden, aufruft. Diese Skripten (re-)initialisieren diverse Dienste, wie z.B. WebDAV (Online-Speicher).
+the script /bin/onlinechanged is called. It in turn calls additional scripts below the directories /etc/onlinechanged and
+/var/tmp/onlinechanged, if present. These scripts (re-)initialize various services, such as WebDAV (online storage).
 
-Auch diverse Freetz-Pakete benötigen die Möglichkeit, beim Wechsel des Verbindungsstatus gewisse Aktionen durchzuführen, z.B. DynDNS-Hostnamen
-mit neuer IP-Adresse zu registrieren, VPN-Verbindungen neu aufzubauen etc. Das Paket Onlinechanged-CGI ermöglicht es dem Benutzer darüber hinaus,
-eigene Aktionen anzustoßen, bspw. eine E-Mail mit der aktuellen IP an den Benutzer zu senden.
+Various Freetz packages also need the ability to perform certain actions when the connection status changes, for example registering DynDNS hostnames
+with a new IP address, rebuilding VPN connections, and so on. The Onlinechanged-CGI package additionally allows the user to trigger custom actions,
+for example sending an email with the current IP address to the user.
 
- * Hinweis: AVM Onlinechanged funktioniert nur auf Geräten, die so konfiguriert sind, daß sie die Internet-Verbindung selbst herstellen (also
-   i.d.R. via DSL oder via PPPoE), nicht auf Boxen hinter einem NAT (z.B. bei "Internetverbindung mitbenutzen"). Falls auf solchen Geräten auch
-   Onlinechanged ausgeführt werden soll, geht das über den Patch "replace onlinechanged", der auch zur Anwendung kommt in Problemfällen bei Geräten,
-   wo AVM Onlinechanged nicht zuverlässig funktioniert (siehe entsprechendes ​IPPF-Thema).
+ * Note: AVM Onlinechanged works only on devices configured to establish the internet connection themselves, usually via DSL or PPPoE. It does not
+    work on boxes behind NAT, for example with "share existing internet connection". If Onlinechanged should also run on such devices, this is possible
+    with the "replace onlinechanged" patch, which is also used in problem cases on devices where AVM Onlinechanged does not work reliably (see the
+    corresponding IPPF topic).
 
 
-Dieses Feature ist ab r2850 (trunk) in Freetz und wurde implementiert weil AVM in der Firmware 54.04.67 das Verhalten von /bin/onlinechanged geändert hat.
-Bisher handelte sich bei /bin/onlinechanged um ein Symlink auf das Skript /var/tmp/onlinechanged. Die Entstehung kann in Ticket #271 nachverfolgt werden.
+This feature has been in Freetz since r2850 (trunk) and was implemented because AVM changed the behavior of /bin/onlinechanged in firmware 54.04.67.
+Previously, /bin/onlinechanged was a symlink to the script /var/tmp/onlinechanged. Its creation can be traced in Ticket #271.
 
-Um das Verhalten zu vereinheitlichen gilt ab r2850 für /bin/onlinechanged:
-Beim Wechsel des Online Status wird das Skript vom multid mit online bzw. offline als Parameter aufgerufen und ruft dann selbst folgende Skripte auf:
+To unify the behavior, since r2850 the following applies to /bin/onlinechanged:
+When the online status changes, the script is called by multid with online or offline as the parameter and then calls the following scripts itself:
 
- * /var/tmp/onlinechanged 	Kompatibilität zum alten Verhalten
- * /etc/onlinechanged/* 	neues AVM Verhalten
- * /tmp/flash/onlinechanged/* 	Skripte im Freetz Flash
+ * /var/tmp/onlinechanged 	compatibility with the old behavior
+ * /etc/onlinechanged/* 	new AVM behavior
+ * /tmp/flash/onlinechanged/* 	scripts in Freetz flash
 
-Ein Skript in /etc/onlinechanged könnte zum Beispiel folgendermaßen aussehen:
+A script in /etc/onlinechanged could look like this, for example:
 ```
 #!/bin/sh
 

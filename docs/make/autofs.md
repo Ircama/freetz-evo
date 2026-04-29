@@ -6,29 +6,27 @@
   - Package: [master/make/pkgs/autofs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/autofs/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit diesem Paket können verschiedene Dateisysteme nach /var/media/autofs
-gemountet werden.
+This package can mount various filesystems under /var/media/autofs.
 
-Zweck ist, dass Mountpoints nur eingebunden werden, wenn darauf
-zugegriffen wird. Nach einem Timeout ohne Zugriffe werden sie wieder
-ausgehängt. Das funktioniert mit allen Dateisystemen und ist besonders
-praktisch bei Netzwerk-Freigaben (NFS, CIFS, DAVFS etc.), da der Server,
-auf den man zugreifen möchte, nicht bei Start des Freetz-Packages, das
-diesen mountet, erreichbar sein muss, sondern nur bei Zugriff.
+The purpose is that mountpoints are mounted only when they are accessed.
+After a timeout without access, they are unmounted again. This works with
+all filesystems and is especially practical for network shares (NFS,
+CIFS, DAVFS, etc.), because the server to be accessed does not need to be
+reachable when the Freetz package that mounts it starts, but only when it
+is accessed.
 
-### Optionale Aufrufparameter
+### Optional Invocation Parameters
 
-Zur Fehlersuche empfiehlt sich der Parameter `-v` und zusätzlich evtl
-`-d`. Die Meldungen werden per [syslogd-cgi](syslogd.md)
-ausgegeben.
+For troubleshooting, the parameter `-v`, and optionally also `-d`, is
+recommended. The messages are output via [syslogd-cgi](syslogd.md).
 
 
 
-### Beispielkonfigurationen der auto.conf
+### Example auto.conf Configurations
 
 ### NFS
 
-Für NFS wird lediglich das Modul nfs.ko benötigt.
+For NFS, only the nfs.ko module is required.
 
 ```
 NFS-SHARE -rw,soft,intr,rsize=8192,wsize=8192         SERVER:/SHARE
@@ -36,8 +34,8 @@ NFS-SHARE -rw,soft,intr,rsize=8192,wsize=8192         SERVER:/SHARE
 
 ### Samba
 
-Hierfür wird das Paket [cifsmount](cifsmount.md) benötigt,
-dessen Webinterface nicht.
+For this, the [cifsmount](cifsmount.md) package is required, but not its
+web interface.
 
 ```
 SMB-SHARE -fstype=cifs,user=USER,pass=PASS,ro         ://SERVER/SHARE
@@ -45,24 +43,24 @@ SMB-SHARE -fstype=cifs,user=USER,pass=PASS,ro         ://SERVER/SHARE
 
 ### WebDAV
 
-Für WebDAV wird das [davfs2](davfs2.html)-Paket (ohne
-Webinterface) benötigt.
+For WebDAV, the [davfs2](davfs2.html) package is required, without its
+web interface.
 
 ```
 DAV-SHARE -fstype=davfs     :https://SERVER
 ```
 
-Außerdem noch diese 2 Dateien:
+Additionally, these two files are needed:
 
 /tmp/flash/autofs/davfs2.conf
 
 ```
 ask_auth 0
-#falls benötigt:
+#if required:
 #if_match_bug 1
 ```
 
-/tmp/flash/autofs/davfs2.secrets (Dateirechte 600!)
+/tmp/flash/autofs/davfs2.secrets (file permissions 600!)
 
 ```
 https://SERVER USERNAME    PASSWORT
@@ -70,7 +68,7 @@ https://SERVER USERNAME    PASSWORT
 
 ### CurlFtpFS
 
-Es wird das Package CurlFtpFS (ohne Webinterface) benötigt
+The CurlFtpFS package is required, without its web interface.
 
 ```
 FTP-SHARE -fstype=fuse,allow_other       :curlftpfs\#SERVER
@@ -78,14 +76,13 @@ FTP-SHARE -fstype=fuse,allow_other       :curlftpfs\#SERVER
 
 ### SSHfs
 
-Es werden die Packages OpenSSH und SSHfs-FUSE benötigt
+The OpenSSH and SSHfs-FUSE packages are required.
 
 ```
 SSH-SHARE -fstype=fuse,rw,allow_other             :sshfs#USER@SERVER:/
 ```
 
-Außerdem muss der Server in der known_hosts bekannt sein und in id_rsa
-oder id_dsa muss der private Schlüssel hinterlegt sein. Diese Dateien
-können mit dem SSH/[authorized_keys](authorized-keys.md)
-Package bearbeitet werden
+In addition, the server must be known in known_hosts, and the private key
+must be stored in id_rsa or id_dsa. These files can be edited with the
+SSH/[authorized_keys](authorized-keys.md) package.
 

@@ -6,8 +6,8 @@
   - Package: [master/make/pkgs/tinyproxy/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tinyproxy/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Das [tinyproxy](http://tinyproxy.sourceforge.net/)
-Paket stellt einen kleinen HTTP Proxy mit Filterfunktionen bereit.
+The [tinyproxy](http://tinyproxy.sourceforge.net/) package provides a
+small HTTP proxy with filtering functions.
 
 ### Proxy auto-config (pac)
 

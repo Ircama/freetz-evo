@@ -7,32 +7,29 @@
   - Steward: [@fda77](https://github.com/fda77)
 
 **[strace](http://sourceforge.net/projects/strace/)**
-verfolgt System-Calls und Signale eines Prozesses. Dabei schaltet es
-sich zwischen einen Benutzerprozeß und den Kernel und protokolliert alle
-Aktivitäten an dieser Schnittstelle. Wenn der verfolgte Prozess einen
-Systemaufruf macht, gibt *strace* den Namen, die Argumente des Aufrufs
-und den Rückgabewert dieses Systemaufrufs aus. Wenn der verfolgte
-Prozess ein Signal erhält, gibt *strace* den Namen des Signals aus.
-Falls ein Systemaufruf mit einem Fehler zurückkehrt, wird, wenn
-vorhanden, die dem Fehlerstatus zugeordnete Fehlermeldung angezeigt.
+traces the system calls and signals of a process. It places itself
+between a user process and the kernel and logs all activity at this
+interface. When the traced process makes a system call, *strace* prints
+the name, arguments, and return value of that system call. When the
+traced process receives a signal, *strace* prints the signal name. If a
+system call returns with an error, the error message associated with the
+error status is displayed, if available.
 
-Kurzum: *strace* kommt meist dann zum Einsatz, wenn "etwas nicht
-funktioniert, und keiner weiß warum". Sprich: Ein Programm stürzt ab,
-ein Prozess hängt - und man möchte herausfinden, bei welcher Aktion dies
-passiert.
+In short, *strace* is usually used when "something does not work and
+nobody knows why". In other words: a program crashes, a process hangs,
+and you want to find out during which action this happens.
 
-Das "Geschwisterchen" [ltrace](ltrace.md) kann dabei auch
-hilfreich zur Seite stehen: Anstelle der System-Calls protokolliert
-*ltrace* Bibliotheks-Aufrufe (aka "Library Calls").
+Its sibling [ltrace](ltrace.md) can also be helpful here: instead of
+system calls, *ltrace* logs library calls.
 
-### Tip: Vermeiden von "unfinished" und "resumed" in strace-Logs
+### Tip: Avoiding "unfinished" and "resumed" in strace Logs
 
-Wenn man strace mit "-f" aufruft, um Unterprozesse bzw. Threads
-mitzuverfolgen, sieht man oft unterbrochene Systemaufrufe im Log, weil
-strace im Fall einer Unterbrechung den Start- und Rückkehrzeitpunkt der
-Aufrufe separat notiert. Darunter leidet aber die Lesbarkeit, weil man
-weiter unten oft nicht mehr weiß, zum welchem "unfinished" welches
-"resume" gehört (hier im Beispiel ist es noch einfach):
+When strace is called with "-f" to follow subprocesses or threads,
+interrupted system calls often appear in the log because strace records
+the start and return time of calls separately when an interruption occurs.
+Readability suffers, because further down it is often no longer clear
+which "resumed" belongs to which "unfinished" call (in this example it is
+still easy):
 
 ```
 719   14:55:13.562840 clock_gettime(CLOCK_MONOTONIC,  <unfinished ...>
@@ -44,13 +41,12 @@ weiter unten oft nicht mehr weiß, zum welchem "unfinished" welches
 719   14:55:13.565543 <... clock_gettime resumed> {337216, 717736704}) = 0
 ```
 
-Mittels "-ff" schreibt man eine separate Log-Datei pro PID, aber dann
-kann mit die Zeitlinie nicht mehr anschaulich verfolgen. Möchte man
-beides zusammen haben, hilft folgendes Skript (der *sed*-Befehl ist
-deshalb so kompliziert, weil bei Aufrufen des Skripts mit mehreren
-"-p" die in diesem Modus als erste Spalte auftauchenden PIDs in den
-Einzeldateien zuerst entfernt werden müssen, weil sonst keine Sortierung
-nach Zeitstempel möglich wäre):
+Using "-ff" writes a separate log file per PID, but then the timeline can
+no longer be followed clearly. If both are desired together, the following
+script helps. The *sed* command is so complicated because, when the script
+is called with multiple "-p" options, the PIDs that appear as the first
+column in this mode must first be removed from the individual files;
+otherwise sorting by timestamp would not be possible:
 
 ```
 #!/bin/sh
@@ -76,13 +72,13 @@ done
 rm "$logfile".*
 ```
 
-### Weiterführende Links
+### Further Links
 
 -   [strace
-    Projektseite](http://sourceforge.net/projects/strace/)
+    project page](http://sourceforge.net/projects/strace/)
     (Sourceforge)
--   [Artikel: Mit ''strace'' Systemaufrufe
-    verfolgen](http://www.pronix.de/pronix-585.html)
+-   [Article: tracing system calls with
+    ''strace''](http://www.pronix.de/pronix-585.html)
 -   [strace Man
     page](http://linux.die.net/man/1/strace)
 

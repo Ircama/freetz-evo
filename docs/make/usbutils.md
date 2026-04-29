@@ -2,20 +2,19 @@
   - Package: [master/make/pkgs/usbutils/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/usbutils/)
   - Steward: -
 
-Das Paket **usbutils** enthält, was man zur Anzeige von USB
-Geräteinformationen benötigt: `lsusb-freetz` listet diese Informationen
-auf.
+The **usbutils** package contains what is needed to display USB device
+information: `lsusb-freetz` lists this information.
 
-Zur Vermeidung einer Namenskollision, mit einem gleichnamigen Tool von
-AVM, wurde das Binary in `lsusb-freetz` umbenannt.
+To avoid a name collision with an AVM tool of the same name, the binary
+was renamed to `lsusb-freetz`.
 
-### Weiterführende Links
+### Further Links
 
 -   [Linux USB Homepage](http://www.linux-usb.org/)
 -   [lsusb Man
     Page](http://man-wiki.net/index.php/8:lsusb)
--   [Feste Devices für
-    USB-Geräte](http://wiki.marcelwinkel.de/index.php/Main/FesteDevicesF%FCrUsb-Ger%E4te)
-    bei Linux-Wiki
+-   [Fixed devices for
+  USB devices](http://wiki.marcelwinkel.de/index.php/Main/FesteDevicesF%FCrUsb-Ger%E4te)
+  at Linux-Wiki
 
 

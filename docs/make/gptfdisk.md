@@ -1,4 +1,4 @@
-# gptfdisk 1.0.10
+# gptfdisk 1.0.10 (gdisk)
   - Package: [master/make/pkgs/gptfdisk/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gptfdisk/)
   - Steward: -
 

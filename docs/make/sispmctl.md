@@ -3,110 +3,104 @@
   - Steward: -
 
 **[sispmctl](http://sispmctl.sourceforge.net/)**
-ermöglicht das Schalten von 230V-Steckdosen über den USB-Anschluss der
-Fritzbox (nur für Fritzboxen mit USB-Host-Anschluss). Es unterstützt die
-USB-Steckdosen GEMBIRD Silvershield SIS-PM, SIS-PMS und mSIS-PM. Diese
-USB-Steckdosen sind deutlich günstiger zu bekommen als Steckdosen, die
-übers Netzwerk geschaltet werden. Dank der Fähigkeiten von Freetz können
-diese Steckdosen auch per Internet und per Telefon geschaltet werden.
+makes it possible to switch 230V outlets through the USB port of the
+Fritzbox, only for Fritzboxes with a USB host port. It supports the
+GEMBIRD Silvershield SIS-PM, SIS-PMS, and mSIS-PM USB power strips. These
+USB power strips are significantly cheaper than outlets switched over the
+network. Thanks to Freetz's capabilities, these outlets can also be
+switched over the internet and by telephone.
 
-### Einschränkung
+### Limitation
 
-sispmctl läuft leider nicht auf Boxen, die den USB-Low-Speed-Modus nicht
-unterstützen. Zu diesen Boxen gehört z.B. die alt bekannte 7170. Der
-Grund dafür liegt darin, dass der USB-Controller solcher Boxen in einem
-FPGA realisiert ist und von AVM nur sehr spärlich programmiert wurde. Da
-dieser Teil der Firmware zum Closed-Source-Bereich gehört, sehen wir
-leider keine große Chancen, dass sich die Situation in der nächsten Zeit
-verbessern wird. Wenn sich jemand damit auskennt, ist er dennoch
-herzlich eingeladen den USB-Controller einer 7170 dazu zu ertüchtigen,
-mit den Steckdosenleisten von GEMBIRD zu reden.
+Unfortunately, sispmctl does not run on boxes that do not support USB
+low-speed mode. These boxes include, for example, the well-known old
+7170. The reason is that the USB controller of such boxes is implemented
+in an FPGA and was programmed only very sparsely by AVM. Since this part
+of the firmware belongs to the closed-source area, we unfortunately do
+not see much chance that the situation will improve soon. Nevertheless,
+anyone who is familiar with this is warmly invited to enable the USB
+controller of a 7170 to talk to the GEMBIRD power strips.
 
-Liste der Boxen, mit denen sispmctl [**nicht**]
-funktioniert: alle x1xx Modelle z.B. **3131**, **7141**, **7170**
-Liste der Boxen, mit denen sispmctl funktioniert: **3370**, **7270**,
+List of boxes with which sispmctl [**does not**]
+work: all x1xx models, for example **3131**, **7141**, **7170**
+List of boxes with which sispmctl works: **3370**, **7270**,
 **W920V**
 ([Speedport2Fritz](http://www.ip-phone-forum.de/showthread.php?t=172137))
 
-### Benutzung
+### Usage
 
-**sispmctl** kann einerseits per Kommandozeile benutzt werden
-(telnet/ssh), andererseits enthält es einen kleinen Webserver, der das
-Schalten der Steckdosen ermöglicht. Der eingebaute Webserver enthält
-leider keine Möglichkeit zur Authentifizierung, so dass auch bei
-Benutzung von https (xrelayd, matrixtunnel) von der Verwendung übers
-Internet abzuraten ist. Es ist leider ohne Weiteres nicht möglich den
-integrierten Webserver über inetd laufen zu lassen, da sispmctl nur
-rudimentär Listener-Mode unterstützt. Selbst im Listener-Mode
-unterstützt sispmctl-Binary nicht die echte Daemon-Funktionalität. Aus
-diesem Grund muss der integrierte Webserver mit einem & am Ende in den
-Hintergrund geschickt werden, um eine Daemon-ähnliche Funktionsweise
-abzubilden.
+**sispmctl** can be used from the command line (telnet/ssh), and it also
+contains a small web server that makes it possible to switch the outlets.
+Unfortunately, the built-in web server has no authentication option, so
+using it over the internet is discouraged even when https is used
+(xrelayd, matrixtunnel). It is unfortunately not readily possible to run
+the integrated web server via inetd, because sispmctl supports listener
+mode only rudimentarily. Even in listener mode, the sispmctl binary does
+not support real daemon functionality. For this reason, the integrated
+web server must be sent to the background with an & at the end to emulate
+daemon-like operation.
 
-Die Steckdosenleiste kann, wenn sie direkt an einem Windows-Rechner
-angeschlossen ist, über die mitgelieferte Software auch so eingestellt
-werden, dass sie unabhängig vom Rechner zu bestimmten Zeitpunkten
-Schaltvorgänge ausführt. Diese Fähigkeit unterstützt **sispmctl** seit
-Version 3.0 (30.03.2011). Da diese Funktionalität noch ziemlich neu ist,
-wird sie oft auch durch andere Pakete in Freetz realisiert:
+If the power strip is connected directly to a Windows computer, the
+included software can also configure it so that it performs switching
+operations at specific times independently of the computer. **sispmctl**
+has supported this capability since version 3.0 (2011-03-30). Since this
+functionality is still fairly new, it is often also implemented by other
+packages in Freetz:
 
--   **cron**: zeitgesteuertes Schalten
--   **callmonitor**: Schalten per Telefon (ohne Annahme des Gesprächs).
--   **dtmfbox**: Schalten per Telefon (mit Annahme des Gesprächs; per
+-   **cron**: time-controlled switching
+-   **callmonitor**: switching by telephone (without answering the call).
+-   **dtmfbox**: switching by telephone (with answering the call; via
     DTMF).
--   **dropbear (ssh)**: Schalten übers Internet.
--   **apache/lighthttpd/busybox-httpd, haserl/php und
-    xrelayd/matrixtunnel**: Schalten per Web-Interface.
+-   **dropbear (ssh)**: switching over the internet.
+-   **apache/lighthttpd/busybox-httpd, haserl/php and
+    xrelayd/matrixtunnel**: switching via web interface.
 
 ### Freetz Webinterface
 
-[![CGI zur Einrichtung von sispmctl](../screenshots/207_md.jpg)](../screenshots/207.jpg)
+[![CGI for setting up sispmctl](../screenshots/207_md.jpg)](../screenshots/207.jpg)
 
-Seit Mitte März 2011 wurden die ersten Versuche unternommen, eine
-Konfigurationsseite für FREETZ und einen rc-Startskript zu entwickeln.
-Näheres s. unter weiterführenden Links.
+Since mid-March 2011, the first attempts were made to develop a
+configuration page for FREETZ and an rc start script. See the further
+links for more details.
 
-Die Version 1.0 von sispmctl-cgi erlaubt das Wählen zwei zusätzlicher
-Skins über menuconfig. Insbesonders "smartphone"-Skin ist
-minimalistisch gestaltet und bestens für Kleingeräte zugeschnitten. Auf
-der Einstellungsseite kann man "on-the-box" zwischen den Skins
-umschalten.
+Version 1.0 of sispmctl-cgi allows selecting two additional skins via
+menuconfig. The "smartphone" skin in particular is minimalist and well
+tailored for small devices. On the settings page, the skins can be
+switched "on the box".
 
-Seit Version 1.1 von sispmctl-cgi besteht die Möglichkeit mehrere
-Steckdosenleisten (bis 9) zu konfigurieren und einzelnen Steckdosen
-Namen zu vergeben. Diese benutzerdefinierten Bezeichnungen werden in
-FREETZ-Einstellungen abgespeichert und vom integrierten Webserver dank
-einer Parser-Funktion im rc-Skript dargestellt. Um mehrere
-Steckdosenleisten per integriertes Webinterface bedienen zu können,
-werden mehrere Instanzen von sispmctl als Listener auf unterschiedlichen
-Ports gestartet. Diese Ports können über die Einstellungsseite separat
-für jede Steckdosenleiste konfiguriert werden.
+Since version 1.1 of sispmctl-cgi, it is possible to configure several
+power strips (up to 9) and assign names to individual outlets. These
+user-defined labels are stored in the FREETZ settings and displayed by
+the integrated web server thanks to a parser function in the rc script.
+To control several power strips through the integrated web interface,
+several instances of sispmctl are started as listeners on different
+ports. These ports can be configured separately for each power strip on
+the settings page.
 
-Seit Trunkversion Changeset r6789 ist sispmctl 3.0 samt cgi-Version 1.1 ein
-Bestandteil von FREETZ und kann über menuconfig unter "Testing"
-ausgewählt werden. CGI-Version und rc-Skript kann in menuconfig separat
-abgewählt oder ins Image "mitgenommen" werden. Werden cgi- und
-rc-Skript abgewählt, so steht dem Benutzer die alt bekannte
-binary-Version zur Verfügung, die er allerdings selbst händisch starten
-und verwalten muss. Für das in sispmctl integrierte Webinterface stehen
-jetzt zusätzliche Skins zur Verfügung, die ebenfalls über menuconfig
-ausgewählt werden können.
+Since trunk version Changeset r6789, sispmctl 3.0 together with CGI
+version 1.1 has been part of FREETZ and can be selected via menuconfig
+under "Testing". The CGI version and rc script can be deselected
+separately in menuconfig or included in the image. If the CGI and rc
+script are deselected, the familiar binary version is available to the
+user, but it must be started and managed manually. Additional skins are
+now available for the web interface integrated into sispmctl, and these
+can also be selected via menuconfig.
 
 [![sispmctl in menuconfig](../screenshots/210_md.jpg)](../screenshots/210.jpg)
 
-### Platzbedarf
+### Space Required
 
-Cgi und rc-Skript beanspruchen im Flash circa 4kB. Der Unterschied im
-Binary mit und ohne Webserver ist 6kB. Die Skins beinhalten jeweils ein
-Bildchen und einige html-Dateien, was pro Skin etwa 10...16kB an
-Zusatzplatz kostet.
+CGI and rc script take up about 4 kB in flash. The difference in the
+binary with and without web server is 6 kB. The skins each contain a
+small image and a few html files, which costs about 10...16 kB of
+additional space per skin.
 
 ### manpage
 
-Auf der Kommandozeile gibt `sispmctl -h` eine kurze Übersicht über die
-Optionen. Die
+On the command line, `sispmctl -h` gives a brief overview of the options.
+The
 [man-page](http://sispmctl.sourceforge.net/#mozTocId756141)
-findet sich aber auch auf der Homepage des Projekts.
+can also be found on the project's homepage.
 
 ```
 root@fritz:/var/mod/root# sispmctl -h
@@ -154,31 +148,30 @@ sispmctl [-q] [-i <ip>] [-p <#port>] [-u <path>] -l
    'u'   - repository for web pages (default=/usr/share/sispmctl)
 ```
 
-### Bekannte Bugs
+### Known Bugs
 
-Das integrierte Web-Interface ist sehr empfindlich gegenüber Störungen
-auf dem USB-Bus bzw. gegenüber falscher Byte-Sequenzen auf dem
-lauschenden Port. Beides führt zu einem sicheren Absturz vom Webserver.
-Zu erkennen sind solche Abstürze dadurch, dass der Web-Browser auf dem
-besagten Port eine Zeitüberschreitung meldet bzw. sispmctl-Dienst in
-FREETZ als "stopped" vermeldet wird. Ein manueller Wiederstart des
-intgrierten Web-Interfaces ist nach einem solchen Absturz möglich.
+The integrated web interface is very sensitive to disturbances on the USB
+bus and to incorrect byte sequences on the listening port. Both reliably
+lead to a crash of the web server. Such crashes can be recognized by the
+web browser reporting a timeout on the port in question, or by the
+sispmctl service being reported as "stopped" in FREETZ. A manual restart
+of the integrated web interface is possible after such a crash.
 
-### Weiterführende Links
+### Further Links
 
--   [Homepage von
-    sispmctl](http://sispmctl.sourceforge.net/) (Englisch)
--   [Version 1.0 von sispmctl-cgi auf
+-   [Homepage of
+    sispmctl](http://sispmctl.sourceforge.net/) (English)
+-   [Version 1.0 of sispmctl-cgi on
     IPPF](http://www.ip-phone-forum.de/showthread.php?t=232493&p=1690967&viewfull=1#post1690967)
--   [Version 1.1 von sispmctl-cgi auf
+-   [Version 1.1 of sispmctl-cgi on
     IPPF](http://www.ip-phone-forum.de/showthread.php?t=232493&p=1695596&viewfull=1#post1695596)
 -   Ticket #1264
 -   Ticket #1677
 
-### Weitere Screenshots
+### More Screenshots
 
-[![Hauptskin von sispmctl](../screenshots/208_md.jpg)](../screenshots/208.jpg)
+[![Main skin of sispmctl](../screenshots/208_md.jpg)](../screenshots/208.jpg)
 
-[![Smartphone-Skin von sispmctl](../screenshots/211_md.jpg)](../screenshots/211.jpg)
+[![Smartphone skin of sispmctl](../screenshots/211_md.jpg)](../screenshots/211.jpg)
 
 

@@ -2,17 +2,16 @@
   - Package: [master/make/pkgs/dns2tcp/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/dns2tcp/)
   - Steward: -
 
-**Dns2tcp** wurde entwickelt, um TCP Connections über DNS Traffic zu
-"tunneln". Die Datenkapselung erfolgt bereits auf dem TCP Level,
-sodass kein gesonderter Treiber (TUN/TAP) benötigt wird. Der *Dns2tcp*
-Client muss nicht mit besonderen Rechten laufen.
+**Dns2tcp** was developed to tunnel TCP connections over DNS traffic. The
+data encapsulation already takes place at the TCP level, so no separate
+driver (TUN/TAP) is required. The *Dns2tcp* client does not need to run
+with special privileges.
 
-*Dns2tcp* besteht aus zwei Teilen: Einem Server- und einem
-Client-seitigen Tool. Aus seiner Konfigurationsdatei kennt der Server
-eine Liste von Resourcen, wobei jede Resource ein lokaler oder
-entfernter Dienst ist, der auf TCP Connections "horcht"
-("Listener"). Der Client hört auf einen vordefinierten TCP Port, und
-leitet jede eingehende Verbindung über DNS an den Zieldienst weiter.
+*Dns2tcp* consists of two parts: a server-side tool and a client-side
+tool. From its configuration file, the server knows a list of resources;
+each resource is a local or remote service that listens for TCP
+connections. The client listens on a predefined TCP port and forwards each
+incoming connection over DNS to the target service.
 
 ### Using with FreeDNS
 
@@ -68,12 +67,12 @@ A few notes:
 6.  There is no Windows client available (you could try
     [iodine](iodine.md))
 
-### Weiterführende Links
+### Further Links
 
 -   [Dns2Tcp
     Homepage](http://www.hsc.fr/ressources/outils/dns2tcp/)
--   [Artikel: TCP over DNS mit
+-   [Article: TCP over DNS with
     dns2tcp](https://netzhure.de/2007/10/22/127-TCP-over-DNS-mit-dns2tcp.html)
--   [IPPF Forumsdiskussion zu
+-   [IPPF forum discussion about
     Dns2Tcp](http://www.ip-phone-forum.de/showthread.php?t=156586)
 

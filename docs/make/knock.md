@@ -6,23 +6,22 @@
   - Package: [master/make/pkgs/knock/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/knock/)
   - Steward: -
 
-*"Wer klopfet, dem wird aufgetan"* - so könnte man dieses Paket
-überschreiben. *knockd* bietet eine gute Möglichkeit, Dienste von Remote
-zu starten. Läuft der (übrigens sehr resourcenschonende) Knock-Daemon
-auf der Fritzbox, so kann man z.B. - bei entsprechender Konfiguration -
-durch das korrekte "Klopfzeichen" signalisieren, dass man "rein
-möchte". Wurde der richtige "Knock Code" gesendet, startet knockd das
-zugehörige Programm (z.B. den SSH Daemon). Ein weiteres "Klopfen"
-beendet ihn dann später wieder. Dieses Vorgehen bietet zusätzliche
-Sicherheit, da Ports nur dann offen sind, wenn man sie auch wirklich
-braucht - der Portscan eines Hackers läuft also damit meist ins Leere.
+*"Knock, and it shall be opened unto you"* could be this package's
+caption. *knockd* provides a good way to start services remotely. If the
+very resource-friendly Knock daemon is running on the Fritzbox, the
+correct "knock signal" can indicate, with suitable configuration, that
+you want to get in. When the correct "knock code" has been sent, knockd
+starts the associated program, for example the SSH daemon. Another knock
+can stop it again later. This approach provides additional security
+because ports are open only when they are really needed, so a hacker's
+port scan usually comes up empty.
 
-### Weiterführende Links
+### Further Links
 
--   [Ein kurzer Workshop zu
+-   [A short workshop on
     knockd](http://wiki.hetzner.de/index.php/Knockd)
--   [Artikel zu
+-   [Article on
     "Portknocking"](http://blog.roothell.org/archives/146-Portknocking-Tools-Teil-1-knockd.html)
--   [Knockd Demo auf
+-   [Knockd demo on
     YouTube](http://www.youtube.com/watch?v=EbzrLPf6D7Y)
 

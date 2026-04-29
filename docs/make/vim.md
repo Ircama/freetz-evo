@@ -7,30 +7,28 @@
   - Steward: [@fda77](https://github.com/fda77)
 
 **vim** (**vi i**mproved)
-ist eine Variante des bekannten Unix-Editors *vi*. Wie sein "Parent",
-läuft er in der Konsole, und wird ausschließlich über die Tastatur
-bedient, weshalb er sich auch hervorragend für die Benutzung auf der
-FritzBox eignet.
+is a variant of the well-known Unix editor *vi*. Like its parent, it runs
+in the console and is operated exclusively with the keyboard, which makes
+it very well suited for use on the FritzBox.
 
-Für Anfänger stellt seine Syntax oft eine große Hürde zu seiner
-Benutzung dar - weshalb böse Zungen behaupten, der wichtigste
-*vi*-Befehl sei ":q!" ("Nix tun und schnell wieder raus"). Hat man
-diese Hürde allerdings genommen, so ist ein machtvolles Werkzeug
-gewonnen: Kenntnis der [entsprechenden
-Syntax](http://de.wikibooks.org/wiki/Vi_Befehlsreferenz:_%C3%9Cbersicht)
-vorausgesetzt, sind Dinge wie "Suchen und Ersetzen", Textblöcke
-löschen/verschieben/kopieren, und was sonst noch häufig beim Bearbeiten
-reiner [ASCII](http://de.wikipedia.org/wiki/Ascii)
-Textdateien anfällt, mit keinem anderen Werkzeug so schnell erledigt.
-Auch [reguläre
-Ausdrücke](http://de.wikipedia.org/wiki/Reguläre_Ausdrücke)
-sind für *vim* eine Selbstverständlichkeit.
+For beginners, its syntax is often a major hurdle, which is why some
+people jokingly claim that the most important *vi* command is `:q!`
+("do nothing and get out quickly"). Once that hurdle is overcome,
+however, it becomes a powerful tool. Provided the user knows the
+[corresponding
+syntax](http://de.wikibooks.org/wiki/Vi_Befehlsreferenz:_%C3%9Cbersicht),
+tasks such as search and replace, deleting/moving/copying text blocks,
+and the other common operations involved in editing plain
+[ASCII](http://de.wikipedia.org/wiki/Ascii) text files can be done faster
+than with almost any other tool. [Regular
+expressions](https://en.wikipedia.org/wiki/Regular_expression) are also a
+matter of course for *vim*.
 
-### Weiterführende Links
+### Further Links
 
--   [Wikipedia Artikel](http://de.wikipedia.org/wiki/Vim)
--   [vi Befehlsreferenz bei Wiki-Books](http://de.wikibooks.org/wiki/Vi_Befehlsreferenz:_%C3%9Cbersicht)
--   [vim Schnellübersicht](http://tnerual.eriogerg.free.fr/vimqrc-ge.pdf)
--   [Sieben Angewohnheiten für das effektive Editieren](http://www.moolenaar.net/habits_de.pdf)
+-   [Wikipedia article](http://de.wikipedia.org/wiki/Vim)
+-   [vi command reference at Wikibooks](http://de.wikibooks.org/wiki/Vi_Befehlsreferenz:_%C3%9Cbersicht)
+-   [vim quick reference](http://tnerual.eriogerg.free.fr/vimqrc-ge.pdf)
+-   [Seven habits of effective text editing](http://www.moolenaar.net/habits_de.pdf)
 
 

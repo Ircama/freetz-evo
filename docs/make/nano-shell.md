@@ -2,90 +2,90 @@
   - Package: [master/make/pkgs/nano-shell/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/nano-shell/)
   - Steward: -
 
-Die **Nano-Shell** führt beliebige Shell-Komandos via URL aus, d.h. an
-eine Webadresse angehängte Parameter werden von einem kleinen CGI-Skript
-ausgewertet. Die Nano-Shell ist noch kleiner und leichtgewichtiger als
-die [Rudi-Shell](rudi-shell.md), denn sie kommt ohne
-Einstiegs-Oberfläche aus. Im Folgenden wird der ins Deutsche übersetzte
-Hilfetext aus `make menuconfig` zitiert, ergänzt um einige zusätzliche
-Informationen:
+The **Nano Shell** executes arbitrary shell commands via URL, meaning
+that parameters appended to a web address are evaluated by a small CGI
+script. Nano Shell is even smaller and lighter than the
+[Rudi Shell](rudi-shell.md), because it does not need an entry interface.
+The following quotes the help text from `make menuconfig`, supplemented
+with some additional information:
 
-Dieses kleine Paket ermöglicht es sowohl der AVM- als auch der
-Freetz-Weboberfläche, benutzerdefinierte Shell-Kommandos auszuführen und
-ihre Befehls- bzw. Fehlerausgaben anzuzeigen, falls vorhanden.
+This small package enables both the AVM and Freetz web interfaces to run
+user-defined shell commands and display their command or error output, if
+any.
 
-### Sicherheitshinweis
+### Security Notice
 
- * **ACHTUNG!**
-Die Nano-Shell sollte nur für Debugging-Zwecke (Entwicklung,
-Fehlersuche) verwendet werden, z.B. wenn *telnetd, sshd (Dropbear)* oder
-*Rudi-Shell* aus irgendeinem Grund nicht verfügbar bzw. nicht zugreifbar
-sind. Sie ist eine Art Reservefallschirm oder letzter Ausweg, um
-Kommandos auf der Router-Box auszuführen, wenn alles andere scheitert,
-aber zumindest eine der beiden Weboberflächen (AVM oder Freetz) noch
-zugreifbar sind.
+ * **ATTENTION!**
+Nano Shell should be used only for debugging purposes (development,
+troubleshooting), for example when *telnetd*, *sshd (Dropbear)*, or
+*Rudi Shell* is unavailable or inaccessible for some reason. It is a kind
+of reserve parachute or last resort for running commands on the router
+box when everything else fails, but at least one of the two web
+interfaces (AVM or Freetz) is still accessible.
 /!
 
-Da die Nano-Shell in der AVM-Oberfläche die Paßwortabfrage umgeht,
-handelt es sich hierbei um ein
+Since Nano Shell bypasses the password prompt in the AVM interface, this
+is a
 /!
-***potentielles Sicherheitsrisiko***
+***potential security risk***
 /!, sofern Ihre
-Router-Box aus dem LAN/WAN für Fremde zugreifbar ist. Das Freetz-Paßwort
-wird allerdings abgefragt, da es bereits auf Webserver-Ebene greift und
-nicht wie bei AVM in der Web-Applikationslogik implementiert ist.
+router box is accessible to strangers from the LAN/WAN. The Freetz
+password is requested, however, because it already applies at the web
+server level and is not implemented in the web application logic as it is
+with AVM.
 
-### Benutzung
+### Usage
 
-Schicken Sie einfach ein URL-kodiertes Kommando an das Nano-CGI, welches
-z.B. folgende Basisadressen haben kann:
+Simply send a URL-encoded command to the Nano CGI, which can have, for
+example, the following base addresses:
 
 -   [http://fritz.box/cgi-bin/shell.cgi](http://fritz.box/cgi-bin/shell.cgi)
-    (AVM-Weboberfläche)
+    (AVM web interface)
 -   [http://speedport.ip/cgi-bin/shell.cgi](http://speedport.ip/cgi-bin/shell.cgi)
     (AVM)
 -   [http://192.168.0.1/cgi-bin/shell.cgi](http://192.168.0.1/cgi-bin/shell.cgi)
     (AVM)
 -   [http://fritz.box:81/cgi-bin/shell.cgi](http://fritz.box:81/cgi-bin/shell.cgi)
-    (Freetz-Weboberfläche)
+    (Freetz web interface)
 -   [http://speedport.ip:81/cgi-bin/shell.cgi](http://speedport.ip:81/cgi-bin/shell.cgi)
     (Freetz)
 -   [http://192.168.0.1:81/cgi-bin/shell.cgi](http://192.168.0.1:81/cgi-bin/shell.cgi)
     (Freetz)
 
-oder allgemein eben der Name bzw. die IP-Adresse, unter der Ihre
-Router-Box im Netz zu erreichen ist.
+or, more generally, the name or IP address under which your router box is
+reachable on the network.
 
-Einige Beispiel-Kommandos samt zugehöriger kodierter URLs:
+Some example commands with their corresponding encoded URLs:
 
   ---------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  Kommando                                                         URL
+    Command                                                         URL
   ls -l /var/tmp                                                   [http://fritz.box/cgi-bin/shell.cgi?ls%20-l%20%2Fvar%2Ftmp](http://fritz.box/cgi-bin/shell.cgi?ls%20-l%20%2Fvar%2Ftmp)
   /usr/sbin/telnetd -p 2323 -l /bin/sh                             [http://fritz.box/cgi-bin/shell.cgi?%2Fusr%2Fsbin%2Ftelnetd%20-p%202323%20-l%20%2Fbin%2Fsh](http://fritz.box/cgi-bin/shell.cgi?%2Fusr%2Fsbin%2Ftelnetd%20-p%202323%20-l%20%2Fbin%2Fsh)
-  echo "Erster Befehl"; cat /etc/motd; echo "Dritter Befehl"   [http://fritz.box/cgi-bin/shell.cgi?echo%20%22Erster%20Befehl%22%3B%20cat%20%2Fetc%2Fmotd%3B%20echo%20%22Dritter%20Befehl%22](http://fritz.box/cgi-bin/shell.cgi?echo%20%22Erster%20Befehl%22%3B%20cat%20%2Fetc%2Fmotd%3B%20echo%20%22Dritter%20Befehl%22)
+    echo "First command"; cat /etc/motd; echo "Third command"   [http://fritz.box/cgi-bin/shell.cgi?echo%20%22First%20command%22%3B%20cat%20%2Fetc%2Fmotd%3B%20echo%20%22Third%20command%22](http://fritz.box/cgi-bin/shell.cgi?echo%20%22First%20command%22%3B%20cat%20%2Fetc%2Fmotd%3B%20echo%20%22Third%20command%22)
   ---------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Es gibt **Online-Kodierer/-Dekodierer** für URLs im WWW, z.B. diesen
+There are **online encoders/decoders** for URLs on the web, for example
+this
 [URL-En-/Decoder](http://netzreport.googlepages.com/online_tool_zur_url_kodierung_de.html#kodieren),
-der ASCII und UTF-8 kann, oder auch diesen
+which supports ASCII and UTF-8, or this
 [Encoder](http://www.simplelogic.com/Developer/InetEncode.asp)
-bzw.
+and
 [Decoder](http://www.simplelogic.com/Developer/URLDecode.asp),
-der Sonderzeichen in Latin-1 (ISO-8859-1) (de)kodiert. Außerdem kann man
-mit `httpd -d STRING` via BusyBox ebenfalls URL-Dekodierung machen.
+which encode/decode special characters in Latin-1 (ISO-8859-1). URL
+decoding can also be done via BusyBox with `httpd -d STRING`.
 
-**Usability-Tip** (getestet in IE 7, Opera 9.23, Firefox 2.0.6,
-Konqueror 3.5.8): Viele Browser akzeptieren auch unkodierte
-CGI-Parameter, also Befehler im Klartext, d.h. normalerweise kann man
-anstatt der kodierten Befehle oben auch Folgendes schreiben:
+**Usability tip** (tested in IE 7, Opera 9.23, Firefox 2.0.6, Konqueror
+3.5.8): Many browsers also accept unencoded CGI parameters, meaning
+commands in plain text. Normally, instead of the encoded commands above,
+you can also write the following:
 
 ```
 http://fritz.box/cgi-bin/shell.cgi?ls -l /var/tmp
 http://fritz.box/cgi-bin/shell.cgi?/usr/sbin/telnetd -p 2323 -l /bin/sh
-http://fritz.box/cgi-bin/shell.cgi?echo "Erster Befehl"; cat /etc/motd; echo "Dritter Befehl"
+http://fritz.box/cgi-bin/shell.cgi?echo "First command"; cat /etc/motd; echo "Third command"
 ```
 
-Viel Spaß beim Ausprobieren!
+Have fun trying it out!
 
 [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)

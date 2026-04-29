@@ -2,27 +2,26 @@
   - Package: [master/make/pkgs/bridge-utils/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bridge-utils/)
   - Steward: -
 
-Dieses Paket beinhaltet Utilities für die Konfiguration des
+This package contains utilities for configuring
 [IEEE
 802.1d](http://standards.ieee.org/getieee802/) Ethernet
-Bridging (inkl. Spanning Tree Protokoll) in Linux-Kernels 2.4 oder
-höher.
+bridging, including the Spanning Tree Protocol, in Linux kernels 2.4 or
+newer.
 
-Mittels einer [Ethernet
-Bridge](http://de.wikipedia.org/wiki/Bridge_(Netzwerk))
-lassen sich mehrere Ethernet Geräte (üblicherweise Netzwerkkarten)
-transparent verbinden, sodass Hosts, die mit einem Netzwerk-Gerät
-verbunden sind, Hosts des anderen Netzwerk-Gerätes direkt sehen können
-(als wären sie im eigenen Netz).
+An [Ethernet
+bridge](http://de.wikipedia.org/wiki/Bridge_(Netzwerk))
+can transparently connect several Ethernet devices, usually network
+cards, so hosts connected to one network device can directly see hosts
+on the other network device, as if they were on the same network.
 
-### Weiterführende Links
+### Further Links
 
 -   [Sourceforge
-    Projekt-Seite](http://sourceforge.net/projects/bridge/)
+    project page](http://sourceforge.net/projects/bridge/)
 -   [Project
     Homepage](http://www.linuxfoundation.org/en/Net:Bridge)
-    including [FAQs](../FAQ.html) a.o.m.
+    including [FAQs](../wiki/00_FAQ/FAQ.html) a.o.m.
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Bridge_(Netzwerk))
-    zu Bridge (Netzwerk)
+    article](http://de.wikipedia.org/wiki/Bridge_(Netzwerk))
+    about Bridge (networking)
 

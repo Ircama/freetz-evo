@@ -174,7 +174,7 @@ modprobe iptable_filter
 modprobe x_tables
 modprobe xt_tcpudp
 
-# Alternative LOG und REJECT targets:
+# Alternative LOG and REJECT targets:
 modprobe ipt_LOG
 modprobe ipt_REJECT
 

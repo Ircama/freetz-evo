@@ -7,55 +7,52 @@
 *"xrelayd is the successor to matrixtunnel, a lightweight stunnel
 replacement. Xrelayd is a basic tcp proxy server which enables you to
 encrypt arbitrary protocols without changing ssl unaware deamons and
-client software."* [xrelayd Thread im
+client software."* [xrelayd thread in the
 OpenWRT-Forum](http://forum.openwrt.org/viewtopic.php?id=12338)
 
-Obwohl es als Nachfolger von matrixtunnel betrachtet wird, ist auch
-dieses Projekt ähnlich wie *matrixtunnel* seit Ende 2007 etwas
-eingeschlafen. *xrelayd* benutzt eine andere SSL-Bibliothek als
-*matrixtunnel* und ist auch nicht so kompakt wie dieses. Die Handhabung
-und Syntax von *xrelayd* ist ähnlich dem *matrixtunnel*. *xrelayd* kann
-im Unterschied zu *matrixtunnel* auch noch [selbstsignierte
-Zertifikate](http://en.wikipedia.org/wiki/Self-signed_certificate)
-erstellen, sodass dies auf der Box selbst geschehen kann. Solche
-Zertifikate werden allerdings von den Browsern wie Firefox 3 als korrupt
-angesehen, weil sie "nicht vertrauenswürdig" sind (bei
-"vertrauenswürdigen Zertifikaten" bürgt dafür eine
+Although it is considered the successor to matrixtunnel, this project,
+like *matrixtunnel*, has also become somewhat dormant since the end of
+2007. *xrelayd* uses a different SSL library than *matrixtunnel* and is
+not as compact. Its handling and syntax are similar to *matrixtunnel*.
+Unlike *matrixtunnel*, *xrelayd* can also create [self-signed
+certificates](http://en.wikipedia.org/wiki/Self-signed_certificate), so
+this can be done directly on the box. Such certificates are considered
+corrupt by browsers such as Firefox 3, however, because they are "not
+trusted" (with "trusted certificates", a
 "[Certificate
 Authority](http://de.wikipedia.org/wiki/Zertifizierungsstelle)"
-wie z.B. Thawte oder VeriSign). AVM scheint für ihren HTTPS-Server eine
-xrelayd-ähnliche-Lösung zu benutzen. Dafür sprechen bei jedem Reboot neu
-erstellte selbst signierte Zertifikate des HTTPS-Servers von AVM.
+such as Thawte or VeriSign vouches for them). AVM appears to use an
+xrelayd-like solution for its HTTPS server. The self-signed certificates
+newly created for AVM's HTTPS server on every reboot support this
+assumption.
 
-Seit
-Freetz-trunk Changeset r3571 gibt es dazu auch ein WebGUI.
+Since Freetz trunk Changeset r3571, a WebGUI is also available for this.
 
-### Konfiguration
+### Configuration
 
-1.  Erzeugen der Keys auf dem PC (unter Linux):
+1.  Generate the keys on the PC (under Linux):
 
     ``` 
     openssl genrsa 1024 > host.key
     openssl req -new -x509 -nodes -sha1 -days 365 -key host.key > host.cert
     ```
 
-2.  Die Keys im Webinterface unter Einstellungen→XRelayd:
-    Certificate/Private Key einfügen.
+2.  Paste the keys into the web interface under Settings -> XRelayd:
+    Certificate/Private Key.
 
 <!-- -->
 
-3.  Die gewünschten Services hinzufügen. Zum Beispiel:
+3.  Add the desired services. For example:
 
     ``` 
     0.0.0.0:4433 127.0.0.1:81 Freetz-Webinterface
     ```
 
-4.  Zugriff (intern) über
+4.  Access internally via
     [https://fritz.box:4433](https://fritz.box:4433).
-    Für den externen Zugriff muss noch eine Port-Freigabe eingetragen
-    werden.
+    For external access, a port forward still has to be entered.
 
-### Zertifikate auf der Box erzeugen
+### Creating Certificates on the Box
 
 ```
 xrelayd -f -K 1024 -p host.key -U "CN=localhost" -p host.key -A host.cert

@@ -3,13 +3,11 @@
   - Steward: -
 
 [HP Linux Imaging and
-Printing](http://hplipopensource.com/) (HPLIP) ermöglicht das
-Drucken und Scannen auf HP-Geräten unter Linux ([unterstütze
-Geräte](http://hplipopensource.com/hplip-web/supported_devices/index.html)).
+Printing](http://hplipopensource.com/) (HPLIP) enables printing and
+scanning on HP devices under Linux ([supported
+devices](http://hplipopensource.com/hplip-web/supported_devices/index.html)).
 
-Da die Druckfunktionalität sowieso schon über den AVM-Printserver
-möglich ist, wird durch dieses Paket lediglich die Scanfunktionalität
-zur Verfügung gestellt. Außerdem bietet das Paket die nötige
-Infrastruktur für [hp-utils](hp-utils.md), womit man z.B. den
-Tintenstand und den Druckerzustand in einem Web-Interface anzeigen
-lassen kann.
+Because printing functionality is already available through the AVM print
+server, this package provides only scanning functionality. It also
+provides the infrastructure required by [hp-utils](hp-utils.md), which can
+display, for example, ink levels and printer status in a web interface.

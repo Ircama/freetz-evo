@@ -2,33 +2,31 @@
   - Package: [master/make/pkgs/openntpd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/openntpd/)
   - Steward: -
 
-*"OpenNTPD ist eine FREIE und einfach zu benutzende Implementierung des
-Network Time Protocol. OpenNTPD kann die lokale Uhr mit NTP-Servern
-abgleichen und selbst als NTP-Server fungieren, also die lokale Uhrzeit
-anderen Systemen zur Verfügung stellen."*
+*"OpenNTPD is a free and easy-to-use implementation of the Network Time
+Protocol. OpenNTPD can synchronize the local clock with NTP servers and
+also act as an NTP server itself, making the local time available to
+other systems."*
 [http://www.openntpd.org/de/](http://www.openntpd.org/de/)
 
-Mit **OpenNTPD** lässt sich die Zeit per Internet synchronisieren.
-Natürlich kann man das von jedem PC aus auch, und die Fritzbox (multid
-daemon) selbst holt sich die Zeit ja auch aus dem Netz - wozu also
-dieses Paket?
+With **OpenNTPD**, time can be synchronized via the internet. Of course,
+this can also be done from any PC, and the Fritzbox itself (the multid
+daemon) also gets its time from the network, so why this package?
 
-Das OpenNTPD Paket stellt nicht nur einen Client, sondern auch einen
-Server zur Verfügung. Somit kann sich die FritzBox die Zeit aus dem
-Internet "downloaden" - und stellt sie dann im lokalen Netz bereit.
+The OpenNTPD package provides not only a client but also a server. This
+allows the FritzBox to "download" the time from the internet and then
+make it available in the local network.
 
-### Vorteile:
+### Advantages:
 
--   Nur die FritzBox muss die Zeit "Remote" abgleichen
--   Da die FritzBox sicher rund um die Uhr läuft, kann dies jederzeit
-    passieren - und dennoch steht die aktuelle Zeit zur Verfügung,
-    sollte das Internet mal "kaputt" sein (Probleme beim Provider
-    o.ä.).
--   Alle Rechner im lokalen Netz synchronisieren mit der FritzBox, und
-    haben somit identische Zeitstempel - sehr von Vorteil, wenn man z.B.
-    Logfiles abgleichen will.
--   Auch Rechner, die nicht ins Internet dürfen, haben die Chance auf
-    einen Zeitabgleich.
+-   Only the FritzBox has to synchronize the time remotely.
+-   Because the FritzBox is usually running around the clock, this can
+    happen at any time, and the current time is still available if the
+    internet is ever "broken" (provider problems, etc.).
+-   All computers in the local network synchronize with the FritzBox and
+    therefore have identical timestamps, which is very useful, for
+    example, when comparing log files.
+-   Even computers that are not allowed to access the internet can still
+    synchronize their time.
 
 ### Ubuntu client setup
 
@@ -39,37 +37,37 @@ Internet "downloaden" - und stellt sie dann im lokalen Netz bereit.
 -   More info:
     [here](https://help.ubuntu.com/community/UbuntuTime)
 
-### Multid NTP client deaktivieren
+### Disabling the Multid NTP Client
 
-Durch diese Option wird AVM's multid durch einen zusätzlichen Parameter
-angewiesen die Zeit nicht zu synchronisieren (erfordert Restarts von
-multid).
+This option instructs AVM's multid, through an additional parameter, not
+to synchronize the time (requires multid restarts).
 
-Wenn chronyd in der Firmware vorhanden ist wird multid in rc.net ohne
-SNTP-Funktion gestartet. Zusätzlich deaktiviert multid diese Funktion
-auch automatisch wenn /var/run/chronyd.pid existiert
+If chronyd is present in the firmware, multid is started in rc.net
+without SNTP functionality. In addition, multid also disables this
+function automatically when /var/run/chronyd.pid exists
 ([source](http://www.wehavemorefun.de/fritzbox/index.php/Multid#Aufruf)).
 
 SNTP = Simple Network Time Protocol
 
 openntpd automatically selects Remove chronyd.
 
-### Fehlerbehebung
+### Troubleshooting
 
--   `dispatch_imsg in main: pipe closed`: In der `openntpd.conf` wird
-    `listen on` falsch benutzt.
+-   `dispatch_imsg in main: pipe closed`: `listen on` is used incorrectly
+    in `openntpd.conf`.
 
 ### Alternative
 
-Man kann auch den in [inetd](inetd.html#user) integrierten
+The
 ["time"
-Service](http://en.wikipedia.org/wiki/Time_Protocol)
-aktivieren. Diese kann z.B. mit "rdate" genutzt werden, welches
-bereits in Freetz enthalten ist oder auch auf der Dbox2
+service](http://en.wikipedia.org/wiki/Time_Protocol)
+integrated in [inetd](inetd.html#user) can also be enabled. It can be
+used, for example, with "rdate", which is already included in Freetz, or
+also on the Dbox2.
 
-### Weiterführende Links
+### Further Links
 
 -   [http://www.openntpd.org/](http://www.openntpd.org/)
--   [Artikel zu
+-   [Article on
     OpenNtpd](http://www.zdnet.de/builder/program/0,39023551,39191851,00.htm)
 

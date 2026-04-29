@@ -10,29 +10,28 @@
 ([Filesystem](http://de.wikipedia.org/wiki/Dateisystem)
 in
 [Userspace](http://de.wikipedia.org/wiki/Userspace))
-ist ein
-[Kernel-Modul](http://de.wikipedia.org/wiki/Kernel-Modul),
-das es ermöglicht, Dateisystem-Treiber aus dem
-[Kernel-Mode](http://de.wikipedia.org/wiki/Betriebssystemkern)
-in den
-[User-Mode](http://de.wikipedia.org/wiki/Ring_(CPU))
-zu verlagern. Auf diese Weise können auch nicht-priviligierte Benutzer
-(also jene, die nicht *root* heißen) Dateisysteme einbinden bzw.
-erstellen. Die *FUSE* Module agieren quasi als "Bridge" zu den
-Kernel-Schnittstellen.
+is a
+[kernel module](http://de.wikipedia.org/wiki/Kernel-Modul)
+that makes it possible to move filesystem drivers out of
+[kernel mode](http://de.wikipedia.org/wiki/Betriebssystemkern)
+and into
+[user mode](http://de.wikipedia.org/wiki/Ring_(CPU)). This allows
+unprivileged users, meaning users who are not *root*, to mount or create
+filesystems. The *FUSE* modules effectively act as a bridge to the kernel
+interfaces.
 
-*FUSE* lässt sich besonders gut einsetzen, um virtuelle Dateisysteme zu
-verwirklichen. Anders als bei traditionellen Dateisystemen, die sich um
-das Speichern und Laden von Daten auf der Disk zu kümmern haben,
-speichern virtuelle Dateisysteme selbst keine Daten. Sie sind vielmehr
-eine "View" oder "Übersetzung" eines bereits existierenden Datei-
-oder Speichersystems. Im Prinzip kann jede für *FUSE* verfügbare
-Resource als Dateisystem exportiert werden.
+*FUSE* is especially useful for implementing virtual filesystems. Unlike
+traditional filesystems, which are responsible for storing and loading
+data on disk, virtual filesystems do not store data themselves. Instead,
+they are a view or translation of an already existing file or storage
+system. In principle, any resource available to *FUSE* can be exported as
+a filesystem.
 
-In Freetz basiert z.B. das [NTFS](ntfs-3g.html) Paket auf *FUSE*.
+In Freetz, for example, the [NTFS](ntfs-3g.html) package is based on
+*FUSE*.
 
-### Weiterführende Links
+### Further Links
 
  - [Wikipedia: FUSE](http://de.wikipedia.org/wiki/Filesystem_in_Userspace)
- - s3fslite für Freetz: Ticket #796
+ - s3fslite for Freetz: Ticket #796
 

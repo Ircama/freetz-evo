@@ -2,14 +2,14 @@
   - Package: [master/make/pkgs/avm-rules/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/avm-rules/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit AVM-rules können (ausschliesslich) Ports der Fritz!Box selbst für Zugriff aus dem Internet freigegeben werden.<br>
+AVM-rules can expose ports of the Fritz!Box itself, and only those ports, for access from the internet.<br>
 
 [![screenshot](../screenshots/000-PKG_avm-rules_md.png)](../screenshots/000-PKG_avm-rules.png)
 
-Dazu wird ```pcplisten``` verwendet, nur für IPv4-Freigaben. Zu finden im menuconfig unter ```packages > webif```.
+It uses ```pcplisten``` and only supports IPv4 forwards. It can be found in menuconfig under ```packages > webif```.
 
- * Die Ports werden für maximal 120 Sekunden geöffnet und müssen danach erneuert werden.
- * Neue Ports werden sofort beim Daemonstart geöffnet.
- * Bei Konfigurationsänderungen werden alte Ports erst nach dem ersten Intervall aktualisiert.
- * Offene Ports können nicht geschlossen werden und es muss der Timeout abgewartet werden.
+ * Ports are opened for at most 120 seconds and must then be renewed.
+ * New ports are opened immediately when the daemon starts.
+ * After configuration changes, old ports are updated only after the first interval.
+ * Open ports cannot be closed explicitly; the timeout must expire.
 

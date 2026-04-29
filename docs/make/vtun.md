@@ -2,39 +2,38 @@
   - Package: [master/make/pkgs/vtun/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/vtun/)
   - Steward: -
 
-[VTUN](http://vtun.sourceforge.net/) ist eine
-einfache Möglichkeit, einen Tunnel von der oder auf die Fritzbox
-aufzubauen. Mit maximal 75k ist es zudem auch nicht allzu groß.
+[VTUN](http://vtun.sourceforge.net/) is a
+simple way to build a tunnel from or to the Fritzbox. At a maximum of 75k,
+it is also not very large.
 
 ### Version
 
 [![vtun configuration GUI](../screenshots/125_md.png)](../screenshots/125.png)
 
-Momentan ist die Version 3.0.2 enthalten. Es kann im menuconfig
-(momentan im Bereich "Testing") mit folgenden Optionen gebaut werden:
+Version 3.0.2 is currently included. It can be built in menuconfig
+(currently in the "Testing" section) with the following options:
 
--   Komprimierung per LZO2 oder Deflate (zlib)
--   Verschlüsselung per SSL (Achtung, [Hinweise zur SSL Bibliothek
-    beachten](../FAQ.html#NachdemFlashenistdieBoxnichtmehrerreichbarundoderrebootetständig))
-    ^Es besteht die Möglichkeit, VTUN statisch zu bauen, um mögliche Probleme damit zu vermeiden^
--   Flusssteuerung ("Traffic-Shaping")
+-   Compression via LZO2 or Deflate (zlib)
+-   Encryption via SSL (caution: [note the information about the SSL
+  library](../wiki/00_FAQ/FAQ.html))
+  ^It is possible to build VTUN statically to avoid possible problems with this^
+-   Flow control ("traffic shaping")
 
-### Konfigurationsanleitung
+### Configuration Guide
 
-Die GUI für das Programm ist momentan sehr einfach aufgebaut:
+The GUI for the program is currently very simple:
 
--   In einer Zeile wird der Aufrufstring für das Programm festgelegt
--   In der Feld darunter wird die Konfigurationsdatei eingegeben werden
+-   The invocation string for the program is defined in one line.
+-   The configuration file is entered in the field below.
 
-Auf der Seite von VTUN findet man auch ein paar
-[Konfigurationsbeispiele](http://vtun.sourceforge.net/setup.html)
+The VTUN site also provides a few
+[configuration examples](http://vtun.sourceforge.net/setup.html).
 
-### Portweiterleitung
+### Port Forwarding
 
-Soll die Box als Server dienen und die Verbindung auf die Box über das
-Internet aufgebaut werden, so muss dafür eine "Portweiterleitung"
-eingerichet werden. Ausführlich wird das Thema z.B. beim Paket
-[OpenVPN](openvpn.html#Portweiterleitung) behandelt, als Freetz
-Nutzer bietet sich dafür das Paket [AVM
-Firewall](avm-firewall.md) an
+If the box is to act as a server and the connection to the box is to be
+established over the internet, port forwarding must be configured for
+this. The topic is covered in detail, for example, in the
+[OpenVPN](openvpn.html#port-forwarding) package documentation. For Freetz
+users, the [AVM Firewall](avm-firewall.md) package is a suitable option.
 

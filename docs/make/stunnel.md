@@ -15,33 +15,30 @@ protocols (like POP, IMAP, LDAP, etc) by having Stunnel provide the
 encryption, requiring no changes to the daemon's code. "*
 [http://www.stunnel.org/](http://www.stunnel.org/)
 
-**Stunnel** könnte man auf Deutsch mit "Sicherer Tunnel" wiedergeben.
-Hinter dem Begriff verbirgt sich die Möglichkeit, beliebige TCP
-Verbindungen per SSL zu verschlüsseln - auch bzw. gerade wenn die
-Anwendung selbst dies nicht unterstützt, und somit dem
-"Man-in-the-Middle" das Schnüffeln zu verderben. Zahlreiche gute
-Anwendungsbeispiele finden sich auf der [Stunnel
-Homepage](http://www.stunnel.org/examples/).
+**Stunnel** can be understood as a "secure tunnel". Behind the term is
+the ability to encrypt arbitrary TCP connections with SSL, even and
+especially when the application itself does not support this, thereby
+spoiling sniffing for the "man in the middle". Numerous good usage
+examples can be found on the [Stunnel
+homepage](http://www.stunnel.org/examples/).
 
-### Konfiguration
+### Configuration
 
-1. Erzeugen der Keys auf dem PC (unter Linux):
+1. Generate the keys on the PC (under Linux):
    <pre><code>
    openssl genrsa 1024 > host.key
    openssl req -new -x509 -nodes -sha1 -days 365 -key host.key > host.cert
    </code></pre>
 
-2. Das Zertifikat und den Schlüssel im Webinterface unter Einstellungen
-   → Stunnel: "Certificate Chain" (host.cert) und "Private Key"
-   (host.key) einfügen.
+2. Paste the certificate and key into the web interface under Settings ->
+   Stunnel: "Certificate Chain" (host.cert) and "Private Key" (host.key).
 
-3. Die gewünschten Services hinzufügen.
-   Die Angabe des Pfads zum Zertifikat und zum Schlüssel sind optional.
-   Ohne ausdrückliche Angabe wird das Zertifikat
-   `/tmp/flash/stunnel/certs.pem` und der Schlüssel
-   `/tmp/flash/stunnel/key.pem` verwendet, welche vom Webinterface aus
-   verwaltet werden (Punkt 2).
-   Zum Beispiel:
+3. Add the desired services.
+   Specifying the path to the certificate and key is optional. Without an
+   explicit setting, the certificate `/tmp/flash/stunnel/certs.pem` and
+   the key `/tmp/flash/stunnel/key.pem`, which are managed by the web
+   interface (step 2), are used.
+   For example:
    <pre><code>
    [freetz https Web-Interface]
    client = no
@@ -51,16 +48,15 @@ Homepage](http://www.stunnel.org/examples/).
    connect = 81
    </code></pre>
 
-4. Zugriff (intern) über
+4. Access internally via
    [https://fritz.box:4433](https://fritz.box:4433).
-   Für den externen Zugriff muss noch eine Port-Freigabe eingetragen
-   werden.
+   For external access, a port forward still has to be entered.
 
-### Erweitert
+### Advanced
 
-Die Standardeinstellungen von Freetz können mit der Zeile `#EXCLUSIVE#` deaktiviert werden.
-Dies ermöglicht, globale Einstellungen außerhalb der `[<section>]` vorzunehmen.
-Zum Beispiel:
+The Freetz default settings can be disabled with the line `#EXCLUSIVE#`.
+This makes it possible to set global options outside `[<section>]`.
+For example:
 <pre><code>
    #EXCLUSIVE#
 
@@ -80,9 +76,9 @@ Zum Beispiel:
    connect = 80
 </code></pre>
 
-### Weiterführende Links
+### Further Links
 
 -   [Wikipedia (EN)](http://en.wikipedia.org/wiki/Stunnel)
 -   [xrelayd](xrelayd.md)
--   [Artikel im Forum](http://www.ip-phone-forum.de/showthread.php?t=123174)
+-   [Article in the forum](http://www.ip-phone-forum.de/showthread.php?t=123174)
 

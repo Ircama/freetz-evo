@@ -6,30 +6,28 @@
 
 [![SMStools3](../screenshots/251_md.jpg)](../screenshots/251.jpg)
 
-Package um SMS mit einem UMTS-Stick zu versenden und zu empfangen.
+Package for sending and receiving SMS messages with a UMTS stick.
 
- * Falls die
-FritzBox UMTS-Unterstützung hat, am besten den umtsd herauspatchen.
+ * If the FritzBox has UMTS support, it is best to patch out umtsd.
 
-SMStools3 kann komplett per Webif bedient werden oder alternativ per
-Terminal.
+SMStools3 can be operated entirely through the WebIF or alternatively
+from the terminal.
 
-### Datenverzeichnis
+### Data Directory
 
-Das "Datenverzeichnis" legt man am besten auf einen USB-Stick, damit
-keine SMS verloren gehen. Dennoch wird ein `modsave` beim Beenden des
-Packages ausgeführt, falls der Pfad mit `/tmp/flash` beginnt.
+The "data directory" is best placed on a USB stick so no SMS messages are
+lost. Nevertheless, a `modsave` is run when the package stops if the path
+starts with `/tmp/flash`.
 
-### Senden und Empfangen mit dem Terminal
+### Sending and Receiving from the Terminal
 
-Eine SMS kann man diesem Befehl versendet werden, der Parameter `flash`
-ist optional:
+An SMS can be sent with this command; the `flash` parameter is optional:
 
 ```
-rc.smstools3 sendsms flash +497771234567 Text der Nachricht
+rc.smstools3 sendsms flash +497771234567 Message text
 ```
 
-Empfangene SMS können so aufgelistet angezeigt:
+Received SMS messages can be listed like this:
 
 ```
 rc.smstools3 listsms
@@ -91,10 +89,10 @@ if [ "$1" = "RECEIVED" ]; then
 fi
 ```
 
-### Weiteres
+### Miscellaneous
 
--   Komplette Dokumentation:
+-   Complete documentation:
     [http://smstools3.kekekasvi.com/](http://smstools3.kekekasvi.com/)
--   Falls der Stick nicht richtig erkannt wird, sondern nur als
-    Datenträger:
-    [wiki:/packages/ppp#Weiteres](ppp.html#weiteres)
+-   If the stick is not recognized correctly and appears only as a mass
+  storage device:
+  [wiki:/packages/ppp#Miscellaneous](ppp.html#miscellaneous)

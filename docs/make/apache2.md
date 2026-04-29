@@ -6,110 +6,108 @@
   - Package: [master/make/pkgs/apache2/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/apache2/)
   - Steward: [@fda77](https://github.com/fda77)
 
-*Mit diesem Paket ist es möglich, den Apache Webserver entweder allein
-oder mit zusätzlichem PHP CGI Binary zu erstellen.*
+*This package makes it possible to build the Apache web server either on
+its own or with an additional PHP CGI binary.*
 
-Apache ist unter Testing zu finden, PHP unter Standard packages.
+Apache can be found under Testing, PHP under Standard packages.
 
-Das Paket enthält die minimale Verzeichnisstruktur für Apache + PHP. Die
-Konfigurationsdateien bedürfen wahrscheinlich noch einiger Anpassungen
-an die jeweiligen Bedürfnisse, bevor das ganze dann entweder manuell auf
-ein an die Box angeschlossenes USB-Gerät (USB-Stick, Festplatte) - oder
-aber ins Verzeichnis `root` (zur Integration ins Firmware-Image) kopiert
-werden kann.
+The package contains the minimal directory structure for Apache + PHP.
+The configuration files probably still need some adjustments to the
+respective needs before everything can then be copied either manually to
+a USB device connected to the box (USB stick, hard disk) or into the
+`root` directory for integration into the firmware image.
 
-Man kann PHP auch ohne den Apache erstellen; das CGI Binary
-(`sapi/cgi/php`) ist anschließend unter packages/php-x.y.z zu finden
-(php-cgi) Wer hingegen das CLI Binary (`sapi/cli/php`) benötigt, muss es
-sich leider selbst besorgen.
+PHP can also be built without Apache; the CGI binary (`sapi/cgi/php`) can
+then be found under packages/php-x.y.z (php-cgi). Anyone who needs the
+CLI binary (`sapi/cli/php`), however, unfortunately has to obtain it
+separately.
 
-Beide Pakete, Apache sowohl auch PHP werden standardmäßig dynamisch
-gegen die benötigten Bibliotheken gelinkt. Wer statische Binaries
-bevorzugt, kann dies jedoch mit entsprechenden Einstellungen anpassen.
+Both packages, Apache as well as PHP, are dynamically linked against the
+required libraries by default. Anyone who prefers static binaries can
+adjust this with the corresponding settings.
 
-Werden spezielle Features (etwa SSL für Apache, XML Handling in PHP,
-etc.) benötigt, müssen die Makefiles entsprechend angepasst werden.
-Entsprechende Tipps und Tricks finden sich im
+If special features are needed, such as SSL for Apache or XML handling in
+PHP, the Makefiles must be adjusted accordingly. Corresponding tips and
+tricks can be found in the
 [Forum](http://www.ip-phone-forum.de/showthread.php?t=127089).
 
-Das Apache Paket befindet sich nach dem Build in
-*packages/apache-x.y.z,* ebenso ist dort die Config für PHP zu finden.
-Das PHP Binary wird automatisch in das Firmware Image gepackt, dies ist
-auf Grund der Größe nicht zu empfehlen. Besser ist folgende
-Vorgehensweise:
+After the build, the Apache package is located in *packages/apache-x.y.z,*
+and the config for PHP can also be found there. The PHP binary is
+automatically packed into the firmware image; this is not recommended due
+to its size. The following procedure is better:
 
-1.  Freetz Image ohne Apache und Php erstellen und auf die Box spielen
-2.  Apache und ev. PHP als [statisch gelinkte] binaries
-    auswählen und erneut make ausführen
-3.  Die Binaries aus *packages/apache-x.y.z* und *packages/php-x.y.z*
-    auf einen externen Stick packen (das php-cgi sollte in den cgi-bin
-    Ordner des apache gelegt werden
-4.  apache.conf bzw httpd.conf im apache binary anpassen, ev. ist es
-    nötig, dass zwei symlinks erstellt werden dies kann z.B so gelöst
-    werden
+1.  Create a Freetz image without Apache and PHP and flash it to the box.
+2.  Select Apache and possibly PHP as [statically linked] binaries and
+    run make again.
+3.  Put the binaries from *packages/apache-x.y.z* and *packages/php-x.y.z*
+    onto an external stick; php-cgi should be placed in Apache's cgi-bin
+    folder.
+4.  Adjust apache.conf or httpd.conf in the Apache binary. It may be
+    necessary to create two symlinks; this can be solved like this, for
+    example:
 
 ```
   ln -s /var/media/ftp/uStor01/apache/logs /var/logs
 ```
 
-Danach kann man die Apache Befehle direkt verwenden (z.B. apachectl
-start|stop|restart):
+After that, the Apache commands can be used directly, for example
+apachectl start|stop|restart:
 
 ```
 /var/media/ftp/uStor01/apache/bin/apachectl start
 ```
 
-**Verwendet man kein selbsterstelltes Binary, so sollte (muss) man
-Apache mittels folgendem Befehl starten:**
+**If no self-created binary is used, Apache should (must) be started with
+the following command:**
 
 ```
-httpd-2.2.4/bin/apachectl -f /Pfad/zur/Apache/Config/httpd.conf -k start
+httpd-2.2.4/bin/apachectl -f /path/to/Apache/Config/httpd.conf -k start
 ```
 
--   Sollte die Website nicht direkt erreichbar sein, bitte unter
-    apache/logs nachsehen, welche Fehlermeldungen dort ausgegeben werden
--   Lässt sich Apache gar nicht erst starten ein chmod -R 777
-    /var/media/ftp/uStor01/apache durchführen (evtl. reicht auch nur
-    chmod -R +x /var/media/ftp/uStor01/apache)
--   Wichtig: damit PHP funktioniert müssen folgende Zeilen in die
-    Apache-Konfiguration eingefügt werden:
+-   If the website is not directly reachable, check under apache/logs to
+    see which error messages are output there.
+-   If Apache cannot be started at all, run chmod -R 777
+    /var/media/ftp/uStor01/apache; possibly chmod -R +x
+    /var/media/ftp/uStor01/apache is sufficient.
+-   Important: for PHP to work, the following lines must be inserted into
+    the Apache configuration:
 
 ```
 Action       php-script /cgi-bin/php-cgi
 AddHandler      php-script .php
 ```
 
-Für CGI's muss folgende Zeile hinzugefügt/auskommentiert werden:
+For CGIs, the following line must be added/uncommented:
 
 ```
 AddHandler    cgi-script .cgi
 ```
 
-Es kann auch eine bereits fertiger Apache2 Binary mit dem oben
-beschriebenem PHP Binary verwendet werden.
+A ready-made Apache2 binary can also be used with the PHP binary
+described above.
 
-Wird z.B. mod_proxy bzw. sogar mod_proxy_html benötigt empfehle ich
-das fertige Binary aus diesem
+If, for example, mod_proxy or even mod_proxy_html is needed, I recommend
+the ready-made binary from this
 [Thread](http://www.ip-phone-forum.de/showthread.php?t=103110&p=1730858&viewfull=1#post1730858).
 
 ### apache.conf
 
-Der User muss auf einen vorhandenen User abgeändert werden (der User
-root ist nur bei speziellen Binaries möglich).
+The user must be changed to an existing user; the root user is possible
+only with special binaries.
 
-Derzeit (Stand Juli 2011) kann folgendes verwendet werden:
+Currently (as of July 2011), the following can be used:
 
 ```
 User boxusr80
 Group root
 ```
 
-Sollen die .htaccess Dateien verwendet werden, so muss für das
-entsprechende Verzeichnis AllowOverride entsprechend angepasst werden
-(man kann auch einfach "AllowOverride All" verwenden)
+If .htaccess files should be used, AllowOverride must be adjusted
+accordingly for the relevant directory; "AllowOverride All" can also be
+used.
 
-Hier eine entsprechende Config für ein Verzeichnis (diese ermöglicht
-[jedem] den Zugriff!):
+Here is a corresponding config for a directory; this allows access for
+[everyone]:
 
 ```
 <Directory "/var/media/ftp/uStor01/apache/htdocs">
@@ -126,57 +124,56 @@ Order allow,deny
 Allow from all</Directory>
 ```
 
-### Passwortschutz mit .htaccess
+### Password Protection with .htaccess
 
-> Soll ein Verzeichnis mittels *.htaccess* vor autorisiertem Zugriff
-> geschützt werden kann folgendes hinzugefügt werden:
+> If a directory should be protected from unauthorized access using
+> *.htaccess*, the following can be added:
 
 ```
 AuthType
-Basic AuthUserFile    /path/to/.ht.password !AuthName    "Die Website erfordert Zugangsdaten" require valid-user
+Basic AuthUserFile    /path/to/.ht.password !AuthName    "The website requires credentials" require valid-user
 ```
 
-> **Wichtig** : im apache Ordner befindet sich htpasswd, mit dem man die
-> Passwortdatei erstellen kann.
+> **Important**: the Apache folder contains htpasswd, which can be used
+> to create the password file.
 
 ```
 htpasswd -c/path/to/.ht.password username
 ```
 
-(Dies erstellt eine neue oder [überschreibt] die vorhandene
-Passwortdatei mit dem angegebenem Usernamen)
+(This creates a new password file or [overwrites] the existing one with
+the specified username.)
 
-Um Benutzer zur Passwortdatei hinzuzufügen folgendes benutzen:
+To add users to the password file, use the following:
 
 ```
  htpasswd/path/to/.ht.password username
 ```
 
-Es ist generell empfehlenswert vor zu schützenden Daten das Kürzel .ht
-anzugeben, dadurch bekommt der Benutzer die Datei nicht zu sehen.
+It is generally recommended to prefix data that should be protected with
+.ht; this prevents the user from seeing the file.
 
-### Apache als Proxy
+### Apache as a Proxy
 
-Ein guter Einsatzzweck des Apaches ist es, ihn als Proxy zu verwenden.
+A good use case for Apache is to use it as a proxy.
 
-Dies kann wie folgt aussehen: Nach extern ist nur der Port 80
-freigegeben. Gibt der user z.B. freetz.meinedomain.at ein, so kommt er
-auf das Freetz-Interface bei fritzbox.meinedomain.at auf das
-AVM-Interface usw.
+This can look as follows: only port 80 is exposed externally. If the user
+enters, for example, freetz.meinedomain.at, they reach the Freetz
+interface; with fritzbox.meinedomain.at they reach the AVM interface, and
+so on.
 
-Der Vorteil besteht dabei, dass man nur einen Port nach außen freigeben
-muss, und zusätzlich kann man die einzelnen Seiten auch mit einem
-Passwort sichern. (Die Fritzbox kann z.B. nicht mehr zurückgesetzt
-werden, wenn vorher ein Passwort eingegeben werden muss.
+The advantage is that only one port has to be exposed externally, and the
+individual pages can also be protected with a password. For example, the
+Fritzbox can no longer be reset if a password has to be entered first.
 
-**Umsetzung:** Nötig ist dafür ein Apache mit dem Modul Proxy. Ich
-verwende hierfür das von MaxMuster erstellte
-[Binary](http://www.ip-phone-forum.de/showthread.php?t=103110&p=1737217&viewfull=1#post1737217).
+**Implementation:** This requires Apache with the Proxy module. For this,
+I use the
+[binary](http://www.ip-phone-forum.de/showthread.php?t=103110&p=1737217&viewfull=1#post1737217)
+created by MaxMuster.
 
-Die Einrichtung erfolgt wie weiter oben beschrieben. Für jede
-zusätzliche Website, welche angezeigt werden soll, muss ein VirtualHost
-erstellt werden. Hier eine Beispielkonfiguration um das Freetz-Interface
-über freetz.meinedomain.at anzeigen zu lassen:
+Setup is performed as described above. For each additional website that
+should be displayed, a VirtualHost must be created. Here is an example
+configuration to display the Freetz interface via freetz.meinedomain.at:
 
 ```
 <VirtualHost *:80>
@@ -192,16 +189,17 @@ ServerName freetz.meinedomain.at
         Require valid-user
         AuthType basic
         AuthName "Passwortgeschuetzt - Login"
-        AuthUserFile /Pfad/zur/Datei/.htpasswd
+        AuthUserFile /path/to/file/.htpasswd
     </Location>
 </VirtualHost>
 ```
 
-Das Location Element bewirkt, dass der Benutzer sich vor dem
-Seitenaufbau anmelden muss.
+The Location element causes the user to have to log in before the page is
+built.
 
 ### Geoblocking
-Bestimmte Länder können über eine `.htaccess`-Datei blockiert werden, `XX` entsprechend ersetzen:
+Certain countries can be blocked through an `.htaccess` file; replace
+`XX` accordingly:
 ```
 <IfModule mod_geoip.c>
     GeoIPEnable On
@@ -215,36 +213,34 @@ Bestimmte Länder können über eine `.htaccess`-Datei blockiert werden, `XX` en
 </IfModule>
 ```
 
-### Sonstiges
+### Miscellaneous
 
-Sollte jemand auf die Idee kommen, ein CMS auf der Fritzbox laufen zu
-lassen, so empfehle ich
-[phpSqliteCms](http://phpsqlitecms.net/) dies ist
-ein sehr smartes und schnelles CMS welches problemlos auf der Box läuft
-(nur die Bildkomprimierung sollte man nicht nutzen).Andere CMS wie
-Joomla!, Kajona, oder gar Drupal sollte man aufgrund der geringen
-Systemleistung der [FritzBox](/search/opensearch?q=wiki%3AFritzBox)
-vergessen. Außer man kann mit Seitenaufbauzeiten von 1-3 Minuten leben
-(dafür muss die php.ini angepasst werden).
+If someone gets the idea of running a CMS on the Fritzbox, I recommend
+[phpSqliteCms](http://phpsqlitecms.net/). It is a very smart and fast CMS
+that runs on the box without problems; only image compression should not
+be used. Other CMSs such as Joomla!, Kajona, or even Drupal should be
+forgotten because of the low system performance of the
+[FritzBox](/search/opensearch?q=wiki%3AFritzBox), unless page load times
+of 1-3 minutes are acceptable; for that, php.ini must be adjusted.
 
-### Weiterführende Links
+### Further Links
 
 -   [Forumsdiskussion](http://www.ip-phone-forum.de/showthread.php?t=127089)
-    mit Tipps und Tricks zu diesem Paket
--   [Homepage](http://httpd.apache.org/) des Apache
+    with tips and tricks about this package
+-   [Homepage](http://httpd.apache.org/) of the Apache
     Webservers
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Apache_HTTP_Server)
-    zum Apache Webserver
--   [Homepage](http://www.apache.org/) der Apache
+    article](http://de.wikipedia.org/wiki/Apache_HTTP_Server)
+    about the Apache web server
+-   [Homepage](http://www.apache.org/) of the Apache
     Software Foundation
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Apache_Software_Foundation)
-    zur Apache Software Foundation
+    article](http://de.wikipedia.org/wiki/Apache_Software_Foundation)
+    about the Apache Software Foundation
 -   [Apache Wiki](http://wiki.apache.org/general/)
 -   [PHP Homepage](http://de.php.net)
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Php) zu PHP
--   [Apache 1.3.37 und PHP 5.2.0 CGI auf der
+    article](http://de.wikipedia.org/wiki/Php) about PHP
+-   [Apache 1.3.37 and PHP 5.2.0 CGI on the
     FritzBox](http://www.xobztirf.de/selfsite.php?aktion=Apache%20und%20PHP)
 

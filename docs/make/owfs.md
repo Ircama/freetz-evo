@@ -2,37 +2,36 @@
   - Package: [master/make/pkgs/owfs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/owfs/)
   - Steward: -
 
-Dieses Paket bietet ähnliche Funktionen wie das digitemp Paket, mit dem
-Vorteil, dass eine größere Auswahl an Chips unterstützt wird. Eine
-Integration in die Freetz Oberfläche ist jedoch noch nicht vorhanden.
+This package provides functions similar to the digitemp package, with the
+advantage that a larger selection of chips is supported. Integration into
+the Freetz interface is not available yet.
 
-Der 1-Wire-Bus sollte für längere Distanzen (x00m) mindestens mit
-Shielded/TwistedPair Kabeln aufgebaut werden. Wie bei jedem Bus dürfen
-die Zweige nicht zu lang werden, dh. < 1m, damit die Reflexionen das
-Datensignal nicht überlagern.
-Als Busmaster wurde derzeit der USB-1.1 Adapter DS9490R an einer
-Fritzbox getestet.
+For longer distances (x00m), the 1-Wire bus should be built at least
+with shielded/twisted-pair cables. As with any bus, branches must not be
+too long, i.e. less than 1 m, so reflections do not interfere with the
+data signal. The DS9490R USB 1.1 adapter has currently been tested as a
+bus master on a Fritzbox.
 
-Das Paket wird ohne Fuse-Support gebaut, die Shelltools erlauben jedoch
-gleichwertige Funktionen. Grundsätzlich muss ein owserver gestartet
-werden, er serialisiert/managed die Anfragen an den Bus.
-Verbindungen laufen standardmäßig über Port 4304.
+The package is built without FUSE support, but the shell tools provide
+equivalent functionality. In general, an owserver must be started; it
+serializes and manages requests to the bus. Connections use port 4304 by
+default.
 ` owserver --usb=ALL `
 
-owhttpd ist ein mini Webserver und erlaubt komfortables BUS-Debugging
-per Webbrowser
+owhttpd is a mini web server and allows convenient bus debugging through
+a web browser
 ([http://fritz.box:99](http://fritz.box:99))
 ` owhttpd -s 127.0.0.1:4304 -p 99 `
-Dieser muss natürlich nicht zwingend auf der fritzbox laufen, denn die
-option -s bestimmt die tcp/ip Verbindungsparameter zu irgendeinem
+Of course, it does not necessarily have to run on the Fritzbox, because
+the `-s` option defines the TCP/IP connection parameters to any
 `owserver`.
 
-owdir owread owwrite: erlaubt das einfache Auslesen und Beschreiben von
-1-Wire Devices in der Shell bzw. in Shell-Skripten.
+owdir, owread, and owwrite allow easy reading and writing of 1-Wire
+devices in the shell or in shell scripts.
 
-Mehr Infos gibts in den manpages unter "weiterführende Links".
+More information is available in the man pages under "Further Links".
 
-### Weiterführende Links
+### Further Links
 
 -   [http://owfs.org/](http://owfs.org/)
 -   [A Guide to the 1WRJ45

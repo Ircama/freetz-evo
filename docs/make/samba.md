@@ -4,141 +4,132 @@
 
 [![Samba Webinterface](../screenshots/204_md.png)](../screenshots/204.png)
 
-Dieses Paket macht angeschlossen USB-Speicher oder das Dateisystem der
-FritzBox für Windows als Dateifreigabe verfügbar (die Beschreibung
-basiert auf freetz-1.2 mit Samba 3.0.37). Unter Linux kann dieser
-Speicher mittels *smbmount*, *cifsmount*, etc. verfügbar gemacht werden.
-Natürlich ergibt ein Samba-Server auf der FritzBox nur dann Sinn, wenn
-man einen USB-Datenträger angeschlossen hat oder wenn man einen
-[WebDav](davfs2.html) im LAN bereitstellen möchte - ein
-Samba-Client kann jedoch durchaus auch genutzt werden, um der FritzBox
-externen Speicher zur Verfügung zu stellen - etwa von einem
-[NAS](http://de.wikipedia.org/wiki/Network_Attached_Storage)
-Device.
+This package makes connected USB storage or the FritzBox filesystem
+available to Windows as a file share (the description is based on
+freetz-1.2 with Samba 3.0.37). Under Linux, this storage can be made
+available using *smbmount*, *cifsmount*, etc. Of course, a Samba server
+on the FritzBox only makes sense if a USB data carrier is connected or if
+[WebDav](davfs2.html) should be provided in the LAN. A Samba client,
+however, can also be used to provide external storage to the FritzBox,
+for example from a
+[NAS](http://de.wikipedia.org/wiki/Network_Attached_Storage) device.
 
-Die Dateifreigabe ist zwar auch Bestandteil neuerer AVM Firmware, aber
-das Freetz-Paket erweitert die Möglichkeiten:
+File sharing is also part of newer AVM firmware, but the Freetz package
+extends the possibilities:
 
 ```
   --------------------------------------------- ------- ---------- --------
                                                 AVM^1   freetz^2   Samba^3
-  Automatische Freigabe von USB-Speicher        +       +       +
-  * mit / ohne Passwort                        +       +       +
-  * nur lesen / lesen und schreiben            +       +       +
-  * für FAT, FAT32                             +       +       +
-  * für EXT2, EXT3, NTFS                       -^4     +       +
-  Arbeitsgruppe und Servername konfigurierbar   -       -       +
-  Dateigröße über 2GB                           -       -       +
-  In der Netzwerkumgebung sichtbar              -       -       +
-  Manuell konfigurierte Freigaben               -       -       +
+  Automatic sharing of USB storage              +       +       +
+  * with / without password                     +       +       +
+  * read-only / read and write                  +       +       +
+  * for FAT, FAT32                              +       +       +
+  * for EXT2, EXT3, NTFS                        -^4     +       +
+  Workgroup and server name configurable        -       -       +
+  File size over 2GB                            -       -       +
+  Visible in the network neighborhood           -       -       +
+  Manually configured shares                    -       -       +
   Master Browser                                -       -       +
-  Detailierte Konfiguration des Servers         -       -       +
+  Detailed server configuration                 -       -       +
   --------------------------------------------- ------- ---------- --------
 ```
 
-^1 wenn Dateifreigabe für das Modell vorgesehen ist
-^2 Freetz mit AVM-Samba
-^3 Freetz mit "eigenem" Samba
-^4 NTFS/EXT2 bei Modellen ab Generation x2xx (EXT2 nicht bei 7270v1), EXT3/4 bei Modellen ab Firmware 5.x
+^1 if file sharing is provided for the model
+^2 Freetz with AVM Samba
+^3 Freetz with "own" Samba
+^4 NTFS/EXT2 on models from generation x2xx (EXT2 not on 7270v1), EXT3/4 on models from firmware 5.x
 
-### Package ins Image einbinden
+### Include the Package in the Image
 
-Im menuconfig unter `Package selection -> Standard packages` befindet
-sich
+In menuconfig under `Package selection -> Standard packages` there is
 
   - *Samba 3.0.37 smbd (Filesharing)*
-    Damit wird Dateifreigabe möglich.
+    This enables file sharing.
   - *Samba 3.0.37 nmbd (Nameservices)*
-    Dies macht die FritzBox in der Netzwerkumgebung sichtbar. `nmbd`
-    kann nur gewählt werden, wenn `smbd` ausgewählt ist.
+    This makes the FritzBox visible in the network neighborhood. `nmbd`
+    can only be selected if `smbd` is selected.
 
-### Verwandte Themen
+### Related Topics
 
-Unter `Patches` befindet sich
+Under `Patches` there is
 
-  - *Patch USB storage names* ... mit zusätzlichen Unterpunkten.
-    Diese beeinflussen ebenfalls Details der Dateifreigabe.
+  - *Patch USB storage names* ... with additional subitems.
+    These also affect details of file sharing.
   - *Remove smbd*
-     * Diese
-    Option sollte deselektiert sein und wird bei der Auswahl des
-    Samba-Packages aus menuconfig entfernt.
+     * This option should be deselected and is removed from menuconfig
+    when the Samba package is selected.
 
-### Konfigurieren des Pakets
+### Configuring the Package
 
-### AVM Konfiguration
+### AVM Configuration
 
-Die Optionen der original AVM Firmware sind unverändert verfügbar (unter
-*Erweiterte Einstellungen → USB-Geräte → USB-Speicher*) . Dies sind:
+The options of the original AVM firmware remain available unchanged
+(under *Advanced settings -> USB devices -> USB storage*). These are:
 
-  - aktivieren / deaktivieren des Dateiservers (Samba)
-  - Zugriffsberechtigung für die automatischen Freigaben: nur lesen /
-    lesen und schreiben
-  - Kennwort
+  - enable / disable the file server (Samba)
+  - access permission for automatic shares: read-only / read and write
+  - password
 
-### Freetz Konfiguration
+### Freetz Configuration
 
-Im Freetz Webinterface werden die zusätzlichen Möglichkeiten des Pakets
-konfiguriert.
+The additional package options are configured in the Freetz web
+interface.
 
-#### Pakete → Samba
+#### Packages -> Samba
 
-  - **Arbeitsgruppe**
-    unter dieser Arbeitsgruppe wird der Server in der Netzwerkumgebung
-    von Windows sichtbar
-  - **Name des Servers**
-    der Name des Server in seiner Arbeitsgruppe
-  - **Beschreibung des Servers**
-    und seine zusätzliche Beschreibung
-  - Optionen für den **Master Browser**
-    Wenn mehrere Windows Systeme im gleichen Netzwerksegment vorhanden
-    sind, übernimmt eines die Aufgabe, eine Liste mit verfügbaren
-    Systemen zu verwalten. Die folgenden Parameter bestimmen, ob die
-    FritzBox diese Aufgabe übernimmt und *Master Browser* wird. Details
-    unter
+  - **Workgroup**
+    the server becomes visible in the Windows network neighborhood under
+    this workgroup
+  - **Server name**
+    the server's name in its workgroup
+  - **Server description**
+    its additional description
+  - Options for the **Master Browser**
+    If several Windows systems are present in the same network segment,
+    one of them takes over the task of maintaining a list of available
+    systems. The following parameters determine whether the FritzBox takes
+    over this task and becomes the *Master Browser*. Details at
     [http://us3.samba.org/samba/docs/using_samba/ch07.html#samba2-CHP-7-TABLE-2](http://us3.samba.org/samba/docs/using_samba/ch07.html#samba2-CHP-7-TABLE-2)
-      - OS Level für Election
-        Mit dem Standardwert von 20 wird die FritzBox fast immer *Master
-        Browser*.
-      - Bevorzugter Master
-        Wenn dies gewählt ist, versucht die FritzBox nach dem Booten
-        einen eventuell schon vorhanden Master Browser abzulösen.
-  - Auswahl der **Netzwerkschnittstelle**
-    Hier wird das Netzwerksegment angegeben, für das die Box die
-    Dateifreigabe bereit stellt. Es kann leer gelassen werden. Dann gilt
-    die Dateifreigabe für alle Netzwerksegment, in der sich die Box
-    befindet.
+      - OS Level for election
+        With the default value of 20, the FritzBox almost always becomes
+        *Master Browser*.
+      - Preferred master
+        If this is selected, the FritzBox tries after booting to replace
+        any existing Master Browser.
+  - Selection of the **network interface**
+    This specifies the network segment for which the box provides file
+    sharing. It can be left empty. Then file sharing applies to all
+    network segments in which the box is located.
     /!
-    **Achtung:** Wenn die Box direkt mit dem Internet verbunden ist,
-    sollte man sicher sein der der interne Firewall in Ordnung ist.
-    Sonst könnte das eine Angriffsmöglichkeit aus dem gesamten Internet
-    eröffnen.
+    **Attention:** If the box is directly connected to the internet, make
+    sure that the internal firewall is in order. Otherwise this could open
+    an attack possibility from the entire internet.
   - Startmodus
-    Hier kann entweder **automatisch** oder **manuell** ausgewählt
-    werden. (*TODO: Wird smbd auch von den Hotplug-Skripten gestartet*?)
+    Either **automatic** or **manual** can be selected here. (*TODO: Is
+    smbd also started by the hotplug scripts?*)
 
 
 
-#### Einstellungen → Samba Freigaben
+#### Settings -> Samba Shares
 
-Zusätzlich zum USB-Speicher, der beim Anschließen automatisch eine
-Freigabe erzeugt, können hier statische Freigaben definiert werden. Z.
-B. das Dateisystem der FritzBox oder ausgewählte Verzeichnisse des
-USB-Speichers als selbständige Freigabe.
-Konfiguriert werden kann:
+In addition to USB storage, which automatically creates a share when
+connected, static shares can be defined here. For example, the FritzBox
+filesystem or selected directories of the USB storage can be made
+available as independent shares.
+The following can be configured:
 
-  - **Path**: Der FritzBox-interne Pfad des Verzeichnisses, das
-    freigegeben wird.
-  - **Name**: Unter diesem Namen ist die Freigabe für Windows sichtbar
-  - **guest ok**: *1*: Legt fest, dass auf diese Freigabe auch ohne
-    Kennwort zugegriffen werden kann. Das Kennwort wird in der
-    Konfiguration der FritzBox festgelegt.
-  - **read only**: *1*: Auf diese Freigabe kann nur lesend zugegriffen
-    werden. *0*: Lese- und Schreibzugriff
-  - **comment 1**: *-*: Beschreibung folgt
-  - **comment 2**: Beschreibung / Kommentar, den Windows mit dieser
-    Freigabe anzeigt.
+  - **Path**: The FritzBox-internal path of the directory that is shared.
+  - **Name**: The share is visible to Windows under this name.
+  - **guest ok**: *1*: Specifies that this share can also be accessed
+    without a password. The password is defined in the FritzBox
+    configuration.
+  - **read only**: *1*: This share can only be accessed read-only. *0*:
+    read and write access.
+  - **comment 1**: *-*: Description follows.
+  - **comment 2**: Description / comment that Windows displays with this
+    share.
 
-**Beispiel:**
+**Example:**
 
 ```
 /var/media/ftp/uStor01/Videos hdd1 1 0 - Videos
@@ -146,11 +137,11 @@ Konfiguriert werden kann:
 /var/media/ftp/uStor01/Musik hdd1 1 0 - Musik
 ```
 
-Bei Nutzung eines USB-Speichers ist zu beachten, dass die Zugriffsrechte
-entsprechend gesetzt sein müssen. Wurde der Speicher an einem
-Fremdrechner z. B. mit ext2 oder ext3 formatiert, sind oft keine
-Schreibrechte und auch nicht `ftpuser` als Eigentümer gesetzt. In der
-FRITZBox kann das mit folgenden Kommandos korrigiert werden:
+When using USB storage, note that the access rights must be set
+accordingly. If the storage was formatted on another computer, for
+example with ext2 or ext3, write permissions are often missing and
+`ftpuser` is also not set as owner. On the FRITZBox, this can be
+corrected with the following commands:
 
 ```
 chmod -R 777 uStor01
@@ -162,19 +153,18 @@ chown ftpuser -R uStor01
 
 
 
-#### Einstellungen → Samba Erweitert
+#### Settings -> Samba Advanced
 
-Hier können sich die Experten austoben und beliebige globale Optionen
-für Samba definieren: Der eingegebene Text wird verbatim ans Ende der
-`[global]` - Sektion in der Samba-Konfiguration eingefügt.
-Details unter
+Experts can let loose here and define arbitrary global options for Samba:
+the entered text is inserted verbatim at the end of the `[global]`
+section in the Samba configuration. Details at
 [http://samba.org/samba/docs/using_samba/ch06.html](http://samba.org/samba/docs/using_samba/ch06.html)
 
-Weitere Tuningmöglichkeiten gibt es hier:
+Further tuning options can be found here:
 [http://lug.krems.cc/docu/samba/appb_02.html](http://lug.krems.cc/docu/samba/appb_02.html)
 
-Für Performanceverbesserungen kann folgendes unter 'Erweitert'
-eingetragen werden:
+For performance improvements, the following can be entered under
+'Advanced':
 
 ```
 socket options = TCP_NODELAY IPTOS_LOWDELAY
@@ -186,8 +176,7 @@ dead time = 15
 getwd cache = yes
 ```
 
-Nichtexperten können diese Einstellung einfach leer lassen.
-Falls bei Windows 7 64-bit ein BSOD auftritt "oplocks = no" setzen,
-siehe
+Non-experts can simply leave this setting empty.
+If a BSOD occurs with Windows 7 64-bit, set "oplocks = no"; see
 [IPPF](http://www.ip-phone-forum.de/showpost.php?p=1538911&postcount=1).
 

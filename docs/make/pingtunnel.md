@@ -2,18 +2,18 @@
   - Package: [master/make/pkgs/pingtunnel/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/pingtunnel/)
   - Steward: -
 
-**PTunnel** erlaubt das verlässliche Tunneln von TCP Verbindungen über
+**PTunnel** allows reliable tunneling of TCP connections over
 [ICMP](http://de.wikipedia.org/wiki/Internet_Control_Message_Protocol)
-Echo-Requests, was auch als [ICMP
-Tunnel](http://en.wikipedia.org/wiki/Pingtunnel) bekannt ist.
-Das mag zwar auf den ersten Blick recht nutzlos aussehen - dafür erweist
-es sich in manchen Situationen als recht hilfreich. Wenn nämlich nichts
-anderes weiterhilft, weil eine restriktive Firewall im Wege steht...
+echo requests, which is also known as an [ICMP
+tunnel](http://en.wikipedia.org/wiki/Pingtunnel).
+This may look rather useless at first glance, but it proves quite helpful
+in some situations, namely when nothing else helps because a restrictive
+firewall is in the way.
 
 ### Setup
 
-Folgendes bei `forwardrules` der ar7.cfg eintragen um Pings aus dem
-Internet zuzulassen:
+Add the following to `forwardrules` in ar7.cfg to allow pings from the
+internet:
 
 ```
 "icmp 0.0.0.0 0.0.0.0 0 # PTunnel"
@@ -76,14 +76,14 @@ this:
 -da localhost -dp 8123
 ```
 
-### Weiterführende Links
+### Further Links
 
 -   [Homepage](http://www.cs.uit.no/~daniels/PingTunnel/)
-    (Englisch)
+    (English)
 -   [Freshmeat
-    Projektseite](http://freshmeat.net/projects/ptunnel/)
+    project page](http://freshmeat.net/projects/ptunnel/)
 -   [Breaking through firewalls with a ping
     tunnel](http://psung.blogspot.com/2008/05/breaking-through-firewalls-with-ping.html)
-    (Blog Artikel)
+    (blog article)
 
 

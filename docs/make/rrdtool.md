@@ -6,26 +6,25 @@
   - Package: [master/make/pkgs/rrdtool/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rrdtool/)
   - Steward: [@fda77](https://github.com/fda77)
 
-### Einleitung
+### Introduction
 
-RRD steht für Round Robin Database und wurde für Linux und Windows unter
-der GNU-Lizenz von Tobias Oetiker entwickelt. Es ist ein sehr
-leistungsfähiges Werkzeug, um zeitbezogene Messdaten wie Temperatur,
-Festplattenauslastung, Netzwerkverkehr auf kompakte Art und Weise in
-einer Datenbank zu speichern und ansprechend zu visualisieren. Die
-Messdaten können beispielsweise über einfache Skriptsprachen wie
-[Bash](bash.md) oder auch mit Hilfe komplexer Webanwendungen
-wie [Cacti](http://de.wikipedia.org/wiki/Cacti) aufbereitet
-und dem [RRDtool](http://www.rrdtool.org/) übergeben werden."
+RRD stands for Round Robin Database and was developed for Linux and
+Windows under the GNU license by Tobias Oetiker. It is a very powerful
+tool for storing time-related measurement data such as temperature, disk
+usage, and network traffic compactly in a database and visualizing it in
+an appealing way. The measured data can be prepared, for example, using
+simple scripting languages such as [Bash](bash.md), or with the help of
+complex web applications such as [Cacti](http://de.wikipedia.org/wiki/Cacti),
+and passed to [RRDtool](http://www.rrdtool.org/)."
 (Wikipedia)
 
 ### RRDstats
 
-Mit [RRDstats](rrdstats.md) lassen sich die Statistiken auch
-auf der FritzBox grafisch anzeigen. Details dazu bitte dort nachlesen.
+With [RRDstats](rrdstats.md), the statistics can also be displayed
+graphically on the FritzBox. Please read the details there.
 
-### Weiterführende Links
+### Further Links
 
--   [Wikipedia Artikel](http://de.wikipedia.org/wiki/RRDtool)
--   [Linux Magazin: Messdaten mit RRDtool und Perl verwalten](http://www.linux-magazin.de/heft_abo/ausgaben/2004/06/daten_ausgesiebt)
+-   [Wikipedia article](http://de.wikipedia.org/wiki/RRDtool)
+-   [Linux Magazin: managing measurement data with RRDtool and Perl](http://www.linux-magazin.de/heft_abo/ausgaben/2004/06/daten_ausgesiebt)
 

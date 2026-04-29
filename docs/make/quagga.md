@@ -2,38 +2,34 @@
   - Package: [master/make/pkgs/quagga/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/quagga/)
   - Steward: -
 
-**[Quagga](http://www.quagga.net/)** ist eine
-Routing-Software Suite, die Implementierungen für
+**[Quagga](http://www.quagga.net/)** is a
+routing software suite that provides implementations of
 [OSPF](http://de.wikipedia.org/wiki/OSPF)v2,
 OSPFv3,
 [RIP](http://de.wikipedia.org/wiki/Routing_Information_Protocol)
-v1 und v2, RIPng and
-[BGP](http://de.wikipedia.org/wiki/BGP)-4 für
-Unix-Plattformen bietet. *Quagga* ist ein Fork von [GNU
-Zebra](http://www.zebra.org/), und basiert auf dem
-Server-Client Modell.
+v1 and v2, RIPng, and
+[BGP](http://de.wikipedia.org/wiki/BGP)-4 for
+Unix platforms. *Quagga* is a fork of [GNU
+Zebra](http://www.zebra.org/) and is based on the server-client model.
 
-Dieses Paket enthält derzeit noch keine Konfigurationshilfe; die
-Konfigurationsdateien lassen sich jedoch über das Web-Interface
-bearbeiten.
+This package currently does not include any configuration assistance, but
+the configuration files can be edited through the web interface.
 
- * **Wer nicht
-weiß, wie die Routing-Daemons zu konfigurieren sind, sollte dieses Paket
-*NICHT* installieren'''
-/!**
+ * **Anyone who does not know how to configure the routing daemons should
+*NOT* install this package.**
 
-Ein sicheres Konfigurations-Interface ist allerdings in Arbeit...
+A safe configuration interface is in progress, however.
 
-### Weiterführende Links
+### Further Links
 
 -   [Quagga Homepage](http://www.quagga.net/)
 -   [Quagga
-    Dokumentation](http://www.quagga.net/docs.php)
+    documentation](http://www.quagga.net/docs.php)
 -   [Quagga Wiki](http://wiki.quagga.net/)
 -   Quagga IRC channel: irc:irc.freenode.net#quagga
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Quagga_(Software))
--   [Quagga auf
+    article](http://de.wikipedia.org/wiki/Quagga_(Software))
+-   [Quagga on
     OpenWRT](http://martybugs.net/wireless/openwrt/quagga.cgi)
 
 

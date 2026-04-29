@@ -10,50 +10,46 @@
 terminal between several processes, typically interactive shells."*
 [http://www.gnu.org/software/screen/](http://www.gnu.org/software/screen/)
 
-*screen* erzeugt eine Shell welche auch nach einem Ausloggen bestehen
-bleibt und die man aushängen (detach) und sich auch beliebig wieder
-einhängen (attach) kann, jedesmal wird dabei der Bildschirm
-wiederhergestellt, auch wenn er sich verändert haben sollte.
+*screen* creates a shell that remains available even after logging out,
+and that can be detached and reattached at will. Each time, the screen is
+restored, even if it should have changed.
 
-### Bedienung
+### Usage
 
-*screen* kann ohne alles aufgerufen werden und bietet dann eine ganz
-normale Shell an. *screen* kann aber auch mit einem Befehl als Argument
-aufgerufen werden, woraufhin dieser ausgeführt wird bis er sich selbst
-beendet oder der Prozess beendet wird. Oder auch: die Daemon-Version für
-Arme (den jeder Prozess ist so im Hintergrund ausführbar ohne als Daemon
-programmiert worden zu sein).
+*screen* can be invoked without anything else and then provides a normal
+shell. *screen* can also be invoked with a command as an argument, after
+which that command is executed until it exits on its own or the process
+is terminated. In other words: the poor man's daemon version, because any
+process can be run in the background this way without having been
+programmed as a daemon.
 
-### aushängen/detach
+### Detach
 
-Mit *CTRl+A* und dann *D* kann man sich aus einer Shell aushängen die
-auch dann im Hintergrund weiterläuft.
+With *CTRL+A* and then *D*, you can detach from a shell that then
+continues running in the background.
 
-### einhängen/attach
+### Attach
 
-Ausserhalb der ausgehängten Shell kann man mit `screen -x` sich in die
-Shell einhängen aus der man sich ausgehangen hat (wenn es nur eine gibt)
-Mit `screen -list` kann man sich eine Liste der Shells anzeigen die im
-Hintergrund laufen. Die Namen (die man mit `screen -t <neuerName>`
-ändern kann) werden dazu benutzt mit `screen -r <Name>` ausgewählt zu
-werden.
+Outside the detached shell, `screen -x` can be used to attach to the
+shell from which you detached, if there is only one. `screen -list` shows
+a list of shells running in the background. The names, which can be
+changed with `screen -t <newName>`, are used to select a shell with
+`screen -r <Name>`.
 
-### PuTTY-Tip: Änderung der Fensterbreite beim Screen-Start verhindern
+### PuTTY Tip: Prevent Window Width Changes When Starting Screen
 
-Kleiner Tip für *PuTTY*-Benutzer: Beim Starten von *screen* verändert
-das Programm gern mal eigenmächtig die Fensterbreite auf 80 Zeichen. Man
-kann das entweder durch eine entsprechende Einstellung in *screen*
-verhindern (Kommando
+Small tip for *PuTTY* users: when *screen* starts, the program sometimes
+changes the window width to 80 characters on its own. This can either be
+prevented with an appropriate setting in *screen* (command
 [termcapinfo](http://lists.gnu.org/archive/html/screen-users/2005-10/msg00006.html)),
-wovon ich aber nicht genug verstehe, oder man kann durch eine
-*PuTTY*-Einstellung serverseitige Größenänderungen am Terminal verbieten
-- siehe Bild. Trotzdem kann man noch clientseitig die Fenstergröße
-verändern.
+which I do not understand well enough, or server-side size changes of the
+terminal can be forbidden with a *PuTTY* setting; see the image. The
+window size can still be changed on the client side.
 
-[![PuTTY Terminal Konfiguration](../screenshots/35_md.gif)](../screenshots/35.gif)
+[![PuTTY terminal configuration](../screenshots/35_md.gif)](../screenshots/35.gif)
 
-### Weiterführende Links
+### Further Links
 
 -   [Screen](http://de.wikipedia.org/wiki/Screen)
-    bei Wikipedia
+  on Wikipedia
 

@@ -58,8 +58,8 @@ lan,fd00::2,64,active
   - Status is mandatory and must be either active or inactive.
 
 ### WebUI notes
-  - Netzwerkdevices shows current ip a output in a scrollable area.
-  - Neu laden refreshes this section on demand.
+  - Network devices shows current ip a output in a scrollable area.
+  - Reload refreshes this section on demand.
   - Reload uses the currently active wrapper route and extracts the devices output block from the returned HTML.
 
 ### Operational notes

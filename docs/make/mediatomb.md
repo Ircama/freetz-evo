@@ -2,29 +2,28 @@
   - Package: [master/make/pkgs/mediatomb/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mediatomb/)
   - Steward: -
 
-**MediaTomb** ist ein OpenSource (GPL) UPnP MediaServer mit einer
-schönen Web-Oberfläche, der das Streamen digitaler Medien im Heimnetz
-und das Ansehen/Anhören auf einer ganzen Reihe von UPnP kompatiblen
-Geräten (oftmals auch mit "DLNA" gekennzeichnet) ermöglicht.
+**MediaTomb** is an open source (GPL) UPnP media server with a nice web
+interface. It allows digital media to be streamed in the home network and
+viewed or listened to on a wide range of UPnP-compatible devices, often
+also labeled "DLNA".
 
-Eine vollständige Installation dürfte in den wenigsten Fällen in das
-Dateisystem der Fritzbox passen (sofern man nicht etliche andere Dinge
-weglässt): Allein das Binary bringt ca. 1.2 Megabyte auf die Waage, und
-hinzu kommen noch weitere etwa 2.5 Megabyte Abhängigkeiten (`libavcodec`
-mit gut 1.2 MB, `libsqlite3` mit knapp 700 kB, `libtag` mit knapp 500
-kB, `ffmpeg` ...).
+A complete installation will fit into the Fritzbox filesystem only in a
+few cases, unless many other things are omitted: the binary alone weighs
+about 1.2 MB, plus roughly another 2.5 MB of dependencies (`libavcodec`
+at a good 1.2 MB, `libsqlite3` at just under 700 kB, `libtag` at just
+under 500 kB, `ffmpeg`, ...).
 
-Die Konfiguration von *MediaTomb* erfolgt dateibasiert (im
+*MediaTomb* is configured through files (the
 [UbuntuWiki MediaTomb
-Artikel](http://wiki.ubuntuusers.de/Mediatomb) ist dies recht
-gut beschrieben). Informationen zu einem dafür in Freetz integrierten
-Web-Interface finden sich u. a. in
+article](http://wiki.ubuntuusers.de/Mediatomb) describes this quite
+well). Information about a web interface integrated into Freetz for this
+purpose can be found, among other places, in
 Ticket #1993
 
-^(vielleicht mag noch jemand, der *MediaTomb* erfolgreich auf seine Box bekommen hat, Hinweise zum "wie" ergänzen -- insbesondere hinsichtlich des Platzbedarfs?)^
+^(Maybe someone who has successfully put *MediaTomb* on their box would like to add notes on how, especially with regard to space requirements.)^
 
-### Weiterführende Links
+### Further Links
 
 -   [MediaTomb Homepage](http://mediatomb.cc/)
 -   [UbuntuWiki MediaTomb
-    Artikel](http://wiki.ubuntuusers.de/Mediatomb)
+  article](http://wiki.ubuntuusers.de/Mediatomb)

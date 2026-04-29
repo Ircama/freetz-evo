@@ -6,45 +6,43 @@
   - Package: [master/make/pkgs/digitemp/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/digitemp/)
   - Steward: [@fda77](https://github.com/fda77)
 
-### **Was ist digitemp?**
+### **What is digitemp?**
 
 [![DigiTemp screenshot](../screenshots/120_md.jpg)](../screenshots/120.jpg)
 
-Digitemp ist eine Software zum Auslesen von 1-Wire Temperatursensoren
-als auch anderen von Dallas zur Verfügung gestellten 1-Wire Komponenten,
-z.B. DS1820.
+Digitemp is software for reading 1-Wire temperature sensors as well as
+other 1-Wire components provided by Dallas, for example DS1820.
 
-### Wichtiger Hinweis
+### Important Note
 
- * Egal was in
-irgendeiner Anleitung im Internet steht, es MÜSSEN alle 3 Beinchen der
-Sensoren verbunden werden!
-Ob es nun eine eigene Stromversorgung oder Masse ist, bleibt euch
-überlassen. Ansonsten befinden sich die Sensoren in einem nicht
-definierten Zustand und melden je nach Wetter Fantasiewerte.
+ * No matter what any guide on the internet says, all three legs of the
+sensors MUST be connected.
+Whether this is a separate power supply or ground is up to you.
+Otherwise the sensors are in an undefined state and report fantasy values
+depending on the weather.
 
-### Tipp bei Verwendung mehrerer USB-RS232-Adapter an einer Fritzbox
+### Tip When Using Several USB-RS232 Adapters on a Fritzbox
 
-Wer mehrere USB-RS232-Adapter an seiner Fritzbox verwendet und das
-Problem hat, dass diese mal */dev/ttyUSB0*, mal */dev/ttyUSB1* usw.
-heißen, kann mit folgendem Eintrag in *rc.custom* einen Adapter mit
-pl2303-Chip fest auf ein Device legen (mittels Softlink - danke an kuppe
-für diesen Tipp in
-[diesem](http://www.ip-phone-forum.de/showthread.php?p=1586380#post1586380)
-bzw.
-[diesem](http://www.ip-phone-forum.de/showthread.php?t=221189)
-Thread!):
+Anyone using several USB-RS232 adapters on a Fritzbox and facing the
+problem that they are sometimes named */dev/ttyUSB0*, sometimes
+*/dev/ttyUSB1*, and so on, can pin an adapter with a pl2303 chip to a
+fixed device with the following entry in *rc.custom* (using a symlink;
+thanks to kuppe for this tip in
+[this](http://www.ip-phone-forum.de/showthread.php?p=1586380#post1586380)
+and
+[this](http://www.ip-phone-forum.de/showthread.php?t=221189)
+threads):
 
 ```
-	# digitemp-Link erstellen (pl2303)
+	# create digitemp link (pl2303)
 	USBNR=$(grep 2303 /proc/tty/driver/usbserial | cut -d ":" -f1)
 	ln -s /dev/ttyUSB$USBNR /dev/digitemp
 ```
 
-Die Device ID findet man mit *lsusb-freetz* heraus (Package selection →
-Debug helpers → usbutils). Ein Blick nach */proc/tty/driver/usbserial*
-hilft auch weiter, z.B. könnte das Resultat so aussehen (bei 2 Adaptern
-mit je einem pl2303- bzw. einem ftdi-Chipsatz):
+The device ID can be found with *lsusb-freetz* (Package selection ->
+Debug helpers -> usbutils). Looking at */proc/tty/driver/usbserial* also
+helps; for example, with two adapters, one with a pl2303 chipset and one
+with an ftdi chipset, the result could look like this:
 
 ```
 	root@fb1 /var/mod/root $ cat /proc/tty/driver/usbserial
@@ -53,29 +51,27 @@ mit je einem pl2303- bzw. einem ftdi-Chipsatz):
 	1: module:pl2303 name:"PL-2303" vendor:067b product:2303 num_ports:1 port:1 path:usb-ahci_hcd-1.2
 ```
 
-Falls man also statt eines pl2303-Chip Adapters einen mit FTDI-Chip fest
-verdrahten will, müsste obiger Code so aussehen:
+If, instead of an adapter with a pl2303 chip, you want to pin one with an
+FTDI chip, the code above would look like this:
 
 ```
-	# digitemp-Link erstellen (ftdi)
+	# create digitemp link (ftdi)
 	USBNR=$(grep ftdi /proc/tty/driver/usbserial | cut -d ":" -f1)
 	ln -s /dev/ttyUSB$USBNR /dev/digitemp
 ```
 
-Bei RRDstats → Einstellungen ist unter "Serieller Port:" dann
-natürlich entsprechend */dev/digitemp* zu wählen (statt */dev/ttyUSB0*
-o.ä.).
+In RRDstats -> Settings, select */dev/digitemp* accordingly under
+"Serial port:" instead of */dev/ttyUSB0* or similar.
 
-### Datenbank
+### Database
 
-Bis zu Changeset r11010
-konnte mit einem Intervall von 60 Sekunden 146 Tage aufgezeichnet
-werden, mit 150 Sekunden 1 Jahr. Ab dieser Revision werden die
-Datenbanken von DigiTemp und RRDstats-Kabelsegment mit 2 Jahren bei 60
-Sekunden *erstellt*. Damit wachsen die einzelnen Dateien von ~85kB
-auf ~150kB.
-Existierende rrd-Datenbanken kann man so neue RRAs hinzufügen (für
-experimentierfreudige):
+Up to Changeset r11010, an interval of 60 seconds could record 146 days;
+with 150 seconds, 1 year. Starting with this revision, the databases of
+DigiTemp and the RRDstats cable segment are *created* for 2 years at 60
+seconds. This increases the individual files from about 85 kB to about
+150 kB.
+New RRAs can be added to existing rrd databases like this, for the
+experimentally inclined:
 
 ```
 	## box
@@ -114,16 +110,16 @@ experimentierfreudige):
 	rc.rrdstats start
 ```
 
-### Weiterführende Links
+### Further Links
 
--   Anleitung zur Hardware:
+-   Hardware guide:
     [http://lena.franken.de/hardware/temperaturmessung.html](http://lena.franken.de/hardware/temperaturmessung.html)
--   Einbau einer zusätzlichen Stromversorgung:
+-   Installing an additional power supply:
     [http://public.rz.fh-wolfenbuettel.de/~hamannm/general/digitempd.html](http://public.rz.fh-wolfenbuettel.de/~hamannm/general/digitempd.html)
--   Anleitung digitemp und rrdtool:
+-   Guide for digitemp and rrdtool:
     [http://www.arbeitsplatzvernichtung-durch-outsourcing.de/marty44/rrdtool.html](http://www.arbeitsplatzvernichtung-durch-outsourcing.de/marty44/rrdtool.html)
--   Thread "[[Trunk #3003] Visualisierung von
+-   Thread "[[Trunk #3003] visualization of
     DigiTemp](http://www.ip-phone-forum.de/showthread.php?t=183491)"
-    im IP-Phone-Forum (nicht auf Trunk Changeset r3003
-    beschränkt, sondern stetig aktualisiert)
+	in IP-Phone-Forum (not limited to Trunk Changeset r3003, but
+	continuously updated)
 

@@ -2,13 +2,12 @@
   - Package: [master/make/pkgs/iodine/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/iodine/)
   - Steward: -
 
-**[iodine](http://code.kryo.se/iodine/)** erlaubt
-es, IPv4 Daten über DNS zu tunneln. Eine hilfreiche Sache, wenn man z.B.
-hinter einer restriktiven Firewall sitzt - da DNS Traffic in den
-seltensten Fällen geblockt wird
-;)
+**[iodine](http://code.kryo.se/iodine/)** allows
+IPv4 data to be tunneled over DNS. This is helpful, for example, when
+you are behind a restrictive firewall, because DNS traffic is rarely
+blocked.
 
-### Weiterführende Links
+### Further Links
 
 -   [iodine Homepage](http://code.kryo.se/iodine/)
 -   [iodine Man

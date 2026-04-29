@@ -4,47 +4,42 @@
 
 [![Sundtek DVB driver](../screenshots/256_md.jpg)](../screenshots/256.jpg)
 
-Dieses Package stellt den Treiber für USB-Sticks von Sundtek bereit, mit
-denen DVB (c/s/t) empfangen werden kann.
+This package provides the driver for Sundtek USB sticks that can receive
+DVB (c/s/t).
 
- * Die Fritzbox
-sollte mindestens USB 2.0 haben, 11 MBit/s reichen nicht aus.
- * Mit Kernel
-2.6.19.2 (Fritzbox 7270v1 und 7570) gibt es momentan ein Memoryleak,
-siehe
+ * The Fritzbox should have at least USB 2.0; 11 MBit/s is not enough.
+ * With kernel 2.6.19.2 (Fritzbox 7270v1 and 7570), there is currently a
+memory leak; see
 Ticket #472
 
-### Parameter für 'mediaclient'
+### Parameters for 'mediaclient'
 
-In dieses Textfeld können Parameter zum initialisieren für den
-`mediaclient` eingetragen werden. Wenn dies genutzt wird, wird die
-Hardwareerkennung vom `mediasrv` abgewartet was etwa 10 Sekunden
-benötigt
+Parameters for initializing `mediaclient` can be entered in this text
+field. If this is used, hardware detection by `mediasrv` is awaited,
+which takes about 10 seconds.
 
-### Treiber verwenden
+### Using the Driver
 
-Um den Treiber benutzen zu können muss vorher dieser Befehl ausgeführt
-werden:
+To use the driver, this command must be run first:
 
 ```
 export LD_PRELOAD=/usr/lib/libmediaclient.so
 ```
 
-### USB-Stick initialisieren
+### Initializing the USB Stick
 
-Der USB-Stick muss für die Fritzbox in den Übertrangungsmodus "bulk"
-versetzt werden:
+For the Fritzbox, the USB stick must be switched to the "bulk" transfer
+mode:
 
 ```
 mediaclient --dtvtransfermode=bulk
 ```
 
-Dies ist nur einmalig nötig und der Stick muss danach neu angesteckt
-werden.
+This is needed only once, and the stick must then be plugged in again.
 
-### Weiteres
+### Miscellaneous
 
-Nutzbar z.B. zur Aufzeichnung der Auslastung des Segmentes von
-Kabelinternet mit [RRDstats](rrdstats.html#segment). Es soll
-damit auch Streaming zu einem Windows PC mit einer aktuellen Betaversion
-des DVB-Viewer via SAT>IP möglich sein.
+It can be used, for example, to record the load of the cable internet
+segment with [RRDstats](rrdstats.html#segment). Streaming to a Windows PC
+with a current beta version of DVB-Viewer via SAT>IP is also said to be
+possible.

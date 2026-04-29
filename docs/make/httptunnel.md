@@ -3,24 +3,24 @@
   - Steward: -
 
 **[httptunnel](http://www.nocrew.org/software/httptunnel.html)**
-erstellt eine virtuell, bi-direktionale Datenverbindung, welche über das
-HTTP Protokoll getunnelt wird. Die erforderlichen HTTP-Requests können
-bei Bedarf auch über Proxies geleitet werden.
+creates a virtual, bidirectional data connection tunneled over the HTTP
+protocol. The required HTTP requests can also be routed through proxies
+if needed.
 
-Dieser Ansatz ist hilfreich für all jene, die hinter einer restriktiven
-Firewall sitzen. Sofern WWW Zugriff erlaubt ist - und sei es auch nur
-über einen Proxy -, kann *httptunnel* verwendet werden, um z.B. per
-Telnet auf einen Rechner außerhalb der Firewall zuzugreifen.
+This approach is useful for anyone behind a restrictive firewall. As long
+as web access is allowed, even if only through a proxy, *httptunnel* can
+be used, for example, to access a computer outside the firewall via
+Telnet.
 
-Ein etwas anschaulicheres Beispiel anbei von
+A somewhat more illustrative example follows, by
 [sweetie-pie](http://www.ip-phone-forum.de/member.php?u=62645)
-aus [diesem
+from [this
 Thread](http://www.ip-phone-forum.de/showthread.php?p=536622#post536622):
 
 ```
-PC in der Firma          Proxy in der Firma         Fritzbox
+PC at the company        Proxy at the company       Fritzbox
 
-   +-------+    Verbunden auf                       +-------+    Heimnetz
+    +-------+    Connected to                        +-------+    home network
    |Putty  |--+ 127.0.0.1:22                        |sshd   |--> via ssh-Tunnel
    |-------|  |                +-----+              |       |<-+ (Port 22)
    |htc    |<-+ Port 22        |HTTP |              |-------|  |
@@ -28,18 +28,18 @@ PC in der Firma          Proxy in der Firma         Fritzbox
    +-------+                   +-----+    Port 9999 +-------+
 ```
 
-Derzeit ist httptunnel nur als Binary (3.3) für Freetz verfügbar, d.h.
-es gibt noch kein WebGUI für grafische Einstellungen.
+Currently, httptunnel is available for Freetz only as a binary (3.3), so
+there is no WebGUI for graphical settings yet.
 
-### Weiterführende Links
+### Further Links
 
 -   [httptunnel
     Homepage](http://www.nocrew.org/software/httptunnel.html)
--   [Mini-HowTo bei
+-   [Mini-how-to at
     LinuxWiki.org](http://linuxwiki.org/HttpTunnel)
--   [Wikipedia Artikel zum HTTP
+-   [Wikipedia article on HTTP
     Tunneling](http://en.wikipedia.org/wiki/HTTP_tunnel)
-    (Englisch)
--   [Thread im
+    (English)
+-   [Thread in the
     IP-Phone-Forum](http://www.ip-phone-forum.de/showthread.php?t=167980)
 

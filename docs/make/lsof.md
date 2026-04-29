@@ -6,14 +6,13 @@
   - Package: [master/make/pkgs/lsof/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lsof/)
   - Steward: -
 
-Mit `lsof` lässt sich feststellen, welche Dateien wo und von wem gerade
-geöffnet sind. Dies kann sehr hilfreich sein, wenn man z.B. ein
-angeschlossenes Wechselmedium (USB-Stick oder USB-Festplatte) von der
-Box entfernen will, sich das Dateisystem aber nicht "unmounten" lässt,
-weil es noch in Benutzung ist ("still in use") - mount sagt einem ja
-nur, dass dem so sei, gibt aber keine Details bekannt.
+`lsof` can determine which files are currently open, where, and by whom.
+This can be very helpful when, for example, you want to remove an
+attached removable medium (USB stick or USB hard disk) from the box, but
+the filesystem cannot be unmounted because it is still in use. `mount`
+only says that this is the case; it does not provide any details.
 
-Beispiel:
+Example:
 
 ```
 # lsof /var
@@ -23,6 +22,6 @@ syslogd     350     root    6w  VREG  222,5   339098   6248 /var/log/syslog
 cron        353     root  cwd   VDIR  222,5      512 254550 /var -- atjobs
 ```
 
-Weitere Informationen finden sich u.a. bei
+More information is available, among other places, at
 [Wikipedia](http://en.wikipedia.org/wiki/Lsof).
 

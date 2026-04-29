@@ -2,88 +2,84 @@
   - Package: [master/make/pkgs/usbroot/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/usbroot/)
   - Steward: -
 
-Mit **USB-Root** lässt sich das Root-Verzeichnis (`/`) auf ein an die
-Fritz!Box angeschlossenes USB-Gerät auslagern - was zusätzlichen Platz
-nicht nur für weitere Software schafft.
+With **USB-Root**, the root directory (`/`) can be moved to a USB device
+connected to the Fritz!Box, creating additional space not only for more
+software.
 
-### Vorteile
+### Advantages
 
--   Immer noch ein lauffähiges System im Flash-Speicher der Fritz!Box
-    als Notfall-System vorhanden
--   Nahezu unbegrenzter Platz
--   Mehrere Systeme parallel zur Auswahl auf dem USB-Stick → einfaches
-    Testen neuer Versionen und Konfigurationen. Dabei sollte allerdings
-    die jeweils genutzte Firmwarebasis von AVM ein zueinander
-    kompatibles Konfigurationsformat aufweisen!
+-   A runnable system is still available in the Fritz!Box flash memory as
+    an emergency system.
+-   Almost unlimited space.
+-   Several systems can be available in parallel on the USB stick, making
+    it easy to test new versions and configurations. However, the AVM
+    firmware base used in each case should have mutually compatible
+    configuration formats.
 
-**Ein Beispiel aus der Praxis:**
+**A practical example:**
 
-Annex A Box in Frankreich mit DAU als Besitzer
-;-) Bei einem nicht
-funktionierenden System im Flash würde da gar nichts mehr gehen. Strom
-aus, USB-Stick ab und Strom wieder an, bekommt er aber hin um damit das
-Notfallsystem im Flash nutzen zu können.
+Annex A box in France with a clueless user as owner ;-). If the system in
+flash did not work, nothing would work anymore. But switching off the
+power, removing the USB stick, and switching the power back on is still
+manageable, allowing the emergency system in flash to be used.
 
-### Konfiguration und Kompilierung
+### Configuration and Compilation
 
-USB-Root muss einfach bei Erstellung des Images mit `make menuconfig`
-(siehe [Freetz Installation?]) mit ausgewählt werden. Um
-später eine Shell auf der Fritz!Box zu haben und scp nutzen zu können,
-sollte auch dropbear mit ins Image. Zuerst wird dann ein Image mit
-USB-Root erzeugt, das in den Flashspeicher der Fritz!Box passt und dann
-auch wie jedes Image auf die Fritz!Box geflasht wird.
+USB-Root simply has to be selected when creating the image with
+`make menuconfig` (see [Freetz Installation?]). To have a shell on the
+Fritz!Box later and be able to use scp, dropbear should also be included
+in the image. First, an image with USB-Root is created that fits into the
+Fritz!Box flash memory and is then flashed to the Fritz!Box like any
+other image.
 
-Dann kann man sich sein System für den USB-Root zusammen stellen und
-braucht nicht mehr auf den Platz zu achten. Das USB-Root Paket muss
-jedoch ausgewählt bleiben! Die Fehlermeldung am Ende, dass das Image zu
-groß ist, stört hier nicht weiter. Wir benötigen ja nur das erstellte
-Systeme, das wir in [Freetz-Ordner]/build/modified/filesystem finden.
+Then the system for USB-Root can be assembled without having to worry
+about space anymore. However, the USB-Root package must remain selected.
+The error message at the end saying that the image is too large is not a
+problem here. Only the created system is needed, which can be found in
+[Freetz folder]/build/modified/filesystem.
 
-Es kann eine beliebige Freetz-Version für den USB-Stick verwendet
-werden. Es muss nicht die gleiche Version verwendet werden, wie sie im
-Flashspeicher der Fritz!Box abgelegt ist. Es muss ausschließlich der
-Kernel im Flashspeicher zum Kernel des USB-Sticks passen.
+Any Freetz version can be used for the USB stick. It does not have to be
+the same version as the one stored in the Fritz!Box flash memory. Only
+the kernel in flash memory must match the kernel on the USB stick.
 
-Als Dateisystem ist eine Partition mit ext2 oder ext3 zu verwenden. Das
-passende Kernel-Modul muss bei der Imageerstellung ausgewählt werden!
+Use a partition with ext2 or ext3 as the filesystem. The matching kernel
+module must be selected when creating the image.
 
-### Packen, kopieren auf die Fritz!Box und entpacken
+### Pack, Copy to the Fritz!Box, and Unpack
 
 ```
-# 1. Dateisystem packen, dabei Besitzer auf root:root ändern
+# 1. Pack the filesystem, changing owner to root:root
 tar --group=0 --owner=0 -czf rootfs.tar.gz -C build/modified/filesystem .
 
-# 2. USB-Root im Freetz-Web deaktivieren, falls bereits aktiv
+# 2. Disable USB-Root in the Freetz web interface if it is already active
 
-# 3. Box mit Firmware aus dem Flash neu starten
+# 3. Restart the box with firmware from flash
 
-# 4. Archiv direkt auf an der Box angeschlossenes USB-Medium kopieren (Zielpfad anpassen!)
+# 4. Copy the archive directly to a USB medium connected to the box (adjust target path!)
 
-# Variante A: vom PC aus die Datei auf die Box schieben (benötigt SSH-Server auf der Box)
+# Variant A: push the file from the PC to the box (requires SSH server on the box)
 scp rootfs.tar.gz root@fritz.box:/var/media/ftp/uStor01/rootfs
 
-# Variante B: von der Box aus die Datei vom PC holen (benötigt SSH-Server auf dem PC)
+# Variant B: fetch the file from the PC on the box (requires SSH server on the PC)
 scp user@my_pc:/home/user/freetz-trunk/rootfs.tar.gz /var/media/ftp/uStor01/rootfs
 
-# 5. Archiv auf der Box entpacken
+# 5. Unpack the archive on the box
 cd /var/media/ftp/uStor01/rootfs
 tar -xzf rootfs.tar.gz
 
-# 6. Falls USB-Root noch nicht genutzt wurde muss es erst im Freetz-Web konfiguriert werden (Partition auswählen und Verzeichnis eintragen (z.B. /rootfs)
+# 6. If USB-Root has not been used yet, configure it first in the Freetz web interface (select partition and enter directory, for example /rootfs)
 
-# 7. USB-Root in Freetz-Web aktivieren, Box vom USB-Root neu starten
+# 7. Enable USB-Root in the Freetz web interface, restart the box from USB-Root
 ```
 
-**Neu in der Entwicklerversion seit
-Changeset r8566:**
-Man kann direkt in *Menuconfig* einstellen, daß beim Build zusätzlich
-zum oder anstelle des Firmware-Images das Dateisystem direkt in ein
-Archiv gepackt wird ("USB Root Mode", ersetzt Schritt 1 oben).
-Alternativ ist es über den "NFS Root Mode" auch möglich, das
-Dateisystem direkt (fix und fertig entpackt, Schritte 1, 3, 4) auf den
-USB-Stick zu kopieren, sofern dieser am PC angeschlossen oder über NFS
-erreichbar ist. Erstere Variante ist vermutlich die häufigere und sieht
-so aus:
+**New in the development version since Changeset r8566:**
+It can be configured directly in *Menuconfig* that, during the build, the
+filesystem is packed directly into an archive in addition to or instead
+of the firmware image ("USB Root Mode", replacing step 1 above).
+Alternatively, "NFS Root Mode" also makes it possible to copy the
+filesystem directly, fully unpacked, to the USB stick (steps 1, 3, 4), as
+long as it is connected to the PC or reachable via NFS. The first variant
+is probably the more common one and looks like this:
 
 ```
 ### Freetz Configuration
@@ -96,58 +92,55 @@ so aus:
             [*] Pack file system into archive (USB root mode)
 ```
 
-### Einbinden von Partitionen
+### Mounting Partitions
 
-Das Einbinden von weiteren Partitionen funktionierte in frühen
-Freetz-Versionen nicht, somit mussten diese Partitionen manuell
-eingebunden werden. In aktuellen Freetz-Versionen funktioniert dies nun,
-so dass die AVM-Features, welche auf USB-Partitionen speichern,
-verwendet werden können.
+Mounting additional partitions did not work in early Freetz versions, so
+these partitions had to be mounted manually. In current Freetz versions,
+this now works, so the AVM features that store data on USB partitions can
+be used.
 
-Allerdings gibt es beim Mounten der Partitionen eine Fehlermeldung für
-die verwendete Root-Partition: da diese bereits gemountet ist, schlägt
-ein weiterer Mount-Versuch (der "normale" von AVM) natürlich fehl.
-Dies kann mit ruhigem Gewissen ignoriert werden.
+However, when mounting the partitions, there is an error message for the
+root partition being used: since it is already mounted, another mount
+attempt (the "normal" one from AVM) naturally fails. This can safely be
+ignored.
 
-### Mögliche Nebenwirkungen
+### Possible Side Effects
 
-Das Freetz usbroot Paket verändert die Environment-Variable kernel_args
-und startet dort einen alternativen init Prozess
-(init=/etc/init.d/rc.usbroot). Die Variable kernel_args1 wird auch
-gesetzt. Beim Upgrade / Recover der Firmware kann dies zu Problemen
-führen, daher **MUSS vor dem Firmware-Update bzw Recover die
-usbroot-Funktion wieder deaktiviert werden''', wahlweise über das
-Freetz Webinterface oder aus der Shell mit:**
+The Freetz usbroot package changes the environment variable kernel_args
+and starts an alternative init process there
+(init=/etc/init.d/rc.usbroot). The variable kernel_args1 is also set.
+During a firmware upgrade or recovery, this can cause problems; therefore
+the **usbroot function MUST be disabled again before the firmware update
+or recovery, either through the Freetz web interface or from the shell
+with:**
 
 ```
 echo kernel_args > /proc/sys/urlader/environment
 echo kernel_args1 > /proc/sys/urlader/environment
 ```
 
-Bemerkt man dies zu spät (Die Box startet als Beispiel gleich nach 5
-Sekunden neu) helfen die ADAM2 Befehle:
+If this is noticed too late, for example the box restarts after only 5
+seconds, the ADAM2 commands help:
 
 ```
 quote SETENV kernel_args
 quote SETENV kernel_args1
 ```
 
-Sollte es nach den beiden Befehlen immernoch nicht helfen, so führt man
-ein Recover aus und flasht danach ein Freetz **ohne jediglichen Umfang**
-(ohne Packages sowie **ohne** usbroot) über das AVM-WebInterface auf die
-Box und setzt die beiden Variablen (mittels Telnet) wieder auf ihren
-normalwert, danach kann man wieder problemlos seine gewünschte
-modifizierte Firmware auf die Box bringen!
+If it still does not help after the two commands, perform a recovery and
+then flash a Freetz **without any extras** (without packages and
+**without** usbroot) to the box via the AVM web interface, set the two
+variables back to their normal value (via Telnet), and then the desired
+modified firmware can be put on the box again without problems.
 
-### Verbesserungsmöglichkeiten
+### Possible Improvements
 
-1.  Direkt per SCP oder rsync aus der Stinky-VM auf die Fritz!Box
-    kopieren.
-    Wenn man aus Buildsystem (z.B. VM mit STinky) direkt über Netzwerk
-    die Fritz!Box per ssh/scp erreichen kann ist der Umweg über einen
-    weiteren PC unnötig. Hier wäre es dann eine direkte Verbindung
-    zwischen Fritz!Box und Buildsystem eleganter. Die Variante oben ist
-    aber für entfernte Systeme, ohne von außen erreichbaren SSH-Zugang
-    weiterhin brauchbar.
-2.  Die sich wiederholenden Befehle in ein bash-script packen
+1.  Copy directly to the Fritz!Box from the Stinky VM via SCP or rsync.
+    If the Fritz!Box can be reached directly from the build system (for
+    example a VM with Stinky) over the network via ssh/scp, the detour
+    through another PC is unnecessary. In that case, a direct connection
+    between Fritz!Box and build system would be more elegant. The variant
+    above is still useful for remote systems without externally reachable
+    SSH access.
+2.  Put the repeated commands into a bash script.
 

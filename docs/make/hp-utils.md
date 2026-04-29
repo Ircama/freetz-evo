@@ -3,18 +3,16 @@
   - Steward: -
 
 [hp-utils](http://www.michaeldenk.de/projects/hp-utils/)
-ist eine Portierung einiger Tools von
-[HPLIP](http://hplipopensource.com/) von Python
-nach C. hp-utils greift dabei auf die Bibliothek libhpmud zurück und
-setzt das Paket [HPLIP](hplip.md) voraus.
+is a port of several [HPLIP](http://hplipopensource.com/) tools from
+Python to C. hp-utils uses the libhpmud library and requires the
+[HPLIP](hplip.md) package.
 
-hp-utils stellt Commandline-Tools zur Verfügung und bietet auch ein
-Web-Interface (standardmäßig unter
-[http://fritz.box:83/](http://fritz.box:83/)), das
-derzeit den Druckerstatus und Tintenstand anzeigt und mit dem man eine
-Druckkopfreinigung starten kann.
+hp-utils provides command-line tools and also offers a web interface
+(by default at [http://fritz.box:83/](http://fritz.box:83/)). It
+currently shows printer status and ink level and can start print-head
+cleaning.
 
-Folgende Tools sind enthalten:
+The following tools are included:
 
   ------------------ ---------------------------------------------------------------------------
   **hp-probe**       Probe connected HP devices.

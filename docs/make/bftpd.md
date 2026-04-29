@@ -10,45 +10,43 @@
 > strives to be fast, secure and quick to install/configure."
 > [http://bftpd.sourceforge.net/](http://bftpd.sourceforge.net/)
 
-Bftpd ist ein kleiner FTP Server. Um den Zugriff auf den FTP-Server mit
-einem Passwort zu schützen, kann man wie folgt vorgehen:
+Bftpd is a small FTP server. To protect access to the FTP server with a
+password, proceed as follows:
 
--   Anonymer Zugriff auf der Freetz Konfigurations-Seite deaktivieren
--   In einer Shell (serielle Konsole, telnet oder dropbear) das Passwort
-    für den Benutzer ftp ändern:
+-   Disable anonymous access on the Freetz configuration page.
+-   In a shell (serial console, telnet, or dropbear), change the password
+    for the user ftp:
 
     ``` 
     passwd ftp
     modsave
     ```
 
-Nun ist der Zugriff auf den FTP Server nur noch als Benutzer ftp mit dem
-vergebenen Passwort möglich.
+Access to the FTP server is now possible only as user ftp with the
+assigned password.
 
-### Zusätzliche Benutzer einrichten
+### Set Up Additional Users
 
- * Achtung: Der
-AVM-Dämon `ctlmgr` überschreibt die `/etc/passwd` bei Änderungen im
-Webinterface und löscht die angelegten User. Außerdem ist das
-Usermanagement von Freetz überarbeitet worden, so dass jetzt mit
-`adduser username -h /var/media/ftp/uStor01` neue Benutzer angelegt
-werden können. Diese Änderung muss anschließend mit
-`modusers save; modsave flash` persistent gemacht werden.
+ * Attention: the AVM daemon `ctlmgr` overwrites `/etc/passwd` when
+changes are made in the web interface and deletes the created users. In
+addition, Freetz user management has been revised, so new users can now
+be created with `adduser username -h /var/media/ftp/uStor01`. This change
+must then be made persistent with `modusers save; modsave flash`.
 
-Über eine kleine Änderung in der `debug.cfg` oder mit *crond* können
-zusätzliche Benutzer mit frei wählbaren Homeverzeichnissen eingerichtet
-werden.
+Additional users with freely selectable home directories can be set up
+through a small change in `debug.cfg` or with *crond*.
 
-Auf dieser Seite kann man sich die für die `/var/tmp/passwd` benötigten
-Zeilen mit Benutzer und Passwort erzeugen lassen:
+On this page, the lines with user and password required for
+`/var/tmp/passwd` can be generated:
 
 ```
 http://home.flash.net/cgi-bin/pw.pl
 ```
 
-Alternativ geht das auch mit dem Unix/Linux Kommando `htpasswd`.
+Alternatively, this can also be done with the Unix/Linux command
+`htpasswd`.
 
-Die Syntax sieht dann wie folgt aus:
+The syntax then looks like this:
 
 ```
 echo "user1:pass1:1000:1:ftp user:/var/media/ftp:/bin/sh" >> /var/tmp/passwd
@@ -56,47 +54,43 @@ echo "user2:pass2:1000:1:ftp user:/var/media/ftp:/bin/sh" >> /var/tmp/passwd
 echo "user3:pass3:1000:1:ftp user:/var/media/ftp/uStor01/share:/bin/sh" >> /var/tmp/passwd
 ```
 
-Wobei user und pass durch die zuvor zuvor erzeugten User und Passwörter
-zu ersetzen sind. Wie auch die Pfadangaben sind das natürlich nur
-Beispiele. Man beachte die Pfadangabe auf den USB-Stick im dritten
-Beispiel. Der Pfad muss natürlich zum Zeitpunkt des Logins existieren,
-sonst gibt es einen Fehler.
+Here, user and pass must be replaced by the previously generated users
+and passwords. Like the path specifications, these are of course only
+examples. Note the path specification to the USB stick in the third
+example. The path must of course exist at login time, otherwise there
+will be an error.
 
-*Anmerkung:*
+*Note:*
 
--   Das Passwort sollte nicht in der `/etc/passwd`, sondern in der
-    `/etc/shadow` gespeichert werden. Das funktioniert auf der FritzBox,
-    wie auf jeder üblichen Linux Distribution und ist im Internet an
-    vielen Stellen dokumentiert.
--   Die einzelnen Benutzer erhhalten fortlaufende Benutzer-IDs und
-    nicht, wie hier, alle Benutzer die selbe ID (hier: 1000). Als
-    group-ID kann/sollte man die 1 (= Gruppe "users") nehmen, anstelle
-    der 0 (= Gruppe "root").
+-   The password should not be stored in `/etc/passwd`, but in
+    `/etc/shadow`. This works on the FritzBox just like on any common
+    Linux distribution and is documented in many places on the internet.
+-   The individual users receive consecutive user IDs, not all users the
+    same ID as shown here (1000). As group ID, 1 (= group "users") can
+    and should be used instead of 0 (= group "root").
 
-Den AVM FTP benötigt ihr jetzt nicht mehr. Das Filesystem sollte auf
-Lesen und Schreiben ohne Passwörter eingestellt sein. Der bftpd sollte
-mit den Optionen "Automatisch starten lassen" und "nicht anonym"
-gestartet werden.
+The AVM FTP is no longer needed now. The filesystem should be set to read
+and write without passwords. bftpd should be started with the options
+"start automatically" and "not anonymous".
 
-### Bestehende (persistente) Benutzer modifizieren
+### Modify Existing (Persistent) Users
 
-Ergänzung von [Alexander Kriegisch
+Addition by [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
-vom 13.10.2007:
+from 2007-10-13:
 
-Wie man im DS-Mod bis Version ds26-15.2 persistent Benutzer anlegt und
-löscht, erkläre ich in den
+How to create and delete persistent users in DS-Mod up to version
+ds26-15.2 is explained in the
 [How-Tos](../help/howtos/security/user_management.html). Damit
-hat man also schon einmal automatisch angelegte Benutzer und Passwörter
-nach dem Hochfahren der Box. Die Passworteingabe erfolgt direkt an der
-Konsole, man braucht keine externe Seite, die das berechnet.
+This already gives automatically created users and passwords after the
+box boots. The password is entered directly at the console; no external
+page is needed to calculate it.
 
-Jetzt geht es noch darum, dass das Heimverzeichnis eines Benutzers sowie
-seine UID (eindeutige numerische Benutzer-ID) automatisch jedesmal nach
-dem Neustart der Box vom DS-Mod vergeben werden, da sie bislang nicht
-persistent gespeichert werden (auch das wird sich zu 15.3 ändern). Wie
-man nun bestehende Benutzerdaten entsprechend automatisch umbiegt,
-beschreibe ich
+The remaining point is that a user's home directory and UID (unique
+numeric user ID) are automatically assigned by DS-Mod each time the box
+restarts, because until now they are not stored persistently (this will
+also change with 15.3). How to automatically adapt existing user data
+accordingly is described
 [dort](http://www.ip-phone-forum.de/showthread.php?p=958801#post958801)
-im Forum.
+there in the forum.
 

@@ -2,22 +2,21 @@
   - Package: [master/make/pkgs/irssi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/irssi/)
   - Steward: -
 
-**[irssi](http://www.irssi.org/)** ist ein
-Konsolen-[IRC-Client](http://de.wikipedia.org/wiki/IRC-Client)
-- d.h. im Gegensatz zu den meisten anderen IRC-Clients, verwendet
-*irssi* keine grafische Oberfläche. Das macht ihn natürlich für unsere
-Freetz-Box interessant. Da *irssi* über eine auf
+**[irssi](http://www.irssi.org/)** is a
+console [IRC client](http://de.wikipedia.org/wiki/IRC-Client), meaning
+that unlike most other IRC clients, *irssi* does not use a graphical
+interface. This naturally makes it interesting for our Freetz box. Since
+*irssi* has a scripting engine based on
 [Perl](http://de.wikipedia.org/wiki/Perl_(Programmiersprache))
-basierende "Scripting Engine" verfügt, lässt sich die
-Kernfunktionalität über Perl-Skripte erweitern - sofern man auf der Box
-auch Perl (z.B. [packages/microperl microperl]) installiert hat.
+, its core functionality can be extended with Perl scripts, provided Perl
+(for example [packages/microperl microperl]) is also installed on the box.
 
-### Weiterführende Links
+### Further Links
 
 -   [irssi Homepage](http://www.irssi.org/)
--   [Wikipedia-Artikel zu
+-   [Wikipedia article on
     ''irssi''](http://de.wikipedia.org/wiki/Irssi)
 -   [irssi
-    Dokumentation](http://de.wikibooks.org/wiki/Irssi) auf
+  documentation](http://de.wikibooks.org/wiki/Irssi) on
     WikiBooks
 

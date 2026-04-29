@@ -2,17 +2,17 @@
   - Package: [master/make/pkgs/dnsd-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/dnsd-cgi/)
   - Steward: -
 
-Schlanker DNS-Server für statische Namensauflösung (BusyBox Applet)
+Lightweight DNS server for static name resolution (BusyBox applet).
 
-### Weiterführende Links
+### Further Links
 
 -   [Man
     page](http://www.busybox.net/downloads/BusyBox.html#dnsd)
 
-### Beispielkonfiguration
+### Example Configuration
 
-Port 53 mit [AVM firewall CGI](avm-firewall.md) nach 10053
-mappen wo [iodine](iodine.md) läuft. Dieses leitet Anfragen
-unbekannter Domains auf Port 5353 weiter wo *dnsd* läuft. *dnsd*
-beantwortet für ein paar Subdomains diese Anfragen.
+Map port 53 to 10053 with [AVM firewall CGI](avm-firewall.md), where
+[iodine](iodine.md) is running. iodine forwards queries for unknown
+domains to port 5353, where *dnsd* is running. *dnsd* answers these
+queries for a few subdomains.
 

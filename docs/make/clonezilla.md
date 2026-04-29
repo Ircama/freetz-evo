@@ -4,6 +4,7 @@
   - Changelog: [https://github.com/stevenshiau/clonezilla/tags](https://github.com/stevenshiau/clonezilla/tags)
   - Repository: [https://github.com/stevenshiau/clonezilla](https://github.com/stevenshiau/clonezilla)
   - Package: [master/make/pkgs/clonezilla/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/clonezilla/)
+  - Steward: -
   - Additional documentation: https://clonezilla.org/
 
 clonezilla is installed as a DRBL script bundle under /usr/share/drbl,

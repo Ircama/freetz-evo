@@ -2,60 +2,59 @@
   - Package: [master/make/pkgs/iptables-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/iptables-cgi/)
   - Steward: -
 
-**iptables-CGI** ist ein Web-Frontend für
+**iptables-CGI** is a web frontend for
 [iptables](http://de.wikipedia.org/wiki/Iptables).
-Mittels iptables lassen sich Firewallregeln umsetzen, indem einzelne
-Portregeln erstellt bzw. gelöscht werden. Genutzt wird iptables u.a. von
+iptables can be used to implement firewall rules by creating or deleting
+individual port rules. iptables is used, among other things, by
 [knockd](knock.md).
 
 ### Installation
 
-iptables-cgi kann in `make menuconfig` angewählt werden, wenn man
-iptables markiert.
+iptables-cgi can be selected in `make menuconfig` if iptables is marked.
 
-### Häufige Fragen / Howto
+### Frequently Asked Questions / Howto
 
-Die Funktionen und die Geschichte von iptables wird hier nicht
-wiederholt bzw. erzählt, denn dazu gibt es schon genug Dokumentation in
-Internet. Eine sehr gute Seite ist z.B. folgende:
+The functions and history of iptables are not repeated or described here,
+because there is already enough documentation about them on the internet.
+A very good page, for example, is the following:
 [http://de.wikipedia.org/wiki/Iptables](http://de.wikipedia.org/wiki/Iptables)
 
-Hier wird nur auf das Webinterface von iptables eingegangen und mit
-einfachen Sätzen erklärt, wie man damit arbeitet.
+Only the iptables web interface is covered here, with simple explanations
+of how to work with it.
 
 ### Activation
 
-Wenn hier "Active" ausgewählt wird, dann werden die iptables Module
-beim Starten der Box geladen.
+If "Active" is selected here, the iptables modules are loaded when the
+box starts.
 
-Beim "Stop" unter Dienste werden die Regeln und die Module entladen.
+When "Stop" is used under Services, the rules and modules are unloaded.
 
 ### iptables add/remove rule
 
   --------------------- ----------------------------------------------------------------------
-  **Bezeichnug**        **Funktion**
-  Add                   Fügt eine neue Regel hinzu
-  Insert                Fügt eine neue Regel in die unter "Position" angegebene Stelle ein
-  Position (ID)         Dieses Feld ist nur in Verbindung mit Insert nutzbar
-  Chain                 Gibt an, in welche Tabelle die Regel abgelegt werden soll
-  Source Address        Bestimmt die ausgehende IP-Adresse (host)
-  Destination Address   Bestimmt die Ziel IP-Adresse (host)
-  Port                  Gibt den Source / Destination Port an (ANY = Alle)
-  Protokoll             Das verwendete Protokoll = tcp, udp, icmp (ping)
-  Interface             Gibt das Interface an, auf das die Regel wirken soll
-  NAT                   Network Address Translation / Maskierung der Adresse
-  Action                Gibt an, ob Erlaubt (Accept) oder Verbot (Drop) oder Loggen (LOG)
+  **Label**             **Function**
+  Add                   Adds a new rule
+  Insert                Inserts a new rule at the position specified under "Position"
+  Position (ID)         This field can only be used together with Insert
+  Chain                 Specifies the table in which the rule should be stored
+  Source Address        Defines the outgoing IP address (host)
+  Destination Address   Defines the target IP address (host)
+  Port                  Specifies the source/destination port (ANY = all)
+  Protocol              The protocol used = tcp, udp, icmp (ping)
+  Interface             Specifies the interface on which the rule should apply
+  NAT                   Network Address Translation / address masquerading
+  Action                Specifies whether to allow (Accept), deny (Drop), or log (LOG)
   --------------------- ----------------------------------------------------------------------
 
-Für die Felder **Source Address** und **Destination Address** können
-auch in der HOSTS gespeicherte Hostnamen eingetragen werden. Die Box
-macht eine automatische Namensauflösung.
+For the fields **Source Address** and **Destination Address**, host names
+stored in HOSTS can also be entered. The box performs automatic name
+resolution.
 
 ### Services
 
-Die unter **Port** auswählbaren Services (Dienste) sind unter
-*Einstellungen → Iptables: Services* gespeichert und können beliebig
-erweitert werden. Dabei bitte den folgenden Syntax verwenden:
+The services selectable under **Port** are stored under *Settings ->
+Iptables: Services* and can be extended as desired. Please use the
+following syntax:
 
 ```
 Service:Port   z.B. SSH:22
@@ -63,28 +62,25 @@ Service:Port   z.B. SSH:22
 
 ### Rules
 
-Die Regeln werden fest in den Flash-Speicher der Box gespeichert und
-gehen also nicht verloren. Diese Regel-Liste kann auch unter
-*Einstellungen → Iptables: Rules* händig verändert werden. Beim
-speichern dieser Liste werden die regeln sofort angewendet.
+The rules are permanently stored in the box's flash memory and are
+therefore not lost. This rule list can also be changed manually under
+*Settings -> Iptables: Rules*. When this list is saved, the rules are
+applied immediately.
 
-### Löschen von Regeln
+### Deleting Rules
 
-Regeln können entweder über den *Remove* Link rechts neben der
-entsprechenden Regel gelöscht werden, oder manuell unter *Einstellungen
-→ Iptables: Rules*
+Rules can be deleted either via the *Remove* link to the right of the
+corresponding rule, or manually under *Settings -> Iptables: Rules*.
 
-### Zu Beachten
+### Important Notes
 
-In diversen Foren kursiert die Halbwahrheit, dass IPTables instabil sei
-und die Box zu unprovozierten Reboots verleitet. Dies ist so nicht ganz
-korrekt: IPTables selbst läuft stabil. Die Probleme werden durch das
-**conntrack** Modul verursacht, sofern es geladen ist. Da es für die
-allgemeine Funktion von IPTables jedoch nicht unbedingt benötigt wird,
-muss man es auch nicht installieren.
+Various forums circulate the half-truth that IPTables is unstable and
+causes the box to reboot without provocation. This is not entirely
+correct: IPTables itself runs stably. The problems are caused by the
+**conntrack** module if it is loaded. Since it is not strictly required
+for the general function of IPTables, it does not have to be installed.
 
- * Bei der
-Auswahl von iptables-cgi in `make menuconfig` wird *conntrack* u.U.
-rekursiv mit ausgewählt. Man kann es jedoch manuell abwählen, sodass
-dessen Installation unterbleibt.
+ * When selecting iptables-cgi in `make menuconfig`, *conntrack* may be
+recursively selected. However, it can be deselected manually so that it is
+not installed.
 

@@ -7,16 +7,16 @@
   - Steward: [@fda77](https://github.com/fda77)
 
 **[mtr](http://www.bitwizard.nl/mtr/)** (**M**y
-**TR**aceroute) kombiniert die Funktionalität von
+**TR**aceroute) combines the functionality of
 [traceroute](http://en.wikipedia.org/wiki/Traceroute)
-und [ping](http://en.wikipedia.org/wiki/Ping) in
-einem. Es untersucht Router auf dem Pfad, indem es die Anzahl der
+and [ping](http://en.wikipedia.org/wiki/Ping) in one tool. It examines
+routers along the path by limiting the number of
 [Hops](http://en.wikipedia.org/wiki/Hop_(telecommunications))
-limitiert, die ein Paket durchlaufen darf, und wertet die Responses
-ihres "Verfallsdatums" aus. Diesen Prozess wiederholt *mtr*
-regelmäßig, gewöhnlich einmal pro Sekunde.
+that a packet may pass through and evaluates the responses to its
+"expiration date". *mtr* repeats this process regularly, usually once per
+second.
 
-### Weiterführende Links
+### Further Links
 
--   [Wikipedia Artikel](http://en.wikipedia.org/wiki/Mtr_(My_traceroute)) (Englisch)
+-   [Wikipedia article](http://en.wikipedia.org/wiki/Mtr_(My_traceroute)) (English)
 

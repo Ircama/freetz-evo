@@ -2,46 +2,45 @@
   - Package: [master/make/pkgs/usbip/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/usbip/)
   - Steward: -
 
-Das Ziel von
-**[USB/IP](http://usbip.sourceforge.net/)** ist es,
-die an einem Rechner angeschlossenen USB-Geräte von anderen Rechnern
-benutzbar zu machen - und zwar im vollen Funktionsumfang. Dazu werden
-"USB I/O messages" in IP-Pakete gepackt, um über das Netzwerk
-übertragen zu werden. Jeder einzelne Rechner kann die betreffenden
-USB-Geräte nun so benutzen, als seien sie direkt bei ihm angeschlossen.
-Damit lassen sich folgende Dinge tun:
+The goal of
+**[USB/IP](http://usbip.sourceforge.net/)** is to make USB devices
+attached to one computer usable from other computers, with their full
+functionality. To do this, "USB I/O messages" are packed into IP packets
+for transmission over the network. Each individual computer can then use
+the corresponding USB devices as if they were directly attached to it.
+This makes the following things possible:
 
 -   **USB Storage Devices**: `fdisk`, `mkfs`, `mount`/`umount`, diverse
-    Dateioperationen, Filme von einer DVD abspielen, eine DVD brennen...
--   **USB Tastaturen und USB Mäuse**: Benutzung selbiger sowohl von der
-    Konsole als auch aus dem X Window System.
--   **USB Webcams und USB Lautsprecher**: Durch die Webcam schauen,
-    Bilddaten "capturen" (aufzeichnen), Musik abspielen.
--   **USB Drucker**: Wie die AVM-Druckerfreigabe, zusätzlich kann zB der
-    Füllstand ermittelt werden.
--   **USB Scanner, USB Serial Converter und USB Netzwerk Interfaces**:
-    Naja - halt benutzen eben.
+    file operations, playing movies from a DVD, burning a DVD...
+-   **USB keyboards and USB mice**: use them both from the console and
+    from the X Window System.
+-   **USB webcams and USB speakers**: look through the webcam, capture
+    image data, play music.
+-   **USB printers**: like AVM printer sharing; additionally, for example,
+    the ink level can be determined.
+-   **USB scanners, USB serial converters, and USB network interfaces**:
+    well, simply use them.
 
-In Hardware gegossen, findet man über Google auch schon etliche
-sogenannte "USB Extender" (und zwar stellen diese bei weitem die
-größte Treffermenge dar) - mit diesem Paket bringen wir das jedoch
-einfach vorhandener Hardware, nämlich unserer Freetz-Box, bei.
+Implemented in hardware, there are already many so-called "USB extenders"
+to be found through Google, and they make up by far the largest group of
+search results. With this package, however, we teach the same trick to
+existing hardware: our Freetz box.
 
-Im IPPF ist beschrieben wie man es nutzt: [Teil
+IPPF describes how to use it: [part
 1](http://www.ip-phone-forum.de/showpost.php?p=1392146&postcount=45)
-[Teil
+[part
 2](http://www.ip-phone-forum.de/showpost.php?p=1609255&postcount=50)
 
-### Verwendete Bibliotheken
+### Libraries Used
 
 -   libglib2
 -   libsysfs
 
-### Weiterführende Links
+### Further Links
 
 -   [USB/IP
-    Projektseite](http://usbip.sourceforge.net/)
--   [IPPF Thread: Wie kam USB/IP auf die
+    project page](http://usbip.sourceforge.net/)
+-   [IPPF thread: how USB/IP came to the
     Freetz-Box](http://www.ip-phone-forum.de/showthread.php?t=131278)
 -   Windows-Client:
     [usbip_windows_v0.1.0.0_signed.zip](https://sourceforge.net/projects/usbip/files/usbip_windows/)

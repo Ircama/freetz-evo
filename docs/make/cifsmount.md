@@ -7,43 +7,38 @@
 
 [![](../screenshots/146_md.jpg)](../screenshots/146.jpg)
 
-In diesem Paket kommen die Helferlein für das Einbinden von CIFS
-Netzwerkfreigaben - inklusive eines Web-Interfaces für die einfache
-Konfiguration von bis zu drei "Mounts", optional mit automatischen
-start/stop Events.
+This package provides the helper tools for mounting CIFS network shares,
+including a web interface for simple configuration of up to three mounts,
+optionally with automatic start/stop events.
 
-CIFS (**C**ommon **I**nternet **F**ile **S**ystem) ist eine erweiterte
-Version von
+CIFS (**C**ommon **I**nternet **F**ile **S**ystem) is an extended version
+of
 [SMB](http://de.wikipedia.org/wiki/Server_Message_Block)
-- dem Protokoll, welches bei MS Windows und auch
-[Samba](samba.md) zum Einsatz kommt, um sowohl Ordner und
-Dateien als auch Drucker im Netz bereitzustellen. Somit kann cifsmount
-einen Samba-Client ersetzen - mit einem weiteren großen Vorteil, wenn
-wir an unsere FritzBox denken: cifsmount benötigt wesentlich weniger
-Speicherplatz - und ist damit die "Erste Wahl" für diejenigen, die
-Windows- oder Samba-Shares auf der FritzBox mounten möchten.
+, the protocol used by MS Windows and also by [Samba](samba.md) to make
+folders, files, and printers available on the network. cifsmount can
+therefore replace a Samba client, with another major advantage when we
+think of our FritzBox: cifsmount needs much less storage space, making it
+the first choice for those who want to mount Windows or Samba shares on
+the FritzBox.
 
-### Konfiguration cifsmount
+### cifsmount Configuration
 
-**Starttyp:** Automatisch (mit dem Starten der Box), oder Manuell
-(starten des Dienstes von Hand).
-**Shares:** Bis zu fünf Shares können über das Webinterface angelegt
-werden.
-**Share:** Hier wird die Freigabe, welche gemountet werde soll
-eingetragen.
-**User:** Benutzername der Freigabe.
-**Pass:** Passwort der Freigabe.
-**Mountpoint:** Der Ort, wohin die Freigabe auf der Box gemountet werden
-soll.
-**Mountoptions:** Zusätzliche Option die dem Mountbefehl angehängt wird,
-zB `noserverino` bei sehr großen Festplatten.
+**Start type:** Automatic (when the box starts) or manual (start the
+service by hand).
+**Shares:** Up to five shares can be created through the web interface.
+**Share:** The share to be mounted is entered here.
+**User:** Username for the share.
+**Pass:** Password for the share.
+**Mountpoint:** The location where the share should be mounted on the
+box.
+**Mountoptions:** Additional option appended to the mount command, for
+example `noserverino` with very large hard disks.
 
-### Fehlersuche
+### Troubleshooting
 
-Mit `echo 1 > /proc/fs/cifs/cifsFYI` kann man cifs etwas gesprächiger
-machen. Anschauen kann man sich die Meldungen mit `dmesg | tail`. Bei
-fehlendem Benutzername oder falschem Passwort sieht das Beispielsweise
-so aus:
+With `echo 1 > /proc/fs/cifs/cifsFYI`, cifs can be made a bit more
+verbose. The messages can be viewed with `dmesg | tail`. If the username
+is missing or the password is wrong, it looks like this, for example:
 
 ```
 root@fritz:/var/mod/root# mount -t cifs //192.168.1.1/Freetz /var/media/ftp
@@ -57,11 +52,11 @@ Status code returned 0xc000006d NT_STATUS_LOGON_FAILURE
 ```
 
 
-### Weiterführende Links
+### Further Links
 
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Server_Message_Block)
-    zum SMB Protokoll und CIFS
+  article](http://de.wikipedia.org/wiki/Server_Message_Block)
+  about the SMB protocol and CIFS
 -   [cifsmount Man
     page](http://www.obdev.at/resources/sharity/manual/manCifsmount.html)
 

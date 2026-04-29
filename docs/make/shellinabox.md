@@ -5,31 +5,31 @@
   - Package: [master/make/pkgs/shellinabox/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/shellinabox/)
   - Steward: [@fda77](https://github.com/fda77)
 
-### Anmerkungen (05.02.2024 - getestet mit FritzBox Firmware 154.07.57 und Shell-In-A-Box v2.21)
-Intern verwendet Shell-In-A-Box standardmässig das Programm `/bin/login` - und das kann nicht mit Passwörtern umgehen, die in `/etc/shadow` gespeichert sind.
-Damit schlägt ein Login dann unweigerlich fehl...
+### Notes (2024-02-05 - tested with FritzBox firmware 154.07.57 and Shell-In-A-Box v2.21)
+Internally, Shell-In-A-Box uses `/bin/login` by default, and that cannot handle passwords stored in `/etc/shadow`.
+As a result, login inevitably fails.
 
-Es gibt zwei mögliche Lösungen für das Problem:<br>
-1) Passwörter aus `/etc/shadow` nach `/etc/passwd` kopieren oder verschieben.<br>
-    (dies betrifft v.a. das Passwort des root-Benutzers...)
-    Das lässt sich bei einer ssh-Session und Kenntnissen mit dem vi oder einem anderen Texteditor machen;
-    Um es dauerhaft zu machen, darf ein `modsave flash` danach nicht vergessen werden!
-    Ist aber m.E. nicht schön; beim neuen Setzen eines Passworts für ssh (z.B. über `/usr/bin/passwd`) wandert das Passwort wieder nach `/etc/shadow`...<br>
-	Deshalb bevorzuge ich die zweite Lösung:<br>
-2) eine SSH-Session statt der LOGIN-Session aufbauen.<br>
-   Die zweite Lösung benötigt einen laufenden ssh-Daemon (z.B. dropbear) auf der Box - aber wer hat das nicht? ;-)
-   Dann muss man Shell-In-A-Box dazu bringen, statt dem "normalen" *LOGIN*-Service den *SSH*-Service zu verwenden.
-   Hierzu trägt man über die Konfigurationsseite des Shell-In-A-Box-Pakets in der Freetz WebUI unter "Service:" folgendes ein:<br>
+There are two possible solutions for the problem:<br>
+1) Copy or move passwords from `/etc/shadow` to `/etc/passwd`.<br>
+    (This mainly affects the root user's password.)
+    This can be done in an SSH session if you know vi or another text editor.
+    To make it permanent, do not forget to run `modsave flash` afterwards.
+    In my opinion, however, this is not very nice; when a new SSH password is set, for example via `/usr/bin/passwd`, the password moves back to `/etc/shadow`.<br>
+	Therefore I prefer the second solution:<br>
+2) Establish an SSH session instead of the LOGIN session.<br>
+   The second solution requires a running SSH daemon, for example dropbear, on the box, but who does not have that? ;-)
+   Then Shell-In-A-Box must be made to use the *SSH* service instead of the "normal" *LOGIN* service.
+   To do this, enter the following under "Service:" on the configuration page of the Shell-In-A-Box package in the Freetz WebUI:<br>
      `/:SSH:<hostname|ip>[:<sshport>]`<br>
-     Für einen SSH-Daemon der lokal auf der Box angesprochen werden soll, kann als *hostname* `localhost` eingetragen werden.
-     Hört der SSH-Daemon auf den Standardport `22`, kann die optionale *sshport*-Angabe auch weg gelassen werden.
-     Für einen dropbear-Paket, das auf der Box läuft und auf alle Schnittstellen hört und dessen Port z.B. auf `2222` gesetzt ist,
-     würde die Angabe also folgendermaßen aussehen:<br>
+     For an SSH daemon that should be reached locally on the box, `localhost` can be entered as *hostname*.
+     If the SSH daemon listens on the standard port `22`, the optional *sshport* value can also be omitted.
+     For a dropbear package that runs on the box, listens on all interfaces, and whose port is set to `2222`, for example,
+     the entry would therefore look like this:<br>
      `/:SSH:localhost:2222`<br>
 
-Übrigens ließe sich der Shell-In-A-Box-Dienst auch verwenden, um SSHs auf anderen (internen) Rechnern zu benutzen; und es ließen sich lt. Doku auch mehrere (durch Leerzeichen getrennte) Services definieren, die gleichzeitig aktiv sind.
-Die Shell-In-A-Box-Doku gibt darüber Auskunft, was sonst noch möglich ist (allerdings steht dort aktuell die Möglichkeit, den SSH-Port angeben zu können nicht drin - obwohl da bereits seit 2018 ein Patch für integriert wurde)...
-Sind mehrere Services aktiv, kann auf der Shell-In-A-Box Login-Webseite (standardmässig Port 4200) per Rechtsklick ein Menü aufgeschaltet werden, in dem die eingestellten Services auswählbar sein sollen (habe ich bisher nicht ausprobiert).
+Incidentally, the Shell-In-A-Box service could also be used to access SSH on other internal computers; according to the documentation, several services separated by spaces can also be defined and active at the same time.
+The Shell-In-A-Box documentation explains what else is possible, although it currently does not mention the possibility of specifying the SSH port, even though a patch for this has been integrated since 2018.
+If several services are active, a right-click on the Shell-In-A-Box login page (port 4200 by default) should open a menu in which the configured services can be selected. I have not tried this yet.
 
-Nachdem auf SSH-Service umgestellt wurde, klappt auch der Login.
+After switching to the SSH service, login works as well.
 

@@ -6,10 +6,9 @@
   - Package: [master/make/pkgs/bird/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bird/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**Bird** ist die OpenSource Implementierung eines TCP/IP Routing Daemons
-für Unix/Linux Systeme. Es unterstützt sowohl IPv4 als auch IPv6,
-multiple Routing-Tabellen, BGP, RIP und OSPF Routing-Protokolle, sowie
-statische Routen.
+**Bird** is the open-source implementation of a TCP/IP routing daemon for
+Unix/Linux systems. It supports IPv4 and IPv6, multiple routing tables,
+BGP, RIP and OSPF routing protocols, as well as static routes.
 
 Links:
  - [Bird Wiki: transition notes to bird 2](https://gitlab.nic.cz/labs/bird/-/wikis/transition-notes-to-bird-2)

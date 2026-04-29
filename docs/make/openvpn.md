@@ -6,154 +6,144 @@
   - Package: [master/make/pkgs/openvpn/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/openvpn/)
   - Steward: [@fda77](https://github.com/fda77)
 
-OpenVPN ist ein Programm zur Herstellung eines Virtuellen Privaten
-Netzwerkes (VPN) über eine verschlüsselte TLS-Verbindung.
+OpenVPN is a program for creating a Virtual Private Network (VPN) over an
+encrypted TLS connection.
 
-### Häufige Fragen / Howto
+### Frequently Asked Questions / Howto
 
-Die Dokumentation auf der OpenVPN Webseite ist sehr gut und ausführlich.
-Dort findet man wohl auf die meisten Fragen die passende Antwort.
+The documentation on the OpenVPN website is very good and detailed. Most
+questions are likely answered there.
 
 [http://openvpn.net/faq.html](http://openvpn.net/faq.html)
-oder
+or
 [http://openvpn.net/howto.html](http://openvpn.net/howto.html)
 
-Viele hilfreiche Informationen zu OpenVPN findet man auch
-[hier im
-ippf-Wiki](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:openvpn).
+Many helpful pieces of information about OpenVPN can also be found
+[here in the IPPF wiki](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:openvpn).
 
-### Konfigurationsanleitung
+### Configuration Guide
 
-Dies ist eine (sicher nicht ganz vollständige) Anleitung zur
-Konfiguration des OpenVPN Pakets. Sie soll aufzeigen, wie man eine
-OpenVPN Konfiguration mit der zugehörigen GUI erstellt. *Was* ein VPN
-ist und welche Parameter man grundsätzlich braucht, kann hier *nicht*
-gefunden werden.
+This is a certainly not entirely complete guide to configuring the
+OpenVPN package. It is intended to show how to create an OpenVPN
+configuration with the corresponding GUI. *What* a VPN is and which
+parameters are generally required cannot be found here.
 
-### Portweiterleitung
+### Port Forwarding
 
-Soll (was wohl meistens der Fall ist), die Verbindung auf die Box über
-das Internet aufgebaut werden, so muss dafür eine "Portweiterleitung"
-eingerichet werden, damit die Box die VPN-Pakete annimmt. Standardmäßig
-nutzt OpenVPN den IP-Port 1194 mit UDP oder TCP, und die Pakete dafür
-müssen von der Box angenommen werden. Die naheliegende Idee, dieses in
-der Fritzbox GUI einzurichten wird von AVM unterbunden, indem keine
-Weiterleitungen "auf die Box selbst" erlaubt werden. Prinzipiell gibt
-es drei Möglichkeiten, das zu "umgehen":
+If, as is usually the case, the connection to the box should be
+established over the internet, a "port forwarding" rule must be set up so
+the box accepts the VPN packets. By default, OpenVPN uses IP port 1194
+with UDP or TCP, and the box must accept packets for it. The obvious idea
+of setting this up in the FritzBox GUI is prevented by AVM, because no
+forwarding "to the box itself" is allowed. In principle, there are three
+ways to "work around" this:
 
-1.  Indem die Box eine zusätzliche IP-Adresse bekommt, von der die GUI
-    "nichts weiss" und damit die Einrichtung über die GUI vornehmen.
-    Dafür kann das Paket [Virtual IP](virtualip.md) genutzt
-    werden und dann in der GUI eine Weiterleitung auf diese IP
-    eingerichtet werden. Mittlerweile gibt es einige User, die damit
-    Probleme gemeldet haben (vermutlich wegen der "Startreihenfolge"
-    der Pakete). Als Alternative dazu bietet es sich an, in der
-    [debug.cfg](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:shell_scripte#erzeugen_der_dateien_aus_der_debug.cfg)
-    eine weitere IP anzulegen (zum Beispiel mittels des Eintrags
-    "ifconfig lan:1 192.168.178.253" in dieser Datei).
-2.  Man verwendet das Freetz-Paket
-    [avm-firewall](avm-firewall.md). Hierdurch kann man einfach
-    im Freetz-GUI eine Portweiterleitung auf die IP-Adresse 0.0.0.0
-    eintragen. Anschließend ist der Port vom Internet aus offen
-    (Achtung: UDP als Protokoll auswählen!).
-3.  Oder man editiert die Datei "/var/flash/ar7.cfg", wozu der Zugriff
-    auf die Box mit Telnet/SSH nötig ist, was jedoch mit freetz kein
-    Problem darstellt. Obwohl diese Methode etwas "risikoreicher" ist
-    ( weil eine "falsch editierte Datei" den Start der Box verhindern
-    kann) würde ich sie empfehlen.
+1.  Give the box an additional IP address that the GUI "knows nothing
+    about" and then configure forwarding to that IP through the GUI. The
+    [Virtual IP](virtualip.md) package can be used for this, and a
+    forwarding rule to this IP can then be configured in the GUI. In the
+    meantime, some users have reported problems with this, probably
+    because of the package "startup order". As an alternative, it is
+    possible to create another IP in the
+    [debug.cfg](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:shell_scripte#erzeugen_der_dateien_aus_der_debug.cfg),
+    for example with the entry "ifconfig lan:1 192.168.178.253" in this
+    file.
+2.  Use the Freetz package [avm-firewall](avm-firewall.md). This makes it
+    easy to enter a port forward to IP address 0.0.0.0 in the Freetz GUI.
+    Afterwards, the port is open from the internet. Attention: select UDP
+    as the protocol.
+3.  Or edit the file "/var/flash/ar7.cfg", which requires access to the
+    box via telnet/SSH, but this is not a problem with Freetz. Although
+    this method is somewhat "riskier" because a wrongly edited file can
+    prevent the box from starting, I would recommend it.
 
-Ich würde vorschlagen, die Datei im RAM zu editieren und dann, wenn
-alles "zufriedenstellend" erfolgt ist, die Datei zurück zu kopieren.
-Zum "Kopieren" nutzt man hier das "Auslesen und Umleiten", da diese
-Datei keine normale Datei ist. Die Stelle, an der man ändern muß, findet
-man am einfachsten, indem man zuvor in der AVM-GUI unter Einstellungen →
-Erweitertet Einstellungen → Internet → Portfreigabe → Neue Portfreigabe
-eine aussagekräftige Portfreigabe erstellt, z.B. "MeineFreigabe".
-Diese kann in der im vi geöffneten /var/tmp/ar7.cfg gesucht werden mit
-/MeineFreigabe.
+I would suggest editing the file in RAM and then copying the file back
+when everything has been done "satisfactorily". For "copying", use
+"reading and redirection" here, because this file is not a normal file.
+The easiest way to find the place to change is to first create a
+meaningful port forward in the AVM GUI under Settings -> Advanced
+Settings -> Internet -> Port Sharing -> New Port Sharing, for example
+"MyShare". This can then be searched in the /var/tmp/ar7.cfg opened in
+vi with /MyShare.
 
 ```
   cat /var/flash/ar7.cfg > /var/tmp/ar7.cfg
   vi /var/tmp/ar7.cfg
 
-  # Mini-Anleitung zu vi:
-  # i  Insert  - an dieser Stelle etwas eingeben
-  # a  append  - nach dieser Stelle etwas eingeben
-  # o          - Zeile nach der aktuellen Zeile einfügen
-  # O          - Zeile vor der aktuellen Zeile einfügen
-  # /<Ausdruck>- Suche vorwärts nach Ausdruck
-  # A  Append  - am Ende der Zeile etwas eingeben
-  # r  replace - den Buchstaben unter dem Cursor ersetzen
-  # x  delete  - den Buchstaben unter dem Cursor löschen
-  # <Zahl>     - den nächsten Befehl so oft ausführen (z.B. 10x -> 10 Zeichen löschen)
-  # dd         - Zeile Löschen
-  # D          - Rest der Zeile ab aktuellem Zeichen löschen
-  # <ESC>      - Editier- / Eingabe-Modus verlassen
-  # :w  write  - Änderungen Speichern
-  # :q  quit   - vi verlassen
-  # :q!        - vi verlassen, auch wenn ungesicherte Änderungen waren
+  # Mini guide to vi:
+  # i  Insert  - enter something at this position
+  # a  append  - enter something after this position
+  # o          - insert line after the current line
+  # O          - insert line before the current line
+  # /<term>    - search forward for term
+  # A  Append  - enter something at the end of the line
+  # r  replace - replace the character under the cursor
+  # x  delete  - delete the character under the cursor
+  # <number>   - execute the next command this many times, e.g. 10x -> delete 10 characters
+  # dd         - delete line
+  # D          - delete rest of the line from current character
+  # <ESC>      - leave edit / input mode
+  # :w  write  - save changes
+  # :q  quit   - leave vi
+  # :q!        - leave vi even if there are unsaved changes
   #
   #
-  # Hier nun im vi die Freigabe eintragen und die Datei mit ":wq" abgespeichert
+  # Now enter the share in vi and save the file with ":wq"
 
-  # Wenn alles richtig war, kann diese neue Datei zurückgeschrieben werden:
+  # If everything was correct, this new file can be written back:
   cat /var/tmp/ar7.cfg > /var/flash/ar7.cfg
 ```
 
-> Im Ergebnis muss zu den "forwardrules" eine der folgenden Art
-> hinzugefügt werden, natürlich mit dem richtigen Protokoll (TCP/UDP)
-> und der richtigen Port-Nummer. Zu beachten ist, dass die Zeilen mit
-> "," abzuschließen sind, die letzte Zeile mit ";":
+> As a result, a rule of the following type must be added to the
+> "forwardrules", of course with the correct protocol (TCP/UDP) and the
+> correct port number. Note that lines must be terminated with ",", and
+> the last line with ";":
 
 ```
-  ## falls es **nicht** die letzte Zeile ist so,
-  ## wenn es **die letzte** ist, bitte ein ";" statt des ","
+  ## if it is **not** the last line, like this,
+  ## if it is **the last** line, please use ";" instead of ","
   "udp 0.0.0.0:1194 0.0.0.0:1194" ,
 ```
 
-Das Format dafür ist: <Protokoll> <In IP>:<In IP-Port> <Out IP
->:<Out IP-Port> Hier ist das erste "0.0.0.0" jeweils alles
-eingehende das zweite "0.0.0.0" steht für "die Box selbst". Der
-"ausgehende" Port ist hier wie der eingehende der Standardport von
-OpenVPN: 1194.
+The format is: <Protocol> <In IP>:<In IP port> <Out IP>:<Out IP port>.
+Here, the first "0.0.0.0" means all incoming traffic; the second
+"0.0.0.0" stands for "the box itself". The outgoing port here is the same
+as the incoming one, the OpenVPN default port: 1194.
 
-Nach dem Editieren der ar7.cfg muss die Änderung übernommen werden, z.B.
-mittels *ar7cfgchanged* oder einem Reboot.
+After editing ar7.cfg, the change must be applied, for example via
+*ar7cfgchanged* or a reboot.
 
-**Relativ neu:** Mittels [dieses
-Patches](http://www.ip-phone-forum.de/showthread.php?t=159266)
-ist auch eine Freigabe über die "normale" Portfreigabe in der AVM-GUI
-auf die Box selbst mit 0.0.0.0 möglich.
+**Relatively new:** with [this
+patch](http://www.ip-phone-forum.de/showthread.php?t=159266), forwarding
+to the box itself with 0.0.0.0 is also possible through the "normal" port
+sharing in the AVM GUI.
 
 ### Static Key
 
-Die einfachste Variante ist der Betrieb mit statischem Schlüssel:
+The simplest variant is operation with a static key:
 
--   es kann sich immer ein Client gleichzeitig mit dem Server verbinden
--   beide Seiten verwenden den selben statischen Schlüssel zur
-    Authentifizierung
--   beim ersten Start des Dienstes wird ein Schlüssel automatisch
-    erzeugt
--   Der Schlüssel kann unter "Einstellungen → Static Key" ausgelesen
-    und eingestellt werden
-    (eventuell vorher die [Sicherheitsstufe
-    einstellen](http://wiki.ip-phone-forum.de/software:ds-mod:faq#konfiguration_in_der_aktuellen_sicherheitsstufe_nicht_verfuegbar))
--   die IP-Zuweisung erfolgt manuell auf Client und Server
+-   only one client can connect to the server at a time
+-   both sides use the same static key for authentication
+-   a key is generated automatically when the service is started for the
+    first time
+-   the key can be read and configured under "Settings -> Static Key"
+    (possibly first set the [security
+    level](http://wiki.ip-phone-forum.de/software:ds-mod:faq#konfiguration_in_der_aktuellen_sicherheitsstufe_nicht_verfuegbar))
+-   IP assignment is done manually on client and server
 
-Hier mal ein Beispiel mit folgenden Daten:
+Here is an example with the following data:
 
 ```
   Server-IP 192.168.200.1
   Client-IP 192.168.200.2
-  Netzwerk hinter Fritzbox 192.168.178.0/255.255.255.0
+  Network behind FritzBox 192.168.178.0/255.255.255.0
 ```
 
-In der GUI wäre der Server dann so zu konfigurieren:
+In the GUI, the server would then be configured like this:
 
-[![OpenVPN Webinterface: static server](../screenshots/27_md.png)](../screenshots/27.png)
+[![OpenVPN web interface: static server](../screenshots/27_md.png)](../screenshots/27.png)
 
-Eine passende Windows-Client-Konfiguration dazu, die sich auf die Box
-verbinden kann:
+A matching Windows client configuration that can connect to the box:
 
 ```
   remote meinserver.dyndns.org
@@ -170,63 +160,59 @@ verbinden kann:
   keepalive 10 120
 ```
 
-### Zertifikate
+### Certificates
 
-Wenn man mehrere gleichzeitige Verbindungen ermöglichen will, muss man
-mit Zertifikaten arbeiten.
+If multiple simultaneous connections should be possible, certificates
+must be used.
 
--   es können sich mehrere Clients gleichzeitig mit dem Server verbinden
--   Zertifikate müssen erstellt und auf Server und Client hinterlegt
-    werden
--   Die Zertifikate werden über "Einstellungen" eingetragen (Zuordnung
-    siehe weiter unten)
--   die IP-Zuweisung erfolgt dynamisch durch den Server
--   einfache Konfiguration der Clients durch Push/Pull
+-   multiple clients can connect to the server at the same time
+-   certificates must be created and stored on server and client
+-   the certificates are entered via "Settings"; assignment is shown
+    below
+-   IP assignment is dynamic through the server
+-   simple client configuration via push/pull
 
-Wie man ganz einfach Zertifikate erstellen und auf die Box laden kann,
-erklären u.a. dieser
-[Wiki-Eintrag](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:openvpn#2._zertifikate_erstellen)
-sowie die offizielle OpenVPN Hilfe zum Thema [Public Key
-Infrastructure](http://openvpn.net/howto.html#pki). Die
-Zertifikate werden auch mit Hilfe der GUI auf die Box geladen werden.
-Dafür öffnet man im Freetz das Menu Einstellungen und wählt den
-entsprechenden Eintrag aus (z.B. OpenVPN: Box Cert). Mit einem Editor
-öffnet man nun die entsprechende Datei (z.B. Server.crt) und kopiert den
-Inhalt in das Freetz Fenster. Mit Übernehmen überträgt nun die GUI das
-Zertifikat auf die Box.
-***Hinweis:*** Bevor man unter "Einstellungen" Dinge eintragen kann,
-muss man ggf vorher die Sicherheitsstufe entsprechend ändern, das geht
-z.B. mit
+How to create certificates easily and load them onto the box is explained
+by, among others, this
+[wiki entry](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:openvpn#2._zertifikate_erstellen)
+and the official OpenVPN help about [Public Key
+Infrastructure](http://openvpn.net/howto.html#pki). Certificates can also
+be loaded onto the box with the help of the GUI. To do this, open the
+Settings menu in Freetz and select the corresponding entry, for example
+OpenVPN: Box Cert. Open the corresponding file, for example Server.crt,
+with an editor and copy the content into the Freetz window. With Apply,
+the GUI transfers the certificate to the box.
+***Note:*** Before entries can be made under "Settings", the security
+level may first have to be changed accordingly. This can be done, for
+example, with
 
 > *echo 0 > /var/tmp/flash/security && modsave*
 
-Zuordnung der Schlüssel und Zertifikate auf der Box:
+Assignment of keys and certificates on the box:
 
 ```
   ------------- ----------------- ----------------------------------------
-  GUI-Name      Datei-Name        Beispiel / Bemerkung
-  Box Cert      <Name>.crt        server.crt od. client01.crt
-  Private Key   <Name>.key        server.key oder client01.key
-  CA Cert       ca.crt            Zertifikat der CA
-  DH Param      dh<Länge>.pem     dh1024.pem od. dh2048.pem
-  Static Key    wird generiert    muss auf Server und Client gleich sein
-  CRL           leer lassen       Liste zurückgezogener Zertifikate
+  GUI name      File name         Example / note
+  Box Cert      <Name>.crt        server.crt or client01.crt
+  Private Key   <Name>.key        server.key or client01.key
+  CA Cert       ca.crt            Certificate of the CA
+  DH Param      dh<Length>.pem    dh1024.pem or dh2048.pem
+  Static Key    is generated      must be the same on server and client
+  CRL           leave empty       list of revoked certificates
   ------------- ----------------- ----------------------------------------
 ```
 
-In der folgenden Beispiel-Konfiguration soll der Server auf der Box mit
-mehreren Clients genutzt werden können und im TAP-Modus laufen. Die
-meiste Konfiguration der Clients (IP- und Netzwerkeinstellungen,
-Routing, usw.) erfolgt ebenfalls durch den Server.
-Der Server vergibt an die Clients IP-Adressen ab der 192.168.200.100 bis
-192.168.200.150. Er übergibt dem Client auch eine Route zu seinem LAN,
-dem Netz 192.168.178.0. Für das "Abholen" dieser Parameter sorgt das
-***pull*** in der Client-Konfiguration.
+In the following example configuration, the server on the box should be
+usable with several clients and run in TAP mode. Most of the client
+configuration (IP and network settings, routing, and so on) is also done
+by the server. The server assigns IP addresses to clients from
+192.168.200.100 through 192.168.200.150. It also passes the client a
+route to its LAN, the network 192.168.178.0. The ***pull*** in the client
+configuration takes care of "fetching" these parameters.
 
-[![OpenVPN Webinterface: certificate server](../screenshots/28_md.png)](../screenshots/28.png)
+[![OpenVPN web interface: certificate server](../screenshots/28_md.png)](../screenshots/28.png)
 
-Ebenfalls wieder eine Client-Konfiguration dazu, die sich mit diesem
-Server verbinden könnte:
+Again, a client configuration that could connect to this server:
 
 ```
   remote meinserver.dyndns.org
@@ -246,53 +232,51 @@ Server verbinden könnte:
   verb 3
 ```
 
-Dass der Name des Servers (hinter **"remote"**) und die Pfade zu den
-Zertifikaten ggf. anzupassen sind, versteht sich hoffentlich von selbst
-;-). Man sieht,
-dass der Client keine eigene IP Konfiguration oder Routing Einträge hat,
-diese Parameter bekommt er mit dem *pull* vom Server. Wichtig ist
-hierbei auch die **"Schlüsselrichtung"** bei der
-TLS-Authentifizierung. Da freetz hierfür augenscheinlich den Wert "0"
-nutzt, muss im Client entsprechend der Wert "1" gesetzt werden.
+It should hopefully be self-evident that the server name after
+**"remote"** and the paths to the certificates may need adjustment ;-).
+It can be seen that the client has no own IP configuration or routing
+entries; it receives these parameters from the server via *pull*. The
+**"key direction"** for TLS authentication is also important here. Since
+Freetz apparently uses the value "0" for this, the client must set the
+value "1" accordingly.
 
 ### Routing vs. Bridging
 
-Für die meisten Anwendungsfälle ist Routing (TUN) die beste Wahl, doch
-in einigen Fällen kann es auch sinnvoll sein, das VPN Netzwerk mit einer
-Brücke (TAP) zu realisieren. Eine ausführliche Beschreibung der
-Unterschiede findet man auf der [OpenVPN
-Webseite](http://openvpn.net/faq.html#bridge2)
+For most use cases, routing (TUN) is the best choice, but in some cases
+it can also make sense to implement the VPN network with a bridge (TAP).
+A detailed description of the differences can be found on the [OpenVPN
+website](http://openvpn.net/faq.html#bridge2).
 
-Hier ein paar Vorteile von Bridging:
+Some advantages of bridging:
 
--   Der Client befindet sich nach Aufbau der Verbindung im gleichen Netz
-    wie der Server
--   Broadcasts werden durch den VPN-Tunnel geleitet, das hat den
-    Vorteil, dass z.B. NetBIOS Namen aufgelöst werden können (sinnvoll
-    für PING, Netzwerkfreigaben etc)
--   Bridging leitet alle Ethernet-Protokolle über den Tunnel (IPv4,
-    IPv6, IPX, AppleTalk etc.)
+-   after the connection is established, the client is in the same network
+    as the server
+-   broadcasts are routed through the VPN tunnel, which has the advantage
+    that, for example, NetBIOS names can be resolved; useful for PING,
+    network shares, etc.
+-   bridging routes all Ethernet protocols through the tunnel (IPv4,
+    IPv6, IPX, AppleTalk, etc.)
 
-Hier ein paar Nachteile von Bridging:
+Some disadvantages of bridging:
 
--   weniger effizient als Routing (langsamer)
--   alle Broadcasts gehen durch das Netz
+-   less efficient than routing (slower)
+-   all broadcasts go through the network
 
-Um mit der Fritz Box ein echtes Bridging zu realisieren, ist es
-notwendig, den tap0-Adapter in die Liste der gebrückten Adapter der
-Fritz Box einzutragen. Dies geschieht wiederum in der ar7.cfg, die im
-oben beschriebenen Verfahren geändert werden muß. Unter dem Punkt
-"brinterfaces" → interfaces muß der tap0-Adapter ergänzt werden:
+To implement real bridging with the FritzBox, it is necessary to add the
+tap0 adapter to the list of bridged adapters of the FritzBox. This is
+again done in ar7.cfg, which must be changed using the procedure
+described above. Under the point "brinterfaces" -> interfaces, the tap0
+adapter must be added:
 
-Also wieder:
+So again:
 
 ```
   cat /var/flash/ar7.cfg > /var/tmp/ar7.cfg
   vi /var/tmp/ar7.cfg
 ```
 
-Dann suchen nach /brinterfaces und den Eintrag "tap0" vor dem
-Semikolon einfügen.
+Then search for /brinterfaces and insert the entry "tap0" before the
+semicolon.
 
 ```
   brinterfaces {
@@ -308,35 +292,35 @@ Semikolon einfügen.
                 dhcpend = 192.168.178.100;
 ```
 
-Zum Abschluß noch mal
+Finally, once more:
 
 ```
   cat /var/tmp/ar7.cfg > /var/flash/ar7.cfg
   reboot
 ```
 
-Die Konfiguration in der OpenVPN-Gui könnte für den FritzBox Standard
-dann folgendermaßen aussehen:
+The configuration in the OpenVPN GUI could then look like this for the
+FritzBox standard:
 
-[![OpenVPN Webinterface: bridged server](../screenshots/29_md.png)](../screenshots/29.png)
+[![OpenVPN web interface: bridged server](../screenshots/29_md.png)](../screenshots/29.png)
 
-Die Windows-Client-Konfiguration dazu sieht so aus:
+The Windows client configuration for this looks like this:
 
 ```
   client
   dev tap
-  #udp/tcp je nachdem, was ausgewählt wurde
+  #udp/tcp depending on what was selected
   proto tcp
-  #Port entsprechend der Konfiguration
+  #Port according to the configuration
   remote meinserver.dyndns.org 443
   nobind
   persist-key
   persist-tun
-  #hier die Zertifikate/Schlüssel, wie beim Erstellen benannt
+  #here the certificates/keys, named as during creation
   ca ca.crt
   cert client01.crt
   key client01.key
-  # für TLS-Remote "ServerBox1" wie beim Erstellen benannt
+  # for TLS-Remote "ServerBox1", named as during creation
   tls-remote ServerBox1
   tls-auth static.key 1
   auth SHA1
@@ -348,63 +332,53 @@ Die Windows-Client-Konfiguration dazu sieht so aus:
 CRL
 ---
 
-CRL steht für "certificate revocation list" und bietet eine
-Möglichkeit, ausgestellte Zertifikate zurückzuziehen und damit ungültig
-zu machen. Aktuell gibt es einen BUG in Freetz
-(Ticket #1578) so dass eine CRL nur mit etwas Handarbeit
-über die Telnet Konsole bzw. Rudishell zum Laufen gebracht werden kann.
-Wer sich das manuelle Erstellen einer CRL nicht zutraut findet mit
-Kleopatra (Windows /
-[http://www.gpg4win.de/](http://www.gpg4win.de/))
-oder TinyCA (Linux /
-[http://tinyca.sm-zone.net/](http://tinyca.sm-zone.net/))
-GUI-basierte Zertifikatmanager, die das Erstellen einer CRL
-unterstützen.
+CRL stands for "certificate revocation list" and provides a way to revoke
+issued certificates and thus make them invalid. There is currently a bug
+in Freetz (ticket #1578), so a CRL can only be made to work with some
+manual work via the telnet console or Rudi shell. Anyone who does not
+trust themselves to create a CRL manually can use Kleopatra (Windows /
+[http://www.gpg4win.de/](http://www.gpg4win.de/)) or TinyCA (Linux /
+[http://tinyca.sm-zone.net/](http://tinyca.sm-zone.net/)), GUI-based
+certificate managers that support creating a CRL.
 
-### Fehlersuche: Ein paar Tips wenn es nicht gleich so klappt
+### Troubleshooting: A Few Tips If It Does Not Work Right Away
 
-Meist versucht man gleich den schwierigsten Fall, über das Internet mit
-Zertifikaten und TLS-Authentifizierung zwei Netze zu verbinden und
-testet, indem man versucht eine Freigabe auf dem Fileserver im anderen
-Netz anzubinden
-;-).
+Usually one immediately tries the most difficult case: connecting two
+networks over the internet with certificates and TLS authentication, and
+testing by trying to mount a share on the file server in the other
+network ;-).
 
-Schön, wenn es sofort klappt, dafür gibt es "unendlich" viele
-Fehlermöglichkeiten falls nicht...
+Great if it works immediately; if not, there are "infinitely" many
+possible errors...
 
-Daher der Apell, tastet euch langsam an das ganze heran!
+Therefore the appeal: approach the whole thing slowly!
 
--   Erster "Fehlerkandidat" ist der Zugang über das Internet, der über
-    eine "virtuelle IP" oder in der Datei "/var/flash/ar7.cfg"
-    freigeschaltet werden muss (siehe oben, ich bevorzuge persönlich die
-    zweite Methode). Diesen Faktor kann man prüfen, indem man die
-    Verbindung zunächst mal "intern" testet, also über die
-    LAN-Schnittstelle. Klappt es so, aber nicht über das Internet, habt
-    ihr den Fehler eingegrenzt.
--   Wenn es was anderes ist, hilt nur noch der Vergleich der
-    Konfigurationen Punkt für Punkt. Eigentlich gibt es nur zwei Arten
-    von Parametern:
-    Solche, die identisch sein müssen und solche, die
-    "spiegelverkehrt" auftreten müssen.
-    -   Die "identischen" sind z.B. Cipher, "comp-lzo", tls-auth,
-        das benutzte Protokoll (UDP/TCP) und der Port,
-    -   "Spiegelbildlich" sind die IPs beim TUN, die Routing-Einträge,
-        die Server- / Client-Parameter wie "tls-server/tls-client",
-        push und pull.
--   Die Config auf der Box kann man am einfachsten in der
-    [Rudi-Shell](rudi-shell.md) ausgeben lasssen, indem man
-    dort
-    *cat /mod/etc/openvpn*.conf*
-    ausführt. Diese Config kann man dann gut mit der Config der
-    "Gegenseite" vergleichen.
--   Erste Hilfe für mehr Infos, z.B. wenn die Ausgabe nur lautet
-    *Starting OpenVPN ...failed.*
-    In der [Rudi-Shell](rudi-shell.md) (wenn openvpn nicht mehr
-    läuft) sollten so (spätestens nach zehn Sekunden) die Startmeldungen
-    Hinweise auf den Fehler bringen.:
+-   The first "error candidate" is access over the internet, which must
+    be enabled via a "virtual IP" or in the file "/var/flash/ar7.cfg"
+    (see above; I personally prefer the second method). This factor can
+    be checked by first testing the connection "internally", meaning via
+    the LAN interface. If it works this way but not over the internet, the
+    error has been narrowed down.
+-   If it is something else, only a point-by-point comparison of the
+    configurations helps. Basically, there are only two types of
+    parameters: those that must be identical and those that must appear
+    "mirror-reversed".
+    -   The "identical" ones are, for example, cipher, "comp-lzo",
+        tls-auth, the protocol used (UDP/TCP), and the port.
+    -   "Mirror-image" are the IPs with TUN, the routing entries, the
+        server/client parameters such as "tls-server/tls-client", push,
+        and pull.
+-   The config on the box can most easily be output in the
+    [Rudi shell](rudi-shell.md) by executing
+    *cat /mod/etc/openvpn*.conf* there. This config can then be compared
+    well with the config of the "other side".
+-   First aid for more information, for example if the output only says
+    *Starting OpenVPN ...failed.* In the [Rudi shell](rudi-shell.md), if
+    openvpn is no longer running, the startup messages should provide
+    hints about the error like this, at the latest after ten seconds:
 
     ``` 
-      # die .../openvpn*.conf wird erst beim Starten des Dienstes erstellt und beim Stoppen gelöscht!
+      # the .../openvpn*.conf is created only when the service starts and deleted when it stops!
     ```
 
     ``` 
@@ -414,37 +388,31 @@ Daher der Apell, tastet euch langsam an das ganze heran!
       killall openvpn
     ```
 
--   Ein typisches Fehlerbild (ich tippe mal auf mindestens 20% aller
-    Probleme ;-)):
-    Die Verbindung wird aufgebaut, aber der Client und Server können
-    sich nicht per Ping erreichen, es "geht nichts durch das VPN".
-    Häufigste Ursache ist ein nur auf einer Seite aktiviertes
-    "comp-lzo"
+-   A typical error pattern, I would guess at least 20% of all problems
+    ;-): the connection is established, but client and server cannot reach
+    each other by ping; "nothing goes through the VPN". The most common
+    cause is that "comp-lzo" is enabled on only one side.
 
 <!-- -->
 
--   Und noch ein Hinweis für die "Windows-Nutzer": Wenn der Rechner,
-    der eine Freigabe hat, nicht im gleichen Netz ist (also zum Beispiel
-    über VPN verbunden ist), muss zum einen die Firewall Zugriffe aus
-    einem anderen Netz zulassen zum anderen funktioniert die Windows
-    Namensauflösung nicht. Kann man im LAN die Freigabe in der Art *
-    Der_PC_mit-Freigabemeine_Daten*
-    nutzen, so ist das über das VPN nicht möglich. Es gibt dann zwei
-    Möglichkeiten:
-    1.  Nutzung der IP-Adresse, also *
-        192.168.178.12meine_Daten*
-    2.  Nutzung der Datei
-        *<Windowsverzeichnis>system32driversetclmhosts*, in
-        die man Rechnername und IP einträgt. Dann kann die Freigabe
-        weiterhin über den Namen genutzt werden
+-   Another note for "Windows users": if the computer that has a share is
+    not in the same network, for example connected via VPN, the firewall
+    must allow access from another network, and Windows name resolution
+    does not work. If the share can be used in the LAN in the form
+    *The_PC_with_sharemy_data*, this is not possible over the VPN. There
+    are then two options:
+    1.  Use the IP address, for example *192.168.178.12my_data*.
+    2.  Use the file *<Windows directory>system32driversetclmhosts* and
+        enter the computer name and IP there. Then the share can continue
+        to be used by name.
 
-### Verschlüsselung: Welcher "Cipher" ?
+### Encryption: Which "Cipher"?
 
-Der Verkehr zwischen Client und Server wird normalerweise verschlüsselt
-übertragen, um die Inhalte vor dem Ausspähen zu schützen. Die Wahl des
-Verschlüsselungsalgorithmus erfolg über die "Cipher" Auswahlbox.
-Momentan sind dort diese Cipher wählbar, in Klammern jeweils die OpenVPN
-Bezeichnung, wie sie aus dem OpenSSL übernommen wurde:
+Traffic between client and server is normally transmitted encrypted to
+protect the contents from being spied on. The encryption algorithm is
+chosen through the "Cipher" selection box. At the moment, these ciphers
+can be selected there, with the OpenVPN designation in parentheses as it
+was adopted from OpenSSL:
 
 ```
 Blowfish (BF-CBC)
@@ -453,10 +421,9 @@ AES 256 (AES-256-CBC)
 Triple-DES (DES-EDE3-CBC)
 ```
 
-Um die Frage der durch die Verschüsselung erzeugte Last auf der Box
-nachzugehen, habe ich mal mit `openssl speed des aes blowfish` einen
-"Leistungsvergleich" der Verfahren auf einem Speedport 701 gemacht
-(nur für die wählbaren Optionen):
+To investigate the load produced on the box by encryption, I once ran a
+"performance comparison" of the algorithms on a Speedport 701 with
+`openssl speed des aes blowfish`, only for the selectable options:
 
 ```
 The 'numbers' are in 1000s of bytes per second processed.
@@ -467,13 +434,12 @@ aes-128 cbc       1936.58k     1984.45k     2019.82k     2004.45k     1940.50k
 aes-256 cbc       1500.48k     1532.26k     1541.70k     1510.14k     1494.16k
 ```
 
-Man sieht, dass von den verfügbaren Algorithmen "Blowfish" den größten
-Durchsatz hat. Bei intensiver Nutzung könnte das von Interesse sein. Für
-tiefergehende Vergleiche der Algorithmen sei z.B. auf
-[Wikipedia](http://en.wikipedia.org/wiki/Block_cipher)
-verwiesen.
+It can be seen that among the available algorithms, "Blowfish" has the
+highest throughput. This could be of interest for intensive use. For more
+detailed comparisons of algorithms, see for example
+[Wikipedia](http://en.wikipedia.org/wiki/Block_cipher).
 
-Zum Vergleich die Zahlen von einer 7320:
+For comparison, the numbers from a 7320:
 
 ```
 The 'numbers' are in 1000s of bytes per second processed.
@@ -486,7 +452,7 @@ aes-192 cbc       3731.79k     4053.84k     4106.21k     4079.90k     4176.53k
 aes-256 cbc       3312.71k     3596.58k     3627.24k     3628.52k     3678.10k
 ```
 
-... und von einer 7390:
+... and from a 7390:
 
 ```
 The 'numbers' are in 1000s of bytes per second processed.
@@ -516,34 +482,32 @@ iptables -A PREROUTING -i tun0 -p udp -m udp --dport 53 -j DNAT --to-destination
 
 It is interesting to see what Android is doing ...
 
-### Diskussion
+### Discussion
 
-Fragen und Anmerkungen zu diesem Paket werden in [diesem
-Thread](http://www.ip-phone-forum.de/showthread.php?t=101980)
-diskutiert.
+Questions and comments about this package are discussed in [this
+thread](http://www.ip-phone-forum.de/showthread.php?t=101980).
 
-### Neue, simple GUI (GUI2)
+### New, Simple GUI (GUI2)
 
-[![neue OpenVPN GUI](../screenshots/273_md.png)](../screenshots/273.png)
+[![new OpenVPN GUI](../screenshots/273_md.png)](../screenshots/273.png)
 
-Aktuell ist im "trunk" (der Freetz Entwicklerversion) eine weitere GUI
-zum Paket hinzugekommen, die deutlich "schlanker" ist als die
-bisherige. Sie ist als "simple GUI" für Experten gedacht, die direkt
-eine Konfigurationsdatei eingeben können.
+Currently, in the "trunk" (the Freetz development version), another GUI
+has been added to the package. It is significantly "leaner" than the
+previous one. It is intended as a "simple GUI" for experts who can enter
+a configuration file directly.
 
-Wichtig:
+Important:
 
--   Um diese GUI wählen zu können, muss der "Level of user competence"
-    mindestens "Advanced" sein.
+-   To be able to select this GUI, the "Level of user competence" must be
+    at least "Advanced".
 
-Als Option sind zusätzlich Skript-Dateien hinzugekommen, die z.B. als
-"up"- oder "client-connect"-Skript genutzt werden können.
+Additional script files have been added as an option; these can be used,
+for example, as "up" or "client-connect" scripts.
 
-Ein Beispiel sei hier genannt für einen Server mit Zertifikaten, zu dem
-sich Clients verbinden, zu denen Netze geroutet werden sollen. Damit das
-funktioniert muss neben dem "normalen" Routing auch das interne
-Routing des Servers konfiguriert werden, der dazu "iroute" Einträge
-benötigt.
+Here is an example for a server with certificates to which clients
+connect, and to which networks should be routed. For this to work, in
+addition to the "normal" routing, the server's internal routing must also
+be configured; this requires "iroute" entries.
 
 ```
 mode server
@@ -567,14 +531,13 @@ client-connect "/bin/sh /tmp/flash/openvpn/script1"
 daemon
 ```
 
-Um für die Clients IPs zu vergeben wird hier "script1" als
-client-connect Skript genutzt (ähnlich wie die "erweiterte
-Clientconfig" der "alten GUI"). Die Idee/Anwendung sollte
-selbsterklärend sein (hoffe ich):
+To assign IPs to the clients, "script1" is used here as the
+client-connect script, similar to the "extended client config" of the
+"old GUI". The idea/application should be self-explanatory, I hope:
 
 ```
 #!/bin/sh
-CLIENTS='name:ip maske:netz1 maske1; netz2 maske2
+CLIENTS='name:ip mask:network1 mask1; network2 mask2
 Client1:10.10.10.1 255.255.255.0:192.168.100.0 255.255.255.0
 Client2:10.10.10.2 255.255.255.0:192.168.200.0 255.255.255.0
 Client3:10.10.10.3 255.255.255.0:
@@ -596,13 +559,11 @@ NETS=${X##*:}
 fi
 ```
 
-### Weitere Konfigs anlegen
+### Creating Additional Configurations
 
-Um weitere Konfigs anzulegen, muss man momentan noch von Hand einmal
-einen Aufruf machen. Um Beispielsweise eine Config Namens `OpenVPN_TCP`
-anzulegen:
+To create additional configurations, one manual call currently still has
+to be made. For example, to create a config named `OpenVPN_TCP`:
 
 `http://fritz.box:81/cgi-bin/conf/openvpn?genconfigname=OpenVPN_TCP`
 
-ACHTUNG: Nicht den Config-Namen "OpenVPN" oder "openvpn" verwenden!
-
+ATTENTION: Do not use the config name "OpenVPN" or "openvpn"!

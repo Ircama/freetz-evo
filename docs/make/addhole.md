@@ -2,17 +2,17 @@
   - Package: [master/make/pkgs/addhole/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/addhole/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Addhole ist eine Erweiterung für Dnsmasq.<br>
+Addhole is an extension for Dnsmasq.<br>
 
 [![screenshot](../screenshots/000-PKG_addhole_md.png)](../screenshots/000-PKG_addhole.png)
 
- - Mit Addhole können Listen mit Hostnamen in Dnsmasq eingebunden werdend die blockiert werden. Es gibt Listen mit Hosts die Werbung, Malware, Viren etc verbreiten.
-   Das Package ist vergleichbar mit Pi-Hole, nur ohne Webinterface mit den Zugriffsstatistiken und ohne ein zusätzliches Gerät.
+ - Addhole can include lists of hostnames in Dnsmasq and block them. There are lists of hosts that distribute advertising, malware, viruses, and similar unwanted content.
+   The package is comparable to Pi-hole, but without the web interface with access statistics and without requiring an additional device.
 
- - In der Standardkonfiguration von Addhole benötig Dnsmasq etwa 10MB Ram, werden alle vordefinierten Listen aktiviert 25MB Ram.
-   Hinweis: Dies macht keinen Sinn auf einer Fritzbox mit 32 MB Ram!
-   Die Listen können automatisch mit Cron aktualisert werden. Es könne zusätzlich eigene Hosts angegeben werden
+ - With Addhole's default configuration, Dnsmasq needs about 10 MB of RAM; with all predefined lists enabled, it needs about 25 MB of RAM.
+   Note: this makes no sense on a Fritzbox with 32 MB of RAM.
+   The lists can be updated automatically with Cron. Additional custom hosts can also be specified.
 
- - Vorsicht: Die Namensauflösung wird auf dem Server (Dnsmasq), dem Client (Linux, Windows, Android, ...) und im Anwendungsprogramm (zb Webbrowser) gecacht!
-   Falls sich nicht sofort eine Änderung zeigt, alle Caches löschen - oder einfach alles rebooten...
+ - Caution: name resolution is cached on the server (Dnsmasq), on the client (Linux, Windows, Android, ...), and in the application program (for example, the web browser).
+   If a change is not visible immediately, clear all caches, or simply reboot everything.
 

@@ -2,12 +2,11 @@
   - Package: [master/make/pkgs/cpmaccfg/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/cpmaccfg/)
   - Steward: -
 
-Hierbei handelt es sich um ein Tool zur Konfiguration des eingebauten Ethernet-Switches einer 7390.
-Eine genauere Anleitung findet sich [in diesem Howto](../wiki/50_Security/switch_config.html).
+This is a tool for configuring the built-in Ethernet switch of a 7390.
+A more detailed guide is available [in this how-to](../wiki/50_Security/switch_config.html).
 
 ### cpmaccfg-cgi
 
-Hiermit kann cpmaccfg über das Freetz Webinterface bedient werden. Je
-nach Boxtyp werden mehr oder weniger Funktionen des Switches
-unterstützt.
+This allows cpmaccfg to be controlled through the Freetz web interface.
+Depending on the box type, more or fewer switch functions are supported.
 

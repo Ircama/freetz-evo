@@ -2,202 +2,184 @@
   - Package: [master/make/pkgs/avm-firewall/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/avm-firewall/)
   - Steward: -
 
-Das **AVM-firewall-CGI** stellt eine Web-Oberfläche dar, mit der man die
-von AVM dem User vorenthaltene integrierte Firewall administrieren kann.
-Die Firewall ist ein Bestandteil des "dsld" von AVM, deshalb kann man
-diese Firewall nicht wirklich starten oder stoppen, sie läuft eigentlich
-immer (solange dsld auf der Box ist).
+The **AVM-firewall-CGI** provides a web interface for administering the
+integrated firewall that AVM withholds from the user. The firewall is a
+component of AVM's "dsld", so this firewall cannot really be started or
+stopped; it is actually always running as long as dsld is on the box.
 
 [![AVM firewall forward rule example](../screenshots/10_md.jpg)](../screenshots/10.jpg)
 
-Ein paar Worte zu den "Grundlagen" und der Philosophie, die AVM damit
-umsetzt:
+A few words about the "basics" and the philosophy AVM implements with
+it:
 
--   Die Firewall von AVM ist wohl konzipiert als eine "Zusatzfirewall"
--   Die "Firewall" ist jeweils vorgeschaltet und wirkt auf Pakete, die
-    *vom* WAN-Interface kommen oder *zum* WAN gehen. Box-intern wirkt
-    sie nicht.
--   Die Box hat für das WAN-Interface eine zweite (die "eigentliche")
-    Sicherung: Alle eingehenden Pakete, für die es keinen Eintrag in der
-    NAT-Tabelle gibt, werden verworfen.
+-   AVM's firewall is probably designed as an "additional firewall".
+-   The "firewall" is placed in front of the WAN path and acts on packets
+    that come *from* the WAN interface or go *to* the WAN. It has no
+    effect inside the box.
+-   The box has a second (the "actual") protection for the WAN interface:
+    all incoming packets for which there is no entry in the NAT table are
+    discarded.
 
-Diese NAT-Einträge geschehen entweder dynamisch (wenn aus dem LAN ins
-Internet zugegriffen wird), oder statisch, wenn Einträge im
-"Portforwarding" existieren. Dieses Verfahren gilt immer, auch die
-Box-Prozesse selbst akzeptieren keine Pakete, ohne eine solche NAT,
-daher gibt es dafür die Portweiterleitungen "auf die Box selbst".
+These NAT entries are created either dynamically, when the internet is
+accessed from the LAN, or statically when entries exist in
+"port forwarding". This procedure always applies; even the box processes
+themselves do not accept packets without such NAT, which is why there are
+port forwards "to the box itself" for them.
 
-Die Firewall filtert also nur zusätzlich Pakete heraus, die eigentliche
-"Sicherheit" wird über den "NAT-Mechanismus" realisiert. Deshalb ist
-die "Default-Einstellung" der Firewall auch für alle nicht verbotenen
-Pakete: Permit.
+The firewall therefore only additionally filters packets; the actual
+"security" is implemented through the "NAT mechanism". This is also why
+the firewall's "default setting" for all packets that are not forbidden
+is: Permit.
 
-Wirklich wirksam wird diese Firewall deshalb zum einen, um ausgehend
-bestimmte Verbindungen zu blocken, oder aber, wenn man sich "viel
-Arbeit macht" und alle benötigten Verbindungen erlaubt und dann die
-Default-Regel auf "Deny" stellt.
+This firewall therefore becomes truly effective either for blocking
+certain outgoing connections, or when one "does a lot of work" and allows
+all required connections, then sets the default rule to "Deny".
 
-Ich persönlich (ich hoffe, auch als "Autor" darf ich das sagen) würde
-für tiefergehende Eingriffe eher auf [iptables](iptables.md)
-zurückgreifen...
+Personally (I hope I am allowed to say this even as the "author"), I
+would rather use [iptables](iptables.md) for deeper interventions...
 
-### Feature-Übersicht
+### Feature Overview
 
 [![AVM Firewall cgi](../screenshots/100_md.jpg)](../screenshots/100.jpg)
 
-Mit AVM-FIREWALL-CGI kann man direkt über eine Weboberfläche Folgendes
-tun:
+With AVM-FIREWALL-CGI, the following can be done directly through a web
+interface:
 
--   Die von AVM vordefinierten Firewallregeln ändern/löschen
--   Eigene Regeln hinzufügen (sehr praktisch um lästiges "nach Hause
-    telefonieren" von mancher Software im Router zu unterbinden)
--   Portforwardings erstellen, die auch auf die Fritz selber (0.0.0.0)
-    zeigen können.(z.B. für FTP oder webserver Freigaben ins I-Net)
+-   Change/delete the firewall rules predefined by AVM.
+-   Add custom rules, which is very practical for preventing annoying
+    "phoning home" by some software from the router.
+-   Create port forwards that can also point to the Fritz itself
+    (0.0.0.0), for example for FTP or web server shares to the internet.
 
-Die Syntax sollte nicht weiter schwer sein, dafür gibt es ja die
-Dropdown-Felder.
+The syntax should not be too difficult; the dropdown fields are there for
+that.
 
-### Anwendung der geänderten Regeln
+### Applying the Changed Rules
 
-Die Tatsache, dass AVM entweder keine Änderungen am Regelwerk vorsieht
-(bei der Firewall) oder selbst die Änderungen verwaltet (Forwarding),
-erfordert besondere Maßhnahmen, um die in der GUI vorgenommenen
-Änderungen auch anzuwenden. Hierfür werden AVM-Dienste neu gestartet,
-was zum Crash der Box und sogar zum Reset auf Werkseinstellungen führen
-kann, deshalb am Ende der Seite die animierte Grafik zur Warung.
+The fact that AVM either does not provide for changes to the rule set (in
+the firewall) or manages the changes itself (forwarding) requires special
+measures to actually apply changes made in the GUI. For this, AVM
+services are restarted, which can cause the box to crash and even reset
+to factory defaults; therefore the animated warning graphic appears at
+the end of the page.
 
-Um allen Problemen aus dem Weg zu gehen sollte der "Übernehmen" Haken
-**nicht** gesetzt werden, sondern die Regeln "nur" abgespeichert und
-die Box dann neu gestartet.
+To avoid all problems, the "Apply" checkbox should **not** be set;
+instead, the rules should "only" be saved and the box then restarted.
 
-**Ergänzung zur Trunk-Version, Stand 22.02.2010** In dieser Version sind
-jetzt vier Auswahlpunkte zur Übernahme der Regelwerke vorgesehen, um die
-beschriebenen Crash-Probleme besser eingrenzen zu können (sihe Bild
-unten). Hier eine Kurze Erläuterung dazu:
-Die GUI tangiert zwei AVM Daemons (ctlmgr und dsld) und zwar deshalb,
-weil im *dsld* die Regeln tatsächlich wirken, im *ctlmgr*, weil der die
-eigene Regelverwaltung macht.
+**Addition for the trunk version, as of 2010-02-22** In this version,
+four selection points are now provided for applying the rule sets, so the
+described crash problems can be narrowed down better (see image below).
+Here is a brief explanation:
+The GUI touches two AVM daemons (ctlmgr and dsld): *dsld* because this is
+where the rules actually take effect, and *ctlmgr* because it performs
+its own rule management.
 
--   In der Freetz-GUI vorgenommenen Änderungen sind der
-    AVM-"Regelverwaltung" unbekannt. Deshalb muss der *ctlmgr* neu
-    gestartet werden, um diese Änderunegen dort auch zu verankern. Wird
-    der ctlmgr nicht neu gestartet, können Änderungen in der AVM-GUI
-    alle Änderungen in dieser GUI (sowohl in der Firewall als auch im
-    Forwarding) rückgängig machen.
--   Um **Firewall-Änderungen** zu aktivieren, muss der dsld gestoppt und
-    neu gestartet werden
--   Um Änderungen an den **Optionen des dsld** zu aktivieren, ist
-    ebenfalls ein Neustart des dsld erforderlich
--   Um **Portforwarding-Änderungen** zu übernehmen, muss der dsld nicht
-    komplett neu gestartet werden, es reicht, ihn über ein Signal (HUP)
-    "anzuweisen", die Regeln neu zu laden und anzuwenden.
+-   Changes made in the Freetz GUI are unknown to AVM's "rule
+    management". Therefore, *ctlmgr* must be restarted to anchor these
+    changes there as well. If ctlmgr is not restarted, changes in the AVM
+    GUI can undo all changes in this GUI, both in the firewall and in
+    forwarding.
+-   To activate **firewall changes**, dsld must be stopped and restarted.
+-   To activate changes to the **dsld options**, dsld must also be
+    restarted.
+-   To apply **port forwarding changes**, dsld does not need to be
+    completely restarted; it is enough to "instruct" it via a signal
+    (HUP) to reload and apply the rules.
 
-[![AVM firewall - Übernehmen Parameter (Trunk Version)](../screenshots/145_md.png)](../screenshots/145.png)
+[![AVM firewall - apply parameters (trunk version)](../screenshots/145_md.png)](../screenshots/145.png)
 
-### Die Gefahr von Reboot-Schleifen und wie man da wieder herauskommt
+### The Danger of Reboot Loops and How to Get Out of Them
 
-Bei zahlreichen Versuchen mit der Einrichtung von Firewallregeln mit
-Hilfe dieses CGI-Paketes hat sich gezeigt, daß man die Box bei
-umfangreichen Änderungen dazu bringen kann, immer wieder neu zu starten.
-Das geschieht auch bei völlig legitimen Regeln und scheint mit dem
-Umfang des Regelsatzes zusammenzuhängen. Subjektiv erscheinen mir
-Portsperren unkritischer als IP-Bereichssperren über Subnetzadressen und
--Masken. Aufgetreten ist das bei mir auf einer 7270v3 mit 74.04.88 und
-Freetz 1.2 Revision 7500; ein anderer Nutzer berichtete gleiches von
-einer 7390.
+In numerous attempts to set up firewall rules using this CGI package, it
+has become apparent that extensive changes can cause the box to restart
+again and again. This also happens with completely legitimate rules and
+seems to be related to the size of the rule set. Subjectively, port
+blocks seem less critical to me than IP range blocks via subnet addresses
+and masks. This occurred for me on a 7270v3 with 74.04.88 and Freetz 1.2
+Revision 7500; another user reported the same from a 7390.
 
-Die Ursache des Problems liegt irgendwo im „dsld" von AVM begraben, der
-auch die Firewall-Funktion bereitstellt und ist inziwschen insbesondere
-dank
-[„MaxMuster"](http://www.ip-phone-forum.de/member.php?u=62478)
-ergründet (siehe dazu die „Literaturhinweise" aus dem IP-Phone-Forum am
-Ende dieser Seite).
+The cause of the problem is buried somewhere in AVM's "dsld", which also
+provides the firewall function, and has since been investigated,
+especially thanks to
+["MaxMuster"](http://www.ip-phone-forum.de/member.php?u=62478) (see the
+"literature references" from IP-Phone-Forum at the end of this page).
 
-### Abhilfe
+### Remedy
 
-AVM hat nach dem Hinweis auf die hier beschriebenen Sachverhalte den
-Fehler gefunden und will ihn in der nächsten Laborversion der Firmware
-beheben. Die X.05.05-Versionen sind auf jeden Fall noch betroffen. Bis
-dahin kann es helfen, wenn man beim Erstellen von Firewall-Regeln die
-folgenden Hinweise beachtet.
+After being informed of the facts described here, AVM found the bug and
+intends to fix it in the next lab version of the firmware. The X.05.05
+versions are definitely still affected. Until then, it may help to observe
+the following notes when creating firewall rules.
 
-Es dürfen nicht mehr als jeweils drei „gleichartige" Regeln für das
-Protokoll „IP" unmittelbar hintereinander stehen. Die folgenden Typen
-sind betroffen:
+There must not be more than three "similar" rules for the "IP" protocol
+directly one after another. The following types are affected:
 
 -   „ip reject [...]"
 -   „ip deny [...]"
 -   „ip permit [...]"
 
-Man muß also nach spätestens drei Zeilen, die mit „ip reject" beginnen,
-mindestens eine andere Zeile einfügen, so daß nie mehr als drei Zeilen
-gleichen „Typs" aufeinanderfolgen. Port-Forward-Regeln und Port-Sperren
-scheinen nicht betroffen zu sein, letztere können aber mit den anderen
-Zeilen gemischt werden, um den Fehler zu verhindern. Wenn man nicht
-genügend „andersartige" Regeln hat, kann man bereits bestehende
-wiederholen oder andere wirkungslose Regeln einfügen.
+So after at most three lines that begin with "ip reject", at least one
+other line must be inserted, so that never more than three lines of the
+same "type" follow one another. Port-forward rules and port blocks do not
+seem to be affected, but the latter can be mixed with the other lines to
+prevent the bug. If there are not enough "different" rules, existing ones
+can be repeated or other ineffective rules can be inserted.
 
-Bei zwei 7270 hat diese Vorgehensweise reproduzierbar funktioniert. In
-einem Fall, bei der schon erwähnten 7390, scheint das nicht ausreichend
-gewesen zu sein.
+On two 7270s, this procedure worked reproducibly. In one case, on the
+already mentioned 7390, this does not seem to have been sufficient.
 
-### Anleitung, um eine versehentlich ausgelöste Reboot-Schleife zu beenden
+### Instructions for Ending an Accidentally Triggered Reboot Loop
 
-Die folgende Lösung funktioniert nur, wenn tatsächlich eine
-Firewall-Änderung die Neustarts verursacht und ist kein Allheilmittel
-für Neustart-Schleifen. Sie funktioniert auch nicht, wenn der Router im
-Ethernet-Modus läuft, also die ADSL-Verbindung nicht selber aufbaut.
-Getestet ist sie nur im gewöhnlichen ADSL-Router-Modus, also ohne
-externes Modem. Den Flash-Speicher mit einer Sicherheitskopie zu
-überschreiben ist in diesem speziallen Fall unnötig, gleichwohl sollte
-man unbedingt eine funktionierende Komplettsicherung und alles nötige
-für eine Wiederherstellung bereitliegen haben, wenn man an der
-AVM-Firewall Änderungen vornimmt.
+The following solution works only if a firewall change actually causes
+the restarts and is not a cure-all for reboot loops. It also does not
+work if the router is running in Ethernet mode, meaning it does not build
+the ADSL connection itself. It has only been tested in normal ADSL router
+mode, without an external modem. Overwriting the flash memory with a
+backup is unnecessary in this special case; nevertheless, a working full
+backup and everything needed for recovery should absolutely be ready when
+making changes to the AVM firewall.
 
-Glücklicherweise erfolgt in dem Fall kein Neustart, wenn man den
-ADSL-Verbindungsaufbau unterbindet, das heißt, das ADSL-Kabel vom
-Splitter abzieht. Das analoge oder ISDN-Telefonkabel kann
-steckenbleiben, man hat also während der Reparaturzeit kein Internet,
-wohl aber Telefon zur Verfügung, das Risiko von Experimenten mit der
-Firewall ist also kleiner, als man auf den ersten Blick denkt, wenn man
-was von „Reboot-Schleifen" liest.
+Fortunately, in this case no restart occurs if ADSL connection setup is
+prevented, meaning the ADSL cable is unplugged from the splitter. The
+analog or ISDN telephone cable can remain connected, so during the repair
+time there is no internet, but telephone is available. The risk of
+experimenting with the firewall is therefore smaller than it may seem at
+first glance when reading about "reboot loops".
 
-#### Wie also erkenne ich, daß so eine „Reboot-Schleife" stattfindet?
+#### How Do I Recognize That Such a "Reboot Loop" Is Happening?
 
-Der Router zeigt dabei die typischen „Start-Blink-Sequenzen" der
-Leuchtdioden. Wenn man es immer wieder probiert, kommt man zwar kurz ins
-Webinterface hinein, aber ein paar Sekunden später „hängt" es schon
-wieder, die Zeit reicht nicht, um die letzten Änderungen rückgängig zu
-machen. Das liegt daran, daß alles normal läuft, bis die
-Internet-Verbindung aufgebaut wird, dabei stürzt der Kernel dann ab.
+The router shows the typical "startup blinking sequences" of the LEDs. If
+you keep trying, you may briefly get into the web interface, but a few
+seconds later it already "hangs" again; the time is not enough to undo
+the last changes. This is because everything runs normally until the
+internet connection is established, at which point the kernel crashes.
 
-#### Wie behebe ich das Problem ohne FTP-Flash?
+#### How Do I Fix the Problem Without FTP Flashing?
 
-1.  Das ADSL-Kabel vom Splitter ziehen.
-2.  Warten, bis der Router ordentlich gestartet hat und das Freetz-CGI
-    wieder läuft. (Das kann etwas dauern, je nachdem welcher Paketumfang
-    in Freetz installiert ist, kommen nicht alle Programme fast
-    gleichzeitig hoch.)
-3.  Die Firewalländerungen zurücknehmen, die den Fehler verursacht
-    haben.
-4.  Neustart über das Freetz-Webinterface anstoßen.
-5.  Das ADSL-Kabel wieder einstecken.
+1.  Unplug the ADSL cable from the splitter.
+2.  Wait until the router has started properly and the Freetz CGI is
+    running again. This can take a while; depending on which package set
+    is installed in Freetz, not all programs come up almost
+    simultaneously.
+3.  Revert the firewall changes that caused the error.
+4.  Trigger a restart through the Freetz web interface.
+5.  Plug the ADSL cable back in.
 
 [Christoph
 Franzen](http://www.ip-phone-forum.de/member.php?u=121255)
 
-### Verweise
+### References
 
-Im [IP-Phone-Forum](http://www.ip-phone-forum.de)
-gibt es zur AVM Firewall einige Threads, z.B.:
+In [IP-Phone-Forum](http://www.ip-phone-forum.de), there are several
+threads about the AVM firewall, for example:
 
--   [instabile AVM-Firewall auf
+-   [unstable AVM firewall on
     7270](http://www.ip-phone-forum.de/showthread.php?t=238901)
-    (aktueller Diskussions-Thread)
--   [Aufruf zur Dokumentation der internen
+    (current discussion thread)
+-   [Call to document the internal
     Firewall](http://www.ip-phone-forum.de/showthread.php?t=156778)
--   [(NEU) AVM-Firewall package für
+-   [(NEW) AVM-Firewall package for
     Freetz](http://www.ip-phone-forum.de/showthread.php?t=159802)
--   [Blog von
+-   [Blog by
     real-riot](http://www.realriot.de/2007/05/die-interne-fritzbox-stateful-firewall_30.html)
 

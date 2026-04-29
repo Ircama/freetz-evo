@@ -5,25 +5,24 @@
   - Package: [master/make/pkgs/lynx/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lynx/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**[Lynx](http://lynx.isc.org/)** ist ein
-Web-Browser, der ohne grafische Oberfläche daherkommt - also von der
-Konsole zu nutzen ist. Anstelle von Grafiken stellt er die "ALT"-Tags
-("Alternative Description") dar, bzw. (so diese nicht vorhanden sind)
-den Namen der Bilddatei. Man kann Lynx auch so konfigurieren, dass er
-diese als "Links" darstellt, die mit einem externen Programm geöffnet
-werden.
+**[Lynx](http://lynx.isc.org/)** is a
+web browser without a graphical interface, so it is used from the
+console. Instead of graphics, it displays the "ALT" tags ("Alternative
+Description"), or, if those are not present, the image file name. Lynx
+can also be configured to display these as links that are opened with an
+external program.
 [Cookies](http://de.wikipedia.org/wiki/HTTP-Cookie)
-und
+and
 [Image-Maps](http://de.wikipedia.org/wiki/Verweissensitive_Grafik)
-werden ebenfalls unterstützt - Tabellen hingegen nur eingeschränkt,
+are also supported, while tables are supported only in a limited way;
 [Java](http://de.wikipedia.org/wiki/Java_(Programmiersprache))
-sowie
+and
 [JavaScript](http://de.wikipedia.org/wiki/JavaScript)
-überhaupt nicht.
+are not supported at all.
 
-### Weiterführende Links
+### Further Links
 
 -   [The History of Lynx](http://people.cc.ku.edu/~grobe/early-lynx.html)
 -   [Tips on using Lynx](http://brainstormsandraves.com/articles/browsers/lynx/)
--   [Liste von Web-Browsern](http://de.wikipedia.org/wiki/Liste_von_Webbrowsern)
+-   [List of web browsers](http://de.wikipedia.org/wiki/Liste_von_Webbrowsern)
 

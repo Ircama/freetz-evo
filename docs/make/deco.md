@@ -2,19 +2,17 @@
   - Package: [master/make/pkgs/deco/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/deco/)
   - Steward: -
 
-DECO ist ein Dateimanager für das Betriebssystem UNIX, das zu den
-Motiven des weit bekannten Norton Commander entwickelt wurde. Der
-"Demos Commander" ist dabei weit resourcensparender als etwa der
-[Midnight Commander](mc.md) und bietet sich daher insbesondere
-an, wenn im Image nur noch wenig Platz verfügbar ist, der für den
-[Midnight Commander](mc.md) ("mc") nicht mehr reicht.
-Natürlich reicht der DeCo damit auch nicht an die Funktionalitäten des
-[Midnight Commanders](mc.md) heran.
+DECO is a file manager for the UNIX operating system developed in the
+style of the well-known Norton Commander. The "Demos Commander" is far
+more resource-efficient than, for example, the [Midnight Commander](mc.md)
+and is therefore especially useful when little space remains in the image
+and there is no longer enough room for [Midnight Commander](mc.md)
+("mc"). Of course, this also means that DeCo does not match the
+functionality of [Midnight Commander](mc.md).
 
-Anzumerken wäre ferner, dass (laut
-[Projektseite](http://deco.sourceforge.net/)) die
-Entwicklung des "Demos Commander" zugunsten des "Bash Commander"
-eingestellt wurde - daher ist hier kaum damit zu rechnen, dass
-eventuelle "Feature Requests" noch Berücksichtigung finden werden.
-Auch eventuell gefundene Bugs darf man wahrscheinlich behalten...
+It should also be noted that, according to the
+[project page](http://deco.sourceforge.net/), development of "Demos
+Commander" was discontinued in favor of "Bash Commander". It is therefore
+unlikely that any feature requests will still be considered here. Any bugs
+that are found can probably be kept as well.
 

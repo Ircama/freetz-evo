@@ -6,11 +6,11 @@
   - Package: [master/make/pkgs/proxychains-ng/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/proxychains-ng/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit ProxyChains-NG kann (fast) jedes Programm einen Proxy verwenden.<br>
+With ProxyChains-NG, almost any program can use a proxy.<br>
 
 [![screenshot](../screenshots/000-PKG_proxychains-ng_md.png)](../screenshots/000-PKG_proxychains-ng.png)
 &emsp;
 [![screenshot](../screenshots/000-PKG_proxychains-ng_terminal_md.png)](../screenshots/000-PKG_proxychains-ng_terminal.png)
 
-Es werden HTTP, SOCKS4a und SOCKS5 Proxies unterstützt, sowie DNS-Tunneling.
+HTTP, SOCKS4a, and SOCKS5 proxies are supported, as is DNS tunneling.
 

@@ -8,7 +8,7 @@
 
 [![E-MailRelay](../screenshots/274_md.jpg)](../screenshots/274.jpg)
 
-Von der Webseite des Herstellers:
+From the manufacturer's website:
 
 > E-MailRelay is a simple SMTP proxy and store-and-forward message
 > transfer agent (MTA). When running as a proxy all e-mail messages can
@@ -21,7 +21,7 @@ Von der Webseite des Herstellers:
 > E-MailRelay can also run as a POP3 server. Messages received over SMTP
 > can be automatically dropped into several independent POP3 mailboxes.
 
-### Hilfe für die Konfiguration
+### Configuration Help
 
 [User
 guide](http://emailrelay.sourceforge.net/userguide.html)

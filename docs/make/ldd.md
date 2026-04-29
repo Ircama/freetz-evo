@@ -5,17 +5,16 @@
   - Package: [master/make/pkgs/ldd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ldd/)
   - Steward: -
 
-**ldd** steht für **L**ist **D**ynamic **D**ependencies. Es handelt sich
-hier um ein kleines Konsolen-Tool, mit dem sich herausfinden lässt, ob
-ein Binary von anderen Binaries (in der Regel [dynamische
-Bibliotheken](http://de.wikipedia.org/wiki/Programmbibliothek#Dynamische_Bibliotheken))
-abhängt und wenn ja, von welchen.
+**ldd** stands for **L**ist **D**ynamic **D**ependencies. It is a small
+console tool that can determine whether a binary depends on other
+binaries, usually [dynamic
+libraries](http://de.wikipedia.org/wiki/Programmbibliothek#Dynamische_Bibliotheken),
+and if so, which ones.
 
-Wie die Beschreibung richtig vermuten lässt, wird *ldd* in der Regel von
-Entwicklern benutzt - wohingegen der "normale Anwender" sie eher
-selten bis gar nicht benötigt.
+As the description suggests, *ldd* is usually used by developers, while
+"normal users" rarely need it, if at all.
 
-### Weiterführende Links
+### Further Links
 
 -   [ldd Man
     page](http://www.gsp.com/cgi-bin/man.cgi?section=1&topic=ldd)

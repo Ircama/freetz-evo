@@ -6,11 +6,11 @@
   - Package: [master/make/pkgs/htpdate/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/htpdate/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Dieses Paket kann dazu genutzt werden die Uhrzeit der Fritzbox zu
-synchronisieren. Dazu wird das HTTP Protokoll genutzt und dessen Header
-ausgewertet. Eine Synchronisierung über Proxyserver ist möglich.
+This package can be used to synchronize the Fritzbox clock. It uses the
+HTTP protocol and evaluates its headers. Synchronization through proxy
+servers is possible.
 
-### Weiterführende Links
+### Further Links
 
 Manpage:
 [htpdate(8)](http://linux.die.net/man/8/htpdate)

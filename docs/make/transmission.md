@@ -93,7 +93,7 @@ example *rc.custom*:
     echo "disable">/dev/watchdog
 ```
 
-### Weiterführende Links
+### Further Links
 
 -   [Transmission](http://transmissionbt.com/)
     (external)

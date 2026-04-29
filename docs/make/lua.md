@@ -6,18 +6,18 @@
   - Package: [master/make/pkgs/lua/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lua/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**[Lua](http://www.lua.org/)** ist eine
-[Skriptsprache](http://de.wikipedia.org/wiki/Skriptsprache)
-zum Einbinden in Programme, um diese leichter weiterentwickeln und
-warten zu können. Eine der besonderen Eigenschaften von Lua ist die
-geringe Größe des kompilierten Skript-Interpreters.
+**[Lua](http://www.lua.org/)** is a
+[scripting language](http://de.wikipedia.org/wiki/Skriptsprache)
+intended for embedding in programs so they can be extended and
+maintained more easily. One of Lua's special characteristics is the small
+size of the compiled script interpreter.
 
-### Weiterführende Links
+### Further Links
 
 -   [Lua Homepage](http://www.lua.org/)
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Lua)
--   [Lua für Anfänger](http://lua.gts-stolberg.de/)
+    article](http://de.wikipedia.org/wiki/Lua)
+-   [Lua for beginners](http://lua.gts-stolberg.de/)
 -   [Lua
     Links](http://www.dmoz.org/World/Deutsch/Computer/Programmieren/Sprachen/Lua/)
 -   [Libraries And

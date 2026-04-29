@@ -89,7 +89,7 @@ facebook.com/plugins
 -   Download of large files is broken and wont be fixed:
     [ticket](https://trac.torproject.org/projects/tor/ticket/1149)
 
-### Weiterführende Links
+### Further Links
 
 -   [Polipo
     home](http://www.pps.jussieu.fr/~jch/software/polipo/)

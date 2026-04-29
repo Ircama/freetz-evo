@@ -2,7 +2,7 @@
   - Package: [master/make/pkgs/juis_check/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/juis_check/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit diesen Package kann nach der neuesten Firmwareversion von AVM gesucht werden. Das Resultat wird im Webinterface unter `System` angezeigt.<br>
-Um die Suche zu automatisieren kann das Script `/usr/bin/juis` zB mit onlinechanged oder cron ausgeführt werden.
-Die Antwort wird in der Datei `/tmp/.juis_check` gespeichert.
+This package can search for the newest AVM firmware version. The result is shown in the web interface under `System`.<br>
+To automate the search, the script `/usr/bin/juis` can be run, for example, with onlinechanged or cron.
+The response is stored in the file `/tmp/.juis_check`.
 

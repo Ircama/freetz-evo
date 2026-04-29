@@ -6,17 +6,17 @@
   - Package: [master/make/pkgs/wget/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/wget/)
   - Steward: [@fda77](https://github.com/fda77)
 
-GNU Wget ist ein freies Kommandozeilen-Programm zum Herunterladen von Ressourcen
-(Dateien, Webseiten, etc) über ein Netzwerk. Zu den unterstützten Protokollen gehören
+GNU Wget is a free command-line program for downloading resources
+(files, web pages, etc.) over a network. Supported protocols include
 [ftp](http://de.wikipedia.org/wiki/File_Transfer_Protocol),
-[http](http://de.wikipedia.org/wiki/Http) und
+[http](http://de.wikipedia.org/wiki/Http), and
 [https](http://de.wikipedia.org/wiki/Https). Wget
-kann einen abgebrochenen [Download](../Download.html) wieder
-aufnehmen, komplette Webseiten mit Bildern sowie vollständige Websites
-herunterladen, z. B. zum Offline-Lesen oder zur Archivierung.
+can resume an interrupted [download](../Download.html), download complete
+web pages with images, and download full websites, for example for
+offline reading or archiving.
 
-### Weiterführende Links
- - [Wikipedia Artikel](http://de.wikipedia.org/wiki/Wget)
- - [Herunterladen von Webseiten mit Wget](http://www.pro-linux.de/berichte/wget-doku.html)
+### Further Links
+ - [Wikipedia article](http://de.wikipedia.org/wiki/Wget)
+ - [Downloading web pages with Wget](http://www.pro-linux.de/berichte/wget-doku.html)
 
 

@@ -2,53 +2,50 @@
   - Package: [master/make/pkgs/wol/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/wol/)
   - Steward: -
 
-Es gibt zwei Programme, die WoL unterstützen:
-1. *ether-wake*, das in der busybox integriert ist und
-2. *wol*, das genutzt werden kann, wenn es mit *ether-wake* Probleme
-gibt.
+There are two programs that support WoL:
+1. *ether-wake*, which is integrated into busybox, and
+2. *wol*, which can be used if there are problems with *ether-wake*.
 
-Das `wol` Paket ist "binary only", kann aber seit einiger Zeit auch
-über wol-cgi bedient werden.
+The `wol` package is "binary only", but for some time it has also been
+usable through wol-cgi.
 
-### Wake on LAN WebInterface(wol-cgi)
+### Wake on LAN Web Interface (wol-cgi)
 
-Mit Hilfe des wol-cgi Paketes lässt sich das Busybox Applet `ether-wake`
-steuern. Hiermit lassen sich PCs über das lokale Netzwerk (LAN) oder
-über das Internet (WAN) aufwecken.
+The wol-cgi package can be used to control the Busybox applet
+`ether-wake`. This can wake PCs over the local network (LAN) or over the
+internet (WAN).
 
-### Konfiguration auf der Fritzbox
+### Configuration on the Fritzbox
 
-Ein PC, der aufgeweckt werden soll, muss in die Hostliste aufgenommen
-werden. Die Hostliste lässt sich auf folgende Weisen bearbeiten:
+A PC that should be woken must be added to the host list. The host list
+can be edited in the following ways:
 
--   *Pakete → Wake on LAN → Hosts bearbeiten*
--   *Einstellungen → Hosts*
+-   *Packages -> Wake on LAN -> Edit hosts*
+-   *Settings -> Hosts*
 
-Um Wake on LAN zu nutzen, muss wenigstens die Mac-Adresse und der
-Hostname eingegeben werden, am Besten einfach gleich noch die IP-Adresse
-und das Interface (meist eth0). Beispiele:
+To use Wake on LAN, at least the MAC address and host name must be
+entered; ideally, also enter the IP address and the interface (usually
+eth0) right away. Examples:
 
 ```
-#<ip>           <mac>              <interface> <host>  [<description>]  (*... nicht definiert)
+#<ip>           <mac>              <interface> <host>  [<description>]  (*... not defined)
 *              0A:B1:2C:D3:4E:F5  *           server
-192.168.178.2  0A:B1:2C:D3:4E:F5  eth0        server  Das ist mein Server
+192.168.178.2  0A:B1:2C:D3:4E:F5  eth0        server  This is my server
 ```
 
-Im Menü *Pakete → Wake on LAN* können noch weitere Einstellungen
-vorgenommen werden:
+Further settings can be made in the *Packages -> Wake on LAN* menu:
 
 [![Wake on LAN Configuration](../screenshots/16_md.png)](../screenshots/16.png)
 
-Anschließen ist das WoL-WebInterface über `fritz.box:82` oder den
-Menüpunkt "*Freetz WOL*" des AVM-WebInterfaces zu erreichen. Darin
-dann den PC in der Liste "Bekannte Hosts" auswählen. Die Einträge MAC
-und Interface werden automatisch eingetragen und ein Klick auf
-"WakeUp" startet den gewählten PC.
+Afterwards, the WoL web interface can be reached via `fritz.box:82` or
+the "*Freetz WOL*" menu item in the AVM web interface. There, select the
+PC from the "Known hosts" list. The MAC and interface entries are filled
+in automatically, and clicking "WakeUp" starts the selected PC.
 
 [![Wake on LAN WebInterface](../screenshots/14_md.png)](../screenshots/14.png)
 
-Bei Problemen bitte zuerst versuchen, ob der PC sich anderweitig (von
-anderen PCs) aufwecken lässt. Hierdurch ist sichergestellt, dass der PC
-richtig konfiguriert ist. Weiterhin kann man statt dem Busybox
-`ether-wake` Applet das [wol](wol.md) Binary probieren.
+If there are problems, first try whether the PC can be woken by other
+means, for example from other PCs. This ensures that the PC is configured
+correctly. In addition, the [wol](wol.md) binary can be tried instead of
+the Busybox `ether-wake` applet.
 

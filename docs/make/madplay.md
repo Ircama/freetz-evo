@@ -3,22 +3,22 @@
   - Steward: -
 
 **[MAD](http://www.underbit.com/products/mad/)**
-ist ein qualitativ hochwertiger
+is a high-quality
 [MPEG](http://de.wikipedia.org/wiki/MPEG) Audio
-Decoder. MPEG rein -
+decoder. MPEG goes in,
 [PCM](http://de.wikipedia.org/wiki/Puls-Code-Modulation)
-raus, und zwar in 24-Bit. Da *MAD* bei sämtlichen Berechnungen auf
-Gleitkomma-Zahlen verzichtet, eignet es sich besonders für "Embedded
-Systems" sowie "schwachbrüstige Systeme".
+comes out, and it does so in 24-bit. Because *MAD* avoids floating-point
+numbers in all calculations, it is especially suitable for embedded
+systems and low-powered systems.
 
-*Freetz* verwendet *MAD' z.B. im Paket [DTMFBox](dtmfbox.md).*
+*Freetz* uses *MAD*, for example, in the [DTMFBox](dtmfbox.md) package.
 
-### Weiterführende Links
+### Further Links
 
 -   [MAD
     Homepage](http://www.underbit.com/products/mad/)
 -   [MAD
-    Projektseite](http://sourceforge.net/projects/mad/)
+  project page](http://sourceforge.net/projects/mad/)
     (Sourceforge)
 
 

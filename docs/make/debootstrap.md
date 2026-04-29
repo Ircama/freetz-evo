@@ -2,219 +2,204 @@
   - Package: [master/make/pkgs/debootstrap/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/debootstrap/)
   - Steward: -
 
-**Debootstrap** kann verwendet werden, um ein Debian System von Grund
-auf neu zu installieren. Dies kann aus einem laufenden System heraus auf
-einer anderen Partition oder auch in einem Verzeichnis auf dem aktuellen
-System geschehen, beispielsweise um eine andere Release-Version von
-Debian zu testen. Auch ist es möglich, mittels *debootstrap* eine
-Installation von Debian von einer anderen Linux-Distribution aus
-vorzunehmen.
+**Debootstrap** can be used to install a Debian system from scratch. This
+can be done from a running system onto another partition or into a
+directory on the current system, for example to test another Debian
+release version. It is also possible to use *debootstrap* to install
+Debian from another Linux distribution.
 
-*Debootstrap* benötigt dazu initial weder
+Initially, *Debootstrap* requires neither
 [dpkg](http://de.wikipedia.org/wiki/Debian_Package_Manager)
-noch
-[apt](http://de.wikipedia.org/wiki/Advanced_Packaging_Tool).
-Das initiale System wird erstellt, indem die Debian-Pakete von einer
-Mirror-Site heruntergeladen und vorsichtig in ein lokales Verzeichnis
-entpackt werden, in welches man schließlich
-"[chrooten](http://de.wikipedia.org/wiki/Chroot)"
-kann.
+nor [apt](http://de.wikipedia.org/wiki/Advanced_Packaging_Tool).
+The initial system is created by downloading the Debian packages from a
+mirror site and carefully unpacking them into a local directory, into
+which one can finally [chroot](http://de.wikipedia.org/wiki/Chroot).
 
-Sofern z.B. unter Debian, Ubuntu *Debootstrap* noch nicht installiert
-ist, kann dies mit
+If *Debootstrap* is not yet installed, for example under Debian or
+Ubuntu, it can be installed with:
 
 ```
 sudo apt-get install -y debootstrap
 ```
 
-nachgeholt werden.
+### Use Debian in a Few Steps
 
-### Debian in wenigen Schritten nutzen
+First download the Debian system with Debootstrap. This can be done from
+any other system that contains the Debootstrap program, for example also
+from the freetzed box with the Debootstrap package selected. Otherwise,
+the only requirement is that the mounted partition uses ext2, ext3, or
+ext4 as its filesystem. Because there are often problems with the current
+lenny Debian, etch is used here. It is recommended to run the first two
+commands on the computer, as this is much faster. In this case,
+*---foreign* should be added to the arguments. For all common FritzBox
+models up to x2xx, enter *---arch=mipsel*; for current x3xx models,
+enter *---arch=mips*.
 
-Zuerst mit Debootstrap das Debian-System herunterladen. Dies kann von
-jedem anderen System aus gemacht werden, welches das
-Debootstrap-Programm enthält (z.B. auch von der gefreezten Box mit
-ausgewähltem Debootstrap-Paket). Sonst ist nur noch erforderlich, dass
-die gemountete Partition ext2,3 oder 4 als Dateisystem besitzt. Da es
-häufig Probleme mit dem aktuellen lenny Debian gibt wird hier etch
-verwendet. Es empfiehlt sich die ersten beiden Befehle am Computer
-auszuführen, da dies wesentlich schneller ist. In diesem Falle sollte
-man *---foreign* zu den Argumenten hinzufügen. Für alle gängigen
-FritzBox Modelle bis x2xx *---arch=mipsel* eintragen, für die aktuellen
-x3xx Modelle *---arch=mips* eintragen
+**Note**:
 
-**Hinweis**:
+The name of the connected USB device can vary. In the paths shown below,
+the name is *uStor01*; for other devices it can also be
+Generic-FlashDisk-01. There are 3 ways to find out the name: via the
+[web interface](http://192.168.178.1/nas/index.lua) (FRITZNAS), FTP (the
+root directory must be visible), or enabled Telnet.
 
-Beim angeschlossenen USB-Gerät kann die Bezeichnung variieren, in den
-unten angezeigten Pfaden lautet die Bezeichnung *uStor01*, bei anderen
-Geräten kann diese auch Generic-FlashDisk-01 lauten. Um die Bezeichnung
-herauszufinden, gibt es 3 Möglichkeiten, entweder per
-[Weboberfläche](http://192.168.178.1/nas/index.lua)
-(FRITZNAS), FTP (Wurzelverzeichnis (root) muss sichtbar sein) oder per
-aktiviertem Telnet.
-
-**Telnet** (in der Übersicht wird das USB-Gerät aufgelistet)
+**Telnet** (the USB device is listed in the overview)
 
 ```
 ls /var/media/ftp/
 ```
 
-**Ausgabe könnte in wie folgt sein** (Variiert nach Modell/Firmware):
+**Output could look like this** (varies by model/firmware):
 
 ```
 FRITZ-NAS.txt         FRITZ-Song.mp3        Generic-FlashDisk-01  lost+found
 FRITZ-Picture.jpg     FRITZ-Video.mp4       Onlinespeicher
 ```
 
-**Mit *Etch* ausprobieren** (veraltete Version):
+**Try with *Etch*** (outdated version):
 
-(FritzBox Modelle bis Version x2xxx)
+(FritzBox models up to version x2xxx)
 
 ```
 debootstrap --foreign --arch=mipsel etch /var/media/ftp/uStor01/debian http://ftp.de.debian.org/debian
 ```
 
-(FritzBox Modelle ab Version x3xxx)
+(FritzBox models from version x3xxx)
 
 ```
 debootstrap --foreign --arch=mips etch /var/media/ftp/uStor01/debian http://ftp.de.debian.org/debian
 ```
 
-**Mit *Wheezy* ausprobieren** (aktuelle Version):
+**Try with *Wheezy*** (current version):
 
-(FritzBox Modelle bis Version x2xxx)
+(FritzBox models up to version x2xxx)
 
 ```
 debootstrap --foreign --arch=mipsel wheezy /var/media/ftp/uStor01/debian http://ftp.de.debian.org/debian
 ```
 
-(FritzBox Modelle ab Version x3xxx)
+(FritzBox models from version x3xxx)
 
 ```
 debootstrap --foreign --arch=mips wheezy /var/media/ftp/uStor01/debian http://ftp.de.debian.org/debian
 ```
 
-anschließend
+then
 
 ```
 chroot /var/media/ftp/uStor01/debian /debootstrap/debootstrap --second-stage
 ```
 
-Sollte man Debootstrap an einem anderen PC durchgeführt haben, steckt
-man den betreffenden USB-Stick nun in die FritzBox. Um das Debian jetzt
-noch nutzen zu können, muss das /proc/ Verzeichnis für das Debian
-bereitgestellt werden und wie bereits erwähnt "gechrootet" werden:
+If Debootstrap was run on another PC, insert the relevant USB stick into
+the FritzBox now. To be able to use Debian now, the /proc/ directory must
+be provided for Debian and, as already mentioned, chroot must be used:
 
 ```
 mount -t proc proc /var/media/ftp/uStor01/debian/proc
 chroot /var/media/ftp/uStor01/debian bash
 ```
 
-Wenn alles gut geht sollte folgender Prompt da sein
+If everything goes well, the following prompt should appear:
 
 ```
 root@fritz
 ```
 
-Ab jetzt kann man sich wie gewohnt nach einem apt-get update mit apt-get
-install zusätzliche Pakete installieren.
+From now on, after an apt-get update, additional packages can be
+installed as usual with apt-get install.
 
-### Erfahrungswerte
+### Experience Values
 
-Die Erst-Installation auf einer 7170 dauert etwa 2 Stunden, die sich mit
-ca. 45/75 Minuten auf die ersten 2 Schritte verteilen. Der belegte
-Speicherplatz auf einem EXT3-formatierten Datenträger liegt bei ca 505
-MB (März 2011). Im Gegensatz zur späteren Nutzung (speziell von
-Aptitude) benötigt die Installation noch keinen Swap, steigert
-allerdings den CPU-Verbrauch während dieser Zeit auf 100%.
+The initial installation on a 7170 takes about 2 hours, with about 45/75
+minutes distributed over the first 2 steps. The used storage space on an
+EXT3-formatted data carrier is about 505 MB (March 2011). Unlike later
+use, especially of Aptitude, the installation does not yet require swap,
+but it does increase CPU usage to 100% during this time.
 
-### Weiterführende Links
+### Further Links
 
 -   [Linux-Wiki:
     Debootstrap](http://www.linuxwiki.de/debootstrap)
--   [Debian-Anwenderhandbuch:
+-   [Debian user manual:
     Debootstrap](http://debiananwenderhandbuch.de/debootstrap.html)
 -   [Installing new Debian systems with
     debootstrap](http://www.debian-administration.org/articles/426)
--   [IPPF-Thread über Mailserver in Debian
+-   [IPPF thread about mail servers in Debian
     chroot](http://www.ip-phone-forum.de/showthread.php?t=169744)
--   [Debootstrap im Wehavemorefun
+-   [Debootstrap in the Wehavemorefun
     Wiki](http://wehavemorefun.de/fritzbox/index.php/Debootstrap)
 
-#### Comment by oliver on Sa 26 Feb 2011 11:26:45 CET
+#### Comment by oliver on Sat 26 Feb 2011 11:26:45 CET
 
-Die Erstellung des Debootstrap ist relativ einfach und gut beschrieben.
-Aber wie nutzt man das jetzt? Den proc mount kann man in die rc.custom
-schreiben. Und was macht man mit dem chroot? Kann man beim Starten eine
-Screen-Session erstellen und sich dann dahin verbinden? Oder jedesmal
-den chroot Befehl eingeben?
+Creating the Debootstrap is relatively simple and well described. But how
+do you use it now? The proc mount can be written into rc.custom. And what
+do you do with chroot? Can you create a screen session at startup and
+then connect to it? Or enter the chroot command every time?
 
-#### Comment by mandy28 on Sa 26 Feb 2011 13:09:38 CET
+#### Comment by mandy28 on Sat 26 Feb 2011 13:09:38 CET
 
-chroot per Konsole starten oder bequem mit einem addon welches dann
-gleichzeitig für binary ist die im chroot laufen soll
+Start chroot from the console, or conveniently with an addon that is then
+also responsible for the binary that should run in the chroot.
 
-#### Comment by oliver on Di 01 Mär 2011 21:09:47 CET
+#### Comment by oliver on Tue 01 Mar 2011 21:09:47 CET
 
-Ich hab jetzt debootstrap installiert, aber die /etc/apt/sources.list
-ist leer!? Könntest du noch beschreiben was da rein muss, dass man
-Pakete installieren kann.
+I have now installed debootstrap, but /etc/apt/sources.list is empty.
+Could you describe what has to go in there so packages can be installed?
 
-#### Comment by mandy28 on Di 01 Mär 2011 22:30:28 CET
+#### Comment by mandy28 on Tue 01 Mar 2011 22:30:28 CET
 
-sollte so aussehen
+should look like this
 
 ```
 deb http://ftp.de.debian.org/debian stable main
 ```
 
-#### Comment by oliver on Di 01 Mär 2011 22:43:32 CET
+#### Comment by oliver on Tue 01 Mar 2011 22:43:32 CET
 
-Sollte das da drin stehen oder muss man das selbst reinschreiben?
+Should that already be in there, or do you have to write it yourself?
 
-#### Comment by mandy28 on Di 01 Mär 2011 22:54:33 CET
+#### Comment by mandy28 on Tue 01 Mar 2011 22:54:33 CET
 
-sollte normalerweise so oder ähnlich schon drin stehn
+Normally it should already be in there like that or similarly.
 
-#### Comment by MyRaCoLi on Mi 02 Mär 2011 02:55:27 CET
+#### Comment by MyRaCoLi on Wed 02 Mar 2011 02:55:27 CET
 
-Funktioniert das mit der aktuellen stable, squeeze? Lenny ist hier noch
-irrtümlich als stable aufgeführt.
+Does this work with the current stable, squeeze? Lenny is still listed
+here incorrectly as stable.
 
-#### Comment by mandy28 on Mi 02 Mär 2011 08:15:05 CET
+#### Comment by mandy28 on Wed 02 Mar 2011 08:15:05 CET
 
-mit den entsprechenden scrips in debootstrap ja , dann aber über anderen
-Mirror z.B.:
+With the corresponding scripts in debootstrap, yes, but then through a
+different mirror, for example:
 
 ```
 debootstrap --foreign --arch=mipsel squeeze /var/media/ftp/uStor01/squeeze http://ftp.de.debian.org/debian
 chroot /var/media/ftp/uStor01/squeeze /debootstrap/debootstrap --second-stage
 ```
 
-#### Comment by kriegaex on Mo 12 Dez 2011 23:05:51 CET
+#### Comment by kriegaex on Mon 12 Dec 2011 23:05:51 CET
 
-Also ich kriege nach dem Erstellen von Debootstrap auf dem PC und dem
-Kopieren auf die 7170 via NFS beim chroot nur die Fehlermeldung:
+After creating Debootstrap on the PC and copying it to the 7170 via NFS,
+I only get the following error message when chrooting:
 "FATAL: kernel too old"
 
-#### Comment by zocky on Do 26 Jul 2012 18:43:38 CEST
+#### Comment by zocky on Thu 26 Jul 2012 18:43:38 CEST
 
-zu diesem zu alter fb kernel problem
+About this too-old fb kernel problem: with 7170 firmware version 29.04.76,
+I also had the message "FATAL: kernel too old" with everything higher
+than etch, so you simply have to take an older distribution until it
+works.
 
-7170 Firmware-Version 29.04.76 hatte ich auch alles was höer als etch is
-die meldung "FATAL: kernel too old" da must einfach ne ältere dist
-nehmen bis es geht
+The sources.list may then have to be adjusted to archive servers. In my
+case this currently works with these entries:
 
-die sources.list muss dan eventl auf archive server angepasst werden
-
-in meinem fall funktioniert das im moment mit diesem einträgen :
-
+```
 deb http://archive.debian.org/debian-archive/debian/ etch main contrib
 non-free
 deb-src http://archive.debian.org/debian-archive/debian/ etch main
 contrib non-free
+```
 
-aba das kann sich je nach dist und aktuellem zeitraum ändern
+But this can change depending on the distribution and the current time.
 
 [AddComment?]
-

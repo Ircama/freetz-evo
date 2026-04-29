@@ -4,66 +4,64 @@
 
 [![RRDstats screenshot](../screenshots/229_md.jpg)](../screenshots/229.jpg)
 
-### Einleitung
+### Introduction
 
-RRD steht für Round Robin Database und wurde für Linux und Windows unter
-der GNU-Lizenz von Tobias Oetiker entwickelt. Es ist ein sehr
-leistungsfähiges Werkzeug, um zeitbezogene Messdaten wie Temperatur,
-Festplattenauslastung, Netzwerkverkehr auf kompakte Art und Weise in
-einer Datenbank zu speichern und ansprechend zu visualisieren. Weitere
-Details sind hier im Wiki beim Paket [RRDtool](rrdtool.md)
-nachzulesen. Um die Daten nachher graphisch darzustellen, wird rrdstats
-verwendet, worum es hier im Detail geht. Das Package
-[DigiTemp](digitemp.md) wird zum Aufzeichen von
-Temperaturwerten benötigt.
+RRD stands for Round Robin Database and was developed for Linux and
+Windows under the GNU license by Tobias Oetiker. It is a very powerful
+tool for storing time-related measurement data such as temperature, disk
+usage, and network traffic compactly in a database and visualizing it in
+an appealing way. More details can be found here in the wiki under the
+[RRDtool](rrdtool.md) package. To display the data graphically later,
+rrdstats is used; that is what this page covers in detail. The
+[DigiTemp](digitemp.md) package is required for recording temperature
+values.
 
-### Voraussetzungen und Einbau von RRDstats beim Firmware-Bau
+### Requirements and Adding RRDstats During Firmware Build
 
-Im `menuconfig`:
+In `menuconfig`:
 
 -   Package selection / Web interface / RRDstats for RRDtool
-    [selektiert automatisch auch RRDtool 1.2.30 unter "Package
-    selection / Testing"]
--   *nur für DigiTemp:* Package selection / Testing / digitemp 3.0.6 /
-    digitemp for ds9097 [mit den beiden anderen Optionen ging es (bei
-    ao) nicht] Ich (cuma) nutze "ds2490" mit dem "DS9490R". Hierbei
-    sind keine zusätzlichen Module nötig.
--   *nur für DigiTemp:* Advanced options / Kernel modules / drivers /
-    pl2303.ko [habe für einen anderen Adapter zusätzlich auch noch
-    ftdi_sio.ko ausgewählt]
--   *nur für Kabelmodem:* Optional das Package "wget" installieren.
-    Dadurch werden Ausfälle bei Nichterreichbarkeit des Kabelmodem
-    vermieden, es ist aber ca 350 kB gross.
+    [automatically also selects RRDtool 1.2.30 under "Package selection /
+    Testing"]
+-   *only for DigiTemp:* Package selection / Testing / digitemp 3.0.6 /
+    digitemp for ds9097 [the other two options did not work for ao]. I
+    (cuma) use "ds2490" with the "DS9490R". No additional modules are
+    needed for this.
+-   *only for DigiTemp:* Advanced options / Kernel modules / drivers /
+    pl2303.ko [I additionally selected ftdi_sio.ko for another adapter]
+-   *only for cable modem:* optionally install the "wget" package. This
+    avoids failures when the cable modem cannot be reached, but it is
+    about 350 kB in size.
 
-Auf der Box:
+On the box:
 
--   *nur für DigiTemp:* im Freetz-WebGUI unter "Einstellungen /
-    Freetz:modules das bzw. die Kernel-Modul(e) untereinander eintragen
-    (aber ohne "modprobe" o.ä.!)
+-   *only for DigiTemp:* in the Freetz WebGUI under "Settings /
+    Freetz:modules", enter the kernel module or modules one below the
+    other, but without "modprobe" or similar.
 
 ```
 	pl2303
 	ftdi_sio
 ```
 
--   im Freetz-Webif unter "RRDstats" weitere Einstellungen vornehmen
+-   make further settings in the Freetz WebIF under "RRDstats"
 
 ### Backup
 
-Sinnvoll ist die Anpassung der Pfade, falls man regelmäßige Backups der
-Messdaten machen möchte, z.B.:
+Adjusting the paths is useful if regular backups of the measurement data
+should be made, for example:
 
 ```
-	Backup Verzeichnis: /var/media/ftp/uStor01/rrdstats/backup
+	Backup directory: /var/media/ftp/uStor01/rrdstats/backup
 ```
 
-... und im Freetz-WebGUI bei den RRDstats-Einstellungen das automatisch
-Wiederherstellen von Backups beim Starten aktivieren
+... and in the Freetz WebGUI, enable automatic restore of backups at
+startup in the RRDstats settings.
 
-Wenn man die Backups nun regelmäßig mittels eines cronjobs durchführt,
-z.B. alle 20-30 Minuten, sind die Lücken in den Graphen bei entsprechend
-kurzen Box-Ausfallzeiten auch nicht zu groß. Im Freetz-WebGUI gibt man
-dazu unter "Einstellungen / Freetz: crontab" z.B. folgendes ein:
+If backups are now performed regularly using a cronjob, for example every
+20-30 minutes, the gaps in the graphs are not too large if box downtimes
+are correspondingly short. In the Freetz WebGUI under "Settings / Freetz:
+crontab", enter something like:
 
 ```
 	00 * * * * /etc/init.d/rc.rrdstats backup
@@ -71,62 +69,57 @@ dazu unter "Einstellungen / Freetz: crontab" z.B. folgendes ein:
 	40 * * * * /etc/init.d/rc.rrdstats backup
 ```
 
-Näheres zu crontab bitte im Internet nachlesen.
+Please read more about crontab on the internet.
 
-### Einstellungen WebGUI
+### WebGUI Settings
 
-"Not lazy" bedeutet, dass die Graphen immer neu generiert werden,
-hingegen bedeutet "lazy", dass sie nur neu generiert werden, wenn sie
-veraltet sind. Die Einstellung "lazy" (bzw. das Abschalten von "not
-lazy") verringert die CPU-Last.
+"Not lazy" means the graphs are always regenerated, whereas "lazy" means
+they are regenerated only when they are outdated. The "lazy" setting (or
+disabling "not lazy") reduces CPU load.
 
-Vefügbare Netzwerkintrafaces auf der Box kann man so ermitteln:
+Available network interfaces on the box can be determined like this:
 `ifconfig |grep -v "^ "`
 
- * Das
-Unterdrücken der 85°C Fehlerwerte wirkt sich nur auf die .rrd Dateien
-aus, nicht auf die .cvs.
+-   Suppressing the 85 deg C error values affects only the .rrd files, not
+    the .cvs files.
 
-*Die anderen Einstellungen dürften selbsterklärend sein. Falls nicht,
-bitte im Forum nachfragen und bei neuen Erkenntnissen hier ergänzen.*
+*The other settings should be self-explanatory. If not, please ask in the
+forum and add any new findings here.*
 
 ### DigiTemp
 
-Die Initialisierung ist nur 1x pro Messfühler nötig.
-Danach muss der Dienst "RRDstats" manuell wieder im Freetz-Webif unter
-"Dienste" gestartet werden
+Initialization is required only once per sensor. Afterwards, the
+"RRDstats" service must be started again manually in the Freetz WebIF
+under "Services".
 
-
-
-### Kabelmodem
+### Cable Modem
 
 [![RRDstats Cisco EPC (S-N Ratio)](../screenshots/253_md.jpg)](../screenshots/253.jpg)
 
 [![RRDstats Cisco EPC (Signal)](../screenshots/252_md.jpg)](../screenshots/252.jpg)
 
-Es werden die Kabelmodems Thomson THG 520 und 540, Cisco EPC 3212 und
-Arris Touchstone TM sowie baugleiche unterstützt.
+The Thomson THG 520 and 540, Cisco EPC 3212, Arris Touchstone TM, and
+identical cable modems are supported.
 
-### Loggen der Kanäle
+### Logging the Channels
 
-Sollen mehr Kanäle geloggt werden als beim Erstellen der Datenbank
-eingestellt waren, ist es an einfachsten die epc_*.rrd zu löschen.
-Bereits aufgezeichneten Daten weiterzuverwenden ist aufwändiger, da
-rrdtool keine Möglichkeit bietet nachträglich einen DS hinzuzufügen.
-Dazu:
+If more channels should be logged than were configured when the database
+was created, the easiest solution is to delete the epc_*.rrd files.
+Reusing already recorded data is more involved, because rrdtool does not
+provide a way to add a DS afterwards. To do this:
 
--   Datensicherung!
--   Die Daten exportieren: `rrdtool dump epc_60.rrd dump.xml`
--   DS Spalten hinzufügen. Hier am Beispiel 1 Upstreamkanal auf 2
-    erweitern:
-    1) Am Anfang der dump.xml vor den Zeilen
+-   Data backup!
+-   Export the data: `rrdtool dump epc_60.rrd dump.xml`
+-   Add DS columns. Here, as an example, expand from 1 upstream channel
+    to 2:
+    1. At the beginning of dump.xml, before the lines
 
 ``` 
     <ds>
     <name> up </name>
 ```
 
-    dies hinzufügen
+    add this
 
 ``` 
     <name> txfq2 </name>
@@ -155,7 +148,7 @@ Dazu:
     </ds>
 ```
 
-    2) 12 Zeilen vor allen `</cdp_prep>` Zeilen dies hinzufügen
+    2. Add this 12 lines before all `</cdp_prep>` lines
 
 ``` 
     <ds>
@@ -172,59 +165,62 @@ Dazu:
     </ds>
 ```
 
-    3) Nun noch alle Zeilen die mit `</row>` enden zwischen das drittletzte
-    und vorletzte `<v> ... </v>` dies einfügen: `<v> NaN </v> <v> NaN </v>`.
+    3. Now insert `<v> NaN </v> <v> NaN </v>` in all lines ending with
+    `</row>` between the third-to-last and second-to-last `<v> ... </v>`.
 
 <!-- -->
 
--   Geänderte Datenbank erstellen:
+-   Create the changed database:
     `rrdtool restore dump.xml epc_60.rrd -f`
 
-Viel Spass und Erfolg beim nachmachen
+Have fun and good luck reproducing it.
 :)
 
+### Cable Segment
 
+[![RRDstats cable segment](../screenshots/257_md.jpg)](../screenshots/257.jpg)
 
-### Kabelsegment
-
-[![RRDstats Kabelsegment](../screenshots/257_md.jpg)](../screenshots/257.jpg)
-
-Hiermit kann die Auslastung des Segmentes von Kabelinternet aufzeichnet
-werden. Es wird zusätzlich noch ein Treiber benötigt. Momentan gibt es
-nur ein Package für DVB-Sticks von [Sundtek](sundtek.md).
-Vorteil dieser ist, dass man kein v4l im Kernel benötigt.
+This can record the utilization of a cable internet segment. An
+additional driver is required. At the moment there is only a package for
+DVB sticks from [Sundtek](sundtek.md). The advantage is that no v4l is
+needed in the kernel.
 
 ### SmartHome
 
-Hiermit können viele Daten von AVM SmartHome Geräten aufgezeichnet werden.
-Welche Daten genau hängt vom Gerät ab, zB ein Heizkostenregler hat keine Spannung.\
-Es wird ein Passwort für die AVM-Weboberfläche (API) benötigt, dies kann auch ein zusätzlicher Benutzer sein.
+This can record many data points from AVM SmartHome devices. Exactly
+which data depends on the device; for example, a radiator controller has
+no voltage.\
+A password for the AVM web interface (API) is required; this can also be
+an additional user.
 
- * Temperatur [Grad Celsius]<br>
-   [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Temperatur_md.png)](../screenshots/000-PKG_rrdstats-Temperatur.png)
- * Spannung [Volt]<br>
-   [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Spannung_md.png)](../screenshots/000-PKG_rrdstats-Spannung.png)
- * Leistung [Wirkleistung, Blindleistung, Scheinleistung]<br>
-   [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Leistung_md.png)](../screenshots/000-PKG_rrdstats-Leistung.png)
- * Stromstärke [Ampere]<br>
-   [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Stromstaerke_md.png)](../screenshots/000-PKG_rrdstats-Stromstaerke.png)
- * Wirk-/Leistungsfaktor [Prozent/100]<br>
-   [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Leistungsfaktor_md.png)](../screenshots/000-PKG_rrdstats-Leistungsfaktor.png)
-
+-   Temperature [degrees Celsius]<br>
+    [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Temperatur_md.png)](../screenshots/000-PKG_rrdstats-Temperatur.png)
+-   Voltage [Volt]<br>
+    [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Spannung_md.png)](../screenshots/000-PKG_rrdstats-Spannung.png)
+-   Power [active power, reactive power, apparent power]<br>
+    [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Leistung_md.png)](../screenshots/000-PKG_rrdstats-Leistung.png)
+-   Current [Ampere]<br>
+    [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Stromstaerke_md.png)](../screenshots/000-PKG_rrdstats-Stromstaerke.png)
+-   Active/power factor [percent/100]<br>
+    [![RRDstats SmartHome](../screenshots/000-PKG_rrdstats-Leistungsfaktor_md.png)](../screenshots/000-PKG_rrdstats-Leistungsfaktor.png)
 
 ### Script aha.sh
 
-Die Steuerung der SmartHome-Geräte geschieht mit aha.sh. Man kann z. B. per cron mit aha.sh entsprechende Schaltzeitpunkte einstellen.
-Derzeit unterstützt aha.sh nur Heizkörperregler wie Comet DECT, FRITZ!DECT 300+301+302 und ein/aus-Aktoren wie die Steckdosen FRITZ!DECT 200, FRITZ!DECT 210 oder FRITZ!Powerline 546E.
+SmartHome devices are controlled with aha.sh. For example, corresponding
+switching times can be configured with aha.sh via cron. Currently,
+aha.sh supports only radiator controllers such as Comet DECT,
+FRITZ!DECT 300+301+302 and on/off actuators such as the FRITZ!DECT 200,
+FRITZ!DECT 210, or FRITZ!Powerline 546E sockets.
 
-Parameter für den Aufruf von `aha.sh`
+Parameters for calling `aha.sh`
 
-**a** oder **alias**
-sha-alias (Liste aller Smarthome-Geräte) aktualisieren (dasselbe wie „Smarthome aktualisieren“ im Webinterface)
+**a** or **alias**
+Update sha-alias (list of all SmartHome devices), the same as "Update
+SmartHome" in the web interface.
 
-**f** oder **fancy**
-Ausgabe der grundlegenden Informationen aller SmartHome-Geräte
- ```
+**f** or **fancy**
+Output basic information for all SmartHome devices.
+```
             manufacturer = AVM
              productname = Comet DECT
                fwversion = 03.68
@@ -233,7 +229,7 @@ Ausgabe der grundlegenden Informationen aller SmartHome-Geräte
                            SRQ PONM LKJI HGFE DCBA
               identifier = 11111 0112314
                       id = 20
-                    name = Heizung A
+                    name = Heating A
                  present = 1
                     lock = 0
               devicelock = 0
@@ -251,161 +247,161 @@ Ausgabe der grundlegenden Informationen aller SmartHome-Geräte
 
                            SRQ PONM LKJI HGFE DCBA
                            ||| |||| |||| |||| ||||
-                           ||| |||| |||| |||| |||+- Bit  0/A: HANFUN Gerät
+                           ||| |||| |||| |||| |||+- Bit  0/A: HANFUN device
                            ||| |||| |||| |||| ||+-- Bit  1/B: ?Unused
-                           ||| |||| |||| |||| |+--- Bit  2/C: Lampe
+                           ||| |||| |||| |||| |+--- Bit  2/C: Lamp
                            ||| |||| |||| |||| +---- Bit  3/D: ?Action
                            ||| |||| |||| ||||
-                           ||| |||| |||| |||+------ Bit  4/E: Alarmsensor
-                           ||| |||| |||| ||+------- Bit  5/F: Taster
-                           ||| |||| |||| |+-------- Bit  6/G: Heizkörperregler
-                           ||| |||| |||| +--------- Bit  7/H: Energiemessgerät
+                           ||| |||| |||| |||+------ Bit  4/E: Alarm sensor
+                           ||| |||| |||| ||+------- Bit  5/F: Button
+                           ||| |||| |||| |+-------- Bit  6/G: Radiator controller
+                           ||| |||| |||| +--------- Bit  7/H: Energy meter
                            ||| |||| ||||
-                           ||| |||| |||+----------- Bit  8/I: Temperatursensor
-                           ||| |||| ||+------------ Bit  9/J: Schaltsteckdose
-                           ||| |||| |+------------- Bit 10/K: DECT-Repeater
-                           ||| |||| +-------------- Bit 11/L: Mikrofon
+                           ||| |||| |||+----------- Bit  8/I: Temperature sensor
+                           ||| |||| ||+------------ Bit  9/J: Switch socket
+                           ||| |||| |+------------- Bit 10/K: DECT repeater
+                           ||| |||| +-------------- Bit 11/L: Microphone
                            ||| ||||
                            ||| |||+---------------- Bit 12/M: ?Bundle
                            ||| ||+----------------- Bit 13/N: HANFUN Unit
                            ||| |+------------------ Bit 14/O: ?Template
-                           ||| +------------------- Bit 15/P: Schaltbar
+                           ||| +------------------- Bit 15/P: Switchable
                            |||
                            ||+--------------------- Bit 16/Q: Potentiometer
-                           |+---------------------- Bit 17/R: Farbtemperatur
-                           +----------------------- Bit 18/S: Rollladensteuerung
+                           |+---------------------- Bit 17/R: Color temperature
+                           +----------------------- Bit 18/S: Roller shutter control
 ```
-**s** oder **small**
-Ausgabe von ain, Name, aktuelle Leistung, aktuelle Spannung, absoluter Verbrauch seit Zurücksetzen der Energiestatistik, Temperatur, Temperaturabweichung (Offset), Current, Factor
+**s** or **small**
+Output ain, name, current power, current voltage, absolute consumption
+since resetting energy statistics, temperature, temperature offset,
+current, factor.
 ```
-111110112314|Heizung A||||270|0||
-111110222314|Heizung B||||275|0||
-111300022222|Steckdose|45910|230676|31986|280|0|2820|706
-```
-
-**b** oder **battery**
-Ausgabe von ain, Name, Batterieladezustand in Prozent, Batterieladezustand niedrig (=1), voll = 100
-```
-111110112314|Heizung A|80|0
-111110222314|Heizung B|80|0
+111110112314|Heating A||||270|0||
+111110222314|Heating B||||275|0||
+111300022222|Socket|45910|230676|31986|280|0|2820|706
 ```
 
-**m** oder **modus**
-Ausgabe von ain, Name, Schaltzustand, Lock
+**b** or **battery**
+Output ain, name, battery charge level in percent, low battery charge
+level (=1), full = 100.
 ```
-111110112314|Heizung A||0
-111110222314|Heizung B||0
-111300022222|Steckdose|1|0
-grp7D7D7D-1C991C990|Heizungen||0
-```
-
-**g** oder **gradc**
-Ausgabe von ain, Name, Schaltzustand, Lock, Isttemperatur in 1/10 °C, Solltemperatur in internen Temperatureinheiten (8°C=16, 28°C=56, aus=253, ein=254)
-```
-111110112314|Heizung A||0|270|32
-111110222314|Heizung B||0|270|32
-111300022222|Steckdose|1|0|275|
-grp7D7D7D-1C991C990|Heizungen||0||253
+111110112314|Heating A|80|0
+111110222314|Heating B|80|0
 ```
 
-**t** oder **translate**
-ain <-> Name zuordnen oder umgekehrt
+**m** or **modus**
+Output ain, name, switching state, lock.
+```
+111110112314|Heating A||0
+111110222314|Heating B||0
+111300022222|Socket|1|0
+grp7D7D7D-1C991C990|Heating||0
+```
+
+**g** or **gradc**
+Output ain, name, switching state, lock, actual temperature in 1/10 deg C,
+target temperature in internal temperature units (8 deg C=16,
+28 deg C=56, off=253, on=254).
+```
+111110112314|Heating A||0|270|32
+111110222314|Heating B||0|270|32
+111300022222|Socket|1|0|275|
+grp7D7D7D-1C991C990|Heating||0||253
+```
+
+**t** or **translate**
+Map ain <-> name or vice versa.
 ```
 aha.sh t 111300022222
-Steckdose
+Socket
 ```
 
 ```
-aha.sh t Steckdose
+aha.sh t Socket
 111300022222
 ```
 
-**d** oder **docmd**
-SmartHome-Geräte schalten
+**d** or **docmd**
+Switch SmartHome devices.
 
-Zusätzlich erforderliche Parameter: Device Command oder Wert
-Device kann als Name oder ain angegeben werden.
+Additional required parameters: device command or value. Device can be
+specified as a name or ain.
 
-Command kann für ein/aus-Aktoren wie folgt lauten:
-- off (aus)
-- on (ein)
-- toggle (umschalten)
+Command for on/off actuators can be:
+- off
+- on
+- toggle
 
-Bereich für Wert bei ein/aus-Aktoren:
-- 0 (aus)
-- 1 (ein)
-- -1 (umschalten)
+Value range for on/off actuators:
+- 0 (off)
+- 1 (on)
+- -1 (toggle)
 
-Bereich für Wert bei Heizkörperreglern:
-- 16…56 (interne Temperatureinheiten)
-- 8.0…28.0 (°C)
-- 8,0…28,0 (°C)
-- 253 (aus)
-- 254 (ein)
+Value range for radiator controllers:
+- 16...56 (internal temperature units)
+- 8.0...28.0 (deg C)
+- 8,0...28,0 (deg C)
+- 253 (off)
+- 254 (on)
 
-`aha.sh d Steckdose off`
-Steckdose aus
+`aha.sh d Socket off`
+Socket off
 
-`aha.sh d Steckdose 1`
-Steckdose ein
+`aha.sh d Socket 1`
+Socket on
 
-`aha.sh d Steckdose toggle`
-Umschalten der Steckdose ein/aus
+`aha.sh d Socket toggle`
+Toggle the socket on/off
 
-`aha.sh d "Heizung A" 17`
-Heizung A auf 17 internen Einheiten schalten (8,5°C)
+`aha.sh d "Heating A" 17`
+Set Heating A to 17 internal units (8.5 deg C)
 
 `aha.sh d 111110112314 8,5`
-Heizung mit ain 111110112314 auf 8,5°C schalten
+Set radiator with ain 111110112314 to 8.5 deg C
 
-`aha.sh d Heizungen 253`
-Gruppe Heizungen ausschalten
+`aha.sh d Heating 253`
+Switch off the Heating group
 
+### Databases
 
-### Datenbanken
+Up to changeset r11010, 146 days could be recorded with an interval of
+60 seconds, and 1 year with 150 seconds. Starting with this revision, the
+DigiTemp and RRDstats cable segment databases are *created* for 2 years
+at 60 seconds. This grows the individual files from about 85 kB to about
+150 kB. Existing rrd databases can be given new RRAs like this:
+[DigiTemp#Database](digitemp.html#database)
 
-Bis zu Changeset r11010
-konnte mit einem Intervall von 60 Sekunden 146 Tage aufgezeichnet
-werden, mit 150 Sekunden 1 Jahr. Ab dieser Revision werden die
-Datenbanken von DigiTemp und RRDstats-Kabelsegment mit 2 Jahren bei 60
-Sekunden *erstellt*. Damit wachsen die einzelnen Dateien von ~85kB
-auf ~150kB. Existierende rrd-Datenbanken kann man so neue RRAs
-hinzufügen: [DigiTemp#Datenbank](digitemp.html#Datenbank)
+### File Overview (Incomplete)
 
-### Dateiübersicht (unvollständig)
+The following files/paths are involved in creating the graphical
+evaluation:
 
-Folgende Dateien/Pfade sind an der Erstellung der Graphischen Auswertung
-beteiligt:
-
--   `/usr/lib/cgi-bin/rrdstats/stats.cgi`: Diverses Feintuning kann man
-    in der Datei vornehmen. Erstellt die png Graphen, aus den rrd
-    Dateien. Es lassen sich z.B. slopes u.ä. hinzufügen. Ein paar
-    Hinweise dazu gibt es in [diesem
-    IPPF-Thread](http://www.ip-phone-forum.de/showpost.php?p=1250750&postcount=44).
-    Zum manuellen generieren der Graphen (z.B. durch cron) kann der neue
-    Parameter "graph" von rc.rrdstats genutzt werden
+-   `/usr/lib/cgi-bin/rrdstats/stats.cgi`: various fine-tuning can be
+    performed in this file. It creates the png graphs from the rrd files.
+    For example, slopes and similar can be added. A few notes about this
+    are available in [this IPPF
+    thread](http://www.ip-phone-forum.de/showpost.php?p=1250750&postcount=44).
+    For manually generating the graphs, for example via cron, the new
+    parameter "graph" of rc.rrdstats can be used.
 
 <!-- -->
 
--   `/usr/bin/rrdstats`: Dieses Shellskript dient dem einsammeln der
-    anzuzeigenden Werte, erstellt csv Dateien und pflegt die neuen Werte
-    in die Round Robin Database über [RRDtool](rrdtool.md) ein.
+-   `/usr/bin/rrdstats`: this shell script collects the values to be
+    displayed, creates csv files, and maintains the new values in the
+    Round Robin Database via [RRDtool](rrdtool.md).
 
 ### BUGS
 
-Manchmal kann es vorkommen, dass die Zähler / Graphiken für CPU, Memory
-etc. nicht mehr verfügbar sind. Im Persistenten Verzeichnis (Dienste -
-RRDStats) sind dann leere Dateien für den jeweiligen counter zu finden.
-Abhilfe schafft ein stoppen des Dienstes, löschen der leeren Dateien und
-erneutes starten des Dienstes. Dabei werden die fehlenden Dateien erneut
-korrekt angelegt und der Fehler ist weg. Verursacht wahrscheinlich durch
-eine fehlerhaftes Datum auf der Fritzbox (Jahr 2017-Problem).
+Sometimes the counters / graphics for CPU, memory, etc. may no longer be
+available. In the persistent directory (Services - RRDStats), empty files
+for the respective counter can then be found. The remedy is to stop the
+service, delete the empty files, and start the service again. The missing
+files are then created correctly again and the error is gone. This is
+probably caused by an incorrect date on the FritzBox (year 2017 problem).
 
-Die Dateien können auf ihre Konsistenz mit `rrdtool dump dateiname.rrd`
-überprüft werden.
+The files can be checked for consistency with `rrdtool dump filename.rrd`.
 
-### Weiterführende Links
+### Further Links
 
-Entstanden aus diesem Thread im IPPF:
+Originated from this thread in IPPF:
 [http://www.ip-phone-forum.de/showthread.php?t=183491](http://www.ip-phone-forum.de/showthread.php?t=183491)
-

@@ -2,44 +2,40 @@
   - Package: [master/make/pkgs/downloader/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/downloader/)
   - Steward: -
 
-Das **Downloader-CGI** ist ausführlich in [diesem
-Forumsthread](http://www.ip-phone-forum.de/showthread.php?t=134934)
-beschrieben. Es hilft beim [Platz sparen im Dateisystem der
-Fritz!Box](http://wiki.ip-phone-forum.de/software:ds-mod:development:platz_sparen),
-indem es benötigte Pakete zur Laufzeit aus dem Netz lädt - sodass man
-diese nicht fest auf der Box installieren muss. Interessant ist
-Downloader in erster Linie für die Boxen ohne USB-Host und wird letzte
-Zeit immer seltener gebraucht.
-Das Vorbereitungsskript für External wurde um eine automatische
-Vorbereitungsroutine für den Downloader erweitert. Somit werden sowohl
-die eigentlichen Dateien für die Auslagerung als separate gz-Archive
-vorbereitet als auch eine Datei mit der Konfiguration für Downloader-CGI
-während der make-Prozedur angelegt. Die Sektion befindet sich in
-menuconfig unter den External-Optionen.
-Das Verhalten von External und Downloader unterscheidet sich um
-Einiges:
+The **Downloader-CGI** is described in detail in [this forum
+thread](http://www.ip-phone-forum.de/showthread.php?t=134934). It helps
+[save space in the Fritz!Box
+filesystem](http://wiki.ip-phone-forum.de/software:ds-mod:development:platz_sparen)
+by loading required packages from the network at runtime, so they do not
+have to be installed permanently on the box. Downloader is mainly
+interesting for boxes without a USB host and has been needed less and
+less often recently.
+The preparation script for External was extended with an automatic
+preparation routine for Downloader. This prepares the actual offload
+files as separate gz archives and also creates a file with the
+Downloader-CGI configuration during the make procedure. The section is in
+menuconfig under the External options.
+External and Downloader differ in several ways:
 
-1.  Downloader benutzt ausgelagerte Binaries als separate gz-Archive.
-    External packt dagegen alle Dateien zu einem gemeinsamen
-    tar.bz2-Archiv.
-2.  Downloader braucht eine Downloader-CGI, mit einem Dienst, der beim
-    Starten der Box die benötigten Dateien von einem externen HTTP- oder
-    FTP-Server ins RAM der Box holt. Beim External gibt es diesen
-    Schritt nicht. Die Dateien sind im Falle von External sofort nach
-    dem mounten vom USB-Medium verfügbar.
-3.  Beim Downloader werden Symlinks beim Bauen der Firmware vom Flash
-    nach RAM hingelegt. Beim External zeigen diese Symlinks auf eine
-    zuvor vereinbarte Stelle auf dem USB-Medium.
+1.  Downloader uses offloaded binaries as separate gz archives. External,
+    in contrast, packs all files into one shared tar.bz2 archive.
+2.  Downloader needs a Downloader-CGI with a service that, when the box
+    starts, fetches the required files from an external HTTP or FTP server
+    into the box's RAM. External has no such step. With External, the
+    files are available immediately after the USB medium has been mounted.
+3.  With Downloader, symlinks are created from flash to RAM while the
+    firmware is being built. With External, these symlinks point to a
+    previously agreed location on the USB medium.
 
-Die Screenshots stammen zwar noch aus den Zeiten von ds-mod. Bis auf die
-Namensänderung in Freetz und einige kosmetische Änderungen hat sich
-allerdings seit dieser Zeit nicht viel geändert.
+The screenshots still date from the ds-mod era. Apart from the name
+change to Freetz and a few cosmetic changes, however, not much has
+changed since then.
 
-**Hauptseite:**
+**Main page:**
 
 [![Downloader: Hauptseite](../screenshots/18_md.jpg)](../screenshots/18.jpg)
 
-**Downloader-Logs beim Hochfahren der Box:**
+**Downloader logs while the box is booting:**
 
 [![Downloader: Startlog](../screenshots/19_md.jpg)](../screenshots/19.jpg)
 

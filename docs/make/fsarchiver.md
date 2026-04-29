@@ -4,6 +4,7 @@
   - Changelog: [https://github.com/fdupoux/fsarchiver/releases](https://github.com/fdupoux/fsarchiver/releases)
   - Repository: [https://github.com/fdupoux/fsarchiver](https://github.com/fdupoux/fsarchiver)
   - Package: [master/make/pkgs/fsarchiver/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/fsarchiver/)
+  - Steward: -
 
 fsarchiver is a filesystem archiver with backup/restore capabilities.
 

@@ -2,84 +2,72 @@
   - Package: [master/make/pkgs/virtualip-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/virtualip-cgi/)
   - Steward: -
 
-[![VirtualIP: Einstellungen](../screenshots/61_md.png)](../screenshots/61.png)
+[![VirtualIP: settings](../screenshots/61_md.png)](../screenshots/61.png)
 
-**Virtual IP** ist eine Erweiterung für Freetz, die es ermöglicht, eine
-virtuelle IP auf der Box anzulegen. Das Paket ist über das Freetz
-Webinterface konfigurierbar. Anfangs wurde diese virtuelle IP genutzt um
-Portfreigaben auf die Box im AVM Webinterface anlegen zu können.
+**Virtual IP** is an extension for Freetz that makes it possible to
+create a virtual IP on the box. The package can be configured through the
+Freetz web interface. Initially, this virtual IP was used to be able to
+create port forwards to the box in the AVM web interface.
 
- * **VORSICHT**
+ * **CAUTION**
 
-Dieses Package wird nicht mehr supported und es sollte stattdessen
-"[AVM-Firewall](avm-firewall.md)" verwendet werden.
+This package is no longer supported and [AVM-Firewall](avm-firewall.md)
+should be used instead.
 
-Portfreigaben auf virtuelle IPs mit Firmwares (> 04.57) funktinieren
-nicht mehr zuverlässig. Bei manchen Firmwares (> 04.80) ist die Box
-teilweise nicht mehr per Netzwerk erreichbar sobald eine virtuelle IP
-eingerichtet wurde. Der ATA-Modus macht weniger Probleme wie der
-DSL-Modus.
+Port forwards to virtual IPs no longer work reliably with firmwares
+(> 04.57). With some firmwares (> 04.80), the box is sometimes no longer
+reachable over the network as soon as a virtual IP has been configured.
+ATA mode causes fewer problems than DSL mode.
 
-Weitereführende Links dazu:
+Further links on this:
 
--   [IPPF: Bei welchen Boxen funktioniert Virtual IP (nicht
-    mehr)?](http://www.ip-phone-forum.de/showthread.php?t=174245)
--   [IPPF: Port-Freigabe auf die Box ist so möglich!
-    Virtual-IP
-    überflüssig?!?](http://www.ip-phone-forum.de/showthread.php?t=159266)
+-   [IPPF: On which boxes does Virtual IP no longer work?](http://www.ip-phone-forum.de/showthread.php?t=174245)
+-   [IPPF: Port forwarding to the box is possible this way; Virtual IP
+    unnecessary?!?](http://www.ip-phone-forum.de/showthread.php?t=159266)
 
-### Einrichtung
+### Setup
 
--   **Starttyp**: "Automatisch", wenn *VirtualIP* nach einem Reboot
-    auch automatisch aktiv werden soll.
--   **Virtuelle IP-Adresse**: Die zusätzliche IP, unter der die Box
-    erreichbar sein soll.
--   **Subnetzmaske**: Die dazu passende
-    [Subnetz](http://de.wikipedia.org/wiki/Subnetz)-Maske
-    (ggf. auch den
-    [englischen](http://en.wikipedia.org/wiki/Subnet_mask)
-    bzw.
-    [deutschen](http://de.wikipedia.org/wiki/Subnetz)
-    Wikipedia-Artikel konsultieren)
--   **Interface**: Normalerweise "eth0:1" wenn die Box auch die
-    DSL-Einwahl vornimmt, bzw. "dsl:0" im ATA-Modus. Im Zweifelsfall
-    ein wenig probieren.
+-   **Start type**: "Automatic" if *VirtualIP* should also become active
+    automatically after a reboot.
+-   **Virtual IP address**: The additional IP under which the box should
+    be reachable.
+-   **Subnet mask**: The matching
+    [subnet](http://de.wikipedia.org/wiki/Subnetz) mask. If necessary,
+    also consult the [English](http://en.wikipedia.org/wiki/Subnet_mask)
+    or [German](http://de.wikipedia.org/wiki/Subnetz) Wikipedia article.
+-   **Interface**: Usually "eth0:1" if the box also performs DSL dial-in,
+    or "dsl:0" in ATA mode. If in doubt, try a little.
 
-Fragen und Diskussionen zu diesem Package kann man auch
-[hier](http://www.ip-phone-forum.de/showthread.php?t=111623)
-stellen/führen.
+Questions and discussions about this package can also be posted/conducted
+[here](http://www.ip-phone-forum.de/showthread.php?t=111623).
 
-### Bekannte Probleme und Bugs
+### Known Problems and Bugs
 
-### dsld-Syslogmeldung
+### dsld Syslog Message
 
-Fehlermeldung im Syslog:
+Error message in syslog:
 
 ```
 user.err dsld[1243]: internet: 192.168.178.253 not an intern host, forwardrule "tcp 0.0.0.0:85 192.168.178.253:85 0 # Test" ignored
 ```
 
-AVM hat im **dsld**, der sich um DSL und die Portweiterleitungen
-kümmert, einen Schutz eingebaut, der eine Weiterleitung auf die FritzBox
-eigenen IPs verhindert.
+In **dsld**, which handles DSL and port forwarding, AVM built in a
+protection mechanism that prevents forwarding to the FritzBox's own IPs.
 
-### Probleme mit OpenVPN / UDP
+### Problems with OpenVPN / UDP
 
-Eine Weiterleitung für OpenVPN bzw. für einen UDP-Port scheint Probleme
-zu machen. Bei einigen funktioniert es jedenfalls nicht.
+A forward for OpenVPN or for a UDP port appears to cause problems. In any
+case, it does not work for some users.
 
-### Probleme mit IPTV
+### Problems with IPTV
 
-Bei aktiver Virtual IP wird das TV Signal nicht mehr an den
-Mediareceiver weitergeleitet.
+When Virtual IP is active, the TV signal is no longer forwarded to the
+media receiver.
 
-### Probleme mit dem SIP-Registrar Modus
+### Problems with SIP Registrar Mode
 
-Nutzt man eine Fritzbox auf der virtual-ip läuft als Registrar scheitern
-VoIP Telefonate am SIP Client. Ausgehende Pakete werden korrekt an den
-Registrar übertragen, jedoch wartet der Client auf Pakete von der
-virtuellen IP - vergebens. Deaktiviert man virtual-ip und ruft
-'voipcfgchanged' auf funktioniert alles korrekt. Getestet mit Firmware
-4.80 und Freetz 1.1.3.
-
-
+If a Fritzbox running on the virtual IP is used as a registrar, VoIP
+calls fail at the SIP client. Outgoing packets are correctly transmitted
+to the registrar, but the client waits in vain for packets from the
+virtual IP. If virtual-ip is disabled and 'voipcfgchanged' is called,
+everything works correctly. Tested with firmware 4.80 and Freetz 1.1.3.

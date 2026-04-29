@@ -5,64 +5,63 @@
   - Package: [master/make/pkgs/pptpd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/pptpd/)
   - Steward: -
 
-Das Interface an sich ist leicht überschaubar ;-).
+The interface itself is easy to understand ;-).
 
-Unter **Einstellungen** sind die Links zu den einzelnen
-Konfigurationsdateien zu finden.
+The links to the individual configuration files can be found under
+**Settings**.
 
-Ein Übersicht über die Einstellmöglichkeiten gibt die Dokumantation von
-Poptop auf deren
+An overview of the available settings is provided by the Poptop
+documentation on their
 [Homepage](http://poptop.sourceforge.net/dox/).
 
--   **"pptpd Einstellungen bearbeiten"** editiert die Datei
+-   **"Edit pptpd settings"** edits the file
     [pptpd.conf](http://poptop.sourceforge.net/dox/pptpd.conf.txt)
-    -   Pfadangaben zum Binary sowie zur Konfigurations-Datei
-    -   mögliche Debug-Infos einschalten
-    -   Server-IP festlegen (Standard: localip 192.168.178.1)
-    -   IP-Bereich angemeldeter Rechner festlegen (Standard: remoteip
+	-   path specifications for the binary and the configuration file
+	-   enable possible debug information
+	-   define the server IP (default: localip 192.168.178.1)
+	-   define the IP range of logged-in computers (default: remoteip
         192.168.178.210-229 )
-    -   Sonstiges
--   **"PPPD Einstellungen bearbeiten"** editiert die Datei
+	-   miscellaneous
+-   **"Edit PPPD settings"** edits the file
     [options.pptpd](http://poptop.sourceforge.net/dox/options.pptpd.txt)
-    -   Name des PPTP-Server (Standard: fritzbox)
-    -   Angabe, welche Protokolle zugelassen sind
-    -   DNS-Server für Clients festlegen (Standard: ms-dns
+	-   name of the PPTP server (default: fritzbox)
+	-   specify which protocols are allowed
+	-   define DNS servers for clients (default: ms-dns
         192.168.178.1)
-    -   Sonstiges
--   **"Password bearbeiten"** editiert die Datei
+	-   miscellaneous
+-   **"Edit password"** edits the file
     [chap-secrets](http://poptop.sourceforge.net/dox/chap-secrets.txt)
-    -   verwaltet berechtigte Benutzer sowie deren Passwörter
+	-   manages authorized users and their passwords
 
-[![pptpd Einstellungen](../screenshots/38_md.png)](../screenshots/38.png)
+[![pptpd settings](../screenshots/38_md.png)](../screenshots/38.png)
 
-### Portweiterleitung
+### Port Forwarding
 
-Um sich schließlich von außen auf den PPTP-Server verbinden zu können,
-muss natürlich eine Portweiterleitung auf die IP der FRITZBox
-eingerichtet werden.
+To ultimately be able to connect to the PPTP server from the outside,
+port forwarding to the IP of the FRITZBox must of course be configured.
 
 ```
-	Protokoll: TCP  Port: 1723
-	Protokoll: GRE  (keine Portangabe nötig)
+	Protocol: TCP  Port: 1723
+	Protocol: GRE  (no port specification needed)
 ```
 
-Siehe dazu auch folgende Paketen:
+See also the following packages:
 
 -   [Virtual IP](virtualip-cgi.md)
 -   [AVM Firewall CGI](avm-firewall.md)
 
-### Konfiguration
+### Configuration
 
-Die drei für Poptop relevanten Dateien können entweder über das
-Webinterface oder auf der Shell per vi editiert
-werden. Sie liegen im Verzeichnis `/tmp/flash/ppp`.
+The three files relevant for Poptop can be edited either through the web
+interface or on the shell using vi. They are located in the directory
+`/tmp/flash/ppp`.
 
 ### pptpd.conf
 
-In der mitgelieferten Konfiguration ist logwtmp standardmäßig aktiviert
-(bezieht sich auf Version 1.1.2-stable. Ist im 'trunk' schon
-gefixed.). Dies sollte deaktiviert werden, da wtmp auf der fritzbox
-nicht läuft und somit eine vpn-Verbindung nicht zustande kommt.
+In the supplied configuration, logwtmp is enabled by default (refers to
+version 1.1.2-stable; already fixed in 'trunk'). This should be disabled,
+because wtmp does not run on the fritzbox and therefore no VPN connection
+is established.
 
 ```
 	# TAG: logwtmp
@@ -71,21 +70,19 @@ nicht läuft und somit eine vpn-Verbindung nicht zustande kommt.
 	#logwtmp
 ```
 
-Falls die Datenrate vom Wlan ins Internet mit pptpd sehr langsam ist,
-sollte die Zeile `bcrelay` auskommentiert werden (siehe
+If the data rate from WLAN to the internet is very slow with pptpd, the
+line `bcrelay` should be commented out (see
 [IPPF](http://www.ip-phone-forum.de/showthread.php?t=201539))
 
 ### options.pptpd
 
-In der Datei options.pptpd ist gegebenenfalls `require-mppe-128`
-eingetragen (bezieht sich auf Version 1.1.2-stable. Ist im 'trunk'
-schon gefixed.). Der pppd kennt diese Option aber nicht. Beim Aushandeln
-der Verschlüsselung per 'Auto' Einstellung im Client kann es unter
-Umständen zu Verbindungsproblemen kommen, wenn der Client erstmal
-verhandeln will (negotiation), der pppd aber direkt verschlüsselt
-sprechen will. Man kann die Verschlüsselung direkt auf 128 Bit fest
-einstellen. Mit dieser Einstellung hat eine PPTP Verbindung mit dem
-iPhone VPN-Client geklappt:
+The file options.pptpd may contain `require-mppe-128` (refers to version
+1.1.2-stable; already fixed in 'trunk'). However, pppd does not know this
+option. When negotiating encryption with the client's 'Auto' setting,
+connection problems may occur if the client first wants to negotiate, but
+pppd wants to speak encrypted immediately. Encryption can be fixed
+directly to 128 bit. With this setting, a PPTP connection with the iPhone
+VPN client worked:
 
 ```
 	# Require the peer to authenticate itself using MS-CHAPv2 [Microsoft
@@ -100,9 +97,8 @@ iPhone VPN-Client geklappt:
 
 ### chap-secrets
 
-In der `options.pptpd` ist der Name auf `fritzbox` eingestellt. Dies
-sollte sich dann in einem Benutzereintrag in der `chap-secrets`
-widerspiegeln:
+In `options.pptpd`, the name is set to `fritzbox`. This should then be
+reflected in a user entry in `chap-secrets`:
 
 ```
 	# client        server  secret                  IP addresses
@@ -110,28 +106,26 @@ widerspiegeln:
 	EOF
 ```
 
-In vielen Beispielen im Netz steht in der zweiten Spalte `pptpd`. Möchte
-man das so haben, dann sollte man einfach den `name` Eintrag in
-`options.pptpd` entsprechend anpassen.
+In many examples on the internet, the second column contains `pptpd`. If
+that is desired, simply adjust the `name` entry in `options.pptpd`
+accordingly.
 
 ### Troubleshooting
 
-Um die pptpd Meldungen zu sehen, muss man zunächst einen syslogd
-starten:
+To see the pptpd messages, first start a syslogd:
 
 ```
 	/var/tmp/flash/ppp # syslogd -L -C256 -l 7
 ```
 
-Und kann sich danach die Meldungen des daemons im syslog per `logread`
-anschauen:
+After that, the daemon's syslog messages can be viewed with `logread`:
 
 ```
 	/var/tmp/flash/ppp # logread
 ```
 
-Um mehr Meldungen zu bekommen, kann man in `options.pptpd` und/oder
-`pptpd.conf` den Debug-Modus aktivieren:
+To get more messages, debug mode can be enabled in `options.pptpd` and/or
+`pptpd.conf`:
 
 options.pptpd:
 
@@ -150,25 +144,25 @@ pptpd.conf:
 	debug
 ```
 
-### Troubleshooting keine Fehlermeldung
+### Troubleshooting No Error Message
 
-Bei mir tauchte im log keine Fehlermeldung auf. Da hilft debuggen auf
-der Box mit:
+In my case, no error message appeared in the log. Debugging on the box
+with the following helps:
 
 ```
 	./strace pptpd -d -f -c /etc/ppp/pptpd.conf
 ```
 
-Dabei kam heraus, dass es folgende Fehlermeldung gibt:
+This showed that the following error message exists:
 
 ```
 	can't resolve symbol 'bzero'
 ```
 
-Dazu gibt es einen Thread im Forum, der letzte Post erklärt wie man die
-Toolchain zum fixen neu bauen muss:
+There is a thread about this in the forum; the last post explains how the
+toolchain must be rebuilt to fix it:
 [http://www.ip-phone-forum.de/showpost.php?p=1407147&postcount=25](http://www.ip-phone-forum.de/showpost.php?p=1407147&postcount=25)
 
-Update[18.07.11]: Das Problem sollte mit Freetz-1.2 bzw. einem
-aktuellen Trunk nicht mehr auftreten.
+Update [2011-07-18]: The problem should no longer occur with Freetz 1.2
+or a current trunk.
 

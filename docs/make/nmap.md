@@ -67,7 +67,7 @@ Useful command:
 netstat -anp
 ```
 
-### Weiterführende Links
+### Further Links
 
 -   [home page](http://nmap.org/)
 -   [IPPF: Port

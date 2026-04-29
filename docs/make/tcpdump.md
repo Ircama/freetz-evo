@@ -6,28 +6,26 @@
   - Package: [master/make/pkgs/tcpdump/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tcpdump/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**[tcpdump](http://www.tcpdump.org/)** ist ein
-Netzwerk-[Sniffer](http://de.wikipedia.org/wiki/Sniffer)
-(zu Deutsch: Netzwerk-Schnüffler) - oder, etwas eleganter ausgedrückt:
-ein Netzwerk- Diagnoseprogramm. Es ist standardmäßig bei allen
-Linux-Distributionen dabei und existiert auch für andere UNIX-Derivate.
-Es ist zwar relativ schwer zu bedienen, und die Ausgabe auch recht
-schwer zu lesen - weswegen *tcpdump* gegenüber Sniffern wie
-[Wireshark](http://de.wikipedia.org/wiki/Wireshark),
-die über eine grafische Oberfläche verfügen, gewisse Nachteile hat. Der
-Vorteil insbesondere für die FritzBox liegt aber genau in diesem
-Nachteil, da auf der Box kein X installiert ist (oder war etwa jemand so
-wahnsinnig, und hat das gemacht?).
-:o
+**[tcpdump](http://www.tcpdump.org/)** is a
+network [sniffer](http://de.wikipedia.org/wiki/Sniffer), or, phrased a
+little more elegantly, a network diagnostic program. It is included by
+default in all Linux distributions and also exists for other UNIX
+derivatives. It is relatively difficult to use, and its output is also
+quite hard to read, which gives *tcpdump* certain disadvantages compared
+with sniffers such as [Wireshark](http://de.wikipedia.org/wiki/Wireshark)
+that have a graphical interface. Especially for the FritzBox, however,
+the advantage lies precisely in this disadvantage, because no X is
+installed on the box (unless someone was actually crazy enough to do
+that?).
 
 ### Warning
 
 A lot of traffic will use a lot of CPU, even if that traffic isn't
 monitored. However, filtering by network adapter helps.
 
-### Weiterführende Links
+### Further Links
 
--   [Wikipedia Artikel](http://de.wikipedia.org/wiki/Tcpdump)
--   [Linux-Wiki Artikel](http://www.linuxwiki.de/TcpDump)
+-   [Wikipedia article](http://de.wikipedia.org/wiki/Tcpdump)
+-   [Linux-Wiki article](http://www.linuxwiki.de/TcpDump)
 
 

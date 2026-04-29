@@ -2,17 +2,18 @@
   - Package: [master/make/pkgs/hol/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hol/)
   - Steward: -
 
-Halt-on-Lan ist ein Paket zum Steuern vom Rechner im lokalen Netz von
-der FritzBox heraus. Es basiert auf
+Halt-on-Lan is a package for controlling computers in the local network
+from the FritzBox. It is based on
 [poweroff.exe](http://users.telenet.be/jbosman/poweroff/poweroff.htm)
-einem Skript für Windows-Rechner, redet seine Sprache und ermöglicht den
-Rechner herunterzufahren, neu zu starten und einige weitere Aktionen.
-Seit
+which is a script for Windows computers. It speaks the same language and
+allows the computer to be shut down, restarted, and a few other actions.
+Since
 Changeset r5024
-ist HOL-Paket im trunk.
-Langfristig ist angedacht HOL mit WOL zu verbinden und HOL-Aktionen aus
-dem erweiterten WOL-WebIF zu ermöglichen. Momentan ist es noch nicht
-implementiert und man sollte sich mit der Kommandozeile befreunden:
+the HOL package has been in trunk.
+In the long term, HOL is intended to be combined with WOL and HOL actions
+are to be made available from the extended WOL WebIF. This is not
+implemented yet, so for now you should get comfortable with the command
+line:
 
 ```
 /var/mod/root # hol
@@ -31,38 +32,37 @@ MESSAGE   Warning message: e.g. Please close all your files
 /var/mod/root # hol DeinNotebook monitor_off 15 "Hey, dunschalte aus!"
 ```
 
-Man kann aber schon jetzt die HOL-Aufrufe als callmonitor-Aktionen oder
-als cron-Einträge benutzen. Zur Konfiguration der Default-Aktionen und
-sonstiger Parameter gibt es eine Konfigurationsseite zum Paket HOL im
-FREETZ-WebIF. Aus dieser Konfigurationseite ist es jedoch nicht möglich,
-die Aktionen zu initiieren.
+HOL calls can already be used as callmonitor actions or as cron entries.
+There is a configuration page for the HOL package in the FREETZ WebIF for
+configuring default actions and other parameters. However, actions cannot
+be initiated from this configuration page.
 
-Weitere Informationen und Diskussion zum HOL-Paket können dem
-entsprechenden
+Further information and discussion about the HOL package can be found in
+the corresponding
 [Thread](http://www.ip-phone-forum.de/showthread.php?t=211366)
-in IPPF entnommen werden.
-Um den Rechner von der FritzBox ansteuern zu können, muss auf dem
-Rechner eine poweroff.exe-kompatible Anwendung laufen. Das kann z.B.
+thread in IPPF.
+To control the computer from the FritzBox, a poweroff.exe-compatible
+application must be running on the computer. This can be, for example,
 [poweroff.exe](http://users.telenet.be/jbosman/poweroff/poweroff.htm)
-selbst sein. Da
+itself. Since
 [poweroff.exe](http://users.telenet.be/jbosman/poweroff/poweroff.htm)
-leider nicht richtig und nicht zuverlässig zu funktionieren scheint,
-wurde vom Benutzer
+unfortunately does not seem to work correctly and reliably,
+the user
 [linuxkasten](http://www.ip-phone-forum.de/member.php?u=217599)
-aus IPPF eine Alternative dafür
+from IPPF wrote an alternative
 ([remotehalt](http://www.nefkom.info/crats/software/remotehalt/))
-für Windows geschrieben. Es wird empfohlen ab jetzt
+for Windows. It is recommended from now on to use
 [remotehalt](http://www.nefkom.info/crats/software/remotehalt/)
-anstatt von
+instead of
 [poweroff.exe](http://users.telenet.be/jbosman/poweroff/poweroff.htm)
-zu benutzen.
-Auch für Linux-Anweder werden gerade passende Lösungen erarbeitet. Zum
-einen existiert eine getarte
+.
+Suitable solutions for Linux users are also currently being worked on. On
+the one hand, there is a tarred
 [Sammlung](http://www.ip-phone-forum.de/showpost.php?p=1501078&postcount=1)
-zum entpacken und selbst installieren, zum anderen gibt es dafür auch
-eine
+collection for unpacking and installing manually; on the other hand,
+there is also an
 [inetd-Variante](http://www.ip-phone-forum.de/showpost.php?p=1553804&postcount=39).
-Sobald alle rechnerseitigen Anwendungen vollständig implementiert und
-ausreichend getestet sind, werden hier die
-[Download](../Download.html)-Informationen dafür überarbeitet.
+inetd variant. As soon as all computer-side applications are fully
+implemented and sufficiently tested, the [download](../Download.html)
+information here will be revised.
 

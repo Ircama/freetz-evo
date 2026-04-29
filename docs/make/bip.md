@@ -6,39 +6,37 @@
   - Package: [master/make/pkgs/bip/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bip/)
   - Steward: -
 
-Der Bip
+The Bip
 [IRC](http://de.wikipedia.org/wiki/Internet_Relay_Chat)
-Proxy ist eine Anwendung, die, wie das Wort
+proxy is an application which, as the word
 *[Proxy](http://de.wikipedia.org/wiki/Proxy_(Rechnernetz))*
-es bereits andeutet, zwischen IRC Server und IRC Client sitzt. Er hält
-quasi die permanente Verbindung zu dem/den IRC Server(n), kann die Logs
-zwischenspeichern, und selbige sogar an einen sich (wieder-)
-verbindenden Client weiterleiten - was es z.B. erlaubt, selbige zwischen
-mehreren Rechnern auszutauschen (sofern man selbst mehrere Rechner zum
-Chatten benutzt).
+already suggests, sits between IRC server and IRC client. It effectively
+keeps the permanent connection to the IRC server or servers, can cache
+the logs, and can even forward them to a reconnecting client. This makes
+it possible, for example, to exchange them between several computers if
+you use several computers for chatting.
 
-Mehr Informationen gibt es auf der [BIP
-Homepage](http://bip.milkypond.org/).
+More information is available on the [BIP
+homepage](http://bip.milkypond.org/).
 
-### Auswahl
+### Selection
 
 [![Menuconfig](../screenshots/212_md.png)](../screenshots/212.png)
 
-Wenn man einen Bip-Proxy auf seiner Fritzbox betreiben möchte muss
-dieser beim Bau eines Freetz-Image im Menuconfig ausgewählt werden:
+If you want to run a Bip proxy on your Fritzbox, it must be selected in
+menuconfig when building a Freetz image:
 
-Zu finden ist dieser im **menuconfig** unter : **Package selection** =⇒
-**Testing** =⇒ Bip 0.8.x
+It can be found in **menuconfig** under: **Package selection** =>
+**Testing** => Bip 0.8.x
 
 
-### Konfiguration
+### Configuration
 
-[![Menu in der Fritzbox](../screenshots/213_md.png)](../screenshots/213.png)
+[![Menu in the Fritzbox](../screenshots/213_md.png)](../screenshots/213.png)
 
-Im Main-Menu des Bip-Proxy müssen dann noch ein beliebiger Port (im
-Beispiel haben wir die 2222 gewählt) und der Speicherort des Log-Files
-angegeben werden. Des weiteren müsst ihr noch die **user.config** von
-hier :
+In the main menu of the Bip proxy, any port (we chose 2222 in the
+example) and the storage location of the log file must then be specified.
+You also have to copy the **user.config** from here:
 
 ```
 ###client_side_ssl = false;
@@ -69,9 +67,9 @@ user {
 };
 ```
 
-kopieren und nach Euren Wünschen anpassen. Geändert werden muss
-eigentlich nur der **Mustermann** gegen Euren **Usernamen**. Unter
-**Networks** kann auch folgender Eintrag genutzt werden:
+and adapt it to your wishes. In practice, only **Mustermann** has to be
+changed to your **username**. Under **Networks**, the following entry can
+also be used:
 
 ```
 network {
@@ -80,13 +78,13 @@ network {
 };
 ```
 
-**Hinweis:** Nach **jeder** Änderungen an der **user.config** und
-drücken des Button **Übernehmen** muss man ca. 5 Minuten warten bis sich
-der User wieder am IRC-Chanel anmelden kann.
+**Note:** After **every** change to **user.config** and pressing the
+**Apply** button, you have to wait about 5 minutes until the user can log
+in to the IRC channel again.
 
-### Weiterführende Links
+### Further Links
 
-Hier findet man noch weitere Erläuterungen zu BIP und welche
-Einstellungen man beim IRC-Client vornehmen muss:
+Further explanations of BIP and the settings required in the IRC client
+can be found here:
 [http://nerderati.com/2010/11/perpetual-irc-the-proxy-edition/](http://nerderati.com/2010/11/perpetual-irc-the-proxy-edition/)
 

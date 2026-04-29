@@ -3,22 +3,20 @@
   - Steward: -
 
 **[CTorrent](http://ctorrent.sourceforge.net/)**
-ist ein [BitTorrent
-Client](http://de.wikipedia.org/wiki/BitTorrent_(Client)) mit
-Kommandozeilen-Interface, der in
-[C++](http://de.wikipedia.org/wiki/C%2B%2B)
-geschrieben ist.
+is a [BitTorrent
+client](http://de.wikipedia.org/wiki/BitTorrent_(Client)) with a
+command-line interface, written in
+[C++](http://de.wikipedia.org/wiki/C%2B%2B).
 
-Das originale CTorrent Projekt wurde 2006 eingestellt (siehe
+The original CTorrent project was discontinued in 2006 (see the
 [CTorrent
-Homepage](http://ctorrent.sourceforge.net/)). Dafür hat sich
-ein neuer Autor der Sache angenommen, und pflegt das Ganze als
+homepage](http://ctorrent.sourceforge.net/)). A new author then took it
+over and maintains it as
 [enhanced
-CTorrent](http://www.rahul.net/dholmes/ctorrent/) weiter. Das
-Freetz Paket basiert auf dieser "erweiterten Version" (also auf dem
-*enhanced CTorrent*).
+CTorrent](http://www.rahul.net/dholmes/ctorrent/). The Freetz package is
+based on this "extended version", i.e. on *enhanced CTorrent*.
 
-### Weiterführende Links
+### Further Links
 
 -   [CTorrent
     Homepage](http://ctorrent.sourceforge.net/)
@@ -27,8 +25,8 @@ Freetz Paket basiert auf dieser "erweiterten Version" (also auf dem
 -   [enhanced CTorrent
     Homepage](http://www.rahul.net/dholmes/ctorrent/)
 -   [enhanced CTorrent
-    Projektseite](http://sourceforge.net/projects/dtorrent/)
-    bei Sourceforge
+    project page](http://sourceforge.net/projects/dtorrent/)
+    at Sourceforge
 -   enhanced CTorrent [User
     Guide](http://www.rahul.net/dholmes/ctorrent/userguide.html)
 

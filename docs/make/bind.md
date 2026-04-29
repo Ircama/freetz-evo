@@ -6,16 +6,15 @@
   - Package: [master/make/pkgs/bind/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bind/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit [bind](http://isc.org/software/bind) (Berkeley
-Internet Name Daemon) kann ein DNS-Server zur IP- und Namensauflösung
-betrieben werden.
+With [bind](http://isc.org/software/bind) (Berkeley Internet Name
+Daemon), a DNS server can be operated for IP and name resolution.
 
 
 
 ### named.conf
 
-Die möglichen Optionen können der Manpage oder den vielen Internetseiten
-entnommen werden.
+The available options can be taken from the man page or from the many web
+pages about BIND.
 
 Minimal *named.conf*:
 

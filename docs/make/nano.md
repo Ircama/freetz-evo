@@ -6,20 +6,19 @@
   - Package: [master/make/pkgs/nano/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/nano/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**Nano** ist ein kleiner Texteditor für die Konsole, der aber im
-Gegensatz zu (n)vi eine Bedienung wie ein normaler Editor (z.B. der
-Windows-Editor) besitzt. Es ist also nicht erforderlich viel Kommandos
-zu lernen, bevor man ihn nutzen kann. Daher ist er für Anfänger und
-User, die nicht des 10-Finger-Systems mächtig sind, oftmals weit besser
-geeignet als vi.
+**Nano** is a small text editor for the console, but unlike (n)vi it is
+operated like a normal editor, for example Windows Notepad. It is
+therefore not necessary to learn many commands before it can be used.
+This often makes it much better suited than vi for beginners and users
+who are not fluent touch typists.
 
-Damit man die Pos1 und Home Tasten auch in Nano benutzen kann ist
-(zumindest bei mir in der Kombination putty / Windows) das Setzen der
-Umgebungsvariable TERM hilfreich:
+To make the Pos1 and Home keys usable in Nano, setting the TERM
+environment variable is helpful, at least for me with the combination of
+putty and Windows:
 
 ```
 export TERM=xterm
 ```
 
-in der rc.custom tut den Trick.
+in rc.custom does the trick.
 

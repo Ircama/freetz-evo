@@ -3,42 +3,40 @@
   - Steward: -
 
 **[Streamripper](http://streamripper.sourceforge.net/)**
-ist eine freie, plattformunabhängige Software zum
-"[Rippen](http://de.wikipedia.org/wiki/Rippen)"
-(Abspeichern) von "Streams" (z.B.
+is free, platform-independent software for
+"[ripping](http://de.wikipedia.org/wiki/Rippen)"
+(saving) streams, for example
 [SHOUTcast](http://de.wikipedia.org/wiki/SHOUTcast)-,
 [Icecast](http://de.wikipedia.org/wiki/Icecast)-
-und andere
-[Internetradio](http://de.wikipedia.org/wiki/Internetradio)sendungen.
+and other
+[internet radio](http://de.wikipedia.org/wiki/Internetradio) broadcasts.
 
-*Streamripper* selbst verfügt über keine grafische Oberfläche, sondern
-wird von der Kommandozeile aus bedient. Das minimiert den
-Ressourcenverbrauch - und "schön bunt zugucken" muss man bei der
-Aufnahme ja nicht. Wer dennoch ein wenig "Klicki-Bunti" bevorzugt,
-findet aber auch das eine oder andere grafische
+*Streamripper* itself has no graphical interface and is operated from the
+command line. This minimizes resource usage, and there is no need to
+watch colorful graphics while recording. Anyone who still prefers a bit
+of point-and-click can find one or another graphical
 [FrontEnd](http://de.wikipedia.org/wiki/Frontend_und_Backend)
-(z.B. auf der
-[Homepage](http://streamripper.sourceforge.net/)
-des Projekts) - wenn auch nicht gerade für die FritzBox.
+(for example on the project's
+[homepage](http://streamripper.sourceforge.net/)), although not exactly
+for the FritzBox.
 
-*Streamripper* nimmt die Formate
+*Streamripper* records the formats
 [MP3](http://de.wikipedia.org/wiki/MPEG-1_Audio_Layer_3)
-sowie [OGG
-Vorbis](http://de.wikipedia.org/wiki/Vorbis) auf, wobei auch
-Metadaten (ID3 Tags etc.) gespeichert werden. Es kann den Stream nicht
-selbst wiedergeben, ihn aber durchaus direkt zu einem Streaming-fähigen
-"Player" weiterleiten.
+and [OGG
+Vorbis](http://de.wikipedia.org/wiki/Vorbis), saving metadata such as ID3
+tags as well. It cannot play the stream itself, but it can forward it
+directly to a streaming-capable player.
 
-### Verwendete Bibliotheken
+### Libraries Used
 
 -   libmad
 -   libglib2
 
-### Weiterführende Links
+### Further Links
 
 -   [Streamripper
     Homepage](http://streamripper.sourceforge.net/)
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Streamripper)
+  article](http://de.wikipedia.org/wiki/Streamripper)
 
 

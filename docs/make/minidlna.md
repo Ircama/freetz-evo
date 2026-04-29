@@ -8,15 +8,15 @@
 
 [![minidlna](../screenshots/243_md.jpg)](../screenshots/243.jpg)
 
-MiniDLNA ist ein DLNA Server der darauf abzielt vollständig kompatibel
-mit DLNA/UPnp-AV Clients zu sein.
+MiniDLNA is a DLNA server that aims to be fully compatible with
+DLNA/UPnP-AV clients.
 
-### Konfiguartion
+### Configuration
 
-Das `Datenbankverzeichnis` sollte auf einen USB-Stick gelegt werden,
-damit die Datenbank nicht bei jedem Reboot neu aufgebaut werden muss.
+The `database directory` should be placed on a USB stick so the database
+does not have to be rebuilt after every reboot.
 
-### Weiterführende Links
+### Further Links
 
-Projektseite:
+Project page:
 [http://sourceforge.net/projects/minidlna/](http://sourceforge.net/projects/minidlna/)

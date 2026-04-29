@@ -2,41 +2,37 @@
   - Package: [master/make/pkgs/checkmaild/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/checkmaild/)
   - Steward: -
 
-checkmaild ermöglicht es bis zu 3 Email-Konten (POP oder IMAP) in
-festgelegten Intervallen auf neue Mails zu überprüfen. Bei Erhalt einer
-neuen Mail wird ein Skript (maillog.cfg) aufgerufen. In diesem kann das
-Mail-Event z.B. durch eine LED an der FritzBox signalisiert werden. Oder
-über einen kurzen Telefonanruf auf ein Telefon bzw. Handy.
+checkmaild makes it possible to check up to 3 email accounts (POP or
+IMAP) for new mail at defined intervals. When a new mail is received, a
+script (maillog.cfg) is called. In this script, the mail event can be
+signaled, for example, by an LED on the FritzBox, or via a short phone
+call to a telephone or mobile phone.
 
- * Es können
-keine Konten über SSL-Verbindungen abgerufen werden!
+ * Accounts cannot be retrieved over SSL connections.
 
-**Unterschied von IMAP- und POP3-Konten:** Wenn die Mails über ein
-IMAP-Konto abgerufen werden, dann werden die ungelesenen Mails (unread
-mail) korrekt dargestellt. Eine neue Mail (new mail) wird im nächsten
-Abrufintervall zur ungelesenen Mail. Da beim POP3-Zugriff das
-*unseen*-Flag nicht verfügbar ist werden alle Mails im Posteingang als
-ungelesen angezeigt.
+**Difference between IMAP and POP3 accounts:** If the mail is retrieved
+through an IMAP account, unread mail is displayed correctly. A new mail
+becomes unread mail at the next retrieval interval. Since the *unseen*
+flag is not available when accessing POP3, all mail in the inbox is shown
+as unread.
 
-Der Source von checkmaild stammt vom
+The source for checkmaild comes from the
 [Tuxbox-Projekt](http://cvs.tuxbox.org/cgi-bin/viewcvs.cgi/tuxbox/apps/tuxbox/plugins/tuxmail/daemon/).
 
-### Konfiguration
+### Configuration
 
 [![Checkmaild Webinterface](../screenshots/219_md.png)](../screenshots/219.png)
 
-Es können 3 verschiedene Mail-Accounts konfiguriert werden. Einzugeben
-sind ein Kontoname, Benutzername, Kennwort und dann noch der POP- oder
-IMAP-Server des Providers.
+Three different mail accounts can be configured. Enter an account name,
+username, password, and then the provider's POP or IMAP server.
 
-Weiterhin kann das Überprüfungsintervall sowie das Skript-Verhalten
-festgelegt werden. Die Konfigurationsdatei kann unter
-/mod/etc/checkmaild.conf eingesehen werden.
+In addition, the check interval and script behavior can be defined. The
+configuration file can be viewed at /mod/etc/checkmaild.conf.
 
-### Skript-Funktion
+### Script Function
 
-Ab Version 0.4 gibt es zusätzlich die Möglichkeit einer Skript-Funktion.
-Diese ist wie folgt zu benutzen (GMX als Beispiel):
+Starting with version 0.4, there is also a script function. It is used as
+follows, with GMX as an example:
 
 ```
 /mod/etc/maillog.cfg 0 2 1 "GMX" "8d3451bca04e6c2f227257baa821c4b7" "14.Sep" "10:09" "User <user@gmx.de>" "Betreff"]
@@ -47,61 +43,62 @@ Diese ist wie folgt zu benutzen (GMX als Beispiel):
 -   $3. Parameter: Current mail
 -   $4. Parameter: Account
 -   $5. Parameter: Message-ID
--   $6. Parameter: Datum
--   $7. Parameter: Uhrzeit
+-   $6. Parameter: Date
+-   $7. Parameter: Time
 -   $8. Parameter: From
 -   $9. Parameter: Subject
 
-In den Variablen $2 bis $9 stehen die eMail-Infos, wenn Parameter $1
-= "0" ist (Neue eMail empfangen).
+Variables $2 through $9 contain the email information when parameter $1
+is "0" (new email received).
 
-Das Skript `/tmp/flash/checkmaild/maillog.cfg` kann über das
-Webinterface entsprechend angepasst werden. Testen kann man, wenn
-checkmaild im Vordergrund läuft und im Skript Ausgaben gemacht werden.
+The script `/tmp/flash/checkmaild/maillog.cfg` can be adjusted through
+the web interface. Testing can be done while checkmaild is running in the
+foreground and the script produces output.
 
-### LED-Signalisierung
-
-TODO
-
-### Telefon-Benachrichtigung
+### LED Signaling
 
 TODO
 
-### Beispiel-Skripte
+### Telephone Notification
+
+TODO
+
+### Example Scripts
 
 ```
     (echo "$1 $2 $3 ...")
 ```
 
-Beispiel:
+Example:
 
 ```
     #!/bin/sh
-    # neue Email empfangen
+    # new email received
     if [ "$1" = "0" ];
     then
-       echo "Am $6 um $7 Uhr schrieb $8: $9"
+    echo "On $6 at $7, $8 wrote: $9"
     fi
 ```
 
-Und wenn man das jetzt in Verbindung mit dem callmonitor und dem Skript
-callaction auf einem VDR ausgeben will, sieht das Beispiel so aus:
+And if this should now be displayed on a VDR in combination with the
+callmonitor and the callaction script, the example looks like this:
 
 ```
     #!/bin/sh
-    # neue Email empfangen
+    # new email received
     if [ "$1" = "0" ];
     then
-       callaction vdr m741 "Am $6 um $7 Uhr schrieb $8: $9"
+    callaction vdr m741 "On $6 at $7, $8 wrote: $9"
     fi
 ```
 
-Hintergrundinfos zum callmonitor kann man auch hier im Wiki unter
+Background information about callmonitor can also be found here in the
+wiki under
 [callmonitor](callmonitor.md) nachlesen.
 
-### Weiterführende Links
+### Further Links
 
 -   [IPPF
     Thread](http://www.ip-phone-forum.de/showthread.php?t=176375):
-    POP3/IMAP Konten mit *checkmaild*
+    POP3/IMAP accounts with *checkmaild*
 

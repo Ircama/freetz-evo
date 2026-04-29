@@ -6,13 +6,12 @@
   - Package: [master/make/pkgs/ltrace/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ltrace/)
   - Steward: -
 
-**[ltrace](http://ltrace.alioth.debian.org/)** ist
-ein Debug-Tool, mit dem sich von einem Programm ausgelöste "Library
-Calls" (Bibliotheks-Aufrufe) sowie alle empfangenen Signale monitoren
-lassen. Ein vergleichbares Tool findet sich im Paket
-[strace](strace.md).
+**[ltrace](http://ltrace.alioth.debian.org/)** is
+a debugging tool that can monitor library calls triggered by a program
+as well as all received signals. A comparable tool is available in the
+[strace](strace.md) package.
 
-### Weiterführende Links
+### Further Links
 
 -   [ltrace
     Homepage](http://ltrace.alioth.debian.org/)

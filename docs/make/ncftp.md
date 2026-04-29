@@ -8,84 +8,80 @@
 *"NcFTP Client (also known as just NcFTP) is a set of FREE application
 programs implementing the File Transfer Protocol (FTP)."*
 
-### Was ist NcFTP?
+### What is NcFTP?
 
-NcFTP Client ist ein FTP Client für die Kommandozeile. Er besitzt
-fortgeschrittene Funktionen wie z.B. automatisches Vervollständigen von
-Dateinamen, Hintergrundverarbeitung, Bookmarks, Herunterladen ganzer
-Verzeichnissbäume oder Verzeichniscaching.
+NcFTP Client is a command-line FTP client. It has advanced functions such
+as automatic filename completion, background processing, bookmarks,
+downloading entire directory trees, and directory caching.
 
-NcFTP bringt die Befehle ncftpget, ncftpput, ncftpls mit. Mit diesen
-können Dateien direkt via Kommandozeilenbefehl herunter- oder
-heraufgeladen bzw. Verzeichnisse angezeigt werden. Dies ist besonders
-für Shell-Scripte äußerst hilfreich.
+NcFTP includes the commands ncftpget, ncftpput, and ncftpls. These can be
+used to download or upload files directly from the command line or to
+display directories. This is especially helpful for shell scripts.
 
-Quelle:
+Source:
 [apfelwiki](http://www.apfelwiki.de/Main/NcFTPClient)
 
-### Wozu kann NcFTP benutzt werden?
+### What Can NcFTP Be Used For?
 
-1.) Upload von Dateien ohne, dass der PC gestartet sein muß.
-2.) [Download](../Download.html) von Datein ohne, dass der PC
-gestartet sein muß.
+1.) Upload files without the PC having to be started.
+2.) [Download](../Download.html) files without the PC having to be
+started.
 
-### Wie installiere ich NcFTP?
+### How Do I Install NcFTP?
 
-Das NcFTP-Package ist beim Bauen eines neuen Freetz-Images auszuwählen.
-Im Trunk ist NcFTP unter Packages→Testing zu finden.
+Select the NcFTP package when building a new Freetz image. In trunk,
+NcFTP can be found under Packages -> Testing.
 
-[![Ort im Trunk](../screenshots/214_md.png)](../screenshots/214.png)
+[![Location in trunk](../screenshots/214_md.png)](../screenshots/214.png)
 
-### Wie starte ich NcFTP?
+### How Do I Start NcFTP?
 
-Als erstes schreibt man ein Skript z.B. **upload.sh** mit folgendem
-Inhalt:
+First, write a script such as **upload.sh** with the following content:
 
 ```
 nohup ncftpput -u XXX -p XXX remote-host /remote/path/ /local/path/*
 ```
 
-Anschließend startet man es per Telnet/SSH mit dem Befehl **sh
-upload.sh**.
+Then start it via Telnet/SSH with the command **sh upload.sh**.
 
-### Wie ist der Befehl im upload.sh-Skript aufgebaut?
+### How Is the Command in the upload.sh Script Structured?
 
 ```
-nohup ncftpput -u (Username) -p (Password) -m (Adresse des FTP-Servers) /(Zielordner auf dem FTP)/ /(Pfad zum lokalen/eigenen Ordner)/*
+nohup ncftpput -u (Username) -p (Password) -m (FTP server address) /(target folder on the FTP)/ /(path to the local/own folder)/*
 ```
 
-Beispiel:
+Example:
 
 ```
 nohup ncftpput -u freetz -p mypass -m mustermann.no-ip.org /Uploads/ /var/media/ftp/uStor01/User/Mustermann/Downloads/*
 ```
 
-**Zur Info:** Das **nohup** sorgt dafür das das Skript weiter läuft
-obwohl Putty beendet wird.
+**For your information:** **nohup** ensures that the script keeps running
+even after Putty is closed.
 
-### Wie sieht der Befehl für ein download.sh Skript aus?
+### What Does the Command for a download.sh Script Look Like?
 
 ```
-nohup ncftpget -u (Username) -p (Password) (Ziel-FTP) (local-Verzeichnis) /(remote-Verzeichnis)/*
+nohup ncftpget -u (Username) -p (Password) (target FTP) (local directory) /(remote directory)/*
 ```
 
-Beispiel:
+Example:
 
 ```
 nohup ncftpget -u freetz -p mypass mustermann.no-ip.org /var/media/ftp/uStor01/Downloads /Downloads/*
 ```
 
-### Wie kann ich einen abweichenden Port nutzen?
+### How Can I Use a Different Port?
 
-Falls nicht der Standard-Port (21) genutzt werden soll kann man den
-gewünschten Port über den Parameter **-P xx** angeben. Der angegebene
-Port sollte natürlich zu dem Port passen auf dem der Server hört.
+If the standard port (21) should not be used, the desired port can be
+specified with the **-P xx** parameter. The specified port should of
+course match the port on which the server is listening.
 
 ```
-nohup ncftpput -u (Username) -p (Password) -P (Ziel-Port) -m (Adresse des FTP-Servers) /(Zielordner auf dem FTP)/ /(Pfad zum lokalen/eigenen Ordner)/*
+nohup ncftpput -u (Username) -p (Password) -P (target port) -m (FTP server address) /(target folder on the FTP)/ /(path to the local/own folder)/*
 ```
 
-Beispiel:
+Example:
 
 ```
 nohup ncftpput -u freetz -p mypass -P 1234 -m mustermann.no-ip.org /Uploads/ /var/media/ftp/uStor01/User/Mustermann/Downloads/*

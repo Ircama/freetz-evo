@@ -2,23 +2,21 @@
   - Package: [master/make/pkgs/microperl/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/microperl/)
   - Steward: -
 
-**microperl** ist eine Perl Distribution, die noch kleiner ist als
-*miniperl* (deswegen auch "micro" - vielleicht kommen bald noch
-nanoperl und picoperl?
-:-?) Doch der
-Name täuscht leicht: Das Binary hat noch satte 2 MB, dazu kommen 11 MB
-and Libraries (die zum Glück nicht zwingend notwendig sind) - so Micro
-ist es also dann doch nicht...
+**microperl** is a Perl distribution that is even smaller than
+*miniperl* (hence "micro"; maybe nanoperl and picoperl will come next?).
+The name is slightly misleading, though: the binary is still a solid 2 MB,
+plus 11 MB of libraries, which fortunately are not strictly required. So
+it is not quite that micro after all.
 
-### Weiterführende Links
+### Further Links
 
 -   [bootstrapping with
     microperl](http://www.perlmonks.org/?node_id=228040)
 -   [What is
     Microperl](http://www.foo.be/docs/tpj/issues/vol5_3/tpj0503-0003.html)
 -   [IPPF
-    Artikel](http://www.ip-phone-forum.de/showthread.php?t=114888)
-    von
+    article](http://www.ip-phone-forum.de/showthread.php?t=114888)
+    by
     [bodega](http://www.ip-phone-forum.de/member.php?u=101616)
 
 

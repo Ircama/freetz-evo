@@ -2,15 +2,15 @@
   - Package: [master/make/pkgs/gw6/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gw6/)
   - Steward: -
 
-gw6 ist ein IPv6 Client für
+gw6 is an IPv6 client for
 [gogo6/freenet6](http://gogonet.gogo6.com/page/freenet6-services)
 
-Eine anonyme Nutzung ohne Registrierung ist möglich, mit einem Account
-hingegen bekommt man ein ganzes Subnetz zugeteilt.
-Falls es Probleme beim Einloggen gibt kann man einen eigenen
-Broker-Server einstellen, z.B. amsterdam.freenet6.net
+Anonymous use without registration is possible; with an account, however,
+you are assigned an entire subnet.
+If there are login problems, a custom broker server can be configured,
+for example amsterdam.freenet6.net.
 
-### Alternativen
+### Alternatives
 
--   [Aiccu](aiccu.md) für SixXS
+-   [Aiccu](aiccu.md) for SixXS
 

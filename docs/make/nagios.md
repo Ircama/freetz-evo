@@ -2,39 +2,36 @@
   - Package: [master/make/pkgs/nagios/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/nagios/)
   - Steward: -
 
-Die Software **[Nagios](http://www.nagios.org/)**
-(Network + Hagios, früher NetSaint) dient der Überwachung komplexer
-IT-Infrastrukturen.
+The software **[Nagios](http://www.nagios.org/)**
+(Network + Hagios, formerly NetSaint) is used to monitor complex IT
+infrastructures.
 
-Nagios bietet dazu eine Sammlung von Modulen zur Überwachung von
-Netzwerken, Hosts und speziell Diensten sowie einer Web-Schnittstelle
-zum Abfragen der gesammelten Daten. Nagios steht unter der GPL, ist also
-Freie Software, und läuft unter zahlreichen Unix-ähnlichen
-Betriebssystemen.
+For this purpose, Nagios provides a collection of modules for monitoring
+networks, hosts, and especially services, as well as a web interface for
+querying the collected data. Nagios is licensed under the GPL, so it is
+free software, and runs on many Unix-like operating systems.
 
-Nagios kann mit Modulen erweitert werden. Zahlreiche fertige Module sind
-bereits verfügbar, und auch die Entwicklung eigener Module ist oft nicht
-unbedingt kompliziert.
+Nagios can be extended with modules. Many ready-made modules are already
+available, and developing custom modules is often not particularly
+complicated either.
 
-In *Freetz* baut *Nagios* auf das Paket
-[microperl](microperl.md) auf.
+In *Freetz*, *Nagios* is based on the [microperl](microperl.md) package.
 
- * Das Paket hat
-momentan keine Weboberfläche. Die Konfigurationsdateien sind nicht auf
-die Box angepasst und sowohl die html- als auch die cgi-Dateien werden
-nicht ins Image kopiert. Hier ist also einiges an Handarbeit nötig.
+ * The package currently has no web interface. The configuration files are
+not adapted to the box, and neither the HTML files nor the CGI files are
+copied into the image. A fair amount of manual work is therefore needed.
 
-### Weiterführende Informationen
+### Further Information
 
--   [offizielle Homepage](http://www.nagios.org/)
--   [Übersicht über Plug-ins, Artikel etc. zu
+-   [official homepage](http://www.nagios.org/)
+-   [Overview of plug-ins, articles, etc. for
     Nagios](http://nagiosexchange.org/)
--   [Übersicht über
-    Add-ons](http://www.nagiosforge.org/) inkl.
-    Versionsverwaltung, Snippets und Mailinglisten etc. zu Nagios
--   [Wiki für Nagios-relevante
-    Themen](http://nagioswiki.org/), z.B. HowTos, Addons, ...
+-   [Overview of
+    add-ons](http://www.nagiosforge.org/), including version control,
+    snippets, mailing lists, etc. for Nagios
+-   [Wiki for Nagios-related
+    topics](http://nagioswiki.org/), for example how-tos, add-ons, ...
 -   [Wikipedia
-    Artikel](http://de.wikipedia.org/wiki/Nagios)
+    article](http://de.wikipedia.org/wiki/Nagios)
 
 

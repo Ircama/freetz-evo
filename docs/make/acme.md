@@ -6,6 +6,6 @@
   - Package: [master/make/pkgs/acme/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/acme/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit ACME.sh können Let's Encrypt Zertifikate erstellt und aktualisiert werden.
+ACME.sh can be used to create and update Let's Encrypt certificates.
 <br>
 

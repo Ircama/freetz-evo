@@ -6,22 +6,21 @@
   - Package: [master/make/pkgs/mc/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/mc/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Der Midnight Commander ist ein OpenSource-Klon des Norton Commander -
-und wesentlich umfangreicher als z.B. der [DECO](deco.md), was
-sich natürlich nicht zuletzt auch in seiner Größe bemerkbar macht (DECO:
-ca. 60kb, mc (ohne Hilfedateien): ca. 400kb).
+Midnight Commander is an open source clone of Norton Commander and is
+much more extensive than, for example, [DECO](deco.md), which is of
+course also reflected in its size (DECO: about 60 kB, mc without help
+files: about 400 kB).
 
-Er erlaubt das navigieren durch die Verzeichnisstruktur, die Anzeige und
-Editierung von Textdateien und sogar das Entpacken von Archiven. Auch
-ein FTP-Client ist enthalten, sodass man auf FTP-Server fast so bequem
-zugreifen kann wie auf lokale Verzeichnisse.
+It allows navigation through the directory structure, viewing and editing
+text files, and even unpacking archives. An FTP client is also included,
+so FTP servers can be accessed almost as conveniently as local
+directories.
 
-[Wikipedia-Beitrag zum Midnight
+[Wikipedia article on Midnight
 Commander](http://de.wikipedia.org/wiki/Midnight_Commander)
 
-Wenn Putty für die Verbindung zur Fritz!Box verwendet wird, sind folgende.
-Putty-Einstellungen zu empfehlen, um die korrekte Funktion und Darstellung.
-zu gewährleisten:
+If Putty is used to connect to the Fritz!Box, the following Putty
+settings are recommended to ensure correct function and display:
 
     Window -> Translation -> Enable VT100 line drawing even in UTF-8 Mode
     Window -> Colors -> Indicate bolded text by changing: The color

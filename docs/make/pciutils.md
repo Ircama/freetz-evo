@@ -2,21 +2,20 @@
   - Package: [master/make/pkgs/pciutils/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/pciutils/)
   - Steward: -
 
-Die **PCI Utilities** sind eine Tool-Sammlung zur Untersuchung und
-Manipulation von
+The **PCI Utilities** are a collection of tools for examining and
+manipulating
 [PCI](http://de.wikipedia.org/wiki/Peripheral_Component_Interconnect)
-Geräten. Die Tools basieren auf einer gemeinsamen, portablen Bibliothek
-namens *libpci*.
+devices. The tools are based on a shared portable library named *libpci*.
 
-Enthalten sind folgende Programme:
+The following programs are included:
 
--   **lspci** zeigt detaillierte Informationen über alle vorhandenen PCI
-    Busse des Systems sowie daran angeschlossene Geräte an
--   **setpci** erlaubt das Lesen von und auch Schreiben in
-    Konfigurations-Register von PCI Geräten. Zum Beispiel lassen sich
-    damit "Latency Timer" justieren.
+-   **lspci** shows detailed information about all PCI buses present in
+  the system and the devices attached to them.
+-   **setpci** allows reading from and writing to PCI device
+  configuration registers. For example, it can be used to adjust
+  latency timers.
 
-Für weitere Informationen siehe auch
+For more information, see also
 [http://mj.ucw.cz/pciutils.shtml](http://mj.ucw.cz/pciutils.shtml)
 
 

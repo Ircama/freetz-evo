@@ -5,120 +5,116 @@
   - Package: [master/make/pkgs/vsftpd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/vsftpd/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**vsFTP** steht für **v**ery **s**ecure **F**ile **T**ransfer
-**P**rotocol. Der
-[vsftpd](http://vsftpd.beasts.org/) bietet z.B.
-folgende Features:
+**vsFTP** stands for **v**ery **s**ecure **F**ile **T**ransfer
+**P**rotocol. [vsftpd](http://vsftpd.beasts.org/) offers, for example,
+the following features:
 
--   virtuelle IPs
--   virtuelle User
--   Konfiguration pro User, pro Source-IP
--   Limits pro Source-IP
--   Bandweitenbeschränkung ([Bandwidth
+-   virtual IPs
+-   virtual users
+-   configuration per user, per source IP
+-   limits per source IP
+-   bandwidth limitation ([Bandwidth
     throttling](http://en.wikipedia.org/wiki/Bandwidth_throttling))
 -   IPv6
--   SSL Verschlüsselung
+-   SSL encryption
 
-### Bekannte Probleme
+### Known Problems
 
-Mit 7520/7530 07.25 crasht die Box bei Verbindungsaufbau zum FTP-Server.
-Dies ist keine allgemeines ARM Problem da ARM-Repeater nicht crashen.
-Sondern vermutlich ein Bug oder Fehlkonfiguration im Kernel (AVM-PA etc).
-Als Workaround im Webif bei vsftpd unter `Zusätzliche Konfigurationsoptionen
-(für Experten)` dies eintragen: `isolate_network=NO`. Siehe [https://github.com/Freetz-NG/freetz-ng/issues/236](https://github.com/Freetz-NG/freetz-ng/issues/236)
+With 7520/7530 07.25, the box crashes when establishing a connection to
+the FTP server. This is not a general ARM problem, because ARM repeaters
+do not crash. It is probably a bug or misconfiguration in the kernel
+(AVM-PA, etc.). As a workaround, enter this in the WebIF under vsftpd in
+`Additional configuration options (for experts)`: `isolate_network=NO`.
+See [https://github.com/Freetz-NG/freetz-ng/issues/236](https://github.com/Freetz-NG/freetz-ng/issues/236)
 
-### Package ins Image einbinden
+### Including the Package in the Image
 
-Im menuconfig unter `Package selection ---> Standard packages --->`
-findet sich
+In menuconfig under `Package selection ---> Standard packages --->`, you
+will find
 
 -   *Vsftpd 2.x.y*
-    Damit wird der FTP-Zugriff über vsFTP möglich.
+    This enables FTP access via vsFTP.
 
-### Verwandte Themen
+### Related Topics
 
-Unter `Patches --->` findet sich
+Under `Patches --->`, you will find
 
--   *Patch USB storage names* ... mit zusätzlichen Unterpunkten.
-    Hierdurch wird dem USB-Speicher ein einheitlicher Name gegeben.
+-   *Patch USB storage names* ... with additional subitems.
+    This gives the USB storage a consistent name.
 -   *Execute autorun.sh/autoend.sh script on (un)mount*
-    Führt die entsprechenden Skripte beim An- und Abstecken des
-    USB-Speichers aus.
+    Executes the corresponding scripts when USB storage is plugged in or
+    removed.
 
-### Freigaben und Benutzer für vsFTP in Freetz einrichten
+### Setting Up Shares and Users for vsFTP in Freetz
 
-Es folgt eine ausführliche Anleitung für das Erstellen von FTP-Freigaben
-und Nutzern mit verschiedenen Lese/Schreib-Rechten, die unabhängig von
-Linux-Zugriffsrechten funktioniert und somit auch für FAT- und
-NTFS-Platten eingesetzt werden kann. Hierbei können mit dem aktuellen
-Linux Kernel jedoch nur Lese/Schreib-Rechte auf Benutzer- und nicht auf
-Ordnerebene gesetzt werden.
+The following is a detailed guide for creating FTP shares and users with
+different read/write rights. It works independently of Linux access
+rights and can therefore also be used for FAT and NTFS disks. With the
+current Linux kernel, however, read/write rights can only be set at user
+level, not at folder level.
 
-Hier eine Übersicht über die in dieser Anleitung erstellten Ordner mit
-Zugangsbeschränkungen für zwei reguläre Nutzer (user1, user2) und einen
-Gast-Account (gast).
+Here is an overview of the folders created in this guide with access
+restrictions for two regular users (user1, user2) and one guest account
+(gast).
 
--   **Ordner → Zugangsberechtigte Benutzer**
--   user1 → user1
--   user2 → user2
--   shared → user1, user2
--   public → user1, user2, gast
+-   **Folder -> Authorized users**
+-   user1 -> user1
+-   user2 -> user2
+-   shared -> user1, user2
+-   public -> user1, user2, gast
 
-Diese können leicht an den eigenen Bedarf angepasst werden.
+These can easily be adapted to your own needs.
 
-#### Order-Struktur auf der USB-Platte wird vorbereitet.
+#### Prepare the Folder Structure on the USB Disk
 
-Dazu die folgenden Ordner im Hauptverzeichnis der Platte erstellen:
+Create the following folders in the root directory of the disk:
 
 ```
-user1        #Heimverzeichnis user1
+user1        #home directory user1
 user1/shared
 user1/public
-user2        #Heimverzeichnis user2
+user2        #home directory user2
 user2/shared
 user2/public
-shared       #gemeinsamer Ornder user1, user2
-public       #Heimverzeichnis gast
+shared       #shared folder user1, user2
+public       #home directory gast
 ```
 
-#### Die AVM-Lösungen von FTP wird abgeschaltet.
+#### Disable AVM's FTP Solution
 
-*fritz.box* → *Einstellungen* → *Erweiterte Einstellungen* →
-*USB-Geräte* → *USB-Speicher* *USB-Speicher FTP-Zugriff aktivieren* →
-Häkchen weg.
-Dies ist nicht zwingend notwendig, sofern der vsftpd auf einem anderen
-als Port 21 läuft.
+*fritz.box* -> *Settings* -> *Advanced Settings* -> *USB Devices* ->
+*USB Storage* -> *Enable USB storage FTP access* -> remove the checkmark.
+This is not strictly necessary if vsftpd runs on a port other than 21.
 
-#### Diensteinstellungen werden im Freetz-Menü eingestellt.
+#### Set Service Settings in the Freetz Menu
 
-*Pakete* → *vsftpd*
+*Packages* -> *vsftpd*
 
-*Starttyp* → automatisch
+*Start type* -> automatic
 
-→ *Zugriff*
+-> *Access*
 
 ```
-[ ]Anonymes FTP
-[X]Lokale Benutzer
+[ ]Anonymous FTP
+[X]Local users
 [X]chroot jail
-[ ]Erlaube root login
-[ ]Erlaube ftpuser login
+[ ]Allow root login
+[ ]Allow ftpuser login
 ```
 
-So ist sichergestellt, dass nur die genannten Nutzer und diese nur auf
-ihr Verzeichnis zugreifen können.
-Wenn der AVM FTP-Server parallel genutzt wird, **muss** hier auch der
-Haken bei **Erlaube ftpuser login** gesetzt werden.
+This ensures that only the named users can access the server, and only
+their own directory. If the AVM FTP server is used in parallel, the
+checkmark at **Allow ftpuser login** **must** also be set here.
 
-→ *Zusätzliche Konfigurationsoptionen (für Experten)*
+-> *Additional configuration options (for experts)*
 
 ```
 user_config_dir=/var/media/ftp/uStor01/vsftp_user_conf
 ```
 
-Später werden wir die Schreibrechte für die Benutzer getrennt festlegen.
+Later, write permissions for the users will be defined separately.
 
-→*Übernehmen*←
+->*Apply*<-
 
 ```
 Saving settings...done.
@@ -128,16 +124,16 @@ Writing /var/flash/freetz...done.
 10752 bytes written.
 ```
 
-#### TelNet-Zugang wird gestartet.
+#### Start Telnet Access
 
-*Dienste* → *telnetd* → *start*
+*Services* -> *telnetd* -> *start*
 
-Nun geht es auf der Kommandozeile weiter.
+Now continue on the command line.
 
-#### Die lokalen Benutzer werden eingerichtet.
+#### Create the Local Users
 
-Jeder Benutzer erhält dabei ein explizites Heim-Verzeichnis welches von
-vsFTP automatisch übernommen wird.
+Each user receives an explicit home directory, which vsFTP adopts
+automatically.
 
 ```
 adduser -h /var/media/ftp/uStor01/user1 user1
@@ -166,7 +162,7 @@ Retype password:
 Password for gast changed by root
 ```
 
-Die neuen Zugangsdaten werden erstmal gespeichert.
+The new login data is saved for now.
 
 ```
 modsave all
@@ -180,13 +176,12 @@ Writing /var/flash/freetz...done.
 10752 bytes written.
 ```
 
-#### Die Verzeichnisse *shared* und *public* werden in die jeweiligen Heim-Verzeichnisse der Benutzer eingebunden.
+#### Bind the *shared* and *public* Directories into the Users' Home Directories
 
-Dies soll immer sichergestellt werden, wenn die USB-Platte an die
-FritzBox angeschlossen wird. Dazu wird die Datei *autorun.sh* im
-Hauptverzeichnis der USB-Platte erstellt. Dass nach ordnungsgemäßem
-Abhängen der Platte die mounts auch wieder entfernt werden schreiben wir
-unmount-Befehle in die *autoend.sh*.
+This should always be ensured when the USB disk is connected to the
+FritzBox. For this, the file *autorun.sh* is created in the root
+directory of the USB disk. To also remove the mounts again after the disk
+has been properly detached, write unmount commands into *autoend.sh*.
 
 */var/media/ftp/uStor01/autorun.sh*
 
@@ -208,11 +203,11 @@ umount /var/media/ftp/uStor01/user1/public
 umount /var/media/ftp/uStor01/user2/public
 ```
 
-#### FTP-Schreibrechte für die Benutzer werden gesetzt.
+#### Set FTP Write Permissions for the Users
 
-Dazu erhält jeder Benutzer eine Datei mit seinem Dateinamen im Ordner
-*/var/media/ftp/uStor01/vsftp_user_conf/*, die festlegt, ob er
-Schreibrechte hat oder nicht.
+For this, each user receives a file with their file name in the folder
+*/var/media/ftp/uStor01/vsftp_user_conf/*. This file defines whether the
+user has write permission or not.
 
 */var/media/ftp/uStor01/vsftp_user_conf/user1*
 
@@ -232,85 +227,83 @@ write_enable=yes
 write_enable=no
 ```
 
-Über diese Benutzerdateien ist es auch möglich einzelne FTP-Befehle
-([Liste](http://en.wikipedia.org/wiki/List_of_FTP_commands))
-für Benutzer zu verbieten. Hierzu fügt man folgende Zeile in die Datei
-ein und entfernt die nicht gewünschten Befehle:
+These user files can also be used to forbid individual FTP commands
+([list](http://en.wikipedia.org/wiki/List_of_FTP_commands)) for users.
+To do this, add the following line to the file and remove the unwanted
+commands:
 
 ```
 cmds_allowed=ABOR,ACCT,ALLO,APPE,AUTH,CDUP,CWD,DELE,EPRT,EPSV,FEAT,HELP,LIST,MDTM,MKD,MODE,NLST,NOOP,OPTS,PASS,PASV,PBSZ,PORT,PROT,PWD,QUIT,REIN,REST,RETR,RMD,RNFR,RNTO,SITE,SMNT,STAT,STOR,STOU,STRU,SYST,TYPE,USER
 ```
 
-Alternativ kann man auch einzelne FTP-Befehle verbieten (ab vsftpd
-Version 2.1.0):
+Alternatively, individual FTP commands can also be forbidden (from
+vsftpd version 2.1.0):
 
 ```
 cmds_denied=DELE,RMD
 ```
 
-**Hinweiß:** Wenn wie Oben beschrieben das verbieten von Befehlen über
-**cmds_denied=** nicht Funktioniert hat, gibt es noch einen zweiten Weg
-das Ausführen von Befehle für einige User zu verbieten.
+**Note:** If forbidding commands via **cmds_denied=** as described above
+did not work, there is another way to forbid executing commands for some
+users.
 
-Gelöst wird das ganze ebenfalls über die Benutzerdateien. Hierzu fügt
-man folgende Zeile in die Datei ein und **entfernt** die Befehle die der
-User nicht ausführen darf:
+This is also solved via the user files. Add the following line to the
+file and **remove** the commands that the user must not execute:
 
 ```
 cmds_allowed=ABOR,ACCT,ALLO,APPE,AUTH,CDUP,CWD,DELE,EPRT,EPSV,FEAT,HELP,LIST,MDTM,MKD,MODE,NLST,NOOP,OPTS,PASS,PASV,PBSZ,PORT,PROT,PWD,QUIT,REIN,REST,RETR,RMD,RNFR,RNTO,SITE,SMNT,STAT,STOR,STOU,STRU,SYST,TYPE,USER
 ```
 
-**Beispiel:** user1 darf Dateien auf den FTP kopieren und Verzeichnisse
-anlegen, jedoch diese nicht wieder löschen. Also muß folgendes in der
-Datei stehen:
+**Example:** user1 may copy files to the FTP server and create
+directories, but may not delete them again. The following must therefore
+be in the file:
 
 ```
 cmds_allowed=ABOR,ACCT,ALLO,APPE,AUTH,CDUP,CWD,EPRT,EPSV,FEAT,HELP,LIST,MDTM,MKD,MODE,NLST,NOOP,OPTS,PASS,PASV,PBSZ,PORT,PROT,PWD,QUIT,REIN,REST,RETR,RNFR,RNTO,SITE,SMNT,STAT,STOR,STOU,STRU,SYST,TYPE,USER
 ```
 
-> **DELE** (Delete file), **RMD** (Remove a directory) wurden aus dem
-> oben angegebenen String gelöscht.
-> 
-> 
-> Sollte etwas immer noch nicht gehen, dann einfach mal den Router neu
-> starten.( Reboot der FritzBox )
+> **DELE** (Delete file) and **RMD** (Remove a directory) were removed
+> from the string specified above.
+>
+> If something still does not work, simply restart the router (reboot the
+> FritzBox).
 
-Eine Liste aller FTP-Befehle und ihre Bedeutung findet ihr hier:
-[Liste](http://en.wikipedia.org/wiki/List_of_FTP_commands)
+A list of all FTP commands and their meanings can be found here:
+[list](http://en.wikipedia.org/wiki/List_of_FTP_commands)
 
-#### Das wars!
+#### That's It!
 
-Die Ordner sind nun per FTP
-([ftp://fritz.box](ftp://fritz.box)) mit den
-gegebenen Zugangsdaten erreichbar.
+The folders can now be reached via FTP
+([ftp://fritz.box](ftp://fritz.box)) using the given login data.
 
-### Anmeldebildschirm bei vsftpd ändern
+### Changing the vsftpd Login Screen
 
-Hier wird nun kurz beschrieben wie ihr den Anmeldebildschirm von VSFTP
-ändern bzw. anpassen könnt.
-1.) Folgende Datei erzeugen:
-Name: **ftp-startbild**
-Inhalt:
+This briefly describes how to change or customize the login screen of
+VSFTP.
+
+1.  Create the following file:
+    Name: **ftp-startbild**
+    Content:
 
 ```
-Herzlich Willkommen bei
+Welcome to
   _   _   _   _   _   _   _   _   _
  /  /  /  /  /  /  /  /  /  / 
 ( M ) u ) s ) t ) e ) r ) m ) a ) n ) n )
  _/ _/ _/ _/ _/ _/ _/ _/ _/ _/
 ```
 
-Sehr hilfreich bei der Erzeugung des Schriftzuges ist diese Seite:
-[AsciiArt
-Generator](http://www.ihr-freelancer.de/asciiart)
-(Schriftart:Bubble)
-2.) Diese Datei wird dann einfach auf Eurer Festplatte abgelegt.
-Ort: **/var/media/ftp/uStor01/**
-3.) Nun muß diese Datei nur noch über das WebIF ins Freetz eingebunden
-werden.
-hierzu wird nun im Freetz-WebIF das VSFTP-Menue aufgerufen und folgender
-Eintrag unter **Zusätzliche Konfigurationsoptionen (für Experten)**
-eingetragen.
+This page is very helpful when creating the lettering:
+[AsciiArt Generator](http://www.ihr-freelancer.de/asciiart)
+(font: Bubble)
+
+2.  Then simply store this file on your hard disk.
+    Location: **/var/media/ftp/uStor01/**
+
+3.  Now this file only needs to be integrated into Freetz via the WebIF.
+    To do this, open the VSFTP menu in the Freetz WebIF and enter the
+    following entry under **Additional configuration options (for
+    experts)**.
 
 ```
 banner_file=/var/media/ftp/uStor01/ftp-startbild
@@ -318,21 +311,19 @@ banner_file=/var/media/ftp/uStor01/ftp-startbild
 
 [![](../screenshots/126_md.jpg)](../screenshots/126.jpg)
 
-4.) Nun nur noch Übernehmen und schon sollte sich Eure Box / der FTP mit
-dem neuen Anmeldebildschirm melden.
+4.  Now just apply, and your box / FTP should report with the new login
+    screen.
 
 [![](../screenshots/127_md.jpg)](../screenshots/127.jpg)
 
 [![](../screenshots/128_md.jpg)](../screenshots/128.jpg)
 
-
-### Weiterführende Links
+### Further Links
 
 -   [Project Homepage](http://vsftpd.beasts.org/)
 -   [IPPF
-    Thread](http://www.ip-phone-forum.de/showthread.php?t=176105):
-    Aktives/passives FTP auf die Box von außen mit *vsftpd* auf der Box
+    thread](http://www.ip-phone-forum.de/showthread.php?t=176105):
+    active/passive FTP to the box from outside with *vsftpd* on the box
 -   [IPPF
-    Thread](http://www.ip-phone-forum.de/showthread.php?t=187488):
-    vsFTP und Samba mit Benutzerrechten für FAT32-USB-Platte
-
+    thread](http://www.ip-phone-forum.de/showthread.php?t=187488):
+    vsFTP and Samba with user rights for a FAT32 USB disk

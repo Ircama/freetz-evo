@@ -118,16 +118,16 @@ directory!
     forge](http://sourceforge.net/projects/phpxmail/)
 -   [PhpXMail
     Configuration](http://wiki.qnap.com/wiki/PhpXMail_Configuration)
--   [IPPF: Mailserver für die
+-   [IPPF: mail server for the
     Fritzbox?](http://www.ip-phone-forum.de/showthread.php?t=103699&highlight=PHPXMail)
 -   [IPPF: [PATCH]: XMail
-    funktioniert](http://www.ip-phone-forum.de/showthread.php?t=205071&highlight=PHPXMail) *
+    works](http://www.ip-phone-forum.de/showthread.php?t=205071&highlight=PHPXMail) *
 -   [OpenSSL Self-signed Test
     Certificates](http://sial.org/howto/openssl/self-signed/)
 -   [HOWTO: Creating SSL certificates with CAcert.org and
     OpenSSL](http://www.lwithers.me.uk/articles/cacert.html)
--   [Welche Webmail-Oberflächen in PHP gibt
-    es?](http://www.php-faq.de/q-scripte-webmailer.html)
+-   [Which webmail interfaces exist in
+    PHP?](http://www.php-faq.de/q-scripte-webmailer.html)
 -   [AfterLogic WebMail
     Pro](http://www.afterlogic.com/products/webmail-pro)
 

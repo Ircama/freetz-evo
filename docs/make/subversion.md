@@ -7,27 +7,25 @@
   - Steward: [@fda77](https://github.com/fda77)
 
 [Subversion](http://subversion.tigris.org/) (SVN)
-ist eine Freie Software zur Versionsverwaltung von Dateien und
-Verzeichnissen.
+is free software for versioning files and directories.
 
-Die Versionierung erfolgt in einem zentralen Projektarchiv (engl.
-repository) in Form einer einfachen Revisionszählung. Wenn Änderungen an
-Inhalten verteilt auf den Computern der Bearbeiter ausgeführt werden,
-werden zwischen dem Projektarchiv und einem Arbeitsplatz jeweils nur die
-Unterschiede zu bereits vorhandenen Ständen übertragen.
+Versioning takes place in a central project archive (repository) using a
+simple revision count. When changes to content are made across the
+contributors' computers, only the differences from existing states are
+transferred between the project archive and a workstation.
 
-### Enthaltene Programmteile
+### Included Program Components
 
 ```
   --------------- --------------------------------------------------------------------------------------------------------
-  svn             Das Kommandozeilenprogramm
-  svnadmin        Ein Werkzeug zum Erstellen, Verändern oder Reparieren eines Repositorys
-  svndumpfilter   Ein Programm zum Filtern von Subversion-Repository-Dump-Streams
-  svnlook         Ein Werkzeug zur direkten Untersuchung eines Subversion-Repositorys
-  svnserve        Ein spezielles Server-Programm, dass als Hintergrundprozess laufen oder von SSH aufgerufen
-                  werden kann; eine weitere Möglichkeit, das Repository über ein Netzwerk verfügbar zu machen
-  svnsync         Ein Programm zum inkrementellen Spiegeln eines Repositorys über ein Netzwerk
-  svnversion      Ein Programm, das den Zustand einer Arbeitskopie (durch Revisionen der vorliegenden Objekte) berichtet
+  svn             The command-line program
+  svnadmin        A tool for creating, modifying, or repairing a repository
+  svndumpfilter   A program for filtering Subversion repository dump streams
+  svnlook         A tool for directly examining a Subversion repository
+  svnserve        A special server program that can run as a background process or be invoked by SSH;
+                  another way to make the repository available over a network
+  svnsync         A program for incrementally mirroring a repository over a network
+  svnversion      A program that reports the state of a working copy based on the revisions of its objects
   --------------- --------------------------------------------------------------------------------------------------------
 ```
 
@@ -36,28 +34,25 @@ Unterschiede zu bereits vorhandenen Ständen übertragen.
 [![Subversion](../screenshots/117_md.png)](../screenshots/117.png)
 
 
-### Konfiguration
+### Configuration
 
-Ein Repository wird mit folgendem Befehl angelegt
+A repository is created with the following command:
 
 ```
 svnadmin create --fs-type fsfs /PFAD_ZU_DEM_EXT2_TRAEGER/REPOSITORY_NAME
 ```
 
-REPOSITORY_NAME ist ein Platzhalter und darf beliebig gewählt werden.
-Der Datenträger muss mit ext2 bzw. ext3 formatiert werden, Repositories
-auf FAT- bzw. NTFS-Trägern werden von Freetz (derzeit noch) nicht
-unterstützt.
+REPOSITORY_NAME is a placeholder and can be chosen freely. The storage
+medium must be formatted with ext2 or ext3; repositories on FAT or NTFS
+media are not currently supported by Freetz.
 
-Nachdem das Repository angelegt ist, sind in dem Verzeichnis
-REPOSITORY_NAME/**conf** folgende Dateien zu finden bzw. neu anzulegen.
-Welche Einträge in diesen gemacht werden können und was sie bedeuten,
-kann
+After the repository has been created, the following files can be found
+or newly created in the REPOSITORY_NAME/**conf** directory. Which entries
+can be made in them and what they mean can be read
 [hier](http://svnbook.red-bean.com/nightly/en/svn.serverconfig.svnserve.html)
-nachgelesen werden. Die allereinfachte Konfiguration könnte z.B. so
-aussehen:
+here. The simplest possible configuration could look like this:
 
-**authz** einfach leer
+**authz** simply empty
 
 **passwd**
 

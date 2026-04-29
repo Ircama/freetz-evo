@@ -6,12 +6,11 @@
   - Package: [master/make/pkgs/socat/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/socat/)
   - Steward: [@fda77](https://github.com/fda77)
 
-**[socat](http://www.dest-unreach.org/socat/)** ist
-eine Alternative zum [netcat Paket](netcat.md), welches mit
-erweiterter Funktionalität aufwartet. Dies hat natürlich auch seinen
-Preis: *socat* benötigt *lib_ssl*, *lib_util* sowie *libz*, welche bei
-der Installation über
-[menuconfig](../help/howtos/common/install/menuconfig.html)
-automatisch mit ausgewählt werden.
+**[socat](http://www.dest-unreach.org/socat/)** is
+an alternative to the [netcat package](netcat.md), offering extended
+functionality. This naturally has its price: *socat* requires *lib_ssl*,
+*lib_util*, and *libz*, which are automatically selected during
+installation via
+[menuconfig](../help/howtos/common/install/menuconfig.html).
 
 

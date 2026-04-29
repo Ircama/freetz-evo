@@ -6,13 +6,13 @@
   - Package: [master/make/pkgs/wput/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/wput/)
   - Steward: -
 
-**wput** ist ein command-line ftp client, der Dateien oder auch ganze
-Verzeichnisse auf einen remote Server hochlädt. Dabei unterstützt er
-auch das wiederaufnehmen von abgebrochenen uploads.
+**wput** is a command-line FTP client that uploads files or entire
+directories to a remote server. It also supports resuming interrupted
+uploads.
 
 Features
 
--   wget ähnliches inteface
+-   wget-like interface
 -   TLS-encryption
 -   resuming
 -   speed-limit

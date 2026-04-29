@@ -2,206 +2,184 @@
   - Package: [master/make/pkgs/callmonitor/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/callmonitor/)
   - Steward: -
 
-Der Callmonitor ermöglicht es, bei eingehenden Anrufen auf einer
-FritzBox beliebige Aktionen
-auszuführen, abhängig davon, wer wen anruft. Beliebt sind das Senden von
-Benachrichtigungen an verschiedenste Arten von "Boxen"
-(TV/Sat-Receiver, Spielekonsolen, PCs) oder das Aufwecken von Geräten
-(Wake on LAN).
+The Callmonitor makes it possible to execute arbitrary actions on a
+FritzBox for incoming calls, depending on who calls whom. Popular uses
+include sending notifications to various kinds of "boxes" (TV/satellite
+receivers, game consoles, PCs) or waking devices (Wake on LAN).
 
-Dabei kann über eine Rückwärtssuche in Internet-Telefonbüchern oft auch
-der Name des Anrufers angezeigt werden.
+With a reverse lookup in internet telephone directories, the caller's name
+can often also be displayed.
 
-Das Besondere an diesem Callmonitor (leider gibt es viele Projekte mit
-ähnlichem Namen) ist, dass er komplett auf der Fritzbox läuft; es ist
-also nicht nötig, weitere Rechner eingeschaltet zu haben.
+The special thing about this Callmonitor, unfortunately there are many
+projects with similar names, is that it runs entirely on the FritzBox. It
+is therefore not necessary to keep additional computers switched on.
 
 ## Installation
 
 [![[Callmonitor WebInterface]](../../docs/screenshots/6_md.png)](../../docs/screenshots/6.png)
 
-Der Callmonitor ist als Paket im Rahmen von Freetz
-([Forum](http://www.ip-phone-forum.de/showthread.php?t=85371))
-realisiert, und kann bei dessen Installation einfach ausgewählt werden.
+The Callmonitor is implemented as a package within Freetz
+([forum](http://www.ip-phone-forum.de/showthread.php?t=85371)) and can
+simply be selected during its installation.
 
-Das Callmonitor-Paket kann nicht als Addon-Paket installiert werden.
+The Callmonitor package cannot be installed as an addon package.
 
-##  Installation neuer Versionen
+## Installing New Versions
 
-Bitte beachtet: Mit Freetz 1.1 können nur Callmonitor-Version bis 1.15
-eingesetzt werden. Callmonitor 1.15.1 und höher benötigen Änderungen,
-die in Freetz 1.2 oder der Freetz-Entwicklerversion enthalten sind.
+Please note: with Freetz 1.1, only Callmonitor versions up to 1.15 can be
+used. Callmonitor 1.15.1 and higher require changes that are included in
+Freetz 1.2 or the Freetz development version.
 
-Zum Einbinden der aktuellsten Version aus der Entwicklerversion in
-Freetz 1.2 kann man so vorgehen (im Wurzelverzeichnis von Freetz):
+To include the latest version from the development version in Freetz 1.2,
+you can proceed as follows in the root directory of Freetz:
 
 ```
 svn switch http://svn_freetz_org/trunk/make/callmonitor/callmonitor.mk make/callmonitor/callmonitor.mk
 ```
 
-## Weiterführende Links
+## Further Links
 
--   [Entwicklungsseite bei
-    Sourceforge](http://sourceforge.net/projects/callmonitor/)
--   [Forumsseite für Fragen und
-    Diskussionen](http://www.ip-phone-forum.de/showthread.php?t=191723)
+-   [Development page at SourceForge](http://sourceforge.net/projects/callmonitor/)
+-   [Forum page for questions and discussions](http://www.ip-phone-forum.de/showthread.php?t=191723)
 
+## Configuration
 
-## Konfiguration
+The Callmonitor configuration is best performed in several steps, spread
+across different pages in the Freetz web interface:
 
-Die Konfiguration des Callmonitors nimmt man sinnvollerweise in mehreren
-Schritten vor, die sich auf verschiedene Seiten im Web-Interface von
-Freetz verteilen:
+1.  Perform basic configuration, described below.
+2.  Define listeners for specific actions.
+3.  Test the configuration with a test call.
 
-1.  Basiskonfiguration durchführen (im Folgenden beschrieben)
-2.  Listeners für bestimmte Aktionen definieren
-3.  mit einem Testanruf die Konfiguration testen
+## Basic Configuration
 
-## Basiskonfiguration
+Some fundamental settings can be configured on the Packages-Callmonitor
+page of the web interface.
 
-Auf der Seite Pakete-Callmonitor des Web-Interfaces lassen sich einige
-grundlegende Einstellungen vornehmen.
+First, choose the start type, normally "Automatic", because otherwise the
+Callmonitor has to be started manually after every FritzBox restart. If
+there are problems, debug output can additionally be enabled, but this is
+normally unnecessary.
 
-Als erstes wählt man den Starttyp - normalerweise "Automatisch", da
-der Callmonitor sonst nach jedem Neustart der FritzBox per Hand
-gestartet werden muss. Sollte es Probleme geben, kann man noch
-zusätzlich die Debug-Ausgaben aktivieren, was jedoch normalerweise
-unnötig ist.
+The next block only provides links to the listeners and to running test
+calls.
 
-Der nächste Block bietet lediglich Links zu den Listeners und zur
-Durchführung von Testanrufen.
+In the following block, the location information (country and area code)
+can be checked again and also adjusted through a link to the AVM WebGUI.
+Note that changes to the country and/or area code are shown on the
+Callmonitor page only after the Callmonitor has been restarted.
 
-Im folgenden Block lassen sich die Standort-Angaben (Landes- und
-Ortsvorwahl) noch einmal überprüfen und über einen Link zum AVM-WebGUI
-auch anpassen. Es ist zu beachten, dass Änderungen der Landes- und/oder
-Ortsvorwahl erst auf der Callmonitor-Seite angezeigt werden, wenn der
-Callmonitor neu gestartet wurde.
+But we are not there yet; first, the reverse lookup settings in the third
+block still have to be checked. Reverse lookup can be disabled completely;
+the checkbox before "Perform reverse lookup for" is responsible for this.
+If it should be used, the "Service for reverse lookup" can be selected,
+to which the requests are sent. **Attention:** this function requires an
+existing internet connection, so some kind of always-on flat rate for
+internet access is recommended, for example a volume tariff or complete
+flat rate.
 
-So weit sind wir aber noch nicht, vorher sind noch die Einstellungen zur
-Rückwärtssuche im dritten Block zu überprüfen. Sie kann komplett
-deaktiviert werden, dafür ist die Checkbox vor "Rückwärtssuche
-durchführen bei" zuständig. Möchte man sie benutzen, kann der "Dienst
-für die Rückwärtssuche" ausgewählt werden,
-an den die Anfragen geschickt werden. **Achtung:** Diese Funktion setzt
-eine bestehende Internetverbindung voraus - es empfiehlt sich also
-irgendeine Art von always-on Flatrate für den Internetzugang zu
-verwenden (z.B. Volumentarif, komplette Flat).
+If the telephone number cannot be found, for example because the
+subscriber has objected to reverse lookup, the area code is looked up at
+the selected service instead. This at least allows the location to be
+displayed. Finally, it can be selected whether the reverse lookup results
+are stored permanently in the phone book (that is, in the box flash) or
+temporarily in memory until restart. It is also possible to disable
+caching entirely. Then reverse lookup is performed again and again, even
+if the same phone number has already been looked up once.
 
-Falls die Telefonnummer nicht gefunden werden kann (z.B. weil der
-Teilnehmer der Rückwärtssuche widersprochen hat), wird ersatzweise die
-Vorwahl bei dem dort ausgewählten Dienst nachgeschlagen. Dadurch kann
-zumindest der Ort angezeigt werden. Zum Schluss kann noch ausgewählt
-werden, ob die Ergebnisse der Rückwärtssuche dauerhaft im Telefonbuch
-(also im Flash der Box) oder flüchtig (d.h. bis zum Neustart) im
-Speicher abgelegt werden. Es ist auch möglich, die Zwischenspeicherung
-ganz abzuschalten. Dann wird die Rückwärtssuche immer wieder neu
-durchgeführt, selbst wenn dieselbe Rufnummer schon einmal nachgeschlagen
-wurde.
+The setting "Area code for local phone numbers" is needed because in the
+local network the area code is not always transmitted. In current
+versions, the area code is automatically taken from the internet telephony
+settings in the AVM web interface.
 
-Die Einstellung "Vorwahl für lokale Rufnummern" wird benötigt, da im
-Ortsnetz nicht (immer) die Vorwahl mit übertragen wird. In aktuellen
-Versionen wird die Vorwahl automatisch aus den Einstellungen zur
-Internettelefonie übernommen (in der Weboberfläche von AVM).
+## Defining Listeners
 
-## Listeners definieren
+Next, so-called listeners must be defined. On incoming calls they start
+the desired action. More details are available on a special page for the
+listeners.
 
-Als nächstes müssen sogenannte Listeners definiert werden, die dann bei
-eingehenden Anrufen die gewünschte Aktion starten. Genaueres hierzu auf
-einer speziellen Seite für die Listeners.
+## Test Call
 
-## Testanruf
+Once the listeners have been defined, they can and should be tried with a
+test call. Of course, a real call can be made, but often there is no way
+to test special rules. Therefore, there is the option to generate a test
+call through the web interface.
 
-Sind die Listeners einmal definiert, kann und sollte man sie mit einem
-Testanruf ausprobieren. Dafür kann man natürlich einen echten Anruf
-machen - allerdings hat man oft nicht die Möglichkeit, spezielle Regeln
-zu testen. Daher gibt es die Möglichkeit, einen Testanruf über das
-Web-Interface zu generieren.
+## Troubleshooting
 
-## Fehlersuche
+The output of the test call and, if applicable, debug messages usually
+provide enough hints as to why the action was not executed or why the
+Callmonitor does not start. To see the log, first enable this option in
+the Freetz configuration so it is built into the image. It is also worth
+looking at the maintenance page: if the Callmonitor interface is disabled,
+the Callmonitor cannot work either. Enabling it with a call to the
+FritzBox from an attached telephone using the number #96*5* can help. If
+none of this helps, support is available on the [forum page for questions
+and discussions](http://www.ip-phone-forum.de/showthread.php?t=100706).
 
-Die Ausgaben des Testanrufs und ggf. die Debug-Meldungen (siehe oben, um
-das log zu sehen vorher in freetz-konfig diese option aktivieren um sie
-in das image einzubauen) geben in den meisten Fällen ausreichend
-Hinweise, warum die Aktion nicht ausgeführt wurde bzw. der Callmonitor
-nicht startet. Außerdem lohnt sich auch ein Blick auf die
-Wartungsseite - falls die
-Callmonitor-Schnittstelle deaktiviert ist, kann dieser auch nicht
-funktionieren. Einschalten mit einem Anruf der Fritzbox von einem
-angeschlossenem Telefon aus mit der Nummer: #96*5* kann
-helfen. Wenn das alles nicht weiterhilft, kann man
-auf der [Forumsseite für Fragen und
-Diskussionen](http://www.ip-phone-forum.de/showthread.php?t=100706)
-Unterstützung bekommen.
+## Rules (Listeners)
 
+The listeners file contains a list of rules that determine which actions
+should be executed under which conditions.
 
-## Regeln (Listeners)
+Blank lines are ignored, as are lines beginning with *#*; those are
+comments.
 
-Die Listeners-Datei enthält eine Liste von Regeln, die festlegen, welche
-Aktionen unter welchen Bedingungen ausgeführt werden sollen.
+Each rule is on one line and consists of four values, separated by
+whitespace, in this order:
 
-Leerzeilen werden ignoriert, ebenso Zeilen, die mit *#* beginnen (das
-sind Kommentare).
+1.  Event
+2.  Source phone number: pattern for SOURCE
+3.  Destination phone number: pattern for DEST
+4.  Action: arbitrary shell code
 
-Jede Regel steht in einer Zeile und besteht aus vier Angaben, die durch
-Leerraum getrennt in dieser Reihenfolge aufeinander folgen:
+The two patterns for *SOURCE* and *DEST* are [extended regular
+expressions (ERE)](http://www.selflinux.org/selflinux/html/regex.html),
+as understood by *egrep*. The event (incoming/outgoing call; ringing,
+acceptance, etc.) is specified with the syntax shown below.
 
-1.  Ereignis
-2.  Quellrufnummer: Muster für SOURCE
-3.  Zielrufnummer: Muster für DEST
-4.  Aktion: Beliebiger Shell-Code
+Negative patterns can be used in listeners by prefixing an exclamation
+mark: `!123` matches all numbers that do not contain 123 anywhere.
 
-Die beiden Muster für *SOURCE* und *DEST* sind ["extended
-regular expressions"
-(ERE)](http://www.selflinux.org/selflinux/html/regex.html),
-wie sie von *egrep* verstanden werden. Das Ereignis (ein-/ausgehender
-Anruf; Klingeln, Annahme, etc.) wird mit der unten angeführten Syntax
-angegeben.
-
-Man kann negative Muster bei den Listeners verwenden, indem man ein
-Ausrufezeichen voranstellt: `!123` passt auf alle Nummern, die nicht
-irgendwo 123 enthalten.
-
-Beispiele:
+Examples:
 
 ```
-  Muster           passt auf
+  Pattern          matches
   ---------------- ---------------------------------------------------------------------
-  `^`              alle Nummern
-  `^034`           Nummern, die mit 034 beginnen
-  `4563$`          Nummern, die auf 4563 enden
-  `!^(045|0164)`   Nummern, die **nicht** mit 045 oder 0164 beginnen
-  `^0123456$`      nur genau die Nummer 0123456
-  `^04553...$`     die Nummern, bei denen nach 04553 genau drei weitere Zeichen folgen
+  `^`              all numbers
+  `^034`           numbers beginning with 034
+  `4563$`          numbers ending with 4563
+  `!^(045|0164)`   numbers that **do not** begin with 045 or 0164
+  `^0123456$`      only exactly the number 0123456
+  `^04553...$`     numbers where exactly three more characters follow 04553
   ---------------- ---------------------------------------------------------------------
 ```
 
-Alle Regeln werden parallel abgearbeitet; eine bestimmte Reihenfolge ist
-nicht garantiert.
+All rules are processed in parallel; a specific order is not guaranteed.
 
-Damit die Listeners über das Webinterface von Freetz bearbeitet werden
-können, muss dessen Sicherheitsstufe auf 0 gesetzt werden. Das ist
-nötig, da über die Listeners beliebiger Code ausgeführt werden kann.
+For the listeners to be editable through the Freetz web interface, its
+security level must be set to 0. This is necessary because arbitrary code
+can be executed through the listeners.
 
-[![[Callmonitor: Listener Konfiguration]](../../docs/screenshots/20_md.png)](../../docs/screenshots/20.png)
+[![[Callmonitor: Listener configuration]](../../docs/screenshots/20_md.png)](../../docs/screenshots/20.png)
 
 ## Format
 
-Seit Version 1.0 des Callmonitors gilt folgendes Format für die
-Listeners, mit dem auf bis zu acht verschiedene Ereignisse
-unterschiedlich reagiert werden kann:
+Since version 1.0 of the Callmonitor, the following format applies to the
+listeners, allowing different reactions to up to eight different events:
 
--   ***:request**: Anruf kommt an (es klingelt)
--   ***:cancel**: Anruf wurde abgebrochen, bevor eine Verbindung
-    zustande kam (so kann man direkt auf "verpasste Anrufe" reagieren)
--   ***:connect**: Verbindung beginnt
--   ***:disconnect**: Verbindung wurde beendet
+-   ***:request**: call arrives (it rings)
+-   ***:cancel**: call was canceled before a connection was established,
+    allowing direct reaction to "missed calls"
+-   ***:connect**: connection begins
+-   ***:disconnect**: connection was ended
 
-Dazu kommt die Unterscheidung zwischen
+In addition, there is a distinction between
 
--   **in:***: eingehenden und
--   **out:***: ausgehenden Anrufen.
+-   **in:***: incoming and
+-   **out:***: outgoing calls.
 
-Das ergibt folgende Menge von Ereignissen:
+This yields the following set of events:
 
 ```
   |           *:request       *:cancel       *:connect       *:disconnect
@@ -211,128 +189,126 @@ Das ergibt folgende Menge von Ereignissen:
   ----------- --------------- -------------- --------------- ------------------
 ```
 
-Dazu passend haben die Listeners eine zusätzliche erste Spalte bekommen,
-in der (mit Hilfe von Abkürzungen und Wildcards) das gewünschte Ereignis
-angegeben werden kann, auf das die betreffende Regel reagieren soll:
+Accordingly, the listeners received an additional first column in which
+the desired event for the rule can be specified, using abbreviations and
+wildcards:
 
 ```
 in:request  ^       ^1234$  xboxmessage xbox
 in:cancel   ^       ^       mailmessage -t test@example.com
-out:cancel  ^1234$  ^0123   dboxpopup dbox-a "${DEST} geht nicht ran"
-*:dis       ^       ^       echo "Anruf beendet: ${DURATION} Sekunden" >> log
+out:cancel  ^1234$  ^0123   dboxpopup dbox-a "${DEST} does not pick up"
+*:dis       ^       ^       echo "Call ended: ${DURATION} seconds" >> log
 ```
 
-Es kann mehrere Regeln geben, die auf dasselbe Ereignis passen.
+There can be multiple rules that match the same event.
 
-Die Präfixe "NT:", "E:" und "*:" in der *SOURCE*-Spalte gibt es
-nicht mehr. Eure bisherige Listeners-Datei (vor Version 1.0) könnt ihr
-nicht einfach weiterverwenden. Der CallMonitor versucht aber, beim
-ersten Start eine grobe Konvertierung vorzunehmen, um euch den Umstieg
-zu erleichtern. Auf jeden Fall solltet ihr aber die Listeners nach der
-Umstellung einmal kontrollieren.
+The prefixes "NT:", "E:", and "*:" in the *SOURCE* column no longer
+exist. Your previous listeners file from before version 1.0 cannot simply
+be reused. However, on first startup the CallMonitor tries to perform a
+rough conversion to make the transition easier. In any case, the
+listeners should be checked once after the conversion.
 
-Die Spalten 2 und 3 in den Listeners sind weiterhin Muster (reguläre
-Ausdrücke) für Quell- und Zielrufnummer (*SOURCE* und *DEST*).
-Dabei ist jedoch zu beachten, dass in Spalte 2 bzw. 3 die MSNs, also die
-Internet-Rufnummern, anzugeben sind und nicht wie früher bspw. *SIP0*
-oder *SIP1*.
+Columns 2 and 3 in the listeners are still patterns (regular expressions)
+for source and destination phone number (*SOURCE* and *DEST*). However,
+note that columns 2 and 3 must contain the MSNs, meaning the internet
+phone numbers, and no longer values such as *SIP0* or *SIP1* as before.
 
-## Ereignis-Informationen für Aktionen
+## Event Information for Actions
 
-Den Aktionen stehen Informationen über den auslösenden Anruf in
-Umgebungsvariablen bereit. Sie werden in Shell-Scripten mit einem $
-referenziert, also z.B. `echo $SOURCE_NAME`.
+Actions receive information about the triggering call in environment
+variables. In shell scripts, they are referenced with a $, for example
+`echo $SOURCE_NAME`.
 
 ```
-  Variable          Inhalt                                                                                                                                     | seit Version
-  ----------------- -------------------------------------------------------------------------------------------------------------------------------------------- -----------------
-  EVENT             das auslösende Ereignis                                                                                                                      1.0
-  ID                die ID des Anrufs (direkt von der Callmonitor-Schnittstelle)                                                                                 1.0
-  UUID              Global eindeutige ID für diesen Anruf (nicht für dieses Ereignis!)                                                                           1.20
-  TIMESTAMP         der Zeitpunkt des Ereignisses (im Format "DD.MM.YY HH:MM")                                                                                   1.0
-  SOURCE            Quellrufnummer                                                                                                                               ---
-  SOURCE_DISP       "anzeigefreundlichere" Variante von SOURCE (Landesvorwahl weg, Call-by-Call-Vorwahlen weg, etc.)                                             1.8
-  SOURCE_NAME       Name der Quelle, falls dieser bestimmt werden konnte                                                                                         ---
-  SOURCE_ADDRESS    Die Adresse (Straße, Stadt, Land) ist seit 1.12 separat verfügbar und nicht mehr in SOURCE_NAME enthalten                                    1.12
-  SOURCE_ENTRY      Der ganze Telefonbucheintrag (entspricht dem SOURCE_NAME vor 1.12)                                                                           1.12
-  DEST              Zielrufnummer                                                                                                                                ---
-  DEST_DISP        "anzeigefreundlichere" Variante von DEST (Landesvorwahl weg, Call-by-Call-Vorwahlen weg, etc.)                                                1.8
-  DEST_NAME         Name des Ziels, falls dieses bestimmt werden konnte                                                                                          ---
-  DEST_ADDRESS      Die Adresse (Straße, Stadt, Land) ist seit 1.12 separat verfügbar und nicht mehr in DEST_NAME enthalten                                      1.12
-  DEST_ENTRY        Der ganze Telefonbucheintrag (entspricht dem DEST_NAME vor 1.12)                                                                             1.12
-  EXT               die Nebenstelle, sofern bekannt (direkt von der Callmonitor-Schnittstelle)                                                                   1.0
-  DURATION          bei *:disconnect die Dauer des Gesprächs in Sekunden                                                                                         1.0
-  PROVIDER          Dienstleister, über den der Anruf abgewickelt wird ("POTS" für Festnetz oder "SIP0", "SIP1", ... für die verschiedenen SIP-Provider)         1.5
-  ----------------- -------------------------------------------------------------------------------------------------------------------------------------------- -----------------
+  Variable          Content                                                                                                                                    | since version
+  ----------------- ------------------------------------------------------------------------------------------------------------------------------------------- -----------------
+  EVENT             the triggering event                                                                                                                        1.0
+  ID                the call ID, directly from the Callmonitor interface                                                                                         1.0
+  UUID              globally unique ID for this call, not just this event                                                                                        1.20
+  TIMESTAMP         time of the event, in "DD.MM.YY HH:MM" format                                                                                               1.0
+  SOURCE            source phone number                                                                                                                         ---
+  SOURCE_DISP       more display-friendly variant of SOURCE, with country code removed, call-by-call prefixes removed, etc.                                      1.8
+  SOURCE_NAME       source name, if it could be determined                                                                                                       ---
+  SOURCE_ADDRESS    the address (street, city, country) is available separately since 1.12 and is no longer included in SOURCE_NAME                              1.12
+  SOURCE_ENTRY      the complete phone book entry, corresponding to SOURCE_NAME before 1.12                                                                      1.12
+  DEST              destination phone number                                                                                                                     ---
+  DEST_DISP         more display-friendly variant of DEST, with country code removed, call-by-call prefixes removed, etc.                                        1.8
+  DEST_NAME         destination name, if it could be determined                                                                                                  ---
+  DEST_ADDRESS      the address (street, city, country) is available separately since 1.12 and is no longer included in DEST_NAME                                1.12
+  DEST_ENTRY        the complete phone book entry, corresponding to DEST_NAME before 1.12                                                                        1.12
+  EXT               extension, if known, directly from the Callmonitor interface                                                                                  1.0
+  DURATION          for *:disconnect, the call duration in seconds                                                                                               1.0
+  PROVIDER          service provider through which the call is handled ("POTS" for landline or "SIP0", "SIP1", ... for the different SIP providers)            1.5
+  ----------------- ------------------------------------------------------------------------------------------------------------------------------------------- -----------------
 ```
 
-EXT kann auf einer FritzBox 7050 folgende numerische Werte haben (bei
-einem eingehenden Anruf liegt diese Information erst ab in:connect vor;
-vorher ist die Zuordnung ja nicht klar):
+On a FritzBox 7050, EXT can have the following numerical values. For an
+incoming call, this information is only available from in:connect onward;
+before that the assignment is not yet clear.
 
 ```
-  Wert     Bedeutung
+  Value    Meaning
   -------- ------------------
   0        FON 1
   1        FON 2
   2        FON 3
-  3        Durchwahl
+  3        direct dial-in
   4        Fon S0
   5        Fon/Fax PC
-  6        Anrufbeantworter
+  6        answering machine
   36       Data S0
   37       Data PC
   -------- ------------------
 ```
 
-## Formatierung der Ausgaben
+## Formatting Output
 
-Zur Formatierung der Ausgaben stehen folgende Funktionen bereit:
+The following functions are available for formatting output:
 
-seit Version 1.8:
+Since version 1.8:
 
--   f_duration: zur Darstellung von Zeitdauern als "hh:mm:ss"
+-   f_duration: displays time durations as "hh:mm:ss"
 
     ```
-    f_duration <ZEIT_IN_SEKUNDEN>
+    f_duration <TIME_IN_SECONDS>
 
-      ZEIT_IN_SEKUNDEN:      Zeit in Sekunden, z.B. $DURATION
+      TIME_IN_SECONDS:      time in seconds, e.g. $DURATION
     ```
 
-Beispiel:
+Example:
 
 ```
-    echo "Der Anruf dauerte $(f_duration $DURATION)"
+    echo "The call lasted $(f_duration $DURATION)"
 ```
 
-führt zu einer Ausgabe
+produces the output
 
 ```
-Der Anruf dauerte 1:05:03
+The call lasted 1:05:03
 ```
 
-falls DURATION den Wert 3903 hat.
+if DURATION has the value 3903.
 
-Als nützlich kann sich auch die Konstante $LF erweisen, die einen
-Zeilenumbruch enthält (line feed):
+The constant $LF can also be useful; it contains a line break (line
+feed):
 
 ```
-    dboxmessage foo.bar "Zeile 1${LF}Zeile 2"
+    dboxmessage foo.bar "Line 1${LF}Line 2"
 ```
 
-## Muster für Ereignisse
+## Patterns for Events
 
-Es gibt mehrere Möglichkeiten, in den Listeners die Ereignisse
-anzugeben, bei der eine Regel auslösen soll:
+There are several ways to specify in the listeners which events should
+trigger a rule:
 
--   Vollständige Ereignisnamen:
+-   Complete event names:
 
     ```
     in:request
     out:disconnect
     ```
 
--   Abkürzungen des vorderen und/oder hinteren Teils:
+-   Abbreviations of the front and/or rear part:
 
     ```
     in:req
@@ -341,7 +317,7 @@ anzugeben, bei der eine Regel auslösen soll:
     o:d
     ```
 
--   Wildcards für den vorderen Teil (Richtung), den hinteren oder beide:
+-   Wildcards for the front part (direction), the rear part, or both:
 
     ```
     *:req
@@ -349,107 +325,101 @@ anzugeben, bei der eine Regel auslösen soll:
     *
     ```
 
--   Listen dieser Bestandteile (mit Komma getrennt (Vorsicht, kein
-    Whitespace); die Regel passt, wenn einer der Teile passt):
+-   Lists of these components, separated by commas. Caution: no
+    whitespace. The rule matches if one of the parts matches:
 
     ```
     in:req,out:*
     ```
 
-## Beispiele:
+## Examples:
 
-Verpasster Anruf (in:cancel) mailmessage an mehrere Email Adressen
-versenden:
+Send a missed call (in:cancel) mailmessage to several email addresses:
 
 ```
 in:cancel ^ ^ mailmessage -t user1@example.com,user2@example.com
 ```
 
-Von einer bestimmten Rufnummer (0401234567) eine festgelegte Rufnummer
-(0401234568) anrufen und den PC über WOL (Wake on Lan) einschalten:
+Call a fixed phone number (0401234568) from a specific phone number
+(0401234567) and switch on the PC via WOL (Wake on LAN):
 
 ```
 in:request ^0401234567 ^0401234568 ether-wake -i eth0 00:13:DE:01:A4:DE
 ```
 
-Benachrichtigungen über Dreambox mit Enigma2 auf Fernseher anzeigen:
+Display notifications on a TV via Dreambox with Enigma2:
 
 ```
 in:request ^ ^ dream2message --user=root --pass=dreambox 192.168.178.104
 ```
 
-Benachrichtigung per Email bei Faxempfang:
+Email notification on fax receipt:
 
 ```
-in:disconnect ^ 0401234567$ mailmessage -s "Faxeingang von $SOURCE"
+in:disconnect ^ 0401234567$ mailmessage -s "Fax received from $SOURCE"
 ```
 
-## Ereignisse
+## Events
 
-Ein erfolgreicher eingehender Anruf erzeugt nacheinander folgende
-Ereignisse (analog für ausgehende Anrufe mit `out:*`):
+A successful incoming call generates the following events in sequence;
+analogous for outgoing calls with `out:*`:
 
 1.  in:request
 2.  in:connect
 3.  in:disconnect
 
-Ein Anruf, der abgebrochen wird, bevor die Gegenseite ihn annimmt,
-erzeugt folgende Ereignisse:
+A call that is canceled before the other party accepts it generates the
+following events:
 
 1.  in:request
 2.  in:cancel
 
-Die Ereignisse sind nicht direkt die Rohereignisse, wie sie an der
-JFritz-Schnittstelle (Port 1012) sichtbar sind, sondern entstehen aus
-diesen (bei gleicher ID) mit Hilfe eines endlichen Automaten (an den
-Kanten sind oben die Eingangsereignisse angegeben, unten die
-Ausgangsereignisse; das Ereignis `in:accept` wird nur intern benutzt):
+The events are not directly the raw events visible on the JFritz
+interface (port 1012), but are created from them, with the same ID, using
+a finite automaton. In the diagram, input events are shown above the
+edges and output events below; the event `in:accept` is used only
+internally.
 
-[![[CallMonitor: Ereignisse]](../../docs/screenshots/36_md.png)](../../docs/screenshots/36.png)
+[![[CallMonitor: events]](../../docs/screenshots/36_md.png)](../../docs/screenshots/36.png)
 
+## Actions
 
-## Aktionen
+Actions are executed based on rules defined in the so-called listeners.
+Any shell code (programs/commands) known to the FritzBox can be executed.
+The actions must be passed in the listener as the <action> parameter; see
+the example image below for the *dboxpopup* action. Environment variables
+with information about the triggering call can be used.
 
-Aktionen werden anhand von Regeln ausgeführt, die in den sogenannten
-Listeners definiert sind. Dabei kann beliebiger
-der FritzBox bekannter Shell-Code (Programme/Befehle) ausgeführt werden.
-Die Aktionen müssen im Listener als Parameter <action> übergeben
-werden (siehe Beispielbild unten für die Aktion *dboxpopup*), wobei
-Umgebungsvariablen mit Informationen über den auslösenden Anruf
-verwendet werden können.
+Some standard functions are provided directly by the Callmonitor and are
+described below. With the script *callaction*, all Callmonitor actions can
+be called from outside, for example from the command line for testing.
 
-Einige Standardfunktionen werden direkt vom callmonitor bereitgestellt
-und sind im Folgenden beschrieben. Mit dem Script *callaction* lassen
-sich alle Callmonitor-Aktionen von außerhalb (z.B. von der Kommandozeile
-zum Testen) aus aufrufen.
-
-Wenn man in Verbindung mit *checkmaild* neu eingetroffene Emails auf
-einem VDR ausgeben will, kann man das machen, indem man die Datei
-`/var/mod/etc/maillog.cfg` z.B. wie folgt anlegt:
+If newly arrived emails from *checkmaild* should be displayed on a VDR,
+this can be done by creating the file `/var/mod/etc/maillog.cfg`, for
+example as follows:
 
 ```
     #!/bin/sh
-    # neue Email empfangen
+    # new email received
     if [ "$1" = "0" ];
     then
-       callaction vdr m741 "Am $6 um $7 Uhr schrieb $8: $9"
+       callaction vdr m741 "On $6 at $7, $8 wrote: $9"
     fi
 ```
 
-Hintergrundinfos zur Datei `maillog.cfg` und dem checkmaild Paket kann
-man auch hier im Wiki unter [checkmaild](../checkmaild/README.mk)
-nachlesen.
+Background information about the file `maillog.cfg` and the checkmaild
+package can also be read here in the wiki under
+[checkmaild](../checkmaild/README.mk).
 
-## Benachrichtigen
+## Notify
 
-Benachrichtigungen sind dafür da, eingehende und/oder verpasste Anrufe
-über verschiedene Kommunikationswege und auf verschiedenen Geräten zu
-signalisieren.
+Notifications are used to signal incoming and/or missed calls through
+various communication paths and on various devices.
 
-Die vorgegebenen Standardtexte der Funktionen können an die eigenen
-Bedürfnisse angepasst werden.
+The predefined default texts of the functions can be adapted to your own
+needs.
 
-Funktionen, die auf getmsg basieren:
+Functions based on getmsg:
 
 -   DGStation Relook 400S
 -   DBox
@@ -457,91 +427,86 @@ Funktionen, die auf getmsg basieren:
 -   XBox
 -   Freecom MusicPal
 
-Falls nötig, können beim Aufruf auch Passwörter und Benutzernamen
-angegeben werden.
+If necessary, passwords and user names can also be specified when
+calling.
 
-Funktionen, die auf rawmsg basieren:
+Functions based on rawmsg:
 
--   SoundBridge von Roku
+-   SoundBridge by Roku
 -   VDR
 -   YACwiki}: Yet Another Caller ID Program
 
-Benachrichtung auf ganz anderem Wege:
+Notification by entirely different means:
 
--   mailmessage: Benachrichtigung per Mail
--   Samsung TV: Benachrichtigung
-    SOAP-Nachricht
--   Snarl: Benachrichtigung für Snarl
+-   mailmessage: notification by mail
+-   Samsung TV: notification SOAP message
+-   Snarl: notification for Snarl
 
-## Wählen, Wecken, Konfigurieren
+## Dial, Wake, Configure
 
--   Wählhilfe: Ansprechen der Wählhilfe der
-    FritzBox
+-   Dialing assistance: addressing the FritzBox dialing assistance
 -   WOL}: Wake on LAN
--   Fritz!Box-Konfiguration: WLAN, SIP,
-    Portforwarding ein- und ausschalten
+-   Fritz!Box configuration: switch WLAN, SIP, and port forwarding on and
+    off
 
-## Eigene Aktionen
+## Custom Actions
 
-Mit den beiden Basisfunktionen *getmsg* und *rawmsg* können auf den
-Zielmaschinen nahezu beliebige Funktionen ausgeführt werden --- sofern
-sie dort entsprechend realisiert sind (Start über den Webserver oder
-Lauschen an einem TCP-Port).
+With the two basic functions *getmsg* and *rawmsg*, almost arbitrary
+functions can be executed on the target machines, provided they are
+implemented there accordingly, either started via the web server or
+listening on a TCP port.
 
--   getmsg: HTTP-GET-Requests
--   rawmsg: Nachrichten über "rohe"
-    TCP-Verbindungen
--   Aufruf: Hinweise zu Funktionsaufrufen
+-   getmsg: HTTP GET requests
+-   rawmsg: messages over "raw" TCP connections
+-   Calling: notes about function calls
 
-Auch andere, selbst-definierte Aktionen sind möglich:
+Other self-defined actions are also possible:
 
--   Selbst-definierte Aktionen
+-   Self-defined actions
 
 ## Third-Party Software
 
-CallMon2: auf Windows und Linux laufendes Perl-Skript,
+CallMon2: Perl script running on Windows and Linux,
 [http://zephyrsoftware.sf.net/](http://zephyrsoftware.sourceforge.net/?q=fritzbox/callmon2)
-(dort genaue Informationen zum Einrichten des ganzen!)
+(there you will find exact information about setting the whole thing up!)
 
-## Telefonbuch (Callers)
+## Phone Book (Callers)
 
 Format:
 
 ```
-<Rufnummer mit Vorwahl>` `<Name>(`;` <Adresse>)
+<Phone number with area code>` `<Name>(`;` <Address>)
 ```
 
-Ergebnisse der Rückwärtssuche können hier
-gespeichert werden für schnelleren Zugriff in der Zukunft; natürlich
-können auch von Hand Nummer-Name-Paare eingetragen oder geändert werden
+Reverse lookup results can be stored here for faster access in the
+future. Of course, number-name pairs can also be entered or changed
+manually.
 
--   49er-Rufnummern (ohne 00, länger als 10 Zeichen) werden erkannt
--   Name des Angerufenen steht zur Verfügung (vor allem für SIP0 bis
-    SIP9); man kann die Zuordnung zu Namen im Telefonbuch (Callers)
-    vornehmen, entweder direkt für SIP0 bis SIP9 oder für Adressen der
-    Form "username@registrar" (das zweite hat den Vorteil, dass man
-    im Telefonbuch nichts anpassen muss, wenn man seine SIP-Accounts in
-    anderer Reihenfolge einträgt). Beim Start werden Kurznamen für alle
-    Accounts generiert und als Vorgabe in die Callers eingetragen.
--   Suchstrategie: Erst Nummer unverändert in den lokalen Telefonbüchern
-    (Callers, AVM-Telefonbuch) nachschlagen, dann normalisieren (evtl.
-    Orts- /Landesvorwahl davor; SIP[0-9] wird zu username@registrar)
-    und noch einmal lokal probieren. Dann erst über Rückwärtssuche im
-    Internet probieren.
+-   49-style phone numbers without 00 and longer than 10 characters are
+    recognized.
+-   The name of the called party is available, especially for SIP0 through
+    SIP9. The assignment to names can be made in the phone book (Callers),
+    either directly for SIP0 through SIP9 or for addresses of the form
+    "username@registrar". The latter has the advantage that nothing in
+    the phone book has to be adjusted if the SIP accounts are entered in
+    a different order. During startup, short names are generated for all
+    accounts and entered as defaults in the Callers.
+-   Search strategy: first look up the number unchanged in the local phone
+    books (Callers, AVM phone book), then normalize it, possibly adding
+    area/country code; SIP[0-9] becomes username@registrar, and try
+    locally again. Only then try reverse lookup on the internet.
 
 [![[Callmonitor Callers]](../../docs/screenshots/216_md.png)](../../docs/screenshots/216.png)
 
+## HTTP Requests (getmsg)
 
-## HTTP-Requests (getmsg)
-
-Die Funktion `getmsg` sendet eine Benachrichtigung, indem sie diese per
-HTTP GET an einen Webserver schickt. Es ist möglich, die URL (nur Pfad +
-Query-String, also den Teil hinter dem Host-Namen) mit
-[printf-Templates](http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html))
-anzugeben. Im einfachsten Fall bedeutet dies, dass die Stelle in der
-URL, an der die Nachricht eingesetzt werden soll, mit `%s` markiert
-wird. `getmsg` sorgt selbst für die richtige Kodierung der Nachrichten
-(URL Encoding).
+The function `getmsg` sends a notification by sending it to a web server
+via HTTP GET. It is possible to specify the URL (only path plus query
+string, meaning the part after the host name) with [printf
+templates](http://www.gnu.org/software/libc/manual/html_node/Formatted-Output.html).
+In the simplest case, this means that the position in the URL where the
+message should be inserted is marked with `%s`. `getmsg` itself ensures
+correct encoding of messages (URL encoding).
 
 ## Syntax:
 
@@ -562,91 +527,86 @@ wird. `getmsg` sorgt selbst für die richtige Kodierung der Nachrichten
         --help             show this help
 ```
 
-Die **folgenden Funktionen basieren** auf `getmsg` und unterstützen daher
-dieselben Optionen. Passend für den entsprechenden Empfänger sind
-URL-Template (`-t`), die Standard-Nachricht (`-d`) und der Port (`-p`)
-schon vorbelegt.
+The **following functions are based** on `getmsg` and therefore support
+the same options. The URL template (`-t`), the default message (`-d`), and
+the port (`-p`) are already preset appropriately for the respective
+receiver.
 
-## Beispiel:
+## Example:
 
 ```
 *:* ^ ^ getmsg 192.168.0.111 -p 222 -t "/home/phone?event=%s&id=%s&time=%s&source=%s&source_name=%s&destination=%s&destination_name=%s&extension=%s&duration=%s&provider=%s" "${EVENT}" "${ID}" "${TIMESTAMP}" "${SOURCE}" "${SOURCE_NAME}" "${DEST}" "${DEST_NAME}" "${EXT}" "${DURATION}" "${PROVIDER}"
 ```
 
-Das obere Beispiel bewirkt einen GET-Aufruf an
+The example above causes a GET call to
 [http://192.168.0.111:222/home/phone](http://192.168.0.111:222/home/phone)
-mit allen relevanten Daten im Query-String.
-
+with all relevant data in the query string.
 
 ## DBox2
 
-## DBox2 mit Neutrino Image
+## DBox2 with Neutrino Image
 
 ```
   dboxmessage (default_dboxmessage)
   dboxpopup (default_dboxpopup)
 ```
 
-Die Funktion unterscheiden sich nur darin, ob die angezeigte Nachricht
-von alleine nach einiger Zeit verschwindet oder explizit bestätigt
-werden muss.
+The functions differ only in whether the displayed message disappears by
+itself after some time or must be explicitly confirmed.
 
-default_dboxmessage und default_dboxpopup haben die Funktion default_dbox
-als gemeinsame Grundlage.
+default_dboxmessage and default_dboxpopup have the function default_dbox
+as their common basis.
 
 ```
   dboxlcd (default_dboxlcd)
 ```
 
-Stellt eine Nachricht auf dem LCD der DBox dar.
+Displays a message on the DBox LCD.
 
-## DBox2 mit Enigma Image
+## DBox2 with Enigma Image
 
-Wenn ihr ein Enigma Image auf eurer Box habt und im Popup vor dem
-eigentlichen Text ein "popup=" oder "nmsg=" erscheint, so könnt ihr
-wie bei der Dreambox folgenden Befehl nutzen:
+If you have an Enigma image on your box and "popup=" or "nmsg=" appears
+in the popup before the actual text, you can use the following command as
+with the Dreambox:
 
 ```
   dreammessage (default_dreammessage)
 ```
 
+## Dialing Assistance
 
-## Wählhilfe
-
-Die aus dem Webinterface von AVM bekannte Wählhilfe steht hier als
-Funktion zur Verfügung (seit Callmonitor 1.1).
+The dialing assistance known from the AVM web interface is available here
+as a function since Callmonitor 1.1.
 
 ```
-dial NUMMER [PORT]
+dial NUMBER [PORT]
 ```
 
-Das erste Argument ist die zu wählende Nummer, das zweite (optional) der
-Port (1, 2, 3, 50, 51, ...), natürlich ohne die eckigen Klammern.
+The first argument is the number to dial, the second optional argument is
+the port (1, 2, 3, 50, 51, ...), of course without square brackets.
 
-Die Ports 1 bis 3 sind die analogen Telefonen, 50 alle ISDN-Telefone, ab
-51 die einzelnen ISDN-Telefone.
+Ports 1 through 3 are the analog telephones, 50 is all ISDN telephones,
+and from 51 onward the individual ISDN telephones.
 
-Auflegen ist auch möglich (seit Callmonitor 1.5):
+Hanging up is also possible since Callmonitor 1.5:
 
 ```
 hangup [PORT]
 ```
 
+## Self-Defined Actions
 
-## Selbstdefinierte Aktionen
+Custom actions can be stored as shell functions in one or more files
+`/tmp/flash/callmonitor/actions.local.d/*.sh`. Standard functions can
+also be overwritten this way, for example `default_message()`.
 
-Eigene Aktionen können als Shell-Funktionen in einer oder mehreren
-Dateien `/tmp/flash/callmonitor/actions.local.d/*.sh` abgelegt werden.
-(Es können so auch Standard-Funktionen überschrieben werden, z.B.
-`default_message()`)
+Of course, arbitrary external programs can also be called.
 
-Natürlich können auch beliebige externe Programme aufgerufen werden.
+## User Names and Passwords
 
-## Benutzernamen und Passwörter
-
-Alle Aktionen, die auf `getmsg` basieren, verstehen folgende Optionen,
-mit denen man Benutzername und Passwort für das Webinterface der Zielbox
-angeben kann:
+All actions based on `getmsg` understand the following options, with
+which user name and password for the target box web interface can be
+specified:
 
 ```
   -U USERNAME
@@ -655,103 +615,95 @@ angeben kann:
   --password PASSWORD
 ```
 
-Außerdem können die Daten in einer Kurzschreibweise direkt beim
-Hostnamen angegeben werden:
+The data can also be specified directly in the host name in short form:
 
 ```
   USERNAME:PASSWORD@HOST:PORT
 ```
 
-## Beispiel
+## Example
 
-Also zum Beispiel:
+For example:
 
 ```
   dboxmessage john:secret@mydbox
 ```
 
-Das bewirkt das gleiche wie
+This has the same effect as
 
 ```
   dboxmessage --user=john --password=secret mydbox
 ```
 
-oder
+or
 
 ```
   dboxmessage -U john -P secret mydbox
 ```
 
-Oder falls die D-Box auf einem anderen als dem Standardport lauscht:
+Or if the D-Box listens on a port other than the default port:
 
 ```
   dboxmessage john:secret@mydbox:3818
   dboxmessage --user=john --password=secret --port=3818 mydbox
 ```
 
-
 ## Freecom MusicPal
 
-Version 1.15.1 enthält die neue Aktion **musicalpalmessage**, mit der
-man Nachrichten auf dem Display eines MusicPals von Freecom darstellen
-kann. Es werden maximal zwei Zeilen unterstützt; die Anzeigedauer
-(standardmäßig 25 Sekunden) kann über die Umgebungsvariable
-MUSICPAL_TIMEOUT verändert werden. Für den Fall, dass die Anzeige
-vorher freigegeben werden soll, steht die Aktion **musicalpalclear**
-bereit.
+Version 1.15.1 contains the new action **musicalpalmessage**, which can
+display messages on the display of a Freecom MusicPal. A maximum of two
+lines is supported; the display duration, 25 seconds by default, can be
+changed through the environment variable MUSICPAL_TIMEOUT. If the display
+should be released earlier, the action **musicalpalclear** is available.
 
-Einige Beispiele:
+Some examples:
 
 ```
-    # Standardnachricht, Benutzername und Passwort "admin"
+    # default message, user name and password "admin"
     musicpalmessage musicpal.domain.my
 
-    # eigene Nachricht mit zwei Zeilen, andere Zugangsdaten
-    musicpalmessage --user="root" --password="secret" musicpal.domain.my "Wichtiger Anruf${LF}von ${SOURCE}!"
+    # custom message with two lines, different credentials
+    musicpalmessage --user="root" --password="secret" musicpal.domain.my "Important call${LF}from ${SOURCE}!"
 
-    # alternative Syntax
-    musicpalmessage root:secret@musicpal.domain.my "Wichtiger Anruf${LF}von ${SOURCE}"
+    # alternative syntax
+    musicpalmessage root:secret@musicpal.domain.my "Important call${LF}from ${SOURCE}"
 
-    # Nachricht löschen
+    # clear message
     musicpalclear musicpal.domain.my
 ```
 
-Zum Anpassen der Standardnachricht kann die Shell-Funktion
-`default_musicpalmessage` überschrieben werden.
-
+To customize the default message, the shell function
+`default_musicpalmessage` can be overwritten.
 
 ## Roku SoundBridge
 
-Die [Roku
-SoundBridge](http://www.rokulabs.com/products_soundbridge.php)
-kann auf ihrem Display Nachrichten darstellen. Seit Callmonitor 1.12.4
-stehen drei Funktionen zur Ansteuerung zur Verfügung:
+The [Roku SoundBridge](http://www.rokulabs.com/products_soundbridge.php)
+can display messages on its display. Since Callmonitor 1.12.4, three
+functions are available for controlling it:
 
 ```
   sbmessage
   (default_sbmessage)
 ```
 
-Zur Anzeige einer statischen Nachricht. Mit der Umgebungsvariable
-`SB_TIMEOUT` kann die Dauer der Anzeige bestimmt werden.
+For displaying a static message. The display duration can be determined
+with the environment variable `SB_TIMEOUT`.
 
 ```
   sbmarquee
   (default_sbmarquee)
 ```
 
-Zur Anzeige eines Lauftexts. Mit der Umgebungsvariable `SB_TIMES` kann
-festgelegt werden, wie oft die Nachricht wiederholt werden soll.
+For displaying scrolling text. The environment variable `SB_TIMES`
+specifies how many times the message should be repeated.
 
 ```
   sbxmessage
   (default_sbxmessage)
 ```
 
-Zur Anzeige einer statischen, mehrzeiligen Nachricht. Mit der
-Umgebungsvariable SB_TIMEOUT kann die Dauer der Anzeige bestimmt
-werden.
-
+For displaying a static, multi-line message. The display duration can be
+determined with the environment variable SB_TIMEOUT.
 
 ## VDR
 
@@ -763,133 +715,124 @@ VDR: Video Disk Recorder,
   (default_vdr)
 ```
 
-## Benachrichtigung auf einem Samsung TV
+## Notification on a Samsung TV
 
-Die Funktion `samsung` verschickt eine Benachrichtigung über einen
-Telefonanruf mit Hilfe der SOAP-Methode an ein Samsung TV:
+The function `samsung` sends a notification about a phone call to a
+Samsung TV using the SOAP method:
 
 ```
-samsung {IP des TV}
+samsung {IP of the TV}
 ```
 
-Also z.B.:
+For example:
 
 ```
 samsung 192.168.178.19
 ```
 
-Es werden der Anrufer-Name (sofern im Telefonbuch oder in den Callers
-eingetragen, ansonsten die Telefonnummer), die angerufene Nummer, sowie
-Datum und Uhrzeit angezeigt. Die Länge der darstellbaren Zeichen hängt
-vom Inhalt ab. Wenn nicht mehr Text angezeigt werden kann (z.B. bei
-Adresszusätzen in den Callers), wird er am Ende abgeschnitten, so dass
-er mit "..." endet.
+The caller name, if entered in the phone book or Callers, otherwise the
+phone number, the called number, and date and time are displayed. The
+length of displayable characters depends on the content. If no more text
+can be displayed, for example with address additions in the Callers, it
+is cut off at the end so it ends with "...".
 
-Der Listener-Eintrag im Callmonitor kann dazu z.B. so aussehen:
+The listener entry in the Callmonitor can look like this, for example:
 
 ```
 in:request ^ ^ samsung tv
 ```
 
-Zum Testen kann man folgendes direkt vom Terminal der Fritzbox
-ausführen:
+For testing, the following can be executed directly from the FritzBox
+terminal:
 
 ```
 callaction samsung tv
 ```
 
-Die Funktion `samsung_text` verschickt eine Nachricht mit Hilfe der
-SOAP-Methode an ein Samsung TV, z.B.:
+The function `samsung_text` sends a message to a Samsung TV using the
+SOAP method, for example:
 
 ```
 echo "Hello, world!" | callaction samsung_text 192.168.178.19 \
---from="Absender" --from-number="069 123456" \
---to-number="089 987654" --to="Empfänger" \
+--from="Sender" --from-number="069 123456" \
+--to-number="089 987654" --to="Recipient" \
 --date="2010-05-21" --time="21:56:00"
 ```
 
-Analog zum obigen Beispiel werden hier Anrufer-Name und dessen
-Telefonnummer, Empfänger-Name und dessen Telefonnummer sowie Datum und
-Uhrzeit angezeigt. D.h. die Nachricht wird mit derselben Methode (SOAP)
-wie bei der Benachrichtigung über einen Telefonanruf verschickt, zzgl.
-der o.g. Daten.
+Analogous to the example above, caller name and phone number, recipient
+name and phone number, as well as date and time are displayed. That means
+the message is sent using the same method (SOAP) as the notification
+about a phone call, plus the data mentioned above.
 
 ## Snarl
 
-[Snarl](http://www.fullphat.net/index.php) ist
-ähnlich wie Growl, welches einigen vielleicht bekannt ist, ist ein
-Benachrichtigungs-Programm ("notification"), welches im Hintergrund
-läuft und von verschiedenen Programmen etc. angesprochen werden kann.
-Vorteil ist, dass man so benutzerdefinierte, systemweit einheitliche
-Benachrichtigungen erhält.
+[Snarl](http://www.fullphat.net/index.php) is similar to Growl, which
+some may know. It is a notification program that runs in the background
+and can be addressed by various programs, etc. The advantage is that this
+provides user-defined, system-wide uniform notifications.
 
-Snarl verwendet ein eigenes Protokoll, welches sich SNP
-([Snarl Network
-Protocol](http://www.fullphat.net/dev/snp/index.htm)) nennt.
+Snarl uses its own protocol called SNP ([Snarl Network
+Protocol](http://www.fullphat.net/dev/snp/index.htm)).
 
-Mittels "rawmsg" wird an eine IP (Port 9887) im Netzwerk, an dem Snarl
-wiederum selbst lauschen muss, eine Nachricht gesendet. Snarl zeigt
-diese vom Callmonitor über SNP übermittelte Benachrichtigung dann an.
+Using "rawmsg", a message is sent to an IP (port 9887) in the network,
+on which Snarl itself must be listening. Snarl then displays this
+notification transmitted by the Callmonitor via SNP.
 
-Also z. B. so:
+For example like this:
 
 ```
-echo -n "type=SNP#?version=1.0#?action=notification#?title=Anruf#?text=${SOURCE}#?timeout=20"$'\r\n' | nc IP 9887
+echo -n "type=SNP#?version=1.0#?action=notification#?title=Call#?text=${SOURCE}#?timeout=20"$'\r\n' | nc IP 9887
 ```
 
-(buehmann hat in diesem
-[Thread](http://www.ip-phone-forum.de/showthread.php?t=216938)
-gezeigt, wie es geht. Danke!)
+(buehmann showed how it works in this
+[thread](http://www.ip-phone-forum.de/showthread.php?t=216938). Thanks!)
 
-## Listener-Eintrag:
+## Listener Entry:
 
-Der Listener-Eintrag im Callmonitor kann dazu z.B. so aussehen:
+The listener entry in the Callmonitor can look like this, for example:
 
 ```
-in:request ^ ^ echo -n "type=SNP#?version=1.0#?action=notification#?title=eingehender Anruf#?text=von ${SOURCE} - ($SOURCE_NAME)${LF}für ${DEST_NAME} - (${DEST_DISP})${LF}#?timeout=20#?icon=C:\pic.png"$'\r\n' | nc 192.168.178.20 9887
+in:request ^ ^ echo -n "type=SNP#?version=1.0#?action=notification#?title=incoming call#?text=from ${SOURCE} - ($SOURCE_NAME)${LF}for ${DEST_NAME} - (${DEST_DISP})${LF}#?timeout=20#?icon=C:\pic.png"$'\r\n' | nc 192.168.178.20 9887
 ```
 
 ## Screenshots:
 
-So könnte eine Benachrichtung von Snarl dann aussehen. Die Angaben
-betreffend Anrufer, Rufnummer, Ereignis etc., lassen sich ja mittels des
-Callmonitor entsprechend anpassen bzw. erweitern.
+A notification from Snarl could then look like this. The information
+about caller, phone number, event, etc. can of course be adjusted or
+extended accordingly using the Callmonitor.
 
-> [![[Snarl Beispiel]](../../docs/screenshots/171_md.png)](../../docs/screenshots/171.png)
+> [![[Snarl example]](../../docs/screenshots/171_md.png)](../../docs/screenshots/171.png)
 >
-> [![[Snarl Beispiel]](../../docs/screenshots/167_md.png)](../../docs/screenshots/167.png)
+> [![[Snarl example]](../../docs/screenshots/167_md.png)](../../docs/screenshots/167.png)
 >
-> [![[Snarl Beispiel]](../../docs/screenshots/173_md.png)](../../docs/screenshots/173.png)
+> [![[Snarl example]](../../docs/screenshots/173_md.png)](../../docs/screenshots/173.png)
 
-> Wichtig: "Curl" oder "getmsg" können [nicht] benutzt
-> werden, diese sind nur für das HTTP (Protokoll) geeignet und
-> funktionieren nicht mit dem SNP von Snarl.
-
+> Important: "Curl" or "getmsg" cannot be used; they are suitable only
+> for the HTTP protocol and do not work with Snarl's SNP.
 
 ## XBox
 
-Für diese Funktion muss das [XBox Media Center
-(XBMC)](http://www.xboxmediacenter.com) laufen und dort unter
-*Einstellungen → Netzwerk* der Webserver aktiviert werden. Ggf. mit den
-Optionen (s.o.) Port, Username und Passwort übergeben. Das XBMC stellt
-die Nachricht dann in einem kleinen Fenster dar, das automatisch
-geschlossen wird.
+For this function, [XBox Media Center
+(XBMC)](http://www.xboxmediacenter.com) must be running, and the web
+server must be enabled there under *Settings -> Network*. If necessary,
+pass port, username, and password with the options (see above). XBMC then
+displays the message in a small window that closes automatically.
 
 ```
   xboxmessage (default_xboxmessage)
 ```
 
-Die XBox erlaubt mit `xboxmessage` keine Kommas in den Nachrichten. Der
-Titel der Nachricht kann über die Umgebungsvariable
-`XBOX_CAPTION="Telefonanruf"` beeinflusst werden.
+The XBox does not allow commas in messages with `xboxmessage`. The title
+of the message can be influenced through the environment variable
+`XBOX_CAPTION="Phone call"`.
 
-## Anpassungen auf der XBox
+## Adjustments on the XBox
 
-Anzeigedauer und Größe des Fensters können in der Datei
-`DialogKaiToast.xml` angepasst werden. Je nach gewähltem TV-Typ ist die
-jeweilige Datei unter `skin\Project Mayhem III\PAL\` oder
-`skin\Project Mayhem III\PAL16x9\` zuständig. Folgende Überarbeitung der
-"PAL"-Datei erreicht ein brauchbares Ergebnis (nur geänderte Zeilen):
+Display duration and window size can be adjusted in the file
+`DialogKaiToast.xml`. Depending on the selected TV type, the respective
+file under `skin\Project Mayhem III\PAL\` or
+`skin\Project Mayhem III\PAL16x9\` is responsible. The following
+revision of the "PAL" file achieves a usable result (only changed lines):
 
 ```
 ...
@@ -929,17 +872,14 @@ jeweilige Datei unter `skin\Project Mayhem III\PAL\` oder
 ...
 ```
 
-## Weitere Möglichkeiten
+## Further Possibilities
 
-Es gibt außerdem einen
-[Python-Script](http://ca.geocities.com/farside@rogers.com/Scripts/callerid.html),
-das eine CallerID-Anzeige auf der Xbox ermöglicht. Dann kann die
-Nachricht mit der Funktion `yac` an die XBox gesendet werden. Das Script
-ist auch im Script
-[xbmcfritz](http://www.xbmc.de/xbmc/download.php?view.150)
-enthalten, das zusätzlich die Anruferliste der FritzBox auf der XBox
-darstellen kann.
-
+There is also a [Python
+script](http://ca.geocities.com/farside@rogers.com/Scripts/callerid.html)
+that enables CallerID display on the Xbox. The message can then be sent
+to the XBox with the function `yac`. The script is also included in
+[xbmcfritz](http://www.xbmc.de/xbmc/download.php?view.150), which can
+also display the FritzBox call list on the XBox.
 
 ## YAC
 
@@ -950,153 +890,147 @@ Syntax:
 
 ```
   yac <IP>
-    IP       IP des Rechners, auf dem der YAC-Listener läuft
+    IP       IP of the computer on which the YAC listener runs
 ```
 
+## General Notes on Function Calls
 
-## Allgemeine Hinweise zu Funktionsaufrufen
-
-Der Aufruf von Funktionen, die auf getmsg oder rawmsg basieren,
-sieht immer so aus:
+Calling functions based on getmsg or rawmsg always looks like this:
 
 ```
   foomessage [OPTION]... <host> [<message>]...
 ```
 
-Der einfachste und am meisten genutzte Fall ist dementsprechend
+The simplest and most commonly used case is therefore
 
 ```
   foomessage <host>
 ```
 
-Als Optionen können alle Optionen verwendet werden, die auch
-getmsg bzw. rawmsg verstehen.
+All options understood by getmsg or rawmsg can be used as options.
 
-Die Standard-Nachricht wird generell von einer Funktion mit der
-Namenskonvention `default_foomessage` erzeugt und kann so einfach
-überschrieben wird.
+The default message is generally generated by a function following the
+name convention `default_foomessage` and can therefore be overwritten
+easily.
 
-Bei den Funktionen können eventuell Umgebungsvariablen verwendet werden.
-Diese werden vor dem Funktionsaufruf gesetzt. Der Callmonitor sorgt
-automatisch für die Kodierung der Umgebungsvariablen, die Text enthalten
-(z.B. `XBOX_CAPTION` und `DREAM_CAPTION`). Man kann also einfach
+Environment variables can sometimes be used with the functions. They are
+set before the function call. The Callmonitor automatically takes care of
+encoding environment variables that contain text, for example
+`XBOX_CAPTION` and `DREAM_CAPTION`. So you can simply write
 
 ```
-  FOO_CAPTION="Dies ist der zu 100% richtige Titel" foomessage <host>
+  FOO_CAPTION="This is the 100% correct title" foomessage <host>
 ```
 
-schreiben, ohne sich Gedanken über Kodierungen (URL- oder printf-)
-machen zu müssen.
+without having to worry about encodings (URL or printf).
 
-## FritzBox-Konfiguration
+## FritzBox Configuration
 
-Mit der Aktion `config` aus der `config.sh` (seit Callmonitor 1.8)
-lassen sich einige Funktionen in der Konfiguration der FritzBox
-umstellen.
+The `config` action from `config.sh` (since Callmonitor 1.8) can be used
+to change some FritzBox configuration functions.
 
-## Portforwarding
+## Port Forwarding
 
-Das Portforwarding kann aktiviert und deaktiviert werden.
+Port forwarding can be enabled and disabled.
 
 ```
 Syntax:
-  config forward <NUMMER> <on|off|toggle>
+  config forward <NUMBER> <on|off|toggle>
 
-    NUMMER                 Nummer des Portforwardings (beginnend bei 1)
-    on|off|toggle          an- bzw. abschalten des Portforwardings: an, aus,
-                           an-/abschalten des Forwardings abhängig der bereits
-                           erfolgten Einstellung
+    NUMBER                 number of the port forwarding rule, beginning at 1
+    on|off|toggle          switch port forwarding on or off, or toggle it
+                           depending on the existing setting
 ```
 
-Beispiele:
+Examples:
 
 ```
-    config forward 1 on     # 1. Portforwarding aktivieren
-    config forward 3 off    # 3. Portforwarding deaktivieren
-    config forward 5 toggle # 5. Portforwarding an-/abschalten
+    config forward 1 on     # enable 1st port forwarding rule
+    config forward 3 off    # disable 3rd port forwarding rule
+    config forward 5 toggle # toggle 5th port forwarding rule
 ```
 
 ## WLAN
 
-Das WLAN kann aktiviert und deaktiviert werden.
+WLAN can be enabled and disabled.
 
 ```
 Syntax:
   config wlan [2.4|5|guest] <on|off>
 
-    2.4|5                  gewünschtes Frequenzband: 2,4 oder 5 GHz
-    guest                  Gast-WLAN schalten (seit Version 1.20.1)
-    on|off                 an- bzw. abschalten des WLANs
+    2.4|5                  desired frequency band: 2.4 or 5 GHz
+    guest                  switch guest WLAN (since version 1.20.1)
+    on|off                 switch WLAN on or off
 ```
 
-Fehlt die Angabe des Frequenzbandes, werden beide geschaltet, aber nur
-das 2,4er abgefragt.
+If the frequency band is omitted, both are switched, but only the 2.4 GHz
+band is queried.
 
-Beispiele:
+Examples:
 
 ```
-    config wlan off      # WLAN aus
-    config wlan on       # WLAN an
-    config wlan 2.4 off  # WLAN im 2,4-GHz-Band aus
-    config wlan 5 on     # 5-GHz-WLAN an
+    config wlan off      # WLAN off
+    config wlan on       # WLAN on
+    config wlan 2.4 off  # WLAN in 2.4 GHz band off
+    config wlan 5 on     # 5 GHz WLAN on
 ```
 
 ## DECT
 
-DECT kann aktiviert und deaktiviert werden.
+DECT can be enabled and disabled.
 
 ```
 Syntax:
   config dect <on|off>
 
-    on|off                 an- bzw. abschalten der DECT-Hardware
+    on|off                 switch DECT hardware on or off
 ```
 
-Beispiele:
+Examples:
 
 ```
-    config dect off      # DECT aus
-    config dect on       # DECT an
+    config dect off      # DECT off
+    config dect on       # DECT on
 ```
 
 ## SIP
 
-Die SIP-Accounts können aktiviert und deaktiviert werden.
+SIP accounts can be enabled and disabled.
 
 ```
 Syntax:
-  config sip <NUMMER> <on|off>
+  config sip <NUMBER> <on|off>
 
-    NUMMER                 Nummer des SIP-Accounts (beginnend bei 1)
-    on|off                 an- bzw. abschalten des SIP-Accounts
+    NUMBER                 number of the SIP account, beginning at 1
+    on|off                 switch SIP account on or off
 ```
 
-Beispiele:
+Examples:
 
 ```
-    config sip 4 on      # 4. SIP-Account aktivieren
-    config sip 2 off     # 2. SIP-Account deaktivieren
+    config sip 4 on      # enable 4th SIP account
+    config sip 2 off     # disable 2nd SIP account
 ```
 
-## Rufumleitung
+## Call Diversion
 
-(De-)Aktivierung der Rufumleitungen. (Seit Version 1.8.2) Unterstützt
-werden momentan nur Rufumleitungen des Typs "Anrufe von Rufnummer xy",
-nicht aber "Alle Anrufe an Fon X".
+(De)activation of call diversions (since version 1.8.2). Currently only
+call diversions of the type "Calls from phone number xy" are supported,
+not "All calls to Fon X".
 
 ```
 Syntax
-  config diversion <NUMMER> <on|off>
+  config diversion <NUMBER> <on|off>
 
-    NUMMER                 Nummer der Rufumleitung (beginnend bei 1)
-    on|off                 an- bzw. abschalten der Rufumleitung
+    NUMBER                 number of the call diversion, beginning at 1
+    on|off                 switch call diversion on or off
 ```
 
-## Abfragen von Konfigurationswerten
+## Querying Configuration Values
 
-(seit Version 1.9.1)
+Since version 1.9.1.
 
-Einfach beim config-Aufruf den Wert weglassen:
+Simply omit the value in the config call:
 
 ```
     config sip 2
@@ -1105,113 +1039,104 @@ Einfach beim config-Aufruf den Wert weglassen:
     config wlan
 ```
 
-Ausgabe ist einer der Werte "on", "off" oder "error" (wenn z.B.
-die Wahlregel nicht existiert).
+Output is one of the values "on", "off", or "error", for example if the
+dialing rule does not exist.
 
 ## Alternative
 
-In neueren Firmware-Versionen ist der Callmonitor nicht unbedingt
-erforderlich, um die Funktionen anzuzeigen oder zu ändern. Alternativ
-lassen sich diese mit dem
-[ctlmgr_ctl](http://wehavemorefun.de/fritzbox/index.php/Ctlmgr_ctl)
-von AVM bearbeiten.
-
+In newer firmware versions, the Callmonitor is not necessarily required
+to display or change these functions. Alternatively, they can be edited
+with AVM's [ctlmgr_ctl](http://wehavemorefun.de/fritzbox/index.php/Ctlmgr_ctl).
 
 ## DreamBox
 
-## Dreambox mit Enigma 1
+## Dreambox with Enigma 1
 
 ```
-  dreammessage [user[:password]@]host[:port] ["Alternative Nachricht"]
+  dreammessage [user[:password]@]host[:port] ["Alternative message"]
 ```
 
-[![[CallMonitor: Dreambox Auth abschalten]](../../docs/screenshots/1_md.jpg)](../../docs/screenshots/1.jpg)
+[![[CallMonitor: disable Dreambox auth]](../../docs/screenshots/1_md.jpg)](../../docs/screenshots/1.jpg)
 
-Wie zu sehen ist, ist "host" (also Rechnername oder IP-Adresse) der
-einzige Pflichtparameter. Damit die Nachricht aber auch wirklich
-ankommt, muss die Authentifizierung berücksichtigt werden. Eine Lösung
-ist es, wie beigefügter Screenshot aufzeigt, das Abschalten der
-Nachrichten-Authentifizierung auf der Box selbst. Wer das nicht will,
-dem bleibt zur Zeit nur, `user:password@` vor den Host zu setzen - was
-dann allerdings bei den Listeners im Klartext angezeigt wird.
+As can be seen, "host" (that is, computer name or IP address) is the only
+required parameter. For the message to actually arrive, authentication
+must be taken into account. One solution, as shown in the attached
+screenshot, is disabling message authentication on the box itself. Anyone
+who does not want this currently has only the option of prefixing the host
+with `user:password@`, which is then shown in plain text in the
+listeners.
 
-`dreammessage` kennt ein Standard-Nachrichten-Template, was
-normalerweise verwendet wird. Wer die Nachricht lieber selbst
-formatieren will, findet bei den Listeners eine Liste mit
-verwendbaren Platzhaltern für Telefonnummer, Zeilenumbrüche, usw.
+`dreammessage` has a standard message template that is normally used.
+Anyone who would rather format the message themselves can find a list of
+usable placeholders for phone number, line breaks, and so on in the
+listeners.
 
-Desweiteren gibt es drei Umgebungsvariablen, die das Verhalten von
-`dreammessage` beeinflussen. Sie sind hier in einem typischen Aufruf mit
-ihren Standardwerten gezeigt:
-
-```
-  DREAM_TIMEOUT=10 DREAM_CAPTION="Telefonanruf" DREAM_ICON=1 dreammessage box1
-```
-
-##  StandBy Check
-
-Befindet sich die zu benachrichtigende Dreambox im StandBy, werden die
-Nachrichten solange zwischengespeichert, bis sie wieder aus selbigem
-aufwacht. An und für sich ganz nett - nur wenn man sie gerade mal ein
-paar Tage nicht benutzt hat, und dann nach dem Anschalten erstmal
-hunderte von "verpassten" Anrufen zu sehen bekommt. Daher wäre es für
-manchen sicher praktisch, würden die Nachrichten nur dann (und zwar
-sofort) zugestellt, wenn die Dreambox sich zum Zeitpunkt des Anrufes
-*nicht* im StandBy befindet - während andernfalls die Benachrichtigung
-komplett unterbliebe.
-
-Glücklicherweise ist das machbar (getestet mit DM600, DM 7000 und
-DM7020). Auf folgende Weise lässt sich nämlich der Status ermitteln:
+Furthermore, there are three environment variables that influence the
+behavior of `dreammessage`. They are shown here in a typical call with
+their default values:
 
 ```
-    # keine Passwort-Authentifizierung aktiv:
+  DREAM_TIMEOUT=10 DREAM_CAPTION="Phone call" DREAM_ICON=1 dreammessage box1
+```
+
+## Standby Check
+
+If the Dreambox to be notified is in standby, messages are buffered until
+it wakes up again. This is nice in itself, but if it has not been used
+for a few days and then, after switching it on, hundreds of "missed"
+calls are shown, it becomes less pleasant. It would therefore be
+practical for some if messages were delivered only when, at the time of
+the call, the Dreambox is *not* in standby, and otherwise notification
+were completely suppressed.
+
+Fortunately, this is feasible; tested with DM600, DM7000, and DM7020. The
+status can be determined as follows:
+
+```
+    # no password authentication active:
     standby=`wget -O- "http://dreambox/cgi-bin/status" | awk '/Standby/' | sed -e 's/<[^>]*>//g'`
-    # mit Passwort-Authentifizierung:
+    # with password authentication:
     standby=`wget -O- --http-user=root --http-passwd=dreambox "http://dreambox/cgi-bin/status" | awk '/Standby/' | sed -e 's/<[^>]*>//g'`
 ```
 
-Je nachdem, ob das WebIF für Passwort-Authentifizierung konfiguriert ist
-oder nicht, kann man also die entsprechende Variante nutzen. Das
-busybox-wget unterstützt allerdings keine Authentifizierung. Daher muss
-beim Bauen von freetz das Paket 'wget' installiert werden. Die
-Variable `$standby` ist anschließend entweder mit `STANDBY:ON` oder
-`STANDBY:OFF` belegt. Für unsere Benachrichtigungs-Aktion können wir uns
-das wie folgt nutzbar machen:
+Depending on whether the WebIF is configured for password authentication
+or not, the corresponding variant can be used. However, busybox-wget does
+not support authentication. Therefore the package 'wget' must be
+installed when building Freetz. The variable `$standby` is subsequently
+set either to `STANDBY:ON` or `STANDBY:OFF`. For our notification action,
+we can use it as follows:
 
 ```
-    [ "$(wget -O- "http://dreambox/cgi-bin/status" | awk '/Standby/' | sed -e 's/<[^>]*>//g')" = "Standby:OFF" ] && DREAM_TIMEOUT=10 dreammessage dreambox "${SOURCE_DISP} ruft an.${LF}${SOURCE_NAME}"
+    [ "$(wget -O- "http://dreambox/cgi-bin/status" | awk '/Standby/' | sed -e 's/<[^>]*>//g')" = "Standby:OFF" ] && DREAM_TIMEOUT=10 dreammessage dreambox "${SOURCE_DISP} is calling.${LF}${SOURCE_NAME}"
 ```
 
-wobei natürlich *dreambox* mit dem Hostnamen bzw. der IP-Adresse der
-Dreambox ersetzt, sowie ggf. die Passwort-Authentifizierung mit
-eingebaut werden muss.
+Of course, *dreambox* must be replaced with the host name or IP address
+of the Dreambox, and password authentication must be included if needed.
 
-*Quelle: [IPPF
-Thread](http://www.ip-phone-forum.de/showthread.php?t=100706&page=55)*
+*Source: [IPPF thread](http://www.ip-phone-forum.de/showthread.php?t=100706&page=55)*
 
-## DreamBox mit Enigma 2
+## DreamBox with Enigma 2
 
 ```
   dream2message (default_dream2message)
 ```
 
-`DREAM_TIMEOUT` und `DREAM_ICON` werden auch hier unterstützt.
+`DREAM_TIMEOUT` and `DREAM_ICON` are also supported here.
 
-Beispiel für ein Popup das nur den Namen (sofern in der Callers
-vorhanden) und die Telefonnummer des Anrufers anzeigt:
+Example of a popup that shows only the name, if present in Callers, and
+the caller's phone number:
 
 ```
-in:request ^ ^ dream2message 192.168.178.25 "${SOURCE_NAME} ${SOURCE} ruft an."
+in:request ^ ^ dream2message 192.168.178.25 "${SOURCE_NAME} ${SOURCE} is calling."
 ```
 
+## Email Notification
 
-## E-Mail-Benachrichtigung
-
-Die Funktion `mailmessage` verschickt eine E-Mail mit Hilfe der Daten,
-die für den Push-Service eingerichtet sind (falls man nicht beim Aufruf
-etwas anderes befiehlt (mailer-Optionen)). Der Push-Service selbst kann
-ruhig ausgeschaltet bleiben, wichtig sind die Einstellungen für
-Adressen, Mailserver & Co. Beispiele zum Einsatz in Listeners:
+The function `mailmessage` sends an email using the data configured for
+the push service, unless something else is specified when calling it
+(mailer options). The push service itself can remain disabled; the
+important part is the settings for addresses, mail server, and so on.
+Examples for use in listeners:
 
 ```
 mailmessage
@@ -1219,13 +1144,12 @@ mailmessage -t me@my.self
 mailmessage -s "Oh, oh ... ($SOURCE)"
 ```
 
--   Mailadressen, Servereinstellungen, Passwörter & Co. werden aus der
-    Konfiguration des Push Service der FritzBox übernommen. Einzelne
-    Teile können durch Optionen überschrieben werden (im Beispiel zum
-    Beispiel die Zieladresse mit `-t`).
--   Die Optionen werden an `mail` durchgereicht; diese wiederum
-    größtenteils an `mailer`. Deswegen können folgende Optionen
-    verwendet werden:
+-   Mail addresses, server settings, passwords, and so on are taken from
+    the FritzBox push service configuration. Individual parts can be
+    overridden by options, for example the destination address with `-t`
+    in the example.
+-   The options are passed through to `mail`, which in turn passes most of
+    them on to `mailer`. Therefore, the following options can be used:
 
     ```
       -s STRING          - Subject. ("FRITZ!Box")
@@ -1238,65 +1162,60 @@ mailmessage -s "Oh, oh ... ($SOURCE)"
       -i STRING          - inline attachment. (NULL)
     ```
 
--   Zur Anpassung der Mails: siehe `mail_subject` und `mail_body` in
-    `mail.sh` (zum Überschreiben am besten
-    `/tmp/flash/callmonitor/actions.local.d/` verwenden, siehe Anpassen
-    der Benachrichtigungstexte).
+-   To customize mails, see `mail_subject` and `mail_body` in `mail.sh`.
+    For overwriting, it is best to use
+    `/tmp/flash/callmonitor/actions.local.d/`; see customizing
+    notification texts.
 
 ## mail
 
-`mail` ist ein Skript, um Mails bei Mailserverfehlern
-zwischenzuspeichern und erneut zu schicken (alle Parameter und
-Attachments werden gepackt in `/var/spool/mail/` abgelegt).
+`mail` is a script for temporarily storing mails when mail server errors
+occur and sending them again later. All parameters and attachments are
+packed and stored in `/var/spool/mail/`.
 
--   Es wird von der Aktion mailmessage verwendet.
--   Ihr solltet regelmäßig (mit cron) ein `mail process` ausführen, um
-    evtl. wartende Mail zu versenden.
--   `mail` gehört streng genommen nicht unbedingt zum Callmonitor, weil
-    auch andere Dienste es brauchen könnten; vielleicht wird in Zukunft
-    mal ein eigenes Paket daraus.
+-   It is used by the mailmessage action.
+-   You should regularly run `mail process`, for example with cron, to
+    send any waiting mail.
+-   Strictly speaking, `mail` does not necessarily belong to the
+    Callmonitor, because other services might also need it. Perhaps in
+    the future it will become its own package.
 
-## Ersatz für mail_missed_call
+## Replacement for mail_missed_call
 
-Die Funktion `mail_missed_call` existiert seit Version 1.0 nicht mehr.
-An ihre Stelle tritt eine allgemeine Benachrichtigungsfunktion per
-E-Mail (`mailmessage`), die (auch) in Kombination mit dem Ereignis
-`in:cancel` genutzt werden kann, um bei verpassten Anrufen eine Mail zu
-verschicken:
+The function `mail_missed_call` no longer exists since version 1.0. It is
+replaced by a general email notification function (`mailmessage`) that can
+also be used together with the `in:cancel` event to send mail for missed
+calls:
 
 ```
 in:cancel   ^   ^   mailmessage
 ```
 
-Das schöne ist, dass die Mail sofort rausgeschickt wird, wenn der
-Gesprächspartner aufgibt; es gibt keine Wartezeit von einer Minute mehr
-wie in den Vorversionen. Außerdem kann jetzt zuverlässiger bestimmt
-werden, wann ein Anruf verpasst wurde.
+The nice thing is that the mail is sent immediately when the calling
+party gives up; there is no longer a wait time of one minute as in
+previous versions. In addition, it can now be determined more reliably
+when a call was missed.
 
-Aber natürlich kann man sich so auch per Mail über alle eingehenden
-Anrufe informieren lassen, oder über alle ausgehenden an eine bestimmte
-Nummer oder oder oder ...
-
+Of course, this way you can also receive mail about all incoming calls,
+or about all outgoing calls to a specific number, and so on.
 
 ## DGStation Relook 400S
 
-Die [DGStation Relook
-400S](http://www.dgstation.co.kr) unterstützt nur die Anzeige
-einer kurzen Zeile ohne Umlaute. Die Anzeigedauer kann über die
-Umgebungsvariable `RELOOK_TIMEOUT` beeinflusst werden (in Sekunden).
+The [DGStation Relook 400S](http://www.dgstation.co.kr) supports only the
+display of a short line without umlauts. The display duration can be
+influenced through the environment variable `RELOOK_TIMEOUT`, in seconds.
 
 ```
   relookmessage (default_relookmessage)
 ```
 
-Beispiel für Benutzung mit veränderter Anzeigedauer (25 Sekunden):
+Example of use with changed display duration (25 seconds):
 
 ```
   RELOOK_TIMEOUT=25 relookmessage 192.168.34.56
 ```
 
-
-## Einfache TCP-Verbindungen (rawmsg)
+## Simple TCP Connections (rawmsg)
 
 ```
   Usage: rawmsg [OPTION]... <HOST> <template> [<param>]...
@@ -1311,18 +1230,16 @@ Beispiel für Benutzung mit veränderter Anzeigedauer (25 Sekunden):
         --help             show this help
 ```
 
-Die **folgenden Funktionen basieren** auf `rawmsg` und unterstützen daher
-dieselben Optionen. Passend für den entsprechenden Empfänger sind
-URL-Template (`-t`), die Standard-Nachricht (`-d`) und der Port (`-p`)
-schon vorbelegt.
-
+The **following functions are based** on `rawmsg` and therefore support
+the same options. The URL template (`-t`), the default message (`-d`), and
+the port (`-p`) are already preset appropriately for the respective
+receiver.
 
 ## Wake on LAN
 
-Zum Aufwecken eines Rechners im LAN --- sofern der Rechner dies generell
-unterstützt --- dient das in Freetz
-vorhandene Programm `ether-wake`. Zur Benutzung sei auf dessen
-Online-Hilfe verwiesen:
+The `ether-wake` program included in Freetz is used to wake a computer in
+the LAN, provided the computer generally supports this. For usage, see
+its online help:
 
 ```
 Usage: ether-wake [-b] [-i iface] [-p aa:bb:cc:dd[:ee:ff]] MAC
@@ -1337,30 +1254,27 @@ Options:
         -p pass Append the four or six byte password PW to the packet
 ```
 
+## Maintenance
 
-## Wartung
+The maintenance page in the web interface provides the following:
 
-Die Wartungsseite im Web-Interface ermöglicht folgendes:
+-   Clean up phone book: sorts the phone book entries and removes blank
+    lines.
+-   Perform SIP update: creates default entries in the phone book for new
+    internet phone numbers.
+-   Enable/disable Callmonitor interface (port 1012): enables or disables
+    the Callmonitor interface on port 1012. The Callmonitor works only
+    with the interface enabled.
 
--   Telefonbuch aufräumen: Sortiert die Einträge im Telefonbuch und
-    entfernt Leerzeilen.
--   SIP-Update durchführen: Erstellt Standardeinträge im Telefonbuch für
-    neu angelegte Internetrufnummern.
--   Callmonitor-Schnittstelle (Port 1012) (de)aktivieren: Aktiviert bzw.
-    deaktiviert die Callmonitor-Schnittstelle an Port 1012. Der
-    Callmonitor funktioniert nur mit aktivierter Schnittstelle.
+The maintenance page can be found in the Freetz web interface under
+*Extras => Maintenance*.
 
-Die Wartungsseite findet man im Freetz Webinterface unter *Extras ⇒
-Wartung*.
+[![[Callmonitor: maintenance]](../../docs/screenshots/24_md.png)](../../docs/screenshots/24.png)
 
-[![[Callmonitor: Wartung]](../../docs/screenshots/24_md.png)](../../docs/screenshots/24.png)
+## Reverse Lookup
 
-
-## Rückwärtssuche
-
-Die Rückwärtssuche wird in der Basiskonfiguration
-des Callmonitors eingestellt. Sie wird bei einem der folgenden Dienste
-durchgeführt:
+Reverse lookup is configured in the Callmonitor basic configuration. It
+is performed using one of the following services:
 
 -   [http://telefonbuch.de/](http://telefonbuch.de/)
 -   [http://inverssuche.de/](http://inverssuche.de/)
@@ -1371,71 +1285,59 @@ durchgeführt:
 -   [http://www.das-telefonbuch.at/](http://www.das-telefonbuch.at/)
 -   [http://www.anywho.com/](http://www.anywho.com/)
 
-Optional kann eine zusätzliche Suche bei Google nach dem Ortsnetz des
-Anrufers durchgeführt werden. Das Ergebnis dieser Suche wird nur
-verwendet, wenn die volle Rückwärtssuche kein Ergebnis liefert.
+Optionally, an additional Google search for the caller's local area can
+be performed. The result of this search is used only if the full reverse
+lookup returns no result.
 
--   Bei ausgehenden Anrufen wird für die angerufene Nummer ggf. eine
-    Anfrage durchgeführt, nicht für die eigene.
--   Rückwärtssuche mit dauerhaftem (im Flash), flüchtigen (im RAM) oder
-    ohne Caching möglich
+-   For outgoing calls, a request is made for the called number if
+    necessary, not for one's own number.
+-   Reverse lookup is possible with permanent caching in flash, temporary
+    caching in RAM, or no caching.
 
-[![[Callmonitor: Rückwärtssuche]](../../docs/screenshots/23_md.png)](../../docs/screenshots/23.png)
+[![[Callmonitor: reverse lookup]](../../docs/screenshots/23_md.png)](../../docs/screenshots/23.png)
 
+## Test Call
 
-## Testanruf
+After the listeners are defined, it is recommended to test whether they
+work correctly. Since not every configuration can always be tested with
+real calls, there is a page in the web interface that simulates calls. No
+telephones ring; the CallMonitor is merely presented with a simulated
+call, which it handles like a real call.
 
-Nachdem die Listeners definiert sind, empfiehlt
-es sich, sie auf korrekte Funktion zu testen. Da man nicht immer jede
-Konfiguration mit echten Anrufen testen kann, gibt es eine Seite im
-Web-Interface, die Anrufe simuliert. Dabei klingeln keine Telefone, es
-wird lediglich dem CallMonitor ein Anruf vorgetäuscht, den er wie einen
-echten Anruf behandelt.
+[![[Callmonitor: test call]](../../docs/screenshots/22_md.png)](../../docs/screenshots/22.png)
 
-[![[Callmonitor: Testanruf]](../../docs/screenshots/22_md.png)](../../docs/screenshots/22.png)
+The form should be mostly self-explanatory. Under "Event", set which
+event should be simulated. The source phone number is the one from which
+this event originates, and the destination phone number is the event's
+target. Enter an event with phone numbers that match a pattern defined in
+the listeners. After clicking "Test call", the Callmonitor should execute
+the action belonging to this listener entry. The web interface displays
+the Callmonitor debug information, which can help with troubleshooting.
 
+## Callmonitor FAQ
 
-Die Maske sollte weitgehend selbsterklärend sein. Unter "Ereignis"
-kann man einstellen, welches Ereignis
-simuliert werden soll. Die Quellrufnummer ist diejenige, von der dieses
-Ereignis ausgeht und die Zielrufnummer diejenige, die das Ziel des
-Ereignisses ist. Man gibt jeweils ein Ereignis mit Rufnummern ein, die
-zu einem in den Listeners definierten Muster passen. Nach einem Klick
-auf "Testanruf" sollte der Callmonitor nun die zu diesem
-Listener-Eintrag gehörende Aktion ausführen. Im Webinterface werden die
-Debug-Informationen des Callmonitors angezeigt, die bei einer
-eventuellen Fehlersuche helfen.
+- Can I also see the result of reverse lookup on my DECT telephone?
 
+No. There is currently no known way to intervene in call signaling over
+DECT.
 
-## Callmonitor-FAQ
+## Customizing Notification Texts
 
-- Kann ich das Ergebnis der Rückwärtssuche auch auf meinem DECT-Telefon sehen?
+To adapt the content of a notification to your own needs, use the
+following approach:
 
-Nein. Es gibt momentan keine bekannte Möglichkeit, in die
-Anrufsignalisierung über DECT einzugreifen.
+1.  Create the directory `/tmp/flash/callmonitor/actions.local.d`.
+2.  Create a file `foobar.sh` in it, or anything else with the `.sh`
+    suffix.
+3.  Copy only the function to be overwritten into it, for example
+    `mail_body() { ... }`, and adapt it; or set only variables such as
+    `RELOOK_TIMEOUT`.
+4.  Call `modsave flash` to save the file in flash.
+5.  Restart Callmonitor.
 
-
-## Anpassen der Benachrichtigungstexte
-
-Um den Inhalt einer Benachrichtigung an die eigenenen Bedürfnisse
-anpassen, gibt es folgenden Weg:
-
-1.  Verzeichnis `/tmp/flash/callmonitor/actions.local.d` erstellen
-2.  darin eine Datei `foobar.sh` anlegen (oder irgendetwas anderes mit
-    Endung `.sh`)
-3.  dorthinein nur die zu überschreibende Funktion kopieren (z.B.
-    `mail_body() { ... } `) und anpassen (oder nur Variablen setzen wie
-    z.B. `RELOOK_TIMEOUT`)
-4.  `modsave flash` aufrufen, um die Datei im Flash zu sichern
-5.  Callmonitor neustarten
-
-Bei den meisten Aktionen ist eine Funktion
-`default_foomessage` vorgesehen, die die Standardnachricht für diesen
-Typ Aktion erzeugt; diese Funktion kann also einfach überschrieben
-werden. Bei mailmessage mail gibt es z.B.
-`mail_subject` und `mail_body`; bei anderen Aktionen hilft nur ein Blick
-in den Quelltext (oder eine Nachfrage), solange bis deren Funktionen
-auch im Wiki beschrieben sind.
-
-
-
+For most actions, a function `default_foomessage` is provided that
+creates the default message for this action type. This function can
+therefore simply be overwritten. For mailmessage/mail, for example, there
+are `mail_subject` and `mail_body`; for other actions, only a look at the
+source code, or a question, helps until their functions are also described
+in the wiki.

@@ -6,139 +6,127 @@
   - Package: [master/make/pkgs/inotify-tools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/inotify-tools/)
   - Steward: -
 
-**Inotify** ist eine Kernel-Schnittstelle zur Überwachung von
-Dateizugriffen, verbunden mit einem Event-Mechanismus, von dem man sich
-über bestimmte Ereignisse benachrichtigen lassen kann. Siehe dazu den
-[deutschen
-(kurz)](http://de.wikipedia.org/wiki/Linux_%28Kernel%29#Inotify)
-und [englischen
-(ausführlich)](http://en.wikipedia.org/wiki/Inotify)
-Wikipedia-Artikel.
+**Inotify** is a kernel interface for monitoring file accesses, combined
+with an event mechanism that can notify you about certain events. See the
+[German short](http://de.wikipedia.org/wiki/Linux_%28Kernel%29#Inotify)
+and [English detailed](http://en.wikipedia.org/wiki/Inotify) Wikipedia
+articles.
 
-### Inotify und Inotify-Tools allgemein
+### Inotify and Inotify-Tools in General
 
-Die
-**[Inotify-Tools](http://inotify-tools.sourceforge.net)**
-sind eine kleine Sammlung von Werkzeugen bzw. Programmierschnittstellen,
-um bequemer diesen mächtigen Mechanismus nutzen zu können. Wir stellen
-als Freetz-Paket zwei ausführbare Werkzeuge und eine Bibliothek zur
-Verfügung, und zwar
+The **[Inotify-Tools](http://inotify-tools.sourceforge.net)** are a small
+collection of tools and programming interfaces that make it easier to use
+this powerful mechanism. As a Freetz package, we provide two executable
+tools and one library, namely
 
 -   inotifywait,
--   inotifywatch und
+-   inotifywatch and
 -   libinotifytools
 
-Verwendungsbeispiele gibt es ebenfalls auf der
-[Sourceforge-Projektseite](http://inotify-tools.sourceforge.net/#info).
-**Inotifywait** wartet auf ein Ereignis, für das man sich vorher
-registriert hat und kehrt dann zurück, wenn es eintritt. Das Ganze geht
-auch im Hintergrundbetrieb, wenn man Ereignisse nicht nur einmalig,
-sondern dauerhaft beobachten möchte. **Inotifywatch** hingegen sammelt
-und summiert statistische Daten zu Dateisystem-Ereignissen und stellt
-sie in tabellarischer Textdarstellung zur Verfügung.
+Usage examples are also available on the
+[Sourceforge project page](http://inotify-tools.sourceforge.net/#info).
+**Inotifywait** waits for an event for which it was previously registered
+and returns when it occurs. This can also run in the background if events
+should be monitored not just once, but continuously. **Inotifywatch**, on
+the other hand, collects and summarizes statistical data about filesystem
+events and provides them in tabular text form.
 
-### Dateizugriffe der FritzBox ab dem Start beobachten
+### Observe FritzBox File Accesses Starting at Boot
 
-Eine besondere Anwendung, für die das Startskript `rc.S` durch einen
-speziellen, immer eingebauten Patch vorbereitet wird, ist das
-Protokollieren sämtlicher Dateisystemzugriffe beim Starten der Box.
-`rc.S` ist das erste Skript, welches von `init` ausgeführt wird, d.h.
-die Protokollierung beginnt wirklich sehr früh (direkt nach dem Start
-des Watchdogs), man verpaßt nichts Wichtiges. Da es keinen Sinn macht,
-diese Protokollierung immer durchzuführen, kann man sie ein- und
-ausschalten. Dafür verwendet man das [kernel_args-API?]. Vor dem zu protokollierenden Startvorgang, also vor dem Reboot,
-aktiviert man die Protokollierung:
+A special application, for which the startup script `rc.S` is prepared by
+a special always-built-in patch, is logging all filesystem accesses when
+the box starts. `rc.S` is the first script executed by `init`, meaning the
+logging really starts very early, directly after the watchdog starts, so
+nothing important is missed. Since it makes no sense to perform this
+logging every time, it can be switched on and off. The [kernel_args-API?]
+is used for this. Before the boot process to be logged, that is before
+rebooting, activate logging:
 
 ```
-# API laden
+# Load API
 . /usr/bin/kernel_args
-# Aktivieren (Achtung, kein "=", zwei Parameter!)
+# Activate (attention, no "=", two parameters!)
 ka_setValue InotifyBootAnalysis y
-# Prüfen, ob Variable gesetzt
+# Check whether variable is set
 ka_getArgs
-# Ergebnis z.B. idle=4 foo=bar InotifyBootAnalysis=y
+# Result e.g. idle=4 foo=bar InotifyBootAnalysis=y
 ```
 
-Anstatt den Wert "y" kann man auch einen positiven Ganzzahlwert
-zuordnen, der automatisch bei jedem Start um 1 vermindert wird, bis er
-schließlich 0 werden würden, was zum Folgewert "n" und zur
-automatischen Deaktivierung der Funktion führt. So kann man erstens das
-Deaktivieren nicht auf Dauer vergessen und zweitens mögliche Probleme
-beim Hochfahren der Box durch das Logging eliminieren, indem man sie
-einfach oft genug neu startet, bis die Funktion wieder inaktiv ist.
+Instead of the value "y", a positive integer value can also be assigned;
+it is automatically decreased by 1 at each boot until it finally becomes
+0, which leads to the follow-up value "n" and automatic deactivation of
+the function. This first prevents forgetting deactivation permanently and
+second eliminates possible problems during box startup caused by logging:
+simply restart often enough until the function is inactive again.
 
-Deaktivieren kann man die Funktion auch manuell, indem man in obiger
-Code-Sequenz eine Zeile austauscht:
+The function can also be deactivated manually by replacing one line in
+the code sequence above:
 
 ```
-# Deaktivieren
+# Deactivate
 ka_setValue InotifyBootAnalysis n
 ```
 
-Auch ganz löschen kann man die Variable aus dem Bootloader Environment:
+The variable can also be deleted completely from the bootloader
+environment:
 
 ```
-# Variable ganz löschen
+# Delete variable completely
 ka_removeVariable InotifyBootAnalysis
 ```
 
-Wenn das Logging erst einmal gestartet wurde, läuft es immer weiter, bis
-man es manuell stoppt, nachdem der Startvorgang abgeschlossen ist bzw.
-auch danach noch man so viel protokolliert hat, wie man möchte. Es
-könnte ja sein, daß man außer dem Startvorgang noch einige Stunden oder
-Tage die Box weiter beobachten möchte, um festzustellen, welche Dateien
-überhaupt benutzt werden oder nicht, um sie dann in Verbindung mit dem
-[Downloader-CGI](downloader.md) auszulagern und nachzuladen
-oder ganz aus der Firmware zu entfernen, um Platz zu schaffen für mehr
-oder größere Pakete, was gerade bei Boxen mit nur 4 MB Flash-Größe eine
-Kunst für sich ist. Die 8-MB-Boxen sind da weniger eingeengt, aber auch
-dort kann es interessant sein, falls man unter "Featuritis" leidet.
+Once logging has been started, it continues running until it is manually
+stopped after the startup process is complete, or even later after as
+much as desired has been logged. It could be useful to continue observing
+the box for a few hours or days beyond startup to determine which files
+are used at all, or not used, so they can then be outsourced and loaded
+on demand in conjunction with the [Downloader-CGI](downloader.md), or
+removed entirely from the firmware to make room for more or larger
+packages. This is an art in itself, especially on boxes with only 4 MB of
+flash. The 8 MB boxes are less constrained, but it can still be
+interesting there if one suffers from "featuritis".
 
-Wie also stoppt man die Protokollierung, bevor einem der Speicher
-volläuft?
+So how do you stop logging before memory fills up?
 
 ```
-# Protokollierung anhalten
+# Stop logging
 /etc/init.d/rc.inotify_tools stop
 ```
 
-Ob die Protokollierung gerade läuft, kann man so feststellen:
+Whether logging is currently running can be determined like this:
 
 ```
-# Status prüfen ("running" oder "stopped")
+# Check status ("running" or "stopped")
 /etc/init.d/rc.inotify_tools status
 ```
 
-Es ist auch jederzeit im laufenden Betrieb möglich, die Protokollierung
-einzuschalten, um bei Bedarf zur Laufzeit alle Dateizugriffe zu
-beobachten:
+It is also possible at any time during operation to enable logging in
+order to observe all file accesses at runtime if needed:
 
 ```
-# Protokollierung (neu) starten
+# (Re)start logging
 /etc/init.d/rc.inotify_tools start
 ```
 
-Achtung, ein kleiner Ausflug ins noch Technischere: Man sollte wissen,
-daß `rc.inotify_tools start` eine evtl. bereits laufende Protokollierung
-kurzzeitig stoppt und sie dann sofort neu startet. Das ist etwas
-ungewohnt, kann aber nützlich sein in Situationen, wo Init von einem
-Skript aufgrund z.B. `kill -1 1`, wie `rc.mini_fo` es verwendet, um in
-mehreren Durchgängen sein Overlay-Dateisystem aufzuziehen, beendet wird,
-um dann neu gestartet zu werden und nochmals die Startskripten
-aufzurufen. Dazwischen kann die Protokollierung entweder noch laufen
-oder abgebrochen worden sein. Jedenfalls startet Inotify-Tools in diesem
-Fall neu, ggf. jetzt mit Ausgabe auf das frisch gemountete *mini_fo*
-(vorher auf das nun überdeckte, darunter liegende Dateisystem).
+Attention, a small excursion into the more technical side: one should
+know that `rc.inotify_tools start` briefly stops any logging that may
+already be running and then immediately restarts it. This is somewhat
+unusual, but can be useful in situations where init is ended by a script,
+for example because of `kill -1 1` as used by `rc.mini_fo` to set up its
+overlay filesystem in several passes, then started again and calls the
+startup scripts once more. In between, logging may either still be
+running or may have been aborted. In any case, Inotify-Tools starts again
+in this situation, possibly now with output to the freshly mounted
+*mini_fo* (previously to the now covered underlying filesystem).
 
-### Was wird von rc.inotify_tools protokolliert?
+### What Does rc.inotify_tools Log?
 
-Wir könnten alles protokollieren, aber das wäre eine große Datenmenge,
-weil bestimmte Zugriffe, z.B. auf häufig verwendete Dateien wie
-`busybox`, `uClibc` oder `libcrypt` das Log zumüllen. Daß sie verwendet
-werden, sollte sowieso selbstverständlich sein, und wir werden sie auch
-ganz bestimmt nicht aus der Firmware auslagern. Also werden sie bei der
-Protokollierung nicht berücksichtigt. So sieht in `rc.S` die Passage
-aus, wo die Protokollierung gestartet wird:
+We could log everything, but that would be a large amount of data because
+certain accesses, for example to frequently used files such as `busybox`,
+`uClibc`, or `libcrypt`, would fill the log. That they are used should be
+obvious anyway, and we certainly will not outsource them from the
+firmware. So they are not considered during logging. This is what the
+section in `rc.S` looks like where logging is started:
 
 ```
 echo "starting inotifywait"
@@ -149,21 +137,20 @@ inotifywait -c -r -m /
 sleep 3
 ```
 
-Es wird also kontinuierlich geloggt, und zwar rekursiv alles ab dem
-Wurzel-Verzeichnis ("/" als Parameter am Ende der ersten
-Aufruf-Zeile). Ausgeschlossen sind die virtuellen oder für interne
-*Mini_fo*-Zwecke verwandten Verzeichnisse `/dev`, `/proc`, `/rom`,
-`/sto` sowie die RAM-Disk `/var`, desweiteren Dateien, welche die
-Zeichenketten "busybox", "uClibc" oder "libcrypt-0" enthalten -
-die "-0" am Ende grenzt übrigens `libcrypt` von `libcrypto` ab.
+It is therefore logged continuously and recursively, everything starting
+from the root directory ("/" as the parameter at the end of the first
+invocation line). Excluded are the virtual directories or directories
+used for internal *Mini_fo* purposes: `/dev`, `/proc`, `/rom`, `/sto`,
+and the RAM disk `/var`. Also excluded are files containing the strings
+"busybox", "uClibc", or "libcrypt-0"; the "-0" at the end distinguishes
+`libcrypt` from `libcrypto`.
 
-Das Log wird geschrieben in die RAM-Disk nach `/var/iw.log` - "iw" wie
+The log is written to the RAM disk at `/var/iw.log`; "iw" stands for
 "inotifywait".
 
-### Ausgabeformat
+### Output Format
 
-Was steht nun drin in `/var/iw.log` bzw. wie sieht es aus? Ein kleiner
-Ausschnitt:
+What is in `/var/iw.log`, and what does it look like? A small excerpt:
 
 ```
 /etc/,"CLOSE_NOWRITE,CLOSE",.subversion
@@ -183,40 +170,36 @@ Ausschnitt:
 /usr/share/images/,"CLOSE_NOWRITE,CLOSE",edge_lt.png
 ```
 
-Mit dem Aufruf aus `rc.S` heraus wurde dafür gesorgt, daß in einem
-leicht woanders (Tabellenkalkulation, Datenbank) importierbaren,
-kommagetrennten CSV-Format protokolliert wird. Wie die einzelnen Daten
-zu interpretieren sind, entnimmt man der Dokumentation der
-Inotify-Tools, das ist nicht Freetz-spezifisch.
+The invocation from `rc.S` ensures that logging is done in a
+comma-separated CSV format that is easy to import elsewhere, for example
+into a spreadsheet or database. How to interpret the individual data can
+be found in the Inotify-Tools documentation; it is not Freetz-specific.
 
-Falls man andere Daten sammeln möchte, z.B. Zugriffe auf die RAM-Disk
-mit protokolliert haben möchte, nur ein bestimmtes Verzeichnis
-beobachten möchte, nur Schreibvorgänge beobachten möchte usw., kann man
-`inotifywait` immer noch manuell starten oder für vorgefertigte
-Statistiken auch mal `inotifywatch` bemühen.
+If other data should be collected, for example accesses to the RAM disk
+should also be logged, only a specific directory should be monitored, or
+only write operations should be observed, `inotifywait` can still be
+started manually, or `inotifywatch` can be used for prebuilt statistics.
 
-### Log-Datei regelmäßig konsolidieren, um Platz zu sparen
+### Consolidate the Log File Regularly to Save Space
 
-Zum Zweck des Platzsparens in Firmware-Images interessiert uns
-vermutlich weniger, auf welche Dateien in welcher Reihenfolge, wie oft,
-auf welche Weise (lesen, schreiben, anlegen, löschen etc.) zugegriffen
-wurde, sondern lediglich, auf welche Dateien *überhaupt* zugegriffen
-wurde - bzw. auf welche nicht, denn die würden dann im Log fehlen. Dafür
-wäre eine kumulierte Ausgabe praktisch, welche
+For the purpose of saving space in firmware images, we are probably less
+interested in which files were accessed in which order, how often, and in
+which way (read, write, create, delete, etc.), but only in which files
+were accessed *at all* or which were not, because those would then be
+missing from the log. For this, cumulative output would be useful, which
 
--   das Log bei Überschreiten einer bestimmten Größe kondensiert auf
-    eine Liste reiner Pfad- und Dateinamen, alphabetisch nach Pfad
-    sortiert,
--   diese kondensierte Liste mit einer evtl. vorhandenen vorherigen
-    Version vereinigt und Dubletten entfernt,
--   das große Log löscht und zu diesem Zweck kurz zwischendurch die
-    Protokollierung anhält,
--   die Protokollierung ins große Log neu startet, bis die Maximalgröße
-    wieder erreicht wird
+-   condenses the log when it exceeds a certain size into a list of pure
+  path and file names, sorted alphabetically by path,
+-   merges this condensed list with any previous version and removes
+  duplicates,
+-   deletes the large log and briefly stops logging in between for this
+  purpose,
+-   restarts logging into the large log until the maximum size is reached
+  again,
 
-usw. immer im Kreis. Folgendes Skript habe ich in meiner
-`/var/tmp/flash/rc.custom`, sie wird also nach dem Ende des
-Freetz-Startvorgangs ausgeführt:
+and so on, in a loop. I have the following script in my
+`/var/tmp/flash/rc.custom`, so it is executed after the end of the Freetz
+startup process:
 
 ```
 # Create script for continuous file access logging and log file consolidation
@@ -253,11 +236,11 @@ if [ "$(/etc/init.d/rc.inotify_tools status)" == "running" ]; then
 fi
 ```
 
-Das Skript erzeugt ein weiteres, ausführbares Skript, welches im
-Hintergrund gestartet wird und die eigentliche kontinuierliche
-Konsolidierung des großen Logs übernimmt. Die konsolidierte Liste der
-Dateien wird regelmäßig aktualisiert in `/var/iw-unique.log`, wo man sie
-jederzeit einsehen kann. Sie sieht in etwa so aus (Ausschnitt):
+The script creates another executable script that is started in the
+background and performs the actual continuous consolidation of the large
+log. The consolidated list of files is regularly updated in
+`/var/iw-unique.log`, where it can be viewed at any time. It looks
+roughly like this (excerpt):
 
 ```
 /
@@ -286,21 +269,19 @@ jederzeit einsehen kann. Sie sieht in etwa so aus (Ausschnitt):
 /usr/lib/callmonitor/applets/rc.callmonitor.sh
 ```
 
-### Schlußwort
+### Closing Word
 
-Damit steht ein mächtiges und nun im nachhinein auch dokumentiertes
-Analyse-Werkzeug zur Verfügung, mit dem die Möglichkeiten der
-"Platzspar-Jünger" sich hoffentlich etwas erweitern werden. Viel Spaß
-beim Ausprobieren. Geduld, Ihr kommt dahinter, bei mir hat es auch
-gedauert - leider hatte ich diese Doku aus naheliegenden Gründen nicht.
-;-)
+This provides a powerful analysis tool, now finally documented after the
+fact, that will hopefully expand the possibilities of the "space-saving
+disciples" a little. Have fun trying it out. Patience, you will figure
+it out; it took me a while too. Unfortunately, for obvious reasons I did
+not have this documentation. ;-)
 
-Im Forum war der Ursprung dieses Pakets meine Idee und Anfrage
-[dort](http://www.ip-phone-forum.de/showthread.php?t=134151),
-aktuell kann über das Paket und diesen Artikel diskutiert werden im
-neuen Thema [Paket Inotify-Tools +
-Anwendungen](http://www.ip-phone-forum.de/showthread.php?t=150597)
+The origin of this package in the forum was my idea and request
+[there](http://www.ip-phone-forum.de/showthread.php?t=134151). Current
+discussion about the package and this article can take place in the new
+topic [Package Inotify-Tools +
+Applications](http://www.ip-phone-forum.de/showthread.php?t=150597)
 
 [Alexander Kriegisch
 (kriegaex)](http://www.ip-phone-forum.de/member.php?u=117253)
-

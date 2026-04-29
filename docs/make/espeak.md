@@ -2,54 +2,49 @@
   - Package: [master/make/pkgs/espeak/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/espeak/)
   - Steward: -
 
-eSpeak ist ein "Text to Speech" Generator - oder, anders ausgedrückt,
-ein "Vorlese-Programm", welches ASCII Texte mit synthetischer Stimme
-wiedergeben ("vorlesen") kann. Bei Freetz wird es u.a. von
-[DTMFBox](dtmfbox.md) genutzt.
+eSpeak is a "text to speech" generator, or in other words a "reading
+aloud" program that can play back ("read aloud") ASCII text with a
+synthetic voice. In Freetz it is used, among other things, by
+[DTMFBox](dtmfbox.md).
 
 ### Installation
 
-Zur Installation ist das Paket einfach im Paket-Menü von
-`make menuconfig` auszuwählen. Unterstützung für zahlreiche zusätzliche
-Sprachen lassen sich nochmals (als "Bundle") auswählen, sobald das
-Paket selbst ausgewählt wird. Dies macht spätestens dann Sinn, wenn man
-auch mehrere Sprachen benötigt.
+To install it, simply select the package in the package menu of
+`make menuconfig`. Support for numerous additional languages can be
+selected again (as a "bundle") once the package itself has been selected.
+This makes sense at the latest when multiple languages are needed.
 
-Wer die Sprachausgabe lediglich für DTMFBox benötigt, muss das
-eSpeak-Paket nicht zwangsweise installieren: DTMFBox unterstützt auch
-sogenanntes "WebStreaming" (die Audio-Daten werden dann auf einem
-anderen Server generiert) - was allerdings eine bestehende
-Internet-Verbindung voraussetzt.
+Anyone who needs speech output only for DTMFBox does not necessarily have
+to install the eSpeak package: DTMFBox also supports so-called
+"WebStreaming" (the audio data is then generated on another server),
+which, however, requires an existing internet connection.
 
-### Aufruf
+### Invocation
 
-An dieser Stelle nur ein paar **kurze** Tipps zum Aufruf von eSpeak -
-Details finden sich auf der
-[Projektseite](http://espeak.sourceforge.net/commands.html):
+Only a few **short** tips for invoking eSpeak are given here; details can
+be found on the [project page](http://espeak.sourceforge.net/commands.html):
 
-`espeak "Hallo Welt"` sagt einfach "Hallo Welt" mit den
-Default-Einstellungen. Das kann recht komisch klingen, wenn z.B.
-Englisch als Default-Sprache eingestellt ist. Daher kann man sowohl
-Sprache als auch Sprecher per Parameter übergeben:
-`espeak -vde+f3 "Hallo Welt"` lässt den gleichen Text von einer
-deutschen Frauenstimme säuseln - richtig geraten: "-vde" wählt Deutsch
-("-ven" Englisch), das "+f" steht für "feminin" (wovon es
-mindestens +f1, +f2, +f3 verschiedene "Modelle" gibt), und es gibt
-auch (+m1, +m2, +m3) "maskuline" Stimmen. Den "+XX" Teil kann man
-ebenfalls weglassen, wenn nur die Sprache festgelegt werden soll.
+`espeak "Hello world"` simply says "Hello world" with the default
+settings. This can sound rather strange if, for example, English is set
+as the default language. Therefore, both language and speaker can be
+passed as parameters: `espeak -vde+f3 "Hallo Welt"` lets the same text be
+whispered by a German female voice. Correctly guessed: "-vde" selects
+German ("-ven" English), "+f" stands for "female" (of which there are at
+least the different "models" +f1, +f2, +f3), and there are also
+(+m1, +m2, +m3) "male" voices. The "+XX" part can also be omitted if
+only the language should be specified.
 
-Sollte sich die Stimme überschlagen, so kann man mit dem Parameter `-s`
-am "Speed" drehen (`-s 170` ist ein guter Ausgangswert). Auch die
-Stimmhöhe lässt sich beeinflussen: `-p 50` setzt den "Pitch" auf 50
-(guter Ausgangswert). Höhere Werte machen männliche Stimmen zu Eunuchen
-- niedrigere transformieren "anwesendes Weibsvolk" zu "bärtigen
-Ladies".
+If the voice rushes too much, the `-s` parameter can be used to adjust
+the "speed" (`-s 170` is a good starting value). The pitch can also be
+influenced: `-p 50` sets the "pitch" to 50 (a good starting value).
+Higher values make male voices sound like eunuchs; lower values turn
+"present ladies" into "bearded ladies".
 
-### Hinweis
+### Note
 
-Das Executeable findet sich auf der Box unter `/usr/bin/speak`.
+The executable can be found on the box under `/usr/bin/speak`.
 
-### Weiterführende Links
+### Further Links
 
 -   [http://espeak.sourceforge.net](http://espeak.sourceforge.net)
 

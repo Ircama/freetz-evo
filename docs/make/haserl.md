@@ -73,7 +73,7 @@ chmod +x info.cgi
 Test:
 [http://fritz.box:8088/cgi-bin/info.cgi](http://fritz.box:8088/cgi-bin/info.cgi)
 
-### Weiterführende Links
+### Further Links
 
 -   Ticket #1326 "Patch for LUA support"
 

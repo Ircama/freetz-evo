@@ -6,28 +6,27 @@
   - Package: [master/make/pkgs/smartmontools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/smartmontools/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit den Smartmontools (bzw. mit smartctl) können die
-"Gesundheitswerte" von Festplatten (auch
+Smartmontools, or more specifically smartctl, can read the "health
+values" of hard disks (also called
 [SMART](http://smartmontools.sourceforge.net/man/smartctl.8.html)
-genannt) ausgelesen, und im Freetz-Webinterface unter Status angezeigt
-werden. Dies funktioniert allerdings nur dann, wenn die Festplatte und
-dessen USB-Festplattengehäuse das Auslesen dieser Werte auch zuläßt.
+values) and display them in the Freetz web interface under Status. This
+only works if the hard disk and its USB hard-disk enclosure allow these
+values to be read.
 
-[![Statusseite von SMART im WebIf](../screenshots/244_md.png)](../screenshots/244.png)
+[![SMART status page in the WebIF](../screenshots/244_md.png)](../screenshots/244.png)
 
-**Folgende Werte werden im Webinterface angezeigt:**
+**The following values are shown in the web interface:**
 
--   Modellbezeichnung der Festplatte und dessen Speicherkapazität.
--   Der allgemeine, von SMART bewertete Zustand (Health) der
-    Festplatte.
--   Aktuelle Temperatur der Festplatte in °C.
--   Bisherige Laufzeit der Festplatte.
--   Anzahl der Einschaltvorgänge.
--   Und anschließend alle verfügbaren Werte, wie man sie auch auf der
-    Konsole sehen würde.
+-   Model name of the hard disk and its storage capacity.
+-   The general condition, or health, of the hard disk as assessed by
+  SMART.
+-   Current hard-disk temperature in °C.
+-   Previous hard-disk runtime.
+-   Number of power-on events.
+-   Then all available values, as they would also be seen on the console.
 
-**Hinweis:**
-Durch das Öffnen der Statusseite im Webinterface wird eine eventuell
-geparkte Festplatte hochgefahren! Daher kann es auch ein wenig dauern,
-bis die Statusseite komplett angezeigt wird.
+**Note:**
+Opening the status page in the web interface spins up any parked hard
+disk. It can therefore take a little while until the status page is fully
+displayed.
 

@@ -6,8 +6,8 @@
   - Steward: [@fda77](https://github.com/fda77)
 
 **[igmpproxy](http://sourceforge.net/projects/igmpproxy/)**
-ist ein einfacher multicast routing Daemon der für multicast forwarding
-zwischen Netzwerken z.B. für IPTV benutzt wird.
+is a simple multicast routing daemon used for multicast forwarding
+between networks, for example for IPTV.
 
 ```
 Usage: igmpproxy [-h] [-d] [-v [-v]] <configfile>
@@ -63,19 +63,18 @@ phyint dsl disabled
 phyint lo disabled
 ```
 
-Damit igmpproxy auf der FritzBox läuft muss multid mit der option "-i"
-(disable IGMP-Proxy) gestarted werden. Die Namen der Interfaces sind
-abhängig von der Konfiguration der Box und müssen angepasst werden. Im
-Beispiel wird das von [br2684ctrl](br2684ctl.html) erzeugte
-"nas0" als Upstream Interface verwendet.
+For igmpproxy to run on the FritzBox, multid must be started with the
+`-i` option (disable IGMP proxy). The interface names depend on the box
+configuration and must be adjusted. In the example, "nas0", created by
+[br2684ctrl](br2684ctl.html), is used as the upstream interface.
 
-Derzeit ist igmpproxy nur als Binary (0.1) für Freetz verfügbar, d.h. es
-gibt noch kein WebGUI für grafische Einstellungen.
+Currently, igmpproxy is available for Freetz only as a binary (0.1), so
+there is no WebGUI for graphical settings yet.
 
-### Weiterführende Links
+### Further Links
 
 -   [igmpproxy
     SourceForge](http://sourceforge.net/projects/igmpproxy/)
--   [IPPF-Thread: AONTV mit der
+-   [IPPF thread: AONTV with the
     FritzBox](http://www.ip-phone-forum.de/showthread.php?t=208004&highlight=aontv)
 

@@ -6,20 +6,20 @@
   - Package: [master/make/pkgs/wireguard/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/wireguard/)
   - Steward: [@fda77](https://github.com/fda77)
 
-Mit Wireguard kann ein VPN aufgebaut werden. Es ist schneller als [OpenVPN](openvpn.md) und einfach zu konfugurieren als IPsec.<br>
+Wireguard can be used to set up a VPN. It is faster than [OpenVPN](openvpn.md) and easier to configure than IPsec.<br>
 
 [![screenshot](../screenshots/000-PKG_wireguard_md.png)](../screenshots/000-PKG_wireguard.png)
 
-### Hinweise
+### Notes
 
- - Ein Wireguard-Client auf der Fritzbox kann nicht als Default-Gateway verwendet werden, siehe [ip-phone-forum.de/threads/304914/](https://www.ip-phone-forum.de/threads/304914/).
- - Falls der Wireguard-Server nicht der Router ist muss auf dem Router eine Route zum IP-Bereich von Wireguard eingerichtet werden.
- - Um AVM-VoIP über Wireguard nutzen zu können muss der Interfacename in "tun0" geändert werden.
+ - A Wireguard client on the Fritzbox cannot be used as the default gateway; see [ip-phone-forum.de/threads/304914/](https://www.ip-phone-forum.de/threads/304914/).
+ - If the Wireguard server is not the router, a route to the Wireguard IP range must be configured on the router.
+ - To use AVM VoIP over Wireguard, the interface name must be changed to "tun0".
 
-### Datendurchsatz
-Erfahrungswerte mit verschiedener Hardware.
+### Throughput
+Experience values with different hardware.
 ```
-|  Client  |     Server     |    Download    |     Upload    | Quelle  |
+|  Client  |     Server     |    Download    |     Upload    | Source  |
 | -------- | -------------- | -------------- | ------------- | ------- |
 | Computer | Raspberry PI 4 | min 100 MBit/s | min 45 MBit/s | cuma    |
 | Computer | Fritz!Box 7590 | min  85 MBit/s | min 40 MBit/s | cuma    |
@@ -27,24 +27,24 @@ Erfahrungswerte mit verschiedener Hardware.
 | Computer | Fritz!Box 7520 | ca   35 MBit/s | ca  35 MBit/s | wall007 |
 ```
 
-### Konfiguration für einen Wireguard-Server auf der Fritzbox mit einem PC erstellen
+### Creating a Configuration for a Wireguard Server on the Fritzbox with a PC
 
-Die `PresharedKey`-Zeilen bzw `psk`-Dateien sind optional und können entfernt werden.
-Der Port muss gegebenenfalls in der Firewall freigegben werden, zum Beispiel mit [AVM-portfw](avm-portfw.md).
+The `PresharedKey` lines or `psk` files are optional and can be removed.
+The port may need to be opened in the firewall, for example with [AVM-portfw](avm-portfw.md).
 
-##### Erforderliche Programme installieren
-Bei Ubuntu heisst der Paketmanager `apt-get`.
+##### Installing Required Programs
+On Ubuntu, the package manager is called `apt-get`.
 ```
 sudo dnf install wireguard-tools qrencode
 ```
 
 ##### MTU
-Die MTU sollte für Server und Clients gleich gesetzt werden. Die Zeilen sind optional.
-Möglich Werte liegen von 1280 bis 1420 Bytes. 1280 ist eine "sichere" Wahl, höhere Werte
-sind besser können aber abhängig vom Netzwerk und Internetanschluss Probleme verursachen.
+The MTU should be set to the same value for server and clients. The lines are optional.
+Possible values range from 1280 to 1420 bytes. 1280 is a "safe" choice; higher values
+are better but can cause problems depending on the network and internet connection.
 
-##### Variablendefinition
-Diese Variablen werden weiter unten genutzt und sollten angepasst werden.
+##### Variable Definition
+These variables are used below and should be adjusted.
 ```
 NUMCLIENTS="9"
 HOSTNAME="mein.dyndns.host"
@@ -55,8 +55,8 @@ MTUBYTES="1280"
 
 ```
 
-##### Schlüsseldateien erstellen
-Es werden die Schlüsseldateien `*.prv`, `*.psk` und `*.pub` generiert. Mit diesen werden die Konfigurationsdateien erstellt.
+##### Creating Key Files
+The key files `*.prv`, `*.psk`, and `*.pub` are generated. They are used to create the configuration files.
 ```
 for x in SRV $(seq -f "CL%g" $NUMCLIENTS); do
 touch           $x.prv   $x.psk     $x.pub
@@ -69,8 +69,8 @@ done
 ```
 
 
-##### Serverkonfiguration erstellen
-Es wird die Serverkonfiguration in `SRV.conf` erstellt die auf der Fritzbox eingefügt werden kann.
+##### Creating the Server Configuration
+The server configuration is created in `SRV.conf`, which can be inserted on the Fritzbox.
 ```
 touch      SRV.conf
 chmod 640  SRV.conf
@@ -93,9 +93,9 @@ done
 
 ```
 
-##### Clientkonfigurationen erstellen
-Die Clientkonfigurationen werden in `CL*.conf` erstellt.
-Die QR-Codes zum scannen mit einer App befinden sich in `CL*.txt` und `CL*.png`.
+##### Creating Client Configurations
+The client configurations are created in `CL*.conf`.
+The QR codes for scanning with an app are located in `CL*.txt` and `CL*.png`.
 ```
 for x in $(seq -f "CL%g" $NUMCLIENTS); do
 cat > $x.conf << EOX
