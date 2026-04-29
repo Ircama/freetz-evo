@@ -263,6 +263,10 @@ find_cmd() {
 	return 1
 }
 
+resolve_tools() {
+	return 0
+}
+
 CMD_PARTED=$(find_cmd parted)
 CMD_PARTPROBE=$(find_cmd partprobe)
 CMD_MKFS_FAT=$(find_cmd mkfs.fat)
@@ -613,6 +617,109 @@ emit_cmd_result_with_target() {
 	_target_start_sector=$(json_escape "$8")
 	_target_end_sector=$(json_escape "$9")
 	printf '%s\n' "{\"success\": $_success, \"rc\": $_rc, \"message\": \"$_msg_json\", \"output\": \"$_out_json\", \"target_partnum\": \"$_target_partnum\", \"target_partition\": \"$_target_partition\", \"target_device\": \"$_target_device\", \"target_start_sector\": \"$_target_start_sector\", \"target_end_sector\": \"$_target_end_sector\"}"
+}
+
+emit_raw_json() {
+	printf 'Content-Type: application/json\r\nCache-Control: no-store\r\n\r\n%s\n' "$1"
+}
+
+emit_raw_json_error() {
+	_msg=$(json_escape "$1")
+	printf 'Status: 400 Bad Request\r\nContent-Type: application/json\r\nCache-Control: no-store\r\n\r\n{"success": false, "message": "%s"}\n' "$_msg"
+}
+
+is_valid_partclone_compression() {
+	case "$1" in
+		none|gzip|gz|bzip2|bz2|lz4|zstd|'') return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+partclone_decompress_cmd() {
+	case "$1" in
+		gzip|gz) printf '%s' 'gunzip -c' ;;
+		bzip2|bz2) printf '%s' 'bunzip2 -c' ;;
+		lz4) printf '%s' 'lz4 -dc' ;;
+		zstd) printf '%s' 'zstd -dc' ;;
+		*) printf '%s' 'cat' ;;
+	esac
+}
+
+partclone_image_ext() {
+	case "$1" in
+		gzip|gz) printf '%s' '.gz' ;;
+		bzip2|bz2) printf '%s' '.bz2' ;;
+		lz4) printf '%s' '.lz4' ;;
+		zstd) printf '%s' '.zst' ;;
+		*) printf '%s' '' ;;
+	esac
+}
+
+sanitize_download_name() {
+	_name=$(basename "$1" 2>/dev/null)
+	_name=$(printf '%s' "${_name:-image.img}" | tr -cd 'A-Za-z0-9._+- ' | tr ' ' '_')
+	[ -n "$_name" ] || _name='image.img'
+	printf '%s' "$_name"
+}
+
+default_host_browser_root() {
+	if [ -d /var/media/ftp ]; then
+		printf '%s' '/var/media/ftp'
+	else
+		printf '%s' '/'
+	fi
+}
+
+normalize_host_browser_dir() {
+	_path="$1"
+	[ -n "$_path" ] || _path=$(default_host_browser_root)
+	case "$_path" in
+		/*) ;;
+		*) _path=$(default_host_browser_root) ;;
+	esac
+	if [ -d "$_path" ]; then
+		(cd "$_path" 2>/dev/null && pwd -P) && return 0
+	fi
+	if [ -e "$_path" ]; then
+		_parent=$(dirname "$_path")
+		(cd "$_parent" 2>/dev/null && pwd -P) && return 0
+	fi
+	_probe="$_path"
+	while [ "$_probe" != "/" ] && [ ! -d "$_probe" ]; do
+		_probe=$(dirname "$_probe")
+	done
+	[ -d "$_probe" ] || _probe=$(default_host_browser_root)
+	(cd "$_probe" 2>/dev/null && pwd -P)
+}
+
+emit_host_browser_entries() {
+	_dir="$1"
+	_kind="$2"
+	_sep="$3"
+	_count="$4"
+	_entries=''
+	for _entry in "$_dir"/* "$_dir"/.[!.]* "$_dir"/..?*; do
+		[ -e "$_entry" ] || continue
+		_name=$(basename "$_entry")
+		case "$_name" in
+			.|..) continue ;;
+		esac
+		if [ "$_kind" = 'dir' ]; then
+			[ -d "$_entry" ] || continue
+			_type='dir'
+			_size=0
+		else
+			[ -f "$_entry" ] || continue
+			_type='file'
+			_size=$(ls -ldn "$_entry" 2>/dev/null | awk '{print $5}')
+			case "$_size" in ''|*[!0-9]*) _size=0 ;; esac
+		fi
+		_entries="${_entries}${_sep}{\"name\":\"$(json_escape "$_name")\",\"path\":\"$(json_escape "$_entry")\",\"type\":\"$_type\",\"size\":$_size}"
+		_sep=','
+		_count=$((_count + 1))
+		[ "$_count" -lt 500 ] || break
+	done
+	printf '%s\n%s\n' "$_entries" "$_count"
 }
 
 # exec_cmd: run command with direct streaming output to STREAM_LOG (no capture).
@@ -3313,6 +3420,121 @@ action_partclone_ddrescue() {
 	fi
 }
 
+action_browse_host_fs() {
+	_req_path=$(cgi_param path)
+	_dir=$(normalize_host_browser_dir "$_req_path") || { emit_json_error "Unable to browse path"; return; }
+	_parent=$(dirname "$_dir")
+	[ "$_dir" = "/" ] && _parent='/'
+	_selected_name=''
+	if [ -n "$_req_path" ] && [ -e "$_req_path" ] && [ ! -d "$_req_path" ]; then
+		_selected_name=$(basename "$_req_path")
+	fi
+	if [ -w "$_dir" ]; then _writable=true; else _writable=false; fi
+	_dirs_and_count=$(emit_host_browser_entries "$_dir" dir '' 0)
+	_dir_entries=$(printf '%s' "$_dirs_and_count" | sed -n '1p')
+	_entry_count=$(printf '%s' "$_dirs_and_count" | sed -n '2p')
+	_files_and_count=$(emit_host_browser_entries "$_dir" file "${_dir_entries:+,}" "$(printf '%s' "${_entry_count:-0}")")
+	_file_entries=$(printf '%s' "$_files_and_count" | sed -n '1p')
+	_entries="${_dir_entries}${_file_entries}"
+	printf '%s\n' "{\"success\": true, \"path\": \"$(json_escape "$_dir")\", \"parent\": \"$(json_escape "$_parent")\", \"selected_name\": \"$(json_escape "$_selected_name")\", \"writable\": $_writable, \"entries\": [${_entries}] }"
+}
+
+action_raw_partclone_export() {
+	_action_partition_image_common || return 1
+	require_ack || { emit_raw_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"; return 1; }
+	_partition=$(cgi_param partition)
+	_compress=$(cgi_param compression)
+	_force_fs=$(cgi_param force_fs)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_extra_opts=$(cgi_param extra_opts)
+	_use_dd=$(cgi_param use_dd)
+	_download_name=$(cgi_param download_name)
+
+	is_valid_device "$_partition" || { emit_raw_json_error "Invalid partition path"; return 1; }
+	[ -r "$_partition" ] || { emit_raw_json_error "Device is not readable by the CGI process"; return 1; }
+	is_valid_partclone_compression "$_compress" || { emit_raw_json_error "Invalid compression '${_compress}'"; return 1; }
+	is_valid_extra_opts "$_extra_opts" || { emit_raw_json_error "Invalid extra options"; return 1; }
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	_flags='-e'
+	[ "$_unmount" = 'yes' ] && _flags="$_flags -u"
+	[ "$_use_dd" = 'yes' ] && _flags="$_flags -c"
+	[ -n "$_download_name" ] || _download_name="$(basename "$_partition")-partclone.img$(partclone_image_ext "$_compress")"
+	_download_name=$(sanitize_download_name "$_download_name")
+
+	printf 'Content-Type: application/octet-stream\r\n'
+	printf 'Content-Disposition: attachment; filename="%s"\r\n' "$_download_name"
+	printf 'Cache-Control: no-store\r\nPragma: no-cache\r\n\r\n'
+
+	# shellcheck disable=SC2086
+	"$CMD_PARTITION_IMAGE" \
+		$_flags \
+		-p "$_partition" \
+		-o '-' \
+		${_compress:+-z "$_compress"} \
+		-w "$_step_delay" \
+		${_force_fs:+-f "$_force_fs"} \
+		${_extra_opts:+-x "$_extra_opts"}
+	return $?
+}
+
+action_raw_partclone_import() {
+	_action_partition_image_common || return 1
+	require_ack || { emit_raw_json_error "Dangerous operation blocked: type YES_I_UNDERSTAND first"; return 1; }
+	_partition=$(cgi_param partition)
+	_compress=$(cgi_param compression)
+	_verify=$(cgi_param verify)
+	_unmount=$(cgi_param unmount_before)
+	_step_delay=$(cgi_param step_delay)
+	_extra_opts=$(cgi_param extra_opts)
+
+	is_valid_device "$_partition" || { emit_raw_json_error "Invalid partition path"; return 1; }
+	[ -w "$_partition" ] || { emit_raw_json_error "Device is not writable by the CGI process"; return 1; }
+	is_valid_partclone_compression "$_compress" || { emit_raw_json_error "Invalid compression '${_compress}'"; return 1; }
+	is_valid_extra_opts "$_extra_opts" || { emit_raw_json_error "Invalid extra options"; return 1; }
+	[ "$_verify" = 'yes' ] && { emit_raw_json_error "Streaming restore verification must be run as a separate preflight step"; return 1; }
+	case "$_step_delay" in ''|*[!0-9]*) _step_delay='1' ;; esac
+
+	# shellcheck disable=SC2086
+	_out=$(
+		"$CMD_PARTITION_IMAGE" \
+			-i \
+			$([ "$_unmount" = 'yes' ] && printf '%s' '-u') \
+			-p "$_partition" \
+			-o '-' \
+			${_compress:+-z "$_compress"} \
+			-w "$_step_delay" \
+			${_extra_opts:+-x "$_extra_opts"} 2>&1
+	)
+	_rc=$?
+	if [ "$_rc" -eq 0 ]; then
+		emit_raw_json "{\"success\": true, \"rc\": $_rc, \"message\": \"$(json_escape "Partition restore completed successfully")\", \"output\": \"$(json_escape "$_out")\"}"
+	else
+		emit_raw_json "{\"success\": false, \"rc\": $_rc, \"message\": \"$(json_escape "Partition restore failed")\", \"output\": \"$(json_escape "$_out")\"}"
+	fi
+}
+
+action_raw_partclone_verify() {
+	resolve_tools
+	_compress=$(cgi_param compression)
+	is_valid_partclone_compression "$_compress" || { emit_raw_json_error "Invalid compression '${_compress}'"; return 1; }
+	[ -n "$CMD_PARTCLONE_CHKIMG" ] || { emit_raw_json_error "partclone.chkimg not available"; return 1; }
+	_dcomp=$(partclone_decompress_cmd "$_compress")
+	if [ "$_dcomp" = 'cat' ]; then
+		_out=$("$CMD_PARTCLONE_CHKIMG" -s - 2>&1)
+		_rc=$?
+	else
+		_out=$(/bin/sh -c "$_dcomp | \"$CMD_PARTCLONE_CHKIMG\" -s -" 2>&1)
+		_rc=$?
+	fi
+	if [ "$_rc" -eq 0 ]; then
+		emit_raw_json "{\"success\": true, \"rc\": $_rc, \"message\": \"$(json_escape "Image verification completed successfully")\", \"output\": \"$(json_escape "$_out")\"}"
+	else
+		emit_raw_json "{\"success\": false, \"rc\": $_rc, \"message\": \"$(json_escape "Image verification failed")\", \"output\": \"$(json_escape "$_out")\"}"
+	fi
+}
+
 action_disk_migration() {
 	resolve_tools
 
@@ -4164,6 +4386,26 @@ action_poll_job() {
 }
 
 AJAX_MODE=$(cgi_param ajax)
+RAW_ACTION=$(cgi_param raw_action)
+
+if [ -n "$RAW_ACTION" ]; then
+	backend_log "RAW REQUEST action=$RAW_ACTION remote=${REMOTE_ADDR:-unknown} query=${QUERY_STRING:-}"
+	case "$RAW_ACTION" in
+		partclone_export_stream)
+			action_raw_partclone_export
+			;;
+		partclone_import_stream)
+			action_raw_partclone_import
+			;;
+		partclone_verify_stream)
+			action_raw_partclone_verify
+			;;
+		*)
+			emit_raw_json_error "Unknown raw action"
+			;;
+	esac
+	exit 0
+fi
 
 if [ "$AJAX_MODE" = "1" ]; then
 	ACTION=$(cgi_param action)
@@ -4236,6 +4478,9 @@ EOF
 			;;
 		partclone_import)
 			action_partclone_import
+			;;
+		browse_host_fs)
+			action_browse_host_fs
 			;;
 		partclone_net_send)
 			action_partclone_net_send
@@ -4541,6 +4786,84 @@ cat <<'EOF'
 .pcgi-modal-form-grid select {
 	box-sizing: border-box;
 	max-width: 100%;
+}
+.pcgi-inline-field-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 6px;
+}
+.pcgi-inline-field-actions button {
+	flex: 0 0 auto;
+}
+.pcgi-local-picker-summary {
+	font-size: 12px;
+	color: #4f5b67;
+	margin-top: 6px;
+	line-height: 1.45;
+}
+.pcgi-hostfs-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	margin: 8px 0;
+}
+.pcgi-hostfs-toolbar input {
+	flex: 1 1 260px;
+	min-width: 0;
+}
+.pcgi-hostfs-list {
+	border: 1px solid #c7d1dc;
+	border-radius: 6px;
+	background: #f8fbff;
+	max-height: 300px;
+	overflow: auto;
+	margin: 8px 0 12px;
+}
+.pcgi-hostfs-entry {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 10px;
+	border-bottom: 1px solid #e1e7ef;
+	cursor: pointer;
+}
+.pcgi-hostfs-entry:last-child {
+	border-bottom: 0;
+}
+.pcgi-hostfs-entry:hover {
+	background: #eef5ff;
+}
+.pcgi-hostfs-entry.is-selected {
+	background: #dbeaff;
+}
+.pcgi-hostfs-entry-main {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+.pcgi-hostfs-entry-type {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: #1a56b0;
+	min-width: 34px;
+	flex: 0 0 auto;
+}
+.pcgi-hostfs-entry-name {
+	min-width: 0;
+	word-break: break-all;
+	flex: 1 1 auto;
+}
+.pcgi-hostfs-entry-meta {
+	font-size: 11px;
+	color: #5f6f82;
+	white-space: nowrap;
+	flex: 0 0 auto;
 }
 .pcgi-modal-subtle {
 	font-size: 12px;
@@ -6118,8 +6441,27 @@ cat <<'EOF'
 				<input id="piExpSource" type="text" readonly style="width:100%;background:#f5f5f5">
 			</div>
 			<div>
+				<label>Destination type</label>
+				<select id="piExpTargetMode" onchange="updatePartcloneExportModeUi()">
+					<option value="server">Box filesystem path</option>
+					<option value="local">Local browser file (streaming)</option>
+				</select>
+			</div>
+			<div id="piExpServerPathWrap" style="grid-column:1/-1">
 				<label id="i18nPiExpOutputLabel">Output image file (-o)</label>
 				<input id="piExpOutput" type="text" placeholder="/var/media/ftp/backup.img" style="width:100%">
+				<div class="pcgi-inline-field-actions">
+					<button type="button" id="pcgiPiExpBrowseHostBtn">Browse box...</button>
+				</div>
+			</div>
+			<div id="piExpLocalPathWrap" style="grid-column:1/-1;display:none">
+				<label>Local browser file</label>
+				<input id="piExpLocalName" type="text" placeholder="backup.img">
+				<div class="pcgi-inline-field-actions">
+					<button type="button" id="pcgiPiExpPickLocalBtn">Pick local destination...</button>
+					<button type="button" id="pcgiPiExpClearLocalBtn">Clear local pick</button>
+				</div>
+				<div id="piExpLocalSummary" class="pcgi-local-picker-summary">The image stream will be written directly to the browser-local file when the page can use the local save picker; otherwise the browser download manager will handle the stream without storing it on the box.</div>
 			</div>
 			<div>
 				<label id="i18nPiExpCompressLabel">Compression (-z)</label>
@@ -6182,8 +6524,27 @@ cat <<'EOF'
 				<input id="piImpTarget" type="text" readonly style="width:100%;background:#f5f5f5">
 			</div>
 			<div>
+				<label>Source type</label>
+				<select id="piImpSourceMode" onchange="updatePartcloneImportModeUi()">
+					<option value="server">Box filesystem path</option>
+					<option value="local">Local browser file (streaming)</option>
+				</select>
+			</div>
+			<div id="piImpServerPathWrap" style="grid-column:1/-1">
 				<label id="i18nPiImpInputLabel">Input image file (-o)</label>
 				<input id="piImpInput" type="text" placeholder="/var/media/ftp/backup.img" style="width:100%">
+				<div class="pcgi-inline-field-actions">
+					<button type="button" id="pcgiPiImpBrowseHostBtn">Browse box...</button>
+				</div>
+			</div>
+			<div id="piImpLocalPathWrap" style="grid-column:1/-1;display:none">
+				<label>Local browser file</label>
+				<input id="piImpLocalName" type="text" readonly placeholder="No local file selected">
+				<div class="pcgi-inline-field-actions">
+					<button type="button" id="pcgiPiImpPickLocalBtn">Choose local file...</button>
+					<button type="button" id="pcgiPiImpClearLocalBtn">Clear selection</button>
+				</div>
+				<div id="piImpLocalSummary" class="pcgi-local-picker-summary">The selected local file is streamed directly to the backend. If verification is enabled, the same local file is streamed once for verification and once for the actual restore, still without any temporary file on the box.</div>
 			</div>
 			<div>
 				<label id="i18nPiImpCompressLabel">Compression (-z)</label>
@@ -6221,6 +6582,36 @@ cat <<'EOF'
 		<div class="pcgi-modal-actions">
 			<button type="button" id="pcgiPiImpCancelBtn">Cancel</button>
 			<button type="button" id="pcgiPiImpOkBtn">Run restore</button>
+		</div>
+	</div>
+</div>
+
+<input id="piImpLocalFilePicker" type="file" style="display:none">
+
+<div id="pcgiHostFsBrowserModal" class="pcgi-modal" aria-hidden="true">
+	<div class="pcgi-modal-box" style="max-width:860px;width:96vw">
+		<h3 id="pcgiHostFsBrowserTitle" class="pcgi-modal-head">Browse box filesystem</h3>
+		<div id="pcgiHostFsBrowserHint" class="pcgi-modal-subtle">Select a path on the box filesystem.</div>
+		<div class="pcgi-hostfs-toolbar">
+			<button type="button" id="pcgiHostFsUpBtn">Up</button>
+			<button type="button" id="pcgiHostFsMediaBtn">/var/media/ftp</button>
+			<button type="button" id="pcgiHostFsRootBtn">/</button>
+			<input id="pcgiHostFsPathInput" type="text" placeholder="/var/media/ftp">
+			<button type="button" id="pcgiHostFsGoBtn">Go</button>
+		</div>
+		<div id="pcgiHostFsStatus" class="pcgi-modal-subtle"></div>
+		<div id="pcgiHostFsList" class="pcgi-hostfs-list"></div>
+		<div id="pcgiHostFsFileNameWrap" style="display:none;margin-top:8px">
+			<label>File name</label>
+			<input id="pcgiHostFsFileName" type="text" placeholder="backup.img">
+		</div>
+		<div style="margin-top:8px">
+			<label>Selected path</label>
+			<input id="pcgiHostFsSelectedPath" type="text" readonly>
+		</div>
+		<div class="pcgi-modal-actions">
+			<button type="button" id="pcgiHostFsCancelBtn">Cancel</button>
+			<button type="button" id="pcgiHostFsSelectBtn">Select</button>
 		</div>
 	</div>
 </div>
@@ -7502,7 +7893,11 @@ window.paceOptions = {
 		mapDragActive: false,
 		partitionDragInfo: null,
 		createPartPreview: null,
-		sectorSyncLock: false
+		sectorSyncLock: false,
+		partcloneImportLocalFile: null,
+		partcloneExportLocalHandle: null,
+		hostFsBrowserContext: null,
+		hostFsBrowserEscHandler: null
 	};
 
 	function t(key) {
@@ -8449,6 +8844,609 @@ window.paceOptions = {
 		return fetch(API_URL + '?' + qp.toString())
 			.then(function (r) { return r.text(); })
 			.then(parseAjaxJson);
+	}
+
+	function getDangerAckToken() {
+		var ackEl = document.getElementById('ackToken');
+		var ack = ackEl ? ackEl.value.trim() : '';
+		if (!state.dryRun && ack !== 'YES_I_UNDERSTAND') {
+			showToast(t('tNeedAck'), 'warn');
+			return '';
+		}
+		return ack;
+	}
+
+	function buildRawApiUrl(rawAction, params) {
+		var qp = new URLSearchParams();
+		qp.set('raw_action', rawAction);
+		for (var key in params) {
+			if (Object.prototype.hasOwnProperty.call(params, key) && params[key] !== undefined && params[key] !== null && params[key] !== '') {
+				qp.set(key, String(params[key]));
+			}
+		}
+		return API_URL + '?' + qp.toString();
+	}
+
+	function readRawJsonResponse(response) {
+		return response.text().then(function (text) {
+			if (!text) {
+				return { response: response, data: {}, text: '' };
+			}
+			try {
+				return { response: response, data: JSON.parse(text), text: text };
+			} catch (err) {
+				var parseErr = new Error(text || ('Invalid JSON response (' + response.status + ')'));
+				parseErr.rawText = text;
+				throw parseErr;
+			}
+		});
+	}
+
+	function requestRawJson(rawAction, params, init) {
+		return fetch(buildRawApiUrl(rawAction, params), init || {})
+			.then(readRawJsonResponse);
+	}
+
+	function streamReadableToWritable(readable, writable) {
+		var reader = readable.getReader();
+		var writtenBytes = 0;
+		function abortWritable(err) {
+			if (writable && typeof writable.abort === 'function') {
+				return writable.abort(err).catch(function () { return null; });
+			}
+			return Promise.resolve();
+		}
+		function pump() {
+			return reader.read().then(function (result) {
+				if (result.done) {
+					return Promise.resolve(writable.close()).then(function () {
+						return writtenBytes;
+					});
+				}
+				var chunk = result.value;
+				writtenBytes += chunk && chunk.byteLength !== undefined ? chunk.byteLength : (chunk && chunk.length ? chunk.length : 0);
+				return Promise.resolve(writable.write(chunk)).then(pump);
+			});
+		}
+		return pump().catch(function (err) {
+			return abortWritable(err).then(function () { throw err; });
+		});
+	}
+
+	function openRawExportStream(params) {
+		return fetch(buildRawApiUrl('partclone_export_stream', params))
+			.then(function (response) {
+				var contentType = String(response.headers.get('content-type') || '').toLowerCase();
+				if (contentType.indexOf('application/json') !== -1 || !response.ok) {
+					return readRawJsonResponse(response).then(function (result) {
+						var data = result.data || {};
+						throw new Error(data.message || data.error || result.text || ('Streaming export failed (' + response.status + ')'));
+					});
+				}
+				return response;
+			});
+	}
+
+	function createUploadRequestInit(file) {
+		var body = file && typeof file.stream === 'function' ? file.stream() : file;
+		var init = { method: 'POST', body: body };
+		if (body && typeof body.getReader === 'function') {
+			init.duplex = 'half';
+		}
+		return init;
+	}
+
+	function appendCommandBanner(label) {
+		appendAnsi('cmdOutput', '\n\x1b[1;34m▶ Running: ' + label + ' ...\x1b[0m\n');
+	}
+
+	function appendCommandText(text) {
+		if (!text) return;
+		appendTo('cmdOutput', text + (/\n$/.test(text) ? '' : '\n'));
+	}
+
+	function makeLoggedError(message) {
+		var err = new Error(message || 'Request failed');
+		err.alreadyLogged = true;
+		return err;
+	}
+
+	function handleRawJsonResult(result, defaultSuccess, defaultFailure) {
+		var response = result && result.response ? result.response : null;
+		var data = result && result.data ? result.data : {};
+		if (data.output) {
+			appendCommandText(data.output);
+		}
+		if (response && !response.ok && data.success !== true) {
+			appendAnsi('cmdOutput', '\x1b[1;31m✘ ' + (data.message || defaultFailure || ('Request failed (' + response.status + ')')) + '\x1b[0m\n');
+			throw makeLoggedError(data.message || defaultFailure || ('Request failed (' + response.status + ')'));
+		}
+		if (data.success === false) {
+			appendAnsi('cmdOutput', '\x1b[1;31m✘ ' + (data.message || defaultFailure || 'Request failed') + '\x1b[0m\n');
+			throw makeLoggedError(data.message || defaultFailure || 'Request failed');
+		}
+		appendAnsi('cmdOutput', '\x1b[1;32m✔ ' + (data.message || defaultSuccess || 'Done') + '\x1b[0m\n');
+		return data;
+	}
+
+	function partcloneCompressionExt(compression) {
+		switch (String(compression || 'none')) {
+			case 'gzip': return '.gz';
+			case 'bzip2': return '.bz2';
+			case 'lz4': return '.lz4';
+			case 'zstd': return '.zst';
+			default: return '';
+		}
+	}
+
+	function defaultPartcloneDownloadName(devPath, compression) {
+		var base = String(devPath || '').split('/').pop() || 'partclone';
+		base = base.replace(/[^A-Za-z0-9._-]+/g, '_');
+		return base + '-partclone.img' + partcloneCompressionExt(compression);
+	}
+
+	function joinHostFsPath(dirPath, name) {
+		var dir = String(dirPath || '/');
+		var base = String(name || '').replace(/^\/+/, '');
+		if (!base) return dir;
+		if (dir === '/') return '/' + base;
+		return dir.replace(/\/+$/, '') + '/' + base;
+	}
+
+	function updateSuggestedLocalExportName(force) {
+		var input = document.getElementById('piExpLocalName');
+		if (!input) return;
+		var suggested = defaultPartcloneDownloadName(
+			(document.getElementById('piExpSource') || {}).value || '',
+			(document.getElementById('piExpCompress') || {}).value || 'none'
+		);
+		var lastSuggested = input.getAttribute('data-last-suggested') || '';
+		if (force || !input.value || input.value === lastSuggested) {
+			input.value = suggested;
+		}
+		input.setAttribute('data-last-suggested', suggested);
+	}
+
+	function updatePartcloneExportLocalSummary() {
+		var summary = document.getElementById('piExpLocalSummary');
+		if (!summary) return;
+		if (state.partcloneExportLocalHandle && state.partcloneExportLocalHandle.name) {
+			summary.textContent = 'Selected local destination: ' + state.partcloneExportLocalHandle.name + '. The export stream will be written directly to this browser-local file.';
+			return;
+		}
+		if (typeof window.showSaveFilePicker === 'function') {
+			summary.textContent = 'No local destination picked yet. Click "Pick local destination..." to stream directly to a browser-local file. If you skip the picker, the browser download manager will receive the stream without storing it on the box.';
+			return;
+		}
+		summary.textContent = 'This browser will hand the export stream to its download manager. No temporary file is created on the box.';
+	}
+
+	function setPartcloneImportLocalFile(file) {
+		state.partcloneImportLocalFile = file || null;
+		var nameInput = document.getElementById('piImpLocalName');
+		var summary = document.getElementById('piImpLocalSummary');
+		if (nameInput) {
+			nameInput.value = file ? file.name : '';
+		}
+		if (summary) {
+			if (file) {
+				summary.textContent = 'Selected local file: ' + file.name + ' (' + humanBytes(Number(file.size || 0)) + '). The file will be streamed directly to the backend without any temporary file on the box.';
+			} else {
+				summary.textContent = 'The selected local file is streamed directly to the backend. If verification is enabled, the same local file is streamed once for verification and once for the actual restore, still without any temporary file on the box.';
+			}
+		}
+	}
+
+	function updatePartcloneExportModeUi() {
+		var mode = (document.getElementById('piExpTargetMode') || {}).value || 'server';
+		var serverWrap = document.getElementById('piExpServerPathWrap');
+		var localWrap = document.getElementById('piExpLocalPathWrap');
+		if (serverWrap) serverWrap.style.display = mode === 'server' ? '' : 'none';
+		if (localWrap) localWrap.style.display = mode === 'local' ? '' : 'none';
+		if (mode === 'local') {
+			updateSuggestedLocalExportName(false);
+		}
+		updatePartcloneExportLocalSummary();
+	}
+
+	function updatePartcloneImportModeUi() {
+		var mode = (document.getElementById('piImpSourceMode') || {}).value || 'server';
+		var serverWrap = document.getElementById('piImpServerPathWrap');
+		var localWrap = document.getElementById('piImpLocalPathWrap');
+		if (serverWrap) serverWrap.style.display = mode === 'server' ? '' : 'none';
+		if (localWrap) localWrap.style.display = mode === 'local' ? '' : 'none';
+	}
+
+	function chooseLocalExportDestination() {
+		updateSuggestedLocalExportName(false);
+		var suggestedName = (document.getElementById('piExpLocalName') || {}).value || defaultPartcloneDownloadName((document.getElementById('piExpSource') || {}).value || '', (document.getElementById('piExpCompress') || {}).value || 'none');
+		if (typeof window.showSaveFilePicker !== 'function') {
+			state.partcloneExportLocalHandle = null;
+			updatePartcloneExportLocalSummary();
+			showToast('This browser will use its download manager for the export stream.', 'info', 8000);
+			return Promise.resolve(null);
+		}
+		return window.showSaveFilePicker({
+			suggestedName: suggestedName,
+			types: [{
+				description: 'Partclone image',
+				accept: {
+					'application/octet-stream': ['.img', '.img.gz', '.img.bz2', '.img.lz4', '.img.zst']
+				}
+			}]
+		}).then(function (handle) {
+			state.partcloneExportLocalHandle = handle;
+			var input = document.getElementById('piExpLocalName');
+			if (input) {
+				input.value = handle && handle.name ? handle.name : suggestedName;
+				input.setAttribute('data-last-suggested', input.value);
+			}
+			updatePartcloneExportLocalSummary();
+			return handle;
+		});
+	}
+
+	function closeHostFsBrowser() {
+		var modal = document.getElementById('pcgiHostFsBrowserModal');
+		if (!modal) return;
+		modal.style.display = 'none';
+		modal.setAttribute('aria-hidden', 'true');
+		if (state.hostFsBrowserEscHandler) {
+			document.removeEventListener('keydown', state.hostFsBrowserEscHandler);
+			state.hostFsBrowserEscHandler = null;
+		}
+	}
+
+	function updateHostFsBrowserSelectedPath() {
+		var ctx = state.hostFsBrowserContext;
+		if (!ctx) return;
+		var selectedInput = document.getElementById('pcgiHostFsSelectedPath');
+		var fileNameInput = document.getElementById('pcgiHostFsFileName');
+		var selectBtn = document.getElementById('pcgiHostFsSelectBtn');
+		var selectedPath = '';
+		if (ctx.mode === 'save-file') {
+			var fileName = fileNameInput ? fileNameInput.value.trim() : '';
+			selectedPath = fileName ? joinHostFsPath(ctx.currentPath || '/', fileName) : '';
+		} else {
+			selectedPath = ctx.selectedPath || '';
+		}
+		if (selectedInput) selectedInput.value = selectedPath;
+		if (selectBtn) selectBtn.disabled = !selectedPath;
+	}
+
+	function renderHostFsBrowserEntries(entries) {
+		var list = document.getElementById('pcgiHostFsList');
+		var ctx = state.hostFsBrowserContext;
+		var fileNameInput = document.getElementById('pcgiHostFsFileName');
+		if (!list || !ctx) return;
+		list.innerHTML = '';
+		(entries || []).forEach(function (entry) {
+			var row = document.createElement('div');
+			var isSelected = false;
+			if (ctx.mode === 'file') {
+				isSelected = ctx.selectedPath === entry.path;
+			} else if (fileNameInput) {
+				isSelected = entry.type === 'file' && fileNameInput.value.trim() === entry.name;
+			}
+			row.className = 'pcgi-hostfs-entry' + (isSelected ? ' is-selected' : '');
+			var main = document.createElement('div');
+			main.className = 'pcgi-hostfs-entry-main';
+			var type = document.createElement('div');
+			type.className = 'pcgi-hostfs-entry-type';
+			type.textContent = entry.type === 'dir' ? 'DIR' : 'FILE';
+			var name = document.createElement('div');
+			name.className = 'pcgi-hostfs-entry-name';
+			name.textContent = entry.name || entry.path || '-';
+			main.appendChild(type);
+			main.appendChild(name);
+			row.appendChild(main);
+			var meta = document.createElement('div');
+			meta.className = 'pcgi-hostfs-entry-meta';
+			meta.textContent = entry.type === 'dir' ? 'open' : humanBytes(Number(entry.size || 0));
+			row.appendChild(meta);
+			row.onclick = function () {
+				if (entry.type === 'dir') {
+					loadHostFsBrowser(entry.path);
+					return;
+				}
+				if (ctx.mode === 'save-file') {
+					if (fileNameInput) {
+						fileNameInput.value = entry.name || '';
+						ctx.fileNameTouched = true;
+					}
+				} else {
+					ctx.selectedPath = entry.path || '';
+				}
+				updateHostFsBrowserSelectedPath();
+				renderHostFsBrowserEntries(ctx.entries || []);
+			};
+			list.appendChild(row);
+		});
+		if (!entries || !entries.length) {
+			var empty = document.createElement('div');
+			empty.className = 'pcgi-modal-subtle';
+			empty.style.padding = '10px';
+			empty.textContent = 'No entries found in this directory.';
+			list.appendChild(empty);
+		}
+	}
+
+	function loadHostFsBrowser(path) {
+		var ctx = state.hostFsBrowserContext;
+		var pathInput = document.getElementById('pcgiHostFsPathInput');
+		var status = document.getElementById('pcgiHostFsStatus');
+		var fileNameInput = document.getElementById('pcgiHostFsFileName');
+		if (!ctx) return Promise.resolve();
+		if (status) status.textContent = 'Loading...';
+		return callApi('browse_host_fs', { path: path || ctx.currentPath || '' })
+			.then(function (res) {
+				ctx.currentPath = res.path || '/';
+				ctx.parentPath = res.parent || '/';
+				ctx.entries = res.entries || [];
+				if (pathInput) pathInput.value = ctx.currentPath;
+				if (ctx.mode === 'file') {
+					ctx.selectedPath = res.selected_name ? joinHostFsPath(ctx.currentPath, res.selected_name) : '';
+				} else if (fileNameInput && res.selected_name) {
+					fileNameInput.value = res.selected_name;
+					ctx.fileNameTouched = true;
+				} else if (ctx.mode === 'save-file' && fileNameInput && !fileNameInput.value && ctx.defaultFileName) {
+					fileNameInput.value = ctx.defaultFileName;
+				}
+				if (status) {
+					status.textContent = ctx.currentPath + ' • ' + (res.entries || []).length + ' entries' + (res.writable ? ' • writable' : ' • read-only');
+				}
+				renderHostFsBrowserEntries(ctx.entries);
+				updateHostFsBrowserSelectedPath();
+				return res;
+			})
+			.catch(function (err) {
+				if (status) status.textContent = 'Error: ' + err.message;
+				showToast('Unable to browse box filesystem: ' + err.message, 'error', 10000);
+				throw err;
+			});
+	}
+
+	function openHostFsBrowser(options) {
+		var modal = document.getElementById('pcgiHostFsBrowserModal');
+		var title = document.getElementById('pcgiHostFsBrowserTitle');
+		var hint = document.getElementById('pcgiHostFsBrowserHint');
+		var fileNameWrap = document.getElementById('pcgiHostFsFileNameWrap');
+		var fileNameInput = document.getElementById('pcgiHostFsFileName');
+		var cancelBtn = document.getElementById('pcgiHostFsCancelBtn');
+		var selectBtn = document.getElementById('pcgiHostFsSelectBtn');
+		var pathInput = document.getElementById('pcgiHostFsPathInput');
+		var upBtn = document.getElementById('pcgiHostFsUpBtn');
+		var mediaBtn = document.getElementById('pcgiHostFsMediaBtn');
+		var rootBtn = document.getElementById('pcgiHostFsRootBtn');
+		var goBtn = document.getElementById('pcgiHostFsGoBtn');
+		if (!modal) return;
+		state.hostFsBrowserContext = {
+			mode: options && options.mode === 'save-file' ? 'save-file' : 'file',
+			targetId: options && options.targetId ? options.targetId : '',
+			currentPath: '',
+			parentPath: '/',
+			selectedPath: '',
+			entries: [],
+			defaultFileName: options && options.defaultFileName ? options.defaultFileName : '',
+			fileNameTouched: false
+		};
+		if (title) title.textContent = state.hostFsBrowserContext.mode === 'save-file' ? 'Choose destination on box filesystem' : 'Select image file on box filesystem';
+		if (hint) hint.textContent = state.hostFsBrowserContext.mode === 'save-file' ? 'Navigate on the box filesystem, then choose the destination directory and file name.' : 'Select an existing image file stored on the box filesystem.';
+		if (fileNameWrap) fileNameWrap.style.display = state.hostFsBrowserContext.mode === 'save-file' ? '' : 'none';
+		if (fileNameInput) {
+			fileNameInput.value = state.hostFsBrowserContext.defaultFileName || '';
+			fileNameInput.oninput = function () {
+				if (state.hostFsBrowserContext) state.hostFsBrowserContext.fileNameTouched = true;
+				updateHostFsBrowserSelectedPath();
+			};
+		}
+		if (cancelBtn) cancelBtn.onclick = closeHostFsBrowser;
+		if (selectBtn) {
+			selectBtn.onclick = function () {
+				var selectedPath = (document.getElementById('pcgiHostFsSelectedPath') || {}).value || '';
+				if (!selectedPath) {
+					showToast(state.hostFsBrowserContext && state.hostFsBrowserContext.mode === 'save-file' ? 'Choose a destination file name on the box filesystem.' : 'Select a file on the box filesystem.', 'warn');
+					return;
+				}
+				if (state.hostFsBrowserContext && state.hostFsBrowserContext.targetId) {
+					var target = document.getElementById(state.hostFsBrowserContext.targetId);
+					if (target) target.value = selectedPath;
+				}
+				closeHostFsBrowser();
+			};
+		}
+		if (upBtn) upBtn.onclick = function () { loadHostFsBrowser((state.hostFsBrowserContext && state.hostFsBrowserContext.parentPath) || '/'); };
+		if (mediaBtn) mediaBtn.onclick = function () { loadHostFsBrowser('/var/media/ftp'); };
+		if (rootBtn) rootBtn.onclick = function () { loadHostFsBrowser('/'); };
+		if (goBtn) goBtn.onclick = function () { loadHostFsBrowser((pathInput && pathInput.value.trim()) || '/'); };
+		if (pathInput) {
+			pathInput.onkeydown = function (ev) {
+				if (ev.key === 'Enter') {
+					ev.preventDefault();
+					loadHostFsBrowser(pathInput.value.trim() || '/');
+				}
+			};
+		}
+		modal.onclick = function (ev) { if (ev.target === modal) closeHostFsBrowser(); };
+		modal.style.display = 'flex';
+		modal.setAttribute('aria-hidden', 'false');
+		if (state.hostFsBrowserEscHandler) {
+			document.removeEventListener('keydown', state.hostFsBrowserEscHandler);
+		}
+		state.hostFsBrowserEscHandler = function (ev) {
+			if (ev.key === 'Escape') closeHostFsBrowser();
+		};
+		document.addEventListener('keydown', state.hostFsBrowserEscHandler);
+		loadHostFsBrowser(options && options.initialPath ? options.initialPath : '/var/media/ftp');
+	}
+
+	function runLocalPartcloneVerify(file, compression, label) {
+		appendCommandBanner(label);
+		return requestRawJson('partclone_verify_stream', { compression: compression || 'none' }, createUploadRequestInit(file))
+			.then(function (result) {
+				return handleRawJsonResult(result, 'Image verification completed successfully', 'Image verification failed');
+			})
+			.catch(function (err) {
+				if (!err.alreadyLogged) {
+					appendAnsi('cmdOutput', '\x1b[1;31m✘ ' + (err.message || 'Image verification failed') + '\x1b[0m\n');
+					err.alreadyLogged = true;
+				}
+				throw err;
+			});
+	}
+
+	function runLocalPartcloneImportStream(file, params, label, verifyFirst) {
+		var chain = Promise.resolve();
+		if (verifyFirst) {
+			chain = chain.then(function () {
+				return runLocalPartcloneVerify(file, params.compression || 'none', 'verify local image ' + file.name);
+			});
+		}
+		return chain
+			.then(function () {
+				appendCommandBanner(label);
+				return requestRawJson('partclone_import_stream', params, createUploadRequestInit(file));
+			})
+			.then(function (result) {
+				return handleRawJsonResult(result, 'Partition restore completed successfully', 'Partition restore failed');
+			})
+			.catch(function (err) {
+				if (!err.alreadyLogged) {
+					appendAnsi('cmdOutput', '\x1b[1;31m✘ ' + (err.message || 'Streaming restore failed') + '\x1b[0m\n');
+					err.alreadyLogged = true;
+				}
+				throw err;
+			});
+	}
+
+	function runLocalPartcloneExportStream(params, localName, verifyAfter) {
+		appendCommandBanner('export ' + params.partition + ' → ' + localName + ' (streaming)');
+		if (!state.partcloneExportLocalHandle || typeof state.partcloneExportLocalHandle.createWritable !== 'function') {
+			return Promise.reject(makeLoggedError('Direct browser-local export requires a picked local destination in a compatible browser.'));
+		}
+		return openRawExportStream(params)
+			.then(function (response) {
+				if (!response.body || typeof response.body.pipeTo !== 'function') {
+					throw makeLoggedError('This browser cannot stream the response directly to a local file.');
+				}
+				return state.partcloneExportLocalHandle.createWritable().then(function (writable) {
+					return streamReadableToWritable(response.body, writable);
+				});
+			})
+			.then(function (writtenBytes) {
+				if (!writtenBytes) {
+					throw makeLoggedError('The export stream produced 0 bytes. Check backend logs or device permissions.');
+				}
+				appendAnsi('cmdOutput', '\x1b[1;32m✔ Export stream completed successfully\x1b[0m\n');
+				refreshDevices();
+				if (!verifyAfter || typeof state.partcloneExportLocalHandle.getFile !== 'function') {
+					return null;
+				}
+				return state.partcloneExportLocalHandle.getFile().then(function (file) {
+					return runLocalPartcloneVerify(file, params.compression || 'none', 'verify exported image ' + localName);
+				});
+			})
+			.catch(function (err) {
+				if (!err.alreadyLogged) {
+					appendAnsi('cmdOutput', '\x1b[1;31m✘ ' + (err.message || 'Streaming export failed') + '\x1b[0m\n');
+					err.alreadyLogged = true;
+				}
+				throw err;
+			});
+	}
+
+	function startBrowserManagedExport(params, localName) {
+		appendCommandBanner('export ' + params.partition + ' → ' + localName + ' (browser download)');
+		var link = document.createElement('a');
+		link.href = buildRawApiUrl('partclone_export_stream', params);
+		link.download = localName || '';
+		link.rel = 'noopener';
+		link.style.display = 'none';
+		document.body.appendChild(link);
+		link.click();
+		window.setTimeout(function () {
+			if (link.parentNode) link.parentNode.removeChild(link);
+		}, 0);
+		appendAnsi('cmdOutput', '\x1b[1;32m✔ Export stream handed off to the browser download manager\x1b[0m\n');
+		refreshDevices();
+		return Promise.resolve({ started: true });
+	}
+
+	function bindPartcloneStreamingControls() {
+		var expBrowseHostBtn = document.getElementById('pcgiPiExpBrowseHostBtn');
+		var expPickLocalBtn = document.getElementById('pcgiPiExpPickLocalBtn');
+		var expClearLocalBtn = document.getElementById('pcgiPiExpClearLocalBtn');
+		var expLocalName = document.getElementById('piExpLocalName');
+		var expCompress = document.getElementById('piExpCompress');
+		var impBrowseHostBtn = document.getElementById('pcgiPiImpBrowseHostBtn');
+		var impPickLocalBtn = document.getElementById('pcgiPiImpPickLocalBtn');
+		var impClearLocalBtn = document.getElementById('pcgiPiImpClearLocalBtn');
+		var impLocalPicker = document.getElementById('piImpLocalFilePicker');
+		if (expBrowseHostBtn) {
+			expBrowseHostBtn.onclick = function () {
+				var current = (document.getElementById('piExpOutput') || {}).value || '';
+				updateSuggestedLocalExportName(false);
+				openHostFsBrowser({
+					mode: 'save-file',
+					targetId: 'piExpOutput',
+					initialPath: current || '/var/media/ftp',
+					defaultFileName: current ? current.split('/').pop() : ((document.getElementById('piExpLocalName') || {}).value || '')
+				});
+			};
+		}
+		if (expPickLocalBtn) {
+			expPickLocalBtn.onclick = function () {
+				chooseLocalExportDestination().catch(function (err) {
+					if (err && err.name === 'AbortError') return;
+					showToast('Unable to pick local destination: ' + err.message, 'error', 10000);
+				});
+			};
+		}
+		if (expClearLocalBtn) {
+			expClearLocalBtn.onclick = function () {
+				state.partcloneExportLocalHandle = null;
+				updateSuggestedLocalExportName(true);
+				updatePartcloneExportLocalSummary();
+			};
+		}
+		if (expLocalName) {
+			expLocalName.oninput = function () {
+				if (state.partcloneExportLocalHandle && this.value.trim() !== String(state.partcloneExportLocalHandle.name || '').trim()) {
+					state.partcloneExportLocalHandle = null;
+				}
+				updatePartcloneExportLocalSummary();
+			};
+		}
+		if (expCompress) {
+			expCompress.onchange = function () {
+				updateSuggestedLocalExportName(false);
+				updatePartcloneExportLocalSummary();
+			};
+		}
+		if (impBrowseHostBtn) {
+			impBrowseHostBtn.onclick = function () {
+				var current = (document.getElementById('piImpInput') || {}).value || '';
+				openHostFsBrowser({
+					mode: 'file',
+					targetId: 'piImpInput',
+					initialPath: current || '/var/media/ftp'
+				});
+			};
+		}
+		if (impPickLocalBtn && impLocalPicker) {
+			impPickLocalBtn.onclick = function () { impLocalPicker.click(); };
+		}
+		if (impClearLocalBtn) {
+			impClearLocalBtn.onclick = function () { setPartcloneImportLocalFile(null); };
+		}
+		if (impLocalPicker) {
+			impLocalPicker.onchange = function () {
+				setPartcloneImportLocalFile(this.files && this.files[0] ? this.files[0] : null);
+				this.value = '';
+			};
+		}
+		updatePartcloneExportModeUi();
+		updatePartcloneImportModeUi();
 	}
 
 	function appendTo(id, text) {
@@ -15153,14 +16151,18 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var titleEl = modal.querySelector('.pcgi-modal-head');
 		if (titleEl) titleEl.textContent = t('piExpTitle') || 'Export partition/disk to image';
 		document.getElementById('piExpSource').value = devPath;
+		document.getElementById('piExpTargetMode').value = 'server';
 		document.getElementById('piExpOutput').value = '';
+		state.partcloneExportLocalHandle = null;
 		document.getElementById('piExpCompress').value = 'none';
+		updateSuggestedLocalExportName(true);
 		document.getElementById('piExpForceFs').value = '';
 		document.getElementById('piExpVerify').value = 'no';
 		document.getElementById('piExpUnmount').value = (partOrDevice && partOrDevice.mountpoint && String(partOrDevice.mountpoint).trim() && String(partOrDevice.mountpoint).trim() !== '-') ? 'yes' : 'no';
 		document.getElementById('piExpUseDd').value = 'no';
 		document.getElementById('piExpStepDelay').value = '1';
 		document.getElementById('piExpExtraOpts').value = '';
+		updatePartcloneExportModeUi();
 
 		var cancelBtn = document.getElementById('pcgiPiExpCancelBtn');
 		var okBtn = document.getElementById('pcgiPiExpOkBtn');
@@ -15171,20 +16173,74 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		modal.onclick = function(ev) { if (ev.target === modal) close(); };
 
 		if (okBtn) okBtn.onclick = function() {
+			var mode = document.getElementById('piExpTargetMode').value;
+			var compression = document.getElementById('piExpCompress').value;
+			var verifyWanted = document.getElementById('piExpVerify').value === 'yes';
+			var xtra = document.getElementById('piExpExtraOpts').value.trim();
+			if (mode === 'local') {
+				var ack = getDangerAckToken();
+				if (!ack) return;
+				var localName = document.getElementById('piExpLocalName').value.trim();
+				if (!localName) {
+					updateSuggestedLocalExportName(true);
+					localName = document.getElementById('piExpLocalName').value.trim();
+				}
+				if (!localName) { showToast('Local destination file name required.', 'warn'); return; }
+				if (verifyWanted && (!state.partcloneExportLocalHandle || typeof state.partcloneExportLocalHandle.getFile !== 'function')) {
+					showToast('Post-export verification for browser-local files requires a picked local destination.', 'warn', 10000);
+					return;
+				}
+				close();
+				var streamParams = {
+					ack: ack,
+					partition: devPath,
+					compression: compression,
+					force_fs: document.getElementById('piExpForceFs').value.trim(),
+					unmount_before: document.getElementById('piExpUnmount').value,
+					use_dd: document.getElementById('piExpUseDd').value,
+					step_delay: document.getElementById('piExpStepDelay').value,
+					download_name: localName
+				};
+				if (xtra) streamParams.extra_opts = xtra;
+				var previewParams = {
+					partition: devPath,
+					output_file: '-',
+					compression: compression,
+					force_fs: streamParams.force_fs,
+					verify: 'no',
+					unmount_before: streamParams.unmount_before,
+					use_dd: streamParams.use_dd,
+					step_delay: streamParams.step_delay
+				};
+				if (xtra) previewParams.extra_opts = xtra;
+				var localLabel = 'export ' + devPath + ' → browser-local ' + localName + (verifyWanted ? ' (post-export verify)' : '');
+				showCommandPreviewModal('partclone_export', previewParams, localLabel,
+					t('confirmPiExp') || 'Confirm image export',
+					t('confirmPiExpMsg') || 'Export partition to image file?'
+				).then(function(previewText) {
+					if (previewText === null) return;
+					var runner = state.partcloneExportLocalHandle ? runLocalPartcloneExportStream(streamParams, localName, verifyWanted) : startBrowserManagedExport(streamParams, localName);
+					runner.then(function () {
+						showToast(t('tDone') + ': ' + localLabel, 'success', 10000);
+					}).catch(function (err) {
+						showToast(t('tError') + ': ' + err.message, 'error', 10000);
+					});
+				});
+				return;
+			}
 			var output = document.getElementById('piExpOutput').value.trim();
 			if (!output) { showToast('Output image file path required.', 'warn'); return; }
 			close();
 			var params = {
 				partition: devPath,
 				output_file: output,
-				compression: document.getElementById('piExpCompress').value,
+				compression: compression,
 				force_fs: document.getElementById('piExpForceFs').value.trim(),
 				verify: document.getElementById('piExpVerify').value,
 				unmount_before: document.getElementById('piExpUnmount').value,
 				use_dd: document.getElementById('piExpUseDd').value,
 				step_delay: document.getElementById('piExpStepDelay').value
 			};
-			var xtra = document.getElementById('piExpExtraOpts').value.trim();
 			if (xtra) params.extra_opts = xtra;
 			var label = 'export ' + devPath + ' → ' + output;
 			showCommandPreviewModal('partclone_export', params, label,
@@ -15207,12 +16263,15 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var titleEl = modal.querySelector('.pcgi-modal-head');
 		if (titleEl) titleEl.textContent = t('piImpTitle') || 'Restore partition/disk from image';
 		document.getElementById('piImpTarget').value = devPath;
+		document.getElementById('piImpSourceMode').value = 'server';
 		document.getElementById('piImpInput').value = '';
+		setPartcloneImportLocalFile(null);
 		document.getElementById('piImpCompress').value = 'none';
 		document.getElementById('piImpVerify').value = 'no';
 		document.getElementById('piImpUnmount').value = (partOrDevice && partOrDevice.mountpoint && String(partOrDevice.mountpoint).trim() && String(partOrDevice.mountpoint).trim() !== '-') ? 'yes' : 'no';
 		document.getElementById('piImpStepDelay').value = '1';
 		document.getElementById('piImpExtraOpts').value = '';
+		updatePartcloneImportModeUi();
 
 		var cancelBtn = document.getElementById('pcgiPiImpCancelBtn');
 		var okBtn = document.getElementById('pcgiPiImpOkBtn');
@@ -15223,18 +16282,62 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		modal.onclick = function(ev) { if (ev.target === modal) close(); };
 
 		if (okBtn) okBtn.onclick = function() {
+			var mode = document.getElementById('piImpSourceMode').value;
+			var compression = document.getElementById('piImpCompress').value;
+			var xtra = document.getElementById('piImpExtraOpts').value.trim();
+			if (mode === 'local') {
+				var ack = getDangerAckToken();
+				var localFile = state.partcloneImportLocalFile;
+				if (!ack) return;
+				if (!localFile) { showToast('Choose a local image file first.', 'warn'); return; }
+				close();
+				var streamParams = {
+					ack: ack,
+					partition: devPath,
+					compression: compression,
+					verify: 'no',
+					unmount_before: document.getElementById('piImpUnmount').value,
+					step_delay: document.getElementById('piImpStepDelay').value
+				};
+				if (xtra) streamParams.extra_opts = xtra;
+				var previewParams = {
+					partition: devPath,
+					input_file: '-',
+					compression: compression,
+					verify: 'no',
+					unmount_before: streamParams.unmount_before,
+					step_delay: streamParams.step_delay
+				};
+				if (xtra) previewParams.extra_opts = xtra;
+				var verifyWanted = document.getElementById('piImpVerify').value === 'yes';
+				var localLabel = 'restore browser-local ' + localFile.name + ' → ' + devPath + (verifyWanted ? ' (preflight verify)' : '');
+				showCommandPreviewModal('partclone_import', previewParams, localLabel,
+					t('confirmPiImp') || 'Confirm image restore',
+					t('confirmPiImpMsg') || 'Restore partition from image? DATA WILL BE OVERWRITTEN.'
+				).then(function(previewText) {
+					if (previewText === null) return;
+					runLocalPartcloneImportStream(localFile, streamParams, localLabel, verifyWanted)
+						.then(function () {
+							showToast(t('tDone') + ': ' + localLabel, 'success', 10000);
+							refreshDevices();
+						})
+						.catch(function (err) {
+							showToast(t('tError') + ': ' + err.message, 'error', 10000);
+						});
+				});
+				return;
+			}
 			var input = document.getElementById('piImpInput').value.trim();
 			if (!input) { showToast('Input image file path required.', 'warn'); return; }
 			close();
 			var params = {
 				partition: devPath,
 				input_file: input,
-				compression: document.getElementById('piImpCompress').value,
+				compression: compression,
 				verify: document.getElementById('piImpVerify').value,
 				unmount_before: document.getElementById('piImpUnmount').value,
 				step_delay: document.getElementById('piImpStepDelay').value
 			};
-			var xtra = document.getElementById('piImpExtraOpts').value.trim();
 			if (xtra) params.extra_opts = xtra;
 			var label = 'restore ' + input + ' → ' + devPath;
 			showCommandPreviewModal('partclone_import', params, label,
@@ -16811,6 +17914,10 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.showDiskMoveCloneModal = showDiskMoveCloneModal;
 	window.showPartcloneExportModal = showPartcloneExportModal;
 	window.showPartcloneImportModal = showPartcloneImportModal;
+	window.updatePartcloneExportModeUi = updatePartcloneExportModeUi;
+	window.updatePartcloneImportModeUi = updatePartcloneImportModeUi;
+	window.dmUpdateMethodFields = dmUpdateMethodFields;
+	window.piNsUpdateHostField = piNsUpdateHostField;
 	window.showPartcloneNetSendModal = showPartcloneNetSendModal;
 	window.showPartcloneNetRecvModal = showPartcloneNetRecvModal;
 	window.showDdrescueModal = showDdrescueModal;
@@ -16834,6 +17941,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.analyzeTools = analyzeTools;
 	window.loadPartitionMetadata = loadPartitionMetadata;
 	window.toggleToolchainSection = toggleToolchainSection;
+	bindPartcloneStreamingControls();
 
 	state.language = detectLanguage();
 	document.getElementById('langSelect').value = state.language;

@@ -3,9 +3,11 @@
 #
 # USAGE (export):
 #   partition_image.sh -e -p /dev/sda1 -o /path/to/image.img [-z gzip|bzip2|lz4|zstd] [-u] [-V] [-w N] [-r]
+#   partition_image.sh -e -p /dev/sda1 -o -                [-z gzip|bzip2|lz4|zstd] [-u]      [-w N] [-r]
 #
 # USAGE (import/restore):
 #   partition_image.sh -i -p /dev/sda1 -o /path/to/image.img [-z gzip|bzip2|lz4|zstd] [-u] [-V] [-w N] [-r]
+#   partition_image.sh -i -p /dev/sda1 -o -                [-z gzip|bzip2|lz4|zstd] [-u]      [-w N] [-r]
 #
 # USAGE (network send):
 #   partition_image.sh -N -p /dev/sda1 -H <ip> -P <port> [-z gzip|bzip2|lz4|zstd] [-u] [-w N] [-r]
@@ -69,7 +71,7 @@ EXTRA_OPTS=''
 VERBOSE=0
 DRY_RUN=0
 
-log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
+log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >&2; }
 err() { log "ERROR: $*" >&2; exit 1; }
 warn() { log "WARN: $*" >&2; }
 run() {
@@ -79,6 +81,13 @@ run() {
         [ "$VERBOSE" = "1" ] && log "RUN: $*"
         eval "$@"
     fi
+}
+
+partclone_clone_flag() {
+    case "$(basename "$1")" in
+        partclone.dd) echo '' ;;
+        *) echo '-c' ;;
+    esac
 }
 
 # ── Option parsing ─────────────────────────────────────────────────────────────
@@ -210,27 +219,54 @@ img_ext() {
 do_export() {
     [ -n "$IMAGE_PATH" ] || err "Image path (-o) required for export"
 
-    _dest="${IMAGE_PATH}$(img_ext)"
-    _parent=$(dirname "$_dest")
-    [ -d "$_parent" ] || err "Output directory does not exist: $_parent"
-    [ -f "$_dest"   ] && warn "Overwriting existing image: $_dest"
+    _stream_stdout=0
+    if [ "$IMAGE_PATH" = "-" ]; then
+        _dest='-'
+        _stream_stdout=1
+    else
+        _dest="${IMAGE_PATH}$(img_ext)"
+        _parent=$(dirname "$_dest")
+        [ -d "$_parent" ] || err "Output directory does not exist: $_parent"
+        [ -f "$_dest"   ] && warn "Overwriting existing image: $_dest"
+    fi
+
+    if [ "$VERIFY" = "1" ] && [ "$_stream_stdout" = "1" ]; then
+        err "Verification after export is not supported when streaming to stdout"
+    fi
 
     do_unmount
-    log "Exporting $TARGET → $_dest ..."
+    if [ "$_stream_stdout" = "1" ]; then
+        log "Exporting $TARGET → stdout ..."
+    else
+        log "Exporting $TARGET → $_dest ..."
+    fi
 
     _fs=$(detect_fs)
     log "Detected filesystem: $_fs"
     _pc=$(resolve_partclone "$_fs")
     command -v "$_pc" >/dev/null 2>&1 || { warn "$_pc not found, falling back to partclone.dd"; _pc="partclone.dd"; }
+    _clone_flag=$(partclone_clone_flag "$_pc")
 
     _comp=$(compress_cmd)
-    if [ "$_comp" = "cat" ]; then
-        run "$_pc -d -c -s '$TARGET' $EXTRA_OPTS -o '$_dest'"
+    if [ "$_stream_stdout" = "1" ]; then
+        if [ "$_comp" = "cat" ]; then
+            run "$_pc ${_clone_flag:+$_clone_flag }-s '$TARGET' $EXTRA_OPTS -o -"
+        else
+            run "$_pc ${_clone_flag:+$_clone_flag }-s '$TARGET' $EXTRA_OPTS -o - | $_comp"
+        fi
     else
-        run "$_pc -d -c -s '$TARGET' $EXTRA_OPTS | $_comp > '$_dest'"
+        if [ "$_comp" = "cat" ]; then
+            run "$_pc ${_clone_flag:+$_clone_flag }-s '$TARGET' $EXTRA_OPTS -o '$_dest'"
+        else
+            run "$_pc ${_clone_flag:+$_clone_flag }-s '$TARGET' $EXTRA_OPTS -o - | $_comp > '$_dest'"
+        fi
     fi
 
-    log "Export complete: $_dest"
+    if [ "$_stream_stdout" = "1" ]; then
+        log "Export complete: stdout"
+    else
+        log "Export complete: $_dest"
+    fi
     step_delay
 
     if [ "$VERIFY" = "1" ]; then
@@ -250,16 +286,38 @@ do_export() {
 # ─────────────────────────────────────────────────────────────────────────────
 do_import() {
     [ -n "$IMAGE_PATH" ] || err "Image path (-o) required for import"
-    [ -f "$IMAGE_PATH" ] || [ "$DRY_RUN" = "1" ] || err "Image file not found: $IMAGE_PATH"
+
+    _stream_stdin=0
+    if [ "$IMAGE_PATH" = "-" ]; then
+        _stream_stdin=1
+    else
+        [ -f "$IMAGE_PATH" ] || [ "$DRY_RUN" = "1" ] || err "Image file not found: $IMAGE_PATH"
+    fi
+
+    if [ "$VERIFY" = "1" ] && [ "$_stream_stdin" = "1" ]; then
+        err "Verification before restore is not supported when streaming from stdin"
+    fi
 
     do_unmount
-    log "Restoring $IMAGE_PATH → $TARGET ..."
+    if [ "$_stream_stdin" = "1" ]; then
+        log "Restoring stdin → $TARGET ..."
+    else
+        log "Restoring $IMAGE_PATH → $TARGET ..."
+    fi
 
     _dcomp=$(decompress_cmd)
-    if [ "$_dcomp" = "cat" ]; then
-        run "partclone.restore -d -s '$IMAGE_PATH' $EXTRA_OPTS -o '$TARGET'"
+    if [ "$_stream_stdin" = "1" ]; then
+        if [ "$_dcomp" = "cat" ]; then
+            run "partclone.restore -s - $EXTRA_OPTS -o '$TARGET'"
+        else
+            run "$_dcomp | partclone.restore -s - $EXTRA_OPTS -o '$TARGET'"
+        fi
     else
-        run "$_dcomp '$IMAGE_PATH' | partclone.restore -d -s - $EXTRA_OPTS -o '$TARGET'"
+        if [ "$_dcomp" = "cat" ]; then
+            run "partclone.restore -s '$IMAGE_PATH' $EXTRA_OPTS -o '$TARGET'"
+        else
+            run "$_dcomp '$IMAGE_PATH' | partclone.restore -s - $EXTRA_OPTS -o '$TARGET'"
+        fi
     fi
 
     log "Restore complete."
@@ -268,9 +326,9 @@ do_import() {
     if [ "$VERIFY" = "1" ]; then
         log "Verifying restored partition ..."
         if [ "$_dcomp" = "cat" ]; then
-            run "partclone.chkimg -d -s '$IMAGE_PATH'"
+            run "partclone.chkimg -s '$IMAGE_PATH'"
         else
-            run "$_dcomp '$IMAGE_PATH' | partclone.chkimg -d -s -"
+            run "$_dcomp '$IMAGE_PATH' | partclone.chkimg -s -"
         fi
         log "Verification complete."
     fi

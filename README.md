@@ -47,29 +47,22 @@ The authentication layer has been updated to support a **form-based session logi
 
 | Package | Description | Status |
 |---|---|---|
-| **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)**, backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. | EVO only |
+| **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`), a web console for partitioning, formatting, cloning, recovery, and disk diagnostics; backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. Includes **ttyd** 1.7.7, a web-based terminal server exposing shell commands over WebSocket with embedded xterm.js terminal, 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
+| **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
+| **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
+| **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
+| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
-| **flood-for-transmission** 1.0.1 | Static Transmission frontend integrated as selectable option in the Transmission package menu. | EVO only |
-| **transmission-web-control** (commit snapshot) | Static Transmission Web frontend. | EVO only |
-| **Transmissionic web UI** 1.8.0 | Static Transmission frontend integrated in the Transmission package menu. | EVO only |
-| **TrguiNG web** 1.5.1 | Static Transmission frontend integrated in the Transmission package menu. | EVO only |
+| **transmission** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission` 1.0.1, `TrguiNG web` 1.5.1, `Transmissionic web UI` 1.8.0, `transmission-web-control` commit snapshot), with package-level installation under `/usr/mww/*`; all available as selectable static frontends integrated in the Transmission package menu. | EVO only |
 | **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
 | **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
 | **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **QuickJS** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
 | **Python 3.14** | Python 3.14.3 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14 too |
 | **MicroPython** 1.27.0 | Lightweight Python implementation for constrained environments, including REPL, script execution, and optional micropython-lib modules. | EVO only |
-| **Node.js** 18.20.8 | JavaScript runtime for server-side tooling and package ecosystems on the device. | EVO only |
 | **python3-*** (58 modules) | New Python 3 third-party packages: `aiodns 4.0.0`, `aiohttp 3.13.3`, `aiohttp-asyncmdnsresolver 0.1.1`, `aiohttp-fast-zlib 0.3.0`, `aiohappyeyeballs 2.6.1`, `aiosignal 1.4.0`, `annotatedyaml 1.0.2`, `async-timeout 5.0.1`, `attrs 26.1.0`, `av 16.0.1`, `audioop-lts 0.2.1`, `bcrypt 3.2.2`, `brotli 1.2.0`, `cffi 1.17.1`, `charset-normalizer 3.4.6`, `ciso8601 2.3.3`, `dateutil 2.9.0.post0`, `dbus-fast 4.0.0`, `faust-cchardet 2.1.19`, `fnv-hash-fast 1.6.0`, `fnvhash 0.2.1`, `frozenlist 1.8.0`, `grpcio 1.78.0`, `grpcio-reflection 1.78.1`, `grpcio-status 1.78.1`, `h11 0.16.0`, `ha-ffmpeg 3.2.2`, `httpcore 1.0.9`, `httpx 0.28.1`, `idna 3.11`, `lru-dict 1.4.1`, `lxml 6.0.2`, `markupsafe 3.0.3`, `multidict 6.7.1`, `numpy 2.4.3`, `pandas 3.0.1`, `pillow 12.1.1`, `pip 26.0.1`, `propcache 0.4.1`, `psutil 7.2.2`, `pycares 5.0.1`, `pycparser 3.0`, `pycryptodome 3.23.0`, `pymicro-vad 2.0.1`, `pynacl 1.6.2`, `pyspeex-noise 2.0.0`, `pyturbojpeg 2.2.0`, `pyyaml 6.0.3`, `setuptools 82.0.1`, `six 1.17.0`, `voluptuous 0.16.0`, `webrtc-models 0.3.0`, `yarl 1.23.0`, `zeroconf 0.148.0`, `python3-certifi 2025.10.5`, `python3-ifaddr 0.2.0`,  `python3-mashumaro 3.17`, `python3-orjson 3.10.7`, `typing_extensions 4.15.0`. Of which, pure-Python runtime modules (no compiled extensions) are: aiohappyeyeballs, aiosignal, async-timeout, attrs, charset-normalizer, dateutil, fnvhash, h11, idna, pycparser, six, voluptuous, certifi, ifaddr, mashumaro, typing_extensions. Build-time tooling (not required at runtime): pip, setuptools. | EVO only |
-| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
-| **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`) | Web console for partitioning, formatting, cloning, recovery, and disk diagnostics. | EVO only |
-| **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
-| **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
-| **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
-| **autotools** (autoconf 2.72) | Build-system generation toolchain support for advanced package development workflows. | EVO only |
-| **Clonezilla** 5.15.23 | Script bundle for disk cloning and imaging scenarios, aligned with storage recovery workflows. | EVO only |
 | **GNU ddrescue** 1.30 | Resilient data recovery and block-copy utility with mapfile-based resume support. | EVO only |
 | **exfatprogs** 1.3.2 | User-space exFAT utilities for formatting, checking, labeling, and tuning exFAT filesystems. | EVO only |
 | **fatresize** (snapshot) | FAT16/FAT32 resize utility for non-destructive partition resizing tasks. | EVO only |
@@ -115,7 +108,6 @@ to the target staging directory instead of the host.
 | Package | Enhancement |
 |---|---|
 | **curl** | Added CA-bundle toggle option; rTorrent uses the curl CA bundle for HTTPS validation. |
-| **transmission** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission`, `TrguiNG web`, `Transmissionic web UI`, `transmission-web-control`), with package-level installation under `/usr/mww/*`. |
 | **busybox** (`httpd`) | Added support for HTTP `Range` header handling for CGI responses, enabling partial-content workflows with CGI-backed endpoints. |
 | **pcre** | Fixed parallel install race condition; removed stray dev/test files; fixed double-indirection via `$(PKG)` causing stray root symlinks; JIT disabled for kernel 2.6.39.3. |
 | **pcre2** / libpcre2-posix | Added `select FREETZ_LIB_libpcre2_posix` to `FREETZ_LIB_libpcre2` (posix wrapper is always built alongside pcre2-8); `EXTERNAL_FREETZ_LIB_libpcre2_posix` changed to `default y` so `libpcre2-posix.so.3.0.7` is automatically externalized. |

@@ -39,6 +39,18 @@ jobs:
         uses: actions/configure-pages@v6
       - name: Build with Zensical
         run: zensical build --config-file "${{ env.ZENSICAL_CONFIG_FILE }}"
+      - name: Set per-page language hints
+        run: bash .github/zensical/fix-page-languages.sh "${{ env.ZENSICAL_INPUT_PATH }}"
+      - name: Verify page language hints
+        run: |
+          NEWS_HTML="${{ env.ZENSICAL_INPUT_PATH }}/NEWS/index.html"
+          ENGLISH_HTML="${{ env.ZENSICAL_INPUT_PATH }}/REPO_README/index.html"
+          test -f "$NEWS_HTML"
+          test -f "$ENGLISH_HTML"
+          grep -q '<html lang="de" class="no-js">' "$NEWS_HTML"
+          grep -q 'http-equiv="content-language" content="de"' "$NEWS_HTML"
+          grep -q '<article class="md-content__inner md-typeset" lang="de">' "$NEWS_HTML"
+          grep -q '<html lang="en" class="no-js">' "$ENGLISH_HTML"
       - name: Verify syntax highlighting markup
         run: |
           TARGET_HTML="${{ env.ZENSICAL_INPUT_PATH }}/REPO_README/index.html"
