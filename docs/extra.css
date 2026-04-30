@@ -1,6 +1,6 @@
 /* ── Secondary sidebar (right-side TOC) ────────────────────────────── */
 /* Hidden by default and enabled only when JS marks body.toc-has-content */
-.md-sidebar--secondary.md-sidebar,
+.md-sidebar--secondary.md-sidebar {
     display: none;
 }
 
@@ -278,7 +278,6 @@ body.toc-has-content .toc-toggle-btn {
     height: 1.1em;
     fill: currentColor;
 }
-*/
 
 /* General styles for navigation and typeset */
 .md-nav {
@@ -351,6 +350,7 @@ body.toc-has-content .toc-toggle-btn {
 
 [data-md-color-primary="blue-grey"] {
     --md-primary-fg-color: #436584;
+}
 
 [data-md-color-scheme="default"] {
     --code-color: #0891b2;        /* teal — matches colorscheme-modern.css .part1 */
@@ -369,6 +369,280 @@ body.toc-has-content .toc-toggle-btn {
     --heading-color: #dfe7ff;
     --heading-accent: #6a85d8;
     --heading-rule: rgba(106, 133, 216, 0.45);
+}
+
+/* Freetz-EVO documentation home */
+[data-md-color-scheme="default"] {
+    --evo-home-surface: #f7fafc;
+    --evo-home-panel: #ffffff;
+    --evo-home-muted: #4b6075;
+    --evo-home-border: rgba(67, 101, 132, 0.22);
+    --evo-home-hero: #eef6f7;
+    --evo-home-accent: #0f766e;
+    --evo-home-accent-2: #2563eb;
+    --evo-home-accent-3: #7c5800;
+    --evo-home-button-fg: #ffffff;
+    --evo-home-terminal: #111827;
+    --evo-home-terminal-fg: #dbeafe;
+    --evo-home-shadow: 0 14px 34px rgba(32, 49, 70, 0.12);
+}
+
+[data-md-color-scheme="slate"] {
+    --evo-home-surface: #101821;
+    --evo-home-panel: #172231;
+    --evo-home-muted: #b2c0d1;
+    --evo-home-border: rgba(172, 190, 214, 0.2);
+    --evo-home-hero: #111c29;
+    --evo-home-accent: #2dd4bf;
+    --evo-home-accent-2: #78a6ff;
+    --evo-home-accent-3: #f3c969;
+    --evo-home-button-fg: #08111f;
+    --evo-home-terminal: #0b111a;
+    --evo-home-terminal-fg: #d9e7ff;
+    --evo-home-shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
+}
+
+.md-typeset .evo-home {
+    display: block;
+    margin-top: 1rem;
+}
+
+.md-typeset .evo-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.9fr);
+    gap: 1.2rem;
+    align-items: stretch;
+    margin: 1rem 0 1.2rem;
+    padding: clamp(1rem, 2.2vw, 1.7rem);
+    background: var(--evo-home-hero);
+    border: 1px solid var(--evo-home-border);
+    border-radius: 8px;
+    box-shadow: var(--evo-home-shadow);
+}
+
+.md-typeset .evo-hero h2 {
+    margin-top: 0.25rem;
+    border-bottom: 0;
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.12;
+}
+
+.md-typeset .evo-kicker {
+    margin: 0 0 0.3rem;
+    color: var(--evo-home-accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.md-typeset .evo-hero__copy p {
+    max-width: 48rem;
+}
+
+.md-typeset .evo-actions {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin: 1rem 0 0;
+}
+
+.md-typeset .evo-actions br {
+    display: none;
+}
+
+.md-typeset .evo-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.1rem;
+    padding: 0.45rem 0.72rem;
+    border: 1px solid var(--evo-home-border);
+    border-radius: 6px;
+    background: var(--evo-home-panel);
+    color: var(--md-typeset-a-color);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+}
+
+.md-typeset .evo-button:hover,
+.md-typeset .evo-button:focus {
+    border-color: var(--evo-home-accent-2);
+    text-decoration: none;
+}
+
+.md-typeset .evo-button--primary {
+    background: var(--evo-home-accent-2);
+    border-color: var(--evo-home-accent-2);
+    color: var(--evo-home-button-fg);
+}
+
+.md-typeset .evo-hero__panel {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.85rem;
+    min-height: 16rem;
+    border-radius: 8px;
+}
+
+.md-typeset .evo-logo {
+    width: min(5rem, 42%);
+    height: auto;
+    border-radius: 8px;
+}
+
+.md-typeset .evo-terminal-card {
+    display: grid;
+    gap: 0.35rem;
+    width: 100%;
+    max-width: 18rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(120, 166, 255, 0.35);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    font-family: var(--md-code-font-family, monospace);
+    font-size: 0.66rem;
+    line-height: 1.5;
+}
+
+.md-typeset .evo-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0 0 1.3rem;
+}
+
+.md-typeset .evo-metrics > div,
+.md-typeset .evo-card,
+.md-typeset .evo-feature-grid > div,
+.md-typeset .evo-link-columns > div {
+    background: var(--evo-home-panel);
+    border: 1px solid var(--evo-home-border);
+    border-radius: 8px;
+}
+
+.md-typeset .evo-metrics > div {
+    min-height: 5.4rem;
+    padding: 0.8rem;
+}
+
+.md-typeset .evo-metrics strong {
+    display: block;
+    color: var(--evo-home-accent-2);
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+.md-typeset .evo-metrics span,
+.md-typeset .evo-feature-grid span {
+    display: block;
+    color: var(--evo-home-muted);
+}
+
+.md-typeset .evo-section {
+    margin: 1.45rem 0;
+}
+
+.md-typeset .evo-section > h2 {
+    border-bottom-color: var(--evo-home-border);
+}
+
+.md-typeset .evo-card-grid,
+.md-typeset .evo-feature-grid,
+.md-typeset .evo-link-columns {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.md-typeset .evo-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.md-typeset .evo-feature-grid,
+.md-typeset .evo-link-columns {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.md-typeset .evo-link-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.md-typeset .evo-card,
+.md-typeset .evo-feature-grid > div,
+.md-typeset .evo-link-columns > div {
+    padding: 0.85rem;
+}
+
+.md-typeset .evo-card__title,
+.md-typeset .evo-column__title {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.md-typeset .evo-card__title {
+    color: var(--evo-home-accent-2);
+}
+
+.md-typeset .evo-column__title {
+    color: var(--heading-color);
+}
+
+.md-typeset .evo-card p:last-child,
+.md-typeset .evo-feature-grid p,
+.md-typeset .evo-link-columns p {
+    margin-bottom: 0;
+}
+
+.md-typeset .evo-feature-grid strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--heading-color);
+    font-size: 0.78rem;
+}
+
+.md-typeset .evo-reference a {
+    display: inline-block;
+    margin: 0.08rem 0;
+}
+
+@media (max-width: 64em) {
+    .md-typeset .evo-hero,
+    .md-typeset .evo-card-grid,
+    .md-typeset .evo-feature-grid,
+    .md-typeset .evo-link-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .md-typeset .evo-hero__panel {
+        min-height: 12rem;
+    }
+
+    .md-typeset .evo-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 34em) {
+    .md-typeset .evo-hero {
+        padding: 0.85rem;
+    }
+
+    .md-typeset .evo-actions,
+    .md-typeset .evo-actions .evo-button {
+        width: 100%;
+    }
+
+    .md-typeset .evo-metrics {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Final mobile override: disable theme max-height clamps and keep scrolling */
