@@ -72,7 +72,8 @@ config FREETZ_TYPE_PREFIX
 	default "6591"              if FREETZ_TYPE_6591
 	default "6660"              if FREETZ_TYPE_6660
 	default "6670"              if FREETZ_TYPE_6670
-	default "6690"              if FREETZ_TYPE_6690
+	default "6690"              if FREETZ_TYPE_6690_NIX
+	default "6690_Pro"          if FREETZ_TYPE_6690_PRO
 	default "6810"              if FREETZ_TYPE_6810
 	default "6820_v1"           if FREETZ_TYPE_6820_V1
 	default "6820_v2"           if FREETZ_TYPE_6820_V2

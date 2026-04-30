@@ -88,14 +88,15 @@ Latest changes
     * Still are some patches not yet adapted for Fritzos 8.2x
 
   - Packages:
+    * ACME.sh 3.1.3
     * Atop 2.12.1
     * Bftpd 6.6
     * BIND 9.11.37/9.20.22
     * Binutils 2.46.0
     * CA-bundle 2026-03-19
-    * Curl 8.12.1/8.19.0
+    * Curl 8.12.1/8.20.0
     * Git 2.26.2/2.53.0
-    * htop 1.0.3/3.5.0
+    * htop 1.0.3/3.5.1
     * ImageMagick 7.1.0-62/7.1.2-21
     * iPerf3 3.3/3.21
     * LCD4linux 63fffafb
@@ -109,6 +110,7 @@ Latest changes
     * OpenVPN 2.4.12/2.5.11/2.6.20/2.7.3
     * procps-ng 4.0.6
     * Python 3.14.3
+    * rsync 3.4.2
     * sslh 2.2.4/2.3.1
     * Stunnel 5.78
     * SQLite 3.40.1/3.53.0
@@ -116,6 +118,7 @@ Latest changes
     * Tinyproxy 1.11.3
     * Tor 0.4.8.23
     * Tree 1.8.0/2.3.2
+    * Unbound 1.25.0
     * UnRAR 6.1.7/7.2.5
     * Virtualip-NG 1.0
     * wireguard-tools 1.0.20260223
@@ -222,6 +225,7 @@ Latest changes
     * ImageMagick 7.1.0-62/7.1.2-12
     * Info-ZIP 3.0
     * iPerf3 3.3/3.20
+    * Iptables-NG 1.0
     * ldd 0.1/1.0.56
     * Make 4.2.1/4.4.1
     * MTR 0.80/0.96

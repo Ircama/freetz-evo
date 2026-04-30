@@ -1,10 +1,4 @@
-menuconfig FREETZ_LIB_libcurl
-	bool "libcurl (libcurl.so)"
-	default n
-	help
-		A client-side URL transfer library.
-
-if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
+menu "libcurl"
 
 	choice
 		prompt "Version"
@@ -15,18 +9,27 @@ if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
 			depends on !FREETZ_SEPARATE_AVM_UCLIBC
 
 		config FREETZ_LIB_libcurl_WITH_VERSION_CURRENT
-			bool "8.19.0"
+			bool "8.20.0"
 			depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 	endchoice
 
+	config FREETZ_LIB_libcurl
+		bool "libcurl (libcurl.so)"
+		default n
+		help
+			A client-side URL transfer library.
+
+	comment " ---"
+
 	config FREETZ_LIB_libcurl_WITH_SSL
 		bool "build with SSL support"
-		default y
+		default n
 		help
 			This option enables SSL support in curl.
 
 	if FREETZ_LIB_libcurl_WITH_SSL
+
 		choice
 			prompt "SSL library"
 			default FREETZ_LIB_libcurl_WITH_OPENSSL
@@ -43,6 +46,12 @@ if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
 				select FREETZ_LIB_libmbedx509
 
 		endchoice
+
+		config FREETZ_LIB_libcurl_WITH_CA_BUNDLE
+			bool "Select CA-bundle"
+			default n
+			select FREETZ_PACKAGE_CA_BUNDLE
+
 	endif # FREETZ_LIB_libcurl_WITH_SSL
 
 	config FREETZ_LIB_libcurl_WITH_CA_BUNDLE
@@ -75,5 +84,5 @@ if FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
 		help
 			This option enables zlib support in curl.
 
-endif # FREETZ_LIB_libcurl || FREETZ_PACKAGE_CURL
+endmenu # libcurl
 

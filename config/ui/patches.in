@@ -486,6 +486,11 @@ config FREETZ_REMOVE_LANGUAGE_pl
 	depends on FREETZ_REMOVE_LANGUAGE && FREETZ_AVM_HAS_LANGUAGE_pl
 	default y
 
+config FREETZ_REMOVE_LANGUAGE_sl
+	bool "sl"
+	depends on FREETZ_REMOVE_LANGUAGE && FREETZ_AVM_HAS_LANGUAGE_sl
+	default y
+
 
 config FREETZ_REMOVE_BRANDING
 	bool "Remove brandings"

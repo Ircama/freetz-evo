@@ -5,7 +5,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### A
 
-  * **[ACME.sh 3.1.2](acme.md)<a id='acme'></a>**<br>
+  * **[ACME.sh 3.1.3](acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
   * **[aMUTorrent 3.5.0 - DEVELOPER](amutorrent.md)<a id='amutorrent'></a>**<br>
@@ -122,7 +122,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Ctorrent dnh3.3.2 (binary only) - DEPRECATED](ctorrent.md)<a id='ctorrent'></a>**<br>
     CTorrent is a BitTorrent client written in the C programming language, known to be a very robust and mature programming language, which produces fast and optimized application.
 
-  * **[Curl 8.12.1/8.19.0 (binary only)](curl.md)<a id='curl'></a>**<br>
+  * **[Curl 8.12.1/8.20.0 (binary only)](curl.md)<a id='curl'></a>**<br>
     Curl is a command line tool for transferring files with URL syntax, supporting FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE and LDAP. Curl supports HTTPS certificates, HTTP POST, HTTP PUT, FTP uploading, kerberos, HTTP form based upload, proxies, cookies, user+password authentication, file transfer resume, http proxy tunneling and a busload of other useful tricks.
 
   * **<u>CurlFtpFS 0.9.2 - DEPRECATED</u><a id='curlftpfs'></a>**<br>
@@ -273,7 +273,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>html2text 1.3.2a (binary only) - DEPRECATED</u><a id='html2text'></a>**<br>
     html2text is a command line utility, written in C++, that converts HTML documents into plain text.
 
-  * **[htop 1.0.3/3.5.0 (binary only)](htop.md)<a id='htop'></a>**<br>
+  * **[htop 1.0.3/3.5.1 (binary only)](htop.md)<a id='htop'></a>**<br>
     htop is a more powerful alternative to top, using ncurses.
 
   * **[htpdate 2.0.1](htpdate.md)<a id='htpdate'></a>**<br>
@@ -818,7 +818,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[RRDtool 1.2.30/1.9.0 (binary only)](rrdtool.md)<a id='rrdtool'></a>**<br>
     RRDtool is the OpenSource industry standard, high performance data logging and graphing system for time series data. Use it to write your custom monitoring shell scripts or create whole applications using its PHP bindings.
 
-  * **[rsync 3.4.1](rsync.md)<a id='rsync'></a>**<br>
+  * **[rsync 3.4.2](rsync.md)<a id='rsync'></a>**<br>
     rsync is an open source utility that provides fast incremental file transfer.
 
   * **<u>RTMPDump 2.4-git (binary only) - DEPRECATED</u><a id='rtmpdump'></a>**<br>
@@ -976,7 +976,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[uMurmur 0.2.20/0.3.1](umurmur.md)<a id='umurmur'></a>**<br>
     umurmur is a minimalistic Mumble server primarily targeted to run on routers using less resources. It targets to fill the needs of a pretty small group of users communicating, which in part originates from the other goal of working well on a small system with a limited CPU and limited amount of disk space. It also aims to minimize writing to the disk since these kinds of systems usually only has a flash memory for disk. umurmur supports a subset of the features of Murmur. https://github.com/umurmur/umurmur
 
-  * **[Unbound 1.24.2](unbound.md)<a id='unbound'></a>**<br>
+  * **[Unbound 1.25.0](unbound.md)<a id='unbound'></a>**<br>
     Unbound is designed as a set of modular components, so that also DNSSEC (secure DNS) validation and stub-resolvers (that do not run as a server, but are linked into an application) are easily possible.
 
   * **[UNFS3 0.9.23 - DEPRECATED](unfs3.md)<a id='unfs3'></a>**<br>
@@ -1241,6 +1241,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Download files from HTTP or FTP server during the boot process. This is particularly useful for binary packages which do not fit into the firmware image, but should be used on the box anyway. As long as they fit into the RAM disk this solution helps to automate the downloads and keeps them out of debug.cfg. by hermann72pb (ip-phone-forum.de) Support thread: http://www.ip-phone-forum.de/showthread.php?t=134934
 
   * **[Iptables-CGI - DEPRECATED](iptables-cgi.md)<a id='iptables'></a>**<br>
+
+  * **[Iptables-NG - EXPERIMENTAL](iptables-ng.md)<a id='iptables-ng'></a>**<br>
+    Advanced iptables/ip6tables management page with dynamic table and module capability detection, plus save/restore controls. Runtime status (started/stopped) is independent from startup mode (automatic/manual). Startup mode only controls boot behavior. See docs/make/iptables-ng.md for more hints. This package forces removing of dsld if available!
 
   * **[ncdu CGI (disk usage web UI)](ncdu-cgi.md)<a id='ncdu'></a>**<br>
     Provides a web interface for ncdu disk usage analysis. Runs ncdu in JSON export mode (-0xo-) on a selected path and renders the result as an interactive expandable directory tree in the browser. http://fritz.box:81/cgi-bin/conf/ncdu

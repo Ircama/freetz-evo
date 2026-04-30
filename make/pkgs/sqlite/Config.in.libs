@@ -1,14 +1,4 @@
-config FREETZ_LIB_libsqlite3
-	bool "libsqlite (libsqlite3.so)"
-	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-	default n
-	help
-		SQLite is a small C library that implements a self-contained,
-		embeddable, zero-configuration SQL database engine.
-		This is just the Library.
-
-if FREETZ_LIB_libsqlite3
+menu "libsqlite3"
 
 	choice
 		prompt "Version"
@@ -26,5 +16,15 @@ if FREETZ_LIB_libsqlite3
 
 	endchoice
 
-endif # FREETZ_LIB_libsqlite3
+	config FREETZ_LIB_libsqlite3
+		bool "libsqlite (libsqlite3.so)"
+		select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		default n
+		help
+			SQLite is a small C library that implements a self-contained,
+			embeddable, zero-configuration SQL database engine.
+			This is just the Library.
+
+endmenu # libsqlite3
 

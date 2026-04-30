@@ -1,20 +1,20 @@
-if FREETZ_TYPE_6690 && FREETZ_AVM_VERSION_08_2X
+if FREETZ_TYPE_6690_PRO && FREETZ_AVM_VERSION_08_2X
 
 config FREETZ_AVM_PROP_NAME
 	string
-	default "FRITZ!Box 6690 Cable"
+	default "FRITZ!Box 6690 Pro"
 
 config FREETZ_AVM_PROP_MAJOR
 	string
-	default "267"
+	default "308"
 
 config FREETZ_AVM_PROP_HWREV
 	string
-	default "267"
+	default "308"
 
 config FREETZ_AVM_PROP_PRODUKT
 	string
-	default "Fritz_Box_HW267x"
+	default "Fritz_Box_HW308x"
 
 config FREETZ_AVM_HAS_BRANDING_avm
 	def_bool y
@@ -43,6 +43,9 @@ config FREETZ_AVM_HAS_LANGUAGE_nl
 config FREETZ_AVM_HAS_LANGUAGE_pl
 	def_bool y
 
+config FREETZ_AVM_HAS_LANGUAGE_sl
+	def_bool y
+
 config FREETZ_AVM_HAS_SIGNATURE
 	def_bool y
 
@@ -66,9 +69,6 @@ config FREETZ_AVM_HAS_MYFRITZ
 	def_bool y
 
 config FREETZ_AVM_HAS_NAS
-	def_bool y
-
-config FREETZ_AVM_HAS_AURA_USB
 	def_bool y
 
 config FREETZ_AVM_HAS_WEBDAV
@@ -246,4 +246,3 @@ config FREETZ_AVM_PROP_UCLIBC_SEPARATE
 	def_bool y
 
 endif
-

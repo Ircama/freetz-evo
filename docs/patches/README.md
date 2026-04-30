@@ -163,6 +163,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>REMOVE_LANGUAGE_pl: pl</u><a id='remove-language-pl'></a>**<br>
 
+  * **<u>REMOVE_LANGUAGE_sl: sl</u><a id='remove-language-sl'></a>**<br>
+
   * **<u>Remove leftover</u><a id='remove-leftover'></a>**<br>
     This enables the scripts in patches/cond/300-remove-leftover/ which remove some unused leftovers of avm, currently 111-disable_crashreport.sh 170-remove_dect_related_files_on_nondect_box.sh 510-remove_usbmon.sh 565-remove_more.sh 565-remove_ncurses.sh 570-remove-trustedd.sh 800-remove_oemcheck.sh 800-remove_ptest.sh
 
