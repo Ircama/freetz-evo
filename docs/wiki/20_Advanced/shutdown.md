@@ -30,43 +30,43 @@ Windows computers.
 ### Configure the FRITZ!Box for a Linux Computer to Shut Down
 
 -   On the FRITZ!Box, create a file such as
-    `/var/tmp/flash/ssh/shutdown_linuxrechner.sh` with the following
+    `/var/tmp/flash/ssh/shutdown_linux_computer.sh` with the following
     content. Some distributions prevent user `root` from logging in by
     default. Change that setting, or preferably replace `root` with a user
     that, for security reasons, only has permission to shut down the
     computer.
 
 ```
-		ssh -i /var/tmp/flash/ssh/rsakey_box root@<ip_rechner> "shutdown -h now"
+    ssh -i /var/tmp/flash/ssh/rsakey_box root@<computer_ip> "shutdown -h now"
 ```
 
 -   As the final configuration step on the FRITZ!Box, add this line to the
     Callmonitor listeners:
 
 ```
-		in:request ^<abgangsrufnummer> ^<eingangsrufnummer> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_linuxrechner.sh
+    in:request ^<outgoing_number> ^<incoming_number> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_linux_computer.sh
 ```
 
 ### Configure the FRITZ!Box for a Windows Computer to Shut Down
 
 -   On the FRITZ!Box, create a file such as
-    `/var/tmp/flash/ssh/shutdown_windowsrechner.sh` with the following
-    content. Replace `<benutzername>` with the Windows user name:
+    `/var/tmp/flash/ssh/shutdown_windows_computer.sh` with the following
+    content. Replace `<username>` with the Windows user name:
     ```
-		ssh -i /var/tmp/flash/ssh/rsakey_box <benutzername>@<ip_rechner> "shutdown -s"
+    ssh -i /var/tmp/flash/ssh/rsakey_box <username>@<computer_ip> "shutdown -s"
     ```
 
 -   Add this line to the Callmonitor listeners:
 
     ```
-		in:request ^<abgangsrufnummer> ^<eingangsrufnummer> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_windowsrechner.sh
+    in:request ^<outgoing_number> ^<incoming_number> HOME=/mod/root && /var/tmp/flash/ssh/shutdown_windows_computer.sh
     ```
 
 ### Configure the Linux Computer to Shut Down
 
 -   Copy the public key, the one extracted earlier, from the FRITZ!Box to
     the target computer and authorize it. Replace `root` with
-    `/home/<benutzername>` if necessary, and make sure that this user is
+    `/home/<username>` if necessary, and make sure that this user is
     allowed to shut down the computer:
     ```
 		cat rsakey_box.pub >> /root/.ssh/authorized_keys
@@ -78,13 +78,13 @@ Windows computers.
 
 -   Copy the public key from the FRITZ!Box to the target computer, rename
     it to `authorized_keys`, and place it in
-    `c:\\Dokumente und Einstellungen\\benutzername\\.ssh\\`. On the
+    `c:\\Documents and Settings\\username\\.ssh\\`. On the
     author's computer, the folder had to be created in the terminal with
     `mkdir .ssh` because of the leading dot.
 
 -   Install [OpenSSH](http://sshwindows.sourceforge.net/).
 
--   Adjust the configuration file `c:\\programme\\openssh\\etc\\sshd_config`.
+-   Adjust the configuration file `c:\\Program Files\\OpenSSH\\etc\\sshd_config`.
     Correct these values:
 
     ```

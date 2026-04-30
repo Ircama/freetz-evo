@@ -1038,23 +1038,23 @@ or in the VM with the following command: **ifconfig**. After entering
 **ifconfig**, the following output should be visible in the VM.
 
 ```
-	eth0      Link encap:Ethernet  Hardware Adresse 08:00:27:45:53:49
-			  inet Adresse:192.168.XXX.203  Bcast:192.168.XXX.255  Maske:255.255.255.0
-			  inet6-Adresse: XXXX::XXXX:XXXX:XXXX:XXXX/XX Gültigkeitsbereich:Verbindung
-			  UP BROADCAST RUNNING MULTICAST  MTU:1500  Metrik:1
+    eth0      Link encap:Ethernet  HWaddr 08:00:27:45:53:49
+              inet addr:192.168.XXX.203  Bcast:192.168.XXX.255  Mask:255.255.255.0
+              inet6 addr: XXXX::XXXX:XXXX:XXXX:XXXX/XX Scope:Link
+              UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
 			  RX packets:454 errors:0 dropped:0 overruns:0 frame:0
 			  TX packets:155 errors:0 dropped:0 overruns:0 carrier:0
-			  Kollisionen:0 SendewarteschlangenlÃ¤nge:1000
+              collisions:0 txqueuelen:1000
 			  RX bytes:59413 (59.4 KB)  TX bytes:24972 (24.9 KB)
-			  Interrupt:10 Basisadresse:0xd020
+              Interrupt:10 Base address:0xd020
 
-	lo        Link encap:Lokale Schleife
-			  inet Adresse:127.0.0.1  Maske:255.0.0.0
-			  inet6-Adresse: ::1/128 Gültigkeitsbereich:Maschine
-			  UP LOOPBACK RUNNING  MTU:16436  Metrik:1
+    lo        Link encap:Local Loopback
+              inet addr:127.0.0.1  Mask:255.0.0.0
+              inet6 addr: ::1/128 Scope:Host
+              UP LOOPBACK RUNNING  MTU:16436  Metric:1
 			  RX packets:15 errors:0 dropped:0 overruns:0 frame:0
 			  TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
-			  Kollisionen:0 SendewarteschlangenlÃ¤nge:0
+              collisions:0 txqueuelen:0
 			  RX bytes:1122 (1.1 KB)  TX bytes:1122 (1.1 KB)
 ```
 

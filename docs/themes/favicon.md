@@ -1,24 +1,23 @@
 # Favicons
 
-Aus WIKIPEDIA:
+From Wikipedia:
 ```
-Ein Favicon (kurz für favourite icon, engl. für Favoriten-Symbol) ist
-ein kleines, 16×16 oder 32×32 Pixel großes Icon, Symbol oder Logo,
-das unter anderem in der Adresszeile eines Browsers links von der
-URL angezeigt wird und meist dazu dient, die zugehörige Website auf
-wiedererkennbare Weise zu kennzeichnen. Es taucht auch in der
-Lesezeichenleiste (Favoriten), bei den Registerkarten (oder Tabs)
-und unter Windows beim Speichern einer Seite auf dem Desktop auf. Das
-Favicon wurde von Microsoft mit dem Internet Explorer 4 eingeführt.
+A favicon, short for favourite icon, is a small 16x16 or 32x32 pixel
+icon, symbol, or logo that is shown, among other places, in a browser's
+address bar to the left of the URL. It usually helps identify the
+associated website in a recognizable way. It also appears in the
+bookmarks bar, on browser tabs, and under Windows when saving a page to
+the desktop. The favicon was introduced by Microsoft with Internet
+Explorer 4.
 ```
-Die Favicons werden sowohl bei AVM-WebIF, als auch bei FREETZ-WebIF angezeigt.<br>
-Zur Zeit können folgende Einstellungen für Favicons im menuconfig unter "Web interface" ausgewählt werden:
+Favicons are displayed in both the AVM WebIF and the FREETZ WebIF.<br>
+The following favicon settings can currently be selected in menuconfig under "Web interface":
 
 
 ## Freetz Webinterface
 
 ### none
-Keine Favicons. Dies ist die Default-Einstellung.
+No favicons. This is the default setting.
 
 ### atomphil
 [![Favicon atomphil](../screenshots/000-FAV_mod-atomphil_md.jpg)](../screenshots/000-FAV_mod-atomphil.jpg)
@@ -39,10 +38,10 @@ Keine Favicons. Dies ist die Default-Einstellung.
 ## AVM Webinterface
 
 ### none
-Keine Favicons. Das ist die Default-Einstellung.
+No favicons. This is the default setting.
 
 ### atomphil
-Es wird das original AVM-Favicon genutzt.
+The original AVM favicon is used.
 
 ### cuma
 [![AVMicon cuma](../screenshots/000-FAV_avm-cuma_md.jpg)](../screenshots/000-FAV_avm-cuma.jpg)
@@ -54,6 +53,6 @@ Es wird das original AVM-Favicon genutzt.
 [![AVMicon hansolo](../screenshots/000-FAV_avm-hansolo_md.jpg)](../screenshots/000-FAV_avm-hansolo.jpg)
 
 ### prisrak
-Es wird das original AVM-Favicon genutzt.
+The original AVM favicon is used.
 
 

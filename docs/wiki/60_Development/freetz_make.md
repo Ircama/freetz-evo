@@ -7,8 +7,8 @@ as `menuconfig`, `toolchain`, `precompiled`, `recover`, and others do
 when building *Freetz* firmware. Nevertheless, the forum regularly sees
 many questions about the build process, usually when the process does not
 complete and the user does not know why. The reason is usually that the
-user is inexperienced with
-[GNU make](http://www.gnu.org/software/make/) keine
+user is unfamiliar with
+[GNU make](http://www.gnu.org/software/make/)
 because, firstly, they are not a C/C++ programmer and/or, secondly, the
 Linux command line itself is already a sealed book to them. At least the
 first point also applies to me, so I read up superficially in order to

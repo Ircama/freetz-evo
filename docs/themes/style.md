@@ -1,19 +1,18 @@
 # Style
 
-Das Aussehen von mounted.cgi (Balken für die Größe der internen und
-eingebundenen Medien) kann in menuconfig festgelegt werden. Folgende
-Darstellungsarten sind möglich:
+The appearance of `mounted.cgi` (bars showing the size of internal and
+mounted media) can be configured in menuconfig. The following display
+styles are available:
 
 ### Green (retro)
-Retrystil für 70er Jahre Fanboys. Überwiegend grüne Balken, die nach
-dem Mountzustand ihre Farbe in dunkelblau verändern können. Andere
-Informationen sind durch unterschiedliche Farben gekennzeichnet.<br><br>
+Retro style for 1970s fans. Mostly green bars that can change to dark
+blue depending on the mount state. Other information is marked with
+different colors.<br><br>
 [![Style green retro](../screenshots/135_md.png)](../screenshots/135.png)<br><br>
 
 ### Grey (dark)
-In diesem Design wurde versucht durch die Grauskala die Vielfalt der
-bunten Farben möglichst farbtreu nachzubilden. Ob es letztendlich
-überall gelungen ist, darüber lässt sich bekanntlich streiten.
-Augenfreundlich, falls die Augen noch nicht vom Alter getrübt sind.<br><br>
+This design tries to reproduce the variety of bright colors in grayscale
+as faithfully as possible. Whether that worked everywhere is, as always,
+open to debate. Easy on the eyes, assuming age has not clouded them yet.<br><br>
 [![Style grey dark](../screenshots/136_md.png)](../screenshots/136.png)<br><br>
 
