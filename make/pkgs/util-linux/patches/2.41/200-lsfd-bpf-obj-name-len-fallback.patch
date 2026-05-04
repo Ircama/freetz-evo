@@ -1,0 +1,14 @@
+--- a/lsfd-cmd/unkn.c
++++ b/lsfd-cmd/unkn.c
+@@ -20,6 +20,11 @@
+  */
+ 
+ #include <linux/bpf.h>
++/* BPF_OBJ_NAME_LEN was added in kernel 5.8; provide fallback for older headers */
++#ifndef BPF_OBJ_NAME_LEN
++#define BPF_OBJ_NAME_LEN 16
++#endif
++
+ #include <sys/syscall.h>
+ #include <sys/timerfd.h>
+ #include <time.h>

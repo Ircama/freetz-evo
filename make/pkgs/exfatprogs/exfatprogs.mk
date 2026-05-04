@@ -5,6 +5,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=67ddb50543636292df8fde58117eefd54210d6cd7bf1eea5e91d2c4dccbc425e
 $(PKG)_SITE:=https://github.com/exfatprogs/exfatprogs/releases/download/$($(PKG)_VERSION)
 
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_TARGET_UCLIBC_0_9_32),uclibc-0.9.32)
+
 $(PKG)_BINARIES_ALL := mkfs.exfat fsck.exfat exfatlabel tune.exfat
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))
 

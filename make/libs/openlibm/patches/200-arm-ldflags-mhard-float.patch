@@ -1,0 +1,9 @@
+--- a/Make.inc
++++ b/Make.inc
+@@ -62,7 +62,6 @@ ifeq ($(findstring arm,$(ARCH)),arm)
+ override ARCH := arm
+ MARCH ?= armv7-a
+-CFLAGS_add += -mhard-float
+ endif
+ ifeq ($(findstring powerpc,$(ARCH)),powerpc)
+ override ARCH := powerpc

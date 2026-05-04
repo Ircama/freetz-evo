@@ -14,9 +14,12 @@ $(PKG)_SOURCE_2.41:=util-linux-2.41.tar.xz
 $(PKG)_HASH_2.41:=81ee93b3cfdfeb7d7c4090cedeba1d7bbce9141fd0b501b686b3fe475ddca4c6
 
 # lsfd requires BPF_OBJ_NAME_LEN from target linux/bpf.h.
+# On kernels < 5.8 the constant is missing; the patch
+# 200-lsfd-bpf-obj-name-len-fallback.patch adds the fallback define, and
+# we override the configure cache variable so autoconf accepts it.
 UTIL_LINUX_BPF_HEADER:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/linux/bpf.h
 UTIL_LINUX_HAS_BPF_OBJ_NAME_LEN:=$(shell [ -r "$(UTIL_LINUX_BPF_HEADER)" ] && grep -q "BPF_OBJ_NAME_LEN" "$(UTIL_LINUX_BPF_HEADER)" && echo y || echo n)
-UTIL_LINUX_ENABLE_LSFD:=$(if $(filter y,$(FREETZ_UTIL_LINUX_LSFD)),$(if $(filter y,$(UTIL_LINUX_HAS_BPF_OBJ_NAME_LEN)),y,n),n)
+UTIL_LINUX_ENABLE_LSFD:=$(if $(filter y,$(FREETZ_UTIL_LINUX_LSFD)),y,n)
 
 # Build list of selected utilities for version 2.41
 $(PKG)_BINARIES_2.41:=
@@ -64,9 +67,11 @@ $(eval $(call UTIL_LINUX_ADD_BINARY,UUIDPARSE,uuidparse,no))
 $(eval $(call UTIL_LINUX_ADD_BINARY,LASTLOG2,lastlog2,no))
 $(eval $(call UTIL_LINUX_ADD_BINARY,MOUNTPOINT,mountpoint,no))
 
-ifeq ($(strip $(FREETZ_UTIL_LINUX_LSFD)),y)
-ifneq ($(strip $(UTIL_LINUX_ENABLE_LSFD)),y)
-$(warning util-linux: lsfd disabled because BPF_OBJ_NAME_LEN is missing in $(UTIL_LINUX_BPF_HEADER))
+ifeq ($(strip $(UTIL_LINUX_ENABLE_LSFD)),y)
+ifeq ($(strip $(UTIL_LINUX_HAS_BPF_OBJ_NAME_LEN)),n)
+# Header lacks BPF_OBJ_NAME_LEN (kernel < 5.8): override the configure check;
+# the source fallback is provided by 200-lsfd-bpf-obj-name-len-fallback.patch.
+$(PKG)_CONFIGURE_ENV += ac_cv_have_decl_BPF_OBJ_NAME_LEN=yes
 endif
 endif
 
@@ -122,6 +127,7 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-shared=no
 endif
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libblkid FREETZ_LIB_libmount FREETZ_LIB_libsmartcols FREETZ_LIB_libfdisk FREETZ_LIB_liblastlog2
+$(PKG)_REBUILD_SUBOPTS += FREETZ_UTIL_LINUX_UNSHARE
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpath
 $(PKG)_CONFIGURE_OPTIONS += --without-libiconv-prefix
@@ -200,6 +206,7 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-lsfd
 else
 $(PKG)_CONFIGURE_OPTIONS += --disable-lsfd
 endif
+
 ifneq ($(strip $(FREETZ_UTIL_LINUX_BLKID)$(FREETZ_UTIL_LINUX_FINDFS)$(FREETZ_UTIL_LINUX_WIPEFS)),)
 $(PKG)_CONFIGURE_OPTIONS += --enable-blkid
 else

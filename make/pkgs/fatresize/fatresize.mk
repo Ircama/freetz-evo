@@ -16,6 +16,7 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/fatresize
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/fatresize
 
 $(PKG)_DEPENDS_ON += parted e2fsprogs
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PARTED
 
 # fatresize's configure checks parted headers before pkg-config macros.
 $(PKG)_CONFIGURE_ENV += CFLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
@@ -23,9 +24,10 @@ $(PKG)_CONFIGURE_ENV += CFLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLCHAIN_STAGING_DI
 # produce an invalid -D_FILE_OFFSET_BITS=no define.
 $(PKG)_CONFIGURE_ENV += ac_cv_sys_file_offset_bits=64
 $(PKG)_CONFIGURE_ENV += PARTED_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
-# configure adds -lparted-fs-resize itself for libparted >= 3.1.
-# Keep only base libs/path here to avoid duplicate symbols from static archives.
-$(PKG)_CONFIGURE_ENV += PARTED_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lparted -luuid -ldl"
+# configure adds -lparted-fs-resize itself for libparted >= 3.1 only when
+# using pkg-config; since we bypass it with PARTED_LIBS, list all needed libs
+# explicitly. Order matters for static archives: fs-resize → parted → blkid.
+$(PKG)_CONFIGURE_ENV += PARTED_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lparted-fs-resize -lparted -lblkid -luuid -ldl"
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)

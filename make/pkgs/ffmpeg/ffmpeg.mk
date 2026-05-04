@@ -47,6 +47,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_IPV6_SUPPORT
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_ffmpeg
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_ffprobe
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_EVERYTHING
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_LZMA
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_SSL_OPENSSL
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_SSL_MBEDTLS
@@ -71,6 +72,10 @@ ifeq ($(strip $(FREETZ_TARGET_ARCH_MIPS)),y)
 $(PKG)_CONFIGURE_OPTIONS += --disable-inline-asm
 # {standard input}:31: Error: opcode not supported on this processor: mips32r2 (mips32r2) `dmult $2,$3'
 # {standard input}:33: Error: opcode not supported on this processor: mips32r2 (mips32r2) `dsrl $2,$2,32'
+endif
+
+ifeq ($(strip $(FREETZ_TARGET_ARCH_X86)),y)
+$(PKG)_CONFIGURE_OPTIONS += --disable-inline-asm
 endif
 
 $(PKG)_CONFIGURE_OPTIONS += --target-os=linux

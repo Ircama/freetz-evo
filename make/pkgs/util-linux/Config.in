@@ -192,6 +192,7 @@ config FREETZ_UTIL_LINUX_FINDMNT
 
 config FREETZ_UTIL_LINUX_UNSHARE
 	bool "unshare - run program with unshared namespaces (renamed to unshare-ng)"
+	depends on !FREETZ_TARGET_UCLIBC_0_9_32
 	default y
 	help
 		unshare runs a program with some namespaces unshared from the parent.

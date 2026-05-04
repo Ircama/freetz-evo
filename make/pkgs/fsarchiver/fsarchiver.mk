@@ -12,7 +12,10 @@ $(PKG)_SITE:=https://github.com/fdupoux/fsarchiver/releases/download/$($(PKG)_VE
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/fsarchiver
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/fsarchiver
 
-$(PKG)_DEPENDS_ON += e2fsprogs
+$(PKG)_DEPENDS_ON += e2fsprogs parted
+
+$(PKG)_CONFIGURE_ENV += BLKID_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/blkid"
+$(PKG)_CONFIGURE_ENV += BLKID_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lblkid -luuid"
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-lzma
 $(PKG)_CONFIGURE_OPTIONS += --disable-lzo

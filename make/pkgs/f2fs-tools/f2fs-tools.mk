@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=77217562ae7011a6d81b7b3c43c42623db1796a57596408d6c8037def70d6cc7
 $(PKG)_SITE:=https://github.com/jaegeuk/f2fs-tools/archive/refs/tags/v$($(PKG)_VERSION)
 
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_TARGET_UCLIBC_0_9_32),uclibc-0.9.32)
+
 $(PKG)_BINARIES_ALL := mkfs.f2fs fsck.f2fs
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))
 

@@ -1,0 +1,10 @@
+--- tools/sha512.c
++++ tools/sha512.c
+@@ -29,6 +29,7 @@
+ #include <termios.h>
+ #include <unistd.h>
+ #include <signal.h>
++#include <linux/types.h>
+ #include <linux/fs.h>
+ 
+ #if HAVE_SYS_TYPES_H

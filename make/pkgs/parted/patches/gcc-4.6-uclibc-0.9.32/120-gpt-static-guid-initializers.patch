@@ -1,0 +1,231 @@
+--- libparted/labels/gpt.c
++++ libparted/labels/gpt.c
+@@ -93,82 +93,112 @@
+ #define UNUSED_ENTRY_GUID    \
+     ((efi_guid_t) { 0x00000000, 0x0000, 0x0000, 0x00, 0x00, \
+                     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }})
++#define PARTITION_SYSTEM_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xC12A7328), PED_CPU_TO_LE16 (0xF81F), \
++    PED_CPU_TO_LE16 (0x11d2), 0xBA, 0x4B, \
++    { 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B }}
+ #define PARTITION_SYSTEM_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xC12A7328), PED_CPU_TO_LE16 (0xF81F), \
+-                    PED_CPU_TO_LE16 (0x11d2), 0xBA, 0x4B, \
+-                    { 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B }})
++  ((efi_guid_t) PARTITION_SYSTEM_GUID_INIT)
++#define PARTITION_BIOS_GRUB_GUID_INIT \
++  { PED_CPU_TO_LE32 (0x21686148), PED_CPU_TO_LE16 (0x6449), \
++    PED_CPU_TO_LE16 (0x6E6f), 0x74, 0x4E, \
++    { 0x65, 0x65, 0x64, 0x45, 0x46, 0x49 }}
+ #define PARTITION_BIOS_GRUB_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0x21686148), PED_CPU_TO_LE16 (0x6449), \
+-                    PED_CPU_TO_LE16 (0x6E6f), 0x74, 0x4E, \
+-                    { 0x65, 0x65, 0x64, 0x45, 0x46, 0x49 }})
++  ((efi_guid_t) PARTITION_BIOS_GRUB_GUID_INIT)
+ #define LEGACY_MBR_PARTITION_GUID \
+     ((efi_guid_t) { PED_CPU_TO_LE32 (0x024DEE41), PED_CPU_TO_LE16 (0x33E7), \
+                     PED_CPU_TO_LE16 (0x11d3, 0x9D, 0x69, \
+                     { 0x00, 0x08, 0xC7, 0x81, 0xF3, 0x9F }})
++#define PARTITION_MSFT_RESERVED_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xE3C9E316), PED_CPU_TO_LE16 (0x0B5C), \
++    PED_CPU_TO_LE16 (0x4DB8), 0x81, 0x7D, \
++    { 0xF9, 0x2D, 0xF0, 0x02, 0x15, 0xAE }}
+ #define PARTITION_MSFT_RESERVED_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xE3C9E316), PED_CPU_TO_LE16 (0x0B5C), \
+-                    PED_CPU_TO_LE16 (0x4DB8), 0x81, 0x7D, \
+-                    { 0xF9, 0x2D, 0xF0, 0x02, 0x15, 0xAE }})
++  ((efi_guid_t) PARTITION_MSFT_RESERVED_GUID_INIT)
++#define PARTITION_MSFT_RECOVERY_INIT \
++  { PED_CPU_TO_LE32 (0xDE94BBA4), PED_CPU_TO_LE16 (0x06D1), \
++    PED_CPU_TO_LE16 (0x4D40), 0xA1, 0x6A, \
++    { 0xBF, 0xD5, 0x01, 0x79, 0xD6, 0xAC }}
+ #define PARTITION_MSFT_RECOVERY \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xDE94BBA4), PED_CPU_TO_LE16 (0x06D1), \
+-                    PED_CPU_TO_LE16 (0x4D40), 0xA1, 0x6A, \
+-                    { 0xBF, 0xD5, 0x01, 0x79, 0xD6, 0xAC }})
++  ((efi_guid_t) PARTITION_MSFT_RECOVERY_INIT)
++#define PARTITION_BASIC_DATA_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xEBD0A0A2), PED_CPU_TO_LE16 (0xB9E5), \
++    PED_CPU_TO_LE16 (0x4433), 0x87, 0xC0, \
++    { 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7 }}
+ #define PARTITION_BASIC_DATA_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xEBD0A0A2), PED_CPU_TO_LE16 (0xB9E5), \
+-                    PED_CPU_TO_LE16 (0x4433), 0x87, 0xC0, \
+-                    { 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7 }})
++  ((efi_guid_t) PARTITION_BASIC_DATA_GUID_INIT)
++#define PARTITION_RAID_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xa19d880f), PED_CPU_TO_LE16 (0x05fc), \
++    PED_CPU_TO_LE16 (0x4d3b), 0xa0, 0x06, \
++    { 0x74, 0x3f, 0x0f, 0x84, 0x91, 0x1e }}
+ #define PARTITION_RAID_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xa19d880f), PED_CPU_TO_LE16 (0x05fc), \
+-                    PED_CPU_TO_LE16 (0x4d3b), 0xa0, 0x06, \
+-                    { 0x74, 0x3f, 0x0f, 0x84, 0x91, 0x1e }})
++  ((efi_guid_t) PARTITION_RAID_GUID_INIT)
++#define PARTITION_SWAP_GUID_INIT \
++  { PED_CPU_TO_LE32 (0x0657fd6d), PED_CPU_TO_LE16 (0xa4ab), \
++    PED_CPU_TO_LE16 (0x43c4), 0x84, 0xe5, \
++    { 0x09, 0x33, 0xc8, 0x4b, 0x4f, 0x4f }}
+ #define PARTITION_SWAP_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0x0657fd6d), PED_CPU_TO_LE16 (0xa4ab), \
+-                    PED_CPU_TO_LE16 (0x43c4), 0x84, 0xe5, \
+-                    { 0x09, 0x33, 0xc8, 0x4b, 0x4f, 0x4f }})
++  ((efi_guid_t) PARTITION_SWAP_GUID_INIT)
+ #define PARTITION_LINUX_DATA_GUID \
+     ((efi_guid_t) { PED_CPU_TO_LE32 (0x0FC63DAF), PED_CPU_TO_LE16 (0x8483), \
+                     PED_CPU_TO_LE16 (0x4772), 0x8E, 0x79, \
+                     { 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4 }})
++#define PARTITION_LVM_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xe6d6d379), PED_CPU_TO_LE16 (0xf507), \
++    PED_CPU_TO_LE16 (0x44c2), 0xa2, 0x3c, \
++    { 0x23, 0x8f, 0x2a, 0x3d, 0xf9, 0x28 }}
+ #define PARTITION_LVM_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xe6d6d379), PED_CPU_TO_LE16 (0xf507), \
+-                    PED_CPU_TO_LE16 (0x44c2), 0xa2, 0x3c, \
+-                    { 0x23, 0x8f, 0x2a, 0x3d, 0xf9, 0x28 }})
++  ((efi_guid_t) PARTITION_LVM_GUID_INIT)
+ #define PARTITION_RESERVED_GUID \
+     ((efi_guid_t) { PED_CPU_TO_LE32 (0x8da63339), PED_CPU_TO_LE16 (0x0007), \
+                     PED_CPU_TO_LE16 (0x60c0), 0xc4, 0x36, \
+                     { 0x08, 0x3a, 0xc8, 0x23, 0x09, 0x08 }})
++#define PARTITION_HPSERVICE_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xe2a1e728), PED_CPU_TO_LE16 (0x32e3), \
++    PED_CPU_TO_LE16 (0x11d6), 0xa6, 0x82, \
++    { 0x7b, 0x03, 0xa0, 0x00, 0x00, 0x00 }}
+ #define PARTITION_HPSERVICE_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xe2a1e728), PED_CPU_TO_LE16 (0x32e3), \
+-                    PED_CPU_TO_LE16 (0x11d6), 0xa6, 0x82, \
+-                    { 0x7b, 0x03, 0xa0, 0x00, 0x00, 0x00 }})
++  ((efi_guid_t) PARTITION_HPSERVICE_GUID_INIT)
+ #define PARTITION_APPLE_HFS_GUID \
+     ((efi_guid_t) { PED_CPU_TO_LE32 (0x48465300), PED_CPU_TO_LE16 (0x0000), \
+                     PED_CPU_TO_LE16 (0x11AA), 0xaa, 0x11, \
+                     { 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC }})
++#define PARTITION_APPLE_TV_RECOVERY_GUID_INIT \
++  { PED_CPU_TO_LE32 (0x5265636F), PED_CPU_TO_LE16 (0x7665), \
++    PED_CPU_TO_LE16 (0x11AA), 0xaa, 0x11, \
++    { 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC }}
+ #define PARTITION_APPLE_TV_RECOVERY_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0x5265636F), PED_CPU_TO_LE16 (0x7665), \
+-                    PED_CPU_TO_LE16 (0x11AA), 0xaa, 0x11, \
+-                    { 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC }})
++  ((efi_guid_t) PARTITION_APPLE_TV_RECOVERY_GUID_INIT)
++#define PARTITION_PREP_GUID_INIT \
++  { PED_CPU_TO_LE32 (0x9e1a2d38), PED_CPU_TO_LE16 (0xc612), \
++    PED_CPU_TO_LE16 (0x4316), 0xaa, 0x26, \
++    { 0x8b, 0x49, 0x52, 0x1e, 0x5a, 0x8b }}
+ #define PARTITION_PREP_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0x9e1a2d38), PED_CPU_TO_LE16 (0xc612), \
+-                    PED_CPU_TO_LE16 (0x4316), 0xaa, 0x26, \
+-                    { 0x8b, 0x49, 0x52, 0x1e, 0x5a, 0x8b }})
++  ((efi_guid_t) PARTITION_PREP_GUID_INIT)
++#define PARTITION_IRST_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xD3BFE2DE), PED_CPU_TO_LE16 (0x3DAF), \
++    PED_CPU_TO_LE16 (0x11DF), 0xba, 0x40, \
++    { 0xE3, 0xA5, 0x56, 0xD8, 0x95, 0x93 }}
+ #define PARTITION_IRST_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xD3BFE2DE), PED_CPU_TO_LE16 (0x3DAF), \
+-                    PED_CPU_TO_LE16 (0x11DF), 0xba, 0x40, \
+-                    { 0xE3, 0xA5, 0x56, 0xD8, 0x95, 0x93 }})
++  ((efi_guid_t) PARTITION_IRST_GUID_INIT)
++#define PARTITION_CHROMEOS_KERNEL_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xfe3a2a5d), PED_CPU_TO_LE16 (0x4f32), \
++    PED_CPU_TO_LE16 (0x41a7), 0xb7, 0x25, \
++    { 0xac, 0xcc, 0x32, 0x85, 0xa3, 0x09 }}
+ #define PARTITION_CHROMEOS_KERNEL_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xfe3a2a5d), PED_CPU_TO_LE16 (0x4f32), \
+-                    PED_CPU_TO_LE16 (0x41a7), 0xb7, 0x25, \
+-                    { 0xac, 0xcc, 0x32, 0x85, 0xa3, 0x09 }})
++  ((efi_guid_t) PARTITION_CHROMEOS_KERNEL_GUID_INIT)
++#define PARTITION_BLS_BOOT_GUID_INIT \
++  { PED_CPU_TO_LE32 (0xbc13c2ff), PED_CPU_TO_LE16 (0x59e6), \
++    PED_CPU_TO_LE16 (0x4262), 0xa3, 0x52, \
++    { 0xb2, 0x75, 0xfd, 0x6f, 0x71, 0x72 }}
+ #define PARTITION_BLS_BOOT_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0xbc13c2ff), PED_CPU_TO_LE16 (0x59e6), \
+-                    PED_CPU_TO_LE16 (0x4262), 0xa3, 0x52, \
+-                    { 0xb2, 0x75, 0xfd, 0x6f, 0x71, 0x72 }})
++  ((efi_guid_t) PARTITION_BLS_BOOT_GUID_INIT)
++#define PARTITION_LINUX_HOME_GUID_INIT \
++  { PED_CPU_TO_LE32 (0x933ac7e1), PED_CPU_TO_LE16 (0x2eb4), \
++    PED_CPU_TO_LE16 (0x4f13), 0xb8, 0x44, \
++    { 0x0e, 0x14, 0xe2, 0xae, 0xf9, 0x15 }}
+ #define PARTITION_LINUX_HOME_GUID \
+-    ((efi_guid_t) { PED_CPU_TO_LE32 (0x933ac7e1), PED_CPU_TO_LE16 (0x2eb4), \
+-                    PED_CPU_TO_LE16 (0x4f13), 0xb8, 0x44, \
+-                    { 0x0e, 0x14, 0xe2, 0xae, 0xf9, 0x15 }})
++  ((efi_guid_t) PARTITION_LINUX_HOME_GUID_INIT)
+ 
+ struct flag_uuid_mapping_t
+ {
+@@ -178,40 +208,40 @@
+ 
+ static const struct flag_uuid_mapping_t flag_uuid_mapping[] =
+ {
+-    { PED_PARTITION_APPLE_TV_RECOVERY,  PARTITION_APPLE_TV_RECOVERY_GUID },
+-    { PED_PARTITION_BIOS_GRUB,          PARTITION_BIOS_GRUB_GUID },
+-    { PED_PARTITION_BLS_BOOT,           PARTITION_BLS_BOOT_GUID },
+-    { PED_PARTITION_BOOT,               PARTITION_SYSTEM_GUID },
+-    { PED_PARTITION_CHROMEOS_KERNEL,    PARTITION_CHROMEOS_KERNEL_GUID },
+-    { PED_PARTITION_DIAG,               PARTITION_MSFT_RECOVERY },
+-    { PED_PARTITION_ESP,                PARTITION_SYSTEM_GUID },
+-    { PED_PARTITION_HPSERVICE,          PARTITION_HPSERVICE_GUID },
+-    { PED_PARTITION_IRST,               PARTITION_IRST_GUID },
+-    { PED_PARTITION_LINUX_HOME,         PARTITION_LINUX_HOME_GUID },
+-    { PED_PARTITION_LVM,                PARTITION_LVM_GUID },
+-    { PED_PARTITION_MSFT_DATA,          PARTITION_BASIC_DATA_GUID },
+-    { PED_PARTITION_MSFT_RESERVED,      PARTITION_MSFT_RESERVED_GUID },
+-    { PED_PARTITION_PREP,               PARTITION_PREP_GUID },
+-    { PED_PARTITION_RAID,               PARTITION_RAID_GUID },
+-    { PED_PARTITION_SWAP,               PARTITION_SWAP_GUID },
++  { PED_PARTITION_APPLE_TV_RECOVERY,  PARTITION_APPLE_TV_RECOVERY_GUID_INIT },
++  { PED_PARTITION_BIOS_GRUB,          PARTITION_BIOS_GRUB_GUID_INIT },
++  { PED_PARTITION_BLS_BOOT,           PARTITION_BLS_BOOT_GUID_INIT },
++  { PED_PARTITION_BOOT,               PARTITION_SYSTEM_GUID_INIT },
++  { PED_PARTITION_CHROMEOS_KERNEL,    PARTITION_CHROMEOS_KERNEL_GUID_INIT },
++  { PED_PARTITION_DIAG,               PARTITION_MSFT_RECOVERY_INIT },
++  { PED_PARTITION_ESP,                PARTITION_SYSTEM_GUID_INIT },
++  { PED_PARTITION_HPSERVICE,          PARTITION_HPSERVICE_GUID_INIT },
++  { PED_PARTITION_IRST,               PARTITION_IRST_GUID_INIT },
++  { PED_PARTITION_LINUX_HOME,         PARTITION_LINUX_HOME_GUID_INIT },
++  { PED_PARTITION_LVM,                PARTITION_LVM_GUID_INIT },
++  { PED_PARTITION_MSFT_DATA,          PARTITION_BASIC_DATA_GUID_INIT },
++  { PED_PARTITION_MSFT_RESERVED,      PARTITION_MSFT_RESERVED_GUID_INIT },
++  { PED_PARTITION_PREP,               PARTITION_PREP_GUID_INIT },
++  { PED_PARTITION_RAID,               PARTITION_RAID_GUID_INIT },
++  { PED_PARTITION_SWAP,               PARTITION_SWAP_GUID_INIT },
+ };
+ 
+ static const efi_guid_t skip_set_system_guids[] =
+ {
+-    PARTITION_LVM_GUID,
+-    PARTITION_SWAP_GUID,
+-    PARTITION_RAID_GUID,
+-    PARTITION_PREP_GUID,
+-    PARTITION_SYSTEM_GUID,
+-    PARTITION_BIOS_GRUB_GUID,
+-    PARTITION_HPSERVICE_GUID,
+-    PARTITION_MSFT_RESERVED_GUID,
+-    PARTITION_BASIC_DATA_GUID,
+-    PARTITION_MSFT_RECOVERY,
+-    PARTITION_APPLE_TV_RECOVERY_GUID,
+-    PARTITION_IRST_GUID,
+-    PARTITION_CHROMEOS_KERNEL_GUID,
+-    PARTITION_BLS_BOOT_GUID,
++  PARTITION_LVM_GUID_INIT,
++  PARTITION_SWAP_GUID_INIT,
++  PARTITION_RAID_GUID_INIT,
++  PARTITION_PREP_GUID_INIT,
++  PARTITION_SYSTEM_GUID_INIT,
++  PARTITION_BIOS_GRUB_GUID_INIT,
++  PARTITION_HPSERVICE_GUID_INIT,
++  PARTITION_MSFT_RESERVED_GUID_INIT,
++  PARTITION_BASIC_DATA_GUID_INIT,
++  PARTITION_MSFT_RECOVERY_INIT,
++  PARTITION_APPLE_TV_RECOVERY_GUID_INIT,
++  PARTITION_IRST_GUID_INIT,
++  PARTITION_CHROMEOS_KERNEL_GUID_INIT,
++  PARTITION_BLS_BOOT_GUID_INIT,
+ };
+ 
+ static const struct flag_uuid_mapping_t* _GL_ATTRIBUTE_CONST

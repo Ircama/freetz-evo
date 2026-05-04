@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_QUICKJS
 	bool "QuickJS 2026-03-23 snapshot (binary only)"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
 	default n
 	select FREETZ_LIB_libatomic
 	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs

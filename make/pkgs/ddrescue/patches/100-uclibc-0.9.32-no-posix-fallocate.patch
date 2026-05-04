@@ -1,0 +1,7 @@
+--- main.cc
++++ main.cc
+@@ -595 +595,2 @@
+-#if defined _POSIX_ADVISORY_INFO && _POSIX_ADVISORY_INFO > 0
++#if defined _POSIX_ADVISORY_INFO && _POSIX_ADVISORY_INFO > 0 && \
++    !defined(DDRESCUE_MISSING_POSIX_FALLOCATE)
+

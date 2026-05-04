@@ -97,6 +97,16 @@ $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_CXX_COMPILER="$(TARGET_CXX)"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_AR="$(TARGET_AR)"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_STRIP="$(TARGET_STRIP)"
 
+# ARM (ARMv7/Cortex-A9): the llamafile SGEMM backend (sgemm.cpp) uses
+# vcvt_f32_f16 which is an always_inline intrinsic requiring -mfpu=neon-fp16
+# or higher. Whether the FP16 VFP extension is present at runtime on the
+# target SoC cannot be guaranteed, so disable the entire llamafile backend
+# on ARM to avoid both the compile error and potential illegal-instruction
+# crashes. ggml falls back to its own SGEMM implementation.
+ifeq ($(strip $(FREETZ_TARGET_ARCH_ARM)),y)
+$(PKG)_CONFIGURE_OPTIONS += -DGGML_LLAMAFILE=OFF
+endif
+
 # Target system
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SYSTEM_NAME=Linux
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SYSTEM_PROCESSOR=$(FREETZ_TARGET_ARCH)

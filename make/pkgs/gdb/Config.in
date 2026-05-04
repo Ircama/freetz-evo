@@ -5,18 +5,20 @@ if FREETZ_PACKAGE_GDB
 
 	choice
 		prompt "version"
+		default FREETZ_GDB_VERSION_7_9 if FREETZ_TARGET_GCC_4_6
 		default FREETZ_GDB_VERSION_17_1
 		help
 			Select the version of gdb you wish to use.
 
-		config FREETZ_GDB_VERSION_6_8
-			bool "gdb 6.8"
-
 		config FREETZ_GDB_VERSION_7_9
 			bool "gdb 7.9.1"
 
+		config FREETZ_GDB_VERSION_6_8
+			bool "gdb 6.8"
+
 		config FREETZ_GDB_VERSION_17_1
 			bool "gdb 17.1"
+			depends on !FREETZ_TARGET_GCC_4_6
 	endchoice
 
 	config FREETZ_PACKAGE_GDB_GDB
