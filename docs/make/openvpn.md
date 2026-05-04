@@ -1,4 +1,4 @@
-# OpenVPN 2.4.12/2.5.11/2.6.20/2.7.3
+# OpenVPN 2.4.12/2.5.11/2.6.20/2.7.4
   - Homepage: [https://openvpn.net/community-downloads/](https://openvpn.net/community-downloads/)
   - Manpage: [https://community.openvpn.net/openvpn/wiki](https://community.openvpn.net/openvpn/wiki)
   - Changelog: [https://github.com/OpenVPN/openvpn/blob/release/2.6/Changes.rst](https://github.com/OpenVPN/openvpn/blob/release/2.6/Changes.rst)

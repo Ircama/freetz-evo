@@ -186,7 +186,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Dante 1.4.4](../../docs/make/dante.md)<a id='dante'></a>**<br>
     A free SOCKS server
 
-  * **[davfs2: davfs 1.5.2/1.7.0](../../docs/make/davfs2.md)<a id='davfs2'></a>**<br>
+  * **[davfs2 1.5.2/1.7.3](../../docs/make/davfs2.md)<a id='davfs2'></a>**<br>
     davfs is a Linux file system driver that allows you to mount a WebDAV server as a disk drive. WebDAV is an extension to HTTP/1.1 that allows remote collaborative authoring of Web resources, defined in RFC 4918.
      - [Introduction](../../docs/make/davfs2.md#introduction)
      - [What Is WebDAV?](../../docs/make/davfs2.md#what-is-webdav)
@@ -251,7 +251,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Example](../../docs/make/dnsmasq.md#example)
      - [Completely Custom Configuration](../../docs/make/dnsmasq.md#completely-custom-configuration)
 
-  * **[Dropbear 2025.89](../../docs/make/dropbear.md)<a id='dropbear'></a>**<br>
+  * **[Dropbear 2026.90](../../docs/make/dropbear.md)<a id='dropbear'></a>**<br>
     Dropbear SSH server and client Dropbear is a relatively small SSH 2 server and client. It runs on a variety of POSIX-based platforms. Dropbear is open source software, distributed under a MIT-style license. Dropbear is particularly useful for "embedded"-type Linux (or other Unix) systems, such as wireless routers. Features - A small memory footprint suitable for memory-constrained environments - Dropbear can compile to a 110kB statically linked binary with uClibc on x86 (only minimal options selected) - Dropbear server implements X11 forwarding, and authentication-agent forwarding for OpenSSH clients - Can run from inetd or standalone - Compatible with OpenSSH ~/.ssh/authorized_keys public key authentication - The server, client, keygen, and key converter can be compiled into a single binary (a la busybox) - Features can easily be disabled when compiling to save space TCP forwarding support
      - [Basic Terms](../../docs/make/dropbear.md#basic-terms)
      - [Web Config](../../docs/make/dropbear.md#web-config)
@@ -678,7 +678,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.20/3.5.6 (binary only)](../../docs/make/openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.20/2.7.3](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.20/2.7.4](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
      - [Frequently Asked Questions / Howto](../../docs/make/openvpn.md#frequently-asked-questions--howto)
      - [Configuration Guide](../../docs/make/openvpn.md#configuration-guide)
