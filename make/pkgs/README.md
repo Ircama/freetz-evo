@@ -14,7 +14,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[aMUTorrent 3.5.0 - DEVELOPER](../../docs/make/amutorrent.md)<a id='amutorrent'></a>**<br>
     Pacchetto sperimentale per sviluppatori: installa aMUTorrent come servizio Node.js completo, con frontend compilato sul sistema host e backend Express/WebSocket eseguito sul target. Il bootstrap preconfigura rTorrent locale via SCGI diretto verso 127.0.0.1:${RTORRENT_SCGI_PORT:-16891} quando disponibile. La pagina http://fritz.box:81/amutorrent/ effettua un redirect verso la porta del servizio (4000 di default) e mostra una pagina diagnostica se il daemon non e' in esecuzione. Selezionando questo pacchetto viene abilitato automaticamente anche il runtime target Node.js, che resta nascosto fuori dalla developer mode. Nota: sul target il porting Node.js non e' ancora considerato funzionante; per questo il pacchetto resta in developer mode, disabilitato di default, e non dovrebbe essere considerato pronto per uso normale. Richiede i programmi host node e npm per il build.
 
-  * **[Apache2 2.4.66 (binary only)](../../docs/make/apache2.md)<a id='apache2'></a>**<br>
+  * **[Apache2 2.4.67 (binary only)](../../docs/make/apache2.md)<a id='apache2'></a>**<br>
     The Apache httpd server
      - [apache.conf](../../docs/make/apache2.md#apacheconf)
      - [Password Protection with .htaccess](../../docs/make/apache2.md#password-protection-with-htaccess)
@@ -409,7 +409,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[htop 1.0.3/3.5.1 (binary only)](../../docs/make/htop.md)<a id='htop'></a>**<br>
     htop is a more powerful alternative to top, using ncurses.
 
-  * **[htpdate 2.0.1](../../docs/make/htpdate.md)<a id='htpdate'></a>**<br>
+  * **[htpdate 2.0.2](../../docs/make/htpdate.md)<a id='htpdate'></a>**<br>
     The HTTP Time Protocol (HTP) is used to synchronize a computer's time with web servers as reference time source. Htpdate will synchronize your computer's time by extracting timestamps from HTTP headers found in web server responses. Htpdate can be used as a daemon, to keep your computer synchronized. WWW: http://www.clevervest.com/htp/ Manpage: http://linux.die.net/man/8/htpdate This package automatically removes AVM'S chronyd if necessary.
 
   * **<u>httpry 0.1.8 - DEPRECATED</u><a id='httpry'></a>**<br>
@@ -1291,7 +1291,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tmux 3.6a (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.23](../../docs/make/tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25](../../docs/make/tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
      - [Use Tor as a Proxy](../../docs/make/tor.md#use-tor-as-a-proxy)
      - [Tor and Privoxy](../../docs/make/tor.md#tor-and-privoxy)
