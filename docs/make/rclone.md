@@ -1,10 +1,11 @@
-# rclone 1.74.1 (cloud storage sync)
+# rclone 1.74.1 (binary only)
   - Homepage: [https://github.com/rclone/rclone](https://github.com/rclone/rclone)
-  - Manpage / README: [https://rclone.org/docs/](https://rclone.org/docs/)
+  - Manpage: [https://rclone.org/docs/](https://rclone.org/docs/)
   - Changelog: [https://github.com/rclone/rclone/releases](https://github.com/rclone/rclone/releases)
   - Repository: [https://github.com/rclone/rclone](https://github.com/rclone/rclone)
-  - Package: [../../make/pkgs/rclone/](../../make/pkgs/rclone/)
+  - Package: [master/make/pkgs/rclone/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rclone/)
   - Steward: Ircama
+  - Manpage / README: [https://rclone.org/docs/](https://rclone.org/docs/)
 
 `rclone` is a command-line tool for syncing and managing files across many cloud
 storage backends as well as local and network paths.

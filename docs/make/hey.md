@@ -1,10 +1,11 @@
-# hey 0.1.5 (HTTP load generator)
+# hey 0.1.5 (binary only)
   - Homepage: [https://github.com/rakyll/hey](https://github.com/rakyll/hey)
-  - Manpage / README: [https://github.com/rakyll/hey#readme](https://github.com/rakyll/hey#readme)
+  - Manpage: [https://github.com/rakyll/hey#usage](https://github.com/rakyll/hey#usage)
   - Changelog: [https://github.com/rakyll/hey/releases](https://github.com/rakyll/hey/releases)
   - Repository: [https://github.com/rakyll/hey](https://github.com/rakyll/hey)
-  - Package: [../../make/pkgs/hey/](../../make/pkgs/hey/)
+  - Package: [master/make/pkgs/hey/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hey/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/rakyll/hey#readme](https://github.com/rakyll/hey#readme)
 
 `hey` is a small HTTP benchmarking tool for generating concurrent request load
 against web services hosted on the FritzBox or elsewhere on the network.

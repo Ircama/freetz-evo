@@ -1,10 +1,11 @@
-# lazygit 0.61.1 (terminal Git UI)
+# lazygit 0.61.1 (binary only)
   - Homepage: [https://github.com/jesseduffield/lazygit](https://github.com/jesseduffield/lazygit)
-  - Manpage / README: [https://github.com/jesseduffield/lazygit#readme](https://github.com/jesseduffield/lazygit#readme)
+  - Manpage: [https://github.com/jesseduffield/lazygit#usage](https://github.com/jesseduffield/lazygit#usage)
   - Changelog: [https://github.com/jesseduffield/lazygit/releases](https://github.com/jesseduffield/lazygit/releases)
   - Repository: [https://github.com/jesseduffield/lazygit](https://github.com/jesseduffield/lazygit)
-  - Package: [../../make/pkgs/lazygit/](../../make/pkgs/lazygit/)
+  - Package: [master/make/pkgs/lazygit/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lazygit/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/jesseduffield/lazygit#readme](https://github.com/jesseduffield/lazygit#readme)
 
 `lazygit` is a full-screen terminal UI for common Git workflows such as status review,
 staging, commits, branch switching, rebases, cherry-picks, stash handling, and log browsing.

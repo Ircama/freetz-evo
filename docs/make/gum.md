@@ -1,10 +1,11 @@
-# gum 0.17.0 (shell TUI helpers)
+# gum 0.17.0 (binary only)
   - Homepage: [https://github.com/charmbracelet/gum](https://github.com/charmbracelet/gum)
-  - Manpage / README: [https://github.com/charmbracelet/gum#readme](https://github.com/charmbracelet/gum#readme)
+  - Manpage: [https://github.com/charmbracelet/gum#readme](https://github.com/charmbracelet/gum#readme)
   - Changelog: [https://github.com/charmbracelet/gum/releases](https://github.com/charmbracelet/gum/releases)
   - Repository: [https://github.com/charmbracelet/gum](https://github.com/charmbracelet/gum)
-  - Package: [../../make/pkgs/gum/](../../make/pkgs/gum/)
+  - Package: [master/make/pkgs/gum/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gum/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/charmbracelet/gum#readme](https://github.com/charmbracelet/gum#readme)
 
 `gum` provides reusable terminal UI primitives for shell scripts, such as prompts,
 choices, formatted output, confirmation dialogs, and progress indicators.

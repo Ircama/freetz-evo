@@ -1,10 +1,11 @@
-# age 1.3.1 (file encryption)
+# age 1.3.1 (binaries only)
   - Homepage: [https://github.com/FiloSottile/age](https://github.com/FiloSottile/age)
-  - Manpage / README: [https://github.com/FiloSottile/age#readme](https://github.com/FiloSottile/age#readme)
+  - Manpage: [https://github.com/FiloSottile/age#usage](https://github.com/FiloSottile/age#usage)
   - Changelog: [https://github.com/FiloSottile/age/releases](https://github.com/FiloSottile/age/releases)
   - Repository: [https://github.com/FiloSottile/age](https://github.com/FiloSottile/age)
-  - Package: [../../make/pkgs/age/](../../make/pkgs/age/)
+  - Package: [master/make/pkgs/age/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/age/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/FiloSottile/age#readme](https://github.com/FiloSottile/age#readme)
 
 `age` is a modern file encryption tool designed as a small and auditable alternative
 to traditional OpenPGP workflows. The Freetz-EVO package installs both `age` for

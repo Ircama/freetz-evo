@@ -5,4 +5,3 @@
   - Repository: [https://git.savannah.gnu.org/git/autoconf.git](https://git.savannah.gnu.org/git/autoconf.git)
   - Package: [master/make/pkgs/autotools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/autotools/)
   - Steward: Ircama
-  - Steward: Ircama

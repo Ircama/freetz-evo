@@ -1,10 +1,11 @@
-# prometheus 3.11.3 (monitoring server)
+# prometheus 3.11.3 (binary only)
   - Homepage: [https://prometheus.io/](https://prometheus.io/)
-  - Manpage / README: [https://prometheus.io/docs/prometheus/latest/](https://prometheus.io/docs/prometheus/latest/)
+  - Manpage: [https://prometheus.io/docs/prometheus/latest/](https://prometheus.io/docs/prometheus/latest/)
   - Changelog: [https://github.com/prometheus/prometheus/releases](https://github.com/prometheus/prometheus/releases)
   - Repository: [https://github.com/prometheus/prometheus](https://github.com/prometheus/prometheus)
-  - Package: [../../make/pkgs/prometheus/](../../make/pkgs/prometheus/)
+  - Package: [master/make/pkgs/prometheus/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/prometheus/)
   - Steward: Ircama
+  - Manpage / README: [https://prometheus.io/docs/prometheus/latest/](https://prometheus.io/docs/prometheus/latest/)
 
 `prometheus` is a monitoring and alerting server that scrapes metrics endpoints,
 stores time series data, and exposes a query UI and HTTP API.

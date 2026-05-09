@@ -1,10 +1,11 @@
-# fzf 0.72.0 (fuzzy finder)
+# fzf 0.72.0 (binary only)
   - Homepage: [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
-  - Manpage / README: [https://github.com/junegunn/fzf#readme](https://github.com/junegunn/fzf#readme)
+  - Manpage: [https://github.com/junegunn/fzf#usage](https://github.com/junegunn/fzf#usage)
   - Changelog: [https://github.com/junegunn/fzf/releases](https://github.com/junegunn/fzf/releases)
   - Repository: [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
-  - Package: [../../make/pkgs/fzf/](../../make/pkgs/fzf/)
+  - Package: [master/make/pkgs/fzf/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/fzf/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/junegunn/fzf#readme](https://github.com/junegunn/fzf#readme)
 
 `fzf` is a general-purpose fuzzy finder for interactive command-line filtering.
 It can be used directly in shell pipelines on the target, especially over SSH.

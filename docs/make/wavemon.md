@@ -1,10 +1,11 @@
-# wavemon 0.9.7 (wireless monitor)
+# wavemon 0.9.7 (binary only)
   - Homepage: [https://github.com/uoaerg/wavemon](https://github.com/uoaerg/wavemon)
-  - Manpage / README: [https://github.com/uoaerg/wavemon#readme](https://github.com/uoaerg/wavemon#readme)
+  - Manpage: [https://github.com/uoaerg/wavemon#readme](https://github.com/uoaerg/wavemon#readme)
   - Changelog: [https://github.com/uoaerg/wavemon/releases](https://github.com/uoaerg/wavemon/releases)
   - Repository: [https://github.com/uoaerg/wavemon](https://github.com/uoaerg/wavemon)
-  - Package: [../../make/pkgs/wavemon/](../../make/pkgs/wavemon/)
-  - Steward: Ircama
+  - Package: [master/make/pkgs/wavemon/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/wavemon/)
+  - Steward: -
+  - Manpage / README: [https://github.com/uoaerg/wavemon#readme](https://github.com/uoaerg/wavemon#readme)
 
 `wavemon` is an ncurses-based monitoring tool for wireless interfaces.
 It shows signal level, bitrate, channel, traffic counters, and device-specific link statistics directly in a terminal UI.

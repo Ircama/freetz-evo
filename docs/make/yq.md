@@ -1,10 +1,11 @@
-# yq 4.53.2 (YAML/JSON/XML processor)
+# yq 4.53.2 (binary only)
   - Homepage: [https://github.com/mikefarah/yq](https://github.com/mikefarah/yq)
-  - Manpage / README: [https://mikefarah.gitbook.io/yq/](https://mikefarah.gitbook.io/yq/)
+  - Manpage: [https://mikefarah.gitbook.io/yq/](https://mikefarah.gitbook.io/yq/)
   - Changelog: [https://github.com/mikefarah/yq/releases](https://github.com/mikefarah/yq/releases)
   - Repository: [https://github.com/mikefarah/yq](https://github.com/mikefarah/yq)
-  - Package: [../../make/pkgs/yq/](../../make/pkgs/yq/)
+  - Package: [master/make/pkgs/yq/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/yq/)
   - Steward: Ircama
+  - Manpage / README: [https://mikefarah.gitbook.io/yq/](https://mikefarah.gitbook.io/yq/)
 
 `yq` is a command-line processor for YAML, JSON, XML, and related structured
 data formats. It is useful for config rewriting, scripted administration, and

@@ -1,10 +1,11 @@
-# glow 2.1.2 (Markdown renderer)
+# glow 2.1.2 (binary only)
   - Homepage: [https://github.com/charmbracelet/glow](https://github.com/charmbracelet/glow)
-  - Manpage / README: [https://github.com/charmbracelet/glow#readme](https://github.com/charmbracelet/glow#readme)
+  - Manpage: [https://github.com/charmbracelet/glow#usage](https://github.com/charmbracelet/glow#usage)
   - Changelog: [https://github.com/charmbracelet/glow/releases](https://github.com/charmbracelet/glow/releases)
   - Repository: [https://github.com/charmbracelet/glow](https://github.com/charmbracelet/glow)
-  - Package: [../../make/pkgs/glow/](../../make/pkgs/glow/)
+  - Package: [master/make/pkgs/glow/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/glow/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/charmbracelet/glow#readme](https://github.com/charmbracelet/glow#readme)
 
 `glow` renders Markdown documents directly in the terminal, making README files and
 notes easy to browse on the box without a browser.

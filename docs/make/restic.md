@@ -1,10 +1,11 @@
-# restic 0.18.1 (backup tool)
+# restic 0.18.1 (binary only)
   - Homepage: [https://github.com/restic/restic](https://github.com/restic/restic)
-  - Manpage / README: [https://restic.readthedocs.io/en/stable/](https://restic.readthedocs.io/en/stable/)
+  - Manpage: [https://restic.readthedocs.io/en/stable/](https://restic.readthedocs.io/en/stable/)
   - Changelog: [https://github.com/restic/restic/releases](https://github.com/restic/restic/releases)
   - Repository: [https://github.com/restic/restic](https://github.com/restic/restic)
-  - Package: [../../make/pkgs/restic/](../../make/pkgs/restic/)
+  - Package: [master/make/pkgs/restic/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/restic/)
   - Steward: Ircama
+  - Manpage / README: [https://restic.readthedocs.io/en/stable/](https://restic.readthedocs.io/en/stable/)
 
 `restic` is a secure backup tool with repository integrity checks, deduplication,
 encryption, and support for local or remote storage backends.

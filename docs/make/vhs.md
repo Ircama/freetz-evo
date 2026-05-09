@@ -1,10 +1,11 @@
-# vhs 0.11.0 (terminal recorder)
+# vhs 0.11.0 (binary only)
   - Homepage: [https://github.com/charmbracelet/vhs](https://github.com/charmbracelet/vhs)
-  - Manpage / README: [https://github.com/charmbracelet/vhs#readme](https://github.com/charmbracelet/vhs#readme)
+  - Manpage: [https://github.com/charmbracelet/vhs#readme](https://github.com/charmbracelet/vhs#readme)
   - Changelog: [https://github.com/charmbracelet/vhs/releases](https://github.com/charmbracelet/vhs/releases)
   - Repository: [https://github.com/charmbracelet/vhs](https://github.com/charmbracelet/vhs)
-  - Package: [../../make/pkgs/vhs/](../../make/pkgs/vhs/)
+  - Package: [master/make/pkgs/vhs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/vhs/)
   - Steward: Ircama
+  - Manpage / README: [https://github.com/charmbracelet/vhs#readme](https://github.com/charmbracelet/vhs#readme)
 
 `vhs` records scripted terminal sessions into media output from declarative tape
 files, which is useful for demos and CLI documentation.

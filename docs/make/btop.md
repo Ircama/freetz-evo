@@ -1,10 +1,11 @@
-# btop 1.4.7 (terminal resource monitor)
+# btop 1.4.7
   - Homepage: [https://github.com/aristocratos/btop](https://github.com/aristocratos/btop)
-  - Manpage / README: [https://github.com/aristocratos/btop#readme](https://github.com/aristocratos/btop#readme)
+  - Manpage: [https://github.com/aristocratos/btop#readme](https://github.com/aristocratos/btop#readme)
   - Changelog: [https://github.com/aristocratos/btop/releases](https://github.com/aristocratos/btop/releases)
   - Repository: [https://github.com/aristocratos/btop](https://github.com/aristocratos/btop)
-  - Package: [../../make/pkgs/btop/](../../make/pkgs/btop/)
-  - Steward: Ircama
+  - Package: [master/make/pkgs/btop/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/btop/)
+  - Steward: -
+  - Manpage / README: [https://github.com/aristocratos/btop#readme](https://github.com/aristocratos/btop#readme)
 
 `btop` is a modern terminal monitor for CPU, memory, disks, network traffic, and processes.
 The Freetz-EVO package follows the lightweight `htop`-style binary packaging model and installs a single stripped binary plus optional upstream themes.
