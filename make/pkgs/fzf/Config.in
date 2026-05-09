@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_FZF
+	bool "fzf 0.72.0 (binary only)"
+	default n
+	help
+		fzf is a command-line fuzzy finder.
+
+		This package cross-compiles the upstream Go sources and installs the
+		fzf executable on the target.
+
+		Can be externalized to save flash memory.

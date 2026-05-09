@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_GLOW
+	bool "glow 2.1.2 (binary only)"
+	default n
+	help
+		Glow renders Markdown on the CLI.
+
+		This package cross-compiles the upstream Go sources and installs the
+		glow executable on the target.
+
+		Can be externalized to save flash memory.

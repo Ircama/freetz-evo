@@ -47,13 +47,24 @@ The authentication layer has been updated to support a **form-based session logi
 
 | Package | Description | Status |
 |---|---|---|
-| **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`), a web console for partitioning, formatting, cloning, recovery, and disk diagnostics; backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. Includes **ttyd** 1.7.7, a web-based terminal server exposing shell commands over WebSocket with embedded xterm.js terminal, 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
+| **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`), a web console for partitioning, formatting, cloning, recovery, and disk diagnostics; backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. | EVO only |
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
 | **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
 | **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes; see **[docs/make/btop.md](docs/make/btop.md)**. | EVO only |
-| **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics, backed by **[libnl](docs/make/libnl.md)**; see **[docs/make/wavemon.md](docs/make/wavemon.md)**. | EVO only |
-| **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories, cross-compiled from vendored Go sources and using the target-side **Git** package; see **[docs/make/lazygit.md](docs/make/lazygit.md)**. | EVO only |
+| **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics; see **[docs/make/wavemon.md](docs/make/wavemon.md)**. | EVO only |
+| **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories; see **[docs/make/lazygit.md](docs/make/lazygit.md)**. | EVO only |
+| **age** 1.3.1 | Modern file encryption tool shipping `age` and `age-keygen`; see **[docs/make/age.md](docs/make/age.md)**. | EVO only |
+| **fzf** 0.72.0 | Command-line fuzzy finder for interactive shell filtering; see **[docs/make/fzf.md](docs/make/fzf.md)**. | EVO only |
+| **glow** 2.1.2 | Terminal Markdown renderer for browsing README files and notes; see **[docs/make/glow.md](docs/make/glow.md)**. | EVO only |
+| **gum** 0.17.0 | Terminal UI helper toolkit for shell scripts; see **[docs/make/gum.md](docs/make/gum.md)**. | EVO only |
+| **hey** 0.1.5 | Small HTTP load generator for smoke tests and benchmarks; see **[docs/make/hey.md](docs/make/hey.md)**. | EVO only |
+| **hugo** 0.161.1 | Static site generator for content trees stored on writable media; see **[docs/make/hugo.md](docs/make/hugo.md)**. | EVO only |
+| **prometheus** 3.11.3 | Monitoring and alerting server with local TSDB storage; see **[docs/make/prometheus.md](docs/make/prometheus.md)**. | EVO only |
+| **rclone** 1.74.1 | Cloud and remote storage synchronization tool; see **[docs/make/rclone.md](docs/make/rclone.md)**. | EVO only |
+| **restic** 0.18.1 | Encrypted backup tool for local and remote repositories; see **[docs/make/restic.md](docs/make/restic.md)**. | EVO only |
+| **vhs** 0.11.0 | Scripted terminal-session recorder for demo generation; see **[docs/make/vhs.md](docs/make/vhs.md)**. | EVO only |
+| **yq** 4.53.2 | YAML, JSON, and XML processor for config automation; see **[docs/make/yq.md](docs/make/yq.md)**. | EVO only |
 | **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |

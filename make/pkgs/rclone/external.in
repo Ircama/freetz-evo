@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_RCLONE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_RCLONE
+	bool "rclone"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/rclone

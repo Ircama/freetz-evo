@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_GUM
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GUM
+	bool "gum"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/gum

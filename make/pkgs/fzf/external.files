@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_FZF" == "y" ] && EXTERNAL_FILES+=" /usr/bin/fzf"

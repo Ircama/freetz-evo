@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_HEY
+	bool "hey 0.1.5 (binary only)"
+	default n
+	help
+		hey is a small HTTP load generator.
+
+		This package cross-compiles the upstream Go sources and installs the
+		hey executable on the target.
+
+		Can be externalized to save flash memory.

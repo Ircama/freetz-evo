@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_HUGO
+	bool "hugo 0.161.1 (binary only)"
+	default n
+	help
+		Hugo is a fast static site generator.
+
+		This package cross-compiles the upstream Go sources and installs the
+		hugo executable on the target.
+
+		Can be externalized to save flash memory.

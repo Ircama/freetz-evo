@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_PROMETHEUS
+	bool "prometheus 3.11.3 (binary only)"
+	default n
+	help
+		Prometheus is an open-source monitoring and alerting toolkit.
+
+		This package cross-compiles the upstream Go sources and installs the
+		prometheus executable on the target.
+
+		Can be externalized to save flash memory.

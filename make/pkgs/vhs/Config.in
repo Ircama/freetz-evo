@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_VHS
+	bool "vhs 0.11.0 (binary only)"
+	default n
+	help
+		VHS records scripted terminal sessions to media output.
+
+		This package cross-compiles the upstream Go sources and installs the
+		vhs executable on the target.
+
+		Can be externalized to save flash memory.

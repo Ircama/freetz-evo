@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_RCLONE
+	bool "rclone 1.74.1 (binary only)"
+	default n
+	help
+		rclone is a command-line program to manage files on cloud storage.
+
+		This package cross-compiles the upstream Go sources and installs the
+		rclone executable on the target.
+
+		Can be externalized to save flash memory.

@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_RESTIC
+	bool "restic 0.18.1 (binary only)"
+	default n
+	help
+		restic is a fast, secure and efficient backup program.
+
+		This package cross-compiles the upstream Go sources and installs the
+		restic executable on the target.
+
+		Can be externalized to save flash memory.

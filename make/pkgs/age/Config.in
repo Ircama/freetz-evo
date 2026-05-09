@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_AGE
+	bool "age 1.3.1 (binaries only)"
+	default n
+	help
+		age is a modern file encryption tool.
+
+		This package cross-compiles the upstream Go sources and installs the
+		age and age-keygen executables on the target.
+
+		Can be externalized to save flash memory.

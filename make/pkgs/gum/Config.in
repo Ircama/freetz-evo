@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_GUM
+	bool "gum 0.17.0 (binary only)"
+	default n
+	help
+		Gum provides reusable TUI components for shell scripts.
+
+		This package cross-compiles the upstream Go sources and installs the
+		gum executable on the target.
+
+		Can be externalized to save flash memory.

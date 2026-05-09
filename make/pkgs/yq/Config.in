@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_YQ
+	bool "yq 4.53.2 (binary only)"
+	default n
+	help
+		yq is a lightweight command-line YAML, JSON and XML processor.
+
+		This package cross-compiles the upstream Go sources and installs the
+		yq executable on the target.
+
+		Can be externalized to save flash memory.
