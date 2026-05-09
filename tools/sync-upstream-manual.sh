@@ -15,6 +15,7 @@ set -euo pipefail
 UPSTREAM_BRANCH="master"
 LOCAL_BRANCH="master"
 MIRROR_BRANCH="upstream-mirror"
+LLM_MERGE_BUNDLE_ROOT=".git/sync-upstream-llm"
 
 # ── Parse arguments ───────────────────────────────────────────
 DRY_RUN=false
@@ -42,6 +43,106 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+finalize_sync_branch() {
+    if [ "$DRY_RUN" = true ]; then
+        echo "🔍 DRY RUN: merge is clean. Reverting..."
+        git checkout "$LOCAL_BRANCH"
+        git branch -D "$SYNC_BRANCH"
+        echo "No changes were made."
+        exit 0
+    fi
+
+    echo "▸ Updating master..."
+    git checkout "$LOCAL_BRANCH"
+    git merge --ff-only "$SYNC_BRANCH"
+    git branch -d "$SYNC_BRANCH"
+
+    echo ""
+    read -rp "Push to origin? [Y/n] " push_confirm
+    if [[ "${push_confirm:-Y}" == [yY] ]]; then
+        echo "▸ Pushing master..."
+        git push --force-with-lease origin "$LOCAL_BRANCH"
+
+        echo "▸ Pushing upstream-mirror..."
+        git push origin "$MIRROR_BRANCH" --force-with-lease
+
+        echo ""
+        echo "✅ Sync complete! Master is up-to-date with upstream."
+    else
+        echo "Not pushed. You can push later with:"
+        echo "  git push --force-with-lease origin $LOCAL_BRANCH"
+        echo "  git push origin $MIRROR_BRANCH --force-with-lease"
+    fi
+
+    exit 0
+}
+
+is_llm_merge_candidate() {
+    case "$1" in
+        *.c|*.cc|*.cpp|*.css|*.h|*.html|*.in|*.js|*.json|*.m4|*.md|*.mk|*.php|*.pl|*.py|*.sh|*.txt|*.xml|*.yml|*.yaml)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+write_llm_merge_bundle() {
+    local file="$1"
+    local bundle_name="${file//\//__}"
+    local bundle_dir="$LLM_MERGE_BUNDLE_ROOT/$bundle_name"
+
+    mkdir -p "$bundle_dir"
+    git show ":1:$file" > "$bundle_dir/base" 2>/dev/null || true
+    git show ":2:$file" > "$bundle_dir/local" 2>/dev/null || true
+    git show ":3:$file" > "$bundle_dir/remote" 2>/dev/null || true
+    cp "$file" "$bundle_dir/conflicted" 2>/dev/null || true
+
+    cat > "$bundle_dir/prompt.md" <<EOF
+# Merge request for $file
+
+Goal: produce a single merged file that preserves both the local Freetz-EVO
+changes and the incoming remote changes without duplicating behavior.
+
+Available inputs:
+- base: common ancestor
+- local: current Freetz-EVO branch
+- remote: incoming branch being merged
+- conflicted: Git's current conflict-marked file, when available
+
+Merge rules:
+- Keep upstream bug fixes unless they directly conflict with an intentional
+  Freetz-EVO customization.
+- Keep Freetz-EVO-specific behavior unless upstream already provides an
+  equivalent implementation.
+- Remove duplicate comments, duplicate branches, and duplicate list entries
+  after merging both sides.
+- Preserve shell syntax, quoting style, and the surrounding file structure.
+EOF
+}
+
+prepare_llm_merge_bundles() {
+    local file
+    local prepared=0
+
+    rm -rf "$LLM_MERGE_BUNDLE_ROOT"
+
+    while IFS= read -r file; do
+        [ -n "$file" ] || continue
+        if is_llm_merge_candidate "$file"; then
+            write_llm_merge_bundle "$file"
+            prepared=$((prepared + 1))
+        fi
+    done < <(git diff --name-only --diff-filter=U)
+
+    if [ "$prepared" -gt 0 ]; then
+        echo "🧠 Prepared $prepared LLM merge bundle(s) under $LLM_MERGE_BUNDLE_ROOT"
+        echo "   Each bundle contains base/local/remote/conflicted snapshots plus a prompt.md."
+        echo ""
+    fi
+}
 
 # ── Preflight ─────────────────────────────────────────────────
 echo "▸ Fetching upstream..."
@@ -128,40 +229,7 @@ New upstream commits: $NEW_COMMITS"; then
     echo ""
     echo "✅ Merge succeeded without conflicts!"
     echo ""
-
-    if [ "$DRY_RUN" = true ]; then
-        echo "🔍 DRY RUN: merge is clean. Reverting..."
-        git checkout "$LOCAL_BRANCH"
-        git branch -D "$SYNC_BRANCH"
-        echo "No changes were made."
-        exit 0
-    fi
-
-    # Fast-forward master
-    echo "▸ Updating master..."
-    git checkout "$LOCAL_BRANCH"
-    git merge --ff-only "$SYNC_BRANCH"
-
-    # Clean up
-    git branch -d "$SYNC_BRANCH"
-
-    # Push
-    echo ""
-    read -rp "Push to origin? [Y/n] " push_confirm
-    if [[ "${push_confirm:-Y}" == [yY] ]]; then
-        echo "▸ Pushing master..."
-        git push --force-with-lease origin "$LOCAL_BRANCH"
-
-        echo "▸ Pushing upstream-mirror..."
-        git push origin "$MIRROR_BRANCH" --force-with-lease
-
-        echo ""
-        echo "✅ Sync complete! Master is up-to-date with upstream."
-    else
-        echo "Not pushed. You can push later with:"
-        echo "  git push --force-with-lease origin $LOCAL_BRANCH"
-        echo "  git push origin $MIRROR_BRANCH --force-with-lease"
-    fi
+    finalize_sync_branch
 
 else
     echo ""
@@ -237,40 +305,22 @@ else
         echo "✅ All conflicts auto-resolved!"
         GIT_EDITOR=true git merge --continue
         echo ""
-
-        if [ "$DRY_RUN" = true ]; then
-            echo "🔍 DRY RUN: merge is clean. Reverting..."
-            git checkout "$LOCAL_BRANCH"
-            git branch -D "$SYNC_BRANCH"
-            echo "No changes were made."
-            exit 0
-        fi
-
-        echo "▸ Updating master..."
-        git checkout "$LOCAL_BRANCH"
-        git merge --ff-only "$SYNC_BRANCH"
-        git branch -d "$SYNC_BRANCH"
-
-        echo ""
-        read -rp "Push to origin? [Y/n] " push_confirm
-        if [[ "${push_confirm:-Y}" == [yY] ]]; then
-            echo "▸ Pushing master..."
-            git push --force-with-lease origin "$LOCAL_BRANCH"
-            echo "▸ Pushing upstream-mirror..."
-            git push origin "$MIRROR_BRANCH" --force-with-lease
-            echo ""
-            echo "✅ Sync complete! Master is up-to-date with upstream."
-        else
-            echo "Not pushed. You can push later with:"
-            echo "  git push --force-with-lease origin $LOCAL_BRANCH"
-            echo "  git push origin $MIRROR_BRANCH --force-with-lease"
-        fi
-        exit 0
+        finalize_sync_branch
     fi
+
+    prepare_llm_merge_bundles
 
     echo "Remaining conflicts (require manual resolution):"
     echo "$REMAINING"
     echo ""
+
+    if [ -d "$LLM_MERGE_BUNDLE_ROOT" ]; then
+        echo "LLM-assisted conflict review:"
+        echo "  - Open the relevant prompt.md under $LLM_MERGE_BUNDLE_ROOT"
+        echo "  - Merge base/local/remote so both upstream and Freetz-EVO contributions survive"
+        echo "  - Apply the merged result, then git add <file> and git merge --continue"
+        echo ""
+    fi
 
     if [ "$DRY_RUN" = true ]; then
         echo "🔍 DRY RUN: conflicts found. Aborting merge..."
