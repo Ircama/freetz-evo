@@ -53,6 +53,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
 | **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes; see **[docs/make/btop.md](docs/make/btop.md)**. | EVO only |
 | **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics, backed by **[libnl](docs/make/libnl.md)**; see **[docs/make/wavemon.md](docs/make/wavemon.md)**. | EVO only |
+| **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories, cross-compiled from vendored Go sources and using the target-side **Git** package; see **[docs/make/lazygit.md](docs/make/lazygit.md)**. | EVO only |
 | **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
 | **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |

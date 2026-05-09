@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_LAZYGIT
+	bool "lazygit 0.61.1 (binary only)"
+	select FREETZ_PACKAGE_GIT
+	default n
+	help
+		lazygit is a terminal UI for Git.
+
+		This package cross-compiles the upstream Go sources and installs the
+		lazygit executable on the target.
+
+		Can be externalized to save flash memory.

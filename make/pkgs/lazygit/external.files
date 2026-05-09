@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_LAZYGIT" == "y" ] && EXTERNAL_FILES+=" /usr/bin/lazygit"

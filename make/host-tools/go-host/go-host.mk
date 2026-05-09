@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 1.23.4)
+$(call TOOLS_INIT, 1.25.10)
 $(PKG)_SOURCE:=go$($(PKG)_VERSION).linux-amd64.tar.gz
-$(PKG)_HASH:=6924efde5de86fe277676e929dc9917d466efa02fb934197bc2eba35d5680971
+$(PKG)_HASH:=42d4f7a32316aa66591eca7e89867256057a4264451aca10570a715b3637ba70
 $(PKG)_SITE:=https://go.dev/dl
 ### WEBSITE:=https://go.dev/
 ### MANPAGE:=https://go.dev/doc/
