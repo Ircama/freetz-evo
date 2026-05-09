@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_WAVEMON
+	bool "wavemon 0.9.7 (binary only)"
+	select FREETZ_LIB_libm         if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread   if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libnl
+	default n
+	help
+		wavemon is an ncurses-based wireless device monitoring application.
