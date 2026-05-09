@@ -1,0 +1,11 @@
+config EXTERNAL_FREETZ_LIB_libnl
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libnl
+	bool "libnl"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libnl-3.so.200.26.0
+		 ${FREETZ_LIBRARY_DIR}/libnl-cli-3.so.200.26.0
+		 ${FREETZ_LIBRARY_DIR}/libnl-genl-3.so.200.26.0
+		 ${FREETZ_LIBRARY_DIR}/libnl-nf-3.so.200.26.0
+		 ${FREETZ_LIBRARY_DIR}/libnl-route-3.so.200.26.0

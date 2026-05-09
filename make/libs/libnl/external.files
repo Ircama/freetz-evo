@@ -1,0 +1,5 @@
+[ "$EXTERNAL_FREETZ_LIB_libnl" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnl-3.so.200.26.0"
+[ "$EXTERNAL_FREETZ_LIB_libnl" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnl-cli-3.so.200.26.0"
+[ "$EXTERNAL_FREETZ_LIB_libnl" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnl-genl-3.so.200.26.0"
+[ "$EXTERNAL_FREETZ_LIB_libnl" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnl-nf-3.so.200.26.0"
+[ "$EXTERNAL_FREETZ_LIB_libnl" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnl-route-3.so.200.26.0"

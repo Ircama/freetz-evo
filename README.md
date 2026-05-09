@@ -85,6 +85,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **libwebsockets** 4.3.9 | Canonical C WebSocket library; optional SSL/TLS support via OpenSSL. | EVO only |
 | **json-c** 0.17 | Lightweight JSON parser/serialiser library. | EVO only |
 | **libcares** (c-ares) | Asynchronous DNS resolver library used by aria2 and curl. | EVO only |
+| **libnl** 3.11.0 | Netlink userspace library stack (`libnl-3`, `libnl-cli-3`, `libnl-genl-3`, `libnl-nf-3`, `libnl-route-3`) for packages such as **[wavemon](docs/make/wavemon.md)**; see **[docs/make/libnl.md](docs/make/libnl.md)**. | EVO only |
 | **libjemalloc** 5.3.0 | General-purpose allocator replacing uClibc malloc; required by aria2 to avoid SIGFPE on MIPS/uClibc-1.0.57. | EVO only |
 | **libtcmalloc_minimal** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
 | **libprofiler** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |

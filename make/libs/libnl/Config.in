@@ -1,0 +1,8 @@
+config FREETZ_LIB_libnl
+	bool "libnl (libnl-3, libnl-cli-3, libnl-genl-3, libnl-route-3)"
+	default n
+	select FREETZ_LIB_libdl      if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	help
+		libnl is a collection of libraries providing APIs to netlink protocol
+		based Linux kernel interfaces.
