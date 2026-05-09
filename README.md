@@ -55,6 +55,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics; see **[docs/make/wavemon.md](docs/make/wavemon.md)**. | EVO only |
 | **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories; see **[docs/make/lazygit.md](docs/make/lazygit.md)**. | EVO only |
 | **age** 1.3.1 | Modern file encryption tool shipping `age` and `age-keygen`; see **[docs/make/age.md](docs/make/age.md)**. | EVO only |
+| **caddy** 2.11.2 | General-purpose web server and reverse proxy with automatic HTTPS capabilities; see **[docs/make/caddy.md](docs/make/caddy.md)**. | EVO only |
 | **fzf** 0.72.0 | Command-line fuzzy finder for interactive shell filtering; see **[docs/make/fzf.md](docs/make/fzf.md)**. | EVO only |
 | **glow** 2.1.2 | Terminal Markdown renderer for browsing README files and notes; see **[docs/make/glow.md](docs/make/glow.md)**. | EVO only |
 | **gum** 0.17.0 | Terminal UI helper toolkit for shell scripts; see **[docs/make/gum.md](docs/make/gum.md)**. | EVO only |

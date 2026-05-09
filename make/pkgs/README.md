@@ -8,6 +8,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[ACME.sh 3.1.3](../../docs/make/acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
+  * **[age 1.3.1 (binaries only)](../../docs/make/age.md)<a id='age'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the age and age-keygen executables on the target. Can be externalized to save flash memory.
+
   * **[aMUTorrent 3.5.0 - DEVELOPER](../../docs/make/amutorrent.md)<a id='amutorrent'></a>**<br>
     Pacchetto sperimentale per sviluppatori: installa aMUTorrent come servizio Node.js completo, con frontend compilato sul sistema host e backend Express/WebSocket eseguito sul target. Il bootstrap preconfigura rTorrent locale via SCGI diretto verso 127.0.0.1:${RTORRENT_SCGI_PORT:-16891} quando disponibile. La pagina http://fritz.box:81/amutorrent/ effettua un redirect verso la porta del servizio (4000 di default) e mostra una pagina diagnostica se il daemon non e' in esecuzione. Selezionando questo pacchetto viene abilitato automaticamente anche il runtime target Node.js, che resta nascosto fuori dalla developer mode. Nota: sul target il porting Node.js non e' ancora considerato funzionante; per questo il pacchetto resta in developer mode, disabilitato di default, e non dovrebbe essere considerato pronto per uso normale. Richiede i programmi host node e npm per il build.
 
@@ -120,6 +123,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[bridge-utils 1.4 (binary only) - DEPRECATED](../../docs/make/bridge-utils.md)<a id='bridge-utils'></a>**<br>
     This package contains utilities for configuring the Linux ethernet bridge. The Linux ethernet bridge can be used for connecting multiple ethernet devices together. The connection is fully transparent: hosts connected to one ethernet device see hosts connected to the other ethernet devices directly. Authors: Lennert Buytenhek <buytenh@gnu.org>
 
+  * **[btop 1.4.7](../../docs/make/btop.md)<a id='btop'></a>**<br>
+    This package installs the btop binary and can optionally install upstream themes. Can be externalized to save flash memory.
+
   * **[bvi 1.5.0 (binary only)](../../docs/make/bvi.md)<a id='bvi'></a>**<br>
     A hex editor/viewer for binary files
 
@@ -130,6 +136,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[CA-bundle 2026-03-19](../../docs/make/ca-bundle.md)<a id='ca-bundle'></a>**<br>
     The Mozilla CA certificate store in PEM format, see https://www.curl.se/docs/caextract.html Size of uncompressed file is about 250 KB.
+
+  * **[caddy 2.11.2 (binary only)](../../docs/make/caddy.md)<a id='caddy'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the caddy executable on the target. Can be externalized to save flash memory.
 
   * **[Callmonitor 1.20.9-git](../../docs/make/callmonitor.md)<a id='callmonitor'></a>**<br>
     Callmonitor enables you to perform arbitrary actions upon incoming calls on your AVM Fritz!Box (e.g., to send notifications to your favorite set-top box, to wake up your PC, or to send you a mail when you have missed a call).
@@ -334,6 +343,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[FUSE 2.9.9 (binary only) - DEPRECATED](../../docs/make/fuse.md)<a id='fuse'></a>**<br>
     Filesystem in Userspace (FUSE) is a free Unix kernel module that allows non-privileged users to create their own file systems without the need to write any kernel code. This is achieved by running the file systemcode in user space, while the FUSE module only provides a "bridge" to the actual kernel interfaces. FUSE was officially merged into the mainstream Linux kernel tree in kernel version 2.6.14. FUSE is particularly useful for writing virtual file systems. Unlike traditional filesystems which essentially save data to and retrieve data from disk, virtual filesystems do not actually store data themselves. They act as a view or translation of an existing filesystem or storage device. In principle, any resource available to FUSE implementation can be exported as a file system. In Freetz, the NTFS package depends on fuse, for example.
 
+  * **[fzf 0.72.0 (binary only)](../../docs/make/fzf.md)<a id='fzf'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the fzf executable on the target. Can be externalized to save flash memory.
+
 ### G
 
   * **[getdns 1.7.3](../../docs/make/getdns.md)<a id='getdns'></a>**<br>
@@ -348,6 +360,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Git 2.26.2/2.53.0](../../docs/make/git.md)<a id='git'></a>**<br>
     Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
+  * **[glow 2.1.2 (binary only)](../../docs/make/glow.md)<a id='glow'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the glow executable on the target. Can be externalized to save flash memory.
+
   * **<u>gntpsend 0.3.2-git (binary only) - DEPRECATED</u><a id='gntpsend'></a>**<br>
     Growl is a notification system for the Mac OS X. Applications can use Growl to display small notifications about events which the user deems important, in a consistent manner. This package provides a tool 'gntp-send' which allows to send notifications to Growl.
 
@@ -359,6 +374,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>gocr 0.49 (binary only) - DEPRECATED</u><a id='gocr'></a>**<br>
     GOCR is an optical character recognition program, released under the GNU General Public License. It reads images in many formats and outputs a text file.
+
+  * **[gum 0.17.0 (binary only)](../../docs/make/gum.md)<a id='gum'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the gum executable on the target. Can be externalized to save flash memory.
 
   * **[gw6: Gateway6 client 5.1 - DEPRECATED](../../docs/make/gw6.md)<a id='gw6'></a>**<br>
     Client to build a tunnel to the ipv6 network (see http://go6.net). The binary will be installed as /usr/sbin/gw6c and CGI frontend will be provided for a simple configuration. A sample can be found in /usr/share/gw6/.
@@ -375,6 +393,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[hd-idle 0.99 - DEPRECATED](../../docs/make/hd-idle.md)<a id='hd-idle'></a>**<br>
     Another idle-daemon for attached hard drives if sg3utils doesn't work as expected. This can happen with most low-cost USB drives.
+
+  * **[hey 0.1.5 (binary only)](../../docs/make/hey.md)<a id='hey'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the hey executable on the target. Can be externalized to save flash memory.
 
   * **[hol: Halt-On-Lan 1.0 - DEPRECATED](../../docs/make/hol.md)<a id='hol'></a>**<br>
     Halt-On-Lan is a package to run predefined actions on a remote host: shutdown, reboot, logoff, lock For successfull action poweroff.exe from http://users.telenet.be/jbosman/poweroff/poweroff.htm or similar compatible script or binary must be installed and run as service on the remote host. Moreover, in case of requested interaction this service should understand the syntax of poweroff.exe
@@ -396,6 +417,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[httptunnel 3.3 (binary only) - DEPRECATED](../../docs/make/httptunnel.md)<a id='httptunnel'></a>**<br>
     httptunnel is a utility that provides a HTTP tunnel server.
+
+  * **[hugo 0.161.1 (binary only)](../../docs/make/hugo.md)<a id='hugo'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the hugo executable on the target. Can be externalized to save flash memory.
 
 ### I
 
@@ -474,6 +498,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Knockd is a port-knock server. It listens to all traffic on an ethernet (or PPP) interface, looking for special "knock" sequences of port-hits.
 
 ### L
+
+  * **[lazygit 0.61.1 (binary only)](../../docs/make/lazygit.md)<a id='lazygit'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the lazygit executable on the target. Can be externalized to save flash memory.
 
   * **[LCD4linux 63fffafb](../../docs/make/lcd4linux.md)<a id='lcd4linux'></a>**<br>
     LCD4Linux is a small program that grabs information from the kernel and some subsystems and displays it on an external liquid crystal display.
@@ -793,6 +820,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Build Configuration](../../docs/make/procps-ng.md#build-configuration)
      - [Known Limitations](../../docs/make/procps-ng.md#known-limitations)
 
+  * **[prometheus 3.11.3 (binary only)](../../docs/make/prometheus.md)<a id='prometheus'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the prometheus executable on the target. Can be externalized to save flash memory.
+
   * **[ProxyChains-NG 4.17](../../docs/make/proxychains-ng.md)<a id='proxychains-ng'></a>**<br>
     A preloader which hooks calls to sockets in dynamically linked programs and redirects it through one or more socks/http proxies, tor is also supported. Usage: proxychains4 telnet mail.example.com 25
 
@@ -1056,6 +1086,12 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Rcapid 0.1 - DEPRECATED</u><a id='rcapid'></a>**<br>
     Remote CAPI daemon from isdn4linux.
 
+  * **[rclone 1.74.1 (binary only)](../../docs/make/rclone.md)<a id='rclone'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the rclone executable on the target. Can be externalized to save flash memory.
+
+  * **[restic 0.18.1 (binary only)](../../docs/make/restic.md)<a id='restic'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the restic executable on the target. Can be externalized to save flash memory.
+
   * **<u>ripmime 1.2.16.21 (binary only) - DEPRECATED</u><a id='ripmime'></a>**<br>
     ripmime is an utility to decode and extract the parts of mime-formatted mails.
 
@@ -1315,6 +1351,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### V
 
+  * **[vhs 0.11.0 (binary only)](../../docs/make/vhs.md)<a id='vhs'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the vhs executable on the target. Can be externalized to save flash memory.
+
   * **[Vim 9.2.0000 (binary only)](../../docs/make/vim.md)<a id='vim'></a>**<br>
     An improved version of VI
 
@@ -1353,6 +1392,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Port Forwarding](../../docs/make/vtun.md#port-forwarding)
 
 ### W
+
+  * **[wavemon 0.9.7 (binary only)](../../docs/make/wavemon.md)<a id='wavemon'></a>**<br>
+    wavemon is an ncurses-based wireless device monitoring application.
 
   * **[Wget 1.25.0 (binary only)](../../docs/make/wget.md)<a id='wget'></a>**<br>
     GNU Wget is a free software package for retrieving files using HTTP, HTTPS and FTP, the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals, etc.
@@ -1395,6 +1437,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[XZ 5.8.3 (binary only)](../../docs/make/xz.md)<a id='xz'></a>**<br>
     XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm compression format, which provides memory-hungry but powerful compression (often better than bzip2) and fast, easy decompression. This package provides the command line tools for working with XZ compression. They can also handle the older LZMA format, and if invoked via appropriate symlinks will emulate the behavior of the commands in the lzma package.
+
+### Y
+
+  * **[yq 4.53.2 (binary only)](../../docs/make/yq.md)<a id='yq'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the yq executable on the target. Can be externalized to save flash memory.
 
 # Data Migration and Disaster Recovery
 

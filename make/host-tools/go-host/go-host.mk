@@ -20,6 +20,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	@touch $@
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
+	$(RM) -r $(TOOLS_DIR)/go-host
 	@mkdir -p $(TOOLS_DIR)/go-host
 	cp -a $(GO_HOST_DIR)/bin $(TOOLS_DIR)/go-host/
 	cp -a $(GO_HOST_DIR)/src $(TOOLS_DIR)/go-host/

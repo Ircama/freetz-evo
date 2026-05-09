@@ -549,6 +549,7 @@ define PKG_FINISH_CHECK_REBUILD_SUBOPTS__INT2
 $($(PKG)_FREETZ_CONFIG_FILE): $(TOPDIR)/.config | $(SOURCE_DIR)
 	@($(foreach OPT,$($(PKG)_REBUILD_SUBOPTS),echo "$(if $($(OPT)),$(OPT)=$($(OPT)),$(_hash) $(OPT) is not set)";):) > $($(PKG)_FREETZ_CONFIG_FILE).temp
 	@if ! diff -q $($(PKG)_FREETZ_CONFIG_FILE).temp $($(PKG)_FREETZ_CONFIG_FILE) $(SILENT) 2>/dev/null; then \
+		[ ! -d $($(PKG)_DIR) ] || chmod -R u+w $($(PKG)_DIR) 2>/dev/null || true; \
 		$(RM) -r $($(PKG)_DIR); \
 		$($(PKG)_CLEAN_TARGET_DIR__INT) \
 		mv $($(PKG)_FREETZ_CONFIG_FILE).temp $($(PKG)_FREETZ_CONFIG_FILE); \
@@ -572,6 +573,7 @@ $(pkg)-precompiled:
 $(eval $(PKG_BUILD_PREREQ__INT))
 
 $(pkg)-dirclean--int:
+	[ ! -d $($(PKG)_DIR) ] || chmod -R u+w $($(PKG)_DIR) 2>/dev/null || true
 	$(RM) -r $($(PKG)_DIR)
 	$($(PKG)_CLEAN_TARGET_DIR__INT)
 #	$($(PKG)_CLEAN_STAGING_DIR__INT)
@@ -633,7 +635,7 @@ $(PKG)_FREETZ_CHANGES_CHECK: $($(PKG)_SOURCE_DIR)
 			if [ ! -z "$$$$PATTERN" ]; then \
 				if [ "`grep -e "$$$$PATTERN" $($(PKG)_FREETZ_CHANGES_FILE)`" != "`grep -e "$$$$PATTERN" $($(PKG)_FREETZ_CHANGES_FILE).temp`" ]; then \
 					mv $($(PKG)_FREETZ_CHANGES_FILE).temp $($(PKG)_FREETZ_CHANGES_FILE); \
-					[ $$$$i == 1 ] && $(RM) -r $($(PKG)_DIR); \
+					[ $$$$i == 1 ] && { [ ! -d $($(PKG)_DIR) ] || chmod -R u+w $($(PKG)_DIR) 2>/dev/null || true; $(RM) -r $($(PKG)_DIR); }; \
 					$($(PKG)_CLEAN_TARGET_DIR__INT) \
 					$($(PKG)_CLEAN_STAGING_DIR__INT) \
 					break; \

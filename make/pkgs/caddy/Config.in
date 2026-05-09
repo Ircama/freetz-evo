@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_CADDY
+	bool "caddy 2.11.2 (binary only)"
+	default n
+	help
+		Caddy is a general-purpose web server with automatic HTTPS.
+
+		This package cross-compiles the upstream Go sources and installs the
+		caddy executable on the target.
+
+		Can be externalized to save flash memory.
