@@ -1,0 +1,28 @@
+config FREETZ_PACKAGE_BTOP
+	bool "btop 1.4.7"
+	depends on FREETZ_TARGET_GCC_13_MIN  # upstream requires C++23
+	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		btop is a modern terminal resource monitor for Linux.
+		
+		This package installs the btop binary and can optionally install
+		upstream themes.
+		
+		Can be externalized to save flash memory.
+
+if FREETZ_PACKAGE_BTOP
+
+	config FREETZ_PACKAGE_BTOP_THEMES
+		bool "Install upstream themes"
+		default n
+		help
+			Install all upstream btop themes to /usr/share/btop/themes/.
+			
+			Useful if you want to switch themes at runtime without manually
+			copying them to the box.
+
+endif # FREETZ_PACKAGE_BTOP

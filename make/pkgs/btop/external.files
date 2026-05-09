@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_BTOP" == "y" ] && EXTERNAL_FILES+=" /usr/bin/btop"
+[ "$EXTERNAL_FREETZ_PACKAGE_BTOP" == "y" -a "$FREETZ_PACKAGE_BTOP_THEMES" == "y" -a "$EXTERNAL_SUBDIRS" == "y" ] && EXTERNAL_FILES+=" /usr/share/btop/themes"

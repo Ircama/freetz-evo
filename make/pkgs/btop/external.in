@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_BTOP
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_BTOP
+	bool "btop"
+	default n
+	help
+		externals the installed btop files.
+		
+		If themes are enabled, /usr/share/btop/themes/ is externalized too
+		when external subdirectories support is enabled.
