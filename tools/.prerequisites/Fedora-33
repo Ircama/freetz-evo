@@ -1,3 +1,4 @@
+ImageMagick
 autoconf
 automake
 bc
@@ -15,7 +16,6 @@ git
 glib2-devel
 glibc-devel.i686
 gnutls-devel
-ImageMagick
 inkscape
 kmod
 libacl-devel

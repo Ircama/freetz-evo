@@ -37,8 +37,8 @@ libxml2-dev
 libzstd-dev
 make
 ncftp
-netcat-openbsd
 net-tools
+netcat-openbsd
 patch
 patchutils
 perl

@@ -16,11 +16,14 @@ gettext
 git
 glib2-devel
 glibc-devel
+glibc-devel.i686
 gnutls-devel
 inkscape
 javapackages-tools
 kmod
 libacl-devel
+libatomic
+libatomic.i686
 libattr-devel
 libcap-devel
 libgcc
@@ -45,7 +48,6 @@ perl
 perl-String-CRC32
 pkgconfig
 pv
-python3
 qt5-qtbase-devel
 readline-devel
 rpcgen

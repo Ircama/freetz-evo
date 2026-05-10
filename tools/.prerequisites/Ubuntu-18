@@ -39,8 +39,8 @@ libusb-dev
 libzstd-dev
 make
 ncftp
-netcat
 net-tools
+netcat
 openssl
 patch
 patchutils

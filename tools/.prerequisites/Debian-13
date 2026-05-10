@@ -47,6 +47,7 @@ patchutils
 perl
 pkg-config
 pv
+python3
 rsync
 sharutils
 sqlite3
@@ -59,4 +60,3 @@ unzip
 uuid-dev
 wget
 zlib1g-dev
-python3

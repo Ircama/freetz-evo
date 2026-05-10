@@ -1,7 +1,12 @@
+[ "$FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON" == "y" ] && ELIBVER="0.8.6" || ELIBVER="3.53.0"
+
 [ "$EXTERNAL_FREETZ_PACKAGE_SQLITE" == "y" ] && EXTERNAL_FILES+=" /usr/bin/sqlite3"
 
 # Support both old (libsqlite3.so.0.*) and new (libsqlite3.so.3.*) SONAME versions
 if [ "$EXTERNAL_FREETZ_LIB_libsqlite3" = "y" ]; then
+    SQLITE_LIB="${FREETZ_LIBRARY_DIR}/libsqlite3.so.$ELIBVER"
+
+    [ ! -e "$FILESYSTEM_MOD_DIR$SQLITE_LIB" ] && \
     SQLITE_LIB=$(find "$FILESYSTEM_MOD_DIR/usr/lib/freetz" -maxdepth 1 -type f -name 'libsqlite3.so.3.*' \
         | grep -v '\.a$' | head -1)
 

@@ -1,4 +1,5 @@
 
+ImageMagick
 bc
 binutils
 bison
@@ -16,7 +17,6 @@ git
 glib2-devel
 glibc-devel
 gnutls-devel
-ImageMagick
 inkscape
 javapackages-tools
 kmod
@@ -34,8 +34,8 @@ make
 ncurses
 ncurses-devel
 ncurses-term
-netcat
 net-tools
+netcat
 openssl
 openssl-devel
 patch
@@ -44,6 +44,7 @@ perl
 perl-String-CRC32
 pkgconfig
 pv
+python3
 qt5-qtbase-devel
 readline-devel
 rpcgen
@@ -58,4 +59,3 @@ util-linux
 wget
 xz
 zlib-ng-devel
-python3

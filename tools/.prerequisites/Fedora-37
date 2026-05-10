@@ -1,3 +1,4 @@
+ImageMagick
 bc
 binutils
 bison
@@ -16,7 +17,6 @@ git
 glib2-devel
 glibc-devel.i686
 gnutls-devel
-ImageMagick
 inkscape
 javapackages-tools
 kmod
@@ -36,8 +36,8 @@ ncftp
 ncurses-devel
 ncurses-devel.i686
 ncurses-term
-netcat
 net-tools
+netcat
 openssl
 openssl-devel
 patch

@@ -42,8 +42,8 @@ libxml2-dev
 libzstd-dev
 make
 ncftp
-netcat
 net-tools
+netcat
 patch
 patchutils
 perl
