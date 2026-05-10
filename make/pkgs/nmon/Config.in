@@ -1,0 +1,13 @@
+config FREETZ_PACKAGE_NMON
+	bool "nmon 16s (binary only)"
+	select FREETZ_LIB_libm       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libncurses
+	default n
+	help
+		nmon is a curses-based performance monitor for Linux systems.
+
+		It displays CPU, memory, disk, network, filesystem, and process
+		statistics in real time and can also save performance samples to a
+		CSV file for later analysis.
+
+		Can be externalized to save flash memory.
