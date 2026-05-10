@@ -54,6 +54,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes. | EVO only |
 | **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |
 | **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
+| **lf** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
 | **age** 1.3.1 | Modern file encryption tool. | EVO only |
 | **caddy** 2.11.2 | General-purpose web server and reverse proxy with automatic HTTPS capabilities. | EVO only |
 | **fzf** 0.72.0 | Command-line fuzzy finder for interactive shell filtering. | EVO only |
@@ -65,6 +66,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **rclone** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
 | **restic** 0.18.1 | Encrypted backup tool for local and remote repositories. | EVO only |
 | **vhs** 0.11.0 | Scripted terminal-session recorder for demo generation. | EVO only |
+| **NeoMutt** 20260504 | Console email client (MUA) with IMAP/POP3/SMTP, SSL/TLS via OpenSSL, wide-character ncurses UI, threading, sidebar, and a rich `muttrc` scripting language. | EVO only |
 | **yq** 4.53.2 | YAML, JSON, and XML processor for config automation. | EVO only |
 | **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
 | **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
