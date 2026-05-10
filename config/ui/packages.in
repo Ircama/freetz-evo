@@ -1,3 +1,12 @@
+config FREETZ_MENUCONFIG_PACKAGES_GROUPED
+	bool "Group packages alphabetically"
+	default y
+	help
+		Enable alphabetical submenus under Packages in make menuconfig.
+
+		Disable this option to show all packages in a single flat list.
+		This affects the ncurses menuconfig frontend.
+
 menu "Packages"
 	source "make/pkgs/Config.in.generated"
 endmenu

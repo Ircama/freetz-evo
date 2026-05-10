@@ -1,0 +1,38 @@
+--- scripts/kconfig/mconf.c
++++ scripts/kconfig/mconf.c
+@@ -291,6 +291,24 @@
+ static int save_and_exit;
+ static int silent;
+ 
++static bool packages_menu_grouped(void)
++{
++	struct symbol *sym;
++
++	sym = sym_lookup("FREETZ_MENUCONFIG_PACKAGES_GROUPED", 0);
++	return !sym || sym_get_tristate_value(sym) != no;
++}
++
++static bool is_packages_letter_menu(void)
++{
++	if (single_menu_mode || !current_menu)
++		return false;
++
++	return menu_get_prompt(current_menu) &&
++	       strcmp(menu_get_prompt(current_menu), "Packages") == 0 &&
++	       !packages_menu_grouped();
++}
++
+ static void conf(struct menu *menu, struct menu *active_menu);
+ 
+ static char filename[PATH_MAX+1];
+@@ -479,6 +497,10 @@
+ 			const char *prompt = menu_get_prompt(menu);
+ 			switch (prop->type) {
+ 			case P_MENU:
++				if (is_packages_letter_menu()) {
++					doint = 0;
++					goto conf_childs;
++				}
+ 				child_count++;
+ 				if (single_menu_mode) {
+ 					item_make("%s%*c%s",
