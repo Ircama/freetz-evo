@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_LF
+	bool "lf r41 (binary only)"
+	default n
+	help
+		lf is a terminal file manager written in Go.
+
+		This package cross-compiles the upstream Go sources and installs the
+		lf executable on the target.
+
+		Can be externalized to save flash memory.
