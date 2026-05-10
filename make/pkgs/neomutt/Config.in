@@ -1,0 +1,16 @@
+config FREETZ_PACKAGE_NEOMUTT
+	bool "NeoMutt 20260504 (binary only)"
+	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libiconv if FREETZ_TARGET_UCLIBC_0_9_28
+	default n
+	help
+		NeoMutt is a feature-rich terminal email client.
+
+		This package builds a lean OpenSSL + ncursesw variant with optional
+		features such as GPGME, Lua, Notmuch, SASL and extra header-cache
+		backends disabled to keep the footprint suitable for Freetz.
+
+		Can be externalized to save flash memory.
