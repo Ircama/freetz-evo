@@ -229,7 +229,6 @@ Older `freetz-1.0` builds required these host packages:
 - `bison`: YACC-compatible parser generator
 - `patch`: applies patches
 - `texinfo`: creates online and print documentation from a shared source
-- `tofrodos`: DOS/UNIX file conversion
 - `gettext`: internationalization for program text
 - `pkg-config`: helper tool required for building binaries and libraries;
   needed by packages such as ntfs and transmission

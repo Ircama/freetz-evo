@@ -174,12 +174,12 @@ sudo apt-get remove --allow-remove-essential coreutils-from-uutils
 
   - Ubuntu 26 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu26%%
+sudo apt-get -y install %%Ubuntu-26%%
 ```
 
   - Ubuntu 23/24/25 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu23%%
+sudo apt-get -y install %%Ubuntu-23%%
 ```
 
   - Ubuntu 22 64-bit:
@@ -189,7 +189,7 @@ sudo apt-get -y install %%Ubuntu-22%%
 
   - Ubuntu 20/21 64-bit:
 ```
-sudo apt-get -y install %%Ubuntu20%%
+sudo apt-get -y install %%Ubuntu-20%%
 # sqlite 32-bit may fail with apt, but works with apt-get. See also:
 # https://developpaper.com/ubuntu-solves-the-problem-of-libsqlite3-0-dependency-recommended/
 sudo apt -y install libzstd-dev:i386 sqlite3:i386
