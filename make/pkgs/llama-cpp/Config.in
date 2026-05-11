@@ -1,5 +1,6 @@
 menuconfig FREETZ_PACKAGE_LLAMA_CPP
 	bool "llama.cpp b8575 (LLM inference engine)"
+	depends on FREETZ_TARGET_GCC_8_MIN  # requires C++17 (GCC 8+)
 	select FREETZ_PACKAGE_HAS_LIBSTDCPP
 	default n
 	help

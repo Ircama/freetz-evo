@@ -15,13 +15,20 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 
+# TARGET_CFLAGS can carry --std=gnu99 for legacy GCC toolchains; strip it from
+# the C++ side and force a standard the selected toolchain understands.
+LIBZEN_CXXFLAGS := $(filter-out --std=gnu99 -std=gnu99,$(TARGET_CFLAGS))
+LIBZEN_CXXFLAGS += $(if $(FREETZ_TARGET_GCC_4_MAX),-std=c++0x,-std=c++11)
+
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.unpacked
 	(cd $(LIBZEN_DIR)/Project/GNU/Library && \
+		$(SED) -i -r -e 's,^AM_CXXFLAGS[[:space:]]*=.*$$,AM_CXXFLAGS =,' Makefile.am && \
 		./autogen.sh && \
 		$(TARGET_CONFIGURE_ENV) \
+		CXXFLAGS="$(LIBZEN_CXXFLAGS)" \
 		./configure \
 			--host=$(GNU_TARGET_NAME) \
 			--build=$(GNU_HOST_NAME) \

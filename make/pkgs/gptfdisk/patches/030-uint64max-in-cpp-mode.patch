@@ -1,0 +1,8 @@
+--- gpttext.cc
++++ gpttext.cc
+@@ -23,4 +23,5 @@
+ #include <string.h>
+ #include <errno.h>
++#define __STDC_LIMIT_MACROS
+ #include <stdint.h>
+ #include <limits.h>
