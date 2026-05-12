@@ -19,6 +19,7 @@ Freetz-EVO includes:
 - over 25 improved packages and libraries.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, a Disk Management web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
+Relevant new subsystems now also include ALSA userspace audio packages, exposed ALSA/USB audio kernel drivers on compatible targets, and the `cdc-acm` USB serial driver for native USB CDC ACM devices.
 
 AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.
 
@@ -51,9 +52,14 @@ The authentication layer has been updated to support a **form-based session logi
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
 | **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
+| **ALSA / USB audio kernel support** | Exposes `soundcore`, `snd`, `snd-timer`, `snd-pcm`, `snd-hwdep`, `snd-rawmidi`, `snd-usbmidi-lib`, and `snd-usb-audio` in menuconfig on compatible targets; these drivers are auto-selected by [`alsa-utils`](docs/make/alsa-utils.md), [`cmus`](docs/make/cmus.md), and [`shairport-sync`](docs/make/shairport-sync.md). | EVO only |
+| **[`alsa-utils`](docs/make/alsa-utils.md)** 1.2.13 / **[`alsa-lib`](docs/make/alsa-lib.md)** 1.2.13 | ALSA userspace toolchain and runtime library for playback, capture, mixer control, MIDI/sequencer tools, and `/usr/share/alsa` configuration data; both support external deployment. | EVO only |
+| **[`cmus`](docs/make/cmus.md)** 2.11.0 | Ncurses music player with ALSA output and MP3/FLAC/Vorbis playback, built on [`ncursesw`](docs/make/ncursesw.md), [`libmad`](docs/make/libmad.md), [`flac`](docs/make/flac.md), [`libvorbis`](docs/make/libvorbis.md), and [`libatomic`](docs/make/libatomic.md); package is externalizable. | EVO only |
+| **[`shairport-sync`](docs/make/shairport-sync.md)** 5.0.4 | AirPlay receiver with ALSA output, metadata FIFO processing, and a Freetz config/status web UI via [`shairport-sync-cgi`](docs/make/shairport-sync-cgi.md); built on [`alsa-lib`](docs/make/alsa-lib.md), [`libconfig`](docs/make/libconfig.md), [`libdaemon`](docs/make/libdaemon.md), [`popt`](docs/make/popt.md), and OpenSSL/libssl. | EVO only |
 | **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes. | EVO only |
 | **nmon** 16s | Curses-based Linux performance monitor for CPU, memory, disks, network, filesystems, and processes, with optional capture-to-file mode for later analysis. | EVO only |
 | **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |
+| **`cdc-acm` kernel driver** | Exposes `cdc-acm.ko` in menuconfig on compatible targets, enabling native USB CDC ACM serial devices such as ESP32-C3 boards and other USB serial gadgets. | EVO only |
 | **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
 | **lf** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
 | **age** 1.3.1 | Modern file encryption tool. | EVO only |
