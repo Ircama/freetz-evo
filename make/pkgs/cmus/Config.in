@@ -1,0 +1,15 @@
+config FREETZ_PACKAGE_CMUS
+	bool "cmus 2.11.0"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libasound
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libmad
+	select FREETZ_LIB_libFLAC
+	select FREETZ_LIB_libvorbisfile
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		cmus is a small and fast ncurses music player.
+		This build enables ALSA output together with MP3, FLAC and Vorbis
+		playback support.

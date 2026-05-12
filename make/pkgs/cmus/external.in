@@ -1,0 +1,10 @@
+config EXTERNAL_FREETZ_PACKAGE_CMUS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_CMUS
+	bool "cmus"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/cmus
+		 /usr/bin/cmus-remote
+		 /usr/lib/cmus (with EXTERNAL_SUBDIRS)
+		 /usr/share/cmus (with EXTERNAL_SUBDIRS)

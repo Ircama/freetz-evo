@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_CMUS" == "y" ] && EXTERNAL_FILES+=" /usr/bin/cmus /usr/bin/cmus-remote"
+[ "$EXTERNAL_FREETZ_PACKAGE_CMUS" == "y" -a "$EXTERNAL_SUBDIRS" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cmus /usr/share/cmus"
