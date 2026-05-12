@@ -1,0 +1,13 @@
+config FREETZ_PACKAGE_SHAIRPORT_SYNC_CGI
+	bool "shairport-sync CGI (AirPlay config/status web UI)"
+	depends on FREETZ_PACKAGE_SHAIRPORT_SYNC
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default y
+	help
+		Provides the freetz CGI configuration page and live status page for
+		shairport-sync.
+
+		Includes startup handling, runtime configuration and metadata/status
+		display in the freetz web UI.
+
+		http://fritz.box:81/cgi-bin/conf/shairport-sync

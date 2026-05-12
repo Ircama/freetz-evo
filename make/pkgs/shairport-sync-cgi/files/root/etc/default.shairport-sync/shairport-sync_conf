@@ -1,0 +1,68 @@
+#!/bin/sh
+
+escape_config() {
+	printf '%s' "$1" | sed -e 's/[\\"]/\\&/g'
+}
+
+metadata_dir="/tmp/shairport-sync"
+metadata_pipe="${metadata_dir}/metadata"
+log_file="/var/log/shairport-sync.log"
+
+mkdir -p "$metadata_dir" /var/log 2>/dev/null
+
+name_escaped="$(escape_config "$SHAIRPORT_SYNC_NAME")"
+password_escaped="$(escape_config "$SHAIRPORT_SYNC_PASSWORD")"
+output_device_escaped="$(escape_config "$SHAIRPORT_SYNC_OUTPUT_DEVICE")"
+mixer_control_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME")"
+mixer_device_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_DEVICE")"
+interpolation_escaped="$(escape_config "$SHAIRPORT_SYNC_INTERPOLATION")"
+log_file_escaped="$(escape_config "$log_file")"
+metadata_pipe_escaped="$(escape_config "$metadata_pipe")"
+
+cat << EOF
+general =
+{
+	name = "${name_escaped}";
+	output_backend = "alsa";
+	mdns_backend = "tinysvcmdns";
+	interpolation = "${interpolation_escaped}";
+	ignore_volume_control = "${SHAIRPORT_SYNC_IGNORE_VOLUME_CONTROL}";
+EOF
+
+[ -n "$SHAIRPORT_SYNC_PASSWORD" ] && echo "\tpassword = \"${password_escaped}\";"
+
+cat << EOF
+};
+
+sessioncontrol =
+{
+	daemonize_with_pid_file = "yes";
+	daemon_pid_dir = "/var/run";
+};
+
+alsa =
+{
+	output_device = "${output_device_escaped}";
+EOF
+
+[ -n "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME" ] && echo "\tmixer_control_name = \"${mixer_control_escaped}\";"
+[ -n "$SHAIRPORT_SYNC_MIXER_DEVICE" ] && echo "\tmixer_device = \"${mixer_device_escaped}\";"
+
+cat << EOF
+};
+
+metadata =
+{
+	enabled = "yes";
+	include_cover_art = "no";
+	pipe_name = "${metadata_pipe_escaped}";
+	progress_interval = 1.0;
+};
+
+diagnostics =
+{
+	log_output_to = "${log_file_escaped}";
+	statistics = "${SHAIRPORT_SYNC_STATISTICS}";
+	log_verbosity = ${SHAIRPORT_SYNC_LOG_VERBOSITY};
+};
+EOF

@@ -1,0 +1,9 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/shairport-sync.cgi
+	usr/lib/cgi-bin/shairport-sync/status.cgi
+}
