@@ -1,0 +1,22 @@
+config EXTERNAL_FREETZ_PACKAGE_ALSA_UTILS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_ALSA_UTILS
+	bool "alsa-utils"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/amidi
+		 /usr/bin/amixer
+		 /usr/bin/aplay
+		 /usr/bin/arecord
+		 /usr/bin/axfer
+		 /usr/bin/aconnect
+		 /usr/bin/aplaymidi
+		 /usr/bin/aplaymidi2
+		 /usr/bin/arecordmidi
+		 /usr/bin/arecordmidi2
+		 /usr/bin/aseqdump
+		 /usr/bin/aseqnet
+		 /usr/bin/aseqsend
+		 /usr/bin/iecset
+		 /usr/bin/speaker-test
+		 /usr/sbin/alsactl
