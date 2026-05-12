@@ -102,7 +102,28 @@ config FREETZ_AVM_HAS_NLS_UTF8_BUILTIN
 config FREETZ_AVM_HAS_SCSI_MOD_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_SND_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_SND_HWDEP_MODULE
+	def_bool y
+
+config FREETZ_AVM_HAS_SND_PCM_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_SND_TIMER_MODULE
+	def_bool y
+
+config FREETZ_AVM_HAS_SOUND_AVAILABLE
+	def_bool y
+
+config FREETZ_AVM_HAS_SOUND_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_TUN_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_USB_ACM_AVAILABLE
 	def_bool y
 
 config FREETZ_AVM_HAS_USB_BUILTIN

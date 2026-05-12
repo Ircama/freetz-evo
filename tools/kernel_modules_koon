@@ -71,7 +71,17 @@ main() {
 			usbip)				koon  USBIP_CORE			 ;;
 			usbip_common_mod)		koon  USB_IP_COMMON			STAGING=y STAGING_EXCLUDE_BUILD=n ;;
 			usblp)				koon  USB_PRINTER			 ;;
+			cdc_acm)			koon  USB_ACM				 ;;
 			usbmon)				koon  USB_MON				 ;;
+
+			soundcore)			koon  SOUND				 ;;
+			snd)				koon  SOUND				SND ;;
+			snd_timer)			koon  SOUND				SND SND_TIMER ;;
+			snd_pcm)			koon  SOUND				SND SND_TIMER SND_PCM ;;
+			snd_hwdep)			koon  SOUND				SND SND_HWDEP ;;
+			snd_rawmidi)			koon  SOUND				SND SND_RAWMIDI ;;
+			snd_usbmidi_lib)		true					 ;;
+			snd_usb_audio)			koon  SOUND				SND SND_TIMER SND_PCM SND_HWDEP SND_RAWMIDI SND_USB=y SND_USB_AUDIO ;;
 
 			ppp_generic)			koon  PPP				 ;;
 			ppp_async)			koon  PPP_ASYNC				PPP ;;

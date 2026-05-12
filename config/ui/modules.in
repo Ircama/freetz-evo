@@ -345,6 +345,77 @@ config FREETZ_MODULE_usbmon
 		enabled in all freetz .config's for 2.6.13 & 2.6.19, disabled for 2.6.28
 
 
+config FREETZ_MODULES_AUDIO_AVAILABLE
+	bool
+	default y if FREETZ_KERNEL_VERSION_4_MIN && FREETZ_AVM_HAS_SOUND_AVAILABLE && ( \
+		(!FREETZ_AVM_HAS_SOUND_BUILTIN         && !FREETZ_AVM_HAS_SOUND_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_BUILTIN           && !FREETZ_AVM_HAS_SND_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_TIMER_BUILTIN     && !FREETZ_AVM_HAS_SND_TIMER_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_PCM_BUILTIN       && !FREETZ_AVM_HAS_SND_PCM_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_HWDEP_BUILTIN     && !FREETZ_AVM_HAS_SND_HWDEP_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_RAWMIDI_BUILTIN   && !FREETZ_AVM_HAS_SND_RAWMIDI_MODULE) || \
+		(!FREETZ_AVM_HAS_SND_USB_AUDIO_BUILTIN && !FREETZ_AVM_HAS_SND_USB_AUDIO_MODULE) \
+	)
+
+menu "audio"
+	depends on FREETZ_MODULES_AUDIO_AVAILABLE
+
+config FREETZ_MODULE_soundcore
+	bool "soundcore.ko"
+	depends on !FREETZ_AVM_HAS_SOUND_BUILTIN && !FREETZ_AVM_HAS_SOUND_MODULE
+	default n
+
+config FREETZ_MODULE_snd
+	bool "snd.ko"
+	depends on !FREETZ_AVM_HAS_SND_BUILTIN && !FREETZ_AVM_HAS_SND_MODULE
+	select FREETZ_MODULE_soundcore if !FREETZ_AVM_HAS_SOUND_BUILTIN && !FREETZ_AVM_HAS_SOUND_MODULE
+	default n
+
+config FREETZ_MODULE_snd_timer
+	bool "snd-timer.ko"
+	depends on !FREETZ_AVM_HAS_SND_TIMER_BUILTIN && !FREETZ_AVM_HAS_SND_TIMER_MODULE
+	select FREETZ_MODULE_snd if !FREETZ_AVM_HAS_SND_BUILTIN && !FREETZ_AVM_HAS_SND_MODULE
+	default n
+
+config FREETZ_MODULE_snd_pcm
+	bool "snd-pcm.ko"
+	depends on !FREETZ_AVM_HAS_SND_PCM_BUILTIN && !FREETZ_AVM_HAS_SND_PCM_MODULE
+	select FREETZ_MODULE_snd if !FREETZ_AVM_HAS_SND_BUILTIN && !FREETZ_AVM_HAS_SND_MODULE
+	select FREETZ_MODULE_snd_timer if !FREETZ_AVM_HAS_SND_TIMER_BUILTIN && !FREETZ_AVM_HAS_SND_TIMER_MODULE
+	default n
+
+config FREETZ_MODULE_snd_hwdep
+	bool "snd-hwdep.ko"
+	depends on !FREETZ_AVM_HAS_SND_HWDEP_BUILTIN && !FREETZ_AVM_HAS_SND_HWDEP_MODULE
+	select FREETZ_MODULE_snd if !FREETZ_AVM_HAS_SND_BUILTIN && !FREETZ_AVM_HAS_SND_MODULE
+	default n
+
+config FREETZ_MODULE_snd_rawmidi
+	bool "snd-rawmidi.ko"
+	depends on !FREETZ_AVM_HAS_SND_RAWMIDI_BUILTIN && !FREETZ_AVM_HAS_SND_RAWMIDI_MODULE
+	select FREETZ_MODULE_snd if !FREETZ_AVM_HAS_SND_BUILTIN && !FREETZ_AVM_HAS_SND_MODULE
+	default n
+
+config FREETZ_MODULE_snd_usbmidi_lib
+	bool
+	default n
+
+config FREETZ_MODULE_snd_usb_audio
+	bool "snd-usb-audio.ko"
+	depends on !FREETZ_AVM_HAS_SND_USB_AUDIO_BUILTIN && !FREETZ_AVM_HAS_SND_USB_AUDIO_MODULE
+	select FREETZ_MODULE_snd_pcm if !FREETZ_AVM_HAS_SND_PCM_BUILTIN && !FREETZ_AVM_HAS_SND_PCM_MODULE
+	select FREETZ_MODULE_snd_hwdep if !FREETZ_AVM_HAS_SND_HWDEP_BUILTIN && !FREETZ_AVM_HAS_SND_HWDEP_MODULE
+	select FREETZ_MODULE_snd_rawmidi if !FREETZ_AVM_HAS_SND_RAWMIDI_BUILTIN && !FREETZ_AVM_HAS_SND_RAWMIDI_MODULE
+	select FREETZ_MODULE_snd_usbmidi_lib
+	default n
+	help
+		Build the in-tree ALSA USB Audio/MIDI driver when the current
+		AVM baseline does not already provide it. Missing ALSA support
+		modules are selected automatically.
+
+endmenu # audio
+
+
 comment " ppp"
 
 config FREETZ_MODULE_ppp_async
@@ -401,7 +472,16 @@ config FREETZ_MODULE_pppox
 	default n
 
 
-comment " serial"
+menu "serial"
+
+config FREETZ_MODULE_cdc_acm
+	bool "cdc-acm.ko"
+	depends on FREETZ_AVM_HAS_USB_ACM_AVAILABLE
+	depends on !FREETZ_AVM_HAS_USB_ACM_BUILTIN && !FREETZ_AVM_HAS_USB_ACM_MODULE
+	default n
+	help
+		USB CDC ACM serial class driver for ttyACM devices such as
+		ESP32-C3 boards using native USB.
 
 config FREETZ_MODULE_ch341
 	bool "ch341.ko"
@@ -449,6 +529,8 @@ config FREETZ_MODULE_usbserial
 	bool "usbserial.ko"
 	depends on !FREETZ_AVM_HAS_USB_SERIAL_BUILTIN
 	default n
+
+endmenu # serial
 
 endmenu # drivers
 

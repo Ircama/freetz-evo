@@ -69,16 +69,19 @@ config FREETZ_AVM_HAS_NFS_FS_BUILTIN
 config FREETZ_AVM_HAS_NFS_V3_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_PPPOE_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_PPP_ASYNC_BUILTIN
 	def_bool y
 
 config FREETZ_AVM_HAS_PPP_BUILTIN
 	def_bool y
 
-config FREETZ_AVM_HAS_PPPOE_BUILTIN
+config FREETZ_AVM_HAS_SLHC_BUILTIN
 	def_bool y
 
-config FREETZ_AVM_HAS_SLHC_BUILTIN
+config FREETZ_AVM_HAS_SOUND_AVAILABLE
 	def_bool y
 
 config FREETZ_AVM_HAS_SUNRPC_BUILTIN
@@ -88,6 +91,12 @@ config FREETZ_AVM_HAS_SWAP_BUILTIN
 	def_bool y
 
 config FREETZ_AVM_HAS_TUN_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_USB_ACM_AVAILABLE
+	def_bool y
+
+config FREETZ_AVM_HAS_USB_ACM_MODULE
 	def_bool y
 
 endif

@@ -17,7 +17,8 @@ SYMS="
  CRYPTO_AEAD CRYPTO_AES CRYPTO_ARC4 CRYPTO_BLKCIPHER CRYPTO_CBC CRYPTO_ALGAPI CRYPTO_HASH
  CRYPTO_WORKQUEUE CRYPTO_MANAGER CRYPTO_PCOMP CRYPTO_RNG CRYPTO_SHA1 CRYPTO_SHA256
  
- USB
+ USB USB_ACM
+ SOUND SND SND_TIMER SND_PCM SND_HWDEP SND_RAWMIDI SND_USB_AUDIO
  BT_HCIBFUSB BT_HCIBTUSB BT_INTEL BT_HCIBTUSB_BCM BT_HCIBTUSB_RTL
   ISDN_CAPI_CAPICONN CDROM_PKTCDVD DUMMY BLK_DEV_DM DM_CRYPT FW_LOADER BT_HCIUSB_SCO BLK_DEV_LOOP USB_MUSB_HDRC
   MTD_NAND BLK_DEV_NBD MTD_NAND_OHIO SCSI_MOD BLK_DEV_SD CHR_DEV_SG SLHC BLK_DEV_SR USB_PRINTER USB_STORAGE USB_IP_HOST USB_IP_COMMON USB_MON
@@ -36,6 +37,14 @@ SYMS="
  WIREGUARD TUN
  BT CRYPTO_ECDH CRYPTO_ECC BT_BNEP BT_L2CAP BT_RFCOMM
  NET_CLS_U32 NET_SCH_CBQ NET_SCH_HTB NET_SCH_LLQ NET_SCH_SFQ NET_SCH_TBF
+"
+MODULE_SYMS="
+ USB_ACM
+ SOUND SND SND_TIMER SND_PCM SND_HWDEP SND_RAWMIDI SND_USB_AUDIO
+"
+AVAILABLE_SYMS="
+ USB_ACM
+ SOUND
 "
 rm -rf "$PROP"
 mkdir -p "$PROP"
@@ -58,9 +67,17 @@ for src in $PARENT/make/kernel/configs/avm/*; do
 
 	echo -n .
 	out="$PROP/${src##*/}.in"
-	for sym in $SYMS; do
-		grep -q "^CONFIG_$sym=y$" "$src" && echo -e "config FREETZ_AVM_HAS_${sym}_BUILTIN"
-	done | sort > "$out"
+	{
+		for sym in $SYMS; do
+			grep -q "^CONFIG_$sym=y$" "$src" && echo -e "config FREETZ_AVM_HAS_${sym}_BUILTIN"
+		done
+		for sym in $MODULE_SYMS; do
+			grep -q "^CONFIG_$sym=m$" "$src" && echo -e "config FREETZ_AVM_HAS_${sym}_MODULE"
+		done
+		for sym in $AVAILABLE_SYMS; do
+			grep -Eq "^(CONFIG_$sym=[ymn]$|# CONFIG_$sym is not set$)" "$src" && echo -e "config FREETZ_AVM_HAS_${sym}_AVAILABLE"
+		done
+	} | sort > "$out"
 	sed -i "s/$/\n\tdef_bool y\n/g;1s/^/if FREETZ_AVM_SOURCE_$box\n\n/;$ s/$/\nendif/g" "$out"
 done
 grep -vE "^($|source )" $PROP/* -h > $PBIG
