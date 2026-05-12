@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_LIB_libasound
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libasound
+	bool "libasound"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libasound.so.2.0.0
+		 /usr/share/alsa (with EXTERNAL_SUBDIRS)

@@ -1,0 +1,9 @@
+config FREETZ_LIB_libasound
+	bool "alsa-lib (libasound.so)"
+	select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		ALSA user-space library for audio playback and mixer/control access.
+		Installs libasound together with the required ALSA runtime modules
+		and configuration files.

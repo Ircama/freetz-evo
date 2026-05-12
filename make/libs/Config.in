@@ -109,6 +109,9 @@ menu "Multi precision arithmetic libs"
 endmenu ### "Multi precision arithmetic libs"
 
 menu "Multimedia"
+	menu "Audio I/O"
+		source "make/libs/alsa-lib/Config.in"
+	endmenu
 	source "make/libs/libdvbcsa/Config.in"
 	menu "Audio and video codecs"
 		menu "Audio codecs"
