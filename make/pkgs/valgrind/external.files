@@ -1,0 +1,5 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_VALGRIND" == "y" ]; then
+	EXTERNAL_FILES+=" /usr/bin/valgrind /usr/bin/vgdb /usr/bin/vgstack"
+	EXTERNAL_FILES+=" /usr/bin/valgrind-listener /usr/bin/valgrind-di-server"
+	EXTERNAL_FILES+=" /usr/lib/valgrind"
+fi

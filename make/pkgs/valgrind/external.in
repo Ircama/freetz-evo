@@ -1,0 +1,12 @@
+config EXTERNAL_FREETZ_PACKAGE_VALGRIND
+	bool "valgrind"
+	depends on EXTERNAL_ENABLED && EXTERNAL_SUBDIRS && FREETZ_PACKAGE_VALGRIND
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/valgrind
+		 /usr/bin/vgdb
+		 /usr/bin/vgstack
+		 /usr/bin/valgrind-listener
+		 /usr/bin/valgrind-di-server
+		 /usr/lib/valgrind

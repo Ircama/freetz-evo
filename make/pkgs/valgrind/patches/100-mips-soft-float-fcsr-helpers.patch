@@ -1,0 +1,39 @@
+--- a/VEX/priv/guest_mips_helpers.c
++++ b/VEX/priv/guest_mips_helpers.c
+@@ -618,6 +618,10 @@
+    UInt ret = 0;
+ #if defined(__mips__)
+    VexGuestMIPS32State* guest_state = (VexGuestMIPS32State*)gs;
++#if defined(__mips_soft_float)
++   /* Soft-float toolchains cannot clobber MIPS FPU registers in inline asm. */
++   ret = guest_state->guest_FCSR;
++#else
+    UInt loFsVal, hiFsVal, loFtVal, hiFtVal;
+ #if defined (_MIPSEL)
+    ULong *addr = (ULong *)&guest_state->guest_f0;
+@@ -698,6 +702,7 @@
+          break;
+    }
+ #endif
++#endif
+    return ret;
+ }
+
+@@ -714,6 +719,10 @@
+ #else
+    VexGuestMIPS64State* guest_state = (VexGuestMIPS64State*)gs;
+ #endif
++#if defined(__mips_soft_float)
++   /* Soft-float toolchains cannot clobber MIPS FPU registers in inline asm. */
++   ret = guest_state->guest_FCSR;
++#else
+    ULong *addr = (ULong *)&guest_state->guest_f0;
+    UInt fcsr   = guest_state->guest_FCSR;
+    switch (inst) {
+@@ -859,6 +868,7 @@
+          break;
+    }
+ #endif
++#endif
+    return ret;
+ }

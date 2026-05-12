@@ -1,0 +1,14 @@
+config FREETZ_PACKAGE_VALGRIND
+	bool "Valgrind 3.27.0"
+	depends on FREETZ_KERNEL_VERSION_3_MIN
+	select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_librt if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Instrumentation framework for memory debugging and profiling.
+
+		This package installs the core Valgrind executables and the
+		runtime payload under /usr/lib/valgrind.
+
+		Helper scripts requiring perl or python3 on the target are omitted.

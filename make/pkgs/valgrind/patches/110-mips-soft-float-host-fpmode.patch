@@ -1,0 +1,20 @@
+--- a/coregrind/m_machine.c
++++ b/coregrind/m_machine.c
+@@ -2107,6 +2107,9 @@
+      if (fpmode < 0) {
+         /* prctl(PR_GET_FP_MODE) is not supported by Kernel,
+            we are using alternative way to determine FP mode */
++#if defined(__mips_soft_float)
++        fpmode = 0;
++#else
+         ULong result = 0;
+ 
+         if (!VG_MINIMAL_SETJMP(env_unsup_insn)) {
+@@ -2126,6 +2129,7 @@
+ 
+            fpmode = (result != 0x3FF0000000000000ull);
+         }
++#endif
+      }
+ 
+      if (fpmode != 0)
