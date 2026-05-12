@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_NEOVIM
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_NEOVIM
+	bool "neovim"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/nvim
+		 /usr/share/nvim (with EXTERNAL_SUBDIRS)
+		 /usr/lib/nvim (with EXTERNAL_SUBDIRS)

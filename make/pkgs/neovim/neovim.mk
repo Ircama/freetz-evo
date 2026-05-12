@@ -1,0 +1,177 @@
+$(call PKG_INIT_BIN, 0.12.2)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=ef9f58da7d687ed4d1dad9715542bf0dabdeedbfe8089e2ce17fff21b920a268
+$(PKG)_SITE:=https://github.com/neovim/neovim/archive/refs/tags
+### WEBSITE:=https://neovim.io/
+### MANPAGE:=https://neovim.io/doc/
+### CHANGES:=https://github.com/neovim/neovim/releases
+### CVSREPO:=https://github.com/neovim/neovim
+### STEWARD:=Ircama
+
+$(PKG)_BINARY:=$($(PKG)_DIR)/build/bin/nvim
+$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/nvim
+$(PKG)_TARGET_RUNTIME_DIR:=$($(PKG)_DEST_DIR)/usr/share/nvim
+$(PKG)_TARGET_LIB_DIR:=$($(PKG)_DEST_DIR)/usr/lib/nvim
+
+$(PKG)_HOST_DEPS_DIR:=$($(PKG)_DIR)/.hostdeps
+$(PKG)_HOST_DEPS_PREFIX:=$($(PKG)_HOST_DEPS_DIR)/usr
+$(PKG)_HOST_LUA_PRG:=$($(PKG)_HOST_DEPS_PREFIX)/bin/luajit
+$(PKG)_HOST_LPEG_LIBRARY:=$($(PKG)_HOST_DEPS_PREFIX)/lib/liblpeg.a
+$(PKG)_HOST_NLUA0:=$($(PKG)_HOST_DEPS_DIR)/nlua0.so
+
+$(PKG)_TARGET_DEPS_DIR:=$($(PKG)_DIR)/.deps
+$(PKG)_TARGET_DEPS_PREFIX:=$($(PKG)_TARGET_DEPS_DIR)/usr
+$(PKG)_BUILD_DIR:=$($(PKG)_DIR)/build
+$(PKG)_NVIM_FIND_ROOT_PATH:=$(TARGET_TOOLCHAIN_STAGING_DIR);$(abspath $($(PKG)_TARGET_DEPS_PREFIX))
+$(PKG)_LUAJIT_HOST_CC:=$(HOSTCC)$(if $(filter 64,$(shell getconf LONG_BIT 2>/dev/null)),$(if $(filter y,$(FREETZ_TARGET_ARCH_AARCH64)),, -m32))
+$(PKG)_TARGET_DEPS_ENV := HOST_CC="$($(PKG)_LUAJIT_HOST_CC)"
+
+$(PKG)_BUILD_PREREQ += vim
+$(PKG)_BUILD_PREREQ_HINT := Install host package "vim"; it is used to generate Neovim helptags during cross-build.
+
+$(PKG)_DEPENDS_ON += cmake-host ninja-host
+
+ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0_9_28)),y)
+$(PKG)_DEPENDS_ON += iconv
+endif
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_MIPS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_ARM
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_AARCH64
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_ARCH_X86
+
+$(PKG)_TARGET_CMAKE_COMMON += -G Ninja
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_MAKE_PROGRAM="$(abspath $(TOOLS_DIR)/ninja)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_SYSTEM_NAME=Linux
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_SYSTEM_PROCESSOR="$(FREETZ_TARGET_ARCH)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_C_COMPILER="$(TARGET_CC)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_C_FLAGS="$(TARGET_CFLAGS) $(FPIC)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_EXE_LINKER_FLAGS="$(TARGET_LDFLAGS)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_SHARED_LINKER_FLAGS="$(TARGET_LDFLAGS)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_AR="$(TARGET_AR)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_STRIP="$(TARGET_STRIP)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_FIND_ROOT_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)"
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY
+$(PKG)_TARGET_CMAKE_COMMON += -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
+
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -G Ninja
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DCMAKE_MAKE_PROGRAM="$(abspath $(TOOLS_DIR)/ninja)"
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED=OFF
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LPEG=ON
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LUAJIT=ON
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_GETTEXT=OFF
+$(PKG)_HOST_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LIBICONV=OFF
+
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += $(NEOVIM_TARGET_CMAKE_COMMON)
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED=OFF
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LIBUV=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LPEG=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LUAJIT=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_LUV=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_TS=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_TS_PARSERS=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_UNIBILIUM=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_UTF8PROC=ON
+$(PKG)_TARGET_DEPS_CMAKE_OPTIONS += -DUSE_BUNDLED_GETTEXT=OFF
+
+$(PKG)_NVIM_CMAKE_OPTIONS += $(NEOVIM_TARGET_CMAKE_COMMON)
+$(PKG)_NVIM_CMAKE_OPTIONS += -DCMAKE_INSTALL_PREFIX=/usr
+$(PKG)_NVIM_CMAKE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_NVIM_CMAKE_OPTIONS += -DCMAKE_FIND_ROOT_PATH="$($(PKG)_NVIM_FIND_ROOT_PATH)"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DDEPS_PREFIX="$(abspath $(NEOVIM_TARGET_DEPS_PREFIX))"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DENABLE_LIBINTL=OFF
+$(PKG)_NVIM_CMAKE_OPTIONS += -DENABLE_LTO=OFF
+$(PKG)_NVIM_CMAKE_OPTIONS += -DCOMPILE_LUA=OFF
+$(PKG)_NVIM_CMAKE_OPTIONS += -DLUA_PRG="$(abspath $(NEOVIM_HOST_LUA_PRG))"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DLUA_GEN_PRG="$(abspath $(NEOVIM_HOST_LUA_PRG))"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DNLUA0_HOST_PRG="$(abspath $(NEOVIM_HOST_NLUA0))"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DNVIM_HOST_PRG=/usr/bin/vim
+
+ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0_9_28)),y)
+$(PKG)_NVIM_CMAKE_OPTIONS += -DICONV_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)$(LIBICONV_PREFIX)/include"
+$(PKG)_NVIM_CMAKE_OPTIONS += -DICONV_LIBRARY="$(TARGET_TOOLCHAIN_STAGING_DIR)$(LIBICONV_PREFIX)/lib/libiconv.so"
+endif
+
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+
+$($(PKG)_DIR)/.hostdeps-built: $($(PKG)_DIR)/.build-prereq-checked $($(PKG)_DIR)/.unpacked
+	(cd $(NEOVIM_DIR) && \
+		$(CMAKE) -S cmake.deps -B .hostdeps $(NEOVIM_HOST_DEPS_CMAKE_OPTIONS) && \
+		$(CMAKE) --build .hostdeps \
+	) $(SILENT)
+	touch $@
+
+$($(PKG)_HOST_NLUA0): $($(PKG)_DIR)/.hostdeps-built $($(PKG)_DIR)/.deps-built
+	(cd $(NEOVIM_DIR) && \
+		$(MAKE_ENV) $(CMAKE) -S . -B build $(NEOVIM_NVIM_CMAKE_OPTIONS) && \
+		$(HOSTCC) -shared -fPIC \
+			-I$(abspath $(NEOVIM_HOST_DEPS_PREFIX))/include \
+			-I$(abspath $(NEOVIM_HOST_DEPS_PREFIX))/include/luajit-2.1 \
+			-I$(abspath $(NEOVIM_DIR))/src \
+			-I$(abspath $(NEOVIM_BUILD_DIR))/cmake.config \
+			-I$(abspath $(NEOVIM_BUILD_DIR))/include \
+			src/nlua0.c src/mpack/*.c \
+			$(abspath $(NEOVIM_HOST_LPEG_LIBRARY)) \
+			-L$(abspath $(NEOVIM_HOST_DEPS_PREFIX))/lib \
+			-Wl,-rpath,$(abspath $(NEOVIM_HOST_DEPS_PREFIX))/lib \
+			-lluajit-5.1 \
+			-lm -ldl \
+			-o $(abspath $(NEOVIM_HOST_NLUA0)) \
+	) $(SILENT)
+
+$($(PKG)_DIR)/.deps-built: $($(PKG)_DIR)/.build-prereq-checked $($(PKG)_DIR)/.unpacked
+	(cd $(NEOVIM_DIR) && \
+		$(NEOVIM_TARGET_DEPS_ENV) $(MAKE_ENV) $(CMAKE) -S cmake.deps -B .deps $(NEOVIM_TARGET_DEPS_CMAKE_OPTIONS) && \
+		$(NEOVIM_TARGET_DEPS_ENV) $(MAKE_ENV) $(CMAKE) --build .deps \
+	) $(SILENT)
+	touch $@
+
+$($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.build-prereq-checked $($(PKG)_DIR)/.unpacked $($(PKG)_DIR)/.deps-built $($(PKG)_HOST_NLUA0)
+	(cd $(NEOVIM_DIR) && \
+		$(MAKE_ENV) $(CMAKE) -S . -B build $(NEOVIM_NVIM_CMAKE_OPTIONS) \
+	) $(SILENT)
+	touch $@
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBNINJA) -C $(NEOVIM_BUILD_DIR)
+
+$($(PKG)_DIR)/.installed: $($(PKG)_BINARY)
+	(cd $(NEOVIM_DIR) && DESTDIR="$(abspath $(NEOVIM_DEST_DIR))" $(CMAKE) --install build) $(SILENT)
+	$(RM) -r \
+		$(NEOVIM_DEST_DIR)/usr/share/applications \
+		$(NEOVIM_DEST_DIR)/usr/share/icons \
+		$(NEOVIM_DEST_DIR)/usr/share/man
+	$(TARGET_STRIP) $(NEOVIM_TARGET_BINARY) 2>/dev/null || true
+	@if [ -d "$(NEOVIM_DEST_DIR)/usr/lib/nvim" ]; then \
+		find "$(NEOVIM_DEST_DIR)/usr/lib/nvim" -type f -name '*.so' -exec $(TARGET_STRIP) {} + 2>/dev/null || true; \
+	fi
+	touch $@
+
+$(pkg):
+
+$(pkg)-precompiled: $($(PKG)_DIR)/.installed
+
+
+$(pkg)-clean:
+	$(RM) -r \
+		$(NEOVIM_BUILD_DIR) \
+		$(NEOVIM_HOST_DEPS_DIR) \
+		$(NEOVIM_TARGET_DEPS_DIR) \
+		$(NEOVIM_DIR)/.configured \
+		$(NEOVIM_DIR)/.deps-built \
+		$(NEOVIM_DIR)/.hostdeps-built \
+		$(NEOVIM_DIR)/.installed
+
+$(pkg)-uninstall:
+	$(RM) -r \
+		$(NEOVIM_TARGET_BINARY) \
+		$(NEOVIM_TARGET_RUNTIME_DIR) \
+		$(NEOVIM_TARGET_LIB_DIR)
+
+$(PKG_FINISH)

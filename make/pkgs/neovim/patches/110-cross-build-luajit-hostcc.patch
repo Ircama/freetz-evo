@@ -1,0 +1,16 @@
+--- cmake.deps/cmake/BuildLuajit.cmake
++++ cmake.deps/cmake/BuildLuajit.cmake
+@@ -27,7 +27,12 @@
+ else()
+   set(AMD64_ABI "")
+ endif()
+-set(BUILDCMD_UNIX ${MAKE_PRG} -j CFLAGS=-fPIC
++if(DEFINED ENV{HOST_CC} AND NOT "$ENV{HOST_CC}" STREQUAL "")
++  set(LUAJIT_HOST_CC "HOST_CC=$ENV{HOST_CC}")
++else()
++  set(LUAJIT_HOST_CC "")
++endif()
++set(BUILDCMD_UNIX ${MAKE_PRG} -j ${LUAJIT_HOST_CC} CFLAGS=-fPIC
+                               CFLAGS+=-DLUA_USE_APICHECK
+                               CFLAGS+=-funwind-tables
+                               ${NO_STACK_CHECK}

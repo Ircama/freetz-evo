@@ -1,0 +1,35 @@
+--- runtime/CMakeLists.txt
++++ runtime/CMakeLists.txt
+@@ -5,6 +5,14 @@
+ set(GENERATED_SYN_VIM ${GENERATED_RUNTIME_DIR}/syntax/vim/generated.vim)
+ set(SYN_VIM_GENERATOR ${PROJECT_SOURCE_DIR}/src/gen/gen_vimvim.lua)
+ 
++if(CMAKE_CROSSCOMPILING)
++  set(NVIM_HOST_BASE_ARGS -u NONE -i NONE -n -es -c "set nomore")
++  set(NVIM_HOST_QUIT_CMD qall!)
++else()
++  set(NVIM_HOST_BASE_ARGS -u NONE -i NONE -n -e --headless -c "set nomore")
++  set(NVIM_HOST_QUIT_CMD quit)
++endif()
++
+ if(NOT NVIM_HOST_PRG)
+   set(NVIM_HOST_PRG $<TARGET_FILE:nvim_bin>)
+ endif()
+@@ -42,7 +50,7 @@
+       COMMAND ${CMAKE_COMMAND} -E copy_directory
+         ${PACKAGE} ${GENERATED_PACKAGE_DIR}/${PACKNAME}
+       COMMAND ${NVIM_HOST_PRG}
+-        -u NONE -i NONE -e --headless -c "helptags doc" -c quit
++        ${NVIM_HOST_BASE_ARGS} -c "helptags doc" -c ${NVIM_HOST_QUIT_CMD}
+       DEPENDS
+         nvim_bin
+         nvim_runtime_deps
+@@ -74,7 +82,7 @@
+   COMMAND ${CMAKE_COMMAND} -E copy_directory
+     ${PROJECT_SOURCE_DIR}/runtime/doc doc
+   COMMAND ${NVIM_HOST_PRG}
+-    -u NONE -i NONE -e --headless -c "helptags ++t doc" -c quit
++    ${NVIM_HOST_BASE_ARGS} -c "helptags ++t doc" -c ${NVIM_HOST_QUIT_CMD}
+   DEPENDS
+     nvim_bin
+     nvim_runtime_deps

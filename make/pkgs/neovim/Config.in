@@ -1,0 +1,14 @@
+config FREETZ_PACKAGE_NEOVIM
+	bool "Neovim 0.12.2"
+	select FREETZ_LIB_libdl       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libiconv    if FREETZ_TARGET_UCLIBC_0_9_28
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Modern Vim-based terminal editor.
+
+		This package builds Neovim with the upstream bundled dependencies
+		needed by the editor and installs the runtime under /usr/share/nvim.
+		Externalization is supported for the editor binary and, when
+		EXTERNAL_SUBDIRS is enabled, for /usr/share/nvim and /usr/lib/nvim.
