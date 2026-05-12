@@ -1,0 +1,27 @@
+menuconfig FREETZ_PACKAGE_SHAIRPORT_SYNC
+	bool "shairport-sync 5.0.4"
+	depends on FREETZ_OPENSSL_VERSION_10_MIN
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libasound
+	select FREETZ_LIB_libconfig
+	select FREETZ_LIB_libdaemon
+	select FREETZ_LIB_libpopt
+	select FREETZ_LIB_libssl
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		Shairport Sync is an AirPlay audio receiver with ALSA output.
+		This build enables the lightweight tinysvcmdns backend and
+		metadata support for the Freetz status page.
+
+if FREETZ_PACKAGE_SHAIRPORT_SYNC
+
+config FREETZ_PACKAGE_SHAIRPORT_SYNC_CGI
+	bool "shairport-sync CGI (AirPlay config/status web UI)"
+	default y
+	help
+		Provides the freetz CGI configuration page and live status page for
+		shairport-sync, including startup handling and metadata display.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif

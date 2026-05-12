@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_SHAIRPORT_SYNC
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_SHAIRPORT_SYNC
+	bool "shairport-sync"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/shairport-sync
+		 /usr/bin/shairport-sync-status-cache

@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_SHAIRPORT_SYNC" == "y" ] && EXTERNAL_FILES+=" /usr/bin/shairport-sync /usr/bin/shairport-sync-status-cache"
