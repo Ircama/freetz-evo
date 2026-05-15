@@ -1,0 +1,9 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/alsa-utils.cgi
+	usr/lib/cgi-bin/alsa-utils/status.cgi
+}

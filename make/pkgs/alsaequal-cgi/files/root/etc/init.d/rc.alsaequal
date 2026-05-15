@@ -1,0 +1,49 @@
+#!/bin/sh
+
+DAEMON=alsaequal
+DAEMON_LONG_NAME='ALSA Equalizer'
+DAEMON_CONFIG=/etc/alsa/conf.d/50-alsaequal.conf
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/alsaequal.cfg ] && . /mod/etc/conf/alsaequal.cfg
+
+config() {
+	mkdir -p /etc/alsa/conf.d 2>/dev/null
+	if [ "$ALSAEQUAL_ENABLED" = 'yes' ]; then
+		modlib_config "$DAEMON" "$DAEMON_CONFIG"
+	else
+		rm -f "$DAEMON_CONFIG"
+	fi
+}
+
+case "$1" in
+	""|load)
+		modreg cgi "$DAEMON" "$DAEMON_LONG_NAME"
+		modreg status "$DAEMON" "$DAEMON_LONG_NAME"
+		config
+		;;
+	unload)
+		modunreg status "$DAEMON"
+		modunreg cgi "$DAEMON"
+		rm -f "$DAEMON_CONFIG"
+		;;
+	config|start|restart)
+		config
+		;;
+	stop)
+		: 
+		;;
+	status)
+		if [ "$ALSAEQUAL_ENABLED" = 'yes' ] && [ -s "$DAEMON_CONFIG" ]; then
+			echo 'configured'
+		else
+			echo 'disabled'
+		fi
+		;;
+	*)
+		echo "Usage: $0 [load|unload|config|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

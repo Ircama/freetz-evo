@@ -1,0 +1,59 @@
+#!/bin/sh
+
+escape_conf() {
+	printf '%s' "$1" | sed -e 's/[\\"]/\\&/g'
+}
+
+if [ "$ALSAEQUAL_ENABLED" != 'yes' ]; then
+	echo '# alsaequal disabled'
+	exit 0
+fi
+
+control_file="${ALSAEQUAL_CONTROL_FILE:-/tmp/flash/alsaequal/alsaequal.bin}"
+library_name="${ALSAEQUAL_LIBRARY:-caps.so}"
+module_name="${ALSAEQUAL_MODULE:-Eq10}"
+slave_pcm="${ALSAEQUAL_SLAVE_PCM:-plughw:0,0}"
+channels="${ALSAEQUAL_CHANNELS:-2}"
+
+mkdir -p "$(dirname "$control_file")" 2>/dev/null
+
+control_file_escaped="$(escape_conf "$control_file")"
+library_name_escaped="$(escape_conf "$library_name")"
+module_name_escaped="$(escape_conf "$module_name")"
+slave_pcm_escaped="$(escape_conf "$slave_pcm")"
+
+cat << EOF
+ctl.equal {
+	type equal
+	controls "${control_file_escaped}"
+	library "${library_name_escaped}"
+	module "${module_name_escaped}"
+	channels ${channels}
+}
+
+pcm.plugequal {
+	type equal
+	slave.pcm "${slave_pcm_escaped}"
+	controls "${control_file_escaped}"
+	library "${library_name_escaped}"
+	module "${module_name_escaped}"
+	channels ${channels}
+}
+
+pcm.equal {
+	type plug
+	slave.pcm plugequal
+	hint {
+		show on
+		description "alsaequal output"
+	}
+}
+EOF
+
+if [ "$ALSAEQUAL_SET_DEFAULT" = 'yes' ]; then
+	cat << 'EOF'
+
+pcm.!default equal
+ctl.!default equal
+EOF
+fi

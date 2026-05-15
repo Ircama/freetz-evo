@@ -1,4 +1,4 @@
-menuconfig FREETZ_PACKAGE_SHAIRPORT_SYNC
+config FREETZ_PACKAGE_SHAIRPORT_SYNC
 	bool "shairport-sync 5.0.4"
 	depends on FREETZ_OPENSSL_VERSION_10_MIN
 	depends on FREETZ_TARGET_GCC_4_8_MIN

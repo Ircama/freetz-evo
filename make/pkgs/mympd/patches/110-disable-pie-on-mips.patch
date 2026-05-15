@@ -1,0 +1,33 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -426,7 +426,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+ elseif(CMAKE_BUILD_TYPE MATCHES "(Release|RelWithDebInfo|MinSizeRel)")
+   add_compile_options(
+-    "-fPIE"
+     "-O2"
+   )
++  if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "mips")
++    add_compile_options("-fPIE")
++  endif()
+   if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+     message("Generating binary with debug symbols")
+     add_compile_options("-g")
+@@ -457,13 +459,15 @@ elseif(MYMPD_ENABLE_TSAN)
+ if(CMAKE_BUILD_TYPE MATCHES "(Release|RelWithDebInfo|MinSizeRel)")
+   add_link_options(
+-    "-pie"
+     "-Wl,-z,nodlopen"
+     "-Wl,-z,noexecstack"
+     "-Wl,-z,relro"
+     "-Wl,-z,now"
+     "-Wl,--as-needed"
+     "-Wl,--no-copy-dt-needed-entries"
+     "-Wl,--gc-sections"
+   )
++  if(NOT CMAKE_SYSTEM_PROCESSOR MATCHES "mips")
++    add_link_options("-pie")
++  endif()
+   if(CMAKE_BUILD_TYPE MATCHES "(Release|MinSizeRel)")
+     message("Generating stripped binary")
+     add_link_options("-s")

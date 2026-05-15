@@ -1,0 +1,261 @@
+{
+  "deepl:Activation": {
+    "original": "Activation",
+    "translation": "Attivazione",
+    "timestamp": "2026-05-15T15:17:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Applied equalizer values": {
+    "original": "Applied equalizer values",
+    "translation": "Valori di equalizzazione applicati",
+    "timestamp": "2026-05-15T15:17:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable equalizer device": {
+    "original": "Enable equalizer device",
+    "translation": "Abilitare il dispositivo di equalizzazione",
+    "timestamp": "2026-05-15T15:17:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:alsaequal is currently disabled.": {
+    "original": "alsaequal is currently disabled.",
+    "translation": "alsaequal è attualmente disabilitato.",
+    "timestamp": "2026-05-15T15:17:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Route default PCM/control through equalizer": {
+    "original": "Route default PCM/control through equalizer",
+    "translation": "Indirizzare il PCM/controllo predefinito attraverso l'equalizzatore",
+    "timestamp": "2026-05-15T15:17:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No control values were submitted.": {
+    "original": "No control values were submitted.",
+    "translation": "Non sono stati inviati valori di controllo.",
+    "timestamp": "2026-05-15T15:17:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA configuration": {
+    "original": "ALSA configuration",
+    "translation": "Configurazione ALSA",
+    "timestamp": "2026-05-15T15:17:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Flat response": {
+    "original": "Flat response",
+    "translation": "Risposta piatta",
+    "timestamp": "2026-05-15T15:17:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Slave PCM (e.g. plughw:0,0)": {
+    "original": "Slave PCM (e.g. plughw:0,0)",
+    "translation": "Slave PCM (es. plughw:0,0)",
+    "timestamp": "2026-05-15T15:17:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No equalizer controls found.": {
+    "original": "No equalizer controls found.",
+    "translation": "Non sono stati trovati controlli dell'equalizzatore.",
+    "timestamp": "2026-05-15T15:17:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control file": {
+    "original": "Control file",
+    "translation": "File di controllo",
+    "timestamp": "2026-05-15T15:17:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer status": {
+    "original": "Equalizer status",
+    "translation": "Stato dell'equalizzatore",
+    "timestamp": "2026-05-15T15:17:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enabled": {
+    "original": "Enabled",
+    "translation": "Abilitato",
+    "timestamp": "2026-05-15T15:17:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:LADSPA library": {
+    "original": "LADSPA library",
+    "translation": "Libreria LADSPA",
+    "timestamp": "2026-05-15T15:17:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Use as default": {
+    "original": "Use as default",
+    "translation": "Utilizzare come predefinito",
+    "timestamp": "2026-05-15T15:17:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Plugin module": {
+    "original": "Plugin module",
+    "translation": "Modulo plugin",
+    "timestamp": "2026-05-15T15:17:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Channels": {
+    "original": "Channels",
+    "translation": "Canali",
+    "timestamp": "2026-05-15T15:17:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated configuration": {
+    "original": "Generated configuration",
+    "translation": "Configurazione generata",
+    "timestamp": "2026-05-15T15:17:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Slave PCM": {
+    "original": "Slave PCM",
+    "translation": "Slave PCM",
+    "timestamp": "2026-05-15T15:17:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The exported ALSA device names are fixed to <code>equal</code> and <code>plugequal</code>.": {
+    "original": "The exported ALSA device names are fixed to <code>equal</code> and <code>plugequal</code>.",
+    "translation": "I nomi dei dispositivi ALSA esportati sono fissati a <code>equal</code> e <code>plugequal</code>.",
+    "timestamp": "2026-05-15T15:17:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Library status": {
+    "original": "Library status",
+    "translation": "Stato della biblioteca",
+    "timestamp": "2026-05-15T15:17:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path.": {
+    "original": "The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path.",
+    "translation": "Il valore predefinito <code>caps.so</code> si aspetta che una libreria CAPS/Eq10 LADSPA sia presente nel percorso di ricerca del runtime.",
+    "timestamp": "2026-05-15T15:17:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T15:17:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer controls available": {
+    "original": "Equalizer controls available",
+    "translation": "Controlli dell'equalizzatore disponibili",
+    "timestamp": "2026-05-15T15:17:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show runtime control and status": {
+    "original": "Show runtime control and status",
+    "translation": "Mostra il controllo e lo stato del runtime",
+    "timestamp": "2026-05-15T15:17:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Detected sound cards": {
+    "original": "Detected sound cards",
+    "translation": "Schede audio rilevate",
+    "timestamp": "2026-05-15T15:17:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer controls": {
+    "original": "Equalizer controls",
+    "translation": "Controlli dell'equalizzatore",
+    "timestamp": "2026-05-15T15:17:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Band": {
+    "original": "Band",
+    "translation": "Banda",
+    "timestamp": "2026-05-15T15:17:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current": {
+    "original": "Current",
+    "translation": "Corrente",
+    "timestamp": "2026-05-15T15:17:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Range": {
+    "original": "Range",
+    "translation": "Gamma",
+    "timestamp": "2026-05-15T15:17:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:New value": {
+    "original": "New value",
+    "translation": "Nuovo valore",
+    "timestamp": "2026-05-15T15:17:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Apply values": {
+    "original": "Apply values",
+    "translation": "Applica valori",
+    "timestamp": "2026-05-15T15:17:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Set flat": {
+    "original": "Set flat",
+    "translation": "Imposta piatto",
+    "timestamp": "2026-05-15T15:17:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:alsaequal is disabled. Enable it in the configuration page and save it.": {
+    "original": "alsaequal is disabled. Enable it in the configuration page and save it.",
+    "translation": "alsaequal è disabilitato. Abilitarlo nella pagina di configurazione e salvarlo.",
+    "timestamp": "2026-05-15T15:17:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated ALSA configuration": {
+    "original": "Generated ALSA configuration",
+    "translation": "Configurazione ALSA generata",
+    "timestamp": "2026-05-15T15:17:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-15T15:17:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh": {
+    "original": "Refresh",
+    "translation": "Aggiorna",
+    "timestamp": "2026-05-15T15:17:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

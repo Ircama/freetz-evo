@@ -13,6 +13,7 @@ $(PKG)_DEPENDS_ON += alsa-lib
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
+# alsamixer needs the ncurses UI stack, which this lean build avoids.
 $(PKG)_CONFIGURE_OPTIONS += --disable-alsamixer
 $(PKG)_CONFIGURE_OPTIONS += --disable-alsaconf
 $(PKG)_CONFIGURE_OPTIONS += --disable-alsaloop

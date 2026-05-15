@@ -1,0 +1,32 @@
+#!/bin/sh
+
+pkg_pre_save() {
+	case "$ALSAEQUAL_CHANNELS" in
+		''|*[!0-9]*)
+			echo 'Error: channels must be a positive integer.' >&2
+			return 1
+			;;
+	esac
+	[ "$ALSAEQUAL_CHANNELS" -gt 0 ] 2>/dev/null || {
+		echo 'Error: channels must be greater than zero.' >&2
+		return 1
+	}
+	if [ "$ALSAEQUAL_ENABLED" = 'yes' ] && [ -z "$ALSAEQUAL_LIBRARY" -o -z "$ALSAEQUAL_MODULE" ]; then
+		echo 'Error: library and module are required when alsaequal is enabled.' >&2
+		return 1
+	fi
+	if [ "$ALSAEQUAL_SET_DEFAULT" = 'yes' ]; then
+		case "$ALSAEQUAL_SLAVE_PCM" in
+			default|equal|plugequal)
+				echo 'Error: slave PCM must not point to default/equal/plugequal when default routing is enabled.' >&2
+				return 1
+				;;
+		esac
+	fi
+	return 0
+}
+
+pkg_apply_save() {
+	/etc/init.d/rc.alsaequal config >/dev/null 2>&1 || true
+	return 0
+}

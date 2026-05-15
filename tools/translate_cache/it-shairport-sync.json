@@ -215,5 +215,33 @@
     "timestamp": "2026-05-12T01:48:29Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Network interface (empty = all)": {
+    "original": "Network interface (empty = all)",
+    "translation": "Interfaccia di rete (vuoto = tutti)",
+    "timestamp": "2026-05-15T15:19:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Output device (e.g. default or hw:0,0)": {
+    "original": "Output device (e.g. default or hw:0,0)",
+    "translation": "Dispositivo di uscita (ad esempio, default o hw:0,0)",
+    "timestamp": "2026-05-15T15:19:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Output format (optional, e.g. S16)": {
+    "original": "Output format (optional, e.g. S16)",
+    "translation": "Formato di output (opzionale, ad esempio S16)",
+    "timestamp": "2026-05-15T15:19:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Output rate (optional, e.g. 44100 or auto)": {
+    "original": "Output rate (optional, e.g. 44100 or auto)",
+    "translation": "Velocità di uscita (opzionale, ad esempio 44100 o auto)",
+    "timestamp": "2026-05-15T15:19:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

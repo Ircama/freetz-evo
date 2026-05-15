@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_ALSA_UTILS_CGI
+	bool "alsa-utils CGI (audio status/test web UI)"
+	depends on FREETZ_PACKAGE_ALSA_UTILS
+	default y
+	help
+		Provides the freetz web UI pages for ALSA playback tests,
+		capability inspection and mixer or volume control.
+
+		http://fritz.box:81/cgi-bin/conf/alsa-utils

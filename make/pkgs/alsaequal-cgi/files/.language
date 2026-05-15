@@ -1,0 +1,9 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/alsaequal.cgi
+	usr/lib/cgi-bin/alsaequal/status.cgi
+}

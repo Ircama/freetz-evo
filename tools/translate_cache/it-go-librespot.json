@@ -1,0 +1,254 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-05-15T15:17:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T15:17:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show status": {
+    "original": "Show status",
+    "translation": "Mostra lo stato",
+    "timestamp": "2026-05-15T15:17:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon status": {
+    "original": "Daemon status",
+    "translation": "Stato del demone",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon": {
+    "original": "Daemon",
+    "translation": "Daemon",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Spotify Connect": {
+    "original": "Spotify Connect",
+    "translation": "Spotify Connect",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device name": {
+    "original": "Device name",
+    "translation": "Nome del dispositivo",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA output": {
+    "original": "ALSA output",
+    "translation": "Uscita ALSA",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Output device": {
+    "original": "Output device",
+    "translation": "Dispositivo di uscita",
+    "timestamp": "2026-05-15T15:17:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer device (optional)": {
+    "original": "Mixer device (optional)",
+    "translation": "Dispositivo mixer (opzionale)",
+    "timestamp": "2026-05-15T15:17:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer control (optional)": {
+    "original": "Mixer control (optional)",
+    "translation": "Controllo del mixer (opzionale)",
+    "timestamp": "2026-05-15T15:17:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:PID": {
+    "original": "PID",
+    "translation": "PID",
+    "timestamp": "2026-05-15T15:17:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Buffer time in us (optional)": {
+    "original": "Buffer time in us (optional)",
+    "translation": "Tempo di buffer in us (opzionale)",
+    "timestamp": "2026-05-15T15:17:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device type": {
+    "original": "Device type",
+    "translation": "Tipo di dispositivo",
+    "timestamp": "2026-05-15T15:17:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Period count (optional)": {
+    "original": "Period count (optional)",
+    "translation": "Conteggio del periodo (opzionale)",
+    "timestamp": "2026-05-15T15:17:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Audio device": {
+    "original": "Audio device",
+    "translation": "Dispositivo audio",
+    "timestamp": "2026-05-15T15:17:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Persistence and networking": {
+    "original": "Persistence and networking",
+    "translation": "Persistenza e rete",
+    "timestamp": "2026-05-15T15:17:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration directory": {
+    "original": "Configuration directory",
+    "translation": "directory di configurazione",
+    "timestamp": "2026-05-15T15:17:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:File status": {
+    "original": "File status",
+    "translation": "Stato del file",
+    "timestamp": "2026-05-15T15:17:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Zeroconf port (optional)": {
+    "original": "Zeroconf port (optional)",
+    "translation": "Porta Zeroconf (opzionale)",
+    "timestamp": "2026-05-15T15:18:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:YAML configuration": {
+    "original": "YAML configuration",
+    "translation": "Configurazione YAML",
+    "timestamp": "2026-05-15T15:18:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advertised interfaces (empty = all)": {
+    "original": "Advertised interfaces (empty = all)",
+    "translation": "Interfacce pubblicizzate (vuoto = tutte)",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Persistent state": {
+    "original": "Persistent state",
+    "translation": "Stato persistente",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Persist Zeroconf credentials": {
+    "original": "Persist Zeroconf credentials",
+    "translation": "Persistere le credenziali di Zeroconf",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Lock file": {
+    "original": "Lock file",
+    "translation": "File di blocco",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log file": {
+    "original": "Log file",
+    "translation": "File di registro",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated configuration": {
+    "original": "Generated configuration",
+    "translation": "Configurazione generata",
+    "timestamp": "2026-05-15T15:18:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Recent log lines": {
+    "original": "Recent log lines",
+    "translation": "Linee di log recenti",
+    "timestamp": "2026-05-15T15:18:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Playback and logging": {
+    "original": "Playback and logging",
+    "translation": "Riproduzione e registrazione",
+    "timestamp": "2026-05-15T15:18:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto refresh 5s": {
+    "original": "Auto refresh 5s",
+    "translation": "Aggiornamento automatico 5s",
+    "timestamp": "2026-05-15T15:18:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Volume steps": {
+    "original": "Volume steps",
+    "translation": "Passi di volume",
+    "timestamp": "2026-05-15T15:18:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh once": {
+    "original": "Refresh once",
+    "translation": "Aggiorna una volta",
+    "timestamp": "2026-05-15T15:18:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-15T15:18:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Initial volume": {
+    "original": "Initial volume",
+    "translation": "Volume iniziale",
+    "timestamp": "2026-05-15T15:18:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Disable autoplay": {
+    "original": "Disable autoplay",
+    "translation": "Disabilita l'autoplay",
+    "timestamp": "2026-05-15T15:18:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Detected sound cards": {
+    "original": "Detected sound cards",
+    "translation": "Schede audio rilevate",
+    "timestamp": "2026-05-15T15:18:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_ALSAEQUAL" == "y" ] && EXTERNAL_FILES+=" /usr/lib/alsa-lib/libasound_module_pcm_equal.so"
+[ "$EXTERNAL_FREETZ_PACKAGE_ALSAEQUAL" == "y" ] && EXTERNAL_FILES+=" /usr/lib/alsa-lib/libasound_module_ctl_equal.so"

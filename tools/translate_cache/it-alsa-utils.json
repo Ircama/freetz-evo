@@ -1,0 +1,219 @@
+{
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T15:17:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:speaker-test output": {
+    "original": "speaker-test output",
+    "translation": "uscita di prova dell'altoparlante",
+    "timestamp": "2026-05-15T15:17:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show audio status and test tools": {
+    "original": "Show audio status and test tools",
+    "translation": "Mostra lo stato dell'audio e gli strumenti di test",
+    "timestamp": "2026-05-15T15:17:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:aplay output": {
+    "original": "aplay output",
+    "translation": "uscita aplay",
+    "timestamp": "2026-05-15T15:17:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:About alsamixer": {
+    "original": "About alsamixer",
+    "translation": "Informazioni su alsamixer",
+    "timestamp": "2026-05-15T15:17:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Unknown sample file.": {
+    "original": "Unknown sample file.",
+    "translation": "File di esempio sconosciuto.",
+    "timestamp": "2026-05-15T15:17:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:<code>alsamixer</code> is intentionally absent here because the current package is built with <code>--disable-alsamixer</code> to avoid the ncurses UI dependency stack. Use <code>amixer</code> or this web UI instead.": {
+    "original": "<code>alsamixer</code> is intentionally absent here because the current package is built with <code>--disable-alsamixer</code> to avoid the ncurses UI dependency stack. Use <code>amixer</code> or this web UI instead.",
+    "translation": "<code>alsamixer</code> è intenzionalmente assente perché il pacchetto corrente è compilato con <code>--disable-alsamixer</code> per evitare lo stack di dipendenze dell'interfaccia utente di ncurses. Utilizzare invece <code>amixer</code> o questa interfaccia web.",
+    "timestamp": "2026-05-15T15:17:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Detected sound cards": {
+    "original": "Detected sound cards",
+    "translation": "Schede audio rilevate",
+    "timestamp": "2026-05-15T15:17:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Volume control result": {
+    "original": "Volume control result",
+    "translation": "Risultato del controllo del volume",
+    "timestamp": "2026-05-15T15:17:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer control result": {
+    "original": "Mixer control result",
+    "translation": "Risultato del controllo del mixer",
+    "timestamp": "2026-05-15T15:17:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control name and value are required.": {
+    "original": "Control name and value are required.",
+    "translation": "Il nome e il valore del controllo sono obbligatori.",
+    "timestamp": "2026-05-15T15:17:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current devices": {
+    "original": "Current devices",
+    "translation": "Dispositivi attuali",
+    "timestamp": "2026-05-15T15:17:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:PCM device": {
+    "original": "PCM device",
+    "translation": "Dispositivo PCM",
+    "timestamp": "2026-05-15T15:17:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer device": {
+    "original": "Mixer device",
+    "translation": "Dispositivo di miscelazione",
+    "timestamp": "2026-05-15T15:17:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Volume control": {
+    "original": "Volume control",
+    "translation": "Controllo del volume",
+    "timestamp": "2026-05-15T15:17:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device test": {
+    "original": "Device test",
+    "translation": "Test del dispositivo",
+    "timestamp": "2026-05-15T15:17:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Channels": {
+    "original": "Channels",
+    "translation": "Canali",
+    "timestamp": "2026-05-15T15:17:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Run speaker-test -t wav -c2": {
+    "original": "Run speaker-test -t wav -c2",
+    "translation": "Eseguire speaker-test -t wav -c2",
+    "timestamp": "2026-05-15T15:17:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sample playback": {
+    "original": "Sample playback",
+    "translation": "Riproduzione campione",
+    "timestamp": "2026-05-15T15:17:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sample file": {
+    "original": "Sample file",
+    "translation": "File di esempio",
+    "timestamp": "2026-05-15T15:17:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Play with aplay": {
+    "original": "Play with aplay",
+    "translation": "Giocare con aplay",
+    "timestamp": "2026-05-15T15:17:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control": {
+    "original": "Control",
+    "translation": "Controllo",
+    "timestamp": "2026-05-15T15:17:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Value": {
+    "original": "Value",
+    "translation": "Valore",
+    "timestamp": "2026-05-15T15:17:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Switch": {
+    "original": "Switch",
+    "translation": "Interruttore",
+    "timestamp": "2026-05-15T15:17:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Set volume": {
+    "original": "Set volume",
+    "translation": "Imposta volume",
+    "timestamp": "2026-05-15T15:17:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer control": {
+    "original": "Mixer control",
+    "translation": "Controllo del mixer",
+    "timestamp": "2026-05-15T15:17:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control name": {
+    "original": "Control name",
+    "translation": "Nome del controllo",
+    "timestamp": "2026-05-15T15:17:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Apply control": {
+    "original": "Apply control",
+    "translation": "Applicare il controllo",
+    "timestamp": "2026-05-15T15:17:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Audio capabilities": {
+    "original": "Audio capabilities",
+    "translation": "Capacità audio",
+    "timestamp": "2026-05-15T15:17:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Back to overview": {
+    "original": "Back to overview",
+    "translation": "Torna alla panoramica",
+    "timestamp": "2026-05-15T15:17:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh": {
+    "original": "Refresh",
+    "translation": "Aggiorna",
+    "timestamp": "2026-05-15T15:17:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

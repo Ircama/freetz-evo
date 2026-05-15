@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_ALSAEQUAL
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_ALSAEQUAL
+	bool "alsaequal"
+	default n
+	help
+		externals the following file(s):
+		 /usr/lib/alsa-lib/libasound_module_pcm_equal.so
+		 /usr/lib/alsa-lib/libasound_module_ctl_equal.so

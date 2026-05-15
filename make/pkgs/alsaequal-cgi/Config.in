@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_ALSAEQUAL_CGI
+	bool "alsaequal CGI (equalizer config/control web UI)"
+	depends on FREETZ_PACKAGE_ALSAEQUAL && FREETZ_PACKAGE_ALSA_UTILS
+	default y
+	help
+		Provides the freetz web UI pages to configure alsaequal and adjust
+		the exported equalizer controls at runtime.
+
+		http://fritz.box:81/cgi-bin/conf/alsaequal

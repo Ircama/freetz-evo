@@ -22,7 +22,7 @@ Freetz-EVO includes:
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 
-Relevant new subsystems now also include ALSA userspace audio packages, exposed ALSA/USB audio kernel drivers on compatible targets, and the `cdc-acm` USB serial driver for native USB CDC ACM devices.
+New subsystems also include ALSA userspace audio packages, exposed ALSA/USB audio kernel drivers on compatible targets, and the `cdc-acm` USB serial driver for native USB CDC ACM devices.
 
 Additionally, Freetz-EVO offers AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new features.
 
@@ -37,7 +37,7 @@ New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walk
 
 Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.
 
-Freetz-EVO is currently a preliminary release, still in development.
+Freetz-EVO is still in development.
 
 #### UX and Web Interface
 

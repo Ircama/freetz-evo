@@ -1,0 +1,275 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon status": {
+    "original": "Daemon status",
+    "translation": "Stato del demone",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show status": {
+    "original": "Show status",
+    "translation": "Mostra lo stato",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon": {
+    "original": "Daemon",
+    "translation": "Daemon",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:PID": {
+    "original": "PID",
+    "translation": "PID",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Working directory": {
+    "original": "Working directory",
+    "translation": "Directory di lavoro",
+    "timestamp": "2026-05-15T15:18:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Open myMPD over HTTP": {
+    "original": "Open myMPD over HTTP",
+    "translation": "Aprire myMPD via HTTP",
+    "timestamp": "2026-05-15T15:18:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Working directory status": {
+    "original": "Working directory status",
+    "translation": "Stato della directory di lavoro",
+    "timestamp": "2026-05-15T15:18:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Open myMPD over HTTPS": {
+    "original": "Open myMPD over HTTPS",
+    "translation": "Aprire myMPD su HTTPS",
+    "timestamp": "2026-05-15T15:18:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cache directory": {
+    "original": "Cache directory",
+    "translation": "Directory di cache",
+    "timestamp": "2026-05-15T15:18:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directories": {
+    "original": "Directories",
+    "translation": "Direzioni",
+    "timestamp": "2026-05-15T15:18:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Web interface": {
+    "original": "Web interface",
+    "translation": "Interfaccia web",
+    "timestamp": "2026-05-15T15:18:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cache directory status": {
+    "original": "Cache directory status",
+    "translation": "Stato della directory cache",
+    "timestamp": "2026-05-15T15:18:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable HTTP": {
+    "original": "Enable HTTP",
+    "translation": "Abilita HTTP",
+    "timestamp": "2026-05-15T15:18:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP listener": {
+    "original": "HTTP listener",
+    "translation": "Ascoltatore HTTP",
+    "timestamp": "2026-05-15T15:18:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP bind address": {
+    "original": "HTTP bind address",
+    "translation": "Indirizzo HTTP bind",
+    "timestamp": "2026-05-15T15:18:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP port": {
+    "original": "HTTP port",
+    "translation": "Porta HTTP",
+    "timestamp": "2026-05-15T15:18:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTPS listener": {
+    "original": "HTTPS listener",
+    "translation": "Ascoltatore HTTPS",
+    "timestamp": "2026-05-15T15:18:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable HTTPS": {
+    "original": "Enable HTTPS",
+    "translation": "Abilita HTTPS",
+    "timestamp": "2026-05-15T15:18:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP URL": {
+    "original": "HTTP URL",
+    "translation": "URL HTTP",
+    "timestamp": "2026-05-15T15:18:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTPS port": {
+    "original": "HTTPS port",
+    "translation": "Porta HTTPS",
+    "timestamp": "2026-05-15T15:18:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTPS URL": {
+    "original": "HTTPS URL",
+    "translation": "URL HTTPS",
+    "timestamp": "2026-05-15T15:18:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MPD backend": {
+    "original": "MPD backend",
+    "translation": "backend MPD",
+    "timestamp": "2026-05-15T15:18:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configured MPD port": {
+    "original": "Configured MPD port",
+    "translation": "Porta MPD configurata",
+    "timestamp": "2026-05-15T15:18:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MPD host or socket (empty = autodetect)": {
+    "original": "MPD host or socket (empty = autodetect)",
+    "translation": "Host o socket MPD (vuoto = autodetect)",
+    "timestamp": "2026-05-15T15:18:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Active MPD host": {
+    "original": "Active MPD host",
+    "translation": "Host MPD attivo",
+    "timestamp": "2026-05-15T15:18:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MPD port (empty = default)": {
+    "original": "MPD port (empty = default)",
+    "translation": "Porta MPD (vuota = predefinita)",
+    "timestamp": "2026-05-15T15:18:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note": {
+    "original": "Note",
+    "translation": "Nota",
+    "timestamp": "2026-05-15T15:18:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Active MPD port": {
+    "original": "Active MPD port",
+    "translation": "Porta MPD attiva",
+    "timestamp": "2026-05-15T15:18:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional myMPD application settings are managed in the native myMPD web interface after the first start.": {
+    "original": "Additional myMPD application settings are managed in the native myMPD web interface after the first start.",
+    "translation": "Ulteriori impostazioni dell'applicazione myMPD sono gestite nell'interfaccia web nativa di myMPD dopo il primo avvio.",
+    "timestamp": "2026-05-15T15:18:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Bootstrap files": {
+    "original": "Bootstrap files",
+    "translation": "File Bootstrap",
+    "timestamp": "2026-05-15T15:18:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration directory": {
+    "original": "Configuration directory",
+    "translation": "directory di configurazione",
+    "timestamp": "2026-05-15T15:18:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:State directory": {
+    "original": "State directory",
+    "translation": "directory di stato",
+    "timestamp": "2026-05-15T15:18:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:SSL directory": {
+    "original": "SSL directory",
+    "translation": "directory SSL",
+    "timestamp": "2026-05-15T15:19:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Recent log lines": {
+    "original": "Recent log lines",
+    "translation": "Linee di log recenti",
+    "timestamp": "2026-05-15T15:19:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto refresh 5s": {
+    "original": "Auto refresh 5s",
+    "translation": "Aggiornamento automatico 5s",
+    "timestamp": "2026-05-15T15:19:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh once": {
+    "original": "Refresh once",
+    "translation": "Aggiorna una volta",
+    "timestamp": "2026-05-15T15:19:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-15T15:19:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

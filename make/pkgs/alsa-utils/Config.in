@@ -6,3 +6,15 @@ config FREETZ_PACKAGE_ALSA_UTILS
 	help
 		ALSA command line utilities including aplay, arecord, amixer,
 		alsactl and speaker-test.
+
+if FREETZ_PACKAGE_ALSA_UTILS
+
+config FREETZ_PACKAGE_ALSA_UTILS_CGI
+	bool "alsa-utils CGI (audio status/test web UI)"
+	default y
+	help
+		Provides the freetz web UI pages for ALSA device testing, sample
+		playback, mixer inspection and volume control.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif

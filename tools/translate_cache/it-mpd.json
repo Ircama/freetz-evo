@@ -1,0 +1,261 @@
+{
+  "deepl:Daemon status": {
+    "original": "Daemon status",
+    "translation": "Stato del demone",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon": {
+    "original": "Daemon",
+    "translation": "Daemon",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:PID": {
+    "original": "PID",
+    "translation": "PID",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show status": {
+    "original": "Show status",
+    "translation": "Mostra lo stato",
+    "timestamp": "2026-05-15T15:18:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Working directory": {
+    "original": "Working directory",
+    "translation": "Directory di lavoro",
+    "timestamp": "2026-05-15T15:18:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directories and listeners": {
+    "original": "Directories and listeners",
+    "translation": "Directory e ascoltatori",
+    "timestamp": "2026-05-15T15:18:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Music directory": {
+    "original": "Music directory",
+    "translation": "Elenco musicale",
+    "timestamp": "2026-05-15T15:18:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Music directory status": {
+    "original": "Music directory status",
+    "translation": "Stato della directory musicale",
+    "timestamp": "2026-05-15T15:18:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Bind address (empty = Unix socket only)": {
+    "original": "Bind address (empty = Unix socket only)",
+    "translation": "Indirizzo di binding (vuoto = solo socket Unix)",
+    "timestamp": "2026-05-15T15:18:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:TCP listener": {
+    "original": "TCP listener",
+    "translation": "Ascoltatore TCP",
+    "timestamp": "2026-05-15T15:18:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Unix socket": {
+    "original": "Unix socket",
+    "translation": "Unix socket",
+    "timestamp": "2026-05-15T15:18:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA output": {
+    "original": "ALSA output",
+    "translation": "Uscita ALSA",
+    "timestamp": "2026-05-15T15:18:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Bind address": {
+    "original": "Bind address",
+    "translation": "Indirizzo di vincolo",
+    "timestamp": "2026-05-15T15:18:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porta",
+    "timestamp": "2026-05-15T15:18:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Output name": {
+    "original": "Output name",
+    "translation": "Nome dell'uscita",
+    "timestamp": "2026-05-15T15:18:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA device": {
+    "original": "ALSA device",
+    "translation": "Dispositivo ALSA",
+    "timestamp": "2026-05-15T15:18:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer type": {
+    "original": "Mixer type",
+    "translation": "Tipo di mixer",
+    "timestamp": "2026-05-15T15:18:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:File status": {
+    "original": "File status",
+    "translation": "Stato del file",
+    "timestamp": "2026-05-15T15:18:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-15T15:18:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log file": {
+    "original": "Log file",
+    "translation": "File di registro",
+    "timestamp": "2026-05-15T15:18:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer device (hardware only)": {
+    "original": "Mixer device (hardware only)",
+    "translation": "Dispositivo mixer (solo hardware)",
+    "timestamp": "2026-05-15T15:18:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database": {
+    "original": "Database",
+    "translation": "Database",
+    "timestamp": "2026-05-15T15:18:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Mixer control (hardware only)": {
+    "original": "Mixer control (hardware only)",
+    "translation": "Controllo del mixer (solo hardware)",
+    "timestamp": "2026-05-15T15:18:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:State file": {
+    "original": "State file",
+    "translation": "File di stato",
+    "timestamp": "2026-05-15T15:18:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Playlist directory": {
+    "original": "Playlist directory",
+    "translation": "Elenco di riproduzione",
+    "timestamp": "2026-05-15T15:18:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated configuration": {
+    "original": "Generated configuration",
+    "translation": "Configurazione generata",
+    "timestamp": "2026-05-15T15:18:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Audio format (optional, e.g. 44100:16:2)": {
+    "original": "Audio format (optional, e.g. 44100:16:2)",
+    "translation": "Formato audio (opzionale, ad esempio 44100:16:2)",
+    "timestamp": "2026-05-15T15:18:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Active ALSA parameters": {
+    "original": "Active ALSA parameters",
+    "translation": "Parametri ALSA attivi",
+    "timestamp": "2026-05-15T15:18:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Recent log lines": {
+    "original": "Recent log lines",
+    "translation": "Linee di log recenti",
+    "timestamp": "2026-05-15T15:18:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto refresh 5s": {
+    "original": "Auto refresh 5s",
+    "translation": "Aggiornamento automatico 5s",
+    "timestamp": "2026-05-15T15:18:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh once": {
+    "original": "Refresh once",
+    "translation": "Aggiorna una volta",
+    "timestamp": "2026-05-15T15:18:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Runtime options": {
+    "original": "Runtime options",
+    "translation": "Opzioni di runtime",
+    "timestamp": "2026-05-15T15:18:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Automatically update music database": {
+    "original": "Automatically update music database",
+    "translation": "Aggiornamento automatico del database musicale",
+    "timestamp": "2026-05-15T15:18:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Restore paused state on startup": {
+    "original": "Restore paused state on startup",
+    "translation": "Ripristino dello stato di pausa all'avvio",
+    "timestamp": "2026-05-15T15:18:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Detected sound cards": {
+    "original": "Detected sound cards",
+    "translation": "Schede audio rilevate",
+    "timestamp": "2026-05-15T15:18:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

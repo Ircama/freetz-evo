@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DAEMON=alsa-utils
+DAEMON_LONG_NAME='ALSA Utils'
+. /etc/init.d/modlibrc
+
+case "$1" in
+	""|load)
+		modreg cgi "$DAEMON" "$DAEMON_LONG_NAME"
+		modreg status "$DAEMON" "$DAEMON_LONG_NAME"
+		;;
+	unload)
+		modunreg status "$DAEMON"
+		modunreg cgi "$DAEMON"
+		;;
+	start|stop|restart|status)
+		: 
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0
