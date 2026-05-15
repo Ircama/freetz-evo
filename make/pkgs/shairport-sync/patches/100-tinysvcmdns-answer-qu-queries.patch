@@ -1,0 +1,17 @@
+--- a/tinysvcmdns.c
++++ b/tinysvcmdns.c
+@@ -1335,12 +1335,9 @@ static int process_mdns_pkt(struct mdnsd *svr, struct mdns_pkt *pkt, struct mdn
+       DEBUG_PRINTF("qn #%d: type %s (%02x) %s - ", i, rr_get_type_name(qn->type), qn->type,
+                    namestr);
+       free(namestr);
+ 
+-      // check if it's a unicast query - we ignore those
+-      if (qn->unicast_query) {
+-        DEBUG_PRINTF("skipping unicast query\n");
+-        continue;
+-      }
++      if (qn->unicast_query)
++        DEBUG_PRINTF("unicast response preferred; answering on multicast\n");
+ 
+       num_ans_added = populate_answers(svr, &reply->rr_ans, qn->name, qn->type);
+       reply->num_ans_rr += num_ans_added;

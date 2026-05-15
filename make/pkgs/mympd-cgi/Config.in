@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_MYMPD_CGI
+	bool "myMPD CGI (config/status web UI)"
+	depends on FREETZ_PACKAGE_MYMPD
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default y
+	help
+		Provides the freetz CGI configuration page and status page for myMPD.
+
+		Includes startup handling and bootstrap settings for the embedded
+		myMPD web interface.
+
+		http://fritz.box:81/cgi-bin/conf/mympd

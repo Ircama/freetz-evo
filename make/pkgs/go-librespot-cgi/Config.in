@@ -1,0 +1,13 @@
+config FREETZ_PACKAGE_GO_LIBRESPOT_CGI
+	bool "go-librespot CGI (Spotify Connect config/status web UI)"
+	depends on FREETZ_PACKAGE_GO_LIBRESPOT
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default y
+	help
+		Provides the freetz CGI configuration page and live status page for
+		go-librespot.
+
+		Includes startup handling, runtime YAML generation and log-based
+		service monitoring in the freetz web UI.
+
+		http://fritz.box:81/cgi-bin/conf/go-librespot

@@ -1,0 +1,147 @@
+#!/bin/sh
+
+DAEMON=mympd
+DAEMON_BIN=mympd
+DAEMON_LONG_NAME="myMPD"
+CONF_ENABLED=MYMPD_ENABLED
+DAEMON_CHECK="$DAEMON_BIN"
+PID_FILE=/var/run/mympd.pid
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/mympd.cfg ] && . /mod/etc/conf/mympd.cfg
+
+: ${MYMPD_WORKDIR:=/tmp/flash/mympd}
+: ${MYMPD_CACHEDIR:=/tmp/mympd-cache}
+: ${MYMPD_HTTP:=yes}
+: ${MYMPD_HTTP_HOST:=0.0.0.0}
+: ${MYMPD_HTTP_PORT:=8080}
+: ${MYMPD_SSL:=no}
+: ${MYMPD_SSL_PORT:=8443}
+: ${MYMPD_MPD_HOST:=}
+: ${MYMPD_MPD_PORT:=}
+
+MYMPD_WORKDIR="${MYMPD_WORKDIR%/}"
+MYMPD_CACHEDIR="${MYMPD_CACHEDIR%/}"
+MYMPD_LOG_FILE="${MYMPD_WORKDIR}/mympd.log"
+
+as_mympd_bool() {
+	case "$1" in
+		yes|true|1|on) echo true ;;
+		*) echo false ;;
+	esac
+}
+
+export_bootstrap_env() {
+	export MYMPD_HTTP="$(as_mympd_bool "$MYMPD_HTTP")"
+	export MYMPD_HTTP_HOST="${MYMPD_HTTP_HOST:-0.0.0.0}"
+	export MYMPD_HTTP_PORT="${MYMPD_HTTP_PORT:-8080}"
+	export MYMPD_SSL="$(as_mympd_bool "$MYMPD_SSL")"
+	export MYMPD_SSL_PORT="${MYMPD_SSL_PORT:-8443}"
+
+	if [ -n "$MYMPD_MPD_HOST" ]; then
+		export MPD_HOST="$MYMPD_MPD_HOST"
+	else
+		unset MPD_HOST
+	fi
+
+	if [ -n "$MYMPD_MPD_PORT" ]; then
+		export MPD_PORT="$MYMPD_MPD_PORT"
+	else
+		unset MPD_PORT
+	fi
+}
+
+config() {
+	[ -x "/usr/bin/$DAEMON_BIN" ] || return 1
+	mkdir -p "$MYMPD_WORKDIR" "$MYMPD_CACHEDIR" 2>/dev/null
+	touch "$MYMPD_LOG_FILE" 2>/dev/null
+	chmod a+rw "$MYMPD_LOG_FILE" 2>/dev/null
+	export_bootstrap_env
+	/usr/bin/$DAEMON_BIN -c -w "$MYMPD_WORKDIR" -a "$MYMPD_CACHEDIR" >>"$MYMPD_LOG_FILE" 2>&1
+}
+
+start() {
+	echo -n "Starting ${DAEMON_LONG_NAME} ... "
+
+	if [ ! -x "/usr/bin/$DAEMON_BIN" ]; then
+		echo "failed: /usr/bin/$DAEMON_BIN not found."
+		exit 1
+	fi
+
+	touch "$MYMPD_LOG_FILE" 2>/dev/null
+	chmod a+rw "$MYMPD_LOG_FILE" 2>/dev/null
+	rm -f "$PID_FILE" 2>/dev/null
+	export_bootstrap_env
+
+	start-stop-daemon -S -b -q -m -p "$PID_FILE" -n "$DAEMON_BIN" \
+		-- /bin/sh -c "exec /usr/bin/$DAEMON_BIN -w \"$MYMPD_WORKDIR\" -a \"$MYMPD_CACHEDIR\" >>\"$MYMPD_LOG_FILE\" 2>&1"
+
+	if [ $? -ne 0 ]; then
+		echo 'failed.'
+		exit 1
+	fi
+
+	sleep 1
+	modlib_check_running
+	if [ $? -eq 0 ]; then
+		echo 'done.'
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+stop() {
+	retval=0
+	case "$1" in
+		0)
+			if [ -s "$PID_FILE" ]; then
+				start-stop-daemon -K -q -p "$PID_FILE" >/dev/null 2>&1 || retval=$?
+			else
+				killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			fi
+			;;
+		5)
+			killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			;;
+	esac
+	return $retval
+}
+
+stop_post() {
+	rm -f "$PID_FILE" 2>/dev/null
+}
+
+case $1 in
+	""|load)
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modreg daemon $DAEMON
+		modreg status $DAEMON "$DAEMON_LONG_NAME"
+
+		modlib_start $MYMPD_ENABLED
+		;;
+	unload)
+		modunreg status $DAEMON
+		modunreg daemon $DAEMON
+		modunreg cgi $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

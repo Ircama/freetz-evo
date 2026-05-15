@@ -13,6 +13,7 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/cmus
 $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed
 
 $(PKG)_DEPENDS_ON += alsa-lib libatomic ncursesw libmad flac libvorbis
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_CONFIGURE_ENV += PKG_CONFIG=/usr/bin/pkg-config
 $(PKG)_CONFIGURE_ENV += PKG_CONFIG_LIBDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig"
@@ -70,6 +71,10 @@ $($(PKG)_TARGET_INSTALL_MARKER): $($(PKG)_BINARY)
 	$(RM) -r \
 		$(CMUS_DEST_DIR)/usr/share/doc \
 		$(CMUS_DEST_DIR)/usr/share/man
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		$(FREETZ_BASE_DIR)/$(TOOLS_DIR)/patchelf-target --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(CMUS_DEST_DIR)/usr/bin/cmus; \
+		$(FREETZ_BASE_DIR)/$(TOOLS_DIR)/patchelf-target --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(CMUS_DEST_DIR)/usr/bin/cmus-remote; \
+	fi
 	$(TARGET_STRIP) \
 		$(CMUS_DEST_DIR)/usr/bin/cmus \
 		$(CMUS_DEST_DIR)/usr/bin/cmus-remote 2>/dev/null || true

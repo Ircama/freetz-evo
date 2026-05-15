@@ -1,0 +1,12 @@
+--- aplay/aplay.c
++++ aplay/aplay.c
+@@ -1458,4 +1458,7 @@
+ 	}
+-	snd_pcm_hw_params_get_period_size(params, &chunk_size, 0);
+-	snd_pcm_hw_params_get_buffer_size(params, &buffer_size);
++	err = snd_pcm_get_params(handle, &buffer_size, &chunk_size);
++	if (err < 0) {
++		error(_("Unable to get buffer and period size"));
++		prg_exit(EXIT_FAILURE);
++	}
+ 	if (chunk_size == buffer_size) {

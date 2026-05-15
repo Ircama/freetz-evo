@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_MYMPD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MYMPD
+	bool "mympd"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/mympd

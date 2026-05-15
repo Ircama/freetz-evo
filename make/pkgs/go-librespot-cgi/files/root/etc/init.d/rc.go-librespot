@@ -1,0 +1,107 @@
+#!/bin/sh
+
+DAEMON=go-librespot
+DAEMON_BIN=go-librespot
+DAEMON_LONG_NAME="go-librespot"
+CONF_ENABLED=GO_LIBRESPOT_ENABLED
+DAEMON_CHECK="$DAEMON_BIN"
+PID_FILE=/var/run/go-librespot.pid
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/go-librespot.cfg ] && . /mod/etc/conf/go-librespot.cfg
+
+: ${GO_LIBRESPOT_CONFIG_DIR:=/tmp/flash/go-librespot}
+GO_LIBRESPOT_CONFIG_DIR="${GO_LIBRESPOT_CONFIG_DIR%/}"
+GO_LIBRESPOT_CONFIG_YAML="${GO_LIBRESPOT_CONFIG_DIR}/config.yml"
+GO_LIBRESPOT_LOG_FILE="${GO_LIBRESPOT_CONFIG_DIR}/go-librespot.log"
+
+config() {
+	mkdir -p "$GO_LIBRESPOT_CONFIG_DIR" 2>/dev/null
+	modlib_config "$DAEMON" "$GO_LIBRESPOT_CONFIG_YAML"
+}
+
+start() {
+	echo -n "Starting ${DAEMON_LONG_NAME} ... "
+	config
+
+	if [ ! -x /usr/bin/$DAEMON_BIN ]; then
+		echo "failed: /usr/bin/$DAEMON_BIN not found."
+		exit 1
+	fi
+
+	touch "$GO_LIBRESPOT_LOG_FILE" 2>/dev/null
+	chmod a+rw "$GO_LIBRESPOT_LOG_FILE" 2>/dev/null
+	rm -f "$PID_FILE" 2>/dev/null
+
+	start-stop-daemon -S -b -q -m -p "$PID_FILE" -n "$DAEMON_BIN" \
+		-- /bin/sh -c "exec /usr/bin/$DAEMON_BIN --config_dir \"$GO_LIBRESPOT_CONFIG_DIR\" >>\"$GO_LIBRESPOT_LOG_FILE\" 2>&1"
+
+	if [ $? -ne 0 ]; then
+		echo 'failed.'
+		exit 1
+	fi
+
+	sleep 1
+	modlib_check_running
+	if [ $? -eq 0 ]; then
+		echo 'done.'
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+stop() {
+	local retval=0
+	case "$1" in
+		0)
+			if [ -s "$PID_FILE" ]; then
+				start-stop-daemon -K -q -p "$PID_FILE" >/dev/null 2>&1 || retval=$?
+			else
+				killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			fi
+			;;
+		5)
+			killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			;;
+	esac
+	return $retval
+}
+
+stop_post() {
+	rm -f "$PID_FILE" 2>/dev/null
+}
+
+case $1 in
+	""|load)
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modreg daemon $DAEMON
+		modreg status $DAEMON "$DAEMON_LONG_NAME"
+
+		modlib_start $GO_LIBRESPOT_ENABLED
+		;;
+	unload)
+		modunreg status $DAEMON
+		modunreg daemon $DAEMON
+		modunreg cgi $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

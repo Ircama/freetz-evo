@@ -12,7 +12,10 @@ mkdir -p "$metadata_dir" /var/log 2>/dev/null
 
 name_escaped="$(escape_config "$SHAIRPORT_SYNC_NAME")"
 password_escaped="$(escape_config "$SHAIRPORT_SYNC_PASSWORD")"
+interface_escaped="$(escape_config "$SHAIRPORT_SYNC_INTERFACE")"
 output_device_escaped="$(escape_config "$SHAIRPORT_SYNC_OUTPUT_DEVICE")"
+output_format_escaped="$(escape_config "$SHAIRPORT_SYNC_OUTPUT_FORMAT")"
+output_rate_escaped="$(escape_config "$SHAIRPORT_SYNC_OUTPUT_RATE")"
 mixer_control_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME")"
 mixer_device_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_DEVICE")"
 interpolation_escaped="$(escape_config "$SHAIRPORT_SYNC_INTERPOLATION")"
@@ -29,7 +32,8 @@ general =
 	ignore_volume_control = "${SHAIRPORT_SYNC_IGNORE_VOLUME_CONTROL}";
 EOF
 
-[ -n "$SHAIRPORT_SYNC_PASSWORD" ] && echo "\tpassword = \"${password_escaped}\";"
+[ -n "$SHAIRPORT_SYNC_PASSWORD" ] && printf '\tpassword = "%s";\n' "$password_escaped"
+[ -n "$SHAIRPORT_SYNC_INTERFACE" ] && printf '\tinterface = "%s";\n' "$interface_escaped"
 
 cat << EOF
 };
@@ -45,8 +49,14 @@ alsa =
 	output_device = "${output_device_escaped}";
 EOF
 
-[ -n "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME" ] && echo "\tmixer_control_name = \"${mixer_control_escaped}\";"
-[ -n "$SHAIRPORT_SYNC_MIXER_DEVICE" ] && echo "\tmixer_device = \"${mixer_device_escaped}\";"
+[ -n "$SHAIRPORT_SYNC_OUTPUT_FORMAT" ] && printf '\toutput_format = "%s";\n' "$output_format_escaped"
+[ -n "$SHAIRPORT_SYNC_OUTPUT_RATE" ] && case "$SHAIRPORT_SYNC_OUTPUT_RATE" in
+	auto) printf '\toutput_rate = "auto";\n' ;;
+	*[!0-9]*) printf '\toutput_rate = "%s";\n' "$output_rate_escaped" ;;
+	*) printf '\toutput_rate = %s;\n' "$SHAIRPORT_SYNC_OUTPUT_RATE" ;;
+esac
+[ -n "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME" ] && printf '\tmixer_control_name = "%s";\n' "$mixer_control_escaped"
+[ -n "$SHAIRPORT_SYNC_MIXER_DEVICE" ] && printf '\tmixer_device = "%s";\n' "$mixer_device_escaped"
 
 cat << EOF
 };

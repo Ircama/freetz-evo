@@ -1,0 +1,34 @@
+config FREETZ_PACKAGE_MPD
+	bool "MPD 0.24.7"
+	depends on FREETZ_TARGET_GCC_13_MIN
+	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libasound
+	select FREETZ_LIB_libFLAC
+	select FREETZ_LIB_libid3tag
+	select FREETZ_LIB_libmad
+	select FREETZ_LIB_libogg
+	select FREETZ_LIB_libvorbis
+	select FREETZ_LIB_libz
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		Music Player Daemon is a network-controllable music player.
+
+		This build enables the local database, TCP control interface,
+		ALSA output and the MP3, FLAC and Vorbis decoders.
+
+		Can be externalized to save flash memory.
+
+if FREETZ_PACKAGE_MPD
+
+config FREETZ_PACKAGE_MPD_CGI
+	bool "MPD CGI (Music Player Daemon config/status web UI)"
+	default y
+	help
+		Provides the freetz CGI configuration page and status page for MPD.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif

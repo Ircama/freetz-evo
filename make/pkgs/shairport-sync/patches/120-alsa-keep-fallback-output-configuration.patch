@@ -1,0 +1,22 @@
+--- a/player.c
++++ b/player.c
+@@ -604,8 +604,17 @@ int setup_software_resampler(rtsp_conn_info *conn, ssrc_t ssrc) {
+   int output_configuration_changed = 0;
+ 
+   if (config.output->get_configuration) {
+-    output_configuration =
+-        config.output->get_configuration(channels, conn->input_rate, suggested_output_format);
++    uint32_t backend_output_configuration =
++        config.output->get_configuration(channels, conn->input_rate, suggested_output_format);
++    if (backend_output_configuration != 0) {
++      output_configuration = backend_output_configuration;
++    } else {
++      debug(1,
++            "Connection %d: backend returned no output configuration for request %s/%u/%u; "
++            "keeping fallback %s.",
++            conn->connection_number, sps_format_description_string(suggested_output_format),
++            conn->input_rate, channels, short_format_description(output_configuration));
++    }
+   }
+ 
+   // if you can set up a configuration...

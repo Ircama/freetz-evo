@@ -1,0 +1,41 @@
+--- a/server.c
++++ b/server.c
+@@ -332,6 +332,20 @@
+	run_only_safe_commands = 0;
+ }
+ 
++static void die_bind_error(const char *address)
++{
++	if (addr.sa.sa_family == AF_UNIX &&
++	    (errno == EPERM || errno == EACCES || errno == EOPNOTSUPP)) {
++		die("bind: %s\n"
++		    "cmus needs to create the UNIX socket %s.\n"
++		    "This usually happens when HOME, CMUS_HOME, XDG_CONFIG_HOME, XDG_RUNTIME_DIR or CMUS_SOCKET points to a filesystem\n"
++		    "that does not support UNIX sockets (common on non-EXT4 USB/NAS filesystems on this target).\n"
++		    "Try HOME=/tmp cmus or point CMUS_HOME / CMUS_SOCKET to a local EXT4 path.\n",
++		    strerror(errno), address);
++	}
++	die_errno("bind");
++}
++
+ void server_init(char *address)
+ {
+ 	const char *port = STRINGIZE(DEFAULT_PORT);
+@@ -371,7 +385,7 @@
+ 		int sock;
+ 
+ 		if (errno != EADDRINUSE)
+-			die_errno("bind");
++			die_bind_error(address);
+ 
+ 		/* address already in use */
+ 		if (addr.sa.sa_family != AF_UNIX)
+@@ -392,7 +406,7 @@
+ 			if (unlink(addr.un.sun_path) == -1 && errno != ENOENT)
+ 				die_errno("unlink");
+ 			if (bind(server_socket, &addr.sa, addrlen) == -1)
+-				die_errno("bind");
++				die_bind_error(address);
+ 		} else {
+ 			/* server already running */
+ 			die("cmus is already listening on socket %s\n", address);

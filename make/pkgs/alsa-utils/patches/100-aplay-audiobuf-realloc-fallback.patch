@@ -1,0 +1,31 @@
+--- a/aplay/aplay.c
++++ b/aplay/aplay.c
+@@ -1518,10 +1518,24 @@
+ 	bits_per_sample = snd_pcm_format_physical_width(hwparams.format);
+ 	significant_bits_per_sample = snd_pcm_format_width(hwparams.format);
+ 	bits_per_frame = bits_per_sample * hwparams.channels;
+-	chunk_bytes = chunk_size * bits_per_frame / 8;
+-	audiobuf = realloc(audiobuf, chunk_bytes);
+-	if (audiobuf == NULL) {
+-		error(_("not enough memory"));
++	{
++		size_t old_chunk_bytes = chunk_bytes ? chunk_bytes : 1024;
++		uint8_t *newbuf;
++
++		chunk_bytes = chunk_size * bits_per_frame / 8;
++		newbuf = realloc(audiobuf, chunk_bytes);
++		if (newbuf == NULL && chunk_bytes > 0) {
++			newbuf = malloc(chunk_bytes);
++			if (newbuf != NULL && audiobuf != NULL) {
++				size_t copy_bytes = old_chunk_bytes < chunk_bytes ? old_chunk_bytes : chunk_bytes;
++				memcpy(newbuf, audiobuf, copy_bytes);
++				free(audiobuf);
++			}
++		}
++		audiobuf = newbuf;
++	}
++	if (audiobuf == NULL) {
++		error(_("not enough memory (%zu bytes)"), chunk_bytes);
+ 		prg_exit(EXIT_FAILURE);
+ 	}
+	// fprintf(stderr, "real chunk_size = %i, frags = %i, total = %i\n", chunk_size, setup.buf.block.frags, setup.buf.block.frags * chunk_size);

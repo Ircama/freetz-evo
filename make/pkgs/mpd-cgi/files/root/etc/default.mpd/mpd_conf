@@ -1,0 +1,78 @@
+#!/bin/sh
+
+escape_conf() {
+	printf '%s' "$1" | sed -e 's/[\\"]/\\&/g'
+}
+
+bool_conf() {
+	case "$1" in
+		yes|true|1|on) echo yes ;;
+		*) echo no ;;
+	esac
+}
+
+config_dir="${MPD_CONFIG_DIR%/}"
+playlist_dir="${config_dir}/playlists"
+db_file="${config_dir}/database"
+state_file="${config_dir}/state"
+log_file="${config_dir}/mpd.log"
+socket_file="/var/run/mpd/socket"
+pid_file="/var/run/mpd.pid"
+
+mkdir -p "$config_dir" "$playlist_dir" 2>/dev/null
+
+case "$MPD_MUSIC_DIR" in
+	''|*://*) ;;
+	*) mkdir -p "$MPD_MUSIC_DIR" 2>/dev/null ;;
+esac
+
+music_dir_escaped="$(escape_conf "$MPD_MUSIC_DIR")"
+playlist_dir_escaped="$(escape_conf "$playlist_dir")"
+db_file_escaped="$(escape_conf "$db_file")"
+state_file_escaped="$(escape_conf "$state_file")"
+log_file_escaped="$(escape_conf "$log_file")"
+socket_file_escaped="$(escape_conf "$socket_file")"
+bind_to_address_escaped="$(escape_conf "$MPD_BIND_TO_ADDRESS")"
+alsa_output_name_escaped="$(escape_conf "$MPD_ALSA_OUTPUT_NAME")"
+alsa_device_escaped="$(escape_conf "$MPD_ALSA_DEVICE")"
+mixer_type_escaped="$(escape_conf "$MPD_MIXER_TYPE")"
+mixer_device_escaped="$(escape_conf "$MPD_MIXER_DEVICE")"
+mixer_control_escaped="$(escape_conf "$MPD_MIXER_CONTROL")"
+audio_format_escaped="$(escape_conf "$MPD_AUDIO_FORMAT")"
+log_level_escaped="$(escape_conf "$MPD_LOG_LEVEL")"
+
+cat << EOF
+music_directory "${music_dir_escaped}"
+playlist_directory "${playlist_dir_escaped}"
+db_file "${db_file_escaped}"
+log_file "${log_file_escaped}"
+pid_file "${pid_file}"
+state_file "${state_file_escaped}"
+bind_to_address "${socket_file_escaped}"
+EOF
+
+[ -n "$MPD_BIND_TO_ADDRESS" ] && printf 'bind_to_address "%s"\n' "$bind_to_address_escaped"
+
+cat << EOF
+port "${MPD_PORT}"
+auto_update "$(bool_conf "$MPD_AUTO_UPDATE")"
+restore_paused "$(bool_conf "$MPD_RESTORE_PAUSED")"
+log_level "${log_level_escaped}"
+
+audio_output {
+	type "alsa"
+	name "${alsa_output_name_escaped}"
+	device "${alsa_device_escaped}"
+	mixer_type "${mixer_type_escaped}"
+EOF
+
+[ -n "$MPD_AUDIO_FORMAT" ] && printf '\tformat "%s"\n' "$audio_format_escaped"
+
+if [ "$MPD_MIXER_TYPE" = 'hardware' ]; then
+	[ -n "$MPD_MIXER_DEVICE" ] && printf '\tmixer_device "%s"\n' "$mixer_device_escaped"
+	[ -n "$MPD_MIXER_CONTROL" ] && printf '\tmixer_control "%s"\n' "$mixer_control_escaped"
+fi
+
+cat << EOF
+}
+EOF

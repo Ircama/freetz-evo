@@ -42,9 +42,12 @@ echo "$PKGS" | sed 's/##.*//g' | uniq | while read cat; do
 			esac
 			[ -n "$lnk" ] && sed "2i\  - Steward: $lnk" -i "$MDPWD/$pkg.md"
 
-			lnk="https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/$pkg/"
+			lnk="$(sed -n "s/^### PKGSITE:= *//p" "$INPWD/$pkg/$pkg.mk")"
+			[ -z "$lnk" ] && lnk="https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/$pkg/"
+			lbl="$(echo "$lnk" | sed -E 's#^https://github.com/[^/]*/[^/]*/tree/##')"
+			[ -z "$lbl" ] && lbl="$lnk"
 			sed "/^  - Package: \[.*)$/d" -i "$MDPWD/$pkg.md"
-			sed "2i\  - Package: \[${lnk:44}\]($lnk)" -i "$MDPWD/$pkg.md"
+			sed "2i\  - Package: \[$lbl\]($lnk)" -i "$MDPWD/$pkg.md"
 
 			for pair in CVSREPO°Repository CHANGES°Changelog MANPAGE°Manpage WEBSITE°Homepage; do
 				sed "/^  - ${pair#*°}: \[.*)$/d" -i "$MDPWD/$pkg.md"

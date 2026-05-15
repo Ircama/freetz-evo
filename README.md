@@ -16,15 +16,18 @@ Freetz-EVO includes:
 
 - over 50 new packages and libraries
 - over 60 python3 libraries
-- over 25 improved packages and libraries.
+- over 25 improved packages and libraries
+- exclusive applications
+- audio driver.
 
-Relevant new packages include rtorrent with improved ruTorrent web tool, a Disk Management web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
+Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
+
 Relevant new subsystems now also include ALSA userspace audio packages, exposed ALSA/USB audio kernel drivers on compatible targets, and the `cdc-acm` USB serial driver for native USB CDC ACM devices.
 
-AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new packages.
+Additionally, Freetz-EVO offers AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new features.
 
 Freetz-EVO is continuously kept in sync with the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)
-repository: upstream fixes, new firmware support, and toolchain updates are regularly merged so Freetz-EVO keeps evolving on top of the latest Freetz-NG base.
+repository: upstream fixes, new firmware support, and toolchain updates are periodically merged, so Freetz-EVO keeps evolving on top of recent Freetz-NG base.
 
 ### Getting Started
 
@@ -34,9 +37,11 @@ New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walk
 
 Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.
 
+Freetz-EVO is currently a preliminary release, still in development.
+
 #### UX and Web Interface
 
-The Freetz-EVO web interface features a completely redesigned, fully responsive skin ("EVO skin"). On mobile devices, the navigation adapts to a fixed bottom bar with a slide-up drawer for sub-menus and sub-pages; on desktop and tablet a horizontal top menu with hover dropdowns is used, with an optional hamburger mode that collapses the top bar into a right-side slide-in panel. Dark mode, page-width toggle, and per-device preferences are persisted in cookies for a consistent experience across page loads and devices.
+The Freetz-EVO web interface features a completely redesigned, fully responsive, mobile first skin ("EVO skin"). On mobile devices, the navigation adapts to a fixed bottom bar with a slide-up drawer for sub-menus and sub-pages; on desktop and tablet a horizontal top menu with hover dropdowns is used, with an optional hamburger mode that collapses the top bar into a right-side slide-in panel. Dark mode, page-width toggle, and per-device preferences are persisted in cookies for a consistent experience across page loads and devices.
 
 The web interface can be added to the home screen on any smartphone (Android or iOS) for an app-like experience; on Android, [Samsung Internet](https://play.google.com/store/apps/details?id=com.sec.android.app.sbrowser) delivers a full PWA-quality install. With `freetz_proxy` and HTTPS the full PWA install prompt is available, and the same HTTPS URL works remotely via [MyFRITZ!](https://www.myfritz.net) without port-forwarding. See [docs/mobile.md](docs/mobile.md) for detailed setup instructions.
 
@@ -52,10 +57,13 @@ The authentication layer has been updated to support a **form-based session logi
 | **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
 | **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
 | **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
-| **ALSA / USB audio kernel support** | Exposes `soundcore`, `snd`, `snd-timer`, `snd-pcm`, `snd-hwdep`, `snd-rawmidi`, `snd-usbmidi-lib`, and `snd-usb-audio` in menuconfig on compatible targets; these drivers are auto-selected by [`alsa-utils`](docs/make/alsa-utils.md), [`cmus`](docs/make/cmus.md), and [`shairport-sync`](docs/make/shairport-sync.md). | EVO only |
+| **ALSA / USB audio kernel support** | Exposes `soundcore`, `snd`, `snd-timer`, `snd-pcm`, `snd-hwdep`, `snd-rawmidi`, `snd-usbmidi-lib`, and `snd-usb-audio` in menuconfig on compatible targets. | EVO only |
 | **[`alsa-utils`](docs/make/alsa-utils.md)** 1.2.13 / **[`alsa-lib`](docs/make/alsa-lib.md)** 1.2.13 | ALSA userspace toolchain and runtime library for playback, capture, mixer control, MIDI/sequencer tools, and `/usr/share/alsa` configuration data; both support external deployment. | EVO only |
-| **[`cmus`](docs/make/cmus.md)** 2.11.0 | Ncurses music player with ALSA output and MP3/FLAC/Vorbis playback, built on [`ncursesw`](docs/make/ncursesw.md), [`libmad`](docs/make/libmad.md), [`flac`](docs/make/flac.md), [`libvorbis`](docs/make/libvorbis.md), and [`libatomic`](docs/make/libatomic.md); package is externalizable. | EVO only |
-| **[`shairport-sync`](docs/make/shairport-sync.md)** 5.0.4 | AirPlay receiver with ALSA output, metadata FIFO processing, and a Freetz config/status web UI via [`shairport-sync-cgi`](docs/make/shairport-sync-cgi.md); built on [`alsa-lib`](docs/make/alsa-lib.md), [`libconfig`](docs/make/libconfig.md), [`libdaemon`](docs/make/libdaemon.md), [`popt`](docs/make/popt.md), and OpenSSL/libssl. | EVO only |
+| **[`cmus`](docs/make/cmus.md)** 2.11.0 | Ncurses music player with ALSA output and MP3/FLAC/Vorbis playback. | EVO only |
+| **[`go-librespot`](docs/make/go-librespot.md)** 0.7.1 | Spotify Connect audio daemon cross-compiled from upstream Go sources with CGO, using ALSA output plus FLAC and Ogg/Vorbis support; optional Freetz config/status web UI via `go-librespot-cgi`; package is externalizable. | EVO only |
+| **[`MPD`](docs/make/mpd.md)** 0.24.7 | Music Player Daemon with local database, TCP control interface, UNIX socket, ALSA output, and MP3/FLAC/Vorbis decoding; optional Freetz config/status web UI via `mpd-cgi`; package is externalizable. | EVO only |
+| **[`myMPD`](docs/make/mympd.md)** 25.0.2 | Standalone lightweight web-based MPD client with embedded web assets and embedded `libmpdclient`; optional Freetz config/status web UI via `mympd-cgi`; package is externalizable. | EVO only |
+| **[`shairport-sync`](docs/make/shairport-sync.md)** 5.0.4 | AirPlay receiver with ALSA output, metadata FIFO processing, and a Freetz config/status web UI. | EVO only |
 | **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes. | EVO only |
 | **nmon** 16s | Curses-based Linux performance monitor for CPU, memory, disks, network, filesystems, and processes, with optional capture-to-file mode for later analysis. | EVO only |
 | **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |

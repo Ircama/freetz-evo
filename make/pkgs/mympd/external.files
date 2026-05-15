@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_MYMPD" == "y" ] && EXTERNAL_FILES+=" /usr/bin/mympd"

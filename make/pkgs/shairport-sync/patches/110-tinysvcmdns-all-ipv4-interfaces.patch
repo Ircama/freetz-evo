@@ -1,0 +1,118 @@
+--- a/tinysvcmdns.c
++++ b/tinysvcmdns.c
+@@ -60,6 +60,7 @@
+ #include <in6addr.h>
+ #include <winsock.h>
+ #else
++#include <ifaddrs.h>
+ #include <netinet/in.h>
+ #endif
+ 
+@@ -1170,6 +1171,46 @@
+ 
+ /////////////////////////////////
+ 
++static int mdns_ipv4_interface_matches(const struct ifaddrs *ifa) {
++  if ((ifa == NULL) || (ifa->ifa_addr == NULL))
++    return 0;
++
++  if ((ifa->ifa_flags & IFF_LOOPBACK) || (ifa->ifa_addr->sa_family != AF_INET))
++    return 0;
++
++  if ((config.interface != NULL) && (strcmp(config.interface, ifa->ifa_name) != 0))
++    return 0;
++
++  return 1;
++}
++
++static int mdns_join_ipv4_memberships(int sd) {
++  struct ifaddrs *ifalist = NULL;
++  struct ifaddrs *ifa = NULL;
++  int joined = 0;
++
++  if (getifaddrs(&ifalist) < 0) {
++    log_message(LOG_ERR, "recv getifaddrs(): %m");
++    return -1;
++  }
++
++  for (ifa = ifalist; ifa != NULL; ifa = ifa->ifa_next) {
++    struct ip_mreq mreq;
++
++    if (!mdns_ipv4_interface_matches(ifa))
++      continue;
++
++    memset(&mreq, 0, sizeof(struct ip_mreq));
++    mreq.imr_interface = ((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
++    mreq.imr_multiaddr.s_addr = inet_addr(MDNS_ADDR);
++    if (setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) == 0)
++      joined++;
++  }
++
++  freeifaddrs(ifalist);
++  return joined > 0 ? 0 : -1;
++}
++
+ static int create_recv_sock() {
+   int sd = socket(AF_INET, SOCK_DGRAM, 0);
+   if (sd < 0) {
+@@ -1196,11 +1237,7 @@
+   }
+ 
+   // add membership to receiving socket
+-  struct ip_mreq mreq;
+-  memset(&mreq, 0, sizeof(struct ip_mreq));
+-  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+-  mreq.imr_multiaddr.s_addr = inet_addr(MDNS_ADDR);
+-  if ((r = setsockopt(sd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq))) < 0) {
++  if ((r = mdns_join_ipv4_memberships(sd)) < 0) {
+     log_message(LOG_ERR, "recv setsockopt(IP_ADD_MEMBERSHIP): %m");
+     return r;
+   }
+@@ -1221,8 +1258,24 @@
+   return sd;
+ }
+ 
++static ssize_t send_packet_on_interface(int fd, const struct sockaddr_in *ifaddr,
++                                        const struct sockaddr_in *toaddr,
++                                        const void *data, size_t len) {
++  if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, (char *)&ifaddr->sin_addr,
++                 sizeof(ifaddr->sin_addr)) < 0) {
++    return -1;
++  }
++
++  return sendto(fd, data, len, 0, (const struct sockaddr *)toaddr, sizeof(*toaddr));
++}
++
+ static ssize_t send_packet(int fd, const void *data, size_t len) {
+   static struct sockaddr_in toaddr;
++  struct ifaddrs *ifalist = NULL;
++  struct ifaddrs *ifa = NULL;
++  ssize_t last_result = -1;
++  int sent = 0;
++
+   if (toaddr.sin_family != AF_INET) {
+     memset(&toaddr, 0, sizeof(struct sockaddr_in));
+     toaddr.sin_family = AF_INET;
+@@ -1230,6 +1283,22 @@
+     toaddr.sin_addr.s_addr = inet_addr(MDNS_ADDR);
+   }
+ 
++  if (getifaddrs(&ifalist) == 0) {
++    for (ifa = ifalist; ifa != NULL; ifa = ifa->ifa_next) {
++      if (!mdns_ipv4_interface_matches(ifa))
++        continue;
++
++      last_result = send_packet_on_interface(fd, (struct sockaddr_in *)ifa->ifa_addr,
++                                             &toaddr, data, len);
++      if (last_result >= 0)
++        sent++;
++    }
++    freeifaddrs(ifalist);
++  }
++
++  if (sent > 0)
++    return last_result;
++
+   return sendto(fd, data, len, 0, (struct sockaddr *)&toaddr, sizeof(struct sockaddr_in));
+ }
+ 

@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_MPD_CGI
+	bool "MPD CGI (Music Player Daemon config/status web UI)"
+	depends on FREETZ_PACKAGE_MPD
+	default y
+	help
+		Provides the freetz CGI configuration page and status page for MPD.
+
+		Includes startup handling, generated mpd.conf management and
+		auto-refresh monitoring in the freetz web UI.
+
+		http://fritz.box:81/cgi-bin/conf/mpd

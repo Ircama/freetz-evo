@@ -1,0 +1,9 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/mpd.cgi
+	usr/lib/cgi-bin/mpd/status.cgi
+}

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_MPD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MPD
+	bool "mpd"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/mpd

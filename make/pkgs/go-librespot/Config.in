@@ -1,0 +1,27 @@
+config FREETZ_PACKAGE_GO_LIBRESPOT
+	bool "go-librespot 0.7.1 (binary only)"
+	select FREETZ_LIB_libasound
+	select FREETZ_LIB_libFLAC
+	select FREETZ_LIB_libogg
+	select FREETZ_LIB_libvorbis
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		go-librespot is a Spotify Connect audio daemon.
+
+		This package cross-compiles the upstream Go daemon sources with
+		CGO and installs the go-librespot executable on the target.
+
+		Can be externalized to save flash memory.
+
+if FREETZ_PACKAGE_GO_LIBRESPOT
+
+config FREETZ_PACKAGE_GO_LIBRESPOT_CGI
+	bool "go-librespot CGI (Spotify Connect config/status web UI)"
+	default y
+	help
+		Provides the freetz CGI configuration page and live status page for
+		go-librespot.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif

@@ -4,6 +4,7 @@ DAEMON=shairport-sync
 DAEMON_BIN=shairport-sync
 DAEMON_LONG_NAME="Shairport Sync"
 CONF_ENABLED=SHAIRPORT_SYNC_ENABLED
+DAEMON_CHECK="$DAEMON_BIN"
 DAEMON_CONFIG=/mod/etc/shairport-sync.conf
 PID_FILE=/var/run/shairport-sync.pid
 COLLECTOR_BIN=/usr/bin/shairport-sync-status-cache
@@ -20,6 +21,7 @@ config() {
 
 startdaemon_pre() {
 	start-stop-daemon -K -q -p "$COLLECTOR_PID_FILE" >/dev/null 2>&1 || true
+	killall shairport-sync-status-cache >/dev/null 2>&1 || true
 	rm -f "$METADATA_PIPE"
 	mkfifo "$METADATA_PIPE" || return 1
 	start-stop-daemon -S -b -q -m -p "$COLLECTOR_PID_FILE" -n shairport-sync-status-cache \
@@ -31,8 +33,26 @@ start() {
 	modlib_startdaemon $DAEMON_BIN -d -c "$DAEMON_CONFIG"
 }
 
+stop() {
+	local retval=0
+	case "$1" in
+		0)
+			if [ -s "$PID_FILE" ]; then
+				start-stop-daemon -K -q -p "$PID_FILE" >/dev/null 2>&1 || retval=$?
+			else
+				killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			fi
+			;;
+		5)
+			killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+			;;
+	 esac
+	return $retval
+}
+
 stop_post() {
 	start-stop-daemon -K -q -p "$COLLECTOR_PID_FILE" >/dev/null 2>&1 || true
+	killall shairport-sync-status-cache >/dev/null 2>&1 || true
 	rm -f "$COLLECTOR_PID_FILE" "$METADATA_PIPE"
 }
 

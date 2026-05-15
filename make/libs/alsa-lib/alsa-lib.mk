@@ -22,6 +22,9 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-python
 $(PKG)_CONFIGURE_OPTIONS += --disable-topology
 $(PKG)_CONFIGURE_OPTIONS += --disable-ucm
+$(PKG)_CONFIGURE_OPTIONS += --with-versioned=no
+
+$(PKG)_DATA_CONFIG_FILE := $($(PKG)_DATA_STAGING_DIR)/$($(PKG)_DATA_MARKER_FILE)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -37,6 +40,7 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libasound.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/alsa.pc
+	sed -i -e 's|^defaults\.pcm\.ipc_gid audio$$|defaults.pcm.ipc_gid root|' $($(PKG)_DATA_CONFIG_FILE)
 
 $($(PKG)_DATA_STAGING_DIR)/$($(PKG)_DATA_MARKER_FILE): $($(PKG)_STAGING_BINARY)
 	[ -f "$@" ]

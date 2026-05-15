@@ -19,11 +19,17 @@ cgi_print_textline_p "name" "$SHAIRPORT_SYNC_NAME" 40/50 \
 	"$(lang de:"Dienstname" en:"Service name"): "
 cgi_print_password_p "password" "$SHAIRPORT_SYNC_PASSWORD" 24/128 \
 	"$(lang de:"Passwort (optional)" en:"Password (optional)"): "
+cgi_print_textline_p "interface" "$SHAIRPORT_SYNC_INTERFACE" 16/32 \
+	"$(lang de:"Netzwerk-Interface (leer = alle)" en:"Network interface (empty = all)"): "
 sec_end
 
 sec_begin "$(lang de:"ALSA-Ausgabe" en:"ALSA output")"
 cgi_print_textline_p "output_device" "$SHAIRPORT_SYNC_OUTPUT_DEVICE" 32/128 \
-	"$(lang de:"Ausgabegeraet" en:"Output device"): "
+	"$(lang de:"Ausgabegeraet (z.B. default oder hw:0,0)" en:"Output device (e.g. default or hw:0,0)"): "
+cgi_print_textline_p "output_format" "$SHAIRPORT_SYNC_OUTPUT_FORMAT" 16/32 \
+	"$(lang de:"Ausgabeformat (optional, z.B. S16)" en:"Output format (optional, e.g. S16)"): "
+cgi_print_textline_p "output_rate" "$SHAIRPORT_SYNC_OUTPUT_RATE" 8/16 \
+	"$(lang de:"Ausgaberate (optional, z.B. 44100 oder auto)" en:"Output rate (optional, e.g. 44100 or auto)"): "
 cgi_print_textline_p "mixer_control_name" "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME" 24/128 \
 	"$(lang de:"Mixer-Regler (optional)" en:"Mixer control (optional)"): "
 cgi_print_textline_p "mixer_device" "$SHAIRPORT_SYNC_MIXER_DEVICE" 32/128 \
