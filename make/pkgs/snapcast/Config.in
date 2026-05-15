@@ -1,0 +1,38 @@
+config FREETZ_PACKAGE_SNAPCAST
+	bool "snapcast 0.35.0"
+	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libasound
+	select FREETZ_LIB_libFLAC
+	select FREETZ_LIB_libogg
+	select FREETZ_LIB_libvorbis
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libssl
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		snapcast is a multiroom client/server audio player.
+
+		This Freetz build provides the upstream snapserver and snapclient
+		binaries with ALSA output on the client side plus FLAC and
+		Ogg/Vorbis codec support.
+
+		mDNS discovery, Opus, PulseAudio, JACK, PipeWire, and SDL2 are
+		disabled to keep the embedded footprint smaller.
+
+		Can be externalized to save flash memory.
+
+if FREETZ_PACKAGE_SNAPCAST
+
+config FREETZ_PACKAGE_SNAPCAST_CGI
+	bool "snapcast CGI (Snapserver/snapclient config/status web UI)"
+	default y
+	help
+		Provides the freetz CGI configuration page and status page for
+		snapcast.
+		This is the same symbol shown in "Packages -> Web interfaces".
+
+endif

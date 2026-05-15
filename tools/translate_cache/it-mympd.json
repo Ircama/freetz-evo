@@ -271,5 +271,12 @@
     "timestamp": "2026-05-15T15:19:00Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Configured MPD host": {
+    "original": "Configured MPD host",
+    "translation": "Host MPD configurato",
+    "timestamp": "2026-05-15T21:12:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

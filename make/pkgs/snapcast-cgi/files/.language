@@ -1,0 +1,9 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/snapcast.cgi
+	usr/lib/cgi-bin/snapcast/status.cgi
+}

@@ -1,0 +1,6 @@
+config EXTERNAL_FREETZ_PACKAGE_SNAPCAST
+	bool "snapcast"
+	depends on FREETZ_PACKAGE_SNAPCAST
+	default n
+	help
+		Externalize snapcast binaries and shared data to storage.

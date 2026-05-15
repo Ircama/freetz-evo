@@ -1,0 +1,148 @@
+#!/bin/sh
+
+DAEMON=snapcast
+DAEMON_LONG_NAME="Snapcast"
+SERVER_BIN=/usr/bin/snapserver
+CLIENT_BIN=/usr/bin/snapclient
+SERVER_PID_FILE=/var/run/snapserver.pid
+CLIENT_PID_FILE=/var/run/snapclient.pid
+SERVER_CONFIG=/mod/etc/snapserver.conf
+SERVER_LOG=/var/log/snapserver.log
+CLIENT_LOG=/var/log/snapclient.log
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/snapcast.cfg ] && . /mod/etc/conf/snapcast.cfg
+
+: "${SNAPCAST_ENABLED:=no}"
+: "${SNAPCAST_SERVER_ENABLED:=yes}"
+: "${SNAPCAST_CLIENT_ENABLED:=no}"
+: "${SNAPCAST_SERVER_DATA_DIR:=/tmp/flash/snapcast}"
+: "${SNAPCAST_CLIENT_HOST:=127.0.0.1}"
+: "${SNAPCAST_CLIENT_PORT:=1704}"
+: "${SNAPCAST_CLIENT_SOUND_CARD:=default}"
+: "${SNAPCAST_CLIENT_MIXER:=software}"
+: "${SNAPCAST_CLIENT_LATENCY:=0}"
+: "${SNAPCAST_CLIENT_INSTANCE:=1}"
+: "${SNAPCAST_CLIENT_LOG_FILTER:=*:info}"
+
+is_running_pid() {
+	local pidfile="$1"
+	local pid
+	[ -s "$pidfile" ] || return 1
+	pid="$(cat "$pidfile" 2>/dev/null)"
+	[ -n "$pid" ] || return 1
+	kill -0 "$pid" 2>/dev/null
+}
+
+config() {
+	mkdir -p "${SNAPCAST_SERVER_DATA_DIR%/}" /var/log 2>/dev/null
+	modlib_config snapserver "$SERVER_CONFIG"
+}
+
+start_snapserver() {
+	[ "$SNAPCAST_SERVER_ENABLED" = "yes" ] || return 0
+	is_running_pid "$SERVER_PID_FILE" && return 0
+	[ -x "$SERVER_BIN" ] || return 1
+	start-stop-daemon -S -b -q -m -p "$SERVER_PID_FILE" -x "$SERVER_BIN" -- -c "$SERVER_CONFIG"
+}
+
+start_snapclient() {
+	local client_url
+	[ "$SNAPCAST_CLIENT_ENABLED" = "yes" ] || return 0
+	is_running_pid "$CLIENT_PID_FILE" && return 0
+	[ -x "$CLIENT_BIN" ] || return 1
+	client_url="tcp://${SNAPCAST_CLIENT_HOST}:${SNAPCAST_CLIENT_PORT}"
+	set -- \
+		"--player=alsa" \
+		"--soundcard=${SNAPCAST_CLIENT_SOUND_CARD}" \
+		"--mixer=${SNAPCAST_CLIENT_MIXER}" \
+		"--latency=${SNAPCAST_CLIENT_LATENCY}" \
+		"--logsink=file:${CLIENT_LOG}" \
+		"--logfilter=${SNAPCAST_CLIENT_LOG_FILTER}"
+	[ -n "$SNAPCAST_CLIENT_INSTANCE" ] && set -- "$@" "--instance=${SNAPCAST_CLIENT_INSTANCE}"
+	[ -n "$SNAPCAST_CLIENT_HOST_ID" ] && set -- "$@" "--hostID=${SNAPCAST_CLIENT_HOST_ID}"
+	start-stop-daemon -S -b -q -m -p "$CLIENT_PID_FILE" -x "$CLIENT_BIN" -- "$@" "$client_url"
+}
+
+stop_component() {
+	local pidfile="$1"
+	local binname="$2"
+	local retval=0
+	if [ -s "$pidfile" ]; then
+		start-stop-daemon -K -q -p "$pidfile" >/dev/null 2>&1 || retval=$?
+	else
+		killall "$binname" >/dev/null 2>&1 || retval=$?
+	fi
+	rm -f "$pidfile"
+	return $retval
+}
+
+start() {
+	local enabled_count=0
+	local retval=0
+	config || return 1
+	[ "$SNAPCAST_SERVER_ENABLED" = "yes" ] && enabled_count=$((enabled_count + 1))
+	[ "$SNAPCAST_CLIENT_ENABLED" = "yes" ] && enabled_count=$((enabled_count + 1))
+	[ "$enabled_count" -gt 0 ] || return 1
+	start_snapserver || retval=1
+	start_snapclient || retval=1
+	return $retval
+}
+
+stop() {
+	local retval=0
+	stop_component "$CLIENT_PID_FILE" snapclient || retval=1
+	stop_component "$SERVER_PID_FILE" snapserver || retval=1
+	return $retval
+}
+
+status() {
+	local running=1
+	if is_running_pid "$SERVER_PID_FILE"; then
+		echo "snapserver: running (pid $(cat "$SERVER_PID_FILE" 2>/dev/null))"
+		running=0
+	else
+		echo "snapserver: stopped"
+	fi
+	if is_running_pid "$CLIENT_PID_FILE"; then
+		echo "snapclient: running (pid $(cat "$CLIENT_PID_FILE" 2>/dev/null))"
+		running=0
+	else
+		echo "snapclient: stopped"
+	fi
+	return $running
+}
+
+case $1 in
+	""|load)
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modreg daemon $DAEMON
+		modreg status $DAEMON "$DAEMON_LONG_NAME"
+		[ "$SNAPCAST_ENABLED" = "yes" ] && start
+		;;
+	unload)
+		modunreg status $DAEMON
+		modunreg daemon $DAEMON
+		modunreg cgi $DAEMON
+		stop
+		;;
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

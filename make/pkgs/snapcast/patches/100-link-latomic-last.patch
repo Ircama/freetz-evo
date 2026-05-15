@@ -1,0 +1,44 @@
+diff --git a/client/CMakeLists.txt b/client/CMakeLists.txt
+--- a/client/CMakeLists.txt
++++ b/client/CMakeLists.txt
+@@ -9,7 +9,7 @@ set(CLIENT_SOURCES
+     player/player.cpp
+     player/file_player.cpp)
+ 
+-set(CLIENT_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${ATOMIC_LIBRARY} common)
++set(CLIENT_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} common)
+ 
+ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/client)
+ 
+@@ -149,6 +149,9 @@ if(ANDROID)
+   target_link_libraries(libsnapclient.so ${CLIENT_LIBRARIES} log OpenSLES)
+ else()
+   add_executable(snapclient ${CLIENT_SOURCES})
++  if(ATOMIC_LIBRARY)
++    list(APPEND CLIENT_LIBRARIES ${ATOMIC_LIBRARY})
++  endif()
+   target_link_libraries(snapclient ${CLIENT_LIBRARIES})
+ 
+   install(
+diff --git a/server/CMakeLists.txt b/server/CMakeLists.txt
+--- a/server/CMakeLists.txt
++++ b/server/CMakeLists.txt
+@@ -31,7 +31,7 @@ set(SERVER_SOURCES
+     streamreader/metadata.cpp
+     streamreader/process_stream.cpp)
+ 
+-set(SERVER_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${ATOMIC_LIBRARY} common)
++set(SERVER_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} common)
+ 
+ include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/server)
+ 
+@@ -142,6 +142,9 @@ if(ANDROID)
+   target_link_libraries(libsnapserver.so ${SERVER_LIBRARIES} log)
+ else()
+   add_executable(snapserver ${SERVER_SOURCES})
++  if(ATOMIC_LIBRARY)
++    list(APPEND SERVER_LIBRARIES ${ATOMIC_LIBRARY})
++  endif()
+   target_link_libraries(snapserver ${SERVER_LIBRARIES})
+ 
+   install(

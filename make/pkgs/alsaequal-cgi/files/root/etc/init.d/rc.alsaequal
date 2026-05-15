@@ -2,13 +2,13 @@
 
 DAEMON=alsaequal
 DAEMON_LONG_NAME='ALSA Equalizer'
-DAEMON_CONFIG=/etc/alsa/conf.d/50-alsaequal.conf
+DAEMON_CONFIG=/var/lib/alsa/conf.d/50-alsaequal.conf
 . /etc/init.d/modlibrc
 
 [ -r /mod/etc/conf/alsaequal.cfg ] && . /mod/etc/conf/alsaequal.cfg
 
 config() {
-	mkdir -p /etc/alsa/conf.d 2>/dev/null
+	mkdir -p "$(dirname "$DAEMON_CONFIG")" 2>/dev/null
 	if [ "$ALSAEQUAL_ENABLED" = 'yes' ]; then
 		modlib_config "$DAEMON" "$DAEMON_CONFIG"
 	else

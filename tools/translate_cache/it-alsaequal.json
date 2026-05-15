@@ -257,5 +257,26 @@
     "timestamp": "2026-05-15T15:17:33Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:The generated ALSA configuration is missing at '$RUNTIME_CONFIG'. Save the configuration again or reload the package.": {
+    "original": "The generated ALSA configuration is missing at '$RUNTIME_CONFIG'. Save the configuration again or reload the package.",
+    "translation": "La configurazione ALSA generata manca in '$RUNTIME_CONFIG'. Salvare nuovamente la configurazione o ricaricare il pacchetto.",
+    "timestamp": "2026-05-15T21:11:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The configured LADSPA library is not readable. Fix the library path or search path and save again.": {
+    "original": "The configured LADSPA library is not readable. Fix the library path or search path and save again.",
+    "translation": "La libreria LADSPA configurata non è leggibile. Correggere il percorso della libreria o il percorso di ricerca e salvare nuovamente.",
+    "timestamp": "2026-05-15T21:11:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer controls could not be opened. Raw diagnostic output:": {
+    "original": "Equalizer controls could not be opened. Raw diagnostic output:",
+    "translation": "Non è stato possibile aprire i controlli dell'equalizzatore. Uscita diagnostica grezza:",
+    "timestamp": "2026-05-15T21:11:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

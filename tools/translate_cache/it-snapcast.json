@@ -1,0 +1,289 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-05-15T21:55:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-15T21:55:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show status": {
+    "original": "Show status",
+    "translation": "Mostra lo stato",
+    "timestamp": "2026-05-15T21:55:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Components": {
+    "original": "Components",
+    "translation": "Componenti",
+    "timestamp": "2026-05-15T21:55:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Snapcast status": {
+    "original": "Snapcast status",
+    "translation": "Stato di Snapcast",
+    "timestamp": "2026-05-15T21:55:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start snapserver": {
+    "original": "Start snapserver",
+    "translation": "Avviare snapserver",
+    "timestamp": "2026-05-15T21:55:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Service": {
+    "original": "Service",
+    "translation": "Servizio",
+    "timestamp": "2026-05-15T21:55:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start local snapclient": {
+    "original": "Start local snapclient",
+    "translation": "Avviare lo snapclient locale",
+    "timestamp": "2026-05-15T21:55:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Autostart": {
+    "original": "Autostart",
+    "translation": "Autostart",
+    "timestamp": "2026-05-15T21:55:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Snapserver": {
+    "original": "Snapserver",
+    "translation": "Snapserver",
+    "timestamp": "2026-05-15T21:55:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Data directory": {
+    "original": "Data directory",
+    "translation": "Directory di dati",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Local snapclient": {
+    "original": "Local snapclient",
+    "translation": "Snapclient locale",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable HTTP web UI": {
+    "original": "Enable HTTP web UI",
+    "translation": "Abilitare l'interfaccia web HTTP",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stream source": {
+    "original": "Stream source",
+    "translation": "Fonte Stream",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP bind address": {
+    "original": "HTTP bind address",
+    "translation": "Indirizzo HTTP bind",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP port": {
+    "original": "HTTP port",
+    "translation": "Porta HTTP",
+    "timestamp": "2026-05-15T21:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Client target": {
+    "original": "Client target",
+    "translation": "Obiettivo del cliente",
+    "timestamp": "2026-05-15T21:56:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control bind address": {
+    "original": "Control bind address",
+    "translation": "Indirizzo di controllo",
+    "timestamp": "2026-05-15T21:56:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated snapserver.conf": {
+    "original": "Generated snapserver.conf",
+    "translation": "Generato snapserver.conf",
+    "timestamp": "2026-05-15T21:56:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control port": {
+    "original": "Control port",
+    "translation": "Porta di controllo",
+    "timestamp": "2026-05-15T21:56:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Recent snapserver log lines": {
+    "original": "Recent snapserver log lines",
+    "translation": "Linee di log recenti di snapserver",
+    "timestamp": "2026-05-15T21:56:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stream bind address": {
+    "original": "Stream bind address",
+    "translation": "Indirizzo di bind del flusso",
+    "timestamp": "2026-05-15T21:56:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Recent snapclient log lines": {
+    "original": "Recent snapclient log lines",
+    "translation": "Linee di log recenti di snapclient",
+    "timestamp": "2026-05-15T21:56:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stream port": {
+    "original": "Stream port",
+    "translation": "Porta di flusso",
+    "timestamp": "2026-05-15T21:56:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Process list": {
+    "original": "Process list",
+    "translation": "Elenco dei processi",
+    "timestamp": "2026-05-15T21:56:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Detected sound cards": {
+    "original": "Detected sound cards",
+    "translation": "Schede audio rilevate",
+    "timestamp": "2026-05-15T21:56:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh": {
+    "original": "Refresh",
+    "translation": "Aggiorna",
+    "timestamp": "2026-05-15T21:56:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-15T21:56:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Source URI": {
+    "original": "Source URI",
+    "translation": "URI sorgente",
+    "timestamp": "2026-05-15T21:56:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default source (optional)": {
+    "original": "Default source (optional)",
+    "translation": "Fonte predefinita (opzionale)",
+    "timestamp": "2026-05-15T21:56:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sample format": {
+    "original": "Sample format",
+    "translation": "Formato di esempio",
+    "timestamp": "2026-05-15T21:56:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Chunk size in ms": {
+    "original": "Chunk size in ms",
+    "translation": "Dimensione dei pezzi in ms",
+    "timestamp": "2026-05-15T21:56:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Buffer in ms": {
+    "original": "Buffer in ms",
+    "translation": "Buffer in ms",
+    "timestamp": "2026-05-15T21:56:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Server log filter": {
+    "original": "Server log filter",
+    "translation": "Filtro log del server",
+    "timestamp": "2026-05-15T21:56:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Server host": {
+    "original": "Server host",
+    "translation": "Server host",
+    "timestamp": "2026-05-15T21:56:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Server port": {
+    "original": "Server port",
+    "translation": "Porta del server",
+    "timestamp": "2026-05-15T21:56:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA device": {
+    "original": "ALSA device",
+    "translation": "Dispositivo ALSA",
+    "timestamp": "2026-05-15T21:56:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Latency": {
+    "original": "Latency",
+    "translation": "Latenza",
+    "timestamp": "2026-05-15T21:56:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Instance id": {
+    "original": "Instance id",
+    "translation": "Id istanza",
+    "timestamp": "2026-05-15T21:56:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Host ID (optional)": {
+    "original": "Host ID (optional)",
+    "translation": "ID host (opzionale)",
+    "timestamp": "2026-05-15T21:56:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Client log filter": {
+    "original": "Client log filter",
+    "translation": "Filtro log del client",
+    "timestamp": "2026-05-15T21:56:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

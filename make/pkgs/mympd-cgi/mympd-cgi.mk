@@ -13,6 +13,10 @@ $(PKG)_STAGING_TARGET := $(MYMPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mympd.cgi
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	mkdir -p $(MYMPD_CGI_TARGET_DIR)/root
 	$(call COPY_USING_TAR,$(MYMPD_CGI_MAKE_DIR)/files,$(MYMPD_CGI_TARGET_DIR))
+	chmod 755 \
+		$(MYMPD_CGI_DEST_DIR)/etc/init.d/rc.mympd \
+		$(MYMPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mympd.cgi \
+		$(MYMPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mympd/status.cgi
 
 $(PKG_UNPACKED)
 

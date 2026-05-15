@@ -1,6 +1,16 @@
 #!/bin/sh
 
+normalize_channels() {
+	local value
+	value="$(printf '%s' "$1" | tr -d '[:space:]')"
+	[ -n "$value" ] || value=2
+	printf '%s' "$value"
+}
+
 pkg_pre_save() {
+	ALSAEQUAL_CHANNELS="$(normalize_channels "$ALSAEQUAL_CHANNELS")"
+	export ALSAEQUAL_CHANNELS
+
 	case "$ALSAEQUAL_CHANNELS" in
 		''|*[!0-9]*)
 			echo 'Error: channels must be a positive integer.' >&2

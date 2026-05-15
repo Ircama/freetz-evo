@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_SNAPCAST" == "y" ] && EXTERNAL_FILES+=" /usr/bin/snapserver /usr/bin/snapclient /etc/snapserver.conf"
+[ "$EXTERNAL_FREETZ_PACKAGE_SNAPCAST" == "y" -a "$EXTERNAL_SUBDIRS" == "y" ] && EXTERNAL_FILES+=" /usr/share/snapserver /etc/snapserver"

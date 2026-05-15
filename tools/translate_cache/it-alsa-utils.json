@@ -215,5 +215,110 @@
     "timestamp": "2026-05-15T15:17:19Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Defaults": {
+    "original": "Defaults",
+    "translation": "Default",
+    "timestamp": "2026-05-15T21:11:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default PCM device": {
+    "original": "Default PCM device",
+    "translation": "Dispositivo PCM predefinito",
+    "timestamp": "2026-05-15T21:11:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control '$VOLUME_CONTROL' not found; using '$DETECTED_VOLUME_CONTROL'.": {
+    "original": "Control '$VOLUME_CONTROL' not found; using '$DETECTED_VOLUME_CONTROL'.",
+    "translation": "Controllo '$VOLUME_CONTROL' non trovato; utilizzare '$DETECTED_VOLUME_CONTROL'.",
+    "timestamp": "2026-05-15T21:11:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default mixer device": {
+    "original": "Default mixer device",
+    "translation": "Dispositivo mixer predefinito",
+    "timestamp": "2026-05-15T21:11:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto-detected control '$DETECTED_VOLUME_CONTROL'.": {
+    "original": "Auto-detected control '$DETECTED_VOLUME_CONTROL'.",
+    "translation": "Controllo rilevato automaticamente '$DETECTED_VOLUME_CONTROL'.",
+    "timestamp": "2026-05-15T21:11:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default volume control (empty = auto)": {
+    "original": "Default volume control (empty = auto)",
+    "translation": "Controllo volume predefinito (vuoto = auto)",
+    "timestamp": "2026-05-15T21:11:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control '$REQUESTED_VOLUME_CONTROL' is not available on '$MIXER_DEVICE'.": {
+    "original": "Control '$REQUESTED_VOLUME_CONTROL' is not available on '$MIXER_DEVICE'.",
+    "translation": "Il controllo '$REQUESTED_VOLUME_CONTROL' non è disponibile su '$MIXER_DEVICE'.",
+    "timestamp": "2026-05-15T21:11:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default speaker-test channels": {
+    "original": "Default speaker-test channels",
+    "translation": "Canali predefiniti per il test dei diffusori",
+    "timestamp": "2026-05-15T21:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No simple ALSA controls were found on '$MIXER_DEVICE'.": {
+    "original": "No simple ALSA controls were found on '$MIXER_DEVICE'.",
+    "translation": "Non sono stati trovati controlli ALSA semplici su '$MIXER_DEVICE'.",
+    "timestamp": "2026-05-15T21:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default sample file (optional)": {
+    "original": "Default sample file (optional)",
+    "translation": "File di esempio predefinito (opzionale)",
+    "timestamp": "2026-05-15T21:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No simple volume control found on the selected mixer device.": {
+    "original": "No simple volume control found on the selected mixer device.",
+    "translation": "Non è stato trovato alcun controllo di volume semplice sul dispositivo del mixer selezionato.",
+    "timestamp": "2026-05-15T21:11:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note": {
+    "original": "Note",
+    "translation": "Nota",
+    "timestamp": "2026-05-15T21:11:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:If no volume control is configured, the status page automatically tries to use the first available simple ALSA control of the selected mixer device.": {
+    "original": "If no volume control is configured, the status page automatically tries to use the first available simple ALSA control of the selected mixer device.",
+    "translation": "Se non è configurato alcun controllo di volume, la pagina di stato tenta automaticamente di utilizzare il primo controllo ALSA semplice disponibile del dispositivo mixer selezionato.",
+    "timestamp": "2026-05-15T21:11:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No simple volume control available. Available controls:": {
+    "original": "No simple volume control available. Available controls:",
+    "translation": "Non è disponibile un semplice controllo del volume. Controlli disponibili:",
+    "timestamp": "2026-05-15T21:11:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No simple ALSA controls found; showing raw control list.": {
+    "original": "No simple ALSA controls found; showing raw control list.",
+    "translation": "Nessun controllo ALSA semplice trovato; mostra l'elenco dei controlli grezzi.",
+    "timestamp": "2026-05-15T21:11:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -70,7 +70,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(MYMPD_BUILD_DIR) -j1
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
-	$(SUBMAKE) -C $(MYMPD_BUILD_DIR) DESTDIR="$(MYMPD_DEST_DIR)" install
+	$(SUBMAKE) -C $(MYMPD_BUILD_DIR) DESTDIR="$(abspath $(MYMPD_DEST_DIR))" install
 	$(RM) -f $(MYMPD_DEST_DIR)/usr/bin/mympd-config
 	$(TARGET_STRIP) $(MYMPD_TARGET_BINARY) 2>/dev/null || true
 

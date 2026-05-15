@@ -4,6 +4,7 @@ $(PKG)_CATEGORY:=Web interfaces
 
 $(PKG)_STAGING_SOURCES := \
 	$(ALSA_UTILS_CGI_MAKE_DIR)/files/.language \
+	$(ALSA_UTILS_CGI_MAKE_DIR)/files/root/etc/default.alsa-utils/alsa-utils.cfg \
 	$(ALSA_UTILS_CGI_MAKE_DIR)/files/root/etc/init.d/rc.alsa-utils \
 	$(ALSA_UTILS_CGI_MAKE_DIR)/files/root/usr/lib/cgi-bin/alsa-utils.cgi \
 	$(ALSA_UTILS_CGI_MAKE_DIR)/files/root/usr/lib/cgi-bin/alsa-utils/status.cgi

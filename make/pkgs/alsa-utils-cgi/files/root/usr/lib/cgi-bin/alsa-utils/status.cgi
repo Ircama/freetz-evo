@@ -2,6 +2,8 @@
 
 . /usr/lib/libmodcgi.sh
 
+[ -r /mod/etc/conf/alsa-utils.cfg ] && . /mod/etc/conf/alsa-utils.cfg
+
 ACTION="$(cgi_param action)"
 PCM_DEVICE="$(cgi_param pcm_device)"
 MIXER_DEVICE="$(cgi_param mixer_device)"
@@ -26,17 +28,58 @@ sanitize_uint() {
 	esac
 }
 
-PCM_DEVICE="$(sanitize_text "${PCM_DEVICE:-default}")"
-MIXER_DEVICE="$(sanitize_text "${MIXER_DEVICE:-default}")"
-VOLUME_CONTROL="$(sanitize_text "${VOLUME_CONTROL:-Master}")"
+list_simple_controls() {
+	local device="$1"
+	amixer -D "$device" scontrols 2>/dev/null | sed -n "s/Simple mixer control '\([^']*\)'.*/\1/p"
+}
+
+first_simple_control() {
+	list_simple_controls "$1" | sed -n '1p'
+}
+
+has_simple_control() {
+	local device="$1"
+	local control="$2"
+	[ -n "$control" ] || return 1
+	list_simple_controls "$device" | grep -Fqx "$control"
+}
+
+PCM_DEVICE="$(sanitize_text "${PCM_DEVICE:-${ALSA_UTILS_PCM_DEVICE:-default}}")"
+MIXER_DEVICE="$(sanitize_text "${MIXER_DEVICE:-${ALSA_UTILS_MIXER_DEVICE:-default}}")"
+REQUESTED_VOLUME_CONTROL="$(sanitize_text "${VOLUME_CONTROL:-${ALSA_UTILS_VOLUME_CONTROL}}")"
+VOLUME_CONTROL="$REQUESTED_VOLUME_CONTROL"
 CONTROL_NAME="$(sanitize_text "$CONTROL_NAME")"
 CONTROL_VALUE="$(sanitize_text "$CONTROL_VALUE")"
 case "$VOLUME_SWITCH" in
 	mute|unmute|toggle) ;;
 	*) VOLUME_SWITCH=unmute ;;
 esac
-TEST_CHANNELS="$(sanitize_uint "${TEST_CHANNELS:-2}")"
+TEST_CHANNELS="$(sanitize_uint "${TEST_CHANNELS:-${ALSA_UTILS_TEST_CHANNELS:-2}}")"
 [ -n "$TEST_CHANNELS" ] || TEST_CHANNELS=2
+SAMPLE_FILE="$(sanitize_text "${SAMPLE_FILE:-${ALSA_UTILS_SAMPLE_FILE}}")"
+[ -n "$PCM_DEVICE" ] || PCM_DEVICE=default
+[ -n "$MIXER_DEVICE" ] || MIXER_DEVICE=default
+[ -n "$SAMPLE_FILE" ] || SAMPLE_FILE="$(list_samples | sed -n '1p')"
+
+DETECTED_VOLUME_CONTROL="$(first_simple_control "$MIXER_DEVICE")"
+VOLUME_CONTROL_NOTE=''
+if [ -n "$DETECTED_VOLUME_CONTROL" ]; then
+	if ! has_simple_control "$MIXER_DEVICE" "$VOLUME_CONTROL"; then
+		if [ -n "$VOLUME_CONTROL" ]; then
+			VOLUME_CONTROL_NOTE="$(lang de:"Regler '$VOLUME_CONTROL' nicht gefunden; verwende '$DETECTED_VOLUME_CONTROL'." en:"Control '$VOLUME_CONTROL' not found; using '$DETECTED_VOLUME_CONTROL'.")"
+		else
+			VOLUME_CONTROL_NOTE="$(lang de:"Automatisch erkannter Regler '$DETECTED_VOLUME_CONTROL'." en:"Auto-detected control '$DETECTED_VOLUME_CONTROL'.")"
+		fi
+		VOLUME_CONTROL="$DETECTED_VOLUME_CONTROL"
+	fi
+else
+	VOLUME_CONTROL=''
+	if [ -n "$REQUESTED_VOLUME_CONTROL" ]; then
+		VOLUME_CONTROL_NOTE="$(lang de:"Regler '$REQUESTED_VOLUME_CONTROL' ist auf '$MIXER_DEVICE' nicht verf\u00fcgbar." en:"Control '$REQUESTED_VOLUME_CONTROL' is not available on '$MIXER_DEVICE'.")"
+	else
+		VOLUME_CONTROL_NOTE="$(lang de:"Auf '$MIXER_DEVICE' wurden keine einfachen ALSA-Regler gefunden." en:"No simple ALSA controls were found on '$MIXER_DEVICE'.")"
+	fi
+fi
 
 list_samples() {
 	for sample in /usr/share/sounds/alsa/*.wav; do
@@ -78,7 +121,11 @@ case "$ACTION" in
 		ACTION_TITLE="$(lang de:"Lautst\u00e4rke gesetzt" en:"Volume control result")"
 		VOLUME_VALUE="$(sanitize_uint "$VOLUME_VALUE")"
 		[ -n "$VOLUME_VALUE" ] || VOLUME_VALUE=75
-		ACTION_OUTPUT="$(amixer -D "$MIXER_DEVICE" sset "$VOLUME_CONTROL" "${VOLUME_VALUE}%" "$VOLUME_SWITCH" 2>&1 | tail -n 80)"
+		if [ -n "$VOLUME_CONTROL" ]; then
+			ACTION_OUTPUT="$(amixer -D "$MIXER_DEVICE" sset "$VOLUME_CONTROL" "${VOLUME_VALUE}%" "$VOLUME_SWITCH" 2>&1 | tail -n 80)"
+		else
+			ACTION_OUTPUT="$(lang de:"Kein einfacher Lautst\u00e4rkeregler auf dem gew\u00e4hlten Mixer-Ger\u00e4t gefunden." en:"No simple volume control found on the selected mixer device.")"
+		fi
 		;;
 	set_control)
 		ACTION_TITLE="$(lang de:"Mixer-Regler gesetzt" en:"Mixer control result")"
@@ -95,6 +142,7 @@ echo "<table style='width:100%'>"
 print_row "$(lang de:"PCM-Ger\u00e4t" en:"PCM device")" "$PCM_DEVICE"
 print_row "$(lang de:"Mixer-Ger\u00e4t" en:"Mixer device")" "$MIXER_DEVICE"
 print_row "$(lang de:"Lautst\u00e4rkeregler" en:"Volume control")" "$VOLUME_CONTROL"
+print_row "$(lang de:"Hinweis" en:"Note")" "$VOLUME_CONTROL_NOTE"
 echo '</table>'
 sec_end
 
@@ -158,7 +206,15 @@ cat << EOF
 </form>
 <pre class="log full">
 EOF
-amixer -D "$MIXER_DEVICE" sget "$VOLUME_CONTROL" 2>&1 | tail -n 40 | html
+if [ -n "$VOLUME_CONTROL" ]; then
+	amixer -D "$MIXER_DEVICE" sget "$VOLUME_CONTROL" 2>&1 | tail -n 40 | html
+else
+	echo "$(lang de:"Kein einfacher Lautst\u00e4rkeregler verf\u00fcgbar. Verf\u00fcgbare Regler:" en:"No simple volume control available. Available controls:")" | html
+	list_simple_controls "$MIXER_DEVICE" | html
+	if ! list_simple_controls "$MIXER_DEVICE" | grep -q .; then
+		amixer -D "$MIXER_DEVICE" controls 2>&1 | tail -n 80 | html
+	fi
+fi
 cat << EOF
 </pre>
 EOF
@@ -177,7 +233,12 @@ cat << EOF
 </form>
 <pre class="log full">
 EOF
-amixer -D "$MIXER_DEVICE" scontrols 2>&1 | tail -n 80 | html
+if list_simple_controls "$MIXER_DEVICE" | grep -q .; then
+	amixer -D "$MIXER_DEVICE" scontrols 2>&1 | tail -n 80 | html
+else
+	echo "$(lang de:"Keine einfachen ALSA-Regler gefunden; zeige rohe Control-Liste." en:"No simple ALSA controls found; showing raw control list.")" | html
+	amixer -D "$MIXER_DEVICE" controls 2>&1 | tail -n 80 | html
+fi
 cat << EOF
 </pre>
 EOF

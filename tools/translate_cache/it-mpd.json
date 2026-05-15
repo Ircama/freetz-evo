@@ -257,5 +257,12 @@
     "timestamp": "2026-05-15T15:18:46Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:TCP port": {
+    "original": "TCP port",
+    "translation": "Porta TCP",
+    "timestamp": "2026-05-15T21:12:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

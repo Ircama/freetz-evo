@@ -1,0 +1,60 @@
+#!/bin/sh
+
+bool_conf() {
+	case "$1" in
+		yes|true|1|on) echo true ;;
+		*) echo false ;;
+	esac
+}
+
+: "${SNAPCAST_SERVER_DATA_DIR:=/tmp/flash/snapcast}"
+: "${SNAPCAST_HTTP_ENABLED:=yes}"
+: "${SNAPCAST_HTTP_BIND_TO_ADDRESS:=0.0.0.0}"
+: "${SNAPCAST_HTTP_PORT:=1780}"
+: "${SNAPCAST_TCP_CONTROL_BIND_TO_ADDRESS:=0.0.0.0}"
+: "${SNAPCAST_TCP_CONTROL_PORT:=1705}"
+: "${SNAPCAST_STREAM_BIND_TO_ADDRESS:=0.0.0.0}"
+: "${SNAPCAST_STREAM_PORT:=1704}"
+: "${SNAPCAST_STREAM_SOURCE:=pipe:///tmp/snapfifo?name=default}"
+: "${SNAPCAST_STREAM_CODEC:=flac}"
+: "${SNAPCAST_STREAM_SAMPLEFORMAT:=48000:16:2}"
+: "${SNAPCAST_STREAM_CHUNK_MS:=20}"
+: "${SNAPCAST_STREAM_BUFFER:=1000}"
+: "${SNAPCAST_LOG_FILTER:=*:info}"
+
+cat << EOF
+[server]
+datadir = ${SNAPCAST_SERVER_DATA_DIR%/}
+
+[http]
+enabled = $(bool_conf "$SNAPCAST_HTTP_ENABLED")
+bind_to_address = ${SNAPCAST_HTTP_BIND_TO_ADDRESS}
+port = ${SNAPCAST_HTTP_PORT}
+doc_root = /usr/share/snapserver/snapweb
+
+[tcp-control]
+enabled = true
+bind_to_address = ${SNAPCAST_TCP_CONTROL_BIND_TO_ADDRESS}
+port = ${SNAPCAST_TCP_CONTROL_PORT}
+
+[tcp-streaming]
+enabled = true
+bind_to_address = ${SNAPCAST_STREAM_BIND_TO_ADDRESS}
+port = ${SNAPCAST_STREAM_PORT}
+
+[stream]
+source = ${SNAPCAST_STREAM_SOURCE}
+EOF
+
+[ -n "$SNAPCAST_STREAM_DEFAULT_SOURCE" ] && printf 'default_source = %s\n' "$SNAPCAST_STREAM_DEFAULT_SOURCE"
+
+cat << EOF
+sampleformat = ${SNAPCAST_STREAM_SAMPLEFORMAT}
+codec = ${SNAPCAST_STREAM_CODEC}
+chunk_ms = ${SNAPCAST_STREAM_CHUNK_MS}
+buffer = ${SNAPCAST_STREAM_BUFFER}
+
+[logging]
+sink = file:/var/log/snapserver.log
+filter = ${SNAPCAST_LOG_FILTER}
+EOF

@@ -12,7 +12,7 @@
 : ${ALSAEQUAL_MODULE:=Eq10}
 : ${ALSAEQUAL_CHANNELS:=2}
 
-RUNTIME_CONFIG=/etc/alsa/conf.d/50-alsaequal.conf
+RUNTIME_CONFIG=/var/lib/alsa/conf.d/50-alsaequal.conf
 ACTION="$(cgi_param action)"
 ACTION_TITLE=''
 ACTION_OUTPUT=''
@@ -208,7 +208,12 @@ else
 	echo '<pre class="log full">'
 	if [ "$ALSAEQUAL_ENABLED" != 'yes' ]; then
 		echo "$(lang de:"alsaequal ist deaktiviert. Aktivieren Sie das Ger\u00e4t in der Konfiguration und speichern Sie die Seite." en:"alsaequal is disabled. Enable it in the configuration page and save it.")" | html
+	elif [ ! -s "$RUNTIME_CONFIG" ]; then
+		echo "$(lang de:"Die generierte ALSA-Konfiguration fehlt unter '$RUNTIME_CONFIG'. Speichern Sie die Konfiguration erneut oder laden Sie das Paket neu." en:"The generated ALSA configuration is missing at '$RUNTIME_CONFIG'. Save the configuration again or reload the package.")" | html
+	elif [ "$LIBRARY_STATE" = 'missing' ]; then
+		echo "$(lang de:"Die konfigurierte LADSPA-Bibliothek ist nicht lesbar. Korrigieren Sie Bibliothek oder Suchpfad und speichern Sie erneut." en:"The configured LADSPA library is not readable. Fix the library path or search path and save again.")" | html
 	else
+		echo "$(lang de:"Equalizer-Regler konnten nicht ge\u00f6ffnet werden. Rohdiagnose:" en:"Equalizer controls could not be opened. Raw diagnostic output:")" | html
 		amixer -D equal controls 2>&1 | html
 	fi
 	echo '</pre>'
