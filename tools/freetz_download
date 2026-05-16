@@ -31,7 +31,12 @@ FREETZ_DL_SITES_COUNT=5
 FREETZ_DL_SITES_NORND_FIRST=1
 FREETZ_DL_SITES_NORND_LAST=1
 
-WGET="wget"
+# Prefer the host wget for network downloads; the repo-local tools/wget may be
+# bootstrapped before its CA trust matches the host system.
+WGET="$(command -v wget 2>/dev/null)"
+for candidate in /usr/bin/wget /bin/wget /usr/local/bin/wget; do
+	[ -x "$candidate" ] && WGET="$candidate" && break
+done
 WVER="$(${WGET} --version | head -n1 | sed -r 's/.* ([\.0-9]*) .*/\1/')"
 HASH="$(tools/freetz_revision repo | tr -d '\n' | md5sum  | cut -f1 -d ' ')"
 userAgent="${WGET^}/${WVER} (${HASH})"
@@ -124,8 +129,8 @@ do_check() {
 	local mode wget_output wget_result
 	for mode in --spider --output-document=/dev/null; do
 		[ "$DEBUG" == "1" ] && \
-		echo         "LC_ALL=C wget --tries=2 --timeout=3 --server-response $mode '$1' 2>&1"
-		wget_output=$(LC_ALL=C wget --tries=2 --timeout=3 --server-response $mode "$1" 2>&1)
+		echo         "LC_ALL=C ${WGET} --tries=2 --timeout=3 --server-response $mode '$1' 2>&1"
+		wget_output=$(LC_ALL=C ${WGET} --tries=2 --timeout=3 --server-response $mode "$1" 2>&1)
 		wget_result=$?
 		if [ "$wget_result" != "0" ]; then
 			# workaround wget spider-mode bug (false negative): known to happen with all sites
@@ -591,7 +596,7 @@ download_by_url
 [ "$FREETZ_DL_VCS_REPO_FIRST" != "y" ] && download_by_vcs
 
 print_final_download_failure_help() {
-	local doc_url="https://github.com/Freetz-NG/freetz-ng/blob/master/docs/wiki/40_Troubleshooting/download_failures.md"
+	local doc_url="https://github.com/Ircama/freetz-evo/blob/master/docs/wiki/40_Troubleshooting/download_failures.md"
 	local dl_path
 	local show_hosttools_hint=n
 	local out_fd=2
