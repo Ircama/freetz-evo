@@ -1,18 +1,18 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),3400100,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),3470100,3530000)))
+$(call PKG_INIT_BIN, $(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),3400100,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),3470100,3530100)))
 $(PKG)_LIB_VERSION_ABANDON:=0.8.6
 $(PKG)_LIB_VERSION_STABLE:=0.8.6
-$(PKG)_LIB_VERSION_CURRENT:=3.53.0
+$(PKG)_LIB_VERSION_CURRENT:=3.53.1
 $(PKG)_LIB_VERSION:=$($(PKG)_LIB_VERSION_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
 $(PKG)_SOURCE:=$(pkg)-autoconf-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH_ABANDON:=2c5dea207fa508d765af1ef620b637dcb06572afa6f01f0815bd5bbf864b33d9
 $(PKG)_HASH_STABLE:=416a6f45bf2cacd494b208fdee1beda509abda951d5f47bc4f2792126f01b452
-$(PKG)_HASH_CURRENT:=851e9b38192fe2ceaa65e0baa665e7fa06230c3d9bd1a6a9662d02380d73365a
+$(PKG)_HASH_CURRENT:=83e6b2020a034e9a7ad4a72feea59e1ad52f162e09cbd26735a3ffb98359fc4f
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
 $(PKG)_SITE_ABANDON:=https://www.sqlite.org/2022
 $(PKG)_SITE_STABLE:=https://www.sqlite.org/2024
 $(PKG)_SITE_CURRENT:=https://www.sqlite.org/2026
 $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
-### VERSION:=3.40.1/3.47.1/3.53.0
+### VERSION:=3.40.1/3.47.1/3.53.1
 ### WEBSITE:=https://www.sqlite.org
 ### MANPAGE:=https://www.sqlite.org/docs.html
 ### CHANGES:=https://www.sqlite.org/changes.html
@@ -67,7 +67,7 @@ $($(PKG)_BINARY): $($(PKG)_LIB_BINARY)
 	@touch -c $@
 
 ifeq ($(strip $(FREETZ_LIB_libsqlite3_WITH_VERSION_CURRENT)),y)
-# SQLite 3.50.4: make install creates versioned library directly
+# SQLite 3.53.1: make install creates versioned library directly
 $($(PKG)_LIB_STAGING_BINARY): $($(PKG)_LIB_BINARY)
 	$(SUBMAKE) -C $(SQLITE_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \

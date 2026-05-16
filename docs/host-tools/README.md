@@ -12,11 +12,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### B
 
-  * **[busybox 1.37.0](busybox-host.md)<a id='busybox-host'></a>**<br>
+  * **[busybox 1.38.0](busybox-host.md)<a id='busybox-host'></a>**<br>
 
 ### C
 
-  * **[ca-bundle 2026-03-19](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
+  * **[ca-bundle 2026-05-14](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
   * **[cmake 4.3.2](cmake-host.md)<a id='cmake-host'></a>**<br>
 
@@ -110,7 +110,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[prelink 20131005](prelink-host.md)<a id='prelink-host'></a>**<br>
 
-  * **[pseudo 1.9.6](pseudo-host.md)<a id='pseudo-host'></a>**<br>
+  * **[pseudo 1.9.7](pseudo-host.md)<a id='pseudo-host'></a>**<br>
 
   * **[python2 2.7.18](python2-host.md)<a id='python2-host'></a>**<br>
 
@@ -118,19 +118,19 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python2-setuptools 44.1.1](python2-setuptools-host.md)<a id='python2-setuptools-host'></a>**<br>
 
-  * **[python3-attrs 25.4.0](python3-attrs-host.md)<a id='python3-attrs-host'></a>**<br>
+  * **[python3-attrs 26.1.0](python3-attrs-host.md)<a id='python3-attrs-host'></a>**<br>
 
   * **[python3 3.14.5](python3-host.md)<a id='python3-host'></a>**<br>
 
-  * **[python3-jsonschema 4.25.1](python3-jsonschema-host.md)<a id='python3-jsonschema-host'></a>**<br>
+  * **[python3-jsonschema 4.26.0](python3-jsonschema-host.md)<a id='python3-jsonschema-host'></a>**<br>
 
-  * **[python3-packaging 25.0](python3-packaging-host.md)<a id='python3-packaging-host'></a>**<br>
+  * **[python3-packaging 26.2](python3-packaging-host.md)<a id='python3-packaging-host'></a>**<br>
 
-  * **[python3-pip 25.3](python3-pip-host.md)<a id='python3-pip-host'></a>**<br>
+  * **[python3-pip 26.1.1](python3-pip-host.md)<a id='python3-pip-host'></a>**<br>
 
   * **[python3-referencing 0.37.0](python3-referencing-host.md)<a id='python3-referencing-host'></a>**<br>
 
-  * **[python3-setuptools 80.9.0](python3-setuptools-host.md)<a id='python3-setuptools-host'></a>**<br>
+  * **[python3-setuptools 82.0.1](python3-setuptools-host.md)<a id='python3-setuptools-host'></a>**<br>
 
 ### S
 
@@ -154,13 +154,15 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-05-10](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-05-15](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 
-  * **[uboot 2026.01](uboot-host.md)<a id='uboot-host'></a>**<br>
+  * **[uboot 2026.04](uboot-host.md)<a id='uboot-host'></a>**<br>
 
   * **[uimg 871930d](uimg-host.md)<a id='uimg-host'></a>**<br>
+
+  * **[util-linux 2.42](util-linux-host.md)<a id='util-linux-host'></a>**<br>
 
 ### W
 

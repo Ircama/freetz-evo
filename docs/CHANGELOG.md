@@ -64,21 +64,29 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13.5
+    * ccache 4.13.6
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57
 
   - Host tools:
+    * busybox 1.38.0
     * autoconf 2.73
-    * ca-bundle 2026-03-19
+    * ca-bundle 2026-05-14
     * cmake 4.3.2
     * dos2unix 7.5.5
     * file 5.47
     * kconfig 7.0
     * meson 1.11.1
     * openssl 3.5.6
-    * pseudo 1.9.6
+    * pseudo 1.9.7
     * python3 3.14.5
+    * python3-attrs 26.1.0
+    * python3-jsonschema 4.26.0
+    * python3-packaging 26.2
+    * python3-pip 26.1.1
+    * python3-setuptools 82.0.1
     * sed 4.10
+    * uboot 2026.04
+    * util-linux 2.42
 
   - AVM sources:
 
@@ -95,11 +103,14 @@ Latest changes
     * Bftpd 6.6
     * BIND 9.11.37/9.20.22
     * Binutils 2.46.0
-    * CA-bundle 2026-03-19
+    * BusyBox 1.27.2/1.38.0
+    * CA-bundle 2026-05-14
     * Curl 8.12.1/8.20.0
     * davfs2 1.5.2/1.7.3
+    * Dnsmasq 2.80/2.92rel2
     * Dropbear 2026.91
     * Git 2.26.2/2.53.0
+    * HAProxy 2.6.29
     * htop 1.0.3/3.5.1
     * htpdate 2.0.2
     * ImageMagick 7.1.0-62/7.1.2-21
@@ -118,7 +129,7 @@ Latest changes
     * rsync 3.4.2
     * sslh 2.2.4/2.3.1
     * Stunnel 5.78
-    * SQLite 3.40.1/3.53.0
+    * SQLite 3.40.1/3.53.1
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
     * Tor 0.4.8.25
@@ -132,7 +143,7 @@ Latest changes
     * XZ 5.8.3
 
   - Libraries:
-    * expat 2.7.5/2.8.0
+    * expat 2.7.5/2.8.1
     * file 5.47
     * FreeType 2.14.3
     * gettext 1.0

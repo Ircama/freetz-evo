@@ -47,7 +47,6 @@ perl
 perl-String-CRC32
 pkgconfig
 pv
-python3
 qt5-qtbase-devel
 readline-devel
 rpcgen
