@@ -61,7 +61,7 @@ sudo dnf -y update && sudo systemctl daemon-reload
 ```
 sudo dnf -y install \
   ImageMagick bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc \
-  gcc-c++ gettext git glib2-devel glibc-devel glibc-devel.i686 gnutls-devel inkscape \
+  gcc-c++ gettext git glib2-devel glibc-devel glibc-devel.i686 gnutls-devel golang inkscape \
   javapackages-tools kmod libacl-devel libatomic.i686 libattr-devel libcap-devel libgcc libglade2-devel \
   libstdc++-devel libtool libuuid-devel libxml2-devel libzstd-devel make ncurses ncurses-devel \
   ncurses-term net-tools netcat openssl openssl-devel openssl-devel-engine patch patchutils perl \
@@ -73,7 +73,7 @@ sudo dnf -y install \
 ```
 sudo dnf -y install \
   ImageMagick bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc \
-  gcc-c++ gettext git glib2-devel glibc-devel gnutls-devel inkscape javapackages-tools kmod \
+  gcc-c++ gettext git glib2-devel glibc-devel gnutls-devel golang inkscape javapackages-tools kmod \
   libacl-devel libattr-devel libcap-devel libgcc libglade2-devel libstdc++-devel libtool \
   libuuid-devel libxml2-devel libzstd-devel make ncurses ncurses-devel ncurses-term net-tools netcat \
   openssl openssl-devel openssl-devel-engine patch patchutils perl perl-String-CRC32 pkgconfig pv \
@@ -85,7 +85,7 @@ sudo dnf -y install \
 ```
 sudo dnf -y install \
   ImageMagick bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex gcc \
-  gcc-c++ gettext git glib2-devel glibc-devel gnutls-devel inkscape javapackages-tools kmod \
+  gcc-c++ gettext git glib2-devel glibc-devel gnutls-devel golang inkscape javapackages-tools kmod \
   libacl-devel libattr-devel libcap-devel libgcc libglade2-devel libstdc++-devel libtool \
   libuuid-devel libxml2-devel libzstd-devel make ncurses ncurses-devel ncurses-term net-tools netcat \
   openssl openssl-devel patch patchutils perl perl-String-CRC32 pkgconfig pv python3 \
@@ -97,19 +97,20 @@ sudo dnf -y install \
 ```
 sudo dnf -y install \
   ImageMagick bc binutils bison bzip2 ccache cmake curl ecj elfutils-libelf-devel flex ftp gcc \
-  gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel inkscape javapackages-tools kmod \
-  libacl-devel libattr-devel libcap-devel libgcc.i686 libglade2-devel libstdc++-devel.i686 \
-  libstdc++-devel.x86_64 libtool libuuid-devel libxml2-devel libzstd-devel.x86_64 make ncftp ncurses-devel \
-  ncurses-devel.i686 ncurses-term net-tools netcat openssl openssl-devel patch patchutils perl \
-  perl-String-CRC32 pkgconfig pv qt5-qtbase-devel readline-devel rpcgen rsync sharutils sqlite-devel \
-  sqlite.i686 subversion texinfo unar util-linux wget xz zlib-devel zlib-devel.i686
+  gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel golang inkscape \
+  javapackages-tools kmod libacl-devel libattr-devel libcap-devel libgcc.i686 libglade2-devel \
+  libstdc++-devel.i686 libstdc++-devel.x86_64 libtool libuuid-devel libxml2-devel libzstd-devel.x86_64 make \
+  ncftp ncurses-devel ncurses-devel.i686 ncurses-term net-tools netcat openssl openssl-devel \
+  patch patchutils perl perl-String-CRC32 pkgconfig pv qt5-qtbase-devel readline-devel rpcgen \
+  rsync sharutils sqlite-devel sqlite.i686 subversion texinfo unar util-linux wget xz zlib-devel \
+  zlib-devel.i686
 ```
 
   - Fedora 36 64-bit:
 ```
 sudo dnf -y install \
   ImageMagick autoconf automake bc binutils bison bzip2 ccache cmake curl ecj \
-  elfutils-libelf-devel flex gcc gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel inkscape \
+  elfutils-libelf-devel flex gcc gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel golang inkscape \
   javapackages-tools kmod libacl-devel libattr-devel libcap-devel libgcc.i686 libglade2-devel \
   libstdc++-devel.i686 libstdc++-devel.x86_64 libtool libuuid-devel libxml2-devel libzstd-devel.x86_64 make \
   ncftp ncurses-devel ncurses-devel.i686 ncurses-term net-tools netcat openssl openssl-devel \
@@ -122,7 +123,7 @@ sudo dnf -y install \
 ```
 sudo dnf -y install \
   ImageMagick autoconf automake bc binutils bison bzip2 ccache cmake curl ecj \
-  elfutils-libelf-devel flex gcc gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel inkscape \
+  elfutils-libelf-devel flex gcc gcc-c++ gettext git glib2-devel glibc-devel.i686 gnutls-devel golang inkscape \
   javapackages-tools kmod libacl-devel libattr-devel libcap-devel libgcc.i686 libglade2-devel \
   libstdc++-devel.i686 libstdc++-devel.x86_64 libtool libuuid-devel libxml2-devel libzstd-devel.x86_64 make \
   ncftp ncurses-devel ncurses-devel.i686 ncurses-term net-tools netcat openssl openssl-devel \
@@ -135,11 +136,11 @@ sudo dnf -y install \
 ```
 sudo dnf -y install \
   ImageMagick autoconf automake bc binutils bison bzip2 ccache cmake ecj flex gcc gcc-c++ \
-  gettext git glib2-devel glibc-devel.i686 gnutls-devel inkscape kmod libacl-devel libattr-devel \
-  libcap-devel libgcc.i686 libglade2-devel libstdc++-devel.i686 libtool libuuid-devel libxml2-devel \
-  libzstd-devel.i686 make ncurses-devel ncurses-devel.i686 ncurses-term openssl openssl-devel patch perl \
-  perl-String-CRC32 pkgconfig pv qt5-qtbase-devel readline-devel rsync sqlite-devel sqlite.i686 subversion \
-  texinfo unar util-linux wget xz zlib-devel zlib-devel.i686
+  gettext git glib2-devel glibc-devel.i686 gnutls-devel golang inkscape kmod libacl-devel \
+  libattr-devel libcap-devel libgcc.i686 libglade2-devel libstdc++-devel.i686 libtool libuuid-devel \
+  libxml2-devel libzstd-devel.i686 make ncurses-devel ncurses-devel.i686 ncurses-term openssl \
+  openssl-devel patch perl perl-String-CRC32 pkgconfig pv qt5-qtbase-devel readline-devel rsync \
+  sqlite-devel sqlite.i686 subversion texinfo unar util-linux wget xz zlib-devel zlib-devel.i686
 ```
 
   - If the following system runs 64-bit Linux, install additionally:
@@ -151,7 +152,7 @@ sudo yum -y install ncurses-devel.i686 glibc-devel.i686 libgcc.i686
 ```
 sudo yum -y install \
   ImageMagick autoconf automake binutils bison bzip2 ecj flex gcc gcc-c++ gettext git \
-  glib2-devel libacl-devel libattr-devel libcap-devel libtool make ncurses-devel patch perl \
+  glib2-devel golang libacl-devel libattr-devel libcap-devel libtool make ncurses-devel patch perl \
   perl-String-CRC32 pkgconfig subversion texinfo wget zlib-devel
 ```
 
@@ -168,7 +169,7 @@ sudo apt -y dist-upgrade
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make netcat-traditional patch patchutils \
@@ -180,7 +181,7 @@ sudo apt -y install \
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make netcat-traditional patch patchutils \
@@ -192,7 +193,7 @@ sudo apt -y install \
 ```
 sudo apt -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make netcat patch patchutils perl \
@@ -246,7 +247,7 @@ sudo apt-get remove --allow-remove-essential coreutils-from-uutils
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat-openbsd patch \
@@ -258,7 +259,7 @@ sudo apt-get -y install \
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat-openbsd patch \
@@ -270,7 +271,7 @@ sudo apt-get -y install \
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat-openbsd patch \
@@ -282,7 +283,7 @@ sudo apt-get -y install \
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils bzip2 ccache cmake curl ecj flex ftp g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool java-wrappers kmod \
   lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat patch \
@@ -297,32 +298,32 @@ sudo apt -y install libzstd-dev:i386 sqlite3:i386
 ```
 sudo apt-get -y install \
   autopoint bc binutils bison bsdmainutils build-essential bzip2 ccache cmake curl ecj flex \
-  g++ gawk gcc gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool kmod \
-  lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libglib2.0-dev \
-  libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev libstring-crc32-perl \
-  libtool-bin libusb-dev libzstd-dev make ncftp net-tools netcat openssl patch patchutils perl \
-  pkg-config pv rsync sqlite3 subversion sudo texinfo unar unzip uuid-dev wget zlib1g-dev
+  g++ gawk gcc gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool \
+  kmod lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev \
+  libglib2.0-dev libgnutls28-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
+  libstring-crc32-perl libtool-bin libusb-dev libzstd-dev make ncftp net-tools netcat openssl patch patchutils \
+  perl pkg-config pv rsync sqlite3 subversion sudo texinfo unar unzip uuid-dev wget zlib1g-dev
 ```
 
   - Ubuntu 15/16/17 64-bit:
 ```
 sudo apt-get -y install \
   autoconf automake autopoint bc binutils bison bsdmainutils bzip2 ecj flex g++ gawk gcc \
-  gcc-multilib gettext git graphicsmagick imagemagick inkscape intltool kmod lib32ncurses5-dev \
-  lib32stdc++6 libacl1-dev libc6-dev-i386 libcap-dev libglib2.0-dev libncurses5-dev libreadline-dev \
-  libstring-crc32-perl libtool-bin libusb-dev make patch perl pkg-config pv realpath rsync subversion sudo texinfo \
-  unar unzip wget zlib1g-dev
+  gcc-multilib gettext git golang-go graphicsmagick imagemagick inkscape intltool kmod \
+  lib32ncurses5-dev lib32stdc++6 libacl1-dev libc6-dev-i386 libcap-dev libglib2.0-dev libncurses5-dev \
+  libreadline-dev libstring-crc32-perl libtool-bin libusb-dev make patch perl pkg-config pv realpath rsync \
+  subversion sudo texinfo unar unzip wget zlib1g-dev
 ```
 
   - Ubuntu 14 64-bit:
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 autopoint bc binutils bison bsdmainutils build-essential \
-  bzip2 ccache cmake curl ecj flex g++ gawk gcc gcc-multilib gettext git graphicsmagick imagemagick \
-  inkscape intltool kmod lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 \
-  libcap-dev libglib2.0-dev libncurses5-dev libreadline-dev libsqlite3-dev libstring-crc32-perl \
-  libtool libusb-dev make netcat openssl patch perl pkg-config pv realpath rsync sqlite3 subversion \
-  sudo texinfo unar unzip wget zlib1g-dev
+  bzip2 ccache cmake curl ecj flex g++ gawk gcc gcc-multilib gettext git golang-go graphicsmagick \
+  imagemagick inkscape intltool kmod lib32ncurses5-dev lib32stdc++6 lib32z1-dev libacl1-dev \
+  libc6-dev-i386 libcap-dev libglib2.0-dev libncurses5-dev libreadline-dev libsqlite3-dev \
+  libstring-crc32-perl libtool libusb-dev make netcat openssl patch perl pkg-config pv realpath rsync sqlite3 \
+  subversion sudo texinfo unar unzip wget zlib1g-dev
 ```
 Additionally, install manually:
 ```
@@ -355,24 +356,25 @@ sudo apt-get -y install libtool-bin
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext \
-  graphicsmagick intltool libacl1-dev libcap-dev libncurses5-dev libreadline-dev libstring-crc32-perl \
-  libtool libusb-dev make patch perl pkg-config python realpath subversion texinfo unzip zlib1g-dev
+  golang-go graphicsmagick intltool libacl1-dev libcap-dev libncurses5-dev libreadline-dev \
+  libstring-crc32-perl libtool libusb-dev make patch perl pkg-config python realpath subversion texinfo unzip \
+  zlib1g-dev
 ```
 
   - Ubuntu 10/11/12 32-bit:
 ```
 sudo apt-get -y install \
   autoconf automake binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext git-core \
-  imagemagick intltool libacl1-dev libattr1-dev libcap-dev libglib2.0-dev libncurses5-dev \
-  libreadline-dev libstring-crc32-perl libtool libusb-dev make patch perl pkg-config python realpath \
-  subversion texinfo unzip xz-utils zlib1g-dev
+  golang-go imagemagick intltool libacl1-dev libattr1-dev libcap-dev libglib2.0-dev \
+  libncurses5-dev libreadline-dev libstring-crc32-perl libtool libusb-dev make patch perl pkg-config \
+  python realpath subversion texinfo unzip xz-utils zlib1g-dev
 ```
 
   - Ubuntu 9.04 32-bit (no automake 1.8, use "ecj" instead of "ecj-bootstrap"):
 ```
 sudo apt-get -y install \
   autoconf automake automake1.9 binutils bison bzip2 ecj fastjar flex g++ gawk gcc gettext \
-  git-core imagemagick intltool jikes libacl1-dev libattr1-dev libcap-dev libglib2.0-dev \
+  git-core golang-go imagemagick intltool jikes libacl1-dev libattr1-dev libcap-dev libglib2.0-dev \
   libncurses5-dev libreadline-dev libstring-crc32-perl libtool libusb-dev make patch perl pkg-config \
   python realpath subversion texinfo unzip xz-utils zlib1g-dev
 ```

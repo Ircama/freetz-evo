@@ -145,6 +145,10 @@ install_requisite() {
 
 	vals="$(sed 's/[\t ]*#.*//g' "$PACKAGES/$OSV" | sort | tr '\n' ' ' | sed 's/^ *//;s/  */ /g;s/ *$//')"
 	case "$OSV" in
+		Fedora*)
+			vals="$vals golang"
+			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
+			;;
 		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
 			vals="$vals golang-go $NODEJS_HOST_MULTILIB_PKG"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"

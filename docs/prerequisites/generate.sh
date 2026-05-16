@@ -11,7 +11,16 @@ for x in "$PARENT/tools/.prerequisites/"*; do
 	sort -u -o "$x" "$x"
 	vals="\\\\\n "
 	c=0
-	for v in $(sed 's/[\t ]*#.*//g' "$x" | sort | tr '\n' ' '); do
+	pkgs="$(sed 's/[\t ]*#.*//g' "$x" | sort | tr '\n' ' ')"
+	case "${x##*/}" in
+		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
+			pkgs="$pkgs golang-go"
+			;;
+		Fedora*)
+			pkgs="$pkgs golang"
+			;;
+	esac
+	for v in $(echo "$pkgs" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' '); do
 		c=$(( ${c} + ${#v} ))
 		[ $c -gt $LIMIT ] && c=0 && vals="$vals \\\\\n "
 		vals="$vals $v"
