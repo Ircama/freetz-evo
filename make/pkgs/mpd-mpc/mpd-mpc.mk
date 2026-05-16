@@ -5,8 +5,9 @@ $(PKG)_SITE:=https://www.musicpd.org/download/mpc/0
 $(PKG)_DIR:=$(SOURCE_DIR)/mpc-$($(PKG)_VERSION)
 ### WEBSITE:=https://www.musicpd.org/clients/mpc/
 ### MANPAGE:=https://www.musicpd.org/doc/mpc/html/
-### CHANGES:=https://raw.githubusercontent.com/MusicPlayerDaemon/mpc/v$($(PKG)_VERSION)/NEWS
+### CHANGES:=https://github.com/MusicPlayerDaemon/mpc/releases
 ### CVSREPO:=https://github.com/MusicPlayerDaemon/mpc
+### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/mpd-mpc/
 
 $(PKG)_CATEGORY:=Audio
 

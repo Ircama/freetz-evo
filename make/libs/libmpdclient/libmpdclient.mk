@@ -5,8 +5,9 @@ $(PKG)_HASH:=eac15b82b5ba5ed0648af580221eb74657394f7fe768e966d9e9ebb27435429f
 $(PKG)_SITE:=https://www.musicpd.org/download/libmpdclient/2
 ### WEBSITE:=https://www.musicpd.org/libs/libmpdclient/
 ### MANPAGE:=https://www.musicpd.org/doc/libmpdclient/
-### CHANGES:=https://raw.githubusercontent.com/MusicPlayerDaemon/libmpdclient/v$($(PKG)_VERSION)/NEWS
+### CHANGES:=https://github.com/MusicPlayerDaemon/libmpdclient/releases
 ### CVSREPO:=https://github.com/MusicPlayerDaemon/libmpdclient
+### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/libs/libmpdclient/
 
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmpdclient.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmpdclient.so.$($(PKG)_LIB_VERSION)

@@ -1102,3 +1102,762 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>Rcapid 0.1 - DEPRECATED</u><a id='rcapid'></a>**<br>
     Remote CAPI daemon from isdn4linux.
+
+  * **[rclone 1.74.1 (binary only)](../../docs/make/rclone.md)<a id='rclone'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the rclone executable on the target. Can be externalized to save flash memory.
+
+  * **[restic 0.18.1 (binary only)](../../docs/make/restic.md)<a id='restic'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the restic executable on the target. Can be externalized to save flash memory.
+
+  * **<u>ripmime 1.2.16.21 (binary only) - DEPRECATED</u><a id='ripmime'></a>**<br>
+    ripmime is an utility to decode and extract the parts of mime-formatted mails.
+
+  * **[RPCBind 1.2.7 (binary only)](../../docs/make/rpcbind.md)<a id='rpcbind'></a>**<br>
+    The rpcbind utility is a server that converts RPC program numbers into universal addresses.
+
+  * **[RRDtool 1.2.30/1.9.0 (binary only)](../../docs/make/rrdtool.md)<a id='rrdtool'></a>**<br>
+    RRDtool is the OpenSource industry standard, high performance data logging and graphing system for time series data. Use it to write your custom monitoring shell scripts or create whole applications using its PHP bindings.
+     - [Introduction](../../docs/make/rrdtool.md#introduction)
+     - [RRDstats](../../docs/make/rrdtool.md#rrdstats)
+
+  * **[rsync 3.4.2](../../docs/make/rsync.md)<a id='rsync'></a>**<br>
+    rsync is an open source utility that provides fast incremental file transfer.
+
+  * **<u>RTMPDump 2.4-git (binary only) - DEPRECATED</u><a id='rtmpdump'></a>**<br>
+    rtmpdump is a toolkit for RTMP streams. All forms of RTMP are supported, including rtmp://, rtmpt://, rtmpe://, rtmpte://, and rtmps://.
+
+  * **[rTorrent/ruTorrent](../../docs/make/rtorrent.md)<a id='rtorrent'></a>**<br>
+    rTorrent is a console-based BitTorrent client with optional ruTorrent web interface. Includes libtorrent dependency.
+     - [AJAX service endpoints](../../docs/make/rtorrent.md#ajax-service-endpoints)
+     - [Initial setup wizard](../../docs/make/rtorrent.md#initial-setup-wizard)
+     - [Standard configuration page](../../docs/make/rtorrent.md#standard-configuration-page)
+     - [Integrated config editors](../../docs/make/rtorrent.md#integrated-config-editors)
+     - [Save hook behavior](../../docs/make/rtorrent.md#save-hook-behavior)
+     - [Init script behavior](../../docs/make/rtorrent.md#init-script-behavior)
+     - [Core and base plugin model](../../docs/make/rtorrent.md#core-and-base-plugin-model)
+     - [Included/optional plugin groups](../../docs/make/rtorrent.md#includedoptional-plugin-groups)
+     - [Freetz filemanager plugin variant](../../docs/make/rtorrent.md#freetz-filemanager-plugin-variant)
+     - [1) Build prerequisites](../../docs/make/rtorrent.md#1-build-prerequisites)
+     - [2) Open the configuration page](../../docs/make/rtorrent.md#2-open-the-configuration-page)
+     - [3) Validate setup results](../../docs/make/rtorrent.md#3-validate-setup-results)
+     - [4) Tune runtime settings from the UI](../../docs/make/rtorrent.md#4-tune-runtime-settings-from-the-ui)
+     - [5) Configure router forwarding](../../docs/make/rtorrent.md#5-configure-router-forwarding)
+     - [6) Launch ruTorrent and verify connection](../../docs/make/rtorrent.md#6-launch-rutorrent-and-verify-connection)
+     - [Service does not start](../../docs/make/rtorrent.md#service-does-not-start)
+     - [Changes saved but not applied](../../docs/make/rtorrent.md#changes-saved-but-not-applied)
+     - [ruTorrent cannot connect to backend](../../docs/make/rtorrent.md#rutorrent-cannot-connect-to-backend)
+     - [Permission/path issues](../../docs/make/rtorrent.md#permissionpath-issues)
+
+  * **<u>Rush 1.7 (binary only) - DEPRECATED</u><a id='rush'></a>**<br>
+    GNU Rush is a Restricted User Shell, designed for sites providing limited remote access to their resources, such as, for example, savannah.gnu.org. Its main program, rush, is configured as a user login shell for users that are allowed only remote access to the machine. Using a flexible configuration file, GNU Rush gives administrator complete control over the command lines that users execute, and allows to tune the usage of system resources, such as virtual memory, CPU time, etc. on a per-user basis. http://puszcza.gnu.org.ua/software/rush/
+
+### S
+
+  * **<u>sablevm-sdk: sablevm 1.13 (binary only) - DEPRECATED</u><a id='sablevm-sdk'></a>**<br>
+    SableVM is a robust, extremely portable, efficient, and specifications-compliant Java virtual machine that aims to be easy to maintain and to extend. It features a state-of-the-art and efficient interpreter engine. Its source code is very accessible and easy to understand. It also has many robustness features that have been the object of careful design.
+
+  * **[Samba 3.0.37/3.6.25 - DEPRECATED](../../docs/make/samba.md)<a id='samba'></a>**<br>
+    The binary with smbd and nmbd needs about 1033 kB (uncompressed).
+     - [Include the Package in the Image](../../docs/make/samba.md#include-the-package-in-the-image)
+     - [Related Topics](../../docs/make/samba.md#related-topics)
+     - [Configuring the Package](../../docs/make/samba.md#configuring-the-package)
+     - [AVM Configuration](../../docs/make/samba.md#avm-configuration)
+     - [Freetz Configuration](../../docs/make/samba.md#freetz-configuration)
+
+  * **[Screen 4.9.1/5.0.1](../../docs/make/screen.md)<a id='screen'></a>**<br>
+    Screen is a full-screen window manager that multiplexes a physical terminal between several processes, typically interactive shells. Each virtual terminal provides the functions of the DEC VT100 terminal and, in addition, several control functions from the ANSI X3.64 (ISO 6429) and ISO 2022 standards (e.g., insert/delete line and support for multiple character sets). There is a scrollback history buffer for each virtual terminal and a copy-and-paste mechanism that allows the user to move text regions between windows. When screen is called, it creates a single window with a shell in it (or the specified command) and then gets out of your way so that you can use the program as you normally would. Then, at any time, you can create new (full-screen) windows with other programs in them (including more shells), kill the current window, view a list of the active windows, turn output logging on and off, copy text between windows, view the scrollback history, switch between windows, etc. All windows run their programs completely independent of each other. Programs continue to run when their window is currently not visible and even when the whole screen session is detached from the users terminal.
+     - [Usage](../../docs/make/screen.md#usage)
+     - [Detach](../../docs/make/screen.md#detach)
+     - [Attach](../../docs/make/screen.md#attach)
+     - [PuTTY Tip: Prevent Window Width Changes When Starting Screen](../../docs/make/screen.md#putty-tip-prevent-window-width-changes-when-starting-screen)
+
+  * **[ser2net 3.5.4 - DEPRECATED](../../docs/make/ser2net.md)<a id='ser2net'></a>**<br>
+    Ser2net is a program for allowing network connections to serial ports. It supports RFC 2217 (remote control of serial port parameters), but you must have a complient client.
+
+  * **[SFK 2.0.0.3](../../docs/make/sfk.md)<a id='sfk'></a>**<br>
+    Swiss File Knife - A Command Line Tools Collection This packages provides the freeware version of SFK, see http://stahlworks.com/dev/swiss-file-knife.html for further information
+
+  * **<u>sg3_utils 1.26 (binary only) - DEPRECATED</u><a id='sg3-utils'></a>**<br>
+    The sg3_utils package contains utilities that send SCSI commands to devices. As well as devices on transports traditionally associated with SCSI (e.g. Fibre Channel (FCP), Serial Attached SCSI (SAS) and the SCSI Parallel Interface(SPI)) many other devices use SCSI command sets. ATAPI cd/dvd drives and SATA disks that connect via a translation layer or a bridge device are examples of devices that use SCSI command sets. This package is primarly used by the spindown cgi package. Note also that currently only sg_start is built and used, other tools may follow as needed.
+
+  * **[shellinabox 2.21](../../docs/make/shellinabox.md)<a id='shellinabox'></a>**<br>
+    Shell In A Box implements a web server that can export arbitrary command line tools to a web based terminal emulator. This emulator is accessible to any JavaScript and CSS enabled web browser and does not require any additional browser plugins.
+     - [Notes (2024-02-05 - tested with FritzBox firmware 154.07.57 and Shell-In-A-Box v2.21)](../../docs/make/shellinabox.md#notes-2024-02-05---tested-with-fritzbox-firmware-1540757-and-shell-in-a-box-v221)
+
+  * **[siproxd 0.8.1 - DEPRECATED](../../docs/make/siproxd.md)<a id='siproxd'></a>**<br>
+    Siproxd is a proxy/masquerading daemon for the SIP protocol. See http://siproxd.sourceforge.net for more information.
+
+  * **[sispmctl 3.1 - DEPRECATED](../../docs/make/sispmctl.md)<a id='sispmctl'></a>**<br>
+    sispmctl is an application enabling the use of the GEMBIRD SiS-PM (sispm) USB-controlled power-outlet device under Linux. Note that the device is also sold under different names, i.e. as "IntelliPlug" in Germany.
+     - [Limitation](../../docs/make/sispmctl.md#limitation)
+     - [Usage](../../docs/make/sispmctl.md#usage)
+     - [Freetz Webinterface](../../docs/make/sispmctl.md#freetz-webinterface)
+     - [Space Required](../../docs/make/sispmctl.md#space-required)
+     - [manpage](../../docs/make/sispmctl.md#manpage)
+     - [Known Bugs](../../docs/make/sispmctl.md#known-bugs)
+     - [More Screenshots](../../docs/make/sispmctl.md#more-screenshots)
+
+  * **[slang: S-Lang 2.3.3 (binary only)](../../docs/make/slang.md)<a id='slang'></a>**<br>
+    S-Lang is a powerful interpreted language that may be embedded into an application to make the application extensible. Note: at the moment this options causes only libslang to be included in the image, i.e. S-Lang shell support is disabled.
+
+  * **<u>Slurm 0.3.3 (binary only) - DEPRECATED</u><a id='slurm'></a>**<br>
+    slurm - yet another network load monitor slurm started as a FreeBSD port of the Linux ppp link monitor called pppstatus by Gabriel Montenegro. features: - "realtime" traffic statistics - three graph modes: combined RX and TX and two split views - can monitor any network device - curses ascii graphics
+
+  * **[smstools3 3.1.21](../../docs/make/smstools3.md)<a id='smstools3'></a>**<br>
+    The SMS Server Tools 3 is a SMS Gateway software which can send and receive short messages through GSM modems and mobile phones. This is the enhanced version 3.x maintained by Mr. Keijo "Keke" Kasvi. WWW: http://smstools3.kekekasvi.com
+     - [Data Directory](../../docs/make/smstools3.md#data-directory)
+     - [Sending and Receiving from the Terminal](../../docs/make/smstools3.md#sending-and-receiving-from-the-terminal)
+     - [Event-Handler](../../docs/make/smstools3.md#event-handler)
+     - [Miscellaneous](../../docs/make/smstools3.md#miscellaneous)
+
+  * **<u>smusbutil 1.1 (binary only)</u><a id='smusbutil'></a>**<br>
+    Linux software for setting up the frequency and resetpolarity on WB Electronics ftdi devices. This utility is written and maintained by Carsten Sprung. WB Electronics does not currently provide official support for Linux, please contact the author directly for any support issues.
+
+  * **[socat 1.8.1.1 (binary only)](../../docs/make/socat.md)<a id='socat'></a>**<br>
+    socat is an extended netcat-like utility
+
+  * **<u>spawn-fcgi 1.6.3 (binary only) - DEPRECATED</u><a id='spawn-fcgi'></a>**<br>
+    Spawns FastCGI processes
+
+  * **[SQLite 3.40.1/3.47.1/3.53.0 (binary only)](../../docs/make/sqlite.md)<a id='sqlite'></a>**<br>
+    SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
+
+  * **<u>squashfs3: squashfs-tools 3.4</u><a id='squashfs3'></a>**<br>
+    mksquashfs and unsquashfs are small utilities to handle (inspect and create) SquashFS formatted filesystem images.
+
+  * **<u>squashfs4-be: squashfs-tools 4.3 (AVM-BE)</u><a id='squashfs4-be'></a>**<br>
+    This package provides unsquashfs/mksquashfs utilities modified to be able to expand/create images in AVM-BE format. AVM-BE is not an official name, it's a name given by the user community to a non-standard SquashFS format used by AVM since Fritz!OS Labor 6.35 - ths first kernel 3.10.73 based Fritz!OS version.
+
+  * **<u>squashfs4-le: squashfs-tools 4.3 (AVM-LE)</u><a id='squashfs4-le'></a>**<br>
+    This package provides unsquashfs/mksquashfs utilities modified to be able to expand/create images in AVM-LE format. AVM-LE is the format used by AVM to pack the filesystem of some cable boxes, e.g. 6490, 6590 (x86 core only). The only difference of this format to the original LE format is that the value of the mkfs_time superblock field is equal to the bytes_used field.
+
+  * **<u>sshfs-fuse 2.4 (binary only) - DEPRECATED</u><a id='sshfs-fuse'></a>**<br>
+    This is a filesystem client based on the SSH File Transfer Protocol. Since most SSH servers already support this protocol it is very easy to set up: i.e. on the server side there's nothing to do. On the client side mounting the filesystem is as easy as logging into the server with ssh.
+
+  * **[sslh 2.2.4/2.3.1](../../docs/make/sslh.md)<a id='sslh'></a>**<br>
+    sslh accepts HTTPS, SSH and OpenVPN connections on the same port. This makes it possible to connect to an SSH server or an OpenVPN on port 443 (e.g. from inside a corporate firewall, which almost never block port 443) while still serving HTTPS on that port.
+
+  * **[Streamripper 1.64.6 - DEPRECATED](../../docs/make/streamripper.md)<a id='streamripper'></a>**<br>
+    Streamripper records mp3 and ogg streams. For shoutcast style streams it finds the "meta data" or track separation data, and uses that as a marker for where the track should be separated.
+     - [Libraries Used](../../docs/make/streamripper.md#libraries-used)
+
+  * **[Stunnel 5.78](../../docs/make/stunnel.md)<a id='stunnel'></a>**<br>
+    Stunnel universal SSL proxy
+     - [Configuration](../../docs/make/stunnel.md#configuration)
+     - [Advanced](../../docs/make/stunnel.md#advanced)
+
+  * **[Subversion 1.9.12/1.14.5](../../docs/make/subversion.md)<a id='subversion'></a>**<br>
+    Subversion, also known as svn, is a version control system much like the Concurrent Versions System (CVS). Version control systems allow many individuals (who may be distributed geographically) to collaborate on a set of files (typically source code). Subversion has all the major features of CVS, plus certain new features that CVS users often wish they had.
+     - [Included Program Components](../../docs/make/subversion.md#included-program-components)
+     - [WebIF](../../docs/make/subversion.md#webif)
+     - [Configuration](../../docs/make/subversion.md#configuration)
+
+  * **[Sudo 1.9.17p2 (binary only)](../../docs/make/sudo.md)<a id='sudo'></a>**<br>
+    Sudo (su "do") allows a system administrator to delegate authority to give certain users (or groups of users) the ability to run some (or all) commands as root or another user while providing an audit trail of the commands and their arguments.
+
+  * **[Sundtek DVB driver 130210.134617/170310.204343/210803.071224 - DEPRECATED](../../docs/make/sundtek.md)<a id='sundtek'></a>**<br>
+    Sundtek closed-source linux driver daemon & client. To use this driver you have to run: export LD_PRELOAD=/usr/lib/libsundtekmediaclient.so
+     - [Parameters for 'mediaclient'](../../docs/make/sundtek.md#parameters-for-mediaclient)
+     - [Using the Driver](../../docs/make/sundtek.md#using-the-driver)
+     - [Initializing the USB Stick](../../docs/make/sundtek.md#initializing-the-usb-stick)
+     - [Miscellaneous](../../docs/make/sundtek.md#miscellaneous)
+
+  * **<u>sundtek-rtspd: Include Sundtek Streaming Server (rtspd) - DEPRECATED</u><a id='sundtek-rtspd'></a>**<br>
+    Download the latest version of rtspd each time Freetz is built.
+
+  * **<u>SynCE dccm 0.9.1 - DEPRECATED</u><a id='synce-dccm'></a>**<br>
+    SynCE is a framework to sync WinCE devices
+
+  * **<u>SynCE serial 0.10.0 (binary only) - DEPRECATED</u><a id='synce-serial'></a>**<br>
+    SynCE is a framework to sync WinCE devices
+
+### T
+
+  * **[tcp_wrappers 7.6 (binary only) - DEPRECATED](../../docs/make/tcp_wrappers.md)<a id='tcp-wrappers'></a>**<br>
+    TCP Wrapper is a host-based Networking ACL system, used to filter network access to Internet Protocol servers on (Unix-like) operating systems such as Linux or BSD. It allows host or subnetwork IP addresses, names and/or ident query replies, to be used as tokens on which to filter for access control purposes.
+
+  * **[tcpdump 4.1.1/4.99.6 (binary only)](../../docs/make/tcpdump.md)<a id='tcpdump'></a>**<br>
+    Network monitoring and data acquisition tool
+     - [Warning](../../docs/make/tcpdump.md#warning)
+
+  * **<u>tcpproxy 2.0.0-beta15 (binary only) - DEPRECATED</u><a id='tcpproxy'></a>**<br>
+    tcpproxy is a proxy (or tunnel or redirector) for TCP/IP protocols. In standalone mode it waits for incoming connections forwarding them to another machine or starting a local server program.
+
+  * **<u>Tesseract OCR 3.02.02 (binary only)</u><a id='tesseract'></a>**<br>
+    Tesseract is an Open Source OCR engine Note: Tesseract including languages files is a huge package and requires a lot of RAM at run-time. It is NOT recommended to use it on boxes having less than 64MB RAM.
+
+  * **[tflite-micro (TensorFlow Lite for Microcontrollers)](../../docs/make/tflite-micro.md)<a id='tflite-micro'></a>**<br>
+    TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow Lite designed to run ML inference on resource-constrained devices. This package cross-compiles TFLM into a static library (libtflm.a) and installs the public headers into the staging area so that other packages can link against it. The build uses the official project-generation script (create_tflm_tree.py) to produce a self-contained source tree, then compiles it with the freetz cross-toolchain (C++17 required). Requires Python 3 on the build host. Homepage:  https://github.com/tensorflow/tflite-micro Reference: https://www.tensorflow.org/lite/microcontrollers
+
+  * **<u>tichksum: TI chksum 1.0</u><a id='tichksum'></a>**<br>
+
+  * **<u>TIFF utils 4.0.7 (binary only) - DEPRECATED</u><a id='tiff'></a>**<br>
+    Various utilities to manupulate/convert images to/from TIFF format.
+
+  * **[tinc 1.0.37/1.1pre18](../../docs/make/tinc.md)<a id='tinc'></a>**<br>
+    Tinc is a Virtual Private Network (VPN) daemon that uses tunneling and encryption to create a secure private network between hosts on the Internet.
+     - [Features](../../docs/make/tinc.md#features)
+     - [Libraries Used](../../docs/make/tinc.md#libraries-used)
+
+  * **[Tinyproxy 1.11.3](../../docs/make/tinyproxy.md)<a id='tinyproxy'></a>**<br>
+    Tinyproxy is a lightweight HTTP and HTTPS proxy.
+     - [Proxy auto-config (pac)](../../docs/make/tinyproxy.md#proxy-auto-config-pac)
+     - [URL blocking](../../docs/make/tinyproxy.md#url-blocking)
+     - [Memory usage](../../docs/make/tinyproxy.md#memory-usage)
+
+  * **[tmux 3.6a (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
+    tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
+
+  * **[Tor 0.4.8.25](../../docs/make/tor.md)<a id='tor'></a>**<br>
+    The Onion Router Anonymous Internet communication system.
+     - [Use Tor as a Proxy](../../docs/make/tor.md#use-tor-as-a-proxy)
+     - [Tor and Privoxy](../../docs/make/tor.md#tor-and-privoxy)
+     - [Installation](../../docs/make/tor.md#installation)
+     - [Optimize Speed](../../docs/make/tor.md#optimize-speed)
+     - [Set Up Tor as a Server](../../docs/make/tor.md#set-up-tor-as-a-server)
+     - [Remote Control](../../docs/make/tor.md#remote-control)
+     - [obfsproxy](../../docs/make/tor.md#obfsproxy)
+     - [Memory Usage](../../docs/make/tor.md#memory-usage)
+     - [Dependencies](../../docs/make/tor.md#dependencies)
+     - [Discussion](../../docs/make/tor.md#discussion)
+
+  * **[tput (ncurses terminal control)](../../docs/make/tput.md)<a id='tput'></a>**<br>
+    tput is a command-line utility from the ncurses package that queries the terminfo database to provide terminal-dependent capabilities (e.g. clear screen, set colors, get terminal size). Common uses: tput cols     - number of columns tput lines    - number of lines tput clear    - clear screen tput bold     - enable bold tput sgr0     - reset attributes https://invisible-island.net/ncurses/
+
+  * **[Transmission 3.00/4.1.1 (binary only)](../../docs/make/transmission.md)<a id='transmission'></a>**<br>
+    If needed, remember to change the base directory as well as the installation directory on the webif.
+     - [Blocklist](../../docs/make/transmission.md#blocklist)
+     - [Number of peers](../../docs/make/transmission.md#number-of-peers)
+     - [Memory usage](../../docs/make/transmission.md#memory-usage)
+     - [Limit memory usage](../../docs/make/transmission.md#limit-memory-usage)
+     - [Watchdog](../../docs/make/transmission.md#watchdog)
+
+  * **[Tree 1.8.0/2.3.2 (binary only)](../../docs/make/tree.md)<a id='tree'></a>**<br>
+    Tree is a recursive directory listing program that produces a depth indented listing of files, which is colorized ala dircolors if the LS_COLORS environment variable is set and output is to tty.
+
+  * **[trickle 1.07 (binary only) - DEPRECATED](../../docs/make/trickle.md)<a id='trickle'></a>**<br>
+    trickle is a simple and portable lightweight userspace bandwidth shaper, to rate limit the TCP connections of a given process or group of processes. It can run in collaborative mode (together with trickled) or in stand alone mode. trickle works by taking advantage of the unix loader preloading. Essentially it provides to the application, a new version of the functionality that is required to send and receive data through sockets. It then limits traffic based on delaying the sending and receiving of data over a socket. trickle runs entirely in userspace and does not require root privileges. *** Does NOT support statically linked executables!! WWW: http://monkey.org/~marius/trickle/
+     - [Syntax](../../docs/make/trickle.md#syntax)
+     - [Examples for Using trickle](../../docs/make/trickle.md#examples-for-using-trickle)
+
+  * **[ttyd 1.7.7](../../docs/make/ttyd.md)<a id='ttyd'></a>**<br>
+    ttyd is a simple command-line tool for sharing a terminal over the web. Powered by libwebsockets with an embedded xterm.js terminal frontend. The web interface is embedded in the CGI control page of this package and connects to the ttyd WebSocket server. Access: http://fritz.box:81/cgi-bin/conf/ttyd ttyd WebSocket: http://fritz.box:7681/ Project homepage: https://github.com/tsl0922/ttyd
+
+### U
+
+  * **<u>udpxy 1.0.23-9 (binary only) - DEPRECATED</u><a id='udpxy'></a>**<br>
+    Small-footprint UNIX/Linux daemon to relay multicast UDP traffic to client's TCP (HTTP) connection.
+
+  * **[uMurmur 0.2.20/0.3.1](../../docs/make/umurmur.md)<a id='umurmur'></a>**<br>
+    umurmur is a minimalistic Mumble server primarily targeted to run on routers using less resources. It targets to fill the needs of a pretty small group of users communicating, which in part originates from the other goal of working well on a small system with a limited CPU and limited amount of disk space. It also aims to minimize writing to the disk since these kinds of systems usually only has a flash memory for disk. umurmur supports a subset of the features of Murmur. https://github.com/umurmur/umurmur
+
+  * **[Unbound 1.25.0](../../docs/make/unbound.md)<a id='unbound'></a>**<br>
+    Unbound is designed as a set of modular components, so that also DNSSEC (secure DNS) validation and stub-resolvers (that do not run as a server, but are linked into an application) are easily possible.
+
+  * **[UNFS3 0.9.23 - DEPRECATED](../../docs/make/unfs3.md)<a id='unfs3'></a>**<br>
+    Userspace NFS v3 Server.
+
+  * **[UnRAR 6.1.7/7.2.5 (binary only)](../../docs/make/unrar.md)<a id='unrar'></a>**<br>
+    Unarchiver for .rar files
+
+  * **[usbids: usb.ids 635738b64e](../../docs/make/usbids.md)<a id='usbids'></a>**<br>
+    This package provides up-to-date version of the usb.ids file needed by many usb related packages.
+
+  * **[uvncrepeater: UltraVNC Repeater 014 - DEPRECATED](../../docs/make/uvncrepeater.md)<a id='uvncrepeater'></a>**<br>
+    UltraVNC Repeater has two unique functions: Mode 1: Allows for connection to multiple servers (in listen mode), using only one port. All connection data flows through the repeater, allowing connection to multiple servers through a single port forward or tunnel. Mode 2: Allows both a Viewer and Server to connect together using the repeater as a PROXY. All connection data flows through the repeater, allowing both the server and viewer to be behind firewalls or routers.
+
+### V
+
+  * **[vhs 0.11.0 (binary only)](../../docs/make/vhs.md)<a id='vhs'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the vhs executable on the target. Can be externalized to save flash memory.
+
+  * **[Vim 9.2.0000 (binary only)](../../docs/make/vim.md)<a id='vim'></a>**<br>
+    An improved version of VI
+
+  * **[Virtualip-NG - EXPERIMENTAL](../../docs/make/virtualip-ng.md)<a id='virtualip-ng'></a>**<br>
+    Creates one or more virtual IPv4/IPv6 addresses on selected interfaces. This package is a maintained NG variant derived from the former virtualip-cgi module and provides a web configuration page for interface, IP/netmask-or-prefix entries, autostart and timing controls. See docs/make/virtualip-ng.md for more hints.
+     - [Overview](../../docs/make/virtualip-ng.md#overview)
+     - [What it does](../../docs/make/virtualip-ng.md#what-it-does)
+     - [IPv6 support](../../docs/make/virtualip-ng.md#ipv6-support)
+     - [Capabilities](../../docs/make/virtualip-ng.md#capabilities)
+     - [Configuration format](../../docs/make/virtualip-ng.md#configuration-format)
+     - [Notes](../../docs/make/virtualip-ng.md#notes)
+     - [WebUI notes](../../docs/make/virtualip-ng.md#webui-notes)
+     - [Operational notes](../../docs/make/virtualip-ng.md#operational-notes)
+
+  * **[VLMCSD svn1113](../../docs/make/vlmcsd.md)<a id='vlmcsd'></a>**<br>
+    vlmcsd is a fully Microsoft compatible KMS server hat provides product activation services to clients. It is designed to run on POSIX compatible operating systens. Only requirements are a basic C library with a BSD-style sockets API and either fork(2) or pthreads(7). That allows it to run on most embedded systems like routers, NASes, etc.
+
+  * **[vnStat 1.18 (binary only) - DEPRECATED](../../docs/make/vnstat.md)<a id='vnstat'></a>**<br>
+    vnStat is a console-based network traffic monitor. It keeps a log of hourly, daily and monthly network traffic for the selected interface(s). However, it isn't a packet sniffer. The traffic information is analyzed from the proc(5) filesystem. That way vnStat can be used even without root permissions.
+
+  * **[Vpnc 0.5.3 - DEPRECATED](../../docs/make/vpnc.md)<a id='vpnc'></a>**<br>
+    Cisco IPSec VPN Client
+
+  * **[vsftpd 3.0.5](../../docs/make/vsftpd.md)<a id='vsftpd'></a>**<br>
+    A fast and secure FTP server
+     - [Known Problems](../../docs/make/vsftpd.md#known-problems)
+     - [Including the Package in the Image](../../docs/make/vsftpd.md#including-the-package-in-the-image)
+     - [Related Topics](../../docs/make/vsftpd.md#related-topics)
+     - [Setting Up Shares and Users for vsFTP in Freetz](../../docs/make/vsftpd.md#setting-up-shares-and-users-for-vsftp-in-freetz)
+     - [Changing the vsftpd Login Screen](../../docs/make/vsftpd.md#changing-the-vsftpd-login-screen)
+
+  * **[VTun 3.0.4 - DEPRECATED](../../docs/make/vtun.md)<a id='vtun'></a>**<br>
+    Virtual tunnel client and server
+     - [Version](../../docs/make/vtun.md#version)
+     - [Configuration Guide](../../docs/make/vtun.md#configuration-guide)
+     - [Port Forwarding](../../docs/make/vtun.md#port-forwarding)
+
+### W
+
+  * **[wavemon 0.9.7 (binary only)](../../docs/make/wavemon.md)<a id='wavemon'></a>**<br>
+    wavemon is an ncurses-based wireless device monitoring application.
+
+  * **[Wget 1.25.0 (binary only)](../../docs/make/wget.md)<a id='wget'></a>**<br>
+    GNU Wget is a free software package for retrieving files using HTTP, HTTPS and FTP, the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals, etc.
+
+  * **[Whois 5.6.6 (binary only)](../../docs/make/whois.md)<a id='whois'></a>**<br>
+    Whois - client for the whois directory service.
+
+  * **[wireguard-tools 1.0.20260223](../../docs/make/wireguard.md)<a id='wireguard'></a>**<br>
+    WireGuard is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPSec, while avoiding the massive headache. It intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it plans to be cross-platform and widely deployable. It is currently under heavy development, but already it might be regarded as the most secure, easiest to use, and simplest VPN solution in the industry.
+     - [Notes](../../docs/make/wireguard.md#notes)
+     - [Throughput](../../docs/make/wireguard.md#throughput)
+     - [Creating a Configuration for a Wireguard Server on the Fritzbox with a PC](../../docs/make/wireguard.md#creating-a-configuration-for-a-wireguard-server-on-the-fritzbox-with-a-pc)
+
+  * **[wireguard-linux-compat 1.0.20220627](../../docs/make/wireguard-linux-compat.md)<a id='wireguard-linux-compat'></a>**<br>
+    This package provides the kernel module required for Wireguard
+
+  * **[WOL 0.7.1 (binary only) - DEPRECATED](../../docs/make/wol.md)<a id='wol'></a>**<br>
+    Simple Wake-On-Lan utility to wake up Magic-Packet-compliant hardware.
+     - [Wake on LAN Web Interface (wol-cgi)](../../docs/make/wol.md#wake-on-lan-web-interface-wol-cgi)
+     - [Configuration on the Fritzbox](../../docs/make/wol.md#configuration-on-the-fritzbox)
+
+  * **[wput 0.6.2 (binary only) - DEPRECATED](../../docs/make/wput.md)<a id='wput'></a>**<br>
+    Wput is a command-line ftp-client that looks like wget but instead of downloading, uploads files or whole directories to remote ftp-servers.
+
+### X
+
+  * **[XMail 1.27 - DEPRECATED](../../docs/make/xmail.md)<a id='xmail'></a>**<br>
+    XMail is an Internet and Intranet mail server featuring an SMTP server, POP3 server, finger server, multiple domains, no need for users to have a real system account, SMTP relay checking, RBL/RSS/ORBS/DUL and custom (IP based and address based) spam protection, SMTP authentication (PLAIN LOGIN CRAM-MD5 POP3-before-SMTP and custom), a POP3 account synchronizer with external POP3 accounts, account aliases, domain aliases, custom mail processing, direct mail files delivery, custom mail filters, mailing lists, remote administration, custom mail exchangers, logging, and multi-platform code.
+
+  * **<u>Xpdf 3.04 (binary only) - DEPRECATED</u><a id='xpdf'></a>**<br>
+    Xpdf is an open source viewer for Portable Document Format (PDF) files. (These are also sometimes also called 'Acrobat' files, from the name of Adobe's PDF software.) The Xpdf project also includes a PDF text extractor, PDF-to-PostScript converter, and various other utilities. This packages includes only the non-X utilities.
+
+  * **[Xrelayd 0.2.1pre2 - DEPRECATED](../../docs/make/xrelayd.md)<a id='xrelayd'></a>**<br>
+    SSL tunnel based on PolarSSL. Xrelayd is a stripped down version of stunnel based on PolarSSL library. Essentially, this package makes your router's websrv or httpd SSL-enabled, offering you the option of remote configuration via WWW or secure remote use of features like Rudi-Shell.
+     - [Configuration](../../docs/make/xrelayd.md#configuration)
+     - [Creating Certificates on the Box](../../docs/make/xrelayd.md#creating-certificates-on-the-box)
+
+  * **[xsltproc 1.1.45 (binary only)](../../docs/make/xsltproc.md)<a id='xsltproc'></a>**<br>
+    xsltproc is a command line tool for applying XSLT stylesheets to XML documents. It is part of libxslt, the XSLT C library for GNOME. While it was developed as part of the GNOME project, it can operate independently of the GNOME desktop.
+
+  * **[XZ 5.8.3 (binary only)](../../docs/make/xz.md)<a id='xz'></a>**<br>
+    XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm compression format, which provides memory-hungry but powerful compression (often better than bzip2) and fast, easy decompression. This package provides the command line tools for working with XZ compression. They can also handle the older LZMA format, and if invoked via appropriate symlinks will emulate the behavior of the commands in the lzma package.
+
+### Y
+
+  * **[yq 4.53.2 (binary only)](../../docs/make/yq.md)<a id='yq'></a>**<br>
+    This package cross-compiles the upstream Go sources and installs the yq executable on the target. Can be externalized to save flash memory.
+
+# Audio
+
+  * **[alsa-utils 1.2.13](../../docs/make/alsa-utils.md)<a id='alsa-utils'></a>**<br>
+    alsactl and speaker-test.
+
+  * **[alsaequal 0.7.1](../../docs/make/alsaequal.md)<a id='alsaequal'></a>**<br>
+    devices, so it can be configured with regular ALSA mixer tools. At runtime it expects a LADSPA plugin library such as CAPS Eq10.
+
+  * **[cmus 2.11.0](../../docs/make/cmus.md)<a id='cmus'></a>**<br>
+    This build enables ALSA output together with MP3, FLAC and Vorbis playback support.
+
+  * **[go-librespot 0.7.1 (binary only)](../../docs/make/go-librespot.md)<a id='go-librespot'></a>**<br>
+    This package cross-compiles the upstream Go daemon sources with CGO and installs the go-librespot executable on the target. Can be externalized to save flash memory.
+
+  * **[MPD 0.24.7](../../docs/make/mpd.md)<a id='mpd'></a>**<br>
+    This build enables the local database, TCP control interface, ALSA output and the MP3, FLAC and Vorbis decoders. Can be externalized to save flash memory.
+
+  * **[mpd-mpc: mpc 0.35 (MPD CLI client)](../../docs/make/mpd-mpc.md)<a id='mpd-mpc'></a>**<br>
+    It installs the `mpc` CLI and can be used with the local MPD package or any reachable MPD server. Can be externalized to save flash memory.
+
+  * **[myMPD 25.0.2](../../docs/make/mympd.md)<a id='mympd'></a>**<br>
+    This freetz build uses embedded web assets and embedded libmpdclient to keep the package self-contained. Can be externalized to save flash memory.
+
+  * **[shairport-sync 5.0.4](../../docs/make/shairport-sync.md)<a id='shairport-sync'></a>**<br>
+    This build enables the lightweight tinysvcmdns backend and metadata support for the Freetz status page.
+
+  * **[snapcast 0.35.0](../../docs/make/snapcast.md)<a id='snapcast'></a>**<br>
+    This Freetz build provides the upstream snapserver and snapclient binaries with ALSA output on the client side plus FLAC and Ogg/Vorbis codec support. mDNS discovery, Opus, PulseAudio, JACK, PipeWire, and SDL2 are disabled to keep the embedded footprint smaller. Can be externalized to save flash memory.
+
+# Data Migration and Disaster Recovery
+
+  * **[clonezilla 5.15.23 (script bundle)](../../docs/make/clonezilla.md)<a id='clonezilla'></a>**<br>
+    Clonezilla script bundle for disk/partition cloning workflows. This package installs DRBL/Clonezilla scripts under /usr/share/drbl and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly).
+
+  * **[ddrescue: GNU ddrescue 1.30 (gddrescue) (binary only)](../../docs/make/ddrescue.md)<a id='ddrescue'></a>**<br>
+    GNU ddrescue is a data recovery tool with mapfile support. This package installs ddrescue and ddrescuelog.
+
+  * **[fsarchiver 0.8.9 (binary only)](../../docs/make/fsarchiver.md)<a id='fsarchiver'></a>**<br>
+    fsarchiver is a filesystem archiver with restore capabilities. This package is built with conservative compression support (disabling lzma/lzo/lz4/zstd) to keep dependencies smaller.
+
+  * **[partclone 0.3.31 (binary only)](../../docs/make/partclone.md)<a id='partclone'></a>**<br>
+    Partclone provides block-level clone/restore/check tools. This package installs generic engines plus extended filesystem backends (extfs, xfs, ntfs, btrfs, exfat, f2fs, fat, minix, apfs, hfsp) and ncursesw support.
+
+  * **[udpcast 20250223 (binary only)](../../docs/make/udpcast.md)<a id='udpcast'></a>**<br>
+    udpcast is a multicast file transfer tool used by cloning workflows. This package installs udp-sender and udp-receiver.
+
+# Debug helpers
+
+  * **[autotools (autoconf) 2.72](../../docs/make/autotools.md)<a id='autotools'></a>**<br>
+    autoconf is a tool for producing configure scripts for building, installing and packaging software on computer systems where a Posix shell is available.
+
+  * **[binutils-tools: Binutils 2.46.0 (binary only)](../../docs/make/binutils-tools.md)<a id='binutils-tools'></a>**<br>
+    Collection of essential tools for analyzing and manipulating ELF binaries. Size of all binaries and libraries: ~1.5MB (uncompressed: ~4.5MB)
+     - [Inspecting Binaries](../../docs/make/binutils-tools.md#inspecting-binaries)
+     - [Debugging](../../docs/make/binutils-tools.md#debugging)
+     - [Binary Manipulation](../../docs/make/binutils-tools.md#binary-manipulation)
+     - [1. Debugging Crashes](../../docs/make/binutils-tools.md#1-debugging-crashes)
+     - [2. Analyzing Dependencies](../../docs/make/binutils-tools.md#2-analyzing-dependencies)
+     - [3. Fixing Dynamic Linker Issues](../../docs/make/binutils-tools.md#3-fixing-dynamic-linker-issues)
+     - [4. Reverse Engineering](../../docs/make/binutils-tools.md#4-reverse-engineering)
+     - [4. Reducing Binary Size](../../docs/make/binutils-tools.md#4-reducing-binary-size)
+
+  * **[file 5.47 (binary only)](../../docs/make/file.md)<a id='file'></a>**<br>
+    file - determine file type The file command is used to identify a particular file according to the type of data contained by the file. File can identify many different file types, including ELF binaries, system libraries, RPM packages, and many different graphics formats. This utility is essential for analyzing binaries and file formats on the target system, especially useful for debugging cross-compilation issues.
+
+  * **[gcc-toolchain: GCC (Native Compiler for On-Device Compilation)](../../docs/make/gcc-toolchain.md)<a id='gcc-toolchain'></a>**<br>
+    Install the GCC compiler on Fritz!Box for native compilation. Base installation includes: - gcc, g++, cpp (compilers) - ar, ranlib (archive tools from Binutils package)
+
+  * **[gdb GNU debugger 6.8/7.9.1/17.1 (binary only)](../../docs/make/gdb.md)<a id='gdb'></a>**<br>
+    Select the version of gdb you wish to use.
+
+  * **[inotify-tools 3.14 (binary only) - DEPRECATED](../../docs/make/inotify-tools.md)<a id='inotify-tools'></a>**<br>
+    inotify-tools - watch file and directory access inotify-tools is a C library and a set of command-line programs for Linux providing a simple interface to inotify. These programs can be used to monitor and act upon filesystem events. The programs are written in C and have no dependencies other than a Linux kernel supporting inotify. inotifywait This command simply blocks for inotify events, making it appropriate for use in shell scripts. It can watch any set of files and directories, and can recursively watch entire directory trees. inotifywatch inotifywatch collects filesystem usage statistics and outputs counts of each inotify event. Please read https://freetz.github.io/wiki/packages/inotify_tools for further details. Improper usage can lead to reboots.
+     - [Inotify and Inotify-Tools in General](../../docs/make/inotify-tools.md#inotify-and-inotify-tools-in-general)
+     - [Observe FritzBox File Accesses Starting at Boot](../../docs/make/inotify-tools.md#observe-fritzbox-file-accesses-starting-at-boot)
+     - [What Does rc.inotify_tools Log?](../../docs/make/inotify-tools.md#what-does-rcinotify-tools-log)
+     - [Output Format](../../docs/make/inotify-tools.md#output-format)
+     - [Consolidate the Log File Regularly to Save Space](../../docs/make/inotify-tools.md#consolidate-the-log-file-regularly-to-save-space)
+     - [Closing Word](../../docs/make/inotify-tools.md#closing-word)
+
+  * **[ldd 0.1/1.0.57 (binary only)](../../docs/make/ldd.md)<a id='ldd'></a>**<br>
+    ldd prints the shared libraries required by each program or shared library specified on the command line.
+
+  * **[lsof 4.89 (binary only) - DEPRECATED](../../docs/make/lsof.md)<a id='lsof'></a>**<br>
+    lsof (LiSt Open Files) The lsof tool lists information about files opened by processes.
+
+  * **[ltrace 0.7.3checkpoint1-git (binary only) - DEPRECATED](../../docs/make/ltrace.md)<a id='ltrace'></a>**<br>
+    ltrace - library call tracer ltrace is a debugging tool, similar to strace, but it traces library calls instead of system calls.
+
+  * **[Nano Shell 0.1 (binary only) - DEPRECATED](../../docs/make/nano-shell.md)<a id='nano-shell'></a>**<br>
+    Remotely execute arbitrary shell commands via URLs This tiny package enables both the AVM and Freetz web interfaces to execute user-specified commands and display their results and/or errors,
+     - [Security Notice](../../docs/make/nano-shell.md#security-notice)
+     - [Usage](../../docs/make/nano-shell.md#usage)
+
+  * **[PatchELF 0.18.0 (binary only)](../../docs/make/patchelf.md)<a id='patchelf'></a>**<br>
+    Modifies existing ELF executables and libraries. Can change the interpreter, RPATH, and other ELF metadata. Useful for modifying binaries to use different dynamic linker paths or library search paths (RPATH/RUNPATH).
+
+  * **[pciutils 3.1.7 (binary only) - DEPRECATED](../../docs/make/pciutils.md)<a id='pciutils'></a>**<br>
+    The PCI Utilities are a collection of programs for inspecting and manipulating configuration of PCI devices, all based on a common portable library libpci which offers access to the PCI configuration space on a variety of operating systems. lspci displays detailed information about all PCI buses and devices in the system. setpci allows reading from and writing to PCI device configuration registers. For example, you can adjust the latency timers with it.
+
+  * **[strace 4.9/5.0/6.19 (binary only)](../../docs/make/strace.md)<a id='strace'></a>**<br>
+    strace - trace system calls and signals strace is a system call tracer, i.e. a debugging tool which prints out a trace of all the system calls made by another process/program.
+     - [Tip: Avoiding "unfinished" and "resumed" in strace Logs](../../docs/make/strace.md#tip-avoiding-unfinished-and-resumed-in-strace-logs)
+
+  * **<u>target-tester - DEVELOPER</u><a id='target-tester'></a>**<br>
+    This package is intended to be used by freetz' developers only. It allows to compile and run configure-tests which need to be run on target in a less complicated way (compared to completely manual one). Note: Simply modify target-tester.c or replace it with code taken from configure script.
+
+  * **[usbutils 007 (binary only) - DEPRECATED](../../docs/make/usbutils.md)<a id='usbutils'></a>**<br>
+    USB devices listing utilities To avoid name conflicts with AVM's lsusb the binary is renamed to lsusb-freetz.
+
+  * **[Valgrind 3.27.0](../../docs/make/valgrind.md)<a id='valgrind'></a>**<br>
+    This package installs the core Valgrind executables and the runtime payload under /usr/lib/valgrind. Helper scripts requiring perl or python3 on the target are omitted.
+
+  * **<u>vermagic D1W0U (binary only)</u><a id='vermagic'></a>**<br>
+    A tool dump .modinfo section and set vermagic variable of Linux Kernel Modules. It also supports (not tested) CRC dump and changes, including the vermagic string. The original work is from here: https://github.com/fanfuqiang/vc The extended code of this tool: https://github.com/D1W0U/vermagic
+
+# Disk Tools
+
+  * **[dosfstools 4.2 (binary only)](../../docs/make/dosfstools.md)<a id='dosfstools'></a>**<br>
+    utilities to create, check and label MS-DOS FAT filesystems
+
+  * **[E2fsprogs 1.47.4 (binary only)](../../docs/make/e2fsprogs.md)<a id='e2fsprogs'></a>**<br>
+    This package contains essential ext2, ext3 and ext4 filesystem utilities which consists of e2fsck, mke2fs, debugfs, dumpe2fs, tune2fs, and most of the other core ext2 filesystem utilities. Homepage: http://e2fsprogs.sourceforge.net/
+
+  * **[exfatprogs 1.3.2 (binary only)](../../docs/make/exfatprogs.md)<a id='exfatprogs'></a>**<br>
+    exFAT userspace tools for create/check/label operations. Provides mkfs.exfat, fsck.exfat, exfatlabel and tune.exfat.
+
+  * **<u>f2fs-tools 1.9.0 (binary only)</u><a id='f2fs-tools'></a>**<br>
+    Userspace tools to create, check and manage F2FS (Flash-Friendly File System) filesystems. Provides mkfs.f2fs and fsck.f2fs (v1.9.0).
+
+  * **[fatresize 2026-04-03 snapshot (master, binary only)](../../docs/make/fatresize.md)<a id='fatresize'></a>**<br>
+    Resize FAT partitions using libparted.
+
+  * **[fstyp 0.1 (binary only) - DEPRECATED](../../docs/make/fstyp.md)<a id='fstyp'></a>**<br>
+    fstyp can be used to heuristically detect which filesystem type a block device contains.
+
+  * **[gptfdisk 1.0.10 (gdisk)](../../docs/make/gptfdisk.md)<a id='gptfdisk'></a>**<br>
+    Interactive GUID partition table (GPT) manipulator
+
+  * **[hdparm 9.65 (binary only)](../../docs/make/hdparm.md)<a id='hdparm'></a>**<br>
+    Hdparm can be used to show and set parameters of ATA-drives (e.g. hard disk drives).
+
+  * **[NTFS-3G 2022.10.3 (binary only)](../../docs/make/ntfs.md)<a id='ntfs'></a>**<br>
+    The NTFS-3G userspace stack is an open source, freely available read/write NTFS driver for Linux, FreeBSD, OS X, and NetBSD. It provides safe and fast handling of the Windows XP, Windows Server 2003, Windows 2000 and Windows Vista file systems. Most POSIX file system operations are supported, with the exception of full file ownership and access right support.
+
+  * **[parted 3.6 (binary only)](../../docs/make/parted.md)<a id='parted'></a>**<br>
+    GNU Parted is a disk partition editor. This package is linked with jemalloc to reduce allocator-related crashes observed on some target combinations.
+
+  * **[Smartmontools 7.5](../../docs/make/smartmontools.md)<a id='smartmontools'></a>**<br>
+    Smartmontools contains utility programs (smartctl, smartd) to control/monitor storage systems using the Self-Monitoring, Analysis and Reporting Technology System (S.M.A.R.T.) built into most modern ATA and SCSI disks. It is derived from smartsuite.
+
+  * **[testdisk 7.2](../../docs/make/testdisk.md)<a id='testdisk'></a>**<br>
+    TestDisk is a powerful data recovery tool designed to recover lost partitions and repair non-booting disks caused by software faults or accidental deletion of the partition table. PhotoRec is a companion tool focused on file data recovery, supporting over 480 file extensions. fidentify uses PhotoRec's signature database to identify file types from raw data. TestDisk and PhotoRec provide an ncurses TUI and are intended for use over SSH on the FRITZ!Box. Project home: https://www.cgsecurity.org/wiki/TestDisk GitHub:       https://github.com/cgsecurity/testdisk These are large binaries; can be externalized to save flash memory.
+
+  * **[util-linux (Linux disk utilities)](../../docs/make/util-linux.md)<a id='util-linux'></a>**<br>
+    Provides essential disk and block device utilities from util-linux project.
+     - [Version 2.27.1 (Legacy)](../../docs/make/util-linux.md#version-2271-legacy)
+     - [Version 2.41 (Modern)](../../docs/make/util-linux.md#version-241-modern)
+     - [Selection Rules:](../../docs/make/util-linux.md#selection-rules)
+     - [Version 2.41 Patches](../../docs/make/util-linux.md#version-241-patches)
+     - [Version 2.27.1 Patches](../../docs/make/util-linux.md#version-2271-patches)
+
+# Unstable
+
+  * **<u>Asterisk 11.25.3 - DEPRECATED</u><a id='asterisk'></a>**<br>
+    Asterisk is an open source framework for building communications applications.
+
+  * **<u>axtlswrap: axTLS wrapper 2.1.3 (binary only) - DEPRECATED</u><a id='axtlswrap'></a>**<br>
+
+  * **[Collectd 4.10.3 - DEPRECATED](../../docs/make/collectd.md)<a id='collectd'></a>**<br>
+    Collectd collects information about the system it is running on and stores this information. The information can then be used to do find current performance bottlenecks (i. e. performance analysis) and predict future system load (i. e. capacity planning). Or if you just want pretty graphs of your private server and are fed up with some homegrown solution you're at the right place, too.
+
+  * **[hp-utils 0.3.2 - DEPRECATED](../../docs/make/hp-utils.md)<a id='hp-utils'></a>**<br>
+    hp-utils is a collection of utility programs for HP printers. It's meant to be used on systems, which are unable to run the corresponding programs provided by HPLIP, e.g. because they only have limited memory and/or cpu power. hp-utils is primarily focused towards embedded systems, particularly towards the FRITZ!Box, a family of DSL routers produced by AVM.
+
+  * **[HPLIP 3.14.6 (binary only) - DEPRECATED](../../docs/make/hplip.md)<a id='hplip'></a>**<br>
+    HPLIP - HP Linux Imaging and Printing
+
+  * **[Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13 (binary only)](../../docs/make/iptables.md)<a id='iptables'></a>**<br>
+    Netfilter/iptables Netfilter is the set of hooks within the Linux kernel for intercepting and manipulating network packets. The best-known component on top of netfilter is the firewall which filters packets, but the hooks are also used by a component which performs network address translation, and by another which provides ipchains backwards compatibility. These components are usually Loadable Kernel Modules. iptables is the name of the user space tool by which administrators create rules for the packet filtering and NAT modules. While technically iptables is merely the tool which controls the packet filtering and NAT components within the kernel, the name iptables is often used to refer to the entire infrastructure, including netfilter, connection tracking and NAT, as well as the tool itself. iptables is a standard part of all modern Linux distributions.
+     - [Current state (largely broken)](../../docs/make/iptables.md#current-state-largely-broken)
+     - [What is iptables and who needs it?](../../docs/make/iptables.md#what-is-iptables-and-who-needs-it)
+     - [What is the difference between AVM Firewall and iptables, can they co-exist on the same system?](../../docs/make/iptables.md#what-is-the-difference-between-avm-firewall-and-iptables-can-they-co-exist-on-the-same-system)
+     - [How to build iptables for Freetz?](../../docs/make/iptables.md#how-to-build-iptables-for-freetz)
+     - [Configuration: After successful firmware build and upload](../../docs/make/iptables.md#configuration-after-successful-firmware-build-and-upload)
+     - [Hints regarding FritzBox 7270:](../../docs/make/iptables.md#hints-regarding-fritzbox-7270)
+     - [What is the difference of INPUT, OUTPUT and FORWARD chains](../../docs/make/iptables.md#what-is-the-difference-of-input-output-and-forward-chains)
+     - [Hints regarding the example code](../../docs/make/iptables.md#hints-regarding-the-example-code)
+     - [Isolate guest network from LAN](../../docs/make/iptables.md#isolate-guest-network-from-lan)
+     - [Questions](../../docs/make/iptables.md#questions)
+
+  * **[mini_fo 0.3 - DEPRECATED](../../docs/make/mini_fo.md)<a id='mini-fo'></a>**<br>
+    Makes the filesystem writeable. Changes are not reboot-persistent, unless stored on a hard disk or on flash storage media. The way mini_fo is configured here creates the overlay filesystem in the router's RAM disk, so they definitely are *not* reboot-persistent. Nonetheless, mini_fo is tremendously helpful, eliminating the need for tricks like 'mount -o bind' etc. Note: The mini_fo root filesystem will not be used if an NFS-root was mounted first (see NFS-root package). Still, both packages can be installed at the same time, because mini_fo is still useful if NFS-root is decativated. This package does not work with (at least) 7390 at the moment.
+     - [Configuration (Web Interface)](../../docs/make/mini_fo.md#configuration-web-interface)
+     - [Configuration (Manually)](../../docs/make/mini_fo.md#configuration-manually)
+     - [Possible Side Effects](../../docs/make/mini_fo.md#possible-side-effects)
+     - [Restore original file](../../docs/make/mini_fo.md#restore-original-file)
+
+  * **[MySQL 6.0.11-alpha - DEPRECATED](../../docs/make/mysql.md)<a id='mysql'></a>**<br>
+    MySQL is a very fast, multi-threaded, multi-user and robust SQL (Structured Query Language) database server. Unstable, as this version is quite old, but runs well on Fritzbox. Do not expose this daemon to the internet!
+
+  * **[sane-backends: SANE 1.0.27 - DEPRECATED](../../docs/make/sane-backends.md)<a id='sane-backends'></a>**<br>
+    SANE - Scanner support (initial Freetz package by Michael Denk, tehron @ http://www.ip-phone-forum.de/)
+     - [Description](../../docs/make/sane-backends.md#description)
+     - [Quick Start](../../docs/make/sane-backends.md#quick-start)
+     - [Installation and Configuration](../../docs/make/sane-backends.md#installation-and-configuration)
+     - [Use from a PC under Linux/Windows](../../docs/make/sane-backends.md#use-from-a-pc-under-linuxwindows)
+     - [Scanning Does Not Work](../../docs/make/sane-backends.md#scanning-does-not-work)
+     - [Problems and Solutions](../../docs/make/sane-backends.md#problems-and-solutions)
+     - [Limitations and Notes](../../docs/make/sane-backends.md#limitations-and-notes)
+     - [Notes on Specific Devices](../../docs/make/sane-backends.md#notes-on-specific-devices)
+
+  * **<u>scanbuttond cvs - DEPRECATED</u><a id='scanbuttond'></a>**<br>
+    Scanner button daemon. It allows you to invoke actions such as shell scripts whenever one of the scanner front panel buttons is pressed.
+
+  * **<u>Squid 3.0.STABLE26 - DEPRECATED</u><a id='squid'></a>**<br>
+    Squid is a caching proxy for the Web supporting HTTP, HTTPS, FTP, and more. It reduces bandwidth and improves response times by caching and reusing frequently-requested web pages. Squid has extensive access controls and makes a great server accelerator.
+
+  * **[usbip: USB/IP 0.1.8 - DEPRECATED](../../docs/make/usbip.md)<a id='usbip'></a>**<br>
+    USB/IP Project aims to develop a general USB device sharing system over IP network. To share USB devices between computers with their full functionality, USB/IP encapsulates "USB I/O messages" into IP packets and transmits them between computers. If you plan to share a printer with this package, consider to remove AVM's printserv, but not the usblp kernel module.
+     - [Libraries Used](../../docs/make/usbip.md#libraries-used)
+
+  * **[usbroot: USB root 0.2 - DEPRECATED](../../docs/make/usbroot.md)<a id='usbroot'></a>**<br>
+    Mount an ext{2,3} filesystem (fs) from an USB stick and use it as root fs which may be fully writable and basically unlimited in size. The Linux kernel will still be loaded from your box and during the first phase of the init process the SquashFS on the box is still used, but after the USB root is mounted, we pivot_root into it and it becomes the new root fs. The default is to unmount the read-only fs on the box to conserve memory, but if desired, it can be still be accessed under /oldroot (though this is absolutely not necessary anymore after pivot_root). Having said that, it should be clear that the usb stick should contain everything necessary to run the box. Usually you just create a full copy of a target filesystem (e.g. from build/modified/filesystem or from an unpacked firmware image) and start modifying it as needed. The binaries (kernel modules, executables, shared libraries) used therein just have to fit the kernel installed on the box. Note: The webinterface makes it pretty easy to (de-)activate and configure the functionality of this package. However, USB root is an expert thing! See also the help screen of /etc/init.d/rc.usbroot for further description. As some config data is stored in bootloader environment, this package is special anyway.
+     - [Advantages](../../docs/make/usbroot.md#advantages)
+     - [Configuration and Compilation](../../docs/make/usbroot.md#configuration-and-compilation)
+     - [Pack, Copy to the Fritz!Box, and Unpack](../../docs/make/usbroot.md#pack-copy-to-the-fritzbox-and-unpack)
+     - [Freetz Configuration](../../docs/make/usbroot.md#freetz-configuration)
+     - [Mounting Partitions](../../docs/make/usbroot.md#mounting-partitions)
+     - [Possible Side Effects](../../docs/make/usbroot.md#possible-side-effects)
+     - [Possible Improvements](../../docs/make/usbroot.md#possible-improvements)
+
+  * **[virtualip-cgi: Virtual IP CGI - DEPRECATED](../../docs/make/virtualip-cgi.md)<a id='virtualip'></a>**<br>
+    Creates a virtual network interface. In former times this was used to comfortably open server ports on the Fritz!Box itself via AVM web interface. Nowadays the avm-firewall package is used for this task. The package is also equipped with a configuration interface for the Freetz web configurator which lets you choose the IP address and net mask of the virtual interface as well as toggle auto-start.
+     - [Setup](../../docs/make/virtualip-cgi.md#setup)
+     - [Known Problems and Bugs](../../docs/make/virtualip-cgi.md#known-problems-and-bugs)
+     - [dsld Syslog Message](../../docs/make/virtualip-cgi.md#dsld-syslog-message)
+     - [Problems with OpenVPN / UDP](../../docs/make/virtualip-cgi.md#problems-with-openvpn--udp)
+     - [Problems with IPTV](../../docs/make/virtualip-cgi.md#problems-with-iptv)
+     - [Problems with SIP Registrar Mode](../../docs/make/virtualip-cgi.md#problems-with-sip-registrar-mode)
+
+  * **<u>Zabbix 2.4.6 (binary only) - DEPRECATED</u><a id='zabbix'></a>**<br>
+    Zabbix is an enterprise-class open source distributed monitoring solution. Zabbix is software that monitors numerous parameters of a network and the health and integrity of servers. Zabbix uses a flexible notification mechanism that allows users to configure e-mail based alerts for virtually any event. This allows a fast reaction to server problems. Zabbix offers excellent reporting and data visualisation features based on the stored data. This makes Zabbix ideal for capacity planning. Zabbix supports both polling and trapping. All Zabbix reports and statistics, as well as configuration parameters, are accessed through a web-based front end. A web-based front end ensures that the status of your network and the health of your servers can be assessed from any location. Properly configured, Zabbix can play an important role in monitoring IT infrastructure. This is equally true for small organisations with a few servers and for large companies with a multitude of servers. Zabbix is free of cost. Zabbix is written and distributed under the GPL General Public License version 2. It means that its source code is freely distributed and available for the general public.
+
+# Web interfaces
+
+  * **[Addhole (for dnsmasq)](../../docs/make/addhole.md)<a id='addhole'></a>**<br>
+    Downloads block lists and adds them to dnsmasq. Warning: If you enable all included lists, dnsmasq will need 25 MB of RAM instead of 1MB without them.
+
+  * **<u>alsa-utils CGI (audio status/test web UI)</u><a id='alsa-utils'></a>**<br>
+    capability inspection and mixer or volume control. http://fritz.box:81/cgi-bin/conf/alsa-utils
+
+  * **<u>alsaequal CGI (equalizer config/control web UI)</u><a id='alsaequal'></a>**<br>
+    the exported equalizer controls at runtime. http://fritz.box:81/cgi-bin/conf/alsaequal
+
+  * **<u>aria2 CGI (freetz configuration web page)</u><a id='aria2'></a>**<br>
+    Provides a freetz web configuration page for aria2 daemon. Includes init script, default config and CGI script for managing aria2 settings via the freetz web UI (http://fritz.box:81/).
+
+  * **[authorized_keys: Frontend for SSH keys](../../docs/make/authorized-keys.md)<a id='authorized-keys'></a>**<br>
+    This frontend allows the management of the authorized_keys file used by either Dropbear or OpenSSH to allow a key-based authentication. The key-based authentication is much more secure than password-based authentication.
+
+  * **[AVM-firewall](../../docs/make/avm-firewall.md)<a id='avm-firewall'></a>**<br>
+    For FritzOS 4.xx - 5.5x only. Configuration front-end for AVM-firewall. This front-end is used for managing firewall rules for the AVM standard firewall. You can also modify the ar7.cfg file manually. But a better way is to use this GUI.
+     - [Feature Overview](../../docs/make/avm-firewall.md#feature-overview)
+     - [Applying the Changed Rules](../../docs/make/avm-firewall.md#applying-the-changed-rules)
+     - [The Danger of Reboot Loops and How to Get Out of Them](../../docs/make/avm-firewall.md#the-danger-of-reboot-loops-and-how-to-get-out-of-them)
+     - [Remedy](../../docs/make/avm-firewall.md#remedy)
+     - [Instructions for Ending an Accidentally Triggered Reboot Loop](../../docs/make/avm-firewall.md#instructions-for-ending-an-accidentally-triggered-reboot-loop)
+     - [References](../../docs/make/avm-firewall.md#references)
+
+  * **<u>AVM-forwarding</u><a id='avm-forwarding'></a>**<br>
+    For FritzOS 6.0x - 6.5x only. Configuration of forwardings to FB itself (open ports). Requires an existing forwarding in the configuration, e.g. HTTPS to box is allowed in the regular AVM GUI.
+
+  * **[AVM-portfw](../../docs/make/avm-portfw.md)<a id='avm-portfw'></a>**<br>
+    For FritzOS 6.8x - 7.57 only (up to ar7cfg_version=24). Configuration of port forwardings to the FritzBox itself by using internet_forwardrules. Warning: This package changes the ar7.cfg. On syntax errors AVM will reset the whole file to default, including default password and default ip. Backup you config before!
+
+  * **[AVM-rules](../../docs/make/avm-rules.md)<a id='avm-rules'></a>**<br>
+    For FritzOS since v7.5x only. Configuration of port forwardings to the FritzBox itself by using pcplisten. This avm tool can open ports for not more than 120 seconds. The steady renewal is managed by this package.
+
+  * **<u>Cpmaccfg CGI</u><a id='cpmaccfg'></a>**<br>
+    Configuration front-end to cpmaccfg This frontend shows the current settings of the LAN ports and gives a very simple way to set VLAN, portmode and WLAN assigment. Additional to this, you can set IP addresses for the VLAN interfaces eth0-eth3 if needed.
+
+  * **<u>disk-mgmt-cgi: Disk Management CGI</u><a id='disk-mgmt'></a>**<br>
+    Disk Management web UI. This is the same as in Packages -> Disk Tools http://fritz.box:81/cgi-bin/conf/disk-mgmt
+
+  * **[dnsd-cgi](../../docs/make/dnsd-cgi.md)<a id='dnsd'></a>**<br>
+    WebIF for dnsd (busybox applet)
+     - [Example Configuration](../../docs/make/dnsd-cgi.md#example-configuration)
+
+  * **[Downloader CGI](../../docs/make/downloader.md)<a id='downloader'></a>**<br>
+    Download files from HTTP or FTP server during the boot process. This is particularly useful for binary packages which do not fit into the firmware image, but should be used on the box anyway. As long as they fit into the RAM disk this solution helps to automate the downloads and keeps them out of debug.cfg. by hermann72pb (ip-phone-forum.de) Support thread: http://www.ip-phone-forum.de/showthread.php?t=134934
+
+  * **<u>go-librespot CGI (Spotify Connect config/status web UI)</u><a id='go-librespot'></a>**<br>
+    go-librespot. Includes startup handling, runtime YAML generation and log-based service monitoring in the freetz web UI. http://fritz.box:81/cgi-bin/conf/go-librespot
+
+  * **[Iptables-CGI - DEPRECATED](../../docs/make/iptables-cgi.md)<a id='iptables'></a>**<br>
+
+  * **[Iptables-NG - EXPERIMENTAL](../../docs/make/iptables-ng.md)<a id='iptables-ng'></a>**<br>
+    Advanced iptables/ip6tables management page with dynamic table and module capability detection, plus save/restore controls. Runtime status (started/stopped) is independent from startup mode (automatic/manual). Startup mode only controls boot behavior. See docs/make/iptables-ng.md for more hints. This package forces removing of dsld if available!
+     - [Warning](../../docs/make/iptables-ng.md#warning)
+     - [This package provides an advanced web interface for iptables/ip6tables](../../docs/make/iptables-ng.md#this-package-provides-an-advanced-web-interface-for-iptablesip6tables)
+     - [Behavior notes](../../docs/make/iptables-ng.md#behavior-notes)
+     - [Dependencies and constraints](../../docs/make/iptables-ng.md#dependencies-and-constraints)
+     - [Chain editor input](../../docs/make/iptables-ng.md#chain-editor-input)
+     - [My setup is for example like this](../../docs/make/iptables-ng.md#my-setup-is-for-example-like-this)
+     - [Other](../../docs/make/iptables-ng.md#other)
+
+  * **<u>MPD CGI (Music Player Daemon config/status web UI)</u><a id='mpd'></a>**<br>
+    Includes startup handling, generated mpd.conf management and auto-refresh monitoring in the freetz web UI. http://fritz.box:81/cgi-bin/conf/mpd
+
+  * **<u>myMPD CGI (config/status web UI)</u><a id='mympd'></a>**<br>
+    Includes startup handling and bootstrap settings for the embedded myMPD web interface. http://fritz.box:81/cgi-bin/conf/mympd
+
+  * **[ncdu CGI (disk usage web UI)](../../docs/make/ncdu-cgi.md)<a id='ncdu'></a>**<br>
+    Provides a web interface for ncdu disk usage analysis. Runs ncdu in JSON export mode (-0xo-) on a selected path and renders the result as an interactive expandable directory tree in the browser. http://fritz.box:81/cgi-bin/conf/ncdu
+
+  * **[NFSD CGI](../../docs/make/nfsd-cgi.md)<a id='nfsd'></a>**<br>
+    Configuration frontend to NFS-server If this does not work, enable replace-kernel!
+     - [/etc/exports (exports in GUI)](../../docs/make/nfsd-cgi.md#etcexports-exports-in-gui)
+     - [/etc/hosts.allow](../../docs/make/nfsd-cgi.md#etchostsallow)
+     - [/etc/hosts.deny](../../docs/make/nfsd-cgi.md#etchostsdeny)
+     - [Verification on Server:](../../docs/make/nfsd-cgi.md#verification-on-server)
+     - [rsize and wsize buffers](../../docs/make/nfsd-cgi.md#rsize-and-wsize-buffers)
+     - [References](../../docs/make/nfsd-cgi.md#references)
+
+  * **[NHIPT Iptables CGI 0.8.3a - DEPRECATED](../../docs/make/nhipt.md)<a id='nhipt'></a>**<br>
+    New Iptables configuration interface.
+     - [MOTIVATION](../../docs/make/nhipt.md#motivation)
+     - [REQUIREMENTS:](../../docs/make/nhipt.md#requirements)
+     - [THREE PACKAGES ARE AVAILABLE:](../../docs/make/nhipt.md#three-packages-are-available)
+     - [nhipt.cgi.(version).tar.gz](../../docs/make/nhipt.md#nhiptcgiversiontargz)
+     - [ipt.(version).tar.gz](../../docs/make/nhipt.md#iptversiontargz)
+     - [Via *make menuconfig*](../../docs/make/nhipt.md#via-make-menuconfig)
+     - [MODE OF OPERATION:](../../docs/make/nhipt.md#mode-of-operation)
+     - [Tips & Literature:](../../docs/make/nhipt.md#tips--literature)
+     - [Boot Process](../../docs/make/nhipt.md#boot-process)
+     - [Configuration File](../../docs/make/nhipt.md#configuration-file)
+     - [Files in the Freetz Package](../../docs/make/nhipt.md#files-in-the-freetz-package)
+     - [WELL-MEANT ADVICE:](../../docs/make/nhipt.md#well-meant-advice)
+     - [DOWNLOAD](../../docs/make/nhipt.md#download)
+     - [KNOWN PROBLEMS](../../docs/make/nhipt.md#known-problems)
+     - [SCREENSHOTS](../../docs/make/nhipt.md#screenshots)
+
+  * **[Onlinechanged-CGI](../../docs/make/onlinechanged-cgi.md)<a id='onlinechanged'></a>**<br>
+    When the online-status changes (e.g. a forced re-connect) this CGI allows you to specify arbitrary commands which are executed at that event. The following different change events are considered: initial start of the box, going online (IPv4), going onlineipv6 (IPv6), going offline (IPv4) and going offlineipv6 (IPv6).
+
+  * **[PHPXmail 1.5 - DEPRECATED](../../docs/make/phpxmail.md)<a id='phpxmail'></a>**<br>
+    Web configuration interface for XMail from the phpxmail team. Accessible via the URL http://fritz.box:81/phpxmail, it enables you to configure your XMail server locally on the fritz.box or any other remote host. This GUI needs PHP, so it is automaticaly selected. Used web server is busybox httpd.
+     - [Basic setup guide](../../docs/make/phpxmail.md#basic-setup-guide)
+     - [Setup SSL](../../docs/make/phpxmail.md#setup-ssl)
+     - [Useful links](../../docs/make/phpxmail.md#useful-links)
+
+  * **[ppp: Point-to-Point](../../docs/make/ppp.md)<a id='ppp'></a>**<br>
+
+  * **<u>ppp-cgi: ppp dial-up-network</u><a id='ppp'></a>**<br>
+    Use this package to establish a dun connection
+
+  * **[RRDstats for RRDtool](../../docs/make/rrdstats.md)<a id='rrdstats'></a>**<br>
+    Lets you view graphically various stats of your Freetz Box. Selects BusyBox's 'nice' to save spare resources.
+     - [Introduction](../../docs/make/rrdstats.md#introduction)
+     - [Requirements and Adding RRDstats During Firmware Build](../../docs/make/rrdstats.md#requirements-and-adding-rrdstats-during-firmware-build)
+     - [Backup](../../docs/make/rrdstats.md#backup)
+     - [WebGUI Settings](../../docs/make/rrdstats.md#webgui-settings)
+     - [DigiTemp](../../docs/make/rrdstats.md#digitemp)
+     - [Cable Modem](../../docs/make/rrdstats.md#cable-modem)
+     - [Logging the Channels](../../docs/make/rrdstats.md#logging-the-channels)
+     - [Cable Segment](../../docs/make/rrdstats.md#cable-segment)
+     - [SmartHome](../../docs/make/rrdstats.md#smarthome)
+     - [Script aha.sh](../../docs/make/rrdstats.md#script-ahash)
+     - [Databases](../../docs/make/rrdstats.md#databases)
+     - [File Overview (Incomplete)](../../docs/make/rrdstats.md#file-overview-incomplete)
+     - [BUGS](../../docs/make/rrdstats.md#bugs)
+
+  * **<u>rTorrent CGI web configuration interface</u><a id='rtorrent'></a>**<br>
+    Provides a configuration interface for rTorrent daemon. Access the configuration (e.g., http://fritz.box:81/cgi-bin/conf/rtorrent)
+
+  * **[shairport-sync CGI (AirPlay config/status web UI)](../../docs/make/shairport-sync-cgi.md)<a id='shairport-sync'></a>**<br>
+    shairport-sync. Includes startup handling, runtime configuration and metadata/status display in the freetz web UI. http://fritz.box:81/cgi-bin/conf/shairport-sync
+
+  * **<u>snapcast CGI (Snapserver/snapclient config/status web UI)</u><a id='snapcast'></a>**<br>
+    snapcast. Includes startup handling, generated snapserver.conf management and live status output for snapserver and the optional local snapclient. http://fritz.box:81/cgi-bin/conf/snapcast
+
+  * **[spindown-cgi](../../docs/make/spindown-cgi.md)<a id='spindown'></a>**<br>
+    Choose this package if you want to spin down your attached USB disk after a configurable idle time period. However, it is not guaranteed to work with all disks.
+
+  * **[Syslogd CGI](../../docs/make/syslogd-cgi.md)<a id='syslogd'></a>**<br>
+    Configuration frontend to syslogd
+     - [Setup in Freetz web-interface](../../docs/make/syslogd-cgi.md#setup-in-freetz-web-interface)
+     - [Usage of syslog](../../docs/make/syslogd-cgi.md#usage-of-syslog)
+
+  * **<u>Transmission CGI</u><a id='transmission'></a>**<br>
+    Provides a simple configuration interface for transmission-daemon.
+
+  * **<u>ttyd-cgi: Web Terminal (ttyd CGI)</u><a id='ttyd'></a>**<br>
+    Provides the freetz CGI control page for ttyd, including service management and the embedded web terminal UI.
+
+  * **<u>vnstat-cgi: vnstat Webinterface - DEPRECATED</u><a id='vnstat'></a>**<br>
+    Lets you view graphically the output of vnstat.
+
+  * **<u>wol-cgi: Wake-on-LAN (WoL) CGI</u><a id='wol'></a>**<br>
+    Web configuration interface for Etherwake wake-on-LAN. Accessible via the URL http://fritz.box:84, it enables you to interactively wake up sleeping or switched off computers in the LAN reachable from you router box. Which machines can be woken up can be configured using the regular Freetz web interface.

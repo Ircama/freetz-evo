@@ -3,7 +3,7 @@
   - Manpage: [https://github.com/devgianlu/go-librespot#readme](https://github.com/devgianlu/go-librespot#readme)
   - Changelog: [https://github.com/devgianlu/go-librespot/releases](https://github.com/devgianlu/go-librespot/releases)
   - Repository: [https://github.com/devgianlu/go-librespot](https://github.com/devgianlu/go-librespot)
-  - Package: [ster/make/pkgs/go-librespot/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/go-librespot/)
+  - Package: [master/make/pkgs/go-librespot/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/go-librespot/)
   - Steward: Ircama
 
   - Depends on: `alsa-lib`, `flac`, `libogg`, `libvorbis`
