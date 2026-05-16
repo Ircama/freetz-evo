@@ -7,9 +7,43 @@ DAEMON_CONFIG=/var/lib/alsa/conf.d/50-alsaequal.conf
 
 [ -r /mod/etc/conf/alsaequal.cfg ] && . /mod/etc/conf/alsaequal.cfg
 
+resolve_ladspa_library() {
+	local library="$1"
+	local search_path old_ifs dir
+	case "$library" in
+		/*)
+			[ -r "$library" ] && {
+				printf '%s\n' "$library"
+				return 0
+			}
+			return 1
+			;;
+	esac
+	search_path="${LADSPA_PATH:-/usr/lib/ladspa:/usr/lib/freetz/ladspa:/mod/usr/lib/ladspa:/mod/external/usr/lib/ladspa:/usr/lib}"
+	old_ifs="$IFS"
+	IFS=':'
+	for dir in $search_path; do
+		[ -n "$dir" ] || continue
+		if [ -r "$dir/$library" ]; then
+			IFS="$old_ifs"
+			printf '%s\n' "$dir/$library"
+			return 0
+		fi
+	done
+	IFS="$old_ifs"
+	return 1
+}
+
 config() {
+	local resolved_library
 	mkdir -p "$(dirname "$DAEMON_CONFIG")" 2>/dev/null
 	if [ "$ALSAEQUAL_ENABLED" = 'yes' ]; then
+		if ! resolved_library="$(resolve_ladspa_library "$ALSAEQUAL_LIBRARY")"; then
+			echo "alsaequal: LADSPA library '$ALSAEQUAL_LIBRARY' not found; generated ALSA configuration disabled." >&2
+			rm -f "$DAEMON_CONFIG"
+			return 0
+		fi
+		export ALSAEQUAL_LIBRARY="$resolved_library"
 		modlib_config "$DAEMON" "$DAEMON_CONFIG"
 	else
 		rm -f "$DAEMON_CONFIG"

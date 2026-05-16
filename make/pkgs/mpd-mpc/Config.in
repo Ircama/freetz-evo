@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_MPD_MPC
+	bool "mpc 0.35 (MPD CLI client)"
+	select FREETZ_LIB_libmpdclient
+	default n
+	help
+		mpc is the minimalist command-line client for Music Player Daemon.
+		It installs the `mpc` CLI and can be used with the local MPD package
+		or any reachable MPD server.
+
+		Can be externalized to save flash memory.

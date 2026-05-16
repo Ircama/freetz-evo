@@ -35,7 +35,7 @@ cgi_print_textline_p "channels" "$ALSAEQUAL_CHANNELS" 4/8 \
 $(lang de:"Die exportierten ALSA-Ger\u00e4tenamen sind fest auf <code>equal</code> und <code>plugequal</code> gesetzt." en:"The exported ALSA device names are fixed to <code>equal</code> and <code>plugequal</code>.")
 </p>
 <p>
-$(lang de:"Der Standardwert <code>caps.so</code> erwartet eine vorhandene CAPS/Eq10-LADSPA-Bibliothek im Runtime-Suchpfad." en:"The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path.")
+$(lang de:"Der Standardwert <code>caps.so</code> erwartet eine vorhandene CAPS/Eq10-LADSPA-Bibliothek im Runtime-Suchpfad. Dieses Paket liefert die LADSPA-Bibliothek nicht selbst mit." en:"The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path. This package does not ship the LADSPA library itself.")
 </p>
 EOF
 sec_end

@@ -16,6 +16,7 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/mpd
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/mpd
 
 $(PKG)_DEPENDS_ON += meson-host
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 $(PKG)_DEPENDS_ON += alsa-lib flac libid3tag libmad libogg libvorbis zlib
 
 MPD_MESON_ENV := PATH="$(abspath $(TOOLS_DIR)/path):$(subst ",,$(TARGET_PATH))" $(FREETZ_LD_RUN_PATH) FREETZ_LIBRARY_DIR="$(FREETZ_LIBRARY_DIR)"
@@ -117,6 +118,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	cmd() { $(MPD_MESON_ENV) $(MESON) "$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } ; }; $(call _ECHO,building) cmd install \
+		--no-rebuild \
 		--destdir "$(abspath $(MPD_DEST_DIR))" \
 		-C $(MPD_DIR)/builddir/
 	$(RM) -r \
@@ -124,6 +126,9 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 		$(MPD_DEST_DIR)/usr/lib/pkgconfig \
 		$(MPD_DEST_DIR)/usr/share
 	$(RM) $(MPD_DEST_DIR)/usr/lib/libfmt.a
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(MPD_DEST_DIR)/usr/bin/mpd; \
+	fi
 	$(TARGET_STRIP) $(MPD_TARGET_BINARY) 2>/dev/null || true
 
 $(pkg):

@@ -17,6 +17,33 @@ ACTION="$(cgi_param action)"
 ACTION_TITLE=''
 ACTION_OUTPUT=''
 
+resolve_ladspa_library() {
+	local library="$1"
+	local search_path old_ifs dir
+	case "$library" in
+		/*)
+			[ -r "$library" ] && {
+				printf '%s\n' "$library"
+				return 0
+			}
+			return 1
+			;;
+	esac
+	search_path="${LADSPA_PATH:-/usr/lib/ladspa:/usr/lib/freetz/ladspa:/mod/usr/lib/ladspa:/mod/external/usr/lib/ladspa:/usr/lib}"
+	old_ifs="$IFS"
+	IFS=':'
+	for dir in $search_path; do
+		[ -n "$dir" ] || continue
+		if [ -r "$dir/$library" ]; then
+			IFS="$old_ifs"
+			printf '%s\n' "$dir/$library"
+			return 0
+		fi
+	done
+	IFS="$old_ifs"
+	return 1
+}
+
 sanitize_text() {
 	printf '%s' "$1" | sed 's/[^A-Za-z0-9_.,:\/ +%=-]//g'
 }
@@ -136,18 +163,13 @@ case "$ACTION" in
 		;;
 esac
 
-case "$ALSAEQUAL_LIBRARY" in
-	/*)
-		if [ -r "$ALSAEQUAL_LIBRARY" ]; then
-			LIBRARY_STATE='present'
-		else
-			LIBRARY_STATE='missing'
-		fi
-		;;
-	*)
-		LIBRARY_STATE="search path (${ALSAEQUAL_LIBRARY})"
-		;;
-esac
+if RESOLVED_LIBRARY="$(resolve_ladspa_library "$ALSAEQUAL_LIBRARY")"; then
+	LIBRARY_STATE="present (${RESOLVED_LIBRARY})"
+elif [ "${ALSAEQUAL_LIBRARY#/}" != "$ALSAEQUAL_LIBRARY" ]; then
+	LIBRARY_STATE="missing (${ALSAEQUAL_LIBRARY})"
+else
+	LIBRARY_STATE="missing in search path (${ALSAEQUAL_LIBRARY})"
+fi
 
 CONTROL_IDS="$(equal_controls)"
 

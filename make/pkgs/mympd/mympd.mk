@@ -17,12 +17,11 @@ $(PKG)_BINARY:=$($(PKG)_BUILD_DIR)/bin/mympd
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/mympd
 
 $(PKG)_DEPENDS_ON += cmake-host openssl pcre2
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX=/usr
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
-# Upstream keeps -pie for Release builds but skips -fPIE on MIPS.
-$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_C_FLAGS=-fPIE
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_C_COMPILER="$(TARGET_CC)"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_CXX_COMPILER="$(TARGET_CXX)"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_AR="$(TARGET_AR)"
@@ -72,6 +71,9 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(MYMPD_BUILD_DIR) DESTDIR="$(abspath $(MYMPD_DEST_DIR))" install
 	$(RM) -f $(MYMPD_DEST_DIR)/usr/bin/mympd-config
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		$(FREETZ_BASE_DIR)/$(TOOLS_DIR)/patchelf-target --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(MYMPD_DEST_DIR)/usr/bin/mympd; \
+	fi
 	$(TARGET_STRIP) $(MYMPD_TARGET_BINARY) 2>/dev/null || true
 
 $(pkg):

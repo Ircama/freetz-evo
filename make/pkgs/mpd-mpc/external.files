@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_MPD_MPC" == "y" ] && EXTERNAL_FILES+=" /usr/bin/mpc"

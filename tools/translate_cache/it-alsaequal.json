@@ -278,5 +278,12 @@
     "timestamp": "2026-05-15T21:11:21Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path. This package does not ship the LADSPA library itself.": {
+    "original": "The default <code>caps.so</code> value expects a CAPS/Eq10 LADSPA library to be present in the runtime search path. This package does not ship the LADSPA library itself.",
+    "translation": "Il valore predefinito <code>caps.so</code> si aspetta che nel percorso di ricerca del runtime sia presente una libreria LADSPA CAPS/Eq10. Questo pacchetto non fornisce la libreria LADSPA stessa.",
+    "timestamp": "2026-05-16T07:48:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

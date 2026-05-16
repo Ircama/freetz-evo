@@ -1,0 +1,7 @@
+config FREETZ_LIB_libmpdclient
+	bool "libmpdclient (libmpdclient.so)"
+	default n
+	help
+		libmpdclient is the official client library for Music Player Daemon.
+		It is used by CLI and UI clients which connect to a local or remote
+		MPD instance.

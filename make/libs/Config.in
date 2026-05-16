@@ -113,6 +113,7 @@ menu "Multimedia"
 		source "make/libs/alsa-lib/Config.in"
 	endmenu
 	source "make/libs/libdvbcsa/Config.in"
+	source "make/libs/libmpdclient/Config.in"
 	menu "Audio and video codecs"
 		menu "Audio codecs"
 			source "make/libs/flac/Config.in"
