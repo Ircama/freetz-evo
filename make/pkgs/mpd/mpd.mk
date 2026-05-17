@@ -18,6 +18,16 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/mpd
 $(PKG)_DEPENDS_ON += meson-host
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 $(PKG)_DEPENDS_ON += alsa-lib flac libid3tag libmad libogg libvorbis zlib
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_MPD_WITH_URI_INPUTS),curl)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_MPD_WITH_SQLITE),sqlite)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_MPD_WITH_BZIP2),bzip2)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_MPD_WITH_FFMPEG),ffmpeg)
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MPD_WITH_URI_INPUTS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MPD_WITH_SQLITE
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MPD_WITH_BZIP2
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MPD_WITH_FFMPEG
+$(PKG)_REBUILD_SUBOPTS += $(if $(FREETZ_PACKAGE_MPD_WITH_URI_INPUTS),$(filter FREETZ_LIB_libcurl_%,$(CURL_REBUILD_SUBOPTS)))
 
 MPD_MESON_ENV := PATH="$(abspath $(TOOLS_DIR)/path):$(subst ",,$(TARGET_PATH))" $(FREETZ_LD_RUN_PATH) FREETZ_LIBRARY_DIR="$(FREETZ_LIBRARY_DIR)"
 
@@ -31,12 +41,12 @@ $(PKG)_CONFIGURE_OPTIONS += -D syslog=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D systemd=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D dbus=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D zeroconf=disabled
-$(PKG)_CONFIGURE_OPTIONS += -D sqlite=disabled
+$(PKG)_CONFIGURE_OPTIONS += -D sqlite=$(if $(FREETZ_PACKAGE_MPD_WITH_SQLITE),enabled,disabled)
 $(PKG)_CONFIGURE_OPTIONS += -D pcre=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D icu=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D iconv=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D expat=disabled
-$(PKG)_CONFIGURE_OPTIONS += -D curl=disabled
+$(PKG)_CONFIGURE_OPTIONS += -D curl=$(if $(FREETZ_PACKAGE_MPD_WITH_URI_INPUTS),enabled,disabled)
 $(PKG)_CONFIGURE_OPTIONS += -D webdav=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D nfs=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D qobuz=disabled
@@ -52,7 +62,7 @@ $(PKG)_CONFIGURE_OPTIONS += -D local_socket=true
 $(PKG)_CONFIGURE_OPTIONS += -D daemon=true
 $(PKG)_CONFIGURE_OPTIONS += -D dsd=false
 $(PKG)_CONFIGURE_OPTIONS += -D cue=false
-$(PKG)_CONFIGURE_OPTIONS += -D bzip2=disabled
+$(PKG)_CONFIGURE_OPTIONS += -D bzip2=$(if $(FREETZ_PACKAGE_MPD_WITH_BZIP2),enabled,disabled)
 $(PKG)_CONFIGURE_OPTIONS += -D iso9660=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D zzip=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D cdio_paranoia=disabled
@@ -65,7 +75,7 @@ $(PKG)_CONFIGURE_OPTIONS += -D vorbis=enabled
 $(PKG)_CONFIGURE_OPTIONS += -D adplug=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D audiofile=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D faad=disabled
-$(PKG)_CONFIGURE_OPTIONS += -D ffmpeg=disabled
+$(PKG)_CONFIGURE_OPTIONS += -D ffmpeg=$(if $(FREETZ_PACKAGE_MPD_WITH_FFMPEG),enabled,disabled)
 $(PKG)_CONFIGURE_OPTIONS += -D fluidsynth=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D gme=disabled
 $(PKG)_CONFIGURE_OPTIONS += -D mikmod=disabled

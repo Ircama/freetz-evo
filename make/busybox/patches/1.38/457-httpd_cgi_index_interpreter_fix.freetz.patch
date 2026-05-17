@@ -1,0 +1,75 @@
+--- networking/httpd.c
++++ networking/httpd.c
+@@ -1658,11 +1658,19 @@
+ static void send_cgi_and_exit(
+ 		const char *url,
+ 		const char *orig_uri,
+-		const char *request) NORETURN;
++		const char *request
++#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
++		, Htaccess *script_interp
++#endif
++) NORETURN;
+ static void send_cgi_and_exit(
+ 		const char *url,
+ 		const char *orig_uri,
+-		const char *request)
++		const char *request
++#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
++		, Htaccess *script_interp
++#endif
++)
+ {
+ 	struct fd_pair fromCgi;  /* CGI -> httpd pipe */
+ 	struct fd_pair toCgi;    /* httpd -> CGI pipe */
+@@ -1791,9 +1799,9 @@
+ 		argv[1] = NULL;
+ 
+ # if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+-		if (script_i != NULL) {
++		if (script_interp != NULL) {
+ 			/* found interpreter name */
+-			argv[0] = script_i->after_colon;
++			argv[0] = script_interp->after_colon;
+ 			argv[1] = script;
+ 			argv[2] = NULL;
+ 		}
+@@ -2354,6 +2362,9 @@
+ 		CGI_INDEX,
+ 		CGI_INTERPRETER,
+ 	} cgi_type = CGI_NONE;
++#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
++	Htaccess *script_interp = NULL;
++#endif
+ #endif
+ #if ENABLE_FEATURE_HTTPD_PROXY
+ 	Htaccess_Proxy *proxy_entry;
+@@ -2595,14 +2606,14 @@
+ #if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
+ 				char *suffix = strrchr(tptr, '.');
+ 				if (suffix) {
+-					for (; script_i; script_i = script_i->next) {
+-						if (strcmp(script_i->before_colon + 1, suffix) == 0) {
++					Htaccess *cur;
++					for (cur = script_i; cur; cur = cur->next) {
++						if (strcmp(cur->before_colon + 1, suffix) == 0) {
++							script_interp = cur;
+ 							cgi_type = CGI_INTERPRETER;
+ 							break;
+ 						}
+ 					}
+-				} else {
+-					script_i = NULL;
+ 				}
+ #endif
+  IF_FEATURE_HTTPD_CGI(exists:)
+@@ -2771,6 +2782,9 @@
+ 			(cgi_type == CGI_INDEX) ? "/cgi-bin/index.cgi"
+ 			/*CGI_NORMAL or CGI_INTERPRETER*/ : urlcopy,
+ 			urlcopy, prequest
++#if ENABLE_FEATURE_HTTPD_CONFIG_WITH_SCRIPT_INTERPR
++			, script_interp
++#endif
+ 		);
+ 	}
+ #endif

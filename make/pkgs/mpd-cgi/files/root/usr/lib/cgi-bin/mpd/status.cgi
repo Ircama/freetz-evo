@@ -4,10 +4,10 @@
 
 [ -r /mod/etc/conf/mpd.cfg ] && . /mod/etc/conf/mpd.cfg
 
-: ${MPD_CONFIG_DIR:=/tmp/flash/mpd}
+: ${MPD_CONFIG_DIR:=/var/media/ftp/MediaServer/mpd}
 : ${MPD_BIND_TO_ADDRESS:=0.0.0.0}
 : ${MPD_PORT:=6600}
-: ${MPD_MUSIC_DIR:=/var/media/ftp/mpd/music}
+: ${MPD_MUSIC_DIR:=/var/media/ftp/MediaServer}
 
 MPD_CONFIG_DIR="${MPD_CONFIG_DIR%/}"
 CONFIG_FILE=/mod/etc/mpd.conf

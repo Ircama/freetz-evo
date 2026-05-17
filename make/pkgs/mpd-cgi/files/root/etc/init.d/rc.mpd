@@ -12,7 +12,7 @@ MPD_SOCKET=/var/run/mpd/socket
 
 [ -r /mod/etc/conf/mpd.cfg ] && . /mod/etc/conf/mpd.cfg
 
-: ${MPD_CONFIG_DIR:=/tmp/flash/mpd}
+: ${MPD_CONFIG_DIR:=/var/media/ftp/MediaServer/mpd}
 MPD_CONFIG_DIR="${MPD_CONFIG_DIR%/}"
 MPD_PLAYLIST_DIR="${MPD_CONFIG_DIR}/playlists"
 

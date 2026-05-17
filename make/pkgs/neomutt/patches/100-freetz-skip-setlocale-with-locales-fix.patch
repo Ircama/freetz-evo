@@ -1,0 +1,14 @@
+--- main.c
++++ main.c
+@@ -772,7 +772,9 @@ static int start_curses(void)
+   */
+ static void init_locale(void)
+ {
++#ifndef LOCALES_HACK
+   setlocale(LC_ALL, "");
++#endif
+ 
+ #ifdef ENABLE_NLS
+   const char *domdir = mutt_str_getenv("TEXTDOMAINDIR");
+   if (domdir)
+      bindtextdomain(PACKAGE, domdir);

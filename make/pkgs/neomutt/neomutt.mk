@@ -14,6 +14,7 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/neomutt
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/neomutt
 
 $(PKG)_DEPENDS_ON += ncursesw openssl
+$(PKG)_DEPENDS_ON += zlib $(if $(FREETZ_OPENSSL_VERSION_30_MIN),libatomic)
 
 ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0_9_28)),y)
 $(PKG)_DEPENDS_ON += iconv
@@ -36,6 +37,7 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-notmuch
 $(PKG)_CONFIGURE_OPTIONS += --disable-sqlite
 $(PKG)_CONFIGURE_OPTIONS += --disable-tokyocabinet
 $(PKG)_CONFIGURE_OPTIONS += --disable-lmdb
+$(PKG)_CONFIGURE_OPTIONS += --locales-fix
 $(PKG)_CONFIGURE_OPTIONS += --ssl
 $(PKG)_CONFIGURE_OPTIONS += --with-ncurses="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 $(PKG)_CONFIGURE_OPTIONS += --with-ssl="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"

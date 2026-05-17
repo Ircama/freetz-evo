@@ -7,12 +7,15 @@
   - Steward: Ircama
 
   - Depends on: `alsa-lib`, `flac`, `libid3tag`, `libmad`, `libogg`, `libvorbis`, `zlib`
+  - Optional runtime dependencies: `libcurl` for URI input, `libsqlite3` for the SQLite database backend, `libbz2` for bzip2 support, and FFmpeg libraries for the optional FFmpeg decoder backend
   - Provides: `/usr/bin/mpd`
   - Configuration URL: `http://fritz.box:81/cgi-bin/conf/mpd` (with `mpd-cgi`)
   - Status URL: `http://fritz.box:81/cgi-bin/status/mpd` (with `mpd-cgi`)
   - Externalization: supported
 
 `MPD` is the classic Music Player Daemon for local or network-controlled playback. The Freetz-EVO build is trimmed to the embedded use case: local database, TCP control interface, UNIX socket support, ALSA output, and the MP3/FLAC/Vorbis decoder stack.
+
+Menuconfig toggles allow the package to stay compact by default while still exposing a few optional upstream features. Libcurl-based remote URI input for common `http://` and `https://` streams is enabled by default and can be disabled if a smaller build is preferred. Optional `sqlite`, `bzip2`, and `ffmpeg` backends remain disabled by default.
 
 On compatible targets, selecting the package also auto-selects the exposed ALSA USB audio driver stack, making USB DAC playback practical without separate manual driver selection.
 
@@ -31,7 +34,11 @@ On compatible targets, selecting the package also auto-selects the exposed ALSA 
 - MP3 via `libmad`
 - FLAC via `libFLAC`
 - Ogg/Vorbis via `libogg` and `libvorbis`
+- libcurl input backend for remote HTTP/HTTPS URIs enabled by default
+- optional SQLite database backend
+- optional bzip2 support
+- optional FFmpeg decoder backend
 
 ## Deliberately disabled upstream features
 
-To keep the target footprint small and predictable, the Freetz package disables optional integrations such as zeroconf, UPnP, SQLite, FFmpeg, curl/WebDAV, PulseAudio, PipeWire, JACK, and the bundled HTTP server.
+To keep the target footprint small and predictable, the Freetz package still disables many heavier optional integrations such as zeroconf, UPnP, WebDAV, PulseAudio, PipeWire, JACK, and the bundled HTTP server. The libcurl input backend is enabled by default, while SQLite, bzip2, and FFmpeg are exposed as explicit opt-in toggles.

@@ -1,8 +1,10 @@
 config FREETZ_PACKAGE_NEOMUTT
 	bool "NeoMutt 20260504 (binary only)"
+	select FREETZ_LIB_libatomic if FREETZ_OPENSSL_VERSION_30_MIN
 	select FREETZ_LIB_libncursesw
 	select FREETZ_LIB_libcrypto
 	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libz
 	select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	select FREETZ_LIB_libiconv if FREETZ_TARGET_UCLIBC_0_9_28
 	default n

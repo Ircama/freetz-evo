@@ -1,10 +1,20 @@
 config FREETZ_PACKAGE_VHS
 	bool "vhs 0.11.0 (binary only)"
+	select FREETZ_PACKAGE_FFMPEG
+	select FREETZ_PACKAGE_FFMPEG_ffmpeg
+	select FREETZ_PACKAGE_FFMPEG_DECODER_png
+	select FREETZ_PACKAGE_FFMPEG_DEMUXER_image2
+	select FREETZ_PACKAGE_FFMPEG_PROTOCOL_file
+	select FREETZ_PACKAGE_TTYD
 	default n
 	help
 		VHS records scripted terminal sessions to media output.
 
 		This package cross-compiles the upstream Go sources and installs the
 		vhs executable on the target.
+
+		Upstream requires the `ffmpeg` and `ttyd` executables at runtime.
+		The Freetz package auto-selects them, including the minimal FFmpeg
+		options needed for PNG frame sequences and GIF output.
 
 		Can be externalized to save flash memory.
