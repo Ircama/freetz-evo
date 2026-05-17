@@ -8,6 +8,8 @@ DAEMON_CHECK="$DAEMON_BIN"
 DAEMON_CONFIG=/mod/etc/mpd.conf
 PID_FILE=/var/run/mpd.pid
 MPD_SOCKET=/var/run/mpd/socket
+MPD_RUNTIME_DIR=${MPD_SOCKET%/*}
+DAEMON_ENV='LD_PRELOAD=libjemalloc.so.2'
 . /etc/init.d/modlibrc
 
 [ -r /mod/etc/conf/mpd.cfg ] && . /mod/etc/conf/mpd.cfg
@@ -17,7 +19,7 @@ MPD_CONFIG_DIR="${MPD_CONFIG_DIR%/}"
 MPD_PLAYLIST_DIR="${MPD_CONFIG_DIR}/playlists"
 
 config() {
-	mkdir -p "$MPD_CONFIG_DIR" "$MPD_PLAYLIST_DIR" 2>/dev/null
+	mkdir -p "$MPD_CONFIG_DIR" "$MPD_PLAYLIST_DIR" "$MPD_RUNTIME_DIR" 2>/dev/null
 	case "$MPD_MUSIC_DIR" in
 		''|*://*) ;;
 		*) mkdir -p "$MPD_MUSIC_DIR" 2>/dev/null ;;
@@ -26,6 +28,7 @@ config() {
 }
 
 startdaemon_pre() {
+	mkdir -p "$MPD_RUNTIME_DIR" 2>/dev/null
 	rm -f "$PID_FILE" "$MPD_SOCKET" 2>/dev/null
 }
 

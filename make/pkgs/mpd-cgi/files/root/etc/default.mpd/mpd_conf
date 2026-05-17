@@ -17,9 +17,10 @@ db_file="${config_dir}/database"
 state_file="${config_dir}/state"
 log_file="${config_dir}/mpd.log"
 socket_file="/var/run/mpd/socket"
+socket_dir="${socket_file%/*}"
 pid_file="/var/run/mpd.pid"
 
-mkdir -p "$config_dir" "$playlist_dir" 2>/dev/null
+mkdir -p "$config_dir" "$playlist_dir" "$socket_dir" 2>/dev/null
 
 case "$MPD_MUSIC_DIR" in
 	''|*://*) ;;

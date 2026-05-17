@@ -3,6 +3,7 @@ config FREETZ_PACKAGE_MPD
 	depends on FREETZ_TARGET_GCC_13_MIN
 	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
 	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libjemalloc
 	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	select FREETZ_LIB_libasound
@@ -19,6 +20,8 @@ config FREETZ_PACKAGE_MPD
 
 		This build enables the local database, TCP control interface,
 		ALSA output and the MP3, FLAC and Vorbis decoders.
+		jemalloc is selected to work around allocator-related crashes
+		observed on some uClibc target combinations.
 		Libcurl-based URI input support is enabled by default and can
 		be disabled below.
 
@@ -55,6 +58,11 @@ if FREETZ_PACKAGE_MPD
 
 	config FREETZ_PACKAGE_MPD_WITH_FFMPEG
 		bool "Enable FFmpeg decoder integration"
+		select FREETZ_PACKAGE_FFMPEG_PATENTED
+		select FREETZ_PACKAGE_FFMPEG_DECODER_aac
+		select FREETZ_PACKAGE_FFMPEG_PARSER_aac
+		select FREETZ_PACKAGE_FFMPEG_DEMUXER_aac
+		select FREETZ_PACKAGE_FFMPEG_DEMUXER_hls
 		select FREETZ_LIB_libavcodec
 		select FREETZ_LIB_libavformat
 		select FREETZ_LIB_libavutil
@@ -64,7 +72,8 @@ if FREETZ_PACKAGE_MPD
 
 			This uses the FFmpeg library set configured in Freetz and
 			is intended for users who want broader format coverage than
-			the built-in MP3/FLAC/Vorbis stack.
+			the built-in MP3/FLAC/Vorbis stack, including AAC/HLS
+			radio streams.
 
 config FREETZ_PACKAGE_MPD_CGI
 	bool "MPD CGI (Music Player Daemon config/status web UI)"

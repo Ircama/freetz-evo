@@ -68,13 +68,18 @@ start() {
 		exit 1
 	fi
 
+	if ! config; then
+		echo 'failed.'
+		exit 1
+	fi
+
 	touch "$MYMPD_LOG_FILE" 2>/dev/null
 	chmod a+rw "$MYMPD_LOG_FILE" 2>/dev/null
 	rm -f "$PID_FILE" 2>/dev/null
 	export_bootstrap_env
 
 	start-stop-daemon -S -b -q -m -p "$PID_FILE" -n "$DAEMON_BIN" \
-		-- /bin/sh -c "exec /usr/bin/$DAEMON_BIN -w \"$MYMPD_WORKDIR\" -a \"$MYMPD_CACHEDIR\" >>\"$MYMPD_LOG_FILE\" 2>&1"
+		-- /bin/sh -c "exec /usr/bin/$DAEMON_BIN -w \"$MYMPD_WORKDIR\" -a \"$MYMPD_CACHEDIR\" -s >>\"$MYMPD_LOG_FILE\" 2>&1"
 
 	if [ $? -ne 0 ]; then
 		echo 'failed.'
