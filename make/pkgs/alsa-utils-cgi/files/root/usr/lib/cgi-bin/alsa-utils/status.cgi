@@ -73,6 +73,22 @@ has_simple_control() {
 	list_simple_controls "$device" | grep -Fqx "$control"
 }
 
+list_samples() {
+	for sample in /usr/share/sounds/alsa/*.wav; do
+		[ -f "$sample" ] || continue
+		basename "$sample"
+	done
+}
+
+sample_exists() {
+	local wanted="$1"
+	local sample
+	for sample in $(list_samples); do
+		[ "$sample" = "$wanted" ] && return 0
+	done
+	return 1
+}
+
 PCM_DEVICE="$(sanitize_text "${PCM_DEVICE:-${ALSA_UTILS_PCM_DEVICE:-default}}")"
 MIXER_DEVICE="$(sanitize_text "${MIXER_DEVICE:-${ALSA_UTILS_MIXER_DEVICE:-default}}")"
 REQUESTED_VOLUME_CONTROL="$(sanitize_text "${VOLUME_CONTROL:-${ALSA_UTILS_VOLUME_CONTROL}}")"
@@ -89,7 +105,7 @@ SAMPLE_LOOPS="$(normalize_uint "${SAMPLE_LOOPS:-4}" 4 1 64)"
 SAMPLE_CHANNELS="$(normalize_channels_or_all "${SAMPLE_CHANNELS:-ALL}")"
 SINE_CHANNELS="$(normalize_uint "${SINE_CHANNELS:-${ALSA_UTILS_TEST_CHANNELS:-2}}" 2 1 32)"
 SINE_LOOPS="$(normalize_uint "${SINE_LOOPS:-4}" 4 1 64)"
-SINE_FREQUENCY="$(normalize_uint "${SINE_FREQUENCY:-2600}" 2600 20 20000)"
+SINE_FREQUENCY="$(normalize_uint "${SINE_FREQUENCY:-440}" 440 20 20000)"
 SAMPLE_FILE="$(sanitize_text "${SAMPLE_FILE:-${ALSA_UTILS_SAMPLE_FILE}}")"
 [ -n "$PCM_DEVICE" ] || PCM_DEVICE=default
 [ -n "$MIXER_DEVICE" ] || MIXER_DEVICE=default
@@ -114,27 +130,11 @@ if [ -n "$DETECTED_VOLUME_CONTROL" ]; then
 else
 	VOLUME_CONTROL=''
 	if [ -n "$REQUESTED_VOLUME_CONTROL" ]; then
-		VOLUME_CONTROL_NOTE="$(lang de:"Regler '$REQUESTED_VOLUME_CONTROL' ist auf '$MIXER_DEVICE' nicht verf\u00fcgbar." en:"Control '$REQUESTED_VOLUME_CONTROL' is not available on '$MIXER_DEVICE'.")"
+		VOLUME_CONTROL_NOTE="$(lang de:"Regler '$REQUESTED_VOLUME_CONTROL' ist auf '$MIXER_DEVICE' nicht verfügbar." en:"Control '$REQUESTED_VOLUME_CONTROL' is not available on '$MIXER_DEVICE'.")"
 	else
 		VOLUME_CONTROL_NOTE="$(lang de:"Auf '$MIXER_DEVICE' wurden keine einfachen ALSA-Regler gefunden." en:"No simple ALSA controls were found on '$MIXER_DEVICE'.")"
 	fi
 fi
-
-list_samples() {
-	for sample in /usr/share/sounds/alsa/*.wav; do
-		[ -f "$sample" ] || continue
-		basename "$sample"
-	done
-}
-
-sample_exists() {
-	local wanted="$1"
-	local sample
-	for sample in $(list_samples); do
-		[ "$sample" = "$wanted" ] && return 0
-	done
-	return 1
-}
 
 wav_test_preview() {
 	printf 'speaker-test -t wav -c%s -l %s' "$WAV_CHANNELS" "$WAV_LOOPS"
@@ -155,12 +155,21 @@ sine_test_preview() {
 print_sample_channel_options() {
 	local selected="$1"
 	local option
-	for option in ALL 1 2 4 6 8; do
+	for option in ALL; do
 		if [ "$option" = "$selected" ]; then
 			echo "<option value='$(html "$option")' selected>$(html "$option")</option>"
 		else
 			echo "<option value='$(html "$option")'>$(html "$option")</option>"
 		fi
+	done
+	option=1
+	while [ "$option" -le 32 ]; do
+		if [ "$option" = "$selected" ]; then
+			echo "<option value='$(html "$option")' selected>$(html "$option")</option>"
+		else
+			echo "<option value='$(html "$option")'>$(html "$option")</option>"
+		fi
+		option=$((option + 1))
 	done
 }
 
@@ -196,14 +205,14 @@ case "$ACTION" in
 		ACTION_OUTPUT="$(speaker-test -D "$PCM_DEVICE" -t sine -f "$SINE_FREQUENCY" -c "$SINE_CHANNELS" -l "$SINE_LOOPS" 2>&1 | tail -n 120)"
 		;;
 	set_volume)
-		ACTION_TITLE="$(lang de:"Lautst\u00e4rke gesetzt" en:"Volume control result")"
+		ACTION_TITLE="$(lang de:"Lautstärke gesetzt" en:"Volume control result")"
 		VOLUME_VALUE="$(sanitize_uint "$VOLUME_VALUE")"
 		[ -n "$VOLUME_VALUE" ] || VOLUME_VALUE=75
 		if [ -n "$VOLUME_CONTROL" ]; then
 			ACTION_COMMAND="amixer -D $MIXER_DEVICE sset $VOLUME_CONTROL ${VOLUME_VALUE}% $VOLUME_SWITCH"
 			ACTION_OUTPUT="$(amixer -D "$MIXER_DEVICE" sset "$VOLUME_CONTROL" "${VOLUME_VALUE}%" "$VOLUME_SWITCH" 2>&1 | tail -n 80)"
 		else
-			ACTION_OUTPUT="$(lang de:"Kein einfacher Lautst\u00e4rkeregler auf dem gew\u00e4hlten Mixer-Ger\u00e4t gefunden." en:"No simple volume control found on the selected mixer device.")"
+			ACTION_OUTPUT="$(lang de:"Kein einfacher Lautstärkeregler auf dem gewählten Mixer-Gerät gefunden." en:"No simple volume control found on the selected mixer device.")"
 		fi
 		;;
 	set_control)
@@ -224,6 +233,12 @@ cat << EOF
 	flex-wrap: wrap;
 	gap: 16px;
 }
+.alsa-stage-grid {
+	display: grid;
+	grid-template-columns: minmax(360px, 2fr) minmax(280px, 1fr);
+	gap: 16px;
+	margin: 0 0 16px 0;
+}
 .alsa-card {
 	flex: 1 1 320px;
 	min-width: 320px;
@@ -233,12 +248,33 @@ cat << EOF
 	padding: 14px;
 	box-sizing: border-box;
 }
-.alsa-card h3 {
+.alsa-card h3,
+.alsa-stage-panel h3 {
 	margin: 0 0 8px 0;
+}
+.alsa-stage-panel {
+	border: 1px solid #c8d3da;
+	border-radius: 6px;
+	background: #f7fafb;
+	padding: 14px;
+	box-sizing: border-box;
+}
+.alsa-stage-panel-full {
+	grid-column: 1 / -1;
 }
 .alsa-note {
 	margin: 0 0 10px 0;
 	color: #455a64;
+	line-height: 1.45;
+}
+.alsa-section-label {
+	display: block;
+	margin: 0 0 6px 0;
+	font-size: 12px;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #60727c;
 }
 .alsa-command-box {
 	font-family: monospace;
@@ -250,23 +286,43 @@ cat << EOF
 	white-space: pre-wrap;
 	word-break: break-word;
 }
+.alsa-device-table td,
 .alsa-form-table td {
 	padding: 4px 8px 4px 0;
 	vertical-align: top;
 }
-.alsa-console-title {
-	margin: 0 0 8px 0;
-	font-weight: bold;
+.alsa-form-table {
+	width: 100%;
+}
+.alsa-form-table td:first-child {
+	width: 128px;
+}
+.alsa-form-table input[type='text'],
+.alsa-form-table select {
+	width: 100%;
+	box-sizing: border-box;
+}
+.alsa-form-table input[type='number'] {
+	width: 110px;
+	box-sizing: border-box;
+}
+.alsa-submit {
+	margin-top: 8px;
 }
 .alsa-output-box {
 	max-height: 360px;
 	overflow: auto;
 }
+@media (max-width: 900px) {
+	.alsa-stage-grid {
+		grid-template-columns: 1fr;
+	}
+}
 </style>
 EOF
 
 sec_begin "$(lang de:"Aktuelle Ger\u00e4te" en:"Current devices")"
-echo "<table style='width:100%'>"
+echo "<table class='alsa-device-table' style='width:100%'>"
 print_row "$(lang de:"PCM-Ger\u00e4t" en:"PCM device")" "$PCM_DEVICE"
 print_row "$(lang de:"Mixer-Ger\u00e4t" en:"Mixer device")" "$MIXER_DEVICE"
 print_row "$(lang de:"Lautst\u00e4rkeregler" en:"Volume control")" "$VOLUME_CONTROL"
@@ -276,32 +332,52 @@ sec_end
 
 sec_begin "$(lang de:"Speaker-test Studio" en:"Speaker-test studio")"
 cat << EOF
-<p class="alsa-note">$(lang de:"Konfigurieren Sie die speaker-test Aufrufe direkt im Browser. Jeder Lauf sammelt seinen Konsolen-Output in der Ausgabebox weiter unten." en:"Configure speaker-test runs directly in the browser. Each run collects its console output in the output box below.")</p>
+<p class="alsa-note">$(lang de:"Konfigurieren Sie die drei speaker-test Varianten direkt im Browser. Die generierten Befehle bleiben sichtbar und jede Ausführung sammelt ihren Konsolen-Output in der Konsole dieser Seite." en:"Configure the three speaker-test variants directly in the browser. The generated commands stay visible and each execution collects its console output in the console on this page.")</p>
+<div class="alsa-stage-grid">
+<div class="alsa-stage-panel alsa-stage-panel-full">
+<h3>$(lang de:"Ausführungs-Konsole" en:"Execution console")</h3>
+<p class="alsa-note">$(lang de:"Hier landen die letzten speaker-test oder amixer Aufrufe inklusive Kommandozeile und gesammelter Ausgabe." en:"The latest speaker-test or amixer runs land here with the command line and collected output.")</p>
+<span class="alsa-section-label">$(lang de:"Letztes Kommando" en:"Last command")</span>
+<div class="alsa-command-box">$(html "${ACTION_COMMAND:-$(lang de:"Führen Sie einen speaker-test oder Mixer-Befehl aus, um hier den aufgerufenen Befehl zu sehen." en:"Run a speaker-test or mixer command to see the executed command here.")}")</div>
+<span class="alsa-section-label">$(html "${ACTION_TITLE:-$(lang de:"Noch kein Kommando ausgeführt" en:"No command executed yet")}")</span>
+<pre class="log full alsa-output-box">
+EOF
+if [ -n "$ACTION_OUTPUT" ]; then
+	printf '%s\n' "$ACTION_OUTPUT" | html
+else
+	echo "$(lang de:"Noch keine Ausgabe vorhanden. Starten Sie einen Test, um die Konsole hier zu sammeln." en:"No output collected yet. Run a test to collect console output here.")" | html
+fi
+cat << EOF
+</pre>
+</div>
+</div>
 <div class="alsa-grid">
 <div class="alsa-card">
 <h3>$(lang de:"WAV-Kanaltest" en:"WAV channel test")</h3>
 <p class="alsa-note">$(lang de:"Entspricht dem klassischen WAV-basierten speaker-test mit konfigurierbaren Kanälen und Zyklen." en:"Classic WAV-based speaker-test with configurable channels and loops.")</p>
-<div class="alsa-command-box">$(html "$(wav_test_preview)")</div>
-<form action="$(href status alsa-utils)" method="post">
+<span class="alsa-section-label">$(lang de:"Kommando-Vorschau" en:"Command preview")</span>
+<div class="alsa-command-box" id="alsa-preview-wav">$(html "$(wav_test_preview)")</div>
+<form action="$(href status alsa-utils)" method="get">
 <input type="hidden" name="action" value="speaker_test_wav">
 <table class="alsa-form-table">
-<tr><td>$(lang de:"PCM-Ger\u00e4t" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
-<tr><td>$(lang de:"Kan\u00e4le" en:"Channels"):</td><td><input type="number" name="wav_channels" value="$(html "$WAV_CHANNELS")" min="1" max="32"></td></tr>
-<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input type="number" name="wav_loops" value="$(html "$WAV_LOOPS")" min="1" max="64"></td></tr>
+<tr><td>$(lang de:"PCM-Gerät" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
+<tr><td>$(lang de:"Kanäle" en:"Channels"):</td><td><input id="alsa-wav-channels" type="number" name="wav_channels" value="$(html "$WAV_CHANNELS")" min="1" max="32"></td></tr>
+<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input id="alsa-wav-loops" type="number" name="wav_loops" value="$(html "$WAV_LOOPS")" min="1" max="64"></td></tr>
 </table>
-<input type="submit" value="$(lang de:"speaker-test -t wav -c2 -l 4 ausf\u00fchren" en:"Run speaker-test -t wav -c2 -l 4")">
+<input class="alsa-submit" type="submit" value="$(lang de:"WAV-Kanaltest starten" en:"Run WAV channel test")">
 </form>
 </div>
 
 <div class="alsa-card">
 <h3>$(lang de:"WAV-Datei testen" en:"Test a WAV file")</h3>
-<p class="alsa-note">$(lang de:"Ersetzt die bisherige aplay-Wiedergabe durch speaker-test mit ausw\u00e4hlbarer WAV-Datei." en:"Replaces the old aplay playback with speaker-test using a selectable WAV file.")</p>
-<div class="alsa-command-box">$(html "$(sample_test_preview)")</div>
-<form action="$(href status alsa-utils)" method="post">
+<p class="alsa-note">$(lang de:"Ersetzt die bisherige aplay-Wiedergabe durch speaker-test mit auswählbarer WAV-Datei." en:"Replaces the old aplay playback with speaker-test using a selectable WAV file.")</p>
+<span class="alsa-section-label">$(lang de:"Kommando-Vorschau" en:"Command preview")</span>
+<div class="alsa-command-box" id="alsa-preview-sample">$(html "$(sample_test_preview)")</div>
+<form action="$(href status alsa-utils)" method="get">
 <input type="hidden" name="action" value="speaker_test_sample">
 <table class="alsa-form-table">
-<tr><td>$(lang de:"PCM-Ger\u00e4t" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
-<tr><td>$(lang de:"WAV-Datei" en:"WAV file"):</td><td><select name="sample_file">
+<tr><td>$(lang de:"PCM-Gerät" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
+<tr><td>$(lang de:"WAV-Datei" en:"WAV file"):</td><td><select id="alsa-sample-file" name="sample_file">
 EOF
 for sample in $(list_samples); do
 	selected=''
@@ -310,61 +386,118 @@ for sample in $(list_samples); do
 done
 cat << EOF
 </select></td></tr>
-<tr><td>$(lang de:"Kan\u00e4le" en:"Channels"):</td><td><select name="sample_channels">
+<tr><td>$(lang de:"Kanäle" en:"Channels"):</td><td><select id="alsa-sample-channels" name="sample_channels">
 EOF
 print_sample_channel_options "$SAMPLE_CHANNELS"
 cat << EOF
 </select> <span class="alsa-note">$(lang de:"ALL = speaker-test Standard" en:"ALL = speaker-test default")</span></td></tr>
-<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input type="number" name="sample_loops" value="$(html "$SAMPLE_LOOPS")" min="1" max="64"></td></tr>
+<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input id="alsa-sample-loops" type="number" name="sample_loops" value="$(html "$SAMPLE_LOOPS")" min="1" max="64"></td></tr>
 </table>
-<input type="submit" value="$(lang de:"speaker-test -t wav -l 4 -w Rear_Left.wav ausf\u00fchren" en:"Run speaker-test -t wav -l 4 -w Rear_Left.wav")">
+<input class="alsa-submit" type="submit" value="$(lang de:"WAV-Datei-Test starten" en:"Run WAV file test")">
 </form>
 </div>
 
 <div class="alsa-card">
 <h3>$(lang de:"Sinuston-Test" en:"Sine tone test")</h3>
 <p class="alsa-note">$(lang de:"Erzeugt einen Sinuston mit konfigurierbarer Frequenz, Kanalzahl und Zyklusanzahl." en:"Generates a sine tone with configurable frequency, channels and loop count.")</p>
-<div class="alsa-command-box">$(html "$(sine_test_preview)")</div>
-<form action="$(href status alsa-utils)" method="post">
+<span class="alsa-section-label">$(lang de:"Kommando-Vorschau" en:"Command preview")</span>
+<div class="alsa-command-box" id="alsa-preview-sine">$(html "$(sine_test_preview)")</div>
+<form action="$(href status alsa-utils)" method="get">
 <input type="hidden" name="action" value="speaker_test_sine">
 <table class="alsa-form-table">
-<tr><td>$(lang de:"PCM-Ger\u00e4t" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
-<tr><td>$(lang de:"Frequenz" en:"Frequency"):</td><td><input type="number" name="sine_frequency" value="$(html "$SINE_FREQUENCY")" min="20" max="20000"> Hz</td></tr>
-<tr><td>$(lang de:"Kan\u00e4le" en:"Channels"):</td><td><input type="number" name="sine_channels" value="$(html "$SINE_CHANNELS")" min="1" max="32"></td></tr>
-<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input type="number" name="sine_loops" value="$(html "$SINE_LOOPS")" min="1" max="64"></td></tr>
+<tr><td>$(lang de:"PCM-Gerät" en:"PCM device"):</td><td><input type="text" name="pcm_device" value="$(html "$PCM_DEVICE")" size="24"></td></tr>
+<tr><td>$(lang de:"Frequenz" en:"Frequency"):</td><td><input id="alsa-sine-frequency" type="number" name="sine_frequency" value="$(html "$SINE_FREQUENCY")" min="20" max="20000"> Hz</td></tr>
+<tr><td>$(lang de:"Kanäle" en:"Channels"):</td><td><input id="alsa-sine-channels" type="number" name="sine_channels" value="$(html "$SINE_CHANNELS")" min="1" max="32"></td></tr>
+<tr><td>$(lang de:"Zyklen" en:"Loops"):</td><td><input id="alsa-sine-loops" type="number" name="sine_loops" value="$(html "$SINE_LOOPS")" min="1" max="64"></td></tr>
 </table>
-<input type="submit" value="$(lang de:"speaker-test -t sine -f 2600 -c2 ausf\u00fchren" en:"Run speaker-test -t sine -f 2600 -c2")">
+<input class="alsa-submit" type="submit" value="$(lang de:"Sinuston-Test starten" en:"Run sine tone test")">
 </form>
 </div>
 </div>
-EOF
-sec_end
+<script>
+(function() {
+	function byId(id) {
+		return document.getElementById(id);
+	}
 
-sec_begin "$(lang de:"Beispiele" en:"Examples")"
-cat << EOF
-<pre class="log full alsa-output-box">speaker-test -t wav -c2
-speaker-test -t wav -l 4 -w Rear_Left.wav
-speaker-test -t sine -f 2600 -c2</pre>
-EOF
-sec_end
+	function readValue(id, fallback) {
+		var element = byId(id);
+		if (!element || !element.value) {
+			return fallback;
+		}
+		return element.value;
+	}
 
-sec_begin "$(lang de:"Ausgabebox" en:"Output box")"
-cat << EOF
-<div class="alsa-console-title">$(html "${ACTION_TITLE:-$(lang de:"Noch kein Kommando ausgef\u00fchrt" en:"No command executed yet")}")</div>
-<div class="alsa-command-box">$(html "${ACTION_COMMAND:-$(lang de:"F\u00fchren Sie einen speaker-test oder Mixer-Befehl aus, um hier den aufgerufenen Befehl zu sehen." en:"Run a speaker-test or mixer command to see the executed command here.")}")</div>
-<pre class="log full alsa-output-box">
+	function normalizePositive(value, fallback) {
+		var parsed = parseInt(value, 10);
+		if (isNaN(parsed) || parsed < 1) {
+			return fallback;
+		}
+		return parsed;
+	}
+
+	function updateText(id, text) {
+		var element = byId(id);
+		if (element) {
+			element.textContent = text;
+		}
+	}
+
+	function bind(ids, callback) {
+		var index;
+		var element;
+		for (index = 0; index < ids.length; index++) {
+			element = byId(ids[index]);
+			if (!element) {
+				continue;
+			}
+			element.addEventListener('input', callback);
+			element.addEventListener('change', callback);
+		}
+	}
+
+	function updateWavPreview() {
+		var channels = normalizePositive(readValue('alsa-wav-channels', '2'), 2);
+		var loops = normalizePositive(readValue('alsa-wav-loops', '4'), 4);
+		updateText('alsa-preview-wav', 'speaker-test -t wav -c' + channels + ' -l ' + loops);
+	}
+
+	function updateSamplePreview() {
+		var channels = readValue('alsa-sample-channels', 'ALL');
+		var loops = normalizePositive(readValue('alsa-sample-loops', '4'), 4);
+		var file = readValue('alsa-sample-file', 'Rear_Left.wav');
+		var command = 'speaker-test -t wav ';
+
+		if (channels && channels !== 'ALL') {
+			command += '-c' + normalizePositive(channels, 2) + ' ';
+		}
+
+		command += '-l ' + loops + ' -w ' + file;
+		updateText('alsa-preview-sample', command);
+	}
+
+	function updateSinePreview() {
+		var frequency = normalizePositive(readValue('alsa-sine-frequency', '440'), 440);
+		var channels = normalizePositive(readValue('alsa-sine-channels', '2'), 2);
+		var loops = normalizePositive(readValue('alsa-sine-loops', '4'), 4);
+		updateText('alsa-preview-sine', 'speaker-test -t sine -f ' + frequency + ' -c' + channels + ' -l ' + loops);
+	}
+
+	bind(['alsa-wav-channels', 'alsa-wav-loops'], updateWavPreview);
+	bind(['alsa-sample-file', 'alsa-sample-channels', 'alsa-sample-loops'], updateSamplePreview);
+	bind(['alsa-sine-frequency', 'alsa-sine-channels', 'alsa-sine-loops'], updateSinePreview);
+
+	updateWavPreview();
+	updateSamplePreview();
+	updateSinePreview();
+})();
+</script>
 EOF
-if [ -n "$ACTION_OUTPUT" ]; then
-	printf '%s\n' "$ACTION_OUTPUT" | html
-else
-	echo "$(lang de:"Noch keine Ausgabe vorhanden. Starten Sie einen Test, um die Konsole hier zu sammeln." en:"No output collected yet. Run a test to collect console output here.")" | html
-fi
-echo '</pre>'
 sec_end
 
 sec_begin "$(lang de:"Lautst\u00e4rke" en:"Volume control")"
 cat << EOF
-<form action="$(href status alsa-utils)" method="post">
+<form action="$(href status alsa-utils)" method="get">
 <input type="hidden" name="action" value="set_volume">
 <table>
 <tr><td>$(lang de:"Mixer-Ger\u00e4t" en:"Mixer device"):</td><td><input type="text" name="mixer_device" value="$(html "$MIXER_DEVICE")" size="24"></td></tr>
@@ -396,7 +529,7 @@ sec_end
 
 sec_begin "$(lang de:"Mixer" en:"Mixer control")"
 cat << EOF
-<form action="$(href status alsa-utils)" method="post">
+<form action="$(href status alsa-utils)" method="get">
 <input type="hidden" name="action" value="set_control">
 <table>
 <tr><td>$(lang de:"Mixer-Ger\u00e4t" en:"Mixer device"):</td><td><input type="text" name="mixer_device" value="$(html "$MIXER_DEVICE")" size="24"></td></tr>
@@ -417,6 +550,87 @@ cat << EOF
 </pre>
 EOF
 sec_end
+
+cat << EOF
+<script>
+(function() {
+	function byId(id) {
+		return document.getElementById(id);
+	}
+
+	function readValue(id, fallback) {
+		var element = byId(id);
+		if (!element || !element.value) {
+			return fallback;
+		}
+		return element.value;
+	}
+
+	function normalizePositive(value, fallback) {
+		var parsed = parseInt(value, 10);
+		if (isNaN(parsed) || parsed < 1) {
+			return fallback;
+		}
+		return parsed;
+	}
+
+	function updateText(id, text) {
+		var element = byId(id);
+		if (element) {
+			element.textContent = text;
+		}
+	}
+
+	function bind(ids, callback) {
+		var index;
+		var element;
+		for (index = 0; index < ids.length; index++) {
+			element = byId(ids[index]);
+			if (!element) {
+				continue;
+			}
+			element.addEventListener('input', callback);
+			element.addEventListener('change', callback);
+		}
+	}
+
+	function updateWavPreview() {
+		var channels = normalizePositive(readValue('alsa-wav-channels', '2'), 2);
+		var loops = normalizePositive(readValue('alsa-wav-loops', '4'), 4);
+		updateText('alsa-preview-wav', 'speaker-test -t wav -c' + channels + ' -l ' + loops);
+	}
+
+	function updateSamplePreview() {
+		var channels = readValue('alsa-sample-channels', 'ALL');
+		var loops = normalizePositive(readValue('alsa-sample-loops', '4'), 4);
+		var file = readValue('alsa-sample-file', 'Rear_Left.wav');
+		var command = 'speaker-test -t wav ';
+
+		if (channels && channels !== 'ALL') {
+			command += '-c' + normalizePositive(channels, 2) + ' ';
+		}
+
+		command += '-l ' + loops + ' -w ' + file;
+		updateText('alsa-preview-sample', command);
+	}
+
+	function updateSinePreview() {
+		var frequency = normalizePositive(readValue('alsa-sine-frequency', '440'), 440);
+		var channels = normalizePositive(readValue('alsa-sine-channels', '2'), 2);
+		var loops = normalizePositive(readValue('alsa-sine-loops', '4'), 4);
+		updateText('alsa-preview-sine', 'speaker-test -t sine -f ' + frequency + ' -c' + channels + ' -l ' + loops);
+	}
+
+	bind(['alsa-wav-channels', 'alsa-wav-loops'], updateWavPreview);
+	bind(['alsa-sample-file', 'alsa-sample-channels', 'alsa-sample-loops'], updateSamplePreview);
+	bind(['alsa-sine-frequency', 'alsa-sine-channels', 'alsa-sine-loops'], updateSinePreview);
+
+	updateWavPreview();
+	updateSamplePreview();
+	updateSinePreview();
+})();
+</script>
+EOF
 
 sec_begin "$(lang de:"Audio-F\u00e4higkeiten" en:"Audio capabilities")"
 echo '<pre class="log full">'

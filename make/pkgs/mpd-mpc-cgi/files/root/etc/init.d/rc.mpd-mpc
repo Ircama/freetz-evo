@@ -1,0 +1,214 @@
+#!/bin/sh
+
+DAEMON=mpd-mpc
+DAEMON_LONG_NAME='mpc Web Radio'
+LOG_FILE=/tmp/rc.mpd-mpc.log
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/mpd-mpc.cfg ] && . /mod/etc/conf/mpd-mpc.cfg
+
+: ${MPD_MPC_ENABLED:=no}
+: ${MPD_MPC_HOST:=/var/run/mpd/socket}
+: ${MPD_MPC_PORT:=6600}
+: ${MPD_MPC_PARTITION:=}
+: ${MPD_MPC_PASSWORD:=}
+: ${MPD_MPC_STARTUP_URI:=}
+: ${MPD_MPC_STARTUP_VOLUME:=}
+: ${MPD_MPC_STARTUP_CLEAR:=yes}
+: ${MPD_MPC_STARTUP_WAIT:=45}
+LOCAL_MPD_SOCKET=/var/run/mpd/socket
+
+log_msg() {
+	echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG_FILE"
+}
+
+normalize_wait() {
+	case "$1" in
+		''|*[!0-9]*) echo 45 ;;
+		*) echo "$1" ;;
+	esac
+}
+
+mpc_is_local_host() {
+	case "$1" in
+		''|127.0.0.1|localhost|::1|0.0.0.0|::) return 0 ;;
+		*) return 1 ;;
+	esac
+}
+
+mpc_default_host() {
+	if [ -S "$LOCAL_MPD_SOCKET" ]; then
+		printf '%s' "$LOCAL_MPD_SOCKET"
+	else
+		printf '%s' '127.0.0.1'
+	fi
+}
+
+mpc_resolved_host() {
+	case "$MPD_MPC_HOST" in
+		/*|@*)
+			printf '%s' "$MPD_MPC_HOST"
+			;;
+		*)
+			if mpc_is_local_host "$MPD_MPC_HOST" && [ -S "$LOCAL_MPD_SOCKET" ]; then
+				printf '%s' "$LOCAL_MPD_SOCKET"
+			elif [ -n "$MPD_MPC_HOST" ]; then
+				printf '%s' "$MPD_MPC_HOST"
+			else
+				mpc_default_host
+			fi
+			;;
+	esac
+}
+
+mpc_host_value() {
+	resolved_host="$(mpc_resolved_host)"
+	case "$resolved_host" in
+		/*|@*) printf '%s' "$resolved_host" ;;
+		*)
+			if [ -n "$MPD_MPC_PASSWORD" ]; then
+				printf '%s@%s' "$MPD_MPC_PASSWORD" "$resolved_host"
+			else
+				printf '%s' "$resolved_host"
+			fi
+			;;
+	esac
+	}
+
+mpc_uses_port() {
+	case "$(mpc_resolved_host)" in
+		/*|@*) return 1 ;;
+		*) return 0 ;;
+	esac
+}
+
+mpc_target_label() {
+	resolved_host="$(mpc_resolved_host)"
+	case "$resolved_host" in
+		/*|@*) printf '%s' "$resolved_host" ;;
+		*) printf '%s:%s' "$resolved_host" "$MPD_MPC_PORT" ;;
+	esac
+}
+
+mpc_cmd() {
+	host_value="$(mpc_host_value)"
+	if mpc_uses_port; then
+		if [ -n "$MPD_MPC_PARTITION" ]; then
+			/usr/bin/mpc --host "$host_value" --port "$MPD_MPC_PORT" --partition "$MPD_MPC_PARTITION" "$@"
+		else
+			/usr/bin/mpc --host "$host_value" --port "$MPD_MPC_PORT" "$@"
+		fi
+	else
+		if [ -n "$MPD_MPC_PARTITION" ]; then
+			/usr/bin/mpc --host "$host_value" --partition "$MPD_MPC_PARTITION" "$@"
+		else
+			/usr/bin/mpc --host "$host_value" "$@"
+		fi
+	fi
+}
+
+wait_for_mpd() {
+	wait_time="$(normalize_wait "$MPD_MPC_STARTUP_WAIT")"
+	elapsed=0
+	while :; do
+		if mpc_cmd status >/dev/null 2>&1; then
+			return 0
+		fi
+		if [ "$elapsed" -ge "$wait_time" ]; then
+			return 1
+		fi
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+}
+
+run_startup() {
+	if [ ! -x /usr/bin/mpc ]; then
+		log_msg "mpc binary not found"
+		return 1
+	fi
+	if [ -z "$MPD_MPC_STARTUP_URI" ]; then
+		log_msg "startup URI is empty"
+		return 1
+	fi
+	if ! wait_for_mpd; then
+		log_msg "MPD is not reachable at $(mpc_target_label)"
+		return 1
+	fi
+	mpc_cmd stop >/dev/null 2>&1 || true
+	if [ "$MPD_MPC_STARTUP_CLEAR" = 'yes' ]; then
+		mpc_cmd clear >/dev/null 2>&1 || return 1
+	fi
+	mpc_cmd add -- "$MPD_MPC_STARTUP_URI" >/dev/null 2>&1 || return 1
+	if [ -n "$MPD_MPC_STARTUP_VOLUME" ]; then
+		mpc_cmd volume "$MPD_MPC_STARTUP_VOLUME" >/dev/null 2>&1 || return 1
+	fi
+	mpc_cmd play 1 >/dev/null 2>&1 || return 1
+	log_msg "queued and started ${MPD_MPC_STARTUP_URI}"
+	return 0
+}
+
+start_playback() {
+	echo -n "Starting ${DAEMON_LONG_NAME} ... "
+	if run_startup; then
+		echo 'done.'
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+stop_playback() {
+	echo -n "Stopping ${DAEMON_LONG_NAME} ... "
+	if mpc_cmd stop >/dev/null 2>&1; then
+		log_msg 'playback stopped'
+		echo 'done.'
+	else
+		echo 'failed.'
+		exit 1
+	fi
+}
+
+show_status() {
+	if mpc_cmd status; then
+		return 0
+	fi
+	echo 'MPD is not reachable.'
+	return 1
+}
+
+case "$1" in
+	""|load)
+		modreg cgi "$DAEMON" "$DAEMON_LONG_NAME"
+		modreg status "$DAEMON" "$DAEMON_LONG_NAME"
+		if [ "$MPD_MPC_ENABLED" = 'yes' ] && [ -n "$MPD_MPC_STARTUP_URI" ]; then
+			(
+				[ -r /mod/etc/conf/mpd-mpc.cfg ] && . /mod/etc/conf/mpd-mpc.cfg
+				run_startup
+			) >/dev/null 2>&1 &
+		fi
+		;;
+	unload)
+		modunreg status "$DAEMON"
+		modunreg cgi "$DAEMON"
+		;;
+	start)
+		start_playback
+		;;
+	stop)
+		stop_playback
+		;;
+	restart)
+		mpc_cmd stop >/dev/null 2>&1
+		start_playback
+		;;
+	status)
+		show_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1116,7 +1116,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     alsactl and speaker-test.
 
   * **[alsaequal 0.7.1](alsaequal.md)<a id='alsaequal'></a>**<br>
-    devices, so it can be configured with regular ALSA mixer tools. At runtime it expects a LADSPA plugin library such as CAPS Eq10.
+    devices, so it can be configured with regular ALSA mixer tools. Freetz-EVO pairs it with the CAPS LADSPA library by default, including the Eq10 module used by the web UI.
 
   * **[cmus 2.11.0](cmus.md)<a id='cmus'></a>**<br>
     This build enables ALSA output together with MP3, FLAC and Vorbis playback support.

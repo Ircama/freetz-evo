@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_LIB_caps
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_caps
+	bool "caps"
+	default n
+	help
+		externals the following file(s):
+		 /usr/lib/ladspa/caps.so
+		 /usr/share/ladspa/rdf/caps.rdf

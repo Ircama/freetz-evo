@@ -1,0 +1,9 @@
+config FREETZ_LIB_caps
+	bool "CAPS LADSPA plugins (caps.so)"
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		CAPS is the C* Audio Plugin Suite for LADSPA hosts.
+		It provides the caps.so plugin library, including the Eq10 module
+		commonly used by alsaequal.

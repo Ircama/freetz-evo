@@ -1,12 +1,15 @@
 config FREETZ_PACKAGE_ALSAEQUAL
 	bool "alsaequal 0.7.1"
 	select FREETZ_LIB_libasound
+	select FREETZ_LIB_caps
 	default n
 	help
 		alsaequal exposes a LADSPA-based equalizer as ALSA PCM and control
 		devices, so it can be configured with regular ALSA mixer tools.
 
-		At runtime it expects a LADSPA plugin library such as CAPS Eq10.
+		Freetz-EVO selects the CAPS LADSPA library by default so the bundled
+		Eq10 module is immediately available. Another compatible LADSPA
+		plugin can still be configured at runtime if desired.
 
 if FREETZ_PACKAGE_ALSAEQUAL
 

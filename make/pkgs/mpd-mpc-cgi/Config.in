@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_MPD_MPC_CGI
+	bool "mpc CGI (MPD CLI radio control web UI)"
+	depends on FREETZ_PACKAGE_MPD_MPC
+	default y
+	help
+		Provides the freetz CGI configuration page and live radio-control
+		status page for the mpc client.
+
+		Supports WebRadioDB search/import, MPD playback controls, artwork
+		display and saved startup playback presets.
+
+		http://fritz.box:81/cgi-bin/conf/mpd-mpc

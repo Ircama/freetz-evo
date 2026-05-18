@@ -18,11 +18,13 @@ Freetz-EVO includes:
 - over 60 python3 libraries
 - over 25 improved packages and libraries
 - exclusive applications
-- audio driver with player and web radio.
+- USB audio stack, playback tools, and web radio functions.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 
 New subsystems also include ALSA userspace audio packages, exposed ALSA/USB audio kernel drivers on compatible targets, and the `cdc-acm` USB serial driver for native USB CDC ACM devices.
+
+On compatible targets, enabling the exposed ALSA/USB audio drivers together with the ALSA userspace stack allows audio playback through a USB headset or, preferably, a USB HiFi DAC. Combined with the available MPD, mpc, myMPD, and related web interfaces, Freetz-EVO also offers web radio browsing, playback, and control functions directly from the browser.
 
 Additionally, Freetz-EVO offers AI translation for non EN and DE languages, more explicit error/warning messages, an advanced GitHub Action for testing new developments, and many other new features.
 

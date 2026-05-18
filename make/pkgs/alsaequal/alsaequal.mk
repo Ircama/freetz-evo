@@ -12,7 +12,7 @@ $(PKG)_SITE:=https://github.com/bassdr/alsaequal/archive/refs/tags
 
 $(PKG)_CATEGORY:=Audio
 
-$(PKG)_DEPENDS_ON += alsa-lib
+$(PKG)_DEPENDS_ON += alsa-lib caps
 
 $(PKG)_MODULES := \
 	libasound_module_pcm_equal.so \

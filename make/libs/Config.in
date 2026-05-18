@@ -111,6 +111,7 @@ endmenu ### "Multi precision arithmetic libs"
 menu "Multimedia"
 	menu "Audio I/O"
 		source "make/libs/alsa-lib/Config.in"
+		source "make/libs/caps/Config.in"
 	endmenu
 	source "make/libs/libdvbcsa/Config.in"
 	source "make/libs/libmpdclient/Config.in"
