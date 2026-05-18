@@ -10,8 +10,8 @@ $(PKG)_SITE:=https://quitte.de/dsp
 $(PKG)_BINARY:=$($(PKG)_DIR)/caps.so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/ladspa/caps.so
 $(PKG)_STAGING_RDF:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/ladspa/rdf/caps.rdf
-$(PKG)_TARGET_BINARY:=$(TARGET_DIR)/usr/lib/ladspa/caps.so
-$(PKG)_TARGET_RDF:=$(TARGET_DIR)/usr/share/ladspa/rdf/caps.rdf
+$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/ladspa/caps.so
+$(PKG)_TARGET_RDF:=$($(PKG)_DEST_DIR)/usr/share/ladspa/rdf/caps.rdf
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_STDCXXLIB
@@ -44,14 +44,19 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 		$(CAPS_MAKE_OPTS) \
 		install
 
+$($(PKG)_STAGING_RDF): $($(PKG)_STAGING_BINARY)
+	[ -f "$@" ]
+
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
-	$(INSTALL_FILE) $(CAPS_STAGING_BINARY) $(TARGET_DIR)/usr/lib/ladspa/
-	$(TARGET_STRIP) $(CAPS_TARGET_BINARY) 2>/dev/null || true
-	$(INSTALL_FILE) $(CAPS_STAGING_RDF) $(TARGET_DIR)/usr/share/ladspa/rdf/
+	$(INSTALL_FILE)
+	$(TARGET_STRIP) $@ 2>/dev/null || true
 
-$(pkg): $($(PKG)_STAGING_BINARY)
+$($(PKG)_TARGET_RDF): $($(PKG)_STAGING_RDF)
+	$(INSTALL_FILE)
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg): $($(PKG)_STAGING_BINARY) $($(PKG)_STAGING_RDF)
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_TARGET_RDF)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(CAPS_DIR) clean
@@ -61,7 +66,7 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -f \
-		$(TARGET_DIR)/usr/lib/ladspa/caps.so \
-		$(TARGET_DIR)/usr/share/ladspa/rdf/caps.rdf
+		$(CAPS_TARGET_BINARY) \
+		$(CAPS_TARGET_RDF)
 
 $(PKG_FINISH)
