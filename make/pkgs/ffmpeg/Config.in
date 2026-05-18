@@ -111,9 +111,18 @@ if FREETZ_PACKAGE_FFMPEG
 		select FREETZ_PACKAGE_FFMPEG_PROTOCOL_file
 		default n
 
+	config FREETZ_PACKAGE_FFMPEG_FULL_SUPPORT
+		bool "Enable full runtime support"
+		help
+			Disable the size-optimized profile and stop forcing the
+			package-wide `--disable-bsfs`, `--disable-devices`, and
+			`--disable-filters` flags. Leave this off to keep the
+			current small-profile default.
+
 	config FREETZ_PACKAGE_FFMPEG_EVERYTHING
 		bool "Include everything - EXPERIMENTAL"
 		depends on FREETZ_TARGET_GCC_4_8_MIN
+		select FREETZ_PACKAGE_FFMPEG_FULL_SUPPORT
 		select FREETZ_PACKAGE_FFMPEG_PATENTED
 		select FREETZ_PACKAGE_FFMPEG_LIBDLNA_SUPPORT
 		select FREETZ_PACKAGE_FFMPEG_ENCODER_ac3

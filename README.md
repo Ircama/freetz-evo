@@ -18,7 +18,7 @@ Freetz-EVO includes:
 - over 60 python3 libraries
 - over 25 improved packages and libraries
 - exclusive applications
-- audio driver.
+- audio driver with player and web radio.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 

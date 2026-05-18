@@ -1,0 +1,38 @@
+diff --git a/src/main.c b/src/main.c
+--- a/src/main.c
++++ b/src/main.c
+@@ -236,6 +236,19 @@
+             break;
+     }
+ 
++    /*
++     * Configure stdio buffering before the first foreground log message.
++     * uClibc may reject setvbuf() once stdout/stderr have already been used.
++     */
++    if (setvbuf(stdout, NULL, _IOLBF, 0) != 0 ||
++        setvbuf(stderr, NULL, _IOLBF, 0) != 0)
++    {
++#if !defined(__UCLIBC__)
++        MYMPD_LOG_EMERG(NULL, "Could not set stdout and stderr buffer");
++        goto cleanup;
++#endif
++    }
++
+     if (config->log_to_syslog == true &&
+         log_type != LOG_TO_SYSTEMD)
+     {
+@@ -329,14 +342,6 @@
+         goto cleanup;
+     }
+ 
+-    // Set output buffers
+-    if (setvbuf(stdout, NULL, _IOLBF, 0) != 0 ||
+-        setvbuf(stderr, NULL, _IOLBF, 0) != 0)
+-    {
+-        MYMPD_LOG_EMERG(NULL, "Could not set stdout and stderr buffer");
+-        goto cleanup;
+-    }
+-
+     // Init webserver
+     if (create_certificates(config) == false ||
+         (mg_user_data = webserver_init_mg_user_data(config)) == NULL ||
