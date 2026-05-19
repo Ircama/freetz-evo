@@ -7,20 +7,26 @@ $(PKG)_SITE:=@GNU/nettle,https://www.lysator.liu.se/~nisse/archive
 ### CHANGES:=https://git.lysator.liu.se/nettle/nettle/blob/master/ChangeLog
 ### CVSREPO:=https://git.lysator.liu.se/nettle/nettle
 
-$(PKG)_LIBNAMES         := nettle hogweed
-$(PKG)_LIBVERSIONS      := 8.11   6.11
+$(PKG)_LIBNAMES         := nettle
+$(PKG)_LIBNAMES         += $(if $(FREETZ_LIB_libhogweed),hogweed)
+$(PKG)_LIBVERSIONS      := 8.11
+$(PKG)_LIBVERSIONS      += $(if $(FREETZ_LIB_libhogweed),6.11)
 $(PKG)_LIBNAMES_LONG    := $(join $($(PKG)_LIBNAMES:%=lib%.so.),$($(PKG)_LIBVERSIONS))
 $(PKG)_LIBS_BUILD_DIR   := $($(PKG)_LIBNAMES:%=$($(PKG)_DIR)/lib%.so)
 $(PKG)_LIBS_STAGING_DIR := $($(PKG)_LIBNAMES_LONG:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%)
 $(PKG)_LIBS_TARGET_DIR  := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_TARGET_DIR)/%)
 
-$(PKG)_DEPENDS_ON += gmp
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_LIB_libhogweed),gmp)
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libhogweed
+
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS)$(if $(FREETZ_LIB_libhogweed), -L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib)"
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-assembler
 $(PKG)_CONFIGURE_OPTIONS += --disable-documentation
 $(PKG)_CONFIGURE_OPTIONS += --disable-openssl
 $(PKG)_CONFIGURE_OPTIONS += --disable-mini-gmp
-$(PKG)_CONFIGURE_OPTIONS += --enable-public-key
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_LIB_libhogweed),--enable-public-key,--disable-public-key)
 
 
 $(PKG_SOURCE_DOWNLOAD)

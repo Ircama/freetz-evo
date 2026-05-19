@@ -320,5 +320,180 @@
     "timestamp": "2026-05-15T21:11:18Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:WAV speaker-test output": {
+    "original": "WAV speaker-test output",
+    "translation": "Uscita WAV per il test dei diffusori",
+    "timestamp": "2026-05-19T01:01:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WAV file speaker-test output": {
+    "original": "WAV file speaker-test output",
+    "translation": "File WAV di uscita del test dei diffusori",
+    "timestamp": "2026-05-19T01:01:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sine speaker-test output": {
+    "original": "Sine speaker-test output",
+    "translation": "Uscita di prova dell'altoparlante sinusoidale",
+    "timestamp": "2026-05-19T01:01:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Speaker-test studio": {
+    "original": "Speaker-test studio",
+    "translation": "Studio di prova per altoparlanti",
+    "timestamp": "2026-05-19T01:01:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configure the three speaker-test variants directly in the browser. The generated commands stay visible and each execution collects its console output in the console on this page.": {
+    "original": "Configure the three speaker-test variants directly in the browser. The generated commands stay visible and each execution collects its console output in the console on this page.",
+    "translation": "Configurare le tre varianti di speaker-test direttamente nel browser. I comandi generati rimangono visibili e ogni esecuzione raccoglie il suo output nella console di questa pagina.",
+    "timestamp": "2026-05-19T01:01:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Execution console": {
+    "original": "Execution console",
+    "translation": "Console di esecuzione",
+    "timestamp": "2026-05-19T01:01:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The latest speaker-test or amixer runs land here with the command line and collected output.": {
+    "original": "The latest speaker-test or amixer runs land here with the command line and collected output.",
+    "translation": "Le ultime esecuzioni di speaker-test o amixer sono qui con la riga di comando e l'output raccolto.",
+    "timestamp": "2026-05-19T01:01:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Last command": {
+    "original": "Last command",
+    "translation": "Ultimo comando",
+    "timestamp": "2026-05-19T01:01:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Run a speaker-test or mixer command to see the executed command here.": {
+    "original": "Run a speaker-test or mixer command to see the executed command here.",
+    "translation": "Eseguire un comando speaker-test o mixer per vedere il comando eseguito.",
+    "timestamp": "2026-05-19T01:01:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No command executed yet": {
+    "original": "No command executed yet",
+    "translation": "Nessun comando eseguito",
+    "timestamp": "2026-05-19T01:01:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No output collected yet. Run a test to collect console output here.": {
+    "original": "No output collected yet. Run a test to collect console output here.",
+    "translation": "Non è ancora stato raccolto alcun output. Eseguire un test per raccogliere l'output della console.",
+    "timestamp": "2026-05-19T01:01:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WAV channel test": {
+    "original": "WAV channel test",
+    "translation": "Test del canale WAV",
+    "timestamp": "2026-05-19T01:01:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Classic WAV-based speaker-test with configurable channels and loops.": {
+    "original": "Classic WAV-based speaker-test with configurable channels and loops.",
+    "translation": "Classico test di altoparlanti basato su WAV con canali e loop configurabili.",
+    "timestamp": "2026-05-19T01:01:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Command preview": {
+    "original": "Command preview",
+    "translation": "Anteprima del comando",
+    "timestamp": "2026-05-19T01:01:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Loops": {
+    "original": "Loops",
+    "translation": "Loops",
+    "timestamp": "2026-05-19T01:01:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Run WAV channel test": {
+    "original": "Run WAV channel test",
+    "translation": "Eseguire il test del canale WAV",
+    "timestamp": "2026-05-19T01:01:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Test a WAV file": {
+    "original": "Test a WAV file",
+    "translation": "Testare un file WAV",
+    "timestamp": "2026-05-19T01:01:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Replaces the old aplay playback with speaker-test using a selectable WAV file.": {
+    "original": "Replaces the old aplay playback with speaker-test using a selectable WAV file.",
+    "translation": "Sostituisce la vecchia riproduzione aplay con il test dei diffusori utilizzando un file WAV selezionabile.",
+    "timestamp": "2026-05-19T01:01:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WAV file": {
+    "original": "WAV file",
+    "translation": "File WAV",
+    "timestamp": "2026-05-19T01:01:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALL = speaker-test default": {
+    "original": "ALL = speaker-test default",
+    "translation": "ALL = altoparlante-test predefinito",
+    "timestamp": "2026-05-19T01:01:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Run WAV file test": {
+    "original": "Run WAV file test",
+    "translation": "Eseguire il test del file WAV",
+    "timestamp": "2026-05-19T01:01:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sine tone test": {
+    "original": "Sine tone test",
+    "translation": "Test sinusoidale",
+    "timestamp": "2026-05-19T01:01:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generates a sine tone with configurable frequency, channels and loop count.": {
+    "original": "Generates a sine tone with configurable frequency, channels and loop count.",
+    "translation": "Genera un tono sinusoidale con frequenza, canali e numero di loop configurabili.",
+    "timestamp": "2026-05-19T01:02:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Frequency": {
+    "original": "Frequency",
+    "translation": "Frequenza",
+    "timestamp": "2026-05-19T01:02:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Run sine tone test": {
+    "original": "Run sine tone test",
+    "translation": "Eseguire il test del tono sinusoidale",
+    "timestamp": "2026-05-19T01:02:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

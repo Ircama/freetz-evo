@@ -1,0 +1,793 @@
+{
+  "deepl:Autoplay on boot": {
+    "original": "Autoplay on boot",
+    "translation": "Autoplay all'avvio",
+    "timestamp": "2026-05-19T01:03:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No active playback.": {
+    "original": "No active playback.",
+    "translation": "Nessuna riproduzione attiva.",
+    "timestamp": "2026-05-19T01:03:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:unknown": {
+    "original": "unknown",
+    "translation": "sconosciuto",
+    "timestamp": "2026-05-19T01:03:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue and start the saved station automatically when the package is loaded": {
+    "original": "Queue and start the saved station automatically when the package is loaded",
+    "translation": "Accodare e avviare automaticamente la stazione salvata quando il pacchetto viene caricato",
+    "timestamp": "2026-05-19T01:03:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Using local Unix socket automatically.": {
+    "original": "Using local Unix socket automatically.",
+    "translation": "Utilizzo automatico del socket Unix locale.",
+    "timestamp": "2026-05-19T01:03:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Station name (optional)": {
+    "original": "Station name (optional)",
+    "translation": "Nome della stazione (opzionale)",
+    "timestamp": "2026-05-19T01:03:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Live overview": {
+    "original": "Live overview",
+    "translation": "Panoramica live",
+    "timestamp": "2026-05-19T01:03:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stream URI": {
+    "original": "Stream URI",
+    "translation": "URI del flusso",
+    "timestamp": "2026-05-19T01:03:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current playback": {
+    "original": "Current playback",
+    "translation": "Riproduzione corrente",
+    "timestamp": "2026-05-19T01:03:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Image or WebRadioDB image (optional)": {
+    "original": "Image or WebRadioDB image (optional)",
+    "translation": "Immagine o immagine WebRadioDB (opzionale)",
+    "timestamp": "2026-05-19T01:03:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configured MPD target": {
+    "original": "Configured MPD target",
+    "translation": "Destinazione MPD configurata",
+    "timestamp": "2026-05-19T01:03:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Homepage (optional)": {
+    "original": "Homepage (optional)",
+    "translation": "Homepage (opzionale)",
+    "timestamp": "2026-05-19T01:03:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Active MPD target": {
+    "original": "Active MPD target",
+    "translation": "Obiettivo MPD attivo",
+    "timestamp": "2026-05-19T01:03:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Startup volume (empty = keep current)": {
+    "original": "Startup volume (empty = keep current)",
+    "translation": "Volume di avvio (vuoto = mantiene l'attuale)",
+    "timestamp": "2026-05-19T01:03:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Connection note": {
+    "original": "Connection note",
+    "translation": "Nota di connessione",
+    "timestamp": "2026-05-19T01:03:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Partition": {
+    "original": "Partition",
+    "translation": "Partizione",
+    "timestamp": "2026-05-19T01:03:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clear queue before playback": {
+    "original": "Clear queue before playback",
+    "translation": "Cancellare la coda prima della riproduzione",
+    "timestamp": "2026-05-19T01:03:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Saved startup station": {
+    "original": "Saved startup station",
+    "translation": "Stazione di avvio salvata",
+    "timestamp": "2026-05-19T01:03:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Wait time for reachable MPD in seconds": {
+    "original": "Wait time for reachable MPD in seconds",
+    "translation": "Tempo di attesa per MPD raggiungibile in secondi",
+    "timestamp": "2026-05-19T01:03:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current title": {
+    "original": "Current title",
+    "translation": "Titolo attuale",
+    "timestamp": "2026-05-19T01:03:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MPD connection": {
+    "original": "MPD connection",
+    "translation": "Connessione MPD",
+    "timestamp": "2026-05-19T01:03:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Artist / year": {
+    "original": "Artist / year",
+    "translation": "Artista / anno",
+    "timestamp": "2026-05-19T01:03:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Host or socket": {
+    "original": "Host or socket",
+    "translation": "Host o socket",
+    "timestamp": "2026-05-19T01:03:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porta",
+    "timestamp": "2026-05-19T01:03:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Station": {
+    "original": "Station",
+    "translation": "Stazione",
+    "timestamp": "2026-05-19T01:03:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Partition (optional)": {
+    "original": "Partition (optional)",
+    "translation": "Partizione (opzionale)",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Password (optional)": {
+    "original": "Password (optional)",
+    "translation": "Password (opzionale)",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:On air": {
+    "original": "On air",
+    "translation": "In onda",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Duration": {
+    "original": "Duration",
+    "translation": "Durata",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Metadata score": {
+    "original": "Metadata score",
+    "translation": "Punteggio dei metadati",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:For local MPD instances, <code>/var/run/mpd/socket</code> is the most reliable default. If a local TCP host such as <code>127.0.0.1</code> is configured instead, the status page automatically falls back to the Unix socket whenever it is available.": {
+    "original": "For local MPD instances, <code>/var/run/mpd/socket</code> is the most reliable default. If a local TCP host such as <code>127.0.0.1</code> is configured instead, the status page automatically falls back to the Unix socket whenever it is available.",
+    "translation": "Per le istanze MPD locali, <code>/var/run/mpd/socket</code> è l'impostazione predefinita più affidabile. Se invece viene configurato un host TCP locale come <code>127.0.0.1</code>, la pagina di stato torna automaticamente al socket Unix quando è disponibile.",
+    "timestamp": "2026-05-19T01:03:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebRadioDB": {
+    "original": "WebRadioDB",
+    "translation": "WebRadioDB",
+    "timestamp": "2026-05-19T01:03:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Metadata source": {
+    "original": "Metadata source",
+    "translation": "Fonte dei metadati",
+    "timestamp": "2026-05-19T01:03:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:JSON source": {
+    "original": "JSON source",
+    "translation": "fonte JSON",
+    "timestamp": "2026-05-19T01:03:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Metadata ID": {
+    "original": "Metadata ID",
+    "translation": "ID metadati",
+    "timestamp": "2026-05-19T01:03:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cache directory": {
+    "original": "Cache directory",
+    "translation": "Directory di cache",
+    "timestamp": "2026-05-19T01:03:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current URI": {
+    "original": "Current URI",
+    "translation": "URI corrente",
+    "timestamp": "2026-05-19T01:03:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The live page can cache the WebRadioDB dataset locally, filter it in the browser and save a selected station directly as startup profile.": {
+    "original": "The live page can cache the WebRadioDB dataset locally, filter it in the browser and save a selected station directly as startup profile.",
+    "translation": "La pagina live può memorizzare nella cache il dataset WebRadioDB localmente, filtrarlo nel browser e salvare una stazione selezionata direttamente come profilo di avvio.",
+    "timestamp": "2026-05-19T01:03:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-05-19T01:03:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Player state": {
+    "original": "Player state",
+    "translation": "Stato del giocatore",
+    "timestamp": "2026-05-19T01:03:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Progress": {
+    "original": "Progress",
+    "translation": "Progresso",
+    "timestamp": "2026-05-19T01:03:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show live status, MPD controls and WebRadioDB browser": {
+    "original": "Show live status, MPD controls and WebRadioDB browser",
+    "translation": "Mostra lo stato live, i controlli MPD e il browser WebRadioDB",
+    "timestamp": "2026-05-19T01:03:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue position": {
+    "original": "Queue position",
+    "translation": "Posizione in coda",
+    "timestamp": "2026-05-19T01:03:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Notes": {
+    "original": "Notes",
+    "translation": "Note",
+    "timestamp": "2026-05-19T01:03:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue length": {
+    "original": "Queue length",
+    "translation": "Lunghezza della coda",
+    "timestamp": "2026-05-19T01:03:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Volume": {
+    "original": "Volume",
+    "translation": "Volume",
+    "timestamp": "2026-05-19T01:03:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The status page can start a station immediately with <code>mpc clear</code>, <code>mpc add</code> and <code>mpc play</code>, or only queue it. Saving a startup profile sets <code>MPD_MPC_ENABLED=yes</code> and writes name, URI, image and homepage into the persistent configuration.": {
+    "original": "The status page can start a station immediately with <code>mpc clear</code>, <code>mpc add</code> and <code>mpc play</code>, or only queue it. Saving a startup profile sets <code>MPD_MPC_ENABLED=yes</code> and writes name, URI, image and homepage into the persistent configuration.",
+    "translation": "La pagina di stato può avviare una stazione immediatamente con <code>mpc clear</code>, <code>mpc add</code> e <code>mpc play</code>, oppure solo in coda. Salvando un profilo di avvio si imposta <code>MPD_MPC_ENABLED=yes</code> e si scrivono nome, URI, immagine e homepage nella configurazione persistente.",
+    "timestamp": "2026-05-19T01:03:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Station homepage": {
+    "original": "Station homepage",
+    "translation": "homepage della stazione",
+    "timestamp": "2026-05-19T01:03:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:DB cache": {
+    "original": "DB cache",
+    "translation": "DB cache",
+    "timestamp": "2026-05-19T01:03:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cache file": {
+    "original": "Cache file",
+    "translation": "File di cache",
+    "timestamp": "2026-05-19T01:03:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Cache size": {
+    "original": "Cache size",
+    "translation": "Dimensione della cache",
+    "timestamp": "2026-05-19T01:03:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Artwork": {
+    "original": "Artwork",
+    "translation": "Opera d'arte",
+    "timestamp": "2026-05-19T01:03:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MPD controls": {
+    "original": "MPD controls",
+    "translation": "Controlli MPD",
+    "timestamp": "2026-05-19T01:03:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current session": {
+    "original": "Current session",
+    "translation": "Sessione corrente",
+    "timestamp": "2026-05-19T01:03:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:State": {
+    "original": "State",
+    "translation": "Stato",
+    "timestamp": "2026-05-19T01:03:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue": {
+    "original": "Queue",
+    "translation": "Coda",
+    "timestamp": "2026-05-19T01:03:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Playback": {
+    "original": "Playback",
+    "translation": "Riproduzione",
+    "timestamp": "2026-05-19T01:03:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Immediate transport commands for the active stream or queue entry.": {
+    "original": "Immediate transport commands for the active stream or queue entry.",
+    "translation": "Comandi di trasporto immediati per il flusso attivo o la voce della coda.",
+    "timestamp": "2026-05-19T01:03:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Play": {
+    "original": "Play",
+    "translation": "Gioca",
+    "timestamp": "2026-05-19T01:03:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Pause": {
+    "original": "Pause",
+    "translation": "Pausa",
+    "timestamp": "2026-05-19T01:03:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Toggle": {
+    "original": "Toggle",
+    "translation": "Toggle",
+    "timestamp": "2026-05-19T01:03:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stop": {
+    "original": "Stop",
+    "translation": "Stop",
+    "timestamp": "2026-05-19T01:03:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clip progress": {
+    "original": "Clip progress",
+    "translation": "Clip progress",
+    "timestamp": "2026-05-19T01:03:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Prev": {
+    "original": "Prev",
+    "translation": "Prev",
+    "timestamp": "2026-05-19T01:03:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Next": {
+    "original": "Next",
+    "translation": "Avanti",
+    "timestamp": "2026-05-19T01:03:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue and status": {
+    "original": "Queue and status",
+    "translation": "Coda e stato",
+    "timestamp": "2026-05-19T01:03:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Quick access to current track, status output, and key queue actions.": {
+    "original": "Quick access to current track, status output, and key queue actions.",
+    "translation": "Accesso rapido alla traccia corrente, all'output di stato e alle azioni chiave della coda.",
+    "timestamp": "2026-05-19T01:03:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current": {
+    "original": "Current",
+    "translation": "Corrente",
+    "timestamp": "2026-05-19T01:03:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato",
+    "timestamp": "2026-05-19T01:03:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Shuffle queue": {
+    "original": "Shuffle queue",
+    "translation": "Mischia la coda",
+    "timestamp": "2026-05-19T01:03:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clear queue": {
+    "original": "Clear queue",
+    "translation": "Cancella coda",
+    "timestamp": "2026-05-19T01:03:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Use the slider for fine adjustments or jump to a fixed preset value.": {
+    "original": "Use the slider for fine adjustments or jump to a fixed preset value.",
+    "translation": "Utilizzare il cursore per le regolazioni di precisione o per passare a un valore predefinito fisso.",
+    "timestamp": "2026-05-19T01:03:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Apply": {
+    "original": "Apply",
+    "translation": "Applica",
+    "timestamp": "2026-05-19T01:03:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh and setup": {
+    "original": "Refresh and setup",
+    "translation": "Aggiornamento e configurazione",
+    "timestamp": "2026-05-19T01:03:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh the page, sync the radio database, or jump into configuration.": {
+    "original": "Refresh the page, sync the radio database, or jump into configuration.",
+    "translation": "Aggiornare la pagina, sincronizzare il database delle radio o accedere alla configurazione.",
+    "timestamp": "2026-05-19T01:03:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Auto refresh 5s": {
+    "original": "Auto refresh 5s",
+    "translation": "Aggiornamento automatico 5s",
+    "timestamp": "2026-05-19T01:03:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh now": {
+    "original": "Refresh now",
+    "translation": "Aggiorna ora",
+    "timestamp": "2026-05-19T01:03:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Sync WebRadioDB": {
+    "original": "Sync WebRadioDB",
+    "translation": "Sincronizzazione di WebRadioDB",
+    "timestamp": "2026-05-19T01:03:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Disable autoplay": {
+    "original": "Disable autoplay",
+    "translation": "Disabilita l'autoplay",
+    "timestamp": "2026-05-19T01:03:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-05-19T01:03:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Queue management": {
+    "original": "Queue management",
+    "translation": "Gestione delle code",
+    "timestamp": "2026-05-19T01:03:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh queue": {
+    "original": "Refresh queue",
+    "translation": "Aggiorna la coda",
+    "timestamp": "2026-05-19T01:04:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Playing": {
+    "original": "Playing",
+    "translation": "Giocare",
+    "timestamp": "2026-05-19T01:04:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Up": {
+    "original": "Up",
+    "translation": "Su",
+    "timestamp": "2026-05-19T01:04:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Down": {
+    "original": "Down",
+    "translation": "Giù",
+    "timestamp": "2026-05-19T01:04:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Remove": {
+    "original": "Remove",
+    "translation": "Rimuovi",
+    "timestamp": "2026-05-19T01:04:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The queue is empty.": {
+    "original": "The queue is empty.",
+    "translation": "La coda è vuota.",
+    "timestamp": "2026-05-19T01:04:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Command output": {
+    "original": "Command output",
+    "translation": "Uscita di comando",
+    "timestamp": "2026-05-19T01:04:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Last command": {
+    "original": "Last command",
+    "translation": "Ultimo comando",
+    "timestamp": "2026-05-19T01:04:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Exit code": {
+    "original": "Exit code",
+    "translation": "Codice di uscita",
+    "timestamp": "2026-05-19T01:04:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Manual station": {
+    "original": "Manual station",
+    "translation": "Stazione manuale",
+    "timestamp": "2026-05-19T01:04:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Name": {
+    "original": "Name",
+    "translation": "Nome",
+    "timestamp": "2026-05-19T01:04:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Image or filename": {
+    "original": "Image or filename",
+    "translation": "Immagine o nome del file",
+    "timestamp": "2026-05-19T01:04:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Homepage": {
+    "original": "Homepage",
+    "translation": "Homepage",
+    "timestamp": "2026-05-19T01:04:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Play now": {
+    "original": "Play now",
+    "translation": "Gioca ora",
+    "timestamp": "2026-05-19T01:04:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Save startup": {
+    "original": "Save startup",
+    "translation": "Salva avvio",
+    "timestamp": "2026-05-19T01:04:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Save a manual station directly into the persistent configuration or start it immediately in MPD.": {
+    "original": "Save a manual station directly into the persistent configuration or start it immediately in MPD.",
+    "translation": "Salvare una stazione manuale direttamente nella configurazione persistente o avviarla immediatamente in MPD.",
+    "timestamp": "2026-05-19T01:04:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebRadioDB browser": {
+    "original": "WebRadioDB browser",
+    "translation": "Browser WebRadioDB",
+    "timestamp": "2026-05-19T01:04:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Search by name, genre, country": {
+    "original": "Search by name, genre, country",
+    "translation": "Ricerca per nome, genere, paese",
+    "timestamp": "2026-05-19T01:04:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:All countries": {
+    "original": "All countries",
+    "translation": "Tutti i paesi",
+    "timestamp": "2026-05-19T01:04:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:All languages": {
+    "original": "All languages",
+    "translation": "Tutte le lingue",
+    "timestamp": "2026-05-19T01:04:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:All genres": {
+    "original": "All genres",
+    "translation": "Tutti i generi",
+    "timestamp": "2026-05-19T01:04:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:All codecs": {
+    "original": "All codecs",
+    "translation": "Tutti i codec",
+    "timestamp": "2026-05-19T01:04:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Loading WebRadioDB ...": {
+    "original": "Loading WebRadioDB ...",
+    "translation": "Caricamento di WebRadioDB...",
+    "timestamp": "2026-05-19T01:04:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:JavaScript is required for WebRadioDB filtering.": {
+    "original": "JavaScript is required for WebRadioDB filtering.",
+    "translation": "JavaScript è necessario per il filtraggio di WebRadioDB.",
+    "timestamp": "2026-05-19T01:04:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Raw MPD output": {
+    "original": "Raw MPD output",
+    "translation": "Uscita MPD grezza",
+    "timestamp": "2026-05-19T01:04:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Autoplay log": {
+    "original": "Autoplay log",
+    "translation": "Registro autoplay",
+    "timestamp": "2026-05-19T01:04:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No station matches the current filters.": {
+    "original": "No station matches the current filters.",
+    "translation": "Nessuna stazione corrisponde ai filtri correnti.",
+    "timestamp": "2026-05-19T01:04:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Showing first": {
+    "original": "Showing first",
+    "translation": "Mostra prima",
+    "timestamp": "2026-05-19T01:04:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:of": {
+    "original": "of",
+    "translation": "di",
+    "timestamp": "2026-05-19T01:04:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:stations": {
+    "original": "stations",
+    "translation": "stazioni",
+    "timestamp": "2026-05-19T01:04:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Matching stations": {
+    "original": "Matching stations",
+    "translation": "Stazioni di corrispondenza",
+    "timestamp": "2026-05-19T01:04:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebRadioDB ready": {
+    "original": "WebRadioDB ready",
+    "translation": "WebRadioDB pronto",
+    "timestamp": "2026-05-19T01:04:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

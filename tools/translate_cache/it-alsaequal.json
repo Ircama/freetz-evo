@@ -285,5 +285,264 @@
     "timestamp": "2026-05-16T07:48:23Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:The generated ALSA configuration is missing. Regenerate it first.": {
+    "original": "The generated ALSA configuration is missing. Regenerate it first.",
+    "translation": "La configurazione ALSA generata è mancante. Rigenerarla prima.",
+    "timestamp": "2026-05-19T01:02:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The default <code>caps.so</code> value matches the CAPS/Eq10 LADSPA library available with Freetz-EVO. You can still override it with another compatible LADSPA library or an absolute path.": {
+    "original": "The default <code>caps.so</code> value matches the CAPS/Eq10 LADSPA library available with Freetz-EVO. You can still override it with another compatible LADSPA library or an absolute path.",
+    "translation": "Il valore predefinito <code>caps.so</code> corrisponde alla libreria LADSPA CAPS/Eq10 disponibile con Freetz-EVO. È comunque possibile sovrascriverlo con un'altra libreria LADSPA compatibile o con un percorso assoluto.",
+    "timestamp": "2026-05-19T01:02:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generate ALSA configuration": {
+    "original": "Generate ALSA configuration",
+    "translation": "Generare la configurazione ALSA",
+    "timestamp": "2026-05-19T01:02:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated file:": {
+    "original": "Generated file:",
+    "translation": "File generato:",
+    "timestamp": "2026-05-19T01:02:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ALSA configuration generated successfully.": {
+    "original": "ALSA configuration generated successfully.",
+    "translation": "La configurazione ALSA è stata generata con successo.",
+    "timestamp": "2026-05-19T01:02:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No configuration file was generated. Check library availability and enablement.": {
+    "original": "No configuration file was generated. Check library availability and enablement.",
+    "translation": "Non è stato generato alcun file di configurazione. Verificare la disponibilità e l'abilitazione della libreria.",
+    "timestamp": "2026-05-19T01:02:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Reload package": {
+    "original": "Reload package",
+    "translation": "Ricarica il pacchetto",
+    "timestamp": "2026-05-19T01:02:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Package reloaded.": {
+    "original": "Package reloaded.",
+    "translation": "Pacchetto ricaricato.",
+    "timestamp": "2026-05-19T01:02:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer is disabled": {
+    "original": "Equalizer is disabled",
+    "translation": "L'equalizzatore è disabilitato",
+    "timestamp": "2026-05-19T01:02:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable alsaequal on the configuration page and save the settings before using the controls.": {
+    "original": "Enable alsaequal on the configuration page and save the settings before using the controls.",
+    "translation": "Abilitare alsaequal nella pagina di configurazione e salvare le impostazioni prima di utilizzare i controlli.",
+    "timestamp": "2026-05-19T01:02:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:LADSPA library is missing": {
+    "original": "LADSPA library is missing",
+    "translation": "Manca la libreria LADSPA",
+    "timestamp": "2026-05-19T01:02:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The configured library is not readable. Install or fix the library, then regenerate the ALSA configuration.": {
+    "original": "The configured library is not readable. Install or fix the library, then regenerate the ALSA configuration.",
+    "translation": "La libreria configurata non è leggibile. Installare o correggere la libreria, quindi rigenerare la configurazione ALSA.",
+    "timestamp": "2026-05-19T01:02:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generated ALSA configuration is missing": {
+    "original": "Generated ALSA configuration is missing",
+    "translation": "Manca la configurazione ALSA generata",
+    "timestamp": "2026-05-19T01:02:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Regenerate '/var/lib/alsa/conf.d/50-alsaequal.conf' or reload the package so the virtual PCM 'equal' becomes available.": {
+    "original": "Regenerate '/var/lib/alsa/conf.d/50-alsaequal.conf' or reload the package so the virtual PCM 'equal' becomes available.",
+    "translation": "Rigenerare '/var/lib/alsa/conf.d/50-alsaequal.conf' o ricaricare il pacchetto in modo che il PCM virtuale 'equal' diventi disponibile.",
+    "timestamp": "2026-05-19T01:02:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Controls are currently unavailable": {
+    "original": "Controls are currently unavailable",
+    "translation": "I controlli non sono attualmente disponibili",
+    "timestamp": "2026-05-19T01:02:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The configuration exists, but amixer still cannot open 'equal'. Reload the package or inspect the ALSA chain.": {
+    "original": "The configuration exists, but amixer still cannot open 'equal'. Reload the package or inspect the ALSA chain.",
+    "translation": "La configurazione esiste, ma amixer non riesce ancora ad aprire 'equal'. Ricaricare il pacchetto o ispezionare la catena ALSA.",
+    "timestamp": "2026-05-19T01:02:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Equalizer ready": {
+    "original": "Equalizer ready",
+    "translation": "Equalizzatore pronto",
+    "timestamp": "2026-05-19T01:02:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Adjust bands, try presets, and apply the values directly to the running ALSA session.": {
+    "original": "Adjust bands, try presets, and apply the values directly to the running ALSA session.",
+    "translation": "Regolare le bande, provare le preimpostazioni e applicare i valori direttamente alla sessione ALSA in corso.",
+    "timestamp": "2026-05-19T01:02:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Config file": {
+    "original": "Config file",
+    "translation": "File di configurazione",
+    "timestamp": "2026-05-19T01:02:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Controls": {
+    "original": "Controls",
+    "translation": "Controlli",
+    "timestamp": "2026-05-19T01:02:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Library": {
+    "original": "Library",
+    "translation": "Biblioteca",
+    "timestamp": "2026-05-19T01:02:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Runtime details": {
+    "original": "Runtime details",
+    "translation": "Dettagli di runtime",
+    "timestamp": "2026-05-19T01:02:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Quick actions": {
+    "original": "Quick actions",
+    "translation": "Azioni rapide",
+    "timestamp": "2026-05-19T01:02:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Regenerate the runtime configuration, reload the package, or jump straight to the base configuration.": {
+    "original": "Regenerate the runtime configuration, reload the package, or jump straight to the base configuration.",
+    "translation": "Rigenerare la configurazione di runtime, ricaricare il pacchetto o passare direttamente alla configurazione di base.",
+    "timestamp": "2026-05-19T01:02:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Generate config": {
+    "original": "Generate config",
+    "translation": "Genera configurazione",
+    "timestamp": "2026-05-19T01:02:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Apply flat now": {
+    "original": "Apply flat now",
+    "translation": "Applica ora l'appartamento",
+    "timestamp": "2026-05-19T01:02:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Action": {
+    "original": "Action",
+    "translation": "Azione",
+    "timestamp": "2026-05-19T01:02:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Exit code": {
+    "original": "Exit code",
+    "translation": "Codice di uscita",
+    "timestamp": "2026-05-19T01:02:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Graphical equalizer": {
+    "original": "Graphical equalizer",
+    "translation": "Equalizzatore grafico",
+    "timestamp": "2026-05-19T01:02:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Band controls": {
+    "original": "Band controls",
+    "translation": "Controlli della banda",
+    "timestamp": "2026-05-19T01:02:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Presets only stage values in the form. Use 'Apply values' to write them to the live device.": {
+    "original": "Presets only stage values in the form. Use 'Apply values' to write them to the live device.",
+    "translation": "Le preimpostazioni consentono di impostare solo i valori del modulo. Utilizzare \"Applica valori\" per scriverli sul dispositivo in uso.",
+    "timestamp": "2026-05-19T01:02:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Send flat directly": {
+    "original": "Send flat directly",
+    "translation": "Invia direttamente l'appartamento",
+    "timestamp": "2026-05-19T01:02:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Flat": {
+    "original": "Flat",
+    "translation": "Piatto",
+    "timestamp": "2026-05-19T01:02:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Bass": {
+    "original": "Bass",
+    "translation": "Basso",
+    "timestamp": "2026-05-19T01:02:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Vocal": {
+    "original": "Vocal",
+    "translation": "Vocale",
+    "timestamp": "2026-05-19T01:02:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Treble": {
+    "original": "Treble",
+    "translation": "Treble",
+    "timestamp": "2026-05-19T01:02:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Smile": {
+    "original": "Smile",
+    "translation": "Sorriso",
+    "timestamp": "2026-05-19T01:02:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
