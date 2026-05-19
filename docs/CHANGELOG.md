@@ -73,6 +73,7 @@ Latest changes
     * ca-bundle 2026-05-14
     * cmake 4.3.2
     * dos2unix 7.5.5
+    * fakeroot 1.38
     * file 5.47
     * kconfig 7.0
     * meson 1.11.1
@@ -154,6 +155,8 @@ Latest changes
     * libexif 0.6.26
     * libmaxminddb 1.13.3
     * libpng 1.6.58
+    * libusb(-compat) 0.1.12/0.1.9
+    * libusb1 1.0.23/1.0.30
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.3
     * MbedTLS 2.7.19/2.28.10/3.6.6

@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 1.37.2)
+$(call TOOLS_INIT, 1.38)
 $(PKG)_SOURCE:=fakeroot_$($(PKG)_VERSION).orig.tar.gz
-$(PKG)_HASH:=0eea60fbe89771b88fcf415c8f2f0a6ccfe9edebbcf3ba5dc0212718d98884db
+$(PKG)_HASH:=37504619270923546f36d98107f44a3c3be41c8ccd57dfd722311819623fe002
 $(PKG)_SITE:=@DEBIAN/fakeroot
 ### WEBSITE:=https://wiki.debian.org/FakeRoot
 ### MANPAGE:=https://man.archlinux.org/man/fakeroot.1.en
