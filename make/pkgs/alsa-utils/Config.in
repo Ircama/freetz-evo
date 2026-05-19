@@ -7,7 +7,42 @@ config FREETZ_PACKAGE_ALSA_UTILS
 		ALSA command line utilities including aplay, arecord, amixer,
 		alsactl and speaker-test.
 
+		Note: this lean Freetz build keeps optional ALSA tools/features
+		disabled by default (can be enabled below).
+
 if FREETZ_PACKAGE_ALSA_UTILS
+
+config FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSAMIXER
+	bool "Build alsamixer (ncurses UI)"
+	select FREETZ_LIB_libncurses
+	select FREETZ_LIB_libform
+	default n
+	help
+		Enable the ncurses-based alsamixer binary.
+
+config FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSACONF
+	bool "Build alsaconf"
+	default n
+	help
+		Enable the legacy alsaconf helper script.
+
+config FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSALOOP
+	bool "Build alsaloop"
+	default n
+	help
+		Enable the ALSA loopback transfer utility.
+
+config FREETZ_PACKAGE_ALSA_UTILS_WITH_BAT
+	bool "Build alsabat and bat helpers"
+	default n
+	help
+		Enable alsabat and related BAT helper scripts.
+
+config FREETZ_PACKAGE_ALSA_UTILS_WITH_NHLT
+	bool "Build NHLT tools"
+	default n
+	help
+		Enable NHLT parsing support and nhlt-dmic-info utility.
 
 config FREETZ_PACKAGE_ALSA_UTILS_CGI
 	bool "alsa-utils CGI (audio status/test web UI)"

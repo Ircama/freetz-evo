@@ -25,7 +25,7 @@ sec_end
 
 sec_begin "$(lang de:"ALSA-Ausgabe" en:"ALSA output")"
 cgi_print_textline_p "output_device" "$SHAIRPORT_SYNC_OUTPUT_DEVICE" 32/128 \
-	"$(lang de:"Ausgabegeraet (z.B. default oder hw:0,0)" en:"Output device (e.g. default or hw:0,0)"): "
+	"$(lang de:"Ausgabegeraet (z.B. plughw:0,0, hw:0,0 oder default)" en:"Output device (e.g. plughw:0,0, hw:0,0 or default)"): "
 cgi_print_textline_p "output_format" "$SHAIRPORT_SYNC_OUTPUT_FORMAT" 16/32 \
 	"$(lang de:"Ausgabeformat (optional, z.B. S16)" en:"Output format (optional, e.g. S16)"): "
 cgi_print_textline_p "output_rate" "$SHAIRPORT_SYNC_OUTPUT_RATE" 8/16 \

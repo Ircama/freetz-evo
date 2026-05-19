@@ -298,6 +298,20 @@ print_link_row() {
 	echo "<tr><td style='width:220px'><b>$(html "$label")</b></td><td><a href='$(html "$url")' target='_blank'>$(html "$url")</a></td></tr>"
 }
 
+format_size_human() {
+	size_raw="$1"
+	case "$size_raw" in
+		''|*[!0-9]*) echo 'n/a' ; return 0 ;;
+	esac
+	if [ "$size_raw" -lt 1024 ] 2>/dev/null; then
+		echo "${size_raw} B"
+	elif [ "$size_raw" -lt 1048576 ] 2>/dev/null; then
+		awk -v s="$size_raw" 'BEGIN { printf "%.1f KiB", s / 1024 }'
+	else
+		awk -v s="$size_raw" 'BEGIN { printf "%.1f MiB", s / 1048576 }'
+	fi
+}
+
 normalize_queue_index() {
 	queue_value="$(sanitize_uint "$1")" || return 1
 	[ "$queue_value" -ge 1 ] 2>/dev/null || return 1
@@ -850,10 +864,16 @@ ${CURRENT_STATUS_RAW}"
 fi
 
 DB_CACHE_STATE='missing'
-DB_CACHE_SIZE=''
-if [ -s "$DB_CACHE_FILE" ]; then
+DB_CACHE_SIZE='n/a'
+if [ -e "$DB_CACHE_DIR" ] && [ ! -d "$DB_CACHE_DIR" ]; then
+	DB_CACHE_STATE='invalid-dir'
+elif [ -s "$DB_CACHE_FILE" ]; then
 	DB_CACHE_STATE='cached'
-	DB_CACHE_SIZE="$(wc -c < "$DB_CACHE_FILE" 2>/dev/null)"
+	DB_CACHE_SIZE_RAW="$(wc -c < "$DB_CACHE_FILE" 2>/dev/null)"
+	DB_CACHE_SIZE="$(format_size_human "$DB_CACHE_SIZE_RAW")"
+elif [ -f "$DB_CACHE_FILE" ]; then
+	DB_CACHE_STATE='empty'
+	DB_CACHE_SIZE='0 B'
 fi
 
 if [ "$REFRESH" -gt 0 ] 2>/dev/null; then

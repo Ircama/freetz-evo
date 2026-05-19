@@ -264,5 +264,26 @@
     "timestamp": "2026-05-15T21:12:20Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Database path": {
+    "original": "Database path",
+    "translation": "Percorso del database",
+    "timestamp": "2026-05-19T22:27:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ERROR: is directory": {
+    "original": "ERROR: is directory",
+    "translation": "ERRORE: è una directory",
+    "timestamp": "2026-05-19T22:27:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:State file path": {
+    "original": "State file path",
+    "translation": "Percorso del file di stato",
+    "timestamp": "2026-05-19T22:27:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

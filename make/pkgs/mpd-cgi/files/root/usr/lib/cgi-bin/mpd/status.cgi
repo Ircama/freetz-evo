@@ -94,6 +94,8 @@ echo "<table style='width:100%'>"
 [ -f "$DB_FILE" ] && print_row "$(lang de:"Datenbank" en:"Database")" "$DB_FILE"
 [ -f "$STATE_FILE" ] && print_row "$(lang de:"Statusdatei" en:"State file")" "$STATE_FILE"
 [ -d "$PLAYLIST_DIR" ] && print_row "$(lang de:"Playlist-Verzeichnis" en:"Playlist directory")" "$PLAYLIST_DIR"
+[ -d "$DB_FILE" ] && print_row "$(lang de:"Datenbankpfad" en:"Database path")" "$(lang de:"FEHLER: ist Verzeichnis" en:"ERROR: is directory")"
+[ -d "$STATE_FILE" ] && print_row "$(lang de:"Statusdateipfad" en:"State file path")" "$(lang de:"FEHLER: ist Verzeichnis" en:"ERROR: is directory")"
 echo '</table>'
 sec_end
 

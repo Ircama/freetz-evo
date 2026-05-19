@@ -10,15 +10,18 @@ $(PKG)_CATEGORY:=Audio
 $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed
 
 $(PKG)_DEPENDS_ON += alsa-lib
+ifeq ($(FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSAMIXER),y)
+$(PKG)_DEPENDS_ON += libncurses libform
+endif
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
-# alsamixer needs the ncurses UI stack, which this lean build avoids.
-$(PKG)_CONFIGURE_OPTIONS += --disable-alsamixer
-$(PKG)_CONFIGURE_OPTIONS += --disable-alsaconf
-$(PKG)_CONFIGURE_OPTIONS += --disable-alsaloop
-$(PKG)_CONFIGURE_OPTIONS += --disable-bat
-$(PKG)_CONFIGURE_OPTIONS += --disable-nhlt
+# alsamixer is optional to keep the default build lean.
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSAMIXER),,--disable-alsamixer)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSACONF),,--disable-alsaconf)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSALOOP),,--disable-alsaloop)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_ALSA_UTILS_WITH_BAT),,--disable-bat)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_ALSA_UTILS_WITH_NHLT),,--disable-nhlt)
 $(PKG)_CONFIGURE_OPTIONS += --disable-xmlto
 $(PKG)_CONFIGURE_OPTIONS += --disable-rst2man
 $(PKG)_CONFIGURE_OPTIONS += --disable-nls

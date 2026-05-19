@@ -19,8 +19,28 @@ config() {
 	modlib_config
 }
 
+start_pre() {
+	# Clear stale pid files before start.
+	if [ -f "$PID_FILE" ]; then
+		local pid
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
+			rm -f "$PID_FILE"
+		fi
+	fi
+	if [ -f "$COLLECTOR_PID_FILE" ]; then
+		local collector_pid
+		collector_pid=$(cat "$COLLECTOR_PID_FILE" 2>/dev/null)
+		if [ -n "$collector_pid" ] && ! kill -0 "$collector_pid" 2>/dev/null; then
+			rm -f "$COLLECTOR_PID_FILE"
+		fi
+	fi
+	return 0
+}
+
 startdaemon_pre() {
 	start-stop-daemon -K -q -p "$COLLECTOR_PID_FILE" >/dev/null 2>&1 || true
+	start-stop-daemon -K -q -x "$COLLECTOR_BIN" >/dev/null 2>&1 || true
 	killall shairport-sync-status-cache >/dev/null 2>&1 || true
 	rm -f "$METADATA_PIPE"
 	mkfifo "$METADATA_PIPE" || return 1
@@ -30,30 +50,52 @@ startdaemon_pre() {
 }
 
 start() {
-	modlib_startdaemon $DAEMON_BIN -d -c "$DAEMON_CONFIG"
+	modlib_startdaemon "$DAEMON_BIN" -d -c "$DAEMON_CONFIG"
+}
+
+stop_pre() {
+	# Prepare for stop: clear stale PID file if process is gone
+	if [ -f "$PID_FILE" ]; then
+		local pid
+		pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
+			rm -f "$PID_FILE"
+		fi
+	fi
+	return 0
 }
 
 stop() {
 	local retval=0
-	case "$1" in
-		0)
-			if [ -s "$PID_FILE" ]; then
-				start-stop-daemon -K -q -p "$PID_FILE" >/dev/null 2>&1 || retval=$?
-			else
-				killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
-			fi
-			;;
-		5)
-			killall "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
-			;;
-	 esac
+	local timeout=10
+	
+	# Try start-stop-daemon first with PID file if available
+	if [ -s "$PID_FILE" ]; then
+		start-stop-daemon -K -q -p "$PID_FILE" >/dev/null 2>&1 || retval=$?
+	fi
+	
+	# Fallback to killall if still running
+	if killall -0 "$DAEMON_BIN" >/dev/null 2>&1; then
+		# Wait for graceful shutdown
+		while [ $timeout -gt 0 ] && killall -0 "$DAEMON_BIN" >/dev/null 2>&1; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		
+		# Force kill if still running
+		if killall -0 "$DAEMON_BIN" >/dev/null 2>&1; then
+			killall -9 "$DAEMON_BIN" >/dev/null 2>&1 || retval=$?
+		fi
+	fi
+	
 	return $retval
 }
 
 stop_post() {
 	start-stop-daemon -K -q -p "$COLLECTOR_PID_FILE" >/dev/null 2>&1 || true
+	start-stop-daemon -K -q -x "$COLLECTOR_BIN" >/dev/null 2>&1 || true
 	killall shairport-sync-status-cache >/dev/null 2>&1 || true
-	rm -f "$COLLECTOR_PID_FILE" "$METADATA_PIPE"
+	rm -f "$COLLECTOR_PID_FILE" "$METADATA_PIPE" "$STATUS_FILE"
 }
 
 case $1 in

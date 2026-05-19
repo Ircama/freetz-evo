@@ -6,9 +6,8 @@ escape_config() {
 
 metadata_dir="/tmp/shairport-sync"
 metadata_pipe="${metadata_dir}/metadata"
-log_file="/var/log/shairport-sync.log"
 
-mkdir -p "$metadata_dir" /var/log 2>/dev/null
+mkdir -p "$metadata_dir" 2>/dev/null
 
 name_escaped="$(escape_config "$SHAIRPORT_SYNC_NAME")"
 password_escaped="$(escape_config "$SHAIRPORT_SYNC_PASSWORD")"
@@ -19,7 +18,6 @@ output_rate_escaped="$(escape_config "$SHAIRPORT_SYNC_OUTPUT_RATE")"
 mixer_control_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_CONTROL_NAME")"
 mixer_device_escaped="$(escape_config "$SHAIRPORT_SYNC_MIXER_DEVICE")"
 interpolation_escaped="$(escape_config "$SHAIRPORT_SYNC_INTERPOLATION")"
-log_file_escaped="$(escape_config "$log_file")"
 metadata_pipe_escaped="$(escape_config "$metadata_pipe")"
 
 cat << EOF
@@ -71,7 +69,7 @@ metadata =
 
 diagnostics =
 {
-	log_output_to = "${log_file_escaped}";
+	log_output_to = "syslog";
 	statistics = "${SHAIRPORT_SYNC_STATISTICS}";
 	log_verbosity = ${SHAIRPORT_SYNC_LOG_VERBOSITY};
 };

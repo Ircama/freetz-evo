@@ -17,6 +17,23 @@ DAEMON_ENV='LD_PRELOAD=libjemalloc.so.2'
 : ${MPD_CONFIG_DIR:=/var/media/ftp/MediaServer/mpd}
 MPD_CONFIG_DIR="${MPD_CONFIG_DIR%/}"
 MPD_PLAYLIST_DIR="${MPD_CONFIG_DIR}/playlists"
+MPD_STATE_FILE="${MPD_CONFIG_DIR}/state"
+MPD_DB_FILE="${MPD_CONFIG_DIR}/database"
+MPD_LOG_FILE="${MPD_CONFIG_DIR}/mpd.log"
+
+sanitize_runtime_file_path() {
+	local target_path="$1"
+	[ -n "$target_path" ] || return 0
+	if [ -d "$target_path" ]; then
+		# Preserve wrongly-created directories and recreate the expected file path.
+		local backup_path="${target_path}.dir.$(date +%Y%m%d-%H%M%S)"
+		mv "$target_path" "$backup_path" 2>/dev/null || return 1
+	fi
+	if [ ! -e "$target_path" ]; then
+		: > "$target_path" 2>/dev/null || return 1
+	fi
+	return 0
+}
 
 config() {
 	mkdir -p "$MPD_CONFIG_DIR" "$MPD_PLAYLIST_DIR" "$MPD_RUNTIME_DIR" 2>/dev/null
@@ -24,11 +41,18 @@ config() {
 		''|*://*) ;;
 		*) mkdir -p "$MPD_MUSIC_DIR" 2>/dev/null ;;
 	esac
+	sanitize_runtime_file_path "$MPD_STATE_FILE"
+	sanitize_runtime_file_path "$MPD_DB_FILE"
+	sanitize_runtime_file_path "$MPD_LOG_FILE"
 	modlib_config "$DAEMON" "$DAEMON_CONFIG"
 }
 
 startdaemon_pre() {
 	mkdir -p "$MPD_RUNTIME_DIR" 2>/dev/null
+	mkdir -p "$MPD_CONFIG_DIR" "$MPD_PLAYLIST_DIR" 2>/dev/null
+	sanitize_runtime_file_path "$MPD_STATE_FILE"
+	sanitize_runtime_file_path "$MPD_DB_FILE"
+	sanitize_runtime_file_path "$MPD_LOG_FILE"
 	rm -f "$PID_FILE" "$MPD_SOCKET" 2>/dev/null
 }
 
