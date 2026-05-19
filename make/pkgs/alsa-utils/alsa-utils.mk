@@ -11,7 +11,7 @@ $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed
 
 $(PKG)_DEPENDS_ON += alsa-lib
 ifeq ($(FREETZ_PACKAGE_ALSA_UTILS_WITH_ALSAMIXER),y)
-$(PKG)_DEPENDS_ON += libncurses libform
+$(PKG)_DEPENDS_ON += ncurses
 endif
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
