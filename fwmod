@@ -1128,8 +1128,8 @@ if [ "$DO_MOD" -gt 0 ]; then
 			esac
 			sizeinfo "$bn"
 			[ "$FREETZ_SEPARATE_AVM_UCLIBC" == "y" ] \
-			  && LIBPATHS="${FREETZ_LIBRARY_DIR#/} lib usr/lib usr/lib/xtables" \
-			  || LIBPATHS="lib usr/lib ${FREETZ_LIBRARY_DIR#/} usr/lib/xtables"
+			  && LIBPATHS="${FREETZ_LIBRARY_DIR#/} ${FREETZ_LIBRARY_DIR#/}/ladspa lib usr/lib usr/lib/ladspa usr/lib/xtables" \
+			  || LIBPATHS="lib usr/lib usr/lib/ladspa ${FREETZ_LIBRARY_DIR#/} ${FREETZ_LIBRARY_DIR#/}/ladspa usr/lib/xtables"
 			for dn in $LIBPATHS; do
 				files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/$fn[-.]*so*)
 				if [ -z "$files" ]; then
@@ -1175,6 +1175,17 @@ if [ "$DO_MOD" -gt 0 ]; then
 			else
 				mkdir -p "${FILESYSTEM_MOD_DIR}/usr/share/alsa"
 				cp -a "${alsa_share_dir}/." "${FILESYSTEM_MOD_DIR}/usr/share/alsa/"
+			fi
+		fi
+
+		if [ "$FREETZ_LIB_caps" == "y" ]; then
+			echo1 "installing LADSPA metadata"
+			ladspa_share_dir="${TARGET_SPECIFIC_ROOT_DIR}/usr/share/ladspa"
+			if [ ! -d "${ladspa_share_dir}" ]; then
+				warn "CAPS selected, but no LADSPA metadata directory found"
+			else
+				mkdir -p "${FILESYSTEM_MOD_DIR}/usr/share/ladspa"
+				cp -a "${ladspa_share_dir}/." "${FILESYSTEM_MOD_DIR}/usr/share/ladspa/"
 			fi
 		fi
 

@@ -4,5 +4,5 @@ config EXTERNAL_FREETZ_LIB_caps
 	default n
 	help
 		externals the following file(s):
-		 /usr/lib/ladspa/caps.so
+		 /usr/lib/freetz/ladspa/caps.so
 		 /usr/share/ladspa/rdf/caps.rdf

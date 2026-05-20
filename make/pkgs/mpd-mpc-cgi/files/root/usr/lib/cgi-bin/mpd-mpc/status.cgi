@@ -1549,8 +1549,9 @@ cat << EOF
 		});
 	}
 
-	[queryEl, countryEl, languageEl, genreEl, codecEl].forEach(function (element) {
-		element.addEventListener('input', renderResults);
+	// Keep search reactive while typing, but avoid blur-triggered rerender on submit clicks.
+	queryEl.addEventListener('input', renderResults);
+	[countryEl, languageEl, genreEl, codecEl].forEach(function (element) {
 		element.addEventListener('change', renderResults);
 	});
 
