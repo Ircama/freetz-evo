@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_CAPS_LADSPA
+	bool
+	help
+		Internal helper package that deploys the CAPS LADSPA runtime files
+		from staging into the final image without requiring fwmod special
+		handling.

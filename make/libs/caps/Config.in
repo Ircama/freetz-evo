@@ -1,5 +1,6 @@
 config FREETZ_LIB_caps
 	bool "CAPS LADSPA plugins (caps.so)"
+	select FREETZ_PACKAGE_CAPS_LADSPA
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	default n
