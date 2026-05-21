@@ -14,19 +14,3 @@ config FREETZ_PACKAGE_ALSAEQUAL
 		Freetz-EVO selects the CAPS LADSPA library by default so the bundled
 		Eq10 module is immediately available. Another compatible LADSPA
 		plugin can still be configured at runtime if desired.
-
-if FREETZ_PACKAGE_ALSAEQUAL
-
-config FREETZ_PACKAGE_ALSAEQUAL_CGI
-	bool "alsaequal CGI (equalizer config/control web UI) - DEVELOPER"
-	depends on FREETZ_PACKAGE_ALSA_UTILS
-	depends on FREETZ_SHOW_DEVELOPER
-	default y
-	help
-		Provides the freetz CGI configuration page and runtime control page
-		for alsaequal.
-
-		Developer-only together with the underlying alsaequal package.
-		This is the same symbol shown in "Packages -> Web interfaces".
-
-endif
