@@ -288,7 +288,7 @@ cat << EOF
 .alsaeq-hero-warning { background:linear-gradient(135deg, #fff0d8 0%, #fff9ef 100%); border-color:#d7a45a; }
 .alsaeq-badges { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
 .alsaeq-badge { display:inline-block; background:#efe1c5; color:#5d4420; border-radius:999px; padding:5px 10px; font-size:12px; }
-.alsaeq-grid { display:grid; grid-template-columns:minmax(320px, 1.2fr) minmax(280px, 1fr); gap:16px; }
+.alsaeq-grid { display:grid; grid-template-columns:1fr; gap:16px; }
 .alsaeq-panel { background:#fffdf8; border:1px solid #e2d0b1; border-radius:14px; padding:14px; box-shadow:0 1px 0 rgba(0,0,0,0.04); }
 .alsaeq-panel h3 { margin:0 0 10px; color:#3b2811; }
 .alsaeq-panel p { margin:0 0 12px; color:#6b542e; }
@@ -351,30 +351,6 @@ print_row "$(lang de:"Equalizer-Regler erreichbar" en:"Equalizer controls availa
 cat << EOF
 			</table>
 		</div>
-		<div class='alsaeq-panel'>
-			<h3>$(lang de:"Schnellaktionen" en:"Quick actions")</h3>
-			<p>$(lang de:"Erzeugen Sie die Laufzeitkonfiguration neu, laden Sie das Paket oder springen Sie direkt in die Basiskonfiguration." en:"Regenerate the runtime configuration, reload the package, or jump straight to the base configuration.")</p>
-			<div class='alsaeq-actions'>
-				<form class='btn' action='$(href status alsaequal)' method='get'>
-					<input type='hidden' name='action' value='generate_config'>
-					<input type='submit' value='$(lang de:"Konfiguration erzeugen" en:"Generate config")'>
-				</form>
-				<form class='btn' action='$(href status alsaequal)' method='get'>
-					<input type='hidden' name='action' value='reload_package'>
-					<input type='submit' value='$(lang de:"Paket neu laden" en:"Reload package")'>
-				</form>
-				<form class='btn' action='$(href status alsaequal)' method='get'>
-					<input type='hidden' name='action' value='flat'>
-					<input type='submit' value='$(lang de:"Flat sofort anwenden" en:"Apply flat now")'>
-				</form>
-				<form class='btn' action='$(href cgi alsaequal)' method='get'>
-					<input type='submit' value='$(lang de:"Konfiguration" en:"Configuration")'>
-				</form>
-				<form class='btn' action='$(href status alsaequal)' method='get'>
-					<input type='submit' value='$(lang de:"Aktualisieren" en:"Refresh")'>
-				</form>
-			</div>
-		</div>
 	</div>
 </div>
 EOF
@@ -392,7 +368,7 @@ EOF
 	if [ "$ACTION_RC" -ne 0 ]; then
 		echo "<div class='cmd'>$(lang de:"Rueckgabecode" en:"Exit code"): $(html "$ACTION_RC")</div>"
 	fi
-	printf '%s\n' "$ACTION_OUTPUT" | html | {
+	printf '%b' "$ACTION_OUTPUT" | html | {
 		echo '<pre>'
 		cat
 		echo '</pre>'

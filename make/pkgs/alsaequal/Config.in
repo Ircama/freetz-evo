@@ -1,11 +1,15 @@
 config FREETZ_PACKAGE_ALSAEQUAL
-	bool "alsaequal 0.7.1"
+	bool "alsaequal 0.7.1 - DEVELOPER"
+	depends on FREETZ_SHOW_DEVELOPER
 	select FREETZ_LIB_libasound
 	select FREETZ_LIB_caps
 	default n
 	help
 		alsaequal exposes a LADSPA-based equalizer as ALSA PCM and control
 		devices, so it can be configured with regular ALSA mixer tools.
+
+		Note: on FRITZ!Box targets this package can require too much CPU for
+		reliable normal use, so it remains developer-only.
 
 		Freetz-EVO selects the CAPS LADSPA library by default so the bundled
 		Eq10 module is immediately available. Another compatible LADSPA
@@ -14,12 +18,15 @@ config FREETZ_PACKAGE_ALSAEQUAL
 if FREETZ_PACKAGE_ALSAEQUAL
 
 config FREETZ_PACKAGE_ALSAEQUAL_CGI
-	bool "alsaequal CGI (equalizer config/control web UI)"
+	bool "alsaequal CGI (equalizer config/control web UI) - DEVELOPER"
 	depends on FREETZ_PACKAGE_ALSA_UTILS
+	depends on FREETZ_SHOW_DEVELOPER
 	default y
 	help
 		Provides the freetz CGI configuration page and runtime control page
 		for alsaequal.
+
+		Developer-only together with the underlying alsaequal package.
 		This is the same symbol shown in "Packages -> Web interfaces".
 
 endif
