@@ -95,6 +95,7 @@ Latest changes
     * zensical_httpserver.sh - run local zensical http server to develop docs
 
   - Patches:
+    * Various Fritzos 8.5 related changes
     * Still are some patches not yet adapted for Fritzos 8.2x
 
   - Packages:
@@ -127,15 +128,17 @@ Latest changes
     * OpenVPN 2.4.12/2.5.11/2.6.20/2.7.4
     * procps-ng 4.0.6
     * Python 3.14.3
-    * rsync 3.4.2
+    * RRDtool 1.2.30/1.10.2
+    * rsync 3.4.3
     * sslh 2.2.4/2.3.1
     * Stunnel 5.78
     * SQLite 3.40.1/3.53.1
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
+    * tmux 3.6b
     * Tor 0.4.8.25
     * Tree 1.8.0/2.3.2
-    * Unbound 1.25.0
+    * Unbound 1.25.1
     * UnRAR 6.1.7/7.2.5
     * Virtualip-NG 1.0
     * wireguard-tools 1.0.20260223

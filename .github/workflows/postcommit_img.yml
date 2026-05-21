@@ -35,6 +35,7 @@ on:
           - "07_5X"
           - "08_0X"
           - "08_2X"
+          - "08_5X"
 
 concurrency:
   group: ${{ github.workflow }}
