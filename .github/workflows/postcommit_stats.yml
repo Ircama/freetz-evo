@@ -1,10 +1,10 @@
-name: postcommit_docs
+name: postcommit_stats
 
 on:
   push:
     branches: [ master ]
     paths:
-      - '.github/workflows/postcommit_docs.yml'
+      - '.github/workflows/postcommit_stats.yml'
       - 'docs/stats/generate.sh'
       - 'config/ui/firmware.in'
       - 'config/mod/dl-firmware.in'

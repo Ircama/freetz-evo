@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, $(if $(FREETZ_LIB_librrd_WITH_VERSION_ABANDON),1.2.30,1.10.
 $(PKG)_LIB_VERSION:=$(if $(FREETZ_LIB_librrd_WITH_VERSION_ABANDON),2.0.15,8.3.0)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH_ABANDON:=3190efea410a6dd035799717948b2df09910f608d72d23ee81adad4cd0184ae9
-$(PKG)_HASH_CURRENT:=3190efea410a6dd035799717948b2df09910f608d72d23ee81adad4cd0184ae9
+$(PKG)_HASH_CURRENT:=9787114551ee9b5db7c72722736388dcc54bf00ded51b5dd47feed11fb179fe4
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_librrd_WITH_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=https://github.com/oetiker/rrdtool-1.x/releases/download/v$($(PKG)_VERSION),https://oss.oetiker.ch/rrdtool/pub/archive
 ### WEBSITE:=https://www.rrdtool.org

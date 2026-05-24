@@ -71,9 +71,9 @@ Latest changes
     * busybox 1.38.0
     * autoconf 2.73
     * ca-bundle 2026-05-14
-    * cmake 4.3.2
+    * cmake 4.3.3
     * dos2unix 7.5.5
-    * fakeroot 1.38
+    * fakeroot 1.38.1
     * file 5.47
     * kconfig 7.0
     * meson 1.11.1
@@ -129,7 +129,7 @@ Latest changes
     * procps-ng 4.0.6
     * Python 3.14.3
     * RRDtool 1.2.30/1.10.2
-    * rsync 3.4.3
+    * rsync 3.4.2/3.4.3
     * sslh 2.2.4/2.3.1
     * Stunnel 5.78
     * SQLite 3.40.1/3.53.1

@@ -2,7 +2,7 @@ menu "librrd"
 
 	choice
 		prompt "Version"
-			default FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+			default FREETZ_LIB_librrd_WITH_VERSION_CURRENT
 
 		config FREETZ_LIB_librrd_WITH_VERSION_ABANDON
 			bool "1.2.30"

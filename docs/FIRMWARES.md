@@ -448,13 +448,13 @@ Currently supported devices and firmwares
     - 175.07.29 rev92061 {ALL} [PSQ19P2NL4]
     - 175.07.59 rev113612 {ALL} [MOVE21NL2]
     - 175.08.02 rev118102 {ALL} [Smart24 P1 NL1]
-    - 175.08.21 rev127230 {ALL} [Smart24 P2]
+    - 175.08.25 rev132372 {ALL} [Smart24 P2 NL1]
     - Alien 7530 {GER}
   * __Fritz!Box Fon WLAN 7520 B (UNTESTED)__
     - 276.07.31 rev98652 {ALL} [PSQ19P2NL4]
     - 276.07.59 rev113613 {ALL} [MOVE21NL2]
     - 276.08.02 rev118103 {ALL} [Smart24 P1 NL1]
-    - 276.08.21 rev127231 {ALL} [Smart24 P2]
+    - 276.08.25 rev132374 {ALL} [Smart24 P2 NL1]
   * __Fritz!Box Fon WLAN 7530__
     - 164.07.02 rev62311 {GER}
     - 164.07.14 rev73183 {GER} [MESH18 NL4]
@@ -498,12 +498,12 @@ Currently supported devices and firmwares
     - 167.07.31 rev95687 {ALL} [PSQ19P2NL4]
     - 167.07.59 rev113714 {ALL} [MOVE21NL2]
     - 167.08.03 rev118395 {ALL} [Smart24 P1 NL1]
-    - 167.08.20 rev123655 {ALL} [Smart24 P2]
+    - 167.08.25 rev132476 {ALL} [Smart24 P2 NL1]
   * __Fritz!Box Fon WLAN 7583 VDSL (UNTESTED)__
     - 260.07.31 rev95688 {ALL} [PSQ19P2NL4]
     - 260.07.59 rev113700 {ALL} [MOVE21NL2]
     - 260.08.03 rev118396 {ALL} [Smart24 P1 NL1]
-    - 260.08.20 rev123656 {ALL} [Smart24 P2]
+    - 260.08.25 rev132477 {ALL} [Smart24 P2 NL1]
 
   * __Fritz!Box Fon WLAN 7590__
     - 154.06.86 rev45533 {GER}
@@ -522,7 +522,7 @@ Currently supported devices and firmwares
     - 259.07.57 rev107809 {ALL} [MOVE21NL1]
     - 259.08.02 rev117984 {ALL} [Smart24 P1 NL1]
     - 259.08.25 rev130857 {ALL} [Smart24 P2 NL1]
-    - 259.08.40 rev132516 {ALL} [MyFRITZOS P1] (Inhaus)
+    - 259.08.40 rev132802 {ALL} [MyFRITZOS P1] (Labor)
 
 ### Fritz!Box Fon WLAN (76xx)
 
