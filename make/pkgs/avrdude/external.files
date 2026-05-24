@@ -1,0 +1,3 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_AVRDUDE" == "y" ] && EXTERNAL_FILES+=" /usr/bin/avrdude"
+[ "$EXTERNAL_FREETZ_PACKAGE_AVRDUDE" == "y" ] && EXTERNAL_FILES+=" /usr/bin/elf2tag"
+[ "$EXTERNAL_FREETZ_PACKAGE_AVRDUDE" == "y" ] && EXTERNAL_FILES+=" /etc/avrdude.conf"

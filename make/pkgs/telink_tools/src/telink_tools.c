@@ -197,6 +197,10 @@ static bool wait_result(int fd, const char *needle, int timeout_ticks, bool prin
         return false;
     }
     if (print_out) {
+        while (result_len > 0 &&
+               (result[result_len - 1] == '\n' || result[result_len - 1] == '\r')) {
+            result[--result_len] = '\0';
+        }
         printf("[%s] ", result);
         fflush(stdout);
     }
@@ -538,7 +542,7 @@ static int op_burn(int fd, const char *filename) {
         return 1;
     }
 
-    printf("%sOK!%s\r\nBurn Firmware :%s\n", CLR_GREEN, CLR_RESET, filename);
+    printf("%sOK!%s\nBurn Firmware: %s\n", CLR_GREEN, CLR_RESET, filename);
 
     uint8_t chunk[256];
     uint32_t addr = 0;

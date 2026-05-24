@@ -41,7 +41,7 @@ $($(PKG)_BINARY_GENERIC_BUILD): $($(PKG)_DIR)/.configured
 	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -Wall -Wextra -Os \
 		$(ESP_SERIAL_FLASHER_COMMON_CFLAGS) \
 		$(ESP_SERIAL_FLASHER_COMMON_SOURCES) \
-		$(ESP_SERIAL_FLASHER_DIR)/examples/linux_example/main.c \
+		$(ESP_SERIAL_FLASHER_MAKE_DIR)/files/src/linux_flasher.c \
 		-o $@
 
 $($(PKG)_BINARY_UPLOAD_BUILD): $($(PKG)_DIR)/.configured

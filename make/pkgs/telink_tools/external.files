@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_TELINK_TOOLS" == "y" ] && EXTERNAL_FILES+=" /usr/bin/telink_tools"

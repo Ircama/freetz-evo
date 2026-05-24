@@ -21,6 +21,54 @@
 #define PARTITION_TABLE_ADDR 0x8000
 #define APP_ADDR 0x10000
 
+static const char *chip_to_string(target_chip_t chip)
+{
+    switch (chip) {
+    case ESP8266_CHIP: return "esp8266";
+    case ESP32_CHIP: return "esp32";
+    case ESP32S2_CHIP: return "esp32s2";
+    case ESP32C3_CHIP: return "esp32c3";
+    case ESP32S3_CHIP: return "esp32s3";
+    case ESP32C2_CHIP: return "esp32c2";
+    case ESP32C5_CHIP: return "esp32c5";
+    case ESP32H2_CHIP: return "esp32h2";
+    case ESP32C6_CHIP: return "esp32c6";
+    case ESP32P4_CHIP: return "esp32p4";
+    case ESP32C61_CHIP: return "esp32c61";
+    default: return "unknown";
+    }
+}
+
+static bool parse_chip_name(const char *name, target_chip_t *out)
+{
+    if (strcmp(name, "esp8266") == 0) {
+        *out = ESP8266_CHIP;
+    } else if (strcmp(name, "esp32") == 0) {
+        *out = ESP32_CHIP;
+    } else if (strcmp(name, "esp32s2") == 0) {
+        *out = ESP32S2_CHIP;
+    } else if (strcmp(name, "esp32c3") == 0) {
+        *out = ESP32C3_CHIP;
+    } else if (strcmp(name, "esp32s3") == 0) {
+        *out = ESP32S3_CHIP;
+    } else if (strcmp(name, "esp32c2") == 0) {
+        *out = ESP32C2_CHIP;
+    } else if (strcmp(name, "esp32c5") == 0) {
+        *out = ESP32C5_CHIP;
+    } else if (strcmp(name, "esp32h2") == 0) {
+        *out = ESP32H2_CHIP;
+    } else if (strcmp(name, "esp32c6") == 0) {
+        *out = ESP32C6_CHIP;
+    } else if (strcmp(name, "esp32p4") == 0) {
+        *out = ESP32P4_CHIP;
+    } else if (strcmp(name, "esp32c61") == 0) {
+        *out = ESP32C61_CHIP;
+    } else {
+        return false;
+    }
+    return true;
+}
+
 static void print_usage(const char *prog)
 {
     fprintf(stderr,
@@ -29,6 +77,7 @@ static void print_usage(const char *prog)
             "Options:\n"
             "  -p, --port <device>       Serial device (default: %s)\n"
             "  -b, --baud <rate>         Baud rate (default: %d)\n"
+            "  -c, --chip <name>         Expected chip (esp32c3, esp32s3, ...)\n"
             "  -B, --bootloader <file>   Bootloader image (default: bootloader.bin)\n"
             "  -T, --partition <file>    Partition table image (default: partition-table.bin)\n"
             "  -A, --app <file>          App image (default: ble50_scan.bin)\n"
@@ -112,10 +161,13 @@ int main(int argc, char *argv[])
     const char *app = "ble50_scan.bin";
     uint32_t baud_rate = DEFAULT_BAUD_RATE;
     bool use_stub = true;
+    bool expected_chip_set = false;
+    target_chip_t expected_chip = ESP_UNKNOWN_CHIP;
 
     static const struct option long_opts[] = {
         { "port", required_argument, NULL, 'p' },
         { "baud", required_argument, NULL, 'b' },
+        { "chip", required_argument, NULL, 'c' },
         { "bootloader", required_argument, NULL, 'B' },
         { "partition", required_argument, NULL, 'T' },
         { "app", required_argument, NULL, 'A' },
@@ -130,7 +182,7 @@ int main(int argc, char *argv[])
     esp_loader_error_t err;
     uint32_t bootloader_addr;
 
-    while ((opt = getopt_long(argc, argv, "p:b:B:T:A:nh", long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "p:b:c:B:T:A:nh", long_opts, NULL)) != -1) {
         switch (opt) {
         case 'p':
             device = optarg;
@@ -141,6 +193,13 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Invalid baud rate: %s\n", optarg);
                 return 1;
             }
+            break;
+        case 'c':
+            if (!parse_chip_name(optarg, &expected_chip)) {
+                fprintf(stderr, "Invalid chip '%s'\n", optarg);
+                return 1;
+            }
+            expected_chip_set = true;
             break;
         case 'B':
             bootloader = optarg;
@@ -165,6 +224,9 @@ int main(int argc, char *argv[])
 
     printf("Serial device : %s\n", device);
     printf("Baud rate     : %" PRIu32 "\n", baud_rate);
+    if (expected_chip_set) {
+        printf("Expected chip : %s\n", chip_to_string(expected_chip));
+    }
     printf("Connect mode  : %s\n", use_stub ? "stub" : "ROM bootloader");
 
     port = (linux_port_t) {
@@ -189,7 +251,16 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    bootloader_addr = get_bootloader_address(esp_loader_get_target(&loader));
+    target_chip_t detected_chip = esp_loader_get_target(&loader);
+    printf("Detected chip : %s\n", chip_to_string(detected_chip));
+    if (expected_chip_set && detected_chip != expected_chip) {
+        fprintf(stderr, "Error: detected chip '%s' differs from expected '%s'\n",
+                chip_to_string(detected_chip), chip_to_string(expected_chip));
+        esp_loader_deinit(&loader);
+        return 1;
+    }
+
+    bootloader_addr = get_bootloader_address(detected_chip);
 
     if (flash_file(&loader, bootloader, bootloader_addr) != ESP_LOADER_SUCCESS ||
         flash_file(&loader, partition, PARTITION_TABLE_ADDR) != ESP_LOADER_SUCCESS ||

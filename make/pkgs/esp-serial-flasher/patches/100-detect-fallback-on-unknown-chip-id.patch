@@ -1,0 +1,13 @@
+--- src/esp_targets.c
++++ src/esp_targets.c
+@@ -305,8 +305,10 @@ esp_loader_error_t loader_detect_chip(esp_loader_t *loader)
+     /* First, attempt to get the target info using GET_SECURITY_INFO command.
+        This won't work if the target does not support the command. */
+     esp_loader_target_security_info_t security_info;
+-    if (esp_loader_get_security_info(loader, &security_info) == ESP_LOADER_SUCCESS) {
++    if (esp_loader_get_security_info(loader, &security_info) == ESP_LOADER_SUCCESS &&
++            security_info.target_chip != ESP_UNKNOWN_CHIP) {
+         loader->_target = security_info.target_chip;
++        /* Unknown chip_id from GET_SECURITY_INFO should fall back to magic detect. */
+         goto success;
+     }
