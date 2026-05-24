@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_ESP_SERIAL_FLASHER
+	bool "esp-serial-flasher"
+	default n
+	help
+		ESP Serial Flasher for Linux hosts.
+		Builds two CLI tools:
+		 - linux_flasher: upstream generic CLI (<addr> <file> pairs)
+		 - esp_fw_upload: Freetz helper for bootloader.bin,
+		   partition-table.bin and ble50_scan.bin

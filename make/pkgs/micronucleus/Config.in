@@ -1,0 +1,13 @@
+config FREETZ_PACKAGE_MICRONUCLEUS
+	bool "micronucleus 2.6"
+	default n
+	select FREETZ_LIB_libusb
+	help
+		Micronucleus bootloader command line utility.
+		
+		Installs:
+		 - micronucleus: USB uploader for Digispark/ATTiny
+		   Micronucleus bootloader targets.
+		
+		Usage example:
+		 micronucleus --run firmware.hex

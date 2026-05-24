@@ -1,0 +1,16 @@
+config FREETZ_PACKAGE_AVRDUDE
+	bool "avrdude 8.1"
+	default n
+	select FREETZ_LIB_libelf
+	select FREETZ_LIB_libusb
+	select FREETZ_LIB_libusb1
+	select FREETZ_LIB_libftdi
+	select FREETZ_LIB_readline
+	select FREETZ_LIB_ncurses
+	help
+		AVR Downloader/Uploader for Microchip AVR MCUs.
+		
+		Installs:
+		 - avrdude: main CLI programmer
+		 - elf2tag: helper tool to generate UPDI tags
+		 - /etc/avrdude.conf: default device/programmer definitions

@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_TELINK_TOOLS
+	bool "telink_tools 1.0"
+	default n
+	help
+		Telink BLE chip bootloader utility implemented in C.
+		
+		Supports firmware flashing and flash utility operations
+		for devices such as TB-03F-KIT and TB-04-KIT.
+		
+		Installs:
+		 - /usr/bin/telink_tools

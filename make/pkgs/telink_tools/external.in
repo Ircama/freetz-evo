@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_TELINK_TOOLS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TELINK_TOOLS
+	bool "telink_tools"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/telink_tools

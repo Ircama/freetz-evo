@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_AVRDUDE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_AVRDUDE
+	bool "avrdude"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/avrdude
+		 /usr/bin/elf2tag
+		 /etc/avrdude.conf
