@@ -735,7 +735,6 @@ int main(int argc, char **argv) {
     cli_args_t cli;
     int parse_rc;
 
-    printf("-- Please download the Ai-Thinker Bootload Firware to the board first.\n");
     printf("telink_tools v%s\n", TOOL_VERSION);
 
     parse_rc = parse_cli(argc, argv, &cli);

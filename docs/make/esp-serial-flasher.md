@@ -6,13 +6,12 @@
   - Steward: -
 
   - Depends on: none
-  - Provides: /usr/bin/linux_flasher, /usr/bin/esp_fw_upload
+  - Provides: /usr/bin/linux_flasher
   - Externalization: supported
 
-The package ships two command line tools:
+The package ships one command line tool:
 
-- linux_flasher: generic upstream utility using address/file pairs
-- esp_fw_upload: Freetz-oriented helper for common ESP32-C3 layouts (bootloader, partition table, app image)
+- linux_flasher: upstream utility using explicit address/file pairs
 
 Both tools also accept an optional chip check:
 
@@ -20,21 +19,13 @@ Both tools also accept an optional chip check:
 
 ## Complete usage examples
 
-Flash with generic linux_flasher:
+Flash ESP32-C3 bootloader + partition table + app image:
 
 linux_flasher -p /dev/ttyACM0 -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
 
-Flash with helper esp_fw_upload defaults:
+Flash with explicit baudrate and no stub (ROM mode):
 
-esp_fw_upload -p /dev/ttyACM0
-
-Flash with explicit files and baudrate:
-
-esp_fw_upload -p /dev/ttyACM0 -c esp32c3 -b 460800 -B bootloader.bin -T partition-table.bin -A ble50_scan.bin
-
-Dry-run command validation:
-
-esp_fw_upload -p /dev/ttyACM0 -n
+linux_flasher -p /dev/ttyACM0 -b 460800 -n -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
 
 Typical ESP32-C3 map used by these examples:
 
@@ -54,7 +45,7 @@ is exactly:
 - partition table at `0x8000`
 - app image at `0x10000`
 
-`esp_fw_upload` uses this layout by default for ESP32-C3. `linux_flasher` always uses explicit `<addr> <file>` pairs.
+`linux_flasher` always uses explicit `<addr> <file>` pairs.
 
 ## Externalization
 

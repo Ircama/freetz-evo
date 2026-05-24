@@ -12,9 +12,6 @@ $(PKG)_CATEGORY:=Flasher tools
 $(PKG)_BINARY_GENERIC_BUILD:=$($(PKG)_DIR)/linux_flasher
 $(PKG)_BINARY_GENERIC_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/linux_flasher
 
-$(PKG)_BINARY_UPLOAD_BUILD:=$($(PKG)_DIR)/esp_fw_upload
-$(PKG)_BINARY_UPLOAD_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/esp_fw_upload
-
 $(PKG)_COMMON_CFLAGS:=\
 	-I$($(PKG)_DIR)/include \
 	-I$($(PKG)_DIR)/port \
@@ -44,31 +41,19 @@ $($(PKG)_BINARY_GENERIC_BUILD): $($(PKG)_DIR)/.configured
 		$(ESP_SERIAL_FLASHER_MAKE_DIR)/files/src/linux_flasher.c \
 		-o $@
 
-$($(PKG)_BINARY_UPLOAD_BUILD): $($(PKG)_DIR)/.configured
-	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -Wall -Wextra -Os \
-		$(ESP_SERIAL_FLASHER_COMMON_CFLAGS) \
-		$(ESP_SERIAL_FLASHER_COMMON_SOURCES) \
-		$(ESP_SERIAL_FLASHER_MAKE_DIR)/files/src/esp_fw_upload.c \
-		-o $@
-
 $($(PKG)_BINARY_GENERIC_TARGET): $($(PKG)_BINARY_GENERIC_BUILD)
-	$(INSTALL_BINARY_STRIP)
-
-$($(PKG)_BINARY_UPLOAD_TARGET): $($(PKG)_BINARY_UPLOAD_BUILD)
 	$(INSTALL_BINARY_STRIP)
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_BINARY_GENERIC_TARGET) $($(PKG)_BINARY_UPLOAD_TARGET)
+$(pkg)-precompiled: $($(PKG)_BINARY_GENERIC_TARGET)
 
 $(pkg)-clean:
 	$(RM) \
-		$($(PKG)_BINARY_GENERIC_BUILD) \
-		$($(PKG)_BINARY_UPLOAD_BUILD)
+		$($(PKG)_BINARY_GENERIC_BUILD)
 
 $(pkg)-uninstall:
 	$(RM) \
-		$($(PKG)_BINARY_GENERIC_TARGET) \
-		$($(PKG)_BINARY_UPLOAD_TARGET)
+		$($(PKG)_BINARY_GENERIC_TARGET)
 
 $(PKG_FINISH)

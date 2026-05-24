@@ -1,0 +1,53 @@
+--- src/esp_targets.c
++++ src/esp_targets.c
+@@ -8,6 +8,7 @@
+ #include "esp_loader_protocol.h"
+ #include "esp_targets.h"
+ #include <stddef.h>
++#include <stdio.h>
+ 
+ typedef esp_loader_error_t (*read_spi_config_t)(esp_loader_t *loader, uint32_t efuse_base, uint32_t *spi_config);
+ 
+@@ -285,13 +286,22 @@ esp_loader_error_t loader_detect_chip(esp_loader_t *loader)
+        This won't work if the target does not support the command. */
+     esp_loader_target_security_info_t security_info;
+-    if (esp_loader_get_security_info(loader, &security_info) == ESP_LOADER_SUCCESS &&
+-            security_info.target_chip != ESP_UNKNOWN_CHIP) {
++    esp_loader_error_t sec_err = esp_loader_get_security_info(loader, &security_info);
++    if (sec_err == ESP_LOADER_SUCCESS && security_info.target_chip != ESP_UNKNOWN_CHIP) {
++        fprintf(stderr, "esp_loader: security_info target=%d eco=%u\n",
++                (int)security_info.target_chip, security_info.eco_version);
+         loader->_target = security_info.target_chip;
+         /* Unknown chip_id from GET_SECURITY_INFO should fall back to magic detect. */
+         goto success;
++    } else if (sec_err == ESP_LOADER_SUCCESS) {
++        fprintf(stderr, "esp_loader: security_info returned UNKNOWN target=%d eco=%u\n",
++                (int)security_info.target_chip, security_info.eco_version);
++    } else {
++        fprintf(stderr, "esp_loader: security_info error=%d\n", (int)sec_err);
+     }
+ 
+     uint32_t magic_value;
+     RETURN_ON_ERROR(esp_loader_read_register(loader, CHIP_DETECT_MAGIC_REG_ADDR, &magic_value));
++    fprintf(stderr, "esp_loader: CHIP_DETECT_MAGIC_REG_ADDR=0x%08x value=0x%08x\n",
++            CHIP_DETECT_MAGIC_REG_ADDR, magic_value);
+ 
+     for (int chip = 0; chip < ESP_MAX_CHIP; chip++) {
+         for (int index = 0; index < esp_target[chip].magic_values_count; index++) {
+             if (magic_value == esp_target[chip].chip_magic_value[index]) {
+@@ -308,10 +318,13 @@ esp_loader_error_t loader_detect_chip(esp_loader_t *loader)
+     // to detect the chip. Date register of SPI peripheral is used instead. There is low probability
+     // that the date register will have same value as for other chips and it will also be at different
+     // address.
+     RETURN_ON_ERROR(esp_loader_read_register(loader, ESP32P4_SPI_DATE_REG, &magic_value));
++    fprintf(stderr, "esp_loader: ESP32P4_SPI_DATE_REG=0x%08x value=0x%08x\n",
++            ESP32P4_SPI_DATE_REG, magic_value);
+     if ((magic_value & ESP32P4_SPI_DATE_REG_MASK) == ESP32P4_SPI_DATE_REG_VALUE) {
+         loader->_target = ESP32P4_CHIP;
+         goto success;
+     }
+ 
++    fprintf(stderr, "esp_loader: chip detect failed\n");
+     return ESP_LOADER_ERROR_INVALID_TARGET;
+ 
+ success:

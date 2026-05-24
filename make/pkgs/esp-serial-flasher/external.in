@@ -5,4 +5,3 @@ config EXTERNAL_FREETZ_PACKAGE_ESP_SERIAL_FLASHER
 	help
 		externals the following file(s):
 		 /usr/bin/linux_flasher
-		 /usr/bin/esp_fw_upload
