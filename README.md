@@ -14,11 +14,12 @@ Freetz-EVO builds on that foundation with additional packages, UX improvements, 
 
 Freetz-EVO includes:
 
-- over 50 new packages and libraries
-- over 60 python3 libraries
-- over 25 improved packages and libraries
-- exclusive applications
-- USB audio stack, playback tools, and web radio functions.
+- over 60 new packages and libraries,
+- over 60 python3 libraries,
+- over 25 improved packages and libraries,
+- exclusive applications,
+- USB audio stack, playback tools, and web radio functions,
+- microcontroller flasher tools to enable USB peripheral devices.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 
@@ -55,11 +56,11 @@ The authentication layer has been updated to support a **form-based session logi
 
 | Package | Description | Status |
 |---|---|---|
-| **Disk tools** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`), a web console for partitioning, formatting, cloning, recovery, and disk diagnostics; backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. | EVO only |
-| **util-linux** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
-| **ncdu** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
-| **ncdu CGI** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
-| **ALSA / USB audio kernel support** | Exposes `soundcore`, `snd`, `snd-timer`, `snd-pcm`, `snd-hwdep`, `snd-rawmidi`, `snd-usbmidi-lib`, and `snd-usb-audio` in menuconfig on compatible targets. | EVO only |
+| **[`Disk tools`](docs/make/disk-mgmt.md)** | Complete storage toolkit centered on the **[Disk Management Web UI](docs/make/disk-mgmt.md)** (`disk-mgmt-cgi`), a web console for partitioning, formatting, cloning, recovery, and disk diagnostics; backed by `parted`, `util-linux`, `gptfdisk`, `e2fsprogs`, `dosfstools`, `exfatprogs`, `ntfs-3g`, `fatresize`, `partclone`, `ddrescue`, `smartmontools`, `hdparm`, `testdisk`, `fsarchiver`, `clonezilla`, and `udpcast`. | EVO only |
+| **[`util-linux`](docs/make/util-linux.md)** | Dual-version support (2.27.1 / 2.41) with Disk Tools category and utilities like `lsblk`, `fdisk`, `blkid`. | upstream has 2.27.1; EVO adds 2.41 |
+| **[`ncdu`](docs/make/ncdu.md)** 1.19 | NCurses disk usage analyzer for quick inspection of storage usage on mounted filesystems. | EVO only |
+| **[`ncdu CGI`](docs/make/ncdu-cgi.md)** (`ncdu-cgi`) | Web frontend for ncdu integrated into the Freetz configuration pages for browser-based usage analysis. | EVO only |
+| **[`ALSA / USB audio kernel support`](docs/make/alsa-usb-audio-kernel-support.md)** | Exposes `soundcore`, `snd`, `snd-timer`, `snd-pcm`, `snd-hwdep`, `snd-rawmidi`, `snd-usbmidi-lib`, and `snd-usb-audio` in menuconfig on compatible targets. | EVO only |
 | **[`alsa-utils`](docs/make/alsa-utils.md)** 1.2.13 / **[`alsa-lib`](docs/make/alsa-lib.md)** 1.2.13 | ALSA userspace toolchain and runtime library for playback, capture, mixer control, MIDI/sequencer tools, and `/usr/share/alsa` configuration data; both support external deployment. | EVO only |
 | **[`alsaequal`](docs/make/alsaequal.md)** 0.7.1 | ALSA equalizer bridge exposing LADSPA EQ plugins as standard ALSA PCM/control devices; optional Freetz config/status web UI via `alsaequal-cgi`. | EVO only |
 | **[`cmus`](docs/make/cmus.md)** 2.11.0 | Ncurses music player with ALSA output and MP3/FLAC/Vorbis playback. | EVO only |
@@ -70,67 +71,71 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`myMPD`](docs/make/mympd.md)** 25.0.2 | Standalone lightweight web-based MPD client with embedded web assets and embedded `libmpdclient`; optional Freetz config/status web UI via `mympd-cgi`. | EVO only |
 | **[`shairport-sync`](docs/make/shairport-sync.md)** 5.0.4 | AirPlay receiver with ALSA output, metadata FIFO processing, and a Freetz config/status web UI. | EVO only |
 | **[`snapcast`](docs/make/snapcast.md)** 0.35.0 | Multiroom audio server/client package with `snapserver`, `snapclient`, ALSA output, and FLAC/Ogg/Vorbis support. | EVO only |
-| **btop** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes. | EVO only |
-| **nmon** 16s | Curses-based Linux performance monitor for CPU, memory, disks, network, filesystems, and processes, with optional capture-to-file mode for later analysis. | EVO only |
-| **wavemon** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |
-| **`cdc-acm` kernel driver** | Exposes `cdc-acm.ko` in menuconfig on compatible targets, enabling native USB CDC ACM serial devices such as ESP32-C3 boards and other USB serial gadgets. | EVO only |
-| **lazygit** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
-| **lf** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
-| **age** 1.3.1 | Modern file encryption tool. | EVO only |
-| **caddy** 2.11.2 | General-purpose web server and reverse proxy with automatic HTTPS capabilities. | EVO only |
-| **fzf** 0.72.0 | Command-line fuzzy finder for interactive shell filtering. | EVO only |
-| **glow** 2.1.2 | Terminal Markdown renderer for browsing README files and notes. | EVO only |
-| **gum** 0.17.0 | Terminal UI helper toolkit for shell scripts. | EVO only |
-| **hey** 0.1.5 | Small HTTP load generator for smoke tests and benchmarks. | EVO only |
-| **hugo** 0.161.1 | Static site generator for content trees stored on writable media. | EVO only |
-| **prometheus** 3.11.3 | Monitoring and alerting server with local TSDB storage. | EVO only |
-| **rclone** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
-| **restic** 0.18.1 | Encrypted backup tool for local and remote repositories. | EVO only |
-| **vhs** 0.11.0 | Scripted terminal-session recorder for demo generation. | EVO only |
-| **NeoMutt** 20260504 | Console email client (MUA) with IMAP/POP3/SMTP, SSL/TLS via OpenSSL, wide-character ncurses UI, threading, sidebar, and a rich `muttrc` scripting language. | EVO only |
-| **yq** 4.53.2 | YAML, JSON, and XML processor for config automation. | EVO only |
-| **ttyd** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
-| **aria2** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
-| **rTorrent** 0.16.7 / **ruTorrent** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
-| **transmission** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission` 1.0.1, `TrguiNG web` 1.5.1, `Transmissionic web UI` 1.8.0, `transmission-web-control` commit snapshot), with package-level installation under `/usr/mww/*`; all available as selectable static frontends integrated in the Transmission package menu. | EVO only |
-| **freetz_proxy** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
-| **Nginx** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
-| **PHP** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
-| **QuickJS** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
-| **Python 3.14** | Python 3.14.3 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14 too |
-| **MicroPython** 1.27.0 | Lightweight Python implementation for constrained environments, including REPL, script execution, and optional micropython-lib modules. | EVO only |
-| **python3-*** (58 modules) | New Python 3 third-party packages: `aiodns 4.0.0`, `aiohttp 3.13.3`, `aiohttp-asyncmdnsresolver 0.1.1`, `aiohttp-fast-zlib 0.3.0`, `aiohappyeyeballs 2.6.1`, `aiosignal 1.4.0`, `annotatedyaml 1.0.2`, `async-timeout 5.0.1`, `attrs 26.1.0`, `av 16.0.1`, `audioop-lts 0.2.1`, `bcrypt 3.2.2`, `brotli 1.2.0`, `cffi 1.17.1`, `charset-normalizer 3.4.6`, `ciso8601 2.3.3`, `dateutil 2.9.0.post0`, `dbus-fast 4.0.0`, `faust-cchardet 2.1.19`, `fnv-hash-fast 1.6.0`, `fnvhash 0.2.1`, `frozenlist 1.8.0`, `grpcio 1.78.0`, `grpcio-reflection 1.78.1`, `grpcio-status 1.78.1`, `h11 0.16.0`, `ha-ffmpeg 3.2.2`, `httpcore 1.0.9`, `httpx 0.28.1`, `idna 3.11`, `lru-dict 1.4.1`, `lxml 6.0.2`, `markupsafe 3.0.3`, `multidict 6.7.1`, `numpy 2.4.3`, `pandas 3.0.1`, `pillow 12.1.1`, `pip 26.0.1`, `propcache 0.4.1`, `psutil 7.2.2`, `pycares 5.0.1`, `pycparser 3.0`, `pycryptodome 3.23.0`, `pymicro-vad 2.0.1`, `pynacl 1.6.2`, `pyspeex-noise 2.0.0`, `pyturbojpeg 2.2.0`, `pyyaml 6.0.3`, `setuptools 82.0.1`, `six 1.17.0`, `voluptuous 0.16.0`, `webrtc-models 0.3.0`, `yarl 1.23.0`, `zeroconf 0.148.0`, `python3-certifi 2025.10.5`, `python3-ifaddr 0.2.0`,  `python3-mashumaro 3.17`, `python3-orjson 3.10.7`, `typing_extensions 4.15.0`. Of which, pure-Python runtime modules (no compiled extensions) are: aiohappyeyeballs, aiosignal, async-timeout, attrs, charset-normalizer, dateutil, fnvhash, h11, idna, pycparser, six, voluptuous, certifi, ifaddr, mashumaro, typing_extensions. Build-time tooling (not required at runtime): pip, setuptools. | EVO only |
-| **GitHub CLI** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
-| **GNU ddrescue** 1.30 | Resilient data recovery and block-copy utility with mapfile-based resume support. | EVO only |
-| **exfatprogs** 1.3.2 | User-space exFAT utilities for formatting, checking, labeling, and tuning exFAT filesystems. | EVO only |
-| **fatresize** (snapshot) | FAT16/FAT32 resize utility for non-destructive partition resizing tasks. | EVO only |
-| **fsarchiver** 0.8.9 | Filesystem-level backup and restore archiver with compressed image support. | EVO only |
-| **partclone** 0.3.31 | Block-level partition backup/restore/check tools frequently used in cloning workflows. | EVO only |
-| **testdisk** 7.2 | Partition and file recovery toolkit for damaged media and lost partition tables. | EVO only |
-| **udpcast** 20250223 | Multicast transfer utility for one-to-many image distribution in cloning operations. | EVO only |
-| **elFinder** 2.1.66 | Full-featured web-based file manager for the FritzBox with enhancements: drag-and-drop UI, PHP connector (squashfs-safe), FTP remote volumes, video preview (with complete seek back and limited seek forward features), Movie plugin (scaping metadata from TMDb, OMDb, IMDb, Wikipedia; specific for Freetz-EVO), MediaInfo plugin (specific for Freetz-EVO), VLC plugin (specific for Freetz-EVO), unrar/7-Zip support, optional themes with theme selection plugin (specific for Freetz-EVO), multilingual (de/en/it/…), better status bar (specific for Freetz-EVO). | EVO only |
-| **MediaInfo** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
-| **proc-ps** | Improved `ps` replacement backed by procps-ng with richer process information output. | merged upstream |
-| **cpulimit** 0.2 | Limits the CPU usage of a process to a given percentage; prevents runaway processes from overloading the device. | package improvement |
-| **microperl** 5.38 | Minimal Perl 5.38.2 interpreter (alongside legacy 5.10.1) with full stub library set for embedded use. | upstream has 5.10.1; EVO adds 5.38.2 |
-| **zip** 3.0 (infozip) | Standard `zip` archiver for creating ZIP archives directly on the device. | merged upstream |
-| **gdb** 17.1 | GNU Debugger version 17.1 for on-device debugging of binaries and crash analysis. | EVO only for 17.1 (upstream has 6.8/7.9.1) |
-| **patchelf** (target) | ELF binary patcher for fixing RPATH and dynamic linker paths on cross-compiled binaries. | merged upstream |
-| **binutils-tools** (`c++filt`, `elfedit`, `nm`, `objdump`) | Additional binutils utilities for binary inspection and symbol demangling on the device. | merged upstream |
-| **libnettle** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
-| **libzen** | Helper library required by MediaInfo for portable C++ utilities. | EVO only |
-| **libxmlrpc** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
-| **libwebsockets** 4.3.9 | Canonical C WebSocket library; optional SSL/TLS support via OpenSSL. | EVO only |
-| **json-c** 0.17 | Lightweight JSON parser/serialiser library. | EVO only |
-| **libcares** (c-ares) | Asynchronous DNS resolver library used by aria2 and curl. | EVO only |
-| **libnl** 3.11.0 | Netlink userspace library stack (`libnl-3`, `libnl-cli-3`, `libnl-genl-3`, `libnl-nf-3`, `libnl-route-3`). | EVO only |
-| **libjemalloc** 5.3.0 | General-purpose allocator replacing uClibc malloc; required by aria2 to avoid SIGFPE on MIPS/uClibc-1.0.57. | EVO only |
-| **libtcmalloc_minimal** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
-| **libprofiler** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
-| **libssl** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
-| **openlibm** | Portable standalone C math library (`libopenlibm.so`) for consistent libm behavior across platforms and toolchains. | EVO only |
-| **tflite-micro** (TFLM) 20260318 | TensorFlow Lite for Microcontrollers: static library (`libtflm.a`) for on-device ML inference. Builds the full TFLM kernel set (conv2d, depthwise conv, LSTM, softmax, fully connected, etc.) from the official flat-source-tree generator. | EVO only |
-| **llama.cpp** b8575 | CPU-only LLM inference engine for running quantized GGUF language models on-device (no GPU). Includes `llama-cli` (interactive inference), `llama-server` (OpenAI-compatible REST API on port 8080), `llama-quantize` (model quantization), and optional tools (`llama-bench`, `llama-perplexity`, `llama-tokenize`, `llama-imatrix`, `llama-gguf-split`, `llama-tts`, `llama-mtmd-cli`). Models stored on USB/NAS storage. Shared libraries (`libllama.so`, `libggml*.so`). | EVO only |
+| **[`btop`](docs/make/btop.md)** 1.4.7 | Modern terminal resource monitor for CPU, memory, disks, network, and processes, with optional upstream themes. | EVO only |
+| **[`nmon`](docs/make/nmon.md)** 16s | Curses-based Linux performance monitor for CPU, memory, disks, network, filesystems, and processes, with optional capture-to-file mode for later analysis. | EVO only |
+| **[`wavemon`](docs/make/wavemon.md)** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |
+| **[`cdc-acm` kernel driver](docs/make/cdc-acm.md)** | Exposes `cdc-acm.ko` in menuconfig on compatible targets, enabling native USB CDC ACM serial devices such as ESP32-C3 boards and other USB serial gadgets. | EVO only |
+| **[`avrdude`](docs/make/avrdude.md)** 8.1 | AVR downloader/uploader toolchain with `avrdude`, `elf2tag`, and default `/etc/avrdude.conf` for full AVR flash/program workflows. | EVO only |
+| **[`esp-serial-flasher`](docs/make/esp-serial-flasher.md)** git-f1cccac | ESP serial flashing toolkit shipping `linux_flasher` and `esp_fw_upload` for multi-image ESP32-family firmware upload layouts. | EVO only |
+| **[`micronucleus`](docs/make/micronucleus.md)** 2.6 | USB bootloader uploader for Digispark/ATTiny devices using Micronucleus (`/usr/bin/micronucleus`). | EVO only |
+| **[`telink_tools`](docs/make/telink_tools.md)** 1.0 | Native C Telink BLE bootloader CLI for TB-03F-KIT/TB-04-KIT style devices; supports burn, triad programming, and flash read/write/erase operations. | EVO only |
+| **[`lazygit`](docs/make/lazygit.md)** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
+| **[`lf`](docs/make/lf.md)** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
+| **[`age`](docs/make/age.md)** 1.3.1 | Modern file encryption tool. | EVO only |
+| **[`caddy`](docs/make/caddy.md)** 2.11.2 | General-purpose web server and reverse proxy with automatic HTTPS capabilities. | EVO only |
+| **[`fzf`](docs/make/fzf.md)** 0.72.0 | Command-line fuzzy finder for interactive shell filtering. | EVO only |
+| **[`glow`](docs/make/glow.md)** 2.1.2 | Terminal Markdown renderer for browsing README files and notes. | EVO only |
+| **[`gum`](docs/make/gum.md)** 0.17.0 | Terminal UI helper toolkit for shell scripts. | EVO only |
+| **[`hey`](docs/make/hey.md)** 0.1.5 | Small HTTP load generator for smoke tests and benchmarks. | EVO only |
+| **[`hugo`](docs/make/hugo.md)** 0.161.1 | Static site generator for content trees stored on writable media. | EVO only |
+| **[`prometheus`](docs/make/prometheus.md)** 3.11.3 | Monitoring and alerting server with local TSDB storage. | EVO only |
+| **[`rclone`](docs/make/rclone.md)** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
+| **[`restic`](docs/make/restic.md)** 0.18.1 | Encrypted backup tool for local and remote repositories. | EVO only |
+| **[`vhs`](docs/make/vhs.md)** 0.11.0 | Scripted terminal-session recorder for demo generation. | EVO only |
+| **[`NeoMutt`](docs/make/neomutt.md)** 20260504 | Console email client (MUA) with IMAP/POP3/SMTP, SSL/TLS via OpenSSL, wide-character ncurses UI, threading, sidebar, and a rich `muttrc` scripting language. | EVO only |
+| **[`yq`](docs/make/yq.md)** 4.53.2 | YAML, JSON, and XML processor for config automation. | EVO only |
+| **[`ttyd`](docs/make/ttyd.md)** 1.7.7 | Web-based terminal server: exposes any shell command over WebSocket; CGI page embeds a full xterm.js terminal with 7 themes, fullscreen, search, font-size controls, and canvas renderer. | EVO only |
+| **[`aria2`](docs/make/aria2.md)** / **AriaNg** | Multi-protocol download utility (HTTP, FTP, BitTorrent, Metalink) with a full web UI (AriaNg) and CGI integration. | EVO only |
+| **[`rTorrent`](docs/make/rtorrent.md)** 0.16.7 / **[`ruTorrent`](docs/make/rutorrent.md)** 5.2.10 | Feature-rich BitTorrent client with a complete web interface, CGI backend, and config editor. | EVO only |
+| **[`transmission`](docs/make/transmission.md)** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission` 1.0.1, `TrguiNG web` 1.5.1, `Transmissionic web UI` 1.8.0, `transmission-web-control` commit snapshot), with package-level installation under `/usr/mww/*`; all available as selectable static frontends integrated in the Transmission package menu. | EVO only |
+| **[`freetz_proxy`](docs/make/freetz-proxy.md)** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
+| **[`Nginx`](docs/make/nginx.md)** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
+| **[`PHP`](docs/make/php.md)** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
+| **[`QuickJS`](docs/make/quickjs.md)** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
+| **[`Python 3.14`](docs/make/python3.md)** | Python 3.14.3 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14 too |
+| **[`MicroPython`](docs/make/micropython.md)** 1.27.0 | Lightweight Python implementation for constrained environments, including REPL, script execution, and optional micropython-lib modules. | EVO only |
+| **[`python3-*`](docs/make/python3.md)** (58 modules) | New Python 3 third-party packages: `aiodns 4.0.0`, `aiohttp 3.13.3`, `aiohttp-asyncmdnsresolver 0.1.1`, `aiohttp-fast-zlib 0.3.0`, `aiohappyeyeballs 2.6.1`, `aiosignal 1.4.0`, `annotatedyaml 1.0.2`, `async-timeout 5.0.1`, `attrs 26.1.0`, `av 16.0.1`, `audioop-lts 0.2.1`, `bcrypt 3.2.2`, `brotli 1.2.0`, `cffi 1.17.1`, `charset-normalizer 3.4.6`, `ciso8601 2.3.3`, `dateutil 2.9.0.post0`, `dbus-fast 4.0.0`, `faust-cchardet 2.1.19`, `fnv-hash-fast 1.6.0`, `fnvhash 0.2.1`, `frozenlist 1.8.0`, `grpcio 1.78.0`, `grpcio-reflection 1.78.1`, `grpcio-status 1.78.1`, `h11 0.16.0`, `ha-ffmpeg 3.2.2`, `httpcore 1.0.9`, `httpx 0.28.1`, `idna 3.11`, `lru-dict 1.4.1`, `lxml 6.0.2`, `markupsafe 3.0.3`, `multidict 6.7.1`, `numpy 2.4.3`, `pandas 3.0.1`, `pillow 12.1.1`, `pip 26.0.1`, `propcache 0.4.1`, `psutil 7.2.2`, `pycares 5.0.1`, `pycparser 3.0`, `pycryptodome 3.23.0`, `pymicro-vad 2.0.1`, `pynacl 1.6.2`, `pyspeex-noise 2.0.0`, `pyturbojpeg 2.2.0`, `pyyaml 6.0.3`, `setuptools 82.0.1`, `six 1.17.0`, `voluptuous 0.16.0`, `webrtc-models 0.3.0`, `yarl 1.23.0`, `zeroconf 0.148.0`, `python3-certifi 2025.10.5`, `python3-ifaddr 0.2.0`,  `python3-mashumaro 3.17`, `python3-orjson 3.10.7`, `typing_extensions 4.15.0`. Of which, pure-Python runtime modules (no compiled extensions) are: aiohappyeyeballs, aiosignal, async-timeout, attrs, charset-normalizer, dateutil, fnvhash, h11, idna, pycparser, six, voluptuous, certifi, ifaddr, mashumaro, typing_extensions. Build-time tooling (not required at runtime): pip, setuptools. | EVO only |
+| **[`GitHub CLI`](docs/make/gh.md)** (`gh`) 2.83.2 | GitHub CLI tool with Go host-tool integration, allowing GitHub API interaction from the FritzBox. | EVO only |
+| **[`GNU ddrescue`](docs/make/ddrescue.md)** 1.30 | Resilient data recovery and block-copy utility with mapfile-based resume support. | EVO only |
+| **[`exfatprogs`](docs/make/exfatprogs.md)** 1.3.2 | User-space exFAT utilities for formatting, checking, labeling, and tuning exFAT filesystems. | EVO only |
+| **[`fatresize`](docs/make/fatresize.md)** (snapshot) | FAT16/FAT32 resize utility for non-destructive partition resizing tasks. | EVO only |
+| **[`fsarchiver`](docs/make/fsarchiver.md)** 0.8.9 | Filesystem-level backup and restore archiver with compressed image support. | EVO only |
+| **[`partclone`](docs/make/partclone.md)** 0.3.31 | Block-level partition backup/restore/check tools frequently used in cloning workflows. | EVO only |
+| **[`testdisk`](docs/make/testdisk.md)** 7.2 | Partition and file recovery toolkit for damaged media and lost partition tables. | EVO only |
+| **[`udpcast`](docs/make/udpcast.md)** 20250223 | Multicast transfer utility for one-to-many image distribution in cloning operations. | EVO only |
+| **[`elFinder`](docs/make/elfinder.md)** 2.1.66 | Full-featured web-based file manager for the FritzBox with enhancements: drag-and-drop UI, PHP connector (squashfs-safe), FTP remote volumes, video preview (with complete seek back and limited seek forward features), Movie plugin (scaping metadata from TMDb, OMDb, IMDb, Wikipedia; specific for Freetz-EVO), MediaInfo plugin (specific for Freetz-EVO), VLC plugin (specific for Freetz-EVO), unrar/7-Zip support, optional themes with theme selection plugin (specific for Freetz-EVO), multilingual (de/en/it/…), better status bar (specific for Freetz-EVO). | EVO only |
+| **[`MediaInfo`](docs/make/mediainfo.md)** / libmediainfo / libzen / libxmlrpc | Media file analysis tool with full library stack; reports codecs, bitrates, resolution, and metadata. | EVO only |
+| **[`proc-ps`](docs/make/procps-ng.md)** | Improved `ps` replacement backed by procps-ng with richer process information output. | merged upstream |
+| **[`cpulimit`](docs/make/cpulimit.md)** 0.2 | Limits the CPU usage of a process to a given percentage; prevents runaway processes from overloading the device. | package improvement |
+| **[`microperl`](docs/make/microperl.md)** 5.38 | Minimal Perl 5.38.2 interpreter (alongside legacy 5.10.1) with full stub library set for embedded use. | upstream has 5.10.1; EVO adds 5.38.2 |
+| **[`zip`](docs/make/infozip.md)** 3.0 (infozip) | Standard `zip` archiver for creating ZIP archives directly on the device. | merged upstream |
+| **[`gdb`](docs/make/gdb.md)** 17.1 | GNU Debugger version 17.1 for on-device debugging of binaries and crash analysis. | EVO only for 17.1 (upstream has 6.8/7.9.1) |
+| **[`patchelf`](docs/make/patchelf.md)** (target) | ELF binary patcher for fixing RPATH and dynamic linker paths on cross-compiled binaries. | merged upstream |
+| **[`binutils-tools`](docs/make/binutils-tools.md)** (`c++filt`, `elfedit`, `nm`, `objdump`) | Additional binutils utilities for binary inspection and symbol demangling on the device. | merged upstream |
+| **[`libnettle`](docs/make/libnettle.md)** | Low-level cryptographic library (AES, SHA, RSA) used by GnuTLS and other packages. | upstream has nettle |
+| **[`libzen`](docs/make/libzen.md)** | Helper library required by MediaInfo for portable C++ utilities. | EVO only |
+| **[`libxmlrpc`](docs/make/libxmlrpc.md)** | XML-RPC library for rTorrent's SCGI/RPC interface; host tool gennmtab moved to `make/host-tools`. | EVO only |
+| **[`libwebsockets`](docs/make/libwebsockets.md)** 4.3.9 | Canonical C WebSocket library; optional SSL/TLS support via OpenSSL. | EVO only |
+| **[`json-c`](docs/make/json-c.md)** 0.17 | Lightweight JSON parser/serialiser library. | EVO only |
+| **[`libcares`](docs/make/libcares.md)** (c-ares) | Asynchronous DNS resolver library used by aria2 and curl. | EVO only |
+| **[`libnl`](docs/make/libnl.md)** 3.11.0 | Netlink userspace library stack (`libnl-3`, `libnl-cli-3`, `libnl-genl-3`, `libnl-nf-3`, `libnl-route-3`). | EVO only |
+| **[`libjemalloc`](docs/make/libjemalloc.md)** 5.3.0 | General-purpose allocator replacing uClibc malloc; required by aria2 to avoid SIGFPE on MIPS/uClibc-1.0.57. | EVO only |
+| **[`libtcmalloc_minimal`](docs/make/libtcmalloc_minimal.md)** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
+| **[`libprofiler`](docs/make/libprofiler.md)** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
+| **[`libssl`](docs/make/openssl.md)** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
+| **[`openlibm`](docs/make/openlibm.md)** | Portable standalone C math library (`libopenlibm.so`) for consistent libm behavior across platforms and toolchains. | EVO only |
+| **[`tflite-micro`](docs/make/tflite-micro.md)** (TFLM) 20260318 | TensorFlow Lite for Microcontrollers: static library (`libtflm.a`) for on-device ML inference. Builds the full TFLM kernel set (conv2d, depthwise conv, LSTM, softmax, fully connected, etc.) from the official flat-source-tree generator. | EVO only |
+| **[`llama.cpp`](docs/make/llama-cpp.md)** b8575 | CPU-only LLM inference engine for running quantized GGUF language models on-device (no GPU). Includes `llama-cli` (interactive inference), `llama-server` (OpenAI-compatible REST API on port 8080), `llama-quantize` (model quantization), and optional tools (`llama-bench`, `llama-perplexity`, `llama-tokenize`, `llama-imatrix`, `llama-gguf-split`, `llama-tts`, `llama-mtmd-cli`). Models stored on USB/NAS storage. Shared libraries (`libllama.so`, `libggml*.so`). | EVO only |
 
 For a full description of `freetz_proxy`, see [docs/make/freetz-proxy.md](docs/make/freetz-proxy.md).
 
