@@ -18,12 +18,30 @@ cgi --id=rudishell
 cgi_begin "$(lang de:"Rudi(ment&auml;r)-Shell" en:"Rudi(mentary) Shell")"
 cat << EOF
 	<style>
+		.shell-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+		.shell-row input[type='text'] { flex: 1 1 auto; min-width: 0; width: auto !important; }
+		.shell-row input[type='submit'], .shell-row input[type='button'] { flex: 0 0 auto; white-space: nowrap; }
+		#shell_output {
+			margin-top: 10px;
+			padding: 10px 12px;
+			border: 1px solid #97a6b7;
+			border-radius: 6px;
+			background: #f3f7fb;
+			min-height: 120px;
+			max-height: 45vh;
+			overflow: auto;
+			line-height: 1.35;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
 		@media (max-width: 600px) {
 			.textwrapper, .textwrapper textarea { width: 100%; box-sizing: border-box; }
 			textarea#script_code { width: 100% !important; }
 			table, tbody, tr, td, form { display: block; width: 100%; box-sizing: border-box; }
 			input[type='text'], input[type='file'] { width: 100%; max-width: 100%; box-sizing: border-box; }
 			input[type='button'], input[type='submit'] { margin: 2px 0; }
+			.shell-row { gap: 6px; }
+			.shell-row input[type='text'] { width: auto !important; }
 		}
 	</style>
 	<script type="text/javascript">
@@ -101,9 +119,9 @@ cat << EOF
 	<table>
 		<form action="/cgi-bin/shell/upload.cgi?pid=$$" target="upload" method="POST" enctype="multipart/form-data">
 			<tr><td><label for="source">$(lang de:"Quelldatei" en:"Source file")</label></td><td><input type="file" name="source" id="source" size=50></td></tr>
-			<tr><td><label for="target">$(lang de:"Zieldatei" en:"Target file")</label></td><td><input type="text" name="target" id="target" value="/var/tmp/rudi_upload" size=50 style="width:100%;box-sizing:border-box"> <input type="submit" value="$(lang de:"Hochladen" en:"Upload")"></td></tr>
+			<tr><td><label for="target">$(lang de:"Zieldatei" en:"Target file")</label></td><td><div class="shell-row"><input type="text" name="target" id="target" value="/var/tmp/rudi_upload" size=50 style="box-sizing:border-box"><input type="submit" value="$(lang de:"Hochladen" en:"Upload")"></div></td></tr>
 		</form>
-		<tr><td><label for="file2edit">$(lang de:"Rudi-Edit" en:"Rudi edit")</label></td><td> <input type="text" id="file2edit" value="/var/tmp/tmp.txt" size=50 style="width:100%;box-sizing:border-box"> <input type="button" value="$(lang de:"Datei editieren" en:"Edit file")" onClick="RudiEdit()"></td></tr>
+		<tr><td><label for="file2edit">$(lang de:"Rudi-Edit" en:"Rudi edit")</label></td><td><div class="shell-row"><input type="text" id="file2edit" value="/var/tmp/tmp.txt" size=50 style="box-sizing:border-box"><input type="button" value="$(lang de:"Datei editieren" en:"Edit file")" onClick="RudiEdit()"></div></td></tr>
 	</table>
 	<iframe name="upload" style="width: 0; height: 0; visibility: hidden;"></iframe>
 	<pre id="shell_output">---</pre>

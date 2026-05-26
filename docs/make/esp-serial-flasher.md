@@ -53,3 +53,13 @@ is exactly:
 `EXTERNAL_FREETZ_PACKAGE_ESP_SERIAL_FLASHER=y` is selected in menuconfig.
 
 If that symbol is not enabled, binaries remain in `/usr/bin` as usual.
+
+## Note on `cdc_acm` and AVM devices
+
+On FRITZ!Box models such as the 7590 AX, `cdc_acm` may already be provided by AVM in the stock firmware,
+so you do not necessarily need to enable a separate kernel option in Freetz.
+
+If `/dev/ttyACM0` appears only after a replug, the practical fix is to make sure `cdc_acm` is loaded at boot
+through the Freetz module list (`/tmp/flash/mod/modules`), not to add a package dependency.
+That means the package can stay usable with a simple module autoload, while the replug symptom usually points
+to USB enumeration timing rather than to `esp-serial-flasher` itself.
