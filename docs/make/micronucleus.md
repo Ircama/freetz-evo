@@ -2,7 +2,7 @@
   - Homepage: [https://github.com/micronucleus/micronucleus](https://github.com/micronucleus/micronucleus)
   - Changelog: [https://github.com/micronucleus/micronucleus/releases](https://github.com/micronucleus/micronucleus/releases)
   - Repository: [https://github.com/micronucleus/micronucleus](https://github.com/micronucleus/micronucleus)
-  - Package: [master/make/pkgs/micronucleus/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/micronucleus/)
+  - Package: [master/make/pkgs/micronucleus/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/micronucleus/)
   - Steward: -
 
   - Depends on: libusb

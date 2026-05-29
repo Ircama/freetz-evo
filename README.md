@@ -14,10 +14,9 @@ Freetz-EVO builds on that foundation with additional packages, UX improvements, 
 
 Freetz-EVO includes:
 
-- over 60 new packages and libraries,
+- about 100 new packages and libraries, including exclusive applications,
 - over 60 python3 libraries,
-- over 25 improved packages and libraries,
-- exclusive applications,
+- over 40 improved packages and libraries,
 - USB audio stack, playback tools, and web radio functions,
 - microcontroller flasher tools to enable USB peripheral devices.
 
@@ -100,6 +99,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`transmission`](docs/make/transmission.md)** | Added integrated static frontend selectors in the Transmission submenu (`flood-for-transmission` 1.0.1, `TrguiNG web` 1.5.1, `Transmissionic web UI` 1.8.0, `transmission-web-control` commit snapshot), with package-level installation under `/usr/mww/*`; all available as selectable static frontends integrated in the Transmission package menu. | EVO only |
 | **[`freetz_proxy`](docs/make/freetz-proxy.md)** | Lightweight CGI HTTPS↔HTTP reverse proxy and index gateway, with HTML/CSS/JS URL rewriting and CDN proxying. Accessible via MyFRITZ! and from the internet without port-forwarding. When included, the Fritz logo and the AVM user menu gain direct links to the Freetz menus (through the proxy). | EVO only |
 | **[`Nginx`](docs/make/nginx.md)** 1.29 | High-performance HTTP/reverse-proxy server with MIPS/ARM cross-compilation fixes and optional externalization. | EVO only |
+| **[`PowerDNS`](docs/make/powerdns.md)** 5.0.5 | Authoritative DNS server port with optional `pdnsutil`, `pdns_control`, `zone2sql`, `zone2json`, diagnostic tools, externalization support, and selectable `bind`/`pipe`/`gmysql`/`gsqlite3`/`geoip`/`lua2`/`remote` backends. Requires modern targets because upstream PowerDNS 5 needs GCC 8+ / C++17. | EVO only |
 | **[`PHP`](docs/make/php.md)** 8.4 / 8.5 | Modern PHP interpreter with multi-version selection (5.6 legacy, 8.4, 8.5), bzip2, libxml2, libatomic support. | upstream has PHP 5.6 only |
 | **[`QuickJS`](docs/make/quickjs.md)** (2026-03-23 git snapshot) | Lightweight embeddable JavaScript engine, packaged with `qjs` and optional `qjsc` compiler support. | EVO only |
 | **[`Python 3.14`](docs/make/python3.md)** | Python 3.14.3 with zip-importer fix, patchelf RPATH support, and build scripts for external deployment. | upstream has 3.14 too |

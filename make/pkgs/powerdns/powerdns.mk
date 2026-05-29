@@ -1,0 +1,194 @@
+$(call PKG_INIT_BIN, 5.0.5)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=pdns-$($(PKG)_VERSION).tar.bz2
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
+$(PKG)_HASH:=c144feb23cfc2cd47ebf335132aea0afab605adb4ff4f30955be3445034e0def
+$(PKG)_SITE:=https://downloads.powerdns.com/releases
+$(PKG)_DIR:=$(SOURCE_DIR)/pdns-$($(PKG)_VERSION)
+### WEBSITE:=https://www.powerdns.com/
+### MANPAGE:=https://doc.powerdns.com/authoritative/
+### CHANGES:=https://doc.powerdns.com/authoritative/changelog/
+### CVSREPO:=https://github.com/PowerDNS/pdns
+
+POWERDNS_BOOST_VERSION:=1.87.0
+POWERDNS_BOOST_SOURCE:=powerdns-boost_1_87_0.tar.bz2
+POWERDNS_BOOST_SOURCE_DOWNLOAD_NAME:=boost_1_87_0.tar.bz2
+POWERDNS_BOOST_HASH:=af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
+POWERDNS_BOOST_SITE:=https://archives.boost.io/release/$(POWERDNS_BOOST_VERSION)/source
+POWERDNS_BOOST_ROOT:=$(POWERDNS_DIR)/.boost/boost_1_87_0
+POWERDNS_BOOST_CONFIG:=$(POWERDNS_BOOST_ROOT)/user-config.jam
+POWERDNS_BOOST_LIBDIR:=$(POWERDNS_BOOST_ROOT)/stage/lib
+POWERDNS_BOOST_MARKER:=$(POWERDNS_BOOST_ROOT)/.built
+POWERDNS_TOOLCHAIN_ERROR:=PowerDNS 5.0.5 requires GCC 8+ with C++17 support.
+
+POWERDNS_BUILD_BINARY:=$(POWERDNS_DIR)/pdns/pdns_server
+POWERDNS_INSTALL_MARKER:=$(POWERDNS_DIR)/.installed
+
+POWERDNS_BACKEND_BIND_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_BIND),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_BIND_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_PIPE_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_GMYSQL_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_GSQLITE3_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_GEOIP_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_LUA2_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2_DYNAMIC),dynamic,static),disabled)
+POWERDNS_BACKEND_REMOTE_MODE:=$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE),$(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE_DYNAMIC),dynamic,static),disabled)
+
+POWERDNS_STATIC_BACKENDS:=$(strip \
+	$(if $(filter static,$(POWERDNS_BACKEND_BIND_MODE)),bind) \
+	$(if $(filter static,$(POWERDNS_BACKEND_PIPE_MODE)),pipe) \
+	$(if $(filter static,$(POWERDNS_BACKEND_GMYSQL_MODE)),gmysql) \
+	$(if $(filter static,$(POWERDNS_BACKEND_GSQLITE3_MODE)),gsqlite3) \
+	$(if $(filter static,$(POWERDNS_BACKEND_GEOIP_MODE)),geoip) \
+	$(if $(filter static,$(POWERDNS_BACKEND_LUA2_MODE)),lua2) \
+	$(if $(filter static,$(POWERDNS_BACKEND_REMOTE_MODE)),remote) \
+)
+POWERDNS_DYNAMIC_BACKENDS:=$(strip \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_BIND_MODE)),bind) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_PIPE_MODE)),pipe) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_GMYSQL_MODE)),gmysql) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_GSQLITE3_MODE)),gsqlite3) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_GEOIP_MODE)),geoip) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_LUA2_MODE)),lua2) \
+	$(if $(filter dynamic,$(POWERDNS_BACKEND_REMOTE_MODE)),remote) \
+)
+
+POWERDNS_TOOLS_BINARIES:=pdns_notify sdig calidns dnsdemog dnsgram dnspcap2calidns dnspcap2protobuf dnsreplay dnsscan dnsscope dnswasher nproxy nsec3dig dumresp kvresp stubquery saxfr ixplore dnstcpbench dnsbulktest
+
+$(PKG)_DEPENDS_ON += $(STDCXXLIB)
+$(PKG)_DEPENDS_ON += openssl lua
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_TARGET_ARCH_MIPS),$(if $(FREETZ_TARGET_GCC_4_8_MIN),libatomic))
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL),mysql)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3),sqlite)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP),libmaxminddb)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_POWERDNS_TOOLS),curl)
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_SERVER
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_PDNSUTIL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_ZONE2SQL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_ZONE2JSON
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_TOOLS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_WITH_LUA_RECORDS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_WITH_DNS_OVER_TLS
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_WITH_IPCIPHER
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_WITH_VERBOSE_LOGGING
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_BIND
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_BIND_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2_DYNAMIC
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE_DYNAMIC
+
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
+
+$(PKG)_CONFIGURE_ENV += BOOST_ROOT="$(abspath $(POWERDNS_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += BOOST_INCLUDEDIR="$(abspath $(POWERDNS_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += BOOST_LIBRARYDIR="$(abspath $(POWERDNS_BOOST_LIBDIR))"
+$(PKG)_CONFIGURE_ENV += CPPFLAGS="-I$(abspath $(POWERDNS_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -L$(abspath $(POWERDNS_BOOST_LIBDIR))"
+
+$(PKG)_CONFIGURE_OPTIONS += --disable-silent-rules
+$(PKG)_CONFIGURE_OPTIONS += --with-boost=$(abspath $(POWERDNS_BOOST_ROOT))
+$(PKG)_CONFIGURE_OPTIONS += --with-boost-libdir=$(abspath $(POWERDNS_BOOST_LIBDIR))
+$(PKG)_CONFIGURE_OPTIONS += --with-modules="$(POWERDNS_STATIC_BACKENDS)"
+$(PKG)_CONFIGURE_OPTIONS += --with-dynmodules="$(POWERDNS_DYNAMIC_BACKENDS)"
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_WITH_DNS_OVER_TLS),--with-libssl=yes,--with-libssl=no)
+$(PKG)_CONFIGURE_OPTIONS += --with-gnutls=no
+$(PKG)_CONFIGURE_OPTIONS += --with-libsodium=no
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_TOOLS),--enable-tools,--disable-tools)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_WITH_LUA_RECORDS),--enable-lua-records,--disable-lua-records)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_WITH_DNS_OVER_TLS),--enable-dns-over-tls,--disable-dns-over-tls)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_WITH_IPCIPHER),--enable-ipcipher,--disable-ipcipher)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_WITH_VERBOSE_LOGGING),--enable-verbose-logging,--disable-verbose-logging)
+$(PKG)_CONFIGURE_OPTIONS += --disable-experimental-pkcs11
+$(PKG)_CONFIGURE_OPTIONS += --disable-experimental-gss-tsig
+$(PKG)_CONFIGURE_OPTIONS += --disable-ixfrdist
+$(PKG)_CONFIGURE_OPTIONS += --disable-remotebackend-zeromq
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL),--with-mysql=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr)
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3),--with-sqlite3=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr)
+$(PKG)_CONFIGURE_OPTIONS += --disable-systemd
+
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_SERVER),,etc/default.powerdns etc/init.d/rc.powerdns usr/sbin/pdns_server)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_PDNSUTIL),,usr/bin/pdnsutil)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL),,usr/bin/pdns_control)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_ZONE2SQL),,usr/bin/zone2sql)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_ZONE2JSON),,usr/bin/zone2json)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_POWERDNS_TOOLS),,$(POWERDNS_TOOLS_BINARIES:%=usr/bin/%))
+$(PKG)_EXCLUDED += $(if $(POWERDNS_DYNAMIC_BACKENDS),,usr/lib/pdns)
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+
+$(DL_DIR)/$(POWERDNS_BOOST_SOURCE): | $(DL_DIR)
+	$(DL_TOOL) -o $(POWERDNS_BOOST_SOURCE) $(DL_DIR) $(POWERDNS_BOOST_SOURCE_DOWNLOAD_NAME) $(POWERDNS_BOOST_SITE) $(POWERDNS_BOOST_HASH)
+
+$(POWERDNS_BOOST_MARKER): $(DL_DIR)/$(POWERDNS_BOOST_SOURCE) $(POWERDNS_DIR)/.unpacked
+	$(RM) -r $(POWERDNS_DIR)/.boost
+	mkdir -p $(POWERDNS_DIR)/.boost
+	$(call UNPACK_TARBALL,$<,$(POWERDNS_DIR)/.boost)
+	cd $(POWERDNS_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization $(SILENT)
+	printf "using gcc : freetz : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(POWERDNS_BOOST_CONFIG)
+	cd $(POWERDNS_BOOST_ROOT) && ./b2 --user-config=$(abspath $(POWERDNS_BOOST_CONFIG)) toolset=gcc-freetz target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	@touch $@
+
+$(POWERDNS_DIR)/.configured: $(POWERDNS_DIR)/.build-prereq-checked $(POWERDNS_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(POWERDNS_BOOST_MARKER))
+	@$(call _ECHO,configuring)
+	@if [ "$(FREETZ_TARGET_GCC_8_MIN)" != "y" ]; then \
+		echo "ERROR: $(POWERDNS_TOOLCHAIN_ERROR)" 1>&2; \
+		exit 1; \
+	fi
+	(cd $(POWERDNS_DIR) && \
+		$(TARGET_CONFIGURE_PRE_CMDS) \
+		$(POWERDNS_CONFIGURE_PRE_CMDS) \
+		$(TARGET_CONFIGURE_ENV) $(POWERDNS_CONFIGURE_ENV) \
+		./configure $(QUIET) $(TARGET_CONFIGURE_OPTIONS) $(POWERDNS_CONFIGURE_OPTIONS) $(SILENT) \
+	) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) }
+	@touch $@
+
+$(POWERDNS_BUILD_BINARY): $(POWERDNS_DIR)/.configured
+	$(SUBMAKE) -C $(POWERDNS_DIR)
+
+$(POWERDNS_INSTALL_MARKER): $(POWERDNS_BUILD_BINARY)
+	$(SUBMAKE) -C $(POWERDNS_DIR) DESTDIR="$(abspath $(POWERDNS_DEST_DIR))" install
+	$(RM) -r \
+		$(POWERDNS_DEST_DIR)/usr/include \
+		$(POWERDNS_DEST_DIR)/usr/share/doc \
+		$(POWERDNS_DEST_DIR)/usr/share/man \
+		$(POWERDNS_DEST_DIR)/usr/lib/pkgconfig
+	$(TARGET_STRIP) $(POWERDNS_DEST_DIR)/usr/sbin/pdns_server 2>/dev/null || true
+	@if [ -d "$(POWERDNS_DEST_DIR)/usr/bin" ]; then \
+		find "$(POWERDNS_DEST_DIR)/usr/bin" -maxdepth 1 -type f -exec $(TARGET_STRIP) {} + 2>/dev/null || true; \
+	fi
+	@if [ -d "$(POWERDNS_DEST_DIR)/usr/lib/pdns" ]; then \
+		find "$(POWERDNS_DEST_DIR)/usr/lib/pdns" -type f -name '*.so' -exec $(TARGET_STRIP) {} + 2>/dev/null || true; \
+	fi
+	@touch $@
+
+$(pkg):
+
+$(pkg)-precompiled: $(POWERDNS_INSTALL_MARKER)
+
+$(pkg)-clean:
+	@if [ -f "$(POWERDNS_DIR)/Makefile" ]; then \
+		$(SUBMAKE) -C $(POWERDNS_DIR) clean; \
+	fi
+	$(RM) -r $(POWERDNS_DIR)/.boost $(POWERDNS_DIR)/.configured $(POWERDNS_DIR)/.installed
+
+$(pkg)-uninstall:
+	$(RM) -r \
+		$(POWERDNS_DEST_DIR)/usr/sbin/pdns_server \
+		$(POWERDNS_DEST_DIR)/usr/bin/pdnsutil \
+		$(POWERDNS_DEST_DIR)/usr/bin/pdns_control \
+		$(POWERDNS_DEST_DIR)/usr/bin/zone2sql \
+		$(POWERDNS_DEST_DIR)/usr/bin/zone2json \
+		$(POWERDNS_TOOLS_BINARIES:%=$(POWERDNS_DEST_DIR)/usr/bin/%) \
+		$(POWERDNS_DEST_DIR)/usr/lib/pdns \
+		$(POWERDNS_DEST_DIR)/usr/share/pdns
+
+$(PKG_FINISH)

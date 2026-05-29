@@ -1,8 +1,8 @@
 # telink_tools 1.0
   - Homepage: [https://github.com/Ircama/freetz-ble](https://github.com/Ircama/freetz-ble)
-  - Source reference: [https://raw.githubusercontent.com/Ircama/freetz-ble/refs/heads/main/ble-adv-telink/make/Telink_Tools.py](https://raw.githubusercontent.com/Ircama/freetz-ble/refs/heads/main/ble-adv-telink/make/Telink_Tools.py)
-  - Package: [master/make/pkgs/telink_tools/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/telink_tools/)
+  - Package: [master/make/pkgs/telink_tools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/telink_tools/)
   - Steward: -
+  - Source reference: [https://raw.githubusercontent.com/Ircama/freetz-ble/refs/heads/main/ble-adv-telink/make/Telink_Tools.py](https://raw.githubusercontent.com/Ircama/freetz-ble/refs/heads/main/ble-adv-telink/make/Telink_Tools.py)
 
   - Depends on: none
   - Provides: /usr/bin/telink_tools

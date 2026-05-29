@@ -91,6 +91,11 @@ $(UCLIBC_DIR)/.unpacked: $(DL_DIR)/$(UCLIBC_SOURCE) $(DL_DIR)/$(UCLIBC_LOCALE_DA
 	$(RM) -r $(UCLIBC_DIR)
 	$(call UNPACK_TARBALL,$(DL_DIR)/$(UCLIBC_SOURCE),$(TARGET_TOOLCHAIN_DIR))
 	$(call APPLY_PATCHES,$(UCLIBC_PATCHES_DIR)/avm $(UCLIBC_PATCHES_DIR),$(UCLIBC_DIR))
+ifeq ($(strip $(FREETZ_TARGET_UCLIBC_1)$(FREETZ_KERNEL_VERSION_2_6_32)),yy)
+	@echo "#fixing adjtimex fallback for kernels without clock_adjtime" $(SILENT); \
+	perl -0pi -e 's|#include <sys/timex.h>\n#include <time.h>|#include <errno.h>\n#include <sys/syscall.h>\n#include <sys/timex.h>\n#include <time.h>|; s|int adjtimex\(struct timex \*buf\)\n\{\n    return clock_adjtime\(CLOCK_REALTIME, buf\);\n\}|int adjtimex(struct timex *buf)\n{\n#if defined(__UCLIBC_USE_TIME64__) && defined(__NR_clock_adjtime64)\n    return clock_adjtime(CLOCK_REALTIME, buf);\n#elif defined(__NR_clock_adjtime)\n    return clock_adjtime(CLOCK_REALTIME, buf);\n#elif !defined(__UCLIBC_USE_TIME64__) && defined(__NR_adjtimex)\n    return INLINE_SYSCALL(adjtimex, 1, buf);\n#else\n    __set_errno(ENOSYS);\n    return -1;\n#endif\n}|s' \
+		"$(UCLIBC_DIR)/libc/sysdeps/linux/common/adjtimex.c"
+endif
 ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0)),y)
 	@echo "#fixing ncurses detection bug" $(SILENT); \
 	$(SED) 's/main() {}/int &/' -i "$(UCLIBC_DIR)/extra/config/Makefile" "$(UCLIBC_DIR)/extra/config/lxdialog/check-lxdialog.sh" 2>/dev/null || true

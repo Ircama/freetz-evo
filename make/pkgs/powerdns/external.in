@@ -1,0 +1,71 @@
+config EXTERNAL_FREETZ_PACKAGE_POWERDNS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_POWERDNS
+	bool "powerdns"
+	default n
+
+if EXTERNAL_FREETZ_PACKAGE_POWERDNS
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_SERVER
+		depends on FREETZ_PACKAGE_POWERDNS_SERVER
+		bool "pdns_server"
+		default n
+		help
+			externals the following file(s):
+			 /usr/sbin/pdns_server
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_PDNSUTIL
+		depends on FREETZ_PACKAGE_POWERDNS_PDNSUTIL
+		bool "pdnsutil"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/pdnsutil
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL
+		depends on FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL
+		bool "pdns_control"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/pdns_control
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2SQL
+		depends on FREETZ_PACKAGE_POWERDNS_ZONE2SQL
+		bool "zone2sql"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/zone2sql
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2JSON
+		depends on FREETZ_PACKAGE_POWERDNS_ZONE2JSON
+		bool "zone2json"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/zone2json
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_TOOLS
+		depends on FREETZ_PACKAGE_POWERDNS_TOOLS
+		bool "extra tools"
+		default n
+		help
+			externals the Authoritative Server extra tools in /usr/bin.
+
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_DYNAMIC_MODULES
+		depends on FREETZ_PACKAGE_POWERDNS && ( \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_BIND_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2_DYNAMIC || \
+			FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE_DYNAMIC )
+		bool "dynamic modules"
+		default n
+		help
+			externals the following file(s):
+			 /usr/lib/pdns
+			 /usr/share/pdns
+
+endif # EXTERNAL_FREETZ_PACKAGE_POWERDNS

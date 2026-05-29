@@ -1,4 +1,4 @@
-# alsaequal 0.7.1
+# alsaequal 0.7.1 - DEVELOPER
   - Homepage: [https://github.com/bassdr/alsaequal](https://github.com/bassdr/alsaequal)
   - Manpage: [https://github.com/bassdr/alsaequal#readme](https://github.com/bassdr/alsaequal#readme)
   - Changelog: [https://github.com/bassdr/alsaequal/releases](https://github.com/bassdr/alsaequal/releases)

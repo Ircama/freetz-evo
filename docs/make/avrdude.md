@@ -1,10 +1,11 @@
 # avrdude 8.1
   - Homepage: [https://github.com/avrdudes/avrdude](https://github.com/avrdudes/avrdude)
-  - Documentation: [https://avrdudes.github.io/avrdude/](https://avrdudes.github.io/avrdude/)
+  - Manpage: [https://avrdudes.github.io/avrdude/](https://avrdudes.github.io/avrdude/)
   - Changelog: [https://github.com/avrdudes/avrdude/releases](https://github.com/avrdudes/avrdude/releases)
   - Repository: [https://github.com/avrdudes/avrdude](https://github.com/avrdudes/avrdude)
-  - Package: [master/make/pkgs/avrdude/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/avrdude/)
-  - Steward: Ircama
+  - Package: [master/make/pkgs/avrdude/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/avrdude/)
+  - Steward: -
+  - Documentation: [https://avrdudes.github.io/avrdude/](https://avrdudes.github.io/avrdude/)
 
   - Depends on: libelf, libusb, libusb1, libftdi, readline, ncurses
   - Provides: /usr/bin/avrdude, /usr/bin/elf2tag, /etc/avrdude.conf

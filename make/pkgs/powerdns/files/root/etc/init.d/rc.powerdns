@@ -1,0 +1,57 @@
+#!/bin/sh
+
+DAEMON=powerdns
+DAEMON_BIN=pdns_server
+CFG_DIR=/tmp/flash/$DAEMON
+CFG_FILE=$CFG_DIR/pdns.conf
+SOCKET_DIR=/var/run/pdns
+. /etc/init.d/modlibrc
+
+ensure_config() {
+	mkdir -p "$CFG_DIR" "$SOCKET_DIR"
+	[ -e "$CFG_FILE" ] || cp /mod/etc/default.$DAEMON/pdns.conf "$CFG_FILE"
+}
+
+has_backend() {
+	grep -Eq '^[[:space:]]*launch[[:space:]]*=' "$CFG_FILE"
+}
+
+start() {
+	ensure_config
+	if ! has_backend; then
+		echo "failed: configure at least one launch backend in $CFG_FILE."
+		return 1
+	fi
+	modlib_startdaemon $DAEMON_BIN --daemon=no --guardian=no --config-dir="$CFG_DIR" --socket-dir="$SOCKET_DIR" $POWERDNS_EXTRA_ARGS
+}
+
+case $1 in
+	""|load)
+		modlib_add_user_and_group pdns
+		ensure_config
+		modreg daemon $DAEMON
+		modlib_start $POWERDNS_ENABLED
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

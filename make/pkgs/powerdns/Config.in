@@ -1,0 +1,226 @@
+comment "PowerDNS Authoritative Server 5.0.5 (requires GCC 8+/C++17)"
+	depends on !FREETZ_TARGET_GCC_8_MIN
+
+menuconfig FREETZ_PACKAGE_POWERDNS
+	bool "PowerDNS Authoritative Server 5.0.5"
+	depends on FREETZ_TARGET_GCC_8_MIN
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic if FREETZ_TARGET_ARCH_MIPS && FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_liblua
+	select FREETZ_LIB_libssl if FREETZ_PACKAGE_POWERDNS_WITH_DNS_OVER_TLS
+	default n
+	help
+		PowerDNS Authoritative Server from the upstream pdns source tree.
+
+		This freetz port packages the Authoritative Server only.
+		Upstream recursor and dnsdist are not included here.
+
+		The default configuration stays close to the minimal upstream mode:
+		no backend or optional server feature is enabled unless selected below.
+
+if FREETZ_PACKAGE_POWERDNS
+
+	config FREETZ_PACKAGE_POWERDNS_SERVER
+		bool "pdns_server"
+		default y
+		help
+			Authoritative server daemon.
+
+	config FREETZ_PACKAGE_POWERDNS_PDNSUTIL
+		bool "pdnsutil (binary only)"
+		default n
+		help
+			DNSSEC and zone maintenance utility.
+
+	config FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL
+		bool "pdns_control (binary only)"
+		default n
+		help
+			Runtime control helper for pdns_server.
+
+	config FREETZ_PACKAGE_POWERDNS_ZONE2SQL
+		bool "zone2sql (binary only)"
+		default n
+		help
+			Convert zone files to SQL statements.
+
+	config FREETZ_PACKAGE_POWERDNS_ZONE2JSON
+		bool "zone2json (binary only)"
+		default n
+		help
+			Convert zone files to JSON.
+
+	config FREETZ_PACKAGE_POWERDNS_TOOLS
+		bool "Extra diagnostic tools"
+		default n
+		select FREETZ_LIB_libcurl
+		help
+			Build the optional Authoritative Server tool set:
+			pdns_notify, sdig, calidns, dnsdemog, dnsgram,
+			dnspcap2calidns, dnspcap2protobuf, dnsreplay, dnsscan,
+			dnsscope, dnswasher, nproxy, nsec3dig, dumresp, kvresp,
+			stubquery, saxfr, ixplore, dnstcpbench and dnsbulktest.
+
+	menu "Optional server features"
+
+		config FREETZ_PACKAGE_POWERDNS_WITH_LUA_RECORDS
+			bool "Enable Lua records"
+			default n
+			help
+				Enable Lua record support. Disabled by default to keep the
+				package in minimal mode.
+
+		config FREETZ_PACKAGE_POWERDNS_WITH_DNS_OVER_TLS
+			bool "Enable DNS-over-TLS support"
+			default n
+			help
+				Enable DNS-over-TLS support using OpenSSL in this port.
+
+		config FREETZ_PACKAGE_POWERDNS_WITH_IPCIPHER
+			bool "Enable IPCipher support"
+			default n
+			help
+				Enable the optional IPCipher helper code.
+
+		config FREETZ_PACKAGE_POWERDNS_WITH_VERBOSE_LOGGING
+			bool "Enable verbose logging"
+			default n
+			help
+				Build with upstream verbose logging support.
+
+		comment "OpenSSL-based signers are built automatically with libcrypto."
+
+		comment "Alternative GnuTLS TLS provider is not wired in this port; DNS-over-TLS uses OpenSSL."
+
+		comment "ixfrdist is not available: yaml-cpp is not packaged in this tree."
+
+		comment "libsodium signers are not available: libsodium is not packaged in this tree."
+
+		comment "PKCS11 support is not available: no PKCS#11 userspace stack is packaged here."
+
+		comment "GSS-TSIG support is not available: no Kerberos/GSS client stack is packaged here."
+
+		comment "Remote backend ZeroMQ connector is not available: libzmq is not packaged in this tree."
+
+	endmenu
+
+	comment "HINT: Keep AVM DNS enabled unless you explicitly reconfigure PowerDNS for port 53."
+		depends on FREETZ_PACKAGE_POWERDNS_SERVER
+
+	config FREETZ_PACKAGE_POWERDNS_DISABLE_DNS
+		bool "Disable multid's DNS/LLMNR"
+		depends on FREETZ_AVM_HAS_AVMMULTID_PRELOAD
+		depends on FREETZ_PACKAGE_POWERDNS_SERVER
+		select FREETZ_AVMDAEMON_DISABLE_MULTIDPORTS
+		select FREETZ_AVMDAEMON_DISABLE_DNS
+		select FREETZ_AVMDAEMON_DISABLE_LLMNR
+		default n
+		help
+			Use this only when you want PowerDNS to listen on the standard DNS port.
+
+	menu "Backends"
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_BIND
+			bool "bind backend"
+			default n
+			help
+				Zone-file based backend.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_BIND_DYNAMIC
+			bool "Build bind backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_BIND
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE
+			bool "pipe backend"
+			default n
+			help
+				External backend bridge.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE_DYNAMIC
+			bool "Build pipe backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL
+			bool "gmysql backend"
+			depends on FREETZ_PACKAGE_MYSQL_mysql
+			default n
+			help
+				Generic MySQL backend. Requires the MySQL client package.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL_DYNAMIC
+			bool "Build gmysql backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3
+			bool "gsqlite3 backend"
+			default n
+			select FREETZ_LIB_libsqlite3
+			help
+				Generic SQLite3 backend.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3_DYNAMIC
+			bool "Build gsqlite3 backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP
+			bool "geoip backend"
+			default n
+			select FREETZ_LIB_libmaxminddb
+			help
+				Geo backend using MaxMind DB.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP_DYNAMIC
+			bool "Build geoip backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2
+			bool "lua2 backend"
+			default n
+			help
+				Lua-based backend.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2_DYNAMIC
+			bool "Build lua2 backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2
+			default n
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE
+			bool "remote backend"
+			default n
+			help
+				Remote backend without the optional ZeroMQ connector.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE_DYNAMIC
+			bool "Build remote backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE
+			default n
+
+		comment "godbc backend is not available: unixODBC is not packaged in this tree."
+
+		comment "gpgsql backend is not available: PostgreSQL client libraries are not packaged in this tree."
+
+		comment "ldap backend is not available: OpenLDAP client libraries are not packaged in this tree."
+
+		comment "lmdb backend is not available: LMDB is not packaged in this tree."
+
+		comment "tinydns backend is not available: cdb support is not packaged in this tree."
+
+	endmenu
+
+	comment "HINT: Enable at least one backend before starting PowerDNS."
+		depends on FREETZ_PACKAGE_POWERDNS_SERVER && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_BIND && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_PIPE && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_GMYSQL && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3 && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2 && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE
+
+endif # FREETZ_PACKAGE_POWERDNS
