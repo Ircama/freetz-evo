@@ -18,9 +18,14 @@ $(PKG)_LIBS_BUILD_DIR := \
 $(PKG)_LIBS_STAGING_DIR := $(addprefix $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/,$($(PKG)_LIBS))
 $(PKG)_LIBS_TARGET_DIR := $(addprefix $($(PKG)_TARGET_LIBDIR)/,$($(PKG)_LIBS))
 
+$(PKG)_BINARIES := isql iusql odbcinst
+$(PKG)_BINARIES_STAGING_DIR := $(addprefix $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/,$($(PKG)_BINARIES))
+$(PKG)_BINARIES_TARGET_DIR := $(addprefix $($(PKG)_DEST_DIR)/usr/bin/,$($(PKG)_BINARIES))
+
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libodbc
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libodbcinst
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libodbccr
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_UNIXODBC
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
@@ -52,9 +57,11 @@ $($(PKG)_LIBS_STAGING_DIR): $($(PKG)_LIBS_BUILD_DIR)
 $($(PKG)_LIBS_TARGET_DIR): $($(PKG)_TARGET_LIBDIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP_WILDCARD_BEFORE_SO)
 
+$(foreach binary,$($(PKG)_BINARIES_STAGING_DIR),$(eval $(call INSTALL_BINARY_STRIP_RULE,$(binary),/usr/bin)))
+
 $(pkg): $($(PKG)_LIBS_STAGING_DIR)
 
-$(pkg)-precompiled: $($(PKG)_LIBS_TARGET_DIR)
+$(pkg)-precompiled: $($(PKG)_LIBS_TARGET_DIR) $(if $(FREETZ_PACKAGE_UNIXODBC),$($(PKG)_BINARIES_TARGET_DIR))
 
 
 $(pkg)-clean:
@@ -70,7 +77,7 @@ $(pkg)-clean:
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/etc/odbc*.ini
 
 $(pkg)-uninstall:
-	$(RM) $(UNIXODBC_TARGET_LIBDIR)/libodbc*.so* $(UNIXODBC_TARGET_LIBDIR)/libodbccr*.so*
+	$(RM) $(UNIXODBC_TARGET_LIBDIR)/libodbc*.so* $(UNIXODBC_TARGET_LIBDIR)/libodbccr*.so* $(UNIXODBC_DEST_DIR)/usr/bin/{isql,iusql,odbcinst}
 
 $(call PKG_ADD_LIB,libodbc)
 $(call PKG_ADD_LIB,libodbcinst)

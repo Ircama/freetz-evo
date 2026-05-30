@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_UNIXODBC
+	bool "unixODBC 2.3.12 (tools)"
+	select FREETZ_LIB_libodbc
+	select FREETZ_LIB_libodbcinst
+	select FREETZ_LIB_libodbccr
+	default n
+	help
+		unixODBC tools package.
+		Installs isql, iusql and odbcinst.

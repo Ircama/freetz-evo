@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_UNIXODBC
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_UNIXODBC
+	bool "unixODBC tools"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/isql
+		 /usr/bin/iusql
+		 /usr/bin/odbcinst
