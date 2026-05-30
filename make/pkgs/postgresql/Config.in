@@ -1,0 +1,19 @@
+config FREETZ_PACKAGE_POSTGRESQL
+	bool "PostgreSQL 16.3 (client tools)"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libpq
+	default n
+	help
+		PostgreSQL client package.
+		Installs psql and links against libpq.
+
+if FREETZ_PACKAGE_POSTGRESQL
+
+config FREETZ_PACKAGE_POSTGRESQL_SERVER
+	bool "Install server binaries (postgres, pg_ctl, initdb)"
+	default n
+	help
+		Enable this option to install core PostgreSQL server binaries.
+		This is intended for advanced setups.
+
+endif # FREETZ_PACKAGE_POSTGRESQL
