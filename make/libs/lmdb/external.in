@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_liblmdb
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_liblmdb
+	bool "liblmdb"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/liblmdb.so

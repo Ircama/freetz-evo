@@ -1,0 +1,6 @@
+config FREETZ_LIB_liblmdb
+	bool "LMDB (liblmdb.so)"
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Lightning Memory-Mapped Database embedded key-value store.
