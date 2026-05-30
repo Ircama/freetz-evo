@@ -1,0 +1,15 @@
+config EXTERNAL_FREETZ_LIB_liblber
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_liblber
+	bool "liblber"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/liblber.so.2.200.0
+
+config EXTERNAL_FREETZ_LIB_libldap
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libldap
+	bool "libldap"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libldap.so.2.200.0

@@ -1,0 +1,17 @@
+menu "OpenLDAP"
+
+	config FREETZ_LIB_liblber
+		bool "OpenLDAP BER library (liblber.so)"
+		default n
+		help
+			OpenLDAP Basic Encoding Rules support library.
+
+	config FREETZ_LIB_libldap
+		bool "OpenLDAP client library (libldap.so)"
+		select FREETZ_LIB_liblber
+		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		default n
+		help
+			OpenLDAP client library.
+
+endmenu
