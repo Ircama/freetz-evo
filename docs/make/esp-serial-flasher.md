@@ -1,8 +1,8 @@
-# esp-serial-flasher
+# esp-serial-flasher git-f1cccac
   - Homepage: [https://github.com/espressif/esp-serial-flasher](https://github.com/espressif/esp-serial-flasher)
   - Changelog: [https://github.com/espressif/esp-serial-flasher/releases](https://github.com/espressif/esp-serial-flasher/releases)
   - Repository: [https://github.com/espressif/esp-serial-flasher](https://github.com/espressif/esp-serial-flasher)
-  - Package: [master/make/pkgs/esp-serial-flasher/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/esp-serial-flasher/)
+  - Package: [master/make/pkgs/esp-serial-flasher/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/esp-serial-flasher/)
   - Steward: -
 
   - Depends on: none
