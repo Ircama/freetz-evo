@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_RIPGREP
+	bool "ripgrep 15.1.0"
+	default n
+	help
+		ripgrep (rg) recursively searches files for patterns.
+
+		This package builds ripgrep from source using Rust/Cargo.

@@ -90,6 +90,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`hugo`](docs/make/hugo.md)** 0.161.1 | Static site generator for content trees stored on writable media. | EVO only |
 | **[`prometheus`](docs/make/prometheus.md)** 3.11.3 | Monitoring and alerting server with local TSDB storage. | EVO only |
 | **[`rclone`](docs/make/rclone.md)** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
+| **[`ripgrep`](docs/make/ripgrep.md)** 14.1.1 | Fast recursive text search tool (`rg`) based on Rust regex/search engines. | EVO only |
 | **[`restic`](docs/make/restic.md)** 0.18.1 | Encrypted backup tool for local and remote repositories. | EVO only |
 | **[`vhs`](docs/make/vhs.md)** 0.11.0 | Scripted terminal-session recorder for demo generation. | EVO only |
 | **[`NeoMutt`](docs/make/neomutt.md)** 20260504 | Console email client (MUA) with IMAP/POP3/SMTP, SSL/TLS via OpenSSL, wide-character ncurses UI, threading, sidebar, and a rich `muttrc` scripting language. | EVO only |

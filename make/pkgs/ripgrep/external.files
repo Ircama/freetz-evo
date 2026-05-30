@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_RIPGREP" == "y" ] && EXTERNAL_FILES+=" /usr/bin/rg"
