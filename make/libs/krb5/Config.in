@@ -1,0 +1,30 @@
+config FREETZ_LIB_libkrb5
+	bool "MIT Kerberos core library (libkrb5.so)"
+	default n
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libcom_err
+	select FREETZ_LIB_libk5crypto
+	select FREETZ_LIB_libkrb5support
+	help
+		MIT Kerberos 5 core runtime library required by software using
+		Kerberos authentication.
+
+config FREETZ_LIB_libgssapi_krb5
+	bool "MIT Kerberos GSSAPI library (libgssapi_krb5.so)"
+	default n
+	select FREETZ_LIB_libkrb5
+	help
+		Kerberos GSSAPI library. Required by PowerDNS ldap backend and
+		other GSS/Kerberos-enabled software.
+
+config FREETZ_LIB_libcom_err
+	bool
+	default n
+
+config FREETZ_LIB_libk5crypto
+	bool
+	default n
+
+config FREETZ_LIB_libkrb5support
+	bool
+	default n

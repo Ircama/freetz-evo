@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libkrb5)$(FREETZ_LIB_libgssapi_krb5)),y)
+LIBS+=krb5
+endif
