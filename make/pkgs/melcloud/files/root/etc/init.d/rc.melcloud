@@ -1,0 +1,41 @@
+#!/bin/sh
+
+DAEMON=melcloud
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/melcloud.cfg ] && . /mod/etc/conf/melcloud.cfg
+
+ensure_runtime_dirs() {
+	mkdir -p /tmp/flash/melcloud 2>/dev/null
+	mkdir -p "${MELCLOUD_TEMPLATE_DIR:-/tmp/flash/melcloud/templates}" 2>/dev/null
+	if [ ! -f "${MELCLOUD_HOME_FILE:-/tmp/flash/melcloud/home.json}" ]; then
+		echo '{"homeName":"My Home","devices":[]}' > "${MELCLOUD_HOME_FILE:-/tmp/flash/melcloud/home.json}" 2>/dev/null
+	fi
+}
+
+case "$1" in
+	""|load)
+		modreg cgi 'melcloud' 'MELCloud'
+		ensure_runtime_dirs
+		;;
+	unload)
+		modunreg cgi 'melcloud'
+		;;
+	start)
+		ensure_runtime_dirs
+		;;
+	stop)
+		;;
+	restart)
+		ensure_runtime_dirs
+		;;
+	status)
+		echo "MELCloud CGI package: no daemon process"
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1,0 +1,17 @@
+config FREETZ_PACKAGE_MELCLOUD
+	bool "MELCloud CLI + CGI dashboard"
+	select FREETZ_LIB_libcurl
+	select FREETZ_LIB_libcurl_WITH_SSL
+	select FREETZ_LIB_libcurl_WITH_CA_BUNDLE
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default n
+	help
+		Reverse-engineered MELCloud integration with:
+		- melcloud-cli (C)
+		- /cgi-bin/conf/melcloud configuration page
+		- /melcloud/index.html full monitoring/control GUI
+
+		Use at your own risk: MELCloud API is unofficial and may change.
+
+		Access the configuration page:
+		http://fritz.box:81/cgi-bin/conf/melcloud

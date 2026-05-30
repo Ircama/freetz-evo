@@ -1,0 +1,18 @@
+#!/bin/sh
+
+pkg_pre_save() {
+	:
+}
+
+pkg_apply_save() {
+	[ -r /mod/etc/conf/melcloud.cfg ] && . /mod/etc/conf/melcloud.cfg
+
+	mkdir -p /tmp/flash/melcloud 2>/dev/null
+	mkdir -p "${MELCLOUD_TEMPLATE_DIR:-/tmp/flash/melcloud/templates}" 2>/dev/null
+
+	if [ ! -f "${MELCLOUD_HOME_FILE:-/tmp/flash/melcloud/home.json}" ]; then
+		echo '{"homeName":"My Home","devices":[]}' > "${MELCLOUD_HOME_FILE:-/tmp/flash/melcloud/home.json}" 2>/dev/null
+	fi
+
+	return 0
+}

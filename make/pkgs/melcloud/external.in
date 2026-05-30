@@ -1,0 +1,13 @@
+config EXTERNAL_FREETZ_PACKAGE_MELCLOUD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MELCLOUD
+	bool "MELCloud Command Center"
+	default n
+	help
+		Externalizes MELCloud package files to the external package directory.
+
+		Externalized paths include:
+		 /usr/bin/melcloud-cli
+		 /usr/lib/cgi-bin/melcloud.cgi
+		 /usr/mww/melcloud
+		 /etc/init.d/rc.melcloud
+		 /etc/default.melcloud

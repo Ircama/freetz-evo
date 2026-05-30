@@ -1,0 +1,5 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_MELCLOUD" == "y" ] && EXTERNAL_FILES+=" /usr/bin/melcloud-cli"
+[ "$EXTERNAL_FREETZ_PACKAGE_MELCLOUD" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/melcloud.cgi"
+[ "$EXTERNAL_FREETZ_PACKAGE_MELCLOUD" == "y" ] && EXTERNAL_FILES+=" /usr/mww/melcloud"
+[ "$EXTERNAL_FREETZ_PACKAGE_MELCLOUD" == "y" ] && EXTERNAL_FILES+=" /etc/init.d/rc.melcloud"
+[ "$EXTERNAL_FREETZ_PACKAGE_MELCLOUD" == "y" ] && EXTERNAL_FILES+=" /etc/default.melcloud"
