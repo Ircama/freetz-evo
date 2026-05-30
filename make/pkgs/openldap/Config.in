@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_OPENLDAP
+	bool "OpenLDAP 2.6.8 (client tools)"
+	select FREETZ_LIB_libldap
+	select FREETZ_LIB_liblber
+	default n
+	help
+		OpenLDAP client tools package.
+		Installs ldapsearch and related command-line tools.

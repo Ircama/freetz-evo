@@ -1,0 +1,11 @@
+config EXTERNAL_FREETZ_PACKAGE_OPENLDAP
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_OPENLDAP
+	bool "OpenLDAP client tools"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/ldapsearch
+		 /usr/bin/ldapmodify
+		 /usr/bin/ldapadd
+		 /usr/bin/ldapdelete
+		 /usr/bin/ldapwhoami
