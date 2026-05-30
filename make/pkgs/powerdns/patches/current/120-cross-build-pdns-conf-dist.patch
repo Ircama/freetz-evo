@@ -1,0 +1,11 @@
+--- a/pdns/Makefile.in
++++ b/pdns/Makefile.in
+@@ -4650,2 +4650,7 @@
+ pdns.conf-dist: pdns_server
+-	$(AM_V_GEN)./pdns_server --config=default > $@
++	$(AM_V_GEN)if ./pdns_server --config=default > $@.tmp 2>/dev/null; then \
++		mv $@.tmp $@; \
++	else \
++		rm -f $@.tmp; \
++		printf '%s\n' '# pdns.conf-dist generation skipped: target binary is not runnable on the build host.' > $@; \
++	fi

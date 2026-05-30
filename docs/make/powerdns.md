@@ -36,20 +36,24 @@ static or dynamic where upstream supports it:
 
 - `bind`
 - `pipe`
+- `godbc`
 - `gmysql`
+- `gpgsql`
 - `gsqlite3`
 - `geoip`
+- `lmdb`
 - `lua2`
 - `remote`
+- `tinydns`
 
 Backends not currently wired into this freetz tree because target-side
 dependencies are missing:
 
-- `godbc`
-- `gpgsql`
 - `ldap`
-- `lmdb`
-- `tinydns`
+
+The `ldap` backend is still blocked specifically by missing Kerberos headers and
+libraries (`krb5`, `krb5-gssapi`) required by upstream PowerDNS in addition to
+OpenLDAP itself.
 
 Remember to configure at least one `launch=` backend in
 `/tmp/flash/powerdns/pdns.conf`, otherwise the daemon will refuse to start.
@@ -60,20 +64,23 @@ The package currently exposes these optional upstream Authoritative Server
 features:
 
 - Lua records
-- DNS-over-TLS via OpenSSL
+- DNS-over-TLS via either OpenSSL or the alternative GnuTLS provider
+- `ixfrdist` as an optional standalone binary
+- libsodium-backed signer and cookie support
 - IPCipher
+- ZeroMQ connector for the `remote` backend
 - verbose logging
-- externalization for the server, helper tools, and dynamic modules
+- externalization for the server, helper tools, `ixfrdist`, and dynamic modules
 
 Upstream features intentionally left unavailable in this tree because the needed
 packages are missing or the integration is not validated yet:
 
-- `ixfrdist` (needs `yaml-cpp`)
-- libsodium-based signers
 - PKCS#11 support
 - GSS-TSIG support
-- ZeroMQ connector for the `remote` backend
-- GnuTLS as an alternative TLS provider
+
+PKCS#11 support needs `p11-kit-1`, and GSS-TSIG support needs Kerberos/GSS
+libraries (`krb5`, `krb5-gssapi`), neither of which is currently packaged in
+this tree.
 
 ### Toolchain Requirement
 
@@ -87,6 +94,13 @@ only an explanatory comment and the package cannot be built.
 
 If you want PowerDNS to listen on port `53`, disable AVM DNS/LLMNR through the
 package option provided in `menuconfig` and adapt `pdns.conf` accordingly.
+
+During cross-builds, upstream tries to generate `pdns.conf-dist` by running the
+freshly built `pdns_server`. On freetz this target binary is not runnable on the
+build host, so the package intentionally installs a small fallback
+`pdns.conf-dist` placeholder instead. This is expected and does not affect the
+normal runtime path, because freetz uses `/mod/etc/default.powerdns/pdns.conf`
+as the runtime template copied on first start.
 
 The default sample does not enable the API or webserver. Turn them on manually
 only after you have configured the backend and access control settings you need.

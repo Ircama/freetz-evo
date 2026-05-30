@@ -1,0 +1,14 @@
+--- a/configure
++++ b/configure
+@@ -7820,7 +7820,10 @@
+ 
+ if test $ac_size -lt 8
+ then :
+-  as_fn_error $? "size of time_t is $ac_size, which is not large enough to fix the y2k38 bug" "$LINENO" 5
++  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: size of time_t is $ac_size, which is not large enough to fully address the y2k38 bug" >&5
++printf "%s\n" "$as_me: WARNING: size of time_t is $ac_size, which is not large enough to fully address the y2k38 bug" >&2;}
++  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: continuing anyway because this target uses 32-bit time_t" >&5
++printf "%s\n" "$as_me: WARNING: continuing anyway because this target uses 32-bit time_t" >&2;}
+ fi
+ 
+  typename=`echo time_t | sed "s/[^a-zA-Z0-9_]/_/g"`
