@@ -147,3 +147,4 @@ source "make/pkgs/xz/external.in.libs"
 source "make/libs/yaml/external.in"
 source "make/libs/zlib/external.in"
 
+source "make/libs/yaml-cpp/external.in"

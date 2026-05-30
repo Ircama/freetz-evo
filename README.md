@@ -143,6 +143,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`tinycdb`](docs/make/tinycdb.md)** 0.81 | Compact constant-database library exporting `libcdb` for read-mostly key/value lookups and TinyDNS-style consumers. | EVO only |
 For a full description of `freetz_proxy`, see [docs/make/freetz-proxy.md](docs/make/freetz-proxy.md).
 
+| **[`yaml-cpp`](docs/make/yaml-cpp.md)** 0.8.0 | C++ YAML parser/emitter library exporting `libyaml-cpp` for configuration-driven C++ packages such as PowerDNS `geoip` and `ixfrdist`. | EVO only |
 #### Python 2 third-party modules fix
 
 Added python-pip for python2. All 13 `python-*` cross-compilation modules (`python-bjoern`, `python-cffi`, `python-cheetah`,

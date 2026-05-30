@@ -249,3 +249,4 @@ menu "Other"
 	source "make/libs/yaml/Config.in"
 endmenu ### "Other"
 
+       source "make/libs/yaml-cpp/Config.in"

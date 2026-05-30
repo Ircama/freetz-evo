@@ -1,0 +1,7 @@
+config FREETZ_LIB_libyaml_cpp
+	bool "yaml-cpp (libyaml-cpp.so)"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libstdcxx
+	default n
+	help
+		YAML parser and emitter library for C++.

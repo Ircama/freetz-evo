@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libyaml_cpp
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libyaml_cpp
+	bool "libyaml-cpp"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libyaml-cpp.so.0.8.0
