@@ -1,0 +1,32 @@
+comment "PowerDNS Recursor 5.0.5 (requires GCC 8+/C++17)"
+	depends on !FREETZ_TARGET_GCC_8_MIN
+
+menuconfig FREETZ_PACKAGE_PDNS_RECURSOR
+	bool "PowerDNS Recursor 5.0.5"
+	depends on FREETZ_TARGET_GCC_8_MIN
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic if FREETZ_TARGET_ARCH_MIPS && FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_liblua
+	default n
+	help
+		PowerDNS Recursor from the upstream standalone release tarball.
+
+		This package builds the recursive resolver daemon and the
+		rec_control runtime helper.
+
+if FREETZ_PACKAGE_PDNS_RECURSOR
+
+	config FREETZ_PACKAGE_PDNS_RECURSOR_BINARY
+		bool "pdns_recursor"
+		default y
+		help
+			PowerDNS recursive resolver daemon.
+
+	config FREETZ_PACKAGE_PDNS_RECURSOR_REC_CONTROL
+		bool "rec_control (binary only)"
+		default y
+		help
+			Runtime control tool for pdns_recursor.
+
+endif # FREETZ_PACKAGE_PDNS_RECURSOR

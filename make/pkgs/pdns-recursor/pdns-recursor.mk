@@ -1,0 +1,125 @@
+$(call PKG_INIT_BIN, 5.0.5)
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
+$(PKG)_HASH:=02b9f053db64b32bd76ce6656cb35772c1d07a21fe0345ec13adb6f0fcfbf9ce
+$(PKG)_SITE:=https://downloads.powerdns.com/releases
+$(PKG)_DIR:=$(SOURCE_DIR)/pdns-recursor-$($(PKG)_VERSION)
+### WEBSITE:=https://www.powerdns.com/recursor.html
+### MANPAGE:=https://doc.powerdns.com/recursor/
+### CHANGES:=https://doc.powerdns.com/recursor/changelog/
+### CVSREPO:=https://github.com/PowerDNS/pdns
+
+PDNS_RECURSOR_BOOST_VERSION:=1.87.0
+PDNS_RECURSOR_BOOST_SOURCE:=pdns-recursor-boost_1_87_0.tar.bz2
+PDNS_RECURSOR_BOOST_SOURCE_DOWNLOAD_NAME:=boost_1_87_0.tar.bz2
+PDNS_RECURSOR_BOOST_HASH:=af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89
+PDNS_RECURSOR_BOOST_SITE:=https://archives.boost.io/release/$(PDNS_RECURSOR_BOOST_VERSION)/source
+PDNS_RECURSOR_BOOST_ROOT:=$(PDNS_RECURSOR_DIR)/.boost/boost_1_87_0
+PDNS_RECURSOR_BOOST_CONFIG:=$(PDNS_RECURSOR_BOOST_ROOT)/user-config.jam
+PDNS_RECURSOR_BOOST_LIBDIR:=$(PDNS_RECURSOR_BOOST_ROOT)/stage/lib
+PDNS_RECURSOR_BOOST_MARKER:=$(PDNS_RECURSOR_BOOST_ROOT)/.built
+PDNS_RECURSOR_TOOLCHAIN_ERROR:=PowerDNS Recursor 5.0.5 requires GCC 8+ with C++17 support.
+
+PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort ,)$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
+PDNS_RECURSOR_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
+
+PDNS_RECURSOR_BUILD_BINARY:=$(PDNS_RECURSOR_DIR)/pdns_recursor
+PDNS_RECURSOR_INSTALL_MARKER:=$(PDNS_RECURSOR_DIR)/.installed
+
+$(PKG)_DEPENDS_ON += $(STDCXXLIB)
+$(PKG)_DEPENDS_ON += openssl lua rust-host
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_TARGET_ARCH_MIPS),$(if $(FREETZ_TARGET_GCC_4_8_MIN),libatomic))
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PDNS_RECURSOR_BINARY
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PDNS_RECURSOR_REC_CONTROL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
+# Keep the y2k38 workaround on generated configure to avoid autoreconf toolchain requirements.
+$(PKG)_CONFIGURE_PRE_CMDS += sed -i '/as_fn_error.*y2k38/d' configure ;
+
+$(PKG)_CONFIGURE_ENV += BOOST_ROOT="$(abspath $(PDNS_RECURSOR_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += BOOST_INCLUDEDIR="$(abspath $(PDNS_RECURSOR_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += BOOST_LIBRARYDIR="$(abspath $(PDNS_RECURSOR_BOOST_LIBDIR))"
+$(PKG)_CONFIGURE_ENV += CPPFLAGS="$(TARGET_CPPFLAGS) -I$(abspath $(PDNS_RECURSOR_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -L$(abspath $(PDNS_RECURSOR_BOOST_LIBDIR))"
+$(PKG)_CONFIGURE_ENV += PATH="$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH"
+$(PKG)_CONFIGURE_ENV += CARGO="$(PDNS_RECURSOR_CARGO_CMD)"
+$(PKG)_CONFIGURE_ENV += RUST_TARGET="$(PDNS_RECURSOR_RUST_TARGET_ARG)"
+$(PKG)_CONFIGURE_ENV += RUSTC_TARGET_ARCH="$(PDNS_RECURSOR_RUST_TARGET_DIR)"
+
+$(PKG)_CONFIGURE_OPTIONS += --disable-silent-rules
+$(PKG)_CONFIGURE_OPTIONS += --with-boost=$(abspath $(PDNS_RECURSOR_BOOST_ROOT))
+$(PKG)_CONFIGURE_OPTIONS += --with-lua=lua
+$(PKG)_CONFIGURE_OPTIONS += --with-libcrypto=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr
+$(PKG)_CONFIGURE_OPTIONS += --with-libssl=yes
+$(PKG)_CONFIGURE_OPTIONS += --with-libsodium=no
+$(PKG)_CONFIGURE_OPTIONS += --with-net-snmp=no
+$(PKG)_CONFIGURE_OPTIONS += --enable-dns-over-tls
+$(PKG)_CONFIGURE_OPTIONS += --disable-dnstap
+$(PKG)_CONFIGURE_OPTIONS += --disable-systemd
+
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_PDNS_RECURSOR_BINARY),,usr/sbin/pdns_recursor)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_PDNS_RECURSOR_REC_CONTROL),,usr/bin/rec_control)
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+
+$(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE): | $(DL_DIR)
+	$(DL_TOOL) -o $(PDNS_RECURSOR_BOOST_SOURCE) $(DL_DIR) $(PDNS_RECURSOR_BOOST_SOURCE_DOWNLOAD_NAME) $(PDNS_RECURSOR_BOOST_SITE) $(PDNS_RECURSOR_BOOST_HASH)
+
+$(PDNS_RECURSOR_BOOST_MARKER): $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE) $(PDNS_RECURSOR_DIR)/.unpacked
+	$(RM) -r $(PDNS_RECURSOR_DIR)/.boost
+	mkdir -p $(PDNS_RECURSOR_DIR)/.boost
+	$(call UNPACK_TARBALL,$<,$(PDNS_RECURSOR_DIR)/.boost)
+	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system $(SILENT)
+	printf "using gcc : freetz : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(PDNS_RECURSOR_BOOST_CONFIG)
+	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc-freetz target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	@touch $@
+
+$(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(PDNS_RECURSOR_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(PDNS_RECURSOR_BOOST_MARKER))
+	@$(call _ECHO,configuring)
+	@if [ "$(FREETZ_TARGET_GCC_8_MIN)" != "y" ]; then \
+		echo "ERROR: $(PDNS_RECURSOR_TOOLCHAIN_ERROR)" 1>&2; \
+		exit 1; \
+	fi
+	(cd $(PDNS_RECURSOR_DIR) && \
+		$(TARGET_CONFIGURE_PRE_CMDS) \
+		$(PDNS_RECURSOR_CONFIGURE_PRE_CMDS) \
+		$(TARGET_CONFIGURE_ENV) $(PDNS_RECURSOR_CONFIGURE_ENV) \
+		./configure $(QUIET) $(TARGET_CONFIGURE_OPTIONS) $(PDNS_RECURSOR_CONFIGURE_OPTIONS) $(SILENT) \
+	) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) }
+	@touch $@
+
+$(PDNS_RECURSOR_BUILD_BINARY): $(PDNS_RECURSOR_DIR)/.configured
+	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR)
+
+$(PDNS_RECURSOR_INSTALL_MARKER): $(PDNS_RECURSOR_BUILD_BINARY)
+	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) DESTDIR="$(abspath $(PDNS_RECURSOR_DEST_DIR))" install
+	$(RM) -r \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/include \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/share/doc \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/share/man \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/lib/pkgconfig
+	$(TARGET_STRIP) $(PDNS_RECURSOR_DEST_DIR)/usr/sbin/pdns_recursor 2>/dev/null || true
+	$(TARGET_STRIP) $(PDNS_RECURSOR_DEST_DIR)/usr/bin/rec_control 2>/dev/null || true
+	@touch $@
+
+$(pkg):
+
+$(pkg)-precompiled: $(PDNS_RECURSOR_INSTALL_MARKER)
+
+$(pkg)-clean:
+	@if [ -f "$(PDNS_RECURSOR_DIR)/Makefile" ]; then \
+		$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) clean; \
+	fi
+	$(RM) -r $(PDNS_RECURSOR_DIR)/.boost $(PDNS_RECURSOR_DIR)/.configured $(PDNS_RECURSOR_DIR)/.installed
+
+$(pkg)-uninstall:
+	$(RM) -r \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/sbin/pdns_recursor \
+		$(PDNS_RECURSOR_DEST_DIR)/usr/bin/rec_control
+
+$(PKG_FINISH)

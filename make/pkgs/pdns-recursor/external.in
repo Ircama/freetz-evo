@@ -1,0 +1,15 @@
+config EXTERNAL_FREETZ_PACKAGE_PDNS_RECURSOR_BINARY
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PDNS_RECURSOR_BINARY
+	bool "pdns_recursor"
+	default n
+	help
+		externals the following file(s):
+		 /usr/sbin/pdns_recursor
+
+config EXTERNAL_FREETZ_PACKAGE_PDNS_RECURSOR_REC_CONTROL
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PDNS_RECURSOR_REC_CONTROL
+	bool "rec_control"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/rec_control
