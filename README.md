@@ -19,6 +19,7 @@ Freetz-EVO includes:
 - over 40 improved packages and libraries,
 - USB audio stack, playback tools, and web radio functions,
 - microcontroller flasher tools to enable USB peripheral devices.
+- built-in Go and Rust toolchains to compile Go and Rust packages.
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 
