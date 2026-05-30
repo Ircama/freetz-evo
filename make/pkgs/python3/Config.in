@@ -422,6 +422,7 @@ if FREETZ_PACKAGE_PYTHON3
 		source "make/pkgs/python3-six/Config.in"
 		source "make/pkgs/python3-typing-extensions/Config.in"
 		source "make/pkgs/python3-ulid-transform/Config.in"
+		source "make/pkgs/python3-uv/Config.in"
 		source "make/pkgs/python3-voluptuous/Config.in"
 		source "make/pkgs/python3-webrtc-models/Config.in"
 		source "make/pkgs/python3-yarl/Config.in"

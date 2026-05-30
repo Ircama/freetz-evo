@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_PYTHON3_UV
+	bool "uv 0.11.16"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		uv 0.11.16
+
+		An extremely fast Python package and project manager,
+		written in Rust.
+
+		WWW: https://github.com/astral-sh/uv
