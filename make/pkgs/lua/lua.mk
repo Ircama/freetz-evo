@@ -57,7 +57,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 
 $($(PKG)_LIB_STAGING_BINARY): $($(PKG)_LIB_BINARY)
 	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)$(LUA_INCLUDE_DIR) \
-	&& cp $(LUA_DIR)/src/{lua.h,luaconf.h,lualib.h,lauxlib.h} $(TARGET_TOOLCHAIN_STAGING_DIR)$(LUA_INCLUDE_DIR)
+	&& cp $(LUA_DIR)/src/{lua.h,luaconf.h,lualib.h,lauxlib.h} $(TARGET_TOOLCHAIN_STAGING_DIR)$(LUA_INCLUDE_DIR) \
+	&& printf '%s\n' '#ifndef LUA_HPP_INCLUDED' '#define LUA_HPP_INCLUDED' 'extern "C" {' '#include "lua.h"' '#include "lualib.h"' '#include "lauxlib.h"' '}' '#endif' > $(TARGET_TOOLCHAIN_STAGING_DIR)$(LUA_INCLUDE_DIR)/lua.hpp
 	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig && \
 	echo -ne \
 	"prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
