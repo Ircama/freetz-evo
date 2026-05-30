@@ -1,14 +1,13 @@
 config FREETZ_PACKAGE_PYTHON3_CRYPTOGRAPHY
-	bool "cryptography 3.3.2 - DEVELOPER"
+	bool "cryptography 48.0.0"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_SHOW_DEVELOPER
 	select FREETZ_PACKAGE_PYTHON3_CFFI
-	select FREETZ_PACKAGE_PYTHON3_SIX
+	select FREETZ_PACKAGE_PYTHON3_TYPING_EXTENSIONS
 	select FREETZ_LIB_libcrypto if !FREETZ_PACKAGE_OPENSSL
 	select FREETZ_LIB_libssl if !FREETZ_PACKAGE_OPENSSL
 	default n
 	help
-		cryptography 3.3.2 (last version without Rust dependency)
+		cryptography 48.0.0
 
 		cryptography is a package which provides cryptographic recipes and
 		primitives to Python developers.
@@ -24,9 +23,11 @@ config FREETZ_PACKAGE_PYTHON3_CRYPTOGRAPHY
 		Dependencies:
 		  - Python 3.x
 		  - cffi (Python C Foreign Function Interface)
-		  - OpenSSL >= 1.1.1 (for cryptographic operations)
+		  - typing-extensions
+		  - OpenSSL
+		  - Rust/Cargo (build time)
 		
-		Build: Uses setuptools
+		Build: Uses pyproject/pip (PEP 517)
 		
 		Size: ~2-3 MB installed
 		
