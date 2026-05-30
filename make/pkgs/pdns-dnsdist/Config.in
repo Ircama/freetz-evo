@@ -1,0 +1,26 @@
+comment "PowerDNS dnsdist 1.9.7"
+	depends on !FREETZ_TARGET_GCC_8_MIN
+
+menuconfig FREETZ_PACKAGE_DNSDIST
+	bool "PowerDNS dnsdist 1.9.7"
+	depends on FREETZ_TARGET_GCC_8_MIN
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic if FREETZ_TARGET_ARCH_MIPS && FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_liblua
+	default n
+	help
+		dnsdist from the upstream standalone release tarball.
+
+		This package ships the dnsdist load-balancer binary in minimal
+		mode with advanced optional protocols disabled by default.
+
+if FREETZ_PACKAGE_DNSDIST
+
+	config FREETZ_PACKAGE_DNSDIST_BINARY
+		bool "dnsdist"
+		default y
+		help
+			dnsdist DNS load-balancer daemon.
+
+endif # FREETZ_PACKAGE_DNSDIST

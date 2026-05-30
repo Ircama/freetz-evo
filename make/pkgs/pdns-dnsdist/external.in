@@ -1,0 +1,17 @@
+config EXTERNAL_FREETZ_PACKAGE_DNSDIST
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DNSDIST
+	bool "dnsdist"
+	default n
+
+if EXTERNAL_FREETZ_PACKAGE_DNSDIST
+
+	config EXTERNAL_FREETZ_PACKAGE_DNSDIST_BINARY
+		depends on FREETZ_PACKAGE_DNSDIST_BINARY
+		bool "dnsdist"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/dnsdist
+			 /etc/dnsdist.conf-dist
+
+endif # EXTERNAL_FREETZ_PACKAGE_DNSDIST
