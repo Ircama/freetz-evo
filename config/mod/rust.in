@@ -1,0 +1,28 @@
+config FREETZ_TARGET_RUST_BUILTIN_TARGET
+	string
+	default "mips-unknown-linux-uclibc"       if FREETZ_TARGET_ARCH_MIPS    && FREETZ_TARGET_ARCH_BE
+	default "mipsel-unknown-linux-uclibc"     if FREETZ_TARGET_ARCH_MIPS    && FREETZ_TARGET_ARCH_LE
+	default "armv5te-unknown-linux-uclibceabi" if FREETZ_TARGET_ARCH_ARM     && FREETZ_TARGET_ARCH_LE && FREETZ_CPU_MODEL_ARM_arm11
+	default "armv7-unknown-linux-uclibceabi"   if FREETZ_TARGET_ARCH_ARM     && FREETZ_TARGET_ARCH_LE && FREETZ_CPU_MODEL_ARM_cortex
+
+config FREETZ_TARGET_RUST_NEEDS_CUSTOM_TARGET
+	bool
+	default y if FREETZ_TARGET_ARCH_AARCH64
+	default y if FREETZ_TARGET_ARCH_X86
+	default y if FREETZ_TARGET_ARCH_ARM && FREETZ_TARGET_ARCH_BE
+
+config FREETZ_TARGET_RUST_CUSTOM_TARGET
+	string
+	default "aarch64-unknown-linux-uclibc.json"      if FREETZ_TARGET_ARCH_AARCH64 && FREETZ_TARGET_ARCH_LE
+	default "aarch64_be-unknown-linux-uclibc.json"   if FREETZ_TARGET_ARCH_AARCH64 && FREETZ_TARGET_ARCH_BE
+	default "armeb-unknown-linux-uclibceabi.json"    if FREETZ_TARGET_ARCH_ARM     && FREETZ_TARGET_ARCH_BE
+	default "i686-unknown-linux-uclibc.json"         if FREETZ_TARGET_ARCH_X86
+
+config FREETZ_TARGET_RUST_TARGET
+	string
+	default "${FREETZ_TARGET_RUST_CUSTOM_TARGET}" if FREETZ_TARGET_RUST_NEEDS_CUSTOM_TARGET
+	default "${FREETZ_TARGET_RUST_BUILTIN_TARGET}"
+
+config FREETZ_TARGET_RUST_NEEDS_STD_BUILD
+	bool
+	default y
