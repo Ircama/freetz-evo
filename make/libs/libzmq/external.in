@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libzmq
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libzmq
+	bool "libzmq"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libzmq.so.5.2.5

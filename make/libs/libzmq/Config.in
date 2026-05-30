@@ -1,0 +1,8 @@
+config FREETZ_LIB_libzmq
+	bool "ZeroMQ (libzmq.so)"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libstdcxx
+	default n
+	help
+		ZeroMQ messaging library.
