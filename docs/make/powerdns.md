@@ -3,23 +3,19 @@
   - Manpage: [https://doc.powerdns.com/authoritative/](https://doc.powerdns.com/authoritative/)
   - Changelog: [https://doc.powerdns.com/authoritative/changelog/](https://doc.powerdns.com/authoritative/changelog/)
   - Repository: [https://github.com/PowerDNS/pdns](https://github.com/PowerDNS/pdns)
-  - Package: [master/make/pkgs/powerdns/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/powerdns/)
-  - Steward: -
+  - Package: [master/make/pkgs/pdns-authoritative/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/pdns-authoritative/)
+  - Steward: Ircama
 
-PowerDNS in this port packages the Authoritative Server only. Upstream `recursor`
-and `dnsdist` are separate products and are not included here.
+PowerDNS in this port packages the Authoritative Server only. Upstream `recursor` is not included here, while `dnsdist` is available as a separate package.
 
 ### Overview
-
-This freetz port follows a minimal default profile: no backend and no optional
-server feature is enabled unless selected explicitly in `menuconfig`.
 
 The runtime integration installs:
 
 - `pdns_server`
 - optional helpers such as `pdnsutil`, `pdns_control`, `zone2sql`, `zone2json`
 - optional diagnostic tools (`sdig`, `pdns_notify`, `dnsbulktest`, and the rest of the upstream tools set)
-- freetz init/default files under `/mod/etc/default.powerdns/` and `/etc/init.d/rc.powerdns`
+- init/default files under `/mod/etc/default.powerdns/` and `/etc/init.d/rc.powerdns`
 
 At first start, the init script copies the sample configuration to:
 
@@ -31,8 +27,7 @@ The sample keeps PowerDNS on `127.0.0.1:5300`, with API and webserver disabled.
 
 ### Backends
 
-The current port supports these Authoritative Server backends, each selectable as
-static or dynamic where upstream supports it:
+The current port supports these Authoritative Server backends, each selectable as static or dynamic where upstream supports it:
 
 - `bind`
 - `pipe`
@@ -41,19 +36,13 @@ static or dynamic where upstream supports it:
 - `gpgsql`
 - `gsqlite3`
 - `geoip`
+- `ldap`
 - `lmdb`
 - `lua2`
 - `remote`
 - `tinydns`
 
-Backends not currently wired into this freetz tree because target-side
-dependencies are missing:
-
-- `ldap`
-
-The `ldap` backend is still blocked specifically by missing Kerberos headers and
-libraries (`krb5`, `krb5-gssapi`) required by upstream PowerDNS in addition to
-OpenLDAP itself.
+The `ldap` backend in this tree requires OpenLDAP plus MIT Kerberos/GSSAPI libraries (`libkrb5`, `libgssapi_krb5`) and headers.
 
 Remember to configure at least one `launch=` backend in
 `/tmp/flash/powerdns/pdns.conf`, otherwise the daemon will refuse to start.
@@ -72,15 +61,23 @@ features:
 - verbose logging
 - externalization for the server, helper tools, `ixfrdist`, and dynamic modules
 
-Upstream features intentionally left unavailable in this tree because the needed
-packages are missing or the integration is not validated yet:
+### Upstream Features Not Wired In This Port
+
+The following items exist upstream, but are intentionally not wired in this
+freetz port (menu option/configure glue/runtime integration is not enabled):
 
 - PKCS#11 support
 - GSS-TSIG support
 
-PKCS#11 support needs `p11-kit-1`, and GSS-TSIG support needs Kerberos/GSS
-libraries (`krb5`, `krb5-gssapi`), neither of which is currently packaged in
-this tree.
+Both are hard-disabled at configure time in this port:
+
+- `--disable-experimental-pkcs11`
+- `--disable-experimental-gss-tsig`
+
+Also note that upstream `recursor` is a separate product and is not part of this
+package. `dnsdist` is packaged separately.
+
+PKCS#11 support still needs `p11-kit-1` in this tree.
 
 ### Toolchain Requirement
 
@@ -92,8 +89,18 @@ only an explanatory comment and the package cannot be built.
 
 ### Notes
 
-If you want PowerDNS to listen on port `53`, disable AVM DNS/LLMNR through the
-package option provided in `menuconfig` and adapt `pdns.conf` accordingly.
+`HINT: Keep AVM DNS enabled unless you explicitly reconfigure PowerDNS for port 53`
+means:
+
+- Keep AVM DNS enabled when PowerDNS is in the default non-standard setup
+  (typically `127.0.0.1:5300`).
+- Disable AVM DNS/LLMNR only if you really want PowerDNS to listen on port `53`.
+
+If you disable AVM DNS but do not move/reconfigure PowerDNS to port `53`, you
+can lose local DNS service on the box for LAN clients.
+
+If you want PowerDNS on port `53`, disable AVM DNS/LLMNR through the package
+option in `menuconfig` and then adapt `pdns.conf` accordingly.
 
 During cross-builds, upstream tries to generate `pdns.conf-dist` by running the
 freshly built `pdns_server`. On freetz this target binary is not runnable on the

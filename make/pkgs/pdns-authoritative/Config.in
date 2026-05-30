@@ -16,7 +16,8 @@ menuconfig FREETZ_PACKAGE_POWERDNS
 		PowerDNS Authoritative Server from the upstream pdns source tree.
 
 		This freetz port packages the Authoritative Server only.
-		Upstream recursor and dnsdist are not included here.
+		Upstream recursor is not included here.
+		dnsdist is available as a separate freetz package.
 
 		jemalloc is selected to avoid allocator-related crashes observed
 		on uClibc targets when using the default allocator.
@@ -128,8 +129,6 @@ if FREETZ_PACKAGE_POWERDNS
 			help
 				Build with upstream verbose logging support.
 
-		comment "PKCS#11 and GSS-TSIG remain unavailable: PowerDNS needs p11-kit-1 and Kerberos/GSS (krb5, krb5-gssapi), which are not packaged in this tree."
-
 	endmenu
 
 	comment "HINT: Keep AVM DNS enabled unless you explicitly reconfigure PowerDNS for port 53."
@@ -231,7 +230,20 @@ if FREETZ_PACKAGE_POWERDNS
 			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP
 			default n
 
-		comment "ldap backend unavailable: PowerDNS also requires Kerberos headers and libraries (krb5), which are not packaged in this tree."
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_LDAP
+			bool "ldap backend"
+			default n
+			select FREETZ_LIB_libldap
+			select FREETZ_LIB_libkrb5
+			select FREETZ_LIB_libgssapi_krb5
+			help
+				LDAP backend. Requires OpenLDAP plus MIT Kerberos/GSSAPI
+				headers and runtime libraries.
+
+		config FREETZ_PACKAGE_POWERDNS_BACKEND_LDAP_DYNAMIC
+			bool "Build ldap backend as dynamic module"
+			depends on FREETZ_PACKAGE_POWERDNS_BACKEND_LDAP
+			default n
 
 		config FREETZ_PACKAGE_POWERDNS_BACKEND_LMDB
 			bool "lmdb backend"
@@ -298,6 +310,7 @@ if FREETZ_PACKAGE_POWERDNS
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_GPGSQL && \
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_GSQLITE3 && \
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP && \
+			!FREETZ_PACKAGE_POWERDNS_BACKEND_LDAP && \
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_LMDB && \
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_LUA2 && \
 			!FREETZ_PACKAGE_POWERDNS_BACKEND_REMOTE && \
