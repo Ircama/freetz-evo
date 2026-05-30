@@ -1,0 +1,26 @@
+menu "unixODBC"
+
+	config FREETZ_LIB_libodbc
+		bool "ODBC driver manager (libodbc.so)"
+		select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		default n
+		help
+			unixODBC driver manager library.
+
+	config FREETZ_LIB_libodbcinst
+		bool "ODBC installer library (libodbcinst.so)"
+		select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		default n
+		help
+			unixODBC installer/configuration library.
+
+	config FREETZ_LIB_libodbccr
+		bool "ODBC cursor library (libodbccr.so)"
+		select FREETZ_LIB_libodbc
+		default n
+		help
+			unixODBC cursor library.
+
+endmenu

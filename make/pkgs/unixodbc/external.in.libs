@@ -1,0 +1,23 @@
+config EXTERNAL_FREETZ_LIB_libodbc
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libodbc
+	bool "libodbc"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libodbc.so.2.0.0
+
+config EXTERNAL_FREETZ_LIB_libodbcinst
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libodbcinst
+	bool "libodbcinst"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libodbcinst.so.2.0.0
+
+config EXTERNAL_FREETZ_LIB_libodbccr
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libodbccr
+	bool "libodbccr"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libodbccr.so.2.0.0

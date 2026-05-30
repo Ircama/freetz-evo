@@ -55,6 +55,7 @@ menu "Database"
 	source "make/pkgs/rrdtool/Config.in.libs"
        source "make/pkgs/postgresql/Config.in.libs"
 endmenu ### "Database"
+       source "make/pkgs/unixodbc/Config.in.libs"
 
 menu "File systems"
 	source "make/pkgs/util-linux/Config.in.libs"
