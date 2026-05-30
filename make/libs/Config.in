@@ -33,6 +33,7 @@ menu "Crypto & SSL"
 		source "make/libs/polarssl13/Config.in"
 	comment "Misc -----------------------------------"
 		source "make/libs/gsasl/Config.in"
+               source "make/libs/libsodium/Config.in"
 		source "make/libs/libssh2/Config.in"
 endmenu ### "Crypto & SSL"
 

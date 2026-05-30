@@ -131,6 +131,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`libnl`](docs/make/libnl.md)** 3.11.0 | Netlink userspace library stack (`libnl-3`, `libnl-cli-3`, `libnl-genl-3`, `libnl-nf-3`, `libnl-route-3`). | EVO only |
 | **[`libjemalloc`](docs/make/libjemalloc.md)** 5.3.0 | General-purpose allocator replacing uClibc malloc; required by aria2 to avoid SIGFPE on MIPS/uClibc-1.0.57. | EVO only |
 | **[`libtcmalloc_minimal`](docs/make/libtcmalloc_minimal.md)** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
+| **[`libsodium`](docs/make/libsodium.md)** 1.0.20 | Modern cryptographic library exporting `libsodium` for Ed25519 signatures, authenticated encryption, keyed hashes, and other high-level primitives. | EVO only |
 | **[`libprofiler`](docs/make/libprofiler.md)** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
 | **[`libssl`](docs/make/openssl.md)** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
 | **[`openlibm`](docs/make/openlibm.md)** | Portable standalone C math library (`libopenlibm.so`) for consistent libm behavior across platforms and toolchains. | EVO only |
