@@ -53,6 +53,7 @@ menu "Database"
 	source "make/pkgs/sqlite/Config.in.libs"
        source "make/libs/tinycdb/Config.in"
 	source "make/pkgs/rrdtool/Config.in.libs"
+       source "make/pkgs/postgresql/Config.in.libs"
 endmenu ### "Database"
 
 menu "File systems"

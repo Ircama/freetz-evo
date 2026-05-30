@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libpq
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libpq
+	bool "libpq"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libpq.so.5.16
