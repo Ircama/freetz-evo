@@ -51,6 +51,7 @@ menu "Database"
 	source "make/libs/libmaxminddb/Config.in"
        source "make/libs/lmdb/Config.in"
 	source "make/pkgs/sqlite/Config.in.libs"
+       source "make/libs/tinycdb/Config.in"
 	source "make/pkgs/rrdtool/Config.in.libs"
 endmenu ### "Database"
 

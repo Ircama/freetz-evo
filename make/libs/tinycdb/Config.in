@@ -1,0 +1,5 @@
+config FREETZ_LIB_libcdb
+	bool "tinycdb (libcdb.so)"
+	default n
+	help
+		Tiny constant database library.

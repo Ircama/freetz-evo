@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libcdb
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libcdb
+	bool "libcdb"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libcdb.so.1
