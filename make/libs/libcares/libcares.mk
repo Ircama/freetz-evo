@@ -21,6 +21,11 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --prefix=/
 $(PKG)_CONFIGURE_OPTIONS += --disable-tests
 
+# c-ares checks only whether getrandom() is declared. On 2.6.32 targets the
+# uClibc headers expose it, but the libc symbol is not linkable, so force the
+# file-backed RNG path during configure.
+$(PKG)_CONFIGURE_ENV += $(if $(FREETZ_KERNEL_VERSION_2_6_32),ac_cv_have_decl_getrandom=no)
+
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)

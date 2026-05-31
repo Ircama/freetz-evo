@@ -1618,6 +1618,8 @@ if [ "$DO_MOD" -gt 0 ]; then
 				local tagging_geo="$1"
 				local tagging_pos="$2"
 				local tagging_arg="$3"
+				local use_gm_composite=""
+				command -v gm >/dev/null 2>&1 && use_gm_composite="1"
 				for d in ${HTML_MOD_DIR}*; do
 					[ ! -d "$d" ] && continue
 					local tagging_ren=""
@@ -1638,8 +1640,15 @@ if [ "$DO_MOD" -gt 0 ]; then
 							fi
 							fi
 						fi
-						composite -dissolve 100% -gravity $tagging_pos -geometry $tagging_geo -quality 100 \
-						  "${TAGGING_DIR}/${FREETZ_TAGGING_STRING}.png" ${tagging_temp:-$tagging_file} ${tagging_temp:-$tagging_file}
+						set -- -dissolve 100% -quality 100
+						[ -n "$tagging_pos" ] && set -- "$@" -gravity "$tagging_pos"
+						[ -n "$tagging_geo" ] && set -- "$@" -geometry "$tagging_geo"
+						set -- "$@" "${TAGGING_DIR}/${FREETZ_TAGGING_STRING}.png" "${tagging_temp:-$tagging_file}" "${tagging_temp:-$tagging_file}"
+						if [ -n "$use_gm_composite" ]; then
+							gm composite "$@"
+						else
+							composite "$@"
+						fi
 						[ $? -ne 0 ] && error 1 "tagging failed on compositing, is imagemagick and libpng installed?"
 						[ -n "$tagging_temp" ] && tagging_ren="$tagging_ren ${tagging_file##*/}" && rm -f "${tagging_file}"
 					done
@@ -1662,8 +1671,6 @@ if [ "$DO_MOD" -gt 0 ]; then
 		fi
 
 	fi
-
-	# freetz_proxy: patch AVM webif — clickable Fritz logo + Freetz link in userMenu
 	if [ "$FREETZ_PACKAGE_FREETZ_PROXY" == "y" ]; then
 		CONTENT_LUA="${HTML_LANG_MOD_DIR}/content.lua"
 		if [ -f "$CONTENT_LUA" ]; then

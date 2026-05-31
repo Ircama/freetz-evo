@@ -1,4 +1,4 @@
-$(call PKG_INIT_BIN, 5.0.5)
+$(call PKG_INIT_BIN, 5.0.5, pdns-authoritative, POWERDNS)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=pdns-$($(PKG)_VERSION).tar.bz2
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
 $(PKG)_HASH:=c144feb23cfc2cd47ebf335132aea0afab605adb4ff4f30955be3445034e0def
@@ -9,11 +9,6 @@ $(PKG)_CONDITIONAL_PATCHES += current
 ### MANPAGE:=https://doc.powerdns.com/authoritative/
 ### CHANGES:=https://doc.powerdns.com/authoritative/changelog/
 ### CVSREPO:=https://github.com/PowerDNS/pdns
-
-# Keep the historical POWERDNS_* variable names after renaming the
-# package path to pdns-authoritative.
-POWERDNS_DIR:=$(PDNS_AUTHORITATIVE_DIR)
-POWERDNS_DEST_DIR:=$(PDNS_AUTHORITATIVE_DEST_DIR)
 
 POWERDNS_BOOST_VERSION:=1.87.0
 POWERDNS_BOOST_SOURCE:=powerdns-boost_1_87_0.tar.bz2
@@ -73,7 +68,7 @@ POWERDNS_DYNAMIC_BACKENDS:=$(strip \
 	$(if $(filter dynamic,$(POWERDNS_BACKEND_TINYDNS_MODE)),tinydns) \
 )
 
-POWERDNS_TOOLS_BINARIES:=pdns_notify sdig calidns dnsdemog dnsgram dnspcap2calidns dnspcap2protobuf dnsreplay dnsscan dnsscope dnswasher nproxy nsec3dig dumresp kvresp stubquery saxfr ixplore dnstcpbench dnsbulktest
+POWERDNS_TOOLS_BINARIES:=pdns_notify sdig calidns dnsgram dnspcap2calidns dnspcap2protobuf dnsreplay dnsscan dnsscope dnswasher nproxy nsec3dig dumresp stubquery saxfr ixplore dnstcpbench dnsbulktest
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 $(PKG)_DEPENDS_ON += jemalloc
@@ -250,7 +245,6 @@ $(pkg)-uninstall:
 		$(POWERDNS_DEST_DIR)/usr/bin/zone2sql \
 		$(POWERDNS_DEST_DIR)/usr/bin/zone2json \
 		$(POWERDNS_TOOLS_BINARIES:%=$(POWERDNS_DEST_DIR)/usr/bin/%) \
-		$(POWERDNS_DEST_DIR)/usr/lib/pdns \
-		$(POWERDNS_DEST_DIR)/usr/share/pdns
+		$(POWERDNS_DEST_DIR)/usr/lib/pdns
 
 $(PKG_FINISH)

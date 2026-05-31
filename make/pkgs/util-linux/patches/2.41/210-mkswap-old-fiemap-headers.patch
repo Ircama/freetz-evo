@@ -1,0 +1,14 @@
+--- a/disk-utils/mkswap.c
++++ b/disk-utils/mkswap.c
+@@ -338,9 +338,11 @@ static void check_extents(struct mkswap_control *ctl)
+			if (e->fe_flags & FIEMAP_EXTENT_DATA_INLINE)
+				warn_extent(ctl, _("data inline extent at offset %ju"),
+						(uintmax_t) e->fe_logical);
++#ifdef FIEMAP_EXTENT_SHARED
+			if (e->fe_flags & FIEMAP_EXTENT_SHARED)
+				warn_extent(ctl, _("shared extent at offset %ju"),
+						(uintmax_t) e->fe_logical);
++#endif
+			if (e->fe_flags & FIEMAP_EXTENT_DELALLOC)
+				warn_extent(ctl, _("unallocated extent at offset %ju"),
+						(uintmax_t) e->fe_logical);

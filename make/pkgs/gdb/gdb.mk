@@ -8,6 +8,9 @@ $(PKG)_SITE:=@GNU/gdb
 
 $(PKG)_CONDITIONAL_PATCHES+=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
 $(PKG)_PATCH_POST_CMDS += $(RM) -r ./readline;
+ifeq ($(FREETZ_GDB_VERSION_6_8),y)
+$(PKG)_PATCH_POST_CMDS += sed -i -e 's|struct fork_info \*fork_list;|extern struct fork_info *fork_list;|' ./gdb/linux-fork.h;
+endif
 
 $(PKG)_DEPENDS_ON += ncurses readline
 ifeq ($(FREETZ_GDB_VERSION_17_1),y)

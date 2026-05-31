@@ -35,7 +35,7 @@ $(TOOLS_CONFIGURED_CONFIGURE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	(PATH=$(TARGET_PATH); \
-		$(TOOLS_SUBMAKE) -C $(PYTHON3_HOST_DIR) \
+		$(TOOLS_SUBMAKE) -j1 -C $(PYTHON3_HOST_DIR) \
 		CFLAGS="$(PYTHON3_HOST_CFLAGS)" \
 		all )
 	@touch -c $@
@@ -44,7 +44,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY) | $(HOST_TOOLS_DIR)
 	\
 	\
 	(PATH=$(TARGET_PATH); \
-		$(TOOLS_SUBMAKE) -C $(PYTHON3_HOST_DIR) \
+		$(TOOLS_SUBMAKE) -j1 -C $(PYTHON3_HOST_DIR) \
 		DESTDIR="$(HOST_TOOLS_DIR)" \
 		commoninstall bininstall maninstall )
 

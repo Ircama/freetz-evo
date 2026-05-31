@@ -3589,5 +3589,75 @@
     "service": "deepl",
     "timestamp": "2026-02-16T14:18:29Z",
     "translation": "con i pulsanti"
+  },
+  "deepl:URL": {
+    "original": "URL",
+    "translation": "URL",
+    "timestamp": "2026-05-31T16:30:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download file": {
+    "original": "Download file",
+    "translation": "Scarica il file",
+    "timestamp": "2026-05-31T16:30:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Working...": {
+    "original": "Working...",
+    "translation": "Lavorare...",
+    "timestamp": "2026-05-31T16:30:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Loading file...": {
+    "original": "Loading file...",
+    "translation": "File di caricamento...",
+    "timestamp": "2026-05-31T16:30:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Saving...": {
+    "original": "Saving...",
+    "translation": "Salvataggio...",
+    "timestamp": "2026-05-31T16:30:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Running script...": {
+    "original": "Running script...",
+    "translation": "Esecuzione di uno script...",
+    "timestamp": "2026-05-31T16:30:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No URL provided!": {
+    "original": "No URL provided!",
+    "translation": "Non è stato fornito alcun URL!",
+    "timestamp": "2026-05-31T16:30:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Here you can either upload an external-file directly or stream it to the box from a URL. Afterwards, the matching firmware should be uploaded.": {
+    "original": "Here you can either upload an external-file directly or stream it to the box from a URL. Afterwards, the matching firmware should be uploaded.",
+    "translation": "Qui è possibile caricare direttamente un file esterno o trasmetterlo al box da un URL. Successivamente, dovrebbe essere caricato il firmware corrispondente.",
+    "timestamp": "2026-05-31T16:30:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The browser upload path is limited to about 250 MB by the CGI upload handler. For larger files, please use the URL method below.": {
+    "original": "The browser upload path is limited to about 250 MB by the CGI upload handler. For larger files, please use the URL method below.",
+    "translation": "Il percorso di caricamento del browser è limitato a circa 250 MB dal gestore di caricamento CGI. Per file di dimensioni maggiori, utilizzare il metodo URL riportato di seguito.",
+    "timestamp": "2026-05-31T16:30:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Download from URL": {
+    "original": "Download from URL",
+    "translation": "Scarica da URL",
+    "timestamp": "2026-05-31T16:30:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

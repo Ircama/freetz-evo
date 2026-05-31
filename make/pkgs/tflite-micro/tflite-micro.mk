@@ -48,12 +48,16 @@ $(PKG_CONFIGURED_NOP)
 # ---------------------------------------------------------------------------
 $(TFLITE_MICRO_TREE_DIR)/.generated: $(TFLITE_MICRO_DIR)/.configured
 	@$(call _ECHO,installing Python build prerequisites)
-	python3 -m pip install --quiet numpy Pillow
 	@$(call _ECHO,generating tflm source tree)
-	cd $(TFLITE_MICRO_DIR) && \
-		python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py \
+	$(call HostPython3, \
+		export PATH="$(HOST_TOOLS_DIR)/usr/bin:$$PATH"; \
+		$(HOST_PYTHON3_BIN) -m pip --version >/dev/null 2>&1 || $(HOST_PYTHON3_BIN) -m ensurepip --upgrade; \
+		$(HOST_PYTHON3_BIN) -m pip install --disable-pip-version-check --no-input --upgrade \
+			--target=$(HOST_TOOLS_DIR)/usr/lib/python$(PYTHON3_MAJOR_VERSION) numpy Pillow; \
+		cd $(TFLITE_MICRO_DIR); \
+	, tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py \
 			-e hello_world \
-			$(CURDIR)/$(TFLITE_MICRO_TREE_DIR)
+			$(CURDIR)/$(TFLITE_MICRO_TREE_DIR))
 	@# array.h is not copied by create_tflm_tree.py but is required by kernel_util.cc
 	cp $(TFLITE_MICRO_DIR)/tensorflow/lite/array.h \
 		$(TFLITE_MICRO_TREE_DIR)/tensorflow/lite/array.h

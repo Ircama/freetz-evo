@@ -16,7 +16,8 @@ Freetz-EVO includes:
 
 - over 100 new packages and libraries, including exclusive applications,
 - over 60 python3 libraries,
-- over 50 improved packages and libraries,
+- about 20 added packages,
+- about 40 improved packages and libraries,
 - USB audio stack, playback tools, and web radio functions,
 - microcontroller flasher tools to enable USB peripheral devices.
 - built-in Go and Rust toolchains to compile Go and Rust packages.
