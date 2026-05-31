@@ -32,6 +32,8 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
 		grep -q 'tempfile = "=3.17.1"' crates/cli/Cargo.toml || \
 			printf "%s\n%s\n%s\n%s\n" "" "[target.'cfg(all(target_os = \"linux\", target_env = \"uclibc\", target_arch = \"mips\"))'.dependencies]" "getrandom = \"=0.3.4\"" "tempfile = \"=3.17.1\"" >> crates/cli/Cargo.toml; \
+		grep -q 'version = "=53.1.0"' crates/query/Cargo.toml || \
+			perl -0pi -e 's~datafusion = \{ version = "53\.0\.0", default-features = false, features = \["sql"\] \}~datafusion = { version = "=53.1.0", default-features = false, features = ["sql"] }~' crates/query/Cargo.toml; \
 		grep -q '__getrandom_v03_custom' crates/cli/src/main.rs || \
 			perl -0pi -e 's~use std::time::\{Duration, Instant\};\n~use std::time::{Duration, Instant};\n\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\n#[no_mangle]\nunsafe extern "Rust" fn __getrandom_v03_custom(\n    dest: *mut u8,\n    len: usize,\n) -> Result<(), getrandom::Error> {\n    use std::fs::File;\n    use std::io::Read;\n\n    let buf = unsafe {\n        std::ptr::write_bytes(dest, 0, len);\n        std::slice::from_raw_parts_mut(dest, len)\n    };\n    File::open("/dev/urandom")\n        .and_then(|mut file| file.read_exact(buf))\n        .map_err(|_| getrandom::Error::UNEXPECTED)\n}\n~' crates/cli/src/main.rs; \
 		export RUSTFLAGS="$$RUSTFLAGS --cfg getrandom_backend=\"custom\" --cfg rustix_use_experimental_asm"; \
@@ -42,6 +44,13 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> .cargo/config.toml; \
+	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
+		cargo +nightly fetch --target "$(LNAV_RS_RUST_TARGET_ARG)"; \
+		datafusion_dir="$$({ find "$${CARGO_HOME:-$$HOME/.cargo}/registry/src" -path '*/datafusion-execution-53.1.0' -type d | head -n 1; } 2>/dev/null)"; \
+		test -n "$$datafusion_dir" || exit 1; \
+		grep -q 'type CompatAtomicU64 = Mutex<u64>;' "$$datafusion_dir/src/disk_manager.rs" || \
+			patch -N -d "$$datafusion_dir" -p1 < "$(abspath make/pkgs/lnav-rs/patches/010-datafusion-execution-no-atomic64.patch)"; \
+	fi; \
 	$(LNAV_RS_CARGO_BUILD_CMD) --target "$(LNAV_RS_RUST_TARGET_ARG)" -p lnav-rs
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
