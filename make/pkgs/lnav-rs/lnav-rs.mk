@@ -52,7 +52,7 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 		datafusion_dir="$$({ find "$${CARGO_HOME:-$$HOME/.cargo}/registry/src" -path '*/datafusion-execution-53.1.0' -type d | head -n 1; } 2>/dev/null)"; \
 		test -n "$$datafusion_dir" || exit 1; \
 		grep -q 'type CompatAtomicU64 = Mutex<u64>;' "$$datafusion_dir/src/disk_manager.rs" || \
-			patch -N -d "$$datafusion_dir" -p1 < "$(abspath make/pkgs/lnav-rs/patches/010-datafusion-execution-no-atomic64.patch)"; \
+			patch -N -d "$$datafusion_dir" -p1 < "$(abspath make/pkgs/lnav-rs/registry-patches/010-datafusion-execution-no-atomic64.patch)"; \
 	fi; \
 	$(LNAV_RS_CARGO_BUILD_CMD) --target "$(LNAV_RS_RUST_TARGET_ARG)" -p lnav-rs
 
