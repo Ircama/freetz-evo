@@ -20,6 +20,8 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
@@ -27,6 +29,14 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 	cd $(JLESS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	cargo update -p libc --precise 0.2.177; \
+	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT,0.22.1) \
+	perl -0pi -e 's/^extern crate libc_stdhandle;\n//m' src/main.rs; \
+	perl -0pi -e 's/let _ = libc::freopen\(filename\.as_ptr\(\), path\.as_ptr\(\), libc_stdhandle::stdin\(\)\);/let stdin_stream = libc::fdopen(libc::STDIN_FILENO, path.as_ptr());\n        if !stdin_stream.is_null() {\n            let _ = libc::freopen(filename.as_ptr(), path.as_ptr(), stdin_stream);\n        }/' src/input.rs; \
+	if ! grep -q 'Clipboard support is unavailable on this target' src/app.rs; then \
+		perl -0pi -e 's/use clipboard::\{ClipboardContext, ClipboardProvider\};/#[cfg(not(all(target_os = "linux", target_env = "uclibc")))]\nuse clipboard::{ClipboardContext, ClipboardProvider};\n#[cfg(all(target_os = "linux", target_env = "uclibc"))]\n#[derive(Debug)]\nstruct ClipboardContext;\n#[cfg(all(target_os = "linux", target_env = "uclibc"))]\nimpl ClipboardContext {\n    fn set_contents(&mut self, _content: String) -> Result<(), Box<dyn Error>> {\n        Err(Box::new(io::Error::new(\n            io::ErrorKind::Unsupported,\n            "Clipboard support is unavailable on this target",\n        )))\n    }\n}/' src/app.rs; \
+		perl -0pi -e 's/clipboard_context: ClipboardProvider::new\(\),/clipboard_context: {\n                #[cfg(all(target_os = "linux", target_env = "uclibc"))]\n                {\n                    Err(Box::new(io::Error::new(\n                        io::ErrorKind::Unsupported,\n                        "Clipboard support is unavailable on this target",\n                    )))\n                }\n                #[cfg(not(all(target_os = "linux", target_env = "uclibc")))]\n                {\n                    ClipboardProvider::new()\n                }\n            },/' src/app.rs; \
+	fi; \
 	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(JLESS_RUST_TARGET_DIR)" \

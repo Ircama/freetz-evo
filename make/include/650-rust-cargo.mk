@@ -55,6 +55,21 @@ for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
 done;
 endef
 
+# Apply nix 0.22.x uClibc/MIPS compatibility fixes.
+# This disables Linux code paths requiring libc symbols missing on uClibc
+# and normalizes signatures for uClibc's libc declarations.
+# $1: nix crate version (for example: 0.22.1)
+define NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT
+for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
+	[ -d "$$nix_dir" ] || continue; \
+	perl -0pi -e 's/#\[cfg\(any\(target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "netbsd"\)\)\]\npub mod aio;/#[cfg(any(target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "macos",\n          target_os = "netbsd",\n          all(target_os = "linux", not(target_env = "uclibc"))))]\npub mod aio;/s; s/#\[cfg\(target_os = "linux"\)\]\npub mod personality;/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub mod personality;/g; s/#\[cfg\(any\(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "netbsd",\n          target_os = "openbsd"\)\)\]\npub mod ptrace;/#[cfg(any(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          all(target_os = "linux", not(target_env = "uclibc")),\n          target_os = "macos",\n          target_os = "netbsd",\n          target_os = "openbsd"))]\npub mod ptrace;/s; s/#\[cfg\(any\(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "openbsd"\n\)\)\]\npub mod statfs;/#[cfg(any(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          all(target_os = "linux", not(target_env = "uclibc")),\n          target_os = "macos",\n          target_os = "openbsd"\n))]\npub mod statfs;/s' "$$nix_dir/src/sys/mod.rs"; \
+	perl -0pi -e 's/#\[cfg\(target_os = "linux"\)\]\n    Ib = libc::AF_IB,/#\[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\n    Ib = libc::AF_IB,/g; s/#\[cfg\(target_os = "linux"\)\]\n    Mpls = libc::AF_MPLS,/#\[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\n    Mpls = libc::AF_MPLS,/g' "$$nix_dir/src/sys/socket/addr.rs"; \
+	perl -0pi -e 's/libc::pwritev\(fd, iov\.as_ptr\(\) as \*const libc::iovec, iov\.len\(\) as c_int, offset\)/libc::pwritev(fd, iov.as_ptr() as *const libc::iovec, iov.len() as c_int, offset as i64)/g; s/libc::preadv\(fd, iov\.as_ptr\(\) as \*const libc::iovec, iov\.len\(\) as c_int, offset\)/libc::preadv(fd, iov.as_ptr() as *const libc::iovec, iov.len() as c_int, offset as i64)/g; s/#\[cfg\(target_os = "linux"\)\]\npub fn process_vm_writev\(/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub fn process_vm_writev(/g; s/#\[cfg\(any\(target_os = "linux"\)\)\]\npub fn process_vm_readv\(/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub fn process_vm_readv(/g' "$$nix_dir/src/sys/uio.rs"; \
+	perl -0pi -e 's/#\[cfg\(not\(target_os = "redox"\)\)\]\ntype SaFlags_t = libc::c_int;/#[cfg(all(not(target_os = "redox"), target_env = "uclibc"))]\ntype SaFlags_t = libc::c_uint;\n#[cfg(all(not(target_os = "redox"), not(target_env = "uclibc")))]\ntype SaFlags_t = libc::c_int;/s' "$$nix_dir/src/sys/signal.rs"; \
+done; \
+$(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,$(1))
+endef
+
 # Expand to the getrandom backend implementation path in Cargo registry.
 # $1: getrandom crate version (for example: 0.3.4)
 define GETRANDOM_BACKEND_PATH_GLOB__INT
