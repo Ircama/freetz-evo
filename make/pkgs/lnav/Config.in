@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_LNAV
+	bool "lnav 0.14.0"
+	default n
+	help
+		Advanced log file viewer and analyzer for the terminal.
+		This is the native C/C++ lnav package built without the optional
+		Rust extensions.

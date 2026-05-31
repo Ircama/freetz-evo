@@ -34,6 +34,19 @@ cat << EOF
 			white-space: pre-wrap;
 			word-break: break-word;
 		}
+		#shell_busy {
+			position: fixed;
+			right: 10px;
+			top: 10px;
+			z-index: 10001;
+			padding: 6px 10px;
+			border-radius: 14px;
+			background: rgba(16, 48, 88, 0.9);
+			color: #ffffff;
+			font-size: 12px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+			display: none;
+		}
 		@media (max-width: 600px) {
 			.textwrapper, .textwrapper textarea { width: 100%; box-sizing: border-box; }
 			textarea#script_code { width: 100% !important; }
@@ -45,7 +58,7 @@ cat << EOF
 		}
 	</style>
 	<script type="text/javascript">
-		var editing=0,code,output,exec,tar,gz,dl,his,repeat,file,hist = Array();
+		var editing=0,code,output,exec,tar,gz,dl,his,repeat,file,busy,hist = Array();
 		window.onload = function(){
 			code = document.getElementById("script_code");
 			output = document.getElementById("shell_output");
@@ -56,6 +69,18 @@ cat << EOF
 			his = document.getElementById("history");
 			file = document.getElementById("file2edit");
 			repeat = document.getElementById("repeat");
+			busy = document.getElementById("shell_busy");
+		}
+		function busyStart(msg) {
+			if (busy) {
+				busy.innerHTML = "⌛ " + (msg || "$(lang de:"Bitte warten..." en:"Working...")");
+				busy.style.display = "block";
+			}
+			if (exec) exec.disabled = true;
+		}
+		function busyStop() {
+			if (busy) busy.style.display = "none";
+			if (exec) exec.disabled = false;
 		}
 		function setShellOutput() {
 			hist.push(new Array(code.value, output.innerHTML));
@@ -80,34 +105,45 @@ cat << EOF
 			return ajax.responseText;
 		}
 		function RudiEdit() {
-			output.innerHTML=ajax_exec("script=cat "+file.value);
-			code.value=output.firstChild.nodeValue;
-			exec.value="$(lang de:"Editieren" en:"Edit")";
-			editing=1;
+			busyStart("$(lang de:"Lade Datei..." en:"Loading file...")");
+			window.setTimeout(function () {
+				output.innerHTML=ajax_exec("script=cat "+file.value);
+				code.value=output.firstChild ? output.firstChild.nodeValue : "";
+				exec.value="$(lang de:"Editieren" en:"Edit")";
+				editing=1;
+				busyStop();
+			}, 0);
 		}
 		function tx(){
 			if(repeat.value != ""){
 				setTimeout("tx();",repeat.value);
 			}
-			if(editing){
-				ajax_exec('script=echo "'+encodeURIComponent(code.value)+'" > '+file.value);
-				code.value="";
-				output.innerHTML="$(lang de:"Editiert!" en:"Edited!")";
-				exec.value="$(lang de:"Skript ausf&uuml;hren" en:"Run script")";
-				editing=0;
-			}
-			else{
-				if(dl.checked){
-					window.location = "/cgi-bin/shell/cmd.cgi?pid=$$&dl=true&script="+encodeURIComponent(code.value)+"&tar="+tar.checked+"&gz="+gz.checked;
+			busyStart(editing ? "$(lang de:"Speichere..." en:"Saving...")" : "$(lang de:"F&uuml;hre Skript aus..." en:"Running script...")");
+			window.setTimeout(function () {
+				if(editing){
+					ajax_exec('script=echo "'+encodeURIComponent(code.value)+'" > '+file.value);
+					code.value="";
+					output.innerHTML="$(lang de:"Editiert!" en:"Edited!")";
+					exec.value="$(lang de:"Skript ausf&uuml;hren" en:"Run script")";
+					editing=0;
+					busyStop();
 				}
 				else{
-					output.innerHTML=ajax_exec("script="+encodeURIComponent(code.value));
-					setShellOutput();
+					if(dl.checked){
+						window.location = "/cgi-bin/shell/cmd.cgi?pid=$$&dl=true&script="+encodeURIComponent(code.value)+"&tar="+tar.checked+"&gz="+gz.checked;
+						busyStop();
+					}
+					else{
+						output.innerHTML=ajax_exec("script="+encodeURIComponent(code.value));
+						setShellOutput();
+						busyStop();
+					}
 				}
-			}
+			}, 0);
 		}
 	</script>
 	<br>
+	<div id="shell_busy">⌛ $(lang de:"Bitte warten..." en:"Working...")</div>
 	<div class="textwrapper"><textarea id="script_code" rows="10" cols="80" style="width:100%;box-sizing:border-box;max-width:100%"></textarea></div><p>
 	<input type="button" id="exec" value="$(lang de:"Skript ausf&uuml;hren" en:"Run script")" onClick="tx();">&nbsp;&nbsp;
 	<label for="repeat">$(lang de:"Wiederholungsintervall" en:"Loop interval")</label> <input type="text" id="repeat" size=6>&nbsp;ms&nbsp;&nbsp;

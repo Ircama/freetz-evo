@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libunistring
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libunistring
+	bool "libunistring"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libunistring.so.5.2.1

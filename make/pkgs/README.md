@@ -792,13 +792,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[portmap 6.0 (binary only) - DEPRECATED](../../docs/make/portmap.md)<a id='portmap'></a>**<br>
     portmap is a part of the ONCRPC collection of software for implementing remote procedure calls between computer programs. It is use widely by NFS and NIS, and assorted other systems.
 
-  * **[PowerDNS Authoritative Server 5.0.5](../../docs/make/powerdns.md)<a id='powerdns'></a>**<br>
+  * **[PowerDNS Authoritative Server 5.0.5](../../docs/make/pdns-authoritative.md)<a id='powerdns'></a>**<br>
     This freetz port packages the Authoritative Server only. Upstream recursor and dnsdist are not included here. The default configuration stays close to the minimal upstream mode: no backend or optional server feature is enabled unless selected below.
-     - [Overview](../../docs/make/powerdns.md#overview)
-     - [Backends](../../docs/make/powerdns.md#backends)
-     - [Optional Features](../../docs/make/powerdns.md#optional-features)
-     - [Toolchain Requirement](../../docs/make/powerdns.md#toolchain-requirement)
-     - [Notes](../../docs/make/powerdns.md#notes)
+     - [Overview](../../docs/make/pdns-authoritative.md#overview)
+     - [Backends](../../docs/make/pdns-authoritative.md#backends)
+     - [Optional Features](../../docs/make/pdns-authoritative.md#optional-features)
+     - [Toolchain Requirement](../../docs/make/pdns-authoritative.md#toolchain-requirement)
+     - [Notes](../../docs/make/pdns-authoritative.md#notes)
 
   * **[pppd 2.4.7 - DEPRECATED](../../docs/make/pppd.md)<a id='pppd'></a>**<br>
     An implementation of the Point-to-point protocol. http://www.samba.org/ppp/

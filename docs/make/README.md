@@ -573,7 +573,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[portmap 6.0 (binary only) - DEPRECATED](portmap.md)<a id='portmap'></a>**<br>
     portmap is a part of the ONCRPC collection of software for implementing remote procedure calls between computer programs. It is use widely by NFS and NIS, and assorted other systems.
 
-  * **[PowerDNS Authoritative Server 5.0.5](powerdns.md)<a id='powerdns'></a>**<br>
+  * **[PowerDNS Authoritative Server 5.0.5](pdns-authoritative.md)<a id='powerdns'></a>**<br>
     This freetz port packages the Authoritative Server only. Upstream recursor and dnsdist are not included here. The default configuration stays close to the minimal upstream mode: no backend or optional server feature is enabled unless selected below.
 
   * **[pppd 2.4.7 - DEPRECATED](pppd.md)<a id='pppd'></a>**<br>

@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_OXKER" == "y" ] && EXTERNAL_FILES+=" /usr/bin/oxker"

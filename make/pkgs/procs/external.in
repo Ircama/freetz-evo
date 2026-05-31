@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_PROCS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PROCS
+	bool "procs"
+	default n
+	help
+		externals the following file(s):
+			 /usr/bin/procs

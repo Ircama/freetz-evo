@@ -1,0 +1,51 @@
+$(call PKG_INIT_BIN, 0.14.11)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v0.14.11.tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=3d6b3561ce05362a092ea8488458f552d6636d3a280290e21f841c432cadf91a
+$(PKG)_SITE:=https://github.com/dalance/procs/archive/refs/tags
+$(PKG)_DIR:=$(SOURCE_DIR)/procs-v0.14.11
+### WEBSITE:=https://github.com/dalance/procs
+### CHANGES:=https://github.com/dalance/procs/releases
+### CVSREPO:=https://github.com/dalance/procs
+
+PROCS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+PROCS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+PROCS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+PROCS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(PROCS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+$(PKG)_BINARY:=$(PROCS_DIR)/target/$(PROCS_RUST_TARGET_DIR)/release/procs
+$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/procs
+
+$(PKG)_DEPENDS_ON += rust-host
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_NOP)
+
+$($(PKG)_BINARY): $(PROCS_DIR)/.configured
+	cd $(PROCS_DIR); \
+	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	mkdir -p .cargo; \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
+		"$(PROCS_RUST_TARGET_DIR)" \
+		"$(TARGET_CROSS)gcc" \
+		"$(TARGET_CROSS)ar" \
+		> .cargo/config.toml; \
+	$(PROCS_CARGO_BUILD_CMD) --target "$(PROCS_RUST_TARGET_ARG)" --bin procs
+
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
+
+$(pkg):
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(PROCS_DIR) clean
+	$(RM) $($(PKG)_BINARY) $(PROCS_DIR)/.configured $(PROCS_DIR)/.cargo/config.toml
+
+$(pkg)-uninstall:
+	$(RM) $($(PKG)_TARGET_BINARY)
+
+$(PKG_FINISH)

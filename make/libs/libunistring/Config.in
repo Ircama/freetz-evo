@@ -1,0 +1,5 @@
+config FREETZ_LIB_libunistring
+	bool "libunistring (libunistring.so)"
+	default n
+	help
+		Unicode string library required by lnav.

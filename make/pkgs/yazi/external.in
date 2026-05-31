@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_YAZI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_YAZI
+	bool "yazi"
+	default n
+	help
+		externals the following file(s):
+			 /usr/bin/yazi /usr/bin/ya

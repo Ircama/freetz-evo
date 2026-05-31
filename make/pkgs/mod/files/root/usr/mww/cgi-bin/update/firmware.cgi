@@ -81,7 +81,7 @@ EOF
 
 if [ -e /usr/mww/cgi-bin/update/external.cgi ]; then
 cat << EOF
-	<div style="clear: both; text-align: right;"><button onclick="location.href='external.cgi'">$(lang de:"external-Datei hochladen (optional)" en:"upload external file (optional)")</button></div>
+	<div style="clear: both; text-align: right;"><button type="button" onclick="location.href='external.cgi'">$(lang de:"external-Datei hochladen (optional)" en:"upload external file (optional)")</button></div>
 EOF
 fi
 

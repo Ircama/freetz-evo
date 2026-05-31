@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_OXKER
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_OXKER
+	bool "oxker"
+	default n
+	help
+		externals the following file(s):
+			 /usr/bin/oxker

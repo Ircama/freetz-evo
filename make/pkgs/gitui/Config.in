@@ -1,0 +1,5 @@
+config FREETZ_PACKAGE_GITUI
+	bool "gitui 0.28.1"
+	default n
+	help
+		gitui utility package built from source using Rust/Cargo.

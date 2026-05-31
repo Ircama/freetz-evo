@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libarchive
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libarchive
+	bool "libarchive"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libarchive.so.13.8.2

@@ -20,7 +20,8 @@ PDNS_RECURSOR_BOOST_MARKER:=$(PDNS_RECURSOR_BOOST_ROOT)/.built
 PDNS_RECURSOR_TOOLCHAIN_ERROR:=PowerDNS Recursor 5.0.5 requires GCC 8+ with C++17 support.
 
 PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort ,)$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
+PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
+PDNS_RECURSOR_RUST_BUILD_STD_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort,)
 PDNS_RECURSOR_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
 
 PDNS_RECURSOR_BUILD_BINARY:=$(PDNS_RECURSOR_DIR)/pdns_recursor
@@ -48,6 +49,7 @@ $(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -L$(abspath $(PDNS_RECURSOR_B
 $(PKG)_CONFIGURE_ENV += PATH="$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH"
 $(PKG)_CONFIGURE_ENV += CARGO="$(PDNS_RECURSOR_CARGO_CMD)"
 $(PKG)_CONFIGURE_ENV += RUST_TARGET="$(PDNS_RECURSOR_RUST_TARGET_ARG)"
+$(PKG)_CONFIGURE_ENV += RUST_BUILD_STD="$(PDNS_RECURSOR_RUST_BUILD_STD_ARG)"
 $(PKG)_CONFIGURE_ENV += RUSTC_TARGET_ARCH="$(PDNS_RECURSOR_RUST_TARGET_DIR)"
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-silent-rules
@@ -74,7 +76,7 @@ $(PDNS_RECURSOR_BOOST_MARKER): $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE) $(PDNS_RE
 	$(RM) -r $(PDNS_RECURSOR_DIR)/.boost
 	mkdir -p $(PDNS_RECURSOR_DIR)/.boost
 	$(call UNPACK_TARBALL,$<,$(PDNS_RECURSOR_DIR)/.boost)
-	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system $(SILENT)
+	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system,thread $(SILENT)
 	printf "using gcc : freetz : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(PDNS_RECURSOR_BOOST_CONFIG)
 	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc-freetz target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@

@@ -1,0 +1,5 @@
+config FREETZ_PACKAGE_BROOT
+	bool "broot 1.56.4"
+	default n
+	help
+		broot utility package built from source using Rust/Cargo.

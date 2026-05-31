@@ -1,0 +1,6 @@
+config FREETZ_LIB_libarchive
+	bool "libarchive (libarchive.so)"
+	default n
+	help
+		Multi-format archive and compression library used by tools
+		like lnav to inspect compressed and archived log files.
