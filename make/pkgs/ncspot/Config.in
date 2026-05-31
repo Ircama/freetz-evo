@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_NCSPOT
+	bool "ncspot 1.3.4"
+	select FREETZ_LIB_libasound
+	select FREETZ_MODULE_snd_usb_audio if FREETZ_MODULES_AUDIO_AVAILABLE
+	default n
+	help
+		ncspot is a ncurses Spotify client built from source using Rust/Cargo.
+
+		This freetz package builds a target-native ncspot binary with ALSA
+		playback backend and crossterm terminal UI backend.
+
+		Can be externalized to save flash memory.

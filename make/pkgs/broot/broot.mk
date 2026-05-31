@@ -1,4 +1,5 @@
 $(call PKG_INIT_BIN, 1.56.4)
+include $(MAKE_DIR)/include/650-rust-cargo.mk
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v1.56.4.tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=ec49422f335965ee0338cd630869eb1fc6d974d43648bd483c802fd7e9aea99b
@@ -27,13 +28,16 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(BROOT_DIR)/.configured
 	cd $(BROOT_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	cargo fetch --locked --target "$(BROOT_RUST_TARGET_ARG)"; \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.2) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(BROOT_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> .cargo/config.toml; \
-	$(BROOT_CARGO_BUILD_CMD) --target "$(BROOT_RUST_TARGET_ARG)" --bin broot
+	$(BROOT_CARGO_BUILD_CMD) --target "$(BROOT_RUST_TARGET_ARG)" --bin broot || CARGO_BUILD_JOBS=1 $(BROOT_CARGO_BUILD_CMD) --target "$(BROOT_RUST_TARGET_ARG)" --bin broot
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
 

@@ -54,3 +54,45 @@ for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
 	perl -0pi -e 's%const \$$Flag = libc::\$$Flag \$$\(as \$$cast\)\*;%const \$$Flag = libc::\$$Flag as \$$T \$$\(as \$$cast\)*;%' "$$nix_dir/src/macros.rs"; \
 done;
 endef
+
+# Expand to the getrandom backend implementation path in Cargo registry.
+# $1: getrandom crate version (for example: 0.3.4)
+define GETRANDOM_BACKEND_PATH_GLOB__INT
+$$HOME/.cargo/registry/src/*/getrandom-$(1)/src/backends/getrandom.rs
+endef
+
+# Apply uClibc MIPS fallback for getrandom 0.3.x when libc::getrandom is missing.
+# $1: getrandom crate version (for example: 0.3.4)
+define GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT
+for getrandom_src in $(call GETRANDOM_BACKEND_PATH_GLOB__INT,$(1)); do \
+	[ -f "$$getrandom_src" ] || continue; \
+	if ! grep -q 'Freetz uClibc mips syscall fallback' "$$getrandom_src"; then \
+		perl -0pi -e 's@let ret = libc::getrandom\(buf\.as_mut_ptr\(\)\.cast\(\), buf\.len\(\), 0\);@// Freetz uClibc mips syscall fallback for missing libc::getrandom.\n        #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n        let ret = libc::syscall(\n            libc::SYS_getrandom,\n            buf.as_mut_ptr() as *mut libc::c_void,\n            buf.len(),\n            0,\n        ) as libc::ssize_t;\n        #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n        let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);@s' "$$getrandom_src"; \
+	fi; \
+done;
+endef
+
+# Expand to the tui-textarea crate directory glob in Cargo registry.
+# $1: tui-textarea crate version (for example: 0.7.0)
+define TUI_TEXTAREA_REGISTRY_DIR_GLOB__INT
+$$HOME/.cargo/registry/src/*/tui-textarea-$(1)
+endef
+
+# Apply AtomicU64 fallback for tui-textarea on targets without native 64-bit atomics.
+# This version avoids adding new dependencies, so --locked builds keep working.
+# $1: tui-textarea crate version (for example: 0.7.0)
+define TUI_TEXTAREA_APPLY_ATOMICU64_FALLBACK__INT
+for textarea_dir in $(call TUI_TEXTAREA_REGISTRY_DIR_GLOB__INT,$(1)); do \
+	[ -d "$$textarea_dir" ] || continue; \
+	perl -0pi -e 's@\n\[dependencies\.portable-atomic\]\nversion = "1"\n@@g' "$$textarea_dir/Cargo.toml"; \
+	perl -0pi -e 's@#\[cfg\(feature = "ratatui"\)\]\nuse ratatui::text::Line;\n(?:.|\n)*?#\[cfg\(feature = "tuirs"\)\]\nuse tui::text::Spans as Line;@#[cfg(feature = "ratatui")]\nuse ratatui::text::Line;\nuse std::cmp;\n// Freetz 32-bit fallback for AtomicU64 without extra dependencies.\n#[cfg(target_has_atomic = "64")]\nuse std::sync::atomic::{AtomicU64, Ordering};\n#[cfg(not(target_has_atomic = "64"))]\nuse std::sync::{atomic::Ordering, Mutex};\n\n#[cfg(not(target_has_atomic = "64"))]\n#[derive(Debug, Default)]\nstruct AtomicU64(Mutex<u64>);\n\n#[cfg(not(target_has_atomic = "64"))]\nimpl AtomicU64 {\n    fn new(value: u64) -> Self { Self(Mutex::new(value)) }\n    fn load(&self, _ordering: Ordering) -> u64 { *self.0.lock().expect("atomic64 emulation lock") }\n    fn store(&self, value: u64, _ordering: Ordering) { *self.0.lock().expect("atomic64 emulation lock") = value; }\n    fn get_mut(&mut self) -> &mut u64 { self.0.get_mut().expect("atomic64 emulation lock") }\n}\n#[cfg(feature = "tuirs")]\nuse tui::text::Spans as Line;@s' "$$textarea_dir/src/widget.rs"; \
+	perl -0pi -e 's@(#\[cfg\(feature = "ratatui"\)\]\nuse ratatui::text::Line;\n)(?!use std::cmp;\n)@$$1use std::cmp;\n@s' "$$textarea_dir/src/widget.rs"; \
+done;
+endef
+
+# Apply 32-bit-friendly generation counter in gitui asyncgit helper crate.
+define GITUI_APPLY_ASYNCGIT_GENERATION_ATOMIC_PATCH__INT
+if ! grep -q 'Freetz 32-bit atomic fallback for generation counter.' asyncgit/src/status.rs; then \
+	perl -0pi -e 's@atomic::\{AtomicU64, AtomicUsize, Ordering\}@atomic::{AtomicUsize, Ordering}@; s@/// Counter that increments after each completed fetch\.\n\tgeneration: Arc<AtomicU64>,@/// Freetz 32-bit atomic fallback for generation counter.\n\tgeneration: Arc<AtomicUsize>,@; s@generation: Arc::new\(AtomicU64::new\(0\)\),@generation: Arc::new(AtomicUsize::new(0)),@' asyncgit/src/status.rs; \
+fi;
+endef

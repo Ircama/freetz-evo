@@ -1,4 +1,5 @@
 $(call PKG_INIT_BIN, 0.1.0)
+include $(MAKE_DIR)/include/650-rust-cargo.mk
 # Upstream has no release tags yet; pin a known main-branch snapshot.
 $(PKG)_SOURCE_DOWNLOAD_NAME:=3f27b3db563b18c33db328a6b6fbf74f5b2ddd03.tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
@@ -29,6 +30,8 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	cd $(LNAV_RS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	cargo fetch --target "$(LNAV_RS_RUST_TARGET_ARG)"; \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
 		grep -q 'tempfile = "=3.17.1"' crates/cli/Cargo.toml || \
 			printf "%s\n%s\n%s\n%s\n" "" "[target.'cfg(all(target_os = \"linux\", target_env = \"uclibc\", target_arch = \"mips\"))'.dependencies]" "getrandom = \"=0.3.4\"" "tempfile = \"=3.17.1\"" >> crates/cli/Cargo.toml; \
