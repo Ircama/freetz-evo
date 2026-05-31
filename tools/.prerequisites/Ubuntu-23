@@ -50,6 +50,7 @@ perl
 pkg-config
 pv
 python3
+rustup
 rsync
 sharutils
 sqlite3

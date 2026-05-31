@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 0.14.0)
 $(PKG)_SOURCE:=lnav-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=bf142441fc85e99c256ebe661e4199768acbd340da1344554da49a9e867a49ea
-$(PKG)_SITE:=https://codeload.github.com/tstack/lnav/tar.gz/refs/tags
+$(PKG)_SITE:=https://github.com/tstack/lnav/archive/refs/tags
 ### WEBSITE:=https://lnav.org/
 ### MANPAGE:=https://docs.lnav.org/
 ### CHANGES:=https://github.com/tstack/lnav/releases

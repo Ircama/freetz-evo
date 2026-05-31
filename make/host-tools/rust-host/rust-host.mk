@@ -11,18 +11,21 @@ $(TOOLS_CONFIGURED_NOP)
 
 
 $(RUST_HOST_TARGET_BINARY): | $(HOST_TOOLS_DIR)
-	@if ! command -v rustc >/dev/null 2>&1; then \
-		echo "ERROR: rustc not found on host PATH"; \
+	@rustc_bin="$$(command -v rustc 2>/dev/null || true)"; \
+	[ -n "$$rustc_bin" ] || [ ! -x "$$HOME/.cargo/bin/rustc" ] || rustc_bin="$$HOME/.cargo/bin/rustc"; \
+	if [ -z "$$rustc_bin" ]; then \
+		echo "ERROR: rustc not found on host PATH or in $$HOME/.cargo/bin"; \
 		exit 1; \
-	fi
-	@if ! command -v cargo >/dev/null 2>&1; then \
-		echo "ERROR: cargo not found on host PATH"; \
+	fi; \
+	cargo_bin="$$(command -v cargo 2>/dev/null || true)"; \
+	[ -n "$$cargo_bin" ] || [ ! -x "$$HOME/.cargo/bin/cargo" ] || cargo_bin="$$HOME/.cargo/bin/cargo"; \
+	if [ -z "$$cargo_bin" ]; then \
+		echo "ERROR: cargo not found on host PATH or in $$HOME/.cargo/bin"; \
 		exit 1; \
-	fi
-	@mkdir -p $(RUST_HOST_TARGET_DIR)
-	ln -sf "$$(command -v rustc)" $(RUST_HOST_TARGET_DIR)/rustc
-	ln -sf "$$(command -v cargo)" $(RUST_HOST_TARGET_DIR)/cargo
-	@touch -c $@
+	fi; \
+	mkdir -p $(RUST_HOST_TARGET_DIR); \
+	ln -sf "$$rustc_bin" $(RUST_HOST_TARGET_DIR)/rustc; \
+	ln -sf "$$cargo_bin" $(RUST_HOST_TARGET_DIR)/cargo
 
 $(pkg)-precompiled: $(RUST_HOST_TARGET_BINARY)
 

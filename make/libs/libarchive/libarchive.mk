@@ -14,6 +14,9 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libarchive.so.$($(PKG)_LIB_VERSION)
 
 $(PKG)_DEPENDS_ON += zlib bzip2
 
+# Some upstream release archives carry mtimes slightly ahead of the local clock,
+# which trips autotools' sanity check during configure.
+$(PKG)_CONFIGURE_PRE_CMDS += find . -exec touch -c {} +
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared

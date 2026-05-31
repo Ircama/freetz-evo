@@ -1,18 +1,20 @@
-$(call PKG_INIT_BIN, 0.9.0)
-$(PKG)_SOURCE_DOWNLOAD_NAME:=v0.9.0.tar.gz
+$(call PKG_INIT_BIN, 0.1.0)
+# Upstream has no release tags yet; pin a known main-branch snapshot.
+$(PKG)_SOURCE_DOWNLOAD_NAME:=3f27b3db563b18c33db328a6b6fbf74f5b2ddd03.tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=43527a78ba2e5e43a7ebd8d0da8b5af17a72455c5f88b4d1134f34908a594239
-$(PKG)_SITE:=https://github.com/PaulJuliusMartinez/jless/archive/refs/tags
-$(PKG)_DIR:=$(SOURCE_DIR)/jless-v0.9.0
-### WEBSITE:=https://github.com/PaulJuliusMartinez/jless
-### CHANGES:=https://github.com/PaulJuliusMartinez/jless/releases
-### CVSREPO:=https://github.com/PaulJuliusMartinez/jless
+$(PKG)_HASH:=4b4f61bb50337f6fce6b86a0adfead4745db57ec815a6a8a1ff214dba1a11e1a
+$(PKG)_SITE:=https://github.com/huskercane/lnav-rs/archive
+$(PKG)_DIR:=$(SOURCE_DIR)/lnav-rs-3f27b3db563b18c33db328a6b6fbf74f5b2ddd03
+### WEBSITE:=https://github.com/huskercane/lnav-rs
+### CHANGES:=https://github.com/huskercane/lnav-rs/commits/main
+### CVSREPO:=https://github.com/huskercane/lnav-rs
 
 LNAV_RS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 LNAV_RS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+LNAV_RS_NEEDS_CUSTOM_GETRANDOM:=$(filter mipsel-unknown-linux-uclibc,$(LNAV_RS_RUST_TARGET_DIR))
 LNAV_RS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
-LNAV_RS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(LNAV_RS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
-$(PKG)_BINARY:=$(LNAV_RS_DIR)/target/$(LNAV_RS_RUST_TARGET_DIR)/release/jless
+LNAV_RS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(LNAV_RS_CARGO_BUILD_STD_FLAGS),cargo build --release)
+$(PKG)_BINARY:=$(LNAV_RS_DIR)/target/$(LNAV_RS_RUST_TARGET_DIR)/release/lnav-rs
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lnav-rs
 
 $(PKG)_DEPENDS_ON += rust-host
@@ -27,13 +29,20 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	cd $(LNAV_RS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
+		grep -q 'tempfile = "=3.17.1"' crates/cli/Cargo.toml || \
+			printf "%s\n%s\n%s\n%s\n" "" "[target.'cfg(all(target_os = \"linux\", target_env = \"uclibc\", target_arch = \"mips\"))'.dependencies]" "getrandom = \"=0.3.4\"" "tempfile = \"=3.17.1\"" >> crates/cli/Cargo.toml; \
+		grep -q '__getrandom_v03_custom' crates/cli/src/main.rs || \
+			perl -0pi -e 's~use std::time::\{Duration, Instant\};\n~use std::time::{Duration, Instant};\n\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\n#[no_mangle]\nunsafe extern "Rust" fn __getrandom_v03_custom(\n    dest: *mut u8,\n    len: usize,\n) -> Result<(), getrandom::Error> {\n    use std::fs::File;\n    use std::io::Read;\n\n    let buf = unsafe {\n        std::ptr::write_bytes(dest, 0, len);\n        std::slice::from_raw_parts_mut(dest, len)\n    };\n    File::open("/dev/urandom")\n        .and_then(|mut file| file.read_exact(buf))\n        .map_err(|_| getrandom::Error::UNEXPECTED)\n}\n~' crates/cli/src/main.rs; \
+		export RUSTFLAGS="$$RUSTFLAGS --cfg getrandom_backend=\"custom\" --cfg rustix_use_experimental_asm"; \
+	fi; \
 	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(LNAV_RS_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> .cargo/config.toml; \
-	$(LNAV_RS_CARGO_BUILD_CMD) --target "$(LNAV_RS_RUST_TARGET_ARG)" --bin jless
+	$(LNAV_RS_CARGO_BUILD_CMD) --target "$(LNAV_RS_RUST_TARGET_ARG)" -p lnav-rs
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	mkdir -p $(dir $@)

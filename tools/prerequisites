@@ -7,6 +7,7 @@ NODEJS_HOST_MULTILIB_PKG="lib32stdc++-13-dev"
 NODEJS_HOST_MULTILIB_DIR="$PARENT/build/host-multilib"
 NODEJS_HOST_MULTILIB_CXXINC="$NODEJS_HOST_MULTILIB_DIR/usr/include/x86_64-linux-gnu/c++/13/32/bits/c++config.h"
 NODEJS_HOST_MULTILIB_LIB="$NODEJS_HOST_MULTILIB_DIR/usr/lib/gcc/x86_64-linux-gnu/13/32/libstdc++.a"
+RUSTUP_HOME_BIN="$HOME/.cargo/bin"
 
 
 check_requisite() {
@@ -18,7 +19,7 @@ check_requisite() {
 			[ -n "$(find /usr/lib/pkgconfig/  /usr/local/lib/pkgconfig/  /usr/lib/*/pkgconfig/ -name "$1" 2>/dev/null | grep -v 'x86_64')" ]
 			;;
 		program)
-			[ -x "$(command -v $1)" ]
+			[ -x "$(command -v $1)" ] || [ -x "$RUSTUP_HOME_BIN/$1" ]
 			;;
 		binary)
 			[ -x "$1" ]
@@ -47,7 +48,7 @@ failed_requisite() {
 			echo "ERROR: The pkgconf '$1' (32-bit) was not found in /usr/(local/)lib/(*/)pkgconfig/"
 			;;
 		program)
-			echo "ERROR: The program '$1' was not found in path"
+			echo "ERROR: The program '$1' was not found in path or $RUSTUP_HOME_BIN"
 			;;
 		binary)
 			echo "ERROR: The exeutabe binary '$1' was not found"
@@ -131,6 +132,26 @@ extract_nodejs_host_multilib() {
 	return 0
 }
 
+setup_rust_host_toolchain() {
+	local rustup_bin=""
+
+	if [ -x "$RUSTUP_HOME_BIN/rustup" ]; then
+		rustup_bin="$RUSTUP_HOME_BIN/rustup"
+	elif [ -x "$(command -v rustup)" ]; then
+		rustup_bin="$(command -v rustup)"
+	else
+		return 0
+	fi
+
+	echo "Preparing rustup stable/nightly toolchains in '$RUSTUP_HOME_BIN'"
+	"$rustup_bin" toolchain install stable || return 1
+	"$rustup_bin" default stable || return 1
+	"$rustup_bin" toolchain install nightly || return 1
+	"$rustup_bin" component add rust-src --toolchain nightly || return 1
+
+	return 0
+}
+
 install_requisite() {
 	local OSV="$1" ARG="$2" DOY="$3"
 
@@ -146,21 +167,35 @@ install_requisite() {
 	vals="$(sed 's/[\t ]*#.*//g' "$PACKAGES/$OSV" | sort | tr '\n' ' ' | sed 's/^ *//;s/  */ /g;s/ *$//')"
 	case "$OSV" in
 		Fedora*)
-			vals="$vals golang"
+			vals="$vals golang rustup"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
 			;;
 		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
-			vals="$vals golang-go $NODEJS_HOST_MULTILIB_PKG"
+			vals="$vals golang-go rustup $NODEJS_HOST_MULTILIB_PKG"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
 			;;
 	esac
 	echo -e "\nPackages for '$OSV':\n$vals\n"
 	[ "${ARG:0:1}" == "s" ] && exit 0
 	case "$OSV" in
-		Fedora*)                                       $SUDO dnf --refresh  install $DOY $vals || exit 1 ;;
-		Debian*|Devuan*|LMDE*) $SUDO apt-get update && $SUDO apt            install $DOY $vals || exit 1; extract_nodejs_host_multilib || exit 1 ;;
-		Ubuntu*|Mint*)         $SUDO apt-get update && $SUDO apt-get        install $DOY $vals || exit 1; extract_nodejs_host_multilib || exit 1 ;;
-		*)                     echo 'No known installer'                                       && exit 1 ;;
+		Fedora*)
+			$SUDO dnf --refresh install $DOY $vals || exit 1
+			setup_rust_host_toolchain || exit 1
+			;;
+		Debian*|Devuan*|LMDE*)
+			$SUDO apt-get update && $SUDO apt install $DOY $vals || exit 1
+			extract_nodejs_host_multilib || exit 1
+			setup_rust_host_toolchain || exit 1
+			;;
+		Ubuntu*|Mint*)
+			$SUDO apt-get update && $SUDO apt-get install $DOY $vals || exit 1
+			extract_nodejs_host_multilib || exit 1
+			setup_rust_host_toolchain || exit 1
+			;;
+		*)
+			echo 'No known installer'
+			exit 1
+			;;
 	esac
 	exit 0
 }
