@@ -99,6 +99,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`rainfrog`](docs/make/rainfrog.md)** 0.3.18 | Terminal PostgreSQL database exploration/query client. | EVO only |
 | **[`jless`](docs/make/jless.md)** 0.9.0 | JSON pager/reader with interactive navigation and search. | EVO only |
 | **[`lnav-rs`](docs/make/lnav-rs.md)** 0.9.0 | Rust-based log/JSON pager package (alias build based on `jless`). | EVO only |
+| **[`lnav`](docs/make/lnav.md)** 0.14.0 | Advanced terminal log viewer and analyzer with optional Rust/PRQL extensions exposed in menuconfig and support for external deployment. | EVO only |
 | **[`termscp`](docs/make/termscp.md)** 1.0.0 | Terminal SCP/SFTP client and remote file browser. | EVO only |
 | **[`atuin`](docs/make/atuin.md)** 18.16.1 | Shell history synchronization and improved history search utility. | EVO only |
 | **[`oxker`](docs/make/oxker.md)** 0.13.2 | Terminal Docker container monitor/manager UI. | EVO only |

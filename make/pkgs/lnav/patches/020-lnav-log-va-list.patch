@@ -1,0 +1,10 @@
+--- a/src/base/lnav_log.hh
++++ b/src/base/lnav_log.hh
+@@ -34,6 +34,7 @@
+ 
+ #include <atomic>
+ #include <cstdint>
++#include <stdarg.h>
+ #include <optional>
+ #include <string>
+ 

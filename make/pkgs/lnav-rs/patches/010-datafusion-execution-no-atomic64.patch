@@ -1,0 +1,224 @@
+--- a/src/disk_manager.rs
++++ b/src/disk_manager.rs
+@@ -25,11 +25,68 @@
+ use rand::{Rng, rng};
+ use std::path::{Path, PathBuf};
+ use std::sync::Arc;
+-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
++use std::sync::atomic::{AtomicUsize, Ordering};
+ use tempfile::{Builder, NamedTempFile, TempDir};
+ 
+ use datafusion_common::human_readable_size;
+ 
++#[cfg(target_has_atomic = "64")]
++type CompatAtomicU64 = std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++type CompatAtomicU64 = Mutex<u64>;
++
++#[cfg(target_has_atomic = "64")]
++fn compat_atomic_u64_new(value: u64) -> CompatAtomicU64 {
++    CompatAtomicU64::new(value)
++}
++
++#[cfg(not(target_has_atomic = "64"))]
++fn compat_atomic_u64_new(value: u64) -> CompatAtomicU64 {
++    Mutex::new(value)
++}
++
++#[cfg(target_has_atomic = "64")]
++fn compat_atomic_u64_load(value: &CompatAtomicU64) -> u64 {
++    value.load(Ordering::Relaxed)
++}
++
++#[cfg(not(target_has_atomic = "64"))]
++fn compat_atomic_u64_load(value: &CompatAtomicU64) -> u64 {
++    *value.lock()
++}
++
++#[cfg(target_has_atomic = "64")]
++fn compat_atomic_u64_store(value: &CompatAtomicU64, new_value: u64) {
++    value.store(new_value, Ordering::Relaxed);
++}
++
++#[cfg(not(target_has_atomic = "64"))]
++fn compat_atomic_u64_store(value: &CompatAtomicU64, new_value: u64) {
++    *value.lock() = new_value;
++}
++
++#[cfg(target_has_atomic = "64")]
++fn compat_atomic_u64_fetch_add(value: &CompatAtomicU64, amount: u64) {
++    value.fetch_add(amount, Ordering::Relaxed);
++}
++
++#[cfg(not(target_has_atomic = "64"))]
++fn compat_atomic_u64_fetch_add(value: &CompatAtomicU64, amount: u64) {
++    let mut guard = value.lock();
++    *guard = guard.wrapping_add(amount);
++}
++
++#[cfg(target_has_atomic = "64")]
++fn compat_atomic_u64_fetch_sub(value: &CompatAtomicU64, amount: u64) {
++    value.fetch_sub(amount, Ordering::Relaxed);
++}
++
++#[cfg(not(target_has_atomic = "64"))]
++fn compat_atomic_u64_fetch_sub(value: &CompatAtomicU64, amount: u64) {
++    let mut guard = value.lock();
++    *guard = guard.wrapping_sub(amount);
++}
++
+ pub const DEFAULT_MAX_TEMP_DIRECTORY_SIZE: u64 = 100 * 1024 * 1024 * 1024; // 100GB
+ 
+ /// Builder pattern for the [DiskManager] structure
+@@ -76,7 +133,7 @@
+             DiskManagerMode::OsTmpDirectory => Ok(DiskManager {
+                 local_dirs: Mutex::new(Some(vec![])),
+                 max_temp_directory_size: self.max_temp_directory_size,
+-                used_disk_space: Arc::new(AtomicU64::new(0)),
++                used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                 active_files_count: Arc::new(AtomicUsize::new(0)),
+             }),
+             DiskManagerMode::Directories(conf_dirs) => {
+@@ -87,14 +144,14 @@
+                 Ok(DiskManager {
+                     local_dirs: Mutex::new(Some(local_dirs)),
+                     max_temp_directory_size: self.max_temp_directory_size,
+-                    used_disk_space: Arc::new(AtomicU64::new(0)),
++                    used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                     active_files_count: Arc::new(AtomicUsize::new(0)),
+                 })
+             }
+             DiskManagerMode::Disabled => Ok(DiskManager {
+                 local_dirs: Mutex::new(None),
+                 max_temp_directory_size: self.max_temp_directory_size,
+-                used_disk_space: Arc::new(AtomicU64::new(0)),
++                used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                 active_files_count: Arc::new(AtomicUsize::new(0)),
+             }),
+         }
+@@ -171,7 +228,7 @@
+     max_temp_directory_size: u64,
+     /// Used disk space in the temporary directories. Now only spilled data for
+     /// external executors are counted.
+-    used_disk_space: Arc<AtomicU64>,
++    used_disk_space: Arc<CompatAtomicU64>,
+     /// Number of active temporary files created by this disk manager
+     active_files_count: Arc<AtomicUsize>,
+ }
+@@ -200,7 +257,7 @@
+             DiskManagerConfig::NewOs => Ok(Arc::new(Self {
+                 local_dirs: Mutex::new(Some(vec![])),
+                 max_temp_directory_size: DEFAULT_MAX_TEMP_DIRECTORY_SIZE,
+-                used_disk_space: Arc::new(AtomicU64::new(0)),
++                used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                 active_files_count: Arc::new(AtomicUsize::new(0)),
+             })),
+             DiskManagerConfig::NewSpecified(conf_dirs) => {
+@@ -211,14 +268,14 @@
+                 Ok(Arc::new(Self {
+                     local_dirs: Mutex::new(Some(local_dirs)),
+                     max_temp_directory_size: DEFAULT_MAX_TEMP_DIRECTORY_SIZE,
+-                    used_disk_space: Arc::new(AtomicU64::new(0)),
++                    used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                     active_files_count: Arc::new(AtomicUsize::new(0)),
+                 }))
+             }
+             DiskManagerConfig::Disabled => Ok(Arc::new(Self {
+                 local_dirs: Mutex::new(None),
+                 max_temp_directory_size: DEFAULT_MAX_TEMP_DIRECTORY_SIZE,
+-                used_disk_space: Arc::new(AtomicU64::new(0)),
++                used_disk_space: Arc::new(compat_atomic_u64_new(0)),
+                 active_files_count: Arc::new(AtomicUsize::new(0)),
+             })),
+         }
+@@ -261,7 +318,7 @@
+     }
+ 
+     pub fn used_disk_space(&self) -> u64 {
+-        self.used_disk_space.load(Ordering::Relaxed)
++        compat_atomic_u64_load(&self.used_disk_space)
+     }
+ 
+     /// Returns the maximum temporary directory size in bytes
+@@ -272,7 +329,7 @@
+     /// Returns the current spilling progress
+     pub fn spilling_progress(&self) -> SpillingProgress {
+         SpillingProgress {
+-            current_bytes: self.used_disk_space.load(Ordering::Relaxed),
++            current_bytes: compat_atomic_u64_load(&self.used_disk_space),
+             active_files_count: self.active_files_count.load(Ordering::Relaxed),
+         }
+     }
+@@ -334,7 +391,7 @@
+                     .tempfile_in(local_dirs[dir_index].as_ref())
+                     .map_err(DataFusionError::IoError)?,
+             ),
+-            current_file_disk_usage: Arc::new(AtomicU64::new(0)),
++            current_file_disk_usage: Arc::new(compat_atomic_u64_new(0)),
+             disk_manager: Arc::clone(self),
+         })
+     }
+@@ -369,7 +426,7 @@
+     ///
+     /// This is wrapped in `Arc<AtomicU64>` so that all clones share the same
+     /// disk usage tracking, preventing incorrect accounting when clones are dropped.
+-    current_file_disk_usage: Arc<AtomicU64>,
++    current_file_disk_usage: Arc<CompatAtomicU64>,
+     /// The disk manager that created and manages this temporary file
+     disk_manager: Arc<DiskManager>,
+ }
+@@ -404,20 +461,16 @@
+         let new_disk_usage = metadata.len();
+ 
+         // Get the old disk usage
+-        let old_disk_usage = self.current_file_disk_usage.load(Ordering::Relaxed);
++        let old_disk_usage = compat_atomic_u64_load(&self.current_file_disk_usage);
+ 
+         // Update the global disk usage by:
+         // 1. Subtracting the old file size from the global counter
+-        self.disk_manager
+-            .used_disk_space
+-            .fetch_sub(old_disk_usage, Ordering::Relaxed);
++        compat_atomic_u64_fetch_sub(&self.disk_manager.used_disk_space, old_disk_usage);
+         // 2. Adding the new file size to the global counter
+-        self.disk_manager
+-            .used_disk_space
+-            .fetch_add(new_disk_usage, Ordering::Relaxed);
++        compat_atomic_u64_fetch_add(&self.disk_manager.used_disk_space, new_disk_usage);
+ 
+         // 3. Check if the updated global disk usage exceeds the configured limit
+-        let global_disk_usage = self.disk_manager.used_disk_space.load(Ordering::Relaxed);
++        let global_disk_usage = compat_atomic_u64_load(&self.disk_manager.used_disk_space);
+         if global_disk_usage > self.disk_manager.max_temp_directory_size {
+             return resources_err!(
+                 "The used disk space during the spilling process has exceeded the allowable limit of {}. Try increasing the `max_temp_directory_size` in the disk manager configuration.",
+@@ -426,14 +479,13 @@
+         }
+ 
+         // 4. Update the local file size tracking
+-        self.current_file_disk_usage
+-            .store(new_disk_usage, Ordering::Relaxed);
++        compat_atomic_u64_store(&self.current_file_disk_usage, new_disk_usage);
+ 
+         Ok(())
+     }
+ 
+     pub fn current_disk_usage(&self) -> u64 {
+-        self.current_file_disk_usage.load(Ordering::Relaxed)
++        compat_atomic_u64_load(&self.current_file_disk_usage)
+     }
+ }
+ 
+@@ -444,10 +496,8 @@
+         // Check if we're the last one by seeing if there's only one strong reference
+         // left to the underlying tempfile (the one we're holding)
+         if Arc::strong_count(&self.tempfile) == 1 {
+-            let current_usage = self.current_file_disk_usage.load(Ordering::Relaxed);
+-            self.disk_manager
+-                .used_disk_space
+-                .fetch_sub(current_usage, Ordering::Relaxed);
++            let current_usage = compat_atomic_u64_load(&self.current_file_disk_usage);
++            compat_atomic_u64_fetch_sub(&self.disk_manager.used_disk_space, current_usage);
+             self.disk_manager
+                 .active_files_count
+                 .fetch_sub(1, Ordering::Relaxed);

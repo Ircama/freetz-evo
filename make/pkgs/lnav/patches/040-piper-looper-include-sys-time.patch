@@ -1,0 +1,10 @@
+--- a/src/piper.looper.cc
++++ b/src/piper.looper.cc
+@@ -39,6 +39,8 @@
+ #include <arpa/inet.h>
+ #include <poll.h>
++#include <sys/time.h>
++#include <sys/stat.h>
+ 
+ #include "ArenaAlloc/arenaalloc.h"
+ #include "base/date_time_scanner.hh"

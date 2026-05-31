@@ -1,0 +1,20 @@
+--- a/src/base/string_util.cc
++++ b/src/base/string_util.cc
+@@ -39,6 +39,7 @@
+ #include "is_utf8.hh"
+ #include "lnav_log.hh"
+ #include "scn/scan.h"
++#define _LIBUNISTRING_NO_CONST_GENERICS 1
+ #include "unistr.h"
+ 
+ using namespace std::string_view_literals;
+--- a/src/view_curses.cc
++++ b/src/view_curses.cc
+@@ -51,6 +51,7 @@
+ #include "terminfo-files.h"
+ #include "terminfo/terminfo.h"
+ #include "termios_guard.hh"
++#define _LIBUNISTRING_NO_CONST_GENERICS 1
+ #include "unistr.h"
+ #include "uniwidth.h"
+ #include "xterm_mouse.hh"

@@ -1,0 +1,12 @@
+--- a/src/piper.looper.cc
++++ b/src/piper.looper.cc
+@@ -464,7 +464,7 @@
+                 auto now = std::chrono::system_clock::now();
+ 
+                 if ((now - last_write) >= FORCE_MTIME_UPDATE_DURATION) {
+                     last_write = now;
+-                    log_perror(futimes(outfd_pair.second.os_fd.get(), nullptr));
++                    log_perror(futimens(outfd_pair.second.os_fd.get(), nullptr));
+                 }
+             }
+             if (file_count == 0) {
