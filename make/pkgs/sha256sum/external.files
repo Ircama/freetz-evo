@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_SHA256SUM" == "y" ] && EXTERNAL_FILES+=" /usr/bin/sha256sum"

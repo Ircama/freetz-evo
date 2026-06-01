@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_SHA256SUM
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_SHA256SUM
+	bool "sha256sum"
+	default n
+	help
+		externals the following file(s):
+			 /usr/bin/sha256sum
