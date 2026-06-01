@@ -16,7 +16,8 @@ LNAV_RUST_CONFIG_DIR:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/.cargo
 LNAV_RUST_CONFIG_FILE:=$(LNAV_RUST_CONFIG_DIR)/config.toml
 LNAV_RUST_MANIFEST:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/Cargo.toml
 LNAV_RUST_LIB_RS:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/src/lib.rs
-LNAV_NEEDS_UCLIBC_RUST_FIXES:=$(filter mipsel-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
+LNAV_RUST_TARGET_ENV:=$(subst -,_,$(LNAV_RUST_TARGET_DIR))
+LNAV_NEEDS_UCLIBC_RUST_FIXES:=$(filter mips-unknown-linux-uclibc mipsel-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/lnav
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lnav
@@ -58,21 +59,19 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		$(LNAV_CARGO_CMD) fetch --locked --manifest-path "$(LNAV_RUST_MANIFEST)" --target "$(LNAV_RUST_TARGET_ARG)"; \
 		if [ -n "$(LNAV_NEEDS_UCLIBC_RUST_FIXES)" ]; then \
 			$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
-			for log2src_dir in $$HOME/.cargo/git/checkouts/log2src-*/*; do \
-				[ -f "$$log2src_dir/Cargo.toml" ] || continue; \
-				perl -0pi -e 's/\nportable-atomic = "1\.13\.1"//g' "$$log2src_dir/Cargo.toml"; \
-				perl -0pi -e 's/use portable_atomic::AtomicU64;\nuse std::sync::atomic::Ordering;/use std::sync::atomic::{AtomicUsize, Ordering};/; s/use std::sync::atomic::\{AtomicU64, Ordering\};/use std::sync::atomic::{AtomicUsize, Ordering};/; s/pub completed: AtomicU64,/pub completed: AtomicUsize,/; s/self\.completed\.load\(Ordering::Relaxed\) as u64 < self\.total/\(self.completed.load(Ordering::Relaxed) as u64\) < self.total/; s/self\.completed\.load\(Ordering::Relaxed\) < self\.total/\(self.completed.load(Ordering::Relaxed) as u64\) < self.total/; s/fetch_add\(amount, Ordering::Relaxed\)/fetch_add(amount as usize, Ordering::Relaxed)/; s/store\(self\.info\.total, Ordering::Relaxed\)/store(self.info.total as usize, Ordering::Relaxed)/; s/AtomicU64::new\(0\)/AtomicUsize::new(0)/' "$$log2src_dir/src/progress.rs"; \
-			done; \
-			grep -q 'LNAV_GETRANDOM_UNEXPECTED' "$(LNAV_RUST_LIB_RS)" || \
-				perl -0pi -e 's~\n#\[cfg\(all\(target_os = "linux", target_env = "uclibc", target_arch = "mips"\)\)\]\n#\[no_mangle\]~\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\n#[repr(transparent)]\nstruct LnavGetrandomError(core::num::NonZeroI32);\n\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\nconst LNAV_GETRANDOM_UNEXPECTED: LnavGetrandomError =\n    LnavGetrandomError(unsafe { core::num::NonZeroI32::new_unchecked(65538) });\n\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\n#[no_mangle]~' "$(LNAV_RUST_LIB_RS)"; \
-			grep -q '__getrandom_v03_custom' "$(LNAV_RUST_LIB_RS)" || \
-				perl -0pi -e 's~use std::time::Duration;\n~use std::time::Duration;\n\n#[cfg(all(target_os = "linux", target_env = "uclibc", target_arch = "mips"))]\n#[no_mangle]\nunsafe extern "Rust" fn __getrandom_v03_custom(\n    dest: *mut u8,\n    len: usize,\n) -> Result<(), getrandom::Error> {\n    use std::fs::File;\n    use std::io::Read;\n\n    let buf = unsafe {\n        std::ptr::write_bytes(dest, 0, len);\n        std::slice::from_raw_parts_mut(dest, len)\n    };\n    File::open("/dev/urandom")\n        .and_then(|mut file| file.read_exact(buf))\n        .map_err(|_| getrandom::Error::UNEXPECTED)\n}\n~' "$(LNAV_RUST_LIB_RS)"; \
-			perl -0pi -e 's/Result<\(\), getrandom::Error>/Result<(), LnavGetrandomError>/g; s/getrandom::Error::UNEXPECTED/LNAV_GETRANDOM_UNEXPECTED/g; s/ext_prog\.completed = info\.completed\.load\(Relaxed\);/ext_prog.completed = info.completed.load(Relaxed) as u64;/' "$(LNAV_RUST_LIB_RS)"; \
+			$(call LOG2SRC_APPLY_ATOMICU64_FALLBACK__INT) \
+			$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
+			perl -0pi -e 's/ext_prog\.completed = info\.completed\.load\(Relaxed\);/ext_prog.completed = info.completed.load(Relaxed) as u64;/' "$(LNAV_RUST_LIB_RS)"; \
 		fi; \
+		perl -0pi -e 's@^PRQLC_DIR = third-party/lnav-rs-ext/target\$$@PRQLC_DIR = third-party/lnav-rs-ext/target/$(LNAV_RUST_TARGET_DIR)@m; s@^RUST_DEPS_TRIGGER = \$\(PRQLC_DIR\)/release/liblnav_rs_ext\.a\.dep\$$@RUST_DEPS_TRIGGER = $(LNAV_DIR)/src/third-party/lnav-rs-ext/target/$(LNAV_RUST_TARGET_DIR)/release/liblnav_rs_ext.a.dep@m' "$(LNAV_DIR)/src/Makefile"; \
 		export CARGO_BUILD_TARGET="$(LNAV_RUST_TARGET_ARG)"; \
+		export CC_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)gcc"; \
+		export CXX_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)g++"; \
+		export AR_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)ar"; \
+		export RANLIB_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)ranlib"; \
 		export RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)"; \
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),export CARGO_UNSTABLE_BUILD_STD="$(LNAV_RUST_BUILD_STD)"; ) \
-		export RUSTFLAGS="$$RUSTFLAGS -C linker=$(TARGET_CROSS)gcc$(if $(LNAV_NEEDS_UCLIBC_RUST_FIXES), --cfg getrandom_backend=\"custom\" --cfg rustix_use_experimental_asm)"; \
+		export RUSTFLAGS="$$RUSTFLAGS -C linker=$(TARGET_CROSS)gcc$(if $(LNAV_NEEDS_UCLIBC_RUST_FIXES), --cfg rustix_use_experimental_asm)"; \
 	fi; \
 	$(SUBMAKE) -C $(LNAV_DIR)
 
