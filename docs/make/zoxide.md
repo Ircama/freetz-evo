@@ -1,0 +1,14 @@
+# zoxide 0.9.9
+
+- Homepage: https://github.com/ajeetdsouza/zoxide
+- Changelog: https://github.com/ajeetdsouza/zoxide/releases
+- Repository: https://github.com/ajeetdsouza/zoxide
+- Package: ../../make/pkgs/zoxide/
+
+zoxide is a smarter directory-jump helper packaged for freetz as the target-side
+binary `zoxide`.
+
+## Build notes
+
+- built from upstream Rust sources with Cargo cross-compilation
+- externalizable via the standard freetz external package flow
