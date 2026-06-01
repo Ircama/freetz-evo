@@ -12,7 +12,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/lnav-rs-3f27b3db563b18c33db328a6b6fbf74f5b2ddd03
 
 LNAV_RS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 LNAV_RS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-LNAV_RS_NEEDS_CUSTOM_GETRANDOM:=$(filter mipsel-unknown-linux-uclibc,$(LNAV_RS_RUST_TARGET_DIR))
+LNAV_RS_NEEDS_UCLIBC_MIPS_WORKAROUNDS:=$(filter mips-unknown-linux-uclibc mipsel-unknown-linux-uclibc,$(LNAV_RS_RUST_TARGET_DIR))
 LNAV_RS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 LNAV_RS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(LNAV_RS_CARGO_BUILD_STD_FLAGS),cargo build --release)
 $(PKG)_BINARY:=$(LNAV_RS_DIR)/target/$(LNAV_RS_RUST_TARGET_DIR)/release/lnav-rs
@@ -32,7 +32,8 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	cargo fetch --target "$(LNAV_RS_RUST_TARGET_ARG)"; \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
-	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
+	if [ -n "$(LNAV_RS_NEEDS_UCLIBC_MIPS_WORKAROUNDS)" ]; then \
 		grep -q 'tempfile = "=3.17.1"' crates/cli/Cargo.toml || \
 			printf "%s\n%s\n%s\n%s\n" "" "[target.'cfg(all(target_os = \"linux\", target_env = \"uclibc\", target_arch = \"mips\"))'.dependencies]" "getrandom = \"=0.3.4\"" "tempfile = \"=3.17.1\"" >> crates/cli/Cargo.toml; \
 		grep -q 'version = "=53.1.0"' crates/query/Cargo.toml || \
@@ -47,7 +48,7 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> .cargo/config.toml; \
-	if [ -n "$(LNAV_RS_NEEDS_CUSTOM_GETRANDOM)" ]; then \
+	if [ -n "$(LNAV_RS_NEEDS_UCLIBC_MIPS_WORKAROUNDS)" ]; then \
 		cargo +nightly fetch --target "$(LNAV_RS_RUST_TARGET_ARG)"; \
 		datafusion_dir="$$({ find "$${CARGO_HOME:-$$HOME/.cargo}/registry/src" -path '*/datafusion-execution-53.1.0' -type d | head -n 1; } 2>/dev/null)"; \
 		test -n "$$datafusion_dir" || exit 1; \

@@ -63,7 +63,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 			$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
 			perl -0pi -e 's/ext_prog\.completed = info\.completed\.load\(Relaxed\);/ext_prog.completed = info.completed.load(Relaxed) as u64;/' "$(LNAV_RUST_LIB_RS)"; \
 		fi; \
-		perl -0pi -e 's@^PRQLC_DIR = third-party/lnav-rs-ext/target\$$@PRQLC_DIR = third-party/lnav-rs-ext/target/$(LNAV_RUST_TARGET_DIR)@m; s@^RUST_DEPS_TRIGGER = \$\(PRQLC_DIR\)/release/liblnav_rs_ext\.a\.dep\$$@RUST_DEPS_TRIGGER = $(LNAV_DIR)/src/third-party/lnav-rs-ext/target/$(LNAV_RUST_TARGET_DIR)/release/liblnav_rs_ext.a.dep@m' "$(LNAV_DIR)/src/Makefile"; \
+		perl -0pi -e 's@^PRQLC_DIR = third-party/lnav-rs-ext/target.*@PRQLC_DIR = third-party/lnav-rs-ext/target/$(LNAV_RUST_TARGET_DIR)@m' "$(LNAV_DIR)/src/Makefile"; \
 		export CARGO_BUILD_TARGET="$(LNAV_RUST_TARGET_ARG)"; \
 		export CC_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)gcc"; \
 		export CXX_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)g++"; \
@@ -73,7 +73,9 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),export CARGO_UNSTABLE_BUILD_STD="$(LNAV_RUST_BUILD_STD)"; ) \
 		export RUSTFLAGS="$$RUSTFLAGS -C linker=$(TARGET_CROSS)gcc$(if $(LNAV_NEEDS_UCLIBC_RUST_FIXES), --cfg rustix_use_experimental_asm)"; \
 	fi; \
-	$(SUBMAKE) -C $(LNAV_DIR)
+	$(SUBMAKE) -C $(LNAV_DIR)/tools; \
+	$(SUBMAKE) -C $(LNAV_DIR)/src all; \
+	$(SUBMAKE1) -C $(LNAV_DIR)/src V=1 lnav
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
