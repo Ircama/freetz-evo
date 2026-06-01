@@ -93,19 +93,24 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`prometheus`](docs/make/prometheus.md)** 3.11.3 | Monitoring and alerting server with local TSDB storage. | EVO only |
 | **[`rclone`](docs/make/rclone.md)** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
 | **[`ripgrep`](docs/make/ripgrep.md)** 14.1.1 | Fast recursive text search tool (`rg`) based on Rust regex/search engines. | EVO only |
+| **[`bat`](docs/make/bat.md)** 0.26.1 | Syntax-highlighting `cat` replacement for reading config files, logs, and source files directly on the device. | EVO only |
 | **[`bottom`](docs/make/bottom.md)** 0.12.3 | Terminal system monitor (`btm`) for CPU, memory, disk, network, and process metrics. | EVO only |
 | **[`bandwhich`](docs/make/bandwhich.md)** 0.23.1 | Terminal bandwidth utilization monitor by process/connection. | EVO only |
 | **[`procs`](docs/make/procs.md)** 0.14.11 | Modern process viewer as an enhanced alternative to `ps`. | EVO only |
 | **[`broot`](docs/make/broot.md)** 1.56.4 | Tree-style terminal file browser and launcher. | EVO only |
+| **[`eza`](docs/make/eza.md)** 0.23.4 | Modern `ls` replacement with richer directory listings, colors, and tree-style output. | EVO only |
 | **[`gitui`](docs/make/gitui.md)** 0.28.1 | Terminal UI for interactive Git workflows. | EVO only |
 | **[`rainfrog`](docs/make/rainfrog.md)** 0.3.18 | Terminal PostgreSQL database exploration/query client. | EVO only |
 | **[`jless`](docs/make/jless.md)** 0.9.0 | JSON pager/reader with interactive navigation and search. | EVO only |
 | **[`lnav-rs`](docs/make/lnav-rs.md)** 0.9.0 | Rust-based log/JSON pager package (alias build based on `jless`). | EVO only |
 | **[`lnav`](docs/make/lnav.md)** 0.14.0 | Advanced terminal log viewer and analyzer with optional Rust/PRQL extensions exposed in menuconfig and support for external deployment. | EVO only |
+| **[`sha256sum`](docs/make/sha256sum.md)** 0.9.0 | SHA-256 checksum utility packaged from uutils/coreutils for target-side integrity verification. | EVO only |
+| **[`tac`](docs/make/tac.md)** 0.9.0 | Reverse concatenation utility packaged from uutils/coreutils for target-side text processing workflows. | EVO only |
 | **[`termscp`](docs/make/termscp.md)** 1.0.0 | Terminal SCP/SFTP client and remote file browser. | EVO only |
 | **[`atuin`](docs/make/atuin.md)** 18.16.1 | Shell history synchronization and improved history search utility. | EVO only |
 | **[`oxker`](docs/make/oxker.md)** 0.13.2 | Terminal Docker container monitor/manager UI. | EVO only |
 | **[`yazi`](docs/make/yazi.md)** 26.5.6 | Fast terminal file manager package shipping `yazi` and helper `ya`. | EVO only |
+| **[`zoxide`](docs/make/zoxide.md)** 0.9.9 | Smarter directory-jump helper that complements interactive shells with ranked path lookup. | EVO only |
 | **[`restic`](docs/make/restic.md)** 0.18.1 | Encrypted backup tool for local and remote repositories. | EVO only |
 | **[`vhs`](docs/make/vhs.md)** 0.11.0 | Scripted terminal-session recorder for demo generation. | EVO only |
 | **[`NeoMutt`](docs/make/neomutt.md)** 20260504 | Console email client (MUA) with IMAP/POP3/SMTP, SSL/TLS via OpenSSL, wide-character ncurses UI, threading, sidebar, and a rich `muttrc` scripting language. | EVO only |
