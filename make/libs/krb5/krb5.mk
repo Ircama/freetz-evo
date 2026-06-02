@@ -1,7 +1,7 @@
 $(call PKG_INIT_LIB, 1.21.3)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=b7a4cd5ead67fb08b980b21abd150ff7217e85ea320c9ed0c6dadd304840ad35
-$(PKG)_SITE:=https://web.mit.edu/kerberos/dist/krb5/1.21
+$(PKG)_SITE:=https://kerberos.org/dist/krb5/1.21
 ### WEBSITE:=https://web.mit.edu/kerberos/
 ### CHANGES:=https://web.mit.edu/kerberos/dist/
 ### CVSREPO:=https://github.com/krb5/krb5
