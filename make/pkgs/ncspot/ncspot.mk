@@ -13,6 +13,7 @@ $(PKG)_CATEGORY:=Audio
 
 NCSPOT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 NCSPOT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+NCSPOT_PKG_CONFIG_DIR:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig
 NCSPOT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 NCSPOT_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(NCSPOT_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 NCSPOT_CARGO_FEATURES:=--no-default-features --features alsa_backend,crossterm_backend
@@ -39,6 +40,10 @@ $($(PKG)_BINARY): $(NCSPOT_DIR)/.configured
 	export OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
 	export OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
 	export OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
+	export PKG_CONFIG=/usr/bin/pkg-config; \
+	export PKG_CONFIG_ALLOW_CROSS=1; \
+	export PKG_CONFIG_PATH="$(NCSPOT_PKG_CONFIG_DIR)"; \
+	export PKG_CONFIG_LIBDIR="$(NCSPOT_PKG_CONFIG_DIR)"; \
 	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(NCSPOT_RUST_TARGET_DIR)" \
