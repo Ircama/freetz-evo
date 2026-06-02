@@ -10,6 +10,7 @@ $(PKG)_SITE:=https://github.com/LMDB/lmdb/archive/refs/tags
 $(PKG)_BINARY:=$($(PKG)_DIR)/libraries/liblmdb/liblmdb.so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblmdb.so
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/liblmdb.so
+$(PKG)_PC_FILE:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/lmdb.pc
 
 $(PKG)_COMMON_MAKE_OPTS := -C $($(PKG)_DIR)/libraries/liblmdb
 $(PKG)_COMMON_MAKE_OPTS += CC="$(TARGET_CC)"
@@ -36,6 +37,17 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 		IPROGS="" \
 		IDOCS="" \
 		install
+	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig
+	printf '%s\n' 'prefix=/usr' > $(LMDB_PC_FILE)
+	printf '%s\n' 'exec_prefix=$${prefix}' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'libdir=$${exec_prefix}/lib' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'includedir=$${prefix}/include' >> $(LMDB_PC_FILE)
+	printf '%s\n' '' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'Name: lmdb' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'Description: Lightning Memory-Mapped Database library' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'Version: $(LMDB_VERSION)' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'Libs: -L$${libdir} -llmdb' >> $(LMDB_PC_FILE)
+	printf '%s\n' 'Cflags: -I$${includedir}' >> $(LMDB_PC_FILE)
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP)
@@ -49,6 +61,7 @@ $(pkg)-clean:
 	-$(SUBMAKE) $(LMDB_COMMON_MAKE_OPTS) clean
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblmdb.so \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/lmdb.pc \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/lmdb.h
 
 $(pkg)-uninstall:
