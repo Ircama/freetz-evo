@@ -1,4 +1,5 @@
 $(call PKG_INIT_BIN, 0.14.11)
+include $(MAKE_DIR)/include/650-rust-cargo.mk
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v0.14.11.tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=3d6b3561ce05362a092ea8488458f552d6636d3a280290e21f841c432cadf91a
@@ -27,6 +28,9 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(PROCS_DIR)/.configured
 	cd $(PROCS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	cargo fetch --locked --target "$(PROCS_RUST_TARGET_ARG)"; \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.3) \
+	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_026_SAFE__INT,0.26.4) \
 	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(PROCS_RUST_TARGET_DIR)" \

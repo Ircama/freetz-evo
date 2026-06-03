@@ -72,6 +72,20 @@ done; \
 $(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,$(1))
 endef
 
+# Apply nix 0.26.x uClibc/MIPS compatibility fixes with shell-safe regexes.
+# This disables Linux code paths requiring libc symbols missing on uClibc
+# and normalizes libc_bitflags typing on uClibc.
+# $1: nix crate version (for example: 0.26.4)
+define NIX_APPLY_UCLIBC_MIPS_PATCHES_026_SAFE__INT
+for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
+	[ -d "$$nix_dir" ] || continue; \
+	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "linux"\)\)\]\n#\[cfg\(feature = "zerocopy"\)\]\nlibc_bitflags! \{/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\n#[cfg(feature = "zerocopy")]\nlibc_bitflags! {/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn splice\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn splice(/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn tee\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn tee(/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn vmsplice\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn vmsplice(/g' "$$nix_dir/src/fcntl.rs"; \
+	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\](?=\n#\[cfg\(feature = "net"\)\]\nsockopt_impl!\(\n    #\[cfg_attr\(docsrs, doc\(cfg\(feature = "net"\)\)\)\]\n    \/\/\/ The `recvmsg\(2\)` call will return the destination IP address for a UDP\n    \/\/\/ datagram\.\n    Ipv6OrigDstAddr,)/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]/s; s/#\[cfg\(any\(\n    target_os = "android",\n    target_os = "ios",\n    target_os = "linux",\n    target_os = "macos",\n\)\)\](\nsockopt_impl!\(\n(?:.|\n)*?\n    Ipv6DontFrag,)/#[cfg(any(\n    target_os = "android",\n    target_os = "ios",\n    all(target_os = "linux", not(target_env = "uclibc")),\n    target_os = "macos",\n))]$$1/s' "$$nix_dir/src/sys/socket/sockopt.rs"; \
+	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\]\n            #\[cfg\(feature = "net"\)\]\n            \(libc::IPPROTO_IPV6, libc::IPV6_ORIGDSTADDR\) =>/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]\n            #[cfg(feature = "net")]\n            (libc::IPPROTO_IPV6, libc::IPV6_ORIGDSTADDR) =>/g; s/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\]\n            #\[cfg\(feature = "net"\)\]\n            \(libc::IPPROTO_IPV6, libc::IPV6_DONTFRAG\) =>/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]\n            #[cfg(feature = "net")]\n            (libc::IPPROTO_IPV6, libc::IPV6_DONTFRAG) =>/g' "$$nix_dir/src/sys/socket/mod.rs"; \
+done; \
+$(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,$(1))
+endef
+
 # Expand to the getrandom backend implementation path in Cargo registry.
 # $1: getrandom crate version (for example: 0.3.4)
 define GETRANDOM_BACKEND_PATH_GLOB__INT
