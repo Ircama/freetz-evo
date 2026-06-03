@@ -1,0 +1,23 @@
+--- Makefile.in
++++ Makefile.in
+@@ -1378,7 +1378,7 @@
+ curl_verbose = $(curl_verbose_$(V))
+ curl_verbose_ = $(curl_verbose_$(AM_DEFAULT_VERBOSITY))
+ curl_verbose_0 = @echo "  CURL    " $@;
+-sysconf_DATA = recursor.conf-dist recursor.yml-dist
++sysconf_DATA =
+ MANPAGES = pdns_recursor.1 \
+ 	 rec_control.1
+ 
+@@ -2802,11 +2802,5 @@
+ pubsuffix.cc: $(srcdir)/effective_tld_names.dat
+ 	$(AM_V_GEN)./mkpubsuffixcc
+ 
+-recursor.conf-dist: pdns_recursor
+-	$(AM_V_GEN)./pdns_recursor --config=default > $@
+-
+-recursor.yml-dist: pdns_recursor
+-	dir=$$(mktemp -d) && touch "$$dir/recursor.yml" && ./pdns_recursor --config-dir="$$dir" --config=default 2> /dev/null > $@ && rm "$$dir/recursor.yml" && rmdir "$$dir"
+-
+ @HAVE_MANPAGES_FALSE@@HAVE_VENV_TRUE@$(MANPAGES): %: docs/manpages/%.rst .venv
+ @HAVE_MANPAGES_FALSE@@HAVE_VENV_TRUE@	.venv/bin/python -msphinx -b man docs . $<

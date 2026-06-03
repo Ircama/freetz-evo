@@ -1,0 +1,9 @@
+--- uuid-utils.cc
++++ uuid-utils.cc
+@@ -31,5 +31,6 @@
+ #endif /* BOOST_VERSION */
+ 
+ #include <boost/uuid/uuid_generators.hpp>
++#include <boost/random/mersenne_twister.hpp>
+ 
+ // The default of:

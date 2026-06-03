@@ -18,11 +18,24 @@ PDNS_RECURSOR_BOOST_CONFIG:=$(PDNS_RECURSOR_BOOST_ROOT)/user-config.jam
 PDNS_RECURSOR_BOOST_LIBDIR:=$(PDNS_RECURSOR_BOOST_ROOT)/stage/lib
 PDNS_RECURSOR_BOOST_MARKER:=$(PDNS_RECURSOR_BOOST_ROOT)/.built
 PDNS_RECURSOR_TOOLCHAIN_ERROR:=PowerDNS Recursor 5.0.5 requires GCC 8+ with C++17 support.
+PDNS_RECURSOR_BOOST_CXXFLAGS:=$(TARGET_CFLAGS) -fPIC $(if $(or $(FREETZ_TARGET_UCLIBC_0),$(FREETZ_TARGET_UCLIBC_1)),-DBOOST_FILESYSTEM_DISABLE_STATX)
+
+# Boost.Context Jamfile.v2 selects ASM sources based on architecture/abi/binary-format properties.
+# When cross-compiling, b2 cannot auto-detect the target (it reads the host OS), so we must
+# pass these properties explicitly. Map Freetz arch variables → b2 properties.
+PDNS_RECURSOR_B2_ARCH_OPTS := \
+    $(if $(FREETZ_TARGET_ARCH_MIPS),architecture=mips address-model=32 binary-format=elf abi=o32) \
+    $(if $(FREETZ_TARGET_ARCH_ARM),architecture=arm address-model=32 binary-format=elf abi=aapcs) \
+    $(if $(FREETZ_TARGET_ARCH_AARCH64),architecture=arm address-model=64 binary-format=elf abi=aapcs) \
+    $(if $(FREETZ_TARGET_ARCH_X86),architecture=x86 address-model=32 binary-format=elf abi=sysv)
 
 PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+PDNS_RECURSOR_RUST_TARGET_VALUE:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
+PDNS_RECURSOR_RUST_BUILD_STD_VALUE:=std,panic_abort
 PDNS_RECURSOR_RUST_BUILD_STD_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort,)
 PDNS_RECURSOR_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
+PDNS_RECURSOR_RUST_ENV_TARGET:=$(subst -,_,$(PDNS_RECURSOR_RUST_TARGET_DIR))
 
 PDNS_RECURSOR_BUILD_BINARY:=$(PDNS_RECURSOR_DIR)/pdns_recursor
 PDNS_RECURSOR_INSTALL_MARKER:=$(PDNS_RECURSOR_DIR)/.installed
@@ -72,16 +85,16 @@ $(PKG_UNPACKED)
 $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE): | $(DL_DIR)
 	$(DL_TOOL) -o $(PDNS_RECURSOR_BOOST_SOURCE) $(DL_DIR) $(PDNS_RECURSOR_BOOST_SOURCE_DOWNLOAD_NAME) $(PDNS_RECURSOR_BOOST_SITE) $(PDNS_RECURSOR_BOOST_HASH)
 
-$(PDNS_RECURSOR_BOOST_MARKER): $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE) $(PDNS_RECURSOR_DIR)/.unpacked
+$(PDNS_RECURSOR_BOOST_MARKER): $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE) $(PDNS_RECURSOR_DIR)/.unpacked $(MAKE_DIR)/pkgs/pdns-recursor/pdns-recursor.mk
 	$(RM) -r $(PDNS_RECURSOR_DIR)/.boost
 	mkdir -p $(PDNS_RECURSOR_DIR)/.boost
 	$(call UNPACK_TARBALL,$<,$(PDNS_RECURSOR_DIR)/.boost)
 	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system,thread $(SILENT)
-	printf "using gcc : freetz : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(PDNS_RECURSOR_BOOST_CONFIG)
-	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc-freetz target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(PDNS_RECURSOR_BOOST_CXXFLAGS)\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(PDNS_RECURSOR_BOOST_CONFIG)
+	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc $(PDNS_RECURSOR_B2_ARCH_OPTS) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@
 
-$(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(PDNS_RECURSOR_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(PDNS_RECURSOR_BOOST_MARKER))
+$(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(PDNS_RECURSOR_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(PDNS_RECURSOR_BOOST_MARKER)) $(MAKE_DIR)/pkgs/pdns-recursor/pdns-recursor.mk
 	@$(call _ECHO,configuring)
 	@if [ "$(FREETZ_TARGET_GCC_8_MIN)" != "y" ]; then \
 		echo "ERROR: $(PDNS_RECURSOR_TOOLCHAIN_ERROR)" 1>&2; \
@@ -96,7 +109,17 @@ $(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(P
 	@touch $@
 
 $(PDNS_RECURSOR_BUILD_BINARY): $(PDNS_RECURSOR_DIR)/.configured
-	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR)
+	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) \
+		RUST_TARGET="$(PDNS_RECURSOR_RUST_TARGET_ARG)" \
+		RUSTC_TARGET_ARCH="$(PDNS_RECURSOR_RUST_TARGET_DIR)" \
+		CARGO_BUILD_TARGET="$(PDNS_RECURSOR_RUST_TARGET_VALUE)" \
+		CC_$(PDNS_RECURSOR_RUST_ENV_TARGET)="$(TARGET_CROSS)gcc" \
+		CXX_$(PDNS_RECURSOR_RUST_ENV_TARGET)="$(TARGET_CROSS)g++" \
+		AR_$(PDNS_RECURSOR_RUST_ENV_TARGET)="$(TARGET_CROSS)ar" \
+		RANLIB_$(PDNS_RECURSOR_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib" \
+		RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)" \
+		$(if $(RUST_TARGET_NEEDS_STD_BUILD),CARGO_UNSTABLE_BUILD_STD="$(PDNS_RECURSOR_RUST_BUILD_STD_VALUE)") \
+		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc"
 
 $(PDNS_RECURSOR_INSTALL_MARKER): $(PDNS_RECURSOR_BUILD_BINARY)
 	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) DESTDIR="$(abspath $(PDNS_RECURSOR_DEST_DIR))" install
