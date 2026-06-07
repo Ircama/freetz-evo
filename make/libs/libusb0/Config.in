@@ -1,20 +1,20 @@
 menu "libusb(-compat)"
 
-	config FREETZ_LIB_libusb_0
+	config FREETZ_LIB_libusb0
 		bool "libusb-0.1 (libusb-0.1.so)"
-		select FREETZ_LIB_libusb_1 if FREETZ_LIB_libusb_0_WITH_VERSION_CURRENT
+		select FREETZ_LIB_libusb1 if FREETZ_LIB_libusb0_WITH_VERSION_CURRENT
 		default n
 		help
 			A library for accessing Linux USB devices (legacy API).
 
 	choice
 		prompt "implemented using"
-			default FREETZ_LIB_libusb_0_WITH_VERSION_CURRENT
+			default FREETZ_LIB_libusb0_WITH_VERSION_CURRENT
 
-		config FREETZ_LIB_libusb_0_WITH_VERSION_ABANDON
+		config FREETZ_LIB_libusb0_WITH_VERSION_ABANDON
 			bool "legacy library"
 
-		config FREETZ_LIB_libusb_0_WITH_VERSION_CURRENT
+		config FREETZ_LIB_libusb0_WITH_VERSION_CURRENT
 			bool "libusb-compat"
 	endchoice
 

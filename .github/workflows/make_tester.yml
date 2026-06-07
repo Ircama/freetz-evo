@@ -139,9 +139,6 @@ jobs:
           FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
         run: |
           make && rm -f images/latest.image
-#     - name: progress
-#       run: |
-#         tools/make_progress_monitor.sh --no-legend
       - name: result
         run: |
           echo "##########################################################"

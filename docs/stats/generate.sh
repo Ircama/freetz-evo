@@ -60,7 +60,7 @@ get_hr() {
 get_pd() {
 #	file="config/.img/separate/*.in"
 	(
-		table_head "Name" "Produkte"
+		table_head "Name" "Produkt"
 		"$PARENT/tools/layoutGens.sh" "produkt" | grep -v '^#' | sort -n | while read -r line; do
 			echo "$line" | sed -rn 's/(.*) - (.*)/@ \1 @ \2 @/p'
 			echo >> "$TMPFILE.pd.head"

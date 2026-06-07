@@ -1,5 +1,5 @@
-config EXTERNAL_FREETZ_LIB_libusb_0
-	depends on EXTERNAL_ENABLED && FREETZ_LIB_libusb_0
+config EXTERNAL_FREETZ_LIB_libusb0
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libusb0
 	bool "libusb-0.1"
 	default n
 	help

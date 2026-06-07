@@ -113,7 +113,6 @@ preprocess_conf() {
 			s/LIB_//
 			s/_/ /
 			$lowercase
-			s/libusb 0_?/libusb_0 /
 			s/^/60 lib /; p; d
 		}
 		/^PACKAGE_.*_CGI$/ {

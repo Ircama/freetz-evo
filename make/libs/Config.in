@@ -196,7 +196,7 @@ menu "USB & related"
 	source "make/libs/libftdi/Config.in"
 	source "make/pkgs/ftdi1/Config.in.libs"
 	source "make/pkgs/pcsc-lite/Config.in.libs"
-	source "make/libs/libusb/Config.in"
+	source "make/libs/libusb0/Config.in"
 	source "make/libs/libusb1/Config.in"
 endmenu ### "USB & related"
 

@@ -1122,16 +1122,17 @@ if [ "$DO_MOD" -gt 0 ]; then
 				fi
 			fi
 
-			case "$bn" in
-				*xx)  fn="${bn//xx/++}" ;;
-				*)    fn="${bn//_/[-+._]}" ;;
-			esac
 			sizeinfo "$bn"
 			[ "$FREETZ_SEPARATE_AVM_UCLIBC" == "y" ] \
 			  && LIBPATHS="${FREETZ_LIBRARY_DIR#/} lib usr/lib usr/lib/xtables" \
 			  || LIBPATHS="lib usr/lib ${FREETZ_LIBRARY_DIR#/} usr/lib/xtables"
 			for dn in $LIBPATHS; do
-				files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/$fn[-.]*so*)
+				case "$bn" in
+					libusb0)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/{libusb.,libusb-0}*so*) ;;
+					libusb1)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libusb-1*so*) ;;
+					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//xx$/++}[-.][-.]*so*) ;;
+					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so*) ;;
+				esac
 				if [ -z "$files" ]; then
 					continue;
 				fi

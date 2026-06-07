@@ -1,6 +1,6 @@
 --- configure
 +++ configure
-@@ -30594,15 +30594,10 @@
+@@ -30584,15 +30584,10 @@
  printf "%s\n" "and out again" >&6; }
  
  echo $ECHO_N "ordering CD from https://tobi.oetiker.ch/wish $ECHO_C" 1>&6

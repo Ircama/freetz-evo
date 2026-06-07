@@ -8,7 +8,7 @@ menu "librrd"
 			bool "1.2.30"
 
 		config FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-			bool "1.10.2"
+			bool "1.10.3"
 			depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 	endchoice

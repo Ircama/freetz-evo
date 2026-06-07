@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_TRANSMISSION_VERSION_ABANDON),3.00,4.1.1))
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_TRANSMISSION_VERSION_ABANDON),3.00,4.1.2))
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH_ABANDON:=9144652fe742f7f7dd6657716e378da60b751aaeda8bef8344b3eefc4db255f2
-$(PKG)_HASH_CURRENT:=e743283ee03a42c4d0b08fed2bd52b554aa6c9f65b4d4d45b795c32d98762a79
+$(PKG)_HASH_CURRENT:=4c6070bdfae264a629cb2b0f1eaf567cb9c6208f9218aa446c0aee883eb0f1fc
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_TRANSMISSION_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE_ABANDON:=https://github.com/transmission/transmission-releases/raw/master
 $(PKG)_SITE_CURRENT:=https://github.com/transmission/transmission/releases/download/$($(PKG)_VERSION)

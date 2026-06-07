@@ -1,6 +1,6 @@
 menu "libusb1"
 
-	config FREETZ_LIB_libusb_1
+	config FREETZ_LIB_libusb1
 		bool "libusb-1.0 (libusb-1.0.so)"
 		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 		default n
@@ -9,13 +9,13 @@ menu "libusb1"
 
 	choice
 		prompt "Version"
-			default FREETZ_LIB_libusb_1_WITH_VERSION_CURRENT
+			default FREETZ_LIB_libusb1_WITH_VERSION_CURRENT
 
-		config FREETZ_LIB_libusb_1_WITH_VERSION_ABANDON
+		config FREETZ_LIB_libusb1_WITH_VERSION_ABANDON
 			bool "1.0.23"
 			depends on (FREETZ_TARGET_GCC_4_MAX || FREETZ_KERNEL_VERSION_2_MAX)
 
-		config FREETZ_LIB_libusb_1_WITH_VERSION_CURRENT
+		config FREETZ_LIB_libusb1_WITH_VERSION_CURRENT
 			bool "1.0.30"
 			depends on !(FREETZ_TARGET_GCC_4_MAX || FREETZ_KERNEL_VERSION_2_MAX)
 	endchoice

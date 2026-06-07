@@ -7,7 +7,6 @@ UCLIBC_HASH_0.9.29   = ca70501ae859cd86b387bb196908838275b4b06e6f4d692f9aa51b8a6
 UCLIBC_HASH_0.9.32.1 = b41c91dcc043919a3c19bd73a524adfd375d6d8792ad7be3631f90ecad8465e9
 UCLIBC_HASH_0.9.33.2 = 988d2c777e0605fe253d12157f71ec68f25d1bb8428725d2b7460bf9977e1662
 UCLIBC_HASH_1.0.14   = 3c63d9f8c8b98b65fa5c4040d1c8ab1b36e99a16e1093810cedad51ac15c9a9e
-UCLIBC_HASH_1.0.57   = 8bc734b584e23ff6ae3d0ebb4c0fb1d1d814c58c82822b93130d436afa7ace8b
 UCLIBC_HASH_1.0.58   = 9e8100a442f7079b9728ca286e3035f67df0578606166ea2d1ef865a4a12ddb9
 UCLIBC_HASH=$(UCLIBC_HASH_$(UCLIBC_VERSION))
 UCLIBC_SITE_0:=http://www.uclibc.org/downloads$(if $(or $(FREETZ_TARGET_UCLIBC_0_9_28),$(FREETZ_TARGET_UCLIBC_0_9_29)),/old-releases)
@@ -30,7 +29,6 @@ UCLIBC_CONFIG_FILE:=$(UCLIBC_MAKE_DIR)/configs/freetz/config-$(FREETZ_TARGET_ARC
 UCLIBC_PATCHES_DIR:=$(UCLIBC_MAKE_DIR)/patches/$(if $(FREETZ_SEPARATE_AVM_UCLIBC),separate,$(UCLIBC_VERSION))
 
 UCLIBC_TARGET_SUBDIR:=$(if $(FREETZ_SEPARATE_AVM_UCLIBC),$(FREETZ_RPATH),/lib)
-UCLIBC_TARGET_UTILS_STAMP:=$(TARGET_UTILS_DIR)/.uclibc_target_installed
 
 # uClibc >= 0.9.31 supports parallel building
 #  TODO    1.0.14: reenable parallel building
@@ -92,11 +90,6 @@ $(UCLIBC_DIR)/.unpacked: $(DL_DIR)/$(UCLIBC_SOURCE) $(DL_DIR)/$(UCLIBC_LOCALE_DA
 	$(RM) -r $(UCLIBC_DIR)
 	$(call UNPACK_TARBALL,$(DL_DIR)/$(UCLIBC_SOURCE),$(TARGET_TOOLCHAIN_DIR))
 	$(call APPLY_PATCHES,$(UCLIBC_PATCHES_DIR)/avm $(UCLIBC_PATCHES_DIR),$(UCLIBC_DIR))
-ifeq ($(strip $(FREETZ_TARGET_UCLIBC_1)$(FREETZ_KERNEL_VERSION_2_6_32)),yy)
-	@echo "#fixing adjtimex fallback for kernels without clock_adjtime" $(SILENT); \
-	perl -0pi -e 's|#include <sys/timex.h>\n#include <time.h>|#include <errno.h>\n#include <sys/syscall.h>\n#include <sys/timex.h>\n#include <time.h>|; s|int adjtimex\(struct timex \*buf\)\n\{\n    return clock_adjtime\(CLOCK_REALTIME, buf\);\n\}|int adjtimex(struct timex *buf)\n{\n#if defined(__UCLIBC_USE_TIME64__) && defined(__NR_clock_adjtime64)\n    return clock_adjtime(CLOCK_REALTIME, buf);\n#elif defined(__NR_clock_adjtime)\n    return clock_adjtime(CLOCK_REALTIME, buf);\n#elif !defined(__UCLIBC_USE_TIME64__) && defined(__NR_adjtimex)\n    return INLINE_SYSCALL(adjtimex, 1, buf);\n#else\n    __set_errno(ENOSYS);\n    return -1;\n#endif\n}|s' \
-		"$(UCLIBC_DIR)/libc/sysdeps/linux/common/adjtimex.c"
-endif
 ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0)),y)
 	@echo "#fixing ncurses detection bug" $(SILENT); \
 	$(SED) 's/main() {}/int &/' -i "$(UCLIBC_DIR)/extra/config/Makefile" "$(UCLIBC_DIR)/extra/config/lxdialog/check-lxdialog.sh" 2>/dev/null || true
@@ -135,7 +128,6 @@ $(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.unpacked | $(UCLIBC_PREREQ_GCC_INITIAL)
 		UCLIBC_HAS_FOPEN_LARGEFILE_MODE=n \
 		UCLIBC_HAS_WCHAR=y \
 		UCLIBC_HAS_XLOCALE=$(if $(FREETZ_AVM_UCLIBC_XLOCALE_ENABLED),y,n) \
-		$(if $(FREETZ_TARGET_UCLIBC_1),UCLIBC_USE_TIME64=$(if $(FREETZ_KERNEL_VERSION_2_6_32),n,y)) \
 		\
 		$(if $(or $(FREETZ_TARGET_UCLIBC_0_9_28),$(FREETZ_TARGET_UCLIBC_0_9_29)),, \
 			LINUXTHREADS_OLD=$(if $(FREETZ_AVM_UCLIBC_NPTL_ENABLED),n,y) \
@@ -318,7 +310,7 @@ uclibc-distclean: uclibc-dirclean
 #
 #############################################################
 
-$(UCLIBC_TARGET_UTILS_STAMP): $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc.a
+$(TARGET_UTILS_DIR)/usr/lib/libc.a: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc.a
 	@$(call _ECHO,headers,$(UCLIBC_ECHO_TYPE),$(UCLIBC_ECHO_MAKE),target)
 	$(UCLIBC_MAKE) -C $(UCLIBC_DIR) \
 		$(UCLIBC_COMMON_BUILD_FLAGS) \
@@ -334,13 +326,13 @@ $(UCLIBC_TARGET_UTILS_STAMP): $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc.a
 	done
 	$(call COPY_KERNEL_HEADERS,$(UCLIBC_KERNEL_HEADERS_DIR),$(TARGET_UTILS_DIR)/usr)
 	$(call REMOVE_DOC_NLS_DIRS,$(TARGET_UTILS_DIR))
-	touch $@
+	touch -c $@
 
-uclibc_target: gcc uclibc $(UCLIBC_TARGET_UTILS_STAMP)
+uclibc_target: gcc uclibc $(TARGET_UTILS_DIR)/usr/lib/libc.a
 
 
 uclibc_target-clean: uclibc_target-dirclean
-	$(RM) $(UCLIBC_TARGET_UTILS_STAMP) $(TARGET_UTILS_DIR)/usr/lib/libc.a $(TARGET_UTILS_DIR)/lib/libc.a
+	$(RM) $(TARGET_UTILS_DIR)/lib/libc.a
 
 uclibc_target-dirclean:
 	$(RM) -r $(TARGET_UTILS_DIR)/usr/include
