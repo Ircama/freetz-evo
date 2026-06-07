@@ -1,0 +1,10 @@
+config FREETZ_TARGET_B2_ARCH_OPTS
+	string
+	default "architecture=mips address-model=32 binary-format=elf abi=o32" \
+		if FREETZ_TARGET_ARCH_MIPS
+	default "architecture=arm address-model=32 binary-format=elf abi=aapcs" \
+		if FREETZ_TARGET_ARCH_ARM
+	default "architecture=arm address-model=64 binary-format=elf abi=aapcs" \
+		if FREETZ_TARGET_ARCH_AARCH64
+	default "architecture=x86 address-model=32 binary-format=elf abi=sysv" \
+		if FREETZ_TARGET_ARCH_X86

@@ -10,15 +10,13 @@ $(PKG)_DIR:=$(SOURCE_DIR)/rainfrog-v0.3.18
 
 include $(MAKE_DIR)/include/650-rust-cargo.mk
 
-RAINFROG_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-RAINFROG_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-RAINFROG_RUST_BUILD_STD:=std\,panic_abort
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_CARGO_BUILD_STD_VARS))
 RAINFROG_WORKDIR:=$(abspath $(RAINFROG_DIR))
 RAINFROG_BUILD_PATH:=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH
 RAINFROG_CARGO_HOME:=$(RAINFROG_WORKDIR)/.cargo
 RAINFROG_RUSTUP_HOME:=$(HOME)/.rustup
 RAINFROG_XDG_CACHE_HOME:=$(RAINFROG_WORKDIR)/.cache
-RAINFROG_TARGET_DIR:=/tmp/rainfrog-target
 
 # getrandom 0.2.x uses src/getrandom.rs (not src/backends/getrandom.rs like 0.3.x)
 define RAINFROG_GETRANDOM_0216_SRC_GLOB__INT
@@ -33,13 +31,10 @@ for getrandom_src in $(call RAINFROG_GETRANDOM_0216_SRC_GLOB__INT); do \
 done;
 endef
 
-$(PKG)_BINARY:=$(RAINFROG_TARGET_DIR)/$(RAINFROG_RUST_TARGET_DIR)/release/rainfrog
+$(PKG)_BINARY:=$(RAINFROG_DIR)/target/$(RAINFROG_RUST_TARGET_DIR)/release/rainfrog
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/rainfrog
 
-$(PKG)_DEPENDS_ON += rust-host
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+$(eval $(call RUST_DEPENDS_VARS))
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -61,12 +56,6 @@ $($(PKG)_BINARY): $(RAINFROG_DIR)/.configured
 	cargo fetch --target "$(RAINFROG_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,1.0.8) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
-	for rustix_dir in "$(RAINFROG_CARGO_HOME)/registry/src/"*"/rustix-1.0.8"; do \
-		[ -d "$$rustix_dir" ] || continue; \
-		crs="$$rustix_dir/src/backend/libc/c.rs"; \
-		perl -0pi -e 's@\#\[cfg\(any\(target_os = "linux", target_os = "hurd", target_os = "emscripten"\)\)\]\npub\(super\) use libc::\{preadv64 as preadv, pwritev64 as pwritev\};@#[cfg(all(target_os = "linux", target_env = "uclibc"))]\npub(super) use libc::{preadv, pwritev};\n#[cfg(any(target_os = "hurd", target_os = "emscripten", all(target_os = "linux", not(target_env = "uclibc"))))]\npub(super) use libc::{preadv64 as preadv, pwritev64 as pwritev};@s' "$$crs"; \
-		perl -0pi -e 's@\#\[cfg\(any\(target_os = "linux", target_os = "hurd", target_os = "emscripten"\)\)\]\npub\(super\) use \{preadv64 as preadv, pwritev64 as pwritev\};@#[cfg(all(target_os = "linux", target_env = "uclibc"))]\npub(super) use {preadv, pwritev};\n#[cfg(any(\n    target_os = "hurd",\n    target_os = "emscripten",\n    all(target_os = "linux", not(target_env = "uclibc"))\n))]\npub(super) use {preadv64 as preadv, pwritev64 as pwritev};@s' "$$crs"; \
-	done; \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
 	for getrandom_src in "$(RAINFROG_CARGO_HOME)/registry/src/"*"/getrandom-0.3.3/src/backends/getrandom.rs"; do \
 		[ -f "$$getrandom_src" ] || continue; \
@@ -74,10 +63,7 @@ $($(PKG)_BINARY): $(RAINFROG_DIR)/.configured
 	done; \
 	$(call RAINFROG_APPLY_GETRANDOM_0216_UCLIBC_PATCH__INT) \
 	$(call TUI_TEXTAREA_APPLY_ATOMICU64_FALLBACK__INT,0.7.0) \
-	cargo $(if $(RUST_TARGET_NEEDS_STD_BUILD),+nightly) build --release --locked \
-		$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=$(RAINFROG_RUST_BUILD_STD)) \
-		--target "$(RAINFROG_RUST_TARGET_ARG)" \
-		--target-dir $(RAINFROG_TARGET_DIR) \
+	$(RAINFROG_CARGO_BUILD_CMD) --target "$(RAINFROG_RUST_TARGET_ARG)" \
 		--bin rainfrog
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
@@ -92,9 +78,7 @@ $(pkg)-clean:
 		$(RAINFROG_DIR)/.configured \
 		$(RAINFROG_DIR)/.cargo \
 		$(RAINFROG_DIR)/.cache \
-		$(RAINFROG_DIR)/target; \
-	$(RM) -r \
-		$(RAINFROG_TARGET_DIR)
+		$(RAINFROG_DIR)/target
 	$(RM) $($(PKG)_BINARY)
 
 $(pkg)-uninstall:

@@ -1,0 +1,15 @@
+config FREETZ_TARGET_GO_ARCH
+	string
+	default "mips"    if FREETZ_TARGET_ARCH_MIPS
+	default "arm"     if FREETZ_TARGET_ARCH_ARM
+	default "386"     if FREETZ_TARGET_ARCH_X86
+	default "arm64"   if FREETZ_TARGET_ARCH_AARCH64
+
+config FREETZ_TARGET_GO_MIPS
+	string
+	default "softfloat" if FREETZ_TARGET_ARCH_MIPS
+
+config FREETZ_TARGET_GO_ARM
+	string
+	default "7" if FREETZ_TARGET_ARCH_ARM && FREETZ_TARGET_ARCH_ARM_NEON
+	default "6" if FREETZ_TARGET_ARCH_ARM

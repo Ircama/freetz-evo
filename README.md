@@ -92,7 +92,6 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`hugo`](docs/make/hugo.md)** 0.161.1 | Static site generator for content trees stored on writable media. | EVO only |
 | **[`prometheus`](docs/make/prometheus.md)** 3.11.3 | Monitoring and alerting server with local TSDB storage. | EVO only |
 | **[`rclone`](docs/make/rclone.md)** 1.74.1 | Cloud and remote storage synchronization tool. | EVO only |
-| **[`ripgrep`](docs/make/ripgrep.md)** 14.1.1 | Fast recursive text search tool (`rg`) based on Rust regex/search engines. | EVO only |
 | **[`bat`](docs/make/bat.md)** 0.26.1 | Syntax-highlighting `cat` replacement for reading config files, logs, and source files directly on the device. | EVO only |
 | **[`bottom`](docs/make/bottom.md)** 0.12.3 | Terminal system monitor (`btm`) for CPU, memory, disk, network, and process metrics. | EVO only |
 | **[`bandwhich`](docs/make/bandwhich.md)** 0.23.1 | Terminal bandwidth utilization monitor by process/connection. | EVO only |
@@ -100,7 +99,6 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`broot`](docs/make/broot.md)** 1.56.4 | Tree-style terminal file browser and launcher. | EVO only |
 | **[`eza`](docs/make/eza.md)** 0.23.4 | Modern `ls` replacement with richer directory listings, colors, and tree-style output. | EVO only |
 | **[`gitui`](docs/make/gitui.md)** 0.28.1 | Terminal UI for interactive Git workflows. | EVO only |
-| **[`rainfrog`](docs/make/rainfrog.md)** 0.3.18 | Terminal PostgreSQL database exploration/query client. | EVO only |
 | **[`jless`](docs/make/jless.md)** 0.9.0 | JSON pager/reader with interactive navigation and search. | EVO only |
 | **[`lnav-rs`](docs/make/lnav-rs.md)** 0.9.0 | Rust-based log/JSON pager package (alias build based on `jless`). | EVO only |
 | **[`lnav`](docs/make/lnav.md)** 0.14.0 | Advanced terminal log viewer and analyzer with optional Rust/PRQL extensions exposed in menuconfig and support for external deployment. | EVO only |

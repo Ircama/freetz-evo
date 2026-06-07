@@ -66,5 +66,7 @@ source "config/mod/source.in"
 source "config/mod/prefix.in"
 source "config/mod/meson.in"
 source "config/mod/rust.in"
+source "config/mod/boost.in"
+source "config/mod/golang.in"
 source "config/mod/mandatory.in"
 

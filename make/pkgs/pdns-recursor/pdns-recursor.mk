@@ -20,14 +20,9 @@ PDNS_RECURSOR_BOOST_MARKER:=$(PDNS_RECURSOR_BOOST_ROOT)/.built
 PDNS_RECURSOR_TOOLCHAIN_ERROR:=PowerDNS Recursor 5.0.5 requires GCC 8+ with C++17 support.
 PDNS_RECURSOR_BOOST_CXXFLAGS:=$(TARGET_CFLAGS) -fPIC $(if $(or $(FREETZ_TARGET_UCLIBC_0),$(FREETZ_TARGET_UCLIBC_1)),-DBOOST_FILESYSTEM_DISABLE_STATX)
 
-# Boost.Context Jamfile.v2 selects ASM sources based on architecture/abi/binary-format properties.
-# When cross-compiling, b2 cannot auto-detect the target (it reads the host OS), so we must
-# pass these properties explicitly. Map Freetz arch variables → b2 properties.
-PDNS_RECURSOR_B2_ARCH_OPTS := \
-    $(if $(FREETZ_TARGET_ARCH_MIPS),architecture=mips address-model=32 binary-format=elf abi=o32) \
-    $(if $(FREETZ_TARGET_ARCH_ARM),architecture=arm address-model=32 binary-format=elf abi=aapcs) \
-    $(if $(FREETZ_TARGET_ARCH_AARCH64),architecture=arm address-model=64 binary-format=elf abi=aapcs) \
-    $(if $(FREETZ_TARGET_ARCH_X86),architecture=x86 address-model=32 binary-format=elf abi=sysv)
+# Boost.Build (b2) architecture properties are now centralised in
+# config/mod/boost.in (FREETZ_TARGET_B2_ARCH_OPTS).
+PDNS_RECURSOR_B2_ARCH_OPTS := $(FREETZ_TARGET_B2_ARCH_OPTS)
 
 PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 PDNS_RECURSOR_RUST_TARGET_VALUE:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))

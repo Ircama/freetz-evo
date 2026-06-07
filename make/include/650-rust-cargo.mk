@@ -143,3 +143,31 @@ if ! grep -q 'Freetz 32-bit atomic fallback for generation counter.' asyncgit/sr
 	perl -0pi -e 's@atomic::\{AtomicU64, AtomicUsize, Ordering\}@atomic::{AtomicUsize, Ordering}@; s@/// Counter that increments after each completed fetch\.\n\tgeneration: Arc<AtomicU64>,@/// Freetz 32-bit atomic fallback for generation counter.\n\tgeneration: Arc<AtomicUsize>,@; s@generation: Arc::new\(AtomicU64::new\(0\)\),@generation: Arc::new(AtomicUsize::new(0)),@' asyncgit/src/status.rs; \
 fi;
 endef
+
+# --- Rust package boilerplate helpers ---
+
+# Define RUST_TARGET_DIR and RUST_TARGET_ARG for the current package.
+# $(PKG) must be set (typically by PKG_INIT_BIN).
+# Usage: $(eval $(call RUST_TARGET_VARS))
+define RUST_TARGET_VARS
+$(PKG)_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+$(PKG)_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+endef
+
+# Define CARGO_BUILD_STD_FLAGS and CARGO_BUILD_CMD for the current package.
+# $(PKG) must be set.
+# Usage: $(eval $(call RUST_CARGO_BUILD_STD_VARS))
+define RUST_CARGO_BUILD_STD_VARS
+$(PKG)_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+$(PKG)_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $$($(PKG)_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+endef
+
+# Define DEPENDS_ON and REBUILD_SUBOPTS for Rust packages.
+# $(PKG) must be set.
+# Usage: $(eval $(call RUST_DEPENDS_VARS))
+define RUST_DEPENDS_VARS
+$(PKG)_DEPENDS_ON += rust-host
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+endef
