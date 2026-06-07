@@ -12,8 +12,8 @@ $(PKG)_CATEGORY:=Flasher tools
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/commandline/micronucleus
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/micronucleus
 
-$(PKG)_DEPENDS_ON += libusb
-$(PKG)_REBUILD_SUBOPTS += $(LIBUSB_REBUILD_SUBOPTS)
+$(PKG)_DEPENDS_ON += libusb0
+$(PKG)_REBUILD_SUBOPTS += $(LIBUSB0_REBUILD_SUBOPTS)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)

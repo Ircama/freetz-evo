@@ -8,10 +8,13 @@ $(PKG)_DIR:=$(SOURCE_DIR)/oxker-v0.13.2
 ### CHANGES:=https://github.com/mrjackwills/oxker/releases
 ### CVSREPO:=https://github.com/mrjackwills/oxker
 
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+
 OXKER_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 OXKER_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 OXKER_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
-OXKER_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(OXKER_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+OXKER_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(OXKER_CARGO_BUILD_STD_FLAGS),cargo build --release)
+OXKER_CARGO_HOME:=$(abspath $(OXKER_DIR)/.cargo)
 $(PKG)_BINARY:=$(OXKER_DIR)/target/$(OXKER_RUST_TARGET_DIR)/release/oxker
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/oxker
 
@@ -27,12 +30,22 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(OXKER_DIR)/.configured
 	cd $(OXKER_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
-	mkdir -p .cargo; \
+	export HOME="$(abspath $(OXKER_DIR))"; \
+	export CARGO_HOME="$(OXKER_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
+	cargo fetch --target "$(OXKER_RUST_TARGET_ARG)"; \
+	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs; do \
+		[ -f "$$socket2_src" ] || continue; \
+		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
+	done; \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(OXKER_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(OXKER_CARGO_BUILD_CMD) --target "$(OXKER_RUST_TARGET_ARG)" --bin oxker
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

@@ -56,9 +56,13 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	# mkbuiltins is a host tool - must be compiled with native compiler
 	$(SUBMAKE) -C $(BASH_DIR)/builtins \
-		EXTRA_CFLAGS="$(BASH_EXTRA_CFLAGS)" \
-		EXTRA_LDFLAGS="$(BASH_EXTRA_LDFLAGS)" \
+		CC="gcc" \
+		CFLAGS="-O2" \
+		LDFLAGS="" \
+		EXTRA_CFLAGS="" \
+		EXTRA_LDFLAGS="" \
 		LDFLAGS_FOR_BUILD="" \
 		mkbuiltins
 	$(SUBMAKE) -C $(BASH_DIR) \

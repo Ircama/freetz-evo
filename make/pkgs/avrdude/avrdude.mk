@@ -19,10 +19,9 @@ $(PKG)_ELF2TAG_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/elf2tag
 $(PKG)_CONF_TARGET:=$($(PKG)_DEST_DIR)/etc/avrdude.conf
 
 $(PKG)_DEPENDS_ON += cmake-host
-$(PKG)_DEPENDS_ON += libelf libusb libusb1 libftdi readline ncurses
+$(PKG)_DEPENDS_ON += libelf libusb1 libftdi readline ncurses
 
 $(PKG)_REBUILD_SUBOPTS += $(LIBELF_REBUILD_SUBOPTS)
-$(PKG)_REBUILD_SUBOPTS += $(LIBUSB_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += $(LIBUSB1_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += $(LIBFTDI_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += $(READLINE_REBUILD_SUBOPTS)

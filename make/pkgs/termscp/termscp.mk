@@ -8,10 +8,13 @@ $(PKG)_DIR:=$(SOURCE_DIR)/termscp-v1.0.0
 ### CHANGES:=https://github.com/veeso/termscp/releases
 ### CVSREPO:=https://github.com/veeso/termscp
 
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+
 TERMSCP_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 TERMSCP_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 TERMSCP_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 TERMSCP_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(TERMSCP_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+TERMSCP_CARGO_HOME:=$(abspath $(TERMSCP_DIR)/.cargo)
 $(PKG)_BINARY:=$(TERMSCP_DIR)/target/$(TERMSCP_RUST_TARGET_DIR)/release/termscp
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/termscp
 
@@ -27,12 +30,15 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	cd $(TERMSCP_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
-	mkdir -p .cargo; \
+	export HOME="$(abspath $(TERMSCP_DIR))"; \
+	export CARGO_HOME="$(TERMSCP_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(TERMSCP_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(TERMSCP_CARGO_BUILD_CMD) --target "$(TERMSCP_RUST_TARGET_ARG)" --bin termscp
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

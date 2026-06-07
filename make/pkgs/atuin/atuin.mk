@@ -13,6 +13,7 @@ ATUIN_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NA
 ATUIN_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 ATUIN_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 ATUIN_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(ATUIN_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+ATUIN_CARGO_HOME:=$(abspath $(ATUIN_DIR)/.cargo)
 $(PKG)_BINARY:=$(ATUIN_DIR)/target/$(ATUIN_RUST_TARGET_DIR)/release/atuin
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/atuin
 
@@ -28,18 +29,21 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(ATUIN_DIR)/.configured
 	cd $(ATUIN_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(abspath $(ATUIN_DIR))"; \
+	export CARGO_HOME="$(ATUIN_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(ATUIN_RUST_TARGET_ARG)"; \
 	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs; do \
 		[ -f "$$socket2_src" ] || continue; \
 		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
 	done; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(ATUIN_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(ATUIN_CARGO_BUILD_CMD) --target "$(ATUIN_RUST_TARGET_ARG)" --bin atuin || CARGO_BUILD_JOBS=1 $(ATUIN_CARGO_BUILD_CMD) --target "$(ATUIN_RUST_TARGET_ARG)" --bin atuin
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

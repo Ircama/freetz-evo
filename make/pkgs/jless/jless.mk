@@ -12,6 +12,7 @@ JLESS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NA
 JLESS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 JLESS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 JLESS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(JLESS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+JLESS_CARGO_HOME:=$(abspath $(JLESS_DIR)/.cargo)
 $(PKG)_BINARY:=$(JLESS_DIR)/target/$(JLESS_RUST_TARGET_DIR)/release/jless
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/jless
 
@@ -29,6 +30,16 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 	cd $(JLESS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(abspath $(JLESS_DIR))"; \
+	export CARGO_HOME="$(JLESS_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
+		"$(JLESS_RUST_TARGET_DIR)" \
+		"$(TARGET_CROSS)gcc" \
+		"$(TARGET_CROSS)ar" \
+		> "$$CARGO_HOME/config.toml"; \
+	cargo fetch --locked --target "$(JLESS_RUST_TARGET_ARG)"; \
 	cargo update -p libc --precise 0.2.177; \
 	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT,0.22.1) \
 	perl -0pi -e 's/^extern crate libc_stdhandle;\n//m' src/main.rs; \
@@ -37,12 +48,6 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 		perl -0pi -e 's/use clipboard::\{ClipboardContext, ClipboardProvider\};/#[cfg(not(all(target_os = "linux", target_env = "uclibc")))]\nuse clipboard::{ClipboardContext, ClipboardProvider};\n#[cfg(all(target_os = "linux", target_env = "uclibc"))]\n#[derive(Debug)]\nstruct ClipboardContext;\n#[cfg(all(target_os = "linux", target_env = "uclibc"))]\nimpl ClipboardContext {\n    fn set_contents(&mut self, _content: String) -> Result<(), Box<dyn Error>> {\n        Err(Box::new(io::Error::new(\n            io::ErrorKind::Unsupported,\n            "Clipboard support is unavailable on this target",\n        )))\n    }\n}/' src/app.rs; \
 		perl -0pi -e 's/clipboard_context: ClipboardProvider::new\(\),/clipboard_context: {\n                #[cfg(all(target_os = "linux", target_env = "uclibc"))]\n                {\n                    Err(Box::new(io::Error::new(\n                        io::ErrorKind::Unsupported,\n                        "Clipboard support is unavailable on this target",\n                    )))\n                }\n                #[cfg(not(all(target_os = "linux", target_env = "uclibc")))]\n                {\n                    ClipboardProvider::new()\n                }\n            },/' src/app.rs; \
 	fi; \
-	mkdir -p .cargo; \
-	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
-		"$(JLESS_RUST_TARGET_DIR)" \
-		"$(TARGET_CROSS)gcc" \
-		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
 	$(JLESS_CARGO_BUILD_CMD) --target "$(JLESS_RUST_TARGET_ARG)" --bin jless
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

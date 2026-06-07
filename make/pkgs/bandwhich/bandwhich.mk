@@ -13,6 +13,7 @@ BANDWHICH_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTI
 BANDWHICH_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 BANDWHICH_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 BANDWHICH_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(BANDWHICH_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+BANDWHICH_CARGO_HOME:=$(abspath $(BANDWHICH_DIR)/.cargo)
 $(PKG)_BINARY:=$(BANDWHICH_DIR)/target/$(BANDWHICH_RUST_TARGET_DIR)/release/bandwhich
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/bandwhich
 
@@ -29,14 +30,17 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(BANDWHICH_DIR)/.configured
 	cd $(BANDWHICH_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(abspath $(BANDWHICH_DIR))"; \
+	export CARGO_HOME="$(BANDWHICH_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(BANDWHICH_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.37) \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(BANDWHICH_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(BANDWHICH_CARGO_BUILD_CMD) --target "$(BANDWHICH_RUST_TARGET_ARG)" --bin bandwhich || CARGO_BUILD_JOBS=1 $(BANDWHICH_CARGO_BUILD_CMD) --target "$(BANDWHICH_RUST_TARGET_ARG)" --bin bandwhich
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

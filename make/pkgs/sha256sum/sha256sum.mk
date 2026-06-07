@@ -14,6 +14,7 @@ SHA256SUM_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTI
 SHA256SUM_RUST_ENV_TARGET:=$(subst -,_,$(SHA256SUM_RUST_TARGET_DIR))
 SHA256SUM_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 SHA256SUM_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(SHA256SUM_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+SHA256SUM_CARGO_HOME:=$(abspath $(SHA256SUM_DIR)/.cargo)
 $(PKG)_BINARY:=$(SHA256SUM_DIR)/target/$(SHA256SUM_RUST_TARGET_DIR)/release/coreutils
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/sha256sum
 
@@ -33,14 +34,17 @@ $($(PKG)_BINARY): $(SHA256SUM_DIR)/.configured
 	export CXX_$(SHA256SUM_RUST_ENV_TARGET)="$(TARGET_CROSS)g++"; \
 	export AR_$(SHA256SUM_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	export RANLIB_$(SHA256SUM_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
+	export HOME="$(abspath $(SHA256SUM_DIR))"; \
+	export CARGO_HOME="$(SHA256SUM_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(SHA256SUM_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(SHA256SUM_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(SHA256SUM_CARGO_BUILD_CMD) --target "$(SHA256SUM_RUST_TARGET_ARG)" --bin coreutils --no-default-features --features sha256sum
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin,,sha256sum))

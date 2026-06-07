@@ -2,7 +2,6 @@ config FREETZ_PACKAGE_AVRDUDE
 	bool "avrdude 8.1"
 	default n
 	select FREETZ_LIB_libelf
-	select FREETZ_LIB_libusb
 	select FREETZ_LIB_libusb1
 	select FREETZ_LIB_libftdi
 	select FREETZ_LIB_readline

@@ -13,6 +13,7 @@ BROOT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NA
 BROOT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 BROOT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 BROOT_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(BROOT_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+BROOT_CARGO_HOME:=$(abspath $(BROOT_DIR)/.cargo)
 $(PKG)_BINARY:=$(BROOT_DIR)/target/$(BROOT_RUST_TARGET_DIR)/release/broot
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/broot
 
@@ -28,15 +29,18 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(BROOT_DIR)/.configured
 	cd $(BROOT_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(abspath $(BROOT_DIR))"; \
+	export CARGO_HOME="$(BROOT_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(BROOT_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.2) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(BROOT_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(BROOT_CARGO_BUILD_CMD) --target "$(BROOT_RUST_TARGET_ARG)" --bin broot || CARGO_BUILD_JOBS=1 $(BROOT_CARGO_BUILD_CMD) --target "$(BROOT_RUST_TARGET_ARG)" --bin broot
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

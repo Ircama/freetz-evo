@@ -14,6 +14,7 @@ ZOXIDE_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_N
 ZOXIDE_RUST_ENV_TARGET:=$(subst -,_,$(ZOXIDE_RUST_TARGET_DIR))
 ZOXIDE_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 ZOXIDE_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(ZOXIDE_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+ZOXIDE_CARGO_HOME:=$(abspath $(ZOXIDE_DIR)/.cargo)
 $(PKG)_BINARY:=$(ZOXIDE_DIR)/target/$(ZOXIDE_RUST_TARGET_DIR)/release/zoxide
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/zoxide
 
@@ -33,13 +34,16 @@ $($(PKG)_BINARY): $(ZOXIDE_DIR)/.configured
 	export CXX_$(ZOXIDE_RUST_ENV_TARGET)="$(TARGET_CROSS)g++"; \
 	export AR_$(ZOXIDE_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	export RANLIB_$(ZOXIDE_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
+	export HOME="$(abspath $(ZOXIDE_DIR))"; \
+	export CARGO_HOME="$(ZOXIDE_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(ZOXIDE_RUST_TARGET_ARG)"; \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(ZOXIDE_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(ZOXIDE_CARGO_BUILD_CMD) --target "$(ZOXIDE_RUST_TARGET_ARG)" --bin zoxide
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))

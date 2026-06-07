@@ -13,6 +13,7 @@ GITUI_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NA
 GITUI_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 GITUI_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 GITUI_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(GITUI_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+GITUI_CARGO_HOME:=$(abspath $(GITUI_DIR)/.cargo)
 $(PKG)_BINARY:=$(GITUI_DIR)/target/$(GITUI_RUST_TARGET_DIR)/release/gitui
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/gitui
 
@@ -28,6 +29,10 @@ $(PKG_CONFIGURED_NOP)
 $($(PKG)_BINARY): $(GITUI_DIR)/.configured
 	cd $(GITUI_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(abspath $(GITUI_DIR))"; \
+	export CARGO_HOME="$(GITUI_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(GITUI_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.3) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.43) \
@@ -38,12 +43,11 @@ $($(PKG)_BINARY): $(GITUI_DIR)/.configured
 	export OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
 	export OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
 	export OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
-	mkdir -p .cargo; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(GITUI_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
-		> .cargo/config.toml; \
+		> "$$CARGO_HOME/config.toml"; \
 	$(GITUI_CARGO_BUILD_CMD) --target "$(GITUI_RUST_TARGET_ARG)" --bin gitui || CARGO_BUILD_JOBS=1 $(GITUI_CARGO_BUILD_CMD) --target "$(GITUI_RUST_TARGET_ARG)" --bin gitui
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
