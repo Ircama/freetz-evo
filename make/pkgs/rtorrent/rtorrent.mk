@@ -1,6 +1,6 @@
-$(call PKG_INIT_BIN, 0.16.10)
+$(call PKG_INIT_BIN, 0.16.13)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=ee3cbd8ee95d98b266f6dbef56ce6b566d340955c762dc4c407f45b706ff5733
+$(PKG)_HASH:=fbc800582974733bae5b785561780e38364e4659e9bb8abe8b2bc0a1e0d96e19
 $(PKG)_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/rakshasa/rtorrent
 ### MANPAGE:=https://github.com/rakshasa/rtorrent/wiki
@@ -11,9 +11,9 @@ $(PKG)_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$($(PKG)_VE
 
 # libTorrent by rakshasa
 # (distinct from libtorrent-rasterbar used by qBittorrent/Deluge)
-LIBTORRENT_RAKSHASA_VERSION:=0.16.10
+LIBTORRENT_RAKSHASA_VERSION:=0.16.13
 LIBTORRENT_SOURCE:=libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz
-LIBTORRENT_HASH:=c707c7eeea2e969e6a16ffed6b5b1e92bb94a75e97c81cc3d0aba7867f652386
+LIBTORRENT_HASH:=4c166ce75351534886d8d3062c93fddb1bf41b4a8384c783784d94c76e6749ad
 LIBTORRENT_SITE:=https://github.com/rakshasa/rtorrent/releases/download/v$(LIBTORRENT_RAKSHASA_VERSION)
 LIBTORRENT_DIR:=$(SOURCE_DIR)/libtorrent-$(LIBTORRENT_RAKSHASA_VERSION)
 
