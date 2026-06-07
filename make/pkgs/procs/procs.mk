@@ -12,7 +12,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/procs-v0.14.11
 PROCS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 PROCS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 PROCS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
-PROCS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(PROCS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+PROCS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(PROCS_CARGO_BUILD_STD_FLAGS),cargo build --release)
 PROCS_CARGO_HOME:=$(abspath $(PROCS_DIR)/.cargo)
 $(PKG)_BINARY:=$(PROCS_DIR)/target/$(PROCS_RUST_TARGET_DIR)/release/procs
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/procs
@@ -33,8 +33,9 @@ $($(PKG)_BINARY): $(PROCS_DIR)/.configured
 	export CARGO_HOME="$(PROCS_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	mkdir -p "$$CARGO_HOME"; \
-	cargo fetch --locked --target "$(PROCS_RUST_TARGET_ARG)"; \
+	cargo fetch --target "$(PROCS_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.3) \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_026_SAFE__INT,0.26.4) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(PROCS_RUST_TARGET_DIR)" \

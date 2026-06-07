@@ -192,7 +192,7 @@ $(POWERDNS_BOOST_MARKER): $(DL_DIR)/$(POWERDNS_BOOST_SOURCE) $(POWERDNS_DIR)/.un
 	$(call UNPACK_TARBALL,$<,$(POWERDNS_DIR)/.boost)
 	cd $(POWERDNS_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization $(SILENT)
 	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(POWERDNS_BOOST_CONFIG)
-	cd $(POWERDNS_BOOST_ROOT) && ./b2 --user-config=$(abspath $(POWERDNS_BOOST_CONFIG)) toolset=gcc $(FREETZ_TARGET_B2_ARCH_OPTS) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	cd $(POWERDNS_BOOST_ROOT) && ./b2 --user-config=$(abspath $(POWERDNS_BOOST_CONFIG)) toolset=gcc $(subst ",,$(FREETZ_TARGET_B2_ARCH_OPTS)) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@
 
 $(POWERDNS_DIR)/.configured: $(POWERDNS_DIR)/.build-prereq-checked $(POWERDNS_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(POWERDNS_BOOST_MARKER))

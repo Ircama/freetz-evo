@@ -84,7 +84,7 @@ $(DNSDIST_BOOST_MARKER): $(DL_DIR)/$(DNSDIST_BOOST_SOURCE) $(DNSDIST_DIR)/.unpac
 	$(call UNPACK_TARBALL,$<,$(DNSDIST_DIR)/.boost)
 	cd $(DNSDIST_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system $(SILENT)
 	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(DNSDIST_BOOST_CONFIG)
-	cd $(DNSDIST_BOOST_ROOT) && ./b2 --user-config=$(abspath $(DNSDIST_BOOST_CONFIG)) toolset=gcc $(FREETZ_TARGET_B2_ARCH_OPTS) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	cd $(DNSDIST_BOOST_ROOT) && ./b2 --user-config=$(abspath $(DNSDIST_BOOST_CONFIG)) toolset=gcc $(subst ",,$(FREETZ_TARGET_B2_ARCH_OPTS)) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@
 
 $(DNSDIST_DIR)/.configured: $(DNSDIST_DIR)/.build-prereq-checked $(DNSDIST_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(DNSDIST_BOOST_MARKER))

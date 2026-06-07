@@ -86,7 +86,7 @@ $(PDNS_RECURSOR_BOOST_MARKER): $(DL_DIR)/$(PDNS_RECURSOR_BOOST_SOURCE) $(PDNS_RE
 	$(call UNPACK_TARBALL,$<,$(PDNS_RECURSOR_DIR)/.boost)
 	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization,context,filesystem,system,thread $(SILENT)
 	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(PDNS_RECURSOR_BOOST_CXXFLAGS)\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(PDNS_RECURSOR_BOOST_CONFIG)
-	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc $(PDNS_RECURSOR_B2_ARCH_OPTS) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
+	cd $(PDNS_RECURSOR_BOOST_ROOT) && ./b2 --user-config=$(abspath $(PDNS_RECURSOR_BOOST_CONFIG)) toolset=gcc $(subst ",,$(PDNS_RECURSOR_B2_ARCH_OPTS)) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@
 
 $(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(PDNS_RECURSOR_DIR)/.unpacked $(if $(FREETZ_TARGET_GCC_8_MIN),$(PDNS_RECURSOR_BOOST_MARKER)) $(MAKE_DIR)/pkgs/pdns-recursor/pdns-recursor.mk
