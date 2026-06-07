@@ -32,7 +32,7 @@ config FREETZ_TOOLCHAIN_MINIMIZE_REQUIRED_GLIBC_VERSION
 	def_bool y
 
 menu "Own precompiled toolchains"
-	visible if FREETZ_REAL_DEVELOPER_ONLY
+	visible if FREETZ_SHOW_DEVELOPER
 
 	config FREETZ_REAL_DEVELOPER_ONLY__TCDLK
 		string "Version of own precompiled kernel toolchain"
@@ -1422,7 +1422,6 @@ config FREETZ_TARGET_TOOLCHAIN
 	select FREETZ_LIB_libmpfr
 	select FREETZ_LIB_libmpc
 	bool "Build binutils and gcc for target" if FREETZ_BUILD_TOOLCHAIN
-	depends on FREETZ_REAL_DEVELOPER_ONLY
 	default n
 	help
 		Build the binutils and gcc to run on the target.

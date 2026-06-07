@@ -999,7 +999,7 @@ config FREETZ_DL_SOURCE2_HASH
 	default "49807f1aa040a88402d5db48f7d745940eebea3006e7ba1dd7e22bdc488c346b"                    if FREETZ_TYPE_W501V
 
 menu "Custom download URL of avm firmware files"
-	visible if FREETZ_REAL_DEVELOPER_ONLY
+	visible if FREETZ_SHOW_DEVELOPER
 
 	config FREETZ_REAL_DEVELOPER_ONLY__DLIMG
 		string "Custom download URL of avm firmware files"
