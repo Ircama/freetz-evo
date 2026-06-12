@@ -12,6 +12,7 @@ LNAV_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAM
 LNAV_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 LNAV_RUST_BUILD_STD:=std,panic_abort
 LNAV_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
+LNAV_CARGO_HOME:=$(abspath $(LNAV_DIR)/.cargo)
 LNAV_RUST_CONFIG_DIR:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/.cargo
 LNAV_RUST_CONFIG_FILE:=$(LNAV_RUST_CONFIG_DIR)/config.toml
 LNAV_RUST_MANIFEST:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/Cargo.toml
@@ -50,7 +51,10 @@ $(PKG_CONFIGURED_CONFIGURE)
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	if [ "$(FREETZ_PACKAGE_LNAV_WITH_CARGO)" = "y" ]; then \
 		export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
-		mkdir -p $(LNAV_RUST_CONFIG_DIR); \
+		export HOME="$(abspath $(LNAV_DIR))"; \
+		export CARGO_HOME="$(LNAV_CARGO_HOME)"; \
+		export RUSTUP_HOME="$(HOME)/.rustup"; \
+		mkdir -p "$(LNAV_CARGO_HOME)" $(LNAV_RUST_CONFIG_DIR); \
 		printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 			"$(LNAV_RUST_TARGET_DIR)" \
 			"$(TARGET_CROSS)gcc" \

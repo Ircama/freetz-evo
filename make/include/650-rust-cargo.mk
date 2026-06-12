@@ -1,4 +1,8 @@
 ### Rust/Cargo macros
+#
+# All packages using these macros MUST set a private CARGO_HOME (and HOME),
+# e.g.: PKG_CARGO_HOME:=$(abspath $(PKG_DIR)/.cargo) + export HOME / CARGO_HOME.
+# Otherwise they share ~/.cargo/registry/src/ and overwrite each other's patches.
 
 # Expand to the rustix crate directory glob in Cargo registry.
 # $1: rustix crate version (for example: 1.1.3)
@@ -7,10 +11,16 @@ $$HOME/.cargo/registry/src/*/rustix-$(1)
 endef
 
 # Apply patch commands identical across rustix layouts.
+# Note: the HWPOISON substitution is guarded to be idempotent — it only runs
+# when the file has NOT already been patched (no linux_raw_sys::general::EHWPOISON
+# reference in errno.rs). Without this guard, repeated application (from multiple
+# packages sharing the same rustix version) creates duplicate HWPOISON definitions.
 define RUSTIX_APPLY_COMMON_UCLIBC_PATCHES__INT
 	perl -0pi -e 's/c::getpriority\(c::PRIO_USER, uid\.as_raw\(\) as _\)/c::getpriority(c::PRIO_USER as _, uid.as_raw() as _)/g; s/c::getpriority\(c::PRIO_PGRP, Pid::as_raw\(pgid\) as _\)/c::getpriority(c::PRIO_PGRP as _, Pid::as_raw(pgid) as _)/g; s/c::getpriority\(c::PRIO_PROCESS, Pid::as_raw\(pid\) as _\)/c::getpriority(c::PRIO_PROCESS as _, Pid::as_raw(pid) as _)/g; s/c::setpriority\(c::PRIO_USER, uid\.as_raw\(\) as _, priority\)/c::setpriority(c::PRIO_USER as _, uid.as_raw() as _, priority)/g; s/c::PRIO_PGRP,/c::PRIO_PGRP as _,/; s/c::PRIO_PROCESS,/c::PRIO_PROCESS as _,/;' "$$rustix_dir/src/backend/libc/process/syscalls.rs"; \
 	perl -0pi -e 's/const CRDLY = c::CRDLY;/const CRDLY = c::CRDLY as c::tcflag_t;/; s/const FFDLY = c::FFDLY;/const FFDLY = c::FFDLY as c::tcflag_t;/; s/const VTDLY = c::VTDLY;/const VTDLY = c::VTDLY as c::tcflag_t;/; s/const CMSPAR = c::CMSPAR;/const CMSPAR = c::CMSPAR as c::tcflag_t;/;' "$$rustix_dir/src/termios/types.rs"; \
-	perl -0pi -e 's/pub const HWPOISON: Self = Self\(c::EHWPOISON\);/#[cfg(not(target_env = "uclibc"))]\n    pub const HWPOISON: Self = Self(c::EHWPOISON);\n    #[cfg(target_env = "uclibc")]\n    pub const HWPOISON: Self = Self(linux_raw_sys::general::EHWPOISON as _);/' "$$rustix_dir/src/backend/libc/io/errno.rs";
+	if ! grep -q 'linux_raw_sys::general::EHWPOISON' "$$rustix_dir/src/backend/libc/io/errno.rs" 2>/dev/null; then \
+		perl -0pi -e 's/pub const HWPOISON: Self = Self\(c::EHWPOISON\);/#[cfg(not(target_env = "uclibc"))]\n    pub const HWPOISON: Self = Self(c::EHWPOISON);\n    #[cfg(target_env = "uclibc")]\n    pub const HWPOISON: Self = Self(linux_raw_sys::general::EHWPOISON as _);/' "$$rustix_dir/src/backend/libc/io/errno.rs"; \
+	fi
 endef
 
 # Apply shared rustix uClibc compatibility fixes for 1.1.x crate layout.
