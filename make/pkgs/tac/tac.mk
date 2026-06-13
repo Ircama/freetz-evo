@@ -40,6 +40,7 @@ $($(PKG)_BINARY): $(TAC_DIR)/.configured
 	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --locked --target "$(TAC_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(TAC_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
