@@ -1,0 +1,10 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -109,7 +109,6 @@
+ 
+ [build-dependencies]
+ cfg_aliases = "0.2"
+-vergen-git2 = { version = "9", features = ["build", "cargo", "rustc", "si"] }
+ 
+ [[bin]]
+ name = "termscp"
