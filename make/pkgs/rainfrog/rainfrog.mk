@@ -47,9 +47,9 @@ $($(PKG)_BINARY): $(RAINFROG_DIR)/.configured
 	export RUSTUP_HOME="$(RAINFROG_RUSTUP_HOME)"; \
 	export XDG_CACHE_HOME="$(RAINFROG_XDG_CACHE_HOME)"; \
 	export PATH=$(RAINFROG_BUILD_PATH); \
-	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
+	export RUSTFLAGS="-C link-arg=-Wl,-no-pie -C link-arg=-latomic"; \
 	mkdir -p "$$CARGO_HOME"; \
-	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie", "-C", "link-args=-latomic"]\n' \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie", "-C", "link-arg=-latomic"]\n' \
 		"$(RAINFROG_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
