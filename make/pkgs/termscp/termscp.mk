@@ -40,7 +40,7 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	export HOME="$(abspath $(TERMSCP_DIR))"; \
 	export CARGO_HOME="$(TERMSCP_CARGO_HOME)"; \
-	export RUSTUP_HOME="/home/myuser/.rustup"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	export CC_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)gcc"; \
 	export CXX_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)g++"; \
 	export AR_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
