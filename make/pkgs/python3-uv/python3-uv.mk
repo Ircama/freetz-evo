@@ -81,7 +81,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		CARGO_BUILD_TARGET="$(PYTHON3_UV_RUST_TARGET_ARG)" \
 		RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)" \
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),CARGO_UNSTABLE_BUILD_STD=$(PYTHON3_UV_RUST_BUILD_STD)) \
-		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc" \
+		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc -C link-arg=-Wl,-no-pie" \
 	, isolated, no-build-ext-config)
 
 $(pkg):

@@ -75,7 +75,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		export RANLIB_$(LNAV_RUST_TARGET_ENV)="$(TARGET_CROSS)ranlib"; \
 		export RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)"; \
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),export CARGO_UNSTABLE_BUILD_STD="$(LNAV_RUST_BUILD_STD)"; ) \
-		export RUSTFLAGS="$$RUSTFLAGS -C linker=$(TARGET_CROSS)gcc$(if $(LNAV_NEEDS_UCLIBC_RUST_FIXES), --cfg rustix_use_experimental_asm)"; \
+		export RUSTFLAGS="$$RUSTFLAGS -C linker=$(TARGET_CROSS)gcc -C link-arg=-Wl,-no-pie$(if $(LNAV_NEEDS_UCLIBC_RUST_FIXES), --cfg rustix_use_experimental_asm)"; \
 	fi; \
 	$(SUBMAKE) -C $(LNAV_DIR)/tools; \
 	$(SUBMAKE) -C $(LNAV_DIR)/src all; \

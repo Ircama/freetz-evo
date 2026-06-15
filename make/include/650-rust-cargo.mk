@@ -206,3 +206,8 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 endef
+
+# On MIPS FRITZ!Box targets, PIE executables crash with ld-uClibc.so.1 (SIGSEGV).
+# Force -no-pie for all Rust packages via RUSTFLAGS.
+RUSTFLAGS += -C link-arg=-Wl,-no-pie
+export RUSTFLAGS

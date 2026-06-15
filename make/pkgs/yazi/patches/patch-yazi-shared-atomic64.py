@@ -39,15 +39,16 @@ patch_file(f'{yazi_dir}/yazi-shared/src/throttle.rs', [
 ])
 
 # 3. yazi-vfs/src/provider/copier.rs: AtomicU64 -> AtomicU32 (byte counter fits 32-bit)
-#     n must stay u64 for progress reporting via prog_tx.channel, only cast to u32 for fetch_add
+#     n = acc.swap(0) returns u32; cast to u64 for prog_tx channel
 patch_file(f'{yazi_dir}/yazi-vfs/src/provider/copier.rs', [
     ('AtomicU64', 'AtomicU32'),
     ('self.acc.fetch_add(n as u64, Ordering::SeqCst);', 'self.acc.fetch_add(n as u32, Ordering::SeqCst);'),
+    ('self.prog_tx.send(Ok(n)).await.ok();', 'self.prog_tx.send(Ok(n as u64)).await.ok();'),
 ])
 
 # 4. yazi-dds/src/state.rs: AtomicU64 timestamp -> std::sync::Mutex<u64>
 patch_file(f'{yazi_dir}/yazi-dds/src/state.rs', [
-    ('use std::{mem, ops::Deref, sync::atomic::{AtomicU64, Ordering}}', 'use std::{mem, ops::Deref, sync::atomic::Ordering, sync::Mutex}'),
+    ('use std::{mem, ops::Deref, sync::atomic::{AtomicU64, Ordering}}', 'use std::{mem, ops::Deref, sync::Mutex}'),
     ('last:  AtomicU64,', 'last:  Mutex<u64>,'),
     ('self.last.store(timestamp_us(), Ordering::Relaxed)', '*self.last.lock().unwrap() = timestamp_us()'),
     ('self.last.load(Ordering::Relaxed)', '*self.last.lock().unwrap()'),
@@ -58,7 +59,7 @@ patch_file(f'{yazi_dir}/yazi-scheduler/src/behavior.rs', [
     ('use std::sync::atomic::{AtomicU64, Ordering}', 'use std::sync::atomic::{AtomicU32, Ordering}'),
     ('AtomicU64', 'AtomicU32'),
     ('self.first_id.load(Ordering::Relaxed).into()', '(self.first_id.load(Ordering::Relaxed) as u64).into()'),
-    ('id.get()),', 'id.get() as u32),'),
+    ('id.get(), Ordering::Relaxed, Ordering::Relaxed)', 'id.get() as u32, Ordering::Relaxed, Ordering::Relaxed)'),
 ])
 
 print('Done patching yazi workspace AtomicU64 -> AtomicU32/Mutex.')
