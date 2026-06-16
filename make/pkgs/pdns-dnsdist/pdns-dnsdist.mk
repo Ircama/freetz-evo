@@ -77,7 +77,7 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-dns-over-quic
 $(PKG)_CONFIGURE_OPTIONS += --disable-dns-over-http3
 $(PKG)_CONFIGURE_OPTIONS += --disable-systemd
 
-$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_DNSDIST_BINARY),,usr/bin/dnsdist etc/dnsdist.conf-dist)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_DNSDIST_BINARY),,usr/bin/dnsdist)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -113,9 +113,6 @@ $(DNSDIST_BUILD_BINARY): $(DNSDIST_DIR)/.configured
 
 $(DNSDIST_INSTALL_MARKER): $(DNSDIST_BUILD_BINARY)
 	$(SUBMAKE) -C $(DNSDIST_DIR) DESTDIR="$(abspath $(DNSDIST_DEST_DIR))" install
-	if [ ! -f "$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist" ]; then \
-		install -D -m 644 "$(DNSDIST_DIR)/dnsdist.conf-dist" "$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist"; \
-	fi
 	$(RM) -r \
 		$(DNSDIST_DEST_DIR)/usr/include \
 		$(DNSDIST_DEST_DIR)/usr/share/doc \
