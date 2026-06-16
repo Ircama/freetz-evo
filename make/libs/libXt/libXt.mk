@@ -10,6 +10,7 @@ $(PKG)_DEPENDS_ON += xorgproto libX11 libSM libICE
 $(PKG)_DEPENDS_ON += util-macros
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-appload --disable-composecache
+$(PKG)_CONFIGURE_OPTIONS += --disable-xkb
 $(PKG)_CONFIGURE_OPTIONS += --disable-malloc0returnsnull
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -31,3 +32,4 @@ $(pkg)-clean:
 $(pkg)-uninstall:
 	$(RM) $(LIBXT_TARGET_DIR)/libXt*.so*
 $(PKG_FINISH)
+# DEBUG CHECK

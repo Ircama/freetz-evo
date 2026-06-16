@@ -26,9 +26,9 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
 	# Also install resize binary
-	mkdir -p $(dir $($(PKG)_DEST_USR_BIN)/resize)
-	$(INSTALL_FILE) $(XTERM_DIR)/resize $($(PKG)_DEST_USR_BIN)/resize
-	$(TARGET_STRIP) $($(PKG)_DEST_USR_BIN)/resize
+	mkdir -p $(dir $@)
+	cp $(XTERM_DIR)/resize $(dir $@)resize
+	$(TARGET_STRIP) $(dir $@)resize
 
 $(pkg):
 
@@ -39,6 +39,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) $(XTERM_TARGET_BINARY)
-	$(RM) $($(PKG)_DEST_USR_BIN)/resize
+	$(RM) $(dir $(XTERM_TARGET_BINARY))resize
 
 $(PKG_FINISH)
