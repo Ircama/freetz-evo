@@ -1,0 +1,6 @@
+config FREETZ_LIB_libXpm
+	bool "libXpm 3.5.19 (X11 Pixmap)"
+	select FREETZ_LIB_libX11
+	default n
+	help
+		X11 pixmap library.

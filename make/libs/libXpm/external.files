@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_LIB_libXpm" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXpm.so.4"
+[ "$EXTERNAL_FREETZ_LIB_libXpm" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXpm.so.4.11.0"

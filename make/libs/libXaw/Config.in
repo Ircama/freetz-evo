@@ -1,0 +1,10 @@
+config FREETZ_LIB_libXaw
+	bool "libXaw 1.0.16 (X11 Athena Widgets)"
+	select FREETZ_LIB_libXmu
+	select FREETZ_LIB_libXpm
+	select FREETZ_LIB_libXt
+	select FREETZ_LIB_libXext
+	select FREETZ_LIB_libX11
+	default n
+	help
+		X11 Athena Widgets library (Xaw7).

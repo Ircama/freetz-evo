@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_XTERM" == "y" ] && EXTERNAL_FILES+=" /usr/bin/xterm"
+[ "$EXTERNAL_FREETZ_PACKAGE_XTERM" == "y" ] && EXTERNAL_FILES+=" /usr/bin/resize"

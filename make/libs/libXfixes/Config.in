@@ -1,0 +1,6 @@
+config FREETZ_LIB_libXfixes
+	bool "libXfixes 6.0.2 (X11 Fixes)"
+	select FREETZ_LIB_libX11
+	default n
+	help
+		X11 Fixes extension library.

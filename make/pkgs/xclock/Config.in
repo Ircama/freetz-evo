@@ -1,0 +1,11 @@
+config FREETZ_PACKAGE_XCLOCK
+	bool "xclock 1.1.1"
+	select FREETZ_LIB_libXaw
+	select FREETZ_LIB_libXmu
+	select FREETZ_LIB_libX11
+	select FREETZ_LIB_libXext
+	select FREETZ_LIB_libXt
+	default n
+	help
+		X11 clock application.
+		Use with DISPLAY=<remote-host>:0.

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_XCLOCK
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_XCLOCK
+	bool "xclock"
+	default n
+	help
+		externals the following file(s):
+		/usr/bin/xclock

@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_LIB_libXi
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libXi
+	bool "libXi"
+	default n
+	help
+		externals the following file(s):
+		${FREETZ_LIBRARY_DIR}/libXi.so.6
+		${FREETZ_LIBRARY_DIR}/libXi.so.6.1.0

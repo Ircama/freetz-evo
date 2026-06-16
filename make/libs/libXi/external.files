@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_LIB_libXi" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXi.so.6"
+[ "$EXTERNAL_FREETZ_LIB_libXi" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXi.so.6.1.0"

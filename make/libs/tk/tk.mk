@@ -5,7 +5,6 @@ $(PKG)_HASH:=be9f94d3575d4b3099d84bc3c10de8994df2d7aa405208173c709cc404a7e5fe
 $(PKG)_SITE:=https://prdownloads.sourceforge.net/tcl
 ### WEBSITE:=https://www.tcl.tk/
 ### CHANGES:=https://core.tcl-lang.org/tk/timeline
-### CVSREPO:=https://core.tcl-lang.org/tk
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/unix/libtk$(TK_LIB_VERSION).so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtk$(TK_LIB_VERSION).so
@@ -57,6 +56,10 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	for f in $(dir $@)libtk$(TK_LIB_VERSION).so*; do \
 		if [ ! -L "$$f" ]; then $(TARGET_STRIP) "$$f"; fi; \
 	done
+	# Install wish binary (Tk shell)
+	mkdir -p $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin
+	cp -a $(TK_DIR)/unix/wish $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
+	$(TARGET_STRIP) $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
@@ -74,5 +77,7 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) $(TK_TARGET_DIR)/libtk*.so*
+	$(RM) $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
+	$(RM) $($(PKG)_DEST_USR_BIN)/wish
 
 $(PKG_FINISH)

@@ -1,0 +1,2 @@
+[ "$EXTERNAL_FREETZ_LIB_libXaw" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXaw.so.7"
+[ "$EXTERNAL_FREETZ_LIB_libXaw" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXaw7.so.7.0.0"
