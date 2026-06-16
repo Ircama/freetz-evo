@@ -1,0 +1,114 @@
+{
+  "deepl:MELCloud access": {
+    "original": "MELCloud access",
+    "translation": "Accesso a MELCloud",
+    "timestamp": "2026-06-16T02:08:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable MELCloud package": {
+    "original": "Enable MELCloud package",
+    "translation": "Abilita pacchetto MELCloud",
+    "timestamp": "2026-06-16T02:08:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Email": {
+    "original": "Email",
+    "translation": "Email",
+    "timestamp": "2026-06-16T02:08:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Password": {
+    "original": "Password",
+    "translation": "Password",
+    "timestamp": "2026-06-16T02:08:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Context key (optional)": {
+    "original": "Context key (optional)",
+    "translation": "Chiave di contesto (facoltativa)",
+    "timestamp": "2026-06-16T02:08:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:API base URL": {
+    "original": "API base URL",
+    "translation": "URL di base dell'API",
+    "timestamp": "2026-06-16T02:08:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:App version": {
+    "original": "App version",
+    "translation": "Versione dell'app",
+    "timestamp": "2026-06-16T02:08:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Language (0=en)": {
+    "original": "Language (0=en)",
+    "translation": "Lingua (0=en)",
+    "timestamp": "2026-06-16T02:08:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:GUI runtime": {
+    "original": "GUI runtime",
+    "translation": "GUI runtime",
+    "timestamp": "2026-06-16T02:08:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Polling interval (s)": {
+    "original": "Polling interval (s)",
+    "translation": "Intervallo di polling (s)",
+    "timestamp": "2026-06-16T02:08:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Home mapping file": {
+    "original": "Home mapping file",
+    "translation": "File di mappatura Home",
+    "timestamp": "2026-06-16T02:08:15Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Template directory": {
+    "original": "Template directory",
+    "translation": "Directory dei modelli",
+    "timestamp": "2026-06-16T02:08:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Open MELCloud dashboard": {
+    "original": "Open MELCloud dashboard",
+    "translation": "Pannello di controllo Open MELCloud",
+    "timestamp": "2026-06-16T02:08:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Direct URL (only when static webroot provides it)": {
+    "original": "Direct URL (only when static webroot provides it)",
+    "translation": "URL diretto (solo se fornito dalla radice web statica)",
+    "timestamp": "2026-06-16T02:08:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note": {
+    "original": "Note",
+    "translation": "Nota",
+    "timestamp": "2026-06-16T02:08:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MELCloud is an unofficial API integration. Vendor-side changes may require updates. Use reasonable polling intervals (at least 60 seconds).": {
+    "original": "MELCloud is an unofficial API integration. Vendor-side changes may require updates. Use reasonable polling intervals (at least 60 seconds).",
+    "translation": "MELCloud è un'integrazione API non ufficiale. Eventuali modifiche da parte del fornitore potrebbero richiedere aggiornamenti. Utilizzare intervalli di polling ragionevoli (almeno 60 secondi).",
+    "timestamp": "2026-06-16T02:08:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

@@ -1,4 +1,5 @@
 $(call PKG_INIT_BIN, 1.9.7)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=dnsdist-$($(PKG)_VERSION).tar.bz2
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
 $(PKG)_HASH:=285111c2b7dff6bc8a2407106a51c365cc5bf5e6287fe459a29b396c74620332
 $(PKG)_SITE:=https://downloads.powerdns.com/releases
@@ -106,6 +107,9 @@ $(DNSDIST_BUILD_BINARY): $(DNSDIST_DIR)/.configured
 
 $(DNSDIST_INSTALL_MARKER): $(DNSDIST_BUILD_BINARY)
 	$(SUBMAKE) -C $(DNSDIST_DIR) DESTDIR="$(abspath $(DNSDIST_DEST_DIR))" install
+	if [ ! -f "$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist" ]; then \
+		install -D -m 644 "$(DNSDIST_DIR)/dnsdist.conf-dist" "$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist"; \
+	fi
 	$(RM) -r \
 		$(DNSDIST_DEST_DIR)/usr/include \
 		$(DNSDIST_DEST_DIR)/usr/share/doc \
