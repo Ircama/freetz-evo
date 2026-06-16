@@ -136,4 +136,7 @@ $(pkg)-uninstall:
 		$(DNSDIST_DEST_DIR)/usr/bin/dnsdist \
 		$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist
 
+# Config symbol is FREETZ_PACKAGE_DNSDIST (without PDNS_ prefix) because the
+# package was renamed from dnsdist to pdns-dnsdist. PKG_ADD_BIN maps it.
+$(call PKG_ADD_BIN, DNSDIST)
 $(PKG_FINISH)
