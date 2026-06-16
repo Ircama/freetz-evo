@@ -1,0 +1,9 @@
+config FREETZ_LIB_libXau
+	bool "libXau (X11 authorization library)"
+	select FREETZ_LIB_libxorgproto
+	default n
+	help
+		X11 authorization library (libXau.so).
+		Provides the X Authority file handling.
+		
+		Website: https://www.x.org/

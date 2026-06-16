@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libICE
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libICE
+	bool "libICE"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libICE.so.6.4.0

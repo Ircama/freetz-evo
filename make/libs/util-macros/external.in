@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libutilmacros
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libutilmacros
+	bool "util-macros"
+	default n
+	help
+		externals the following file(s):
+		 (headers/macros only, no shared library)

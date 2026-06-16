@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libSM" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libSM.so.6.0.1"

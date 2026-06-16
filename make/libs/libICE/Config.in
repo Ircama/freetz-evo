@@ -1,0 +1,8 @@
+config FREETZ_LIB_libICE
+	bool "libICE (X11 Inter-Client Exchange)"
+	select FREETZ_LIB_libxorgproto
+	default n
+	help
+		X11 Inter-Client Exchange library (libICE.so).
+		Required by libSM for session management.
+		Website: https://www.x.org/

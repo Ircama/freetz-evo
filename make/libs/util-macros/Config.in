@@ -1,0 +1,9 @@
+config FREETZ_LIB_libutilmacros
+	bool "util-macros (X.org autoconf macros)"
+	default n
+	help
+		X.org autoconf macros package (xorg-macros.pc).
+		Required by all X.org packages at configure time.
+		This is a header/macros-only package, no shared library.
+		
+		Website: https://www.x.org/

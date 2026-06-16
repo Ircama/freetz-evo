@@ -1,0 +1,9 @@
+config FREETZ_LIB_libxorgproto
+	bool "xorgproto (X11 protocol headers)"
+	default n
+	help
+		Xorg protocol headers package providing the X11 protocol definitions
+		needed to compile X11 client libraries (libX11, libXt, etc.).
+		This is a header-only package, no shared library.
+		
+		Website: https://www.x.org/

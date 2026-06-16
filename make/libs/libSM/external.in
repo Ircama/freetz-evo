@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libSM
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libSM
+	bool "libSM"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libSM.so.6.0.1

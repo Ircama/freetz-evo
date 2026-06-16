@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libXext" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libXext.so.6.4.0"

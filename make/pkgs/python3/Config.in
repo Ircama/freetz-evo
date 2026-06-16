@@ -360,6 +360,23 @@ if FREETZ_PACKAGE_PYTHON3
 				with WSGI environments.
 				For details, see: https://docs.python.org/3/library/wsgiref.html
 
+		config FREETZ_PACKAGE_PYTHON3_MOD_TKINTER
+			bool "tkinter"
+			select FREETZ_LIB_libtcl
+			select FREETZ_LIB_libtk
+			default n
+			help
+				Tkinter is Python's de-facto standard GUI package.
+				It is a thin object-oriented layer on top of Tcl/Tk.
+				Requires Tcl/Tk libraries (libtcl8.6.so, libtk8.6.so)
+				and X11 client libraries (libX11, libXt, etc.).
+				
+				Tkinter connects to a remote display via the DISPLAY
+				environment variable (e.g., DISPLAY=192.168.1.100:0).
+				No local X11 server is needed on the FritzBox.
+				
+				For details, see: https://docs.python.org/3/library/tkinter.html
+
 	endmenu
 
 	menu "3rd-party modules"

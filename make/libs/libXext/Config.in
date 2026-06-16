@@ -1,0 +1,9 @@
+config FREETZ_LIB_libXext
+	bool "libXext (X11 Extension library)"
+	select FREETZ_LIB_libxorgproto
+	select FREETZ_LIB_libX11
+	default n
+	help
+		X11 Extension library (libXext.so).
+		Provides common X11 extensions (Shape, MIT-SHM, etc.).
+		Website: https://www.x.org/

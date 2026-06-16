@@ -1,0 +1,16 @@
+config FREETZ_LIB_libtk
+	bool "Tk (libtk8.6.so)"
+	select FREETZ_LIB_libtcl
+	select FREETZ_LIB_libX11
+	select FREETZ_LIB_libXt
+	default n
+	help
+		Tk is a cross-platform toolkit for creating graphical user interfaces.
+		This package provides the Tk shared library (libtk8.6.so) required by
+		Python's tkinter module.
+		
+		Tk requires X11 client libraries (libX11, libXt) to build and to
+		connect to a remote X11 display server via DISPLAY=<host>:<screen>.
+		
+		Website: https://www.tcl.tk/
+		Source: https://core.tcl-lang.org/tk/

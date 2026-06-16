@@ -1,0 +1,11 @@
+config FREETZ_LIB_libxcb
+	bool "libxcb (X11 C Binding)"
+	select FREETZ_LIB_libxorgproto
+	select FREETZ_LIB_libxcbproto
+	select FREETZ_LIB_libXau
+	default n
+	help
+		X C-language Binding library (libxcb.so).
+		Replaces the core X11 protocol library for modern X11.
+		
+		Website: https://www.x.org/

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libX11
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libX11
+	bool "libX11"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libX11.so.6.4.0

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libXt
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libXt
+	bool "libXt"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libXt.so.6.0.0

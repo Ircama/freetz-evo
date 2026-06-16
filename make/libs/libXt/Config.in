@@ -1,0 +1,11 @@
+config FREETZ_LIB_libXt
+	bool "libXt (X11 Toolkit Intrinsics)"
+	select FREETZ_LIB_libxorgproto
+	select FREETZ_LIB_libX11
+	select FREETZ_LIB_libSM
+	select FREETZ_LIB_libICE
+	default n
+	help
+		X11 Toolkit Intrinsics library (libXt.so).
+		Required by Tk toolkit for widget framework.
+		Website: https://www.x.org/

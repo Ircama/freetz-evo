@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libXext
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libXext
+	bool "libXext"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libXext.so.6.4.0

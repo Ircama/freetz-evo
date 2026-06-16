@@ -211,6 +211,14 @@ define PyMod3/termios/files
 usr/lib/python$(PYTHON3_MAJOR_VERSION)/lib-dynload/termios.so
 endef
 
+define PyMod3/tkinter/dirs
+usr/lib/python$(PYTHON3_MAJOR_VERSION)/tkinter
+endef
+define PyMod3/tkinter/files
+usr/lib/python$(PYTHON3_MAJOR_VERSION)/lib-dynload/_tkinter.so
+usr/lib/python$(PYTHON3_MAJOR_VERSION)/tkinter/*.py*
+endef
+
 define PyMod3/test/dirs
 usr/lib/python$(PYTHON3_MAJOR_VERSION)/test
 usr/lib/python$(PYTHON3_MAJOR_VERSION)/test/cjkencodings

@@ -1,0 +1,11 @@
+config FREETZ_LIB_libtcl
+	bool "Tcl (libtcl8.6.so)"
+	select FREETZ_LIB_libz
+	default n
+	help
+		Tcl is a very powerful but easy to learn dynamic programming language,
+		providing a wide range of useful features. This package provides the
+		Tcl shared library (libtcl8.6.so) required by Python's tkinter module.
+		
+		Website: https://www.tcl.tk/
+		Source: https://core.tcl-lang.org/tcl/

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libxcbproto
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libxcbproto
+	bool "xcb-proto"
+	default n
+	help
+		externals the following file(s):
+		 (headers only, no shared library)

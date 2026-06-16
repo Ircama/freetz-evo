@@ -1,0 +1,8 @@
+config FREETZ_LIB_libxcbproto
+	bool "xcb-proto (XCB protocol descriptions)"
+	default n
+	help
+		XCB protocol descriptions needed to build libxcb.
+		This is a header-only package, no shared library.
+		
+		Website: https://www.x.org/

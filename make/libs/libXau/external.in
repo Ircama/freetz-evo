@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libXau
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libXau
+	bool "libXau"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libXau.so.6.0.0

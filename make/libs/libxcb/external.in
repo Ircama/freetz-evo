@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libxcb
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libxcb
+	bool "libxcb"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libxcb.so.1.1.0

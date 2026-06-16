@@ -1,0 +1,9 @@
+config FREETZ_LIB_libSM
+	bool "libSM (X11 Session Management)"
+	select FREETZ_LIB_libxorgproto
+	select FREETZ_LIB_libICE
+	default n
+	help
+		X11 Session Management library (libSM.so).
+		Required by libXt for session management support.
+		Website: https://www.x.org/

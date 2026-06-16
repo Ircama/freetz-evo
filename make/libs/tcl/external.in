@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_LIB_libtcl
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libtcl
+	bool "libtcl"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libtcl8.6.so
+		 ${FREETZ_LIBRARY_DIR}/libtcl8.6.so.1
+

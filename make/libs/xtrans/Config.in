@@ -1,0 +1,8 @@
+config FREETZ_LIB_libxtrans
+	bool "xtrans (X11 transport layer headers)"
+	default n
+	help
+		X transport layer headers needed to build libX11.
+		This is a header-only package, no shared library.
+		
+		Website: https://www.x.org/

@@ -30,7 +30,7 @@ $(PKG)_MODULES_ALL := \
 	audiodev audioop bsddb cmath cprofile crypt csv ctypes curses \
 	eastern_codecs elementtree ensurepip grp hotshot json \
 	mmap multiprocessing readline spwd sqlite ssl \
-	syslog termios test unicodedata unittest wsgiref
+	syslog termios test tkinter unicodedata unittest wsgiref
 $(PKG)_MODULES_SELECTED := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_MODULES_ALL),MOD)
 $(PKG)_MODULES_EXCLUDED := $(filter-out $($(PKG)_MODULES_SELECTED),$($(PKG)_MODULES_ALL))
 
@@ -45,6 +45,7 @@ $(PKG)_DEPENDS_ON += $(if $(or $(FREETZ_PACKAGE_PYTHON3_MOD_CURSES),$(FREETZ_PAC
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_READLINE),readline)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_SQLITE),sqlite)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_SSL),openssl)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),tcl tk libX11 libXt libXext)
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_STATIC
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_BSDDB
@@ -52,6 +53,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_CURSES
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_READLINE
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_SQLITE
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_SSL
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_MOD_TKINTER
 $(PKG)_REBUILD_SUBOPTS += $(OPENSSL_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_IPV6_SUPPORT
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_COMPILER_ONDEVICE
@@ -85,6 +87,9 @@ $(PKG)_CONFIGURE_OPTIONS += --with-build-python=$(abspath $(TOOLS_DIR)/path/pyth
 $(PKG)_CONFIGURE_OPTIONS += --with-ensurepip=no
 $(PKG)_CONFIGURE_OPTIONS += --enable-ipv6
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_STATIC),--disable-shared,--enable-shared)
+
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),--with-tcltk-includes="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include")
+$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),--with-tcltk-libs="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ltcl8.6 -ltk8.6")
 
 # remove local copy of libffi, we use system one
 $(PKG)_CONFIGURE_PRE_CMDS += $(RM) -r Modules/_ctypes/libffi*;

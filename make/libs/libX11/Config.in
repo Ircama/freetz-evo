@@ -1,0 +1,11 @@
+config FREETZ_LIB_libX11
+	bool "libX11 (Core X11 protocol library)"
+	select FREETZ_LIB_libxorgproto
+	select FREETZ_LIB_libxtrans
+	select FREETZ_LIB_libxcb
+	default n
+	help
+		Core X11 protocol client library (libX11.so).
+		Required by Xt, Xext, and most X11 applications.
+		
+		Website: https://www.x.org/
