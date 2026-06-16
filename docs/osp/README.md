@@ -152,6 +152,7 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [source-files-FRITZ.Box_5690_Pro-rtl9601-08.20.tar.gz](https://osp.avm.de/fritzbox/fritzbox-5690-pro/source-files-FRITZ.Box_5690_Pro-rtl9601-08.20.tar.gz)
   * fritzbox-5690-xgs/
     - [source-files-FRITZ.Box_5690_XGS-airoha01-08.20.tar.gz](https://osp.avm.de/fritzbox/fritzbox-5690-xgs/source-files-FRITZ.Box_5690_XGS-airoha01-08.20.tar.gz)
+    - [source-files-FRITZ.Box_5690_XGS-airoha01-08.25.tar.gz](https://osp.avm.de/fritzbox/fritzbox-5690-xgs/source-files-FRITZ.Box_5690_XGS-airoha01-08.25.tar.gz)
   * fritzbox-6360/
     - [fritzbox6360-source-files-04.91.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6360/fritzbox6360-source-files-04.91.tar.gz)
     - [fritzbox6360-source-files-05.29.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6360/fritzbox6360-source-files-05.29.tar.gz)

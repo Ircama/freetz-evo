@@ -75,11 +75,11 @@ Latest changes
     * dos2unix 7.5.5
     * fakeroot 1.38.1
     * file 5.47
-    * kconfig 7.0
+    * kconfig 7.1
     * meson 1.11.1
-    * openssl 3.5.6
+    * openssl 3.5.7
     * pseudo 1.9.7
-    * python3 3.14.5
+    * python3 3.14.6
     * python3-attrs 26.1.0
     * python3-jsonschema 4.26.0
     * python3-packaging 26.2
@@ -90,6 +90,7 @@ Latest changes
     * util-linux 2.42
 
   - AVM sources:
+    * 5690 XGS 8.25 - 5.4.293
 
   - Scripts:
     * zensical_httpserver.sh - run local zensical http server to develop docs
@@ -100,7 +101,7 @@ Latest changes
 
   - Packages:
     * ACME.sh 3.1.3
-    * Apache2 2.4.67
+    * Apache2 2.4.68
     * Atop 2.12.1
     * Bftpd 6.6
     * BIND 9.11.37/9.20.23
@@ -115,22 +116,24 @@ Latest changes
     * HAProxy 2.6.29
     * htop 1.0.3/3.5.1
     * htpdate 2.0.2
-    * ImageMagick 7.1.0-62/7.1.2-24
+    * ImageMagick 7.1.0-62/7.1.2-25
     * iPerf3 3.3/3.21
     * LCD4linux 63fffafb
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13
     * ldd 0.1/1.0.58
+    * Lighttpd 1.4.83
+    * ltrace 0.7.3-git/0.8.1
     * Minicom 2.11.1
     * Nano 9.0
     * Nmap 4.76/5.51/7.99
     * OpenSSH 9.3p2/10.3p1
-    * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.20/3.5.6
+    * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7
     * OpenVPN 2.4.12/2.5.11/2.6.20/2.7.4
     * procps-ng 4.0.6
     * Python 3.14.3
     * RRDtool 1.2.30/1.10.3
     * radvd 1.9.3/2.21
-    * rsync 3.4.1/3.4.3
+    * rsync 3.4.1/3.4.4
     * sslh 2.2.4/2.3.1
     * Stunnel 5.78
     * SQLite 3.40.1/3.53.1

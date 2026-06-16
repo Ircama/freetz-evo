@@ -168,7 +168,7 @@ Currently supported devices and firmwares
     - 279.08.03 rev118508 {ALL} [Smart24 P1 FCS]
     - 279.08.22 rev129541 {ALL} [Smart24 P2]
   * __Fritz!Box 5690 XGS (UNTESTED)__
-    - 295.08.20 rev128699 {ALL} [Smart24 P2]
+    - 295.08.25 rev133396 {ALL} [Smart24 P2 NL1]
 
 ### Fritz!Box Cable (63xx/64xx/65xx/66xx)
 
@@ -242,6 +242,9 @@ Currently supported devices and firmwares
     - 254.07.59 rev116421 {GER} [MOVE21NL2]
   * __Fritz!Box 6820 LTE v4__
     - 142.07.59 rev116427 {INT} [MOVE21NL2]
+
+  * __Fritz!Box 6825 4G (UNTESTED)__
+    - 306.08.24 rev132381 {ALL} [Smart24 P2 NL1] (Labor)
 
   * __Fritz!Box 6840 LTE__
     - 105.06.30 rev31187 {GER}
@@ -526,6 +529,8 @@ Currently supported devices and firmwares
 
 ### Fritz!Box Fon WLAN (76xx)
 
+  * __Fritz!Box 7630 (UNTESTED)__
+    - 304.08.24 rev133524 {ALL} [Smart24 P2 NL1] (Inhaus)
   * __Fritz!Box 7632 (UNTESTED)__
     - 303.08.24 rev129095 {ALL} [Smart24 P2 NL1] (Inhaus)
   * __Fritz!Box 7682 (UNTESTED)__

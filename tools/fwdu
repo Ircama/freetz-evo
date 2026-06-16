@@ -210,7 +210,7 @@ image() {
 		done > kf.image
 		[ -s ${d}/filesystem.image ] && file ${d}/filesystem.image | grep -iqv 'Squashfs filesystem' && cat ${d}/filesystem.image | gunzip > kernelsquashfs.raw
 		mv ${d}/kernel.image kernel.raw
-		rm -f ${d}/filesystem.image
+		[ "$FLV_FIT" == "1" ] || rm -f ${d}/filesystem.image
 
 		# strip NMI vector if any
 		($FTOOLS/remove-nmi-vector kf.image kf.image.no-nmi 2>&1 && mv kf.image.no-nmi kf.image 2>/dev/null) | grep "NMI vector v" >> "$nfo"
@@ -220,6 +220,8 @@ image() {
 		SIZE_K2="$(stat -c %s kernel.raw)"
 		SIZE_F2="$(stat -c %s kernelsquashfs.raw)"
 		rm -f kf.image
+		# get rid of modem drivers at end of kernel.raw for 2nd cpu
+		[ "$FLV_FIT" == "1" ] && mv ${d}/filesystem.image kernelsquashfs.raw
 
 		# get avm_kernel_config size
 		if [ "$nfo" != "/dev/null" ]; then

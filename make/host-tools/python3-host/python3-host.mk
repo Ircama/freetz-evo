@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 3.14.5)
+$(call TOOLS_INIT, 3.14.6)
 $(PKG)_SOURCE:=Python-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=7e32597b99e5d9a39abed35de4693fa169df3e5850d4c334337ffd6a19a36db6
+$(PKG)_HASH:=143b1dddefaec3bd2e21e3b839b34a2b7fb9842272883c576420d605e9f30c63
 $(PKG)_SITE:=https://www.python.org/ftp/python/$($(PKG)_VERSION)
 ### WEBSITE:=https://www.python.org/
 ### MANPAGE:=https://docs.python.org/3/
@@ -22,7 +22,6 @@ $(PKG)_CONFIGURE_OPTIONS += --build=$(GNU_HOST_NAME)
 $(PKG)_CONFIGURE_OPTIONS += --host=$(GNU_HOST_NAME)
 $(PKG)_CONFIGURE_OPTIONS += --target=$(GNU_HOST_NAME)
 $(PKG)_CONFIGURE_OPTIONS += --prefix=/usr
-$(PKG)_CONFIGURE_OPTIONS += --enable-optimizations
 $(PKG)_CONFIGURE_OPTIONS += --disable-test-modules
 
 $(PKG)_CFLAGS := $(TOOLS_CFLAGS)

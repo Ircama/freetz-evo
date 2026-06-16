@@ -1,6 +1,10 @@
 name: postcommit_stats
 
 on:
+  workflow_run:
+    workflows: [ postcommit_img ]
+    types:
+      - completed
   push:
     branches: [ master ]
     paths:

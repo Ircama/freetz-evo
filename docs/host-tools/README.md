@@ -58,7 +58,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### K
 
-  * **[kconfig 7.0](kconfig-host.md)<a id='kconfig-host'></a>**<br>
+  * **[kconfig 7.1](kconfig-host.md)<a id='kconfig-host'></a>**<br>
 
 ### L
 
@@ -98,7 +98,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### O
 
-  * **[openssl 3.5.6](openssl-host.md)<a id='openssl-host'></a>**<br>
+  * **[openssl 3.5.7](openssl-host.md)<a id='openssl-host'></a>**<br>
 
 ### P
 
@@ -120,7 +120,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python3-attrs 26.1.0](python3-attrs-host.md)<a id='python3-attrs-host'></a>**<br>
 
-  * **[python3 3.14.5](python3-host.md)<a id='python3-host'></a>**<br>
+  * **[python3 3.14.6](python3-host.md)<a id='python3-host'></a>**<br>
 
   * **[python3-jsonschema 4.26.0](python3-jsonschema-host.md)<a id='python3-jsonschema-host'></a>**<br>
 

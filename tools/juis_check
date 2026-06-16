@@ -35,6 +35,7 @@ Variables:
 
 	Name		Default if not set      Comment
 	----------------------------------------------------------------------------------------------------------------------------------------------------------
+	Bearer		[unauthenticated]	Enables mTLS with dca.avm.de and replaces "Serial" and "HW" if not yet set. Uses ~/.juis_bearer if created by juis_bearer.sh
 	HW		[mandatory]		The HWR code of the device, eg "226" for Fritzbox 7590
 	Version		[HW].00.00-00000	The "HW" as "Major" does not work with HW<150
 	Name		[random]		There is no space in the name but a zero-width space: "printf '\342\200\212'". Or copy & paste examples below.
@@ -67,8 +68,8 @@ Examples:
 	env - tools/juis_check        Version=67                                             HW=137                                 -i -s -d
 	env - tools/juis_check                                                               HW=156                                 -i -s -d
 	env - tools/juis_check                                                               HW=259                                 -i -s -d
-	for x in $(seq 150 300); do                            env - tools/juis_check        HW=$x                                  -a; done
-	for x in $(seq 200 300); do                            env - tools/juis_check        HW=$x   Buildtype=1001                 -a; done
+	for x in $(seq 150 277); do                            env - tools/juis_check        HW=$x                                  -a; done
+	for x in $(seq 222 277); do                            env - tools/juis_check        HW=$x   Buildtype=1001                 -a; done
 	for x in $(seq  10 139); do [ ${#x} != 3 ] && x="0$x"; env - tools/juis_check --dect HW=259  DHW=${x::-1}.0${x:2}           -a; done
 	Or just: tools/juis m  # f
 
@@ -79,11 +80,25 @@ exit
 js() { [ -e "$1" ] && sed -rn "s/^<.:$2>(.*)<.*/\1/p" "$1" ; }
 
 main() {
-	local x soap avmca url host sdir docsis flags Envelope body post cache info payload day ser
+	local x auth soap avmca url host sdir docsis flags Envelope body post cache info payload day ser
 	local line='################################################################'
 	local type='text/xml; charset="utf-8"'
 	local zwsp="$(printf '\342\200\212')"
 	#soap='SOAPAction: "http://jason.avm.de/updatecheck/BoxFirmwareUpdateCheck"'
+
+	[ -z "$Bearer" ] && [ -s "$HOME/.juis_bearer" ] && Bearer="$(cat $HOME/.juis_bearer)"
+	if [ -n "$Bearer" ]; then
+		local ticks_end="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"exp"://;s/,.*//')"
+		local ticks_now="$(date +%s)"
+		[ "$(( $ticks_end - $ticks_now ))" -gt 0 ] 2>/dev/null || Bearer=""
+	fi
+	if [ -n "$Bearer" ]; then
+		auth="Authorization: Bearer $Bearer"
+		[ -z "$Serial" ] && Serial="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"client_id":"//;s/".*//')"  # maca
+		[ -z "$HW" ]     &&     HW="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"hardware_id"://;s/,.*//')"  # HWR
+		SSL='y'
+		[ -z "$(command -v curl)" ] && echo 'Curl is mandatory for mTLS.' 1>&2 && exit 1
+	fi
 
 	[ -z "$Nonce" ] && Nonce="$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | base64)"
 
@@ -107,7 +122,7 @@ main() {
 	fi
 	[ -z "$Name"      ] &&      Name="$(js $info 'Name')"
 	[ -z "$HW"        ] &&        HW="$(js $info 'HW')"
-	case "$HW" in 175|176|182|187|213|220|231|233|252|267|284) docsis='y' ;; esac
+	case "$HW" in 175|176|182|187|213|220|231|233|252|267|284|308) docsis='y' ;; esac
 	[ -z "$OEM"       ] &&       OEM="$(js $info 'OEM')"
 	[ -z "$OEM"       ] &&       OEM="avm"
 	[ -z "$Lang"      ] &&      Lang="$(js $info 'Lang')"
@@ -273,14 +288,15 @@ EOX
 		  -H "Connection: close" \
 		  -H "Content-Length: ${#body}" \
 		  -H "Content-Type: ${type}" \
+		  ${auth:+-H "$auth"} \
 		  ${soap:+-H "$soap"} \
 		  -d "${body}" \
 		  "https://${url}" \
 		  --cacert "${avmca}" \
-		  | tee $cache | sed 's,><,>\n<,g' | sed 's,</.*,,g;s/.*>$//g')"
+		  | tee $cache | sed 's,><,>\n<,g' | sed 's,</.*,,g;s/.*>$//g' | sed '/^$/d')"
 	else
 		resp="$(echo -e "${post}" | nc ${url%%/*} 80 2>/dev/null \
-		  | tee $cache | sed 's,><,>\n<,g' | sed 's,</.*,,g;s/.*>$//g')"
+		  | tee $cache | sed 's,><,>\n<,g' | sed 's,</.*,,g;s/.*>$//g' | sed '/^$/d')"
 	fi
 	[ -z "$resp" ] && echo 'Did not received an anser.' 1>&2 && exit 1
 
