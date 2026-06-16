@@ -13,6 +13,9 @@ $(PKG)_DIR:=$(SOURCE_DIR)/dnsdist-$($(PKG)_VERSION)
 # package path to pdns-dnsdist.
 DNSDIST_DIR:=$(PDNS_DNSDIST_DIR)
 DNSDIST_DEST_DIR:=$(PDNS_DNSDIST_DEST_DIR)
+DNSDIST_CONFIGURE_PRE_CMDS = $(PDNS_DNSDIST_CONFIGURE_PRE_CMDS)
+DNSDIST_CONFIGURE_ENV = $(PDNS_DNSDIST_CONFIGURE_ENV)
+DNSDIST_CONFIGURE_OPTIONS = $(PDNS_DNSDIST_CONFIGURE_OPTIONS)
 
 DNSDIST_BOOST_VERSION:=1.87.0
 DNSDIST_BOOST_SOURCE:=dnsdist-boost_1_87_0.tar.bz2
@@ -37,6 +40,9 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_DNSDIST_BINARY
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 # Keep the y2k38 workaround on generated configure to avoid autoreconf toolchain requirements.
 $(PKG)_CONFIGURE_PRE_CMDS += sed -i '/as_fn_error.*y2k38/d' configure ;
+# Fix upstream bug: PDNS_WITH_LIBEDIT uses $enableval instead of $withval,
+# causing --with-libedit=no to be overwritten by stale $enableval value.
+$(PKG)_CONFIGURE_PRE_CMDS += sed -i 's/with_libedit=$$enableval/with_libedit=$$withval/' configure ;
 
 $(PKG)_CONFIGURE_ENV += BOOST_ROOT="$(abspath $(DNSDIST_BOOST_ROOT))"
 $(PKG)_CONFIGURE_ENV += BOOST_INCLUDEDIR="$(abspath $(DNSDIST_BOOST_ROOT))"
