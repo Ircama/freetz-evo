@@ -1130,7 +1130,7 @@ if [ "$DO_MOD" -gt 0 ]; then
 				case "$bn" in
 					libusb0)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/{libusb.,libusb-0}*so*) ;;
 					libusb1)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libusb-1*so*) ;;
-					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//xx$/++}[-.][-.]*so*) ;;
+					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn/xx/++}*so*) ;;
 					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so*) ;;
 				esac
 				if [ -z "$files" ]; then

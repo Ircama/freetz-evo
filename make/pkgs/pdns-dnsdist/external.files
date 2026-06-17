@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_DNSDIST_BINARY" == "y" ] && EXTERNAL_FILES+=" /usr/bin/dnsdist /etc/dnsdist.conf-dist"
+[ "$EXTERNAL_FREETZ_PACKAGE_PDNS_DNSDIST_BINARY" == "y" ] && EXTERNAL_FILES+=" /usr/bin/dnsdist /etc/dnsdist.conf-dist"

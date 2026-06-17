@@ -35,7 +35,7 @@ $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 $(PKG)_DEPENDS_ON += openssl lua
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_TARGET_ARCH_MIPS),$(if $(FREETZ_TARGET_GCC_4_8_MIN),libatomic))
 
-$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_DNSDIST_BINARY
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PDNS_DNSDIST_BINARY
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 # Keep the y2k38 workaround on generated configure to avoid autoreconf toolchain requirements.
@@ -77,7 +77,7 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-dns-over-quic
 $(PKG)_CONFIGURE_OPTIONS += --disable-dns-over-http3
 $(PKG)_CONFIGURE_OPTIONS += --disable-systemd
 
-$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_DNSDIST_BINARY),,usr/bin/dnsdist)
+$(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_PDNS_DNSDIST_BINARY),,usr/bin/dnsdist)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -136,7 +136,4 @@ $(pkg)-uninstall:
 		$(DNSDIST_DEST_DIR)/usr/bin/dnsdist \
 		$(DNSDIST_DEST_DIR)/etc/dnsdist.conf-dist
 
-# Config symbol is FREETZ_PACKAGE_DNSDIST (without PDNS_ prefix) because the
-# package was renamed from dnsdist to pdns-dnsdist. PKG_ADD_BIN maps it.
-$(call PKG_ADD_BIN, DNSDIST)
 $(PKG_FINISH)
