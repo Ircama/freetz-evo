@@ -79,7 +79,23 @@ $($(PKG)_LIB_STAGING_BINARY): $($(PKG)_LIB_BINARY)
 $($(PKG)_LIB_TARGET_BINARY): $($(PKG)_LIB_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP)
 
-$(pkg):
+# Ensure lua.pc exists even if staging binary is up-to-date
+$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/lua.pc:
+	@mkdir -p $(dir $@)
+	echo -ne \
+		"prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
+		"exec_prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
+		"libdir=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib\n"\
+		"includedir=$(TARGET_TOOLCHAIN_STAGING_DIR)$(LUA_INCLUDE_DIR)\n"\
+		"\n"\
+		"Name: lua\n"\
+		"Description: LUA Library\n"\
+		"Version: $(LUA_VERSION)\n"\
+		"Libs: -L\$${libdir} -llua -ldl -lm\n"\
+		"Cflags: -I\$${includedir}\n"\
+		>$@
+
+$(pkg): $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/lua.pc
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_LIB_TARGET_BINARY)
 

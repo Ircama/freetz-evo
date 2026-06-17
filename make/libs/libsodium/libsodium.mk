@@ -34,7 +34,25 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP_WILDCARD_BEFORE_SO)
 
-$(pkg): $($(PKG)_STAGING_BINARY)
+# Ensure libsodium.pc exists even if staging binary is up-to-date
+$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libsodium.pc:
+	@mkdir -p $(dir $@)
+	echo -ne \
+		"prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
+		"exec_prefix=\$${prefix}\n"\
+		"libdir=\$${prefix}/lib\n"\
+		"includedir=\$${prefix}/include\n"\
+		"\n"\
+		"Name: libsodium\n"\
+		"Version: $(LIBSODIUM_VERSION)\n"\
+		"Description: libsodium is a portable, cross-compilable, installable, packageable, fork of NaCl\n"\
+		"URL: https://libsodium.org\n"\
+		"Libs: -L\$${libdir} -lsodium\n"\
+		"Libs.private: -lm\n"\
+		"Cflags: -I\$${includedir}\n"\
+		>$@
+
+$(pkg): $($(PKG)_STAGING_BINARY) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libsodium.pc
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
