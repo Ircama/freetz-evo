@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_HASERL
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_HASERL
+	bool "haserl"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/haserl

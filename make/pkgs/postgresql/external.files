@@ -1,4 +1,4 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_POSTGRESQL" == "y" ] && EXTERNAL_FILES+=" /usr/bin/psql"
+[ "$EXTERNAL_FREETZ_PACKAGE_POSTGRESQL" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libpq.so.5.16 /usr/bin/psql"
 
 if [ "$EXTERNAL_FREETZ_PACKAGE_POSTGRESQL" == "y" ] && [ "$EXTERNAL_FREETZ_PACKAGE_POSTGRESQL_SERVER" == "y" ]; then
 	EXTERNAL_FILES+=" /usr/sbin/postgres /usr/bin/pg_ctl /usr/bin/initdb /usr/share/postgresql"

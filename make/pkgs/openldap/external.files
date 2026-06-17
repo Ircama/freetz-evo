@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_OPENLDAP" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ldapsearch /usr/bin/ldapmodify /usr/bin/ldapadd /usr/bin/ldapdelete /usr/bin/ldapwhoami"
+[ "$EXTERNAL_FREETZ_PACKAGE_OPENLDAP" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libldap.so.2.0.200 ${FREETZ_LIBRARY_DIR}/liblber.so.2.0.200 /usr/bin/ldapsearch /usr/bin/ldapmodify /usr/bin/ldapadd /usr/bin/ldapdelete /usr/bin/ldapwhoami"

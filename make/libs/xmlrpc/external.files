@@ -4,4 +4,8 @@ if [ "$EXTERNAL_FREETZ_LIB_libxmlrpc" == "y" ]; then
 	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_xmlparse.so.3.64"
 	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_xmltok.so.3.64"
 	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_util.so.4.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_abyss.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_client.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_server_abyss.so.3.64"
+	EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libxmlrpc_server_cgi.so.3.64"
 fi

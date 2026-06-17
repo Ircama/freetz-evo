@@ -1,3 +1,1 @@
 [ "$EXTERNAL_FREETZ_LIB_libtk" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtk8.6.so"
-[ "$EXTERNAL_FREETZ_LIB_libtk" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtk8.6.so.1"
-[ "$EXTERNAL_FREETZ_LIB_libtk" == "y" ] && EXTERNAL_FILES+=" /usr/bin/wish"

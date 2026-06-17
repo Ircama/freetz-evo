@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_PYTHON3_UV
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PYTHON3_UV
+	bool "python3-uv"
+	default n
+	help
+		externals the following file(s):
+		/usr/bin/uv
+		/usr/bin/uvx

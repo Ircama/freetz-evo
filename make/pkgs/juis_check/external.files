@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_JUIS_CHECK" == "y" ] && EXTERNAL_FILES+=" /usr/bin/juis_check"

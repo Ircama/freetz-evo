@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_UNIXODBC" == "y" ] && EXTERNAL_FILES+=" /usr/bin/isql /usr/bin/iusql /usr/bin/odbcinst"
+[ "$EXTERNAL_FREETZ_PACKAGE_UNIXODBC" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libodbc.so.2.0.0 ${FREETZ_LIBRARY_DIR}/libodbcinst.so.2.0.0 ${FREETZ_LIBRARY_DIR}/libodbccr.so.2.0.0 /usr/bin/isql /usr/bin/iusql /usr/bin/odbcinst"

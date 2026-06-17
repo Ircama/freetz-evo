@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_WISH
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_WISH
+	bool "wish"
+	default n
+	help
+		externals the following file(s):
+		/usr/bin/wish

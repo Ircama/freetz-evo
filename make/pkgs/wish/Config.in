@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_WISH
+	bool "wish 8.6.16"
+	select FREETZ_LIB_libtk
+	default n
+	help
+		Wish is the Tcl/Tk shell interpreter.
+		Use with DISPLAY=<remote-host>:0.
