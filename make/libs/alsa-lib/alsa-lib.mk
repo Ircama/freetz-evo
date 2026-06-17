@@ -37,6 +37,10 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(ALSA_LIB_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
+	# Ensure alsa.pc is installed (recursive install from top-level may skip utils/)
+	$(SUBMAKE) -C $(ALSA_LIB_DIR)/utils \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install-pkgconfigDATA 2>/dev/null || true
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libasound.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/alsa.pc

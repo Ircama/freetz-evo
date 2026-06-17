@@ -36,6 +36,7 @@ $($(PKG)_BINARY): $(NCSPOT_DIR)/.configured
 	export HOME="$(abspath $(NCSPOT_DIR))"; \
 	export CARGO_HOME="$(NCSPOT_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	export RUSTFLAGS="-C link-arg=-Wl,-no-pie -C link-arg=-latomic"; \
 	mkdir -p "$$CARGO_HOME"; \
 	cargo fetch --target "$(NCSPOT_RUST_TARGET_ARG)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.2) \
@@ -50,7 +51,7 @@ $($(PKG)_BINARY): $(NCSPOT_DIR)/.configured
 	export PKG_CONFIG_ALLOW_CROSS=1; \
 	export PKG_CONFIG_PATH="$(NCSPOT_PKG_CONFIG_DIR)"; \
 	export PKG_CONFIG_LIBDIR="$(NCSPOT_PKG_CONFIG_DIR)"; \
-	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie", "-C", "link-arg=-latomic"]\n' \
 		"$(NCSPOT_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
