@@ -1,3 +1,4 @@
 [ "$EXTERNAL_FREETZ_PACKAGE_PHP_cgi" == "y" ] && EXTERNAL_FILES+=" /usr/bin/php-cgi"
 [ "$EXTERNAL_FREETZ_PACKAGE_PHP_cli" == "y" ] && EXTERNAL_FILES+=" /usr/bin/php"
 [ "$EXTERNAL_FREETZ_PACKAGE_PHP_fpm" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/php-fpm"
+[ "$EXTERNAL_FREETZ_PACKAGE_PHP" == "y" ] && [ -d "${FILESYSTEM_MOD_DIR}/usr/lib/php" ] && EXTERNAL_FILES+=" /usr/lib/php"
