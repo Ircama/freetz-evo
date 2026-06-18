@@ -4,5 +4,4 @@ config EXTERNAL_FREETZ_LIB_libXaw
 	default n
 	help
 		externals the following file(s):
-		${FREETZ_LIBRARY_DIR}/libXaw.so.7
 		${FREETZ_LIBRARY_DIR}/libXaw7.so.7.0.0

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Debug boot log - remove leading '#' to enable
+BOOTLOG="/var/media/ftp/uStor01/freetz-boot.log"
+exec 2>>"$BOOTLOG" 1>&2
+echo "==== rc.mod started at $(date) ===="
+
 [ -z "$1" ] && [ -e /tmp/.mod.started ] && echo "Freetz is yet started!" && exit 1
 
 DAEMON=mod
@@ -100,6 +105,13 @@ update_lfs() {
 
 start() {
 	echo "Freetz version $(sed 's/^freetz-//' /etc/.freetz-version)"
+
+	# Debug: start ttyd early (if compiled) so we can reach the box via web
+	if [ -x /usr/bin/ttyd ]; then
+		echo "[BOOT] Starting ttyd on port 8080 for debug access"
+		/usr/bin/ttyd -p 8080 /bin/sh &
+		echo "[BOOT] ttyd PID: $!"
+	fi
 
 	# Basic Packages: links
 	for pkg in crond telnetd webcfg stickymon dsld ftpd rextd multid swap external websrv smbd; do

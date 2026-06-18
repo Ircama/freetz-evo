@@ -4,5 +4,4 @@ config EXTERNAL_FREETZ_LIB_libXpm
 	default n
 	help
 		externals the following file(s):
-		${FREETZ_LIBRARY_DIR}/libXpm.so.4
 		${FREETZ_LIBRARY_DIR}/libXpm.so.4.11.0

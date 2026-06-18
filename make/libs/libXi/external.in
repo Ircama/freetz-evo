@@ -4,5 +4,4 @@ config EXTERNAL_FREETZ_LIB_libXi
 	default n
 	help
 		externals the following file(s):
-		${FREETZ_LIBRARY_DIR}/libXi.so.6
 		${FREETZ_LIBRARY_DIR}/libXi.so.6.1.0
