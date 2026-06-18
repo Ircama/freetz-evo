@@ -41,7 +41,24 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP_WILDCARD_BEFORE_SO)
 
-$(pkg): $($(PKG)_STAGING_BINARY)
+# Ensure yaml-cpp.pc exists even if staging binary is up-to-date
+$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/yaml-cpp.pc:
+	@mkdir -p $(dir $@)
+	echo -ne \
+		"prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
+		"exec_prefix=\$${prefix}\n"\
+		"libdir=\$${prefix}/lib\n"\
+		"includedir=\$${prefix}/include\n"\
+		"\n"\
+		"Name: yaml-cpp\n"\
+		"Description: YAML parser and emitter for C++\n"\
+		"Version: $(YAML_CPP_VERSION)\n"\
+		"Requires:\n"\
+		"Libs: -L\$${libdir} -lyaml-cpp\n"\
+		"Cflags: -I\$${includedir}\n"\
+		>$@
+
+$(pkg): $($(PKG)_STAGING_BINARY) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/yaml-cpp.pc
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 

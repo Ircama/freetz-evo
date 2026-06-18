@@ -43,7 +43,24 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP_WILDCARD_BEFORE_SO)
 
-$(pkg): $($(PKG)_STAGING_BINARY)
+# Ensure libzmq.pc exists even if staging binary is up-to-date
+$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libzmq.pc:
+	@mkdir -p $(dir $@)
+	echo -ne \
+		"prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr\n"\
+		"exec_prefix=\$${prefix}\n"\
+		"libdir=\$${prefix}/lib\n"\
+		"includedir=\$${prefix}/include\n"\
+		"\n"\
+		"Name: libzmq\n"\
+		"Description: ZeroMQ library\n"\
+		"Version: $(LIBZMQ_VERSION)\n"\
+		"Requires:\n"\
+		"Libs: -L\$${libdir} -lzmq\n"\
+		"Cflags: -I\$${includedir}\n"\
+		>$@
+
+$(pkg): $($(PKG)_STAGING_BINARY) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libzmq.pc
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 

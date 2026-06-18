@@ -89,6 +89,33 @@ $($(PKG)_LIB_STAGING_DIR): $($(PKG)_LIB_BUILD_DIR)
 	cp $(POSTGRESQL_DIR)/src/include/postgres_ext.h $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/
 	cp $(POSTGRESQL_PG_CONFIG_EXT_H) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/
 	cp $(POSTGRESQL_DIR)/src/include/libpq/libpq-fs.h $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/libpq/
+	# Install a host-side pg_config wrapper script for configure scripts
+	# that need to find postgresql during cross-compilation (e.g., pdns).
+	# The real pg_config binary would be MIPS-target and cannot run on host.
+	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin
+	{ \
+		echo '#!/bin/sh'; \
+		echo 'bindir=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin'; \
+		echo 'includedir=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include'; \
+		echo 'libdir=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib'; \
+		echo 'pkglibdir=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib'; \
+		echo 'version=16.3'; \
+		echo ''; \
+		echo 'case $$1 in'; \
+		echo '  --bindir) echo "$$bindir" ;;'; \
+		echo '  --includedir|--includedir-server) echo "$$includedir" ;;'; \
+		echo '  --libdir) echo "$$libdir" ;;'; \
+		echo '  --pkglibdir) echo "$$pkglibdir" ;;'; \
+		echo '  --version) echo "$$version" ;;'; \
+		echo '  --libs) echo "-L$$libdir -lpq" ;;'; \
+		echo '  --cflags) echo "-I$$includedir" ;;'; \
+		echo '  --cflags_sl) echo "" ;;'; \
+		echo '  --ldflags) echo "-L$$libdir" ;;'; \
+		echo '  *) echo "$$libdir" ;;'; \
+		echo 'esac'; \
+		echo 'exit 0'; \
+	} >$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/pg_config
+	chmod 755 $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/pg_config
 	@touch -c $@
 
 $($(PKG)_LIB_TARGET_DIR): $($(PKG)_LIB_STAGING_DIR)
