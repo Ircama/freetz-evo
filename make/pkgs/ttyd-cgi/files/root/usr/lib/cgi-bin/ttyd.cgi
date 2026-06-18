@@ -436,19 +436,6 @@ document.addEventListener('keydown', function(e) {
 /* ── Window resize ────────────────────────────────────────────── */
 var _rft;
 window.addEventListener('resize', function() {
-
-if [ -n "$ACTION_RESULT" ]; then
-  cat << EOF
-<script>
-(function() {
-  if (window.history && window.history.replaceState) {
-    var cleanUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
-  }
-})();
-</script>
-EOF
-fi
   clearTimeout(_rft);
   _rft = setTimeout(function() { if (fitAddon) fitAddon.fit(); }, 80);
 });
@@ -487,6 +474,19 @@ fi
 })();
 </script>
 JSEOF
+
+if [ -n "$ACTION_RESULT" ]; then
+  cat << EOF
+<script>
+(function() {
+  if (window.history && window.history.replaceState) {
+    var cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+})();
+</script>
+EOF
+fi
 
 sec_end
 

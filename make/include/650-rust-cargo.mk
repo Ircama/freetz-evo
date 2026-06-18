@@ -209,7 +209,11 @@ endef
 
 # On MIPS FRITZ!Box targets, PIE executables crash with ld-uClibc.so.1 (SIGSEGV).
 # Force -no-pie only on MIPS; other architectures support PIE fine.
+# Guard against duplicate appends when multiple packages include this file.
 ifeq ($(strip $(FREETZ_TARGET_ARCH_MIPS)),y)
+ifndef RUSTFLAGS_NO_PIE_GUARD
 RUSTFLAGS += -C link-arg=-Wl,-no-pie
 export RUSTFLAGS
+RUSTFLAGS_NO_PIE_GUARD := 1
+endif
 endif

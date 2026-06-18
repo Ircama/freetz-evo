@@ -68,7 +68,9 @@ $(LIBTORRENT_BINARY): $(DL_DIR)/libtorrent-$(LIBTORRENT_RAKSHASA_VERSION).tar.gz
 			AR="$(TARGET_AR)" \
 			RANLIB="$(TARGET_RANLIB)" \
 			CPPFLAGS="-DOPENSSL_API_COMPAT=0x10100000L -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
-			LDFLAGS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" && \
+			LDFLAGS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" \
+			PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig" \
+			PKG_CONFIG_LIBDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig" && \
 		perl -i -pe 'if (m{arm\*\|aarch64\*\|powerpc\*\|ppc\*\|s390x\*\)}) { $$found = 1 } if ($$found && m{^\s+\*\)\s*$$}) { print "          mips*|mipsel*)\n            { printf \"%s\\n\" \"\044as_me:\044{as_lineno-\044LINENO}: result: linux fallback mips 32 bytes\" >&5\nprintf \"%s\\n\" \"linux fallback mips 32 bytes\" >&6; }\n\nprintf \"%s\\n\" \"#define LT_SMP_CACHE_BYTES 32\" >>confdefs.h\n\n            ;;\n"; $$found = 0 }' configure && \
 		./configure \
 			$(LIBTORRENT_CONFIGURE_OPTIONS) && \
@@ -98,6 +100,7 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked $(LIBTORRENT_STAGING_LIB)
 			CFLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
 			CXXFLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include" \
 			LDFLAGS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib" \
+			LIBS="-lcurl" \
 			PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig" \
 			PKG_CONFIG_LIBDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig" \
 			XMLRPC_C_CONFIG="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/xmlrpc-c-config" && \

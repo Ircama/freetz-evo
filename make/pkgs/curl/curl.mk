@@ -113,6 +113,9 @@ $($(PKG)_LIB_STAGING_BINARY): $($(PKG)_LIB_BINARY)
 	$(SUBMAKE) -C $(CURL_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
+	# Ensure libcurl.pc is staged (make install may skip it in some configurations)
+	install -D -m 644 $(CURL_DIR)/libcurl.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libcurl.pc
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libcurl.pc \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcurl.la \
@@ -133,7 +136,7 @@ $(pkg)-clean:
 	-$(SUBMAKE) -C $(CURL_DIR) clean
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcurl* \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig/libcurl.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libcurl.pc \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/curl \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/curl*
 

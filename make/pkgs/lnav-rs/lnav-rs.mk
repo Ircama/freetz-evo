@@ -61,10 +61,7 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	fi; \
 	$(LNAV_RS_CARGO_BUILD_CMD) --target "$(LNAV_RS_RUST_TARGET_ARG)" -p lnav-rs
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
-	mkdir -p $(dir $@)
-	cp $< $@
-	$(TARGET_STRIP) $@
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
 
 $(pkg):
 

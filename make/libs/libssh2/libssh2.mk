@@ -56,6 +56,9 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(LIBSSH2_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
+	# Ensure libssh2.pc is staged (make install may skip it in some configurations)
+	install -D -m 644 $(LIBSSH2_DIR)/libssh2.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libssh2.pc
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libssh2.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libssh2.pc
@@ -69,9 +72,9 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(LIBSSH2_DIR) clean
-	$(RM) $(TARGET_TOOLCHAIN_STAGING_DIR)/lib/libssh2* \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig/libssh2.pc \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/include/libssh2*.h
+	$(RM) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libssh2* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libssh2.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/libssh2*.h
 
 $(pkg)-uninstall:
 	$(RM) $(LIBSSH2_TARGET_DIR)/libssh2*.so*
