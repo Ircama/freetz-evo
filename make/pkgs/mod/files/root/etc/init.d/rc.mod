@@ -1,13 +1,14 @@
 #!/bin/sh
 
-# Debug boot log - remove leading '#' to enable
-BOOTLOG="/var/media/ftp/uStor01/freetz-boot.log"
-exec 2>>"$BOOTLOG" 1>&2
-echo "==== rc.mod started at $(date) ===="
-
 [ -z "$1" ] && [ -e /tmp/.mod.started ] && echo "Freetz is yet started!" && exit 1
 
 DAEMON=mod
+# Set PATH before modlibrc is sourced, because modlibrc sources
+# /var/env.mod.daemon which does not yet exist at boot (it is created
+# later by modload). Without a proper PATH, loglib_logger (logger) and
+# other applets under /usr/bin cannot be found.
+[ -s /var/env.mod.daemon ] && . /var/env.mod.daemon || \
+	export PATH="${PATH:-/bin:/sbin:/usr/bin:/usr/sbin}"
 . /etc/init.d/modlibrc
 [ -r /etc/options.cfg ] && . /etc/options.cfg
 
@@ -121,6 +122,10 @@ start() {
 		[ -e "$rc" -a ! -e "/mod$rc" ] && ln -s "$rc" "/mod$rc"
 	done
 
+	# Run modload to populate /tmp/flash/mod/ and /var/env.mod.daemon.
+	# AVM's init creates /tmp/flash very early but may not have mod/.
+	# Ensure the mod subdirectory exists before checking the condition.
+	mkdir -p /tmp/flash/mod 2>/dev/null
 	[ -d /tmp/flash ] || /usr/bin/modload
 
 	# udev: reload rules after link targets are unpacked

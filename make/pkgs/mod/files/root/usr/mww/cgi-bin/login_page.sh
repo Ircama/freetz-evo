@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Ensure standard system directories are in PATH (busybox applets like md5sum,
+# tr, head etc. live under /usr/bin which may not be in PATH during early CGI
+# execution if /var/env.mod.daemon hasn't been loaded yet)
+export PATH="${PATH:-/bin:/sbin:/usr/bin:/usr/sbin}"
+
 # keine Schleife, wenn wir schon libmodcgi.sh hatten ;-)
 [ -z "$SENDSID" ] && . /usr/lib/libmodcgi.sh
 

@@ -1,5 +1,10 @@
 . /mod/etc/conf/mod.cfg
 
+# Ensure standard system directories are in PATH for all CGI scripts.
+# /var/env.mod.daemon (which normally extends PATH with /mod/ directories)
+# may not exist yet during early CGI execution.
+export PATH="${PATH:-/bin:/sbin:/usr/bin:/usr/sbin}"
+
 sec_level=1
 [ -r /tmp/flash/mod/security ] && let sec_level=$(cat /tmp/flash/mod/security)
 
