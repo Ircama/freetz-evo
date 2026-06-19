@@ -1,7 +1,6 @@
 config FREETZ_PACKAGE_PYTHON3_PYOPENSSL
 	bool "pyopenssl 26.0.0"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_SHOW_DEVELOPER
 	select FREETZ_PACKAGE_PYTHON3_CRYPTOGRAPHY
 	default n
 	help

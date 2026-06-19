@@ -1,26 +1,26 @@
 config FREETZ_PACKAGE_AMUTORRENT
-	depends on FREETZ_USER_LEVEL_DEVELOPER
-	depends on FREETZ_TARGET_GCC_13_MIN
-	depends on FREETZ_OPENSSL_VERSION_30 || FREETZ_OPENSSL_VERSION_35
-	bool "aMUTorrent 3.5.0 - DEVELOPER"
-	default n
-	help
-		Pacchetto sperimentale per sviluppatori: installa aMUTorrent come servizio
-		Node.js completo, con frontend compilato sul sistema host e backend
-		Express/WebSocket eseguito sul target.
+        depends on FREETZ_USER_LEVEL_DEVELOPER
+        depends on FREETZ_TARGET_GCC_13_MIN
+        depends on FREETZ_OPENSSL_VERSION_30 || FREETZ_OPENSSL_VERSION_35
+        bool "aMUTorrent 3.5.0 - DEVELOPER"
+        default n
+        help
+                Experimental package for developers: installs aMUTorrent as a service
+                with full Node.js, with the frontend built on the host system and the
+                Express/WebSocket backend running on the target.
 
-		Il bootstrap preconfigura rTorrent locale via SCGI diretto verso
-		127.0.0.1:${RTORRENT_SCGI_PORT:-16891} quando disponibile.
+                The bootstrap preconfigures a local rTorrent via SCGI directly to
+                127.0.0.1:${RTORRENT_SCGI_PORT:-16891} when available.
 
-		La pagina http://fritz.box:81/amutorrent/ effettua un redirect verso la
-		porta del servizio (4000 di default) e mostra una pagina diagnostica se
-		il daemon non e' in esecuzione.
+                The page http://fritz.box:81/amutorrent/ redirects to the service port
+                (4000 by default) and displays a diagnostic page if the daemon is not running.
 
-		Selezionando questo pacchetto viene abilitato automaticamente anche il
-		runtime target Node.js, che resta nascosto fuori dalla developer mode.
+                By selecting this package, the Node.js runtime for the target is also
+                automatically enabled, remaining hidden outside developer mode.
 
-		Nota: sul target il porting Node.js non e' ancora considerato funzionante;
-		per questo il pacchetto resta in developer mode, disabilitato di default,
-		e non dovrebbe essere considerato pronto per uso normale.
+                Note: the Node.js porting on the target is not yet considered functional;
+                for this reason the package remains in developer mode, disabled by default,
+                and should not be considered ready for normal use.
 
-		Richiede i programmi host node e npm per il build.
+                Requires the host programs node and npm for the build.
+
