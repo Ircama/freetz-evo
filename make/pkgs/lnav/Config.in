@@ -1,6 +1,7 @@
 config FREETZ_PACKAGE_LNAV
 	bool "lnav 0.14.0"
 	select FREETZ_LIB_libatomic if FREETZ_TARGET_ARCH_MIPS && FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_libarchive
 	default n
 	help
 		Advanced log file viewer and analyzer for the terminal.
