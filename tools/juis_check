@@ -27,6 +27,7 @@ Parameters:
 	--plain		Forces to use http. AVM uses this only.
 	--https		Forces to use https. Curl is mandatory for https.
 	Without --plain and --https, the default is https if curl is installed. But on fritzbox only if "FREETZ_ADD_JUIS_CHECK__SSL" is set.
+	If the command "~/.juis_bearer/juis_bearer.sh show_auth HWR" exists and returns any "bearer.maca" it will be used for mTLS with dca.avm.de (via https).
 
 Variables:
 	On Fritzbox no variables are needed and missing will be read from the device.
@@ -35,7 +36,6 @@ Variables:
 
 	Name		Default if not set      Comment
 	----------------------------------------------------------------------------------------------------------------------------------------------------------
-	Bearer		[unauthenticated]	Enables mTLS with dca.avm.de and replaces "Serial" and "HW" if not yet set. Uses ~/.juis_bearer if created by juis_bearer.sh
 	HW		[mandatory]		The HWR code of the device, eg "226" for Fritzbox 7590
 	Version		[HW].00.00-00000	The "HW" as "Major" does not work with HW<150
 	Name		[random]		There is no space in the name but a zero-width space: "printf '\342\200\212'". Or copy & paste examples below.
@@ -71,7 +71,7 @@ Examples:
 	for x in $(seq 150 277); do                            env - tools/juis_check        HW=$x                                  -a; done
 	for x in $(seq 222 277); do                            env - tools/juis_check        HW=$x   Buildtype=1001                 -a; done
 	for x in $(seq  10 139); do [ ${#x} != 3 ] && x="0$x"; env - tools/juis_check --dect HW=259  DHW=${x::-1}.0${x:2}           -a; done
-	Or just: tools/juis m  # f
+	Or just: tools/juis_detect m  # f
 
 EOX
 exit
@@ -85,20 +85,6 @@ main() {
 	local type='text/xml; charset="utf-8"'
 	local zwsp="$(printf '\342\200\212')"
 	#soap='SOAPAction: "http://jason.avm.de/updatecheck/BoxFirmwareUpdateCheck"'
-
-	[ -z "$Bearer" ] && [ -s "$HOME/.juis_bearer" ] && Bearer="$(cat $HOME/.juis_bearer)"
-	if [ -n "$Bearer" ]; then
-		local ticks_end="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"exp"://;s/,.*//')"
-		local ticks_now="$(date +%s)"
-		[ "$(( $ticks_end - $ticks_now ))" -gt 0 ] 2>/dev/null || Bearer=""
-	fi
-	if [ -n "$Bearer" ]; then
-		auth="Authorization: Bearer $Bearer"
-		[ -z "$Serial" ] && Serial="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"client_id":"//;s/".*//')"  # maca
-		[ -z "$HW" ]     &&     HW="$(echo "$Bearer" | cut -d. -f2 | base64 -d | sed 's/.*"hardware_id"://;s/,.*//')"  # HWR
-		SSL='y'
-		[ -z "$(command -v curl)" ] && echo 'Curl is mandatory for mTLS.' 1>&2 && exit 1
-	fi
 
 	[ -z "$Nonce" ] && Nonce="$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | base64)"
 
@@ -175,6 +161,24 @@ main() {
 
 	[ -z "$HW"      ] && echo "You have to provide 'HW'." 1>&2 && exit 1
 	[ -z "$Version" ] && echo "You have to provide 'HW' and 'Version'." 1>&2 && exit 1
+
+	local HOME="${HOME:-$(eval echo "~$(id -un)")}"
+	if [ -x "$HOME/.juis_bearer/juis_bearer.sh" ]; then
+		local MTLS='y'
+		if [ -e '/etc/.freetz-ng-version' ]; then
+			grep -q "^FREETZ_ADD_JUIS_CHECK__MTLS='y'" /etc/options.cfg 2>/dev/null || MTLS='n'
+		fi
+		if [ "$MTLS" == "y" ]; then
+			local TOKEN="$("$HOME/.juis_bearer/juis_bearer.sh" "show_auth" "$HW" 2>/dev/null)"
+			if [ -n "$TOKEN" ]; then
+				SSL='y'
+				local Bearer="$(echo "$TOKEN" | cut -d. -f1-3)"
+				auth="Authorization: Bearer $Bearer"
+				local MACA="$(echo "$TOKEN" | cut -d. -f4)"
+				Serial="${MACA:-$Serial}"
+			fi
+		fi
+	fi
 
 	if [ "$SSL" == 'y' ]; then
 		avmca="$MYPWD/avm-rootca.pem"
@@ -314,7 +318,10 @@ EOX
 			[ -n "$VER" -a "$VER" != "$Version" ] && echo "Found newer version: $VER" 1>&2 || echo "No newer version found." 1>&2
 			;;
 		*)
-			echo -e "Using SSL:=${SSL:-n}\n\nRequest:\n$line"
+			echo "Using SSL:=${SSL:-n}"
+			echo -n "Using mTLS:="
+			[ -n "${auth}" ] && echo "y" || echo "n"
+			echo -e "\nRequest:\n$line"
 			[ "$SSL" == 'y' ] && echo -ne "$body" || echo -ne "$post"
 			echo -e "\n$line\n\nResponse:\n$line"
 			if command -v xmllint &>/dev/null; then

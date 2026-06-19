@@ -1,4 +1,4 @@
-# Lighttpd 1.4.83
+# Lighttpd 1.4.84
   - Homepage: [https://www.lighttpd.net/](https://www.lighttpd.net/)
   - Manpage: [https://wiki.lighttpd.net/](https://wiki.lighttpd.net/)
   - Changelog: [https://www.lighttpd.net/releases/](https://www.lighttpd.net/releases/)

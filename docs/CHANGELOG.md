@@ -71,7 +71,7 @@ Latest changes
     * busybox 1.38.0
     * autoconf 2.73
     * ca-bundle 2026-05-14
-    * cmake 4.3.3
+    * cmake 4.3.4
     * dos2unix 7.5.5
     * fakeroot 1.38.1
     * file 5.47
@@ -121,9 +121,10 @@ Latest changes
     * LCD4linux 63fffafb
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13
     * ldd 0.1/1.0.58
-    * Lighttpd 1.4.83
+    * Lighttpd 1.4.84
     * ltrace 0.7.3-git/0.8.1
     * Minicom 2.11.1
+    * Mosquitto 2.0.22/2.1.2
     * Nano 9.0
     * Nmap 4.76/5.51/7.99
     * OpenSSH 9.3p2/10.3p1
@@ -160,6 +161,7 @@ Latest changes
     * harfbuzz 14.2.1
     * libcap 2.49/2.78
     * libcap-ng 0.9.3
+    * libcjson 1.7.19
     * libexif 0.6.26
     * libmaxminddb 1.13.3
     * libpng 1.6.58

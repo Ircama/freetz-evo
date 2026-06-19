@@ -14,6 +14,7 @@ if FREETZ_PACKAGE_JQ
 
 	config FREETZ_PACKAGE_JQ_STATIC
 		bool "Link statically"
+		depends on FREETZ_PACKAGE_JQ_WITH_RE_SUPPORT || FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 		default n
 
 endif # FREETZ_PACKAGE_JQ

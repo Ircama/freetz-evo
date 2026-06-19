@@ -18,7 +18,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ca-bundle 2026-05-14](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
-  * **[cmake 4.3.3](cmake-host.md)<a id='cmake-host'></a>**<br>
+  * **[cmake 4.3.4](cmake-host.md)<a id='cmake-host'></a>**<br>
 
   * **[config a2287c3041a3f2a204eb942e09c015eab00dc7dd](config-host.md)<a id='config-host'></a>**<br>
 
@@ -154,7 +154,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-05-22](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-06-19](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

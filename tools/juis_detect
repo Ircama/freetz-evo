@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+# This script is/was used by make to get firmware download url by juis
 SCRIPT="$(readlink -f $0)"
 PARENT="$(dirname ${SCRIPT%/*})"
 cd $PARENT

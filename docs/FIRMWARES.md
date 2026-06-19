@@ -154,7 +154,7 @@ Currently supported devices and firmwares
     - 257.07.30 rev99334 {ALL} [PSQ19P2NL4]
     - 257.07.58 rev108018 {ALL} [MOVE21NL1]
     - 257.08.02 rev117982 {ALL} [Smart24 P1 NL1]
-    - 257.08.20 rev123884 {ALL} [Smart24 P2]
+    - 257.08.25 rev133601 {ALL} [Smart24 P2 NL1]
   * __Fritz!Box 5590 Fiber__
     - 272.07.30 rev101793 {ALL} [PSQ19P2NL4]
     - 272.07.58 rev109907 {ALL} [MOVE21NL1]
@@ -445,7 +445,7 @@ Currently supported devices and firmwares
     - 271.07.30 rev94120 {ALL} [PSQ19P2NL4]
     - 271.07.59 rev113715 {ALL} [MOVE21NL2]
     - 271.08.02 rev117988 {ALL} [Smart24 P1 NL1]
-    - 271.08.20 rev124684 {ALL} [Smart24 P2]
+    - 271.08.25 rev133418 {ALL} [Smart24 P2 NL1]
   * __Fritz!Box Fon WLAN 7520__
     - 175.07.14 rev73182 {GER} [MESH18 NL4]
     - 175.07.29 rev92061 {ALL} [PSQ19P2NL4]
@@ -618,7 +618,7 @@ Currently supported devices and firmwares
   * __Fritz!Repeater 1200 AX__
     - 268.07.31 rev108167 {ALL} [PSQ19P2NL4]
     - 268.07.58 rev113012 {ALL} [MOVE21NL1]
-    - 268.08.20 rev127465 {ALL} [Smart24 P2]
+    - 268.08.25 rev133939 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 1200 AX v2 (UNTESTED)__
     - 296.08.03 rev120165 {ALL} [Smart24 P1 FCS]
     - 296.08.20 rev128093 {ALL} [Smart24 P2]
@@ -647,7 +647,7 @@ Currently supported devices and firmwares
   * __Fritz!Repeater 6000__
     - 253.07.31 rev109964 {ALL} [PSQ19P2NL4]
     - 253.07.58 rev113014 {ALL} [MOVE21NL1]
-    - 253.08.20 rev127464 {ALL} [Smart24 P2]
+    - 253.08.25 rev133938 {ALL} [Smart24 P2 NL1]
 
 ### Fritz!Smart
 
