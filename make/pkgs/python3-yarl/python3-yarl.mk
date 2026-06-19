@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 1.23.0)
+$(call PKG_INIT_BIN, 1.24.2)
 $(PKG)_SOURCE:=yarl-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=yarl-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/y/yarl
-$(PKG)_HASH:=53b1ea6ca88ebd4420379c330aea57e258408dd0df9af0992e5de2078dc9f5d5
+$(PKG)_HASH:=9ac374123c6fd7abf64d1fec93962b0bd4ee2c19751755a762a72dd96c0378f8
 ### WEBSITE:=https://github.com/aio-libs/yarl
 ### CHANGES:=https://github.com/aio-libs/yarl/releases
 ### CVSREPO:=https://github.com/aio-libs/yarl

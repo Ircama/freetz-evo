@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 12.1.1)
+$(call PKG_INIT_BIN, 12.2.0)
 $(PKG)_SOURCE:=pillow-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=pillow-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pillow
-$(PKG)_HASH:=9ad8fa5937ab05218e2b6a4cff30295ad35afd2f83ac592e68c0d871bb0fdbc4
+$(PKG)_HASH:=a830b1a40919539d07806aa58e1b114df53ddd43213d9c8b75847eee6c0182b5
 ### WEBSITE:=https://python-pillow.org/
 ### MANPAGE:=https://pillow.readthedocs.io/
 ### CHANGES:=https://pillow.readthedocs.io/en/stable/releasenotes/

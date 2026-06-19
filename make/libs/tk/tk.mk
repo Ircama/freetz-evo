@@ -57,6 +57,9 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	for f in $(dir $@)libtk$(TK_LIB_VERSION).so*; do \
 		if [ ! -L "$$f" ]; then $(TARGET_STRIP) "$$f"; fi; \
 	done
+	# Install Tk library scripts needed by wish/Tk applications
+	mkdir -p $(TK_DEST_DIR)/usr/lib
+	cp -a $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/tk$(TK_LIB_VERSION) $(TK_DEST_DIR)/usr/lib/
 	# Install wish binary (Tk shell)
 	mkdir -p $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin
 	cp -a $(TK_DIR)/unix/wish $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
@@ -86,6 +89,7 @@ $(pkg)-clean:
 $(pkg)-uninstall:
 	$(RM) $(TK_TARGET_DIR)/libtk*.so*
 	$(RM) $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
+	$(RM) -r $(TK_DEST_DIR)/usr/lib/tk$(TK_LIB_VERSION)
 	$(RM) $($(PKG)_DEST_USR_BIN)/wish
 
 $(PKG_FINISH)

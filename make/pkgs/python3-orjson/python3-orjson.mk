@@ -1,17 +1,60 @@
-$(call PKG_INIT_BIN, 3.10.7)
+$(call PKG_INIT_BIN, 3.11.9)
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+$(PKG)_SOURCE:=orjson-py3-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=orjson-$($(PKG)_VERSION).tar.gz
+$(PKG)_SITE:=https://files.pythonhosted.org/packages/source/o/orjson
+$(PKG)_HASH:=4fef17e1f8722c11587a6ef18e35902450221da0028e65dbaaa543619e68e48f
 ### WEBSITE:=https://github.com/ijl/orjson
+### CHANGES:=https://github.com/ijl/orjson/releases
+### CVSREPO:=https://github.com/ijl/orjson
 ### STEWARD:=Ircama
-### NOTE:=This package installs a pure-Python compatibility shim.
 
-$(PKG)_DEPENDS_ON += python3
+$(PKG)_DEPENDS_ON += python3 rust-host
 
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/orjson.py
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_ORJSON
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
+$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 
+PYTHON3_ORJSON_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+PYTHON3_ORJSON_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+PYTHON3_ORJSON_RUST_BUILD_STD:=std$(_comma)panic_abort
+
+$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/orjson/__init__.py
+
+$(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
+$(PKG_CONFIGURED_NOP)
 
-$($(PKG)_TARGET_BINARY):
-	@mkdir -p $(@D)
-	cp ./make/pkgs/python3-orjson/files/orjson.py $@
+PYTHON3_ORJSON_WORKDIR:=$(abspath $(PYTHON3_ORJSON_DIR))
+PYTHON3_ORJSON_CARGO_HOME:=$(PYTHON3_ORJSON_WORKDIR)/.cargo
+PYTHON3_ORJSON_RUSTUP_HOME:=$(HOME)/.rustup
+
+$($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
+	cd "$(PYTHON3_ORJSON_WORKDIR)" || exit 1; \
+	export HOME="$(PYTHON3_ORJSON_WORKDIR)"; \
+	export CARGO_HOME="$(PYTHON3_ORJSON_CARGO_HOME)"; \
+	export RUSTUP_HOME="$(PYTHON3_ORJSON_RUSTUP_HOME)"; \
+	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$$PATH; \
+	mkdir -p "$$CARGO_HOME"; \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
+		"$(PYTHON3_ORJSON_RUST_TARGET_DIR)" \
+		"$(TARGET_CROSS)gcc" \
+		"$(TARGET_CROSS)ar" \
+		> "$$CARGO_HOME/config.toml"; \
+	cargo fetch --manifest-path Cargo.toml --target "$(PYTHON3_ORJSON_RUST_TARGET_ARG)"
+	$(call Build/PyMod3/Pip, PYTHON3_ORJSON, , \
+		HOME="$(PYTHON3_ORJSON_WORKDIR)" \
+		CARGO_HOME="$(PYTHON3_ORJSON_CARGO_HOME)" \
+		RUSTUP_HOME="$(PYTHON3_ORJSON_RUSTUP_HOME)" \
+		PATH="$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH" \
+		CARGO_BUILD_TARGET="$(PYTHON3_ORJSON_RUST_TARGET_ARG)" \
+		RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)" \
+		$(if $(RUST_TARGET_NEEDS_STD_BUILD),CARGO_UNSTABLE_BUILD_STD="$(PYTHON3_ORJSON_RUST_BUILD_STD)") \
+		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc -C link-arg=-Wl$(_comma)-no-pie" \
+		PYO3_CROSS_LIB_DIR="$(PYTHON3_STAGING_LIB_DIR)" \
+		PYO3_CROSS_PYTHON_VERSION="$(PYTHON3_MAJOR_VERSION)" \
+	, isolated)
 
 $(pkg):
 
@@ -19,10 +62,13 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 
 $(pkg)-clean:
+	$(RM) -r $(PYTHON3_ORJSON_DIR)/.configured
 	$(RM) -r $(PYTHON3_ORJSON_DIR)/build
+	$(RM) -r $(PYTHON3_ORJSON_DIR)/.cargo
 
 $(pkg)-uninstall:
-	$(RM) -f \
-		$(PYTHON3_ORJSON_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/orjson.py
+	$(RM) -r \
+		$(PYTHON3_ORJSON_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/orjson \
+		$(PYTHON3_ORJSON_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/orjson-*.dist-info
 
 $(PKG_FINISH)

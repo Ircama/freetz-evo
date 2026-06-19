@@ -57,6 +57,10 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 			$(PATCHELF_TARGET) --set-rpath $(FREETZ_LIBRARY_DIR) "$$f" 2>/dev/null || true; \
 		done; \
 	fi
+	# Install Tcl library scripts (init.tcl etc.) needed by wish/Tcl applications
+	mkdir -p $(TCL_DEST_DIR)/usr/lib
+	cp -a $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/tcl$(TCL_LIB_VERSION) $(TCL_DEST_DIR)/usr/lib/
+	cp -a $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/tcl8 $(TCL_DEST_DIR)/usr/lib/
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
@@ -74,5 +78,6 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) $(TCL_TARGET_DIR)/libtcl*.so*
+	$(RM) -r $(TCL_DEST_DIR)/usr/lib/tcl$(TCL_LIB_VERSION) $(TCL_DEST_DIR)/usr/lib/tcl8
 
 $(PKG_FINISH)

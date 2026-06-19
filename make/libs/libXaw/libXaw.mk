@@ -28,9 +28,12 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
 	$(PKG_FIX_LIBTOOL_LA) $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXaw7.la
+	ln -sf libXaw7.so $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXaw.so
+	ln -sf libXaw7.so.7 $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXaw.so.7
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP)
+	ln -sf libXaw7.so.7 $(dir $@)libXaw.so.7
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 

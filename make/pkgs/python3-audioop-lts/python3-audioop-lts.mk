@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 0.2.1)
+$(call PKG_INIT_BIN, 0.2.2)
 $(PKG)_SOURCE:=audioop-lts-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=audioop_lts-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/a/audioop-lts
-$(PKG)_HASH:=e81268da0baa880431b68b1308ab7257eb33f356e57a5f9b1f915dfb13dd1387
+$(PKG)_HASH:=64d0c62d88e67b98a1a5e71987b7aa7b5bcffc7dcee65b635823dbdd0a8dbbd0
 ### WEBSITE:=https://github.com/AbstractUmbra/audioop
 ### CHANGES:=https://github.com/AbstractUmbra/audioop/releases
 ### CVSREPO:=https://github.com/AbstractUmbra/audioop

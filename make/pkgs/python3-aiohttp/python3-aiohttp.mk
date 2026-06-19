@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 3.13.3)
+$(call PKG_INIT_BIN, 3.13.5)
 $(PKG)_SOURCE:=aiohttp-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=aiohttp-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/a/aiohttp
-$(PKG)_HASH:=a949eee43d3782f2daae4f4a2819b2cb9b0c5d3b7f7a927067cc84dafdbb9f88
+$(PKG)_HASH:=9d98cc980ecc96be6eb4c1994ce35d28d8b1f5e5208a23b421187d1209dbb7d1
 ### WEBSITE:=https://github.com/aio-libs/aiohttp
 ### CHANGES:=https://github.com/aio-libs/aiohttp/releases
 ### CVSREPO:=https://github.com/aio-libs/aiohttp
