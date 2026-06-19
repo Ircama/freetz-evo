@@ -132,19 +132,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		-C $(MPD_DIR)/builddir/
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
-	cmd() { $(MPD_MESON_ENV) $(MESON) "$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } ; }; $(call _ECHO,building) cmd install \
-		--no-rebuild \
-		--destdir "$(abspath $(MPD_DEST_DIR))" \
-		-C $(MPD_DIR)/builddir/
-	$(RM) -r \
-		$(MPD_DEST_DIR)/usr/include \
-		$(MPD_DEST_DIR)/usr/lib/pkgconfig \
-		$(MPD_DEST_DIR)/usr/share
-	$(RM) $(MPD_DEST_DIR)/usr/lib/libfmt.a
-	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
-		$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(MPD_DEST_DIR)/usr/bin/mpd; \
-	fi
-	$(TARGET_STRIP) $(MPD_TARGET_BINARY) 2>/dev/null || true
+	$(INSTALL_BINARY_STRIP)
 
 $(pkg):
 

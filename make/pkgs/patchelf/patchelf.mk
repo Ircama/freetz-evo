@@ -11,11 +11,13 @@ $(PKG)_SITE:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSIO
 $(PKG)_CATEGORY:=Debug helpers
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
+$(PKG)_DEPENDS_ON += jemalloc
 
 $(PKG)_BINARY_BUILD := $($(PKG)_DIR)/src/patchelf
 $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/patchelf
 
 $(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -fPIC"
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -ljemalloc"
 
 
 ifneq ($($(PKG)_SOURCE),$(PATCHELF_HOST_SOURCE))
