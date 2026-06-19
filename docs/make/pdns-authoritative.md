@@ -4,7 +4,7 @@
   - Changelog: [https://doc.powerdns.com/authoritative/changelog/](https://doc.powerdns.com/authoritative/changelog/)
   - Repository: [https://github.com/PowerDNS/pdns](https://github.com/PowerDNS/pdns)
   - Package: [master/make/pkgs/pdns-authoritative/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/pdns-authoritative/)
-  - Steward: Ircama
+  - Steward: -
 
 PowerDNS in this port packages the Authoritative Server only. Upstream `recursor` is not included here, while `dnsdist` is available as a separate package.
 

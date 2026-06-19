@@ -1,4 +1,9 @@
 # eza 0.23.4
+  - Homepage: [https://github.com/eza-community/eza](https://github.com/eza-community/eza)
+  - Changelog: [https://github.com/eza-community/eza/releases](https://github.com/eza-community/eza/releases)
+  - Repository: [https://github.com/eza-community/eza](https://github.com/eza-community/eza)
+  - Package: [master/make/pkgs/eza/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/eza/)
+  - Steward: -
 
 - Homepage: https://github.com/eza-community/eza
 - Changelog: https://github.com/eza-community/eza/releases

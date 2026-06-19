@@ -1,4 +1,4 @@
-# go 1.23.4
+# go 1.25.10
   - Homepage: [https://go.dev/](https://go.dev/)
   - Manpage: [https://go.dev/doc/](https://go.dev/doc/)
   - Changelog: [https://go.dev/doc/devel/release](https://go.dev/doc/devel/release)

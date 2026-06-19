@@ -4,6 +4,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### A
 
+  * **[alsa-lib (libasound.so) 1.2.13](alsa-lib.md)<a id='alsa-lib'></a>**<br>
+    Installs libasound together with the required ALSA runtime modules and configuration files.
+
   * **[apr: Apache Portable Runtime Library (libapr-1.so) 1.7.4](apr.md)<a id='apr'></a>**<br>
     APR is Apache's Portable Runtime Library, designed to be a support library that provides a predictable and consistent interface to underlying platform-specific implementations.
 
@@ -22,6 +25,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[Cairo (libcairo.so) 1.18.4](cairo.md)<a id='cairo'></a>**<br>
     Cairo is a 2D graphics library with support for multiple output devices. Cairo is designed to produce consistent output on all output media while taking advantage of display hardware acceleration when available.
+
+  * **[CAPS LADSPA plugins (caps.so) 0.9.26](caps.md)<a id='caps'></a>**<br>
+    CAPS is the C* Audio Plugin Suite for LADSPA hosts. It provides the caps.so plugin library, including the Eq10 module commonly used by alsaequal.
 
 ### D
 
@@ -88,6 +94,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[json-c (libjson-c.so) json-c-0.17-20230812](json-c.md)<a id='json-c'></a>**<br>
     json-c is a JSON library implementing an object model allowing the creation and manipulation of JSON formatted strings. This library is required by ttyd. Project homepage: https://github.com/json-c/json-c
 
+### K
+
+  * **[krb5: MIT Kerberos core library (libkrb5.so) 1.21.3](krb5.md)<a id='krb5'></a>**<br>
+    MIT Kerberos 5 core runtime library required by software using Kerberos authentication.
+
 ### L
 
   * **[ldns: libldns (libldns.so) 1.7.1](ldns.md)<a id='ldns'></a>**<br>
@@ -95,6 +106,42 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[leptonica (liblept.so) 1.69](leptonica.md)<a id='leptonica'></a>**<br>
     A library for efficient image processing and image analysis operations.
+
+  * **[libICE (X11 Inter-Client Exchange) 1.1.1](libICE.md)<a id='libICE'></a>**<br>
+    X11 Inter-Client Exchange library (libICE.so). Required by libSM for session management. Website: https://www.x.org/
+
+  * **[libSM (X11 Session Management) 1.2.4](libSM.md)<a id='libSM'></a>**<br>
+    X11 Session Management library (libSM.so). Required by libXt for session management support. Website: https://www.x.org/
+
+  * **[libX11 (Core X11 protocol library) 1.8.10](libX11.md)<a id='libX11'></a>**<br>
+    Core X11 protocol client library (libX11.so). Required by Xt, Xext, and most X11 applications. Website: https://www.x.org/
+
+  * **[libXau (X11 authorization library) 1.0.11](libXau.md)<a id='libXau'></a>**<br>
+    X11 authorization library (libXau.so). Provides the X Authority file handling. Website: https://www.x.org/
+
+  * **[libXaw 1.0.16 (X11 Athena Widgets) 1.0.16](libXaw.md)<a id='libXaw'></a>**<br>
+    X11 Athena Widgets library (Xaw7).
+
+  * **[libXext (X11 Extension library) 1.3.6](libXext.md)<a id='libXext'></a>**<br>
+    X11 Extension library (libXext.so). Provides common X11 extensions (Shape, MIT-SHM, etc.). Website: https://www.x.org/
+
+  * **[libXfixes 6.0.2 (X11 Fixes) 6.0.2](libXfixes.md)<a id='libXfixes'></a>**<br>
+    X11 Fixes extension library.
+
+  * **[libXi 1.8.3 (X11 Input) 1.8.3](libXi.md)<a id='libXi'></a>**<br>
+    X11 Input extension library.
+
+  * **[libXmu 1.3.1 (X11 Misc Utilities) 1.3.1](libXmu.md)<a id='libXmu'></a>**<br>
+    X11 miscellaneous utility library.
+
+  * **[libXpm 3.5.19 (X11 Pixmap) 3.5.19](libXpm.md)<a id='libXpm'></a>**<br>
+    X11 pixmap library.
+
+  * **[libXt (X11 Toolkit Intrinsics) 1.3.0](libXt.md)<a id='libXt'></a>**<br>
+    X11 Toolkit Intrinsics library (libXt.so). Required by Tk toolkit for widget framework. Website: https://www.x.org/
+
+  * **[libarchive (libarchive.so) 3.8.2](libarchive.md)<a id='libarchive'></a>**<br>
+    like lnav to inspect compressed and archived log files.
 
   * **[libaria2](libaria2.md)<a id='libaria2'></a>**<br>
 
@@ -109,17 +156,20 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libavmhmac (libavmhmac.so) - EXPERIMENTAL 0.2](libavmhmac.md)<a id='libavmhmac'></a>**<br>
     Replaces AVM's libavmhmac. Our libavmhmac only forwards functions to openssl's libcrypto where AVM wrote their own implementations. We have no clue why they did this.
 
-  * **[libcap (libcap.so) 2.49/2.77](libcap.md)<a id='libcap'></a>**<br>
+  * **[libcap (libcap.so) 2.49/2.78](libcap.md)<a id='libcap'></a>**<br>
     A library for getting and setting POSIX.1e (formerly POSIX 6) draft 15 capabilities.
+
+  * **[libcap-ng (libcap-ng.so) 0.9.3](libcap-ng.md)<a id='libcap-ng'></a>**<br>
+    The libcap-ng library should make programming with posix capabilities easier. The library has some utilities to help you analyse a system for apps that may have too much privileges.
 
   * **[libcapi: CAPI 2.0 (libcapi20.so) avm-7390.05.50](libcapi.md)<a id='libcapi'></a>**<br>
     COMMON-ISDN-API (CAPI) 2.0 Library
 
-  * **[libcap-ng (libcap-ng.so) 0.8.5](libcap-ng.md)<a id='libcap-ng'></a>**<br>
-    The libcap-ng library should make programming with posix capabilities easier. The library has some utilities to help you analyse a system for apps that may have too much privileges.
-
   * **[libcares 1.28.1 (Async DNS resolver library) 1.34.6](libcares.md)<a id='libcares'></a>**<br>
     c-ares is a C library that performs DNS requests and name lookups asynchronously. It is intended for applications which need to perform DNS queries without blocking, or need to perform multiple DNS queries in parallel. This library is used by various download managers and networking tools for asynchronous DNS resolution.
+
+  * **[libcjson 1.7.19](libcjson.md)<a id='libcjson'></a>**<br>
+    Ultralightweight JSON parser in ANSI C.
 
   * **[libconfig (libconfig.so) 1.5](libconfig.md)<a id='libconfig'></a>**<br>
     Libconfig is a simple library for processing structured configuration files. Libconfig is very compact - just 46K for the stripped C shared library. This makes it well-suited for memory-constrained systems.
@@ -190,6 +240,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libmnl (libmnl.so) 1.0.4](libmnl.md)<a id='libmnl'></a>**<br>
     libmnl is a minimalistic user-space library oriented to Netlink developers. There are a lot of common tasks in parsing, validating, constructing of both the Netlink header and TLVs that are repetitive and easy to get wrong. This library aims to provide simple helpers that allows you to re-use code and to avoid re-inventing the wheel.
 
+  * **[libmpdclient (libmpdclient.so) 2.22](libmpdclient.md)<a id='libmpdclient'></a>**<br>
+    It is used by CLI and UI clients which connect to a local or remote MPD instance.
+
   * **[libmultid (libmultid.so) 1.0](libmultid.md)<a id='libmultid'></a>**<br>
     If this library is preloaded to multid, some portbindings will be remapped.
 
@@ -198,6 +251,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[libnfsidmap (libnfsidmap.so) 0.27](libnfsidmap.md)<a id='libnfsidmap'></a>**<br>
     This library provides support for the idmapd service used by NFSv4.
+
+  * **[libnl (libnl-3, libnl-cli-3, libnl-genl-3, libnl-route-3) 3.11.0](libnl.md)<a id='libnl'></a>**<br>
+    libnl is a collection of libraries providing APIs to netlink protocol based Linux kernel interfaces.
 
   * **[libogg (libogg.so) 1.3.2](libogg.md)<a id='libogg'></a>**<br>
     Libogg is a library for manipulating ogg bitstreams. It handles both making ogg bitstreams and getting packets from ogg bitstreams.
@@ -214,8 +270,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libpcap (libpcap.so) 1.1.1/1.10.6](libpcap.md)<a id='libpcap'></a>**<br>
     libpcap is a system-independent interface for user-level packet capture. libpcap provides a portable framework for low-level network monitoring. Applications include network statistics collection, security monitoring, network debugging, etc.
 
-  * **[libpng: PNG library (libpng.so) 1.6.57](libpng.md)<a id='libpng'></a>**<br>
+  * **[libpng: PNG library (libpng.so) 1.6.58](libpng.md)<a id='libpng'></a>**<br>
     libpng is the official PNG reference library. It supports almost all PNG features, is extensible, and has been extensively tested for over 12 years. The home site for development versions (i.e., may be buggy or subject to change or include experimental features) is http://libpng.sourceforge.net/, and the place to go for questions about the library is the png-mng-implement mailing list.
+
+  * **[libsodium (libsodium.so) 1.0.20](libsodium.md)<a id='libsodium'></a>**<br>
 
   * **[libssh2 (libssh2.so) 1.11.1](libssh2.md)<a id='libssh2'></a>**<br>
     libssh2 is a client-side C library implementing the SSH2 protocol.
@@ -235,6 +293,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libtool (libltdl.so) 1.5.26](libtool.md)<a id='libtool'></a>**<br>
     A generic dynamic object loading library
 
+  * **[libunistring (libunistring.so) 1.4](libunistring.md)<a id='libunistring'></a>**<br>
+
   * **[liburcu (liburcu.so) 0.15.6](liburcu.md)<a id='liburcu'></a>**<br>
     liburcu is a LGPLv2.1 userspace RCU (read-copy-update) library. This data synchronization library provides read-side access which scales linearly with the number of cores.
 
@@ -253,14 +313,21 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libwebsockets (libwebsockets.so) 4.3.9](libwebsockets.md)<a id='libwebsockets'></a>**<br>
     libwebsockets is a lightweight, low-latency C library for WebSocket clients and servers, HTTP/2, and more. Required by ttyd (web-based terminal). Project homepage: https://libwebsockets.org/
 
-  * **[libxml2 (libxml2.so) 2.15.2](libxml2.md)<a id='libxml2'></a>**<br>
+  * **[libxcb (X11 C Binding) 1.17.0](libxcb.md)<a id='libxcb'></a>**<br>
+    X C-language Binding library (libxcb.so). Replaces the core X11 protocol library for modern X11. Website: https://www.x.org/
+
+  * **[libxml2 (libxml2.so) 2.15.3](libxml2.md)<a id='libxml2'></a>**<br>
     XML toolkit from the GNOME project
 
   * **[libzen (libzen.so) 0.4.41](libzen.md)<a id='libzen'></a>**<br>
     ZenLib is a C++ library that supplements the standard library. It is used by MediaInfo as a dependency.
 
+  * **[libzmq: ZeroMQ (libzmq.so) 4.3.5](libzmq.md)<a id='libzmq'></a>**<br>
+
   * **[linux-atm (libatm.so) 2.5.2](linux-atm.md)<a id='linux-atm'></a>**<br>
     Libatm is a library for accessing the Linux ATM subsystem.
+
+  * **[LMDB (liblmdb.so) 0.9.33](lmdb.md)<a id='lmdb'></a>**<br>
 
   * **[LZ4 (liblz4.so) 1.10.0](lz4.md)<a id='lz4'></a>**<br>
     LZ4 is a very fast lossless compression algorithm, providing compression speed at 400 MB/s per core, scalable with multi-cores CPU. It also features an extremely fast decoder, with speed in multiple GB/s per core, typically reaching RAM speed limits on multi-core systems.
@@ -369,6 +436,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[taglib (libtag.so) 1.6.3](taglib.md)<a id='taglib'></a>**<br>
     TagLib is a library for reading and editing the meta-data of several popular audio formats. Currently it supports both ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC, MPC, Speex, WavPack TrueAudio, WAV, AIFF, MP4 and ASF files.
 
+  * **[Tcl (libtcl8.6.so) 8.6.16](tcl.md)<a id='tcl'></a>**<br>
+    Tcl is a very powerful but easy to learn dynamic programming language, providing a wide range of useful features. This package provides the Tcl shared library (libtcl8.6.so) required by Python's tkinter module. Website: https://www.tcl.tk/ Source: https://core.tcl-lang.org/tcl/
+
+  * **[tinycdb (libcdb.so) 0.81](tinycdb.md)<a id='tinycdb'></a>**<br>
+
+  * **[Tk (libtk8.6.so) 8.6.16](tk.md)<a id='tk'></a>**<br>
+    Tk is a cross-platform toolkit for creating graphical user interfaces. This package provides the Tk shared library (libtk8.6.so) required by Python's tkinter module. Tk requires X11 client libraries (libX11, libXt) to build and to connect to a remote X11 display server via DISPLAY=<host>:<screen>. Website: https://www.tcl.tk/ Source: https://core.tcl-lang.org/tk/
+
 ### U
 
   * **[uClibc (ld-uClibc-x.y.z.so) 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.58](uclibc.md)<a id='uclibc'></a>**<br>
@@ -383,15 +458,29 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[utf8proc (libutf8proc.so) 2.7.0](utf8proc.md)<a id='utf8proc'></a>**<br>
     a clean C library for processing UTF-8 Unicode data: normalization, case-folding, graphemes, and more
 
+  * **[util-macros (X.org autoconf macros) 1.20.2](util-macros.md)<a id='util-macros'></a>**<br>
+    X.org autoconf macros package (xorg-macros.pc). Required by all X.org packages at configure time. This is a header/macros-only package, no shared library. Website: https://www.x.org/
+
 ### X
+
+  * **[xcb-proto (XCB protocol descriptions) 1.17.0](xcb-proto.md)<a id='xcb-proto'></a>**<br>
+    XCB protocol descriptions needed to build libxcb. This is a header-only package, no shared library. Website: https://www.x.org/
 
   * **[xmlrpc: libxmlrpc.so 1.64.03](xmlrpc.md)<a id='xmlrpc'></a>**<br>
     xmlrpc-c core library
+
+  * **[xorgproto (X11 protocol headers) 2024.1](xorgproto.md)<a id='xorgproto'></a>**<br>
+    Xorg protocol headers package providing the X11 protocol definitions needed to compile X11 client libraries (libX11, libXt, etc.). This is a header-only package, no shared library. Website: https://www.x.org/
+
+  * **[xtrans (X11 transport layer headers) 1.5.2](xtrans.md)<a id='xtrans'></a>**<br>
+    X transport layer headers needed to build libX11. This is a header-only package, no shared library. Website: https://www.x.org/
 
 ### Y
 
   * **[yaml: libyaml (libyaml.so) 0.2.5](yaml.md)<a id='yaml'></a>**<br>
     LibYAML is a YAML 1.1 configuration file parser and emitter.
+
+  * **[yaml-cpp (libyaml-cpp.so) 0.8.0](yaml-cpp.md)<a id='yaml-cpp'></a>**<br>
 
 ### Z
 

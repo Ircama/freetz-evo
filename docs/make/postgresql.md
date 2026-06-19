@@ -1,8 +1,9 @@
-# PostgreSQL 16.3
+# PostgreSQL 16.3 (client tools)
   - Homepage: [https://www.postgresql.org/](https://www.postgresql.org/)
   - Changelog: [https://www.postgresql.org/docs/release/](https://www.postgresql.org/docs/release/)
   - Repository: [https://git.postgresql.org/gitweb/?p=postgresql.git](https://git.postgresql.org/gitweb/?p=postgresql.git)
-  - Package: [../../make/pkgs/postgresql/](../../make/pkgs/postgresql/)
+  - Package: [master/make/pkgs/postgresql/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/postgresql/)
+  - Steward: -
 
   - Provides: `libpq.so.5.16`
   - Externalization: supported

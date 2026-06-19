@@ -1,7 +1,7 @@
 # uv 0.11.16
-  - Homepage: [https://pypi.org/project/uv/](https://pypi.org/project/uv/)
+  - Homepage: [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv)
   - Repository: [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv)
-  - Package: [master/make/pkgs/python3-uv/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/python3-uv/)
+  - Package: [master/make/pkgs/python3-uv/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-uv/)
   - Steward: Ircama
 
 `uv` is a fast Python package and project manager written in Rust.

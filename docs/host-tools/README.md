@@ -52,7 +52,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[gmp 6.3.0](gmp-host.md)<a id='gmp-host'></a>**<br>
 
-  * **[go 1.23.4](go-host.md)<a id='go-host'></a>**<br>
+  * **[go 1.25.10](go-host.md)<a id='go-host'></a>**<br>
 
   * **[gperf 3.3](gperf-host.md)<a id='gperf-host'></a>**<br>
 
@@ -68,9 +68,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[lzma1 465](lzma1-host.md)<a id='lzma1-host'></a>**<br>
 
-  * **[lzma2eva 1.0](lzma2eva-host.md)<a id='lzma2eva-host'></a>**<br>
-
   * **[lzma2 5.8.3](lzma2-host.md)<a id='lzma2-host'></a>**<br>
+
+  * **[lzma2eva 1.0](lzma2eva-host.md)<a id='lzma2eva-host'></a>**<br>
 
 ### M
 
@@ -131,6 +131,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-referencing 0.37.0](python3-referencing-host.md)<a id='python3-referencing-host'></a>**<br>
 
   * **[python3-setuptools 82.0.1](python3-setuptools-host.md)<a id='python3-setuptools-host'></a>**<br>
+
+### R
+
+  * **[rust 1.0.0](rust-host.md)<a id='rust-host'></a>**<br>
 
 ### S
 

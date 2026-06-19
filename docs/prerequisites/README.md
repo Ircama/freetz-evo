@@ -251,7 +251,7 @@ sudo apt-get -y install \
   lib32ncurses-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat-openbsd patch \
-  patchutils perl pkg-config pv python3 rsync sharutils sqlite3 subversion sudo texinfo unar unzip \
+  patchutils perl pkg-config pv python3 rsync rustup sharutils sqlite3 subversion sudo texinfo unar unzip \
   uuid-dev wget zip zlib1g-dev
 ```
 
@@ -263,7 +263,7 @@ sudo apt-get -y install \
   lib32ncurses-dev lib32stdc++6 lib32z1-dev libacl1-dev libc6-dev-i386 libcap-dev libelf-dev \
   libglib2.0-dev libgnutls28-dev libncurses-dev libreadline-dev libsqlite3-dev libssl-dev \
   libstring-crc32-perl libtool-bin libusb-dev libxml2-dev libzstd-dev make ncftp net-tools netcat-openbsd patch \
-  patchutils perl pkg-config pv python3 rsync sharutils sqlite3 subversion sudo texinfo unar unzip \
+  patchutils perl pkg-config pv python3 rsync rustup sharutils sqlite3 subversion sudo texinfo unar unzip \
   uuid-dev wget zip zlib1g-dev
 ```
 

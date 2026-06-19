@@ -50,8 +50,8 @@ perl
 pkg-config
 pv
 python3
-rustup
 rsync
+rustup
 sharutils
 sqlite3
 subversion

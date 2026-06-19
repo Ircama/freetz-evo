@@ -1,8 +1,9 @@
-# OpenLDAP 2.6.8 (client libraries)
+# OpenLDAP 2.6.8 (client tools)
   - Homepage: [https://www.openldap.org/](https://www.openldap.org/)
   - Changelog: [https://www.openldap.org/software/release/changes.html](https://www.openldap.org/software/release/changes.html)
   - Repository: [https://git.openldap.org/openldap/openldap](https://git.openldap.org/openldap/openldap)
-  - Package: [../../make/pkgs/openldap/](../../make/pkgs/openldap/)
+  - Package: [master/make/pkgs/openldap/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/openldap/)
+  - Steward: -
 
   - Provides: `liblber.so.2.200.0`, `libldap.so.2.200.0`
   - Externalization: supported

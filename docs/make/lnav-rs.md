@@ -1,4 +1,9 @@
 # lnav-rs 0.1.0
+  - Homepage: [https://github.com/huskercane/lnav-rs](https://github.com/huskercane/lnav-rs)
+  - Changelog: [https://github.com/huskercane/lnav-rs/commits/main](https://github.com/huskercane/lnav-rs/commits/main)
+  - Repository: [https://github.com/huskercane/lnav-rs](https://github.com/huskercane/lnav-rs)
+  - Package: [master/make/pkgs/lnav-rs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lnav-rs/)
+  - Steward: -
 
 - Homepage: https://github.com/huskercane/lnav-rs
 - Changelog: https://github.com/huskercane/lnav-rs/commits/main

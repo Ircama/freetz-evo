@@ -1,4 +1,6 @@
-# melcloud (freetz package)
+# MELCloud CLI + CGI dashboard
+  - Package: [master/make/pkgs/melcloud/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/melcloud/)
+  - Steward: Ircama
 
 - Homepage: https://www.melcloud.com/
 - Package: ../../make/pkgs/melcloud/

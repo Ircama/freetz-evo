@@ -1,4 +1,9 @@
 # bat 0.26.1
+  - Homepage: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
+  - Changelog: [https://github.com/sharkdp/bat/releases](https://github.com/sharkdp/bat/releases)
+  - Repository: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
+  - Package: [master/make/pkgs/bat/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bat/)
+  - Steward: -
 
 - Homepage: https://github.com/sharkdp/bat
 - Changelog: https://github.com/sharkdp/bat/releases
