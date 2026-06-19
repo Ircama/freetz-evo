@@ -5,7 +5,7 @@ config FREETZ_PACKAGE_AMUTORRENT
         bool "aMUTorrent 3.5.0 - DEVELOPER"
         default n
         help
-                Experimental package for developers: installs aMUTorrent as a service
+                Experimental package, needs Node.js: installs aMUTorrent as a service
                 with full Node.js, with the frontend built on the host system and the
                 Express/WebSocket backend running on the target.
 
@@ -15,12 +15,7 @@ config FREETZ_PACKAGE_AMUTORRENT
                 The page http://fritz.box:81/amutorrent/ redirects to the service port
                 (4000 by default) and displays a diagnostic page if the daemon is not running.
 
-                By selecting this package, the Node.js runtime for the target is also
-                automatically enabled, remaining hidden outside developer mode.
-
                 Note: the Node.js porting on the target is not yet considered functional;
                 for this reason the package remains in developer mode, disabled by default,
                 and should not be considered ready for normal use.
-
-                Requires the host programs node and npm for the build.
 
