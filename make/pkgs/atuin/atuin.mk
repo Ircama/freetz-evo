@@ -17,10 +17,7 @@ ATUIN_CARGO_HOME:=$(abspath $(ATUIN_DIR)/.cargo)
 $(PKG)_BINARY:=$(ATUIN_DIR)/target/$(ATUIN_RUST_TARGET_DIR)/release/atuin
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/atuin
 
-$(PKG)_DEPENDS_ON += rust-host
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+$(eval $(call RUST_DEPENDS_VARS))
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -32,23 +29,45 @@ $($(PKG)_BINARY): $(ATUIN_DIR)/.configured
 	export HOME="$(abspath $(ATUIN_DIR))"; \
 	export CARGO_HOME="$(ATUIN_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	export XDG_CACHE_HOME="$(abspath $(ATUIN_DIR))/.cache"; \
+	export RUSTFLAGS="-C link-arg=-Wl,-no-pie -C link-arg=-latomic"; \
 	mkdir -p "$$CARGO_HOME"; \
+	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie", "-C", "link-arg=-latomic"]\n' \
+		"$(ATUIN_RUST_TARGET_DIR)" \
+		"$(TARGET_CROSS)gcc" \
+		"$(TARGET_CROSS)ar" \
+		> "$$CARGO_HOME/config.toml"; \
 	cargo fetch --locked --target "$(ATUIN_RUST_TARGET_ARG)"; \
 	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs; do \
 		[ -f "$$socket2_src" ] || continue; \
 		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
 	done; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
-	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
-		"$(ATUIN_RUST_TARGET_DIR)" \
-		"$(TARGET_CROSS)gcc" \
-		"$(TARGET_CROSS)ar" \
-		> "$$CARGO_HOME/config.toml"; \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
+	for libc_uclibc_mod in $$HOME/.cargo/registry/src/*/libc-0.2.183/src/unix/linux_like/linux/uclibc/mod.rs; do \
+		[ -f "$$libc_uclibc_mod" ] || continue; \
+		if ! grep -q 'MFD_HUGE_1MB' "$$libc_uclibc_mod"; then \
+			perl -0pi -e 's@(pub const MAP_HUGE_16GB: c_int = 34 << MAP_HUGE_SHIFT;)@$$1\n\n// MFD_HUGE constants (from linux_l4re_shared, missing on uClibc)\npub const MFD_HUGETLB: c_uint = 0x0004;\npub const MFD_HUGE_64KB: c_uint = 0x40000000;\npub const MFD_HUGE_512KB: c_uint = 0x4c000000;\npub const MFD_HUGE_1MB: c_uint = 0x50000000;\npub const MFD_HUGE_2MB: c_uint = 0x54000000;\npub const MFD_HUGE_8MB: c_uint = 0x5c000000;\npub const MFD_HUGE_16MB: c_uint = 0x60000000;\npub const MFD_HUGE_32MB: c_uint = 0x64000000;\npub const MFD_HUGE_256MB: c_uint = 0x70000000;\npub const MFD_HUGE_512MB: c_uint = 0x74000000;\npub const MFD_HUGE_1GB: c_uint = 0x78000000;\npub const MFD_HUGE_2GB: c_uint = 0x7c000000;\npub const MFD_HUGE_16GB: c_uint = 0x88000000;\npub const MFD_HUGE_MASK: c_uint = 63;\npub const MFD_HUGE_SHIFT: c_uint = 26;@s' "$$libc_uclibc_mod"; \
+		fi; \
+	done; \
+	for boxcar_src in $$HOME/.cargo/registry/src/*/boxcar-*/src/lib.rs; do \
+		[ -f "$$boxcar_src" ] || continue; \
+		if ! grep -q 'Freetz 32-bit AtomicU64 fallback' "$$boxcar_src"; then \
+			perl -0pi -e 's@(use std::sync::atomic::\{AtomicBool, AtomicPtr, AtomicU64, Ordering\};)@// Freetz 32-bit AtomicU64 fallback for targets without native 64-bit atomics.\n#[cfg(target_has_atomic = "64")]\nuse std::sync::atomic::{AtomicBool, AtomicPtr, AtomicU64, Ordering};\n#[cfg(not(target_has_atomic = "64"))]\nuse std::sync::{atomic::{AtomicBool, AtomicPtr, Ordering}, Mutex};\n\n#[cfg(not(target_has_atomic = "64"))]\n#[derive(Debug)]\nstruct AtomicU64(Mutex<u64>);\n\n#[cfg(not(target_has_atomic = "64"))]\nimpl AtomicU64 {\n    fn new(val: u64) -> Self { Self(Mutex::new(val)) }\n    fn load(&self, _: Ordering) -> u64 { *self.0.lock().unwrap() }\n    fn store(&self, val: u64, _: Ordering) { *self.0.lock().unwrap() = val; }\n    fn fetch_add(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock += val; prev }\n    fn fetch_or(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock |= val; prev }\n    fn into_inner(self) -> u64 { self.0.into_inner().unwrap() }\n}@s' "$$boxcar_src"; \
+		fi; \
+	done; \
+	for atuin_boxcar_src in $$HOME/crates/atuin-nucleo/src/boxcar.rs; do \
+		[ -f "$$atuin_boxcar_src" ] || continue; \
+		if ! grep -q 'Freetz 32-bit AtomicU64 fallback' "$$atuin_boxcar_src"; then \
+			perl -0pi -e 's@(use std::sync::atomic::\{AtomicBool, AtomicPtr, AtomicU64, Ordering\};)@// Freetz 32-bit AtomicU64 fallback for targets without native 64-bit atomics.\n#[cfg(target_has_atomic = "64")]\nuse std::sync::atomic::{AtomicBool, AtomicPtr, AtomicU64, Ordering};\n#[cfg(not(target_has_atomic = "64"))]\nuse std::sync::{atomic::{AtomicBool, AtomicPtr, Ordering}, Mutex};\n\n#[cfg(not(target_has_atomic = "64"))]\n#[derive(Debug)]\nstruct AtomicU64(Mutex<u64>);\n\n#[cfg(not(target_has_atomic = "64"))]\nimpl AtomicU64 {\n    fn new(val: u64) -> Self { Self(Mutex::new(val)) }\n    fn load(&self, _: Ordering) -> u64 { *self.0.lock().unwrap() }\n    fn store(&self, val: u64, _: Ordering) { *self.0.lock().unwrap() = val; }\n    fn fetch_add(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock += val; prev }\n    fn fetch_or(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock |= val; prev }\n    fn into_inner(self) -> u64 { self.0.into_inner().unwrap() }\n}@s' "$$atuin_boxcar_src"; \
+		fi; \
+	done; \
 	$(ATUIN_CARGO_BUILD_CMD) --target "$(ATUIN_RUST_TARGET_ARG)" --bin atuin || CARGO_BUILD_JOBS=1 $(ATUIN_CARGO_BUILD_CMD) --target "$(ATUIN_RUST_TARGET_ARG)" --bin atuin
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
 
-$(pkg):
+$(pkg): $($(PKG)_TARGET_BINARY)
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 

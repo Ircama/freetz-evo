@@ -9,6 +9,7 @@ $(PKG)_HASH:=4b435fcb0af8f34833dcc1903a8a223856437efd0d515c2160a2871def221238
 ### STEWARD:=Ircama
 
 $(PKG)_DEPENDS_ON += python3 rust-host
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_UV
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
@@ -83,6 +84,12 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),CARGO_UNSTABLE_BUILD_STD=$(PYTHON3_UV_RUST_BUILD_STD)) \
 		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc -C link-arg=-Wl$(_comma)-no-pie" \
 	, isolated, no-build-ext-config)
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		for f in uv uvx uvw; do \
+			[ -f "$(PYTHON3_UV_DEST_DIR)/usr/bin/$$f" ] || continue; \
+			$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(PYTHON3_UV_DEST_DIR)/usr/bin/$$f; \
+		done; \
+	fi
 
 $(pkg):
 

@@ -15,6 +15,7 @@ $(PKG)_BUILD_SUBDIR:=unix
 $(PKG)_DEPENDS_ON += tcl
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_LIB_libX11),libX11)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_LIB_libXt),libXt)
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-threads
@@ -60,6 +61,13 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	mkdir -p $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin
 	cp -a $(TK_DIR)/unix/wish $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
 	$(TARGET_STRIP) $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $(TARGET_SPECIFIC_ROOT_DIR)/usr/bin/wish; \
+		for f in $(dir $@)libtk$(TK_LIB_VERSION).so*; do \
+			[ -L "$$f" ] && continue; \
+			$(PATCHELF_TARGET) --set-rpath $(FREETZ_LIBRARY_DIR) "$$f" 2>/dev/null || true; \
+		done; \
+	fi
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 

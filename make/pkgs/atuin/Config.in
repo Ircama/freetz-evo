@@ -1,8 +1,5 @@
 config FREETZ_PACKAGE_ATUIN
 	bool "atuin 18.16.1"
-	depends on !FREETZ_TARGET_ARCH_MIPS
 	default n
 	help
 		atuin utility package built from source using Rust/Cargo.
-
-		Disabled on MIPS targets due rustix/uClibc incompatibilities.

@@ -24,6 +24,8 @@ $(PKG)_CONFIGURE_ENV += tcl_cv_strtod_buggy=1
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libtcl
 
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
+
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -49,6 +51,12 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	for f in $(dir $@)libtcl$(TCL_LIB_VERSION).so*; do \
 		if [ ! -L "$$f" ]; then $(TARGET_STRIP) "$$f"; fi; \
 	done
+	@if [ "$(FREETZ_SEPARATE_AVM_UCLIBC)" = "y" ]; then \
+		for f in $(dir $@)libtcl$(TCL_LIB_VERSION).so*; do \
+			[ -L "$$f" ] && continue; \
+			$(PATCHELF_TARGET) --set-rpath $(FREETZ_LIBRARY_DIR) "$$f" 2>/dev/null || true; \
+		done; \
+	fi
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
