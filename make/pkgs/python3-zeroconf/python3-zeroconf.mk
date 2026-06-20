@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 0.148.0)
+$(call PKG_INIT_BIN, 0.149.16)
 $(PKG)_SOURCE:=zeroconf-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=zeroconf-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/z/zeroconf
-$(PKG)_HASH:=03fcca123df3652e23d945112d683d2f605f313637611b7d4adf31056f681702
+$(PKG)_HASH:=5e6b5a3b153c2cc2a8d9e6f6f189ec5638f7d9c86fc3e88a6c53eb6863761a5e
 ### WEBSITE:=https://github.com/python-zeroconf/python-zeroconf
 ### CVSREPO:=https://github.com/python-zeroconf/python-zeroconf
 ### STEWARD:=Ircama

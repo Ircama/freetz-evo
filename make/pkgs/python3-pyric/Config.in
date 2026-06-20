@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_PYTHON3_PYRIC
+	bool "PyRIC 0.1.6.3 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Python Radio Interface Controller (pyric).
+		Linux wireless library providing nl80211 interface
+		for managing wireless interfaces, channels, and connections.
+		
+		Website: http://wraith-wireless.github.io/PyRIC/

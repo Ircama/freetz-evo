@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 4.0.0)
+$(call PKG_INIT_BIN, 5.0.22)
 $(PKG)_SOURCE:=dbus-fast-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=dbus_fast-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/d/dbus-fast
-$(PKG)_HASH:=e1d3ee49a4a81524d7caaa2d5a31fc71075a1c977b661df958cee24bef86b8fe
+$(PKG)_HASH:=34dc67d7d21a12399828dd13e63b352750580beea54ea7c729e708f2d2905fef
 ### WEBSITE:=https://github.com/Bluetooth-Devices/dbus-fast
 ### CHANGES:=https://github.com/Bluetooth-Devices/dbus-fast/releases
 ### CVSREPO:=https://github.com/Bluetooth-Devices/dbus-fast

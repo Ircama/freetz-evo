@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_PYTHON3_REGEX
+	bool "regex 2026.5.9 (C extension)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_SETUPTOOLS
+	default n
+	help
+		Alternative regular expression module for Python 3,
+		backwards-compatible with the standard 're' module.
+		Provides additional features including fuzzy matching,
+		POSIX matching, recursive patterns and more.
+		
+		Website: https://github.com/mrabarnett/mrab-regex

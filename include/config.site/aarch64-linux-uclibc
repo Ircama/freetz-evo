@@ -17,3 +17,6 @@ ac_cv_c_bigendian=no
 # Common values for all architectures
 . $FREETZ_BASE_DIR/include/config.site/_common-linux-uclibc
 
+# Architecture-specific overrides after common files
+ac_cv_alignof_max_align_t=8
+

@@ -88,8 +88,8 @@ $(PKG)_CONFIGURE_OPTIONS += --with-ensurepip=no
 $(PKG)_CONFIGURE_OPTIONS += --enable-ipv6
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_STATIC),--disable-shared,--enable-shared)
 
-$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),--with-tcltk-includes="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include")
-$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),--with-tcltk-libs="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ltcl8.6 -ltk8.6")
+$(PKG)_CONFIGURE_ENV += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),TCLTK_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include")
+$(PKG)_CONFIGURE_ENV += $(if $(FREETZ_PACKAGE_PYTHON3_MOD_TKINTER),TCLTK_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -ltk8.6 -ltcl8.6 -lX11 -lxcb -lXau")
 
 # remove local copy of libffi, we use system one
 $(PKG)_CONFIGURE_PRE_CMDS += $(RM) -r Modules/_ctypes/libffi*;

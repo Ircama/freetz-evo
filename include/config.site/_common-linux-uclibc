@@ -1,5 +1,11 @@
 # Common values for all architectures
 
+# Sizes (universal across all architectures)
+ac_cv_sizeof_float=4
+ac_cv_sizeof_double=8
+ac_cv_sizeof__Bool=1
+ac_cv_sizeof_wchar_t=4
+
 # Types
 ac_cv_type_pid_t=yes
 ac_cv_type_ptrdiff_t=yes

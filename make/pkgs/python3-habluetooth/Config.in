@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_PYTHON3_HABLUETOOTH
+	bool "habluetooth 6.8.3 (pure python, prerequisite)"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_BLUETOOTH_DATA_TOOLS
+	select FREETZ_PACKAGE_PYTHON3_DBUS_FAST
+	default n
+	help
+		High availability Bluetooth library for Home Assistant.
+		Provides reliable BLE scanning and connection management
+		with automatic recovery.

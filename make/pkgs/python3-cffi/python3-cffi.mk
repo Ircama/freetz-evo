@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, 1.17.1)
+$(call PKG_INIT_BIN, 2.0.0)
 $(PKG)_SOURCE:=cffi-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=cffi-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/c/cffi
-$(PKG)_HASH:=1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824
+$(PKG)_HASH:=44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529
 ### WEBSITE:=https://cffi.readthedocs.io/
 ### MANPAGE:=https://cffi.readthedocs.io/en/latest/
 ### CHANGES:=https://cffi.readthedocs.io/en/latest/whatsnew.html
