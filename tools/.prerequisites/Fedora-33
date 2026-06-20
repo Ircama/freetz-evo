@@ -50,5 +50,6 @@ unar
 util-linux
 wget
 xz
+xz-devel
 zlib-devel
 zlib-devel.i686

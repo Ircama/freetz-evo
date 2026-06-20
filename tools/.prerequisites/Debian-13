@@ -30,8 +30,7 @@ libc6-dev-i386
 libcap-dev
 libelf-dev
 libglib2.0-dev
-libgnutls28-dev
-libncurses5-dev
+libgnutls28-devliblzma-devlibncurses5-dev
 libreadline-dev
 libsqlite3-dev
 libssl-dev

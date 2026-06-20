@@ -24,4 +24,5 @@ pkgconfig
 subversion
 texinfo
 wget
+xz-devel
 zlib-devel
