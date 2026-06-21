@@ -1,8 +1,10 @@
-$(call PKG_INIT_BIN, 2.4.3)
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_PYTHON3_NUMPY_VERSION_ABANDON),2.3.2,2.4.3))
 $(PKG)_SOURCE:=numpy-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=numpy-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/n/numpy
-$(PKG)_HASH:=483a201202b73495f00dbc83796c6ae63137a9bdade074f7648b3e32613412dd
+$(PKG)_HASH_ABANDON:=e0486a11ec30cdecb53f184d496d1c6a20786c81e55e41640270130056f8ee48
+$(PKG)_HASH_CURRENT:=483a201202b73495f00dbc83796c6ae63137a9bdade074f7648b3e32613412dd
+$(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_PYTHON3_NUMPY_VERSION_ABANDON),ABANDON,CURRENT))
 ### WEBSITE:=https://numpy.org/
 ### MANPAGE:=https://numpy.org/doc/stable/
 ### CHANGES:=https://numpy.org/doc/stable/release.html
@@ -13,6 +15,8 @@ $(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += meson-host
 $(PKG)_DEPENDS_ON += ninja-host
 $(PKG)_DEPENDS_ON += openlibm
+
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_NUMPY_VERSION_ABANDON
 
 PYTHON3_NUMPY_MESON_CROSS_FILE:=$(PYTHON3_NUMPY_DIR)/meson.freetz
 
