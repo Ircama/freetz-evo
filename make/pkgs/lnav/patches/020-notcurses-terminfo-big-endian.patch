@@ -1,6 +1,6 @@
 --- a/src/third-party/notcurses/src/lib/terminfo.c
 +++ b/src/third-party/notcurses/src/lib/terminfo.c
-@@ -136,7 +136,21 @@
+@@ -136,7 +136,19 @@
      }* header = (void*) content;
      int num_size = 0;
 +    int swapped = 0;
@@ -18,7 +18,10 @@
  
      if (header->magic == TERMINFO_MAGIC) {
          num_size = 2;
-@@ -225,6 +236,14 @@
+     } else if (header->magic == TERMINFO_MAGIC_32BIT) {
+         num_size = 4;
+
+@@ -223,9 +237,17 @@
          uint16_t strtab_end;
      }* ext_header = (void*) content;
  
@@ -33,4 +36,7 @@
  
      if (remaining < sizeof(*ext_header)) {
          return retval;
+     }
+ 
+     content += sizeof(*ext_header);
 

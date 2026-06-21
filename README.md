@@ -15,12 +15,14 @@ Freetz-EVO builds on that foundation with additional packages, UX improvements, 
 Freetz-EVO includes:
 
 - over 100 new packages and libraries, including exclusive applications,
-- over 60 python3 libraries,
+- over 70 python3 libraries,
 - about 20 added packages,
 - about 40 improved packages and libraries,
 - USB audio stack, playback tools, and web radio functions,
 - microcontroller flasher tools to enable USB peripheral devices.
 - built-in Go and Rust toolchains to compile Go and Rust packages.
+
+The extensive Python3 support allows installing and running [Home Assistant](https://www.home-assistant.io).
 
 Relevant new packages include rtorrent with improved ruTorrent web tool, aria2 with AriaNg web tool, a Disk Management interactive web tool, ncdu web tool, improved elfinder Web tool, GCC on-device, nginx and many others.
 
