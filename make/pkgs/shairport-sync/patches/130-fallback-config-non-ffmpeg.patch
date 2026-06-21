@@ -1,0 +1,18 @@
+--- a/player.c
++++ b/player.c
+@@ -2366,7 +2366,14 @@ static abuf_t *buffer_get_frame(rtsp_conn_info *conn, int resync_requested) {
+                 // ask the backend if it can give us its best choice for a non-ffmpeg configuration:
+                 if (config.output->get_configuration) {
+                   config.current_output_configuration = config.output->get_configuration(
+-                      2, conn->input_rate, (unsigned int)(SPS_FORMAT_S16));
++                      2, conn->input_rate, (unsigned int)(SPS_FORMAT_S16));
++                  if (config.current_output_configuration == 0) {
++                    debug(1, "Non-FFmpeg: backend returned no configuration for S16/%u/2, "
++                          "using fallback S16_LE/44100/2.", conn->input_rate);
++                    config.current_output_configuration = CHANNELS_TO_ENCODED_FORMAT(2) |
++                                                          RATE_TO_ENCODED_FORMAT(44100) |
++                                                          FORMAT_TO_ENCODED_FORMAT(SPS_FORMAT_S16_LE);
++                  }
+                 } else {
+                   // otherwise, use the standard 44100/S16_LE/2 for non-ffmpeg operation
+                   config.current_output_configuration = CHANNELS_TO_ENCODED_FORMAT(2) |
