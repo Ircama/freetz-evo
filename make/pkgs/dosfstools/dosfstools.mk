@@ -29,7 +29,14 @@ $($(PKG)_BINARIES_TARGET_DIR): $($(PKG)_DEST_DIR)/usr/sbin/%: $($(PKG)_DIR)/src/
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_BINARIES_TARGET_DIR)
+# Create fsck.vfat symlink -> fsck.fat in /usr/sbin/ (needed by fsck wrapper)
+ifeq ($(strip $(FREETZ_PACKAGE_DOSFSTOOLS_fsck_fat)),y)
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.vfat: $($(PKG)_DEST_DIR)/usr/sbin/fsck.fat
+	ln -sf fsck.fat $@
+endif
+
+$(pkg)-precompiled: $($(PKG)_BINARIES_TARGET_DIR) \
+	$(if $(filter y,$(FREETZ_PACKAGE_DOSFSTOOLS_fsck_fat)),$($(PKG)_DEST_DIR)/usr/sbin/fsck.vfat)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(DOSFSTOOLS_DIR) clean

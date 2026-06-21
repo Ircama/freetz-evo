@@ -1,0 +1,36 @@
+--- a/src/third-party/notcurses/src/lib/terminfo.c
++++ b/src/third-party/notcurses/src/lib/terminfo.c
+@@ -136,7 +136,21 @@
+     }* header = (void*) content;
+     int num_size = 0;
++    int swapped = 0;
++
++    // If magic doesn't match, the data may be LE16 on a big-endian host.
++    // Byte-swap the header fields to compensate.
++    if (header->magic != TERMINFO_MAGIC && header->magic != TERMINFO_MAGIC_32BIT) {
++        uint16_t* hdr_fields = (uint16_t*) header;
++        size_t hdr_count = sizeof(*header) / sizeof(uint16_t);
++        for (size_t h = 0; h < hdr_count; h++) {
++            hdr_fields[h] = read_le16((const char*)&hdr_fields[h]);
++        }
++        swapped = 1;
++    }
+ 
+     if (header->magic == TERMINFO_MAGIC) {
+         num_size = 2;
+@@ -225,6 +236,14 @@
+         uint16_t strtab_end;
+     }* ext_header = (void*) content;
+ 
++    // Byte-swap extended header fields (LE16) if the main header was swapped
++    if (swapped) {
++        uint16_t* ext_fields = (uint16_t*) ext_header;
++        size_t ext_count = sizeof(*ext_header) / sizeof(uint16_t);
++        for (size_t h = 0; h < ext_count; h++) {
++            ext_fields[h] = read_le16((const char*)&ext_fields[h]);
++        }
++    }
+ 
+     if (remaining < sizeof(*ext_header)) {
+         return retval;
+

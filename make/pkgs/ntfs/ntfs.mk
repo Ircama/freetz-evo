@@ -65,12 +65,20 @@ $($(PKG)_LIB_STAGING_BINARY): $($(PKG)_LIB_BINARY)
 
 $(foreach binary,$($(PKG)_BINARIES_BUILD_DIR),$(eval $(call INSTALL_BINARY_STRIP_RULE,$(binary),/usr/bin)))
 
+# Create fsck.ntfs symlink -> ../bin/ntfsfix in /usr/sbin/ (needed by fsck wrapper)
+ifeq ($(strip $(FREETZ_PACKAGE_NTFS_ntfsfix)),y)
+$($(PKG)_DEST_DIR)/usr/sbin/fsck.ntfs: $($(PKG)_DEST_DIR)/usr/bin/ntfsfix
+	mkdir -p $(dir $@)
+	ln -sf ../bin/ntfsfix $@
+endif
+
 $($(PKG)_LIB_TARGET_BINARY): $($(PKG)_LIB_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP)
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_LIB_TARGET_BINARY) $($(PKG)_BINARIES_TARGET_DIR)
+$(pkg)-precompiled: $($(PKG)_LIB_TARGET_BINARY) $($(PKG)_BINARIES_TARGET_DIR) \
+	$(if $(filter y,$(FREETZ_PACKAGE_NTFS_ntfsfix)),$($(PKG)_DEST_DIR)/usr/sbin/fsck.ntfs)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(NTFS_DIR) $(NTFS_MAKE_FLAGS) clean

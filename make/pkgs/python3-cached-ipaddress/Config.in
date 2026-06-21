@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_CACHED_IPADDRESS
+	bool "cached-ipaddress 1.1.2 [^]"
+	default n
+	help
+		cached-ipaddress provides a cached IP address resolution utility.
+		Python 3 module for resolving and caching IP addresses.
+		
+		https://pypi.org/project/cached-ipaddress/
