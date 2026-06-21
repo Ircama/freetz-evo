@@ -47,13 +47,6 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libasound.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/alsa.pc
 	sed -i -e 's|^defaults\.pcm\.ipc_gid audio$$|defaults.pcm.ipc_gid root|' $(ALSA_LIB_DATA_CONFIG_FILE)
-	# Set speexrate as the default rate converter for better audio quality
-	# (requires libspeex which is auto-selected by alsa-lib)
-	if grep -q '^defaults.pcm.rate_converter' $(ALSA_LIB_DATA_CONFIG_FILE); then \
-		sed -i 's|^defaults.pcm.rate_converter.*|defaults.pcm.rate_converter "speexrate"|' $(ALSA_LIB_DATA_CONFIG_FILE); \
-	else \
-		sed -i '/^defaults.pcm.ipc_gid/a\defaults.pcm.rate_converter "speexrate"' $(ALSA_LIB_DATA_CONFIG_FILE); \
-	fi
 
 $($(PKG)_DATA_STAGING_DIR)/$($(PKG)_DATA_MARKER_FILE): $($(PKG)_STAGING_BINARY)
 	[ -f "$@" ]
