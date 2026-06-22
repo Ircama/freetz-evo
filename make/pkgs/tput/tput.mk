@@ -22,6 +22,9 @@ endif
 ifeq ($(strip $(FREETZ_PACKAGE_TPUT_reset)),y)
 $(PKG)_BINARIES += reset clear
 endif
+ifeq ($(strip $(FREETZ_PACKAGE_TPUT_tic)),y)
+$(PKG)_BINARIES += tic
+endif
 
 $(PKG)_CONFIGURE_ENV += cf_cv_func_nanosleep=yes
 $(PKG)_CONFIGURE_ENV += cf_cv_link_dataonly=yes
@@ -80,5 +83,6 @@ $(pkg)-uninstall:
 	$(RM) $(TPUT_DEST_DIR)/usr/bin/infocmp
 	$(RM) $(TPUT_DEST_DIR)/usr/bin/reset
 	$(RM) $(TPUT_DEST_DIR)/usr/bin/clear
+	$(RM) $(TPUT_DEST_DIR)/usr/bin/tic
 
 $(PKG_FINISH)

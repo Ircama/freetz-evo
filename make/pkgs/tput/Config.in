@@ -33,4 +33,13 @@ config FREETZ_PACKAGE_TPUT_reset
 		reset and clear are simple programs that emit terminal control
 		sequences. reset initializes the terminal, clear clears the screen.
 
+config FREETZ_PACKAGE_TPUT_tic
+	bool "tic (terminfo compiler)"
+	default n
+	help
+		tic is the terminfo compiler from the ncurses package. It translates
+		terminfo source files into the compiled binary format used by
+		ncurses-based programs. Useful for installing new terminal types
+		or fixing the terminfo database on the target device.
+
 endif # FREETZ_PACKAGE_TPUT

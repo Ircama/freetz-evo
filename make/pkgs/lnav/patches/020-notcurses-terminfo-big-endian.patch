@@ -21,11 +21,10 @@
      } else if (header->magic == TERMINFO_MAGIC_32BIT) {
          num_size = 4;
 
-@@ -223,9 +237,17 @@
+@@ -223,8 +235,15 @@
          uint16_t strtab_end;
      }* ext_header = (void*) content;
  
-+    // Byte-swap extended header fields (LE16) if the main header was swapped
 +    if (swapped) {
 +        uint16_t* ext_fields = (uint16_t*) ext_header;
 +        size_t ext_count = sizeof(*ext_header) / sizeof(uint16_t);
@@ -33,7 +32,6 @@
 +            ext_fields[h] = read_le16((const char*)&ext_fields[h]);
 +        }
 +    }
- 
      if (remaining < sizeof(*ext_header)) {
          return retval;
      }
