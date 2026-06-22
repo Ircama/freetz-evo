@@ -2,7 +2,7 @@
 
 This guide describes the complete workflow: preparing a Linux build environment, configuring firmware options, compiling the image, and flashing it onto the device.
 
-A Linux build environment with approximately 10–20 GB of free disk space is required.
+A Linux build environment with approximately 100–200 GB of free disk space is required.
 
 Before the practical steps, this document introduces the ecosystem in the correct order: FRITZ!Box, AVM/FRITZ!, Freetz, Freetz-NG, and finally Freetz-EVO.
 
@@ -107,7 +107,7 @@ Some highlights compared to stock Freetz-NG:
 
 - An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.20)
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
-- About **10–20 GB of free disk space** for the build environment
+- About **100–200 GB of free disk space** for the build environment
 - A reasonably fast internet connection to download source packages
 - Basic familiarity with the Linux command line
 
