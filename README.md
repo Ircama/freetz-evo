@@ -14,8 +14,9 @@ Freetz-EVO builds on that foundation with additional packages, UX improvements, 
 
 Freetz-EVO includes:
 
-- over 100 new packages and libraries, including exclusive applications, Go and Rust support,
-- over 70 python3 libraries including Rust support,
+- over 110 new packages and libraries, including exclusive applications, Go and Rust support,
+- over 70 python3 packages, including Rust support,
+- over 40 libraries,
 - over 40 improved packages and libraries,
 - USB audio stack, playback tools, and web radio functions,
 - X11 client libraries and tools,
