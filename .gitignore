@@ -3,7 +3,7 @@
 # subdirectories here. Add them in the ".gitignore" file
 # in that subdirectory instead.
 #
-# NOTE! Please use 'git ls-files -i --exclude-standard'
+# NOTE! Please use 'git ls-files -i --exclude-standard -o'
 # command after changing this file, to see if there are
 # any tracked files which get ignored after the change.
 #
@@ -31,8 +31,11 @@
 # ignore ide project files
 /.project
 /.vs
-deploy-*
+
+# Freetz-EVO:
+evo-eng-tools/
 .tmp_*
 .venv-build/
 .vscode/
+__pycache__/
 
