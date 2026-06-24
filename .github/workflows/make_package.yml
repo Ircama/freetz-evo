@@ -605,8 +605,6 @@ jobs:
           printf "matrix=%s\n" '${{ steps.parse.outputs.matrix }}' | sed 's/\[{/\[\n{/;s/},{/},\n{/g;s/},\]/},\n\]/'
 
   build:
-    container:
-      image: ubuntu:24.04
     needs: parse_matrix
     strategy:
       max-parallel: 16
@@ -667,14 +665,27 @@ jobs:
           echo -n
           URL="$(echo '${{ github.event.inputs.url }}' | sed 's/^ *//;s/ *$//')"
           [ -z "$URL" ] && URL="${{ secrets.ACTIONS_TESTER }}"
-          [ "$URL" ] && echo -n "Downloading configuration file '${URL}': "
-          case "${URL##*.}" in \
-          '') echo "ℹ️ No configuration file URL provided. Checking 'myconfig'." ;; \
-          tar) wget -q "$URL" -O - 2>/dev/null | tar x  2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-          tgz) wget -q "$URL" -O - 2>/dev/null | tar xz 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-          tbz) wget -q "$URL" -O - 2>/dev/null | tar xj 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-          *)   wget -q "$URL" -O - 2>/dev/null > .config            && echo "✓ Done." || echo "❌ URL download failed." ;; \
-          esac
+          
+          if [ -n "$URL" ]; then
+            echo -n "Downloading configuration file '${URL}': "
+            
+            # For private GitHub repos via raw.githubusercontent.com, use a
+            # Personal Access Token (PAT) stored as GH_PAT secret for auth.
+            DL_OPTS="-sL"
+            if echo "$URL" | grep -q "^https://raw\.githubusercontent\.com/"; then
+              GH_PAT="${{ secrets.GH_PAT }}"
+              [ -n "$GH_PAT" ] && DL_OPTS="-sL --header=\"Authorization: Bearer $GH_PAT\""
+            fi
+            
+            case "${URL##*.}" in \
+            tar) curl $DL_OPTS -L "$URL" 2>/dev/null | tar x  2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            tgz) curl $DL_OPTS -L "$URL" 2>/dev/null | tar xz 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            tbz) curl $DL_OPTS -L "$URL" 2>/dev/null | tar xj 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            *)   curl $DL_OPTS -L "$URL" 2>/dev/null > .config && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            esac
+          else
+            echo "ℹ️ No configuration file URL provided. Checking 'myconfig'."
+          fi
           echo -n
           echo "##########################################################" && echo -n "Number of lines in file: " && wc -l .config
           
