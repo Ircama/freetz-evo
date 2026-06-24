@@ -20,8 +20,12 @@ Compared with Freetz-NG, this tree adds **103 package makefiles** and **8 librar
   <img src="screenshots/000-TAG_freetz-evo.png" alt="Freetz-EVO logo" class="evo-logo">
   <div class="evo-terminal-card" aria-hidden="true">
     <span>&gt; git clone github.com/Ircama/freetz-evo</span>
+    <span>&gt; cd freetz-evo</span>
+    <span>&gt; tools/prerequisites install -y</span>
     <span>&gt; make menuconfig</span>
     <span>&gt; make</span>
+    <span>&gt; tools/push_firmware</span>
+    <span>&gt; tools/ssh_firmware_update.py --host <myIP> --password <myPassword> --batch</span>
   </div>
 </div>
 </section>

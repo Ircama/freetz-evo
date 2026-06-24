@@ -10,7 +10,11 @@ $(PKG)_SITE:=https://quitte.de/dsp
 $(PKG)_BINARY:=$($(PKG)_DIR)/caps.so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/ladspa/caps.so
 $(PKG)_STAGING_RDF:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/ladspa/rdf/caps.rdf
-$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/caps.so
+# The real library deployed to the target (ladspa/caps.so).
+$(PKG)_TARGET_LIB:=$($(PKG)_TARGET_DIR)/ladspa/caps.so
+# Convenience symlink at the top of FREETZ_LIBRARY_DIR that LADSPA hosts
+# expect (caps.so -> ladspa/caps.so).
+$(PKG)_TARGET_SYMLINK:=$($(PKG)_TARGET_DIR)/caps.so
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_STDCXXLIB
@@ -46,14 +50,21 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 $($(PKG)_STAGING_RDF): $($(PKG)_STAGING_BINARY)
 	[ -f "$@" ]
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
+# Deploy the real library from staging to target packages directory
+# (INSTALL_LIBRARY_STRIP copies $< → $@ and strips it).
+$($(PKG)_TARGET_LIB): $($(PKG)_STAGING_BINARY)
+	$(INSTALL_LIBRARY_STRIP)
+
+# Convenience symlink depending on the real file, so make only recreates
+# the symlink when the underlying library has actually been updated.
+$($(PKG)_TARGET_SYMLINK): $($(PKG)_TARGET_LIB)
 	mkdir -p $(dir $@)
 	$(RM) -f $@
 	ln -s ladspa/caps.so $@
 
 $(pkg): $($(PKG)_STAGING_BINARY) $($(PKG)_STAGING_RDF)
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $($(PKG)_TARGET_LIB) $($(PKG)_TARGET_SYMLINK)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(CAPS_DIR) clean
@@ -65,8 +76,8 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) -f \
-		$(CAPS_TARGET_BINARY) \
-		$(TARGET_SPECIFIC_ROOT_DIR)$(FREETZ_LIBRARY_DIR)/ladspa/caps.so \
+		$(CAPS_TARGET_SYMLINK) \
+		$(CAPS_TARGET_LIB) \
 		$(TARGET_SPECIFIC_ROOT_DIR)/usr/share/ladspa/rdf/caps.rdf
 
 $(PKG_FINISH)

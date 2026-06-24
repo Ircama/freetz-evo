@@ -14,6 +14,10 @@ $(PKG)_LIBS := $(if $(FREETZ_LIB_libkrb5),$($(PKG)_BASE_LIBS) $($(PKG)_MAIN_LIBS
 $(PKG)_BINARY := $($(PKG)_DIR)/src/lib/krb5/.libs/libkrb5.so.3.3
 $(PKG)_STAGING_BINARIES := $($(PKG)_LIBS:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%)
 $(PKG)_TARGET_BINARIES := $($(PKG)_LIBS:%=$($(PKG)_TARGET_DIR)/%)
+# Use a sentinel stamp file instead of multiple explicit targets to avoid
+# the GNU Make multi-target anti-pattern where each target re-triggers the
+# recipe independently (touching only $@ leaves other targets stale).
+$(PKG)_STAGING_SENTINEL := $($(PKG)_DIR)/.staged
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libkrb5
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libgssapi_krb5
@@ -56,7 +60,7 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(KRB5_DIR)/src
 
-$($(PKG)_STAGING_BINARIES): $($(PKG)_BINARY)
+$($(PKG)_STAGING_SENTINEL): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(KRB5_DIR)/src DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" install
 	$(SED) -i \
 		-e 's|^prefix=.*|prefix=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr|' \
@@ -65,12 +69,14 @@ $($(PKG)_STAGING_BINARIES): $($(PKG)_BINARY)
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/sbin \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/man
-	@touch -c $@
+	touch $@
+
+$($(PKG)_STAGING_BINARIES): $($(PKG)_STAGING_SENTINEL)
 
 $($(PKG)_TARGET_BINARIES): $($(PKG)_TARGET_DIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
 
-$(pkg): $($(PKG)_STAGING_BINARIES)
+$(pkg): $($(PKG)_STAGING_SENTINEL)
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARIES)
 
