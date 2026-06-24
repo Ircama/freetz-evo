@@ -89,6 +89,9 @@ jobs:
     runs-on: ubuntu-latest
 #   if: github.repository == 'freetz-ng/freetz-ng'
 
+    env:
+      RUSTUP_HOME: /rustup
+
     steps:
 
 #     - name: sleep
