@@ -864,8 +864,8 @@ jobs:
           grep -q '^FREETZ_TYPE_FIRMWARE_' .config || echo 'FREETZ_TYPE_FIRMWARE_08_0X=y'             >> .config
 
           # Extract device and firmware from .config
-          DEVICE_CONFIG="$(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
-          FIRMWARE_CONFIG="$(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
+          DEVICE_CONFIG="$(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config 2>/dev/null | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
+          FIRMWARE_CONFIG="$(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config 2>/dev/null | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
           
           # Extract from matrix.fritz.name
           MATRIX_NAME="${{ matrix.fritz.name }}"
@@ -879,17 +879,17 @@ jobs:
           make olddefconfig
           echo "##########################################################"
           echo "👉 Configuration summary:"
-          echo "  - Device:   $(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
-          echo "  - Firmware: $(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
-          echo "  - Language: $(grep '^FREETZ_TYPE_LANG_[A-Z][A-Z]=y' .config | sed 's/FREETZ_TYPE_LANG_//;s/=y//' | head -1)"
-          echo "  - Kernel:   $(grep '^FREETZ_AVM_PROP_KERNEL_' .config | grep '=y' | sed 's/.*KERNEL_//;s/_/./g;s/=y//' | head -1)"
+          echo "  - Device:   $(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config 2>/dev/null | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
+          echo "  - Firmware: $(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config 2>/dev/null | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
+          echo "  - Language: $(grep '^FREETZ_TYPE_LANG_[A-Z][A-Z]=y' .config 2>/dev/null | sed 's/FREETZ_TYPE_LANG_//;s/=y//' | head -1)"
+          echo "  - Kernel:   $(grep '^FREETZ_AVM_PROP_KERNEL_' .config 2>/dev/null | grep '=y' 2>/dev/null | sed 's/.*KERNEL_//;s/_/./g;s/=y//' | head -1)"
           echo "  - KernelVer:$(grep '^FREETZ_KERNEL_VERSION=' .config | sed 's/.*=//' | tr -d '"')"
           echo "  - KernMajor:$(grep '^FREETZ_KERNEL_VERSION_MAJOR=' .config | sed 's/.*=//' | tr -d '"')"
           echo "  - KernDir:  $(grep '^FREETZ_KERNEL_VANILLA_DLDIR=' .config | sed 's/.*=//' | tr -d '"')"
           echo "  - KernMods: $(grep '^FREETZ_KERNEL_VERSION_MODULES_SUBDIR=' .config | sed 's/.*=//' | tr -d '"')"
-          echo "  - Arch:     $(grep '^FREETZ_AVM_PROP_ARCH_' .config | grep '=y' | sed 's/.*ARCH_//;s/=y//' | head -5 | tr '\n' ' ')"
-          echo "  - GCC:      $(grep '^FREETZ_TARGET_GCC_' .config | grep -v MIN | grep -v MAX | grep '=y' | sed 's/.*GCC_//;s/_/./g;s/=y//' | head -1)"
-          echo "  - uClibc:   $(grep '^FREETZ_TARGET_UCLIBC_' .config | grep -v HAS | grep '=y' | sed 's/.*UCLIBC_//;s/_/./g;s/=y//' | head -1)"
+          echo "  - Arch:     $(grep '^FREETZ_AVM_PROP_ARCH_' .config 2>/dev/null | grep '=y' 2>/dev/null | sed 's/.*ARCH_//;s/=y//' | head -5 | tr '\n' ' ')"
+          echo "  - GCC:      $(grep '^FREETZ_TARGET_GCC_' .config 2>/dev/null | grep -v MIN | grep -v MAX | grep '=y' 2>/dev/null | sed 's/.*GCC_//;s/_/./g;s/=y//' | head -1)"
+          echo "  - uClibc:   $(grep '^FREETZ_TARGET_UCLIBC_' .config 2>/dev/null | grep -v HAS | grep '=y' 2>/dev/null | sed 's/.*UCLIBC_//;s/_/./g;s/=y//' | head -1)"
           echo "  - GCC ABI:  $(grep '^FREETZ_GCC_ABI=' .config | sed 's/.*=//' | tr -d '"')"
           echo "  - GCC Arch: $(grep '^FREETZ_GCC_ARCH=' .config | sed 's/.*=//' | tr -d '"')"
           echo "  - GCC CPU:  $(grep '^FREETZ_GCC_CPU=' .config | sed 's/.*=//' | tr -d '"')"
@@ -899,8 +899,8 @@ jobs:
           echo ""
           
           # Validate that device and firmware match expected values from matrix
-          DEVICE_FINAL="$(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
-          FIRMWARE_FINAL="$(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
+          DEVICE_FINAL="$(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config 2>/dev/null | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
+          FIRMWARE_FINAL="$(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config 2>/dev/null | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
           
           # Extract expected values from matrix name
           # Format: "DEVICE - FIRMWARE" or "DEVICE - FIRMWARE (LANG)"
@@ -1276,7 +1276,7 @@ jobs:
               echo "Checking configuration requirements..."
               if [ "$TYPE" = "pkgs" ] && [ -f "make/$TYPE/$pkg/Config.in" ]; then
                 echo "Package dependencies:"
-                grep -E "^\s*(depends on|select)" "make/$TYPE/$pkg/Config.in" | head -10 || echo "  (none found)"
+                grep -E "^\s*(depends on|select)" "make/$TYPE/$pkg/Config.in" 2>/dev/null | head -10 || echo "  (none found)"
               fi
               echo "This package is disabled in 'make menuconfig' for this device - skipping build."
               echo "################################################################"
@@ -1326,7 +1326,7 @@ jobs:
               # Show last build errors from log files
               echo ""
               echo "=== 👉 Recent build errors from make logs (last 500 lines) ==="
-              find . -name "*.log" -type f -mmin -30 -exec echo "=== {} ===" \; -exec tail -500 {} \; 2>/dev/null | grep -B2 -A2 -i "error" | head -100 || echo "No recent error logs found"
+              find . -name "*.log" -type f -mmin -30 -exec echo "=== {} ===" \; -exec tail -500 {} \; 2>/dev/null | grep -B2 -A2 -i "error" 2>/dev/null | head -100 || echo "No recent error logs found"
               echo ""
           fi
                     
@@ -1356,19 +1356,19 @@ jobs:
           # Show toolchain information
           echo "=== 👉 Toolchain information ==="
           echo "ℹ️ Target architecture:"
-          grep "^FREETZ_TARGET_ARCH=" .config | head -1
+          grep "^FREETZ_TARGET_ARCH=" .config 2>/dev/null | head -1
           echo "ℹ️ CPU model:"
-          grep "^FREETZ_CPU_MODEL_" .config | grep "=y" | head -3
+          grep "^FREETZ_CPU_MODEL_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -3
           echo "ℹ️ Architecture properties:"
-          grep "^FREETZ_AVM_PROP_ARCH_" .config | grep "=y" | head -5
+          grep "^FREETZ_AVM_PROP_ARCH_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -5
           echo "ℹ️ Target arch flags:"
-          grep "^FREETZ_TARGET_ARCH_" .config | grep "=y" | head -3
+          grep "^FREETZ_TARGET_ARCH_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -3
           echo "ℹ️ GCC version:"
-          grep "^FREETZ_TARGET_GCC_" .config | grep "=y" | head -3
+          grep "^FREETZ_TARGET_GCC_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -3
           echo "ℹ️ uClibc version:"
-          grep "^FREETZ_TARGET_UCLIBC_" .config | grep "=y" | head -3
+          grep "^FREETZ_TARGET_UCLIBC_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -3
           echo "ℹ️ Kernel version:"
-          grep "^FREETZ_AVM_PROP_KERNEL_" .config | grep "=y" | head -3
+          grep "^FREETZ_AVM_PROP_KERNEL_" .config 2>/dev/null | grep "=y" 2>/dev/null | head -3
           echo ""
           
           # Show package dependencies status
