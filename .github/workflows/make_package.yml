@@ -80,9 +80,6 @@ concurrency:
 jobs:
 
   parse_matrix:
-    container:
-      image: ghcr.io/freetz-ng/generate
-      options: --user freetz
     runs-on: ubuntu-latest
 
     outputs:
@@ -609,10 +606,7 @@ jobs:
 
   build:
     container:
-#     image: ubuntu:20.04
-#     image: freetzng/firmware
-      image: ghcr.io/freetz-ng/firmware
-      options: --user freetz
+      image: ubuntu:24.04
     needs: parse_matrix
     strategy:
       max-parallel: 16
@@ -626,21 +620,6 @@ jobs:
     env:
       CACHE_KEY: "make_freetz"
     steps:
-
-#       run: apt-get -y update && apt-get -y upgrade && apt-get -y dist-upgrade
-#
-#     - name: install
-#       run: |
-#         DEBIAN_FRONTEND=noninteractive apt-get -y install \
-#           locales \
-#           pv cpio rsync kmod imagemagick inkscape graphicsmagick subversion git bc unar wget sudo gcc g++ binutils autoconf automake \
-#           autopoint libtool-bin make bzip2 libncurses5-dev libreadline-dev zlib1g-dev flex bison patch texinfo tofrodos gettext pkg-config ecj \
-#           perl libstring-crc32-perl ruby gawk libusb-dev unzip intltool libacl1-dev libcap-dev libc6-dev-i386 \
-#           lib32ncurses5-dev gcc-multilib bsdmainutils lib32stdc++6 libglib2.0-dev ccache cmake lib32z1-dev libsqlite3-dev sqlite3 libzstd-dev \
-#           netcat curl uuid-dev libssl-dev libgnutls28-dev u-boot-tools device-tree-compiler
-#
-#     - name: locale
-#       run: locale-gen en_US.utf8 && locale-gen de_DE.UTF-8 && update-locale
 
       - name: sleep
         run: |
@@ -667,6 +646,10 @@ jobs:
           fetch-depth: 0
           clean: false
           persist-credentials: true
+
+      - name: prerequisites
+        run: |
+          tools/prerequisites install -y
 
       - name: cache_load
         uses: actions/cache/restore@v4
