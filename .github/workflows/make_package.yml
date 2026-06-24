@@ -669,19 +669,24 @@ jobs:
           if [ -n "$URL" ]; then
             echo -n "Downloading configuration file '${URL}': "
             
-            # For private GitHub repos via raw.githubusercontent.com, use a
+            # Download helper: uses bash arrays for proper quoting of auth header.
+            # For private GitHub repos via raw.githubusercontent.com, uses a
             # Personal Access Token (PAT) stored as GH_PAT secret for auth.
-            DL_OPTS="-sL"
-            if echo "$URL" | grep -q "^https://raw\.githubusercontent\.com/"; then
-              GH_PAT="${{ secrets.GH_PAT }}"
-              [ -n "$GH_PAT" ] && DL_OPTS="-sL --header=\"Authorization: Bearer $GH_PAT\""
-            fi
+            _dl() {
+              local opts=(-sL)
+              local gh_pat="${{ secrets.GH_PAT }}"
+              if [ -n "$gh_pat" ] && echo "$1" | grep -q "^https://raw\.githubusercontent\.com/"; then
+                opts+=(--header "Authorization: Bearer $gh_pat")
+              fi
+              curl "${opts[@]}" "$1"
+            }
             
             case "${URL##*.}" in \
-            tar) curl $DL_OPTS -L "$URL" 2>/dev/null | tar x  2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-            tgz) curl $DL_OPTS -L "$URL" 2>/dev/null | tar xz 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-            tbz) curl $DL_OPTS -L "$URL" 2>/dev/null | tar xj 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
-            *)   curl $DL_OPTS -L "$URL" 2>/dev/null > .config && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            '') echo "ℹ️ No configuration file URL provided. Checking 'myconfig'." ;; \
+            tar) _dl "$URL" 2>/dev/null | tar x  2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            tgz) _dl "$URL" 2>/dev/null | tar xz 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            tbz) _dl "$URL" 2>/dev/null | tar xj 2>/dev/null && echo "✓ Done." || echo "❌ URL download failed." ;; \
+            *)   _dl "$URL" 2>/dev/null > .config && echo "✓ Done." || echo "❌ URL download failed." ;; \
             esac
           else
             echo "ℹ️ No configuration file URL provided. Checking 'myconfig'."
