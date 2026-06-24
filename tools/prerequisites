@@ -140,14 +140,31 @@ setup_rust_host_toolchain() {
 	elif [ -x "$(command -v rustup)" ]; then
 		rustup_bin="$(command -v rustup)"
 	else
-		return 0
+		# Install rustup via the official installer (not via apt/dnf),
+		# so it lives at $CARGO_HOME/bin/rustup where it expects to
+		# find itself — this also avoids path issues in containers
+		# where $HOME may point to a non-standard directory (e.g.
+		# GitHub Actions' /github/home).
+		echo "Installing rustup via the official installer..."
+		curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+			| sh -s -- -y 2>/dev/null || return 0
+		if [ -x "$RUSTUP_HOME_BIN/rustup" ]; then
+			rustup_bin="$RUSTUP_HOME_BIN/rustup"
+		else
+			echo "Warning: rustup installation failed, skipping Rust setup"
+			return 0
+		fi
 	fi
 
-	echo "Preparing rustup stable/nightly toolchains in '$RUSTUP_HOME_BIN'"
-	"$rustup_bin" toolchain install stable || return 1
-	"$rustup_bin" default stable || return 1
+	# All freetz-evo Rust packages require nightly because
+	# RUST_TARGET_NEEDS_STD_BUILD defaults to 'y' for all targets
+	# (build-std compiles std/panic_abort from source via rust-src).
+	echo "Preparing rustup nightly/stable toolchains in '$RUSTUP_HOME_BIN'"
 	"$rustup_bin" toolchain install nightly || return 1
+	"$rustup_bin" default nightly || return 1
 	"$rustup_bin" component add rust-src --toolchain nightly || return 1
+	# Stable toolchain is also installed as a secondary fallback.
+	"$rustup_bin" toolchain install stable || return 1
 
 	return 0
 }
@@ -167,11 +184,11 @@ install_requisite() {
 	vals="$(sed 's/[\t ]*#.*//g' "$PACKAGES/$OSV" | sort | tr '\n' ' ' | sed 's/^ *//;s/  */ /g;s/ *$//')"
 	case "$OSV" in
 		Fedora*)
-			vals="$vals golang rustup"
+			vals="$vals golang"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
 			;;
 		Debian*|Devuan*|LMDE*|Ubuntu*|Mint*)
-			vals="$vals golang-go rustup $NODEJS_HOST_MULTILIB_PKG"
+			vals="$vals golang-go $NODEJS_HOST_MULTILIB_PKG"
 			vals="$(echo "$vals" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
 			;;
 	esac

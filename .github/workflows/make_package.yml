@@ -619,7 +619,6 @@ jobs:
 
     env:
       CACHE_KEY: "make_freetz"
-      RUSTUP_HOME: /rustup
     steps:
 
       - name: sleep

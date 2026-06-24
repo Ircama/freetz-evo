@@ -52,7 +52,6 @@ pkg-config
 pv
 python3
 rsync
-rustup
 sharutils
 sqlite3
 subversion
