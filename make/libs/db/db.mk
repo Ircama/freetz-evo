@@ -26,7 +26,12 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --disable-cxx
 $(PKG)_CONFIGURE_OPTIONS += --disable-compat185
 $(PKG)_CONFIGURE_OPTIONS += --disable-tcl
+# Disable mutex support for ARMv8+ cores (whether 64-bit aarch64 or 32-bit mode),
+# because the ARM/gcc-assembly mutex uses swp{b} which is deprecated in ARMv8.
+# ARMv8 32-bit CPUs: cortex-a53, cortex-a73; ARMv7 CPUs: cortex-a7, cortex-a9, arm11 are fine.
 ifeq ($(strip $(FREETZ_TARGET_ARCH_AARCH64)),y)
+$(PKG)_CONFIGURE_OPTIONS += --disable-mutexsupport
+else ifneq ($(strip $(FREETZ_CPU_MODEL_ARM_cortex_a53)$(FREETZ_CPU_MODEL_ARM_cortex_a73)),)
 $(PKG)_CONFIGURE_OPTIONS += --disable-mutexsupport
 else
 $(PKG)_CONFIGURE_OPTIONS += --with-mutex='$($(PKG)_MUTEX_$(call qstrip,$(FREETZ_TARGET_ARCH)))'
