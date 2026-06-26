@@ -50,10 +50,14 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 $($(PKG)_STAGING_RDF): $($(PKG)_STAGING_BINARY)
 	[ -f "$@" ]
 
-# Deploy the real library from staging to target packages directory
-# (INSTALL_LIBRARY_STRIP copies $< → $@ and strips it).
+# Deploy the real library from staging to target packages directory.
+# caps.so is a LADSPA plugin whose name does not follow the lib*.so*
+# convention, so INSTALL_LIBRARY_STRIP cannot be used (the LIBRARY_NAME_TO_SHELL_PATTERN
+# helper only matches names starting with "lib").  Use plain cp + strip instead.
 $($(PKG)_TARGET_LIB): $($(PKG)_STAGING_BINARY)
-	$(INSTALL_LIBRARY_STRIP)
+	mkdir -p $(dir $@)
+	cp -a $< $@
+	$(TARGET_STRIP) $@
 
 # Convenience symlink depending on the real file, so make only recreates
 # the symlink when the underlying library has actually been updated.
