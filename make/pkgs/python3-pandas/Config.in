@@ -1,8 +1,8 @@
 comment "pandas requires external storage  (Enable 'External processing' in the main menu)"
 	depends on FREETZ_PACKAGE_PYTHON3 && !EXTERNAL_ENABLED
 
-config FREETZ_PACKAGE_PYTHON3_PANDAS
-	bool "pandas 3.0.1 (for Python 3)"
+menuconfig FREETZ_PACKAGE_PYTHON3_PANDAS
+	bool "pandas 3.0.3/3.0.1/2.3.3 (for Python 3)"
 	depends on FREETZ_PACKAGE_PYTHON3
 	depends on EXTERNAL_ENABLED
 	select FREETZ_PACKAGE_PYTHON3_NUMPY
@@ -12,6 +12,11 @@ config FREETZ_PACKAGE_PYTHON3_PANDAS
 		pandas is a powerful data analysis and manipulation library.
 		
 		WARNING: Requires NumPy.
+		
+		Available versions:
+		- 2.3.3: last 2.x release (NumPy 1.x compatible API)
+		- 3.0.1: first 3.x release (NumPy 2.x API)
+		- 3.0.3: latest (NumPy 2.x API, recommended)
 		
 		Provides:
 		- DataFrame and Series data structures
@@ -28,7 +33,21 @@ config FREETZ_PACKAGE_PYTHON3_PANDAS
 		- Data visualization (with matplotlib)
 		
 		WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy.
-		Both MUST be externalized to USB storage.
-		
-		Website: https://pandas.pydata.org/
-		Docs: https://pandas.pydata.org/docs/
+
+if FREETZ_PACKAGE_PYTHON3_PANDAS
+
+	choice
+		prompt "Version"
+		default FREETZ_PACKAGE_PYTHON3_PANDAS_VERSION_CURRENT
+
+		config FREETZ_PACKAGE_PYTHON3_PANDAS_VERSION_ABANDON
+			bool "2.3.3"
+
+		config FREETZ_PACKAGE_PYTHON3_PANDAS_VERSION_OLD
+			bool "3.0.1"
+
+		config FREETZ_PACKAGE_PYTHON3_PANDAS_VERSION_CURRENT
+			bool "3.0.3"
+	endchoice
+
+endif
