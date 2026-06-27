@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 3.0.3)
 $(PKG)_SOURCE:=pandas-py3-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=pandas-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/p/pandas
-$(PKG)_HASH:=696a4a00a2a2a35d4e5deb3fc946641b96c944f0220e4f76137fe35d806c4fc
+$(PKG)_HASH:=696a4a00a2a2a35d4e5deb3fc946641b96c944f02230e4f76137fe35d806c4fc
 ### WEBSITE:=https://pandas.pydata.org/
 ### MANPAGE:=https://pandas.pydata.org/docs/
 ### CHANGES:=https://pandas.pydata.org/docs/whatsnew/
