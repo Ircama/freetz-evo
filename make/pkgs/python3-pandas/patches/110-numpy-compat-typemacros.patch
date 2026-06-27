@@ -1,0 +1,22 @@
+--- a/pandas/meson.build.orig
++++ b/pandas/meson.build
+@@ -31,6 +31,19 @@
+     language: 'cpp',
+ )
+ 
++# pandas 3.x Cython-generated code uses PyDataType_TYPEOBJ, PyDataType_KIND,
++# PyDataType_TYPE, PyDataType_BYTEORDER (added in NumPy 2.5.0) and
++# _PyUFuncObject_GET_ITEM_DATA (missing from some numpy builds).
++# Provide compatibility macros for NumPy < 2.5.0.
++add_project_arguments(
++    '-DPyDataType_TYPEOBJ(descr)=((descr)->typeobj)',
++    '-DPyDataType_KIND(descr)=((descr)->kind)',
++    '-DPyDataType_TYPE(descr)=((descr)->type)',
++    '-DPyDataType_BYTEORDER(descr)=((descr)->byteorder)',
++    '-D_PyUFuncObject_GET_ITEM_DATA(ufunc)=(ufunc)',
++    language: 'c',
++)
++
+ cc = meson.get_compiler('c')
+ if cc.get_id() == 'msvc'
+     # Tracking issue: https://github.com/pandas-dev/pandas/issues/63701
