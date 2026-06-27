@@ -1,7 +1,7 @@
 $(call PKG_INIT_BIN, 1.0)
 ### STEWARD:=Ircama
 
-$(PKG)_DEPENDS_ON += curl
+	$(PKG)_DEPENDS_ON += curl
 
 $(PKG)_STAGING_SOURCES := \
 	$(MELCLOUD_MAKE_DIR)/files/.language \
