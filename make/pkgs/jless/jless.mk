@@ -9,6 +9,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/jless-v0.9.0
 ### CVSREPO:=https://github.com/PaulJuliusMartinez/jless
 
 JLESS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
+JLESS_RUST_ENV_TARGET:=$(subst -,_,$(JLESS_RUST_TARGET_DIR))
 JLESS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 JLESS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
 JLESS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(JLESS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
@@ -33,6 +34,10 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 	export HOME="$(abspath $(JLESS_DIR))"; \
 	export CARGO_HOME="$(JLESS_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	export CC_$(JLESS_RUST_ENV_TARGET)="$(TARGET_CROSS)gcc"; \
+	export CXX_$(JLESS_RUST_ENV_TARGET)="$(TARGET_CROSS)g++"; \
+	export AR_$(JLESS_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
+	export RANLIB_$(JLESS_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
 	mkdir -p "$$CARGO_HOME"; \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \
 		"$(JLESS_RUST_TARGET_DIR)" \

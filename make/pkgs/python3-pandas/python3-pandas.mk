@@ -60,6 +60,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	$(call Build/PyMod3/Pip, PYTHON3_PANDAS, \
 		--config-settings=setup-args=--cross-file=$(abspath $(PYTHON3_PANDAS_MESON_CROSS_FILE)), \
 		PANDAS_NUMPY_INCLUDE_DIR="$(abspath $(PYTHON3_NUMPY_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/numpy/_core/include)" \
+		CFLAGS="$(TARGET_CFLAGS) -I$(PYTHON3_STAGING_INC_DIR) -D_PyDatetimeScalarObject_GetMetadata(obj)=((PyDatetimeScalarObject *)(obj))->obmeta" \
 		LDFLAGS="$(TARGET_LDFLAGS) -L$(PYTHON3_STAGING_LIB_DIR)" \
 	, isolated, no-build-ext-config)
 

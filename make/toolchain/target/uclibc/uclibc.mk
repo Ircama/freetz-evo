@@ -326,7 +326,10 @@ $(TARGET_UTILS_DIR)/usr/lib/libc.a: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libc
 	done
 	$(call COPY_KERNEL_HEADERS,$(UCLIBC_KERNEL_HEADERS_DIR),$(TARGET_UTILS_DIR)/usr)
 	$(call REMOVE_DOC_NLS_DIRS,$(TARGET_UTILS_DIR))
-	touch -c $@
+	# Use 'touch $@' (without -c) to ensure the stamp file is created
+	# even when FREETZ_SEPARATE_AVM_UCLIBC=y causes install_dev to put
+	# libc.a at $(TARGET_UTILS_DIR)/usr/usr/lib/freetz/ instead of here.
+	touch $@
 
 uclibc_target: gcc uclibc $(TARGET_UTILS_DIR)/usr/lib/libc.a
 
