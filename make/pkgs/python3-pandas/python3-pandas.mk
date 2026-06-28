@@ -77,6 +77,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 			"    '-DPyDataType_TYPENUM(descr)=((descr)->type_num)'," \
 			"    '-D_PyUFuncObject_GET_ITEM_DATA(ufunc)=(ufunc)'," \
 			"    '-D_PyDatetimeScalarObject_GetMetadata(obj)=(((PyDatetimeScalarObject *)(obj))->obmeta)'," \
+			"    '-D_PyDatetimeScalarObject_GetValue(obj)=(((PyDatetimeScalarObject *)(obj))->obval)'," \
+			"    '-D_PyTimedeltaScalarObject_GetValue(obj)=(((PyTimedeltaScalarObject *)(obj))->obval)'," \
 			"    ]:" \
 			"    add += ', ' + chr(39) + d + chr(39)" \
 			"for i, line in enumerate(lines):" \
