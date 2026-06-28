@@ -21,6 +21,7 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_DIR)/.compiled
 	$(SUBMAKE) -C $(XCB_PROTO_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
+	touch -c $@
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
