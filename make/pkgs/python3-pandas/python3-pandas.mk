@@ -78,11 +78,10 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 			"    '-D_PyUFuncObject_GET_ITEM_DATA(ufunc)=(ufunc)'," \
 			"    '-D_PyDatetimeScalarObject_GetMetadata(obj)=(((PyDatetimeScalarObject *)(obj))->obmeta)'," \
 			"    ]:" \
-			"    add += ', ' + d" \
+			"    add += ', ' + chr(39) + d + chr(39)" \
 			"for i, line in enumerate(lines):" \
-			"    if line.strip().startswith('c_args'):" \
-			"        lines[i] = line.rstrip().rstrip(']') + add + ']\\n'" \
-			"        break" \
+			"    if line.strip().startswith('c_args') or line.strip().startswith('cpp_args'):" \
+			"        lines[i] = line.rstrip().rstrip(']').rstrip(',') + add + ']\\n'" \
 			"open(p, 'w').writelines(lines)" \
 		| $(TOOLS_DIR)/path/python3 2>/dev/null || true; \
 	fi
