@@ -65,6 +65,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	@printf "endian = '$(call qstrip,$(FREETZ_TARGET_MESON_ENDIAN))'\n" >> $(PYTHON3_PANDAS_MESON_CROSS_FILE)
 	@if [ "$(FREETZ_PACKAGE_PYTHON3_PANDAS_VERSION_ABANDON)" != "y" ]; then \
 		sed -i 's/NPY_1_21_API_VERSION/NPY_2_0_API_VERSION/g' $(PYTHON3_PANDAS_DIR)/meson.build 2>/dev/null || true; \
+		$(TOOLS_DIR)/path/python3 "$(abspath $(dir $(lastword $(MAKEFILE_LIST))))/patches/110-add-compat-macros.py" \
+			"$(PYTHON3_PANDAS_DIR)/meson.build" 2>/dev/null || true; \
 	fi
 	$(call Build/PyMod3/Pip, PYTHON3_PANDAS, \
 		--config-settings=setup-args=--cross-file=$(abspath $(PYTHON3_PANDAS_MESON_CROSS_FILE)), \
