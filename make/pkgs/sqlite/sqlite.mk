@@ -28,6 +28,10 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/sqlite3
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(if $(or $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),$(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE)),.libs/)sqlite3
 
 $(PKG)_LIB_BINARY:=$($(PKG)_DIR)/$(if $(or $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),$(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE)),.libs/)libsqlite3.so.$($(PKG)_LIB_VERSION)
+# SQLite 3.53.1 (CURRENT): the build produces libsqlite3.so (no version suffix in source dir)
+ifeq ($(strip $(FREETZ_LIB_libsqlite3_WITH_VERSION_CURRENT)),y)
+$(PKG)_LIB_BINARY:=$($(PKG)_DIR)/libsqlite3.so
+endif
 $(PKG)_LIB_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libsqlite3.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_TARGET_BINARY:=$($(PKG)_TARGET_LIBDIR)/libsqlite3.so.$($(PKG)_LIB_VERSION)
 

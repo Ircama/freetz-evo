@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/util
 # Provides xorg-macros.pc needed by all X.org packages at configure time.
 # Install to lib/pkgconfig (not share/pkgconfig) so that the build system's
 # default PKG_CONFIG_PATH finds it.
-$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/xorg-macros.pc
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/share/pkgconfig/xorg-macros.pc
 
 $(PKG)_CONFIGURE_OPTIONS += --with-pkgconfigdir=/usr/lib/pkgconfig
 

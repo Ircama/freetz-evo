@@ -5,7 +5,7 @@ $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
 ### WEBSITE:=https://www.x.org/
 
 # Header-only package, no shared library
-$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/X11/Xtrans.h
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/include/X11/Xtrans/Xtrans.h
 
 $(PKG)_DEPENDS_ON += util-macros
 $(PKG)_CONFIGURE_OPTIONS += --with-pkgconfigdir=/usr/lib/pkgconfig
@@ -21,6 +21,7 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_DIR)/.compiled
 	$(SUBMAKE) -C $(XTRANS_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
+	touch -c $@
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
