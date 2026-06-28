@@ -1,5 +1,5 @@
---- a/pandas/meson.build.orig
-+++ b/pandas/meson.build
+--- pandas/meson.build.orig
++++ pandas/meson.build
 @@ -31,6 +31,19 @@
      language: 'cpp',
  )
