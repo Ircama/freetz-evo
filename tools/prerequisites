@@ -214,6 +214,7 @@ install_requisite() {
 			exit 1
 			;;
 	esac
+	echo -e "\nPrerequisites successfully installed.\n"
 	exit 0
 }
 
