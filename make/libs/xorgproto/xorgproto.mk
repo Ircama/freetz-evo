@@ -17,6 +17,7 @@ $(PKG_CONFIGURED_CONFIGURE)
 
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(XORGPROTO_DIR)
+	touch $@
 
 $($(PKG)_STAGING_BINARY): $($(PKG)_DIR)/.compiled
 	$(SUBMAKE) -C $(XORGPROTO_DIR) \

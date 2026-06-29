@@ -17,6 +17,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(MYMPD_CGI_DEST_DIR)/etc/init.d/rc.mympd \
 		$(MYMPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mympd.cgi \
 		$(MYMPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mympd/status.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

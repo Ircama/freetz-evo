@@ -17,6 +17,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(ALSA_UTILS_CGI_DEST_DIR)/etc/init.d/rc.alsa-utils \
 		$(ALSA_UTILS_CGI_DEST_DIR)/usr/lib/cgi-bin/alsa-utils.cgi \
 		$(ALSA_UTILS_CGI_DEST_DIR)/usr/lib/cgi-bin/alsa-utils/status.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

@@ -21,6 +21,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(ALSAEQUAL_CGI_DEST_DIR)/etc/init.d/rc.alsaequal \
 		$(ALSAEQUAL_CGI_DEST_DIR)/usr/lib/cgi-bin/alsaequal.cgi \
 		$(ALSAEQUAL_CGI_DEST_DIR)/usr/lib/cgi-bin/alsaequal/status.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

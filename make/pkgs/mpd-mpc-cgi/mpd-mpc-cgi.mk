@@ -17,6 +17,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(MPD_MPC_CGI_DEST_DIR)/etc/init.d/rc.mpd-mpc \
 		$(MPD_MPC_CGI_DEST_DIR)/usr/lib/cgi-bin/mpd-mpc.cgi \
 		$(MPD_MPC_CGI_DEST_DIR)/usr/lib/cgi-bin/mpd-mpc/status.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

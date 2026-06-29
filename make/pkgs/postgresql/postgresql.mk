@@ -72,7 +72,7 @@ $($(PKG)_TARGET_SHARE_STAMP): $($(PKG)_DIR)/.configured
 	cp $(POSTGRESQL_DIR)/src/backend/catalog/system_functions.sql $(POSTGRESQL_TARGET_SHARE_DIR)/
 	cp $(POSTGRESQL_DIR)/src/backend/catalog/system_views.sql $(POSTGRESQL_TARGET_SHARE_DIR)/
 	cp $(POSTGRESQL_DIR)/src/backend/catalog/information_schema.sql $(POSTGRESQL_TARGET_SHARE_DIR)/
-	@touch -c $@
+	touch $@
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_PSQL_BINARY),/usr/bin))
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_POSTGRES_BINARY),/usr/sbin))

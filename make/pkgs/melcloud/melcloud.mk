@@ -29,6 +29,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	chmod 755 \
 		$(MELCLOUD_DEST_DIR)/etc/init.d/rc.melcloud \
 		$(MELCLOUD_DEST_DIR)/usr/lib/cgi-bin/melcloud.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

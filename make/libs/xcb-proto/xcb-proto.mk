@@ -16,6 +16,7 @@ $(PKG_CONFIGURED_CONFIGURE)
 
 $($(PKG)_DIR)/.compiled: $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(XCB_PROTO_DIR)
+	touch $@
 
 $($(PKG)_STAGING_BINARY): $($(PKG)_DIR)/.compiled
 	$(SUBMAKE) -C $(XCB_PROTO_DIR) \

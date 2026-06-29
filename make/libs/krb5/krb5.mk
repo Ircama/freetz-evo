@@ -11,7 +11,7 @@ $(PKG)_MAIN_LIBS := $(if $(FREETZ_LIB_libkrb5),libkrb5.so.3.3)
 $(PKG)_GSS_LIBS := $(if $(FREETZ_LIB_libgssapi_krb5),libgssapi_krb5.so.2.2)
 $(PKG)_LIBS := $(if $(FREETZ_LIB_libkrb5),$($(PKG)_BASE_LIBS) $($(PKG)_MAIN_LIBS)) $($(PKG)_GSS_LIBS)
 
-$(PKG)_BINARY := $($(PKG)_DIR)/src/lib/krb5/.libs/libkrb5.so.3.3
+$(PKG)_BINARY := $($(PKG)_DIR)/src/lib/krb5/libkrb5.so.3.3
 $(PKG)_STAGING_BINARIES := $($(PKG)_LIBS:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%)
 $(PKG)_TARGET_BINARIES := $($(PKG)_LIBS:%=$($(PKG)_TARGET_DIR)/%)
 # Use a sentinel stamp file instead of multiple explicit targets to avoid
@@ -84,11 +84,13 @@ $(pkg)-clean:
 	-$(SUBMAKE) -C $(KRB5_DIR)/src clean
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/{krb5.h,gssapi,profile.h,com_err.h,krb5} \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib{com_err,gssapi_krb5,k5crypto,krb5,krb5support}* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcom_err.so.3* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib{gssapi_krb5,k5crypto,krb5,krb5support}* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/{krb5,krb5-gssapi}.pc \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/krb5-config
 
 $(pkg)-uninstall:
-	$(RM) $($(PKG)_TARGET_DIR)/lib{com_err,gssapi_krb5,k5crypto,krb5,krb5support}*.so*
+	$(RM) $($(PKG)_TARGET_DIR)/libcom_err.so.3*
+	$(RM) $($(PKG)_TARGET_DIR)/lib{gssapi_krb5,k5crypto,krb5,krb5support}*.so*
 
 $(PKG_FINISH)

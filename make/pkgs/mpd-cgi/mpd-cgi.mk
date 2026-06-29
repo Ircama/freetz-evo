@@ -14,6 +14,7 @@ $(PKG)_STAGING_TARGET := $(MPD_CGI_DEST_DIR)/usr/lib/cgi-bin/mpd.cgi
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	mkdir -p $(MPD_CGI_TARGET_DIR)/root
 	$(call COPY_USING_TAR,$(MPD_CGI_MAKE_DIR)/files,$(MPD_CGI_TARGET_DIR))
+	touch $@
 
 $(PKG_UNPACKED)
 

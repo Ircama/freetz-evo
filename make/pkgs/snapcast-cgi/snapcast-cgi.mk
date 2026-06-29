@@ -19,6 +19,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(SNAPCAST_CGI_DEST_DIR)/etc/init.d/rc.snapcast \
 		$(SNAPCAST_CGI_DEST_DIR)/usr/lib/cgi-bin/snapcast.cgi \
 		$(SNAPCAST_CGI_DEST_DIR)/usr/lib/cgi-bin/snapcast/status.cgi
+	touch $@
 
 $(PKG_UNPACKED)
 

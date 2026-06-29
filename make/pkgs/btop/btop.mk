@@ -43,6 +43,7 @@ $($(PKG)_THEMES_TARGET_DIR): $($(PKG)_DIR)/.configured
 	$(RM) -r $(BTOP_THEMES_TARGET_DIR)
 	mkdir -p $(dir $(BTOP_THEMES_TARGET_DIR))
 	cp -a $(BTOP_THEMES_SOURCE_DIR) $(dir $(BTOP_THEMES_TARGET_DIR))
+	touch $@
 
 $(pkg):
 
