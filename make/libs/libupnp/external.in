@@ -1,0 +1,6 @@
+config EXTERNAL_FREETZ_LIB_libupnp
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libupnp
+	bool "libupnp (portable UPnP SDK)"
+	default n
+	help
+		libupnp shared libraries

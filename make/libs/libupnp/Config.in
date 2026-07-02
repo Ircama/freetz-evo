@@ -1,0 +1,9 @@
+config FREETZ_LIB_libupnp
+	bool "libupnp (portable UPnP SDK)"
+	select FREETZ_LIB_libuuid
+	default n
+	help
+		libupnp is the open-source IGD UPnP library (pupnp).
+		Required by Gerbera and other UPnP media servers.
+		
+		https://pupnp.github.io/pupnp/

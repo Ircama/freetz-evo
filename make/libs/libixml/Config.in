@@ -1,0 +1,6 @@
+config FREETZ_LIB_libixml
+	bool "libixml (XML parser library, part of libupnp)"
+	default y if FREETZ_LIB_libupnp
+	help
+		libixml is a lightweight XML parser library, part of the libupnp SDK.
+		Required by Gerbera and other UPnP applications.

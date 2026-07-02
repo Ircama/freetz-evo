@@ -1,0 +1,2 @@
+# This configuration is now defined in make/pkgs/miniupnpd/external.in
+# to keep all MiniUPnPd externalisation options together in one menu

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+pkg_pre_save() {
+	if [ "$GERBERA_ENABLED" = "yes" ] && [ -z "$GERBERA_BASEDIR" ]; then
+		echo "Error: Base directory required when enabled" >&2
+		return 1
+	fi
+	return 0
+}
+
+pkg_apply_save() {
+	[ -r /mod/etc/conf/gerbera.cfg ] && . /mod/etc/conf/gerbera.cfg
+
+	mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
+
+	# Restart daemon to apply config
+	/etc/init.d/rc.gerbera restart 2>/dev/null || true
+
+	return 0
+}

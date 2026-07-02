@@ -1,0 +1,12 @@
+languages
+{ en }
+default
+{ en }
+files
+{
+	etc/init.d/rc.pi-hole
+	usr/lib/cgi-bin/pi-hole.cgi
+	usr/lib/cgi-bin/pi-hole/status.cgi
+	etc/default.pi-hole/pi-hole.cfg
+	etc/default.pi-hole/pi-hole.save
+}

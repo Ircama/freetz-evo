@@ -1,0 +1,4 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON" == "y" ] && EXTERNAL_FILES+=" /usr/bin/pihole"
+[ "$EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON" == "y" ] && EXTERNAL_FILES+=" /usr/share/pi-hole/gravity.sh"
+[ "$EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/pi-hole.cgi"
+[ "$EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/pi-hole/status.cgi"

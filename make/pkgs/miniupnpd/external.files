@@ -1,0 +1,4 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_DAEMON" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/miniupnpd"
+[ "$EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_DAEMON" == "y" ] && EXTERNAL_FILES+=" /etc/default.miniupnpd/miniupnpd.conf"
+[ "$EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/miniupnpd.cgi"
+[ "$EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/miniupnpd/status.cgi"

@@ -419,7 +419,7 @@ menu "Web Interface"
 			bool "Freetz MOD"
 
 		config FREETZ_TAGGING_NG
-			bool "Freetz-NG"
+			bool "Freetz-EVO"
 
 		config FREETZ_TAGGING_PIMPED
 			bool "Pimped"

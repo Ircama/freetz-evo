@@ -51,7 +51,7 @@ R=" ${RC:+$RC-}${RH:-UNKNOWN}${RB:+ $RB}${RD:+ $RD}"
 [ "${1:0:1}" == "f" ] && R="${R// /-}"
 case "${1}" in
 	s|short)	[ "$RC" == "INVALID" ] && echo "$RC" ; echo "${RC//[ABCDEFGHIJKLMNOPQRSTUVWXYZ]/}-${RH:-UNKNOWN}" ;;
-	m|make)		echo "$(date +%H:%M) Freetz-NG${R#-}" ;;
+	m|make)		printf "\033[1m%s\033[0m Freetz-EVO%s\n" "$(date +%H:%M)" "${R#-}" ;;
 #	f|fwmod)	;&
 	*)		echo "$(cat $DIR/.version)${R}" ;;
 esac

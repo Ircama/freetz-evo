@@ -1,0 +1,51 @@
+{
+  "deepl:Gerbera Media Server": {
+    "original": "Gerbera Media Server",
+    "translation": "Gerbera Media Server",
+    "timestamp": "2026-06-30T22:36:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Gerbera Status": {
+    "original": "Gerbera Status",
+    "translation": "Gerbera Status",
+    "timestamp": "2026-06-30T22:36:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon status": {
+    "original": "Daemon status",
+    "translation": "Stato del demone",
+    "timestamp": "2026-06-30T22:36:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porta",
+    "timestamp": "2026-06-30T22:36:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Data directory": {
+    "original": "Data directory",
+    "translation": "Directory di dati",
+    "timestamp": "2026-06-30T22:36:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:General": {
+    "original": "General",
+    "translation": "Generale",
+    "timestamp": "2026-06-30T22:36:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Server name": {
+    "original": "Server name",
+    "translation": "Nome del server",
+    "timestamp": "2026-06-30T22:36:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

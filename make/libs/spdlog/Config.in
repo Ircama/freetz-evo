@@ -1,0 +1,9 @@
+config FREETZ_LIB_libspdlog
+	bool "spdlog (C++ logging library)"
+	select FREETZ_LIB_libfmt
+	default n
+	help
+		spdlog is a fast C++ logging library.
+		Required by Gerbera.
+		
+		https://github.com/gabime/spdlog

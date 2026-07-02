@@ -1,0 +1,3 @@
+[ "$EXTERNAL_FREETZ_LIB_libzip" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libzip.so.5.5"
+[ "$EXTERNAL_FREETZ_LIB_libzip" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libzip.so.5"
+[ "$EXTERNAL_FREETZ_LIB_libzip" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libzip.so"

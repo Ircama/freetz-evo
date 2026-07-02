@@ -1,0 +1,27 @@
+config EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PSEUDO_PI_HOLE
+	bool "Pseudo-Pi-hole"
+	default n
+
+menu "Pseudo-Pi-hole"
+	depends on EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE
+
+	config EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PSEUDO_PI_HOLE
+		bool "Pseudo-Pi-hole daemon and core scripts"
+		default y
+		help
+			externals the following file(s):
+			 /usr/bin/pihole
+			 /usr/share/pi-hole/gravity.sh
+
+	config EXTERNAL_FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI
+		bool "Pseudo-Pi-hole CGI web interface"
+		default n
+		help
+			externals the following file(s):
+			 /usr/lib/cgi-bin/pi-hole.cgi
+			 /usr/lib/cgi-bin/pi-hole/status.cgi
+
+endmenu

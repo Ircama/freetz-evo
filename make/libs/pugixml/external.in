@@ -1,0 +1,4 @@
+config EXTERNAL_FREETZ_LIB_libpugixml
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libpugixml
+	bool "pugixml (C++ XML processing library)"
+	default n

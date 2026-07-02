@@ -1,0 +1,22 @@
+config EXTERNAL_FREETZ_PACKAGE_GERBERA
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA
+	bool "Gerbera (UPnP media server)"
+	default n
+
+menu "Gerbera (UPnP media server)"
+	depends on EXTERNAL_FREETZ_PACKAGE_GERBERA
+
+	config EXTERNAL_FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA
+		bool "Gerbera daemon"
+		default y
+		help
+			externals the following file(s):
+			 /usr/bin/gerbera
+
+	config EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA_CGI
+		bool "Gerbera CGI web interface"
+		default n
+
+endmenu

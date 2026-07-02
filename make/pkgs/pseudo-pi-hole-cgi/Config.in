@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI
+	bool "Pseudo-Pi-hole CGI web configuration interface"
+	depends on FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON
+	depends on FREETZ_SHOW_DEVELOPER
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	default y
+	help
+		Provides a web configuration interface for Pseudo-Pi-hole DNS Sinkhole.
+		Access: http://fritz.box:81/cgi-bin/conf/pseudo-pi-hole

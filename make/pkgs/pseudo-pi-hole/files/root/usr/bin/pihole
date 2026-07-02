@@ -1,0 +1,143 @@
+#!/bin/sh
+# Pi-hole CLI for freetz-ng
+# Adapted from https://github.com/pi-hole/pi-hole
+
+PIHOLE_CMD="$(basename "$0")"
+
+# Source config
+[ -r /mod/etc/conf/pi-hole.cfg ] && . /mod/etc/conf/pi-hole.cfg
+
+: "${PIHOLE_ENABLED:=no}"
+: "${PIHOLE_BLOCKLIST_DIR:=/tmp/flash/pi-hole}"
+: "${PIHOLE_DNSMASQ_CONF_DIR:=/tmp/flash/dnsmasq}"
+: "${PIHOLE_LOG_FILE:=/var/log/pi-hole.log}"
+: "${PIHOLE_GRAVITY_SCRIPT:=/usr/share/pi-hole/gravity.sh}"
+
+log_info() {
+	echo "$(date): [INFO] $*" >> "${PIHOLE_LOG_FILE}"
+}
+
+log_err() {
+	echo "$(date): [ERROR] $*" >&2
+}
+
+show_help() {
+	cat <<-EOF
+	Pi-hole for freetz-ng
+	Usage: ${PIHOLE_CMD} [options]
+	
+	Options:
+	  -g, updateGravity    Update blocklist (run gravity)
+	  -q, query            Query blocklist for a domain
+	  enable               Enable DNS blocking
+	  disable              Disable DNS blocking
+	  status               Show blocking status
+	  -v, version          Show version
+	  -h, --help           Show this help message
+	EOF
+}
+
+version() {
+	cat <<-EOF
+	Pi-hole for freetz-ng v1.0
+	https://github.com/pi-hole/pi-hole
+	EOF
+}
+
+query_blocklist() {
+	domain="$1"
+	[ -z "$domain" ] && echo "Usage: ${PIHOLE_CMD} -q <domain>" && return 1
+	BLOCKLIST="${PIHOLE_DNSMASQ_CONF_DIR}/pi-hole.hosts"
+	if [ -f "$BLOCKLIST" ] && grep -qi "$domain" "$BLOCKLIST" 2>/dev/null; then
+		echo "  ${domain} is BLOCKED"
+		return 0
+	else
+		echo "  ${domain} is NOT blocked"
+		return 1
+	fi
+}
+
+enable_blocking() {
+	echo "Enabling Pi-hole blocking..."
+	mkdir -p "${PIHOLE_DNSMASQ_CONF_DIR}" 2>/dev/null
+	if [ -f "${PIHOLE_DNSMASQ_CONF_DIR}/pi-hole.hosts" ]; then
+		ln -sf "${PIHOLE_DNSMASQ_CONF_DIR}/pi-hole.hosts" /etc/dnsmasq.d/pi-hole.hosts 2>/dev/null || true
+	fi
+	# Mark enabled in runtime config
+	mkdir -p /tmp/flash/pi-hole 2>/dev/null
+	echo "enabled" > "${PIHOLE_BLOCKLIST_DIR}/.blocking"
+	killall -HUP dnsmasq 2>/dev/null || true
+	echo "  Pi-hole blocking enabled"
+	log_info "Blocking enabled"
+}
+
+disable_blocking() {
+	echo "Disabling Pi-hole blocking..."
+	rm -f /etc/dnsmasq.d/pi-hole.hosts 2>/dev/null
+	rm -f "${PIHOLE_BLOCKLIST_DIR}/.blocking" 2>/dev/null
+	killall -HUP dnsmasq 2>/dev/null || true
+	echo "  Pi-hole blocking disabled"
+	log_info "Blocking disabled"
+}
+
+status() {
+	BLOCKLIST="${PIHOLE_DNSMASQ_CONF_DIR}/pi-hole.hosts"
+	BLOCKING_FILE="${PIHOLE_BLOCKLIST_DIR}/.blocking"
+	
+	echo "  Pi-hole Status"
+	echo "  ---------------"
+	
+	if [ -f "$BLOCKING_FILE" ]; then
+		echo "  Blocking status: ENABLED"
+	else
+		echo "  Blocking status: DISABLED"
+	fi
+	
+	if [ -f "$BLOCKLIST" ]; then
+		count=$(wc -l < "$BLOCKLIST")
+		echo "  Blocked domains: $((count - 2))"  # Subtract header lines
+	else
+		echo "  Blocked domains: 0 (no blocklist)"
+	fi
+	
+	if pidof dnsmasq >/dev/null 2>&1; then
+		echo "  DNS service: running"
+	else
+		echo "  DNS service: NOT running"
+	fi
+}
+
+# Main command parser
+case "${1:-}" in
+	"-g"|"updateGravity"|"gravity")
+		if [ -x "$PIHOLE_GRAVITY_SCRIPT" ]; then
+			sh "$PIHOLE_GRAVITY_SCRIPT"
+		else
+			log_err "Gravity script not found: ${PIHOLE_GRAVITY_SCRIPT}"
+			exit 1
+		fi
+		;;
+	"-q"|"query")
+		query_blocklist "${2:-}"
+		;;
+	"enable")
+		enable_blocking
+		;;
+	"disable")
+		disable_blocking
+		;;
+	"status")
+		status
+		;;
+	"-v"|"version")
+		version
+		;;
+	"-h"|"--help"|"")
+		show_help
+		;;
+	*)
+		echo "Unknown option: ${1}"
+		echo "Usage: ${PIHOLE_CMD} -g | -q <domain> | enable | disable | status | -v | -h"
+		exit 1
+		;;
+esac

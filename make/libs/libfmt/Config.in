@@ -1,0 +1,10 @@
+config FREETZ_LIB_libfmt
+	bool "fmt (C++ formatting library)"
+	default n
+	help
+		libfmt is a modern C++ formatting library providing
+		a fast and safe alternative to C stdio and C++ iostreams.
+		
+		Required by spdlog and Gerbera.
+		
+		https://fmt.dev/

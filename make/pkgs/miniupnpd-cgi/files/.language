@@ -1,0 +1,12 @@
+languages
+{ en }
+default
+{ en }
+files
+{
+	etc/init.d/rc.miniupnpd
+	usr/lib/cgi-bin/miniupnpd.cgi
+	usr/lib/cgi-bin/miniupnpd/status.cgi
+	etc/default.miniupnpd/miniupnpd.cfg
+	etc/default.miniupnpd/miniupnpd.save
+}

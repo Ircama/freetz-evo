@@ -1,0 +1,4 @@
+config EXTERNAL_FREETZ_LIB_libspdlog
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libspdlog
+	bool "spdlog (C++ logging library)"
+	default n

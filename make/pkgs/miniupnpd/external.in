@@ -1,0 +1,26 @@
+config EXTERNAL_FREETZ_PACKAGE_MINIUPNPD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MINIUPNPD
+	bool "MiniUPnPd"
+	default n
+
+menu "MiniUPnPd"
+	depends on EXTERNAL_FREETZ_PACKAGE_MINIUPNPD
+
+	config EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_DAEMON
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MINIUPNPD
+		bool "MiniUPnPd daemon"
+		default y
+		help
+			externals the following file(s):
+			 /usr/sbin/miniupnpd
+
+	config EXTERNAL_FREETZ_PACKAGE_MINIUPNPD_CGI
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MINIUPNPD_CGI
+		bool "MiniUPnPd CGI web interface"
+		default n
+		help
+			externals the following file(s):
+			 /usr/lib/cgi-bin/miniupnpd.cgi
+			 /usr/lib/cgi-bin/miniupnpd/status.cgi
+
+endmenu

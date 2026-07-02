@@ -180,5 +180,89 @@
     "timestamp": "2026-02-15T23:09:27Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:start before multid": {
+    "original": "start before multid",
+    "translation": "iniziare prima di multid",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Show": {
+    "original": "Show",
+    "translation": "Mostra",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced options": {
+    "original": "Advanced options",
+    "translation": "Opzioni avanzate",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command-line options (for experts)": {
+    "original": "Additional command-line options (for experts)",
+    "translation": "Opzioni aggiuntive della riga di comando (per gli esperti)",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Options": {
+    "original": "Options",
+    "translation": "Opzioni",
+    "timestamp": "2026-06-30T14:00:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Example": {
+    "original": "Example",
+    "translation": "Esempio",
+    "timestamp": "2026-06-30T14:00:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enabled": {
+    "original": "Enabled",
+    "translation": "Abilitato",
+    "timestamp": "2026-06-30T14:00:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Disabled": {
+    "original": "Disabled",
+    "translation": "Disabili",
+    "timestamp": "2026-06-30T14:00:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:DHCP hosts entries dhcp-hostsfile": {
+    "original": "DHCP hosts entries dhcp-hostsfile",
+    "translation": "Voci host DHCP dhcp-hostsfile",
+    "timestamp": "2026-06-30T14:00:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Current leases": {
+    "original": "Current leases",
+    "translation": "Contratti di locazione attuali",
+    "timestamp": "2026-06-30T14:00:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Optional. Dnsmasq typical syntax": {
+    "original": "Optional. Dnsmasq typical syntax",
+    "translation": "Facoltativo. Sintassi tipica di Dnsmasq",
+    "timestamp": "2026-06-30T14:01:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -1,0 +1,47 @@
+menuconfig FREETZ_PACKAGE_MINIUPNPD
+	bool "MiniUPnPd (UPnP IGD daemon)"
+	select FREETZ_PACKAGE_IPTABLES
+	default n
+	help
+		MiniUPnPd is a UPnP Internet Gateway Device daemon.
+		It implements the UPnP IGDv1 and IGDv2 specifications,
+		allowing clients on the LAN to manage port mappings on
+		the router automatically.
+		
+		This is useful for:
+		- Peer-to-peer applications
+		- Game consoles (Xbox, PlayStation)
+		- VoIP/instant messaging
+		- Any application needing inbound ports
+		
+		https://github.com/miniupnp/miniupnp
+
+if FREETZ_PACKAGE_MINIUPNPD
+
+	config FREETZ_PACKAGE_MINIUPNPD_DAEMON
+		bool "MiniUPnPd daemon"
+		default y
+		help
+			Installs the MiniUPnPd UPnP IGD daemon.
+
+	config FREETZ_PACKAGE_MINIUPNPD_CGI
+		bool "MiniUPnPd CGI web configuration interface"
+		depends on FREETZ_PACKAGE_MINIUPNPD_DAEMON
+		select FREETZ_BUSYBOX_START_STOP_DAEMON
+		default n
+
+	config FREETZ_PACKAGE_MINIUPNPD_SECURE_MODE
+		bool "Enable secure mode (default)"
+		depends on FREETZ_PACKAGE_MINIUPNPD_DAEMON
+		default y
+		help
+			Secure mode only allows port mappings to the client's own IP.
+			Disable to allow mappings to arbitrary IPs.
+
+	config FREETZ_PACKAGE_MINIUPNPD_IPV6
+		bool "Enable IPv6 support"
+		depends on FREETZ_PACKAGE_MINIUPNPD_DAEMON
+		depends on FREETZ_TARGET_IPV6_SUPPORT
+		default y
+
+endif # FREETZ_PACKAGE_MINIUPNPD

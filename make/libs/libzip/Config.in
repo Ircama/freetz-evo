@@ -1,0 +1,10 @@
+config FREETZ_LIB_libzip
+	bool "libzip (C ZIP library)"
+	select FREETZ_LIB_libz
+	default n
+	help
+		libzip is a C library for reading, creating,
+		and modifying ZIP archives.
+		Required by Gerbera.
+		
+		https://libzip.org/

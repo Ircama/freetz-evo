@@ -1,0 +1,38 @@
+comment "Pseudo-Pi-hole (needs dnsmasq)"
+	depends on !FREETZ_PACKAGE_DNSMASQ
+
+menuconfig FREETZ_PACKAGE_PSEUDO_PI_HOLE
+	bool "Pseudo-Pi-hole DNS Sinkhole"
+	depends on FREETZ_PACKAGE_DNSMASQ
+	depends on FREETZ_SHOW_DEVELOPER
+	select FREETZ_BUSYBOX_EGREP
+	select FREETZ_PACKAGE_WGET
+	select FREETZ_PACKAGE_WGET_WITH_SSL
+	select FREETZ_PACKAGE_WGET_CA_BUNDLE
+	default n
+	help
+		Pi-hole-like DNS sinkhole for freetz-ng.
+		Blocks DNS queries for known advertising and tracking domains.
+		Uses dnsmasq for DNS blocking via addn-hosts.
+		Shell scripts for blocklist management (gravity).
+		This is NOT the official Pi-hole. It reimplements Pi-hole-like
+		functionality using existing freetz components (dnsmasq + shell scripts).
+		No pihole-FTL daemon is required.
+		Requires: dnsmasq, wget for blocklist downloads.
+		Web interface: http://fritz.box:81/cgi-bin/conf/pseudo-pi-hole
+
+if FREETZ_PACKAGE_PSEUDO_PI_HOLE
+
+	config FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON
+		bool "Pseudo-Pi-hole daemon and core scripts"
+		default y
+		help
+			Installs Pseudo-Pi-hole core scripts (pihole command, gravity blocklist manager).
+
+	config FREETZ_PACKAGE_PSEUDO_PI_HOLE_CGI
+		bool "Pseudo-Pi-hole CGI web configuration interface"
+		depends on FREETZ_PACKAGE_PSEUDO_PI_HOLE_DAEMON
+		select FREETZ_BUSYBOX_START_STOP_DAEMON
+		default y
+
+endif # FREETZ_PACKAGE_PSEUDO_PI_HOLE

@@ -1,0 +1,8 @@
+config FREETZ_LIB_libpugixml
+	bool "pugixml (C++ XML processing library)"
+	default n
+	help
+		pugixml is a lightweight C++ XML processing library.
+		Required by Gerbera.
+		
+		https://pugixml.org/

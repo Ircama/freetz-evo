@@ -1,0 +1,84 @@
+#!/bin/sh
+
+DAEMON=miniupnpd
+DAEMON_BIN=miniupnpd
+PID_FILE=/var/run/$DAEMON.pid
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/miniupnpd.cfg ] && . /mod/etc/conf/miniupnpd.cfg
+
+: "${MINIUPNPD_ENABLED:=no}"
+: "${MINIUPNPD_WAN_IF:=eth1}"
+: "${MINIUPNPD_LAN_IF:=192.168.0.1/24}"
+: "${MINIUPNPD_SECURE_MODE:=yes}"
+
+DAEMON_ARGS="-f /etc/default.miniupnpd/miniupnpd.conf"
+
+is_running() {
+	[ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null && return 0
+	return 1
+}
+
+start() {
+	echo "Starting ${DAEMON}..."
+	if is_running; then
+		echo "already running."
+		return 0
+	fi
+	if [ ! -x "$(command -v $DAEMON_BIN)" ]; then
+		echo "binary not found."
+		exit 1
+	fi
+	start-stop-daemon -S -b -q -m -p "$PID_FILE" -x /usr/sbin/$DAEMON_BIN -- $DAEMON_ARGS
+	echo 'done.'
+}
+
+stop() {
+	echo "Stopping ${DAEMON}..."
+	if ! is_running; then
+		echo "not running."
+		rm -f "$PID_FILE" 2>/dev/null
+		return 0
+	fi
+	start-stop-daemon -K -q -p "$PID_FILE" 2>/dev/null || true
+	# Also clean iptables rules
+	local iptables_init="/etc/default.miniupnpd/iptables_removeall.sh"
+	[ -x "$iptables_init" ] && "$iptables_init" 2>/dev/null || true
+	rm -f "$PID_FILE"
+	echo 'done.'
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modreg cgi 'miniupnpd' 'MiniUPnPd'
+		if [ "$MINIUPNPD_ENABLED" = "yes" ]; then
+			start
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi 'miniupnpd'
+		stop
+		;;
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		sleep 1
+		start
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

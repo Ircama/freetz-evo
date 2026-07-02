@@ -1,0 +1,4 @@
+config EXTERNAL_FREETZ_LIB_libzip
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libzip
+	bool "libzip (C ZIP library)"
+	default n
