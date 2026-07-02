@@ -46,8 +46,7 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	export AR_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	export RANLIB_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
 	export HOST_CC="cc"; \
-	# Enable vendored openssl for cross-compilation (no system OpenSSL available) ;\
-	unset OPENSSL_NO_VENDOR; \
+	$(RUST_OPENSSL_CROSS_ENV__INT) \
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
 	mkdir -p "$$CARGO_HOME"; \
 	# Remove SMB (libsmbclient) from default features - not available for MIPS cross-compilation ;\
@@ -56,10 +55,6 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	# Fetch all deps ;\
 	cargo fetch --target "$(TERMSCP_RUST_TARGET_ARG)"; \
 	# Apply source patches after fetch extracted everything ;\
-	for openssl_sys_toml in $$HOME/.cargo/registry/src/*/openssl-sys-*/Cargo.toml; do \
-		[ -f "$$openssl_sys_toml" ] || continue; \
-		python3 -c "import re,sys;c=open(sys.argv[1]).read();c=re.sub(r'^default = \[.*?\]','default = [\"vendored\"]',c,flags=re.MULTILINE);open(sys.argv[1],'w').write(c);print('Patched openssl-sys: added vendored to default features')" "$$openssl_sys_toml"; \
-	done; \
 	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs $$HOME/.cargo/registry/src/*/socket2-0.6.4/src/socket.rs; do \
 		[ -f "$$socket2_src" ] || continue; \
 		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
@@ -88,6 +83,8 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 		> "$$CARGO_HOME/config.toml"; \
 	echo "CARGO_HOME=$$CARGO_HOME" >&2; \
 	cat "$$CARGO_HOME/config.toml" >&2; \
+	# Patch openssl-src to recognize armv7-unknown-linux-uclibceabi -> linux-armv4 ;\
+	$(OPENSSL_SRC_APPLY_UCLIBC_ARM_PATCH__INT) \
 	$(TERMSCP_CARGO_BUILD_CMD) --target "$(TERMSCP_RUST_TARGET_ARG)" --bin termscp
 
 $(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
@@ -98,6 +95,7 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(TERMSCP_DIR) clean
+	$(RM) -r $(TERMSCP_DIR)/target/release/build
 	$(RM) $($(PKG)_BINARY) $(TERMSCP_DIR)/.unpacked $(TERMSCP_DIR)/.configured $(TERMSCP_DIR)/.cargo/config.toml
 
 $(pkg)-uninstall:

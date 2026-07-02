@@ -208,6 +208,37 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 endef
 
+# Set environment variables for openssl-sys cross-compilation.
+# Uses global (non-prefixed) OPENSSL_DIR vars which openssl-sys reads as fallback
+# for any target. Also enables pkg-config cross mode so openssl.pc files are found.
+# Requires: TARGET_TOOLCHAIN_STAGING_DIR to be set (always true in freetz builds).
+define RUST_OPENSSL_CROSS_ENV__INT
+	export OPENSSL_NO_VENDOR=1; \
+	export OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
+	export OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
+	export OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
+	export OPENSSL_STATIC=0; \
+	export PKG_CONFIG_ALLOW_CROSS=1; \
+	export PKG_CONFIG_SYSROOT_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)"; \
+	export PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig";
+endef
+
+# Patch openssl-src crate to recognise uClibc ARM targets.
+# openssl-src's build/main.rs matches target triples to OpenSSL config names.
+# armv7-unknown-linux-uclibceabi is not listed; patch it to use linux-armv4
+# (same as armv7-unknown-linux-musleabihf). Idempotent: skips if already patched.
+define OPENSSL_SRC_APPLY_UCLIBC_ARM_PATCH__INT
+for openssl_src_build in $$HOME/.cargo/registry/src/*/openssl-src-*/build/main.rs; do \
+	[ -f "$$openssl_src_build" ] || continue; \
+	if grep -q "armv7-unknown-linux-uclibceabi" "$$openssl_src_build" 2>/dev/null; then \
+		echo "openssl-src already patched for ARM uClibc" >&2; \
+	else \
+		sed -i 's/"armv7-unknown-linux-musleabihf"/"armv7-unknown-linux-musleabihf"\n            "armv7-unknown-linux-uclibceabi" => "linux-armv4",/' "$$openssl_src_build"; \
+		echo "Patched openssl-src: armv7-unknown-linux-uclibceabi -> linux-armv4" >&2; \
+	fi; \
+done;
+endef
+
 # On MIPS FRITZ!Box targets, PIE executables crash with ld-uClibc.so.1 (SIGSEGV).
 # Force -no-pie only on MIPS; other architectures support PIE fine.
 # Guard against duplicate appends when multiple packages include this file.
