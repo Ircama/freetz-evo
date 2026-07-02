@@ -46,11 +46,8 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	export AR_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	export RANLIB_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
 	export HOST_CC="cc"; \
-	export OPENSSL_NO_VENDOR=1; \
-	# Target-specific env vars (not seen by HOST build scripts, so SSH headers don't leak) ;\
-	export MIPS_UNKNOWN_LINUX_UCLIBC_OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
-	export MIPS_UNKNOWN_LINUX_UCLIBC_OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
-	export MIPS_UNKNOWN_LINUX_UCLIBC_OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
+	# Enable vendored openssl for cross-compilation (no system OpenSSL available) ;\
+	unset OPENSSL_NO_VENDOR; \
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
 	mkdir -p "$$CARGO_HOME"; \
 	# Remove SMB (libsmbclient) from default features - not available for MIPS cross-compilation ;\
@@ -59,6 +56,10 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	# Fetch all deps ;\
 	cargo fetch --target "$(TERMSCP_RUST_TARGET_ARG)"; \
 	# Apply source patches after fetch extracted everything ;\
+	for openssl_sys_toml in $$HOME/.cargo/registry/src/*/openssl-sys-*/Cargo.toml; do \
+		[ -f "$$openssl_sys_toml" ] || continue; \
+		python3 -c "import re,sys;c=open(sys.argv[1]).read();c=re.sub(r'^default = \[.*?\]','default = [\"vendored\"]',c,flags=re.MULTILINE);open(sys.argv[1],'w').write(c);print('Patched openssl-sys: added vendored to default features')" "$$openssl_sys_toml"; \
+	done; \
 	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs $$HOME/.cargo/registry/src/*/socket2-0.6.4/src/socket.rs; do \
 		[ -f "$$socket2_src" ] || continue; \
 		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
