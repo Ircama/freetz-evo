@@ -209,18 +209,24 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 endef
 
 # Set environment variables for openssl-sys cross-compilation.
-# Uses global (non-prefixed) OPENSSL_DIR vars which openssl-sys reads as fallback
-# for any target. Also enables pkg-config cross mode so openssl.pc files are found.
-# Requires: TARGET_TOOLCHAIN_STAGING_DIR to be set (always true in freetz builds).
+# Uses TARGET-PREFIXED UPPERCASE vars (e.g. MIPS_UNKNOWN_LINUX_UCLIBC_OPENSSL_DIR)
+# which openssl-sys reads only for the specific cross target, NOT for host builds.
+# This avoids contaminating host-side build scripts (like ssh2-config, libssh2-sys)
+# with sysroot lib/include paths that the host compiler/linker cannot use.
+# PKG_CONFIG vars are intentionally omitted: they leak ARM/MIPS lib paths into
+# HOST linker commands, causing "incompatible with elf32-littlearm" link failures.
+# $1: rust env target with underscores, lowercase (e.g. mips_unknown_linux_uclibc)
 define RUST_OPENSSL_CROSS_ENV__INT
-	export OPENSSL_NO_VENDOR=1; \
-	export OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
-	export OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
-	export OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
-	export OPENSSL_STATIC=0; \
-	export PKG_CONFIG_ALLOW_CROSS=1; \
-	export PKG_CONFIG_SYSROOT_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)"; \
-	export PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig";
+	_RUST_TGT_UPPER=$$(echo "$(1)" | tr '[:lower:]' '[:upper:]'); \
+	if [ -f "$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libssl.so.3" ]; then \
+		echo "System OpenSSL found: setting $${_RUST_TGT_UPPER}_OPENSSL_DIR" >&2; \
+		export OPENSSL_NO_VENDOR=1; \
+		export $${_RUST_TGT_UPPER}_OPENSSL_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"; \
+		export $${_RUST_TGT_UPPER}_OPENSSL_LIB_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib"; \
+		export $${_RUST_TGT_UPPER}_OPENSSL_INCLUDE_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"; \
+	else \
+		echo "No system OpenSSL - openssl-sys will use vendored" >&2; \
+	fi;
 endef
 
 # Patch openssl-src crate to recognise uClibc ARM targets.

@@ -46,7 +46,7 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	export AR_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	export RANLIB_$(TERMSCP_RUST_ENV_TARGET)="$(TARGET_CROSS)ranlib"; \
 	export HOST_CC="cc"; \
-	$(RUST_OPENSSL_CROSS_ENV__INT) \
+	$(call RUST_OPENSSL_CROSS_ENV__INT,$(TERMSCP_RUST_ENV_TARGET)) \
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
 	mkdir -p "$$CARGO_HOME"; \
 	# Remove SMB (libsmbclient) from default features - not available for MIPS cross-compilation ;\
