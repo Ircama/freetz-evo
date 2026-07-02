@@ -42,10 +42,6 @@ if FREETZ_PACKAGE_GERBERA
 		default n
 
 	# Taglib disabled: freetz ships 1.6.3, Gerbera requires >= 1.12
-
-	config FREETZ_PACKAGE_GERBERA_WITH_MAGIC
-		bool "Enable MIME type detection (libmagic)"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
-		default n
+	# LibMagic not packaged in freetz cross-toolchain
 
 endif # FREETZ_PACKAGE_GERBERA
