@@ -3659,5 +3659,12 @@
     "timestamp": "2026-05-31T16:30:39Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Request token": {
+    "original": "Request token",
+    "translation": "Richiedi token",
+    "timestamp": "2026-07-03T20:34:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
