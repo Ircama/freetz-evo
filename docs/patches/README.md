@@ -128,6 +128,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### H
 
+  * **<u>REMOVE_HD_IDLE: Remove hd-idle</u><a id='remove-hd-idle'></a>**<br>
+    Remove hd-idle binary (about 9-66 kB uncompressed). The hd-idle binary is only usefull if you use a HDD. A SSD or USB stick does not need hd-idle.
+
   * **[Remove help](REMOVE_HELP.md)<a id='remove-help'></a>**<br>
     Removes the (offline) help pages from the web menu.
 

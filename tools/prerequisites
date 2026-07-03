@@ -8,6 +8,7 @@ NODEJS_HOST_MULTILIB_DIR="$PARENT/build/host-multilib"
 NODEJS_HOST_MULTILIB_CXXINC="$NODEJS_HOST_MULTILIB_DIR/usr/include/x86_64-linux-gnu/c++/13/32/bits/c++config.h"
 NODEJS_HOST_MULTILIB_LIB="$NODEJS_HOST_MULTILIB_DIR/usr/lib/gcc/x86_64-linux-gnu/13/32/libstdc++.a"
 RUSTUP_HOME_BIN="$HOME/.cargo/bin"
+[ -x "$(command -v apt)"  ] && APT="apt"   || APT="apt-get"
 
 
 check_requisite() {
@@ -200,12 +201,12 @@ install_requisite() {
 			setup_rust_host_toolchain || exit 1
 			;;
 		Debian*|Devuan*|LMDE*)
-			$SUDO apt-get update && $SUDO apt install $DOY $vals || exit 1
+			$SUDO $APT update && $SUDO $APT install $DOY $vals || exit 1
 			extract_nodejs_host_multilib || exit 1
 			setup_rust_host_toolchain || exit 1
 			;;
 		Ubuntu*|Mint*)
-			$SUDO apt-get update && $SUDO apt-get install $DOY $vals || exit 1
+			$SUDO $APT update && $SUDO $APT install $DOY $vals || exit 1
 			extract_nodejs_host_multilib || exit 1
 			setup_rust_host_toolchain || exit 1
 			;;

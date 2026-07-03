@@ -9,7 +9,7 @@ menu "libcurl"
 			depends on !FREETZ_SEPARATE_AVM_UCLIBC
 
 		config FREETZ_LIB_libcurl_WITH_VERSION_CURRENT
-			bool "8.20.0"
+			bool "8.21.0"
 			depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 	endchoice

@@ -40,6 +40,7 @@ on:
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   build:
@@ -104,10 +105,11 @@ jobs:
         env:
           FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
         run: |
-          echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                      >> .config
-          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] || \
-          echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                        >> .config
-          echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'  >> .config
+          echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                        >> .config
+          [ -z "${{ secrets.FREETZ_DLTOKEN }}" ] && \
+          echo '# FREETZ_HOSTTOOLS_DOWNLOAD is not set'                                               >> .config ||
+          echo 'FREETZ_HOSTTOOLS_DOWNLOAD=y'                                                          >> .config
+          echo 'FREETZ_DL_SITE_USER="https://github.com/Freetz-NG/dl-mirror/releases/download/dl"'    >> .config
           make tools
 
       - name: generate

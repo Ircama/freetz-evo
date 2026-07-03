@@ -741,6 +741,15 @@ config FREETZ_REMOVE_LSOF
 		Remove /bin/lsof binary.
 		This saves about 48 KB compressed space in kernel.image.
 
+config FREETZ_REMOVE_HD_IDLE
+	bool "Remove hd-idle"
+	depends on FREETZ_AVM_HAS_HD_IDLE
+	default n
+	help
+		Remove hd-idle binary (about 9-66 kB uncompressed).
+		The hd-idle binary is only usefull if you use a HDD.
+		A SSD or USB stick does not need hd-idle.
+
 config FREETZ_REMOVE_SOCAT
 	bool "Remove socat"
 	depends on FREETZ_AVM_HAS_SOCAT

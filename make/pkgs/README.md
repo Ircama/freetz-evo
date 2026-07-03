@@ -198,7 +198,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Ctorrent dnh3.3.2 (binary only) - DEPRECATED](../../docs/make/ctorrent.md)<a id='ctorrent'></a>**<br>
     CTorrent is a BitTorrent client written in the C programming language, known to be a very robust and mature programming language, which produces fast and optimized application.
 
-  * **[Curl 8.12.1/8.20.0 (binary only)](../../docs/make/curl.md)<a id='curl'></a>**<br>
+  * **[Curl 8.12.1/8.21.0 (binary only)](../../docs/make/curl.md)<a id='curl'></a>**<br>
     Curl is a command line tool for transferring files with URL syntax, supporting FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE and LDAP. Curl supports HTTPS certificates, HTTP POST, HTTP PUT, FTP uploading, kerberos, HTTP form based upload, proxies, cookies, user+password authentication, file transfer resume, http proxy tunneling and a busload of other useful tricks.
 
   * **<u>CurlFtpFS 0.9.2 - DEPRECATED</u><a id='curlftpfs'></a>**<br>
@@ -295,7 +295,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     dtach is a tiny program that emulates the detach feature of screen, allowing you to run a program in an environment that is protected from the controlling terminal and attach to it later.
      - [Usage](../../docs/make/dtach.md#usage)
 
-  * **[dtc 1.7.2](../../docs/make/dtc.md)<a id='dtc'></a>**<br>
+  * **[dtc 1.8.1](../../docs/make/dtc.md)<a id='dtc'></a>**<br>
     Device  Tree  Compiler,  dtc, takes as input a device-tree in a given format and outputs a device-tree in another format for booting kernels on  embedded  systems.   Typically,  the input  format  is  "dts",  a  human readable source format, and creates a "dtb", or binary format as output.
 
   * **<u>dvbsnoop 1.4.50 (binary only) - DEPRECATED</u><a id='dvbsnoop'></a>**<br>
@@ -505,13 +505,16 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[jless 0.9.0](../../docs/make/jless.md)<a id='jless'></a>**<br>
     jless utility package built from source using Rust/Cargo.
 
-  * **[jq 1.8.1 (binary only)](../../docs/make/jq.md)<a id='jq'></a>**<br>
+  * **[jq 1.8.2 (binary only)](../../docs/make/jq.md)<a id='jq'></a>**<br>
     jq is a lightweight and flexible command-line JSON processor.
 
   * **<u>js OSSP 1.6.20070208 (binary only) - DEPRECATED</u><a id='js'></a>**<br>
     OSSP js is a stand-alone distribution of the JavaScript (JS) programming language reference implementation from Mozilla.
 
-  * **[juis_check 1.3](../../docs/make/juis_check.md)<a id='juis-check'></a>**<br>
+  * **<u>juis_bearer 1.0</u><a id='juis-bearer'></a>**<br>
+    This integrates the juis_bearer script from tools/ dir into the image. It is a bearer token handler of juis with avmzertifikate.
+
+  * **[juis_check 1.4](../../docs/make/juis_check.md)<a id='juis-check'></a>**<br>
     This integrates the juis_check script from tools/ dir into the image. It run 23 time faster (0,3sec vs 7sec) than other bloated implementations and needs only 4% of space (4kB vs 93kB).
 
 ### K
@@ -606,6 +609,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[minisatip 1.0.4/1.3.6 (binary only) - DEPRECATED](../../docs/make/minisatip.md)<a id='minisatip'></a>**<br>
     Minisatip is a multi-threaded satip server version 1.2 that runs under Linux and it was tested with DVB-S, DVB-S2, DVB-T, DVB-T2, DVB-C, DVB-C2, ATSC and ISDB-T cards.
+
+  * **[mini-snmpd 1.7 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
+    This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
 
   * **[mod: Freetz(-MOD)](../../docs/make/mod.md)<a id='mod'></a>**<br>
     This package is mandatory
@@ -756,7 +762,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7 (binary only)](../../docs/make/openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.20/2.7.4](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.21/2.7.5](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
      - [Frequently Asked Questions / Howto](../../docs/make/openvpn.md#frequently-asked-questions--howto)
      - [Configuration Guide](../../docs/make/openvpn.md#configuration-guide)
@@ -1310,7 +1316,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Streamripper records mp3 and ogg streams. For shoutcast style streams it finds the "meta data" or track separation data, and uses that as a marker for where the track should be separated.
      - [Libraries Used](../../docs/make/streamripper.md#libraries-used)
 
-  * **[Stunnel 5.78](../../docs/make/stunnel.md)<a id='stunnel'></a>**<br>
+  * **[Stunnel 5.79](../../docs/make/stunnel.md)<a id='stunnel'></a>**<br>
     Stunnel universal SSL proxy
      - [Configuration](../../docs/make/stunnel.md#configuration)
      - [Advanced](../../docs/make/stunnel.md#advanced)
@@ -1379,7 +1385,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [URL blocking](../../docs/make/tinyproxy.md#url-blocking)
      - [Memory usage](../../docs/make/tinyproxy.md#memory-usage)
 
-  * **[tmux 3.6b (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
+  * **[tmux 3.7b (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
   * **[Tor 0.4.8.25](../../docs/make/tor.md)<a id='tor'></a>**<br>
@@ -1398,7 +1404,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tput (ncurses terminal control)](../../docs/make/tput.md)<a id='tput'></a>**<br>
     tput is a command-line utility from the ncurses package that queries the terminfo database to provide terminal-dependent capabilities (e.g. clear screen, set colors, get terminal size). Common uses: tput cols     - number of columns tput lines    - number of lines tput clear    - clear screen tput bold     - enable bold tput sgr0     - reset attributes https://invisible-island.net/ncurses/
 
-  * **[Transmission 3.00/4.1.2 (binary only)](../../docs/make/transmission.md)<a id='transmission'></a>**<br>
+  * **[Transmission 3.00/4.1.3 (binary only)](../../docs/make/transmission.md)<a id='transmission'></a>**<br>
     If needed, remember to change the base directory as well as the installation directory on the webif.
      - [Blocklist](../../docs/make/transmission.md#blocklist)
      - [Number of peers](../../docs/make/transmission.md#number-of-peers)

@@ -83,7 +83,8 @@ config FREETZ_TYPE_PREFIX
 	default "6840"              if FREETZ_TYPE_6840
 	default "6850_LTE"          if FREETZ_TYPE_6850_4G_V1
 	default "6850_4G"           if FREETZ_TYPE_6850_4G_V2
-	default "6850_5G"           if FREETZ_TYPE_6850_5G
+	default "6850_5Gv1"         if FREETZ_TYPE_6850_5G_V1
+	default "6850_5Gv2"         if FREETZ_TYPE_6850_5G_V2
 	default "6860"              if FREETZ_TYPE_6860
 	default "6842"              if FREETZ_TYPE_6842
 	default "6890"              if FREETZ_TYPE_6890

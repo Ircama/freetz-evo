@@ -1,6 +1,6 @@
-$(call PKG_INIT_BIN,1.6)
+$(call PKG_INIT_BIN,1.7)
 $(PKG)_SOURCE:=mini-snmpd-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=77bc704a4ed4fdc386e2ba2e972d9457564c84abef7e9af5de5a2a231e5a9efe
+$(PKG)_HASH:=bf119818276cd63e37d29d4c5e88f8cdf2975113bc9a2a39ee2b3a91f66de20a
 $(PKG)_SITE:=https://github.com/troglobit/mini-snmpd/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://troglobit.com/projects/mini-snmpd/
 ### MANPAGE:=https://ftp.troglobit.com/mini-snmpd/mini-snmpd.html

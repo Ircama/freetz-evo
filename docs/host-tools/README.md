@@ -28,7 +28,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[dos2unix 7.5.5](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
 
-  * **[dtc 1.7.2](dtc-host.md)<a id='dtc-host'></a>**<br>
+  * **[dtc 1.8.1](dtc-host.md)<a id='dtc-host'></a>**<br>
 
 ### E
 
@@ -106,11 +106,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[patchelf-target 0.14.5/0.15.0](patchelf-target-host.md)<a id='patchelf-target-host'></a>**<br>
 
+  * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
+
   * **[pkgconf 2.5.1](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
 
   * **[prelink 20131005](prelink-host.md)<a id='prelink-host'></a>**<br>
 
-  * **[pseudo 1.9.7](pseudo-host.md)<a id='pseudo-host'></a>**<br>
+  * **[pseudo 1.9.8](pseudo-host.md)<a id='pseudo-host'></a>**<br>
 
   * **[python2 2.7.18](python2-host.md)<a id='python2-host'></a>**<br>
 
@@ -158,7 +160,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-06-19](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-07-01](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

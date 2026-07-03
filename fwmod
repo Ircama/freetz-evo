@@ -1130,8 +1130,8 @@ if [ "$DO_MOD" -gt 0 ]; then
 				case "$bn" in
 					libusb0)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/{libusb.,libusb-0}*so*) ;;
 					libusb1)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libusb-1*so*) ;;
-					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn/xx/++}[-.]*so*) ;;
-					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so* ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[0-9]*[-.]so*) ;;
+					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn%xx}++[-.]*so*) ;;
+					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so*) ;;
 				esac
 				if [ -z "$files" ]; then
 					continue;
@@ -1359,8 +1359,8 @@ if [ "$DO_MOD" -gt 0 ]; then
 			"$TAR_GNU" -c  --owner=0 --group=0 --numeric-owner  -C "${ADDON_DIR}/${pkg}" . | \
 			  "$TAR_BBA" -x -C "$FILESYSTEM_MOD_DIR" || error 1 "tar failed"
 		elif [ "$(echo ${pkg^^}-corrupt | sed -r 's/([^.-_-]*).*/\LfLawed-\1-Addon/' | md5sum | sed 's/ .*//')" != "80d00cf16e1a48ec11801feed60a2be7" ]; then
-			"$TAR_BBA"  $(find "${ADDON_DIR}/${pkg}/" -maxdepth 1 -type f -name ".exclude*" -printf '--exclude-from=%p ') -c -C "${ADDON_DIR}/${pkg}/root" . | \
-			  "$TAR_BBA" -x -C "$FILESYSTEM_MOD_DIR" || error 1 "tar failed"
+			"$TAR_GNU"  $(find "${ADDON_DIR}/${pkg}/" -maxdepth 1 -type f -name ".exclude*" -printf '--exclude-from=%p ') \
+			  -c  --owner=0 --group=0 --numeric-owner  -C "${ADDON_DIR}/${pkg}/root" . | "$TAR_BBA" -x -C "$FILESYSTEM_MOD_DIR" || error 1 "tar failed"
 
 			if [ -d "${ADDON_DIR}/${pkg}/${VARTAR_SUBDIR}" ]; then
 				"$TAR_GNU" -c  --owner=0 --group=0 --numeric-owner  -C "${ADDON_DIR}/${pkg}/${VARTAR_SUBDIR}" . | \
