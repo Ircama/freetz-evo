@@ -29,12 +29,6 @@ if FREETZ_PACKAGE_GERBERA
 		help
 			Installs the Gerbera UPnP media server daemon.
 
-	config FREETZ_PACKAGE_GERBERA_CGI
-		bool "Gerbera CGI web interface"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
-		select FREETZ_BUSYBOX_START_STOP_DAEMON
-		default n
-
 	config FREETZ_PACKAGE_GERBERA_WITH_CURL
 		bool "Enable online services support (libcurl)"
 		depends on FREETZ_PACKAGE_GERBERA_DAEMON
