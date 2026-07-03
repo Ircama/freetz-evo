@@ -129,6 +129,9 @@ config FREETZ_AVM_HAS_SND_BUILTIN
 config FREETZ_AVM_HAS_SND_PCM_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_SND_TIMER_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_SOUND_AVAILABLE
 	def_bool y
 
