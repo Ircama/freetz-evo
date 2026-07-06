@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libexiv2
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libexiv2
+	bool "exiv2"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libexiv2.so.0.28.5

@@ -1,0 +1,11 @@
+config FREETZ_LIB_libicu
+	bool "ICU (International Components for Unicode)"
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_STDCXXLIB_WITH_WCHAR
+	default n
+	help
+		ICU is a mature, widely used set of C/C++ and Java libraries
+		providing Unicode and Globalization support for software applications.
+		WARNING: ICU is very large (~30MB source, hundreds of MB compiled).
+		
+		https://icu.unicode.org/

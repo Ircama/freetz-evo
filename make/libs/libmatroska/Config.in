@@ -1,0 +1,9 @@
+config FREETZ_LIB_libmatroska
+	bool "libmatroska (Matroska container library)"
+	select FREETZ_LIB_libebml
+	default n
+	help
+		libmatroska is a C++ library for handling Matroska container
+		formats (MKV, MKA, MKS).
+		
+		https://github.com/Matroska-Org/libmatroska

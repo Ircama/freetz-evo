@@ -1,0 +1,11 @@
+config FREETZ_LIB_libmicrohttpd
+	bool "libmicrohttpd (GNU libmicrohttpd - embedded HTTP server)"
+	default n
+	help
+		GNU libmicrohttpd is a small C library that provides an HTTP server
+		as part of a C library, making it easy to embed HTTP server
+		functionality into applications.
+		
+		Required by libnpupnp (NPUPnP library).
+		
+		https://www.gnu.org/software/libmicrohttpd/

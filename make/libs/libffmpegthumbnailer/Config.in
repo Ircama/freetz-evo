@@ -1,0 +1,12 @@
+config FREETZ_LIB_libffmpegthumbnailer
+	bool "libffmpegthumbnailer (video thumbnail generator)"
+	select FREETZ_LIB_libavcodec
+	select FREETZ_LIB_libavformat
+	select FREETZ_LIB_libavutil
+	select FREETZ_LIB_libswscale
+	default n
+	help
+		libffmpegthumbnailer is a library for generating thumbnail
+		images from video files, using FFmpeg for decoding.
+		
+		https://github.com/dirkvdb/ffmpegthumbnailer

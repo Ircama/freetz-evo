@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libmagic
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libmagic
+	bool "libmagic"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libmagic.so.1.0.0

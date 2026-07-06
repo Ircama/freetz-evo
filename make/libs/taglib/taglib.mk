@@ -1,26 +1,31 @@
-$(call PKG_INIT_LIB, 1.6.3)
-$(PKG)_LIB_VERSION:=1.9.0
+$(call PKG_INIT_LIB, 2.3)
+$(PKG)_LIB_VERSION:=2.3.0
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=a9ba089cc2c6d26d266bad492de31cadaeb878dea858e22ae3196091718f284b
-$(PKG)_SITE:=http://developer.kde.org/~wheeler/files/src
+$(PKG)_HASH:=7349f6fd942418bc7009ebe743eb7c9d055f02921ec56fa436ec25007c47fd38
+$(PKG)_SITE:=https://github.com/taglib/taglib/releases/download/v$($(PKG)_VERSION)
+### WEBSITE:=https://taglib.org/
+### CHANGES:=https://github.com/taglib/taglib/releases
+### CVSREPO:=https://github.com/taglib/taglib
 
-$(PKG)_BINARY:=$($(PKG)_DIR)/taglib/.libs/libtag.so.$($(PKG)_LIB_VERSION)
+$(PKG)_BINARY:=$($(PKG)_DIR)/taglib/libtag.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtag.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libtag.so.$($(PKG)_LIB_VERSION)
 
+$(PKG)_DEPENDS_ON += cmake-host
 $(PKG)_DEPENDS_ON += $(STDCXXLIB) zlib
 $(PKG)_REBUILD_SUBOPTS += FREETZ_STDCXXLIB
 
-# touch some autotools' files to prevent configure from being regenerated
-$(PKG)_CONFIGURE_PRE_CMDS += touch -t 200001010000.00 configure.in.in configure.in subdirs acinclude.m4 aclocal.m4 admin/acinclude.m4.in admin/libtool.m4.in;
-
-$(PKG)_CONFIGURE_OPTIONS += --enable-shared
-$(PKG)_CONFIGURE_OPTIONS += --enable-static
-$(PKG)_CONFIGURE_OPTIONS += --disable-debug
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_TESTING=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DWITH_MP4=ON
+$(PKG)_CONFIGURE_OPTIONS += -DWITH_ASF=ON
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
-$(PKG_CONFIGURED_CONFIGURE)
+$(PKG_CONFIGURED_CMAKE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(TAGLIB_DIR)
@@ -29,13 +34,10 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(TAGLIB_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
-	$(PKG_FIX_LIBTOOL_LA) \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtag*.la \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/taglib*.pc \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/taglib-config
+	@touch $@
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
-	$(INSTALL_LIBRARY_STRIP)
+	$(INSTALL_LIBRARY_STRIP_WILDCARD_BEFORE_SO)
 
 $(pkg): $($(PKG)_STAGING_BINARY)
 
@@ -46,8 +48,7 @@ $(pkg)-clean:
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/taglib \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtag* \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/taglib*.pc \
-		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/taglib-config
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/taglib*.pc
 
 $(pkg)-uninstall:
 	$(RM) $(TAGLIB_TARGET_DIR)/libtag*.so*

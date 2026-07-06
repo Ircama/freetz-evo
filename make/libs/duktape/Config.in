@@ -1,0 +1,11 @@
+config FREETZ_LIB_libduktape
+	bool "duktape (Embedded JavaScript engine)"
+	default n
+	help
+		Duktape is a small, portable, embeddable JavaScript engine,
+		written in C. It implements ES5/E5.1 with some features
+		from ES2015+.
+		
+		Required by Gerbera for JavaScript scripting support.
+		
+		https://duktape.org/

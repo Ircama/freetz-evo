@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libmicrohttpd)),y)
+LIBS+=libmicrohttpd
+endif

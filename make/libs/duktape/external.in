@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libduktape
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libduktape
+	bool "duktape"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libduktape.so.206.20600

@@ -1,0 +1,11 @@
+config FREETZ_LIB_liblastfm
+	bool "liblastfm (Last.fm API client)"
+	depends on BROKEN
+	default n
+	help
+		liblastfm is a C++ library for the Last.fm webservices API.
+		NOTE: This library requires Qt (QtCore + QtNetwork), which is
+		not available in the freetz cross-compilation toolchain.
+		Packaging this is currently not feasible.
+		
+		https://github.com/lastfm/liblastfm

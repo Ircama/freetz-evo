@@ -1,0 +1,10 @@
+config EXTERNAL_FREETZ_LIB_libicu
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libicu
+	bool "ICU"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libicudata.so.76.1
+		 ${FREETZ_LIBRARY_DIR}/libicui18n.so.76.1
+		 ${FREETZ_LIBRARY_DIR}/libicuio.so.76.1
+		 ${FREETZ_LIBRARY_DIR}/libicuuc.so.76.1

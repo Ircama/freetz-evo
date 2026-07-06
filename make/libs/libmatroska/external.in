@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libmatroska
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libmatroska
+	bool "libmatroska"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libmatroska.so.7.0.0

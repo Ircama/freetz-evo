@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libmatroska)),y)
+LIBS+=libmatroska
+endif

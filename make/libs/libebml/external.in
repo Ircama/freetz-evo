@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libebml
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libebml
+	bool "libebml"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libebml.so.5.0.0

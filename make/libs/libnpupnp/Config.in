@@ -1,0 +1,10 @@
+config FREETZ_LIB_libnpupnp
+	bool "libnpupnp (NPUPnP - modern UPnP library)"
+	select FREETZ_LIB_libcurl
+	select FREETZ_LIB_libmicrohttpd
+	default n
+	help
+		libnpupnp is a new generation UPnP library based on libupnp,
+		providing better performance and modern TLS support.
+		
+		https://www.lesbonscomptes.com/upmpdcli/pages/downloads.html

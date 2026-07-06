@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libnpupnp
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libnpupnp
+	bool "libnpupnp"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libnpupnp.so.13.3.2

@@ -1,0 +1,9 @@
+config FREETZ_LIB_libebml
+	bool "libebml (EBML parser library)"
+	default n
+	help
+		libebml is a C++ library for parsing EBML (Extensible Binary
+		Markup Language) data, used as the foundation for Matroska
+		container format.
+		
+		https://github.com/Matroska-Org/libebml

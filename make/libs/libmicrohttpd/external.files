@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libmicrohttpd" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libmicrohttpd.so.12.61.0"

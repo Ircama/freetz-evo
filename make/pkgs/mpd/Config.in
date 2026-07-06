@@ -22,8 +22,9 @@ config FREETZ_PACKAGE_MPD
 		ALSA output and the MP3, FLAC and Vorbis decoders.
 		jemalloc is selected to work around allocator-related crashes
 		observed on some uClibc target combinations.
-		Libcurl-based URI input support is enabled by default and can
-		be disabled below.
+		Libcurl-based URI input support, SQLite, FFmpeg, ICU, WavPack,
+		UPnP, Expat, Opus, iconv, Vorbis encoder, IPv6,
+		DSD and CUE sheet support can be enabled in the sub-options below.
 
 		Can be externalized to save flash memory.
 
@@ -74,6 +75,76 @@ if FREETZ_PACKAGE_MPD
 			is intended for users who want broader format coverage than
 			the built-in MP3/FLAC/Vorbis stack, including AAC/HLS
 			radio streams.
+
+	config FREETZ_PACKAGE_MPD_WITH_ICU
+		bool "Enable ICU (Unicode) support"
+		select FREETZ_LIB_libicu
+		default n
+		help
+			Enables ICU support in MPD for Unicode string
+			transliteration and case-insensitive matching.
+
+	config FREETZ_PACKAGE_MPD_WITH_WAVPACK
+		bool "Enable WavPack decoder"
+		select FREETZ_LIB_libwavpack
+		default n
+		help
+			Enables MPD's WavPack lossless audio decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_UPNP
+		bool "Enable UPnP Media Server"
+		select FREETZ_LIB_libupnp
+		default n
+		help
+			Enables MPD's UPnP Media Server capability.
+
+	config FREETZ_PACKAGE_MPD_WITH_EXPAT
+		bool "Enable Expat XML parser"
+		select FREETZ_LIB_libexpat
+		default n
+		help
+			Enables Expat XML parser support in MPD.
+
+	config FREETZ_PACKAGE_MPD_WITH_OPUS
+		bool "Enable Opus decoder"
+		select FREETZ_LIB_libopus
+		default n
+		help
+			Enables MPD's Opus audio decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_ICONV
+		bool "Enable iconv charset conversion"
+		select FREETZ_LIB_libiconv
+		default n
+		help
+			Enables character set conversion support via iconv.
+
+	config FREETZ_PACKAGE_MPD_WITH_VORBISENC
+		bool "Enable Vorbis encoder"
+		select FREETZ_LIB_libvorbisenc
+		default n
+		help
+			Enables MPD's Vorbis audio encoder (for the
+			HTTP output plugin).
+
+	config FREETZ_PACKAGE_MPD_WITH_IPV6
+		bool "Enable IPv6 support"
+		default n
+		help
+			Enables IPv6 support in MPD's TCP listener.
+
+	config FREETZ_PACKAGE_MPD_WITH_DSD
+		bool "Enable DSD support"
+		default n
+		help
+			Enables DSD (Direct Stream Digital) support
+			in MPD's ALSA output plugin.
+
+	config FREETZ_PACKAGE_MPD_WITH_CUE
+		bool "Enable CUE sheet support"
+		default n
+		help
+			Enables CUE sheet parsing support in MPD.
 
 config FREETZ_PACKAGE_MPD_CGI
 	bool "MPD CGI (Music Player Daemon config/status web UI)"

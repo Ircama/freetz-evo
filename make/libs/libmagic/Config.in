@@ -1,0 +1,9 @@
+config FREETZ_LIB_libmagic
+	bool "libmagic (file type identification)"
+	select FREETZ_LIB_libz
+	default n
+	help
+		libmagic is the library component of the file(1) command,
+		providing file type identification based on magic numbers.
+		
+		https://www.darwinsys.com/file/

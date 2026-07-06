@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libmicrohttpd
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libmicrohttpd
+	bool "libmicrohttpd"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libmicrohttpd.so.12.61.0

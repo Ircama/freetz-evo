@@ -34,8 +34,120 @@ if FREETZ_PACKAGE_GERBERA
 		depends on FREETZ_PACKAGE_GERBERA_DAEMON
 		select FREETZ_LIB_libcurl
 		default n
+		help
+			Enables online content services (requires libcurl).
 
-	# Taglib disabled: freetz ships 1.6.3, Gerbera requires >= 1.12
-	# LibMagic not packaged in freetz cross-toolchain
+	config FREETZ_PACKAGE_GERBERA_WITH_AVCODEC
+		bool "Enable FFmpeg/libavcodec metadata extraction"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libavcodec
+		select FREETZ_LIB_libavformat
+		select FREETZ_LIB_libavutil
+		default n
+		help
+			Enables metadata extraction from audio/video files using
+			FFmpeg (libavcodec/libavformat/libavutil).
+
+	config FREETZ_PACKAGE_GERBERA_WITH_EXIF
+		bool "Enable EXIF metadata extraction (libexif)"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libexif
+		default n
+		help
+			Enables EXIF metadata extraction from images using libexif.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_INOTIFY
+		bool "Enable inotify directory monitoring"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		default n
+		help
+			Enables inotify-based automatic directory monitoring
+			for changes to the media library.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_JS
+		bool "Enable JavaScript scripting support"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libduktape
+		default n
+		help
+			Enables JavaScript scripting for the Gerbera web interface.
+			Uses the duktape JS engine.
+
+	config FREETZ_PACKAGE_GERBERA_STATIC_LIBUPNP
+		bool "Statically link libupnp"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		default n
+		help
+			Statically link libupnp (libnpupnp) into the Gerbera binary
+			instead of using the shared library.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_TAGLIB
+		bool "Enable TagLib metadata extraction (libtag)"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libtag
+		default n
+		help
+			Enables metadata extraction from audio files using TagLib
+			(ID3v1, ID3v2, Ogg Vorbis, FLAC, MP4, ASF, etc.).
+
+	config FREETZ_PACKAGE_GERBERA_WITH_MAGIC
+		bool "Enable libmagic MIME type detection"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libmagic
+		default n
+		help
+			Enables file type detection using libmagic (file command).
+
+	config FREETZ_PACKAGE_GERBERA_WITH_NPUPNP
+		bool "Use libnpupnp instead of libupnp"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libnpupnp
+		default n
+		help
+			Uses libnpupnp (modern UPnP library) instead of libupnp.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_FFMPEGTHUMBNAILER
+		bool "Enable FFmpeg video thumbnails"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libffmpegthumbnailer
+		default n
+		help
+			Enables video thumbnail generation using FFmpeg.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_EXIV2
+		bool "Enable Exiv2 image metadata extraction"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libexiv2
+		default n
+		help
+			Enables image metadata extraction using Exiv2 (Exif, IPTC, XMP).
+
+	config FREETZ_PACKAGE_GERBERA_WITH_MATROSKA
+		bool "Enable Matroska metadata extraction"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libmatroska
+		default n
+		help
+			Enables metadata extraction from Matroska (MKV/MKA/MKS) files.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_WAVPACK
+		bool "Enable WavPack metadata extraction"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libwavpack
+		default n
+		help
+			Enables metadata extraction from WavPack audio files.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_ICU
+		bool "Enable ICU charset support"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		select FREETZ_LIB_libicu
+		default n
+		help
+			Enables ICU (International Components for Unicode) for
+			improved charset conversion. WARNING: ICU is very large.
+
+	# Unavailable features (dependencies not available in freetz):
+	# - WITH_LASTFM:   requires Qt (not available in freetz toolchain)
 
 endif # FREETZ_PACKAGE_GERBERA

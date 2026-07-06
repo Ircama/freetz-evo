@@ -1,0 +1,8 @@
+config FREETZ_LIB_libwavpack
+	bool "libwavpack (WavPack audio compression)"
+	default n
+	help
+		WavPack is a completely open audio compression format providing
+		lossless, lossy, and hybrid compression modes.
+		
+		https://www.wavpack.com/

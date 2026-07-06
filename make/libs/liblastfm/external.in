@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_liblastfm
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_liblastfm
+	bool "liblastfm"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/liblastfm.so.1.0.9
