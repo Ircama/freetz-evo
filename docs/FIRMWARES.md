@@ -268,13 +268,13 @@ Currently supported devices and firmwares
     - 258.07.30 rev94600 {ALL} [PSQ19P2NL4]
     - 258.07.59 rev114650 {ALL} [MOVE21NL2]
     - 258.08.03 rev119185 {ALL} [Smart24 P1 NL1]
-    - 258.08.20 rev124915 {ALL} [Smart24 P2]
+    - 258.08.25 rev134451 {ALL} [Smart24 P2 NL1]
   * __Fritz!Box 6850 5G v2 (UNTESTED)__
     - 312.08.24 rev133801 {ALL} [Smart24 P2 NL1] (Labor)
 
   * __Fritz!Box 6860 5G (UNTESTED)__
     - 277.08.03 rev119187 {ALL} [Smart24 P1 FCS]
-    - 277.08.20 rev126287 {ALL} [Smart24 P2]
+    - 277.08.25 rev134337 {ALL} [Smart24 P2 NL1]
 
   * __Fritz!Box 6890 LTE__
     - 162.06.87 rev59283 {ALL}
@@ -626,7 +626,7 @@ Currently supported devices and firmwares
     - 296.08.03 rev120165 {ALL} [Smart24 P1 FCS]
     - 296.08.25 rev134127 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 1610 Outdoor (UNTESTED)__
-    - 305.08.20 rev129034 {ALL} [Smart24 P2]
+    - 305.08.25 rev134317 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 1700 (UNTESTED)__
     - 290.08.07 rev128069 {ALL} [Smart24 P1 FCS]
   * __Fritz!Repeater 2400__

@@ -74,7 +74,7 @@ Latest changes
     * cmake 4.3.4
     * dos2unix 7.5.5
     * dtc 1.8.1
-    * fakeroot 1.38.1
+    * fakeroot 2.0
     * file 5.47
     * kconfig 7.1
     * meson 1.11.1
@@ -107,20 +107,20 @@ Latest changes
     * Apache2 2.4.68
     * Atop 2.12.1
     * Bftpd 6.6
-    * BIND 9.11.37/9.20.23
+    * BIND 9.11.37/9.20.24
     * Binutils 2.46.0
     * BusyBox 1.27.2/1.38.0
     * CA-bundle 2026-05-14
     * Curl 8.12.1/8.21.0
     * davfs2 1.5.2/1.7.3
     * Dnsmasq 2.80/2.93
-    * Dropbear 2026.91
+    * Dropbear 2026.92
     * dtc 1.8.1
     * Git 2.26.2/2.53.0
     * HAProxy 2.6.29
     * htop 1.0.3/3.5.1
     * htpdate 2.0.2
-    * ImageMagick 7.1.0-62/7.1.2-25
+    * ImageMagick 7.1.0-62/7.1.2-27
     * iPerf3 3.3/3.21
     * jq 1.8.2
     * juis_bearer 1.0
@@ -128,12 +128,12 @@ Latest changes
     * LCD4linux 63fffafb
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13
     * ldd 0.1/1.0.58
-    * Lighttpd 1.4.84
+    * Lighttpd 1.4.85
     * ltrace 0.7.3-git/0.8.1
-    * mini-snmpd 1.7
+    * mini-snmpd 1.7/2.0
     * Minicom 2.11.1
     * Mosquitto 2.0.22/2.1.2
-    * Nano 9.0
+    * Nano 9.1
     * Nmap 4.76/5.51/7.99
     * OpenSSH 9.3p2/10.3p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7
@@ -172,6 +172,7 @@ Latest changes
     * libcjson 1.7.19
     * libevent 2.1.13
     * libexif 0.6.26
+    * libffi 3.7.1
     * libmaxminddb 1.13.3
     * libpng 1.6.58
     * libusb(-compat) 0.1.12/0.1.9
@@ -179,7 +180,7 @@ Latest changes
     * libuv 1.44.2/1.52.1
     * libxml2 2.15.3
     * libzip 1.11.4
-    * MbedTLS 2.7.19/2.28.10/3.6.6
+    * MbedTLS 2.7.19/2.28.10/3.6.7
     * neon 0.30.2/0.37.0
     * pango 1.58.0
 

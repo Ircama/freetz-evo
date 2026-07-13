@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-site_dir="${1:-.github/zensical/site}"
+site_dir="${1:-./docs/site}"
 news_html="${site_dir%/}/NEWS/index.html"
 nav_probe_html="${site_dir%/}/REPO_README/index.html"
 

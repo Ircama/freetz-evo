@@ -4928,6 +4928,8 @@ config FREETZ_AVM_HAS_LANGUAGE_nl
 	def_bool y
 config FREETZ_AVM_HAS_LANGUAGE_pl
 	def_bool y
+config FREETZ_AVM_HAS_LANGUAGE_sl
+	def_bool y
 config FREETZ_AVM_HAS_SIGNATURE
 	def_bool y
 config FREETZ_AVM_SERIAL_CONSOLE_DEVICE
