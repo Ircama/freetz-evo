@@ -1,0 +1,3 @@
+[ "$EXTERNAL_FREETZ_LIB_libtheora" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtheora.so.0.3.10"
+[ "$EXTERNAL_FREETZ_LIB_libtheora" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtheoradec.so.1.1.4"
+[ "$EXTERNAL_FREETZ_LIB_libtheora" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtheoraenc.so.1.1.2"

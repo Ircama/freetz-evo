@@ -1,0 +1,40 @@
+#!/bin/sh
+
+pkg_pre_save() {
+	if [ "$GERBERA_ENABLED" = "yes" ] && [ -z "$GERBERA_BASEDIR" ]; then
+		echo "Error: Base directory required when enabled" >&2
+		return 1
+	fi
+	return 0
+}
+
+pkg_apply_save() {
+	[ -r /mod/etc/conf/gerbera.cfg ] && . /mod/etc/conf/gerbera.cfg
+
+	: "${GERBERA_WEBROOT:=/usr/share/gerbera/web}"
+
+	mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
+
+	# Deploy config.xml from template with current values
+	local config_file="${GERBERA_BASEDIR}/config.xml"
+	local template_file="/mod/etc/default.gerbera/config.xml.template"
+	if [ -f "$template_file" ]; then
+		sed -e "s|__GERBERA_FRIENDLY_NAME__|${GERBERA_FRIENDLY_NAME}|g" \
+		    -e "s|__GERBERA_BASEDIR__|${GERBERA_BASEDIR}|g" \
+		    -e "s|__GERBERA_PORT__|${GERBERA_PORT}|g" \
+		    -e "s|__GERBERA_WEBROOT__|${GERBERA_WEBROOT}|g" \
+		    -e "s|__GERBERA_DB_ENGINE__|sqlite3|g" \
+		    -e "s|__GERBERA_FOLLOW_SYMLINKS__|yes|g" \
+		    -e "s|__GERBERA_TRANSCODING__|no|g" \
+		    "$template_file" > "$config_file"
+	fi
+
+	# Restart daemon to apply config
+	if [ -x /mod/etc/init.d/rc.gerbera ]; then
+		/mod/etc/init.d/rc.gerbera restart 2>/dev/null || true
+	elif [ -x /etc/init.d/rc.gerbera ]; then
+		/etc/init.d/rc.gerbera restart 2>/dev/null || true
+	fi
+
+	return 0
+}

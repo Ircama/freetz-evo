@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libvorbisidec)),y)
+LIBS+=tremor
+endif

@@ -23,8 +23,10 @@ config FREETZ_PACKAGE_MPD
 		jemalloc is selected to work around allocator-related crashes
 		observed on some uClibc target combinations.
 		Libcurl-based URI input support, SQLite, FFmpeg, ICU, WavPack,
-		UPnP, Expat, Opus, iconv, Vorbis encoder, IPv6,
-		DSD and CUE sheet support can be enabled in the sub-options below.
+		UPnP, Expat, Opus, iconv, Vorbis encoder, FAAD2, FluidSynth,
+		libsamplerate, mpg123, NFS, shine, shout, soxr, Tremor,
+		WildMIDI, WebDAV, IPv6, DSD, CUE, pipe, FIFO and HTTP output
+		can be enabled in the sub-options below.
 
 		Can be externalized to save flash memory.
 
@@ -78,6 +80,7 @@ if FREETZ_PACKAGE_MPD
 
 	config FREETZ_PACKAGE_MPD_WITH_ICU
 		bool "Enable ICU (Unicode) support"
+		depends on FREETZ_SHOW_DEVELOPER
 		select FREETZ_LIB_libicu
 		default n
 		help
@@ -145,6 +148,108 @@ if FREETZ_PACKAGE_MPD
 		default n
 		help
 			Enables CUE sheet parsing support in MPD.
+
+	config FREETZ_PACKAGE_MPD_WITH_NEIGHBOR
+		bool "Enable UPnP neighbor discovery"
+		depends on FREETZ_PACKAGE_MPD_WITH_UPNP
+		default n
+		help
+			Enables MPD's UPnP neighbor discovery (requires UPnP).
+
+	config FREETZ_PACKAGE_MPD_WITH_WEBDAV
+		bool "Enable WebDAV input"
+		depends on FREETZ_PACKAGE_MPD_WITH_URI_INPUTS
+		default n
+		help
+			Enables MPD's WebDAV input backend (requires curl).
+
+	config FREETZ_PACKAGE_MPD_WITH_PIPE
+		bool "Enable named pipe output"
+		default n
+		help
+			Enables MPD's named pipe audio output plugin.
+
+	config FREETZ_PACKAGE_MPD_WITH_FIFO
+		bool "Enable FIFO output"
+		default n
+		help
+			Enables MPD's FIFO audio output plugin.
+
+	config FREETZ_PACKAGE_MPD_WITH_HTTPD
+		bool "Enable HTTP daemon output"
+		default n
+		help
+			Enables MPD's HTTP streaming audio output plugin.
+
+	config FREETZ_PACKAGE_MPD_WITH_FAAD
+		bool "Enable FAAD2 (AAC) decoder"
+		select FREETZ_LIB_libfaad2
+		default n
+		help
+			Enables MPD's FAAD2 AAC audio decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_FLUIDSYNTH
+		bool "Enable FluidSynth (MIDI) decoder"
+		select FREETZ_LIB_libfluidsynth
+		default n
+		help
+			Enables MPD's FluidSynth MIDI synthesis decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_LIBSAMPLERATE
+		bool "Enable libsamplerate (SRC) output"
+		select FREETZ_LIB_libsamplerate
+		default n
+		help
+			Enables MPD's libsamplerate-based sample rate conversion.
+
+	config FREETZ_PACKAGE_MPD_WITH_MPG123
+		bool "Enable mpg123 (MP3) decoder"
+		select FREETZ_LIB_libmpg123
+		default n
+		help
+			Enables MPD's mpg123 MP3 audio decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_NFS
+		bool "Enable NFS input"
+		select FREETZ_LIB_libnfs
+		default n
+		help
+			Enables MPD's NFS input backend.
+
+	config FREETZ_PACKAGE_MPD_WITH_SHINE
+		bool "Enable shine (MP3) encoder"
+		select FREETZ_LIB_libshine
+		default n
+		help
+			Enables MPD's shine fixed-point MP3 encoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_SHOUT
+		bool "Enable Icecast (shout) output"
+		select FREETZ_LIB_libshout
+		default n
+		help
+			Enables MPD's Icecast streaming output plugin.
+
+	config FREETZ_PACKAGE_MPD_WITH_SOXR
+		bool "Enable libsoxr (SRC) output"
+		select FREETZ_LIB_libsoxr
+		default n
+		help
+			Enables MPD's libsoxr sample rate converter.
+
+	config FREETZ_PACKAGE_MPD_WITH_TREMOR
+		bool "Enable Tremor (low-memory Vorbis) decoder"
+		select FREETZ_LIB_libvorbisidec
+		default n
+		help
+			Enables MPD's Tremor low-memory Vorbis decoder.
+
+	config FREETZ_PACKAGE_MPD_WITH_WILDMIDI
+		bool "Enable WildMIDI decoder"
+		select FREETZ_LIB_libwildmidi
+		default n
+		help
+			Enables MPD's WildMIDI software MIDI playback.
 
 config FREETZ_PACKAGE_MPD_CGI
 	bool "MPD CGI (Music Player Daemon config/status web UI)"

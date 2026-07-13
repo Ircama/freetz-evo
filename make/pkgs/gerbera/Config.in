@@ -29,6 +29,11 @@ if FREETZ_PACKAGE_GERBERA
 		help
 			Installs the Gerbera UPnP media server daemon.
 
+	config FREETZ_PACKAGE_GERBERA_CGI
+		bool "Gerbera CGI web configuration interface"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		default n
+
 	config FREETZ_PACKAGE_GERBERA_WITH_CURL
 		bool "Enable online services support (libcurl)"
 		depends on FREETZ_PACKAGE_GERBERA_DAEMON
@@ -146,6 +151,19 @@ if FREETZ_PACKAGE_GERBERA
 		help
 			Enables ICU (International Components for Unicode) for
 			improved charset conversion. WARNING: ICU is very large.
+
+	config FREETZ_PACKAGE_GERBERA_WITH_WEBUI
+		bool "Include built-in web UI (~3.9 MB)"
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		default n
+		help
+			Includes Gerbera's built-in web interface (HTML/JS/CSS)
+			in the firmware image (~3.9 MB). Required for the web
+			browser interface on port GERBERA_PORT.
+			
+			If disabled (default), the Gerbera web UI is not available.
+			The separate "Gerbera CGI web configuration interface"
+			(Packages -> Web interfaces) can be used for configuration.
 
 	# Unavailable features (dependencies not available in freetz):
 	# - WITH_LASTFM:   requires Qt (not available in freetz toolchain)

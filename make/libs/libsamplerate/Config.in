@@ -1,0 +1,5 @@
+config FREETZ_LIB_libsamplerate
+	bool "libsamplerate (libsamplerate.so)"
+	default n
+	help
+		Secret Rabbit Code (libsamplerate) is a sample-rate conversion library.

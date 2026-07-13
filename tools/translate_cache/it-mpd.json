@@ -285,5 +285,26 @@
     "timestamp": "2026-05-19T22:27:33Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:e.g. hw:0,0 (direct) or default (system PCM). See 'aplay -l'.": {
+    "original": "e.g. hw:0,0 (direct) or default (system PCM). See 'aplay -l'.",
+    "translation": "ad es. hw:0,0 (diretto) o default (PCM di sistema). Vedi «aplay -l».",
+    "timestamp": "2026-07-12T23:30:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Volume control:": {
+    "original": "Volume control:",
+    "translation": "Controllo del volume:",
+    "timestamp": "2026-07-12T23:30:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Hardware = uses the sound card hardware mixer. Software = software volume control (PCM). None = no volume control.": {
+    "original": "Hardware = uses the sound card hardware mixer. Software = software volume control (PCM). None = no volume control.",
+    "translation": "Hardware = utilizza il mixer hardware della scheda audio. Software = controllo del volume via software (PCM). Nessuno = nessun controllo del volume.",
+    "timestamp": "2026-07-12T23:30:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

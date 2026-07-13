@@ -1,0 +1,86 @@
+config FREETZ_PACKAGE_SOX
+	bool "SoX (Sound eXchange)"
+	select FREETZ_LIB_libiconv
+	default n
+	help
+		SoX is a command-line audio processing tool that can
+		convert, play, and record audio files in various formats.
+		
+		http://sox.sourceforge.net/
+
+if FREETZ_PACKAGE_SOX
+
+	config FREETZ_PACKAGE_SOX_WITH_LIBSNDFILE
+		bool "Enable libsndfile (WAV/AIFF/FLAC/CAF support)"
+		select FREETZ_LIB_libsndfile
+		default y
+		help
+			Enables reading/writing via libsndfile (WAV, AIFF,
+			FLAC, CAF, AU, etc.).
+
+	config FREETZ_PACKAGE_SOX_WITH_MP3
+		bool "Enable MP3 support"
+		select FREETZ_LIB_libmad
+		select FREETZ_LIB_libmpg123
+		default n
+		help
+			Enables MP3 decoding via libmad and libmpg123.
+
+	config FREETZ_PACKAGE_SOX_WITH_VORBIS
+		bool "Enable Ogg Vorbis support"
+		select FREETZ_LIB_libvorbis
+		select FREETZ_LIB_libogg
+		default n
+		help
+			Enables Ogg Vorbis reading and writing.
+
+	config FREETZ_PACKAGE_SOX_WITH_FLAC
+		bool "Enable FLAC support"
+		select FREETZ_LIB_libFLAC
+		default n
+		help
+			Enables FLAC audio format support.
+
+	config FREETZ_PACKAGE_SOX_WITH_WAVPACK
+		bool "Enable WavPack support"
+		select FREETZ_LIB_libwavpack
+		default n
+		help
+			Enables WavPack audio format support.
+
+	config FREETZ_PACKAGE_SOX_WITH_OPUS
+		bool "Enable Opus support"
+		select FREETZ_LIB_libopus
+		default n
+		help
+			Enables Opus audio format support.
+
+	config FREETZ_PACKAGE_SOX_WITH_GSM
+		bool "Enable GSM support"
+		select FREETZ_LIB_libgsm
+		default n
+		help
+			Enables GSM audio format support.
+
+	config FREETZ_PACKAGE_SOX_WITH_PNG
+		bool "Enable PNG spectrogram output"
+		select FREETZ_LIB_libpng16
+		default n
+		help
+			Enables PNG output for the spectrogram effect.
+
+	config FREETZ_PACKAGE_SOX_WITH_ID3TAG
+		bool "Enable ID3 tag support"
+		select FREETZ_LIB_libid3tag
+		select FREETZ_LIB_libiconv if !FREETZ_TARGET_UCLIBC_0_9_28
+		default n
+		help
+			Enables ID3 tag editing support.
+
+	config FREETZ_PACKAGE_SOX_WITH_LIBGOOGLE8
+		bool "Enable libgooglevoice8 (G728)"
+		default n
+		help
+			Enables support for libgooglevoice8 codec.
+
+endif # FREETZ_PACKAGE_SOX

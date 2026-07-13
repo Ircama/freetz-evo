@@ -3666,5 +3666,19 @@
     "timestamp": "2026-07-03T20:34:57Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:This page is used to upload external files for Freetz boxes whose packages are externalized. An external file is a file with the *.external extension stored in the firmware image region and associated with a specific image file name (*.image). It contains all additional packages that are not included in the actual firmware image. The uploaded *.external file must always be the one belonging to the *.image file being used. Correct system operation is only guaranteed when the image and the external file match.": {
+    "original": "This page is used to upload external files for Freetz boxes whose packages are externalized. An external file is a file with the *.external extension stored in the firmware image region and associated with a specific image file name (*.image). It contains all additional packages that are not included in the actual firmware image. The uploaded *.external file must always be the one belonging to the *.image file being used. Correct system operation is only guaranteed when the image and the external file match.",
+    "translation": "Questa pagina serve a caricare file esterni per i dispositivi Freetz i cui pacchetti sono esternalizzati. Un file esterno è un file con estensione *.external memorizzato nell’area dell’immagine del firmware e associato a un nome specifico di file immagine (*.image). Contiene tutti i pacchetti aggiuntivi che non sono inclusi nell’immagine effettiva del firmware. Il file *.external caricato deve sempre corrispondere al file *.image in uso. Il corretto funzionamento del sistema è garantito solo quando l’immagine e il file esterno corrispondono.",
+    "timestamp": "2026-07-12T19:24:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Two methods are available for uploading: The first method is direct browser upload, which is limited to about 250 MB by the built-in upload handler. It is the simpler method and sufficient for most cases. The second method is downloading from an external URL that must be reachable from the device. This is required when the file to be uploaded is larger than 250 MB and can no longer be uploaded via the browser. To use this method, the user must publish the external file on their own web server accessible from the device and enter the complete URL in the corresponding field below. Both methods can be used as needed.": {
+    "original": "Two methods are available for uploading: The first method is direct browser upload, which is limited to about 250 MB by the built-in upload handler. It is the simpler method and sufficient for most cases. The second method is downloading from an external URL that must be reachable from the device. This is required when the file to be uploaded is larger than 250 MB and can no longer be uploaded via the browser. To use this method, the user must publish the external file on their own web server accessible from the device and enter the complete URL in the corresponding field below. Both methods can be used as needed.",
+    "translation": "Sono disponibili due metodi per il caricamento: il primo è il caricamento diretto dal browser, limitato a circa 250 MB dal gestore di caricamento integrato. È il metodo più semplice e sufficiente nella maggior parte dei casi. Il secondo metodo consiste nel scaricare da un URL esterno che deve essere raggiungibile dal dispositivo. Ciò è necessario quando il file da caricare supera i 250 MB e non può più essere caricato tramite il browser. Per utilizzare questo metodo, l’utente deve pubblicare il file esterno sul proprio server web accessibile dal dispositivo e inserire l’URL completo nel campo corrispondente qui sotto. Entrambi i metodi possono essere utilizzati a seconda delle necessità.",
+    "timestamp": "2026-07-12T19:24:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libsamplerate
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libsamplerate
+	bool "libsamplerate"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libsamplerate.so.0.2.2

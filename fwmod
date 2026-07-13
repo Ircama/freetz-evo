@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+#echo "$(date +%H:%M) FINISHED"; exit 0 # Remember to remove this debug line!
 
 # Freetz script to modify AVM FRITZ!Box and OEM firmware images
 #
@@ -1133,6 +1134,9 @@ if [ "$DO_MOD" -gt 0 ]; then
 					*xx)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn%xx}++[-.]*so*) ;;
 					libtcl|libtk)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn}*[-.]*so*) ;;
 					libicu)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libicu{data,i18n,io,uc}[-.]*so*) ;;
+					libtheora)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libtheora{,dec,enc}[-.]*so*) ;;
+					libwildmidi)	files=$(shopt -s nocaseglob nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn}*[-.]*so*) ;;
+					libfaad2)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libfaad[-.]*so*) ;;
 					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so*) ;;
 				esac
 				if [ -z "$files" ]; then
@@ -1870,6 +1874,14 @@ FREETZ_LOGIN_PY
 
 	# External should run after modifying, stripping etc.
 	if [ "$EXTERNAL_ENABLED" == "y" ]; then
+		# Copy ICU data file to FILESYSTEM_MOD_DIR so the external script can find it
+		for icu_dat in ${TARGET_SPECIFIC_ROOT_DIR}/usr/share/icu/*/icudt*.dat; do
+			if [ -f "$icu_dat" ]; then
+				dat_dest="${FILESYSTEM_MOD_DIR}/usr/share/icu/${icu_dat##*/usr/share/icu/}"
+				mkdir -p "$(dirname "$dat_dest")"
+				cp -a "$icu_dat" "$dat_dest"
+			fi
+		done
 		echo0 "processing external"
 		[ ! -x "$EXTERNAL" ] && error 1 "cannot find the tool $EXTERNAL_TOOL"
 		source "${EXTERNAL}"

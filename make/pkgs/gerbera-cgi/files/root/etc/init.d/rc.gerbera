@@ -1,0 +1,127 @@
+#!/bin/sh
+
+DAEMON=gerbera
+DAEMON_BIN=gerbera
+PID_FILE=/var/run/$DAEMON.pid
+. /etc/init.d/modlibrc
+
+[ -r /mod/etc/conf/gerbera.cfg ] && . /mod/etc/conf/gerbera.cfg
+
+: "${GERBERA_ENABLED:=no}"
+: "${GERBERA_BASEDIR:=/tmp/flash/gerbera}"
+: "${GERBERA_PORT:=49152}"
+: "${GERBERA_FRIENDLY_NAME:=Gerbera (Freetz)}"
+: "${GERBERA_WEBROOT:=/usr/share/gerbera/web}"
+DAEMON_ARGS="-dc ${GERBERA_BASEDIR}/config.xml -P $PID_FILE"
+
+# Deploy config.xml from template if it doesn't exist in basedir
+deploy_config() {
+	local config_file="${GERBERA_BASEDIR}/config.xml"
+	if [ ! -f "$config_file" ]; then
+		local template_file="/mod/etc/default.gerbera/config.xml.template"
+		if [ -f "$template_file" ]; then
+			mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
+			sed -e "s|__GERBERA_FRIENDLY_NAME__|${GERBERA_FRIENDLY_NAME}|g" \
+			    -e "s|__GERBERA_BASEDIR__|${GERBERA_BASEDIR}|g" \
+			    -e "s|__GERBERA_PORT__|${GERBERA_PORT}|g" \
+			    -e "s|__GERBERA_WEBROOT__|${GERBERA_WEBROOT}|g" \
+			    -e "s|__GERBERA_DB_ENGINE__|sqlite3|g" \
+			    -e "s|__GERBERA_FOLLOW_SYMLINKS__|yes|g" \
+			    -e "s|__GERBERA_TRANSCODING__|no|g" \
+			    "$template_file" > "$config_file"
+			echo "$(date): Deployed default config.xml from template" >> /tmp/rc.gerbera.log
+		fi
+	fi
+}
+
+is_running() {
+	[ -f "$PID_FILE" ] || return 1
+	local pid
+	pid=$(cat "$PID_FILE" 2>/dev/null) || return 1
+	[ -n "$pid" ] || return 1
+	kill -0 "$pid" 2>/dev/null || return 1
+	# Verify the PID actually belongs to the daemon process
+	[ "$(cat /proc/$pid/comm 2>/dev/null)" = "$DAEMON_BIN" ] && return 0
+	# Stale PID file — clean it up
+	rm -f "$PID_FILE" 2>/dev/null
+	return 1
+}
+
+start() {
+	echo "Starting ${DAEMON}..."
+	if is_running; then
+		echo "already running."
+		return 0
+	fi
+	if [ ! -x "$(command -v $DAEMON_BIN)" ]; then
+		echo "binary not found."
+		exit 1
+	fi
+	# Kill any stray gerbera processes first
+	killall -q "$DAEMON_BIN" 2>/dev/null || true
+	sleep 1
+	pgrep -x "$DAEMON_BIN" >/dev/null 2>&1 && killall -9 "$DAEMON_BIN" 2>/dev/null || true
+	rm -f "$PID_FILE" 2>/dev/null
+	deploy_config
+	mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
+	/usr/bin/$DAEMON_BIN $DAEMON_ARGS >/dev/null 2>&1 &
+	echo "done."
+}
+
+stop() {
+	echo "Stopping ${DAEMON}..."
+	killall -q "$DAEMON_BIN" 2>/dev/null || true
+	sleep 1
+	local retries=5
+	while pgrep -x "$DAEMON_BIN" >/dev/null 2>&1 && [ $retries -gt 0 ]; do
+		killall -9 "$DAEMON_BIN" 2>/dev/null || true
+		sleep 1
+		retries=$((retries - 1))
+	done
+	rm -f "$PID_FILE" 2>/dev/null
+	echo 'done.'
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modreg cgi 'gerbera' 'Gerbera'
+		if [ "$GERBERA_ENABLED" = "yes" ]; then
+			start
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi 'gerbera'
+		stop
+		;;
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		sleep 1
+		start
+		;;
+	status)
+		if [ -s "$PID_FILE" ]; then
+			modlib_status
+		else
+			# PID file missing — use pgrep fallback
+			if pgrep -x "$DAEMON_BIN" >/dev/null 2>&1; then
+				echo "running"
+			else
+				echo "stopped"
+			fi
+		fi
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libsamplerate" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libsamplerate.so.0.2.2"

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libshine
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libshine
+	bool "shine"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libshine.so.3.0.1

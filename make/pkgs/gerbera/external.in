@@ -14,9 +14,12 @@ menu "Gerbera (UPnP media server)"
 			externals the following file(s):
 			 /usr/bin/gerbera
 
-	config EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI
-		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA_CGI
-		bool "Gerbera CGI web interface"
+	config EXTERNAL_FREETZ_PACKAGE_GERBERA_WEBUI
+		depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA_WITH_WEBUI
+		bool "Gerbera built-in web UI (~3.9 MB)"
 		default n
+		help
+			externals the following file(s):
+			 /usr/share/gerbera/web
 
 endmenu

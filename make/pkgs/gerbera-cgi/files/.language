@@ -1,0 +1,11 @@
+languages
+{ de en }
+default
+{ en }
+files
+{
+	etc/init.d/rc.gerbera
+	usr/lib/cgi-bin/gerbera.cgi
+	usr/lib/cgi-bin/gerbera/status.cgi
+	etc/default.gerbera/gerbera.cfg
+}

@@ -8,3 +8,42 @@ config FREETZ_LIB_libasound
 		ALSA user-space library for audio playback and mixer/control access.
 		Installs libasound together with the required ALSA runtime modules
 		and configuration files.
+
+config FREETZ_LIB_libasound_WITH_SAMPLERATE
+	bool "samplerate rate converter plugin (libsamplerate)"
+	depends on FREETZ_LIB_libasound
+	select FREETZ_LIB_libsamplerate
+	default y
+	help
+		Provides libasound_module_rate_samplerate.so via alsa-plugins.
+		Uses libsamplerate (Secret Rabbit Code) for high-quality
+		sample rate conversion.
+
+config FREETZ_LIB_libasound_WITH_SPEEXRATE
+	bool "speexrate rate converter plugin (built-in speex resampler)"
+	depends on FREETZ_LIB_libasound
+	default y
+	help
+		Provides libasound_module_rate_speexrate.so via alsa-plugins.
+		Uses the built-in speex resampler (Public Parrot Hack).
+		No external library dependency needed.
+
+config FREETZ_LIB_libasound_WITH_LAVRATE
+	bool "lavrate rate converter plugin (ffmpeg/libswresample)"
+	depends on FREETZ_LIB_libasound
+	select FREETZ_LIB_libswresample
+	default y
+	help
+		Provides libasound_module_rate_lavrate.so via alsa-plugins.
+		Uses ffmpeg/libswresample for sample rate conversion.
+
+config FREETZ_LIB_libasound_DEFAULT_PCM_PLUGHW
+	bool "pcm.default = pcm.plughw (bypass mixer, use hw-native rates)"
+	depends on FREETZ_LIB_libasound
+	default y
+	help
+		Sets the default ALSA PCM device to "plughw" instead of
+		"cards.pcm.default". This bypasses the ALSA mixer and uses
+		the sound card's native sample rates directly, avoiding
+		CPU-heavy sample rate conversion on soft-float MIPS.
+		If disabled, the standard "cards.pcm.default" is used.

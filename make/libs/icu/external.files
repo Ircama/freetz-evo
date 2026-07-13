@@ -2,3 +2,4 @@
 [ "$EXTERNAL_FREETZ_LIB_libicu" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libicui18n.so.76.1"
 [ "$EXTERNAL_FREETZ_LIB_libicu" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libicuio.so.76.1"
 [ "$EXTERNAL_FREETZ_LIB_libicu" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libicuuc.so.76.1"
+[ "$EXTERNAL_FREETZ_LIB_libicu" == "y" ] && EXTERNAL_FILES+=" /usr/share/icu/76.1/icudt76b.dat"

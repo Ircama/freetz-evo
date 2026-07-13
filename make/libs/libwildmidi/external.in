@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libwildmidi
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libwildmidi
+	bool "libwildmidi"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libWildMidi.so.2.1.0

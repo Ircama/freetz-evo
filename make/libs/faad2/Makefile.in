@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libfaad2)),y)
+LIBS+=faad2
+endif

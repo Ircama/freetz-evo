@@ -1,0 +1,6 @@
+config FREETZ_LIB_libshout
+	bool "libshout (libshout.so)"
+	select FREETZ_LIB_libtheora
+	default n
+	help
+		libshout is a library for communicating with Icecast servers.

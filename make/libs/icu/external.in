@@ -4,7 +4,7 @@ config EXTERNAL_FREETZ_LIB_libicu
 	default n
 	help
 		externals the following file(s):
-		 ${FREETZ_LIBRARY_DIR}/libicudata.so.76.1
 		 ${FREETZ_LIBRARY_DIR}/libicui18n.so.76.1
 		 ${FREETZ_LIBRARY_DIR}/libicuio.so.76.1
 		 ${FREETZ_LIBRARY_DIR}/libicuuc.so.76.1
+                Note: icudt76b.dat is built by the ICU package, not externalized.

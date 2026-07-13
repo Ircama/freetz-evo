@@ -1,0 +1,5 @@
+config FREETZ_LIB_libfaad2
+	bool "FAAD2 (libfaad2.so)"
+	default n
+	help
+		FAAD2 is a HE-AAC/AAC audio decoder library.

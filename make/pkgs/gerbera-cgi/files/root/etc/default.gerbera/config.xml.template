@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config version="2" xmlns="http://gerbera.io/config/2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://gerbera.io/config/2 http://gerbera.io/config/2.xsd">
+	<!--
+	Gerbera UPnP Media Server
+	-->
+
+	<server>
+		<ui enabled="yes" show-tooltips="yes">
+			<accounts enabled="no" session-timeout="30"/>
+		</ui>
+		<name>__GERBERA_FRIENDLY_NAME__</name>
+		<udn/>
+		<home>__GERBERA_BASEDIR__</home>
+		<webroot>__GERBERA_WEBROOT__</webroot>
+		<alive>180</alive>
+
+		<storage>
+			<sqlite3 enabled="yes">
+				<database-file>__GERBERA_BASEDIR__/gerbera.db</database-file>
+				<backup enabled="yes" interval="600"/>
+			</sqlite3>
+		</storage>
+
+		<extended-runtime-options>
+			<suppress-duplicate-entries>no</suppress-duplicate-entries>
+			<ffmpegthumbnailer enabled="yes">
+				<thumbnail-size>160</thumbnail-size>
+				<seek-percentage>5</seek-percentage>
+				<filmstrip-overlay>no</filmstrip-overlay>
+				<image-quality>8</image-quality>
+			</ffmpegthumbnailer>
+		</extended-runtime-options>
+
+		<pc-directory>__GERBERA_BASEDIR__</pc-directory>
+	</server>
+
+	<import hidden-files="no">
+		<autoscan use-inotify="auto">
+			<directory location="__GERBERA_BASEDIR__/media" mode="inotify" recursive="yes">
+				<media-type>all</media-type>
+			</directory>
+		</autoscan>
+
+		<scripting script-charset="UTF-8">
+			<script-folder>
+				<common>/usr/share/gerbera/js</common>
+			</script-folder>
+			<virtual-layout type="js">
+				<boxlayout>
+					<box key="Audio/allAudio" title="All Audio" class="object.container"/>
+					<box key="Audio/allAlbums" title="Albums" class="object.container" upnp-shortcut="MUSIC_ALBUMS"/>
+					<box key="Audio/allArtists" title="Artists" class="object.container" upnp-shortcut="MUSIC_ARTISTS"/>
+					<box key="Audio/allSongs" title="All Songs" class="object.container"/>
+					<box key="Video/allVideo" title="All Video" class="object.container" upnp-shortcut="VIDEOS_ALL"/>
+					<box key="Video/allDirectories" title="Directories" class="object.container" upnp-shortcut="VIDEOS_FOLDER_STRUCTURE"/>
+					<box key="Image/allImages" title="All Photos" class="object.container" upnp-shortcut="IMAGES_ALL"/>
+					<box key="Image/allDirectories" title="Directories" class="object.container" upnp-shortcut="IMAGES_FOLDER_STRUCTURE"/>
+				</boxlayout>
+			</virtual-layout>
+		</scripting>
+
+		<settings>
+			<follow-symlinks>__GERBERA_FOLLOW_SYMLINKS__</follow-symlinks>
+			<metadata>
+				<use-podcast>yes</use-podcast>
+				<read-all-metadata>yes</read-all-metadata>
+				<online-metadata>
+					<enabled>no</enabled>
+				</online-metadata>
+			</metadata>
+			<resources>
+				<resource-thumbnail>no</resource-thumbnail>
+			</resources>
+		</settings>
+
+		<mappings>
+			<extension-mimetype ignore-unknown="no">
+				<map from="mp3" to="audio/mpeg"/>
+				<map from="ogg" to="audio/ogg"/>
+				<map from="flac" to="audio/x-flac"/>
+				<map from="m4a" to="audio/mp4"/>
+				<map from="wma" to="audio/x-ms-wma"/>
+				<map from="wv" to="audio/x-wavpack"/>
+				<map from="mp4" to="video/mp4"/>
+				<map from="mkv" to="video/x-matroska"/>
+				<map from="avi" to="video/x-msvideo"/>
+				<map from="mpeg" to="video/mpeg"/>
+				<map from="jpg" to="image/jpeg"/>
+				<map from="png" to="image/png"/>
+			</extension-mimetype>
+			<mimetype-upnpclass>
+				<map from="audio/*" to="object.item.audioItem.musicTrack"/>
+				<map from="video/*" to="object.item.videoItem"/>
+				<map from="image/*" to="object.item.imageItem"/>
+			</mimetype-upnpclass>
+		</mappings>
+	</import>
+
+	<transcoding>
+		<enabled>__GERBERA_TRANSCODING__</enabled>
+	</transcoding>
+
+	<online-content>
+		<retrieve-metadata>no</retrieve-metadata>
+	</online-content>
+</config>

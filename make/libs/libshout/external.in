@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libshout
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libshout
+	bool "libshout"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libshout.so.3.2.0

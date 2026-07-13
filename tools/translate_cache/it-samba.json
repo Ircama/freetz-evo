@@ -96,5 +96,96 @@
     "timestamp": "2026-02-15T23:52:57Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Shares": {
+    "original": "Shares",
+    "translation": "Azioni",
+    "timestamp": "2026-07-07T20:09:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-07-07T20:09:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Options": {
+    "original": "Options",
+    "translation": "Opzioni",
+    "timestamp": "2026-07-07T20:09:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-07-07T20:09:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:User": {
+    "original": "User",
+    "translation": "Utente",
+    "timestamp": "2026-07-07T20:09:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Password": {
+    "original": "Password",
+    "translation": "Password",
+    "timestamp": "2026-07-07T20:09:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:IP address": {
+    "original": "IP address",
+    "translation": "indirizzo IP",
+    "timestamp": "2026-07-07T20:09:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Description": {
+    "original": "Description",
+    "translation": "Descrizione",
+    "timestamp": "2026-07-07T20:09:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:advanced options": {
+    "original": "advanced options",
+    "translation": "opzioni avanzate",
+    "timestamp": "2026-07-07T20:09:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Spaces in &lt;name&gt; and &lt;options&gt; have to be replaced with '%20'.": {
+    "original": "Spaces in &lt;name&gt; and &lt;options&gt; have to be replaced with '%20'.",
+    "translation": "Gli spazi in &lt;name&gt; e &lt;options&gt; devono essere sostituiti con '%20'.",
+    "timestamp": "2026-07-07T20:09:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Optional, Samba typical syntax": {
+    "original": "Optional, Samba typical syntax",
+    "translation": "Facoltativo, sintassi tipica di Samba",
+    "timestamp": "2026-07-07T20:09:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Example 1: /var/media/ftp/uStor01 My%20Data 1 0 - Personal files": {
+    "original": "Example 1: /var/media/ftp/uStor01 My%20Data 1 0 - Personal files",
+    "translation": "Esempio 1: /var/media/ftp/uStor01 My%20Data 1 0 - File personali",
+    "timestamp": "2026-07-07T20:09:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Example 2: /var/media/ftp/uStor02 Workgroup 1 0 group=1005,file%20umask=770": {
+    "original": "Example 2: /var/media/ftp/uStor02 Workgroup 1 0 group=1005,file%20umask=770",
+    "translation": "Esempio 2: /var/media/ftp/uStor02 Workgroup 1 0 group=1005,file%20umask=770",
+    "timestamp": "2026-07-07T20:10:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

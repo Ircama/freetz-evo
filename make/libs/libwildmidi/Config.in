@@ -1,0 +1,5 @@
+config FREETZ_LIB_libwildmidi
+	bool "libwildmidi (libWildMidi.so)"
+	default n
+	help
+		WildMIDI is a software MIDI player library.

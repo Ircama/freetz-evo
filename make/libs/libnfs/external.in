@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libnfs
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libnfs
+	bool "libnfs"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libnfs.so.5.0.3

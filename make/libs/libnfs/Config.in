@@ -1,0 +1,5 @@
+config FREETZ_LIB_libnfs
+	bool "libnfs (libnfs.so)"
+	default n
+	help
+		libnfs is a client library for accessing NFS shares.

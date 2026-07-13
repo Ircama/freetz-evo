@@ -1,0 +1,11 @@
+config EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GERBERA_CGI
+	bool "Gerbera CGI web configuration interface"
+	default n
+	help
+		externals the following file(s):
+		 /usr/lib/cgi-bin/gerbera.cgi
+		 /usr/lib/cgi-bin/gerbera/status.cgi
+                 /etc/default.gerbera/gerbera.cfg
+                 /etc/default.gerbera/gerbera.save
+                 /etc/default.gerbera/config.xml.template

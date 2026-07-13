@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libsoxr
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libsoxr
+	bool "libsoxr"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libsoxr.so.0.1.2

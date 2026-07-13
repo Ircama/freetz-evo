@@ -118,12 +118,13 @@ $($(PKG)_TARGET_BINARY) $($(PKG)_INSTALLED_STAMP): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(GERBERA_DIR)/build \
 		DESTDIR="$(FREETZ_BASE_DIR)/$(GERBERA_DEST_DIR)" \
 		install
-	# Remove unnecessary files
+	# Remove unnecessary files (upstream has no init scripts for AVM)
 	$(RM) -r $(GERBERA_DEST_DIR)/etc/init.d 2>/dev/null || true
+	# Remove built-in web UI unless FREETZ_PACKAGE_GERBERA_WITH_WEBUI is set
+ifneq ($(strip $(FREETZ_PACKAGE_GERBERA_WITH_WEBUI)),y)
 	$(RM) -r $(GERBERA_DEST_DIR)/usr/share/gerbera/web 2>/dev/null || true
+endif
 	@touch $@
-
-$(pkg):
 
 $(pkg)-precompiled: \
 	$(if $(FREETZ_PACKAGE_GERBERA_DAEMON),$($(PKG)_INSTALLED_STAMP))

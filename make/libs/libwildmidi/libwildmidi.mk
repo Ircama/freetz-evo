@@ -1,0 +1,50 @@
+$(call PKG_INIT_LIB, 0.4.6)
+# Project version 0.4.6, library SO version 2.1.0
+$(PKG)_LIB_VERSION:=2.1.0
+$(PKG)_SOURCE_DOWNLOAD_NAME:=wildmidi-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=051b8c51699af594ddd3e4e3b06bad3564e9499c3c6b9e6f880cb2f92bcfa9c8
+$(PKG)_SITE:=https://github.com/Mindwerks/wildmidi/archive/refs/tags
+### WEBSITE:=https://github.com/Mindwerks/wildmidi
+
+$(PKG)_BINARY:=$($(PKG)_DIR)/src/libWildMidi.so.$($(PKG)_LIB_VERSION)
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libWildMidi.so.$($(PKG)_LIB_VERSION)
+$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libWildMidi.so.$($(PKG)_LIB_VERSION)
+
+$(PKG)_DEPENDS_ON += cmake-host
+
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
+$(PKG)_CONFIGURE_OPTIONS += -DWANT_PLAYER=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DWANT_STATIC=OFF
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_CMAKE)
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(LIBWILDMIDI_DIR)
+
+$($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
+	$(SUBMAKE) -C $(LIBWILDMIDI_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	@touch $@
+
+$($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
+	$(INSTALL_LIBRARY_STRIP)
+
+$(pkg): $($(PKG)_STAGING_BINARY)
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(LIBWILDMIDI_DIR) clean
+
+$(pkg)-uninstall:
+	$(RM) $($(PKG)_TARGET_DIR)/libWildMidi.so*
+
+$(PKG_FINISH)

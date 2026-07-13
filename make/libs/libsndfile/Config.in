@@ -1,0 +1,5 @@
+config FREETZ_LIB_libsndfile
+	bool "libsndfile (libsndfile.so)"
+	default n
+	help
+		libsndfile is a C library for reading and writing sampled audio data.

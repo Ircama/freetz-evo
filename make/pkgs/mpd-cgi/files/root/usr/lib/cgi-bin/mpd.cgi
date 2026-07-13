@@ -30,10 +30,13 @@ cgi_print_textline_p "alsa_output_name" "$MPD_ALSA_OUTPUT_NAME" 24/80 \
 	"$(lang de:"Output-Name" en:"Output name"): "
 cgi_print_textline_p "alsa_device" "$MPD_ALSA_DEVICE" 32/128 \
 	"$(lang de:"ALSA-Geraet" en:"ALSA device"): "
-cgi_print_radiogroup "mixer_type" "$MPD_MIXER_TYPE" "" "" \
+echo "<div class='desc'>$(lang de:"z.B. hw:0,0 (direkt) oder default (System-PCM). Siehe 'aplay -l'." en:"e.g. hw:0,0 (direct) or default (system PCM). See 'aplay -l'.")</div>"
+cgi_print_radiogroup "mixer_type" "$MPD_MIXER_TYPE" "" \
+	"$(lang de:"Lautstaerkeregelung:" en:"Volume control:"): " \
 	"hardware::Hardware" \
 	"software::Software" \
 	"none::None"
+echo "<div class='desc'>$(lang de:"Hardware = nutzt den Hardware-Mixer der Soundkarte. Software = software-gesteuerte Lautstaerke (PCM). None = keine Lautstaerkeregelung." en:"Hardware = uses the sound card hardware mixer. Software = software volume control (PCM). None = no volume control.")</div>"
 cgi_print_textline_p "mixer_device" "$MPD_MIXER_DEVICE" 24/128 \
 	"$(lang de:"Mixer-Geraet (nur Hardware)" en:"Mixer device (hardware only)"): "
 cgi_print_textline_p "mixer_control" "$MPD_MIXER_CONTROL" 24/128 \

@@ -1,0 +1,5 @@
+config FREETZ_LIB_libshine
+	bool "shine (libshine.so)"
+	default n
+	help
+		Shine is a fast, fixed-point MP3 encoding library.

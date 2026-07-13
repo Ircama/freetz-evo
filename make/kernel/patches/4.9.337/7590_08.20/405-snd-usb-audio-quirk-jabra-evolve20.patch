@@ -1,0 +1,20 @@
+From: Ircama <ircama@users.noreply.github.com>
+Date: Thu Jul 10 00:00:00 2026
+Subject: [PATCH] sound/usb: Add quirk for Jabra EVOLVE 20 MS
+
+Add USB quirk for Jabra EVOLVE 20 MS (0b0e:0300) to fix sample rate
+configuration. The device needs a 1ms delay before USB class control
+requests, otherwise frequency get/set requests return as failed despite
+actually succeeding, causing the device to operate at an incorrect
+sample rate (same issue as Jabra 550a 0b0e:0349).
+
+--- linux-4.9/sound/usb/quirks.c
++++ linux-4.9/sound/usb/quirks.c
+@@ -1338,6 +1338,7 @@
+ 	if ((chip->usb_id == USB_ID(0x1686, 0x00dd) ||
+ 	     chip->usb_id == USB_ID(0x046d, 0x0a46) ||
+ 	     chip->usb_id == USB_ID(0x046d, 0x0a56) ||
++	     chip->usb_id == USB_ID(0x0b0e, 0x0300) ||
+ 	     chip->usb_id == USB_ID(0x0b0e, 0x0349) ||
+ 	     chip->usb_id == USB_ID(0x0951, 0x16ad)) &&
+ 	    (requesttype & USB_TYPE_MASK) == USB_TYPE_CLASS)

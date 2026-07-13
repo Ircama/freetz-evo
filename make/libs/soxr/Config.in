@@ -1,0 +1,5 @@
+config FREETZ_LIB_libsoxr
+	bool "soxr (libsoxr.so)"
+	default n
+	help
+		The SoX Resampler library performs sample-rate conversion.

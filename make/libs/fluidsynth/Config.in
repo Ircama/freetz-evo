@@ -1,0 +1,7 @@
+config FREETZ_LIB_libfluidsynth
+	bool "fluidsynth (libfluidsynth.so)"
+	select FREETZ_LIB_libgthread_2
+	select FREETZ_LIB_libsndfile
+	default n
+	help
+		FluidSynth is a real-time software synthesizer library.

@@ -1,0 +1,34 @@
+--- a/src/formats.c
++++ b/src/formats.c
+@@ -299,17 +299,17 @@
+ {
+   if (ft->encoding.opposite_endian)
+     ft->encoding.reverse_bytes = (ft->handler.flags & SOX_FILE_ENDIAN)?
+-      !(ft->handler.flags & SOX_FILE_ENDBIG) != MACHINE_IS_BIGENDIAN : sox_true;
++      !((ft->handler.flags & SOX_FILE_ENDBIG)) != MACHINE_IS_BIGENDIAN : sox_true;
+   else if (ft->encoding.reverse_bytes == sox_option_default)
+     ft->encoding.reverse_bytes = (ft->handler.flags & SOX_FILE_ENDIAN)?
+-      !(ft->handler.flags & SOX_FILE_ENDBIG) == MACHINE_IS_BIGENDIAN : sox_false;
++      !((ft->handler.flags & SOX_FILE_ENDBIG)) == MACHINE_IS_BIGENDIAN : sox_false;
+ 
+   /* FIXME: Change reports to suitable warnings if trying
+    * to override something that can't be overridden. */
+ 
+   if (ft->handler.flags & SOX_FILE_ENDIAN) {
+     if (ft->encoding.reverse_bytes == (sox_option_t)
+-        (!(ft->handler.flags & SOX_FILE_ENDBIG) != MACHINE_IS_BIGENDIAN))
++        (!((ft->handler.flags & SOX_FILE_ENDBIG)) != MACHINE_IS_BIGENDIAN))
+       lsx_report("`%s': overriding file-type byte-order", ft->filename);
+   } else if (ft->encoding.reverse_bytes == sox_option_yes)
+     lsx_report("`%s': overriding machine byte-order", ft->filename);
+@@ -413,6 +413,10 @@
+ #if defined _FSTDIO || defined _NEWLIB_VERSION || defined __APPLE__
+   fp->_p -= PIPE_AUTO_DETECT_SIZE;
+   fp->_r += PIPE_AUTO_DETECT_SIZE;
++#elif defined __UCLIBC__
++  /* uClibc defines __GLIBC__ for compatibility but uses its own FILE struct */
++  fp->__bufpos -= PIPE_AUTO_DETECT_SIZE;
++  fp->__bufread += PIPE_AUTO_DETECT_SIZE;
+ #elif defined __GLIBC__
+   fp->_IO_read_ptr = fp->_IO_read_base;
+ #elif defined _MSC_VER || defined _WIN32 || defined _WIN64 || \

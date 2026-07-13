@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libfaad2" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libfaad.so.2.11.1"

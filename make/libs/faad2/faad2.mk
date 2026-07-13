@@ -1,0 +1,47 @@
+$(call PKG_INIT_LIB, 2.11.1)
+$(PKG)_LIB_VERSION:=2.11.1
+$(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=72dbc0494de9ee38d240f670eccf2b10ef715fd0508c305532ca3def3225bb06
+$(PKG)_SITE:=https://github.com/knik0/faad2/archive/refs/tags
+### WEBSITE:=https://github.com/knik0/faad2
+
+$(PKG)_BINARY:=$($(PKG)_DIR)/libfaad.so.$($(PKG)_LIB_VERSION)
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libfaad.so.$($(PKG)_LIB_VERSION)
+$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libfaad.so.$($(PKG)_LIB_VERSION)
+
+$(PKG)_DEPENDS_ON += cmake-host
+
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_CMAKE)
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(FAAD2_DIR)
+
+$($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
+	$(SUBMAKE) -C $(FAAD2_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	@touch $@
+
+$($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
+	$(INSTALL_LIBRARY_STRIP)
+
+$(pkg): $($(PKG)_STAGING_BINARY)
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(FAAD2_DIR) clean
+
+$(pkg)-uninstall:
+	$(RM) $($(PKG)_TARGET_DIR)/libfaad.so*
+
+$(PKG_FINISH)

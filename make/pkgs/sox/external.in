@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_SOX
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_SOX
+	bool "SoX (Sound eXchange)"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/sox

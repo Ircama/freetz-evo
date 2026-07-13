@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libmpg123
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libmpg123
+	bool "mpg123"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libmpg123.so.0.48.3

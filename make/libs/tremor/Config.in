@@ -1,0 +1,5 @@
+config FREETZ_LIB_libvorbisidec
+	bool "tremor (libvorbisidec.so)"
+	default n
+	help
+		Tremor is a low-memory Vorbis decoder library (libvorbisidec).

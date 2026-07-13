@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libmpg123" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libmpg123.so.0.48.3"

@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libnfs" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libnfs.so.5.0.3"

@@ -1,0 +1,5 @@
+config FREETZ_LIB_libtheora
+	bool "libtheora (libtheora.so)"
+	default n
+	help
+		libtheora is a video codec library for the Theora format.

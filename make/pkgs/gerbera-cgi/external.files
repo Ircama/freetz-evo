@@ -1,0 +1,6 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /etc/init.d/rc.gerbera"
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/gerbera.cgi"
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /usr/lib/cgi-bin/gerbera/status.cgi"
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /etc/default.gerbera/gerbera.cfg"
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /etc/default.gerbera/gerbera.save"
+[ "$EXTERNAL_FREETZ_PACKAGE_GERBERA_CGI" == "y" ] && EXTERNAL_FILES+=" /etc/default.gerbera/config.xml.template"

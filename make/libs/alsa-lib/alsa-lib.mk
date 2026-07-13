@@ -35,6 +35,15 @@ $(PKG_CONFIGURED_CONFIGURE)
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(ALSA_LIB_DIR)
 
+# Default rate converter: "linear" (built-in integer-only) to avoid
+# floating-point overhead on MIPS soft-float.
+# - samplerate (libsamplerate): pure float/double, heavy on soft-float MIPS
+# - speexrate (pph/): int16_t paths but still uses float in some code paths,
+#   too slow on MIPS soft-float despite -DFIXED_POINT
+# - lavrate (libswresample): handles both float and int paths
+# - linear (built-in): integer-only, lowest quality but no FPU needed
+RATE_CONVERTER = linear
+
 $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(ALSA_LIB_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
@@ -47,6 +56,11 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libasound.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/alsa.pc
 	sed -i -e 's|^defaults\.pcm\.ipc_gid audio$$|defaults.pcm.ipc_gid root|' $(ALSA_LIB_DATA_CONFIG_FILE)
+	sed -i -e '/^defaults\.pcm\.ipc_gid /a defaults.pcm.rate_converter $(RATE_CONVERTER)' $(ALSA_LIB_DATA_CONFIG_FILE)
+ifneq ($(strip $(FREETZ_LIB_libasound_DEFAULT_PCM_PLUGHW)),)
+	# Use plughw as default PCM to bypass mixer and use hw-native rates
+	sed -i -e 's|^pcm\.default cards\.pcm\.default|pcm.default pcm.plughw|' $(ALSA_LIB_DATA_CONFIG_FILE)
+endif
 
 $($(PKG)_DATA_STAGING_DIR)/$($(PKG)_DATA_MARKER_FILE): $($(PKG)_STAGING_BINARY)
 	[ -f "$@" ]

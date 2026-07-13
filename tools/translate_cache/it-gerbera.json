@@ -47,5 +47,299 @@
     "timestamp": "2026-06-30T22:36:47Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-07-08T19:11:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Please complete initial setup first": {
+    "original": "Please complete initial setup first",
+    "translation": "Completare prima la configurazione iniziale",
+    "timestamp": "2026-07-08T19:11:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Base Directory": {
+    "original": "Base Directory",
+    "translation": "Directory di base",
+    "timestamp": "2026-07-08T19:11:14Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Main directory for Gerbera. Media, database and configuration files are stored here.": {
+    "original": "Main directory for Gerbera. Media, database and configuration files are stored here.",
+    "translation": "Directory principale per Gerbera. Qui sono memorizzati i file multimediali, il database e i file di configurazione.",
+    "timestamp": "2026-07-08T19:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Suggested": {
+    "original": "Suggested",
+    "translation": "Suggerito",
+    "timestamp": "2026-07-08T19:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directory does not exist": {
+    "original": "Directory does not exist",
+    "translation": "La directory non esiste",
+    "timestamp": "2026-07-08T19:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Available Storage Devices (RW)": {
+    "original": "Available Storage Devices (RW)",
+    "translation": "Dispositivi di archiviazione disponibili (RW)",
+    "timestamp": "2026-07-08T19:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Click to use path as base directory": {
+    "original": "Click to use path as base directory",
+    "translation": "Fare clic per utilizzare il percorso come directory di base",
+    "timestamp": "2026-07-08T19:11:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start Initial Setup Wizard": {
+    "original": "Start Initial Setup Wizard",
+    "translation": "Avvio dell'installazione guidata iniziale",
+    "timestamp": "2026-07-08T19:11:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Main directory for Gerbera. Media, database and configuration.": {
+    "original": "Main directory for Gerbera. Media, database and configuration.",
+    "translation": "Directory principale per Gerbera. File multimediali, database e configurazione.",
+    "timestamp": "2026-07-08T19:11:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Server Settings": {
+    "original": "Server Settings",
+    "translation": "Impostazioni del server",
+    "timestamp": "2026-07-08T19:11:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port for the web interface": {
+    "original": "Port for the web interface",
+    "translation": "Porta per l’interfaccia web",
+    "timestamp": "2026-07-08T19:11:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Display name in the UPnP network": {
+    "original": "Display name in the UPnP network",
+    "translation": "Nome visualizzato nella rete UPnP",
+    "timestamp": "2026-07-08T19:11:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database": {
+    "original": "Database",
+    "translation": "Database",
+    "timestamp": "2026-07-08T19:11:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database engine": {
+    "original": "Database engine",
+    "translation": "motore di database",
+    "timestamp": "2026-07-08T19:11:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:SQLite3 is enabled by default and requires no configuration.": {
+    "original": "SQLite3 is enabled by default and requires no configuration.",
+    "translation": "SQLite3 è abilitato per impostazione predefinita e non richiede alcuna configurazione.",
+    "timestamp": "2026-07-08T19:11:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Import Settings": {
+    "original": "Import Settings",
+    "translation": "Importa impostazioni",
+    "timestamp": "2026-07-08T19:11:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Follow symlinks": {
+    "original": "Follow symlinks",
+    "translation": "Segui i collegamenti simbolici",
+    "timestamp": "2026-07-08T19:11:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Yes": {
+    "original": "Yes",
+    "translation": "Sì",
+    "timestamp": "2026-07-08T19:11:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No": {
+    "original": "No",
+    "translation": "No",
+    "timestamp": "2026-07-08T19:11:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Autoscan directory": {
+    "original": "Autoscan directory",
+    "translation": "Autoscan directory",
+    "timestamp": "2026-07-08T19:11:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Directory that is automatically monitored for new media": {
+    "original": "Directory that is automatically monitored for new media",
+    "translation": "Directory monitorata automaticamente per i nuovi file multimediali",
+    "timestamp": "2026-07-08T19:11:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Magic file": {
+    "original": "Magic file",
+    "translation": "file Magic",
+    "timestamp": "2026-07-08T19:11:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:File type detection database (libmagic)": {
+    "original": "File type detection database (libmagic)",
+    "translation": "Database di riconoscimento dei tipi di file (libmagic)",
+    "timestamp": "2026-07-08T19:11:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Transcoding": {
+    "original": "Transcoding",
+    "translation": "Transcoding",
+    "timestamp": "2026-07-08T19:11:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Disabled": {
+    "original": "Disabled",
+    "translation": "Disabili",
+    "timestamp": "2026-07-08T19:11:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enabled": {
+    "original": "Enabled",
+    "translation": "Abilitato",
+    "timestamp": "2026-07-08T19:11:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Web Interface": {
+    "original": "Web Interface",
+    "translation": "Interfaccia web",
+    "timestamp": "2026-07-08T19:11:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Access control": {
+    "original": "Access control",
+    "translation": "Controllo dell'accesso",
+    "timestamp": "2026-07-08T19:11:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Username": {
+    "original": "Username",
+    "translation": "Nome utente",
+    "timestamp": "2026-07-08T19:11:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Password": {
+    "original": "Password",
+    "translation": "Password",
+    "timestamp": "2026-07-08T19:11:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration Editor": {
+    "original": "Configuration Editor",
+    "translation": "Editor di configurazione",
+    "timestamp": "2026-07-08T19:11:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Edit config.xml directly with the ACE editor.": {
+    "original": "Edit config.xml directly with the ACE editor.",
+    "translation": "Modifica direttamente il file config.xml con l’editor ACE.",
+    "timestamp": "2026-07-08T19:11:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Load": {
+    "original": "Load",
+    "translation": "Carica",
+    "timestamp": "2026-07-08T19:11:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Save": {
+    "original": "Save",
+    "translation": "Salva",
+    "timestamp": "2026-07-08T19:11:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Load Template": {
+    "original": "Load Template",
+    "translation": "Carica modello",
+    "timestamp": "2026-07-08T19:11:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Delete": {
+    "original": "Delete",
+    "translation": "Elimina",
+    "timestamp": "2026-07-08T19:11:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Ready": {
+    "original": "Ready",
+    "translation": "Ready",
+    "timestamp": "2026-07-08T19:11:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Startup Log": {
+    "original": "Startup Log",
+    "translation": "Log di avvio",
+    "timestamp": "2026-07-08T19:11:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No log available": {
+    "original": "No log available",
+    "translation": "Nessun log disponibile",
+    "timestamp": "2026-07-08T19:11:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Setup Wizard": {
+    "original": "Setup Wizard",
+    "translation": "Setup Wizard",
+    "timestamp": "2026-07-12T19:22:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Re-run Setup Wizard": {
+    "original": "Re-run Setup Wizard",
+    "translation": "Esegui nuovamente la procedura guidata di configurazione",
+    "timestamp": "2026-07-12T19:22:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

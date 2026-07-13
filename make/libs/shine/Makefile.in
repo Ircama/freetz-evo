@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libshine)),y)
+LIBS+=shine
+endif

@@ -1,0 +1,3 @@
+ifneq ($(strip $(FREETZ_LIB_libasound_WITH_SAMPLERATE)$(FREETZ_LIB_libasound_WITH_SPEEXRATE)$(FREETZ_LIB_libasound_WITH_LAVRATE)),)
+PACKAGES+=alsa-plugins
+endif

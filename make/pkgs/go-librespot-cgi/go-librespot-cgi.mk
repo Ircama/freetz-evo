@@ -14,6 +14,9 @@ $(PKG)_STAGING_TARGET := $(GO_LIBRESPOT_CGI_DEST_DIR)/usr/lib/cgi-bin/go-libresp
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	mkdir -p $(GO_LIBRESPOT_CGI_TARGET_DIR)/root
 	$(call COPY_USING_TAR,$(GO_LIBRESPOT_CGI_MAKE_DIR)/files,$(GO_LIBRESPOT_CGI_TARGET_DIR))
+	chmod 755 \
+		$(GO_LIBRESPOT_CGI_DEST_DIR)/usr/lib/cgi-bin/go-librespot.cgi \
+		$(GO_LIBRESPOT_CGI_DEST_DIR)/usr/lib/cgi-bin/go-librespot/status.cgi
 	touch $@
 
 $(PKG_UNPACKED)

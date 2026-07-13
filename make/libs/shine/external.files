@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libshine" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libshine.so.3.0.1"
