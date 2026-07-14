@@ -354,8 +354,6 @@ This repository contains two distinct components under different licences:
 
 - **Freetz-NG base** (all content inherited from the upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) project) is licensed under the **GNU General Public License v2.0 (GPL-2.0)**. See [COPYING](COPYING) for the full GPL-2.0 text.
 
-- **Freetz-EVO extensions** (all additions, modifications, and new packages introduced by this fork) are licensed under the **European Union Public Licence v1.2 (EUPL-1.2)**. See [LICENSE](LICENSE) for the full EUPL-1.2 text.
+- **Freetz-EVO extensions** (all new packages introduced by this fork, not available upstream) are licensed under the **European Union Public Licence v1.2 (EUPL-1.2)**. See [LICENSE](LICENSE) for the full EUPL-1.2 text.
 
 - **Reuse of Freetz-EVO-original files**: when files that are original to Freetz-EVO (e.g., package makefiles or other code not derived from upstream [Freetz-NG](https://github.com/Freetz-NG/freetz-ng)) are reused in other projects, including upstream, their licence remains **EUPL-1.2**. Reusers should keep the original copyright/licence notices and clearly indicate that those specific files are under EUPL-1.2.
-
-The EUPL-1.2 and GPL-2.0 are explicitly compatible: the EUPL-1.2 Appendix lists GPL v.2 as a *Compatible Licence* under Article 5. When distributing the combined work, it may be distributed under the terms of the GPL-2.0 via the EUPL-1.2 compatibility clause.
