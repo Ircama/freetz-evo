@@ -8,7 +8,7 @@ repo_url = "https://github.com/Ircama/freetz-evo"
 edit_uri = "../freetz-evo/blob/master/docs/"
 docs_dir = "."
 copyright = '&copy <span>Freetz-EVO</span><br/><span>Licensed under <a href="https://github.com/Ircama/freetz-evo/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">EUPL-1.2</a></span><br/>'
-extra_css = ["extra.css"]
+extra_css = ["zensical.css"]
 extra_javascript = [
     "javascripts/mathjax.js",
     "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
