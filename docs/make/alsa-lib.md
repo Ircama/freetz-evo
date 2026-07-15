@@ -8,16 +8,18 @@
 
 `alsa-lib` is the userspace runtime library for ALSA. Besides `libasound`, the package also installs the shared ALSA configuration tree under `/usr/share/alsa`, which is essential for normal device discovery and PCM definitions on the target.
 
-In the new audio stack it is the common base for playback, capture, mixer access and AirPlay output.
+In the audio stack it is the common base for playback, capture, mixer access and AirPlay output.
 
-## Soft-float MIPS / FPU emulation
+## Soft-float / FPU emulation
 
 Many FritzBox SoCs (e.g. GRX550 MIPS32) lack a hardware FPU. Floating-point
 operations in audio processing (sample rate conversion, equalization) are
 emulated in software, which overwhelms the CPU and causes stuttering.
 
+The **alsaequal** ALSA equalizer plugin is **disabled** because it depends on heavy floating-point computation (IIR/EQ filtering via `ladspa` / `caps`) — software-emulated FPU makes it unusable.
+
 By default, the build system sets:
-- `defaults.pcm.rate_converter linear` (integer-only, no FPU)
+- `defaults.pcm.rate_converter linear` (integer-only, no FPU, unacceptable audio quality)
 - `pcm.default pcm.plughw` (bypasses ALSA mixer, uses hw-native rates)
 
 Applications should be configured to use ALSA device `hw:0,0` (direct
@@ -37,4 +39,4 @@ The following rate converter plugins produce **low audio quality** and are
 
 For music, stick with `hw:0,0` to avoid resampling entirely.
 
-Also use an audio card supporting both native 44.1 and 48 kHz sampling frequencies. A card only supporting 48000 Hz will require software resampling for 44100 Hz content.
+Also use an audio card supporting both native 44.1 and 48 kHz sampling frequencies (better with S16_LE and S24_3LE). A card only supporting 48000 Hz will require software resampling for 44100 Hz content.

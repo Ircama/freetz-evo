@@ -646,6 +646,22 @@ echo | html
 echo '### /proc/asound/devices' | html
 [ -r /proc/asound/devices ] && cat /proc/asound/devices | html
 echo | html
+echo '### Sound card details (/proc/asound/card*/stream*, /proc/asound/card*/usbmixer)' | html
+found=0
+for file in /proc/asound/card*/stream* /proc/asound/card*/usbmixer; do
+	[ -f "$file" ] || continue
+	found=1
+	card=$(basename "$(dirname "$file")")
+	echo "========================================" | html
+	echo "$card" | html
+	echo "========================================" | html
+	cat "$file" | html
+	echo | html
+done
+if [ "$found" = "0" ]; then
+	echo "$(lang de:"Keine Soundkarten gefunden." en:"No sound cards found.")" | html
+fi
+echo | html
 echo '### aplay -l' | html
 aplay -l 2>&1 | head -n 120 | html
 echo | html

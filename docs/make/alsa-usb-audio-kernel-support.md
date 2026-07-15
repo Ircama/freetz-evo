@@ -23,7 +23,7 @@ Compatibility depends on the target kernel configuration and available in-tree d
 
 Example: on GRX5-based targets where AVM ships ALSA USB support in kernel sources, Freetz can expose the corresponding module toggles in menuconfig.
 
-## Soft-float MIPS / FPU emulation
+## Soft-float / FPU emulation
 
 Many FritzBox SoCs (e.g. GRX550 MIPS32) lack a hardware FPU. Software sample rate conversion and equalization rely on floating-point arithmetic emulated in software, which can overwhelm the CPU.
 
@@ -56,17 +56,8 @@ Pair it with user-space components such as:
 
 ## Runtime checks on the box
 
-After boot, useful checks are:
-
 - `lsmod | grep -E "snd|usb_audio|snd_usb"`
-- `dmesg | grep -i "usb.*audio\|snd-usb"`
+- `cat cat /proc/asound/card*/stream0`
+- `cat cat /proc/asound/card*/usbmixer`
 - `aplay -l`
 - `arecord -l`
-
-If devices are present in `dmesg` but not usable from applications, verify ALSA user-space packages and runtime configuration.
-
-## Troubleshooting hints
-
-- If USB audio appears only after unplug/replug, ensure USB host init order and module autoload are correct at boot.
-- If ALSA modules are loaded but playback fails, verify PCM device selection (`hw:X,Y` vs `default`) and sample format/rate compatibility.
-- If no ALSA USB modules are available in menuconfig, the active target/kernel variant likely does not expose them for that profile.
