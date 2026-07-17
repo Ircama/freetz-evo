@@ -78,6 +78,8 @@ $($(PKG)_BINARY) $($(PKG)_LIBRARY): $($(PKG)_DIR)/.configured
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
+	ln -sf sox $(dir $(SOX_TARGET_BINARY))play
+	ln -sf sox $(dir $(SOX_TARGET_BINARY))rec
 
 $($(PKG)_TARGET_LIBRARY): $($(PKG)_LIBRARY)
 	$(INSTALL_LIBRARY_STRIP)
@@ -92,6 +94,8 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) $(SOX_TARGET_BINARY)
+	$(RM) $(dir $(SOX_TARGET_BINARY))play
+	$(RM) $(dir $(SOX_TARGET_BINARY))rec
 	$(RM) $(SOX_TARGET_DIR)/libsox*.so*
 
 $(PKG_FINISH)
