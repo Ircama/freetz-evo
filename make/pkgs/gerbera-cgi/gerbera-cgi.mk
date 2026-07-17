@@ -6,7 +6,6 @@ $(PKG)_STAGING_SOURCES := \
 	$(GERBERA_CGI_MAKE_DIR)/files/root/etc/init.d/rc.gerbera \
 	$(GERBERA_CGI_MAKE_DIR)/files/root/etc/default.gerbera/gerbera.cfg \
 	$(GERBERA_CGI_MAKE_DIR)/files/root/etc/default.gerbera/gerbera.save \
-	$(GERBERA_CGI_MAKE_DIR)/files/root/etc/default.gerbera/config.xml.template \
 	$(GERBERA_CGI_MAKE_DIR)/files/root/usr/lib/cgi-bin/gerbera.cgi \
 	$(GERBERA_CGI_MAKE_DIR)/files/root/usr/lib/cgi-bin/gerbera/status.cgi
 $(PKG)_STAGING_TARGET := $(GERBERA_CGI_DEST_DIR)/usr/lib/cgi-bin/gerbera.cgi

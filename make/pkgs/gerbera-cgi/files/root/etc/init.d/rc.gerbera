@@ -64,7 +64,8 @@ start() {
 	rm -f "$PID_FILE" 2>/dev/null
 	deploy_config
 	mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
-	/usr/bin/$DAEMON_BIN $DAEMON_ARGS >/dev/null 2>&1 &
+	echo "$(date): Starting $DAEMON_BIN $DAEMON_ARGS" >> /tmp/rc.gerbera.log
+	/usr/bin/$DAEMON_BIN $DAEMON_ARGS >>/tmp/rc.gerbera.log 2>&1 &
 	echo "done."
 }
 

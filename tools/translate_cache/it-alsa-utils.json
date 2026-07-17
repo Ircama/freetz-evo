@@ -495,5 +495,12 @@
     "timestamp": "2026-05-19T01:02:01Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:No sound cards found.": {
+    "original": "No sound cards found.",
+    "translation": "Nessuna scheda audio rilevata.",
+    "timestamp": "2026-07-16T20:56:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

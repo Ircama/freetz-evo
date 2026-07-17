@@ -341,5 +341,103 @@
     "timestamp": "2026-07-12T19:22:51Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Alive interval": {
+    "original": "Alive interval",
+    "translation": "Intervallo di attività",
+    "timestamp": "2026-07-16T20:56:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:SSDP announcement interval in seconds (min 62)": {
+    "original": "SSDP announcement interval in seconds (min 62)",
+    "translation": "Intervallo di annuncio SSDP in secondi (min 62)",
+    "timestamp": "2026-07-16T20:56:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:JavaScript scripting": {
+    "original": "JavaScript scripting",
+    "translation": "scripting JavaScript",
+    "timestamp": "2026-07-16T20:56:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Find": {
+    "original": "Find",
+    "translation": "Trova",
+    "timestamp": "2026-07-16T20:56:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh": {
+    "original": "Refresh",
+    "translation": "Aggiorna",
+    "timestamp": "2026-07-16T20:56:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Gerbera log not found. Showing AJAX log:": {
+    "original": "Gerbera log not found. Showing AJAX log:",
+    "translation": "Log Gerbera non trovato. Visualizzazione del log AJAX:",
+    "timestamp": "2026-07-16T20:56:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No log available - service has not been started yet": {
+    "original": "No log available - service has not been started yet",
+    "translation": "Nessun log disponibile - il servizio non è ancora stato avviato",
+    "timestamp": "2026-07-16T20:56:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Reset Database": {
+    "original": "Reset Database",
+    "translation": "Reset Database",
+    "timestamp": "2026-07-16T20:56:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Stops Gerbera, backs up the old database, and restarts. The media library will be rebuilt.": {
+    "original": "Stops Gerbera, backs up the old database, and restarts. The media library will be rebuilt.",
+    "translation": "Arresta Gerbera, esegue il backup del vecchio database e si riavvia. La libreria multimediale verrà ricostruita.",
+    "timestamp": "2026-07-16T20:56:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Really reset the database? Gerbera will be stopped, the old database backed up, and then restarted.": {
+    "original": "Really reset the database? Gerbera will be stopped, the old database backed up, and then restarted.",
+    "translation": "Vuoi davvero ripristinare il database? Gerbera verrà arrestata, verrà eseguito il backup del vecchio database e poi verrà riavviata.",
+    "timestamp": "2026-07-16T20:56:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Running...": {
+    "original": "Running...",
+    "translation": "In esecuzione...",
+    "timestamp": "2026-07-16T20:56:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Error": {
+    "original": "Error",
+    "translation": "Errore",
+    "timestamp": "2026-07-16T20:56:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Connection error": {
+    "original": "Connection error",
+    "translation": "Errore di connessione",
+    "timestamp": "2026-07-16T20:56:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database reset": {
+    "original": "Database reset",
+    "translation": "Ripristino del database",
+    "timestamp": "2026-07-16T20:56:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

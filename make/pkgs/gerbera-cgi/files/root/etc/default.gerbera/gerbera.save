@@ -15,18 +15,15 @@ pkg_apply_save() {
 
 	mkdir -p "${GERBERA_BASEDIR}" 2>/dev/null
 
-	# Deploy config.xml from template with current values
+	# Generate config.xml dynamically
 	local config_file="${GERBERA_BASEDIR}/config.xml"
-	local template_file="/mod/etc/default.gerbera/config.xml.template"
-	if [ -f "$template_file" ]; then
-		sed -e "s|__GERBERA_FRIENDLY_NAME__|${GERBERA_FRIENDLY_NAME}|g" \
-		    -e "s|__GERBERA_BASEDIR__|${GERBERA_BASEDIR}|g" \
-		    -e "s|__GERBERA_PORT__|${GERBERA_PORT}|g" \
-		    -e "s|__GERBERA_WEBROOT__|${GERBERA_WEBROOT}|g" \
-		    -e "s|__GERBERA_DB_ENGINE__|sqlite3|g" \
-		    -e "s|__GERBERA_FOLLOW_SYMLINKS__|yes|g" \
-		    -e "s|__GERBERA_TRANSCODING__|no|g" \
-		    "$template_file" > "$config_file"
+	if HOME="${GERBERA_BASEDIR}" gerbera --create-advanced-config > "$config_file" 2>/dev/null; then
+		sed -i \
+		    -e "s|<name>Gerbera</name>|<name>${GERBERA_FRIENDLY_NAME:-Gerbera (Freetz)}</name>|g" \
+		    -e "s|<alive>180</alive>|<alive>${GERBERA_ALIVE:-180}</alive>|g" \
+		    -e "s|<directory location=\"/media\" |<directory location=\"${GERBERA_BASEDIR}/media\" |g" \
+		    -e "/<scripting>/,/<\\/scripting>/ s|<enabled>yes</enabled>|<enabled>${GERBERA_SCRIPTING:-no}</enabled>|" \
+		    "$config_file"
 	fi
 
 	# Restart daemon to apply config

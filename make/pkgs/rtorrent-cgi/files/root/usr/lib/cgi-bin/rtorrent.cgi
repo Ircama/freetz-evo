@@ -1102,7 +1102,7 @@ if (!document.getElementById('toastStyles')) {
 var currentStep = 1;
 var totalSteps = 5;  // Reduced from 6 to 5 (removed service start step)
 var wizardData = {
-	basedir: '${RTORRENT_BASEDIR:-$AUTO_STORAGE}',
+	basedir: '$(echo "${RTORRENT_BASEDIR:-$AUTO_STORAGE}" | sed "s/\x27/\\x27/g")',
 	needsDirectories: false,
 	portConfigured: false,
 	rcExists: false
@@ -1164,7 +1164,7 @@ function showStep(step) {
 	document.getElementById('step' + step).style.display = 'block';
 	currentStep = step;
 	
-	document.getElementById('wizardSubtitle').textContent = '$(lang de:"Schritt" en:"Step") ' + step + ' $(lang de:"von" en:"of") ' + totalSteps;
+	document.getElementById('wizardSubtitle').textContent = 'Step ' + step + ' of ' + totalSteps;
 	
 	document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
 	document.getElementById('nextBtn').style.display = step === totalSteps ? 'none' : 'inline-block';
