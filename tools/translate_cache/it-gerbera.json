@@ -439,5 +439,12 @@
     "timestamp": "2026-07-16T20:56:44Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Open Gerbera Web UI": {
+    "original": "Open Gerbera Web UI",
+    "translation": "Interfaccia utente web di Open Gerbera",
+    "timestamp": "2026-07-17T01:13:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
