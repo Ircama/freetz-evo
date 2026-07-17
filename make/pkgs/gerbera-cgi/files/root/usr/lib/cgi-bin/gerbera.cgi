@@ -1213,6 +1213,16 @@ EOF
 EOF
 	sec_end
 
+	sec_begin "$(lang de:"Web-Oberfl\u00e4che" en:"Web Interface")"
+	cat << EOF
+<p>
+	<a href="http://192.168.178.1:49152/" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+		🌐 $(lang de:"Gerbera Web UI \u00f6ffnen" en:"Open Gerbera Web UI")
+	</a>
+</p>
+EOF
+	sec_end
+
 	sec_begin "$(lang de:"Import-Einstellungen" en:"Import Settings")"
 	cat << EOF
 <p>
