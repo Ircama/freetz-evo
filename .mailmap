@@ -1,6 +1,7 @@
 # git log --use-mailmap --pretty='%aN <%aE>' | sort -u
 # git log --use-mailmap --format='%aN <%aE>' | sort -n | uniq -c
 # git log --use-mailmap --format='%aN <%aE>' | sort    | uniq -c | sort -nr
+# git shortlog -sne HEAD
 
 
 fda77 <fda77@users.noreply.github.com> cuma <fda77@users.noreply.github.com>

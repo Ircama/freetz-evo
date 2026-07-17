@@ -526,10 +526,6 @@ config FREETZ_AVM_HAS_FIRMWARE_08_2X_INHAUS
 	bool
 	default y
 	depends on \
-		( (FREETZ_TYPE_LANG_DE||FREETZ_TYPE_LANG_EN) && ( \
-			FREETZ_TYPE_7632 \
-		)) \
-		|| \
 		( FREETZ_TYPE_LANG_DE && ( \
 			FREETZ_TYPE_6690_PRO \
 		))
@@ -584,6 +580,7 @@ config FREETZ_AVM_HAS_FIRMWARE_08_2X
 			FREETZ_TYPE_7590_W5 || \
 			FREETZ_TYPE_7590_W6 || \
 			FREETZ_TYPE_7630 || \
+			FREETZ_TYPE_7632 || \
 			FREETZ_TYPE_7690 || \
 			FREETZ_TYPE_GATE \
 		)) \
