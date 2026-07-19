@@ -29,6 +29,9 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) -C $(LIBONIG_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install-strip
+	$(SUBMAKE) -C $(LIBONIG_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install-pkgconfigDATA
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libonig.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/oniguruma.pc \

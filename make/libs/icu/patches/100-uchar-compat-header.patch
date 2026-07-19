@@ -1,0 +1,71 @@
+Add a compatibility <uchar.h> header for C11 environments (e.g. uClibc-ng)
+that lack this header. ICU 76.1's ptypes.h includes <uchar.h> in C mode
+when U_HAVE_CHAR16_T is 1 (default on Linux), which fails when the header
+is not installed in the toolchain sysroot.
+
+This header provides the char16_t / char32_t type definitions and
+the standard C11 conversion function declarations.
+
+--- /dev/null
++++ source/common/uchar.h
+@@ -0,0 +1,60 @@
++// © 2025 and later: Freetz-NG contributors
++// License & terms of use: http://www.freetz.org/license.html
++/*
++ * Compatibility <uchar.h> for C11 environments where this header
++ * is not provided by the C library (e.g. uClibc-ng without
++ * UCLIBC_HAS_UCHAR).
++ *
++ * This header provides the char16_t / char32_t types and the
++ * standard C11 conversion function declarations so that ICU
++ * can compile its C-language files.
++ *
++ * The functions themselves are expected to come from the C
++ * library (libc) at link time; we only provide declarations
++ * so that the #include in common/unicode/ptypes.h succeeds.
++ */
++
++#ifndef _UCHAR_H
++#define _UCHAR_H
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#include <stdint.h>
++#include <wchar.h>
++
++/*
++ * char16_t / char32_t
++ *
++ * In C11 these are typedefs provided by <uchar.h>.
++ * GCC exposes __CHAR16_TYPE__ / __CHAR32_TYPE__ even in
++ * pre-C11 modes; use them if available, otherwise fall
++ * back to the simplest integer widths.
++ */
++#ifndef __cplusplus
++#ifndef __CHAR16_TYPE__
++typedef uint16_t char16_t;
++#else
++typedef __CHAR16_TYPE__ char16_t;
++#endif
++#ifndef __CHAR32_TYPE__
++typedef uint32_t char32_t;
++#else
++typedef __CHAR32_TYPE__ char32_t;
++#endif
++#endif /* !__cplusplus */
++
++/* Conversion functions (C11, §7.28) */
++size_t c16rtomb(char *__restrict, char16_t, mbstate_t *__restrict);
++size_t mbrtoc16(char16_t *__restrict, const char *__restrict, size_t,
++                mbstate_t *__restrict);
++size_t c32rtomb(char *__restrict, char32_t, mbstate_t *__restrict);
++size_t mbrtoc32(char32_t *__restrict, const char *__restrict, size_t,
++                mbstate_t *__restrict);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* _UCHAR_H */

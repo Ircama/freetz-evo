@@ -1,4 +1,4 @@
-# MPD 0.24.7
+# MPD 0.24.13
   - Homepage: [https://www.musicpd.org/](https://www.musicpd.org/)
   - Manpage: [https://mpd.readthedocs.io/en/stable/user.html](https://mpd.readthedocs.io/en/stable/user.html)
   - Changelog: [https://github.com/MusicPlayerDaemon/MPD/releases](https://github.com/MusicPlayerDaemon/MPD/releases)

@@ -110,3 +110,123 @@
  #include <fstream>
  #include "charset.h"
  #include "curl_handle.h"
+--- src/actions.cpp	2024-10-24 14:28:08.000000000 +0200
++++ src/actions.cpp	2026-07-19 22:21:14.288798 +0200
+@@ -23,7 +23,6 @@
+ #include <cstring>
+ #include <boost/date_time/posix_time/posix_time.hpp>
+ #include <boost/filesystem/operations.hpp>
+-#include <boost/locale/conversion.hpp>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+ #include <iostream>
+@@ -2235,7 +2234,7 @@
+ 	if (rnd_type != 's')
+ 	{
+ 		tag_type = charToTagType(rnd_type);
+-		tag_type_str = boost::locale::to_lower(tagTypeToString(tag_type));
++		tag_type_str = tagTypeToString(tag_type);
+ 	}
+ 	else
+ 		tag_type_str = "song";
+@@ -2327,7 +2326,6 @@
+ 		std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+ 		myLibrary->Tags.setTitle(Config.titles_visibility ? item_type + "s" : "");
+ 		myLibrary->Tags.reset();
+-		item_type = boost::locale::to_lower(item_type);
+ 		std::string and_mtime = Config.media_library_sort_by_mtime ?
+ 		                        " and mtime" :
+ 		                        "";
+
+--- src/screens/media_library.cpp	2024-10-24 14:28:08.000000000 +0200
++++ src/screens/media_library.cpp	2026-07-19 22:21:14.288798 +0200
+@@ -19,7 +19,6 @@
+  ***************************************************************************/
+ 
+ #include <boost/date_time/posix_time/posix_time.hpp>
+-#include <boost/locale/conversion.hpp>
+ #include <algorithm>
+ #include <array>
+ #include <cassert>
+@@ -732,8 +731,7 @@
+ 				std::make_move_iterator(MPD::SongIterator()));
+ 			std::sort(list.begin(), list.end(), SortSongs());
+ 			result = addSongsToPlaylist(list.begin(), list.end(), play, -1);
+-			std::string tag_type = boost::locale::to_lower(
+-				tagTypeToString(Config.media_lib_primary_tag));
++			std::string tag_type = tagTypeToString(Config.media_lib_primary_tag);
+ 			Statusbar::printf("Songs with %1% \"%2%\" added%3%",
+ 				tag_type, Tags.current()->value().tag(), withErrors(result));
+ 		}
+@@ -926,8 +924,7 @@
+ 			nextColumn();
+ 		if (Config.titles_visibility)
+ 		{
+-			std::string item_type = boost::locale::to_lower(
+-				tagTypeToString(Config.media_lib_primary_tag));
++			std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+ 			if (isAlbumOnly)
+ 			{
+ 				std::string and_mtime = Config.media_library_sort_by_mtime ? " (sorted by mtime)" : "";
+@@ -966,8 +963,7 @@
+ 		Songs.clear();
+ 		if (Config.titles_visibility)
+ 		{
+-			std::string item_type = boost::locale::to_lower(
+-				tagTypeToString(Config.media_lib_primary_tag));
++			std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+ 			if (isAlbumOnly)
+ 			{
+ 				std::string and_mtime = Config.media_library_sort_by_mtime ? " (sorted by mtime)" : "";
+@@ -1004,8 +1000,7 @@
+ 	std::string primary_tag = s.get(Config.media_lib_primary_tag);
+ 	if (primary_tag.empty())
+ 	{
+-		std::string item_type = boost::locale::to_lower(
+-			tagTypeToString(Config.media_lib_primary_tag));
++		std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+ 		Statusbar::printf("Can't use this function because the song has no %s tag", item_type);
+ 		return;
+ 	}
+
+--- src/screens/tag_editor.cpp	2024-10-24 14:28:08.000000000 +0200
++++ src/screens/tag_editor.cpp	2026-07-19 22:21:14.288798 +0200
+@@ -22,7 +22,6 @@
+ 
+ #ifdef HAVE_TAGLIB_H
+ 
+-#include <boost/locale/conversion.hpp>
+ #include <algorithm>
+ #include <fstream>
+ 
+@@ -1050,7 +1049,7 @@
+ 	{
+ 		unsigned i = 0;
+ 		for (std::string tag; !(tag = (s.*m->Get)(i)).empty(); ++i)
+-			(s.*m->Set)(boost::locale::to_lower(tag), i);
++			(s.*m->Set)(tag, i);
+ 	}
+ }
+ 
+
+--- src/screens/tiny_tag_editor.cpp	2024-10-24 14:28:08.000000000 +0200
++++ src/screens/tiny_tag_editor.cpp	2026-07-19 22:21:14.288798 +0200
+@@ -22,8 +22,6 @@
+ 
+ #ifdef HAVE_TAGLIB_H
+ 
+-#include <boost/locale/conversion.hpp>
+-
+ // taglib includes
+ #include <fileref.h>
+ #include <tag.h>
+@@ -201,7 +199,7 @@
+ 		return false;
+ 	
+ 	std::string ext = itsEdited.getURI();
+-	ext = boost::locale::to_lower(ext.substr(ext.rfind(".")+1));
++	ext = ext.substr(ext.rfind(".")+1);
+ 	
+ 	w.clear();
+ 	w.reset();
+

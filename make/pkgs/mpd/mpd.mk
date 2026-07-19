@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 0.24.7)
+$(call PKG_INIT_BIN, 0.24.13)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=d497c07df2a78600cf60e4a47c677df9cf9ac1daecb3c163147b643a6e2e0882
+$(PKG)_HASH:=8c66c2bae2d9ed87a06b95724e974a5510d3347556c099b9b7b5706a7e6d3cf4
 $(PKG)_SITE:=https://github.com/MusicPlayerDaemon/MPD/archive/refs/tags
 ### WEBSITE:=https://www.musicpd.org/
 ### MANPAGE:=https://mpd.readthedocs.io/en/stable/user.html

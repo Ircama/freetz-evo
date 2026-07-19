@@ -1,7 +1,7 @@
-$(call PKG_INIT_LIB, 0.28.5)
-$(PKG)_LIB_VERSION:=0.28.5
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=e1671f744e379a87ba0c984617406fdf8c0ad0c594e5122f525b2fb7c28d394d
+$(call PKG_INIT_LIB, 0.28.8)
+$(PKG)_LIB_VERSION:=0.28.8
+$(PKG)_SOURCE:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=ea51b0609f58a9afa063b60daa1539948b62247721e154f4fff0ad3aec9f9756
 $(PKG)_SITE:=https://github.com/Exiv2/exiv2/archive/refs/tags
 ### WEBSITE:=https://exiv2.org/
 ### CHANGES:=https://github.com/Exiv2/exiv2/releases

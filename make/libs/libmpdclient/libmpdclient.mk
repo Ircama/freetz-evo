@@ -35,6 +35,9 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_DIR)/.configured
 	cmd() { $(LIBMPDCLIENT_MESON_ENV) $(MESON) "$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } ; }; $(call _ECHO,building) cmd install \
 		--destdir "$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		-C $(LIBMPDCLIENT_DIR)/builddir/
+	# Ensure libmpdclient.pc is staged (meson install may skip it in some cases)
+	install -D -m 644 $(LIBMPDCLIENT_DIR)/builddir/meson-private/libmpdclient.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libmpdclient.pc
 	$(RM) -r $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/doc/libmpdclient
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)

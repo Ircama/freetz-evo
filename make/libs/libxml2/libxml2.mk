@@ -75,11 +75,14 @@ $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
 	$(SUBMAKE) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		-C $(LIBXML2_DIR) install
+	$(SUBMAKE) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		-C $(LIBXML2_DIR) install-pkgconfigDATA
 	$(PKG_FIX_LIBTOOL_LA) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libxml2.la \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/xml2-config \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/libxml-2.0.pc
-		ln -sf libxml2/libxml $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/libxml
+	ln -sf libxml2/libxml $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/libxml
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 	$(INSTALL_LIBRARY_STRIP)

@@ -1576,7 +1576,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[go-librespot 0.7.1 (binary only)](../../docs/make/go-librespot.md)<a id='go-librespot'></a>**<br>
     This package cross-compiles the upstream Go daemon sources with CGO and installs the go-librespot executable on the target. Can be externalized to save flash memory.
 
-  * **[MPD 0.24.7](../../docs/make/mpd.md)<a id='mpd'></a>**<br>
+  * **[MPD 0.24.13](../../docs/make/mpd.md)<a id='mpd'></a>**<br>
     This build enables the local database, TCP control interface, ALSA output and the MP3, FLAC and Vorbis decoders. jemalloc is selected to work around allocator-related crashes observed on some uClibc target combinations. Libcurl-based URI input support is enabled by default and can be disabled below. Can be externalized to save flash memory.
 
   * **[mpd-mpc: mpc 0.35 (MPD CLI client)](../../docs/make/mpd-mpc.md)<a id='mpd-mpc'></a>**<br>

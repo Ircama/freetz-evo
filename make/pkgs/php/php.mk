@@ -107,9 +107,17 @@ endif
 
 $(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_JSON),--enable-json,--disable-json)
 
+# PKG_CONFIG_PATH must include staging dir for PHP 8.5+ which uses pkg-config
+# to find libxml2 (--with-libxml-dir was dropped in PHP 8.5)
+$(PKG)_CONFIGURE_ENV += PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig"
+
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_LIBXML)),y)
 $(PKG)_DEPENDS_ON+=libxml2
 $(PKG)_CONFIGURE_OPTIONS+=--with-libxml-dir="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
+# Provide LIBXML_CFLAGS/LIBS as fallback to bypass pkg-config (needed when
+# libxml-2.0.pc is not installed in staging dir by libxml2 build)
+$(PKG)_CONFIGURE_ENV += LIBXML_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/libxml2"
+$(PKG)_CONFIGURE_ENV += LIBXML_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lxml2"
 endif
 $(PKG)_CONFIGURE_OPTIONS+=--without-libexpat-dir
 PHP_XML_SUPPORT:=$(if $(FREETZ_PACKAGE_PHP_WITH_LIBXML),enable,disable)
@@ -244,6 +252,9 @@ $(PKG)_CONFIGURE_OPTIONS+=--disable-ipv6
 endif
 $(PKG)_CONFIGURE_OPTIONS+=--enable-exif
 $(PKG)_CONFIGURE_OPTIONS+=--enable-mbstring
+# Provide ONIG_CFLAGS/LIBS as fallback to bypass pkg-config for PHP 8.5+
+$(PKG)_CONFIGURE_ENV += ONIG_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
+$(PKG)_CONFIGURE_ENV += ONIG_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lonig"
 $(PKG)_CONFIGURE_OPTIONS+=--disable-phar
 $(PKG)_CONFIGURE_OPTIONS+=--disable-rpath
 $(PKG)_CONFIGURE_OPTIONS+=--with-config-file-path=/tmp/flash
