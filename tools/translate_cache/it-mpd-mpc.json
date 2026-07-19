@@ -866,5 +866,229 @@
     "timestamp": "2026-07-18T14:15:41Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Playback Mode": {
+    "original": "Playback Mode",
+    "translation": "Modalità di riproduzione",
+    "timestamp": "2026-07-19T20:57:16Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Repeat": {
+    "original": "Repeat",
+    "translation": "Ripeti",
+    "timestamp": "2026-07-19T20:57:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Random": {
+    "original": "Random",
+    "translation": "Casuale",
+    "timestamp": "2026-07-19T20:57:17Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Single": {
+    "original": "Single",
+    "translation": "Singolo",
+    "timestamp": "2026-07-19T20:57:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Consume": {
+    "original": "Consume",
+    "translation": "Consume",
+    "timestamp": "2026-07-19T20:57:18Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Filter...": {
+    "original": "Filter...",
+    "translation": "Filtro...",
+    "timestamp": "2026-07-19T20:57:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Shuffle": {
+    "original": "Shuffle",
+    "translation": "Shuffle",
+    "timestamp": "2026-07-19T20:57:19Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clear": {
+    "original": "Clear",
+    "translation": "Cancella",
+    "timestamp": "2026-07-19T20:57:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Really clear queue?": {
+    "original": "Really clear queue?",
+    "translation": "Coda davvero chiara?",
+    "timestamp": "2026-07-19T20:57:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Refresh": {
+    "original": "Refresh",
+    "translation": "Aggiorna",
+    "timestamp": "2026-07-19T20:57:20Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Track": {
+    "original": "Track",
+    "translation": "Track",
+    "timestamp": "2026-07-19T20:57:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Actions": {
+    "original": "Actions",
+    "translation": "Azioni",
+    "timestamp": "2026-07-19T20:57:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Loading...": {
+    "original": "Loading...",
+    "translation": "Caricamento in corso...",
+    "timestamp": "2026-07-19T20:57:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Searching...": {
+    "original": "Searching...",
+    "translation": "Ricerca...",
+    "timestamp": "2026-07-19T20:57:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:hits": {
+    "original": "hits",
+    "translation": "hits",
+    "timestamp": "2026-07-19T20:57:22Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:No entries": {
+    "original": "No entries",
+    "translation": "Nessuna voce",
+    "timestamp": "2026-07-19T20:57:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Del": {
+    "original": "Del",
+    "translation": "Del",
+    "timestamp": "2026-07-19T20:57:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:items": {
+    "original": "items",
+    "translation": "items",
+    "timestamp": "2026-07-19T20:57:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Parent directory": {
+    "original": "Parent directory",
+    "translation": "Directory principale",
+    "timestamp": "2026-07-19T20:57:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Size": {
+    "original": "Size",
+    "translation": "Dimensione",
+    "timestamp": "2026-07-19T20:57:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Action": {
+    "original": "Action",
+    "translation": "Azione",
+    "timestamp": "2026-07-19T20:57:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:entries": {
+    "original": "entries",
+    "translation": "voci",
+    "timestamp": "2026-07-19T20:57:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Parent": {
+    "original": "Parent",
+    "translation": "Genitore",
+    "timestamp": "2026-07-19T20:57:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Empty directory": {
+    "original": "Empty directory",
+    "translation": "Cartella vuota",
+    "timestamp": "2026-07-19T20:57:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:pages": {
+    "original": "pages",
+    "translation": "pagine",
+    "timestamp": "2026-07-19T20:57:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Adding...": {
+    "original": "Adding...",
+    "translation": "Aggiunta...",
+    "timestamp": "2026-07-19T20:57:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Error": {
+    "original": "Error",
+    "translation": "Errore",
+    "timestamp": "2026-07-19T20:57:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Added!": {
+    "original": "Added!",
+    "translation": "Aggiunto!",
+    "timestamp": "2026-07-19T20:57:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Adding directory...": {
+    "original": "Adding directory...",
+    "translation": "Aggiunta di una directory...",
+    "timestamp": "2026-07-19T20:57:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Added": {
+    "original": "Added",
+    "translation": "Aggiunto",
+    "timestamp": "2026-07-19T20:57:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:files": {
+    "original": "files",
+    "translation": "files",
+    "timestamp": "2026-07-19T20:57:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Errors": {
+    "original": "Errors",
+    "translation": "Errori",
+    "timestamp": "2026-07-19T20:57:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

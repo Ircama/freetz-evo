@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libspdlog)),y)
+LIBS+=spdlog
+endif
