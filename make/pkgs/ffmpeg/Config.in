@@ -54,6 +54,11 @@ if FREETZ_PACKAGE_FFMPEG
 		bool # "Include LZMA support"
 		depends on FREETZ_PACKAGE_FFMPEG_ENCODER_tiff || FREETZ_PACKAGE_FFMPEG_DECODER_tiff
 
+	config FREETZ_PACKAGE_FFMPEG_LIBMP3LAME
+		bool "Include LAME MP3 encoder"
+		default n
+		select FREETZ_LIB_libmp3lame
+
 	config FREETZ_PACKAGE_FFMPEG_SSL
 		bool "Include SSL support"
 		default n

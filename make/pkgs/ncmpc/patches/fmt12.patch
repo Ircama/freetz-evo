@@ -1,0 +1,31 @@
+--- src/page/Page.hxx.orig	2026-07-18 19:27:56.969464597 +0200
++++ src/page/Page.hxx	2026-07-18 19:27:56.979464613 +0200
+@@ -11,6 +11,7 @@
+ #include <curses.h>
+ 
+ #include <fmt/core.h>
++#include <fmt/format.h>
+ 
+ #include <exception>
+ #include <utility>
+--- src/page/Page.cxx.orig	2026-07-18 19:27:56.969464597 +0200
++++ src/page/Page.cxx	2026-07-18 19:27:57.019464680 +0200
+@@ -34,7 +34,7 @@
+ void
+ Page::VFmtAlert(fmt::string_view format_str, fmt::format_args args) noexcept
+ {
+-	Alert(fmt::vformat(format_str, std::move(args)));
++	fmt::memory_buffer _xbuf_; fmt::vformat_to(std::back_inserter(_xbuf_), format_str, args); Alert(std::string(_xbuf_.data(), _xbuf_.size()));
+ }
+ 
+ bool
+--- src/page/FindSupport.cxx.orig	2026-07-18 19:27:56.979464613 +0200
++++ src/page/FindSupport.cxx	2026-07-18 19:27:56.999464647 +0200
+@@ -12,6 +12,7 @@
+ #include "co/InvokeTask.hxx"
+ 
+ #include <fmt/core.h>
++#include <fmt/format.h>
+ 
+ #define FIND_PROMPT  _("Find")
+ #define RFIND_PROMPT _("Find backward")

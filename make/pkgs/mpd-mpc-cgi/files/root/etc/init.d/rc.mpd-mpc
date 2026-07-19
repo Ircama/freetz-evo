@@ -143,6 +143,13 @@ run_startup() {
 	if [ -n "$MPD_MPC_STARTUP_VOLUME" ]; then
 		mpc_cmd volume "$MPD_MPC_STARTUP_VOLUME" >/dev/null 2>&1 || return 1
 	fi
+	# Apply transitions & effects settings
+	[ -n "$MPD_MPC_CROSSFADE" ] && mpc_cmd crossfade "$MPD_MPC_CROSSFADE" >/dev/null 2>&1
+	[ -n "$MPD_MPC_MIXRAMPDB" ] && mpc_cmd mixrampdb "$MPD_MPC_MIXRAMPDB" >/dev/null 2>&1
+	[ -n "$MPD_MPC_MIXRAMPDELAY" ] && mpc_cmd mixrampdelay "$MPD_MPC_MIXRAMPDELAY" >/dev/null 2>&1
+	if [ -n "$MPD_MPC_REPLAYGAIN" ] && [ "$MPD_MPC_REPLAYGAIN" != "off" ]; then
+		mpc_cmd replaygain "$MPD_MPC_REPLAYGAIN" >/dev/null 2>&1
+	fi
 	mpc_cmd play 1 >/dev/null 2>&1 || return 1
 	log_msg "queued and started ${MPD_MPC_STARTUP_URI}"
 	return 0

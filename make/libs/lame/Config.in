@@ -1,0 +1,5 @@
+config FREETZ_LIB_libmp3lame
+	bool "libmp3lame (libmp3lame.so)"
+	default n
+	help
+		LAME is a high quality MP3 (MPEG Audio Layer 3) encoding library.

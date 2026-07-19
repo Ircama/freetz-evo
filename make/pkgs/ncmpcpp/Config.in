@@ -1,0 +1,10 @@
+config FREETZ_PACKAGE_NCMPCPP
+	bool "ncmpcpp 0.9.2"
+	select FREETZ_LIB_libmpdclient
+	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libcurl
+	select FREETZ_LIB_libtag
+	default n
+	help
+		Ncurses-based MPD client. Feature-rich terminal user interface
+		for controlling the Music Player Daemon.

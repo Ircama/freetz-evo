@@ -789,5 +789,82 @@
     "timestamp": "2026-05-19T01:04:19Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Transitions & Effects": {
+    "original": "Transitions & Effects",
+    "translation": "Transizioni ed effetti",
+    "timestamp": "2026-07-18T14:15:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Crossfade": {
+    "original": "Crossfade",
+    "translation": "Crossfade",
+    "timestamp": "2026-07-18T14:15:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:MixRamp": {
+    "original": "MixRamp",
+    "translation": "MixRamp",
+    "timestamp": "2026-07-18T14:15:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:dB": {
+    "original": "dB",
+    "translation": "dB",
+    "timestamp": "2026-07-18T14:15:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Delay": {
+    "original": "Delay",
+    "translation": "Delay",
+    "timestamp": "2026-07-18T14:15:37Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ReplayGain": {
+    "original": "ReplayGain",
+    "translation": "ReplayGain",
+    "timestamp": "2026-07-18T14:15:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Off": {
+    "original": "Off",
+    "translation": "Non attivo",
+    "timestamp": "2026-07-18T14:15:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Local File Browser": {
+    "original": "Local File Browser",
+    "translation": "Esploratore file locale",
+    "timestamp": "2026-07-18T14:15:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Root": {
+    "original": "Root",
+    "translation": "Root",
+    "timestamp": "2026-07-18T14:15:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:+ Dir": {
+    "original": "+ Dir",
+    "translation": "+ Dir",
+    "timestamp": "2026-07-18T14:15:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Local Playlists": {
+    "original": "Local Playlists",
+    "translation": "Playlist locali",
+    "timestamp": "2026-07-18T14:15:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -1,0 +1,41 @@
+config FREETZ_PACKAGE_NCMPC
+	bool "ncmpc 0.52"
+	select FREETZ_LIB_libmpdclient
+	select FREETZ_LIB_libncursesw
+	default n
+	help
+		Official ncurses client for the Music Player Daemon (MPD).
+		Feature-rich terminal user interface with library browser,
+		playlist editor, search, lyrics, and more.
+
+config FREETZ_PACKAGE_NCMPC_WITH_ICONV
+	bool "iconv support"
+	depends on FREETZ_PACKAGE_NCMPC
+	select FREETZ_LIB_libiconv
+	default n
+	help
+		Enable iconv character set conversion support.
+
+config FREETZ_PACKAGE_NCMPC_WITH_LIRC
+	bool "LIRC support"
+	depends on FREETZ_PACKAGE_NCMPC
+	select FREETZ_LIB_liblirc_client
+	default n
+	help
+		Enable LIRC (Linux Infrared Remote Control) support.
+
+config FREETZ_PACKAGE_NCMPC_WITH_NLS
+	bool "NLS (native language support)"
+	depends on FREETZ_PACKAGE_NCMPC
+	select FREETZ_LIB_libintl
+	default n
+	help
+		Enable NLS for localized messages.
+
+config FREETZ_PACKAGE_NCMPC_WITH_REGEX
+	bool "regex support (PCRE2)"
+	depends on FREETZ_PACKAGE_NCMPC
+	select FREETZ_LIB_libpcre2
+	default n
+	help
+		Enable regular expression search using libpcre2.

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_NCMPCPP
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_NCMPCPP
+	bool "ncmpcpp"
+	default n
+	help
+		externals the following file(s):
+		 usr/bin/ncmpcpp

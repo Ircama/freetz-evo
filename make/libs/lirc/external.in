@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_liblirc_client
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_liblirc_client
+	bool "liblirc_client"
+	default n
+	help
+		externals the following file(s):
+		 lib/liblirc_client.so

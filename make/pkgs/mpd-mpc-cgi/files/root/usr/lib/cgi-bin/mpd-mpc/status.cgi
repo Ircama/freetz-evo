@@ -18,11 +18,37 @@
 : ${MPD_MPC_STARTUP_VOLUME:=}
 : ${MPD_MPC_STARTUP_CLEAR:=yes}
 
+: ${MPD_MPC_LOCAL_ROOT:=/var/media/ftp}
+: ${MPD_MPC_PLAYLIST_DIR:=/var/media/ftp/playlists}
+: ${MPD_MPC_MUSIC_DIR:=/var/media/ftp/mpd/music}
+: ${MPD_MPC_CROSSFADE:=0}
+: ${MPD_MPC_MIXRAMPDB:=0}
+: ${MPD_MPC_MIXRAMPDELAY:=-1}
+: ${MPD_MPC_REPLAYGAIN:=off}
+
+# Escape function for JSON string values (must be before AJAX handler)
+escape_json() {
+	printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
 DB_IMAGE_BASE='https://jcorporation.github.io/webradiodb/db/pics'
 DB_CACHE_DIR="${MPD_MPC_DB_CACHE_DIR%/}"
 DB_CACHE_FILE="${DB_CACHE_DIR}/webradiodb-combined.min.json"
 LOCAL_MPD_SOCKET=/var/run/mpd/socket
 LOG_FILE=/tmp/rc.mpd-mpc.log
+LOCAL_ROOT="${MPD_MPC_LOCAL_ROOT:-/var/media/ftp}"
+LOCAL_ROOT="${LOCAL_ROOT%/}"
+[ -z "$LOCAL_ROOT" ] && LOCAL_ROOT="/var/media/ftp"
+[ ! -d "$LOCAL_ROOT" ] && LOCAL_ROOT="/"
+PLAYLIST_DIR="${MPD_MPC_PLAYLIST_DIR:-/var/media/ftp/playlists}"
+PLAYLIST_DIR="${PLAYLIST_DIR%/}"
+MUSIC_DIR="${MPD_MPC_MUSIC_DIR:-/var/media/ftp/mpd/music}"
+MUSIC_DIR="${MUSIC_DIR%/}"
+# Auto-detect music_directory from mpd.conf if available
+if [ -z "$MPD_MPC_MUSIC_DIR" ] && [ -x /usr/bin/mpc ]; then
+	CFG_DIR=$(mpc_cmd config 2>/dev/null | sed -n 's/^music_directory[[:space:]]*"\(.*\)".*/\1/p' | head -1)
+	[ -n "$CFG_DIR" ] && [ -d "$CFG_DIR" ] && MUSIC_DIR="${CFG_DIR%/}" && MPD_MPC_MUSIC_DIR="$MUSIC_DIR"
+fi
 REFRESH="$(cgi_param refresh)"
 AJAX_MODE="$(cgi_param ajax)"
 ACTION="$(cgi_param action)"
@@ -459,18 +485,262 @@ esac
 
 if [ "$AJAX_MODE" = '1' ]; then
 	ajax_json_begin
-	if [ "$ACTION" = 'db_data' ]; then
-		if [ "$FORCE_SYNC" = '1' ] || [ ! -s "$DB_CACHE_FILE" ]; then
-			refresh_db_cache >/dev/null 2>&1
-		fi
-		if [ -s "$DB_CACHE_FILE" ]; then
-			cat "$DB_CACHE_FILE"
-		else
-			echo '{"error":"Unable to load WebRadioDB cache","webradios":{}}'
-		fi
-	else
-		echo '{"error":"Unsupported AJAX action","webradios":{}}'
-	fi
+	case "$ACTION" in
+		db_data)
+			if [ "$FORCE_SYNC" = '1' ] || [ ! -s "$DB_CACHE_FILE" ]; then
+				refresh_db_cache >/dev/null 2>&1
+			fi
+			if [ -s "$DB_CACHE_FILE" ]; then
+				cat "$DB_CACHE_FILE"
+			else
+				echo '{"error":"Unable to load WebRadioDB cache","webradios":{}}'
+			fi
+			;;
+		browse_dir)
+			BROWSE_PATH="$(cgi_param path)"
+			[ -z "$BROWSE_PATH" ] && BROWSE_PATH="$LOCAL_ROOT"
+			[ -z "$BROWSE_PATH" ] && BROWSE_PATH="/var/media/ftp"
+			[ ! -d "$BROWSE_PATH" ] && BROWSE_PATH="$LOCAL_ROOT"
+			[ ! -d "$BROWSE_PATH" ] && BROWSE_PATH="/var/media/ftp"
+			# Security: prevent traversal
+			case "$BROWSE_PATH" in
+				*..*) BROWSE_PATH="$LOCAL_ROOT" ;;
+			esac
+			# Strip trailing slash for consistent handling
+			BROWSE_PATH="${BROWSE_PATH%/}"
+			[ -z "$BROWSE_PATH" ] && BROWSE_PATH="/"
+			
+			echo "$(date): browse_dir BROWSE_PATH=$BROWSE_PATH LOCAL_ROOT=$LOCAL_ROOT" >> /tmp/mpd_ajax.log
+			
+			if [ ! -d "$BROWSE_PATH" ]; then
+				echo "{\"path\":\"$(escape_json "$BROWSE_PATH")\",\"error\":\"Directory not found\",\"entries\":[]}"
+			else
+				printf '{"path":"%s","parent":"%s","entries":[' \
+					"$(escape_json "$BROWSE_PATH")" \
+					"$(escape_json "$(dirname "$BROWSE_PATH")")"
+				first=1
+				for entry in "$BROWSE_PATH"/*; do
+					[ -e "$entry" ] || continue
+					en=$(basename "$entry")
+					[ "$en" = "." ] || [ "$en" = ".." ] && continue
+					ep="$BROWSE_PATH/$en"
+					[ $first -eq 0 ] && printf ','
+					if [ -d "$entry" ]; then
+						printf '{"type":"dir","name":"%s","path":"%s"}' \
+							"$(escape_json "$en")" "$(escape_json "$ep")"
+					elif [ -f "$entry" ]; then
+						sz=$(stat -c%s "$entry" 2>/dev/null || echo 0)
+						ext="${en##*.}"
+						printf '{"type":"file","name":"%s","path":"%s","size":%s,"ext":"%s"}' \
+							"$(escape_json "$en")" "$(escape_json "$ep")" "$sz" "$(escape_json "$ext")"
+					fi
+					first=0
+				done
+				echo ']}'
+			fi
+			;;
+		playlist_list)
+			mkdir -p "$PLAYLIST_DIR" 2>/dev/null
+			echo '{'
+			echo '  "files":['
+			first=1
+			if [ -d "$PLAYLIST_DIR" ]; then
+				for f in "$PLAYLIST_DIR"/*.m3u; do
+					[ -f "$f" ] || continue
+					fn=$(basename "$f" .m3u)
+					sz=$(stat -c%s "$f" 2>/dev/null || echo 0)
+					[ $first -eq 0 ] && echo ','
+					echo "    {\"name\":\"$(escape_json "$fn")\",\"path\":\"$(escape_json "$f")\",\"size\":$sz}"
+					first=0
+				done
+			fi
+			echo '  ]'
+			echo '}'
+			;;
+		playlist_save)
+			PL_NAME="$(cgi_param name)"
+			[ -z "$PL_NAME" ] && { echo '{"error":"No playlist name"}'; ajax_json_end; exit 0; }
+			# Sanitize name
+			PL_NAME=$(echo "$PL_NAME" | sed 's/[^a-zA-Z0-9_ .-]//g')
+			[ -z "$PL_NAME" ] && { echo '{"error":"Invalid playlist name"}'; ajax_json_end; exit 0; }
+			mkdir -p "$PLAYLIST_DIR" 2>/dev/null
+			PL_FILE="$PLAYLIST_DIR/$PL_NAME.m3u"
+			if mpc_cmd playlist > "$PL_FILE" 2>/dev/null; then
+				echo "{\"success\":true,\"name\":\"$(escape_json "$PL_NAME")\",\"path\":\"$(escape_json "$PL_FILE")\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to save playlist\"}"
+			fi
+			;;
+		playlist_load)
+			PL_NAME="$(cgi_param name)"
+			[ -z "$PL_NAME" ] && { echo '{"error":"No playlist name"}'; ajax_json_end; exit 0; }
+			PL_FILE="$PLAYLIST_DIR/$PL_NAME.m3u"
+			if [ ! -f "$PL_FILE" ]; then
+				echo "{\"success\":false,\"error\":\"Playlist not found\"}"
+			else
+				mpc_cmd stop 2>/dev/null
+				mpc_cmd clear 2>/dev/null
+				TMP_OUT=$(mpc_cmd load "$PL_FILE" 2>&1)
+				RC=$?
+				if [ $RC -eq 0 ]; then
+					echo "{\"success\":true,\"name\":\"$(escape_json "$PL_NAME")\"}"
+				else
+					echo "{\"success\":false,\"error\":\"$(escape_json "$TMP_OUT")\"}"
+				fi
+			fi
+			;;
+		playlist_delete)
+			PL_NAME="$(cgi_param name)"
+			[ -z "$PL_NAME" ] && { echo '{"error":"No playlist name"}'; ajax_json_end; exit 0; }
+			PL_FILE="$PLAYLIST_DIR/$PL_NAME.m3u"
+			if [ -f "$PL_FILE" ] && rm -f "$PL_FILE" 2>/dev/null; then
+				echo "{\"success\":true,\"name\":\"$(escape_json "$PL_NAME")\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to delete playlist\"}"
+			fi
+			;;
+		player_crossfade)
+			CF_VAL="$(cgi_param value)"
+			if mpc_cmd crossfade "$CF_VAL" 2>/dev/null; then
+				sed -i "s|^export MPD_MPC_CROSSFADE=.*||" /mod/etc/conf/mpd-mpc.cfg 2>/dev/null
+				echo "export MPD_MPC_CROSSFADE='$CF_VAL'" >> /mod/etc/conf/mpd-mpc.cfg
+				echo "{\"success\":true,\"crossfade\":\"$CF_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set crossfade\"}"
+			fi
+			;;
+		player_mixrampdb)
+			MR_VAL="$(cgi_param value)"
+			if mpc_cmd mixrampdb "$MR_VAL" 2>/dev/null; then
+				sed -i "s|^export MPD_MPC_MIXRAMPDB=.*||" /mod/etc/conf/mpd-mpc.cfg 2>/dev/null
+				echo "export MPD_MPC_MIXRAMPDB='$MR_VAL'" >> /mod/etc/conf/mpd-mpc.cfg
+				echo "{\"success\":true,\"mixrampdb\":\"$MR_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set mixrampdb\"}"
+			fi
+			;;
+		player_mixrampdelay)
+			MD_VAL="$(cgi_param value)"
+			if mpc_cmd mixrampdelay "$MD_VAL" 2>/dev/null; then
+				sed -i "s|^export MPD_MPC_MIXRAMPDELAY=.*||" /mod/etc/conf/mpd-mpc.cfg 2>/dev/null
+				echo "export MPD_MPC_MIXRAMPDELAY='$MD_VAL'" >> /mod/etc/conf/mpd-mpc.cfg
+				echo "{\"success\":true,\"mixrampdelay\":\"$MD_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set mixrampdelay\"}"
+			fi
+			;;
+		player_replaygain)
+			RG_VAL="$(cgi_param value)"
+			if mpc_cmd replaygain "$RG_VAL" 2>/dev/null; then
+				sed -i "s|^export MPD_MPC_REPLAYGAIN=.*||" /mod/etc/conf/mpd-mpc.cfg 2>/dev/null
+				echo "export MPD_MPC_REPLAYGAIN='$RG_VAL'" >> /mod/etc/conf/mpd-mpc.cfg
+				echo "{\"success\":true,\"replaygain\":\"$RG_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set replaygain\"}"
+			fi
+			;;
+		local_add)
+			LA_PATH="$(cgi_param path)"
+			[ -z "$LA_PATH" ] && { echo '{"error":"No path"}'; ajax_json_end; exit 0; }
+			# Quick check: is MPD running?
+			if ! mpc_cmd status >/dev/null 2>&1; then
+				echo '{"success":false,"error":"MPD is not running. Start it first."}'
+				ajax_json_end; exit 0
+			fi
+			# Strip music directory prefix so MPD accepts the path
+			MPD_PATH="$LA_PATH"
+			[ -n "$MUSIC_DIR" ] && [ "$MUSIC_DIR" != "/" ] && MPD_PATH="${LA_PATH#"$MUSIC_DIR/"}"
+			TMP_OUT=$(mpc_cmd add "$MPD_PATH" 2>&1)
+			RC=$?
+			if [ $RC -eq 0 ]; then
+				echo "{\"success\":true,\"path\":\"$(escape_json "$LA_PATH")\"}"
+			else
+				echo "{\"success\":false,\"error\":\"$(escape_json "$TMP_OUT")\"}"
+			fi
+			;;
+		local_add_dir)
+			LD_PATH="$(cgi_param path)"
+			[ -z "$LD_PATH" ] && { echo '{"error":"No path"}'; ajax_json_end; exit 0; }
+			# Quick check: is MPD running?
+			if ! mpc_cmd status >/dev/null 2>&1; then
+				echo '{"success":false,"error":"MPD is not running. Start it first."}'
+				ajax_json_end; exit 0
+			fi
+			# Recursively add all audio files from directory
+			COUNT=0
+			errors=""
+			for f in "$LD_PATH"/*; do
+				if [ -f "$f" ]; then
+					ext="${f##*.}"
+					case "$(echo "$ext" | tr '[:upper:]' '[:lower:]')" in
+						mp3|flac|ogg|wav|m4a|aac|wma|opus|ape|wv|aiff|dsf|dff)
+							MPD_PATH="$f"
+							[ -n "$MUSIC_DIR" ] && [ "$MUSIC_DIR" != "/" ] && MPD_PATH="${f#"$MUSIC_DIR/"}"
+							TMP_OUT=$(mpc_cmd add "$MPD_PATH" 2>&1) && COUNT=$((COUNT + 1)) || errors="${errors}$(basename "$f"): $TMP_OUT\n"
+							;;
+					esac
+				fi
+			done
+			echo "{\"success\":true,\"added\":$COUNT,\"errors\":\"$(escape_json "$(echo -n "$errors" | head -20)")\"}"
+			;;
+		player_repeat)
+			PV_VAL="$(cgi_param value)"
+			if mpc_cmd repeat "$PV_VAL" 2>/dev/null; then
+				echo "{\"success\":true,\"repeat\":\"$PV_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set repeat\"}"
+			fi
+			;;
+		player_random)
+			PV_VAL="$(cgi_param value)"
+			if mpc_cmd random "$PV_VAL" 2>/dev/null; then
+				echo "{\"success\":true,\"random\":\"$PV_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set random\"}"
+			fi
+			;;
+		player_single)
+			PV_VAL="$(cgi_param value)"
+			if mpc_cmd single "$PV_VAL" 2>/dev/null; then
+				echo "{\"success\":true,\"single\":\"$PV_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set single\"}"
+			fi
+			;;
+		player_consume)
+			PV_VAL="$(cgi_param value)"
+			if mpc_cmd consume "$PV_VAL" 2>/dev/null; then
+				echo "{\"success\":true,\"consume\":\"$PV_VAL\"}"
+			else
+				echo "{\"success\":false,\"error\":\"Failed to set consume\"}"
+			fi
+			;;
+		queue_list)
+			Q_OFFSET="$(cgi_param offset)"
+			Q_LIMIT="$(cgi_param limit)"
+			case "$Q_OFFSET" in ''|*[!0-9]*) Q_OFFSET=0 ;; esac
+			case "$Q_LIMIT" in ''|*[!0-9]*) Q_LIMIT=50 ;; esac
+			[ "$Q_LIMIT" -gt 200 ] && Q_LIMIT=200
+			Q_TOTAL=$(mpc_cmd playlist 2>/dev/null | wc -l | tr -d ' ')
+			Q_START=$((Q_OFFSET + 1))
+			Q_END=$((Q_OFFSET + Q_LIMIT))
+			Q_POS=$(mpc_cmd status 2>/dev/null | sed -n '2{s/^.*#\([0-9]*\)\/.*$/\1/p;q}')
+			echo -n "{\"total\":$Q_TOTAL,\"offset\":$Q_OFFSET,\"limit\":$Q_LIMIT,\"current\":\"$Q_POS\",\"items\":["
+			n=0
+			first=1
+			mpc_cmd playlist 2>/dev/null | sed -n "${Q_START},${Q_END}p" | while IFS= read -r label; do
+				n=$((n + 1))
+				idx=$((Q_OFFSET + n))
+				[ $first -eq 1 ] || printf ','
+				first=0
+				printf '{"n":%d,"label":"%s","cur":%s}' "$idx" "$(escape_json "$label")" "$([ "$idx" = "$Q_POS" ] && echo 'true' || echo 'false')"
+			done
+			echo ']}'
+			;;
+		*)
+			echo '{"error":"Unsupported AJAX action","webradios":{}}'
+			;;
+	esac
 	ajax_json_end
 	exit 0
 fi
@@ -706,6 +976,51 @@ case "$ACTION" in
 		;;
 esac
 
+# -----------------------------------------------------------------------
+# MPD connectivity check — block UI if MPD isn't running
+# -----------------------------------------------------------------------
+if ! mpc_cmd status >/dev/null 2>&1; then
+	cat << 'MPD_DOWN_HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>MPD Status</title>
+	<style>
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+		body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+		.mpd-down-card { background: #fff; border-radius: 16px; padding: 40px; max-width: 520px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; }
+		.mpd-down-icon { font-size: 64px; margin-bottom: 20px; }
+		.mpd-down-title { font-size: 22px; font-weight: bold; color: #333; margin-bottom: 12px; }
+		.mpd-down-msg { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+		.mpd-down-btn { display: inline-block; background: #667eea; color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px; transition: background .2s; }
+		.mpd-down-btn:hover { background: #5a6fd6; }
+		.mpd-down-links { margin-top: 20px; font-size: 13px; color: #999; }
+		.mpd-down-links a { color: #667eea; text-decoration: none; }
+	</style>
+</head>
+<body>
+<div class='mpd-down-card'>
+	<div class='mpd-down-icon'>🎵</div>
+	<div class='mpd-down-title'>MPD is not running</div>
+	<div class='mpd-down-msg'>
+		Start the MPD daemon to use this page.<br>
+		Use the Freetz web interface or run:
+		<br><code style='background:#f0f0f0;padding:4px 8px;border-radius:4px;'>/etc/init.d/rc.mpd start</code>
+	</div>
+	<a class='mpd-down-btn' href='javascript:window.location.reload()'>🔄 Refresh</a>
+	<div class='mpd-down-links'>
+		<a href='/cgi-bin/conf/mpd-mpc'>MPD-MPC Configuration</a>
+	</div>
+</div>
+</body>
+</html>
+MPD_DOWN_HTML
+	exit 0
+fi
+# -----------------------------------------------------------------------
+
 if [ -n "$ACTION" ] && [ -z "$ACTION_OUTPUT" ]; then
 	ACTION_OUTPUT='Command completed with no output.'
 fi
@@ -729,6 +1044,15 @@ STATUS_RC=$?
 CURRENT_VOLUME_LINE="$(printf '%s\n%s\n' "$CURRENT_STATUS_RAW" "$(mpc_cmd volume 2>/dev/null)" | sed -n '/volume:/p' | sed -n '1p')"
 CURRENT_VOLUME="$(printf '%s\n' "$CURRENT_VOLUME_LINE" | sed -n 's/^.*volume:[[:space:]]*\([0-9][0-9]*\)%.*/\1/p')"
 CURRENT_VOLUME_SAFE="$(normalize_uint "$CURRENT_VOLUME" 0 100 0)"
+# MPD toggle states: repeat, random, single, consume
+MPD_REPEAT_STATE="$(printf '%s\n' "$CURRENT_STATUS_RAW" | sed -n 's/.*repeat:[[:space:]]*\([^[:space:]]*\).*/\1/p' | head -1)"
+MPD_RANDOM_STATE="$(printf '%s\n' "$CURRENT_STATUS_RAW" | sed -n 's/.*random:[[:space:]]*\([^[:space:]]*\).*/\1/p' | head -1)"
+MPD_SINGLE_STATE="$(printf '%s\n' "$CURRENT_STATUS_RAW" | sed -n 's/.*single:[[:space:]]*\([^[:space:]]*\).*/\1/p' | head -1)"
+MPD_CONSUME_STATE="$(printf '%s\n' "$CURRENT_STATUS_RAW" | sed -n 's/.*consume:[[:space:]]*\([^[:space:]]*\).*/\1/p' | head -1)"
+[ "$MPD_REPEAT_STATE" = 'on' ] || [ "$MPD_REPEAT_STATE" = '1' ] || MPD_REPEAT_STATE='off'
+[ "$MPD_RANDOM_STATE" = 'on' ] || [ "$MPD_RANDOM_STATE" = '1' ] || MPD_RANDOM_STATE='off'
+[ "$MPD_SINGLE_STATE" = 'on' ] || [ "$MPD_SINGLE_STATE" = '1' ] || MPD_SINGLE_STATE='off'
+[ "$MPD_CONSUME_STATE" = 'on' ] || [ "$MPD_CONSUME_STATE" = '1' ] || MPD_CONSUME_STATE='off'
 PLAYLIST_FULL="$(mpc_cmd playlist 2>/dev/null)"
 if [ -n "$PLAYLIST_FULL" ]; then
 	QUEUE_LENGTH="$(printf '%s\n' "$PLAYLIST_FULL" | wc -l | tr -d ' ')"
@@ -932,8 +1256,49 @@ cat << EOF
 .mpc-tag { background:#f3ead8; border-radius:999px; color:#654d25; font-size:12px; padding:3px 8px; }
 .mpc-station-buttons { display:flex; flex-wrap:wrap; gap:8px; }
 .mpc-station-buttons form { margin:0; }
-.mpc-queue-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+.mpc-queue-toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
 .mpc-queue-toolbar form { margin:0; }
+.mpc-queue-info { font-size:13px; color:#666; white-space:nowrap; }
+.mpc-table { width:100%; border-collapse:collapse; border-radius:8px; overflow:hidden; }
+.mpc-table thead th { background:#667eea; color:#fff; padding:10px 12px; text-align:left; font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer; user-select:none; }
+.mpc-table thead th:hover { background:#5a6fd6; }
+.mpc-table thead th.sorted:after { margin-left:4px; opacity:0.7; }
+.mpc-table thead th.sorted.asc:after { content:' \u25b2'; }
+.mpc-table thead th.sorted.desc:after { content:' \u25bc'; }
+.mpc-table tbody td { padding:8px 12px; border-bottom:1px solid #eee; font-size:13px; vertical-align:middle; }
+.mpc-table tbody tr:hover td { background:#f0f4ff; }
+.mpc-table tbody tr.playing td { background:#fff6df; border-color:#e3d4b7; }
+.mpc-table .col-index { width:50px; font-weight:700; color:#6a4c1e; text-align:center; }
+.mpc-table .col-actions { white-space:nowrap; text-align:right; }
+.mpc-table .col-actions button, .mpc-table .col-actions form { display:inline; margin:0 2px; }
+.mpc-table .col-actions button { padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; border:1px solid #ccc; background:#fff; color:#333; }
+.mpc-table .col-actions button:hover { background:#667eea; color:#fff; border-color:#667eea; }
+.mpc-table .playing-badge { display:inline-block; background:#e3d4b7; color:#5f4520; border-radius:999px; padding:2px 7px; font-size:11px; margin-right:6px; }
+.mpc-pager { display:flex; align-items:center; justify-content:center; gap:10px; padding:12px; }
+.mpc-pager button { padding:6px 16px; border-radius:6px; cursor:pointer; border:1px solid #ccc; background:#fff; color:#333; font-size:13px; }
+.mpc-pager button:hover:not(:disabled) { background:#667eea; color:#fff; border-color:#667eea; }
+.mpc-pager button:disabled { opacity:0.4; cursor:default; }
+.mpc-pager span { font-size:13px; color:#666; }
+.mpc-browser-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+.mpc-browser-path { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
+.mpc-browser-path button { padding:6px 10px; border-radius:4px; cursor:pointer; border:1px solid #ccc; background:#333; color:#fff; font-size:13px; }
+.mpc-browser-path button:hover { background:#fff; color:#333; }
+.mpc-browser-path-text { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:monospace; font-size:13px; }
+.mpc-browser-actions { display:flex; gap:6px; }
+.mpc-browser-actions button { padding:6px 12px; border-radius:4px; cursor:pointer; border:1px solid #ccc; background:#333; color:#fff; font-size:13px; }
+.mpc-browser-actions button:hover { background:#fff; color:#333; }
+.mpc-browser-actions .btn-primary { background:#28a745; color:#fff; border-color:#28a745; }
+.mpc-browser-actions .btn-primary:hover { background:#218838; }
+.mpc-browser-grid { max-height:400px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:8px; }
+.mpc-table .file-icon { font-size:18px; min-width:24px; text-align:center; }
+.mpc-table .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mpc-table .file-size { font-size:11px; color:#999; white-space:nowrap; }
+.mpc-table .td-name { max-width:0; width:100%; }
+@media (max-width:640px) {
+	.mpc-table .col-actions button span { display:none; }
+	.mpc-queue-toolbar { flex-direction:column; align-items:stretch; }
+	.mpc-browser-toolbar { flex-direction:column; }
+}
 .mpc-queue-list { display:flex; flex-direction:column; gap:10px; }
 .mpc-queue-row { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:10px 12px; background:#fffdf8; border:1px solid #e3d4b7; border-radius:12px; }
 .mpc-queue-row-current { border-color:#d6a24a; background:#fff6df; }
@@ -954,6 +1319,32 @@ cat << EOF
 	.mpc-queue-row { grid-template-columns:1fr; }
 	.mpc-queue-actions { justify-content:flex-start; }
 }
+.mpc-effects-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+.mpc-card-title { font-weight:bold; font-size:14px; margin-bottom:12px; color:#333; }
+.mpc-slider-row { display:flex; align-items:center; gap:4px; margin-bottom:8px; white-space:nowrap; }
+.mpc-slider-row label { min-width:42px; font-size:13px; }
+.mpc-slider-row input[type=range] { min-width:0; flex:1; }
+.mpc-slider-val { min-width:36px; text-align:center; font-family:monospace; font-size:13px; }
+.mpc-preset-row { display:flex; gap:6px; margin-top:10px; }
+.mpc-preset-row button { padding:4px 12px; border-radius:4px; cursor:pointer; font-size:12px; background:#f0f0f0; border:1px solid #ccc; }
+.mpc-preset-row button:hover { background:#667eea; color:#fff; }
+.mpc-local-browser { }
+.mpc-local-tools { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.mpc-local-status { }
+.mpc-local-grid { display:grid; grid-template-columns:1fr; gap:2px; max-height:380px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:8px; background:#fafafa; }
+.mpc-local-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #eee; transition:background .15s; }
+.mpc-local-item:hover { background:#f0f4ff; }
+.mpc-local-dir { font-weight:bold; }
+.mpc-playlist-grid { display:flex; flex-direction:column; gap:4px; max-height:300px; overflow-y:auto; }
+.mpc-playlist-row { display:flex; align-items:center; gap:8px; padding:8px 12px; background:#fff; border:1px solid #eee; border-radius:8px; transition:background .15s; }
+.mpc-playlist-row:hover { background:#f0f4ff; }
+@media (max-width: 960px) {
+	.mpc-effects-grid { grid-template-columns:1fr; }
+	.mpc-local-tools { flex-direction:column; }
+}
+.mpc-toggle-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+.mpc-toggle-btn { padding:8px 14px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; border:2px solid #ccc; background:#f5f5f5; color:#666; transition:all .2s; }
+.mpc-toggle-btn.active { border-color:#28a745; background:#d4edda; color:#155724; }
 </style>
 EOF
 
@@ -1163,67 +1554,446 @@ cat << EOF
 EOF
 sec_end
 
+sec_begin "$(lang de:"\u00dcberg\u00e4nge & Effekte" en:"Transitions & Effects")"
+cat << EOF
+<div class='mpc-effects-grid'>
+	<div class='mpc-card'>
+		<div class='mpc-card-title'>$(lang de:"Crossfade" en:"Crossfade")</div>
+		<div class='mpc-slider-row'>
+			<input type='range' id='crossfadeSlider' min='0' max='30' value='${MPD_MPC_CROSSFADE:-0}' oninput="document.getElementById('crossfadeVal').textContent=this.value+'s'; updateCrossfade(this.value)"
+				style='flex:1; accent-color:#667eea;'>
+			<span id='crossfadeVal' class='mpc-slider-val'>${MPD_MPC_CROSSFADE:-0}s</span>
+		</div>
+		<div class='mpc-preset-row'>
+			<button type='button' onclick="setCrossfade(0);document.getElementById('crossfadeSlider').value=0;document.getElementById('crossfadeVal').textContent='0s';">0s</button>
+			<button type='button' onclick="setCrossfade(2);document.getElementById('crossfadeSlider').value=2;document.getElementById('crossfadeVal').textContent='2s';">2s</button>
+			<button type='button' onclick="setCrossfade(5);document.getElementById('crossfadeSlider').value=5;document.getElementById('crossfadeVal').textContent='5s';">5s</button>
+			<button type='button' onclick="setCrossfade(10);document.getElementById('crossfadeSlider').value=10;document.getElementById('crossfadeVal').textContent='10s';">10s</button>
+		</div>
+	</div>
+	<div class='mpc-card'>
+		<div class='mpc-card-title'>$(lang de:"MixRamp" en:"MixRamp")</div>
+		<div class='mpc-slider-row'>
+			<label>$(lang de:"dB" en:"dB"):</label>
+			<input type='range' id='mixrampdbSlider' min='-30' max='0' step='0.5' value='${MPD_MPC_MIXRAMPDB:-0}' oninput="document.getElementById('mixrampdbVal').textContent=this.value; updateMixrampDb(this.value)"
+				style='flex:1; accent-color:#e67e22;'>
+			<span id='mixrampdbVal' class='mpc-slider-val'>${MPD_MPC_MIXRAMPDB:-0}</span>
+		</div>
+		<div class='mpc-slider-row'>
+			<label>$(lang de:"Delay" en:"Delay"):</label>
+			<input type='range' id='mixrampdelaySlider' min='-1' max='10' value='${MPD_MPC_MIXRAMPDELAY:--1}' oninput="var v=this.value;document.getElementById('mixrampdelayVal').textContent=v==-1?'off':v+'s'; updateMixrampDelay(v)"
+				style='flex:1; accent-color:#e67e22;'>
+			<span id='mixrampdelayVal' class='mpc-slider-val'>$([ "${MPD_MPC_MIXRAMPDELAY:-0}" -eq -1 ] && echo 'off' || echo "${MPD_MPC_MIXRAMPDELAY}s")</span>
+		</div>
+	</div>
+	<div class='mpc-card'>
+		<div class='mpc-card-title'>$(lang de:"ReplayGain" en:"ReplayGain")</div>
+		<select id='replaygainSel' onchange="updateReplayGain(this.value)" style='width:100%;padding:8px;border-radius:6px;'>
+			<option value='off' $([ "${MPD_MPC_REPLAYGAIN:-off}" = 'off' ] && echo 'selected')>$(lang de:"Aus" en:"Off")</option>
+			<option value='track' $([ "$MPD_MPC_REPLAYGAIN" = 'track' ] && echo 'selected')>Track</option>
+			<option value='album' $([ "$MPD_MPC_REPLAYGAIN" = 'album' ] && echo 'selected')>Album</option>
+			<option value='auto' $([ "$MPD_MPC_REPLAYGAIN" = 'auto' ] && echo 'selected')>Auto</option>
+		</select>
+	</div>
+	<div class='mpc-card'>
+		<div class='mpc-card-title'>$(lang de:"Wiedergabemodi" en:"Playback Mode")</div>
+		<div class='mpc-toggle-row'>
+			<button id='btnRepeat' class='mpc-toggle-btn$([ "$MPD_REPEAT_STATE" = 'on' ] && echo ' active')' onclick="toggleMPD('repeat')">$(lang de:"Wiederholen" en:"Repeat")</button>
+			<button id='btnRandom' class='mpc-toggle-btn$([ "$MPD_RANDOM_STATE" = 'on' ] && echo ' active')' onclick="toggleMPD('random')">$(lang de:"Zufall" en:"Random")</button>
+			<button id='btnSingle' class='mpc-toggle-btn$([ "$MPD_SINGLE_STATE" = 'on' ] && echo ' active')' onclick="toggleMPD('single')">$(lang de:"Einzeln" en:"Single")</button>
+			<button id='btnConsume' class='mpc-toggle-btn$([ "$MPD_CONSUME_STATE" = 'on' ] && echo ' active')' onclick="toggleMPD('consume')">$(lang de:"Verbrauchen" en:"Consume")</button>
+		</div>
+	</div>
+</div>
+<script>
+function ajaxGet(action, params, callback) {
+	var q = '?ajax=1&action=' + encodeURIComponent(action);
+	if (params) for (var k in params) q += '&' + k + '=' + encodeURIComponent(params[k]);
+	var x = new XMLHttpRequest();
+	x.open('GET', window.location.pathname + q, true);
+	x.onload = function() {
+		try {
+			var t = x.responseText;
+			var s = t.indexOf('Content-Type: application/json');
+			if (s === -1) { callback('No JSON', null); return; }
+			t = t.substring(s);
+			var b = t.indexOf('{');
+			if (b === -1) { callback('No brace', null); return; }
+			var d = 0, e = -1;
+			for (var i = b; i < t.length; i++) { if (t[i]==='{') d++; else if (t[i]==='}') { d--; if (d===0) { e=i+1; break; } } }
+			var r = JSON.parse(t.substring(b, e));
+			callback(null, r);
+		} catch(ex) { callback(ex.message, null); }
+	};
+	x.send();
+}
+function setCrossfade(v) { ajaxGet('player_crossfade', {value:v}, function(){}); }
+function updateCrossfade(v) { ajaxGet('player_crossfade', {value:v}, function(){}); }
+function updateMixrampDb(v) { ajaxGet('player_mixrampdb', {value:v}, function(){}); }
+function updateMixrampDelay(v) { ajaxGet('player_mixrampdelay', {value:v}, function(){}); }
+function updateReplayGain(v) { ajaxGet('player_replaygain', {value:v}, function(){}); }
+function toggleMPD(mode) {
+	var btn = document.getElementById('btn'+mode.charAt(0).toUpperCase()+mode.slice(1));
+	var isActive = btn.classList.contains('active');
+	var newVal = isActive ? 'off' : 'on';
+	ajaxGet('player_'+mode, {value:newVal}, function(err, r) {
+		if (!err && r && r.success) {
+			if (newVal === 'on') btn.classList.add('active');
+			else btn.classList.remove('active');
+		}
+	});
+}
+</script>
+EOF
+sec_end
+
 sec_begin "$(lang de:"Queue-Verwaltung" en:"Queue management")"
 cat << EOF
 <div class='mpc-queue-toolbar'>
-	<form class='btn' action='$(href status mpd-mpc)' method='get'>
-		<input type='hidden' name='action' value='queue_shuffle'>
-		<input type='submit' value='$(lang de:"Queue mischen" en:"Shuffle queue")'>
-	</form>
-	<form class='btn' action='$(href status mpd-mpc)' method='get'>
-		<input type='hidden' name='action' value='player_clear'>
-		<input type='submit' value='$(lang de:"Queue leeren" en:"Clear queue")'>
-	</form>
-	<form class='btn' action='$(href status mpd-mpc)' method='get'>
-		<input type='submit' value='$(lang de:"Queue neu laden" en:"Refresh queue")'>
-	</form>
-</div>
-EOF
-if [ "$QUEUE_LENGTH" -gt 0 ] 2>/dev/null; then
-	echo "<div class='mpc-queue-list'>"
-	queue_index=0
-	printf '%s\n' "$PLAYLIST_FULL" | while IFS= read -r queue_label; do
-		[ -n "$queue_label" ] || continue
-		queue_index=$((queue_index + 1))
-		queue_row_class='mpc-queue-row'
-		queue_state_html=''
-		if [ "$queue_index" = "$CURRENT_QUEUE_INDEX" ]; then
-			queue_row_class='mpc-queue-row mpc-queue-row-current'
-			queue_state_html="<span class='mpc-queue-state'>$(html "$(lang de:"Laeuft" en:"Playing")")</span>"
-		fi
-		cat << EOF
-<div class='$(html "$queue_row_class")'>
-	<div class='mpc-queue-index'>#$(html "$queue_index")</div>
-	<div class='mpc-queue-label'>${queue_state_html}$(html "$queue_label")</div>
-	<div class='mpc-queue-actions'>
-		<form action='$(href status mpd-mpc)' method='get'>
-			<input type='hidden' name='action' value='queue_play'>
-			<input type='hidden' name='queue_index' value='$(html "$queue_index")'>
-			<button type='submit'>$(lang de:"Play" en:"Play")</button>
+	<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;'>
+		<input type='text' id='queueSearch' placeholder='$(lang de:"Filter..." en:"Filter...")' oninput='queueReload()'
+			style='padding:6px 10px;border-radius:6px;border:1px solid #ccc;min-width:120px;font-size:13px;'>
+		<span id='queueInfo' class='mpc-queue-info'></span>
+	</div>
+	<div style='display:flex;gap:6px;flex-wrap:wrap;'>
+		<form class='btn' action='$(href status mpd-mpc)' method='get'>
+			<input type='hidden' name='action' value='queue_shuffle'>
+			<input type='submit' value='$(lang de:"Mischen" en:"Shuffle")'>
 		</form>
-		<form action='$(href status mpd-mpc)' method='get'>
-			<input type='hidden' name='action' value='queue_move_up'>
-			<input type='hidden' name='queue_index' value='$(html "$queue_index")'>
-			<button type='submit'>$(lang de:"Hoch" en:"Up")</button>
+		<form class='btn' action='$(href status mpd-mpc)' method='get'>
+			<input type='hidden' name='action' value='player_clear'>
+			<input type='submit' value='$(lang de:"Leeren" en:"Clear")' onclick="return confirm('$(lang de:"Queue wirklich leeren?" en:"Really clear queue?")')">
 		</form>
-		<form action='$(href status mpd-mpc)' method='get'>
-			<input type='hidden' name='action' value='queue_move_down'>
-			<input type='hidden' name='queue_index' value='$(html "$queue_index")'>
-			<button type='submit'>$(lang de:"Runter" en:"Down")</button>
-		</form>
-		<form action='$(href status mpd-mpc)' method='get'>
-			<input type='hidden' name='action' value='queue_remove'>
-			<input type='hidden' name='queue_index' value='$(html "$queue_index")'>
-			<button type='submit'>$(lang de:"Entfernen" en:"Remove")</button>
+		<form class='btn' action='$(href status mpd-mpc)' method='get'>
+			<input type='submit' value='$(lang de:"Aktualisieren" en:"Refresh")'>
 		</form>
 	</div>
 </div>
+<div class='mpc-queue-table-wrap'>
+	<table id='queueTable' class='mpc-table'>
+		<thead><tr><th class='col-index' onclick='queueSort("#")'>#</th><th onclick='queueSort("label")'>$(lang de:"Titel" en:"Track")</th><th class='col-actions'>$(lang de:"Aktionen" en:"Actions")</th></tr></thead>
+		<tbody id='queueTbody'><tr><td colspan='3' style='text-align:center;padding:30px;color:#999;'>$(lang de:"Lade..." en:"Loading...")</td></tr></tbody>
+	</table>
+</div>
+<div id='queuePager' class='mpc-pager'>
+	<button id='queuePrevBtn' onclick='queuePage(-1)' disabled>$(lang de:"Zurueck" en:"Prev")</button>
+	<select id='queuePageSize' onchange='queueChangePageSize()' style='padding:4px 6px;border-radius:4px;border:1px solid #ccc;font-size:13px;'>
+		<option value='20'>20</option>
+		<option value='50' selected>50</option>
+		<option value='100'>100</option>
+		<option value='200'>200</option>
+	</select>
+	<span id='queuePageInfo' style='font-size:13px;color:#666;'></span>
+	<button id='queueNextBtn' onclick='queuePage(1)'>$(lang de:"Weiter" en:"Next")</button>
+</div>
+<script>
+var qTotal=0,qOffset=0,qLimit=50,qCur='$CURRENT_QUEUE_INDEX',qData=[],qSortCol='',qSortDir='asc';
+function queueLoad(append) {
+	var el=document.getElementById('queueTbody');
+	var f=document.getElementById('queueSearch');
+	var filter=f?f.value:'';
+	if(!append){qOffset=0;qData=[];el.innerHTML='<tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">$(lang de:"Lade..." en:"Loading...")</td></tr>';}
+	document.getElementById('queueInfo').textContent='';
+	if(filter!==''){queueFilterAll(filter);return;}
+	ajaxGet('queue_list',{offset:qOffset,limit:qLimit},function(err,data){
+		if(err){el.innerHTML='<tr><td colspan="3" class="mpc-empty">Error: '+err+'</td></tr>';return;}
+		qTotal=data.total;qCur=data.current||qCur;var items=data.items||[];
+		for(var i=0;i<items.length;i++)qData.push(items[i]);
+		if(!append)queueRender(items);else queueRender(items);
+		queueUpdateInfo();
+	});
+}
+function queueFilterAll(f) {
+	f=f.toLowerCase();qData=[];qOffset=0;
+	(function fb(o){ajaxGet('queue_list',{offset:o,limit:200},function(err,data){
+		if(err)return;qTotal=data.total;var items=data.items||[];
+		for(var i=0;i<items.length;i++){if(items[i].label.toLowerCase().indexOf(f)!==-1)qData.push(items[i]);}
+		if(o+200<data.total){document.getElementById('queueTbody').innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:#888;">$(lang de:"Suche..." en:"Searching...") ('+Math.min(o+200,data.total)+'/'+data.total+')</td></tr>';setTimeout(function(){fb(o+200);},50);}
+		else{document.getElementById('queueInfo').textContent=qData.length+' / '+qTotal+' $(lang de:"Treffer" en:"hits")';queueRender(qData);}
+	});})(0);
+}
+function queueRender(items) {
+	var el=document.getElementById('queueTbody');el.innerHTML='';
+	if(items.length===0){el.innerHTML='<tr><td colspan="3" class="mpc-empty">$(lang de:"Keine Eintraege" en:"No entries")</td></tr>';return;}
+	var html='';
+	for(var i=0;i<items.length;i++){
+		var it=items[i];
+		var isCur=(String(it.n)===String(qCur))||it.cur;
+		var rowCls=isCur?' playing':'';
+		var badge=isCur?'<span class="playing-badge">$(lang de:"Laeuft" en:"Playing")</span>':'';
+		html+='<tr class="'+rowCls+'">'+
+			'<td class="col-index">#'+it.n+'</td>'+
+			'<td>'+badge+queueEsc(it.label)+'</td>'+
+			'<td class="col-actions">'+
+				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
+					'<input type="hidden" name="action" value="queue_play"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<button type="submit"><span>$(lang de:"Play" en:"Play")</span></button></form>'+
+				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
+					'<input type="hidden" name="action" value="queue_move_up"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<button type="submit"><span>$(lang de:"Hoch" en:"Up")</span></button></form>'+
+				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
+					'<input type="hidden" name="action" value="queue_move_down"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<button type="submit"><span>$(lang de:"Runter" en:"Down")</span></button></form>'+
+				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
+					'<input type="hidden" name="action" value="queue_remove"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<button type="submit"><span>$(lang de:"Entf." en:"Del")</span></button></form>'+
+			'</td></tr>';
+	}
+	el.innerHTML=html;
+	queueUpdatePager();
+}
+function queueReload(){queueLoad(false);}
+function queuePage(dir){
+	if(dir<0&&qOffset<=0)return;
+	var newOff=qOffset+dir*qLimit;
+	if(newOff<0)newOff=0;
+	if(newOff>=qTotal&&dir>0)return;
+	qOffset=newOff;qData=[];queueLoad(false);
+}
+function queueUpdateInfo(){
+	document.getElementById('queueInfo').textContent=qData.length+' / '+qTotal+' $(lang de:"Eintraege" en:"items")';
+}
+function queueUpdatePager(){
+	document.getElementById('queuePrevBtn').disabled=(qOffset<=0);
+	document.getElementById('queueNextBtn').disabled=(qOffset+qLimit>=qTotal);
+	var pg=Math.floor(qOffset/qLimit)+1;
+	var totalPg=Math.ceil(qTotal/qLimit);
+	document.getElementById('queuePageInfo').textContent=pg+'/'+totalPg;
+}
+function queueChangePageSize(){
+	var sel=document.getElementById('queuePageSize');
+	if(!sel)return;
+	qLimit=parseInt(sel.value);
+	queueReload();
+}
+function queueEsc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+queueLoad(false);
+</script>
 EOF
-	done
-	echo '</div>'
-else
-	echo "<div class='mpc-empty'>$(html "$(lang de:"Die Queue ist leer." en:"The queue is empty.")")</div>"
-fi
+sec_end
+
+sec_begin "$(lang de:"Lokaler Dateibrowser" en:"Local File Browser")"
+cat << LOCALBROWSE_HTML
+<div class='mpc-browser-toolbar'>
+	<div class='mpc-browser-path'>
+		<button type='button' onclick='browseUp()' title='$(lang de:"Elternverzeichnis" en:"Parent directory")'>&#x25B2;</button>
+		<span id='localPathDisp' class='mpc-browser-path-text'>$(lang de:"Lade..." en:"Loading...")</span>
+	</div>
+	<div class='mpc-browser-actions'>
+		<button type='button' onclick='browseRoot()'>$(lang de:"Root" en:"Root")</button>
+		<button type='button' onclick='addCurrentDir()' class='btn-primary'>$(lang de:"+ Dir" en:"+ Dir")</button>
+	</div>
+</div>
+<div id='localDirStatus' style='padding:4px 0 8px;font-size:12px;color:#888;'></div>
+<div class='mpc-browser-grid'>
+	<table id='browserTable' class='mpc-table'>
+		<thead><tr><th onclick='brSort("name")' class='sorted asc'>$(lang de:"Name" en:"Name")</th><th onclick='brSort("size")' style='width:90px;'>$(lang de:"Groesse" en:"Size")</th><th style='width:50px;'>$(lang de:"Aktion" en:"Action")</th></tr></thead>
+		<tbody id='browserTbody'><tr><td colspan='3' style='text-align:center;padding:30px;color:#999;'>$(lang de:"Lade..." en:"Loading...")</td></tr></tbody>
+	</table>
+</div>
+<div id='brPager' class='mpc-pager'>
+	<button id='brPrevBtn' onclick='brPage(-1)' disabled>$(lang de:"Zurueck" en:"Prev")</button>
+	<select id='brPageSize' onchange='brChangePageSize()' style='padding:4px 6px;border-radius:4px;border:1px solid #ccc;font-size:13px;'>
+		<option value='20' selected>20</option>
+		<option value='50'>50</option>
+		<option value='100'>100</option>
+		<option value='200'>200</option>
+	</select>
+	<span id='brPageInfo' style='font-size:13px;color:#666;'></span>
+	<button id='brNextBtn' onclick='brPage(1)'>$(lang de:"Weiter" en:"Next")</button>
+</div>
+<script>
+var brRoot='$(html "${LOCAL_ROOT:-/var/media/ftp}")';
+var brPath=brRoot;
+var brData=[];
+var brSortCol='name';
+var brSortDir=1;
+var brPageNum=0;
+var brPageSize=20;
+
+function browseLocal(path){
+	brPath=path||brRoot;
+	document.getElementById('localPathDisp').textContent=brPath;
+	document.getElementById('localDirStatus').textContent='$(lang de:"Lade..." en:"Loading...")';
+	document.getElementById('browserTbody').innerHTML='<tr><td colspan="3" style="text-align:center;padding:20px;color:#999;">$(lang de:"Lade..." en:"Loading...")</td></tr>';
+	ajaxGet('browse_dir',{path:brPath},function(err,data){
+		if(err){document.getElementById('localDirStatus').textContent='Error: '+err;return;}
+		document.getElementById('localPathDisp').textContent=data.path;
+		brData=[];
+		var entries=data.entries||[];
+		if(brPath!==brRoot&&data.parent){brData.push({name:'..',path:data.parent,type:'dir',size:0});}
+		for(var i=0;i<entries.length;i++)brData.push(entries[i]);
+		document.getElementById('localDirStatus').textContent=entries.length+' $(lang de:"Eintraege" en:"entries")';
+		brPageNum=0;
+		brPageSize=parseInt(document.getElementById('brPageSize').value);
+		brRender();
+	});
+}
+function brRender(){
+	var data=brData.slice();
+	if(brSortCol==='name'){data.sort(function(a,b){var x=a.name.toLowerCase(),y=b.name.toLowerCase();return x<y?-1:x>y?1:0;});}
+	else if(brSortCol==='size'){data.sort(function(a,b){return(a.size||0)-(b.size||0);});}
+	if(brSortDir===-1)data.reverse();
+	var total=data.length;
+	var totalPages=Math.ceil(total/brPageSize)||1;
+	if(brPageNum>=totalPages)brPageNum=totalPages-1;
+	if(brPageNum<0)brPageNum=0;
+	var start=brPageNum*brPageSize;
+	var pageData=data.slice(start,start+brPageSize);
+	var html='';
+	for(var i=0;i<pageData.length;i++){
+		var e=pageData[i];
+		if(e.name==='..'){
+			html+='<tr onclick="browseLocal(\''+brEsc(e.path)+'\')" style="cursor:pointer">'+
+				'<td><span class="file-icon">&#x2190;</span> <em>$(lang de:"Oberverzeichnis" en:"Parent")</em></td><td class="file-size"></td><td></td></tr>';
+			continue;
+		}
+		var icon='\ud83c\udfb5',labelCls='';
+		if(e.type==='dir'){icon='\ud83d\udcc1';}
+		else{
+			if(/\.(mp3|flac|ogg|wav|m4a|aac|wma|opus|ape|wv|aiff|dsf|dff)$/i.test(e.name)){icon='\ud83c\udfb5';labelCls='style="color:#28a745;font-weight:bold"';}
+			else if(/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(e.name)){icon='\ud83d\uddbc';}
+			else if(/\.(txt|nfo|log|md)$/i.test(e.name)){icon='\ud83d\udcc4';}
+		}
+		var size=e.size>1048576?(e.size/1048576).toFixed(1)+' MB':(e.size>1024?(e.size/1024).toFixed(1)+' KB':(e.size||0)+' B');
+		if(e.type==='dir'){
+			html+='<tr onclick="browseLocal(\''+brEsc(e.path)+'\')" style="cursor:pointer">'+
+				'<td><span class="file-icon">'+icon+'</span> <span class="file-name" '+labelCls+'>'+brEsc(e.name)+'/</span></td>'+
+				'<td class="file-size"></td><td></td></tr>';
+		}else{
+			html+='<tr>'+
+				'<td><span class="file-icon">'+icon+'</span> <span class="file-name" '+labelCls+' title="'+brEsc(e.name)+'">'+brEsc(e.name)+'</span></td>'+
+				'<td class="file-size">'+size+'</td>'+
+				'<td><button onclick="brAddFile(\''+brEsc(e.path)+'\')" style="padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;border:1px solid #28a745;background:#d4edda;color:#155724;">+</button></td></tr>';
+		}
+	}
+	document.getElementById('browserTbody').innerHTML=html||'<tr><td colspan="3" class="mpc-empty">$(lang de:"Leeres Verzeichnis" en:"Empty directory")</td></tr>';
+	brUpdatePager(total,totalPages);
+}
+function brPage(dir){
+	brPageNum+=dir;
+	brRender();
+}
+function brChangePageSize(){
+	brPageSize=parseInt(document.getElementById('brPageSize').value);
+	brPageNum=0;
+	brRender();
+}
+function brUpdatePager(total,totalPages){
+	var info;
+	if(total===0){info='0 $(lang de:"Eintraege" en:"entries")';}
+	else{info=''+(brPageNum*brPageSize+1)+'-'+Math.min((brPageNum+1)*brPageSize,total)+' / '+total+' ('+totalPages+' $(lang de:"Seiten" en:"pages")';}
+	document.getElementById('brPageInfo').textContent=info;
+	document.getElementById('brPrevBtn').disabled=(brPageNum<=0);
+	document.getElementById('brNextBtn').disabled=(brPageNum>=totalPages-1||totalPages<=1);
+}
+function brSort(col){
+	if(brSortCol===col)brSortDir*=-1;else{brSortCol=col;brSortDir=1;}
+	var ths=document.querySelectorAll('#browserTable thead th');
+	for(var i=0;i<ths.length;i++)ths[i].classList.remove('sorted','asc','desc');
+	var idx=(col==='name'?0:1);
+	ths[idx].classList.add('sorted',brSortDir===1?'asc':'desc');
+	brPageNum=0;
+	brRender();
+}
+function browseUp(){
+	if(brPath&&brPath!==brRoot&&brPath!=='/'){var p=brPath.substring(0,brPath.lastIndexOf('/'))||brRoot;browseLocal(p);}
+}
+function browseRoot(){browseLocal(brRoot);}
+function brAddFile(p){
+	document.getElementById('localDirStatus').textContent='$(lang de:"Fuege hinzu..." en:"Adding...") '+p.split('/').pop();
+	ajaxGet('local_add',{path:p},function(err,data){
+		if(err||!data||!data.success){alert('$(lang de:"Fehler" en:"Error")'+(data?': '+data.error:err));document.getElementById('localDirStatus').textContent='$(lang de:"Fehler" en:"Error")';}
+		else{document.getElementById('localDirStatus').textContent='$(lang de:"Hinzugefuegt!" en:"Added!")';}
+	});
+}
+function addCurrentDir(){
+	if(!brPath)return;
+	document.getElementById('localDirStatus').textContent='$(lang de:"Fuege Verzeichnis hinzu..." en:"Adding directory...")';
+	ajaxGet('local_add_dir',{path:brPath},function(err,data){
+		if(err||!data||!data.success){alert('$(lang de:"Fehler" en:"Error")'+(data?': '+data.error:err));document.getElementById('localDirStatus').textContent='$(lang de:"Fehler" en:"Error")';}
+		else{document.getElementById('localDirStatus').textContent='$(lang de:"Hinzugefuegt" en:"Added") '+data.added+' $(lang de:"Dateien" en:"files")';if(data.errors)alert('$(lang de:"Fehler" en:"Errors")' + ':\n' + data.errors);}
+	});
+}
+function brEsc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+browseLocal(brRoot);
+</script>
+LOCALBROWSE_HTML
+sec_end
+
+sec_begin "$(lang de:"Lokale Playlisten" en:"Local Playlists")"
+cat << 'PLAYLISTS_HTML'
+<div class='mpc-playlist-manager'>
+	<div class='mpc-local-tools'>
+		<input type='text' id='newPlaylistName' placeholder='Playlist name...' style='flex:1;padding:10px;border-radius:6px;border:1px solid #ddd;min-width:0;'>
+		<button type='button' onclick='savePlaylist()' style='padding:10px 20px;border-radius:6px;cursor:pointer;background:#667eea;color:#fff;'>Save Queue</button>
+		<button type='button' onclick='refreshPlaylists()' style='padding:10px 20px;border-radius:6px;cursor:pointer;'>Refresh</button>
+	</div>
+	<div id='playlistStatus' style='padding:6px 0;font-size:12px;color:#888;'></div>
+	<div id='playlistList' class='mpc-playlist-grid'></div>
+</div>
+<script>
+function refreshPlaylists() {
+	document.getElementById('playlistStatus').textContent = 'Loading...';
+	ajaxGet('playlist_list', null, function(err, data) {
+		if (err) { document.getElementById('playlistStatus').textContent = 'Error: ' + err; return; }
+		var files = data.files || [];
+		var html = '';
+		for (var i = 0; i < files.length; i++) {
+			var f = files[i];
+			html += '<div class="mpc-playlist-row">' +
+				'<span style="font-size:18px;min-width:24px;">\ud83c\udfb6</span>' +
+				'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:bold;">'+escapeHtml(f.name)+'</span>' +
+				'<span style="font-size:11px;color:#999;min-width:50px;text-align:right;">'+(f.size > 1024 ? (f.size/1024).toFixed(1)+' KB' : f.size+' B')+'</span>' +
+				'<button type="button" onclick="loadPlaylist(\''+escapeHtml(f.name)+'\')" style="padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;background:#667eea;color:#fff;">Load</button>' +
+				'<button type="button" onclick="deletePlaylist(\''+escapeHtml(f.name)+'\')" style="padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;background:#dc3545;color:#fff;">Del</button>' +
+				'</div>';
+		}
+		document.getElementById('playlistList').innerHTML = html || '<div class="mpc-empty">No saved playlists</div>';
+		document.getElementById('playlistStatus').textContent = files.length + ' playlist(s)';
+	});
+}
+function savePlaylist() {
+	var name = document.getElementById('newPlaylistName').value.trim();
+	if (!name) { alert('Enter a playlist name'); return; }
+	document.getElementById('playlistStatus').textContent = 'Saving...';
+	ajaxGet('playlist_save', {name: name}, function(err, data) {
+		if (err || !data || !data.success) {
+			alert('Failed to save: ' + (data ? data.error : err));
+			document.getElementById('playlistStatus').textContent = 'Error';
+		} else {
+			document.getElementById('newPlaylistName').value = '';
+			document.getElementById('playlistStatus').textContent = 'Saved: ' + data.name;
+			refreshPlaylists();
+		}
+	});
+}
+function loadPlaylist(name) {
+	if (!confirm('Load playlist "' + name + '"? Current queue will be replaced.')) return;
+	document.getElementById('playlistStatus').textContent = 'Loading...';
+	ajaxGet('playlist_load', {name: name}, function(err, data) {
+		if (err || !data || !data.success) {
+			alert('Failed to load: ' + (data ? data.error : err));
+			document.getElementById('playlistStatus').textContent = 'Error';
+		} else {
+			document.getElementById('playlistStatus').textContent = 'Loaded: ' + data.name;
+			window.location.reload();
+		}
+	});
+}
+function deletePlaylist(name) {
+	if (!confirm('Delete playlist "' + name + '"?')) return;
+	ajaxGet('playlist_delete', {name: name}, function(err, data) {
+		if (err || !data || !data.success) {
+			alert('Failed to delete: ' + (data ? data.error : err));
+		} else {
+			refreshPlaylists();
+		}
+	});
+}
+refreshPlaylists();
+</script>
+PLAYLISTS_HTML
 sec_end
 
 sec_begin "$(lang de:"Kommando-Ausgabe" en:"Command output")"

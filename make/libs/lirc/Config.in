@@ -1,0 +1,6 @@
+config FREETZ_LIB_liblirc_client
+	bool "liblirc_client 0.10.2"
+	default n
+	help
+		LIRC client library. Provides infrared remote control support
+		for client applications like ncmpc.

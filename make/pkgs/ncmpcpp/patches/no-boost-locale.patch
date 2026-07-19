@@ -1,0 +1,140 @@
+--- src/charset.cpp.orig	2026-07-19 07:43:15.179354939 +0200
++++ src/charset.cpp	2026-07-19 07:43:53.539233122 +0200
+@@ -18,7 +18,9 @@
+  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
+  ***************************************************************************/
+ 
+-#include <boost/locale.hpp>
++// Note: boost::locale is not available on this embedded target (uClibc).
++// This target runs UTF-8 throughout, so all charset conversions pass through.
++#include <locale>
+ #include "charset.h"
+ #include "settings.h"
+ 
+@@ -26,59 +28,39 @@
+ 
+ std::locale internalLocale()
+ {
+-	boost::locale::generator gen;
+-	std::locale loc = gen("");
+-	bool is_utf = std::use_facet<boost::locale::info>(loc).utf8();
+-	std::string name = std::use_facet<boost::locale::info>(loc).name();
+-	if (!is_utf && name != "C" && name != "POSIX")
+-	{
+-		// if current locale does not use unicode, use variant of this
+-		// locale with utf8 as ncmpcpp uses utf8 internally and we need
+-		// current locale for sorting, case conversions etc.
+-		std::string new_name = std::use_facet<boost::locale::info>(loc).language()
+-		                     + "_"
+-		                     + std::use_facet<boost::locale::info>(loc).country()
+-		                     + ".UTF-8";
+-		loc = gen(new_name);
+-	}
+-	return loc;
++	// On uClibc embedded targets we assume UTF-8 throughout.
++	try { return std::locale(""); }
++	catch (...) { return std::locale::classic(); }
+ }
+ 
+-std::string toUtf8From(const std::string &s, const char *charset)
++std::string toUtf8From(const std::string &s, const char * /*charset*/)
+ {
+-	return boost::locale::conv::to_utf<char>(s, charset);
++	// Assume input is already UTF-8 on embedded targets.
++	return s;
+ }
+ 
+-std::string fromUtf8To(const std::string &s, const char *charset)
++std::string fromUtf8To(const std::string &s, const char * /*charset*/)
+ {
+-	return boost::locale::conv::to_utf<char>(s, charset);
++	return s;
+ }
+ 
+ std::string utf8ToLocale(const std::string &s)
+ {
+-	return Config.system_encoding.empty()
+-	     ? s
+-	     : boost::locale::conv::from_utf<char>(s, Config.system_encoding);
++	return s;
+ }
+ 
+ std::string localeToUtf8(const std::string &s)
+ {
+-	return Config.system_encoding.empty()
+-	     ? s
+-	     : boost::locale::conv::to_utf<char>(s, Config.system_encoding);
++	return s;
+ }
+ 
+ std::string utf8ToLocale(std::string &&s)
+ {
+-	if (!Config.system_encoding.empty())
+-		s = boost::locale::conv::from_utf<char>(s, Config.system_encoding);
+ 	return std::move(s);
+ }
+ 
+ std::string localeToUtf8(std::string &&s)
+ {
+-	if (!Config.system_encoding.empty())
+-		s = boost::locale::conv::to_utf<char>(s, Config.system_encoding);
+ 	return std::move(s);
+ }
+ 
+--- src/ncmpcpp.cpp.orig	2026-07-19 07:43:15.179354939 +0200
++++ src/ncmpcpp.cpp	2026-07-19 07:44:30.879145938 +0200
+@@ -24,7 +24,6 @@
+ #include <cstring>
+ 
+ #include <boost/date_time/posix_time/posix_time.hpp>
+-#include <boost/locale.hpp>
+ #include <iostream>
+ #include <fstream>
+ #include <stdexcept>
+@@ -92,7 +91,7 @@
+ 	using Global::Timer;
+ 	
+ 	std::setlocale(LC_ALL, "");
+-	std::locale::global(Charset::internalLocale());
++	std::locale::global(Charset::internalLocale()); // uClibc: uses std::locale() internally
+ 
+ 	// clog might be overriden in configure, so preserve the original buffer.
+ 	clog_buffer = std::clog.rdbuf();
+--- src/lastfm_service.cpp.orig	2026-07-19 07:43:15.179354939 +0200
++++ src/lastfm_service.cpp	2026-07-19 07:44:30.909145845 +0200
+@@ -22,7 +22,6 @@
+ 
+ #include <boost/algorithm/string/replace.hpp>
+ #include <boost/algorithm/string/trim.hpp>
+-#include <boost/locale/conversion.hpp>
+ #include <fstream>
+ #include "charset.h"
+ #include "curl_handle.h"
+--- src/actions.cpp.orig	2026-07-19 08:29:01.642803014 +0200
++++ src/actions.cpp	2026-07-19 08:29:01.662802965 +0200
+@@ -23,7 +23,6 @@
+ #include <cstring>
+ #include <boost/date_time/posix_time/posix_time.hpp>
+ #include <boost/filesystem/operations.hpp>
+-#include <boost/locale/conversion.hpp>
+ #include <boost/lexical_cast.hpp>
+ #include <algorithm>
+ #include <iostream>
+@@ -2235,7 +2234,7 @@
+ 	if (rnd_type != 's')
+ 	{
+ 		tag_type = charToTagType(rnd_type);
+-		tag_type_str = boost::locale::to_lower(tagTypeToString(tag_type));
++		tag_type_str = tagTypeToString(tag_type);
+ 	}
+ 	else
+ 		tag_type_str = "song";
+@@ -2327,7 +2326,7 @@
+ 		std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+ 		myLibrary->Tags.setTitle(Config.titles_visibility ? item_type + "s" : "");
+ 		myLibrary->Tags.reset();
+-		item_type = boost::locale::to_lower(item_type);
++		item_type = item_type;
+ 		std::string and_mtime = Config.media_library_sort_by_mtime ?
+ 		                        " and mtime" :
+ 		                        "";
