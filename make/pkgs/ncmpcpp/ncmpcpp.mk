@@ -41,6 +41,8 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-unicode
 $(PKG)_CONFIGURE_OPTIONS += CXXFLAGS="-O2 -pipe -march=24kc -mno-dsp -Wno-deprecated -DBOOST_FILESYSTEM_DISABLE_STATX"
 
 $(PKG)_CONFIGURE_PRE_CMDS += sed -i 's/^BOOST_LOCALE$$/dnl BOOST_LOCALE/' configure.ac;
+$(PKG)_CONFIGURE_PRE_CMDS += cp $(PKG_MAKE_DIR)/files/root/usr/src/boost_locale_stubs.cpp src/boost_locale_stubs.cpp;
+$(PKG)_CONFIGURE_PRE_CMDS += sed -i '/^ncmpcpp_SOURCES = / s/$$/ boost_locale_stubs.cpp/' src/Makefile.am;
 $(PKG)_CONFIGURE_PRE_CMDS += autoreconf -fi;
 
 $(PKG_SOURCE_DOWNLOAD)
