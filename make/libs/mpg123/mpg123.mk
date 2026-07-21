@@ -14,6 +14,8 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpath
 $(PKG)_CONFIGURE_OPTIONS += --disable-dependency-tracking
+$(PKG)_DEPENDS_ON += alsa-lib
+
 $(PKG)_CONFIGURE_OPTIONS += --with-default-audio=alsa
 $(PKG)_CONFIGURE_OPTIONS += --with-optimization=2
 $(PKG)_CONFIGURE_OPTIONS += --with-cpu=generic

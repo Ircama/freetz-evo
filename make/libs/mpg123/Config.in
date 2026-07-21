@@ -1,5 +1,6 @@
 config FREETZ_LIB_libmpg123
 	bool "mpg123 (libmpg123.so)"
+	select FREETZ_LIB_libasound
 	default n
 	help
 		mpg123 is a fast MPEG audio decoder library.

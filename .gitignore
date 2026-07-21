@@ -39,3 +39,7 @@ evo-eng-tools/
 .vscode/
 __pycache__/
 
+# Zensical
+.github/zensical/.venv/
+.github/zensical/site/
+

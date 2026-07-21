@@ -247,15 +247,17 @@ to the target staging directory instead of the host.
 
 ---
 
+## How to use
+
 ### Basic infos:
-  * A web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
+  * After flashing the formware, a web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
   * Default credentials for shell/ssh/telnet access are: `root`/`freetz`<br>
   * For more see: [ircama.github.io/freetz-evo](https://ircama.github.io/freetz-evo/)
 
 ### Requirements:
   * You need an up to date Linux System with some [prerequisites](docs/prerequisites/README.md).
-  * Or download a ready-to-use VM like Gismotro's [Freetz-Linux](https://freetz.digital-eliteboard.com/?dir=Teamserver/Freetz/Freetz-VM/VirtualBox/) (user & pass: `freetz`).
-  * There are also Docker images available like [pfichtner-freetz](https://hub.docker.com/r/pfichtner/freetz) ([README](https://github.com/pfichtner/pfichtner-freetz#readme)).
+  * Or download a ready-to-use VM like Gismotro's [Freetz-Linux](https://freetz.digital-eliteboard.com/?dir=Teamserver/Freetz/Freetz-VM/VirtualBox/) (user & pass: `freetz`). To update it to Freetz-EVO, run again the installation of the prerequisites after cloning this repository.
+  * There are also Docker images available like [pfichtner-freetz](https://hub.docker.com/r/pfichtner/freetz) ([README](https://github.com/pfichtner/pfichtner-freetz#readme)). To update it to Freetz-EVO, run again the installation of the prerequisites after cloning this repository.
 
 ### Clone the main branch:
 ```bash
@@ -270,18 +272,20 @@ to the target staging directory instead of the host.
 ### Install prerequisites:
 ```bash
   cd ~/freetz-evo
-  tools/prerequisites install # -y
+  tools/prerequisites install -y
 ```
 
 ### Build firmware:
 ```bash
   cd ~/freetz-evo
-  make menuconfig
-  make
+  make menuconfig  # Configure your setup
+  make  # Long-running operation
   # make help
 ```
 
-### Flash firmware:
+After running `make menuconfig`, select the options appropriate for your target device and desired packages, then save the configuration when prompted. The selected configuration will be written to `.config`. If `.config` does not exist, it is created, otherwise it is updated.
+
+### Flash firmware (if SSH is not yet installed):
 ```bash
   cd ~/freetz-evo
   tools/push_firmware -h
@@ -300,10 +304,58 @@ to the target staging directory instead of the host.
   git log --graph # --oneline
 ```
 
-### Delete local changes:
+### Cleaning the repository
+
+The repository contains both version-controlled files and build artifacts.
+
+Main directories:
+
+| Directory | Purpose | Can be recreated |
+|-----------|---------|------------------|
+| `dl/` | Downloaded source archives and firmware images. Keeping it avoids downloading everything again. | Yes |
+| `source/` | Extracted source trees used for building packages. | Yes |
+| `packages/` | Package build trees. | Yes |
+| `kernel/` | Kernel build tree. | Yes |
+| `build/` | Temporary firmware build directory. | Yes |
+| `toolchain/` | Generated toolchain and host tools. Rebuilding it takes the longest time. | Yes |
+| `images/` | Generated firmware images. | Yes |
+| `.config` | Your build configuration. Normally you should keep this file. | No |
+
+#### Rebuild everything
+
+To rebuild everything while keeping your configuration (`.config`) and downloaded sources (`dl/`):
+
+```bash
+make distclean
+make
+```
+
+This removes all generated build artifacts, including the toolchain, but preserves `.config` and the download cache.
+
+#### Rebuild without rebuilding the toolchain
+
+```bash
+make dirclean
+make
+```
+
+This removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild.
+
+#### Delete all local Git changes
+
+To completely restore the repository to the current remote revision and remove all untracked files:
+
 ```bash
   git checkout master ; git fetch --all --prune ; git reset --hard origin/HEAD ; git clean -fd
 ```
+
+**Warning:** this permanently discards:
+
+- local commits;
+- modifications to tracked files;
+- untracked files and directories.
+
+Use this command only when you want to reset the Git working tree. It is **not** required for performing a clean rebuild.
 
 ### Update GIT:
 ```bash
@@ -326,11 +378,6 @@ See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 ### Checkout another branch:
 ```bash
   git checkout EXISTING-BRANCH
-```
-
-### Mirrors:
-```bash
-  git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
 ```
 
 ### Documentation:
