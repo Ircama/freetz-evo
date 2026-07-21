@@ -12,6 +12,8 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libxcb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_DEPENDS_ON += xorgproto xcb-proto libXau
 $(PKG)_DEPENDS_ON += util-macros
 
+$(PKG)_CONFIGURE_ENV += PYTHON=/usr/bin/python3
+
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 

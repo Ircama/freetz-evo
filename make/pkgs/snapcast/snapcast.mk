@@ -93,6 +93,7 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.build-prereq-checked $($(PKG)_DIR)/.un
 		PKG_CONFIG=/usr/bin/pkg-config \
 		PKG_CONFIG_PATH="$(SNAPCAST_PKG_CONFIG_DIR)" \
 		PKG_CONFIG_LIBDIR="$(SNAPCAST_PKG_CONFIG_DIR)" \
+		PKG_CONFIG_SYSROOT_DIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		$(CMAKE) .. \
 		$(SNAPCAST_CONFIGURE_OPTIONS) \
 		$(SILENT)
