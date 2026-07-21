@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_MODCGI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MODCGI
+	bool "modcgi"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/modcgi

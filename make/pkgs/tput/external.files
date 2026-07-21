@@ -1,0 +1,6 @@
+if [ "$EXTERNAL_FREETZ_PACKAGE_TPUT" == "y" ] ; then
+	EXTERNAL_FILES+=" /usr/bin/tput"
+	[ "$FREETZ_PACKAGE_TPUT_infocmp" == "y" ] && EXTERNAL_FILES+=" /usr/bin/infocmp"
+	[ "$FREETZ_PACKAGE_TPUT_reset" == "y" ] && EXTERNAL_FILES+=" /usr/bin/clear /usr/bin/reset"
+	[ "$FREETZ_PACKAGE_TPUT_tic" == "y" ] && EXTERNAL_FILES+=" /usr/bin/tic"
+fi

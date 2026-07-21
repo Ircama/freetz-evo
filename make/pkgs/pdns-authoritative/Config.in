@@ -57,6 +57,12 @@ if FREETZ_PACKAGE_POWERDNS
 		help
 			Convert zone files to JSON.
 
+	config FREETZ_PACKAGE_POWERDNS_ZONE2LDAP
+		bool "zone2ldap (binary only)"
+		default n
+		help
+			Convert zone files to LDIF format (for the LDAP backend).
+
 	config FREETZ_PACKAGE_POWERDNS_TOOLS
 		bool "Extra diagnostic tools"
 		default n

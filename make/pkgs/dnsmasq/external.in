@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_DNSMASQ
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DNSMASQ
+	bool "dnsmasq"
+	default n
+	help
+		externals the following file(s):
+		 /usr/sbin/dnsmasq

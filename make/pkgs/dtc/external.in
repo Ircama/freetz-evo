@@ -1,0 +1,16 @@
+config EXTERNAL_FREETZ_PACKAGE_DTC
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DTC
+	bool "dtc"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/fitdump
+
+if EXTERNAL_FREETZ_PACKAGE_DTC
+
+config EXTERNAL_FREETZ_PACKAGE_DTC_fitdump
+	depends on FREETZ_PACKAGE_DTC_fitdump
+	bool "fitdump"
+	default n
+
+endif

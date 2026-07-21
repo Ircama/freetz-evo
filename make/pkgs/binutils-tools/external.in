@@ -6,6 +6,8 @@ config EXTERNAL_FREETZ_PACKAGE_BINUTILS_TOOLS
 		externals the following file(s):
 		 /usr/bin/addr2line
 		 /usr/bin/ar
+		 /usr/bin/cxxfilt
+		 /usr/bin/elfedit
 		 /usr/bin/nm
 		 /usr/bin/objcopy
 		 /usr/bin/objdump

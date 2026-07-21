@@ -3,6 +3,7 @@
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_PDNS_CONTROL" == "y" ] && EXTERNAL_FILES+=" /usr/bin/pdns_control"
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2SQL" == "y" ] && EXTERNAL_FILES+=" /usr/bin/zone2sql"
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2JSON" == "y" ] && EXTERNAL_FILES+=" /usr/bin/zone2json"
+[ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2LDAP" == "y" ] && EXTERNAL_FILES+=" /usr/bin/zone2ldap"
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_IXFRDIST" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ixfrdist"
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_TOOLS" == "y" ] && EXTERNAL_FILES+=" /usr/bin/pdns_notify /usr/bin/sdig /usr/bin/calidns /usr/bin/dnsgram /usr/bin/dnspcap2calidns /usr/bin/dnspcap2protobuf /usr/bin/dnsreplay /usr/bin/dnsscan /usr/bin/dnsscope /usr/bin/dnswasher /usr/bin/nproxy /usr/bin/nsec3dig /usr/bin/dumresp /usr/bin/stubquery /usr/bin/saxfr /usr/bin/ixplore /usr/bin/dnstcpbench /usr/bin/dnsbulktest"
 [ "$EXTERNAL_FREETZ_PACKAGE_POWERDNS_DYNAMIC_MODULES" == "y" ] && EXTERNAL_FILES+=" /usr/lib/pdns"

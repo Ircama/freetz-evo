@@ -45,6 +45,14 @@ if EXTERNAL_FREETZ_PACKAGE_POWERDNS
 			externals the following file(s):
 			 /usr/bin/zone2json
 
+	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_ZONE2LDAP
+		depends on FREETZ_PACKAGE_POWERDNS_ZONE2LDAP
+		bool "zone2ldap"
+		default n
+		help
+			externals the following file(s):
+			 /usr/bin/zone2ldap
+
 	config EXTERNAL_FREETZ_PACKAGE_POWERDNS_IXFRDIST
 		depends on FREETZ_PACKAGE_POWERDNS_IXFRDIST
 		bool "ixfrdist"

@@ -1,6 +1,8 @@
 if [ "$EXTERNAL_FREETZ_PACKAGE_BINUTILS_TOOLS" == "y" ] ; then
 	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_ADDR2LINE" == "y" ]  && EXTERNAL_FILES+=" /usr/bin/addr2line"
 	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_AR" == "y" ]         && EXTERNAL_FILES+=" /usr/bin/ar"
+	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_CXXFILT" == "y" ]    && EXTERNAL_FILES+=" /usr/bin/cxxfilt"
+	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_ELFEDIT" == "y" ]    && EXTERNAL_FILES+=" /usr/bin/elfedit"
 	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_NM" == "y" ]         && EXTERNAL_FILES+=" /usr/bin/nm"
 	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_OBJCOPY" == "y" ]    && EXTERNAL_FILES+=" /usr/bin/objcopy"
 	[ "$FREETZ_PACKAGE_BINUTILS_TOOLS_OBJDUMP" == "y" ]    && EXTERNAL_FILES+=" /usr/bin/objdump"
