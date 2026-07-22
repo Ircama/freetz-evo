@@ -37,6 +37,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	@echo "Building caddy with Go $(CADDY_GO_VERSION)..."
 	cd $(CADDY_DIR); \
 	export PATH=$(TOOLS_DIR)/go-host/bin:$$PATH; \
+	GOFLAGS=-modcacherw \
 	GOMODCACHE=$(CADDY_GO_MODCACHE) \
 	GOOS=$(CADDY_GO_OS) \
 	GOARCH=$(CADDY_GO_ARCH) \
