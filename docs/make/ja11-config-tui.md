@@ -131,8 +131,8 @@ If the device is not accessible, ensure the udev rule is in place (see
 ### Interface layout
 
 ```
- ┌──────────────────────────────────────────────────────────────────────────────┐
- │  CONNESSO: FiiO JA11  Preamp: -3.5 dB  DAC: FAST-LL  All synced with device│ ← status bar
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │  CONNECTED: FiiO JA11  Preamp: -3.5 dB  DAC: FAST-LL  All synced with device│ ← status bar
  ├──────┬──────────────┬──────────────┬──────────────┬──────────┬──────────────┤
  │ Band │ Freq (Hz)    │ Gain (dB)    │ Q            │ Type     │ Status       │
  ├──────┼──────────────┼──────────────┼──────────────┼──────────┼──────────────┤
@@ -142,14 +142,14 @@ If the device is not accessible, ensure the udev rule is in place (see
  │  4   │ 4000         │ +1.8         │ 1.50         │ HSQ      │ ON           │
  │  5   │ 14000        │ 0.0          │ 0.70         │ PK       │ ON           │
  ├──────┴──────────────┴──────────────┴──────────────┴──────────┴──────────────┤
- │                    ░░                                                        │ ← gain bar chart
- │                   ░░░░                                                       │
- │               ░░░░░░░░                                                       │
- │  ─══════════════════════════════════════════════════════════════════─        │
- │                   ░░░░              ░░                                       │
- │                   ░░░░              ░░                                       │
- │  ─══════════════════════════════════════════════════════════════════─        │
- ├──────────────────────────────────────────────────────────────────────────────┤
+ │                    ░░                                                       │ ← gain bar chart
+ │                   ░░░░                                                      │
+ │               ░░░░░░░░                                                      │
+ │  ─══════════════════════════════════════════════════════════════════─       │
+ │                   ░░░░              ░░                                      │
+ │                   ░░░░              ░░                                      │
+ │  ─══════════════════════════════════════════════════════════════════─       │
+ ├─────────────────────────────────────────────────────────────────────────────┤
  │  English                        FiiO JA11 / KT02H20                         │ ← help panel
  │  === NAVIGATION ===                                                         │
  │    Arrows        Move between bands/params                                  │
@@ -171,9 +171,9 @@ If the device is not accessible, ensure the udev rule is in place (see
  │    d             Reset to flat (0 dB, Q=0.7)                                │
  │    D             Reset to defaults (optimal freqs)                          │
  │    q / Q         Quit                                                       │
- ├──────────────────────────────────────────────────────────────────────────────┤
+ ├─────────────────────────────────────────────────────────────────────────────┤
  │  OK: Saved to flash.                                                        │ ← status message
- └──────────────────────────────────────────────────────────────────────────────┘
+ └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Controls reference
@@ -346,70 +346,6 @@ sudo usermod -aG plugdev $USER
 
 **Without the rule**, run the tool as root (`sudo ja11-config-tui`).
 
-## Integration into Freetz
-
-The package appears in `make menuconfig` under:
-
-```
-Libraries  →  hidapi  (FREETZ_LIB_hidapi)
-Packages   →  ja11-config-tui
-```
-
-`ja11-config-tui` automatically selects `hidapi` and `ncurses` as dependencies.
-
-### Build targets
-
-| Command                           | Effect                     |
-|-----------------------------------|----------------------------|
-| `make ja11-config-tui-recompile`  | Recompile from local source (fast iteration). |
-| `make hidapi-recompile`           | Recompile HIDAPI library.  |
-| `make`                            | Full firmware image build. |
-
-### Deployment for testing
-
-The `evo-eng-tools/` directory contains a deployment script
-`deploy-ja11-config-tui.sh` (if created) that copies the binary and library to a
-running device via `sshpass`. Typical iteration cycle:
-
-```
-# Edit source → recompile → deploy
-make ja11-config-tui-recompile
-./evo-eng-tools/deploy-ja11-config-tui.sh
-ssh root@fritz.box '/usr/bin/ja11-config-tui'
-```
-
-### Externalisation
-
-The binary is externalisable (`external.files/in` lists `/usr/bin/ja11-config-tui`).
-The hidapi library is externalisable via `FREETZ_LIB_hidapi=external`.
-
-**Library matching note**: Because the hidapi shared library is named
-`libhidapi-hidraw.so*` (not `libhidapi.so*`), `fwmod` requires a specific case
-for `hidapi` to find the files. This case has been added at line 1137 of `fwmod`:
-
-```bash
-hidapi)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libhidapi*so*) ;;
-```
-
-Without this, externalisation of `FREETZ_LIB_hidapi` would fail with
-"Library hidapi selected, but no files found".
-
-## Building from source (standalone)
-
-To compile outside the Freetz tree (e.g., on a desktop Linux for testing):
-
-```bash
-# Install dependencies
-sudo apt install build-essential cmake libhidapi-dev libncurses-dev pkg-config
-
-# Build
-gcc -std=c11 -Wall -Wextra -Os \
-    -D_DEFAULT_SOURCE -D_GNU_SOURCE \
-    ja11-config-tui.c ja11-config-tui.h \
-    -o ja11-config-tui \
-    -lhidapi-hidraw -lncurses -lm
-```
-
 ## Debugging
 
 ### Device not found
@@ -445,16 +381,9 @@ during a session, not as long-term storage. Save your configuration to flash
   [Externalisation](#externalisation) above).
 - **Volatile presets**: Preset files live in `/tmp` and are cleared on reboot.
 
-## Changelog (package)
-
-| Version | Date       | Changes                                       |
-|---------|------------|-----------------------------------------------|
-| 1.0     | 2026-07-22 | Initial release: full PEQ, DAC filter, i18n.  |
-
 ## See also
 
 - [Audiocular-Aura](https://github.com/mandy321/Audiocular-Aura) — Web-based
   configuration tool for the same chip family.
 - [hidapi](https://github.com/libusb/hidapi) — Library used for raw HID I/O.
-- [ncurses](https://invisible-island.net/ncurses/) — Terminal UI library.
 - [FiiO](https://www.fiio.com/) — Official product page for JA11.

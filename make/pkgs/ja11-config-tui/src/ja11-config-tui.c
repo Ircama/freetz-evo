@@ -5,10 +5,7 @@
  * the FiiO JadeAudio JA11 to configure the 5-band parametric EQ,
  * DAC digital filters, global gain, and more.
  *
- * Based on reverse engineering from Audiocular-Aura:
- *   https://github.com/mandy321/Audiocular-Aura
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * Inspired from Audiocular-Aura: https://github.com/mandy321/Audiocular-Aura
  *
  * Usage:
  *   ja11-config-tui            - English UI (default)
@@ -181,7 +178,7 @@ static const Lang lang_it = {
 	.preset_label   = "Preset:",
 	/* Help */
 	.help_nav       = "=== NAVIGAZIONE ===",
-	.help_arrows    = "  Freccette     Spostamento tra bande/parametri",
+	.help_arrows    = "  Cursore       Spostamento tra bande/parametri",
 	.help_coarse    = "  +/-           Modifica valore (passo veloce)",
 	.help_fine      = "  </>           Modifica valore (passo fine)",
 	.help_toggle    = "  Spazio        Abilita/disabilita banda",
