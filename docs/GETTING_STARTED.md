@@ -105,10 +105,10 @@ Some highlights compared to stock Freetz-NG:
 
 ## 3. What You Need
 
-- An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.20)
+- An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.25)
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
-- About **100–200 GB of free disk space** for the build environment
-- A reasonably fast internet connection to download source packages
+- About **100–200 GB of free disk space** for the build environment (configuring a wide set of Freetz-EVO tools takes about 70 GB)
+- A reasonably fast internet connection to download source packages (the downloaded zipped source archives can take 4 GB or more)
 - Basic familiarity with the Linux command line
 
 ---
@@ -299,20 +299,11 @@ The build process:
 3. Compiles the selected packages
 4. Assembles the final firmware image
 
-The first build can take **one to several hours** depending on your machine. Subsequent builds
-are much faster because intermediate results are cached.
+The first build can take **one to several hours** depending on your machine. A wide Freetz-EVO setup with a 20 core Intel i7 system might take 15 hours (an old 4 core i5 system takes almost two days). Subsequent builds are much faster because intermediate results are cached.
 
 The output files are placed in the `images/` directory:
 - **`*.image`** — the firmware image to flash to your device
 - **`*.external`** (if externalization is enabled) — the archive to upload to external storage
-
-### Monitoring build progress
-
-If you want to watch build progress in a second terminal:
-
-```bash
-tools/make_progress_monitor.sh
-```
 
 ### Useful make targets
 
@@ -322,7 +313,8 @@ tools/make_progress_monitor.sh
 | `make` | Build the full firmware |
 | `make help` | List all available make targets |
 | `make olddefconfig` | Update `.config` after a `git pull` adds new options |
-| `make dirclean` | Full clean — removes all build artefacts (next build starts from scratch) |
+| `make distclean` | Full reset — removes everything while keeping your configuration (`.config`) and downloaded sources (`dl/`). |
+| `make dirclean` | Full clean — removes the build directories and extracted sources while keeping the existing toolchain and configuration. |
 | `make clean` | Clean tools and caches, keep downloaded source packages |
 | `make cacheclean` | Minimal cleanup, keep compiled packages |
 
