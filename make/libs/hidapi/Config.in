@@ -1,0 +1,14 @@
+menu "hidapi"
+
+	config FREETZ_LIB_hidapi
+		bool "hidapi (libhidapi-hidraw.so)"
+		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+		default n
+		help
+			HIDAPI is a multi-platform library enabling applications to easily
+			interface with Bluetooth and USB HID-class devices.
+			
+			This builds only the hidraw backend (libhidapi-hidraw), which uses
+			the Linux kernel's hidraw interface and does not require libusb.
+
+endmenu # hidapi

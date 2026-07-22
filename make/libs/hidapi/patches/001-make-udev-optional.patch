@@ -1,0 +1,34 @@
+--- linux/CMakeLists.txt
++++ linux/CMakeLists.txt
+@@ -1,5 +1,7 @@
+ cmake_minimum_required(VERSION 3.6.3...3.25 FATAL_ERROR)
+ 
++option(HIDAPI_WITH_UDEV "Build hidraw backend with udev support" ON)
++
+ add_library(hidapi_hidraw
+     ${HIDAPI_PUBLIC_HEADERS}
+     hid.c
+@@ -8,10 +10,20 @@
+ 
+ find_package(Threads REQUIRED)
+ 
+-include(FindPkgConfig)
+-pkg_check_modules(libudev REQUIRED IMPORTED_TARGET libudev)
++if(HIDAPI_WITH_UDEV)
++    include(FindPkgConfig)
++    pkg_check_modules(libudev REQUIRED IMPORTED_TARGET libudev)
++    target_link_libraries(hidapi_hidraw PRIVATE PkgConfig::libudev)
++else()
++    target_sources(hidapi_hidraw PRIVATE
++        ${CMAKE_CURRENT_SOURCE_DIR}/libudev.c
++    )
++    target_include_directories(hidapi_hidraw BEFORE PRIVATE
++        ${CMAKE_CURRENT_SOURCE_DIR}
++    )
++endif()
+ 
+-target_link_libraries(hidapi_hidraw PRIVATE PkgConfig::libudev Threads::Threads)
++target_link_libraries(hidapi_hidraw PRIVATE Threads::Threads)
+ 
+ set_target_properties(hidapi_hidraw
+     PROPERTIES

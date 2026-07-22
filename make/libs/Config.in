@@ -289,6 +289,7 @@ menu "Other"
 	source "make/libs/libfmt/Config.in"
 	source "make/libs/spdlog/Config.in"
 	source "make/libs/jsoncpp/Config.in"
+	source "make/libs/hidapi/Config.in"
 endmenu ### "Other"
 
 menu "X11 graphics"

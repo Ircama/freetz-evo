@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_hidapi
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_hidapi
+	bool "hidapi (hidraw)"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libhidapi-hidraw.so.0.15.0

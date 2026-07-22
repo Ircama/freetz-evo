@@ -1,0 +1,13 @@
+config FREETZ_PACKAGE_JA11_CONFIG_TUI
+	bool "ja11-config-tui 1.0 (binary only)"
+	select FREETZ_LIB_libncurses
+	select FREETZ_LIB_hidapi
+	default n
+	help
+		Configuratore TUI per FiiO JA11 (KT02H20).
+		
+		Comunica via HID (backend hidraw) con il chip KT02H20
+		presente nel FiiO JadeAudio JA11 per configurare
+		l'equalizzatore parametrico a 5 bande.
+		
+		Accesso via SSH: ja11-config-tui

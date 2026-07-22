@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_JA11_CONFIG_TUI" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ja11-config-tui"
