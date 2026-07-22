@@ -107,7 +107,7 @@ Some highlights compared to stock Freetz-NG:
 
 - An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.25)
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
-- About **100–200 GB of free disk space** for the build environment (configuring a wide set of Freetz-EVO tools takes about 70 GB)
+- About **100–200 GB of free disk space** for the build environment (configuring a comprehensive set of Freetz-EVO tools for a single device target requires around 70 GB; additionally, each compressed image occupies over 2 GB, split between a large external archive and a small 40–50 MB firmware file)
 - A reasonably fast internet connection to download source packages (the downloaded zipped source archives can take 4 GB or more)
 - Basic familiarity with the Linux command line
 
@@ -389,10 +389,14 @@ make                # rebuild
 For developers, to sync Freetz-EVO with the upstream Freetz-NG project:
 
 ```bash
+tools/sync-upstream-manual.sh             # interactive merge
 tools/sync-upstream-manual.sh --log       # show pending upstream commits
+tools/sync-upstream-manual.sh --diff      # show diff with upstream
 tools/sync-upstream-manual.sh --dry-run   # test the merge without pushing
 tools/sync-upstream-manual.sh             # perform the interactive merge
 ```
+
+See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 
 ---
 
