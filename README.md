@@ -16,9 +16,10 @@ Freetz-EVO includes:
 
 - over 120 new packages and libraries, including exclusive applications, Go and Rust support,
 - over 70 python3 packages, including Rust support,
-- almost 70 libraries,
+- over 70 libraries,
 - over 40 improved packages and libraries,
 - USB audio stack, extensive playback and recording tools, local playlist management and web radio functions,
+- hidapi support for HID-Class USB device access and ja11-config-tui support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs,
 - X11 client libraries and tools,
 - microcontroller flasher tools to enable USB peripheral devices.
 - built-in Go and Rust toolchains to compile Go and Rust packages.
@@ -76,6 +77,9 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`libmpdclient`](docs/make/libmpdclient.md)** 2.22 | Official MPD client library packaged as a shared runtime for target-side MPD frontends; includes Freetz defaults for `localhost`, port `6600`, and `/var/run/mpd/socket`. | EVO only |
 | **[`mpc`](docs/make/mpd-mpc.md)** 0.35 (`mpd-mpc`) | Minimal MPD command-line client using shared `libmpdclient`; suitable for shell scripts, SSH sessions, and queue/player control against local or remote MPD servers. | EVO only |
 | **[`myMPD`](docs/make/mympd.md)** 25.0.2 | Standalone lightweight web-based MPD client with embedded web assets and embedded `libmpdclient`; optional Freetz config/status web UI via `mympd-cgi`. | EVO only |
+| **[`ncmpc`](docs/make/ncmpc.md)** 0.52 | Official ncurses client for MPD with library browser, playlist editor, search, lyrics screen, key bindings help, output configuration, and mouse support; optional iconv, LIRC, NLS, and PCRE2 regex support. | EVO only |
+| **[`ncmpcpp`](docs/make/ncmpcpp.md)** 0.10.1 | Feature-rich ncurses MPD client with tag editor, media library, playlist management, search, clock, outputs screen, visualizer, and Boost-backed configuration parsing; depends on `libmpdclient`, `ncursesw`, `curl`, `taglib`. | EVO only |
+| **[`rmpc`](docs/make/rmpc.md)** 0.11.0 | Beautiful, configurable TUI client for MPD written in Rust with album art, lyrics, and playlist management; built from upstream Rust sources via cross-compiled Cargo. | EVO only |
 | **[`shairport-sync`](docs/make/shairport-sync.md)** 5.0.4 | AirPlay receiver with ALSA output, metadata FIFO processing, and a Freetz config/status web UI. | EVO only |
 | **[`snapcast`](docs/make/snapcast.md)** 0.35.0 | Multiroom audio server/client package with `snapserver`, `snapclient`, ALSA output, and FLAC/Ogg/Vorbis support. | EVO only |
 | **[`SoX`](docs/make/sox.md)** 14.4.2 | Sound eXchange — command-line audio converter, player, and recorder with multi-format and effect support | EVO only |
@@ -89,6 +93,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`esp-serial-flasher`](docs/make/esp-serial-flasher.md)** git-f1cccac | ESP serial flashing toolkit shipping `linux_flasher` and `esp_fw_upload` for multi-image ESP32-family firmware upload layouts. | EVO only |
 | **[`micronucleus`](docs/make/micronucleus.md)** 2.6 | USB bootloader uploader for Digispark/ATTiny devices using Micronucleus (`/usr/bin/micronucleus`). | EVO only |
 | **[`telink_tools`](docs/make/telink_tools.md)** 1.0 | Native C Telink BLE bootloader CLI for TB-03F-KIT/TB-04-KIT style devices; supports burn, triad programming, and flash read/write/erase operations. | EVO only |
+| **[`ja11-config-tui`](docs/make/ja11-config-tui.md)** 1.0 | TUI configurator for FiiO JA11 and other KT02H20 DSP-based USB DACs; 5-band parametric EQ, DAC digital filters, global preamp gain, preset management, persistent flash save, and i18n (EN/IT). | EVO only |
 | **[`lazygit`](docs/make/lazygit.md)** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
 | **[`neovim`](docs/make/neovim.md)** 0.12.2 | Modern terminal-based text editor, fork of Vim with Lua scripting, built-in LSP client, and tree-sitter syntax highlighting; cross-compiled with CMake and Ninja | EVO only |
 | **[`lf`](docs/make/lf.md)** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
@@ -183,6 +188,10 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`libtcmalloc_minimal`](docs/make/libtcmalloc_minimal.md)** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
 | **[`libprofiler`](docs/make/libprofiler.md)** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
 | **[`libssl`](docs/make/openssl.md)** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
+| **[`hidapi`](docs/make/hidapi.md)** 0.15.0 | Multi-platform HID library (`libhidapi-hidraw.so`) using the Linux kernel's hidraw interface; enables applications to interface with HID-Class USB devices without libusb. Used by `ja11-config-tui`. | EVO only |
+| **[`lame`](docs/make/lame.md)** 3.100 | High-quality MPEG Audio Layer 3 (MP3) encoding library (`libmp3lame.so`); provides the LAME encoder for audio applications needing MP3 output. | EVO only |
+| **[`libixml`](docs/make/libixml.md)** 11.1.7 | Lightweight XML parser library (`libixml.so`) distributed as part of the Portable UPnP SDK (libupnp); used by Gerbera and other UPnP applications for XML parsing. | EVO only |
+| **[`lirc`](docs/make/lirc.md)** 0.10.2 | LIRC (Linux Infrared Remote Control) client library (`liblirc_client.so`); provides infrared remote control support for applications like `ncmpc`. | EVO only |
 | **[`openlibm`](docs/make/openlibm.md)** | Portable standalone C math library (`libopenlibm.so`) for consistent libm behavior across platforms and toolchains. | EVO only |
 | **[`tinycdb`](docs/make/tinycdb.md)** 0.81 | Compact constant-database library exporting `libcdb` for read-mostly key/value lookups and TinyDNS-style consumers. | EVO only |
 | **[`tflite-micro`](docs/make/tflite-micro.md)** (TFLM) 20260318 | TensorFlow Lite for Microcontrollers: static library (`libtflm.a`) for on-device ML inference. Builds the full TFLM kernel set (conv2d, depthwise conv, LSTM, softmax, fully connected, etc.) from the official flat-source-tree generator. | EVO only |
