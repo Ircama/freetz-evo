@@ -10,7 +10,9 @@
 ```
 
 Freetz-EVO is a fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng), which remains the technical foundation of this project.
-Freetz-EVO builds on that foundation with additional packages, UX improvements, and workflow tooling. Freetz-EVO is easier, sleeker, with more features and less bugs.
+Freetz-EVO builds on that foundation with additional packages, UX improvements, and workflow tooling.
+
+Freetz-EVO is easier, sleeker, with more features and less bugs.
 
 Freetz-EVO includes:
 
@@ -43,7 +45,7 @@ New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walk
 
 ### Improvements over Freetz-NG
 
-Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.20.
+Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.25.
 
 Freetz-EVO is still in development.
 

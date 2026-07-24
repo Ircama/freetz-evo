@@ -1301,7 +1301,7 @@ function continueBasedirValidation(basedir) {
 					document.getElementById('dirCheckResult').innerHTML = 
 						'<div class="evo-rtor-danger">' +
 						'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler beim Speichern" en:"Error saving configuration")</p></div>';
-					showToast('$(lang de:"Fehler beim Speichern" en:"Error saving configuration")', 'error', 4000);
+					showToast("$(lang de:"Fehler beim Speichern" en:"Error saving configuration")", 'error', 4000);
 					return;
 				}
 				document.getElementById('dirCheckResult').innerHTML = 
@@ -1326,7 +1326,7 @@ function createBasedir(basedir) {
 			document.getElementById('dirCheckResult').innerHTML = 
 				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ ' + (response ? response.message : '$(lang de:"Fehler beim Erstellen" en:"Error creating directory")') + '</p></div>';
-			showToast('$(lang de:"Fehler beim Erstellen" en:"Error creating directory")', 'error', 4000);
+			showToast("$(lang de:\"Fehler beim Erstellen\" en:\"Error creating directory\")", 'error', 4000);
 			return;
 		}
 		
@@ -1340,7 +1340,7 @@ function createBasedir(basedir) {
 				document.getElementById('dirCheckResult').innerHTML = 
 					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ $(lang de:"Fehler beim Speichern" en:"Error saving configuration")</p></div>';
-				showToast('$(lang de:"Fehler beim Speichern" en:"Error saving configuration")', 'error', 4000);
+				showToast("$(lang de:\"Fehler beim Speichern\" en:\"Error saving configuration\")", 'error', 4000);
 				return;
 			}
 			document.getElementById('dirCheckResult').innerHTML = 
@@ -1393,7 +1393,7 @@ function createRtorrentRc() {
 			document.getElementById('rcFileCheck').innerHTML = 
 				'<div class="evo-rtor-danger">' +
 				'<p style="margin: 0; color: #721c24;">✗ ' + (response ? response.message : '$(lang de:"Fehler beim Erstellen" en:"Error creating .rtorrent.rc")') + '</p></div>';
-			showToast('$(lang de:"Fehler beim Erstellen von .rtorrent.rc" en:"Error creating .rtorrent.rc")', 'error', 4000);
+			showToast("$(lang de:\"Fehler beim Erstellen von .rtorrent.rc\" en:\"Error creating .rtorrent.rc\")", 'error', 4000);
 			return;
 		}
 		
@@ -1502,7 +1502,7 @@ function startService(shouldStart) {
 				document.getElementById('serviceStartResult').innerHTML = 
 					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ ' + errorMsg + '</p></div>';
-				showToast('$(lang de:"Fehler beim Starten" en:"Error starting service")', 'error', 4000);
+				showToast("$(lang de:\"Fehler beim Starten\" en:\"Error starting service\")", 'error', 4000);
 				return;
 			}
 			
@@ -1511,7 +1511,7 @@ function startService(shouldStart) {
 				document.getElementById('serviceStartResult').innerHTML = 
 					'<div class="evo-rtor-danger">' +
 					'<p style="margin: 0; color: #721c24;">✗ ' + msg + '</p></div>';
-				showToast('$(lang de:"Fehler beim Starten" en:"Error starting service")', 'error', 4000);
+				showToast("$(lang de:\"Fehler beim Starten\" en:\"Error starting service\")", 'error', 4000);
 				return;
 			}
 			
