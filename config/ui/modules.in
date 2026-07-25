@@ -415,6 +415,50 @@ config FREETZ_MODULE_snd_usb_audio
 
 endmenu # audio
 
+config FREETZ_MODULES_HID_AVAILABLE
+        bool
+        default y if FREETZ_KERNEL_VERSION_4_MIN && ( \
+                (!FREETZ_AVM_HAS_INPUT_BUILTIN         && !FREETZ_AVM_HAS_INPUT_MODULE) || \
+                (!FREETZ_AVM_HAS_HID_BUILTIN           && !FREETZ_AVM_HAS_HID_MODULE) || \
+                (!FREETZ_AVM_HAS_USB_HID_BUILTIN       && !FREETZ_AVM_HAS_USB_HID_MODULE) \
+        )
+
+menu "hid"
+        depends on FREETZ_MODULES_HID_AVAILABLE
+
+config FREETZ_MODULE_hid
+        bool "hid.ko"
+        depends on !FREETZ_AVM_HAS_HID_BUILTIN && !FREETZ_AVM_HAS_HID_MODULE
+        select FREETZ_MODULE_usbcore if !FREETZ_AVM_HAS_USB_BUILTIN && !FREETZ_AVM_HAS_USB_MODULE
+        default n
+
+config FREETZ_MODULE_hid_generic
+        bool "hid-generic.ko"
+        depends on !FREETZ_AVM_HAS_HID_GENERIC_BUILTIN && !FREETZ_AVM_HAS_HID_GENERIC_MODULE
+        select FREETZ_MODULE_hid if !FREETZ_AVM_HAS_HID_BUILTIN && !FREETZ_AVM_HAS_HID_MODULE
+        default n
+
+config FREETZ_MODULE_usbhid
+        bool "usbhid.ko"
+        depends on !FREETZ_AVM_HAS_USB_HID_BUILTIN && !FREETZ_AVM_HAS_USB_HID_MODULE
+        select FREETZ_MODULE_hid if !FREETZ_AVM_HAS_HID_BUILTIN && !FREETZ_AVM_HAS_HID_MODULE
+        select FREETZ_MODULE_hid_generic if !FREETZ_AVM_HAS_HID_GENERIC_BUILTIN && !FREETZ_AVM_HAS_HID_GENERIC_MODULE
+        default n
+        help
+                Build the USB HID transport driver when the current
+                AVM baseline does not already provide it. Required
+                HID subsystem modules are selected automatically.
+
+comment " NOTE: The above HID modules require CONFIG_INPUT in the kernel."
+comment " On many other modern devices, the stock AVM kernel does"
+comment " NOT have INPUT ('# CONFIG_INPUT is not set'), so these"
+comment " modules cannot be loaded ('Unknown symbol' error)."
+comment " Use the hidapi library with libusb backend instead:"
+comment " - Select 'hidapi' in Libraries (use libusb backend)"
+comment " - Link programs with -lhidapi-libusb"
+comment " - hidapi does not require HID/INPUT kernel modules."
+
+endmenu # hid
 
 comment " ppp"
 

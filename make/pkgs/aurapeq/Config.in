@@ -1,0 +1,31 @@
+config FREETZ_PACKAGE_AURAPEQ
+	bool "aurapeq 1.1 (binary only)"
+	select FREETZ_LIB_hidapi
+	select FREETZ_LIB_libwebsockets
+	default n
+	help
+		AuraPEQ WebSocket-HID bridge per Audiocular Aura e DAC
+		USB compatibili.
+		
+		aura-bridged e' un demone che funge da ponte tra WebSocket
+		e HID (backend hidraw). Usa libwebsockets per il server
+		WebSocket e hidapi per l'accesso HID.
+		
+		Permette all'app web AuraPEQ di configurare l'equalizzatore
+		parametrico (PEQ) dei DAC USB compatibili con chip
+		Savitech, Moondrop, Conexant, FiiO e KT02H20.
+		
+		Comunica via JSON:
+		  - {"cmd":"list"} — elenca dispositivi HID
+		  - {"cmd":"open","vendorId":...,"productId":...}
+		  - {"cmd":"send_report","reportId":...,"data":[...]}
+		  - {"cmd":"send_feature_report","reportId":...,"data":[...]}
+		  - {"cmd":"close"}
+		
+		Avvio: aura-bridged [porta]
+		Porta predefinita: 9001
+		
+		Accesso via app web: ws://fritz.box:9001
+		
+		Progetto originale:
+		https://github.com/mandy321/Audiocular-Aura

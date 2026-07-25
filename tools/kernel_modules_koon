@@ -17,7 +17,7 @@ koon() {
 		state="${arg#*=}"
 	fi
 
-	sed -i "/^CONFIG_$arg=/d;/^# CONFIG_$arg /d;\$aCONFIG_$arg=$state" "$KERNEL_CONFIG"
+	sed -i "/^CONFIG_${arg%%=*}=/d;/^# CONFIG_${arg%%=*} /d;$\aCONFIG_${arg%%=*}=$state" "$KERNEL_CONFIG"
 	echo "#### Done, changed symbol: $arg"
 }
 
@@ -82,6 +82,9 @@ main() {
 			snd_rawmidi)			koon  SOUND				SND SND_RAWMIDI ;;
 			snd_usbmidi_lib)		true					 ;;
 			snd_usb_audio)			koon  SOUND				SND SND_TIMER SND_PCM SND_HWDEP SND_RAWMIDI SND_USB=y SND_USB_AUDIO ;;
+                        hid)                            koon  HID   HIDRAW=y             ;;
+                        hid_generic)                    koon  HID   HID_GENERIC          ;;
+                        usbhid)                         koon  HID   HID_GENERIC USB_HID ;;
 
 			ppp_generic)			koon  PPP				 ;;
 			ppp_async)			koon  PPP_ASYNC				PPP ;;
