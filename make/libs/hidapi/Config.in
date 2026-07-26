@@ -1,16 +1,12 @@
-menu "hidapi"
+config FREETZ_LIB_hidapi
+	bool "hidapi (libhidapi-libusb.so)"
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libusb1
+	default n
+	help
+		HIDAPI is a multi-platform library enabling applications to easily
+		interface with Bluetooth and USB HID-class devices.
 
-	config FREETZ_LIB_hidapi
-                bool "hidapi (libhidapi-libusb.so)"
-                select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-                select FREETZ_LIB_libusb1
-                default n
-                help
-                        HIDAPI is a multi-platform library enabling applications to easily
-                        interface with Bluetooth and USB HID-class devices.
-
-                        This builds the libusb backend (libhidapi-libusb), which uses
-                        the Linux kernel's usbfs interface directly and does NOT require
-                        the kernel HID/INPUT subsystem (not available on GRX5 devices).
-
-endmenu # hidapi
+		This builds the libusb backend (libhidapi-libusb), which uses
+		the Linux kernel's usbfs interface directly and does NOT require
+		the kernel HID/INPUT subsystem (not available on GRX5 devices).
