@@ -73,6 +73,8 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(GO_LIBRESPOT_DIR) clean
 	$(RM) $(GO_LIBRESPOT_BINARY) $(GO_LIBRESPOT_DIR)/.configured
+	-[ ! -d $(GO_LIBRESPOT_GO_MODCACHE) ] || chmod -R u+w $(GO_LIBRESPOT_GO_MODCACHE) 2>/dev/null || true
+	-[ ! -d $(GO_LIBRESPOT_GO_CACHE) ] || chmod -R u+w $(GO_LIBRESPOT_GO_CACHE) 2>/dev/null || true
 	$(RM) -r $(GO_LIBRESPOT_GO_MODCACHE) $(GO_LIBRESPOT_GO_CACHE)
 
 $(pkg)-uninstall:

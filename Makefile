@@ -685,6 +685,8 @@ common-cacheclean:
 common-clean: common-cacheclean
 
 common-dirclean: common-clean $(if $(FREETZ_HAVE_DOT_CONFIG),kernel-dirclean)
+	-[ ! -d $(PACKAGES_DIR) ] || chmod -R u+w $(PACKAGES_DIR) 2>/dev/null || true
+	-[ ! -d $(SOURCE_DIR) ] || chmod -R u+w $(SOURCE_DIR) 2>/dev/null || true
 	$(RM) -r $(if $(FREETZ_HAVE_DOT_CONFIG),$(PACKAGES_DIR) $(SOURCE_DIR) $(TARGET_TOOLCHAIN_DIR),$(PACKAGES_DIR_ROOT) $(SOURCE_DIR_ROOT))
 
 common-distclean: common-dirclean
@@ -692,6 +694,7 @@ common-distclean: common-dirclean
 	$(RM) -r $(INCLUDE_DIR)/config
 	$(RM) -r $(FW_IMAGES_DIR)
 	$(RM) -r $(KERNEL_TARGET_DIR)
+	-[ ! -d $(PACKAGES_DIR_ROOT) ] || chmod -R u+w $(PACKAGES_DIR_ROOT) 2>/dev/null || true
 	$(RM) -r $(PACKAGES_DIR_ROOT) $(SOURCE_DIR_ROOT)
 	$(RM) -r $(TOOLCHAIN_DIR)
 	$(RM) -r $(TOOLS_BUILD_DIR)
