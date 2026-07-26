@@ -9,21 +9,28 @@ $(PKG)_SITE:=https://github.com/libusb/hidapi/archive/refs/tags
 ### CVSREPO:=https://github.com/libusb/hidapi
 
 # libusb backend (does not require kernel HID/INPUT subsystem)
-$(PKG)_BINARY:=$($(PKG)_DIR)/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
+# Uses out-of-source build (builddir/) to avoid cmake timestamp churn.
+$(PKG)_BUILD_SUBDIR:=builddir
+$(PKG)_BINARY:=$($(PKG)_DIR)/builddir/src/libusb/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
 
 $(PKG)_DEPENDS_ON += cmake-host
 $(PKG)_DEPENDS_ON += libusb1
 
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_hidapi
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libusb1
+
 # Copy stub libudev files after patches but before configure
-$(PKG)_PATCH_POST_CMDS += cp $(CURDIR)/make/libs/hidapi/files/libudev.h linux/libudev.h && cp $(CURDIR)/make/libs/hidapi/files/libudev.c linux/libudev.c
+$(PKG)_PATCH_POST_CMDS += \
+  [ -f linux/libudev.h ] || cp $(CURDIR)/make/libs/hidapi/files/libudev.h linux/libudev.h; \
+  [ -f linux/libudev.c ] || cp $(CURDIR)/make/libs/hidapi/files/libudev.c linux/libudev.c
 
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_C_FLAGS:STRING="-include stdarg.h -D_GNU_SOURCE $(TARGET_CFLAGS)"
-$(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_HIDRAW=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_HIDRAW=ON
 $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_LIBUSB=ON
 $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_WITH_UDEV=OFF
 $(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
@@ -32,13 +39,22 @@ $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_INSTALL_HEADERS=ON
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
-$(PKG_CONFIGURED_CMAKE)
+
+# Out-of-source cmake build (avoids in-source timestamp churn)
+$($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.unpacked
+	@$(call _ECHO,configuring)
+	mkdir -p $(HIDAPI_DIR)/builddir
+	cd $(HIDAPI_DIR)/builddir && \
+		$(TARGET_CONFIGURE_ENV) $(MAKE_ENV) $(CMAKE) \
+		$(HIDAPI_CONFIGURE_OPTIONS) \
+		..
+	@touch $@
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
-	$(SUBMAKE) -C $(HIDAPI_DIR)
+	$(SUBMAKE) -C $(HIDAPI_DIR)/builddir
 
 $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
-	$(SUBMAKE) -C $(HIDAPI_DIR) \
+	$(SUBMAKE) -C $(HIDAPI_DIR)/builddir \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
 	@touch $@
@@ -52,8 +68,9 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 
 $(pkg)-clean:
-	-$(SUBMAKE) -C $(HIDAPI_DIR) clean
+	-$(SUBMAKE) -C $(HIDAPI_DIR)/builddir clean 2>/dev/null || true
 	$(RM) -r \
+		$(HIDAPI_DIR)/builddir \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libhidapi-*.so* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/hidapi.h \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/hidapi/
