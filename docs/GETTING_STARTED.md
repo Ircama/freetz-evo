@@ -343,6 +343,8 @@ tools/ssh_firmware_update.py --host <device-IP> --password <freetz-password> --b
 
 This script updates both the firmware image and the external file in a single unattended step.
 
+The script assumes that a non-externalized Dropbear package is available in Freetz-EVO.
+
 ### Method 3 — via Freetz web interface
 
 1. Open your device's existing Freetz interface (if already installed) at `http://fritz.box:81/`
