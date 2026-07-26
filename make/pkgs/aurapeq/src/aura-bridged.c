@@ -163,9 +163,6 @@ static void cmd_list(struct lws *wsi) {
     int idx = 0;
     for (struct hid_device_info *cur = devs; cur; cur = cur->next) {
         if (idx > 0) json[pos++] = ',';
-<<<<<<< HEAD
-        char *ename = json_escape(cur->product_string ? cur->product_string : "Unknown");
-=======
         /* Convert wchar_t product string to char */
         char prod_buf[256] = "";
         if (cur->product_string)
@@ -173,7 +170,6 @@ static void cmd_list(struct lws *wsi) {
         else
             snprintf(prod_buf, sizeof(prod_buf), "%s", "Unknown");
         char *ename = json_escape(prod_buf);
->>>>>>> 08e74464e8 (Add hidapi, aurapeq)
         if (!ename) continue;
         int n = snprintf(json + pos, cap - pos,
             "{\"vendorId\":%d,\"productId\":%d,\"productName\":%s}",
