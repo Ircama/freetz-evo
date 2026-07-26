@@ -57,6 +57,10 @@ $(PKG)_CONFIGURE_OPTIONS += --without-bsd-auth
 $(PKG)_CONFIGURE_OPTIONS += --without-kerberos5
 $(PKG)_CONFIGURE_OPTIONS += --without-pie
 
+ifneq ($(strip $(FREETZ_PACKAGE_HTOP_VERSION_ABANDON)),y)
+$(PKG)_CONFIGURE_OPTIONS += --with-sandbox=no
+endif
+
 $(PKG)_EXTRA_CFLAGS  += -ffunction-sections -fdata-sections
 $(PKG)_EXTRA_CFLAGS  += $(if $(FREETZ_TARGET_GCC_4_MAX),-std=c99)
 $(PKG)_EXTRA_LDFLAGS += -Wl,--gc-sections

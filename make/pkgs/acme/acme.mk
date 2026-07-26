@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 3.1.3)
+$(call PKG_INIT_BIN, 3.1.4)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=efd12b265252f8875269960b6b31830731ccce2b3e6ff8e7ecfbee21fde35ab4
+$(PKG)_HASH:=e5f8e187bbf5251e0cd8891f2622daab9850366bd17bea9f92c2fe2ee091fd32
 $(PKG)_SITE:=https://github.com/acmesh-official/acme.sh/archive/refs/tags
 ### WEBSITE:=https://www.acme.sh
 ### MANPAGE:=https://github.com/acmesh-official/acme.sh/wiki

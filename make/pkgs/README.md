@@ -5,7 +5,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### A
 
-  * **[ACME.sh 3.1.3](../../docs/make/acme.md)<a id='acme'></a>**<br>
+  * **[ACME.sh 3.1.4](../../docs/make/acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
   * **[age 1.3.1 (binaries only)](../../docs/make/age.md)<a id='age'></a>**<br>
@@ -55,7 +55,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>asterisk-gui: #Asterisk GUI 2.1.0-rc1 - DEPRECATED</u><a id='asterisk-gui'></a>**<br>
     Asterisk GUI is a framework for the creation of graphical interfaces for configuring Asterisk. Please read https://wiki.asterisk.org/wiki/display/AST/Asterisk+GUI for configuration instructions.
 
-  * **[Atop 2.12.1 (binary only)](../../docs/make/atop.md)<a id='atop'></a>**<br>
+  * **[Atop 2.13.0 (binary only)](../../docs/make/atop.md)<a id='atop'></a>**<br>
     The program atop is an interactive monitor to view the load on a Linux system. It shows the occupation of the most critical hardware resources (from a performance point of view) on system level, i.e. cpu, memory, disk and network.
 
   * **[atuin 18.16.1](../../docs/make/atuin.md)<a id='atuin'></a>**<br>
@@ -274,7 +274,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Example](../../docs/make/dnsmasq.md#example)
      - [Completely Custom Configuration](../../docs/make/dnsmasq.md#completely-custom-configuration)
 
-  * **[Dropbear 2026.92](../../docs/make/dropbear.md)<a id='dropbear'></a>**<br>
+  * **[Dropbear 2026.94](../../docs/make/dropbear.md)<a id='dropbear'></a>**<br>
     Dropbear SSH server and client Dropbear is a relatively small SSH 2 server and client. It runs on a variety of POSIX-based platforms. Dropbear is open source software, distributed under a MIT-style license. Dropbear is particularly useful for "embedded"-type Linux (or other Unix) systems, such as wireless routers. Features - A small memory footprint suitable for memory-constrained environments - Dropbear can compile to a 110kB statically linked binary with uClibc on x86 (only minimal options selected) - Dropbear server implements X11 forwarding, and authentication-agent forwarding for OpenSSH clients - Can run from inetd or standalone - Compatible with OpenSSH ~/.ssh/authorized_keys public key authentication - The server, client, keygen, and key converter can be compiled into a single binary (a la busybox) - Features can easily be disabled when compiling to save space TCP forwarding support
      - [Basic Terms](../../docs/make/dropbear.md#basic-terms)
      - [Web Config](../../docs/make/dropbear.md#web-config)
@@ -425,7 +425,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>html2text 1.3.2a (binary only) - DEPRECATED</u><a id='html2text'></a>**<br>
     html2text is a command line utility, written in C++, that converts HTML documents into plain text.
 
-  * **[htop 1.0.3/3.5.1 (binary only)](../../docs/make/htop.md)<a id='htop'></a>**<br>
+  * **[htop 1.0.3/3.5.2 (binary only)](../../docs/make/htop.md)<a id='htop'></a>**<br>
     htop is a more powerful alternative to top, using ncurses.
 
   * **[htpdate 2.0.2](../../docs/make/htpdate.md)<a id='htpdate'></a>**<br>
@@ -1294,7 +1294,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>spawn-fcgi 1.6.3 (binary only) - DEPRECATED</u><a id='spawn-fcgi'></a>**<br>
     Spawns FastCGI processes
 
-  * **[SQLite 3.40.1/3.47.1/3.53.1 (binary only)](../../docs/make/sqlite.md)<a id='sqlite'></a>**<br>
+  * **[SQLite 3.40.1/3.47.1/3.53.3 (binary only)](../../docs/make/sqlite.md)<a id='sqlite'></a>**<br>
     SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
 
   * **<u>squashfs3: squashfs-tools 3.4</u><a id='squashfs3'></a>**<br>
@@ -1388,7 +1388,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tmux 3.7b (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.25](../../docs/make/tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25 - DEPRECATED](../../docs/make/tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
      - [Use Tor as a Proxy](../../docs/make/tor.md#use-tor-as-a-proxy)
      - [Tor and Privoxy](../../docs/make/tor.md#tor-and-privoxy)
@@ -1431,7 +1431,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[uMurmur 0.2.20/0.3.1](../../docs/make/umurmur.md)<a id='umurmur'></a>**<br>
     umurmur is a minimalistic Mumble server primarily targeted to run on routers using less resources. It targets to fill the needs of a pretty small group of users communicating, which in part originates from the other goal of working well on a small system with a limited CPU and limited amount of disk space. It also aims to minimize writing to the disk since these kinds of systems usually only has a flash memory for disk. umurmur supports a subset of the features of Murmur. https://github.com/umurmur/umurmur
 
-  * **[Unbound 1.25.1](../../docs/make/unbound.md)<a id='unbound'></a>**<br>
+  * **[Unbound 1.25.2](../../docs/make/unbound.md)<a id='unbound'></a>**<br>
     Unbound is designed as a set of modular components, so that also DNSSEC (secure DNS) validation and stub-resolvers (that do not run as a server, but are linked into an application) are easily possible.
 
   * **[UNFS3 0.9.23 - DEPRECATED](../../docs/make/unfs3.md)<a id='unfs3'></a>**<br>

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DAEMON=php5
+DAEMON=php
 
 
 case $1 in
@@ -9,7 +9,7 @@ case $1 in
 		[ ! -e /tmp/flash/php.ini ] && cat /mod/etc/default.$DAEMON/php.ini > /tmp/flash/php.ini
 
 		modreg daemon --hide $DAEMON
-		modreg file $DAEMON config 'php.ini' 0 "php5_config"
+		modreg file $DAEMON config 'php.ini' 0 "php_config"
 		;;
 	unload)
 		modunreg file $DAEMON

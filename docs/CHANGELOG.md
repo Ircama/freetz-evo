@@ -103,9 +103,9 @@ Latest changes
     * Still are some patches not yet adapted for Fritzos 8.2x + 8.5x
 
   - Packages:
-    * ACME.sh 3.1.3
+    * ACME.sh 3.1.4
     * Apache2 2.4.68
-    * Atop 2.12.1
+    * Atop 2.13.0
     * Bftpd 6.6
     * BIND 9.11.37/9.20.24
     * Binutils 2.46.0
@@ -114,11 +114,11 @@ Latest changes
     * Curl 8.12.1/8.21.0
     * davfs2 1.5.2/1.7.3
     * Dnsmasq 2.80/2.93
-    * Dropbear 2026.92
+    * Dropbear 2026.94
     * dtc 1.8.1
     * Git 2.26.2/2.53.0
     * HAProxy 2.6.29
-    * htop 1.0.3/3.5.1
+    * htop 1.0.3/3.5.2
     * htpdate 2.0.2
     * ImageMagick 7.1.0-62/7.1.2-27
     * iPerf3 3.3/3.21
@@ -145,14 +145,14 @@ Latest changes
     * rsync 3.4.1/3.4.4
     * sslh 2.2.4/2.3.1
     * Stunnel 5.79
-    * SQLite 3.40.1/3.53.1
+    * SQLite 3.40.1/3.53.3
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
     * tmux 3.7b
     * Tor 0.4.8.25
     * Transmission 3.00/4.1.3
     * Tree 1.8.0/2.3.2
-    * Unbound 1.25.1
+    * Unbound 1.25.2
     * UnRAR 6.1.7/7.2.5
     * Virtualip-NG 1.0
     * wireguard-tools 1.0.20260223
