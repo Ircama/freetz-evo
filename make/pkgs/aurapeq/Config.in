@@ -8,8 +8,11 @@ config FREETZ_PACKAGE_AURAPEQ
 		USB compatibili.
 		
 		aura-bridged e' un demone che funge da ponte tra WebSocket
-		e HID (backend hidraw). Usa libwebsockets per il server
+		e HID (backend libusb). Usa libwebsockets per il server
 		WebSocket e hidapi per l'accesso HID.
+		
+		hid-list e' una utility diagnostica che elenca tutti i
+		dispositivi HID USB e mostra i report supportati.
 		
 		Permette all'app web AuraPEQ di configurare l'equalizzatore
 		parametrico (PEQ) dei DAC USB compatibili con chip

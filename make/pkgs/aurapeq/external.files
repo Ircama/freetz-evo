@@ -1,1 +1,1 @@
-[ "$EXTERNAL_FREETZ_PACKAGE_AURAPEQ" == "y" ] && EXTERNAL_FILES+=" /usr/bin/aura-bridged"
+[ "$EXTERNAL_FREETZ_PACKAGE_AURAPEQ" == "y" ] && EXTERNAL_FILES+=" /usr/bin/aura-bridged /usr/bin/hid-list"
