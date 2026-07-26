@@ -22,7 +22,7 @@ $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
 		-D_DEFAULT_SOURCE -D_GNU_SOURCE \
 		$(JA11_CONFIG_TUI_DIR)/ja11-config-tui.c \
 		-o $@ \
-		-lhidapi-hidraw -lncurses -lm
+		-lhidapi-libusb -lncurses -lm
 
 $($(PKG)_BINARY_TARGET): $($(PKG)_BINARY_BUILD)
 	$(INSTALL_BINARY_STRIP)
