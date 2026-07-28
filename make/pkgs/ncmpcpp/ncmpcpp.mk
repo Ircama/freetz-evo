@@ -38,7 +38,7 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-clock
 $(PKG)_CONFIGURE_OPTIONS += --enable-outputs
 $(PKG)_CONFIGURE_OPTIONS += --enable-visualizer
 $(PKG)_CONFIGURE_OPTIONS += --disable-unicode
-$(PKG)_CONFIGURE_OPTIONS += CXXFLAGS="-O2 -pipe -march=24kc -mno-dsp -Wno-deprecated -DBOOST_FILESYSTEM_DISABLE_STATX"
+$(PKG)_CONFIGURE_OPTIONS += CXXFLAGS="$(TARGET_CFLAGS) -Wno-deprecated -DBOOST_FILESYSTEM_DISABLE_STATX"
 
 $(PKG)_CONFIGURE_PRE_CMDS += sed -i 's/^BOOST_LOCALE$$/dnl BOOST_LOCALE/' configure.ac;
 $(PKG)_CONFIGURE_PRE_CMDS += autoreconf -fi;
