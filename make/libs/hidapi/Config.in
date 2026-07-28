@@ -10,3 +10,25 @@ config FREETZ_LIB_hidapi
 		This builds the libusb backend (libhidapi-libusb), which uses
 		the Linux kernel's usbfs interface directly and does NOT require
 		the kernel HID/INPUT subsystem (not available on GRX5 devices).
+
+if FREETZ_LIB_hidapi
+
+config FREETZ_LIB_hidapi_hidraw
+	bool "libhidapi-hidraw.so (hidraw backend)"
+	depends on FREETZ_AVM_HAS_INPUT_BUILTIN || FREETZ_AVM_HAS_INPUT_MODULE || FREETZ_REPLACE_KERNEL
+	select FREETZ_MODULE_hid if !FREETZ_AVM_HAS_HID_BUILTIN && !FREETZ_AVM_HAS_HID_MODULE
+	select FREETZ_MODULE_hid_generic if !FREETZ_AVM_HAS_HID_GENERIC_BUILTIN && !FREETZ_AVM_HAS_HID_GENERIC_MODULE
+	select FREETZ_MODULE_usbhid if !FREETZ_AVM_HAS_USB_HID_BUILTIN && !FREETZ_AVM_HAS_USB_HID_MODULE
+	default n
+	help
+		Also build the hidraw backend (libhidapi-hidraw), which talks
+		directly to the kernel's hidraw interface.
+		
+		Required kernel modules (hid.ko, hid-generic.ko, usbhid.ko)
+		are auto-selected when not already provided by the AVM baseline.
+		
+		Note: NOT compatible with GRX5 devices (e.g. 7590AX) because the
+		AVM kernel lacks CONFIG_INPUT — hid.ko cannot load (unknown symbol
+		input_allocate_device). Use the libusb backend instead.
+
+endif

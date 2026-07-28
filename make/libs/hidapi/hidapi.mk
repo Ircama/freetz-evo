@@ -8,7 +8,8 @@ $(PKG)_SITE:=https://github.com/libusb/hidapi/archive/refs/tags
 ### CHANGES:=https://github.com/libusb/hidapi/releases
 ### CVSREPO:=https://github.com/libusb/hidapi
 
-# libusb backend (does not require kernel HID/INPUT subsystem)
+# libusb backend (always built) — uses usbfs directly, no kernel HID/INPUT needed.
+# hidraw backend (optional, FREETZ_LIB_hidapi_hidraw) — requires kernel HID support.
 # Uses out-of-source build (builddir/) to avoid cmake timestamp churn.
 $(PKG)_BUILD_SUBDIR:=builddir
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/src/libusb/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
@@ -20,6 +21,7 @@ $(PKG)_DEPENDS_ON += libusb1
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_hidapi
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libusb1
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_hidapi_hidraw
 
 # Copy stub libudev files after patches but before configure
 $(PKG)_PATCH_POST_CMDS += \
@@ -30,11 +32,18 @@ $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_C_FLAGS:STRING="-include stdarg.h -D_GNU_SOURCE $(TARGET_CFLAGS)"
-$(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_HIDRAW=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_HIDRAW=$(if $(FREETZ_LIB_hidapi_hidraw),ON,OFF)
 $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_BUILD_LIBUSB=ON
 $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_WITH_UDEV=OFF
 $(PKG)_CONFIGURE_OPTIONS += -DBUILD_SHARED_LIBS=ON
 $(PKG)_CONFIGURE_OPTIONS += -DHIDAPI_INSTALL_HEADERS=ON
+
+# --- hidraw backend variables (only if enabled) ---
+ifeq ($(strip $(FREETZ_LIB_hidapi_hidraw)),y)
+$(PKG)_BINARY_HIDRAW:=$($(PKG)_DIR)/builddir/src/hidraw/libhidapi-hidraw.so.$($(PKG)_LIB_VERSION)
+$(PKG)_STAGING_BINARY_HIDRAW:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libhidapi-hidraw.so.$($(PKG)_LIB_VERSION)
+$(PKG)_TARGET_BINARY_HIDRAW:=$($(PKG)_TARGET_DIR)/libhidapi-hidraw.so.$($(PKG)_LIB_VERSION)
+endif
 
 
 $(PKG_SOURCE_DOWNLOAD)
@@ -65,6 +74,20 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
 $(pkg): $($(PKG)_STAGING_BINARY)
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+# --- hidraw backend rules (only if enabled) ---
+ifeq ($(strip $(FREETZ_LIB_hidapi_hidraw)),y)
+
+$($(PKG)_STAGING_BINARY_HIDRAW): $($(PKG)_STAGING_BINARY)
+	@touch $@
+
+$($(PKG)_TARGET_BINARY_HIDRAW): $($(PKG)_STAGING_BINARY_HIDRAW)
+	$(INSTALL_LIBRARY_STRIP)
+
+$(pkg): $($(PKG)_STAGING_BINARY_HIDRAW)
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY_HIDRAW)
+
+endif
 
 
 $(pkg)-clean:
