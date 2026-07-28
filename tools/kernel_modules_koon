@@ -17,7 +17,7 @@ koon() {
 		state="${arg#*=}"
 	fi
 
-	sed -i "/^CONFIG_${arg%%=*}=/d;/^# CONFIG_${arg%%=*} /d;$\aCONFIG_${arg%%=*}=$state" "$KERNEL_CONFIG"
+	sed -i "/^CONFIG_${arg%%=*}=/d;/^# CONFIG_${arg%%=*} /d;\$aCONFIG_${arg%%=*}=$state" "$KERNEL_CONFIG"
 	echo "#### Done, changed symbol: $arg"
 }
 

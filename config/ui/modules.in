@@ -449,15 +449,6 @@ config FREETZ_MODULE_usbhid
                 AVM baseline does not already provide it. Required
                 HID subsystem modules are selected automatically.
 
-comment " NOTE: The above HID modules require CONFIG_INPUT in the kernel."
-comment " On many other modern devices, the stock AVM kernel does"
-comment " NOT have INPUT ('# CONFIG_INPUT is not set'), so these"
-comment " modules cannot be loaded ('Unknown symbol' error)."
-comment " Use the hidapi library with libusb backend instead:"
-comment " - Select 'hidapi' in Libraries (use libusb backend)"
-comment " - Link programs with -lhidapi-libusb"
-comment " - hidapi does not require HID/INPUT kernel modules."
-
 endmenu # hid
 
 comment " ppp"
