@@ -1,0 +1,41 @@
+Workaround missing UPAGES, HOST_TEXT_START_ADDR, HOST_STACK_END_ADDR in
+trad-core.c when building with uClibc (e.g. i686-linux-uclibc).  The
+configure script matches i[3-7]86-*-linux-* and sets COREFILE=trad-core.lo
+with TRAD_HEADER="hosts/i386linux.h", but that header only defines
+TRAD_CORE_EXTRA_SIZE_ALLOWED.  Provide #ifndef fallback defaults so the
+file compiles regardless of C library.
+
+Upstream: N/A [Freetz-specific uClibc workaround]
+
+
+--- bfd/trad-core.c	2026-07-30 00:45:58.337583993 +0200
++++ bfd/trad-core.c	2026-07-30 00:45:58.381584355 +0200
+@@ -37,6 +37,28 @@
+ #ifndef NBPG
+ # define NBPG getpagesize()
+ #endif
++/* Some systems (notably uClibc) do not provide the following legacy
++   BSD macros in their headers.  Provide fallback defaults so that
++   this file compiles even when they are absent.  The trad-core
++   backend is only used for obsolete a.out core dumps; on modern
++   Linux systems (including uClibc-based ones) core files are always
++   ELF, so these values are never actually used at runtime.  */
++#ifndef UPAGES
++# define UPAGES 1
++#endif
++
++#ifndef HOST_TEXT_START_ADDR
++# define HOST_TEXT_START_ADDR 0
++#endif
++
++#ifndef HOST_STACK_END_ADDR
++# define HOST_STACK_END_ADDR 0
++#endif
++
++#ifndef HOST_DATA_START_ADDR
++# define HOST_DATA_START_ADDR 0
++#endif
++
+ 
+ struct trad_core_struct
+ {
