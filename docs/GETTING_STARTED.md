@@ -88,8 +88,8 @@ Some highlights compared to stock Freetz-NG are described in the [README](README
 
 ## 3. What You Need
 
-- An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.25)
-- A USB storage device, such as a USB flash drive, an SD card, or preferably a USB SSD to store the "external" part of the firmware (over 2 GB).
+- An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.25; the toolchain compiles successfully for MIPS and ARM, like 5690 Pro)
+- A USB storage device, such as a USB flash drive, an SD card, or preferably a USB SSD to store the "external" part of the firmware (1.8 GB for ARM to over 2 GB for MIPS).
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
 - About **100–200 GB of free disk space** for the build environment (configuring a comprehensive set of Freetz-EVO tools for a single device target requires around 70 GB; additionally, each compressed image occupies over 2 GB, split between a large external archive and a small 40–50 MB firmware file)
 - A reasonably fast internet connection to download source packages (the downloaded zipped source archives can take 4 GB or more)

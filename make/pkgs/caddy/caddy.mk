@@ -62,8 +62,10 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(CADDY_DIR) clean
 	$(RM) $(CADDY_BINARY) $(CADDY_DIR)/.configured
+	# Remove immutable flag and make writable (Go cache creates read-only files)
+	-[ ! -d $(CADDY_GO_MODCACHE) ] || chattr -R -i $(CADDY_GO_MODCACHE) 2>/dev/null || true
 	-[ ! -d $(CADDY_GO_MODCACHE) ] || chmod -R u+w $(CADDY_GO_MODCACHE) 2>/dev/null || true
-	$(RM) -r $(CADDY_GO_MODCACHE)
+	-$(RM) -r $(CADDY_GO_MODCACHE)
 
 $(pkg)-uninstall:
 	$(RM) $(CADDY_TARGET_BINARY)
