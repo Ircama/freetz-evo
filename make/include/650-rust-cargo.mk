@@ -194,7 +194,7 @@ endef
 # $(PKG) must be set.
 # Usage: $(eval $(call RUST_CARGO_BUILD_STD_VARS))
 define RUST_CARGO_BUILD_STD_VARS
-$(PKG)_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+$(PKG)_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 $(PKG)_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $$($(PKG)_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 endef
 
