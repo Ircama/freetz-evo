@@ -2,19 +2,6 @@
 #
 # Sync freetz-evo with upstream Freetz-NG/freetz-ng
 #
-# Strategy: merge-based (not rebase) to preserve history, avoid force-push,
-# and keep master always clean.
-#
-# Flow:
-#   1. Update 'upstream-mirror' branch (exact copy of upstream/master)
-#   2. Try merge into a staging branch 'sync/upstream-YYYYMMDD'
-#   3. If clean → fast-forward master
-#   4. If conflict → open GitHub Issue, master untouched
-#
-# The 'upstream-mirror' branch is useful for:
-#   - Quick diffs:  git diff master..upstream-mirror
-#   - Seeing what upstream changed since last sync
-#   - Manual conflict resolution base
 
 name: Sync Upstream freetz-ng
 
@@ -35,6 +22,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   sync:
@@ -123,11 +111,13 @@ jobs:
             # file (e.g. docs/juis/README.md).  Always keep EVO's version.
             # Files deleted by us but re-added by upstream are also handled.
             AUTO_OURS_FILES=(
-              "README.md"                             # Fully rewritten for Freetz-EVO branding
+              "README.md"
               "docs/juis/README.md"
               "docs/libs/README.md"
               ".github/workflows/github_ghpages.yml"
             )
+            # Snapshot to temp file to avoid race conditions
+            git status --porcelain > /tmp/git_status.txt
             while IFS= read -r line; do
               xy="${line:0:2}"
               file="${line:3}"
@@ -150,7 +140,7 @@ jobs:
                   fi
                 done
               fi
-            done < <(git status --porcelain)
+            done < /tmp/git_status.txt
 
             REMAINING=$(git diff --name-only --diff-filter=U)
             if [ -z "$REMAINING" ]; then
@@ -175,22 +165,42 @@ jobs:
               git merge --abort
             fi
 
-      # ── 4a. Success: push merge to master ────────────────────────
-      - name: Push merged result to master
+      # ── 4a. Success: create Pull Request ──────────────────────────
+      - name: Push sync branch to origin
         if: |
           steps.check.outputs.already_synced != 'true' &&
           steps.merge.outputs.conflict != 'true' &&
           github.event.inputs.dry_run != 'true'
         run: |
-          # We're on the sync branch with the successful merge
-          # Update master to point here
-          git checkout "$LOCAL_BRANCH"
-          git merge --ff-only "${{ steps.merge.outputs.sync_branch }}"
-          git push --force-with-lease origin "$LOCAL_BRANCH"
+          # Push the sync branch so a PR can be created from it
+          git push origin "${{ steps.merge.outputs.sync_branch }}"
 
-          # Clean up staging branch
-          git branch -d "${{ steps.merge.outputs.sync_branch }}" 2>/dev/null || true
-          echo "✅ Master updated successfully."
+      - name: Create Pull Request
+        if: |
+          steps.check.outputs.already_synced != 'true' &&
+          steps.merge.outputs.conflict != 'true' &&
+          github.event.inputs.dry_run != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const syncBranch = '${{ steps.merge.outputs.sync_branch }}';
+            const newCommits = '${{ steps.check.outputs.new_commits }}';
+            const upstreamSha = '${{ env.UPSTREAM_SHA }}'.substring(0, 12);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Sync upstream freetz-ng (${new Date().toISOString().split('T')[0]})`,
+              head: syncBranch,
+              base: '${{ env.LOCAL_BRANCH }}',
+              body: `Upstream merge (Freetz-NG/freetz-ng@${upstreamSha})
+              New commits: ${newCommits}
+              Workflow run: ${runUrl}
+
+              This PR was created automatically. Review and merge manually.`,
+            });
+            console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
 
       - name: Dry run notice
         if: |
@@ -198,9 +208,12 @@ jobs:
           steps.merge.outputs.conflict != 'true' &&
           github.event.inputs.dry_run == 'true'
         run: |
-          echo "🔍 DRY RUN: merge succeeded but was NOT pushed to master."
+          echo "🔍 DRY RUN: merge succeeded but no PR was created."
           echo "  Sync branch: ${{ steps.merge.outputs.sync_branch }}"
           echo "  New commits:  ${{ steps.check.outputs.new_commits }}"
+          echo "  To create a PR manually:"
+          echo "    git push origin ${{ steps.merge.outputs.sync_branch }}"
+          echo "    gh pr create --base master --head ${{ steps.merge.outputs.sync_branch }}"
 
       # ── 4b. Conflict: create GitHub Issue ────────────────────────
       - name: Create conflict issue
@@ -309,7 +322,7 @@ jobs:
             echo "${{ steps.merge.outputs.conflicted_files }}" >> "$GITHUB_STEP_SUMMARY"
             echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "✅ **Merged ${{ steps.check.outputs.new_commits }} upstream commits** into master." >> "$GITHUB_STEP_SUMMARY"
+            echo "✅ **Merged ${{ steps.check.outputs.new_commits }} upstream commits** -- PR created for review." >> "$GITHUB_STEP_SUMMARY"
           fi
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
