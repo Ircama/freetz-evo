@@ -1,7 +1,11 @@
 $(call PKG_INIT_BIN, 1.1.0)
-### WEBSITE:=https://github.com/Ircama/freetz-evo
-### CHANGES:=
-### CVSREPO:=
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=5d044497e169d480e20f292f7cc8e88014fe0b511bf26795fe6a807b0a26c411
+$(PKG)_SITE:=https://github.com/Ircama/hidws/archive/refs/tags
+### WEBSITE:=https://github.com/Ircama/hidws
+### CHANGES:=https://github.com/Ircama/hidws/releases
+### CVSREPO:=https://github.com/Ircama/hidws
 
 $(PKG)_CATEGORY:=Flasher tools
 
@@ -16,7 +20,8 @@ $(PKG)_BINARY_HIDLIST_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/hid-list
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_HIDWS
 
-$(PKG_LOCALSOURCE_PACKAGE)
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured

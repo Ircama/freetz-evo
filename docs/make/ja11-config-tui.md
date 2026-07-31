@@ -58,6 +58,11 @@ Commands are wrapped in fixed-length packets with the following structure:
 0xbb 0x0b 0x00 0x00  <command> <sub-command> [payload...] 0xee
 ```
 
+> **Note:** hidapi's libusb backend (and the `hidws` WebSocket bridge) returns
+> the report **ID byte (0x02)** as the first byte of numbered **input**
+> reports, i.e. the buffer is `0x02 0xbb 0x0b …`. The TUI strips it
+> (`find_packet_start()`) before parsing, exactly like the web apps do.
+
 Key commands:
 
 | Cmd | Name              | Purpose                                |
@@ -185,6 +190,7 @@ hosts see the [udev rule](#udev-rule) below for non-root access.
  │    </>           Change value (fine step)                                   │
  │    Space         Toggle band on/off                                         │
  │    t             Cycle filter type (PK/LSQ/HSQ)                             │
+ │    Tab/Shift-Tab Move fwd/back across all cells                             │
  │  === DEVICE ACTIONS ===                                                     │
  │    a             Apply changes to RAM                                       │
  │    s (then S)    Save to flash (permanent)                                  │
@@ -214,7 +220,8 @@ the full, scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
 |---------------|----------------------------|----------------------------------------------------------|
 | ↑/↓           | Select band                | Move cursor between the 5 PEQ bands.                     |
 | ←/→           | Select parameter           | Move cursor between Freq, Gain, Q, Type columns.         |
-| `+`/`-`       | Coarse adjust              | Change parameter by a large step (10 Hz, 1 dB, 0.1 Q).   |
+| `Tab`/`Shift+Tab` | Cycle cells (fwd/back) | Move forward/backward across all cells (band × Freq/Gain/Q/Type/Status). |
+| `+`/`-`       | Coarse adjust              | Change parameter by a large step (10 Hz, 1 dB, 0.1 Q); on Type it cycles the filter, on Status it toggles the band. |
 | `<`/`>`       | Fine adjust                | Change parameter by a small step (1 Hz, 0.5 dB, 0.01 Q). |
 | `Space`       | Toggle band                | Enable/disable the selected band (bypass filter).        |
 | `t`/`T`       | Cycle filter type          | PK → LSQ → HSQ → PK …                                    |

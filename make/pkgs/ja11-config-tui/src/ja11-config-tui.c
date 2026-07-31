@@ -59,6 +59,7 @@ typedef struct {
 	const char *help_fine;
 	const char *help_toggle;
 	const char *help_cycle;
+	const char *help_tab;
 	/* Help device actions */
 	const char *help_dev;
 	const char *help_apply;
@@ -127,6 +128,7 @@ static const Lang lang_en = {
 	.help_fine      = "  </>           Change value (fine step)",
 	.help_toggle    = "  Space         Toggle band on/off",
 	.help_cycle     = "  t             Cycle filter type (PK/LSQ/HSQ)",
+	.help_tab       = "  Tab/Shift-Tab Move fwd/back across all cells",
 	.help_dev       = "=== DEVICE ACTIONS ===",
 	.help_apply     = "  a             Apply changes to RAM",
 	.help_save      = "  s (then S)    Save to flash (permanent)",
@@ -190,6 +192,7 @@ static const Lang lang_it = {
 	.help_fine      = "  </>           Modifica valore (passo fine)",
 	.help_toggle    = "  Spazio        Abilita/disabilita banda",
 	.help_cycle     = "  t             Cicla tipo filtro (PK/LSQ/HSQ)",
+	.help_tab       = "  Tab/Maiusc-Tab  Sposta avanti/indietro tra le celle",
 	.help_dev       = "=== AZIONI DISPOSITIVO ===",
 	.help_apply     = "  a             Applica modifiche alla RAM",
 	.help_save      = "  s (poi S)     Salva su flash (permanente)",
@@ -275,6 +278,24 @@ static int read_input_report(unsigned char *buf, int len, int timeout_ms)
 {
 	if (!device_handle) return -1;
 	return hid_read_timeout(device_handle, buf, len, timeout_ms);
+}
+
+/* hidapi's libusb backend returns the report ID byte (0x02) as the first
+ * byte of a numbered INPUT report - exactly like the WebSocket bridge
+ * (aura-bridged / hidws) forwards the raw hid_read buffer. WebHID strips
+ * that byte, so the web apps (kt02h20-control, Audiocular-Aura, ...) strip
+ * it too. Detect and skip the leading report ID so the protocol packet
+ * starts at 0xBB. */
+static int find_packet_start(const unsigned char *buf, int len)
+{
+	if (len >= 3 && buf[0] == REPORT_ID_FIIO &&
+		buf[1] == READ_HDR1 && buf[2] == READ_HDR2)
+		return 1;                        /* [0x02, 0xBB, 0x0B, ...] */
+	if (len >= 3 && buf[1] == READ_HDR1 && buf[2] == READ_HDR2)
+		return 1;                        /* unknown report id prefix */
+	if (len >= 2 && buf[0] == READ_HDR1 && buf[1] == READ_HDR2)
+		return 0;                        /* no report id (raw packet) */
+	return 0;
 }
 
 /* ============================================================
@@ -378,10 +399,13 @@ static bool read_device_config(void)
 		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
-			if (ret > 0 && resp[4] == CMD_GLOBAL_GAIN) {
-				int raw = (resp[7] << 8) | resp[6];
-				if (raw > 32767) raw -= 65536;
-				global_gain = (double)raw / 2560.0;
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_GLOBAL_GAIN) {
+					int raw = (resp[off + 7] << 8) | resp[off + 6];
+					if (raw > 32767) raw -= 65536;
+					global_gain = (double)raw / 2560.0;
+				}
 			}
 		}
 	}
@@ -392,10 +416,13 @@ static bool read_device_config(void)
 		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
-			if (ret > 0 && resp[4] == CMD_DAC_FILTER) {
-				int val = resp[6];
-				if (val >= 1 && val <= DAC_FILTER_COUNT)
-					dac_filter = val;
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_DAC_FILTER) {
+					int val = resp[off + 6];
+					if (val >= 1 && val <= DAC_FILTER_COUNT)
+						dac_filter = val;
+				}
 			}
 		}
 	}
@@ -406,17 +433,20 @@ static bool read_device_config(void)
 		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
-			if (ret > 0 && resp[4] == 21) {
-				int idx = resp[6];
-				if (idx >= 0 && idx < NUM_BANDS) {
-					int rg = (resp[8] << 8) | resp[7];
-					if (rg > 32767) rg -= 65536;
-					bands[idx].gain = (double)rg / 10.0;
-					bands[idx].freq = (double)((resp[10] << 8) | resp[9]);
-					int rq = (resp[12] << 8) | resp[11];
-					bands[idx].q = (double)rq / 100.0;
-					bands[idx].filter_type = resp[13] & 0x03;
-					bands[idx].enabled = true;
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_READ_PARAM) {
+					int idx = resp[off + 6];
+					if (idx >= 0 && idx < NUM_BANDS) {
+						int rg = (resp[off + 8] << 8) | resp[off + 7];
+						if (rg > 32767) rg -= 65536;
+						bands[idx].gain = (double)rg / 10.0;
+						bands[idx].freq = (double)((resp[off + 10] << 8) | resp[off + 9]);
+						int rq = (resp[off + 12] << 8) | resp[off + 11];
+						bands[idx].q = (double)rq / 100.0;
+						bands[idx].filter_type = resp[off + 13] & 0x03;
+						bands[idx].enabled = true;
+					}
 				}
 			}
 		}
@@ -824,6 +854,7 @@ static void show_full_help(void)
 	const char *lines[] = {
 		l->help_nav,        l->help_arrows,     l->help_coarse,
 		l->help_fine,       l->help_toggle,     l->help_cycle,
+		l->help_tab,
 		l->help_dev,        l->help_apply,      l->help_save,
 		l->help_read,       l->help_gain,       l->help_filter,
 		l->help_connect,
@@ -900,6 +931,7 @@ static void draw_help(WINDOW *win, int start_row, int max_height)
 		{l->help_fine,      false},
 		{l->help_toggle,    false},
 		{l->help_cycle,     false},
+		{l->help_tab,       false},
 		{l->help_dev,       true},
 		{l->help_apply,     false},
 		{l->help_save,      false},
@@ -961,6 +993,40 @@ static void draw_status_message(WINDOW *win, int row)
 		mvwaddstr(win, row, 2, status_msg);
 	}
 	status_msg[0] = 0;
+}
+
+/* Adjust the current cell by dir (+1 increase, -1 decrease).
+ * Handles every column: Freq, Gain, Q, Type (cycle) and Status (toggle). */
+static void adjust_param(int dir)
+{
+	Band *b = &bands[current_band];
+
+	switch (current_param) {
+	case 0: /* Freq */
+		b->freq += dir * 10.0;
+		if (b->freq > FREQ_MAX) b->freq = FREQ_MAX;
+		if (b->freq < FREQ_MIN) b->freq = FREQ_MIN;
+		break;
+	case 1: /* Gain */
+		b->gain += dir * 1.0;
+		if (b->gain > GAIN_MAX) b->gain = GAIN_MAX;
+		if (b->gain < GAIN_MIN) b->gain = GAIN_MIN;
+		break;
+	case 2: /* Q */
+		b->q += dir * 0.1;
+		if (b->q > Q_MAX) b->q = Q_MAX;
+		if (b->q < Q_MIN) b->q = Q_MIN;
+		break;
+	case 3: /* Type */
+		b->filter_type = (b->filter_type + dir + 3) % 3;
+		break;
+	case 4: /* Status */
+		b->enabled = !b->enabled;
+		break;
+	default:
+		break;
+	}
+	modified = true;
 }
 
 /* ============================================================
@@ -1053,7 +1119,7 @@ static void main_loop(WINDOW *main_win)
 			if (current_param > 0) current_param--;
 			break;
 		case KEY_RIGHT:
-			if (current_param < 3) current_param++;
+			if (current_param < NUM_PARAMS - 1) current_param++;
 			break;
 		case KEY_UP:
 			if (current_band > 0) current_band--;
@@ -1062,59 +1128,32 @@ static void main_loop(WINDOW *main_win)
 			if (current_band < NUM_BANDS - 1) current_band++;
 			break;
 
-		case '+':
-		case '=':
-		{
-			double *val = NULL;
-			double coarse = 0;
-			switch (current_param) {
-			case 0: val = &bands[current_band].freq; coarse = 10.0;  break;
-			case 1: val = &bands[current_band].gain; coarse = 1.0;   break;
-			case 2: val = &bands[current_band].q;    coarse = 0.1;   break;
-			default: break;
-			}
-			if (val) {
-				if (current_param == 0) {
-					*val += coarse;
-					if (*val > FREQ_MAX) *val = FREQ_MAX;
-				} else if (current_param == 1) {
-					*val += coarse;
-					if (*val > GAIN_MAX) *val = GAIN_MAX;
-				} else if (current_param == 2) {
-					*val += coarse;
-					if (*val > Q_MAX) *val = Q_MAX;
-				}
-				modified = true;
+		case '\t': /* Tab: move forward across all cells */
+			if (current_param < NUM_PARAMS - 1)
+				current_param++;
+			else {
+				current_param = 0;
+				current_band = (current_band + 1) % NUM_BANDS;
 			}
 			break;
-		}
+		case KEY_BTAB: /* Shift+Tab: move backward across all cells */
+			if (current_param > 0)
+				current_param--;
+			else {
+				current_param = NUM_PARAMS - 1;
+				current_band = (current_band - 1 + NUM_BANDS) % NUM_BANDS;
+			}
+			break;
+
+		case '+':
+		case '=':
+			adjust_param(1);
+			break;
 
 		case '-':
 		case '_':
-		{
-			double *val = NULL;
-			double coarse = 0;
-			switch (current_param) {
-			case 0: val = &bands[current_band].freq; coarse = 10.0;  break;
-			case 1: val = &bands[current_band].gain; coarse = 1.0;   break;
-			case 2: val = &bands[current_band].q;    coarse = 0.1;   break;
-			default: break;
-			}
-			if (val) {
-				if (current_param == 0) {
-					*val -= coarse;
-					if (*val < FREQ_MIN) *val = FREQ_MIN;
-				} else if (current_param == 1) {
-					*val -= coarse;
-					if (*val < GAIN_MIN) *val = GAIN_MIN;
-				} else if (current_param == 2) {
-					*val -= coarse;
-					if (*val < Q_MIN) *val = Q_MIN;
-				}
-				modified = true;
-			}
+			adjust_param(-1);
 			break;
-		}
 
 		case '>':
 		case '.':

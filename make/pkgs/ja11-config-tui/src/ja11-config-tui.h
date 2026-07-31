@@ -77,6 +77,7 @@
 
 /* --- Limits --- */
 #define NUM_BANDS        5
+#define NUM_PARAMS       5        /* 0=Freq 1=Gain 2=Q 3=Type 4=Status */
 #define FREQ_MIN     20.0
 #define FREQ_MAX  20000.0
 #define GAIN_MIN   -24.0

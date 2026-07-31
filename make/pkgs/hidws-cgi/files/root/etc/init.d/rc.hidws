@@ -1,0 +1,117 @@
+#!/bin/sh
+
+DAEMON=hidws
+DAEMON_BIN=hidws
+DAEMON_LONG_NAME="hidws"
+DAEMON_CHECK="$DAEMON_BIN"
+PID_FILE=/var/run/$DAEMON.pid
+. /etc/init.d/modlibrc
+
+# Load persistent configuration from modconf
+[ -r /mod/etc/conf/hidws.cfg ] && . /mod/etc/conf/hidws.cfg
+
+# Log files (execution log shown in the freetz web UI)
+RC_LOG=/tmp/rc.hidws.log
+DAEMON_LOG=/tmp/hidws.log
+
+log() {
+	echo "$(date): $*" >> "$RC_LOG"
+}
+
+# Check if daemon is already running
+is_running() {
+	if [ -f "$PID_FILE" ]; then
+		local pid=$(cat "$PID_FILE" 2>/dev/null)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			return 0
+		fi
+	fi
+	pgrep -x $DAEMON_BIN >/dev/null 2>&1 && return 0
+	return 1
+}
+
+start() {
+	touch "$RC_LOG" "$DAEMON_LOG" 2>/dev/null
+	chmod a+rw "$RC_LOG" "$DAEMON_LOG" 2>/dev/null
+
+	if is_running; then
+		echo 'failed: already running.'
+		exit 1
+	fi
+
+	port="${HIDWS_PORT:-9001}"
+
+	# hidws is a foreground server; background it with start-stop-daemon.
+	# The whole command is passed as one quoted string to sh -c, using exec
+	# so the shell is replaced by the daemon process, and stdout/stderr are
+	# captured to the execution log shown in the web UI.
+	start-stop-daemon -S -b -m -p "$PID_FILE" \
+		-N "${HIDWS_NICE:-5}" \
+		-- /bin/sh -c "exec /usr/bin/hidws \"$port\" >>\"$DAEMON_LOG\" 2>&1"
+
+	sleep 1
+	if is_running; then
+		echo 'done.'
+		log "started hidws, listening on port $port"
+	else
+		echo 'failed.'
+		log "failed to start hidws on port $port"
+		exit 1
+	fi
+}
+
+stop() {
+	if ! is_running; then
+		echo 'failed: not running.'
+		return 1
+	fi
+
+	start-stop-daemon -K -q -p "$PID_FILE" 2>/dev/null
+
+	local timeout=10
+	while [ $timeout -gt 0 ] && is_running; do
+		sleep 1
+		timeout=$((timeout - 1))
+	done
+
+	if is_running; then
+		killall -9 "$DAEMON_BIN" 2>/dev/null
+	fi
+
+	rm -f "$PID_FILE"
+	log "stopped hidws"
+	echo 'done.'
+}
+
+case $1 in
+	""|load)
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modreg daemon $DAEMON
+
+		# ${HIDWS_ENABLED:-no}: never auto-start if no saved config yet
+		modlib_start "${HIDWS_ENABLED:-no}"
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modunreg cgi $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

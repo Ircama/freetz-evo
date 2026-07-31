@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Called AFTER the framework saves /mod/etc/conf/hidws.cfg
+pkg_apply_save() {
+	[ -r /mod/etc/conf/hidws.cfg ] && . /mod/etc/conf/hidws.cfg
+	# hidws reads its settings (port, nice) from the saved cfg at start
+	# time, so there is no runtime file to update here. Restart the daemon
+	# manually if the port changed.
+	return 0
+}

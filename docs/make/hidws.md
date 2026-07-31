@@ -1,9 +1,9 @@
 # hidws 1.1.0 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.1.0`
   - Steward: Ircama
-  - Protocol reference: [Audiocular-Aura](https://github.com/mandy321/Audiocular-Aura)
 
-`hidws` is a generic WebSocket ↔ USB HID gateway daemon. It lets web apps (and
+`hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
 any WebSocket client) talk to USB HID devices remotely through a small JSON
 protocol, without the browser needing direct USB access.
 
@@ -19,7 +19,6 @@ shows the reports they support.
 - Binary paths: `/usr/bin/hidws`, `/usr/bin/hid-list`
 - WebSocket port: `9001` by default (`hidws [port]`)
 - Runtime dependency profile: `hidapi` (libusb) + `libwebsockets`
-- Externalization: supported for both binaries
 
 ## Wire protocol (JSON over WebSocket)
 
@@ -45,8 +44,7 @@ Server → Client:
 - On the router: `/usr/bin/hidws 9001`
 - From a web app served locally or over HTTPS (avoid mixed content), connect to
   `ws://fritz.box:9001`
-- The HID device is released automatically when the client disconnects, so
-  there is no dangling handle and no need to `kill` the daemon.
+- The HID device is released automatically when the client disconnects.
 
 ## Notes
 
@@ -55,3 +53,4 @@ Server → Client:
 - `input_report` data received over WebSocket includes the report-ID byte as the
   first element for numbered input reports; WebHID strips it, so remote
   frontends must strip it to match.
+

@@ -1274,11 +1274,16 @@ cat << EOF
 .mpc-table .col-actions button { padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; border:1px solid #ccc; background:#fff; color:#333; }
 .mpc-table .col-actions button:hover { background:#667eea; color:#fff; border-color:#667eea; }
 .mpc-table .playing-badge { display:inline-block; background:#e3d4b7; color:#5f4520; border-radius:999px; padding:2px 7px; font-size:11px; margin-right:6px; }
-.mpc-pager { display:flex; align-items:center; justify-content:center; gap:10px; padding:12px; }
-.mpc-pager button { padding:6px 16px; border-radius:6px; cursor:pointer; border:1px solid #ccc; background:#fff; color:#333; font-size:13px; }
+.mpc-pager { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; flex-wrap:wrap; }
+.mpc-pager button { padding:6px 14px; border-radius:6px; cursor:pointer; border:1px solid #ccc; background:#fff; color:#333; font-size:13px; }
 .mpc-pager button:hover:not(:disabled) { background:#667eea; color:#fff; border-color:#667eea; }
 .mpc-pager button:disabled { opacity:0.4; cursor:default; }
 .mpc-pager span { font-size:13px; color:#666; }
+.mpc-pager select { padding:5px 6px; border-radius:6px; border:1px solid #ccc; font-size:13px; background:#fff; color:#333; }
+.mpc-pager .mpc-pager-label { font-size:13px; color:#888; }
+.mpc-pager .mpc-page-input { width:60px; padding:5px 8px; border-radius:6px; border:1px solid #ccc; font-size:13px; text-align:center; background:#fff; color:#333; }
+.mpc-pager .mpc-page-input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 2px rgba(102,126,234,.25); }
+.mpc-pager .mpc-page-total { font-size:13px; color:#999; }
 .mpc-browser-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
 .mpc-browser-path { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
 .mpc-browser-path button { padding:6px 10px; border-radius:4px; cursor:pointer; border:1px solid #ccc; background:#333; color:#fff; font-size:13px; }
@@ -1676,15 +1681,18 @@ cat << EOF
 	</table>
 </div>
 <div id='queuePager' class='mpc-pager'>
-	<button id='queuePrevBtn' onclick='queuePage(-1)' disabled>$(lang de:"Zurueck" en:"Prev")</button>
-	<select id='queuePageSize' onchange='queueChangePageSize()' style='padding:4px 6px;border-radius:4px;border:1px solid #ccc;font-size:13px;'>
+	<button id='queuePrevBtn' onclick='queuePage(-1)' disabled>&#9664; $(lang de:"Zurueck" en:"Prev")</button>
+	<span class='mpc-pager-label'>$(lang de:"Seite" en:"Page")</span>
+	<input id='queuePageInput' class='mpc-page-input' type='number' min='1' value='1' onkeydown='if(event.key==="Enter")queueGoPage()' title='$(lang de:"Seitenzahl eingeben, Enter zum Springen" en:"Enter page number, press Enter to jump")'>
+	<span id='queuePageTotal' class='mpc-page-total'></span>
+	<button onclick='queueGoPage()' title='$(lang de:"Zu Seite springen" en:"Jump to page")'>$(lang de:"Gehe" en:"Go")</button>
+	<select id='queuePageSize' onchange='queueChangePageSize()' title='$(lang de:"Eintraege pro Seite" en:"entries per page")'>
 		<option value='20'>20</option>
 		<option value='50' selected>50</option>
 		<option value='100'>100</option>
 		<option value='200'>200</option>
 	</select>
-	<span id='queuePageInfo' style='font-size:13px;color:#666;'></span>
-	<button id='queueNextBtn' onclick='queuePage(1)'>$(lang de:"Weiter" en:"Next")</button>
+	<button id='queueNextBtn' onclick='queuePage(1)'>$(lang de:"Weiter" en:"Next") &#9654;</button>
 </div>
 <script>
 var qTotal=0,qOffset=0,qLimit=50,qCur='$CURRENT_QUEUE_INDEX',qData=[],qSortCol='',qSortDir='asc';
@@ -1754,17 +1762,32 @@ function queueUpdateInfo(){
 	document.getElementById('queueInfo').textContent=qData.length+' / '+qTotal+' $(lang de:"Eintraege" en:"items")';
 }
 function queueUpdatePager(){
-	document.getElementById('queuePrevBtn').disabled=(qOffset<=0);
-	document.getElementById('queueNextBtn').disabled=(qOffset+qLimit>=qTotal);
+	var prev=document.getElementById('queuePrevBtn');
+	var next=document.getElementById('queueNextBtn');
+	if(prev)prev.disabled=(qOffset<=0);
+	if(next)next.disabled=(qOffset+qLimit>=qTotal);
 	var pg=Math.floor(qOffset/qLimit)+1;
-	var totalPg=Math.ceil(qTotal/qLimit);
-	document.getElementById('queuePageInfo').textContent=pg+'/'+totalPg;
+	var totalPg=Math.max(1,Math.ceil(qTotal/qLimit));
+	var inp=document.getElementById('queuePageInput');
+	if(inp)inp.value=pg;
+	var tot=document.getElementById('queuePageTotal');
+	if(tot)tot.textContent='/ '+totalPg;
 }
 function queueChangePageSize(){
 	var sel=document.getElementById('queuePageSize');
 	if(!sel)return;
 	qLimit=parseInt(sel.value);
 	queueReload();
+}
+function queueGoPage(){
+	var inp=document.getElementById('queuePageInput');
+	if(!inp)return;
+	var totalPg=Math.max(1,Math.ceil(qTotal/qLimit));
+	var pg=Math.min(totalPg,Math.max(1,parseInt(inp.value,10)||1));
+	if(String(inp.value)!==String(pg))inp.value=pg;
+	var newOff=(pg-1)*qLimit;
+	if(newOff===qOffset)return;
+	qOffset=newOff;qData=[];queueLoad(false);
 }
 function queueEsc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 queueLoad(false);
@@ -1792,15 +1815,18 @@ cat << LOCALBROWSE_HTML
 	</table>
 </div>
 <div id='brPager' class='mpc-pager'>
-	<button id='brPrevBtn' onclick='brPage(-1)' disabled>$(lang de:"Zurueck" en:"Prev")</button>
-	<select id='brPageSize' onchange='brChangePageSize()' style='padding:4px 6px;border-radius:4px;border:1px solid #ccc;font-size:13px;'>
+	<button id='brPrevBtn' onclick='brPage(-1)' disabled>&#9664; $(lang de:"Zurueck" en:"Prev")</button>
+	<span class='mpc-pager-label'>$(lang de:"Seite" en:"Page")</span>
+	<input id='brPageInput' class='mpc-page-input' type='number' min='1' value='1' onkeydown='if(event.key==="Enter")brGoPage()' title='$(lang de:"Seitenzahl eingeben, Enter zum Springen" en:"Enter page number, press Enter to jump")'>
+	<span id='brPageTotal' class='mpc-page-total'></span>
+	<button onclick='brGoPage()' title='$(lang de:"Zu Seite springen" en:"Jump to page")'>$(lang de:"Gehe" en:"Go")</button>
+	<select id='brPageSize' onchange='brChangePageSize()' title='$(lang de:"Eintraege pro Seite" en:"entries per page")'>
 		<option value='20' selected>20</option>
 		<option value='50'>50</option>
 		<option value='100'>100</option>
 		<option value='200'>200</option>
 	</select>
-	<span id='brPageInfo' style='font-size:13px;color:#666;'></span>
-	<button id='brNextBtn' onclick='brPage(1)'>$(lang de:"Weiter" en:"Next")</button>
+	<button id='brNextBtn' onclick='brPage(1)'>$(lang de:"Weiter" en:"Next") &#9654;</button>
 </div>
 <script>
 var brRoot='$(html "${LOCAL_ROOT:-/var/media/ftp}")';
@@ -1880,12 +1906,24 @@ function brChangePageSize(){
 	brRender();
 }
 function brUpdatePager(total,totalPages){
-	var info;
-	if(total===0){info='0 $(lang de:"Eintraege" en:"entries")';}
-	else{info=''+(brPageNum*brPageSize+1)+'-'+Math.min((brPageNum+1)*brPageSize,total)+' / '+total+' ('+totalPages+' $(lang de:"Seiten" en:"pages")';}
-	document.getElementById('brPageInfo').textContent=info;
-	document.getElementById('brPrevBtn').disabled=(brPageNum<=0);
-	document.getElementById('brNextBtn').disabled=(brPageNum>=totalPages-1||totalPages<=1);
+	var prev=document.getElementById('brPrevBtn');
+	var next=document.getElementById('brNextBtn');
+	if(prev)prev.disabled=(brPageNum<=0);
+	if(next)next.disabled=(brPageNum>=totalPages-1||totalPages<=1);
+	var pg=Math.min(totalPages,Math.max(1,brPageNum+1));
+	var inp=document.getElementById('brPageInput');
+	if(inp)inp.value=pg;
+	var tot=document.getElementById('brPageTotal');
+	if(tot)tot.textContent='/ '+totalPages;
+}
+function brGoPage(){
+	var inp=document.getElementById('brPageInput');
+	if(!inp)return;
+	var totalPages=Math.max(1,Math.ceil(brData.length/brPageSize));
+	var pg=Math.min(totalPages,Math.max(1,parseInt(inp.value,10)||1));
+	if(String(inp.value)!==String(pg))inp.value=pg;
+	brPageNum=pg-1;
+	brRender();
 }
 function brSort(col){
 	if(brSortCol===col)brSortDir*=-1;else{brSortCol=col;brSortDir=1;}
