@@ -165,6 +165,7 @@ jobs:
               # Abort merge to leave staging branch clean
               git merge --abort
             fi
+          fi
 
       # ── 4a. Success: create Pull Request ──────────────────────────
       - name: Push sync branch to origin
