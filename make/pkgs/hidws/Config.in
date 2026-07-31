@@ -1,0 +1,33 @@
+config FREETZ_PACKAGE_HIDWS
+        bool "hidws 1.1 (binary only)"
+        select FREETZ_LIB_hidapi
+        select FREETZ_LIB_libwebsockets
+        default n
+        help
+                Generic WebSocket to HID gateway daemon (libusb backend).
+
+                hidws is a daemon that bridges WebSocket clients to USB
+                HID devices. It uses libwebsockets for the WebSocket
+                server and hidapi (libusb backend) for HID access, so it
+                also works on routers where the kernel HID/INPUT
+                subsystem is unavailable (e.g. GRX5 models).
+
+                hid-list is a diagnostic utility that lists all USB HID
+                devices and the reports they support.
+
+                Any web app can use hidws to talk to HID devices
+                remotely over WebSocket:
+                  - {"cmd":"list"} — list HID devices
+                  - {"cmd":"open","vendorId":...,"productId":...}
+                  - {"cmd":"send_report","reportId":...,"data":[...]}
+                  - {"cmd":"send_feature_report","reportId":...,"data":[...]}
+                  - {"cmd":"close"}
+                Responses arrive as {"type":"device_list"},
+                {"type":"opened"}, {"type":"input_report"} or
+                {"type":"error"}.
+
+                Run: hidws [port]   (default port: 9001)
+                Web app access: ws://fritz.box:9001
+
+                Protocol based on the Audiocular Aura backend:
+                https://github.com/mandy321/Audiocular-Aura

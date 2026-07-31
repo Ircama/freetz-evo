@@ -1,9 +1,9 @@
 /*
- * aura-bridged v1.1.0 — WebSocket ↔ HID bridge for Audiocular Aura
+ * hidws v1.1.0 — WebSocket ↔ HID bridge
  *
- * Uses libwebsockets for WebSocket server, hidapi for HID access.
+ * Uses libwebsockets for WebSocket server, hidapi (libusb) for HID access.
  *
- * Run:    ./aura-bridged [port]       (default: 9001)
+ * Run:    ./hidws [port]       (default: 9001)
  *
  * Wire protocol (JSON over WebSocket):
  *   Client → Server:  {"cmd":"list"}
@@ -31,12 +31,13 @@
 #include <errno.h>
 #include <signal.h>
 #include <pthread.h>
+#include <stdarg.h>
 
 #include <hidapi/hidapi.h>
 #include <libwebsockets.h>
 
 /* ──────────────────────────── Version ──────────────────────────────── */
-#define AURA_BRIDGED_VERSION "1.1.0"
+#define HIDWS_VERSION "1.1.0"
 
 /* ──────────────────────────── Configuration ──────────────────────────── */
 #ifndef PORT_DEFAULT
@@ -62,7 +63,7 @@ static char *g_hid_product_string = NULL;
 static bool g_hid_open = false;
 static pthread_mutex_t g_hid_write_lock = PTHREAD_MUTEX_INITIALIZER;
 
-static pthread_t g_hid_thread;
+static pthread_t g_hid_thread = (pthread_t)0;
 static volatile bool g_hid_thread_running = false;
 
 /* ──────────────────── Global state ──────────────────────────────────── */
@@ -257,15 +258,21 @@ static void cmd_send_feature_report(int report_id, const uint8_t *data, int data
         n < 0 ? "error\",\"message\":\"hid_send_feature_report failed" : "ok");
 }
 
-static void cmd_close(void) {
+static void close_hid(void) {
     if (!g_hid_open) return;
     g_hid_open = false;
     g_hid_thread_running = false;
-    pthread_join(g_hid_thread, NULL);
-    g_hid_thread = (pthread_t)0;
+    if (g_hid_thread != (pthread_t)0) {
+        pthread_join(g_hid_thread, NULL);
+        g_hid_thread = (pthread_t)0;
+    }
     if (g_hid_handle) { hid_close(g_hid_handle); g_hid_handle = NULL; }
     free(g_hid_product_string);
     g_hid_product_string = NULL;
+}
+
+static void cmd_close(void) {
+    close_hid();
     broadcast_text("{\"type\":\"closed\"}");
 }
 
@@ -386,7 +393,7 @@ static void *hid_read_worker(void *arg) {
 
 /* ──────────────────── libwebsockets protocol callback ────────────────── */
 
-static int aura_callback(struct lws *wsi, enum lws_callback_reasons reason,
+static int hidws_callback(struct lws *wsi, enum lws_callback_reasons reason,
                          void *user, void *in, size_t len)
 {
     struct per_session_data *psd = (struct per_session_data *)user;
@@ -417,6 +424,9 @@ static int aura_callback(struct lws *wsi, enum lws_callback_reasons reason,
     case LWS_CALLBACK_CLOSED:
         psd->opened = false;
         fprintf(stderr, "[ws] Client disconnected\n");
+        /* Release the HID device so it is not left open after the client
+         * closes the web app; otherwise only a kill would free it. */
+        close_hid();
         break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -450,8 +460,8 @@ static int aura_callback(struct lws *wsi, enum lws_callback_reasons reason,
 
 static struct lws_protocols protocols[] = {
     {
-        .name                  = "aura-bridged",
-        .callback              = aura_callback,
+        .name                  = "hidws",
+        .callback              = hidws_callback,
         .per_session_data_size = sizeof(struct per_session_data),
         .rx_buffer_size        = MAX_MSG_SIZE,
     },
@@ -503,8 +513,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    fprintf(stderr, "[server] aura-bridged v%s listening on 0.0.0.0:%d\n",
-            AURA_BRIDGED_VERSION, port);
+    fprintf(stderr, "[server] hidws v%s listening on 0.0.0.0:%d\n",
+            HIDWS_VERSION, port);
 
     while (g_running && g_context)
         lws_service(g_context, 500);

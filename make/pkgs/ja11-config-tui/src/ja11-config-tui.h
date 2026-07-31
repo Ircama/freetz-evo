@@ -10,7 +10,7 @@
  *   https://github.com/mandy321/Audiocular-Aura
  *
  * Raw HID protocol:
- *   - Report ID: 0x02 (feature report)
+ *   - Report ID: 0x02 (output report - like Audiocular-Aura sendReport)
  *   - Set header: 0xaa 0x0a 0x00 0x00  <cmd> <len> [data...] 0xee
  *   - Read header: 0xbb 0x0b 0x00 0x00  <cmd> <sub> [data...] 0xee
  *   - Gain: fixed-point Q12 (value * 10) in 2 bytes big-endian

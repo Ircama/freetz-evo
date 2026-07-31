@@ -11,7 +11,7 @@
 FiiO JA11 USB DAC/Amp and other devices based on the KT Micro KT02H20 DSP chip
 (JKALLY JM12, etc.).
 
-The tool communicates directly with the hardware via raw HID (hidraw) — it sends
+The tool communicates directly with the hardware via HID — it sends
 binary commands to the chip's Digital Signal Processor (DSP) to set the 5-band
 Parametric Equalizer (PEQ), DAC digital filters, and global preamp gain.
 
@@ -36,14 +36,17 @@ you unplug the DAC and connect it to a phone, tablet, or game console.
   the host (`/tmp/ja11-presets.conf`).
 - **i18n** — English (default) and Italian (`--italian` / `-it`).
 - **Lightweight** — Written in C with only two external dependencies:
-  `hidapi` (hidraw backend) and `ncurses`.
+  `hidapi` (libusb backend, like `hidws`) and `ncurses`.
 
 ## How it works
 
 ### Communication protocol
 
-The KT02H20 chip exposes a HID feature report with Report ID `0x02`. Commands
-are wrapped in fixed-length packets with the following structure:
+The KT02H20 chip uses a HID **output** report with Report ID `0x02`. All
+commands (including read requests) are sent via the interrupt OUT endpoint
+(`hid_write`, equivalent to Audiocular-Aura's `device.sendReport(2, …)`), and
+the responses come back as **input** reports on the interrupt IN endpoint.
+Commands are wrapped in fixed-length packets with the following structure:
 
 **Set (write) packet:**
 ```
@@ -103,7 +106,7 @@ Main files that define the current behaviour:
 - `make/pkgs/ja11-config-tui/src/ja11-config-tui.h` — Protocol constants,
   data structures, limits, i18n codes.
 - `make/pkgs/ja11-config-tui/ja11-config-tui.mk` — Build recipe
-  (PKG_LOCALSOURCE_PACKAGE, links hidapi + ncurses + m).
+  (PKG_LOCALSOURCE_PACKAGE, links libhidapi-libusb + ncurses + m).
 - `make/pkgs/ja11-config-tui/Config.in` — Menuconfig options
   (selects FREETZ_LIB_hidapi, FREETZ_LIB_libncurses).
 - `make/pkgs/ja11-config-tui/external.files/in` — Externalisation manifest.
@@ -125,8 +128,33 @@ Use `--italian` (or `-it`) for Italian UI:
 ja11-config-tui -it
 ```
 
-If the device is not accessible, ensure the udev rule is in place (see
-[Udev rule](#udev-rule) below), or run as root.
+### Device selection
+
+On startup the tool enumerates **all** HID devices (via the hidapi **libusb**
+backend, the same approach used by `hidws`) and shows a picker:
+
+```
+┌────────────────────────────── Select HID device ─────────────────────────────┐
+│   VID:PID     Product                                                       │
+│ * 2972:0102  JadeAudio JA11                ← known KT02H20 device (auto ✓) │
+│   31b2:0111  JM12                                                          │
+│   046d:c52b  USB Receiver                                                   │
+│  Up/Down: move    Enter: connect    q: quit                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+- Devices whose VID/PID or product string matches a known KT02H20 device
+  (`2972:0102`, `31b2:0111`, or names containing `JA11`/`ja11`/`KT02H20`/`JM12`)
+  are marked with `*` and pre-selected.
+- **Enter** connects to the highlighted device; **q** quits.
+- In the main screen, press **`c`** to reopen the picker (reconnect or switch
+  to another device).
+
+If no HID device is found at all, the tool shows the error/hint and stays on
+the (disconnected) main screen.
+
+If a device is not accessible, run as root (normal on the router). On desktop
+hosts see the [udev rule](#udev-rule) below for non-root access.
 
 ### Interface layout
 
@@ -176,6 +204,10 @@ If the device is not accessible, ensure the udev rule is in place (see
  └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+The help panel at the bottom is drawn only if the terminal is tall enough;
+on small terminals it is replaced by a `Press ? or h for full help` hint, and
+the full, scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
+
 ### Controls reference
 
 | Key(s)        | Action                     | Description                                              |
@@ -189,13 +221,14 @@ If the device is not accessible, ensure the udev rule is in place (see
 | `a`/`A`       | Apply to RAM               | Write all bands + gain + filter to device RAM (hear changes instantly). |
 | `s` then `S`  | Save to flash              | Apply + persist to flash. Confirms with a second keypress. |
 | `r`/`R`       | Read from device           | Discard local changes and re-read full config from DSP.  |
-| `g`/`G`       | Set global gain            | Opens an inline prompt to type a preamp value (-12…+12 dB). |
+| `g`/`G`       | Set global gain            | Opens an inline prompt to type a preamp value (-12…+12 dB); applies it to the device immediately. |
 | `f`/`F`       | Cycle DAC filter           | FAST-LL → FAST-PC → Slow-LL → Slow-PC → NON-OS → …      |
 | `p`           | Save preset                | Opens a prompt to name the current config and save it locally. |
 | `P` (Shift+p) | Load preset                | Opens a prompt to select a previously saved preset by number. |
 | `K` (Shift+k) | Delete preset              | Removes the active preset after confirmation.            |
 | `d`           | Reset to flat              | All bands: 0 dB gain, 0.7 Q, PK type, enabled.          |
 | `D` (Shift+d) | Reset to defaults          | All bands set to a useful frequency distribution (32/64/125/250/500 Hz). |
+| `?`/`h`/`H`   | Full help                  | Opens a full-screen, scrollable help viewer (useful on small terminals). |
 | `q`/`Q`       | Quit                       | Exits the program; prompts if there are unsaved changes. |
 
 **Important**: `q` will refuse to exit while the `"** MODIFICATIONS NOT APPLIED **"`
@@ -319,8 +352,10 @@ it to the device, or **`s` (Save)** to make it persistent.
 | FiiO     | `0x2972` | `0x0102` | JadeAudio JA11            | KT02H20 |
 | JKALLY   | `0x31b2` | `0x0111` | JM12                      | KT02H20 |
 
-The tool also attempts to discover any device whose product string contains
-"JA11", "ja11", "KT02H20" or "JM12" via HID enumeration.
+The picker lists every HID device found on the system. Devices whose VID/PID
+or product string matches a known KT02H20 device (`2972:0102`, `31b2:0111`, or
+names containing `JA11`/`ja11`/`KT02H20`/`JM12`) are marked `*` and pre-selected,
+so the correct device is normally highlighted automatically.
 
 ### udev rule
 
@@ -346,24 +381,29 @@ sudo usermod -aG plugdev $USER
 
 **Without the rule**, run the tool as root (`sudo ja11-config-tui`).
 
+> The tool uses the hidapi **libusb** backend (not hidraw), so on the router
+> (where it runs as root) no udev rule is needed. The rule above only matters
+> for non-root desktop use.
+
 ## Debugging
 
 ### Device not found
 
-1. Check `lsusb` for `2972:0102` (FiiO) or `31b2:0111` (JKALLY).
-2. Check kernel driver: `dmesg | grep -i hidraw`.
-3. Check permissions: `ls -la /dev/hidraw*` — should be readable/writable by
-   your user, either via udev rule or root.
-4. Run with `sudo` as a quick test.
+1. The picker only lists devices found by `hid_enumerate()`. If the list is
+   empty, run `lsusb` — the JA11 should appear as `2972:0102` (FiiO) or
+   `31b2:0111` (JKALLY).
+2. The libusb backend does **not** need `/dev/hidraw*` or the kernel HID/INPUT
+   subsystem (important on GRX5 routers, where `hid.ko` cannot load).
+3. Check permissions: running as root (normal on the router) is sufficient.
+4. Run with `sudo` as a quick test on desktop hosts.
 
 ### Communication errors
 
-- Ensure the device is not claimed by another program (check `lsof /dev/hidraw*`).
-- On some kernels, the `usbhid` driver may need to be unbound first:
-  ```
-  echo -n "1-2:1.0" | sudo tee /sys/bus/usb/drivers/usbhid/unbind
-  ```
-  (Replace `1-2:1.0` with the actual USB path from `lsusb -t`.)
+- Ensure the device is not claimed by another program (e.g. close `hidws`
+  or the browser's WebHID session first).
+- The libusb backend claims the USB interface directly via usbfs; on hosts
+  where the kernel `usbhid` driver grabs the device, hidapi detaches it
+  automatically on open.
 
 ### Presets not loading
 
@@ -374,11 +414,10 @@ during a session, not as long-term storage. Save your configuration to flash
 
 ## Known issues
 
-- **Single-device**: The tool connects to the first compatible device found.
+- **Single-device**: The tool connects to the device selected in the picker.
   Connecting multiple KT02H20 devices simultaneously is not supported.
-- **HIDAPI library name**: The hidraw backend builds `libhidapi-hidraw.so*`.
-  The `fwmod` externalisation matcher has a specific case for it (see
-  [Externalisation](#externalisation) above).
+- **HIDAPI library name**: The package links the **libusb** backend
+  (`libhidapi-libusb.so.0`, like `hidws`), not hidraw.
 - **Volatile presets**: Preset files live in `/tmp` and are cleared on reboot.
 
 ## See also

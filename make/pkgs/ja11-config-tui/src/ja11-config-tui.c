@@ -1,7 +1,7 @@
 /*
  * ja11-config-tui.c - Full-featured TUI configurator for FiiO JA11 (KT02H20)
  *
- * Communicates via HID (hidraw backend) with the KT02H20 chip inside
+ * Communicates via HID with the KT02H20 chip inside
  * the FiiO JadeAudio JA11 to configure the 5-band parametric EQ,
  * DAC digital filters, global gain, and more.
  *
@@ -95,6 +95,10 @@ typedef struct {
 	const char *msg_cancelled;
 	const char *msg_no_device;
 	const char *msg_udev_hint;
+	/* Device selection screen */
+	const char *dev_sel_title;
+	const char *dev_sel_hint;
+	const char *help_connect;
 } Lang;
 
 static const Lang lang_en = {
@@ -129,6 +133,7 @@ static const Lang lang_en = {
 	.help_read      = "  r / R         Reload config from device",
 	.help_gain      = "  g / G         Set global preamp gain",
 	.help_filter    = "  f / F         Cycle DAC digital filter",
+	.help_connect   = "  c             Connect / switch HID device",
 	.help_presets   = "=== PRESETS ===",
 	.help_psave     = "  p             Save current preset",
 	.help_pload     = "  P             Load preset",
@@ -153,8 +158,10 @@ static const Lang lang_en = {
 	.msg_preset_loaded= "Preset '%s' loaded.",
 	.msg_preset_deleted= "Preset deleted.",
 	.msg_cancelled   = "Cancelled.",
-	.msg_no_device   = "ERROR: FiiO JA11 not found.",
-	.msg_udev_hint   = "  SUBSYSTEM==\"hidraw\", ATTRS{idVendor}==\"2972\", MODE=\"0660\", GROUP=\"plugdev\"",
+	.msg_no_device   = "ERROR: device not accessible.",
+	.msg_udev_hint   = "  No HID device found. Check USB (lsusb: 2972:0102 / 31b2:0111).",
+	.dev_sel_title   = "Select HID device",
+	.dev_sel_hint    = "Up/Down: move    Enter: connect    q: quit",
 };
 
 static const Lang lang_it = {
@@ -189,6 +196,7 @@ static const Lang lang_it = {
 	.help_read      = "  r / R         Ricarica config. dal dispositivo",
 	.help_gain      = "  g / G         Imposta guadagno globale",
 	.help_filter    = "  f / F         Cicla filtro DAC digitale",
+	.help_connect   = "  c             Connetti / cambia dispositivo HID",
 	.help_presets   = "=== PRESET ===",
 	.help_psave     = "  p             Salva preset corrente",
 	.help_pload     = "  P             Carica preset",
@@ -213,8 +221,10 @@ static const Lang lang_it = {
 	.msg_preset_loaded= "Preset '%s' caricato.",
 	.msg_preset_deleted= "Preset eliminato.",
 	.msg_cancelled   = "Annullato.",
-	.msg_no_device   = "ERRORE: FiiO JA11 non trovato.",
-	.msg_udev_hint   = "  SUBSYSTEM==\"hidraw\", ATTRS{idVendor}==\"2972\", MODE=\"0660\", GROUP=\"plugdev\"",
+	.msg_no_device   = "ERRORE: dispositivo non accessibile.",
+	.msg_udev_hint   = "  Nessun dispositivo HID trovato. Controlla USB (lsusb: 2972:0102 / 31b2:0111).",
+	.dev_sel_title   = "Seleziona dispositivo HID",
+	.dev_sel_hint    = "Su/Giù: sposta    Invio: connetti    q: esci",
 };
 
 static int g_lang = LANG_EN;
@@ -245,7 +255,12 @@ static char status_msg[256] = "";
 /* ============================================================
  * HID Low-Level
  * ============================================================ */
-static bool send_feature_report(const unsigned char *data, int len)
+/* KT02H20 (FiiO JA11) commands are sent as OUTPUT reports on the interrupt
+ * OUT endpoint (hid_write) - exactly like Audiocular-Aura's
+ * device.sendReport(2, packet) and hidws's cmd_send_report.
+ * The chip does not use feature reports; the response comes back as an
+ * INPUT report (interrupt IN), read by read_input_report(). */
+static bool send_output_report(const unsigned char *data, int len)
 {
 	unsigned char buf[65];
 	if (!device_handle) return false;
@@ -253,7 +268,7 @@ static bool send_feature_report(const unsigned char *data, int len)
 	buf[0] = REPORT_ID_FIIO;
 	if (len > 64) len = 64;
 	memcpy(&buf[1], data, len);
-	return (hid_send_feature_report(device_handle, buf, len + 1) != -1);
+	return (hid_write(device_handle, buf, len + 1) != -1);
 }
 
 static int read_input_report(unsigned char *buf, int len, int timeout_ms)
@@ -281,14 +296,14 @@ static bool write_band(int idx)
 	pkt[9] = (f >> 8) & 0xff;  pkt[10] = f & 0xff;
 	pkt[11] = (qv >> 8) & 0xff; pkt[12] = qv & 0xff;
 	pkt[13] = bands[idx].filter_type;
-	return send_feature_report(pkt, sizeof(pkt));
+	return send_output_report(pkt, sizeof(pkt));
 }
 
 static bool apply_changes(void)
 {
 	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
 		CMD_APPLY, APPLY_LEN, 1, 0, FOOTER };
-	return device_handle ? send_feature_report(pkt, sizeof(pkt)) : false;
+	return device_handle ? send_output_report(pkt, sizeof(pkt)) : false;
 }
 
 static bool sync_all_bands(void)
@@ -309,7 +324,7 @@ static bool save_to_flash(void)
 	if (!device_handle) return false;
 	if (!sync_all_bands()) return false;
 	usleep(50000);
-	return send_feature_report(pkt, sizeof(pkt));
+	return send_output_report(pkt, sizeof(pkt));
 }
 
 void set_global_gain_cmd(double gain)
@@ -324,7 +339,7 @@ void set_global_gain_cmd(double gain)
 	if (value < 0) value = 65536 + value;
 	pkt[6] = value & 0xff;
 	pkt[7] = (value >> 8) & 0xff;
-	send_feature_report(pkt, sizeof(pkt));
+	send_output_report(pkt, sizeof(pkt));
 }
 
 static void set_dac_filter_cmd(int filter_idx)
@@ -332,7 +347,7 @@ static void set_dac_filter_cmd(int filter_idx)
 	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
 		CMD_DAC_FILTER, DAC_FILTER_LEN, (unsigned char)filter_idx, 0, FOOTER };
 	if (!device_handle) return;
-	send_feature_report(pkt, sizeof(pkt));
+	send_output_report(pkt, sizeof(pkt));
 }
 
 static const char *dac_filter_name(int idx)
@@ -360,7 +375,7 @@ static bool read_device_config(void)
 	{
 		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
 			CMD_READ_GAIN, 0, 0, FOOTER };
-		if (send_feature_report(cmd, sizeof(cmd))) {
+		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
 			if (ret > 0 && resp[4] == CMD_GLOBAL_GAIN) {
@@ -374,7 +389,7 @@ static bool read_device_config(void)
 	{
 		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
 			CMD_DAC_FILTER, 0, 0, FOOTER };
-		if (send_feature_report(cmd, sizeof(cmd))) {
+		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
 			if (ret > 0 && resp[4] == CMD_DAC_FILTER) {
@@ -388,7 +403,7 @@ static bool read_device_config(void)
 	for (int i = 0; i < NUM_BANDS; i++) {
 		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
 			CMD_READ_PARAM, 1, i, FOOTER };
-		if (send_feature_report(cmd, sizeof(cmd))) {
+		if (send_output_report(cmd, sizeof(cmd))) {
 			memset(resp, 0, sizeof(resp));
 			ret = read_input_report(resp, sizeof(resp), 500);
 			if (ret > 0 && resp[4] == 21) {
@@ -410,55 +425,152 @@ static bool read_device_config(void)
 }
 
 /* ============================================================
- * Device connection
+ * HID device enumeration & selection
+ * (libusb backend, mirrors hidws: enumerate all, open selected)
  * ============================================================ */
-static bool connect_device(void)
+#define MAX_DEVICES 32
+
+typedef struct {
+	char path[256];
+	unsigned short vendor_id;
+	unsigned short product_id;
+	char product_string[128];
+	int compatible;
+} DeviceEntry;
+
+static DeviceEntry devices[MAX_DEVICES];
+static int num_devices = 0;
+
+static int device_is_compatible(unsigned short vid, unsigned short pid,
+                                const char *product)
 {
-	if (hid_init() != 0) return false;
-	device_handle = hid_open(FIIO_VID, JA11_PID, NULL);
-	if (!device_handle) device_handle = hid_open(JKALLY_VID, JM12_PID, NULL);
-	if (!device_handle) {
-		struct hid_device_info *devs = hid_enumerate(FIIO_VID, 0);
-		for (struct hid_device_info *cur = devs; cur; cur = cur->next) {
-			if (cur->product_string &&
-			    (wcsstr(cur->product_string, L"JA11") ||
-			     wcsstr(cur->product_string, L"ja11"))) {
-				device_handle = hid_open_path(cur->path);
-				break;
+	if ((vid == FIIO_VID && pid == JA11_PID) ||
+	    (vid == JKALLY_VID && pid == JM12_PID))
+		return 1;
+	if (product &&
+	    (strstr(product, "JA11") || strstr(product, "ja11") ||
+	     strstr(product, "KT02H20") || strstr(product, "JM12")))
+		return 1;
+	return 0;
+}
+
+/* Like hidws cmd_list: enumerate ALL HID devices (no VID/PID filter) */
+static int enumerate_devices(void)
+{
+	struct hid_device_info *devs;
+	struct hid_device_info *cur;
+
+	num_devices = 0;
+	if (hid_init() != 0) return 0;
+	devs = hid_enumerate(0, 0);
+	for (cur = devs; cur && num_devices < MAX_DEVICES; cur = cur->next) {
+		DeviceEntry *d = &devices[num_devices];
+		snprintf(d->path, sizeof(d->path), "%s",
+		         cur->path ? cur->path : "");
+		d->vendor_id = cur->vendor_id;
+		d->product_id = cur->product_id;
+		if (cur->product_string)
+			wcstombs(d->product_string, cur->product_string,
+			         sizeof(d->product_string) - 1);
+		else
+			d->product_string[0] = 0;
+		d->product_string[sizeof(d->product_string) - 1] = 0;
+		d->compatible = device_is_compatible(d->vendor_id,
+		                                     d->product_id,
+		                                     d->product_string);
+		num_devices++;
+	}
+	hid_free_enumeration(devs);
+	return num_devices;
+}
+
+static bool connect_to_entry(const DeviceEntry *d)
+{
+	if (!d || !d->path[0]) return false;
+	if (device_handle) { hid_close(device_handle); device_handle = NULL; }
+	device_handle = hid_open_path(d->path);
+	if (!device_handle) return false;
+	device_connected = true;
+	device_vid = d->vendor_id;
+	device_pid = d->product_id;
+	if (d->product_string[0])
+		snprintf(device_name, sizeof(device_name), "%s",
+		         d->product_string);
+	else
+		snprintf(device_name, sizeof(device_name), "0x%04x:0x%04x",
+		         d->vendor_id, d->product_id);
+	read_device_config();
+	return true;
+}
+
+/* ncurses picker: lists available HID devices, lets the user choose one.
+ * Returns the selected index, or -1 if cancelled. */
+static int select_device_menu(void)
+{
+	const Lang *l = &LANG;
+	int sel = 0, ch;
+	int h, w, y, x;
+
+	if (num_devices <= 0) return -1;
+	/* Pre-select a known-compatible device if present */
+	for (int i = 0; i < num_devices; i++)
+		if (devices[i].compatible) { sel = i; break; }
+
+	h = num_devices + 6;
+	w = 74;
+	y = (LINES - h) / 2;
+	x = (COLS - w) / 2;
+	if (h > LINES) h = LINES;
+	if (w > COLS) w = COLS;
+	if (y < 0) y = 0;
+	if (x < 0) x = 0;
+
+	WINDOW *win = newwin(h, w, y, x);
+	keypad(win, TRUE);
+	box(win, 0, 0);
+	wattron(win, A_BOLD);
+	mvwaddstr(win, 0, 2, l->dev_sel_title);
+	wattroff(win, A_BOLD);
+	mvwaddstr(win, 2, 2, "   VID:PID     Product");
+	mvwaddstr(win, h - 2, 2, l->dev_sel_hint);
+
+	while (1) {
+		for (int i = 0; i < num_devices; i++) {
+			char line[128];
+			const DeviceEntry *d = &devices[i];
+			snprintf(line, sizeof(line), "%04X:%04X  %s",
+			         d->vendor_id, d->product_id,
+			         d->product_string[0] ? d->product_string
+			                              : "(no name)");
+			mvwaddstr(win, 3 + i, 2, line);
+			mvwaddch(win, 3 + i, 1, d->compatible ? '*' : ' ');
+			if (i == sel) {
+				wattron(win, A_REVERSE);
+				mvwaddstr(win, 3 + i, 2, line);
+				wattroff(win, A_REVERSE);
+			} else if (d->compatible) {
+				wattron(win, COLOR_PAIR(3));
+				mvwaddstr(win, 3 + i, 2, line);
+				wattroff(win, COLOR_PAIR(3));
 			}
 		}
-		hid_free_enumeration(devs);
-	}
-	if (!device_handle) {
-		struct hid_device_info *devs = hid_enumerate(JKALLY_VID, 0);
-		for (struct hid_device_info *cur = devs; cur; cur = cur->next) {
-			if (cur->product_string &&
-			    (wcsstr(cur->product_string, L"KT02H20") ||
-			     wcsstr(cur->product_string, L"JM12"))) {
-				device_handle = hid_open_path(cur->path);
-				break;
-			}
+		wnoutrefresh(win);
+		doupdate();
+
+		ch = wgetch(win);
+		if (ch == KEY_UP) {
+			if (sel > 0) sel--;
+		} else if (ch == KEY_DOWN) {
+			if (sel < num_devices - 1) sel++;
+		} else if (ch == 'q' || ch == 'Q' || ch == 27) {
+			delwin(win);
+			return -1;
+		} else if (ch == '\n' || ch == '\r' || ch == KEY_ENTER) {
+			int idx = sel;
+			delwin(win);
+			return idx;
 		}
-		hid_free_enumeration(devs);
 	}
-	if (device_handle) {
-		device_connected = true;
-		struct hid_device_info *info = hid_get_device_info(device_handle);
-		if (info) {
-			device_vid = info->vendor_id;
-			device_pid = info->product_id;
-			if (info->product_string)
-				snprintf(device_name, sizeof(device_name), "%ls", info->product_string);
-			else
-				snprintf(device_name, sizeof(device_name), "JA11 (0x%04x:0x%04x)", device_vid, device_pid);
-		} else {
-			device_vid = FIIO_VID; device_pid = JA11_PID;
-			snprintf(device_name, sizeof(device_name), "JA11 (0x%04x:0x%04x)", device_vid, device_pid);
-		}
-		read_device_config();
-		return true;
-	}
-	return false;
 }
 
 static void disconnect_device(void)
@@ -704,6 +816,78 @@ static void draw_gain_bars(WINDOW *win, int start_row, int max_width)
 	}
 }
 
+/* Full-screen, scrollable help (opened with ? / h / H). Works on any
+ * terminal size. */
+static void show_full_help(void)
+{
+	const Lang *l = &LANG;
+	const char *lines[] = {
+		l->help_nav,        l->help_arrows,     l->help_coarse,
+		l->help_fine,       l->help_toggle,     l->help_cycle,
+		l->help_dev,        l->help_apply,      l->help_save,
+		l->help_read,       l->help_gain,       l->help_filter,
+		l->help_connect,
+		l->help_presets,    l->help_psave,      l->help_pload,
+		l->help_pdel,
+		l->help_other,      l->help_reset_flat, l->help_reset_def,
+		l->help_quit,
+	};
+	int n = (int)(sizeof(lines) / sizeof(lines[0]));
+	static const int hdr[] = { 0, 6, 13, 17 };
+	int nh = (int)(sizeof(hdr) / sizeof(hdr[0]));
+	int h = LINES - 2;
+	int w = COLS - 2;
+	int top = 0, vis, ch;
+
+	if (h < 8) h = 8;
+	if (w < 44) w = 44;
+	if (h > LINES - 1) h = LINES - 1;
+
+	WINDOW *win = newwin(h, w, 1, 1);
+	keypad(win, TRUE);
+	vis = h - 2;
+	if (vis < 1) vis = 1;
+
+	while (1) {
+		werase(win);
+		box(win, 0, 0);
+		mvwaddstr(win, 0, 2, l->title);
+		mvwaddstr(win, 0, w - 14, "q: close");
+		for (int i = 0; i < vis && top + i < n; i++) {
+			int idx = top + i;
+			int is_hdr = 0;
+			for (int k = 0; k < nh; k++)
+				if (hdr[k] == idx) { is_hdr = 1; break; }
+			if (is_hdr) wattron(win, A_UNDERLINE);
+			mvwaddstr(win, 1 + i, 2, lines[idx]);
+			if (is_hdr) wattroff(win, A_UNDERLINE);
+		}
+		int last = top + vis; if (last > n) last = n;
+		mvwprintw(win, h - 1, 2,
+			"[%d-%d/%d]  Up/Down: scroll   PgUp/PgDn   Home/End   q: close",
+			top + 1, last, n);
+		wnoutrefresh(win);
+		doupdate();
+
+		ch = wgetch(win);
+		if (ch == 'q' || ch == 'Q' || ch == 27)
+			break;
+		else if (ch == KEY_UP || ch == 'k') {
+			if (top > 0) top--;
+		} else if (ch == KEY_DOWN || ch == 'j') {
+			if (top + vis < n) top++;
+		} else if (ch == KEY_PPAGE || ch == 'b') {
+			top -= vis; if (top < 0) top = 0;
+		} else if (ch == KEY_NPAGE || ch == ' ') {
+			top += vis; if (top >= n) top = n - 1;
+		} else if (ch == KEY_HOME) {
+			top = 0;
+		} else if (ch == KEY_END) {
+			top = n - vis; if (top < 0) top = 0;
+		}
+	}
+	delwin(win);
+}
 static void draw_help(WINDOW *win, int start_row, int max_height)
 {
 	const Lang *l = &LANG;
@@ -722,6 +906,7 @@ static void draw_help(WINDOW *win, int start_row, int max_height)
 		{l->help_read,      false},
 		{l->help_gain,      false},
 		{l->help_filter,    false},
+		{l->help_connect,   false},
 		{l->help_presets,   true},
 		{l->help_psave,     false},
 		{l->help_pload,     false},
@@ -793,11 +978,22 @@ static void main_loop(WINDOW *main_win)
 	nodelay(main_win, FALSE);
 	curs_set(0);
 
-	WINDOW *table_win = derwin(main_win, NUM_BANDS + 2, 80, 1, 0);
-	WINDOW *bar_win   = derwin(main_win, 10, 80, NUM_BANDS + 3, 0);
-	WINDOW *help_win  = derwin(main_win, 24, 80, NUM_BANDS + 13, 0);
+	int mrows = getmaxy(main_win);
+	int table_h = NUM_BANDS + 2;
+	int bar_h = 10;
+	int msg_row = mrows - 1;
+	int help_row = 1 + table_h + bar_h;
+	int help_h = 0;
+	if (msg_row - help_row >= 12) {
+		help_h = msg_row - help_row;
+		if (help_h > 24) help_h = 24;
+	}
+
+	WINDOW *table_win = derwin(main_win, table_h, 80, 1, 0);
+	WINDOW *bar_win   = derwin(main_win, bar_h, 80, 1 + table_h, 0);
+	WINDOW *help_win  = help_h > 0 ? derwin(main_win, help_h, 80, help_row, 0) : NULL;
 	WINDOW *status_win= derwin(main_win, 1, 80, 0, 0);
-	WINDOW *msg_win   = derwin(main_win, 1, 80, LINES - 1, 0);
+	WINDOW *msg_win   = derwin(main_win, 1, 80, msg_row, 0);
 
 	wclear(main_win);
 
@@ -818,7 +1014,10 @@ static void main_loop(WINDOW *main_win)
 		draw_gain_bars(bar_win, 0, width);
 
 		/* Help */
-		draw_help(help_win, 0, 24);
+		if (help_win)
+			draw_help(help_win, 0, help_h);
+		else if (help_row < msg_row)
+			mvwaddstr(main_win, help_row, 2, "Press ? or h for full help");
 
 		/* Status message */
 		draw_status_message(msg_win, 0);
@@ -827,7 +1026,8 @@ static void main_loop(WINDOW *main_win)
 		wnoutrefresh(status_win);
 		wnoutrefresh(table_win);
 		wnoutrefresh(bar_win);
-		wnoutrefresh(help_win);
+		if (help_win)
+			wnoutrefresh(help_win);
 		wmove(main_win, current_band + 1, 2 + current_param * 14);
 		wnoutrefresh(msg_win);
 		doupdate();
@@ -835,6 +1035,12 @@ static void main_loop(WINDOW *main_win)
 		ch = wgetch(main_win);
 
 		switch (ch) {
+		case '?':
+		case 'h':
+		case 'H':
+			show_full_help();
+			break;
+
 		case 'q':
 		case 'Q':
 			if (modified) {
@@ -973,6 +1179,29 @@ static void main_loop(WINDOW *main_win)
 			modified = true;
 			break;
 
+		case 'c':
+		case 'C':
+		{
+			int sel;
+			/* Disconnect current device (if any) */
+			disconnect_device();
+			enumerate_devices();
+			if (num_devices == 0) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			sel = select_device_menu();
+			if (sel < 0) {
+				set_status("%s", l->msg_cancelled);
+				break;
+			}
+			if (connect_to_entry(&devices[sel]))
+				set_status("%s", l->status_conn);
+			else
+				set_status("%s", l->msg_no_device);
+			break;
+		}
+
 		case 'a':
 		case 'A':
 			if (!device_connected) {
@@ -1073,7 +1302,15 @@ static void main_loop(WINDOW *main_win)
 				double new_gain = atof(input);
 				if (new_gain >= GLOBAL_GAIN_MIN && new_gain <= GLOBAL_GAIN_MAX) {
 					global_gain = new_gain;
-					modified = true;
+					if (device_connected) {
+						/* Apply immediately to the device RAM (like Audiocular) */
+						set_global_gain_cmd(global_gain);
+						usleep(50000);
+						apply_changes();
+						modified = false;
+					} else {
+						modified = true;
+					}
 					set_status(l->msg_gain_set, global_gain);
 				} else {
 					set_status("ERROR: Range %.0f..+%.0f dB",
@@ -1220,9 +1457,9 @@ static void main_loop(WINDOW *main_win)
 exit_loop:
 	delwin(table_win);
 	delwin(bar_win);
-	delwin(help_win);
+	if (help_win) delwin(help_win);
 	delwin(status_win);
-	delwin(msg_win);
+	if (msg_win) delwin(msg_win);
 	save_presets();
 }
 
@@ -1271,8 +1508,24 @@ int main(int argc, char *argv[])
 	/* Init defaults */
 	init_default_bands();
 
-	/* Connect to device */
-	if (!connect_device()) {
+	/* Enumerate HID devices and let the user pick one to connect to
+	 * (libusb backend, like hidws) */
+	enumerate_devices();
+	if (num_devices > 0) {
+		int sel = select_device_menu();
+		if (sel < 0) {
+			/* User cancelled the picker: clean exit */
+			disconnect_device();
+			delwin(main_win);
+			endwin();
+			return 0;
+		}
+		if (!connect_to_entry(&devices[sel])) {
+			mvaddstr(LINES - 1, 2, l->msg_no_device);
+			mvaddstr(LINES - 0, 2, l->msg_udev_hint);
+			refresh();
+		}
+	} else {
 		mvaddstr(LINES - 1, 2, l->msg_no_device);
 		mvaddstr(LINES - 0, 2, l->msg_udev_hint);
 		refresh();

@@ -1,13 +1,13 @@
 /*
  * hid-list.c
  *
- * Elenca tutti i dispositivi HID USB utilizzando hidapi
- * e mostra i report supportati da ciascun dispositivo.
+ * Lists all USB HID devices using hidapi
+ * and shows the reports supported by each device.
  *
- * Compilazione (backend libusb, non richiede kernel HID/INPUT):
+ * Build (libusb backend, no kernel HID/INPUT support required):
  *   gcc -Wall -O2 hid-list.c -lhidapi-libusb -o hid-list
  *
- * oppure (backend hidraw, richiede kernel CONFIG_HIDRAW=y):
+ * or (hidraw backend, requires kernel CONFIG_HIDRAW=y):
  *   gcc -Wall -O2 hid-list.c -lhidapi-hidraw -o hid-list
  */
 
