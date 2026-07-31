@@ -18,6 +18,19 @@ on:
         options:
           - 'false'
           - 'true'
+      llm_provider:
+        description: 'LLM provider for conflict resolution (openai|anthropic)'
+        required: false
+        default: 'openai'
+        type: choice
+        options:
+          - 'openai'
+          - 'anthropic'
+      llm_model:
+        description: 'LLM model override (default: gpt-4o / claude-sonnet-4-20250514)'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -63,7 +76,7 @@ jobs:
             git branch "$MIRROR_BRANCH" "upstream/$UPSTREAM_BRANCH"
           fi
           # Push upstream-mirror; may be rejected for workflow files (GITHUB_TOKEN limitation)
-          git push origin "$MIRROR_BRANCH" --force-with-lease 2>&1 || echo "Warning: upstream-mirror push failed (workflow files require PAT)" 
+          git push origin "$MIRROR_BRANCH" --force-with-lease 2>&1 || echo "Warning: upstream-mirror push failed (workflow files require PAT)"
 
       # ── 2. Check if sync is needed ───────────────────────────────
       - name: Check if already up-to-date
@@ -162,17 +175,180 @@ jobs:
 
               echo "❌ Merge conflicts detected in $CONFLICT_COUNT files."
 
-              # Abort merge to leave staging branch clean
-              git merge --abort
+              # In dry-run mode abort immediately (no LLM resolution, no push).
+              if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+                git merge --abort
+              fi
+              # NOTE: for real runs the merge is intentionally left in progress
+              # so the LLM resolution step can resolve it on the staging branch.
+              # If LLM resolution is unavailable or fails, that step aborts the
+              # merge and a GitHub Issue is created instead.
             fi
           fi
 
-      # ── 4a. Success: create Pull Request ──────────────────────────
+      # ── 4a. Resolve remaining conflicts via LLM ───────────────────
+      - name: Resolve conflicts via LLM
+        if: |
+          steps.check.outputs.already_synced != 'true' &&
+          steps.merge.outputs.conflict == 'true' &&
+          github.event.inputs.dry_run != 'true'
+        id: llm
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LLM_PROVIDER: ${{ github.event.inputs.llm_provider || 'openai' }}
+          LLM_MODEL: ${{ github.event.inputs.llm_model }}
+          GIT_EDITOR: 'true'
+        run: |
+          set -uo pipefail
+
+          # Fall back to issue creation when no LLM API key is configured.
+          if [ "$LLM_PROVIDER" = "openai" ] && [ -z "${OPENAI_API_KEY:-}" ]; then
+            echo "⚠ No OPENAI_API_KEY configured - aborting merge."
+            echo "llm_resolved=false" >> "$GITHUB_OUTPUT"
+            git merge --abort || true
+            exit 0
+          fi
+          if [ "$LLM_PROVIDER" = "anthropic" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "⚠ No ANTHROPIC_API_KEY configured - aborting merge."
+            echo "llm_resolved=false" >> "$GITHUB_OUTPUT"
+            git merge --abort || true
+            exit 0
+          fi
+
+          python3 - <<'PYEOF'
+          import json, os, subprocess, sys, urllib.request, urllib.error
+
+          provider = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
+          model = os.environ.get("LLM_MODEL", "").strip()
+
+          def git(*args):
+              return subprocess.run(["git"] + list(args), capture_output=True, text=True)
+
+          def llm_call(system_prompt, user_prompt):
+              if provider == "openai":
+                  key = os.environ["OPENAI_API_KEY"]
+                  url = "https://api.openai.com/v1/chat/completions"
+                  payload = {
+                      "model": model or "gpt-4o",
+                      "temperature": 0.2,
+                      "messages": [
+                          {"role": "system", "content": system_prompt},
+                          {"role": "user", "content": user_prompt},
+                      ],
+                  }
+                  req = urllib.request.Request(
+                      url,
+                      data=json.dumps(payload).encode(),
+                      headers={"Content-Type": "application/json",
+                               "Authorization": "Bearer " + key})
+                  with urllib.request.urlopen(req, timeout=300) as resp:
+                      data = json.loads(resp.read().decode())
+                  return data["choices"][0]["message"]["content"]
+              elif provider == "anthropic":
+                  key = os.environ["ANTHROPIC_API_KEY"]
+                  url = "https://api.anthropic.com/v1/messages"
+                  payload = {
+                      "model": model or "claude-sonnet-4-20250514",
+                      "max_tokens": 8192,
+                      "system": system_prompt,
+                      "messages": [{"role": "user", "content": user_prompt}],
+                  }
+                  req = urllib.request.Request(
+                      url,
+                      data=json.dumps(payload).encode(),
+                      headers={"Content-Type": "application/json",
+                               "x-api-key": key,
+                               "anthropic-version": "2023-06-01"})
+                  with urllib.request.urlopen(req, timeout=300) as resp:
+                      data = json.loads(resp.read().decode())
+                  return data["content"][0]["text"]
+              raise RuntimeError("Unsupported LLM_PROVIDER: " + provider)
+
+          SYSTEM = (
+              "You are an expert merge-conflict resolver for the freetz-evo project, a "
+              "fork of Freetz-NG/freetz-ng (embedded Linux firmware build system). "
+              "Merge the given base/local/remote file versions into a single correct "
+              "result that preserves both sides."
+          )
+
+          def build_prompt(path, base, local, remote):
+              return ("File: " + path + "\n\n"
+                  "Merge the three-way conflict below. Return ONLY the final merged file "
+                  "content, no commentary, no markdown fences.\n\n"
+                  "RULES:\n"
+                  "- Keep upstream bug fixes unless they directly conflict with an "
+                  "intentional Freetz-EVO customization.\n"
+                  "- Keep Freetz-EVO-specific behavior unless upstream already provides "
+                  "an equivalent implementation.\n"
+                  "- Remove duplicate comments, duplicate branches, and duplicate list "
+                  "entries after merging both sides.\n"
+                  "- Preserve shell syntax, quoting style, and the surrounding file "
+                  "structure.\n"
+                  "- For config/menu files (Config.in, *.libs), keep the local EVO menu "
+                  "placement unless upstream adds genuinely new entries.\n\n"
+                  "===== BASE =====\n" + base + "\n"
+                  "===== LOCAL (Freetz-EVO) =====\n" + local + "\n"
+                  "===== REMOTE (upstream) =====\n" + remote + "\n")
+
+          conflicted = git("diff", "--name-only", "--diff-filter=U").stdout.split()
+          failed = []
+          for path in conflicted:
+              base = git("show", ":1:" + path).stdout
+              local = git("show", ":2:" + path).stdout
+              remote = git("show", ":3:" + path).stdout
+              try:
+                  merged = llm_call(SYSTEM, build_prompt(path, base, local, remote))
+                  merged = merged.strip()
+                  # strip possible markdown fences
+                  if merged.startswith("```"):
+                      lines = merged.splitlines()
+                      if lines and lines[0].startswith("```"):
+                          lines = lines[1:]
+                      if lines and lines[-1].startswith("```"):
+                          lines = lines[:-1]
+                      merged = "\n".join(lines).strip()
+                  with open(path, "w", encoding="utf-8") as fh:
+                      fh.write(merged + "\n")
+                  git("add", path)
+                  print("✅ Resolved via LLM: " + path)
+              except Exception as e:
+                  failed.append(path)
+                  print("❌ LLM failed for " + path + ": " + str(e))
+
+          if failed:
+              print("LLM_FAILED_FILES: " + ", ".join(failed))
+              sys.exit(1)
+
+          # Check if any conflicts remain (e.g. git add may not have cleared them)
+          remaining = git("diff", "--name-only", "--diff-filter=U").stdout.split()
+          if remaining:
+              print("LLM_FAILED_FILES: " + ", ".join(remaining))
+              sys.exit(1)
+
+          # Continue the merge
+          rc = git("merge", "--continue")
+          if rc.returncode != 0:
+              print("❌ merge --continue failed: " + rc.stderr)
+              sys.exit(1)
+          print("✅ Merge continued after LLM resolution")
+          PYEOF
+
+          if [ $? -eq 0 ]; then
+            echo "llm_resolved=true" >> "$GITHUB_OUTPUT"
+            echo "🎉 All conflicts resolved via LLM."
+          else
+            echo "llm_resolved=false" >> "$GITHUB_OUTPUT"
+            echo "❌ LLM resolution failed - aborting merge."
+            git merge --abort || true
+          fi
+
+      # ── 4b. Success: create Pull Request ─────────────────────────
       - name: Push sync branch to origin
         if: |
           steps.check.outputs.already_synced != 'true' &&
-          steps.merge.outputs.conflict != 'true' &&
-          github.event.inputs.dry_run != 'true'
+          github.event.inputs.dry_run != 'true' &&
+          (steps.merge.outputs.conflict != 'true' || steps.llm.outputs.llm_resolved == 'true')
         run: |
           # Push the sync branch so a PR can be created from it
           git push origin "${{ steps.merge.outputs.sync_branch }}"
@@ -180,8 +356,8 @@ jobs:
       - name: Create Pull Request
         if: |
           steps.check.outputs.already_synced != 'true' &&
-          steps.merge.outputs.conflict != 'true' &&
-          github.event.inputs.dry_run != 'true'
+          github.event.inputs.dry_run != 'true' &&
+          (steps.merge.outputs.conflict != 'true' || steps.llm.outputs.llm_resolved == 'true')
         uses: actions/github-script@v7
         with:
           script: |
@@ -217,11 +393,12 @@ jobs:
           echo "    git push origin ${{ steps.merge.outputs.sync_branch }}"
           echo "    gh pr create --base master --head ${{ steps.merge.outputs.sync_branch }}"
 
-      # ── 4b. Conflict: create GitHub Issue ────────────────────────
+      # ── 4c. Conflict (unresolved by LLM): create GitHub Issue ───
       - name: Create conflict issue
         if: |
           steps.check.outputs.already_synced != 'true' &&
-          steps.merge.outputs.conflict == 'true'
+          steps.merge.outputs.conflict == 'true' &&
+          steps.llm.outputs.llm_resolved != 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -315,6 +492,8 @@ jobs:
 
           if [ "${{ steps.check.outputs.already_synced }}" = "true" ]; then
             echo "✅ **Already up-to-date** with upstream." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.merge.outputs.conflict }}" = "true" ] && [ "${{ steps.llm.outputs.llm_resolved }}" = "true" ]; then
+            echo "✅ **Merge conflicts resolved via LLM** (${{ steps.merge.outputs.conflict_count }} files) -- PR created for review." >> "$GITHUB_STEP_SUMMARY"
           elif [ "${{ steps.merge.outputs.conflict }}" = "true" ]; then
             echo "❌ **Merge conflicts** detected in ${{ steps.merge.outputs.conflict_count }} files." >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
