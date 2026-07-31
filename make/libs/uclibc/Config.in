@@ -1,116 +1,112 @@
-menu "uClibc"
+config FREETZ_LIB_ld_uClibc
+	bool "uClibc (ld-uClibc-x.y.z.so)"
+	default n
+	help
+		uClibc is a small C standard library intended for embedded Linux
+		systems. uClibc was created to support uClinux, a version of Linux not
+		requiring a memory management unit and thus suited for microcontrollers
+		(hence the "uC" in the name - "u" is a replacement for the Greek
+		character "miu" often used as an abbreviation for the prefix "micro").
 
-	choice
-		prompt "Version"
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_28 if FREETZ_TARGET_UCLIBC_0_9_28
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_29 if FREETZ_TARGET_UCLIBC_0_9_29
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_32 if FREETZ_TARGET_UCLIBC_0_9_32
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_33 if FREETZ_TARGET_UCLIBC_0_9_33
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_14 if FREETZ_TARGET_UCLIBC_1_0_14
-			default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58 if FREETZ_TARGET_UCLIBC_1_0_58
+		uClibc is much smaller than GNU C Library (glibc), the C library
+		normally used with Linux distributions. While glibc is intended to fully
+		support all relevant C standards across a wide range of platforms,
+		uClibc is specifically focused on embedded Linux. Features can be
+		enabled or disabled according to space requirements.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_28
-			bool "uclibc-0.9.28"
-			depends on FREETZ_TARGET_UCLIBC_0_9_28
+config FREETZ_LIB_libcrypt
+	bool "libcrypt (libcrypt-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_29
-			bool "uclibc-0.9.29"
-			depends on FREETZ_TARGET_UCLIBC_0_9_29
+config FREETZ_LIB_libdl
+	bool "libdl (libdl-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_32
-			bool "uclibc-0.9.32.1"
-			depends on FREETZ_TARGET_UCLIBC_0_9_32
+config FREETZ_LIB_libm
+	bool "libm (libm-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_33
-			bool "uclibc-0.9.33.2"
-			depends on FREETZ_TARGET_UCLIBC_0_9_33
+config FREETZ_LIB_libpthread
+	bool "libpthread (libpthread-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_14
-			bool "uclibc-1.0.14"
-			depends on FREETZ_TARGET_UCLIBC_1_0_14
+config FREETZ_LIB_librt
+	bool "librt (librt-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-		config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58
-			bool "uclibc-1.0.58"
-			depends on FREETZ_TARGET_UCLIBC_1_0_58
+config FREETZ_LIB_libthread_db
+	bool "libthread_db (libthread_db-x.y.z.so)"
+	default n
+	help
+		A part of older uClibc.
 
-	endchoice
+config FREETZ_LIB_libubacktrace
+	bool "libubacktrace (libubacktrace-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs && FREETZ_TARGET_UCLIBC_SUPPORTS_libubacktrace
+	default n
+	help
+		A part of older uClibc.
 
-	config FREETZ_LIB_ld_uClibc
-		bool "uClibc (ld-uClibc-x.y.z.so)"
-		default n
-		help
-			uClibc is a small C standard library intended for embedded Linux
-			systems. uClibc was created to support uClinux, a version of Linux not
-			requiring a memory management unit and thus suited for microcontrollers
-			(hence the "uC" in the name - "u" is a replacement for the Greek
-			character "miu" often used as an abbreviation for the prefix "micro").
+config FREETZ_LIB_libuClibc
+	bool "libuClibc (libuClibc-x.y.z.so)"
+	default n
+	help
+		A part of older uClibc.
 
-			uClibc is much smaller than GNU C Library (glibc), the C library
-			normally used with Linux distributions. While glibc is intended to fully
-			support all relevant C standards across a wide range of platforms,
-			uClibc is specifically focused on embedded Linux. Features can be
-			enabled or disabled according to space requirements.
+config FREETZ_LIB_libutil
+	bool "libutil (libutil-x.y.z.so)"
+	depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A part of older uClibc.
 
-	config FREETZ_LIB_libcrypt
-		bool "libcrypt (libcrypt-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
+choice
+	prompt "Version" if FALSE
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_28 if FREETZ_TARGET_UCLIBC_0_9_28
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_29 if FREETZ_TARGET_UCLIBC_0_9_29
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_32 if FREETZ_TARGET_UCLIBC_0_9_32
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_33 if FREETZ_TARGET_UCLIBC_0_9_33
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_14 if FREETZ_TARGET_UCLIBC_1_0_14
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58 if FREETZ_TARGET_UCLIBC_1_0_58
 
-	config FREETZ_LIB_libdl
-		bool "libdl (libdl-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_28
+		bool "uclibc-0.9.28"
+		depends on FREETZ_TARGET_UCLIBC_0_9_28
 
-	config FREETZ_LIB_libm
-		bool "libm (libm-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_29
+		bool "uclibc-0.9.29"
+		depends on FREETZ_TARGET_UCLIBC_0_9_29
 
-	config FREETZ_LIB_libpthread
-		bool "libpthread (libpthread-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_32
+		bool "uclibc-0.9.32.1"
+		depends on FREETZ_TARGET_UCLIBC_0_9_32
 
-	config FREETZ_LIB_librt
-		bool "librt (librt-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_33
+		bool "uclibc-0.9.33.2"
+		depends on FREETZ_TARGET_UCLIBC_0_9_33
 
-	config FREETZ_LIB_libthread_db
-		bool "libthread_db (libthread_db-x.y.z.so)"
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_14
+		bool "uclibc-1.0.14"
+		depends on FREETZ_TARGET_UCLIBC_1_0_14
 
-	config FREETZ_LIB_libubacktrace
-		bool "libubacktrace (libubacktrace-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs && FREETZ_TARGET_UCLIBC_SUPPORTS_libubacktrace
-		default n
-		help
-			A part of older uClibc.
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58
+		bool "uclibc-1.0.58"
+		depends on FREETZ_TARGET_UCLIBC_1_0_58
 
-	config FREETZ_LIB_libuClibc
-		bool "libuClibc (libuClibc-x.y.z.so)"
-		default n
-		help
-			A part of older uClibc.
-
-	config FREETZ_LIB_libutil
-		bool "libutil (libutil-x.y.z.so)"
-		depends on FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A part of older uClibc.
-
-endmenu # uClibc
+endchoice
 

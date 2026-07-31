@@ -105,8 +105,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 		$(APACHE2_DEST_DIR)/usr/{bin,include,sbin/envvars-std,share/man} \
 		$(APACHE2_DEST_DIR)/usr/share/apache2/{build,cgi-bin/*,error/README*,icons/README*,icons/*.gif,icons/*/*.gif,manual} \
 		$(APACHE2_DEST_DIR)/var
-# strip binaries & modules
-	-$(TARGET_STRIP) $(APACHE2_DEST_DIR)/usr/sbin/* $(APACHE2_DEST_DIR)/usr/lib/apache2/*.so
+# strip binaries & modules (& scripts !)
+	-$(TARGET_STRIP) $(APACHE2_DEST_DIR)/usr/sbin/* $(APACHE2_DEST_DIR)/usr/lib/apache2/*.so >/dev/null 2>&1
 # rename suexec to suexec2 manually, apache ignores --with-suexec-bin option
 	mv $(APACHE2_DEST_DIR)/usr/sbin/suexec $(APACHE2_DEST_DIR)/usr/sbin/suexec2
 

@@ -1,48 +1,45 @@
-menu "librrd"
+choice
+	prompt "Version"
+		default FREETZ_LIB_librrd_WITH_VERSION_CURRENT
 
-	choice
-		prompt "Version"
-			default FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	config FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+		bool "1.2.30"
 
-		config FREETZ_LIB_librrd_WITH_VERSION_ABANDON
-			bool "1.2.30"
+	config FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+		bool "1.10.3"
+		depends on FREETZ_SEPARATE_AVM_UCLIBC
 
-		config FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-			bool "1.10.3"
-			depends on FREETZ_SEPARATE_AVM_UCLIBC
+endchoice
 
-	endchoice
+config FREETZ_LIB_librrd
+	bool "librrd (librrd.so)"
+	select FREETZ_LIB_libglib_2        if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libgobject_2     if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libintl          if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libharfbuzz      if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libcairo         if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libpango_1       if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libpangocairo_1  if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libxml2          if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
+	select FREETZ_LIB_libpng16
+	select FREETZ_LIB_libm             if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libart_lgpl_2    if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+	select FREETZ_LIB_libfreetype      if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+	select FREETZ_LIB_libz             if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+	default n
+	help
+		Library implementing most of the functionality of RRDTool.
 
-	config FREETZ_LIB_librrd
-		bool "librrd (librrd.so)"
-		select FREETZ_LIB_libglib_2        if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libgobject_2     if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libintl          if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libharfbuzz      if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libcairo         if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libpango_1       if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libpangocairo_1  if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libxml2          if FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		select FREETZ_LIB_libpng16
-		select FREETZ_LIB_libm             if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		select FREETZ_LIB_libart_lgpl_2    if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
-		select FREETZ_LIB_libfreetype      if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
-		select FREETZ_LIB_libz             if FREETZ_LIB_librrd_WITH_VERSION_ABANDON
-		default n
-		help
-			Library implementing most of the functionality of RRDTool.
+config FREETZ_LIB_librrd_th
+	bool "librrd_th (librrd_th.so)"
+	depends on FREETZ_LIB_librrd_WITH_VERSION_ABANDON
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libart_lgpl_2
+	select FREETZ_LIB_libfreetype
+	select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libpng16
+	select FREETZ_LIB_libz
+	default n
+	help
+		Threaded version of librrd library.
 
-	config FREETZ_LIB_librrd_th
-		bool "librrd_th (librrd_th.so)"
-		depends on FREETZ_LIB_librrd_WITH_VERSION_ABANDON
-		select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		select FREETZ_LIB_libart_lgpl_2
-		select FREETZ_LIB_libfreetype
-		select FREETZ_LIB_libm        if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		select FREETZ_LIB_libpng16
-		select FREETZ_LIB_libz
-		default n
-		help
-			Threaded version of librrd library.
-
-endmenu # librrd

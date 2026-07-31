@@ -1,24 +1,18 @@
-menu "libunbound"
-
-	config FREETZ_LIB_libunbound
-		bool "libunbound (libunbound.so)"
-		depends on FREETZ_KERNEL_VERSION_2_6_39_MIN
-		select FREETZ_LIB_libssl
-		select FREETZ_LIB_libcrypto
-		default n
-		help
-			This is the library API, for using the -lunbound  library. The library
-			works independent from a running unbound server, and  can  be  used to
-			convert  hostnames to ip addresses, and back, and obtain other informa-
-			tion from the DNS. The library performs public-key  validation  of  re-
-			sults with DNSSEC.
-
-	comment " ---"
+config FREETZ_LIB_libunbound
+	bool "libunbound (libunbound.so)"
+	depends on FREETZ_KERNEL_VERSION_2_6_39_MIN
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libcrypto
+	default n
+	help
+		This is the library API, for using the -lunbound  library. The library
+		works independent from a running unbound server, and  can  be  used to
+		convert  hostnames to ip addresses, and back, and obtain other informa-
+		tion from the DNS. The library performs public-key  validation  of  re-
+		sults with DNSSEC.
 
 	config FREETZ_LIB_libunbound_WITH_EC
-		bool "Force elliptic curve support"
+		bool "Force elliptic curve support" if FREETZ_LIB_libunbound
 		select FREETZ_LIB_libcrypto_WITH_EC
 		default n
-
-endmenu # libunbound
 

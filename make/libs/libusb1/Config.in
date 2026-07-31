@@ -1,14 +1,12 @@
-menu "libusb1"
-
-	config FREETZ_LIB_libusb1
-		bool "libusb-1.0 (libusb-1.0.so)"
-		select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			A library for accessing Linux USB devices (current API).
+config FREETZ_LIB_libusb1
+	bool "libusb-1.0 (libusb-1.0.so)"
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		A library for accessing Linux USB devices (current API).
 
 	choice
-		prompt "Version"
+		prompt "Version" if FALSE
 			default FREETZ_LIB_libusb1_WITH_VERSION_CURRENT
 
 		config FREETZ_LIB_libusb1_WITH_VERSION_ABANDON
@@ -19,6 +17,4 @@ menu "libusb1"
 			bool "1.0.30"
 			depends on !(FREETZ_TARGET_GCC_4_MAX || FREETZ_KERNEL_VERSION_2_MAX)
 	endchoice
-
-endmenu # libusb1
 

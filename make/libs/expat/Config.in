@@ -1,7 +1,17 @@
-menu "libexpat"
+config FREETZ_LIB_libexpat
+	bool "libexpat (libexpat.so)"
+	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		This is Expat, a C library for parsing XML, written by James Clark.
+		Expat is a stream-oriented XML parser. This means that you register
+		handlers with the parser before starting the parse. These handlers
+		are called when the parser discovers the associated structures in the
+		document being parsed. A start tag is an example of the kind of
+		structures for which you may register handlers.
 
 	choice
-		prompt "Version"
+		prompt "Version" if FALSE
 			default FREETZ_LIB_libexpat_WITH_VERSION_CURRENT
 
 		config FREETZ_LIB_libexpat_WITH_VERSION_ABANDON
@@ -13,18 +23,4 @@ menu "libexpat"
 			depends on !FREETZ_TARGET_GCC_5_MAX
 
 	endchoice
-
-	config FREETZ_LIB_libexpat
-		bool "libexpat (libexpat.so)"
-		select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		default n
-		help
-			This is Expat, a C library for parsing XML, written by James Clark.
-			Expat is a stream-oriented XML parser. This means that you register
-			handlers with the parser before starting the parse. These handlers
-			are called when the parser discovers the associated structures in the
-			document being parsed. A start tag is an example of the kind of
-			structures for which you may register handlers.
-
-endmenu # libexpat
 

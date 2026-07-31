@@ -573,10 +573,10 @@ recover:
 	fi
 
 xconfig: config-cache kconfig-host-qconf
-	@$(CONFIG)/qconf $(CONFIG_IN_CACHE)
+	@srctree=$(CONFIG) $(CONFIG)/qconf $(CONFIG_IN_CACHE)
 
 gconfig: config-cache kconfig-host-gconf
-	@$(CONFIG)/gconf $(CONFIG_IN_CACHE)
+	@srctree=$(CONFIG) $(CONFIG)/gconf $(CONFIG_IN_CACHE)
 
 nconfig: config-cache kconfig-host-nconf
 	@$(CONFIG)/nconf $(CONFIG_IN_CACHE)

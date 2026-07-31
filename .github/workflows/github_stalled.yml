@@ -25,7 +25,7 @@ jobs:
     steps:
 
       - name: stalled
-        uses: actions/stale@v10
+        uses: actions/stale@v11
         env:
           # global
           STALE_LABEL:             'stalled'

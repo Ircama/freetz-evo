@@ -185,6 +185,8 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
   * fritzbox-7590-ax/
     - deutschland: [FRITZ.Box_7590_AX-08.25.image](https://download.avm.de/fritzbox/fritzbox-7590-ax/deutschland/fritz.os/FRITZ.Box_7590_AX-08.25.image)
     - other: [FRITZ.Box_7590_AX-08.25.image](https://download.avm.de/fritzbox/fritzbox-7590-ax/other/fritz.os/FRITZ.Box_7590_AX-08.25.image)
+  * fritzbox-7620/
+    - deutschland: [FRITZ.Box_7620-08.26.image](https://download.avm.de/fritzbox/fritzbox-7620/deutschland/fritz.os/FRITZ.Box_7620-08.26.image)
   * fritzbox-7630/
     - deutschland: [FRITZ.Box_7630-08.25.image](https://download.avm.de/fritzbox/fritzbox-7630/deutschland/fritz.os/FRITZ.Box_7630-08.25.image)
     - other: [FRITZ.Box_7630-08.25.image](https://download.avm.de/fritzbox/fritzbox-7630/other/fritz.os/FRITZ.Box_7630-08.25.image)
@@ -192,8 +194,8 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
     - deutschland: [FRITZ.Box_7632-08.25.image](https://download.avm.de/fritzbox/fritzbox-7632/deutschland/fritz.os/FRITZ.Box_7632-08.25.image)
     - other: [FRITZ.Box_7632-08.25.image](https://download.avm.de/fritzbox/fritzbox-7632/other/fritz.os/FRITZ.Box_7632-08.25.image)
   * fritzbox-7682/
-    - deutschland: [FRITZ.Box_7682-08.03.image](https://download.avm.de/fritzbox/fritzbox-7682/deutschland/fritz.os/FRITZ.Box_7682-08.03.image)
-    - other: [FRITZ.Box_7682-08.03.image](https://download.avm.de/fritzbox/fritzbox-7682/other/fritz.os/FRITZ.Box_7682-08.03.image)
+    - deutschland: [FRITZ.Box_7682-08.25.image](https://download.avm.de/fritzbox/fritzbox-7682/deutschland/fritz.os/FRITZ.Box_7682-08.25.image)
+    - other: [FRITZ.Box_7682-08.25.image](https://download.avm.de/fritzbox/fritzbox-7682/other/fritz.os/FRITZ.Box_7682-08.25.image)
   * fritzbox-7690/
     - deutschland: [FRITZ.Box_7690-08.25.image](https://download.avm.de/fritzbox/fritzbox-7690/deutschland/fritz.os/FRITZ.Box_7690-08.25.image)
     - other: [FRITZ.Box_7690-08.25.image](https://download.avm.de/fritzbox/fritzbox-7690/other/fritz.os/FRITZ.Box_7690-08.25.image)

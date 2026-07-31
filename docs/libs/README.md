@@ -168,7 +168,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libcares 1.28.1 (Async DNS resolver library) 1.34.6](libcares.md)<a id='libcares'></a>**<br>
     c-ares is a C library that performs DNS requests and name lookups asynchronously. It is intended for applications which need to perform DNS queries without blocking, or need to perform multiple DNS queries in parallel. This library is used by various download managers and networking tools for asynchronous DNS resolution.
 
-  * **[libcjson 1.7.19](libcjson.md)<a id='libcjson'></a>**<br>
+  * **[libcjson (libcjson.so) 1.7.19](libcjson.md)<a id='libcjson'></a>**<br>
     Ultralightweight JSON parser in ANSI C.
 
   * **[libconfig (libconfig.so) 1.5](libconfig.md)<a id='libconfig'></a>**<br>

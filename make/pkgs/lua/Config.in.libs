@@ -1,7 +1,11 @@
-menu "liblua"
+config FREETZ_LIB_liblua
+	bool "liblua (liblua.so)"
+	default n
+	help
+		LUA library
 
 	choice
-		prompt "Version"
+		prompt "Version" if FREETZ_LIB_liblua
 			default FREETZ_LIB_liblua_WITH_VERSION_CURRENT
 
 		config FREETZ_LIB_liblua_WITH_VERSION_ABANDON
@@ -14,19 +18,9 @@ menu "liblua"
 
 	endchoice
 
-	config FREETZ_LIB_liblua
-		bool "liblua (liblua.so)"
-		default n
-		help
-			LUA library
-
-	comment " ---"
-
 	config FREETZ_LIB_liblua_WITH_FLOAT
-		bool "Use float instead double"
+		bool "Use float instead double" if FREETZ_LIB_liblua
 		default n
 		help
 			Like AVM's binary: https://github.com/Freetz-NG/freetz-ng/issues/497
-
-endmenu # liblua
 

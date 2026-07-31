@@ -138,6 +138,7 @@ Latest changes
     * OpenSSH 9.3p2/10.4p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7
     * OpenVPN 2.4.12/2.5.11/2.6.21/2.7.5
+    * PHP 5.6.40/8.2.33/8.3.33/8.4.24/8.5.9
     * procps-ng 4.0.6
     * Python 3.14.3
     * RRDtool 1.2.30/1.10.3
@@ -145,7 +146,7 @@ Latest changes
     * rsync 3.4.1/3.4.4
     * sslh 2.2.4/2.3.1
     * Stunnel 5.79
-    * SQLite 3.40.1/3.53.3
+    * SQLite 3.40.1/3.53.4
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
     * tmux 3.7b
