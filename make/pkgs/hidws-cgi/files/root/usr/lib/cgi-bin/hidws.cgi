@@ -41,6 +41,7 @@ cat << EOF
 <li><a href="https://ircama.github.io/kt02h20-control/" target="_blank" rel="noopener">kt02h20-control</a> — <small>$(lang de:"Steuerung für FiiO JA11 (KT02H20)" en:"Control for FiiO JA11 (KT02H20)")</small></li>
 <li><a href="https://ircama.github.io/Audiocular-Aura/" target="_blank" rel="noopener">Audiocular-Aura (AuraPEQ)</a> — <small>$(lang de:"Parametrischer Equalizer für USB-DACs" en:"Parametric equalizer for USB DACs")</small></li>
 <li><a href="https://ircama.github.io/fiiocontrol-oss/" target="_blank" rel="noopener">fiiocontrol-oss</a> — <small>$(lang de:"EQ-Steuerung für FiiO DACs" en:"EQ control for FiiO DACs")</small></li>
+<li><a href="https://ircama.github.io/webhid-explorer/" target="_blank" rel="noopener">webhid-explorer</a> — <small>$(lang de:"HID-Explorer (Geräte, Report-Deskriptoren)" en:"HID explorer (devices, report descriptors)")</small></li>
 </ul>
 <p><small>$(lang de:"Hinweis: Auf HTTPS-Seiten (GitHub Pages) kann eine unsichere ws://-Verbindung blockiert werden. Dann wss:// verwenden oder die App lokal über http ausführen." en:"Note: on HTTPS pages (GitHub Pages) an insecure ws:// connection may be blocked; use wss:// or run the app locally over http.")</small></p>
 EOF

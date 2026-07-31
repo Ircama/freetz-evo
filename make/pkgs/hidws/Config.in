@@ -1,4 +1,4 @@
-config FREETZ_PACKAGE_HIDWS
+menuconfig FREETZ_PACKAGE_HIDWS
         bool "hidws 1.1 (binary only)"
         select FREETZ_LIB_hidapi
         select FREETZ_LIB_libwebsockets
@@ -31,3 +31,18 @@ config FREETZ_PACKAGE_HIDWS
 
                 Protocol based on the Audiocular Aura backend:
                 https://github.com/mandy321/Audiocular-Aura
+
+if FREETZ_PACKAGE_HIDWS
+
+        config FREETZ_PACKAGE_HIDWS_CGI
+                bool "hidws CGI (freetz configuration web page)"
+                default y
+                help
+                        Provides a freetz web configuration page for the hidws
+                        daemon: init script, default config and web UI with the
+                        startup log and links to the supported web apps.
+
+                        This is the same symbol shown in
+                        "Packages -> Web interfaces".
+
+endif # FREETZ_PACKAGE_HIDWS

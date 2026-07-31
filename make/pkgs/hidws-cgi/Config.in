@@ -2,7 +2,6 @@ config FREETZ_PACKAGE_HIDWS_CGI
 	bool "hidws CGI (freetz configuration web page)"
 	depends on FREETZ_PACKAGE_HIDWS
 	select FREETZ_BUSYBOX_START_STOP_DAEMON
-	default y
 	help
 		Provides the freetz CGI configuration page and execution log for
 		the hidws WebSocket <-> USB HID gateway daemon.

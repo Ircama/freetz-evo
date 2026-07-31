@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 1.1.0)
+$(call PKG_INIT_BIN, 1.2.2)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=5d044497e169d480e20f292f7cc8e88014fe0b511bf26795fe6a807b0a26c411
+$(PKG)_HASH:=b4a3cd4da25535f373d400c6eb79602192a0a9c34db3df439d8fe265321f2e5e
 $(PKG)_SITE:=https://github.com/Ircama/hidws/archive/refs/tags
 ### WEBSITE:=https://github.com/Ircama/hidws
 ### CHANGES:=https://github.com/Ircama/hidws/releases
@@ -26,11 +26,15 @@ $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
 	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_LDFLAGS) \
-		-Wall -Wextra -Os -std=c11 \
+		-Wall -Wextra -O0 -std=c11 \
 		-D_DEFAULT_SOURCE -D_GNU_SOURCE \
 		$(HIDWS_DIR)/hidws.c \
 		-o $@ \
 		-lhidapi-libusb -lwebsockets -lpthread
+
+# NOTE: hidws MUST be built with -O0. The reader thread is miscompiled by
+# GCC -O1+ on the MIPS/uClibc toolchain (NULL-deref inside hid_read_timeout
+# right after "[hid] Reader thread started"). Only -O0 is stable there.
 
 $($(PKG)_BINARY_HIDLIST_BUILD): $($(PKG)_DIR)/.configured
 	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_LDFLAGS) \
