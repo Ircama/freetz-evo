@@ -6,8 +6,8 @@
 name: Sync Upstream freetz-ng
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'          # every Monday at 06:00 UTC
+  #schedule:
+  #  - cron: '0 6 * * 1'          # every Monday at 06:00 UTC
   workflow_dispatch:               # manual trigger from Actions tab
     inputs:
       dry_run:
