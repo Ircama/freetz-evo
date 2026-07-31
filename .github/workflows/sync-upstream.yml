@@ -23,7 +23,6 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
-  workflows: write
 
 jobs:
   sync:
@@ -63,7 +62,8 @@ jobs:
           else
             git branch "$MIRROR_BRANCH" "upstream/$UPSTREAM_BRANCH"
           fi
-          git push origin "$MIRROR_BRANCH" --force-with-lease
+          # Push upstream-mirror; may be rejected for workflow files (GITHUB_TOKEN limitation)
+          git push origin "$MIRROR_BRANCH" --force-with-lease 2>&1 || echo "Warning: upstream-mirror push failed (workflow files require PAT)" 
 
       # ── 2. Check if sync is needed ───────────────────────────────
       - name: Check if already up-to-date
