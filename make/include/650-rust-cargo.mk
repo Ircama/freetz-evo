@@ -208,6 +208,67 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 endef
 
+# Shared module sources for the uClibc 32-bit x86 libc patch (see
+# RUST_APPLY_UCLIBC_X86_LIBC_PATCH below).
+#   * libc-x86-uclibc.rs     : new-style module, for libc >= 0.2.183
+#     (crate:: paths, crate::prelude, Padding<T>)
+#   * libc-x86-uclibc-159.rs : old-style module, for libc < 0.2.183
+#     (`::`-prefixed types; c_char/c_long/c_ulong defined in the arch module)
+RUST_LIBC_X86_UCLIBC_MODULE:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc.rs
+RUST_LIBC_X86_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc-159.rs
+
+# Apply the uClibc 32-bit x86 libc module patch to every libc-0.2.x crate in the
+# cargo registry. Use this in any Rust package built for i686-unknown-linux-uclibc.
+#
+# The Rust `libc` crate ships NO x86 (32-bit) uClibc module for ANY 0.2.x
+# version (only mips/arm/x86_64), which breaks `-Z build-std` on x86. This macro:
+#   1. Pre-fetches libc 0.2.185 (the version Rust std pulls in via build-std) so
+#      it is present in the registry and gets patched before the build.
+#   2. For every libc-0.2.* found, creates
+#      src/unix/linux_like/linux/uclibc/x86/mod.rs from the shared module source
+#      matching the crate's syntax style, and wires it into the parent
+#      uclibc/mod.rs (cfg_if branch + missing B19200/B38400/SIGIO constants
+#      referenced by EXTA/EXTB).
+#
+# The libc source style changed at 0.2.183:
+#   - libc < 0.2.183 (old style)  -> $(RUST_LIBC_X86_UCLIBC_MODULE_OLD)
+#   - libc >= 0.2.183 (new style) -> $(RUST_LIBC_X86_UCLIBC_MODULE)
+#
+# Safe on all architectures: on mips/arm/x86_64 the added x86 cfg_if branch and
+# module are simply not compiled.
+#
+# Requires: CARGO_HOME exported, nightly toolchain with rust-src, and a PRIVATE
+# CARGO_HOME (packages must not share ~/.cargo, otherwise they overwrite each
+# other's registry patches).
+define RUST_APPLY_UCLIBC_X86_LIBC_PATCH
+	mkdir -p /tmp/libc-fetch/src; \
+	touch /tmp/libc-fetch/src/lib.rs; \
+	printf '[package]\nname = "tmp"\nversion = "0.1.0"\nedition = "2021"\n[dependencies]\nlibc = "=0.2.185"\n' > /tmp/libc-fetch/Cargo.toml; \
+	CARGO_HOME="$$CARGO_HOME" cargo +nightly fetch --manifest-path /tmp/libc-fetch/Cargo.toml 2>&1 || true; \
+	rm -rf /tmp/libc-fetch; \
+	for libc_mod_file in $$(find "$$CARGO_HOME/registry/src" -path "*/libc-0.2.*/src/unix/linux_like/linux/uclibc/mod.rs" 2>/dev/null); do \
+		echo "Patching libc at: $$libc_mod_file"; \
+		libc_dir="$${libc_mod_file%/src/unix/linux_like/linux/uclibc/mod.rs}"; \
+		libc_x86_dir="$$(dirname "$$libc_mod_file")/x86"; \
+		libc_minor="$$(echo "$$libc_mod_file" | sed -n 's|.*/libc-0\.2\.\([0-9][0-9]*\)/.*|\1|p')"; \
+		chmod -R u+w "$$libc_dir" 2>/dev/null || true; \
+		mkdir -p "$$libc_x86_dir"; \
+		if [ -n "$$libc_minor" ] && [ "$$libc_minor" -lt 183 ]; then \
+			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE_OLD) "$$libc_x86_dir/mod.rs"; \
+		else \
+			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE) "$$libc_x86_dir/mod.rs"; \
+		fi; \
+		if ! grep -q 'target_arch = "x86")' "$$libc_mod_file"; then \
+			sed -i '/^    } else if #\[cfg(target_arch = "x86_64")\] {/i\    } else if #[cfg(target_arch = "x86")] {\n        mod x86;\n        pub use self::x86::*;' "$$libc_mod_file"; \
+		fi; \
+		if grep -q '^pub const EXTA: ::c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
+			perl -0pi -e 's@(^pub const EXTA: ::c_uint = B19200;)@pub const B19200: ::speed_t = 0o000016;\npub const B38400: ::speed_t = 0o000017;\npub const SIGIO: ::c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
+		elif grep -q '^pub const EXTA: c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
+			perl -0pi -e 's@(^pub const EXTA: c_uint = B19200;)@pub const B19200: crate::speed_t = 0xe;\npub const B38400: crate::speed_t = 0xf;\npub const SIGIO: c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
+		fi; \
+	done;
+endef
+
 # Set environment variables for openssl-sys cross-compilation.
 # Uses TARGET-PREFIXED UPPERCASE vars (e.g. MIPS_UNKNOWN_LINUX_UCLIBC_OPENSSL_DIR)
 # which openssl-sys reads only for the specific cross target, NOT for host builds.

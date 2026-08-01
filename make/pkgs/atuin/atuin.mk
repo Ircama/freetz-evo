@@ -44,25 +44,7 @@ $($(PKG)_BINARY): $(ATUIN_DIR)/.configured
 		[ -f "$$socket2_src" ] || continue; \
 		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
 	done; \
-	mkdir -p /tmp/libc-fetch/src; \
-	touch /tmp/libc-fetch/src/lib.rs; \
-	printf '[package]\nname = "tmp"\nversion = "0.1.0"\nedition = "2021"\n[dependencies]\nlibc = "=0.2.185"\n' > /tmp/libc-fetch/Cargo.toml; \
-	CARGO_HOME="$$CARGO_HOME" cargo +nightly fetch --manifest-path /tmp/libc-fetch/Cargo.toml 2>&1 || true; \
-	rm -rf /tmp/libc-fetch; \
-	for libc_mod_file in $$(find "$$CARGO_HOME/registry/src" -path "*/libc-0.2.*/src/unix/linux_like/linux/uclibc/mod.rs" 2>/dev/null); do \
-		echo "Patching libc at: $$libc_mod_file"; \
-		libc_x86_dir="$$(dirname "$$libc_mod_file")/x86"; \
-		if [ ! -d "$$libc_x86_dir" ]; then \
-			mkdir -p "$$libc_x86_dir"; \
-			cp $(FREETZ_BASE_DIR)/make/pkgs/atuin/files/libc-x86-uclibc.rs "$$libc_x86_dir/mod.rs"; \
-		fi; \
-		if ! grep -q 'target_arch = "x86")' "$$libc_mod_file"; then \
-			sed -i '/^    } else if #\[cfg(target_arch = "x86_64")\] {/i\    } else if #[cfg(target_arch = "x86")] {\n        mod x86;\n        pub use self::x86::*;' "$$libc_mod_file"; \
-		fi; \
-		if grep -q '^pub const EXTA: c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
-			perl -0pi -e 's@(^pub const EXTA: c_uint = B19200;)@pub const B19200: crate::speed_t = 0xe;\npub const B38400: crate::speed_t = 0xf;\npub const SIGIO: c_int = 0x1d;\n$1@m' "$$libc_mod_file"; \
-		fi; \
-	done; \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
