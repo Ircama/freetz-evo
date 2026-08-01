@@ -62,6 +62,7 @@ STREAM_IMAGE_B64="$(cgi_param stream_image_b64)"
 STREAM_HOMEPAGE_B64="$(cgi_param stream_homepage_b64)"
 VOLUME_VALUE="$(cgi_param volume_value)"
 QUEUE_INDEX="$(cgi_param queue_index)"
+QUEUE_PAGE="$(cgi_param qpage)"
 FORCE_SYNC="$(cgi_param sync)"
 
 bool_yes() {
@@ -976,6 +977,10 @@ case "$ACTION" in
 		;;
 esac
 
+# Queue pagination state passed through action forms (avoids losing page on reload)
+QUEUE_PAGE_VALUE="$(sanitize_uint "$QUEUE_PAGE")" || QUEUE_PAGE_VALUE=1
+if [ -n "$ACTION" ]; then QUEUE_SCROLL_FLAG=1; else QUEUE_SCROLL_FLAG=0; fi
+
 # -----------------------------------------------------------------------
 # MPD connectivity check — block UI if MPD isn't running
 # -----------------------------------------------------------------------
@@ -1654,7 +1659,7 @@ sec_end
 
 sec_begin "$(lang de:"Queue-Verwaltung" en:"Queue management")"
 cat << EOF
-<div class='mpc-queue-toolbar'>
+<div id='queueSection' class='mpc-queue-toolbar'>
 	<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;'>
 		<input type='text' id='queueSearch' placeholder='$(lang de:"Filter..." en:"Filter...")' oninput='queueReload()'
 			style='padding:6px 10px;border-radius:6px;border:1px solid #ccc;min-width:120px;font-size:13px;'>
@@ -1695,19 +1700,23 @@ cat << EOF
 	<button id='queueNextBtn' onclick='queuePage(1)'>$(lang de:"Weiter" en:"Next") &#9654;</button>
 </div>
 <script>
-var qTotal=0,qOffset=0,qLimit=50,qCur='$CURRENT_QUEUE_INDEX',qData=[],qSortCol='',qSortDir='asc';
-function queueLoad(append) {
+var qTotal=0,qLimit=50,qCur='$CURRENT_QUEUE_INDEX',qData=[],qSortCol='',qSortDir='asc';
+var qInitPage=Math.max(1,parseInt('$QUEUE_PAGE_VALUE',10)||1);
+var qOffset=(qInitPage-1)*qLimit;
+var qScrollQueue=($QUEUE_SCROLL_FLAG===1)||qInitPage>1;
+function queueLoad() {
 	var el=document.getElementById('queueTbody');
 	var f=document.getElementById('queueSearch');
 	var filter=f?f.value:'';
-	if(!append){qOffset=0;qData=[];el.innerHTML='<tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">$(lang de:"Lade..." en:"Loading...")</td></tr>';}
+	qData=[];
+	el.innerHTML='<tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">$(lang de:"Lade..." en:"Loading...")</td></tr>';
 	document.getElementById('queueInfo').textContent='';
 	if(filter!==''){queueFilterAll(filter);return;}
 	ajaxGet('queue_list',{offset:qOffset,limit:qLimit},function(err,data){
 		if(err){el.innerHTML='<tr><td colspan="3" class="mpc-empty">Error: '+err+'</td></tr>';return;}
 		qTotal=data.total;qCur=data.current||qCur;var items=data.items||[];
 		for(var i=0;i<items.length;i++)qData.push(items[i]);
-		if(!append)queueRender(items);else queueRender(items);
+		queueRender(items);
 		queueUpdateInfo();
 	});
 }
@@ -1723,6 +1732,7 @@ function queueFilterAll(f) {
 function queueRender(items) {
 	var el=document.getElementById('queueTbody');el.innerHTML='';
 	if(items.length===0){el.innerHTML='<tr><td colspan="3" class="mpc-empty">$(lang de:"Keine Eintraege" en:"No entries")</td></tr>';return;}
+	var curPg=Math.floor(qOffset/qLimit)+1;
 	var html='';
 	for(var i=0;i<items.length;i++){
 		var it=items[i];
@@ -1734,29 +1744,29 @@ function queueRender(items) {
 			'<td>'+badge+queueEsc(it.label)+'</td>'+
 			'<td class="col-actions">'+
 				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
-					'<input type="hidden" name="action" value="queue_play"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<input type="hidden" name="action" value="queue_play"><input type="hidden" name="queue_index" value="'+it.n+'"><input type="hidden" name="qpage" value="'+curPg+'">'+
 					'<button type="submit"><span>$(lang de:"Play" en:"Play")</span></button></form>'+
 				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
-					'<input type="hidden" name="action" value="queue_move_up"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<input type="hidden" name="action" value="queue_move_up"><input type="hidden" name="queue_index" value="'+it.n+'"><input type="hidden" name="qpage" value="'+curPg+'">'+
 					'<button type="submit"><span>$(lang de:"Hoch" en:"Up")</span></button></form>'+
 				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
-					'<input type="hidden" name="action" value="queue_move_down"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<input type="hidden" name="action" value="queue_move_down"><input type="hidden" name="queue_index" value="'+it.n+'"><input type="hidden" name="qpage" value="'+curPg+'">'+
 					'<button type="submit"><span>$(lang de:"Runter" en:"Down")</span></button></form>'+
 				'<form action="'+(window.location.pathname)+'" method="get" style="display:inline">'+
-					'<input type="hidden" name="action" value="queue_remove"><input type="hidden" name="queue_index" value="'+it.n+'">'+
+					'<input type="hidden" name="action" value="queue_remove"><input type="hidden" name="queue_index" value="'+it.n+'"><input type="hidden" name="qpage" value="'+curPg+'">'+
 					'<button type="submit"><span>$(lang de:"Entf." en:"Del")</span></button></form>'+
 			'</td></tr>';
 	}
 	el.innerHTML=html;
 	queueUpdatePager();
 }
-function queueReload(){queueLoad(false);}
+function queueReload(){qOffset=0;queueLoad();}
 function queuePage(dir){
 	if(dir<0&&qOffset<=0)return;
 	var newOff=qOffset+dir*qLimit;
 	if(newOff<0)newOff=0;
 	if(newOff>=qTotal&&dir>0)return;
-	qOffset=newOff;qData=[];queueLoad(false);
+	qOffset=newOff;queueLoad();
 }
 function queueUpdateInfo(){
 	document.getElementById('queueInfo').textContent=qData.length+' / '+qTotal+' $(lang de:"Eintraege" en:"items")';
@@ -1787,10 +1797,12 @@ function queueGoPage(){
 	if(String(inp.value)!==String(pg))inp.value=pg;
 	var newOff=(pg-1)*qLimit;
 	if(newOff===qOffset)return;
-	qOffset=newOff;qData=[];queueLoad(false);
+	qOffset=newOff;queueLoad();
 }
 function queueEsc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-queueLoad(false);
+function queueScrollIntoView(){var el=document.getElementById('queueSection');if(el&&el.scrollIntoView)el.scrollIntoView({block:'start'});}
+queueLoad();
+if(qScrollQueue){setTimeout(queueScrollIntoView,400);}
 </script>
 EOF
 sec_end
