@@ -438,11 +438,11 @@ static bool read_device_config(void)
 				if (resp[off + 4] == CMD_READ_PARAM) {
 					int idx = resp[off + 6];
 					if (idx >= 0 && idx < NUM_BANDS) {
-						int rg = (resp[off + 8] << 8) | resp[off + 7];
+						int rg = (resp[off + 7] << 8) | resp[off + 8];
 						if (rg > 32767) rg -= 65536;
 						bands[idx].gain = (double)rg / 10.0;
-						bands[idx].freq = (double)((resp[off + 10] << 8) | resp[off + 9]);
-						int rq = (resp[off + 12] << 8) | resp[off + 11];
+						bands[idx].freq = (double)((resp[off + 9] << 8) | resp[off + 10]);
+						int rq = (resp[off + 11] << 8) | resp[off + 12];
 						bands[idx].q = (double)rq / 100.0;
 						bands[idx].filter_type = resp[off + 13] & 0x03;
 						bands[idx].enabled = true;
@@ -1104,7 +1104,15 @@ static void main_loop(WINDOW *main_win)
 		case '?':
 		case 'h':
 		case 'H':
-			show_full_help();
+show_full_help();
+			/* The help window overlaps the whole screen; force a full
+			 * redraw of every window so no residue stays behind. */
+			touchwin(main_win);
+			touchwin(table_win);
+			touchwin(bar_win);
+			if (help_win) touchwin(help_win);
+			touchwin(status_win);
+			touchwin(msg_win);
 			break;
 
 		case 'q':
@@ -1505,6 +1513,49 @@ exit_loop:
 /* ============================================================
  * Entry point
  * ============================================================ */
+/* Non-interactive report mode: print the device configuration as plain
+ * text to stdout without touching ncurses.
+ * Usage: ja11-config-tui --report */
+static int run_report_mode(void)
+{
+	init_default_bands();
+	if (hid_init() != 0) {
+		fprintf(stderr, "Failed to initialize hidapi\n");
+		return 1;
+	}
+	enumerate_devices();
+	int sel = -1;
+	for (int i = 0; i < num_devices; i++)
+		if (devices[i].compatible) { sel = i; break; }
+	if (sel < 0) {
+		fprintf(stderr, "No compatible HID device found.\n");
+		hid_exit();
+		return 1;
+	}
+	if (!connect_to_entry(&devices[sel])) {
+		fprintf(stderr, "Failed to open device.\n");
+		hid_exit();
+		return 1;
+	}
+	read_device_config();
+	printf("FiiO JA11 (KT02H20) - configuration report\n");
+	printf("Device: %s (%04X:%04X)\n", device_name, device_vid, device_pid);
+	printf("Global Preamp: %.1f dB\n", global_gain);
+	printf("DAC Digital Filter: %s\n", dac_filter_name(dac_filter));
+	printf("\nBand  Freq(Hz)  Gain(dB)  Q     Type  Status\n");
+	for (int i = 0; i < NUM_BANDS; i++) {
+		printf("  %d  %7.0f  %+6.1f  %-5.2f  %-4s  %s\n",
+			i + 1,
+			bands[i].freq,
+			bands[i].gain,
+			bands[i].q,
+			filter_type_name(bands[i].filter_type),
+			bands[i].enabled ? "ON" : "OFF");
+	}
+	disconnect_device();
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	const Lang *l;
@@ -1513,9 +1564,12 @@ int main(int argc, char *argv[])
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "--italian") || !strcmp(argv[i], "-it"))
 			g_lang = LANG_IT;
+		else if (!strcmp(argv[i], "--report"))
+			return run_report_mode();
 		else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
-			printf("Usage: %s [--italian|-it]\n", argv[0]);
+			printf("Usage: %s [--italian|-it] [--report]\n", argv[0]);
 			printf("  --italian, -it    UI in Italian (default: English)\n");
+			printf("  --report          Print device configuration report and exit (no TUI)\n");
 			printf("  --help, -h        This help\n");
 			return 0;
 		}
