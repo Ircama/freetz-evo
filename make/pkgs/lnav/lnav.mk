@@ -11,7 +11,10 @@ $(PKG)_SITE:=https://github.com/tstack/lnav/archive/refs/tags
 LNAV_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 LNAV_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 LNAV_RUST_BUILD_STD:=std,panic_abort
-LNAV_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
+# Custom JSON target specs (x86, aarch64, arm-BE) require -Zjson-target-spec on
+# recent cargo versions, otherwise cargo errors out when lnav's own Makefile
+# invokes "$$(CARGO_CMD) build --target <spec.json>".
+LNAV_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec),$(HOST_TOOLS_DIR)/usr/bin/cargo)
 LNAV_CARGO_HOME:=$(abspath $(LNAV_DIR)/.cargo)
 LNAV_RUST_CONFIG_DIR:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/.cargo
 LNAV_RUST_CONFIG_FILE:=$(LNAV_RUST_CONFIG_DIR)/config.toml
@@ -19,6 +22,10 @@ LNAV_RUST_MANIFEST:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/Cargo.toml
 LNAV_RUST_LIB_RS:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/src/lib.rs
 LNAV_RUST_TARGET_ENV:=$(subst -,_,$(LNAV_RUST_TARGET_DIR))
 LNAV_NEEDS_UCLIBC_RUST_FIXES:=$(filter mips-unknown-linux-uclibc mipsel-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
+# The Rust `libc` crate has no x86 (32-bit) uClibc module, which breaks the
+# build-std `libc` (and the app's own `libc`) on i686-unknown-linux-uclibc.
+# RUST_APPLY_UCLIBC_X86_LIBC_PATCH installs the missing module.
+LNAV_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/lnav
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lnav
@@ -63,6 +70,8 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 			"$(TARGET_CROSS)ar" \
 			> $(LNAV_RUST_CONFIG_FILE); \
 		$(LNAV_CARGO_CMD) fetch --locked --manifest-path "$(LNAV_RUST_MANIFEST)" --target "$(LNAV_RUST_TARGET_ARG)"; \
+		$(if $(LNAV_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
+		$(if $(LNAV_NEEDS_X86_LIBC_PATCH),find "$(LNAV_DIR)/src/third-party/lnav-rs-ext/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 		if [ -n "$(LNAV_NEEDS_UCLIBC_RUST_FIXES)" ]; then \
 			$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 			$(call LOG2SRC_APPLY_ATOMICU64_FALLBACK__INT) \

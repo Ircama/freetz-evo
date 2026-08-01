@@ -45,8 +45,9 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(JLESS_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
-	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	cargo update -p libc --precise 0.2.177; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(JLESS_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT,0.22.1) \
 	perl -0pi -e 's/^extern crate libc_stdhandle;\n//m' src/main.rs; \
 	perl -0pi -e 's/let _ = libc::freopen\(filename\.as_ptr\(\), path\.as_ptr\(\), libc_stdhandle::stdin\(\)\);/let stdin_stream = libc::fdopen(libc::STDIN_FILENO, path.as_ptr());\n        if !stdin_stream.is_null() {\n            let _ = libc::freopen(filename.as_ptr(), path.as_ptr(), stdin_stream);\n        }/' src/input.rs; \

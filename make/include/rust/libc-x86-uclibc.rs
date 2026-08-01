@@ -17,6 +17,7 @@ pub type suseconds_t = c_long;
 pub type time_t = c_int;
 pub type wchar_t = c_int;
 pub type pthread_t = c_ulong;
+pub type greg_t = c_int;
 
 pub type fsblkcnt64_t = u64;
 pub type fsfilcnt64_t = u64;
@@ -168,6 +169,30 @@ s! {
         pub ss_size: size_t,
     }
 
+    pub struct _libc_fpreg {
+        pub significand: [u16; 4],
+        pub exponent: u16,
+    }
+
+    pub struct _libc_fpstate {
+        pub cw: c_ulong,
+        pub sw: c_ulong,
+        pub tag: c_ulong,
+        pub ipoff: c_ulong,
+        pub cssel: c_ulong,
+        pub dataoff: c_ulong,
+        pub datasel: c_ulong,
+        pub _st: [_libc_fpreg; 8],
+        pub status: c_ulong,
+    }
+
+    pub struct mcontext_t {
+        pub gregs: [greg_t; 19],
+        pub fpregs: *mut _libc_fpstate,
+        pub oldmask: c_ulong,
+        pub cr2: c_ulong,
+    }
+
     pub struct statfs {
         pub f_type: c_long,
         pub f_bsize: c_long,
@@ -272,7 +297,43 @@ s! {
 }
 
 s_no_extra_traits! {
+    pub struct ucontext_t {
+        pub uc_flags: c_ulong,
+        pub uc_link: *mut ucontext_t,
+        pub uc_stack: stack_t,
+        pub uc_mcontext: mcontext_t,
+        pub uc_sigmask: sigset_t,
+        __private: [u8; 112],
+        __ssp: [c_ulong; 4],
+    }
+}
 
+cfg_if! {
+    if #[cfg(feature = "extra_traits")] {
+        impl PartialEq for ucontext_t {
+            fn eq(&self, other: &ucontext_t) -> bool {
+                self.uc_flags == other.uc_flags
+                    && self.uc_link == other.uc_link
+                    && self.uc_stack == other.uc_stack
+                    && self.uc_mcontext == other.uc_mcontext
+                    && self.uc_sigmask == other.uc_sigmask
+                // Ignore __private field
+            }
+        }
+
+        impl Eq for ucontext_t {}
+
+        impl hash::Hash for ucontext_t {
+            fn hash<H: hash::Hasher>(&self, state: &mut H) {
+                self.uc_flags.hash(state);
+                self.uc_link.hash(state);
+                self.uc_stack.hash(state);
+                self.uc_mcontext.hash(state);
+                self.uc_sigmask.hash(state);
+                // Ignore __private field
+            }
+        }
+    }
 }
 
 // Constants from gnu/b32/x86/mod.rs
@@ -1004,3 +1065,14 @@ pub const F_SETLK: c_int = 6;
 pub const F_SETLKW: c_int = 7;
 pub const O_NOATIME: c_int = 0o1000000;
 pub const O_PATH: c_int = 0o10000000;
+
+// cpu_set_t, CPU_ISSET and sched_getaffinity come from linux_l4re_shared;
+// only the per-arch CPU_SETSIZE is missing on uClibc x86.
+pub const CPU_SETSIZE: c_int = 0x400;
+
+extern "C" {
+    pub fn getcontext(ucp: *mut ucontext_t) -> c_int;
+    pub fn setcontext(ucp: *const ucontext_t) -> c_int;
+    pub fn makecontext(ucp: *mut ucontext_t, func: extern "C" fn(), argc: c_int, ...);
+    pub fn swapcontext(uocp: *mut ucontext_t, ucp: *const ucontext_t) -> c_int;
+}
