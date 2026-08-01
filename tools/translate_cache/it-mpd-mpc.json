@@ -1090,5 +1090,40 @@
     "timestamp": "2026-07-19T20:57:29Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Page": {
+    "original": "Page",
+    "translation": "Pagina",
+    "timestamp": "2026-08-01T08:12:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enter page number, press Enter to jump": {
+    "original": "Enter page number, press Enter to jump",
+    "translation": "Inserisci il numero di pagina, premi Invio per passare alla pagina",
+    "timestamp": "2026-08-01T08:12:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Jump to page": {
+    "original": "Jump to page",
+    "translation": "Vai alla pagina",
+    "timestamp": "2026-08-01T08:12:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Go": {
+    "original": "Go",
+    "translation": "Go",
+    "timestamp": "2026-08-01T08:12:27Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:entries per page": {
+    "original": "entries per page",
+    "translation": "voci per pagina",
+    "timestamp": "2026-08-01T08:12:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
