@@ -13,7 +13,7 @@ include $(MAKE_DIR)/include/650-rust-cargo.mk
 TERMSCP_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 TERMSCP_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 TERMSCP_RUST_ENV_TARGET:=$(subst -,_,$(TERMSCP_RUST_TARGET_DIR))
-TERMSCP_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+TERMSCP_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 TERMSCP_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(TERMSCP_CARGO_BUILD_STD_FLAGS),cargo build --release)
 TERMSCP_CARGO_HOME:=$(abspath $(TERMSCP_DIR)/.cargo)
 $(PKG)_BINARY:=$(TERMSCP_DIR)/target/$(TERMSCP_RUST_TARGET_DIR)/release/termscp
@@ -53,7 +53,8 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	perl -i -pe 's/default = \["keyring", "smb"\]/default = ["keyring"]/' "$(abspath $(TERMSCP_DIR))/Cargo.toml"; \
 	echo "Patched termscp Cargo.toml: removed smb from default features" >&2; \
 	# Fetch all deps ;\
-	cargo fetch --target "$(TERMSCP_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(TERMSCP_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	# Apply source patches after fetch extracted everything ;\
 	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs $$HOME/.cargo/registry/src/*/socket2-0.6.4/src/socket.rs; do \
 		[ -f "$$socket2_src" ] || continue; \

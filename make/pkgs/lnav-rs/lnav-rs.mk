@@ -13,7 +13,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/lnav-rs-3f27b3db563b18c33db328a6b6fbf74f5b2ddd03
 LNAV_RS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 LNAV_RS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 LNAV_RS_NEEDS_UCLIBC_MIPS_WORKAROUNDS:=$(filter mips-unknown-linux-uclibc mipsel-unknown-linux-uclibc,$(LNAV_RS_RUST_TARGET_DIR))
-LNAV_RS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+LNAV_RS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 LNAV_RS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(LNAV_RS_CARGO_BUILD_STD_FLAGS),cargo build --release)
 LNAV_RS_CARGO_HOME:=$(abspath $(LNAV_RS_DIR)/.cargo)
 $(PKG)_BINARY:=$(LNAV_RS_DIR)/target/$(LNAV_RS_RUST_TARGET_DIR)/release/lnav-rs
@@ -35,7 +35,8 @@ $($(PKG)_BINARY): $(LNAV_RS_DIR)/.configured
 	export CARGO_HOME="$(LNAV_RS_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	mkdir -p "$$CARGO_HOME"; \
-	cargo fetch --target "$(LNAV_RS_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(LNAV_RS_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	if [ -n "$(LNAV_RS_NEEDS_UCLIBC_MIPS_WORKAROUNDS)" ]; then \

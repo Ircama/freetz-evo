@@ -11,7 +11,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/jless-v0.9.0
 JLESS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 JLESS_RUST_ENV_TARGET:=$(subst -,_,$(JLESS_RUST_TARGET_DIR))
 JLESS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-JLESS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+JLESS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 JLESS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(JLESS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 JLESS_CARGO_HOME:=$(abspath $(JLESS_DIR)/.cargo)
 $(PKG)_BINARY:=$(JLESS_DIR)/target/$(JLESS_RUST_TARGET_DIR)/release/jless
@@ -44,7 +44,8 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
-	cargo fetch --locked --target "$(JLESS_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(JLESS_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	cargo update -p libc --precise 0.2.177; \
 	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT,0.22.1) \
 	perl -0pi -e 's/^extern crate libc_stdhandle;\n//m' src/main.rs; \

@@ -14,7 +14,7 @@ include $(MAKE_DIR)/include/650-rust-cargo.mk
 
 YAZI_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 YAZI_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-YAZI_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+YAZI_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 YAZI_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(YAZI_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 YAZI_CARGO_HOME:=$(abspath $(YAZI_DIR)/.cargo)
 $(PKG)_BINARY_YAZI:=$(YAZI_DIR)/target/$(YAZI_RUST_TARGET_DIR)/release/yazi
@@ -40,7 +40,8 @@ $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
 	mkdir -p "$$CARGO_HOME"; \
 	# Fetch all deps so we can patch source files before build ;\
-	cargo fetch --target "$(YAZI_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(YAZI_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	# Apply getrandom uClibc MIPS syscall patch for missing libc::getrandom ;\
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \

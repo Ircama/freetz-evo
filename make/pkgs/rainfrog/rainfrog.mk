@@ -54,7 +54,8 @@ $($(PKG)_BINARY): $(RAINFROG_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
-	cargo fetch --target "$(RAINFROG_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(RAINFROG_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,1.0.8) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \

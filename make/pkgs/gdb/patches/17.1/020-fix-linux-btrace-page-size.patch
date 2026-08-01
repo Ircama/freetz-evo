@@ -1,0 +1,15 @@
+--- gdb/nat/linux-btrace.c
++++ gdb/nat/linux-btrace.c
+@@ -40,5 +40,11 @@
+ #include <signal.h>
+ 
++/* PAGE_SIZE is not defined by all C libraries (e.g. uClibc); provide a
++   fallback so this file compiles on every supported target.  */
++#ifndef PAGE_SIZE
++#define PAGE_SIZE sysconf (_SC_PAGESIZE)
++#endif
++
+ /* A branch trace record in perf_event.  */
+ struct perf_event_bts
+ {
+   /* The linear address of the branch source.  */

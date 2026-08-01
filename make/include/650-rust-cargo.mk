@@ -209,12 +209,19 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 endef
 
 # Shared module sources for the uClibc 32-bit x86 libc patch (see
-# RUST_APPLY_UCLIBC_X86_LIBC_PATCH below).
-#   * libc-x86-uclibc.rs     : new-style module, for libc >= 0.2.183
-#     (crate:: paths, crate::prelude, Padding<T>)
-#   * libc-x86-uclibc-159.rs : old-style module, for libc < 0.2.183
-#     (`::`-prefixed types; c_char/c_long/c_ulong defined in the arch module)
+# RUST_APPLY_UCLIBC_X86_LIBC_PATCH below). The right variant is chosen at patch
+# time by FEATURE DETECTION on the actual libc source (not a hardcoded version
+# boundary), because the internal style changed twice:
+#   * libc-x86-uclibc.rs      : prelude + Padding<T> style (e.g. libc >= 0.2.183;
+#     crate:: paths, crate::prelude, Padding<T> padding fields)
+#   * libc-x86-uclibc-2021.rs : prelude, edition 2021, but NO Padding<T>
+#     (e.g. libc 0.2.168..0.2.182, such as 0.2.175: has src/primitives.rs so
+#     c_char/c_long/c_ulong come from there; crate:: paths, no Padding)
+#   * libc-x86-uclibc-159.rs  : old-style, edition 2015 (e.g. libc 0.2.159 and
+#     older: no primitives.rs; `::`-prefixed paths; c_char/c_long/c_ulong are
+#     defined inside the arch module)
 RUST_LIBC_X86_UCLIBC_MODULE:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc.rs
+RUST_LIBC_X86_UCLIBC_MODULE_2021:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc-2021.rs
 RUST_LIBC_X86_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc-159.rs
 
 # Apply the uClibc 32-bit x86 libc module patch to every libc-0.2.x crate in the
@@ -222,41 +229,80 @@ RUST_LIBC_X86_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-u
 #
 # The Rust `libc` crate ships NO x86 (32-bit) uClibc module for ANY 0.2.x
 # version (only mips/arm/x86_64), which breaks `-Z build-std` on x86. This macro:
-#   1. Pre-fetches libc 0.2.185 (the version Rust std pulls in via build-std) so
-#      it is present in the registry and gets patched before the build.
+#   1. Pre-fetches the EXACT libc version that the installed nightly's build-std
+#      std pulls in (extracted from library/std/Cargo.toml of the nightly
+#      toolchain; falls back to 0.2.185 if it cannot be determined), so that
+#      version is present in the registry and gets patched before the build.
+#      NOTE: hardcoding the version (previously 0.2.185) breaks on newer
+#      nightlies whose std needs a newer libc (e.g. 0.2.189): that libc is only
+#      downloaded during `-Z build-std` AFTER this macro ran, so it stays
+#      unpatched and libc fails to compile on x86.
 #   2. For every libc-0.2.* found, creates
 #      src/unix/linux_like/linux/uclibc/x86/mod.rs from the shared module source
 #      matching the crate's syntax style, and wires it into the parent
 #      uclibc/mod.rs (cfg_if branch + missing B19200/B38400/SIGIO constants
 #      referenced by EXTA/EXTB).
 #
-# The libc source style changed at 0.2.183:
-#   - libc < 0.2.183 (old style)  -> $(RUST_LIBC_X86_UCLIBC_MODULE_OLD)
-#   - libc >= 0.2.183 (new style) -> $(RUST_LIBC_X86_UCLIBC_MODULE)
+# The correct module variant is selected per-libc-version by feature detection:
+#   - Padding<T> with PartialEq/Eq/Hash impls (types.rs) -> $(RUST_LIBC_X86_UCLIBC_MODULE)
+#     (libc >= ~0.2.183, e.g. 0.2.185/0.2.189: the Padding-style structs derive
+#     those traits under the `extra_traits` feature, and only these Padding
+#     implementations provide them)
+#   - else has src/primitives.rs   -> $(RUST_LIBC_X86_UCLIBC_MODULE_2021)
+#     (0.2.168..0.2.182, e.g. 0.2.177: `struct Padding` may already exist in
+#     types.rs but WITHOUT Eq/Hash/PartialEq impls, so the Padding-style module
+#     would fail under `extra_traits` with E0277/E0369; use the no-Padding module)
+#   - else (edition 2015, no prelude) -> $(RUST_LIBC_X86_UCLIBC_MODULE_OLD)
 #
 # Safe on all architectures: on mips/arm/x86_64 the added x86 cfg_if branch and
 # module are simply not compiled.
+#
+# IMPORTANT: the shared module MUST keep `sigaction.sa_flags` typed as `c_ulong`
+# (not `c_int`) and define SA_NOCLDSTOP/SA_NODEFER/SA_RESETHAND/SFD_CLOEXEC,
+# exactly like the native uclibc arm/x86_64 modules. nix defines
+# `SaFlags_t = c_ulong` for uClibc, so a `c_int` sa_flags (copied from the gnu
+# module) breaks nix's `SaFlags::from_bits_truncate(sa_flags)` on x86 only
+# (mips/arm use the native modules and are unaffected).
+#
+# After patching, the macro deletes cargo's libc-* fingerprints under
+# $(pwd)/target: the patched x86/mod.rs is NOT tracked by cargo's dep-info, so
+# without this a stale pre-patch libc artifact would be reused on incremental
+# rebuilds and the nix/signal.rs type errors would persist.
+#
+# Newer libc releases (>= 0.2.189, which added the `src/new/linux_uapi` module)
+# export __u64/__s64 at the crate root through `pub use new::*`. Since our x86
+# module also defines those two types, `crate::__u64`/`crate::__s64` become
+# ambiguous (E0659). The macro detects that structure and strips the duplicate
+# definitions from the copied module.
 #
 # Requires: CARGO_HOME exported, nightly toolchain with rust-src, and a PRIVATE
 # CARGO_HOME (packages must not share ~/.cargo, otherwise they overwrite each
 # other's registry patches).
 define RUST_APPLY_UCLIBC_X86_LIBC_PATCH
+	LIBC_BUILD_STD_VER="$$(sed -n 's/.*libc = { version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)".*/\1/p' \
+		"$$RUSTUP_HOME"/toolchains/nightly*/lib/rustlib/src/rust/library/std/Cargo.toml 2>/dev/null | head -1)"; \
+	[ -n "$$LIBC_BUILD_STD_VER" ] || LIBC_BUILD_STD_VER=0.2.185; \
+	echo "Patching build-std libc version: $$LIBC_BUILD_STD_VER" >&2; \
 	mkdir -p /tmp/libc-fetch/src; \
 	touch /tmp/libc-fetch/src/lib.rs; \
-	printf '[package]\nname = "tmp"\nversion = "0.1.0"\nedition = "2021"\n[dependencies]\nlibc = "=0.2.185"\n' > /tmp/libc-fetch/Cargo.toml; \
+	printf '[package]\nname = "tmp"\nversion = "0.1.0"\nedition = "2021"\n[dependencies]\nlibc = "=%s"\n' "$$LIBC_BUILD_STD_VER" > /tmp/libc-fetch/Cargo.toml; \
 	CARGO_HOME="$$CARGO_HOME" cargo +nightly fetch --manifest-path /tmp/libc-fetch/Cargo.toml 2>&1 || true; \
 	rm -rf /tmp/libc-fetch; \
 	for libc_mod_file in $$(find "$$CARGO_HOME/registry/src" -path "*/libc-0.2.*/src/unix/linux_like/linux/uclibc/mod.rs" 2>/dev/null); do \
 		echo "Patching libc at: $$libc_mod_file"; \
 		libc_dir="$${libc_mod_file%/src/unix/linux_like/linux/uclibc/mod.rs}"; \
 		libc_x86_dir="$$(dirname "$$libc_mod_file")/x86"; \
-		libc_minor="$$(echo "$$libc_mod_file" | sed -n 's|.*/libc-0\.2\.\([0-9][0-9]*\)/.*|\1|p')"; \
 		chmod -R u+w "$$libc_dir" 2>/dev/null || true; \
 		mkdir -p "$$libc_x86_dir"; \
-		if [ -n "$$libc_minor" ] && [ "$$libc_minor" -lt 183 ]; then \
-			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE_OLD) "$$libc_x86_dir/mod.rs"; \
-		else \
+		if grep -q 'PartialEq.*Padding' "$$libc_dir"/src/types.rs 2>/dev/null; then \
 			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE) "$$libc_x86_dir/mod.rs"; \
+		elif [ -f "$$libc_dir/src/primitives.rs" ]; then \
+			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE_2021) "$$libc_x86_dir/mod.rs"; \
+		else \
+			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE_OLD) "$$libc_x86_dir/mod.rs"; \
+		fi; \
+		if [ -f "$$libc_dir/src/new/linux_uapi/linux/types.rs" ]; then \
+			sed -i '/^pub type __u64 = \(crate::\|::\)\?c_ulonglong;$/d; /^pub type __s64 = \(crate::\|::\)\?c_longlong;$/d' "$$libc_x86_dir/mod.rs"; \
 		fi; \
 		if ! grep -q 'target_arch = "x86")' "$$libc_mod_file"; then \
 			sed -i '/^    } else if #\[cfg(target_arch = "x86_64")\] {/i\    } else if #[cfg(target_arch = "x86")] {\n        mod x86;\n        pub use self::x86::*;' "$$libc_mod_file"; \
@@ -266,7 +312,8 @@ define RUST_APPLY_UCLIBC_X86_LIBC_PATCH
 		elif grep -q '^pub const EXTA: c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
 			perl -0pi -e 's@(^pub const EXTA: c_uint = B19200;)@pub const B19200: crate::speed_t = 0xe;\npub const B38400: crate::speed_t = 0xf;\npub const SIGIO: c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
 		fi; \
-	done;
+	done; \
+	find "$$(pwd)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;
 endef
 
 # Set environment variables for openssl-sys cross-compilation.

@@ -158,7 +158,7 @@ s! {
     pub struct sigaction {
         pub sa_sigaction: ::sighandler_t,
         pub sa_mask: ::sigset_t,
-        pub sa_flags: ::c_int,
+        pub sa_flags: ::c_ulong,
         pub sa_restorer: Option<extern "C" fn()>,
     }
 
@@ -391,8 +391,10 @@ pub const EOWNERDEAD: ::c_int = 130;
 pub const ENOTRECOVERABLE: ::c_int = 131;
 pub const EHWPOISON: ::c_int = 133;
 pub const ERFKILL: ::c_int = 132;
-pub const SA_SIGINFO: ::c_int = 0x00000004;
-pub const SA_NOCLDWAIT: ::c_int = 0x00000002;
+pub const SA_NOCLDSTOP: ::c_ulong = 0x1;
+pub const SA_NOCLDWAIT: ::c_ulong = 0x2;
+pub const SA_SIGINFO: ::c_ulong = 0x4;
+pub const SA_NODEFER: ::c_ulong = 0x40000000;
 pub const SOCK_STREAM: ::c_int = 1;
 pub const SOCK_DGRAM: ::c_int = 2;
 pub const PTRACE_SYSEMU: ::c_uint = 31;
@@ -975,13 +977,15 @@ pub const NCCS: usize = 32;
 
 pub const O_ACCMODE: ::c_int = 0o003;
 pub const O_TRUNC: ::c_int = 0o1000;
-pub const SA_ONSTACK: ::c_int = 0x08000000;
-pub const SA_RESTART: ::c_int = 0x10000000;
+pub const SA_ONSTACK: ::c_ulong = 0x08000000;
+pub const SA_RESETHAND: ::c_ulong = 0x80000000;
+pub const SA_RESTART: ::c_ulong = 0x10000000;
 pub const SOCK_SEQPACKET: ::c_int = 5;
 pub const SOCK_NONBLOCK: ::c_int = 0o4000;
 pub const SOCK_CLOEXEC: ::c_int = 0x80000;
 pub const EPOLL_CLOEXEC: ::c_int = 0x80000;
 pub const EFD_CLOEXEC: ::c_int = 0x80000;
+pub const SFD_CLOEXEC: ::c_int = 0x80000;
 pub const EADV: ::c_int = 68;
 pub const EBFONT: ::c_int = 59;
 pub const ECOMM: ::c_int = 70;

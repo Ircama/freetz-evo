@@ -11,7 +11,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/bottom-0.12.3
 
 BOTTOM_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 BOTTOM_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-BOTTOM_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+BOTTOM_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 BOTTOM_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(BOTTOM_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 BOTTOM_CARGO_HOME:=$(abspath $(BOTTOM_DIR)/.cargo)
 $(PKG)_BINARY:=$(BOTTOM_DIR)/target/$(BOTTOM_RUST_TARGET_DIR)/release/btm
@@ -33,7 +33,8 @@ $($(PKG)_BINARY): $(BOTTOM_DIR)/.configured
 	export CARGO_HOME="$(BOTTOM_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	mkdir -p "$$CARGO_HOME"; \
-	cargo fetch --locked --target "$(BOTTOM_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(BOTTOM_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.3) \
 	$(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,0.30.1) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \

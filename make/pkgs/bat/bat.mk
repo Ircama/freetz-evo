@@ -12,7 +12,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/bat-0.26.1
 BAT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 BAT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 BAT_RUST_ENV_TARGET:=$(subst -,_,$(BAT_RUST_TARGET_DIR))
-BAT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+BAT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 BAT_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(BAT_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 BAT_CARGO_HOME:=$(abspath $(BAT_DIR)/.cargo)
 $(PKG)_BINARY:=$(BAT_DIR)/target/$(BAT_RUST_TARGET_DIR)/release/bat
@@ -43,7 +43,8 @@ $($(PKG)_BINARY): $(BAT_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
-	cargo fetch --locked --target "$(BAT_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(BAT_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.43) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
 	$(BAT_CARGO_BUILD_CMD) --target "$(BAT_RUST_TARGET_ARG)" --bin bat

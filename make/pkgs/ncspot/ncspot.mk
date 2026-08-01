@@ -14,7 +14,7 @@ $(PKG)_CATEGORY:=Audio
 NCSPOT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 NCSPOT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 NCSPOT_PKG_CONFIG_DIR:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/pkgconfig:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig:$(TARGET_MAKE_PATH)/../lib/pkgconfig
-NCSPOT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort
+NCSPOT_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
 NCSPOT_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(NCSPOT_CARGO_BUILD_STD_FLAGS),cargo build --release)
 NCSPOT_CARGO_HOME:=$(abspath $(NCSPOT_DIR)/.cargo)
 NCSPOT_CARGO_FEATURES:=--no-default-features --features alsa_backend,crossterm_backend
@@ -38,7 +38,8 @@ $($(PKG)_BINARY): $(NCSPOT_DIR)/.configured
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie -C link-arg=-latomic"; \
 	mkdir -p "$$CARGO_HOME"; \
-	cargo fetch --target "$(NCSPOT_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(NCSPOT_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.2) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \

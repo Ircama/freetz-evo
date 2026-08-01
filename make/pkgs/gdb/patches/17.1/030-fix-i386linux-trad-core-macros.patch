@@ -1,0 +1,20 @@
+--- bfd/hosts/i386linux.h
++++ bfd/hosts/i386linux.h
+@@ -25,3 +25,17 @@
+    the end.  */
+ 
+ #define TRAD_CORE_EXTRA_SIZE_ALLOWED 4096
++
++/* glibc defines UPAGES, HOST_TEXT_START_ADDR and HOST_STACK_END_ADDR in
++   <sys/user.h>, but uClibc does not.  Provide the same definitions here
++   (this file is the TRAD_HEADER for i386-linux) so that trad-core.c
++   compiles on uClibc-based targets as well.  */
++#ifndef UPAGES
++# define UPAGES 1
++#endif
++#ifndef HOST_TEXT_START_ADDR
++# define HOST_TEXT_START_ADDR (u.start_code)
++#endif
++#ifndef HOST_STACK_END_ADDR
++# define HOST_STACK_END_ADDR (u.start_stack + u.u_ssize * NBPG)
++#endif
