@@ -1,0 +1,121 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-08-01T09:43:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Daemon": {
+    "original": "Daemon",
+    "translation": "Daemon",
+    "timestamp": "2026-08-01T09:43:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebSocket port": {
+    "original": "WebSocket port",
+    "translation": "porta WebSocket",
+    "timestamp": "2026-08-01T09:43:43Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Process priority (nice)": {
+    "original": "Process priority (nice)",
+    "translation": "Priorità di processo (nice)",
+    "timestamp": "2026-08-01T09:43:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato",
+    "timestamp": "2026-08-01T09:43:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:running": {
+    "original": "running",
+    "translation": "running",
+    "timestamp": "2026-08-01T09:43:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:stopped": {
+    "original": "stopped",
+    "translation": "stopped",
+    "timestamp": "2026-08-01T09:43:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebSocket endpoint": {
+    "original": "WebSocket endpoint",
+    "translation": "endpoint WebSocket",
+    "timestamp": "2026-08-01T09:43:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Web apps": {
+    "original": "Web apps",
+    "translation": "App web",
+    "timestamp": "2026-08-01T09:43:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:These web apps connect to hidws over WebSocket:": {
+    "original": "These web apps connect to hidws over WebSocket:",
+    "translation": "Queste applicazioni web si connettono a hidws tramite WebSocket:",
+    "timestamp": "2026-08-01T09:43:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Control for FiiO JA11 (KT02H20)": {
+    "original": "Control for FiiO JA11 (KT02H20)",
+    "translation": "Controllo per FiiO JA11 (KT02H20)",
+    "timestamp": "2026-08-01T09:43:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Parametric equalizer for USB DACs": {
+    "original": "Parametric equalizer for USB DACs",
+    "translation": "Equalizzatore parametrico per DAC USB",
+    "timestamp": "2026-08-01T09:43:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:EQ control for FiiO DACs": {
+    "original": "EQ control for FiiO DACs",
+    "translation": "Controllo EQ per i DAC FiiO",
+    "timestamp": "2026-08-01T09:43:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HID explorer (devices, report descriptors)": {
+    "original": "HID explorer (devices, report descriptors)",
+    "translation": "HID Explorer (dispositivi, descrittori di report)",
+    "timestamp": "2026-08-01T09:43:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note: on HTTPS pages (GitHub Pages) an insecure ws:// connection may be blocked; use wss:// or run the app locally over http.": {
+    "original": "Note: on HTTPS pages (GitHub Pages) an insecure ws:// connection may be blocked; use wss:// or run the app locally over http.",
+    "translation": "Nota: sulle pagine HTTPS (GitHub Pages) una connessione ws:// non sicura potrebbe essere bloccata; utilizzare wss:// oppure eseguire l’app localmente tramite http.",
+    "timestamp": "2026-08-01T09:43:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Execution log": {
+    "original": "Execution log",
+    "translation": "Registro di esecuzione",
+    "timestamp": "2026-08-01T09:43:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:(no entries)": {
+    "original": "(no entries)",
+    "translation": "(nessuna voce)",
+    "timestamp": "2026-08-01T09:43:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

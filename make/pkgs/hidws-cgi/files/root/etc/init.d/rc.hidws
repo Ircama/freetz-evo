@@ -41,6 +41,15 @@ start() {
 
 	port="${HIDWS_PORT:-9001}"
 
+	# Check whether the port is already bound by another process
+	local hex_port
+	hex_port=$(printf '%04X' "$port")
+	if grep -qi " [0-9A-Fa-f]*:${hex_port} " /proc/net/tcp /proc/net/tcp6 2>/dev/null; then
+		echo "failed: port $port is already in use (another process is listening on it)."
+		log "failed to start hidws: port $port already in use"
+		exit 1
+	fi
+
 	# hidws is a foreground server; background it with start-stop-daemon.
 	# The whole command is passed as one quoted string to sh -c, using exec
 	# so the shell is replaced by the daemon process, and stdout/stderr are
@@ -54,8 +63,14 @@ start() {
 		echo 'done.'
 		log "started hidws, listening on port $port"
 	else
-		echo 'failed.'
-		log "failed to start hidws on port $port"
+		# Check the daemon log for a bind failure to give a specific message
+		if grep -q "ERROR on binding.*$port\|bind.*$port.*fail" "$DAEMON_LOG" 2>/dev/null; then
+			echo "failed: port $port could not be bound (another service may have claimed it)."
+			log "failed to start hidws: port $port bind error"
+		else
+			echo 'failed.'
+			log "failed to start hidws on port $port"
+		fi
 		exit 1
 	fi
 }

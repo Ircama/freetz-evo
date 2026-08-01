@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 1.2.2)
+$(call PKG_INIT_BIN, 1.2.3)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=b4a3cd4da25535f373d400c6eb79602192a0a9c34db3df439d8fe265321f2e5e
+$(PKG)_HASH:=dc3a6b83bac4b03abda508851be59e2951298ff681be480b054c8f4ac07145f2
 $(PKG)_SITE:=https://github.com/Ircama/hidws/archive/refs/tags
 ### WEBSITE:=https://github.com/Ircama/hidws
 ### CHANGES:=https://github.com/Ircama/hidws/releases
