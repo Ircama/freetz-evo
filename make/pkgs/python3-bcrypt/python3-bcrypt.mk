@@ -19,6 +19,16 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 PYTHON3_BCRYPT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 PYTHON3_BCRYPT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 PYTHON3_BCRYPT_RUST_BUILD_STD:=std$(_comma)panic_abort
+# Custom JSON target specs (x86, aarch64, ...) require -Zjson-target-spec on
+# recent cargo versions (>= 1.88). The pip/setuptools-rust-internal cargo
+# invocation cannot be modified, so the feature is enabled via the
+# CARGO_UNSTABLE_JSON_TARGET_SPEC env var (honored on nightly, which the pip
+# build already uses for build-std) and the flag is passed explicitly to the
+# recipe's own cargo fetch below.
+# Additionally, the Rust `libc` crate ships no x86 (32-bit) uClibc module for
+# ANY 0.2.x version, so on i686 the build-std libc (and the app's own libc
+# 0.2.176) must be patched with RUST_APPLY_UCLIBC_X86_LIBC_PATCH.
+PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PYTHON3_BCRYPT_RUST_TARGET_DIR))
 
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/bcrypt/__init__.py
 
@@ -42,12 +52,14 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
-	cargo fetch --manifest-path src/_bcrypt/Cargo.toml --target "$(PYTHON3_BCRYPT_RUST_TARGET_ARG)"; \
+	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly -Zjson-target-spec) fetch --manifest-path src/_bcrypt/Cargo.toml --target "$(PYTHON3_BCRYPT_RUST_TARGET_ARG)"; \
 	for f in "$$CARGO_HOME"/registry/src/*/getrandom-0.3.3/src/backends/getrandom.rs; do \
 		[ -f "$$f" ] || continue; \
 		grep -q 'Freetz uClibc' "$$f" && continue; \
 		perl -0pi -e 's@util_libc::sys_fill_exact\(dest, \|buf\| unsafe \{\n        libc::getrandom\(buf\.as_mut_ptr\(\)\.cast\(\), buf\.len\(\), 0\)\n    \}\)@util_libc::sys_fill_exact(dest, |buf| unsafe {\n        // Freetz uClibc MIPS syscall fallback\n        {\n            #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n            let ret = libc::syscall(\n                libc::SYS_getrandom,\n                buf.as_mut_ptr() as *mut libc::c_void,\n                buf.len(),\n                0,\n            ) as libc::ssize_t;\n            #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n            let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);\n            ret\n        }\n    })@s' "$$f"; \
 	done; \
+	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
+	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),find "$(PYTHON3_BCRYPT_WORKDIR)/src/_bcrypt/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 	$(call Build/PyMod3/Pip, PYTHON3_BCRYPT, , \
 		HOME="$(PYTHON3_BCRYPT_WORKDIR)" \
 		CARGO_HOME="$(PYTHON3_BCRYPT_CARGO_HOME)" \
@@ -56,6 +68,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		CARGO_BUILD_TARGET="$(PYTHON3_BCRYPT_RUST_TARGET_ARG)" \
 		RUSTUP_TOOLCHAIN="$(if $(RUST_TARGET_NEEDS_STD_BUILD),nightly,stable)" \
 		$(if $(RUST_TARGET_NEEDS_STD_BUILD),CARGO_UNSTABLE_BUILD_STD="$(PYTHON3_BCRYPT_RUST_BUILD_STD)") \
+		$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),CARGO_UNSTABLE_JSON_TARGET_SPEC=true) \
 		RUSTFLAGS="-C linker=$(TARGET_CROSS)gcc" \
 		PYO3_CROSS_LIB_DIR="$(PYTHON3_STAGING_LIB_DIR)" \
 		PYO3_CROSS_PYTHON_VERSION="$(PYTHON3_MAJOR_VERSION)" \
