@@ -257,6 +257,14 @@ RUST_LIBC_X86_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-u
 # Safe on all architectures: on mips/arm/x86_64 the added x86 cfg_if branch and
 # module are simply not compiled.
 #
+# NOTE: the injected `SIGIO` constant in the generic uclibc/mod.rs MUST stay
+# guarded with `#[cfg(target_arch = "x86")]`. It is needed there because the
+# generic module's `SIGPOLL = SIGIO` requires SIGIO in scope for x86 (the shared
+# x86 module does not define it), but an UNguarded `pub const SIGIO` would be an
+# explicit item that SHADOWS the glob-re-exported MIPS `SIGIO = 22` (Rust: explicit
+# items beat glob imports). That makes c::SIGIO == c::SIGPROF == 29 on MIPS and
+# rustix fails with `error[E0081]` (duplicate discriminant 29 in its Signal enum).
+#
 # IMPORTANT: the shared module MUST keep `sigaction.sa_flags` typed as `c_ulong`
 # (not `c_int`) and define SA_NOCLDSTOP/SA_NODEFER/SA_RESETHAND/SFD_CLOEXEC,
 # exactly like the native uclibc arm/x86_64 modules. nix defines
@@ -308,9 +316,9 @@ define RUST_APPLY_UCLIBC_X86_LIBC_PATCH
 			sed -i '/^    } else if #\[cfg(target_arch = "x86_64")\] {/i\    } else if #[cfg(target_arch = "x86")] {\n        mod x86;\n        pub use self::x86::*;' "$$libc_mod_file"; \
 		fi; \
 		if grep -q '^pub const EXTA: ::c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
-			perl -0pi -e 's@(^pub const EXTA: ::c_uint = B19200;)@pub const B19200: ::speed_t = 0o000016;\npub const B38400: ::speed_t = 0o000017;\npub const SIGIO: ::c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
+			perl -0pi -e 's@(^pub const EXTA: ::c_uint = B19200;)@pub const B19200: ::speed_t = 0o000016;\npub const B38400: ::speed_t = 0o000017;\n#[cfg(target_arch = "x86")]\npub const SIGIO: ::c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
 		elif grep -q '^pub const EXTA: c_uint = B19200;' "$$libc_mod_file" && ! grep -q '^pub const B19200' "$$libc_mod_file"; then \
-			perl -0pi -e 's@(^pub const EXTA: c_uint = B19200;)@pub const B19200: crate::speed_t = 0xe;\npub const B38400: crate::speed_t = 0xf;\npub const SIGIO: c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
+			perl -0pi -e 's@(^pub const EXTA: c_uint = B19200;)@pub const B19200: crate::speed_t = 0xe;\npub const B38400: crate::speed_t = 0xf;\n#[cfg(target_arch = "x86")]\npub const SIGIO: c_int = 0x1d;\n$$1@m' "$$libc_mod_file"; \
 		fi; \
 	done; \
 	find "$$(pwd)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;
