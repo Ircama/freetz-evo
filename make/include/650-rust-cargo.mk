@@ -302,7 +302,7 @@ define RUST_APPLY_UCLIBC_X86_LIBC_PATCH
 			cp -f $(RUST_LIBC_X86_UCLIBC_MODULE_OLD) "$$libc_x86_dir/mod.rs"; \
 		fi; \
 		if [ -f "$$libc_dir/src/new/linux_uapi/linux/types.rs" ]; then \
-			sed -i '/^pub type __u64 = \(crate::\|::\)\?c_ulonglong;$/d; /^pub type __s64 = \(crate::\|::\)\?c_longlong;$/d' "$$libc_x86_dir/mod.rs"; \
+			sed -i '/^pub type __u64 = \(crate::\|::\)\?c_ulonglong;$$/d; /^pub type __s64 = \(crate::\|::\)\?c_longlong;$$/d' "$$libc_x86_dir/mod.rs"; \
 		fi; \
 		if ! grep -q 'target_arch = "x86")' "$$libc_mod_file"; then \
 			sed -i '/^    } else if #\[cfg(target_arch = "x86_64")\] {/i\    } else if #[cfg(target_arch = "x86")] {\n        mod x86;\n        pub use self::x86::*;' "$$libc_mod_file"; \
