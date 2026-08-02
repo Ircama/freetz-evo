@@ -41,6 +41,11 @@ $(PKG)_CONFIGURE_OPTIONS += --locales-fix
 $(PKG)_CONFIGURE_OPTIONS += --ssl
 $(PKG)_CONFIGURE_OPTIONS += --with-ncurses="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 $(PKG)_CONFIGURE_OPTIONS += --with-ssl="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
+# Point iconv at the target staging dir: with the default prefix (/usr) the
+# autosetup iconv check appends -I/usr/include -L/usr/lib (host paths), which
+# makes the cross compiler pick up the host OpenSSL headers on x86 (fails with
+# "OPENSSL_API_COMPAT expresses an impossible API compatibility level").
+$(PKG)_CONFIGURE_OPTIONS += --with-iconv="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
