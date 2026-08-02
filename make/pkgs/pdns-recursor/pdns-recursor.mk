@@ -8,6 +8,8 @@ $(PKG)_DIR:=$(SOURCE_DIR)/pdns-recursor-$($(PKG)_VERSION)
 ### CHANGES:=https://doc.powerdns.com/recursor/changelog/
 ### CVSREPO:=https://github.com/PowerDNS/pdns
 
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+
 PDNS_RECURSOR_BOOST_VERSION:=1.87.0
 PDNS_RECURSOR_BOOST_SOURCE:=pdns-recursor-boost_1_87_0.tar.bz2
 PDNS_RECURSOR_BOOST_SOURCE_DOWNLOAD_NAME:=boost_1_87_0.tar.bz2
@@ -27,9 +29,20 @@ PDNS_RECURSOR_B2_ARCH_OPTS := $(FREETZ_TARGET_B2_ARCH_OPTS)
 PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 PDNS_RECURSOR_RUST_TARGET_VALUE:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
 PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
+
+# The Rust `libc` crate has no x86 (32-bit) uClibc module, which breaks the
+# build-std `libc` (and the settings crate's own `libc` 0.2.150) on
+# i686-unknown-linux-uclibc. RUST_APPLY_UCLIBC_X86_LIBC_PATCH installs the
+# missing module into the ~/.cargo registry that the recursor's own build
+# system uses: unlike other Rust packages it invokes cargo internally (from
+# settings/rust) without a private CARGO_HOME, so we patch the shared registry.
+PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PDNS_RECURSOR_RUST_TARGET_DIR))
 PDNS_RECURSOR_RUST_BUILD_STD_VALUE:=std,panic_abort
 PDNS_RECURSOR_RUST_BUILD_STD_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort,)
-PDNS_RECURSOR_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly,$(HOST_TOOLS_DIR)/usr/bin/cargo)
+# Custom JSON target specs (x86, aarch64, arm-BE) require -Zjson-target-spec on
+# recent cargo versions, otherwise cargo errors out when the recursor's own
+# settings/rust Makefile invokes "$$(CARGO) build --release --target <spec.json>".
+PDNS_RECURSOR_CARGO_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),$(HOST_TOOLS_DIR)/usr/bin/cargo +nightly$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec),$(HOST_TOOLS_DIR)/usr/bin/cargo)
 PDNS_RECURSOR_RUST_ENV_TARGET:=$(subst -,_,$(PDNS_RECURSOR_RUST_TARGET_DIR))
 
 PDNS_RECURSOR_BUILD_BINARY:=$(PDNS_RECURSOR_DIR)/pdns_recursor
@@ -106,6 +119,15 @@ $(PDNS_RECURSOR_DIR)/.configured: $(PDNS_RECURSOR_DIR)/.build-prereq-checked $(P
 	@touch $@
 
 $(PDNS_RECURSOR_BUILD_BINARY): $(PDNS_RECURSOR_DIR)/.configured
+	if [ -n "$(PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH)" ]; then \
+		export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+		export CARGO_HOME="$$HOME/.cargo"; \
+		export RUSTUP_HOME="$$HOME/.rustup"; \
+		echo "Applying uClibc x86 libc module patch (recursor Rust build)"; \
+		cargo +nightly fetch --locked --manifest-path $(PDNS_RECURSOR_DIR)/settings/rust/Cargo.toml; \
+		$(if $(PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
+		$(if $(PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH),find "$(PDNS_RECURSOR_DIR)/settings/rust/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	fi; \
 	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) \
 		RUST_TARGET="$(PDNS_RECURSOR_RUST_TARGET_ARG)" \
 		RUSTC_TARGET_ARCH="$(PDNS_RECURSOR_RUST_TARGET_DIR)" \
