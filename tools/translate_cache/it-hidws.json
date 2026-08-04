@@ -117,5 +117,12 @@
     "timestamp": "2026-08-01T09:53:26Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Official FiiO Control web app (equalizer / custom)": {
+    "original": "Official FiiO Control web app (equalizer / custom)",
+    "translation": "App web ufficiale FiiO Control (equalizzatore / personalizzato)",
+    "timestamp": "2026-08-04T12:47:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

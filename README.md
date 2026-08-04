@@ -21,7 +21,7 @@ Freetz-EVO includes:
 - over 70 libraries,
 - over 40 improved packages and libraries,
 - USB audio stack, extensive playback and recording tools, local playlist management and web radio functions,
-- hidapi support for HID-Class USB device access and ja11-config-tui support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs,
+- hidapi support for HID-Class USB device access and ja11-config support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs (TUI EQ configurator plus ja11-boot/ja11-flash firmware update),
 - X11 client libraries and tools,
 - microcontroller flasher tools to enable USB peripheral devices.
 - built-in Go and Rust toolchains to compile Go and Rust packages.
@@ -95,7 +95,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`esp-serial-flasher`](docs/make/esp-serial-flasher.md)** git-f1cccac | ESP serial flashing toolkit shipping `linux_flasher` and `esp_fw_upload` for multi-image ESP32-family firmware upload layouts. | EVO only |
 | **[`micronucleus`](docs/make/micronucleus.md)** 2.6 | USB bootloader uploader for Digispark/ATTiny devices using Micronucleus (`/usr/bin/micronucleus`). | EVO only |
 | **[`telink_tools`](docs/make/telink_tools.md)** 1.0 | Native C Telink BLE bootloader CLI for TB-03F-KIT/TB-04-KIT style devices; supports burn, triad programming, and flash read/write/erase operations. | EVO only |
-| **[`ja11-config-tui`](docs/make/ja11-config-tui.md)** 1.0 | TUI configurator for FiiO JA11 and other KT02H20 DSP-based USB DACs; 5-band parametric EQ, DAC digital filters, global preamp gain, preset management, persistent flash save, and i18n (EN/IT). | EVO only |
+| **[`ja11-config`](docs/make/ja11-config.md)** 1.0 | FiiO JA11 / KT02H20 tool set: `ja11-config-tui` (5-band parametric EQ, DAC digital filters, global preamp gain, preset management, persistent flash save, i18n EN/IT), `ja11-boot` (enter firmware-update mode), and `ja11-flash` (firmware flashing over the update-mode serial port). | EVO only |
 | **[`lazygit`](docs/make/lazygit.md)** 0.61.1 | Full-screen terminal UI for Git repositories. | EVO only |
 | **[`neovim`](docs/make/neovim.md)** 0.12.2 | Modern terminal-based text editor, fork of Vim with Lua scripting, built-in LSP client, and tree-sitter syntax highlighting; cross-compiled with CMake and Ninja | EVO only |
 | **[`lf`](docs/make/lf.md)** r41 | Terminal file manager with a Miller-column layout, keyboard-driven navigation, and customizable key bindings. Built with Go cross-compilation. | EVO only |
@@ -190,7 +190,7 @@ The authentication layer has been updated to support a **form-based session logi
 | **[`libtcmalloc_minimal`](docs/make/libtcmalloc_minimal.md)** (gperftools) | Thread-caching allocator from gperftools; low-overhead alternative to the system allocator. | EVO only |
 | **[`libprofiler`](docs/make/libprofiler.md)** (gperftools) | CPU profiler from gperftools; co-installed with libtcmalloc_minimal. | EVO only |
 | **[`libssl`](docs/make/openssl.md)** (OpenSSL) | OpenSSL SSL/TLS library; legacy provider module `legacy.so` added for OpenSSL 3.x compatibility (deprecated algorithms via provider API). | EVO only |
-| **[`hidapi`](docs/make/hidapi.md)** 0.15.0 | Multi-platform HID library (`libhidapi-hidraw.so`) using the Linux kernel's hidraw interface; enables applications to interface with HID-Class USB devices without libusb. Used by `ja11-config-tui`. | EVO only |
+| **[`hidapi`](docs/make/hidapi.md)** 0.15.0 | Multi-platform HID library (`libhidapi-hidraw.so`) using the Linux kernel's hidraw interface; enables applications to interface with HID-Class USB devices without libusb. Used by `ja11-config`. | EVO only |
 | **[`lame`](docs/make/lame.md)** 3.100 | High-quality MPEG Audio Layer 3 (MP3) encoding library (`libmp3lame.so`); provides the LAME encoder for audio applications needing MP3 output. | EVO only |
 | **[`libixml`](docs/make/libixml.md)** 11.1.7 | Lightweight XML parser library (`libixml.so`) distributed as part of the Portable UPnP SDK (libupnp); used by Gerbera and other UPnP applications for XML parsing. | EVO only |
 | **[`lirc`](docs/make/lirc.md)** 0.10.2 | LIRC (Linux Infrared Remote Control) client library (`liblirc_client.so`); provides infrared remote control support for applications like `ncmpc`. | EVO only |

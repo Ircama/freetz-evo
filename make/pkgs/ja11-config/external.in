@@ -1,0 +1,9 @@
+config EXTERNAL_FREETZ_PACKAGE_JA11_CONFIG
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_JA11_CONFIG
+	bool "ja11-config"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/ja11-config-tui
+		 /usr/bin/ja11-boot
+		 /usr/bin/ja11-flash

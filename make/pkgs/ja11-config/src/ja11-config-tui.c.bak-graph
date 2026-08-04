@@ -1,0 +1,1797 @@
+/*
+ * ja11-config-tui.c - Full-featured TUI configurator for FiiO JA11 (KT02H20)
+ *
+ * Communicates via HID with the KT02H20 chip inside
+ * the FiiO JadeAudio JA11 to configure the 5-band parametric EQ,
+ * DAC digital filters, global gain, and more.
+ *
+ * Inspired from Audiocular-Aura: https://github.com/mandy321/Audiocular-Aura
+ *
+ * Usage:
+ *   ja11-config-tui            - English UI (default)
+ *   ja11-config-tui --italian  - Italian UI
+ *   ja11-config-tui -it        - Italian UI (short)
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+#include <math.h>
+#include <ncurses.h>
+#include <hidapi/hidapi.h>
+#include <unistd.h>
+#include <errno.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <locale.h>
+
+#include "ja11-config-tui.h"
+
+/* ============================================================
+ * i18n Strings
+ * ============================================================ */
+typedef struct {
+	const char *lang_name;
+	/* UI */
+	const char *title;
+	const char *connected;
+	const char *disconnected;
+	const char *preamp;
+	const char *band_hdr;
+	const char *freq_hdr;
+	const char *gain_hdr;
+	const char *q_hdr;
+	const char *type_hdr;
+	const char *status_hdr;
+	const char *dac_filter;
+	const char *sync_ok;
+	const char *sync_pending;
+	const char *modified_warn;
+	const char *status_conn;
+	const char *status_disconn;
+	const char *preset_label;
+	/* Help navigation */
+	const char *help_nav;
+	const char *help_arrows;
+	const char *help_coarse;
+	const char *help_fine;
+	const char *help_toggle;
+	const char *help_cycle;
+	const char *help_tab;
+	/* Help device actions */
+	const char *help_dev;
+	const char *help_apply;
+	const char *help_save;
+	const char *help_read;
+	const char *help_gain;
+	/* Help DAC filters */
+	const char *help_filter;
+	/* Help presets */
+	const char *help_presets;
+	const char *help_psave;
+	const char *help_pload;
+	const char *help_pdel;
+	/* Help other */
+	const char *help_other;
+	const char *help_reset_flat;
+	const char *help_reset_def;
+	const char *help_quit;
+	/* Messages */
+	const char *msg_filter_set;
+	const char *msg_applied;
+	const char *msg_saved;
+	const char *msg_read_ok;
+	const char *msg_gain_set;
+	const char *msg_prompt_gain;
+	const char *msg_prompt_pname;
+	const char *msg_prompt_pload;
+	const char *msg_confirm_save;
+	const char *msg_confirm_del;
+	const char *msg_no_presets;
+	const char *msg_preset_saved;
+	const char *msg_preset_loaded;
+	const char *msg_preset_deleted;
+	const char *msg_cancelled;
+	const char *msg_no_device;
+	const char *msg_udev_hint;
+	/* Device selection screen */
+	const char *dev_sel_title;
+	const char *dev_sel_hint;
+	const char *help_connect;
+} Lang;
+
+static const Lang lang_en = {
+	.lang_name      = "English",
+	.title          = "FiiO JA11 (KT02H20) - Full PEQ Configurator",
+	.connected      = "CONNECTED:",
+	.disconnected   = "DISCONNECTED",
+	.preamp         = "Global Preamp:",
+	.band_hdr       = "Band",
+	.freq_hdr       = "Freq (Hz)",
+	.gain_hdr       = "Gain (dB)",
+	.q_hdr          = "Q",
+	.type_hdr       = "Type",
+	.status_hdr     = "Status",
+	.dac_filter     = "DAC Digital Filter:",
+	.sync_ok        = "All synced with device",
+	.sync_pending   = "** MODIFICATIONS NOT APPLIED **",
+	.modified_warn  = "Unapplied changes. Press q again to exit.",
+	.status_conn    = "STATUS: Connected",
+	.status_disconn = "STATUS: NOT connected",
+	.preset_label   = "Preset:",
+	/* Help */
+	.help_nav       = "=== NAVIGATION ===",
+	.help_arrows    = "  Arrows        Move between bands/params",
+	.help_coarse    = "  +/-           Change value (coarse step)",
+	.help_fine      = "  </>           Change value (fine step)",
+	.help_toggle    = "  Space         Toggle band on/off",
+	.help_cycle     = "  t             Cycle filter type (PK/LSQ/HSQ)",
+	.help_tab       = "  Tab/Shift-Tab Move fwd/back across all cells",
+	.help_dev       = "=== DEVICE ACTIONS ===",
+	.help_apply     = "  a             Apply changes to RAM",
+	.help_save      = "  s (then S)    Save to flash (permanent)",
+	.help_read      = "  r / R         Reload config from device",
+	.help_gain      = "  g / G         Set global preamp gain",
+	.help_filter    = "  f / F         Cycle DAC digital filter",
+	.help_connect   = "  c             Connect / switch HID device",
+	.help_presets   = "=== PRESETS ===",
+	.help_psave     = "  p             Save current preset",
+	.help_pload     = "  P             Load preset",
+	.help_pdel      = "  K             Delete current preset",
+	.help_other     = "=== OTHER ===",
+	.help_reset_flat= "  d             Reset to flat (0 dB, Q=0.7)",
+	.help_reset_def = "  D             Reset to defaults (optimal freqs)",
+	.help_quit      = "  q / Q         Quit",
+	/* Messages */
+	.msg_filter_set = "DAC filter set to: %s",
+	.msg_applied    = "OK: Changes applied to RAM.",
+	.msg_saved      = "OK: Configuration saved to flash (permanent).",
+	.msg_read_ok    = "OK: Configuration reloaded from device.",
+	.msg_gain_set   = "Global gain set to %.1f dB.",
+	.msg_prompt_gain= "Global gain (%.0f..+%.0f dB) [current: %+.1f]: ",
+	.msg_prompt_pname= "Preset name: ",
+	.msg_prompt_pload= "Load preset (1-%d): ",
+	.msg_confirm_save= "Save to flash? Press S (SHIFT) to confirm: ",
+	.msg_confirm_del= "Delete preset '%s'? Press K (SHIFT) to confirm: ",
+	.msg_no_presets = "No presets available.",
+	.msg_preset_saved= "Preset '%s' saved.",
+	.msg_preset_loaded= "Preset '%s' loaded.",
+	.msg_preset_deleted= "Preset deleted.",
+	.msg_cancelled   = "Cancelled.",
+	.msg_no_device   = "ERROR: device not accessible.",
+	.msg_udev_hint   = "  No HID device found. Check USB (lsusb: 2972:0102 / 31b2:0111).",
+	.dev_sel_title   = "Select HID device",
+	.dev_sel_hint    = "Up/Down: move    Enter: connect    q: quit",
+};
+
+static const Lang lang_it = {
+	.lang_name      = "Italiano",
+	.title          = "FiiO JA11 (KT02H20) - Configuratore PEQ Completo",
+	.connected      = "CONNESSO:",
+	.disconnected   = "DISCONNESSO",
+	.preamp         = "Preamp Globale:",
+	.band_hdr       = "Banda",
+	.freq_hdr       = "Freq (Hz)",
+	.gain_hdr       = "Guad. (dB)",
+	.q_hdr          = "Q",
+	.type_hdr       = "Tipo",
+	.status_hdr     = "Stato",
+	.dac_filter     = "Filtro DAC Digitale:",
+	.sync_ok        = "Sincronizzato con il dispositivo",
+	.sync_pending   = "** MODIFICHE NON APPLICATE **",
+	.modified_warn  = "Modifiche non applicate. Premi q di nuovo per uscire.",
+	.status_conn    = "STATO: Connesso",
+	.status_disconn = "STATO: NON connesso",
+	.preset_label   = "Preset:",
+	/* Help */
+	.help_nav       = "=== NAVIGAZIONE ===",
+	.help_arrows    = "  Cursore       Spostamento tra bande/parametri",
+	.help_coarse    = "  +/-           Modifica valore (passo veloce)",
+	.help_fine      = "  </>           Modifica valore (passo fine)",
+	.help_toggle    = "  Spazio        Abilita/disabilita banda",
+	.help_cycle     = "  t             Cicla tipo filtro (PK/LSQ/HSQ)",
+	.help_tab       = "  Tab/Maiusc-Tab  Sposta avanti/indietro tra le celle",
+	.help_dev       = "=== AZIONI DISPOSITIVO ===",
+	.help_apply     = "  a             Applica modifiche alla RAM",
+	.help_save      = "  s (poi S)     Salva su flash (permanente)",
+	.help_read      = "  r / R         Ricarica config. dal dispositivo",
+	.help_gain      = "  g / G         Imposta guadagno globale",
+	.help_filter    = "  f / F         Cicla filtro DAC digitale",
+	.help_connect   = "  c             Connetti / cambia dispositivo HID",
+	.help_presets   = "=== PRESET ===",
+	.help_psave     = "  p             Salva preset corrente",
+	.help_pload     = "  P             Carica preset",
+	.help_pdel      = "  K             Elimina preset corrente",
+	.help_other     = "=== ALTRO ===",
+	.help_reset_flat= "  d             Reset a flat (0 dB, Q=0.7)",
+	.help_reset_def = "  D             Reset a default (freq ottimali)",
+	.help_quit      = "  q / Q         Esci",
+	/* Messages */
+	.msg_filter_set = "Filtro DAC impostato: %s",
+	.msg_applied    = "OK: Modifiche applicate alla RAM.",
+	.msg_saved      = "OK: Configurazione salvata su flash (permanente).",
+	.msg_read_ok    = "OK: Configurazione ricaricata dal dispositivo.",
+	.msg_gain_set   = "Guadagno globale impostato a %.1f dB.",
+	.msg_prompt_gain= "Guadagno globale (%.0f..+%.0f dB) [corr: %+.1f]: ",
+	.msg_prompt_pname= "Nome preset: ",
+	.msg_prompt_pload= "Carica preset (1-%d): ",
+	.msg_confirm_save= "Salvare su flash? Premi S (MAIUSC) per confermare: ",
+	.msg_confirm_del= "Eliminare preset '%s'? Premi K (MAIUSC) per confermare: ",
+	.msg_no_presets = "Nessun preset disponibile.",
+	.msg_preset_saved= "Preset '%s' salvato.",
+	.msg_preset_loaded= "Preset '%s' caricato.",
+	.msg_preset_deleted= "Preset eliminato.",
+	.msg_cancelled   = "Annullato.",
+	.msg_no_device   = "ERRORE: dispositivo non accessibile.",
+	.msg_udev_hint   = "  Nessun dispositivo HID trovato. Controlla USB (lsusb: 2972:0102 / 31b2:0111).",
+	.dev_sel_title   = "Seleziona dispositivo HID",
+	.dev_sel_hint    = "Su/Giù: sposta    Invio: connetti    q: esci",
+};
+
+static int g_lang = LANG_EN;
+#define LANG_PTR (g_lang == LANG_IT ? &lang_it : &lang_en)
+#define LANG (*LANG_PTR)
+
+/* ============================================================
+ * Globals
+ * ============================================================ */
+static Band bands[NUM_BANDS];
+static int current_band = 0;
+static int current_param = 0;    /* 0:Freq 1:Gain 2:Q 3:Type */
+static double global_gain = 0.0;
+static bool modified = false;
+static bool device_connected = false;
+static hid_device *device_handle = NULL;
+static int dac_filter = DAC_FILTER_FAST_LL;
+
+static Preset presets[MAX_PRESETS];
+static int num_presets = 0;
+static int current_preset = -1;
+
+static int device_vid = 0;
+static int device_pid = 0;
+static char device_name[256] = "";
+static char status_msg[256] = "";
+
+/* ============================================================
+ * HID Low-Level
+ * ============================================================ */
+/* KT02H20 (FiiO JA11) commands are sent as OUTPUT reports on the interrupt
+ * OUT endpoint (hid_write) - exactly like Audiocular-Aura's
+ * device.sendReport(2, packet) and hidws's cmd_send_report.
+ * The chip does not use feature reports; the response comes back as an
+ * INPUT report (interrupt IN), read by read_input_report(). */
+static bool send_output_report(const unsigned char *data, int len)
+{
+	unsigned char buf[65];
+	if (!device_handle) return false;
+	memset(buf, 0, sizeof(buf));
+	buf[0] = REPORT_ID_FIIO;
+	if (len > 64) len = 64;
+	memcpy(&buf[1], data, len);
+	return (hid_write(device_handle, buf, len + 1) != -1);
+}
+
+static int read_input_report(unsigned char *buf, int len, int timeout_ms)
+{
+	if (!device_handle) return -1;
+	return hid_read_timeout(device_handle, buf, len, timeout_ms);
+}
+
+/* hidapi's libusb backend returns the report ID byte (0x02) as the first
+ * byte of a numbered INPUT report - exactly like the WebSocket bridge
+ * (aura-bridged / hidws) forwards the raw hid_read buffer. WebHID strips
+ * that byte, so the web apps (kt02h20-control, Audiocular-Aura, ...) strip
+ * it too. Detect and skip the leading report ID so the protocol packet
+ * starts at 0xBB. */
+static int find_packet_start(const unsigned char *buf, int len)
+{
+	if (len >= 3 && buf[0] == REPORT_ID_FIIO &&
+		buf[1] == READ_HDR1 && buf[2] == READ_HDR2)
+		return 1;                        /* [0x02, 0xBB, 0x0B, ...] */
+	if (len >= 3 && buf[1] == READ_HDR1 && buf[2] == READ_HDR2)
+		return 1;                        /* unknown report id prefix */
+	if (len >= 2 && buf[0] == READ_HDR1 && buf[1] == READ_HDR2)
+		return 0;                        /* no report id (raw packet) */
+	return 0;
+}
+
+/* ============================================================
+ * HID Commands
+ * ============================================================ */
+static bool write_band(int idx)
+{
+	int g, f, qv;
+	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
+		CMD_FILTER_PARAMS, FILTER_PARAMS_LEN,
+		0, 0,0, 0,0, 0,0, FILTER_PK, 0, FOOTER };
+	if (!device_handle || idx < 0 || idx >= NUM_BANDS) return false;
+	g = (int)round((bands[idx].enabled ? bands[idx].gain : 0.0) * 10.0);
+	if (g < 0) g = 65536 + g;
+	f = (int)round(bands[idx].freq);
+	qv = (int)round(bands[idx].q * 100.0);
+	pkt[6] = idx;
+	pkt[7] = (g >> 8) & 0xff;  pkt[8] = g & 0xff;
+	pkt[9] = (f >> 8) & 0xff;  pkt[10] = f & 0xff;
+	pkt[11] = (qv >> 8) & 0xff; pkt[12] = qv & 0xff;
+	pkt[13] = bands[idx].filter_type;
+	return send_output_report(pkt, sizeof(pkt));
+}
+
+static bool apply_changes(void)
+{
+	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
+		CMD_APPLY, APPLY_LEN, 1, 0, FOOTER };
+	return device_handle ? send_output_report(pkt, sizeof(pkt)) : false;
+}
+
+static bool sync_all_bands(void)
+{
+	if (!device_handle) return false;
+	for (int i = 0; i < NUM_BANDS; i++) {
+		if (!write_band(i)) return false;
+		usleep(25000);
+	}
+	usleep(10000);
+	return apply_changes();
+}
+
+static bool save_to_flash(void)
+{
+	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
+		CMD_SAVE_FLASH, SAVE_FLASH_LEN, 3, 0, FOOTER };
+	if (!device_handle) return false;
+	if (!sync_all_bands()) return false;
+	usleep(50000);
+	return send_output_report(pkt, sizeof(pkt));
+}
+
+void set_global_gain_cmd(double gain)
+{
+	int value;
+	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
+		CMD_GLOBAL_GAIN, GLOBAL_GAIN_LEN, 0,0, 0, FOOTER };
+	if (!device_handle) return;
+	if (gain < GLOBAL_GAIN_MIN) gain = GLOBAL_GAIN_MIN;
+	if (gain > GLOBAL_GAIN_MAX) gain = GLOBAL_GAIN_MAX;
+	value = (int)round(gain * 2560.0);
+	if (value < 0) value = 65536 + value;
+	pkt[6] = value & 0xff;
+	pkt[7] = (value >> 8) & 0xff;
+	send_output_report(pkt, sizeof(pkt));
+}
+
+static void set_dac_filter_cmd(int filter_idx)
+{
+	unsigned char pkt[] = { SET_HDR1, SET_HDR2, 0, 0,
+		CMD_DAC_FILTER, DAC_FILTER_LEN, (unsigned char)filter_idx, 0, FOOTER };
+	if (!device_handle) return;
+	send_output_report(pkt, sizeof(pkt));
+}
+
+static const char *dac_filter_name(int idx)
+{
+	switch (idx) {
+	case DAC_FILTER_FAST_LL: return DAC_FILTER_NAME_FAST_LL;
+	case DAC_FILTER_FAST_PC: return DAC_FILTER_NAME_FAST_PC;
+	case DAC_FILTER_SLOW_LL: return DAC_FILTER_NAME_SLOW_LL;
+	case DAC_FILTER_SLOW_PC: return DAC_FILTER_NAME_SLOW_PC;
+	case DAC_FILTER_NON_OS:  return DAC_FILTER_NAME_NON_OS;
+	default: return "?";
+	}
+}
+
+/* ============================================================
+ * Read device config
+ * ============================================================ */
+static bool read_device_config(void)
+{
+	unsigned char resp[64];
+	int ret;
+	if (!device_handle) return false;
+
+	/* Read global gain */
+	{
+		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
+			CMD_READ_GAIN, 0, 0, FOOTER };
+		if (send_output_report(cmd, sizeof(cmd))) {
+			memset(resp, 0, sizeof(resp));
+			ret = read_input_report(resp, sizeof(resp), 500);
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_GLOBAL_GAIN) {
+					int raw = (resp[off + 7] << 8) | resp[off + 6];
+					if (raw > 32767) raw -= 65536;
+					global_gain = (double)raw / 2560.0;
+				}
+			}
+		}
+	}
+	/* Read DAC filter (from input report) */
+	{
+		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
+			CMD_DAC_FILTER, 0, 0, FOOTER };
+		if (send_output_report(cmd, sizeof(cmd))) {
+			memset(resp, 0, sizeof(resp));
+			ret = read_input_report(resp, sizeof(resp), 500);
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_DAC_FILTER) {
+					int val = resp[off + 6];
+					if (val >= 1 && val <= DAC_FILTER_COUNT)
+						dac_filter = val;
+				}
+			}
+		}
+	}
+	/* Read each band */
+	for (int i = 0; i < NUM_BANDS; i++) {
+		unsigned char cmd[] = { READ_HDR1, READ_HDR2, 0, 0,
+			CMD_READ_PARAM, 1, i, FOOTER };
+		if (send_output_report(cmd, sizeof(cmd))) {
+			memset(resp, 0, sizeof(resp));
+			ret = read_input_report(resp, sizeof(resp), 500);
+			if (ret > 0) {
+				int off = find_packet_start(resp, ret);
+				if (resp[off + 4] == CMD_READ_PARAM) {
+					int idx = resp[off + 6];
+					if (idx >= 0 && idx < NUM_BANDS) {
+						int rg = (resp[off + 7] << 8) | resp[off + 8];
+						if (rg > 32767) rg -= 65536;
+						bands[idx].gain = (double)rg / 10.0;
+						bands[idx].freq = (double)((resp[off + 9] << 8) | resp[off + 10]);
+						int rq = (resp[off + 11] << 8) | resp[off + 12];
+						bands[idx].q = (double)rq / 100.0;
+						bands[idx].filter_type = resp[off + 13] & 0x03;
+						bands[idx].enabled = true;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
+/* ============================================================
+ * HID device enumeration & selection
+ * (libusb backend, mirrors hidws: enumerate all, open selected)
+ * ============================================================ */
+#define MAX_DEVICES 32
+
+typedef struct {
+	char path[256];
+	unsigned short vendor_id;
+	unsigned short product_id;
+	char product_string[128];
+	int compatible;
+} DeviceEntry;
+
+static DeviceEntry devices[MAX_DEVICES];
+static int num_devices = 0;
+
+static int device_is_compatible(unsigned short vid, unsigned short pid,
+                                const char *product)
+{
+	if ((vid == FIIO_VID && pid == JA11_PID) ||
+	    (vid == JKALLY_VID && pid == JM12_PID))
+		return 1;
+	if (product &&
+	    (strstr(product, "JA11") || strstr(product, "ja11") ||
+	     strstr(product, "KT02H20") || strstr(product, "JM12")))
+		return 1;
+	return 0;
+}
+
+/* Like hidws cmd_list: enumerate ALL HID devices (no VID/PID filter) */
+static int enumerate_devices(void)
+{
+	struct hid_device_info *devs;
+	struct hid_device_info *cur;
+
+	num_devices = 0;
+	if (hid_init() != 0) return 0;
+	devs = hid_enumerate(0, 0);
+	for (cur = devs; cur && num_devices < MAX_DEVICES; cur = cur->next) {
+		DeviceEntry *d = &devices[num_devices];
+		snprintf(d->path, sizeof(d->path), "%s",
+		         cur->path ? cur->path : "");
+		d->vendor_id = cur->vendor_id;
+		d->product_id = cur->product_id;
+		if (cur->product_string)
+			wcstombs(d->product_string, cur->product_string,
+			         sizeof(d->product_string) - 1);
+		else
+			d->product_string[0] = 0;
+		d->product_string[sizeof(d->product_string) - 1] = 0;
+		d->compatible = device_is_compatible(d->vendor_id,
+		                                     d->product_id,
+		                                     d->product_string);
+		num_devices++;
+	}
+	hid_free_enumeration(devs);
+	return num_devices;
+}
+
+static bool connect_to_entry(const DeviceEntry *d)
+{
+	if (!d || !d->path[0]) return false;
+	if (device_handle) { hid_close(device_handle); device_handle = NULL; }
+	device_handle = hid_open_path(d->path);
+	if (!device_handle) return false;
+	device_connected = true;
+	device_vid = d->vendor_id;
+	device_pid = d->product_id;
+	if (d->product_string[0])
+		snprintf(device_name, sizeof(device_name), "%s",
+		         d->product_string);
+	else
+		snprintf(device_name, sizeof(device_name), "0x%04x:0x%04x",
+		         d->vendor_id, d->product_id);
+	read_device_config();
+	return true;
+}
+
+/* ncurses picker: lists available HID devices, lets the user choose one.
+ * Returns the selected index, or -1 if cancelled. */
+static int select_device_menu(void)
+{
+	const Lang *l = &LANG;
+	int sel = 0, ch;
+	int h, w, y, x;
+
+	if (num_devices <= 0) return -1;
+	/* Pre-select a known-compatible device if present */
+	for (int i = 0; i < num_devices; i++)
+		if (devices[i].compatible) { sel = i; break; }
+
+	h = num_devices + 6;
+	w = 74;
+	y = (LINES - h) / 2;
+	x = (COLS - w) / 2;
+	if (h > LINES) h = LINES;
+	if (w > COLS) w = COLS;
+	if (y < 0) y = 0;
+	if (x < 0) x = 0;
+
+	WINDOW *win = newwin(h, w, y, x);
+	keypad(win, TRUE);
+	box(win, 0, 0);
+	wattron(win, A_BOLD);
+	mvwaddstr(win, 0, 2, l->dev_sel_title);
+	wattroff(win, A_BOLD);
+	mvwaddstr(win, 2, 2, "   VID:PID     Product");
+	mvwaddstr(win, h - 2, 2, l->dev_sel_hint);
+
+	while (1) {
+		for (int i = 0; i < num_devices; i++) {
+			char line[128];
+			const DeviceEntry *d = &devices[i];
+			snprintf(line, sizeof(line), "%04X:%04X  %s",
+			         d->vendor_id, d->product_id,
+			         d->product_string[0] ? d->product_string
+			                              : "(no name)");
+			mvwaddstr(win, 3 + i, 2, line);
+			mvwaddch(win, 3 + i, 1, d->compatible ? '*' : ' ');
+			if (i == sel) {
+				wattron(win, A_REVERSE);
+				mvwaddstr(win, 3 + i, 2, line);
+				wattroff(win, A_REVERSE);
+			} else if (d->compatible) {
+				wattron(win, COLOR_PAIR(3));
+				mvwaddstr(win, 3 + i, 2, line);
+				wattroff(win, COLOR_PAIR(3));
+			}
+		}
+		wnoutrefresh(win);
+		doupdate();
+
+		ch = wgetch(win);
+		if (ch == KEY_UP) {
+			if (sel > 0) sel--;
+		} else if (ch == KEY_DOWN) {
+			if (sel < num_devices - 1) sel++;
+		} else if (ch == 'q' || ch == 'Q' || ch == 27) {
+			delwin(win);
+			return -1;
+		} else if (ch == '\n' || ch == '\r' || ch == KEY_ENTER) {
+			int idx = sel;
+			delwin(win);
+			return idx;
+		}
+	}
+}
+
+static void disconnect_device(void)
+{
+	if (device_handle) { hid_close(device_handle); device_handle = NULL; }
+	device_connected = false;
+	hid_exit();
+}
+
+/* ============================================================
+ * Preset management
+ * ============================================================ */
+static void save_current_preset(const char *name)
+{
+	if (num_presets >= MAX_PRESETS) return;
+	Preset *p = &presets[num_presets];
+	strncpy(p->name, name, MAX_PRESET_NAME - 1);
+	p->name[MAX_PRESET_NAME - 1] = 0;
+	memcpy(p->bands, bands, sizeof(bands));
+	p->global_gain = global_gain;
+	current_preset = num_presets;
+	num_presets++;
+}
+
+static void load_preset(int idx)
+{
+	if (idx < 0 || idx >= num_presets) return;
+	memcpy(bands, presets[idx].bands, sizeof(bands));
+	global_gain = presets[idx].global_gain;
+	current_preset = idx;
+	modified = true;
+}
+
+static void save_presets(void)
+{
+	FILE *f = fopen(PRESET_FILE, "w");
+	if (!f) return;
+	fprintf(f, "%d\n", num_presets);
+	for (int i = 0; i < num_presets; i++) {
+		fprintf(f, "%s\n", presets[i].name);
+		fprintf(f, "%.1f\n", presets[i].global_gain);
+		for (int j = 0; j < NUM_BANDS; j++)
+			fprintf(f, "%d %.0f %.1f %.2f %d\n",
+				presets[i].bands[j].enabled ? 1 : 0,
+				presets[i].bands[j].freq,
+				presets[i].bands[j].gain,
+				presets[i].bands[j].q,
+				presets[i].bands[j].filter_type);
+	}
+	fclose(f);
+}
+
+static void load_presets(void)
+{
+	FILE *f = fopen(PRESET_FILE, "r");
+	if (!f) return;
+	if (fscanf(f, "%d", &num_presets) != 1) { num_presets = 0; fclose(f); return; }
+	if (num_presets > MAX_PRESETS) num_presets = MAX_PRESETS;
+	for (int i = 0; i < num_presets; i++) {
+		fscanf(f, " %63[^\n]", presets[i].name);
+		fscanf(f, "%lf", &presets[i].global_gain);
+		for (int j = 0; j < NUM_BANDS; j++) {
+			int en;
+			fscanf(f, "%d %lf %lf %lf %d",
+			       &en, &presets[i].bands[j].freq,
+			       &presets[i].bands[j].gain,
+			       &presets[i].bands[j].q,
+			       &presets[i].bands[j].filter_type);
+			presets[i].bands[j].enabled = en ? true : false;
+		}
+	}
+	fclose(f);
+}
+
+/* ============================================================
+ * Band defaults
+ * ============================================================ */
+static void init_default_bands(void)
+{
+	static const double default_freqs[NUM_BANDS] = { 32, 64, 125, 250, 500 };
+	static const double default_gains[NUM_BANDS] = { 0, 0, 0, 0, 0 };
+	static const double default_q[NUM_BANDS] = { 0.7, 0.7, 0.7, 0.7, 0.7 };
+	static const int default_types[NUM_BANDS] = { FILTER_PK, FILTER_PK, FILTER_PK, FILTER_PK, FILTER_PK };
+	for (int i = 0; i < NUM_BANDS; i++) {
+		bands[i].enabled = true;
+		bands[i].freq = default_freqs[i];
+		bands[i].gain = default_gains[i];
+		bands[i].q = default_q[i];
+		bands[i].filter_type = default_types[i];
+	}
+	global_gain = 0.0;
+	modified = false;
+}
+
+static void reset_flat(void)
+{
+	for (int i = 0; i < NUM_BANDS; i++) {
+		bands[i].enabled = true;
+		bands[i].gain = 0.0;
+		bands[i].q = 0.7;
+		bands[i].filter_type = FILTER_PK;
+	}
+	global_gain = 0.0;
+	modified = true;
+}
+
+/* ============================================================
+ * Filter type name
+ * ============================================================ */
+static const char *filter_type_name(int ft)
+{
+	switch (ft) {
+	case FILTER_PK:  return "PK";
+	case FILTER_LSQ: return "LSQ";
+	case FILTER_HSQ: return "HSQ";
+	default:         return "?";
+	}
+}
+
+/* ============================================================
+ * UI Rendering
+ * ============================================================ */
+static void draw_status_bar(WINDOW *win, int width)
+{
+	const Lang *l = &LANG;
+	wattrset(win, A_REVERSE);
+	mvwaddstr(win, 0, 0, " ");
+	if (device_connected) {
+		wattron(win, COLOR_PAIR(3));
+		wprintw(win, " %s %s", l->connected, device_name);
+		wattroff(win, COLOR_PAIR(3));
+		wprintw(win, "  %s%.1f dB", l->preamp, global_gain);
+		wprintw(win, "  %s%s", l->dac_filter, dac_filter_name(dac_filter));
+		if (modified) {
+			wattron(win, COLOR_PAIR(4));
+			wprintw(win, "  %s", l->sync_pending);
+			wattroff(win, COLOR_PAIR(4));
+		} else {
+			wprintw(win, "  %s", l->sync_ok);
+		}
+	} else {
+		wattron(win, COLOR_PAIR(2));
+		wprintw(win, " %s", l->disconnected);
+		wattroff(win, COLOR_PAIR(2));
+	}
+	wattrset(win, A_NORMAL);
+	whline(win, ' ', width - 1);
+}
+
+static void draw_table_headers(WINDOW *win, int width)
+{
+	const Lang *l = &LANG;
+	int col = 2;
+	mvwaddstr(win, 0, col, l->band_hdr);  col += 8;
+	mvwaddstr(win, 0, col, l->freq_hdr);  col += 14;
+	mvwaddstr(win, 0, col, l->gain_hdr);  col += 14;
+	mvwaddstr(win, 0, col, l->q_hdr);      col += 14;
+	mvwaddstr(win, 0, col, l->type_hdr);   col += 10;
+	mvwaddstr(win, 0, col, l->status_hdr);
+	mvwhline(win, 1, 0, ' ', width);
+}
+
+static void draw_band_row(WINDOW *win, int row, int band_idx, bool selected)
+{
+	char buf_freq[16], buf_gain[16], buf_q[16];
+	char pre = ' ';
+	char status[4] = "   ";
+	(void)row;
+	Band *b = &bands[band_idx];
+	int col = 2;
+
+	if (selected) {
+		wattrset(win, A_REVERSE);
+		pre = '>';
+	} else {
+		wattrset(win, A_NORMAL);
+	}
+
+	if (!b->enabled) {
+		wattron(win, COLOR_PAIR(5));
+		pre = 'x';
+	}
+
+	snprintf(buf_freq, sizeof(buf_freq), "%.0f", b->freq);
+	snprintf(buf_gain, sizeof(buf_gain), "%+.1f", b->enabled ? b->gain : 0.0);
+	snprintf(buf_q, sizeof(buf_q), "%.2f", b->enabled ? b->q : 0.7);
+	strcpy(status, b->enabled ? "ON" : "OFF");
+
+	mvwaddch(win, row, 0, pre);
+	mvwaddstr(win, row, col, buf_freq);  col += 14;
+	mvwaddstr(win, row, col, buf_gain);  col += 14;
+	mvwaddstr(win, row, col, buf_q);      col += 14;
+	mvwaddstr(win, row, col, filter_type_name(b->filter_type)); col += 10;
+	wattron(win, b->enabled ? COLOR_PAIR(3) : COLOR_PAIR(5));
+	mvwaddstr(win, row, col, status);
+	wattroff(win, b->enabled ? COLOR_PAIR(3) : COLOR_PAIR(5));
+	wattrset(win, A_NORMAL);
+	whline(win, ' ', 80);
+}
+
+/* Bar chart for gain visualization */
+static const double EQ_TWO_PI = 6.28318530717958647692; /* 2 * pi */
+
+/* Real biquad magnitude (dB) at frequency f for one band. Uses the RBJ
+ * Audio EQ Cookbook coefficients - the same function as the FiiO Control
+ * web app / Audiocular-Aura / fiiocontrol-oss visualizers - evaluated at
+ * 48 kHz. The total response at f is the sum of each band's magnitude. */
+static double biquad_magnitude_db(int filter_type, double freq, double gain,
+                                  double q, double f, double fs)
+{
+        double b0 = 1.0, b1 = 0.0, b2 = 0.0, a0 = 1.0, a1 = 0.0, a2 = 0.0;
+        double w0, A, s, sinw, cosw, alpha;
+
+        if (gain == 0.0)
+                return 0.0;
+
+        w0    = EQ_TWO_PI * freq / fs;
+        A     = pow(10.0, gain / 40.0);
+        s     = sqrt(A);
+        sinw  = sin(w0);
+        cosw  = cos(w0);
+        alpha = sinw / (2.0 * q);
+
+        switch (filter_type) {
+        case FILTER_PK:
+                b0 = 1.0 + alpha * A; b1 = -2.0 * cosw; b2 = 1.0 - alpha * A;
+                a0 = 1.0 + alpha / A; a1 = -2.0 * cosw; a2 = 1.0 - alpha / A;
+                break;
+        case FILTER_LSQ:
+                b0 = A * (A + 1.0 - (A - 1.0) * cosw + 2.0 * s * alpha);
+                b1 = 2.0 * A * (A - 1.0 - (A + 1.0) * cosw);
+                b2 = A * (A + 1.0 - (A - 1.0) * cosw - 2.0 * s * alpha);
+                a0 = A + 1.0 + (A - 1.0) * cosw + 2.0 * s * alpha;
+                a1 = -2.0 * (A - 1.0 + (A + 1.0) * cosw);
+                a2 = A + 1.0 + (A - 1.0) * cosw - 2.0 * s * alpha;
+                break;
+        case FILTER_HSQ:
+                b0 = A * (A + 1.0 + (A - 1.0) * cosw + 2.0 * s * alpha);
+                b1 = -2.0 * A * (A - 1.0 + (A + 1.0) * cosw);
+                b2 = A * (A + 1.0 + (A - 1.0) * cosw - 2.0 * s * alpha);
+                a0 = A + 1.0 - (A - 1.0) * cosw + 2.0 * s * alpha;
+                a1 = 2.0 * (A - 1.0 - (A + 1.0) * cosw);
+                a2 = A + 1.0 - (A - 1.0) * cosw - 2.0 * s * alpha;
+                break;
+        default:
+                return 0.0;
+        }
+
+        {
+                double w = EQ_TWO_PI * f / fs;
+                double c1 = cos(w), s1 = sin(w), c2 = cos(2.0 * w), s2 = sin(2.0 * w);
+                double numR = b0 + b1 * c1 + b2 * c2;
+                double numI = -(b1 * s1 + b2 * s2);
+                double denR = a0 + a1 * c1 + a2 * c2;
+                double denI = -(a1 * s1 + a2 * s2);
+                double numM2 = numR * numR + numI * numI;
+                double denM2 = denR * denR + denI * denI;
+                if (denM2 <= 0.0)
+                        return 0.0;
+                return 10.0 * log10(numM2 / denM2);
+        }
+}
+
+/* Total frequency response (dB) at f: sum of every enabled band's biquad
+ * magnitude, matching the FiiO Control reference curve. */
+static double response_db(double f)
+{
+        double db = 0.0;
+        for (int i = 0; i < NUM_BANDS; i++) {
+                const Band *b = &bands[i];
+                if (!b->enabled || b->gain == 0.0)
+                        continue;
+                db += biquad_magnitude_db(b->filter_type, b->freq, b->gain,
+                                          b->q, f, 48000.0);
+        }
+        return db;
+}
+
+/* Draw the real frequency-response curve of the active bands on a log
+ * frequency axis (20 Hz - 20 kHz) with dB grid lines. Recomputed on every
+ * redraw, so it updates live while editing (like ktmicro_tui.py). */
+static void draw_response_curve(WINDOW *win, int start_row, int max_width)
+{
+        /* Draw the real frequency-response curve of the active EQ bands on a
+         * logarithmic frequency axis (20 Hz - 20 kHz) with a dB scale, decade
+         * grid lines and frequency labels - the same UX as ktmicro_tui.py.
+         * Recomputed on every redraw so it updates live while editing.
+         *
+         * All glyphs are single-byte ACS characters because freetz ncurses is
+         * built with --disable-widec: multibyte UTF-8 glyphs would be split by
+         * ncurses' byte-level diffing on every redraw.  The UTF-8 terminal of
+         * the user renders these as box-drawing chars (─, │, ·). */
+        const double dbmax = 12.0;
+        const double fmin  = FREQ_MIN;   /* 20 Hz  */
+        const double fmax  = FREQ_MAX;   /* 20 kHz */
+        const int left     = 7;          /* room for "+12 │" style labels */
+        const double gridf[3] = { 100.0, 1000.0, 10000.0 };
+        const int dbs[5] = { 12, 6, 0, -6, -12 };
+        int win_h = getmaxy(win);
+        int win_w = getmaxx(win);
+        int plot_w = win_w - left - 1;   /* curve columns (0 .. plot_w-1) */
+        int height = win_h - 1;          /* curve rows (0 .. height-1) */
+        int zero;                        /* row of the 0 dB reference line */
+        int gc[3];                       /* grid columns: 100 Hz, 1 kHz, 10 kHz */
+        int r, c, i;
+        int prev = -1;
+
+        (void)start_row;
+        (void)max_width;
+
+        if (plot_w < 10 || height < 5) {
+                mvwaddstr(win, 0, 1, "(terminal too small for graph)");
+                return;
+        }
+
+        /* Decade grid columns (log positions of 100 Hz, 1 kHz, 10 kHz). */
+        for (i = 0; i < 3; i++)
+                gc[i] = (int)lround(log10(gridf[i] / fmin)
+                                    / log10(fmax / fmin) * (double)(plot_w - 1));
+
+        /* Clear the whole plot area first so no stale curve pixels remain. */
+        for (r = 0; r <= height; r++)
+                mvwhline(win, r, left, ' ', plot_w);
+
+        /* dB axis labels (+12 .. -12) with a vertical axis separator. */
+        for (i = 0; i < 5; i++) {
+                int y = (int)lround(((dbmax - dbs[i]) / (2.0 * dbmax))
+                                    * (double)(height - 1));
+                if (y < 0) y = 0;
+                if (y > height - 1) y = height - 1;
+                mvwprintw(win, y, 1, "%+4d", dbs[i]);
+                mvwaddch(win, y, left - 1, ACS_VLINE);
+        }
+
+        zero = (int)lround((dbmax / (2.0 * dbmax)) * (double)(height - 1));
+
+        /* 0 dB reference line, with a dot at decade crossings. */
+        for (c = 0; c < plot_w; c++) {
+                int is_grid = 0;
+                for (i = 0; i < 3; i++)
+                        if (c == gc[i]) { is_grid = 1; break; }
+                mvwaddch(win, zero, left + c, is_grid ? ACS_BULLET : ACS_HLINE);
+        }
+
+        /* Vertical decade grid lines (dimmed), skipping the 0 dB row. */
+        for (i = 0; i < 3; i++) {
+                for (r = 0; r < height; r++) {
+                        if (r == zero) continue;
+                        wattron(win, A_DIM);
+                        mvwaddch(win, r, left + gc[i], ACS_VLINE);
+                        wattroff(win, A_DIM);
+                }
+        }
+
+        /* Frequency-response curve: solid block at each sample, vertical
+         * connector between consecutive samples. */
+        for (c = 0; c < plot_w; c++) {
+                double lf = log10(fmin) + (log10(fmax) - log10(fmin))
+                                * (double)c / (double)(plot_w - 1);
+                double f  = pow(10.0, lf);
+                double db = response_db(f);
+                int y;
+
+                if (db < -dbmax) db = -dbmax;
+                if (db >  dbmax) db =  dbmax;
+                y = (int)lround(((dbmax - db) / (2.0 * dbmax)) * (double)(height - 1));
+                if (y < 0) y = 0;
+                if (y > height - 1) y = height - 1;
+
+                if (prev != -1) {
+                        int r0 = prev < y ? prev : y;
+                        int r1 = prev < y ? y : prev;
+                        for (r = r0; r <= r1; r++)
+                                mvwaddch(win, r, left + c,
+                                         r == y ? ACS_BLOCK : ACS_VLINE);
+                } else {
+                        mvwaddch(win, y, left + c, ACS_BLOCK);
+                }
+                prev = y;
+        }
+
+        /* Frequency labels (bottom row): 20, 100, 1k, 10k, 20k. */
+        mvwaddstr(win, height, left, "20");
+        mvwaddstr(win, height, left + gc[0] - 1, "100");
+        mvwaddstr(win, height, left + gc[1] - 2, "1k");
+        mvwaddstr(win, height, left + gc[2] - 2, "10k");
+        mvwaddstr(win, height, left + plot_w - 3, "20k");
+}
+
+
+/* Full-screen, scrollable help (opened with ? / h / H). Works on any
+ * terminal size. */
+static void show_full_help(void)
+{
+	const Lang *l = &LANG;
+	const char *lines[] = {
+		l->help_nav,        l->help_arrows,     l->help_coarse,
+		l->help_fine,       l->help_toggle,     l->help_cycle,
+		l->help_tab,
+		l->help_dev,        l->help_apply,      l->help_save,
+		l->help_read,       l->help_gain,       l->help_filter,
+		l->help_connect,
+		l->help_presets,    l->help_psave,      l->help_pload,
+		l->help_pdel,
+		l->help_other,      l->help_reset_flat, l->help_reset_def,
+		l->help_quit,
+	};
+	int n = (int)(sizeof(lines) / sizeof(lines[0]));
+	static const int hdr[] = { 0, 6, 13, 17 };
+	int nh = (int)(sizeof(hdr) / sizeof(hdr[0]));
+	int h = LINES - 2;
+	int w = COLS - 2;
+	int top = 0, vis, ch;
+
+	if (h < 8) h = 8;
+	if (w < 44) w = 44;
+	if (h > LINES - 1) h = LINES - 1;
+
+	WINDOW *win = newwin(h, w, 1, 1);
+	keypad(win, TRUE);
+	vis = h - 2;
+	if (vis < 1) vis = 1;
+
+	while (1) {
+		werase(win);
+		box(win, 0, 0);
+		mvwaddstr(win, 0, 2, l->title);
+		mvwaddstr(win, 0, w - 14, "q: close");
+		for (int i = 0; i < vis && top + i < n; i++) {
+			int idx = top + i;
+			int is_hdr = 0;
+			for (int k = 0; k < nh; k++)
+				if (hdr[k] == idx) { is_hdr = 1; break; }
+			if (is_hdr) wattron(win, A_UNDERLINE);
+			mvwaddstr(win, 1 + i, 2, lines[idx]);
+			if (is_hdr) wattroff(win, A_UNDERLINE);
+		}
+		int last = top + vis; if (last > n) last = n;
+		mvwprintw(win, h - 1, 2,
+			"[%d-%d/%d]  Up/Down: scroll   PgUp/PgDn   Home/End   q: close",
+			top + 1, last, n);
+		wnoutrefresh(win);
+		doupdate();
+
+		ch = wgetch(win);
+		if (ch == 'q' || ch == 'Q' || ch == 27)
+			break;
+		else if (ch == KEY_UP || ch == 'k') {
+			if (top > 0) top--;
+		} else if (ch == KEY_DOWN || ch == 'j') {
+			if (top + vis < n) top++;
+		} else if (ch == KEY_PPAGE || ch == 'b') {
+			top -= vis; if (top < 0) top = 0;
+		} else if (ch == KEY_NPAGE || ch == ' ') {
+			top += vis; if (top >= n) top = n - 1;
+		} else if (ch == KEY_HOME) {
+			top = 0;
+		} else if (ch == KEY_END) {
+			top = n - vis; if (top < 0) top = 0;
+		}
+	}
+	delwin(win);
+}
+static void draw_help(WINDOW *win, int start_row, int max_height)
+{
+	const Lang *l = &LANG;
+	int col = 2;
+
+	struct { const char *text; bool highlight; } lines[] = {
+		{l->help_nav,       true},
+		{l->help_arrows,    false},
+		{l->help_coarse,    false},
+		{l->help_fine,      false},
+		{l->help_toggle,    false},
+		{l->help_cycle,     false},
+		{l->help_tab,       false},
+		{l->help_dev,       true},
+		{l->help_apply,     false},
+		{l->help_save,      false},
+		{l->help_read,      false},
+		{l->help_gain,      false},
+		{l->help_filter,    false},
+		{l->help_connect,   false},
+		{l->help_presets,   true},
+		{l->help_psave,     false},
+		{l->help_pload,     false},
+		{l->help_pdel,      false},
+		{l->help_other,     true},
+		{l->help_reset_flat,false},
+		{l->help_reset_def, false},
+		{l->help_quit,      false},
+	};
+	int n = sizeof(lines)/sizeof(lines[0]);
+	int total_rows = n + 2;
+
+	/* Center the help box vertically if possible */
+	int box_y = start_row;
+	if (box_y + total_rows < max_height) {
+		box_y = start_row + (max_height - start_row - total_rows) / 2;
+	}
+
+	mvwhline(win, box_y, 0, ' ', 80);
+	wattron(win, A_BOLD);
+	mvwaddstr(win, box_y, col, l->lang_name);
+	wattroff(win, A_BOLD);
+	mvwprintw(win, box_y, col + 20, "FiiO JA11 / KT02H20");
+	box_y++;
+
+	for (int i = 0; i < n; i++) {
+		if (lines[i].highlight) {
+			wattron(win, A_UNDERLINE);
+			mvwaddstr(win, box_y, col, lines[i].text);
+			wattroff(win, A_UNDERLINE);
+		} else {
+			mvwaddstr(win, box_y, col, lines[i].text);
+		}
+		box_y++;
+	}
+}
+
+/* ============================================================
+ * Status message line
+ * ============================================================ */
+static void set_status(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(status_msg, sizeof(status_msg), fmt, args);
+	va_end(args);
+}
+
+static void draw_status_message(WINDOW *win, int row)
+{
+	if (status_msg[0]) {
+		mvwaddstr(win, row, 2, status_msg);
+	}
+	status_msg[0] = 0;
+}
+
+/* Adjust the current cell by dir (+1 increase, -1 decrease).
+ * Handles every column: Freq, Gain, Q, Type (cycle) and Status (toggle). */
+static void adjust_param(int dir)
+{
+	Band *b = &bands[current_band];
+
+	switch (current_param) {
+	case 0: /* Freq */
+		b->freq += dir * 10.0;
+		if (b->freq > FREQ_MAX) b->freq = FREQ_MAX;
+		if (b->freq < FREQ_MIN) b->freq = FREQ_MIN;
+		break;
+	case 1: /* Gain */
+		b->gain += dir * 1.0;
+		if (b->gain > GAIN_MAX) b->gain = GAIN_MAX;
+		if (b->gain < GAIN_MIN) b->gain = GAIN_MIN;
+		break;
+	case 2: /* Q */
+		b->q += dir * 0.1;
+		if (b->q > Q_MAX) b->q = Q_MAX;
+		if (b->q < Q_MIN) b->q = Q_MIN;
+		break;
+	case 3: /* Type */
+		b->filter_type = (b->filter_type + dir + 3) % 3;
+		break;
+	case 4: /* Status */
+		b->enabled = !b->enabled;
+		break;
+	default:
+		break;
+	}
+	modified = true;
+}
+
+/* ============================================================
+ * Main loop
+ * ============================================================ */
+static void main_loop(WINDOW *main_win)
+{
+	const Lang *l = &LANG;
+	int height, width;
+	int ch;
+	(void)height;
+
+	load_presets();
+	keypad(main_win, TRUE);
+	nodelay(main_win, FALSE);
+	curs_set(0);
+
+	int mrows = getmaxy(main_win);
+	int winw  = getmaxx(main_win);
+	int table_h = NUM_BANDS + 2;
+	int msg_row = mrows - 1;
+	int help_row;
+	int help_h = 0;
+	int bar_h = 12;
+
+	/* Give the response-curve graph as much height as the terminal allows
+	 * (up to 16 rows, like the Python TUI); the leftover space goes to the
+	 * inline help panel. */
+	{
+		int avail = msg_row - (1 + table_h) - 1;   /* rows for bar+help */
+		if (avail >= 28)      { bar_h = 16; help_h = avail - bar_h; }
+		else if (avail >= 22) { bar_h = 14; help_h = avail - bar_h; }
+		else if (avail >= 20) { bar_h = 12; help_h = avail - bar_h; }
+		else                  { bar_h = avail; help_h = 0; }
+		if (bar_h < 8) bar_h = 8;
+		if (bar_h > 16) bar_h = 16;
+		if (help_h > 24) help_h = 24;
+		if (help_h < 10) help_h = 0;
+	}
+	help_row = 1 + table_h + bar_h;
+	if (help_h > 0 && help_row + help_h > msg_row)
+		help_h = msg_row - help_row;
+	if (help_h < 10) help_h = 0;
+
+	/* All windows are as wide as the terminal so the graph spans the full
+	 * width (no fixed 80-column window). */
+	WINDOW *table_win = derwin(main_win, table_h, winw, 1, 0);
+	WINDOW *bar_win   = derwin(main_win, bar_h, winw, 1 + table_h, 0);
+	WINDOW *help_win  = help_h > 0 ? derwin(main_win, help_h, winw, help_row, 0) : NULL;
+	WINDOW *status_win= derwin(main_win, 1, winw, 0, 0);
+	WINDOW *msg_win   = derwin(main_win, 1, winw, msg_row, 0);
+
+	wclear(main_win);
+
+	while (1) {
+		getmaxyx(main_win, height, width);
+
+		/* Status bar */
+		draw_status_bar(status_win, width);
+
+		/* Headers */
+		draw_table_headers(table_win, width);
+
+		/* Band rows */
+		for (int i = 0; i < NUM_BANDS; i++)
+			draw_band_row(table_win, i + 1, i, (i == current_band));
+
+		/* Bar chart */
+		draw_response_curve(bar_win, 0, width);
+
+		/* Help */
+		if (help_win)
+			draw_help(help_win, 0, help_h);
+		else if (help_row < msg_row)
+			mvwaddstr(main_win, help_row, 2, "Press ? or h for full help");
+
+		/* Status message */
+		draw_status_message(msg_win, 0);
+
+		wnoutrefresh(main_win);
+		wnoutrefresh(status_win);
+		wnoutrefresh(table_win);
+		wnoutrefresh(bar_win);
+		if (help_win)
+			wnoutrefresh(help_win);
+		wmove(main_win, current_band + 1, 2 + current_param * 14);
+		wnoutrefresh(msg_win);
+		doupdate();
+
+		ch = wgetch(main_win);
+
+		switch (ch) {
+		case '?':
+		case 'h':
+		case 'H':
+show_full_help();
+			/* The help window overlaps the whole screen; force a full
+			 * redraw of every window so no residue stays behind. */
+			touchwin(main_win);
+			touchwin(table_win);
+			touchwin(bar_win);
+			if (help_win) touchwin(help_win);
+			touchwin(status_win);
+			touchwin(msg_win);
+			break;
+
+		case 'q':
+		case 'Q':
+			if (modified) {
+				set_status("%s", l->modified_warn);
+				continue;
+			}
+			goto exit_loop;
+
+		case KEY_LEFT:
+			if (current_param > 0) current_param--;
+			break;
+		case KEY_RIGHT:
+			if (current_param < NUM_PARAMS - 1) current_param++;
+			break;
+		case KEY_UP:
+			if (current_band > 0) current_band--;
+			break;
+		case KEY_DOWN:
+			if (current_band < NUM_BANDS - 1) current_band++;
+			break;
+
+		case '\t': /* Tab: move forward across all cells */
+			if (current_param < NUM_PARAMS - 1)
+				current_param++;
+			else {
+				current_param = 0;
+				current_band = (current_band + 1) % NUM_BANDS;
+			}
+			break;
+		case KEY_BTAB: /* Shift+Tab: move backward across all cells */
+			if (current_param > 0)
+				current_param--;
+			else {
+				current_param = NUM_PARAMS - 1;
+				current_band = (current_band - 1 + NUM_BANDS) % NUM_BANDS;
+			}
+			break;
+
+		case '+':
+		case '=':
+			adjust_param(1);
+			break;
+
+		case '-':
+		case '_':
+			adjust_param(-1);
+			break;
+
+		case '>':
+		case '.':
+		{
+			double *val = NULL;
+			switch (current_param) {
+			case 0: val = &bands[current_band].freq; break;
+			case 1: val = &bands[current_band].gain; break;
+			case 2: val = &bands[current_band].q;    break;
+			default: break;
+			}
+			if (val) {
+				if (current_param == 0) {
+					*val += 1.0;
+					if (*val > FREQ_MAX) *val = FREQ_MAX;
+				} else if (current_param == 1) {
+					*val += 0.5;
+					if (*val > GAIN_MAX) *val = GAIN_MAX;
+				} else if (current_param == 2) {
+					*val += 0.01;
+					if (*val > Q_MAX) *val = Q_MAX;
+				}
+				modified = true;
+			}
+			break;
+		}
+
+		case '<':
+		case ',':
+		{
+			double *val = NULL;
+			switch (current_param) {
+			case 0: val = &bands[current_band].freq; break;
+			case 1: val = &bands[current_band].gain; break;
+			case 2: val = &bands[current_band].q;    break;
+			default: break;
+			}
+			if (val) {
+				if (current_param == 0) {
+					*val -= 1.0;
+					if (*val < FREQ_MIN) *val = FREQ_MIN;
+				} else if (current_param == 1) {
+					*val -= 0.5;
+					if (*val < GAIN_MIN) *val = GAIN_MIN;
+				} else if (current_param == 2) {
+					*val -= 0.01;
+					if (*val < Q_MIN) *val = Q_MIN;
+				}
+				modified = true;
+			}
+			break;
+		}
+
+		case ' ':
+			bands[current_band].enabled = !bands[current_band].enabled;
+			modified = true;
+			break;
+
+		case 't':
+		case 'T':
+			bands[current_band].filter_type = (bands[current_band].filter_type + 1) % 3;
+			modified = true;
+			break;
+
+		case 'c':
+		case 'C':
+		{
+			int sel;
+			/* Disconnect current device (if any) */
+			disconnect_device();
+			enumerate_devices();
+			if (num_devices == 0) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			sel = select_device_menu();
+			if (sel < 0) {
+				set_status("%s", l->msg_cancelled);
+				break;
+			}
+			if (connect_to_entry(&devices[sel]))
+				set_status("%s", l->status_conn);
+			else
+				set_status("%s", l->msg_no_device);
+			break;
+		}
+
+		case 'a':
+		case 'A':
+			if (!device_connected) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			if (sync_all_bands()) {
+				set_global_gain_cmd(global_gain);
+				set_dac_filter_cmd(dac_filter);
+				usleep(50000);
+				apply_changes();
+				modified = false;
+				set_status("%s", l->msg_applied);
+			} else {
+				set_status("ERROR: HID send failed.");
+			}
+			break;
+
+		case 's':
+		{
+			int c2;
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%s", l->msg_confirm_save);
+			set_status("%s", buf);
+			/* Draw prompt */
+			draw_status_message(msg_win, 0);
+			wrefresh(msg_win);
+			nodelay(main_win, TRUE);
+			/* Wait for S */
+			int waited = 0;
+			while (waited < 500) {
+				c2 = wgetch(main_win);
+				if (c2 == 'S') break;
+				if (c2 == 27 || c2 == 'q' || c2 == 'Q') { waited = 999; break; }
+				usleep(10000);
+				waited += 10;
+			}
+			nodelay(main_win, FALSE);
+			if (waited >= 500 || c2 != 'S') {
+				set_status("%s", l->msg_cancelled);
+				break;
+			}
+			if (!device_connected) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			if (save_to_flash()) {
+				modified = false;
+				set_status("%s", l->msg_saved);
+			} else {
+				set_status("ERROR: Flash save failed.");
+			}
+			break;
+		}
+
+		case 'r':
+			if (!device_connected) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			read_device_config();
+			modified = false;
+			set_status("%s", l->msg_read_ok);
+			break;
+
+		case 'R':
+			if (!device_connected) {
+				set_status("%s", l->msg_no_device);
+				break;
+			}
+			read_device_config();
+			modified = false;
+			set_status("%s", l->msg_read_ok);
+			break;
+
+		case 'g':
+		case 'G':
+		{
+			char input[16];
+			char prompt[128];
+			snprintf(prompt, sizeof(prompt),
+				l->msg_prompt_gain,
+				GLOBAL_GAIN_MIN, GLOBAL_GAIN_MAX, global_gain);
+			set_status("%s", prompt);
+			draw_status_message(msg_win, 0);
+			wrefresh(msg_win);
+
+			echo();
+			curs_set(1);
+			nodelay(main_win, TRUE);
+			if (wgetnstr(msg_win, input, sizeof(input) - 1) == ERR)
+				input[0] = 0;
+			nodelay(main_win, FALSE);
+			noecho();
+			curs_set(0);
+
+			if (input[0]) {
+				double new_gain = atof(input);
+				if (new_gain >= GLOBAL_GAIN_MIN && new_gain <= GLOBAL_GAIN_MAX) {
+					global_gain = new_gain;
+					if (device_connected) {
+						/* Apply immediately to the device RAM (like Audiocular) */
+						set_global_gain_cmd(global_gain);
+						usleep(50000);
+						apply_changes();
+						modified = false;
+					} else {
+						modified = true;
+					}
+					set_status(l->msg_gain_set, global_gain);
+				} else {
+					set_status("ERROR: Range %.0f..+%.0f dB",
+						GLOBAL_GAIN_MIN, GLOBAL_GAIN_MAX);
+				}
+			} else {
+				set_status("%s", l->msg_cancelled);
+			}
+			break;
+		}
+
+		case 'f':
+		case 'F':
+		{
+			dac_filter = (dac_filter % DAC_FILTER_COUNT) + 1;
+			modified = true;
+			set_status(l->msg_filter_set, dac_filter_name(dac_filter));
+			if (device_connected) {
+				set_dac_filter_cmd(dac_filter);
+				usleep(50000);
+				apply_changes();
+				modified = false;
+			}
+			break;
+		}
+
+		case 'p':
+		{
+			char pname[64];
+			char prompt[80];
+			snprintf(prompt, sizeof(prompt), "%s", l->msg_prompt_pname);
+			set_status("%s", prompt);
+			draw_status_message(msg_win, 0);
+			wrefresh(msg_win);
+
+			echo();
+			curs_set(1);
+			nodelay(main_win, TRUE);
+			if (wgetnstr(msg_win, pname, sizeof(pname) - 1) == ERR)
+				pname[0] = 0;
+			nodelay(main_win, FALSE);
+			noecho();
+			curs_set(0);
+
+			if (pname[0]) {
+				save_current_preset(pname);
+				save_presets();
+				set_status(l->msg_preset_saved, pname);
+			} else {
+				set_status("%s", l->msg_cancelled);
+			}
+			break;
+		}
+
+		case 'P':
+		{
+			char input[8];
+			char prompt[80];
+			if (num_presets == 0) {
+				set_status("%s", l->msg_no_presets);
+				break;
+			}
+			snprintf(prompt, sizeof(prompt),
+				l->msg_prompt_pload, num_presets);
+			set_status("%s", prompt);
+			draw_status_message(msg_win, 0);
+			wrefresh(msg_win);
+
+			echo();
+			curs_set(1);
+			nodelay(main_win, TRUE);
+			if (wgetnstr(msg_win, input, sizeof(input) - 1) == ERR)
+				input[0] = 0;
+			nodelay(main_win, FALSE);
+			noecho();
+			curs_set(0);
+
+			if (input[0]) {
+				int idx = atoi(input) - 1;
+				if (idx >= 0 && idx < num_presets) {
+					load_preset(idx);
+					set_status(l->msg_preset_loaded, presets[idx].name);
+				} else {
+					set_status("ERROR: Invalid preset number.");
+				}
+			} else {
+				set_status("%s", l->msg_cancelled);
+			}
+			break;
+		}
+
+		case 'K':
+		{
+			if (current_preset < 0 || current_preset >= num_presets) {
+				set_status("%s", l->msg_no_presets);
+				break;
+			}
+			char confirm[64];
+			snprintf(confirm, sizeof(confirm),
+				l->msg_confirm_del, presets[current_preset].name);
+			set_status("%s", confirm);
+			draw_status_message(msg_win, 0);
+			wrefresh(msg_win);
+
+			nodelay(main_win, TRUE);
+			int c2;
+			int waited = 0;
+			while (waited < 500) {
+				c2 = wgetch(main_win);
+				if (c2 == 'K') break;
+				if (c2 == 27 || c2 == 'q' || c2 == 'Q') { waited = 999; break; }
+				usleep(10000);
+				waited += 10;
+			}
+			nodelay(main_win, FALSE);
+
+			if (waited < 500 && c2 == 'K') {
+				for (int i = current_preset; i < num_presets - 1; i++)
+					presets[i] = presets[i + 1];
+				num_presets--;
+				current_preset = -1;
+				save_presets();
+				set_status("%s", l->msg_preset_deleted);
+			} else {
+				set_status("%s", l->msg_cancelled);
+			}
+			break;
+		}
+
+		case 'd':
+			reset_flat();
+			set_status("Reset: flat EQ (0 dB, Q=0.7).");
+			break;
+
+		case 'D':
+			init_default_bands();
+			set_status("Reset: default frequencies.");
+			break;
+
+		default:
+			break;
+		}
+	}
+exit_loop:
+	delwin(table_win);
+	delwin(bar_win);
+	if (help_win) delwin(help_win);
+	delwin(status_win);
+	if (msg_win) delwin(msg_win);
+	save_presets();
+}
+
+/* ============================================================
+ * Entry point
+ * ============================================================ */
+/* Non-interactive report mode: print the device configuration as plain
+ * text to stdout without touching ncurses.
+ * Usage: ja11-config-tui --report */
+static int run_report_mode(void)
+{
+	init_default_bands();
+	if (hid_init() != 0) {
+		fprintf(stderr, "Failed to initialize hidapi\n");
+		return 1;
+	}
+	enumerate_devices();
+	int sel = -1;
+	for (int i = 0; i < num_devices; i++)
+		if (devices[i].compatible) { sel = i; break; }
+	if (sel < 0) {
+		fprintf(stderr, "No compatible HID device found.\n");
+		hid_exit();
+		return 1;
+	}
+	if (!connect_to_entry(&devices[sel])) {
+		fprintf(stderr, "Failed to open device.\n");
+		hid_exit();
+		return 1;
+	}
+	read_device_config();
+	printf("FiiO JA11 (KT02H20) - configuration report\n");
+	printf("Device: %s (%04X:%04X)\n", device_name, device_vid, device_pid);
+	printf("Global Preamp: %.1f dB\n", global_gain);
+	printf("DAC Digital Filter: %s\n", dac_filter_name(dac_filter));
+	printf("\nBand  Freq(Hz)  Gain(dB)  Q     Type  Status\n");
+	for (int i = 0; i < NUM_BANDS; i++) {
+		printf("  %d  %7.0f  %+6.1f  %-5.2f  %-4s  %s\n",
+			i + 1,
+			bands[i].freq,
+			bands[i].gain,
+			bands[i].q,
+			filter_type_name(bands[i].filter_type),
+			bands[i].enabled ? "ON" : "OFF");
+	}
+	disconnect_device();
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	const Lang *l;
+
+	/* Parse command line */
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "--italian") || !strcmp(argv[i], "-it"))
+			g_lang = LANG_IT;
+		else if (!strcmp(argv[i], "--report"))
+			return run_report_mode();
+		else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
+			printf("Usage: %s [--italian|-it] [--report]\n", argv[0]);
+			printf("  --italian, -it    UI in Italian (default: English)\n");
+			printf("  --report          Print device configuration report and exit (no TUI)\n");
+			printf("  --help, -h        This help\n");
+			return 0;
+		}
+	}
+
+	l = &LANG;
+
+	/* ncurses init */
+	setlocale(LC_ALL, "");
+	initscr();
+	if (has_colors()) {
+		start_color();
+		init_pair(1, COLOR_WHITE, COLOR_BLACK);
+		init_pair(2, COLOR_RED, COLOR_BLACK);
+		init_pair(3, COLOR_GREEN, COLOR_BLACK);
+		init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+		init_pair(5, COLOR_BLUE, COLOR_BLACK);
+		init_pair(6, COLOR_CYAN, COLOR_BLACK);
+	}
+	cbreak();
+	noecho();
+	curs_set(0);
+
+	/* Title */
+	WINDOW *main_win = newwin(LINES - 1, COLS, 1, 0);
+	mvaddstr(0, 2, l->title);
+	refresh();
+
+	/* Init defaults */
+	init_default_bands();
+
+	/* Enumerate HID devices and let the user pick one to connect to
+	 * (libusb backend, like hidws) */
+	enumerate_devices();
+	if (num_devices > 0) {
+		int sel = select_device_menu();
+		if (sel < 0) {
+			/* User cancelled the picker: clean exit */
+			disconnect_device();
+			delwin(main_win);
+			endwin();
+			return 0;
+		}
+		if (!connect_to_entry(&devices[sel])) {
+			mvaddstr(LINES - 1, 2, l->msg_no_device);
+			mvaddstr(LINES - 0, 2, l->msg_udev_hint);
+			refresh();
+		}
+	} else {
+		mvaddstr(LINES - 1, 2, l->msg_no_device);
+		mvaddstr(LINES - 0, 2, l->msg_udev_hint);
+		refresh();
+	}
+
+	main_loop(main_win);
+
+	/* Cleanup */
+	disconnect_device();
+	delwin(main_win);
+	endwin();
+	return 0;
+}

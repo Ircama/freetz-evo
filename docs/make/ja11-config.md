@@ -1,17 +1,24 @@
-# ja11-config-tui
+# ja11-config
   - Homepage: [https://github.com/Freetz-NG/freetz-ng](https://github.com/Freetz-NG/freetz-ng)
-  - Repository (source): [master/make/pkgs/ja11-config-tui/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config-tui/)
+  - Repository (source): [master/make/pkgs/ja11-config/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config/)
   - Library: [master/make/libs/hidapi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/hidapi/)
   - Hardware: FiiO JA11 (JadeAudio JA11) / KT Micro KT02H20
   - Protocol reference: [Audiocular-Aura](https://github.com/mandy321/Audiocular-Aura)
 
-## What is ja11-config-tui
+## What is ja11-config
 
-`ja11-config-tui` is a Text-based User Interface (TUI) program that configures the
-FiiO JA11 USB DAC/Amp and other devices based on the KT Micro KT02H20 DSP chip
-(JKALLY JM12, etc.).
+`ja11-config` is a set of tools for the FiiO JA11 USB DAC/Amp and other devices
+based on the KT Micro KT02H20 DSP chip (JKALLY JM12, etc.):
 
-The tool communicates directly with the hardware via HID — it sends
+- **`ja11-config-tui`** — an interactive Text-based User Interface (TUI) that
+  configures the device over HID: 5-band Parametric EQ (PEQ), DAC digital
+  filters and global preamp gain, with persistent Save-to-Flash.
+- **`ja11-boot`** — puts the device into firmware-update (boot) mode; the
+  device then re-enumerates as a USB CDC virtual serial port.
+- **`ja11-flash`** — flashes firmware over the update-mode serial port created
+  by `ja11-boot`.
+
+The TUI communicates directly with the hardware via HID — it sends
 binary commands to the chip's Digital Signal Processor (DSP) to set the 5-band
 Parametric Equalizer (PEQ), DAC digital filters, and global preamp gain.
 
@@ -42,11 +49,7 @@ you unplug the DAC and connect it to a phone, tablet, or game console.
 
 ### Communication protocol
 
-The KT02H20 chip uses a HID **output** report with Report ID `0x02`. All
-commands (including read requests) are sent via the interrupt OUT endpoint
-(`hid_write`, equivalent to Audiocular-Aura's `device.sendReport(2, …)`), and
-the responses come back as **input** reports on the interrupt IN endpoint.
-Commands are wrapped in fixed-length packets with the following structure:
+The KT02H20 chip uses a HID **output** report with Report ID `0x02`. All commands (including read requests) are sent via the interrupt OUT endpoint (`hid_write`), and the responses come back as **input** reports on the interrupt IN endpoint. Commands are wrapped in fixed-length packets with the following structure:
 
 **Set (write) packet:**
 ```
@@ -61,7 +64,7 @@ Commands are wrapped in fixed-length packets with the following structure:
 > **Note:** hidapi's libusb backend (and the `hidws` WebSocket bridge) returns
 > the report **ID byte (0x02)** as the first byte of numbered **input**
 > reports, i.e. the buffer is `0x02 0xbb 0x0b …`. The TUI strips it
-> (`find_packet_start()`) before parsing, exactly like the web apps do.
+> (`find_packet_start()`) before parsing.
 
 Key commands:
 
@@ -100,24 +103,53 @@ filter to non-volatile flash, making the setting permanent.
 ## Current packaged versions
 
 - `ja11-config-tui`: `1.0`
+- `ja11-boot`: `1.0`
+- `ja11-flash`: `1.0`
 - `hidapi`: `0.15.0` (shared library dependency)
 
-## Source-based behavior map
+## Firmware update (ja11-boot and ja11-flash)
 
-Main files that define the current behaviour:
+Firmware updates use a two-step workflow:
 
-- `make/pkgs/ja11-config-tui/src/ja11-config-tui.c` — TUI logic, HID I/O,
-  preset management, main loop.
-- `make/pkgs/ja11-config-tui/src/ja11-config-tui.h` — Protocol constants,
-  data structures, limits, i18n codes.
-- `make/pkgs/ja11-config-tui/ja11-config-tui.mk` — Build recipe
-  (PKG_LOCALSOURCE_PACKAGE, links libhidapi-libusb + ncurses + m).
-- `make/pkgs/ja11-config-tui/Config.in` — Menuconfig options
-  (selects FREETZ_LIB_hidapi, FREETZ_LIB_libncurses).
-- `make/pkgs/ja11-config-tui/external.files/in` — Externalisation manifest.
-- `make/libs/hidapi/hidapi.mk` — CMake-based HIDAPI library build.
-- `make/libs/hidapi/patches/` — Patches to make udev optional for freetz.
-- `make/libs/hidapi/Config.in` — Library config symbol FREETZ_LIB_hidapi.
+1. **`ja11-boot`** puts the device into update (boot) mode. It sends the HID
+   output report used by the official FiiO web app (`updateBeforeReset`), after
+   which the device resets and **re-enumerates as a USB CDC virtual serial
+   port** (VID 0x8888, "KT Virtual Com Port", 9600 baud) — usually
+   `/dev/ttyACM0` or `/dev/ttyACM1`.
+2. **`ja11-flash`** flashes the firmware over that virtual serial port using
+   the KT-family bootloader protocol (SYNC ".KTM", CHP, CFG, PWO, KSTA, write
+   frames with CRC32, STP, ZRST).
+
+Example:
+
+```
+ja11-boot                          # enter update mode
+# ... device now appears as /dev/ttyACM1 ...
+ja11-flash /dev/ttyACM1 /path/to/JadeAudio_JA11_V2.2.bin
+```
+
+> **WARNING:** flashing the wrong firmware can brick the device. Only use a firmware intended for the JA11 / KT02H20.
+
+### Forcing the vendor/product ID of ja11-boot
+
+`ja11-boot` looks for the FiiO JadeAudio JA11 by default (VID `0x2972`,
+PID `0x0102`). On some devices (e.g. a **native KTMicro** dongle) the HID
+interface reports a different VID/PID, so `ja11-boot` fails with a
+"device ... not found" error. You can force the values, given **in decimal**,
+with `-v`/`-p`:
+
+For a native KTMicro device:
+
+```
+Vendor ID   : 0x0BDA = 3034
+Product ID  : 0x0023 = 35
+
+ja11-boot -v 3034 -p 35
+```
+
+`ja11-boot -l` lists all HID devices so you can read the VID/PID of your own
+device, and `ja11-boot -c` performs a safe connection test without sending the
+boot trigger.
 
 ## Usage
 
@@ -140,11 +172,10 @@ backend, the same approach used by `hidws`) and shows a picker:
 
 ```
 ┌────────────────────────────── Select HID device ─────────────────────────────┐
-│   VID:PID     Product                                                       │
-│ * 2972:0102  JadeAudio JA11                ← known KT02H20 device (auto ✓) │
-│   31b2:0111  JM12                                                          │
-│   046d:c52b  USB Receiver                                                   │
-│  Up/Down: move    Enter: connect    q: quit                                 │
+│   VID:PID     Product                                                        │
+│ * 2972:0102  JadeAudio JA11                ← known KT02H20 device (auto ✓)   │
+|                                                                              |
+│  Up/Down: move    Enter: connect    q: quit                                  │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -164,51 +195,51 @@ hosts see the [udev rule](#udev-rule) below for non-root access.
 ### Interface layout
 
 ```
- ┌─────────────────────────────────────────────────────────────────────────────┐
- │  CONNECTED: FiiO JA11  Preamp: -3.5 dB  DAC: FAST-LL  All synced with device│ ← status bar
- ├──────┬──────────────┬──────────────┬──────────────┬──────────┬──────────────┤
- │ Band │ Freq (Hz)    │ Gain (dB)    │ Q            │ Type     │ Status       │
- ├──────┼──────────────┼──────────────┼──────────────┼──────────┼──────────────┤
- │ >1   │ 63           │ -2.0         │ 0.70         │ PK       │ ON           │ ← selected band
- │  2   │ 250          │ +3.5         │ 1.20         │ PK       │ ON           │
- │  3   │ 1000         │ 0.0          │ 0.70         │ LSQ      │ OFF          │
- │  4   │ 4000         │ +1.8         │ 1.50         │ HSQ      │ ON           │
- │  5   │ 14000        │ 0.0          │ 0.70         │ PK       │ ON           │
- ├──────┴──────────────┴──────────────┴──────────────┴──────────┴──────────────┤
- │                    ░░                                                       │ ← gain bar chart
- │                   ░░░░                                                      │
- │               ░░░░░░░░                                                      │
- │  ─══════════════════════════════════════════════════════════════════─       │
- │                   ░░░░              ░░                                      │
- │                   ░░░░              ░░                                      │
- │  ─══════════════════════════════════════════════════════════════════─       │
- ├─────────────────────────────────────────────────────────────────────────────┤
- │  English                        FiiO JA11 / KT02H20                         │ ← help panel
- │  === NAVIGATION ===                                                         │
- │    Arrows        Move between bands/params                                  │
- │    +/-           Change value (coarse step)                                 │
- │    </>           Change value (fine step)                                   │
- │    Space         Toggle band on/off                                         │
- │    t             Cycle filter type (PK/LSQ/HSQ)                             │
- │    Tab/Shift-Tab Move fwd/back across all cells                             │
- │  === DEVICE ACTIONS ===                                                     │
- │    a             Apply changes to RAM                                       │
- │    s (then S)    Save to flash (permanent)                                  │
- │    r / R         Reload config from device                                  │
- │    g / G         Set global preamp gain                                     │
- │    f / F         Cycle DAC digital filter                                   │
- │  === PRESETS ===                                                            │
- │    p             Save current preset                                        │
- │    P             Load preset                                                │
- │    K             Delete current preset                                      │
- │  === OTHER ===                                                              │
- │    d             Reset to flat (0 dB, Q=0.7)                                │
- │    D             Reset to defaults (optimal freqs)                          │
- │    q / Q         Quit                                                       │
- ├─────────────────────────────────────────────────────────────────────────────┤
- │  OK: Saved to flash.                                                        │ ← status message
- └─────────────────────────────────────────────────────────────────────────────┘
+  FiiO JA11 (KT02H20) - Full PEQ Configurator
+  CONNECTED: JadeAudio JA11  Global Preamp:6.0 dB  DAC Digital Filter:FAST-LL  All synced with device
+  Band    Freq (Hz)     Gain (dB)     Q             Type      Status
+> 25            +3.5          0.70          PK        ON
+  150           +0.0          0.70          PK        ON
+  1500          +1.4          0.70          PK        ON
+  6500          +9.0          0.70          PK        ON
+  15660         +12.0         0.25          PK        ON
+
+  +12 │                          │                                    │                       @@@@@@@@@@@@@@@@@@@@@@@@│
+                                 │                                    │                     @@│            │          @
+                                 │                                    │                   @@│              │
+                                 │                                    │               @@@@│                │
+   +6 │                          │                                    │           @@@@│                    │
+       @@@@@@@@@@@│              │                                    │   @@@@@@@@│                        │
+                  @@@@@@@@@@│    │                             @@@@@@@@@@@│                                │
+   +0 │─────────────────────@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@│──────·────────────────────────────────────·───────────
+                                 │                                    │                                    │
+                                 │                                    │                                    │
+                                 │                                    │                                    │
+   -6 │                          │                                    │                                    │
+                                 │                                    │                                    │
+                                 │                                    │                                    │
+  -12 │                          │                                    │                                    │
+       20                       100                                 1k                                   10k        20k
+  Press ? or h for full help
+
 ```
+
+The **frequency-response curve** is the real RBJ biquad magnitude of the active
+bands (summed in dB, evaluated at 48 kHz) — the same function used by the FiiO
+Control reference and the web apps. It is plotted on a log frequency axis
+(20 Hz – 20 kHz, −12…+12 dB) and is recomputed on every redraw, so it updates
+live while you edit.
+
+The graph mirrors the Python TUI (`ktmicro_tui.py`) UX:
+
+- **Left axis**: dB labels `+12` … `-12` with a `│` separator.
+- **0 dB reference line**: `─`, with `·` at decade crossings.
+- **Decade grid**: dimmed vertical `│` lines at 100 Hz, 1 kHz and 10 kHz.
+- **Curve**: a connected line (`o` at each sample, `│` vertical connectors).
+- **Bottom row**: frequency labels `20`, `100`, `1k`, `10k`, `20k`.
+
+It spans the full terminal width and its height adapts to the terminal size
+(up to 16 rows); the leftover vertical space is used by the help panel.
 
 The help panel at the bottom is drawn only if the terminal is tall enough;
 on small terminals it is replaced by a `Press ? or h for full help` hint, and
@@ -429,7 +460,5 @@ during a session, not as long-term storage. Save your configuration to flash
 
 ## See also
 
-- [Audiocular-Aura](https://github.com/mandy321/Audiocular-Aura) — Web-based
-  configuration tool for the same chip family.
 - [hidapi](https://github.com/libusb/hidapi) — Library used for raw HID I/O.
 - [FiiO](https://www.fiio.com/) — Official product page for JA11.

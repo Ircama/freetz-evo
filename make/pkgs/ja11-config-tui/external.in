@@ -1,7 +1,0 @@
-config EXTERNAL_FREETZ_PACKAGE_JA11_CONFIG_TUI
-	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_JA11_CONFIG_TUI
-	bool "ja11-config-tui"
-	default n
-	help
-		externals the following file(s):
-		 /usr/bin/ja11-config-tui

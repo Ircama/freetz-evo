@@ -8,7 +8,8 @@ config FREETZ_PACKAGE_HIDWS_CGI
 
 		Includes the init script (rc.hidws), the default configuration and
 		the CGI script for managing hidws via the freetz web UI, plus links
-		to the supported web apps (kt02h20-control, Audiocular-Aura,
-		fiiocontrol-oss) that connect to the daemon over WebSocket.
+		to the supported web apps (fiiocontrol, kt02h20-control,
+		Audiocular-Aura, fiiocontrol-oss, webhid-explorer) that connect to
+		the daemon over WebSocket.
 
 		http://fritz.box:81/cgi-bin/conf/hidws

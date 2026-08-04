@@ -18,7 +18,7 @@ In Freetz-EVO:
 - The **libusb** backend (`libhidapi-libusb`) is **always** built. It talks to
   the device via the kernel's usbfs interface directly, so it does **not**
   require the kernel HID/INPUT subsystem. This is the backend used by
-  `hidws` and `ja11-config-tui`, and it is the only one that works on
+  `hidws` and `ja11-config`, and it is the only one that works on
   GRX5 routers (e.g. 7590AX), where the AVM kernel lacks `CONFIG_INPUT` and
   `hid.ko` cannot load.
 - The **hidraw** backend (`libhidapi-hidraw`) is optional and controlled by

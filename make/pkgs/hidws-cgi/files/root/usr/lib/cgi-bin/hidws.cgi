@@ -38,6 +38,7 @@ sec_begin "$(lang de:"Web-Apps" en:"Web apps")"
 cat << EOF
 <p>$(lang de:"Diese Web-Apps verbinden sich über WebSocket mit hidws:" en:"These web apps connect to hidws over WebSocket:"):</p>
 <ul style="margin:4px 0 8px 0; padding-left:20px;">
+<li><a href="https://ircama.github.io/fiiocontrol/" target="_blank" rel="noopener">fiiocontrol</a> — <small>$(lang de:"Offizielle FiiO-Control-Web-App (Equalizer / Custom)" en:"Official FiiO Control web app (equalizer / custom)")</small></li>
 <li><a href="https://ircama.github.io/kt02h20-control/" target="_blank" rel="noopener">kt02h20-control</a> — <small>$(lang de:"Steuerung für FiiO JA11 (KT02H20)" en:"Control for FiiO JA11 (KT02H20)")</small></li>
 <li><a href="https://ircama.github.io/Audiocular-Aura/" target="_blank" rel="noopener">Audiocular-Aura (AuraPEQ)</a> — <small>$(lang de:"Parametrischer Equalizer für USB-DACs" en:"Parametric equalizer for USB DACs")</small></li>
 <li><a href="https://ircama.github.io/fiiocontrol-oss/" target="_blank" rel="noopener">fiiocontrol-oss</a> — <small>$(lang de:"EQ-Steuerung für FiiO DACs" en:"EQ control for FiiO DACs")</small></li>

@@ -802,49 +802,194 @@ static void draw_band_row(WINDOW *win, int row, int band_idx, bool selected)
 }
 
 /* Bar chart for gain visualization */
-static void draw_gain_bars(WINDOW *win, int start_row, int max_width)
+static const double EQ_TWO_PI = 6.28318530717958647692; /* 2 * pi */
+
+/* Real biquad magnitude (dB) at frequency f for one band. Uses the RBJ
+ * Audio EQ Cookbook coefficients - the same function as the FiiO Control
+ * web app / Audiocular-Aura / fiiocontrol-oss visualizers - evaluated at
+ * 48 kHz. The total response at f is the sum of each band's magnitude. */
+static double biquad_magnitude_db(int filter_type, double freq, double gain,
+                                  double q, double f, double fs)
 {
-	double max_abs = 15.0;
-	int bar_width = (max_width - 10) / NUM_BANDS;
-	if (bar_width < 5) bar_width = 5;
-	int total_bar_area = bar_width * NUM_BANDS;
-	if (total_bar_area > max_width - 10) total_bar_area = max_width - 10;
+        double b0 = 1.0, b1 = 0.0, b2 = 0.0, a0 = 1.0, a1 = 0.0, a2 = 0.0;
+        double w0, A, s, sinw, cosw, alpha;
 
-	int plot_height = 7;
-	int plot_y = start_row;
+        if (gain == 0.0)
+                return 0.0;
 
-	wattron(win, COLOR_PAIR(6));
-	mvwhline(win, plot_y, 1, '=', total_bar_area + 2);
-	mvwhline(win, plot_y + plot_height, 1, '=', total_bar_area + 2);
-	wattroff(win, COLOR_PAIR(6));
+        w0    = EQ_TWO_PI * freq / fs;
+        A     = pow(10.0, gain / 40.0);
+        s     = sqrt(A);
+        sinw  = sin(w0);
+        cosw  = cos(w0);
+        alpha = sinw / (2.0 * q);
 
-	mvwaddstr(win, plot_y + 1, 1, "+");
-	mvwaddstr(win, plot_y + plot_height - 1, 1, "+");
+        switch (filter_type) {
+        case FILTER_PK:
+                b0 = 1.0 + alpha * A; b1 = -2.0 * cosw; b2 = 1.0 - alpha * A;
+                a0 = 1.0 + alpha / A; a1 = -2.0 * cosw; a2 = 1.0 - alpha / A;
+                break;
+        case FILTER_LSQ:
+                b0 = A * (A + 1.0 - (A - 1.0) * cosw + 2.0 * s * alpha);
+                b1 = 2.0 * A * (A - 1.0 - (A + 1.0) * cosw);
+                b2 = A * (A + 1.0 - (A - 1.0) * cosw - 2.0 * s * alpha);
+                a0 = A + 1.0 + (A - 1.0) * cosw + 2.0 * s * alpha;
+                a1 = -2.0 * (A - 1.0 + (A + 1.0) * cosw);
+                a2 = A + 1.0 + (A - 1.0) * cosw - 2.0 * s * alpha;
+                break;
+        case FILTER_HSQ:
+                b0 = A * (A + 1.0 + (A - 1.0) * cosw + 2.0 * s * alpha);
+                b1 = -2.0 * A * (A - 1.0 + (A + 1.0) * cosw);
+                b2 = A * (A + 1.0 + (A - 1.0) * cosw - 2.0 * s * alpha);
+                a0 = A + 1.0 - (A - 1.0) * cosw + 2.0 * s * alpha;
+                a1 = 2.0 * (A - 1.0 - (A + 1.0) * cosw);
+                a2 = A + 1.0 - (A - 1.0) * cosw - 2.0 * s * alpha;
+                break;
+        default:
+                return 0.0;
+        }
 
-	for (int i = 0; i < NUM_BANDS; i++) {
-		int x = 2 + i * bar_width + (bar_width - 3) / 2;
-		double g = bands[i].enabled ? bands[i].gain : 0.0;
-		int bar_h;
-		char ch;
-		if (g >= 0) {
-			bar_h = (int)round((g / max_abs) * (plot_height - 2));
-			if (bar_h > plot_height - 2) bar_h = plot_height - 2;
-			ch = ACS_CKBOARD;
-		} else {
-			bar_h = (int)round((-g / max_abs) * (plot_height - 2));
-			if (bar_h > plot_height - 2) bar_h = plot_height - 2;
-			ch = ' ';
-		}
-		int y0 = (plot_height - 1) / 2;
-		if (g >= 0) {
-			for (int r = 0; r < bar_h; r++)
-				mvwaddch(win, plot_y + y0 - r, x, ch);
-		} else {
-			for (int r = 0; r < bar_h; r++)
-				mvwaddch(win, plot_y + y0 + 1 + r, x, ch);
-		}
-	}
+        {
+                double w = EQ_TWO_PI * f / fs;
+                double c1 = cos(w), s1 = sin(w), c2 = cos(2.0 * w), s2 = sin(2.0 * w);
+                double numR = b0 + b1 * c1 + b2 * c2;
+                double numI = -(b1 * s1 + b2 * s2);
+                double denR = a0 + a1 * c1 + a2 * c2;
+                double denI = -(a1 * s1 + a2 * s2);
+                double numM2 = numR * numR + numI * numI;
+                double denM2 = denR * denR + denI * denI;
+                if (denM2 <= 0.0)
+                        return 0.0;
+                return 10.0 * log10(numM2 / denM2);
+        }
 }
+
+/* Total frequency response (dB) at f: sum of every enabled band's biquad
+ * magnitude, matching the FiiO Control reference curve. */
+static double response_db(double f)
+{
+        double db = 0.0;
+        for (int i = 0; i < NUM_BANDS; i++) {
+                const Band *b = &bands[i];
+                if (!b->enabled || b->gain == 0.0)
+                        continue;
+                db += biquad_magnitude_db(b->filter_type, b->freq, b->gain,
+                                          b->q, f, 48000.0);
+        }
+        return db;
+}
+
+/* Draw the real frequency-response curve of the active bands on a log
+ * frequency axis (20 Hz - 20 kHz) with dB grid lines. Recomputed on every
+ * redraw, so it updates live while editing (like ktmicro_tui.py). */
+static void draw_response_curve(WINDOW *win, int start_row, int max_width)
+{
+        /* Draw the real frequency-response curve of the active EQ bands on a
+         * logarithmic frequency axis (20 Hz - 20 kHz) with a dB scale, decade
+         * grid lines and frequency labels - the same UX as ktmicro_tui.py.
+         * Recomputed on every redraw so it updates live while editing.
+         *
+         * All glyphs are single-byte ACS characters because freetz ncurses is
+         * built with --disable-widec: multibyte UTF-8 glyphs would be split by
+         * ncurses' byte-level diffing on every redraw.  The UTF-8 terminal of
+         * the user renders these as box-drawing chars (─, │, ·). */
+        const double dbmax = 12.0;
+        const double fmin  = FREQ_MIN;   /* 20 Hz  */
+        const double fmax  = FREQ_MAX;   /* 20 kHz */
+        const int left     = 7;          /* room for "+12 │" style labels */
+        const double gridf[3] = { 100.0, 1000.0, 10000.0 };
+        const int dbs[5] = { 12, 6, 0, -6, -12 };
+        int win_h = getmaxy(win);
+        int win_w = getmaxx(win);
+        int plot_w = win_w - left - 1;   /* curve columns (0 .. plot_w-1) */
+        int height = win_h - 1;          /* curve rows (0 .. height-1) */
+        int zero;                        /* row of the 0 dB reference line */
+        int gc[3];                       /* grid columns: 100 Hz, 1 kHz, 10 kHz */
+        int r, c, i;
+        int prev = -1;
+
+        (void)start_row;
+        (void)max_width;
+
+        if (plot_w < 10 || height < 5) {
+                mvwaddstr(win, 0, 1, "(terminal too small for graph)");
+                return;
+        }
+
+        /* Decade grid columns (log positions of 100 Hz, 1 kHz, 10 kHz). */
+        for (i = 0; i < 3; i++)
+                gc[i] = (int)lround(log10(gridf[i] / fmin)
+                                    / log10(fmax / fmin) * (double)(plot_w - 1));
+
+        /* Clear the whole plot area first so no stale curve pixels remain. */
+        for (r = 0; r <= height; r++)
+                mvwhline(win, r, left, ' ', plot_w);
+
+        /* dB axis labels (+12 .. -12) with a vertical axis separator. */
+        for (i = 0; i < 5; i++) {
+                int y = (int)lround(((dbmax - dbs[i]) / (2.0 * dbmax))
+                                    * (double)(height - 1));
+                if (y < 0) y = 0;
+                if (y > height - 1) y = height - 1;
+                mvwprintw(win, y, 1, "%+4d", dbs[i]);
+                mvwaddch(win, y, left - 1, ACS_VLINE);
+        }
+
+        zero = (int)lround((dbmax / (2.0 * dbmax)) * (double)(height - 1));
+
+        /* 0 dB reference line, with a dot at decade crossings. */
+        for (c = 0; c < plot_w; c++) {
+                int is_grid = 0;
+                for (i = 0; i < 3; i++)
+                        if (c == gc[i]) { is_grid = 1; break; }
+                mvwaddch(win, zero, left + c, is_grid ? ACS_BULLET : ACS_HLINE);
+        }
+
+        /* Vertical decade grid lines (dimmed), skipping the 0 dB row. */
+        for (i = 0; i < 3; i++) {
+                for (r = 0; r < height; r++) {
+                        if (r == zero) continue;
+                        wattron(win, A_DIM);
+                        mvwaddch(win, r, left + gc[i], ACS_VLINE);
+                        wattroff(win, A_DIM);
+                }
+        }
+
+        /* Frequency-response curve: '@' at each sample, vertical connector
+         * between consecutive samples. */
+        for (c = 0; c < plot_w; c++) {
+                double lf = log10(fmin) + (log10(fmax) - log10(fmin))
+                                * (double)c / (double)(plot_w - 1);
+                double f  = pow(10.0, lf);
+                double db = response_db(f);
+                int y;
+
+                if (db < -dbmax) db = -dbmax;
+                if (db >  dbmax) db =  dbmax;
+                y = (int)lround(((dbmax - db) / (2.0 * dbmax)) * (double)(height - 1));
+                if (y < 0) y = 0;
+                if (y > height - 1) y = height - 1;
+
+                if (prev != -1) {
+                        int r0 = prev < y ? prev : y;
+                        int r1 = prev < y ? y : prev;
+                        for (r = r0; r <= r1; r++)
+                                mvwaddch(win, r, left + c,
+                                         r == y ? '@' : ACS_VLINE);
+                } else {
+                        mvwaddch(win, y, left + c, '@');
+                }
+                prev = y;
+        }
+
+        /* Frequency labels (bottom row): 20, 100, 1k, 10k, 20k. */
+        mvwaddstr(win, height, left, "20");
+        mvwaddstr(win, height, left + gc[0] - 1, "100");
+        mvwaddstr(win, height, left + gc[1] - 2, "1k");
+        mvwaddstr(win, height, left + gc[2] - 2, "10k");
+        mvwaddstr(win, height, left + plot_w - 3, "20k");
+}
+
 
 /* Full-screen, scrollable help (opened with ? / h / H). Works on any
  * terminal size. */
@@ -1045,21 +1190,39 @@ static void main_loop(WINDOW *main_win)
 	curs_set(0);
 
 	int mrows = getmaxy(main_win);
+	int winw  = getmaxx(main_win);
 	int table_h = NUM_BANDS + 2;
-	int bar_h = 10;
 	int msg_row = mrows - 1;
-	int help_row = 1 + table_h + bar_h;
+	int help_row;
 	int help_h = 0;
-	if (msg_row - help_row >= 12) {
-		help_h = msg_row - help_row;
-		if (help_h > 24) help_h = 24;
-	}
+	int bar_h = 12;
 
-	WINDOW *table_win = derwin(main_win, table_h, 80, 1, 0);
-	WINDOW *bar_win   = derwin(main_win, bar_h, 80, 1 + table_h, 0);
-	WINDOW *help_win  = help_h > 0 ? derwin(main_win, help_h, 80, help_row, 0) : NULL;
-	WINDOW *status_win= derwin(main_win, 1, 80, 0, 0);
-	WINDOW *msg_win   = derwin(main_win, 1, 80, msg_row, 0);
+	/* Give the response-curve graph as much height as the terminal allows
+	 * (up to 16 rows, like the Python TUI); the leftover space goes to the
+	 * inline help panel. */
+	{
+		int avail = msg_row - (1 + table_h) - 1;   /* rows for bar+help */
+		if (avail >= 28)      { bar_h = 16; help_h = avail - bar_h; }
+		else if (avail >= 22) { bar_h = 14; help_h = avail - bar_h; }
+		else if (avail >= 20) { bar_h = 12; help_h = avail - bar_h; }
+		else                  { bar_h = avail; help_h = 0; }
+		if (bar_h < 8) bar_h = 8;
+		if (bar_h > 16) bar_h = 16;
+		if (help_h > 24) help_h = 24;
+		if (help_h < 10) help_h = 0;
+	}
+	help_row = 1 + table_h + bar_h;
+	if (help_h > 0 && help_row + help_h > msg_row)
+		help_h = msg_row - help_row;
+	if (help_h < 10) help_h = 0;
+
+	/* All windows are as wide as the terminal so the graph spans the full
+	 * width (no fixed 80-column window). */
+	WINDOW *table_win = derwin(main_win, table_h, winw, 1, 0);
+	WINDOW *bar_win   = derwin(main_win, bar_h, winw, 1 + table_h, 0);
+	WINDOW *help_win  = help_h > 0 ? derwin(main_win, help_h, winw, help_row, 0) : NULL;
+	WINDOW *status_win= derwin(main_win, 1, winw, 0, 0);
+	WINDOW *msg_win   = derwin(main_win, 1, winw, msg_row, 0);
 
 	wclear(main_win);
 
@@ -1077,7 +1240,7 @@ static void main_loop(WINDOW *main_win)
 			draw_band_row(table_win, i + 1, i, (i == current_band));
 
 		/* Bar chart */
-		draw_gain_bars(bar_win, 0, width);
+		draw_response_curve(bar_win, 0, width);
 
 		/* Help */
 		if (help_win)

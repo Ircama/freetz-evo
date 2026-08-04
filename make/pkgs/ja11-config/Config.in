@@ -1,0 +1,21 @@
+config FREETZ_PACKAGE_JA11_CONFIG
+	bool "ja11-config 1.0 (binary only)"
+	select FREETZ_LIB_libncurses
+	select FREETZ_LIB_hidapi
+	default n
+	help
+		FiiO JA11 (KT02H20) tools: TUI configurator plus firmware update.
+
+		- ja11-config-tui: interactive 5-band parametric EQ configurator.
+		  Communicates over HID using hidapi's libusb backend (like hidws),
+		  NOT hidraw: on startup it lists all HID devices and lets you choose
+		  which one to connect to.
+		- ja11-boot: puts the device into firmware-update mode by sending an
+		  HID output report; the device then re-enumerates as a USB CDC serial
+		  port.
+		- ja11-flash: flashes firmware over the update-mode serial port.
+
+		Access via SSH:
+		  ja11-config-tui               (EQ configuration)
+		  ja11-boot                     (enter update mode)
+		  ja11-flash /dev/ttyACM1 fw.bin (flash firmware)
