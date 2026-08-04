@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_PYTHON3_HIDAPI
+	bool "hidapi 0.15.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_LIB_libusb1
+	default n
+	help
+		Cython-based Python bindings for the cross-platform HIDAPI
+		library, built with the libusb backend (no kernel HID/INPUT
+		required). Provides the "hid" module:
+		
+		    import hid
+		    dev = hid.device()
+		    dev.open(0x2e8c, 0x0100)
+		
+		The hidraw/udev backend is intentionally not built (the target
+		has no udev and no kernel HID stack).
+		
+		https://github.com/trezor/cython-hidapi

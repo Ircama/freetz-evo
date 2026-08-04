@@ -413,6 +413,7 @@ if FREETZ_PACKAGE_PYTHON3
 		source "make/pkgs/python3-h11/Config.in"
 		source "make/pkgs/python3-ha-ffmpeg/Config.in"
 		source "make/pkgs/python3-hass-nabucasa/Config.in"
+		source "make/pkgs/python3-hidapi/Config.in"
 		source "make/pkgs/python3-httpcore/Config.in"
 		source "make/pkgs/python3-httpx/Config.in"
 		source "make/pkgs/python3-idna/Config.in"

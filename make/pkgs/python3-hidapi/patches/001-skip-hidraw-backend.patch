@@ -1,0 +1,36 @@
+--- a/setup.py	2026-08-03 22:45:16.445759796 +0200
++++ b/setup.py	2026-08-03 22:45:16.445759796 +0200
+@@ -131,6 +131,7 @@
+             HIDAPI_WITH_LIBUSB = True
+         else:
+             HIDAPI_WITH_LIBUSB = to_bool(os.getenv("HIDAPI_WITH_LIBUSB"))
++            HIDAPI_WITHOUT_HIDRAW = to_bool(os.getenv("HIDAPI_WITHOUT_HIDRAW"))
+ 
+         # make libusb backend default if none is specified
+         if not HIDAPI_WITH_HIDRAW and not HIDAPI_WITH_LIBUSB:
+@@ -153,14 +154,18 @@
+         else:
+             raise ValueError("Unknown HIDAPI backend")
+ 
+-        modules.append(
+-            Extension(
+-                hidraw_module,
+-                sources=["hidraw.pyx", hidapi_src("linux")],
+-                include_dirs=[embedded_hidapi_include],
+-                libraries=["udev"],
++        # freetz: allow skipping the hidraw (udev) backend. The FritzBox has no
++        # udev and no kernel HID stack, so this extension would fail to link
++        # against -ludev. Only the libusb backend is required there.
++        if not HIDAPI_WITHOUT_HIDRAW:
++            modules.append(
++                Extension(
++                    hidraw_module,
++                    sources=["hidraw.pyx", hidapi_src("linux")],
++                    include_dirs=[embedded_hidapi_include],
++                    libraries=["udev"],
++                )
+             )
+-        )
+ 
+     else:
+         modules = [
