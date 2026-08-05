@@ -1,7 +1,9 @@
 menuconfig FREETZ_PACKAGE_HIDWS
-        bool "hidws 1.1 (binary only)"
+        bool "hidws 1.2 (binary only)"
         select FREETZ_LIB_hidapi
         select FREETZ_LIB_libwebsockets
+        select FREETZ_LIB_libwebsockets_WITH_SSL
+        select FREETZ_LIB_libssl
         default n
         help
                 Generic WebSocket to HID gateway daemon (libusb backend).
@@ -28,6 +30,13 @@ menuconfig FREETZ_PACKAGE_HIDWS
 
                 Run: hidws [port]   (default port: 9001)
                 Web app access: ws://fritz.box:9001
+
+                SSL/TLS (wss://) support is enabled: hidws serves both
+                ws:// and wss:// on the same port, and generates a
+                self-signed certificate automatically on first start
+                (see the hidws web config page). This is required on
+                HTTPS-hosted web apps (e.g. GitHub Pages) that block
+                plain ws:// connections.
 
                 Protocol based on the Audiocular Aura backend:
                 https://github.com/mandy321/Audiocular-Aura

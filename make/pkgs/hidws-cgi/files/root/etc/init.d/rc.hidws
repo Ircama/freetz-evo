@@ -41,6 +41,17 @@ start() {
 
 	port="${HIDWS_PORT:-9001}"
 
+	# SSL/TLS (wss://) support: hidws serves ws:// and wss:// on the same
+	# port. hidws generates a self-signed certificate/key on first start
+	# if they do not exist yet.
+	ssl_args=""
+	if [ "${HIDWS_SSL:-yes}" = "yes" ]; then
+		cert="${HIDWS_CERT:-/mod/etc/hidws/server.crt}"
+		key="${HIDWS_KEY:-/mod/etc/hidws/server.key}"
+		mkdir -p "$(dirname "$cert")" 2>/dev/null
+		ssl_args=" --cert \"$cert\" --key \"$key\""
+	fi
+
 	# Check whether the port is already bound by another process
 	local hex_port
 	hex_port=$(printf '%04X' "$port")
@@ -56,12 +67,16 @@ start() {
 	# captured to the execution log shown in the web UI.
 	start-stop-daemon -S -b -m -p "$PID_FILE" \
 		-N "${HIDWS_NICE:-5}" \
-		-- /bin/sh -c "exec /usr/bin/hidws \"$port\" >>\"$DAEMON_LOG\" 2>&1"
+		-- /bin/sh -c "exec /usr/bin/hidws \"$port\"$ssl_args >>\"$DAEMON_LOG\" 2>&1"
 
 	sleep 1
 	if is_running; then
 		echo 'done.'
-		log "started hidws, listening on port $port"
+		if [ -n "$ssl_args" ]; then
+			log "started hidws, listening on port $port (ws:// and wss://)"
+		else
+			log "started hidws, listening on port $port (ws://)"
+		fi
 	else
 		# Check the daemon log for a bind failure to give a specific message
 		if grep -q "ERROR on binding.*$port\|bind.*$port.*fail" "$DAEMON_LOG" 2>/dev/null; then

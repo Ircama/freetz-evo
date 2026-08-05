@@ -1,6 +1,6 @@
-# hidws 1.1.0 (binaries only)
+# hidws 1.2.5 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
-  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.1.0`
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.5`
   - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
@@ -18,7 +18,20 @@ shows the reports they support.
 
 - Binary paths: `/usr/bin/hidws`, `/usr/bin/hid-list`
 - WebSocket port: `9001` by default (`hidws [port]`)
-- Runtime dependency profile: `hidapi` (libusb) + `libwebsockets`
+- Runtime dependency profile: `hidapi` (libusb) + `libwebsockets` (SSL)
+
+## TLS / WSS support
+
+hidws serves **both** plain `ws://` and encrypted `wss://` on the **same**
+port. A self-signed certificate/key pair is generated automatically on first
+start if it does not exist yet, so `wss://fritz.box:9001` works out of the
+box. This is required by HTTPS-hosted web apps (e.g. GitHub Pages), which
+block plain `ws://` connections.
+
+- Default cert/key paths: `/mod/etc/hidws/server.crt`, `/mod/etc/hidws/server.key`
+- Configured through the hidws web config page
+  (`http://fritz.box:81/cgi-bin/conf/hidws`): enable/disable SSL, cert/key paths
+- The certificate is self-signed; browsers will show a one-time warning.
 
 ## Wire protocol (JSON over WebSocket)
 
@@ -41,9 +54,11 @@ Server → Client:
 
 ## Typical usage
 
-- On the router: `/usr/bin/hidws 9001`
-- From a web app served locally or over HTTPS (avoid mixed content), connect to
-  `ws://fritz.box:9001`
+- On the router: `/usr/bin/hidws 9001` (serves `ws://fritz.box:9001`)
+  or with a cert: `/usr/bin/hidws 9001 --cert /mod/etc/hidws/server.crt`
+  (serves `ws://` **and** `wss://fritz.box:9001`)
+- From a web app served locally or over HTTPS (avoid mixed content), connect
+  to `ws://fritz.box:9001` or `wss://fritz.box:9001`
 - The HID device is released automatically when the client disconnects.
 
 ## Notes
@@ -53,4 +68,6 @@ Server → Client:
 - `input_report` data received over WebSocket includes the report-ID byte as the
   first element for numbered input reports; WebHID strips it, so remote
   frontends must strip it to match.
+- `hidws` must be compiled with `-O0` on the MIPS/uClibc toolchain (reader
+  thread miscompiled at `-O1+`).
 

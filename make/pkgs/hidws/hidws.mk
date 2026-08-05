@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, 1.2.4)
+$(call PKG_INIT_BIN, 1.2.5)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=c4b7d35055b243dfa5447d9fbf47f0c9e51402d3ed7a01f56924b4387a10a5cb
+$(PKG)_HASH:=1ba44bd5838fb02ef45e98d8ee42ffa0db97c48fece8a4244ea96130af7ed8fe
 $(PKG)_SITE:=https://github.com/Ircama/hidws/archive/refs/tags
 ### WEBSITE:=https://github.com/Ircama/hidws
 ### CHANGES:=https://github.com/Ircama/hidws/releases
@@ -11,6 +11,17 @@ $(PKG)_CATEGORY:=Flasher tools
 
 $(PKG)_DEPENDS_ON += hidapi
 $(PKG)_DEPENDS_ON += libwebsockets
+
+# SSL/WSS support: hidws must be built against a libwebsockets that has SSL
+# (FREETZ_LIB_libwebsockets_WITH_SSL, forced on by hidws' Config.in) so it can
+# serve wss:// as well as ws:// on the same port. The openssl library is only
+# linked so hidws can generate a self-signed certificate on first start.
+ifeq ($(strip $(FREETZ_LIB_libwebsockets_WITH_SSL)),y)
+$(PKG)_DEPENDS_ON += openssl
+$(PKG)_SSL_CFLAGS := -DHIDWS_SSL
+$(PKG)_SSL_LIBS := -lssl -lcrypto
+endif
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libwebsockets_WITH_SSL
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/hidws
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/hidws
@@ -28,9 +39,11 @@ $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
 	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_CPPFLAGS) $(TARGET_LDFLAGS) \
 		-Wall -Wextra -O0 -std=c11 \
 		-D_DEFAULT_SOURCE -D_GNU_SOURCE \
+		$(HIDWS_SSL_CFLAGS) \
 		$(HIDWS_DIR)/hidws.c \
 		-o $@ \
-		-lhidapi-libusb -lwebsockets -lpthread
+		-lhidapi-libusb -lwebsockets -lpthread \
+		$(HIDWS_SSL_LIBS)
 
 # NOTE: hidws MUST be built with -O0. The reader thread is miscompiled by
 # GCC -O1+ on the MIPS/uClibc toolchain (NULL-deref inside hid_read_timeout

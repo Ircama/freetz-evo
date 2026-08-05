@@ -19,6 +19,12 @@ cgi_print_textline_p "port" "$HIDWS_PORT" 5/5 \
 	"$(lang de:"WebSocket-Port" en:"WebSocket port"): "
 cgi_print_textline_p "nice" "$HIDWS_NICE" 4/4 \
 	"$(lang de:"Prozesspriorität (nice)" en:"Process priority (nice)"): "
+cgi_print_checkbox_p "ssl" "${HIDWS_SSL:-yes}" \
+	"$(lang de:"SSL/TLS aktivieren (wss:// zusätzlich zu ws://)" en:"Enable SSL/TLS (wss:// in addition to ws://)"): "
+cgi_print_textline_p "cert" "${HIDWS_CERT:-/mod/etc/hidws/server.crt}" 40/160 \
+	"$(lang de:"Zertifikatspfad" en:"Certificate path"): "
+cgi_print_textline_p "key" "${HIDWS_KEY:-/mod/etc/hidws/server.key}" 40/160 \
+	"$(lang de:"Schlüsselpfad" en:"Private key path"): "
 cat << EOF
 <p>
 <strong>$(lang de:"Status" en:"Status"):</strong>
@@ -28,10 +34,18 @@ if [ "$IS_RUNNING" = "yes" ]; then
 else
 	echo "<span style='color:#dc3545;font-weight:bold;'>&#x25CF; $(lang de:"gestoppt" en:"stopped")</span>"
 fi
+if [ "${HIDWS_SSL:-yes}" = "yes" ]; then
+cat << EOF
+&nbsp;&nbsp;<small>$(lang de:"Endpunkte" en:"Endpoints"): <code>ws://fritz.box:${HIDWS_PORT:-9001}</code> $(lang de:"und" en:"and") <code>wss://fritz.box:${HIDWS_PORT:-9001}</code></small>
+</p>
+<p><small>$(lang de:"Ein selbstsigniertes Zertifikat wird beim ersten Start automatisch erzeugt. Browser melden es als unsicher, die Verbindung funktioniert aber trotzdem." en:"A self-signed certificate is generated automatically on first start. Browsers flag it as untrusted, but the connection still works.")</small></p>
+EOF
+else
 cat << EOF
 &nbsp;&nbsp;<small>$(lang de:"WebSocket-Endpunkt" en:"WebSocket endpoint"): <code>ws://fritz.box:${HIDWS_PORT:-9001}</code></small>
 </p>
 EOF
+fi
 sec_end
 
 sec_begin "$(lang de:"Web-Apps" en:"Web apps")"
