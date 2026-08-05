@@ -1,6 +1,6 @@
-# hidws 1.2.6 (binaries only)
+# hidws 1.2.7 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
-  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.6`
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.7`
   - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
@@ -22,11 +22,14 @@ shows the reports they support.
 
 ## TLS / WSS support
 
-hidws serves **both** plain `ws://` and encrypted `wss://` on the **same**
-port. A self-signed certificate/key pair is generated automatically on first
-start if it does not exist yet, so `wss://fritz.box:9001` works out of the
-box. This is required by HTTPS-hosted web apps (e.g. GitHub Pages), which
-block plain `ws://` connections.
+By default (`hidws [port]`) serves **both** plain `ws://` and encrypted
+`wss://` on the **same** port, using a **temporary self-signed certificate
+kept only in memory** (no file, regenerated on every start; warning in the
+log and on the diagnostic page). For a persistent certificate (stable
+browser exception across restarts) use `--cert FILE [--key FILE]` — if the
+cert file is missing, a self-signed certificate/key is generated
+automatically at first start (`/mod/etc/hidws/server.crt` by default via
+`rc.hidws`). `--no-ssl` forces plain `ws://` only.
 
 - Default cert/key paths: `/mod/etc/hidws/server.crt`, `/mod/etc/hidws/server.key`
 - Configured through the hidws web config page
@@ -37,7 +40,8 @@ block plain `ws://` connections.
 
 Opening `http://fritz.box:9001/` or `https://fritz.box:9001/` in a browser
 serves a small diagnostic page (version, port, endpoints) with **"Test ws://" /
-"Test wss://"** buttons that open a real WebSocket and report success/failure.
+"Test wss://"** buttons that open a real WebSocket and report success/failure,
+plus a warning banner when a temporary in-memory certificate is in use.
 Useful to confirm access and to accept the one-time self-signed-cert exception
 for `wss://`: visit `https://192.168.178.1:9001/` once, accept the warning,
 then reconnect.
