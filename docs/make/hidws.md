@@ -1,6 +1,6 @@
-# hidws 1.2.5 (binaries only)
+# hidws 1.2.6 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
-  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.5`
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.6`
   - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
@@ -32,6 +32,15 @@ block plain `ws://` connections.
 - Configured through the hidws web config page
   (`http://fritz.box:81/cgi-bin/conf/hidws`): enable/disable SSL, cert/key paths
 - The certificate is self-signed; browsers will show a one-time warning.
+
+## Diagnostic page
+
+Opening `http://fritz.box:9001/` or `https://fritz.box:9001/` in a browser
+serves a small diagnostic page (version, port, endpoints) with **"Test ws://" /
+"Test wss://"** buttons that open a real WebSocket and report success/failure.
+Useful to confirm access and to accept the one-time self-signed-cert exception
+for `wss://`: visit `https://192.168.178.1:9001/` once, accept the warning,
+then reconnect.
 
 ## Wire protocol (JSON over WebSocket)
 
