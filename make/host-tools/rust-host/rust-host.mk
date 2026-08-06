@@ -7,10 +7,29 @@ $(call TOOLS_INIT, 1.0.0)
 RUST_HOST_TARGET_DIR:=$(HOST_TOOLS_DIR)/usr/bin
 RUST_HOST_TARGET_BINARY:=$(RUST_HOST_TARGET_DIR)/rustc
 
+# Custom Rust target spec files (e.g. i686-unknown-linux-uclibc.json) must live
+# under $(FREETZ_BASE_DIR)/toolchain/rust/targets/, but the whole /toolchain
+# directory is gitignored, so those files get lost on a clean checkout and every
+# cargo invocation fails with "target path ... is not a valid file". Keep the
+# canonical copies tracked in make/include/rust/ and re-materialize them here:
+# rust-host is a prerequisite of every Rust package, so this runs before any
+# cargo build. Safe on mips/arm (builtin targets): FREETZ_TARGET_RUST_CUSTOM_TARGET
+# is empty there, so both the rule and the prerequisite expand to nothing.
+RUST_TARGET_SPEC_CUSTOM:=$(call qstrip,$(FREETZ_TARGET_RUST_CUSTOM_TARGET))
+RUST_TARGET_SPEC_SRC:=$(if $(RUST_TARGET_SPEC_CUSTOM),$(FREETZ_BASE_DIR)/make/include/rust/$(RUST_TARGET_SPEC_CUSTOM))
+RUST_TARGET_SPEC_DST:=$(if $(RUST_TARGET_SPEC_CUSTOM),$(FREETZ_BASE_DIR)/toolchain/rust/targets/$(RUST_TARGET_SPEC_CUSTOM))
+
+ifneq ($(RUST_TARGET_SPEC_DST),)
+$(FREETZ_BASE_DIR)/toolchain/rust/targets/%.json: $(FREETZ_BASE_DIR)/make/include/rust/%.json
+	@mkdir -p $(dir $@)
+	@cp -f $< $@
+	@echo "Re-materialized Rust target spec: $@"
+endif
+
 $(TOOLS_CONFIGURED_NOP)
 
 
-$(RUST_HOST_TARGET_BINARY): | $(HOST_TOOLS_DIR)
+$(RUST_HOST_TARGET_BINARY): $(RUST_TARGET_SPEC_DST) | $(HOST_TOOLS_DIR)
 	@rustc_bin="$$(command -v rustc 2>/dev/null || true)"; \
 	[ -n "$$rustc_bin" ] || [ ! -x "$$HOME/.cargo/bin/rustc" ] || rustc_bin="$$HOME/.cargo/bin/rustc"; \
 	if [ -z "$$rustc_bin" ]; then \
