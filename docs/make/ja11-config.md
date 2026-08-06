@@ -40,8 +40,9 @@ you unplug the DAC and connect it to a phone, tablet, or game console.
 - **Persistent flash memory** — Save your configuration to the device's internal
   flash so it survives power cycles and host changes.
 - **Preset management** — Save, load, and delete EQ profiles stored locally on
-  the host (`/tmp/ja11-presets.conf`).
-- **i18n** — English (default) and Italian (`--italian` / `-it`).
+  the host (default `/tmp/ja11-presets.conf`, configurable with `--presets`).
+- **i18n** — English (default), Italian (`--italian`/`-it`), French
+  (`--french`/`-fr`), German (`--german`/`-de`) and Spanish (`--spanish`/`-es`).
 - **Lightweight** — Written in C with only two external dependencies:
   `hidapi` (libusb backend, like `hidws`) and `ncurses`.
 
@@ -159,11 +160,23 @@ With the FiiO JA11 connected via USB, run:
 ja11-config-tui
 ```
 
-Use `--italian` (or `-it`) for Italian UI:
+The UI language is selectable on the command line:
+
+- `--english` / `-en` (default)
+- `--italian` / `-it`
+- `--french` / `-fr`
+- `--german` / `-de`
+- `--spanish` / `-es`
+
+The preset file path defaults to `/tmp/ja11-presets.conf` and can be changed
+with `--presets <path>` (or `--preset-file <path>`):
 
 ```
-ja11-config-tui -it
+ja11-config-tui --italian --presets /var/media/ftp/ja11-presets.conf
 ```
+
+`--report` prints the device configuration as a plain-text, aligned report and
+exits without opening the TUI.
 
 ### Device selection
 
@@ -198,11 +211,11 @@ hosts see the [udev rule](#udev-rule) below for non-root access.
   FiiO JA11 (KT02H20) - Full PEQ Configurator
   CONNECTED: JadeAudio JA11  Global Preamp:6.0 dB  DAC Digital Filter:FAST-LL  All synced with device
   Band    Freq (Hz)     Gain (dB)     Q             Type      Status
-> 25            +3.5          0.70          PK        ON
-  150           +0.0          0.70          PK        ON
-  1500          +1.4          0.70          PK        ON
-  6500          +9.0          0.70          PK        ON
-  15660         +12.0         0.25          PK        ON
+> 1       25            +3.5          0.70          PK        ON
+  2       150           +0.0          0.70          PK        ON
+  3       1500          +1.4          0.70          PK        ON
+  4       6500          +9.0          0.70          PK        ON
+  5       15660         +12.0         0.25          PK        ON
 
   +12 │                          │                                    │                       @@@@@@@@@@@@@@@@@@@@@@@@│
                                  │                                    │                     @@│            │          @
@@ -249,28 +262,33 @@ the full, scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
 
 | Key(s)        | Action                     | Description                                              |
 |---------------|----------------------------|----------------------------------------------------------|
-| ↑/↓           | Select band                | Move cursor between the 5 PEQ bands.                     |
+| ↑/↓           | Select band                | Move cursor between the 5 PEQ bands. From band 1, ↑ enters the status-bar "strip" to edit the Global Preamp / DAC filter values directly (↓ returns to the table). |
 | ←/→           | Select parameter           | Move cursor between Freq, Gain, Q, Type columns.         |
 | `Tab`/`Shift+Tab` | Cycle cells (fwd/back) | Move forward/backward across all cells (band × Freq/Gain/Q/Type/Status). |
 | `+`/`-`       | Coarse adjust              | Change parameter by a large step (10 Hz, 1 dB, 0.1 Q); on Type it cycles the filter, on Status it toggles the band. |
-| `<`/`>`       | Fine adjust                | Change parameter by a small step (1 Hz, 0.5 dB, 0.01 Q). |
+| `<`/`>` / `PgUp`/`PgDn` | Fine adjust | Change parameter by a small step (1 Hz, 0.5 dB, 0.01 Q). `PgUp` behaves like `<` (decrease), `PgDn` behaves like `>` (increase). |
 | `Space`       | Toggle band                | Enable/disable the selected band (bypass filter).        |
 | `t`/`T`       | Cycle filter type          | PK → LSQ → HSQ → PK …                                    |
+| `e`/`E`       | Edit value numerically     | Opens a popup pre-filled with the current value; edit digit-by-digit with the cursor, Enter confirms, Esc cancels. Applies to Freq/Gain/Q. |
+| `Enter`       | Edit current value         | Opens the same popup as `e`; on Type it cycles the filter type, on Status it toggles the band. |
 | `a`/`A`       | Apply to RAM               | Write all bands + gain + filter to device RAM (hear changes instantly). |
 | `s` then `S`  | Save to flash              | Apply + persist to flash. Confirms with a second keypress. |
 | `r`/`R`       | Read from device           | Discard local changes and re-read full config from DSP.  |
-| `g`/`G`       | Set global gain            | Opens an inline prompt to type a preamp value (-12…+12 dB); applies it to the device immediately. |
-| `f`/`F`       | Cycle DAC filter           | FAST-LL → FAST-PC → Slow-LL → Slow-PC → NON-OS → …      |
-| `p`           | Save preset                | Opens a prompt to name the current config and save it locally. |
-| `P` (Shift+p) | Load preset                | Opens a prompt to select a previously saved preset by number. |
+| `g`/`G`       | Set global gain            | Opens the numeric popup pre-filled with the current preamp (-12…+12 dB); edit with the arrow keys, Enter confirms, Esc cancels. The change stays **pending** (the `** MODIFICATIONS NOT APPLIED **` warning is shown) until you press `a`. |
+| `f`/`F`       | Cycle DAC filter           | FAST-LL → FAST-PC → Slow-LL → Slow-PC → NON-OS → …; the change stays **pending** (the `** MODIFICATIONS NOT APPLIED **` warning is shown) until you press `a`. |
+| `l`/`L`       | HID log                    | Opens a scrollable trace of every TX/RX HID packet (timestamp, header, decoded command, hex payload) — handy to reverse-engineer the device protocol. |
+| `p`           | Save preset                | Shows the preset list (with the file path, e.g. `/tmp/ja11-presets.conf`), then opens the arrow-safe name prompt to save the current config. |
+| `P` (Shift+p) | Load preset                | Shows the preset list (with the file path); pick one with ↑/↓ and press Enter to load it. |
 | `K` (Shift+k) | Delete preset              | Removes the active preset after confirmation.            |
 | `d`           | Reset to flat              | All bands: 0 dB gain, 0.7 Q, PK type, enabled.          |
 | `D` (Shift+d) | Reset to defaults          | All bands set to a useful frequency distribution (32/64/125/250/500 Hz). |
 | `?`/`h`/`H`   | Full help                  | Opens a full-screen, scrollable help viewer (useful on small terminals). |
-| `q`/`Q`       | Quit                       | Exits the program; prompts if there are unsaved changes. |
+| `q`/`Q`       | Quit                       | With unsaved changes the first `q` shows a warning; a second consecutive `q` confirms and exits. Any other key cancels the exit. |
 
-**Important**: `q` will refuse to exit while the `"** MODIFICATIONS NOT APPLIED **"`
-warning is shown. Apply or revert first.
+**Important**: while the `"** MODIFICATIONS NOT APPLIED **"` warning is shown,
+`q` only warns the first time — press `q` again (without pressing anything else
+in between) to confirm and exit. Apply (`a`) or save (`s` → `S`) first to keep
+your changes, or use the double-`q` to discard them.
 
 ## Understanding the parameters
 

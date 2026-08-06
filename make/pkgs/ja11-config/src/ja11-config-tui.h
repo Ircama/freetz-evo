@@ -100,11 +100,14 @@
 /* --- Presets --- */
 #define MAX_PRESET_NAME 64
 #define MAX_PRESETS     16
-#define PRESET_FILE     "/tmp/ja11-presets.conf"
+#define PRESET_FILE_DEFAULT "/tmp/ja11-presets.conf"
 
 /* --- i18n language codes --- */
 #define LANG_EN 0
 #define LANG_IT 1
+#define LANG_FR 2
+#define LANG_DE 3
+#define LANG_ES 4
 
 /* --- Data structures --- */
 
