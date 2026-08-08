@@ -125,10 +125,45 @@
     "service": "deepl",
     "github_user": "Ircama"
   },
-  "deepl:Control for Walk Play devices (e.g., Hi-MAX using the DAC chip CB1200AU)": {
-    "original": "Control for Walk Play devices (e.g., Hi-MAX using the DAC chip CB1200AU)",
-    "translation": "Controllo per i dispositivi Walk Play (es. Hi-MAX con chip DAC CB1200AU)",
-    "timestamp": "2026-08-08T00:00:00Z",
+  "deepl:Enable SSL/TLS (wss:// in addition to ws://)": {
+    "original": "Enable SSL/TLS (wss:// in addition to ws://)",
+    "translation": "Abilita SSL/TLS (wss:// oltre a ws://)",
+    "timestamp": "2026-08-08T07:46:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Certificate path": {
+    "original": "Certificate path",
+    "translation": "Percorso del certificato",
+    "timestamp": "2026-08-08T07:46:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Private key path": {
+    "original": "Private key path",
+    "translation": "Percorso della chiave privata",
+    "timestamp": "2026-08-08T07:46:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Endpoints": {
+    "original": "Endpoints",
+    "translation": "Endpoint",
+    "timestamp": "2026-08-08T07:46:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:and": {
+    "original": "and",
+    "translation": "e",
+    "timestamp": "2026-08-08T07:46:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:A self-signed certificate is generated automatically on first start. Browsers flag it as untrusted, but the connection still works.": {
+    "original": "A self-signed certificate is generated automatically on first start. Browsers flag it as untrusted, but the connection still works.",
+    "translation": "Al primo avvio viene generato automaticamente un certificato autofirmato. I browser lo contrassegnano come non attendibile, ma la connessione funziona comunque.",
+    "timestamp": "2026-08-08T07:46:06Z",
     "service": "deepl",
     "github_user": "Ircama"
   }
