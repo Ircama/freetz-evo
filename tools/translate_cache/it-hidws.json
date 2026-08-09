@@ -166,5 +166,12 @@
     "timestamp": "2026-08-08T07:46:06Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Control for Walk Play devices (e.g., Hi-MAX using the DAC chip CB1200AU)": {
+    "original": "Control for Walk Play devices (e.g., Hi-MAX using the DAC chip CB1200AU)",
+    "translation": "Controllo per i dispositivi Walk Play (es. Hi-MAX con chip DAC CB1200AU)",
+    "timestamp": "2026-08-08T19:14:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
