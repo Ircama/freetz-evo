@@ -56,6 +56,23 @@ start() {
 		ssl_args=" --no-ssl"
 	fi
 
+	# Optional access control (hidws >= 1.3.0): --token / --user /
+	# --password / --allow. All empty by default -> open server
+	# (backwards compatible with hidws < 1.3.0 clients).
+	auth_args=""
+	if [ -n "${HIDWS_TOKEN}" ]; then
+		auth_args="$auth_args --token \"$HIDWS_TOKEN\""
+	fi
+	if [ -n "${HIDWS_USER}" ]; then
+		auth_args="$auth_args --user \"$HIDWS_USER\""
+	fi
+	if [ -n "${HIDWS_PASSWORD}" ]; then
+		auth_args="$auth_args --password \"$HIDWS_PASSWORD\""
+	fi
+	if [ -n "${HIDWS_ALLOW}" ]; then
+		auth_args="$auth_args --allow \"$HIDWS_ALLOW\""
+	fi
+
 	# Check whether the port is already bound by another process
 	local hex_port
 	hex_port=$(printf '%04X' "$port")
@@ -71,12 +88,14 @@ start() {
 	# captured to the execution log shown in the web UI.
 	start-stop-daemon -S -b -m -p "$PID_FILE" \
 		-N "${HIDWS_NICE:-5}" \
-		-- /bin/sh -c "exec /usr/bin/hidws \"$port\"$ssl_args >>\"$DAEMON_LOG\" 2>&1"
+		-- /bin/sh -c "exec /usr/bin/hidws \"$port\"$ssl_args$auth_args >>\"$DAEMON_LOG\" 2>&1"
 
 	sleep 1
 	if is_running; then
 		echo 'done.'
-		if echo "$ssl_args" | grep -q -- "--cert"; then
+		if [ -n "$HIDWS_TOKEN" ] || [ -n "$HIDWS_USER" ]; then
+			log "started hidws, listening on port $port (authentication enabled)"
+		elif echo "$ssl_args" | grep -q -- "--cert"; then
 			log "started hidws, listening on port $port (ws:// and wss://)"
 		else
 			log "started hidws, listening on port $port (ws://)"

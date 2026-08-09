@@ -1,6 +1,6 @@
-# hidws 1.2.7 (binaries only)
+# hidws 1.3.0 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
-  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.2.7`
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.3.0`
   - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
@@ -46,10 +46,38 @@ Useful to confirm access and to accept the one-time self-signed-cert exception
 for `wss://`: visit `https://192.168.178.1:9001/` once, accept the warning,
 then reconnect.
 
+## Access control (optional)
+
+All access control is **disabled by default** (open server, fully backwards
+compatible). It only activates when credentials are configured on the hidws
+web config page (`http://fritz.box:81/cgi-bin/conf/hidws`) or on the command
+line:
+
+- `--token SECRET` — bearer token; clients must authenticate with
+  `{"cmd":"auth","token":SECRET}` (or `?token=SECRET` in the WebSocket URL,
+  or an `Authorization: Bearer SECRET` header).
+- `--user USER --password PASS` — alternative user/password pair
+  (`{"cmd":"auth","user":...,"password":...}` or Basic auth header).
+- `--allow <ip|cidr>,...` — IPv4 allowlist (addresses and CIDR prefixes);
+  connections from any other address are dropped **before** the WebSocket
+  handshake.
+
+When enabled, sessions start **unauthenticated**: all HID commands
+(`list`, `open`, `send_report`, ...) are answered with
+`{"type":"error","message":"not authenticated"}` until the client
+authenticates. Success → `{"type":"auth_ok"}`; failure → `auth failed`
+(connection closed after 5 consecutive failures — brute-force guard).
+Constant-time secret comparison; the diagnostic page shows the auth/allowlist
+state.
+
+> For exposure beyond the LAN use `wss://` on top of the token: without TLS
+the token travels in clear text.
+
 ## Wire protocol (JSON over WebSocket)
 
 Client → Server:
 
+- `{"cmd":"auth","token":SECRET}` or `{"cmd":"auth","user":...,"password":...}`
 - `{"cmd":"list"}`
 - `{"cmd":"open","vendorId":<int>,"productId":<int>}`
 - `{"cmd":"send_report","reportId":<int>,"data":[...]}`
@@ -58,6 +86,7 @@ Client → Server:
 
 Server → Client:
 
+- `{"type":"auth_ok"}`
 - `{"type":"device_list","devices":[...]}`
 - `{"type":"opened","vendorId":...,"productId":...,"productName":"..."}`
 - `{"type":"input_report","reportId":<int>,"data":[...]}`
@@ -70,6 +99,10 @@ Server → Client:
 - On the router: `/usr/bin/hidws 9001` (serves `ws://fritz.box:9001`)
   or with a cert: `/usr/bin/hidws 9001 --cert /mod/etc/hidws/server.crt`
   (serves `ws://` **and** `wss://fritz.box:9001`)
+- With access control: `/usr/bin/hidws 9001 --token mysecret --allow 192.168.178.0/24`
+  — web apps must then send `{"cmd":"auth","token":"mysecret"}` (or use
+  `ws://fritz.box:9001/?token=mysecret`). Configured via the hidws web config
+  page (token/user/password/allow fields).
 - From a web app served locally or over HTTPS (avoid mixed content), connect
   to `ws://fritz.box:9001` or `wss://fritz.box:9001`
 - The HID device is released automatically when the client disconnects.

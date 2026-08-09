@@ -1,6 +1,6 @@
 # ja11-config
-  - Homepage: [https://github.com/Freetz-NG/freetz-ng](https://github.com/Freetz-NG/freetz-ng)
-  - Repository (source): [master/make/pkgs/ja11-config/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config/)
+  - Homepage / Repository (source): [https://github.com/Ircama/ja11-config](https://github.com/Ircama/ja11-config)
+  - Freetz-NG package: [master/make/pkgs/ja11-config/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config/)
   - Library: [master/make/libs/hidapi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/hidapi/)
   - Hardware: FiiO JA11 (JadeAudio JA11) / KT Micro KT02H20
   - Protocol reference: [Audiocular-Aura](https://github.com/mandy321/Audiocular-Aura)
@@ -208,7 +208,7 @@ hosts see the [udev rule](#udev-rule) below for non-root access.
 ### Interface layout
 
 ```
-  FiiO JA11 (KT02H20) - Full PEQ Configurator
+  FiiO JA11 (KT02H20) - PEQ Configurator
   CONNECTED: JadeAudio JA11  Global Preamp:6.0 dB  DAC Digital Filter:FAST-LL  All synced with device
   Band    Freq (Hz)     Gain (dB)     Q             Type      Status
 > 1       25            +3.5          0.70          PK        ON
@@ -233,7 +233,17 @@ hosts see the [udev rule](#udev-rule) below for non-root access.
                                  │                                    │                                    │
   -12 │                          │                                    │                                    │
        20                       100                                 1k                                   10k        20k
-  Press ? or h for full help
+
+  English    FiiO JA11 / KT02H20
+  === NAVIGATION ===                 === DEVICE ACTIONS ===       === PRESETS ===       === OTHER ===
+    Arrows  Move between bands/params   a  Apply changes to RAM       p  Save current preset  d  Reset to flat
+    +/-     Change value (coarse step)  s  (then S) Save to flash     P  Load preset          D  Reset to defaults
+    </>     Change value (fine step)    r  / R Reload config          K  Delete preset        q  / Q Quit
+    Space   Toggle band on/off          g  / G Set global gain
+    t       Cycle filter type (PK/LSQ)  f  / F Cycle DAC filter
+    Tab     Move fwd/back across cells  c  Connect / switch device
+    e       Edit value (popup)
+    l       Show HID log
 
 ```
 
@@ -255,8 +265,10 @@ It spans the full terminal width and its height adapts to the terminal size
 (up to 16 rows); the leftover vertical space is used by the help panel.
 
 The help panel at the bottom is drawn only if the terminal is tall enough;
-on small terminals it is replaced by a `Press ? or h for full help` hint, and
-the full, scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
+it uses a **multi-column, light-yellow layout** so all four sections
+(NAVIGATION, DEVICE ACTIONS, PRESETS, OTHER) fit at once. On small terminals
+it is replaced by a `Press ? or h for full help` hint, and the full,
+scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
 
 ### Controls reference
 
@@ -266,13 +278,15 @@ the full, scrollable help is available anytime with **`?`** / **`h`** / **`H`**.
 | ←/→           | Select parameter           | Move cursor between Freq, Gain, Q, Type columns.         |
 | `Tab`/`Shift+Tab` | Cycle cells (fwd/back) | Move forward/backward across all cells (band × Freq/Gain/Q/Type/Status). |
 | `+`/`-`       | Coarse adjust              | Change parameter by a large step (10 Hz, 1 dB, 0.1 Q); on Type it cycles the filter, on Status it toggles the band. |
-| `<`/`>` / `PgUp`/`PgDn` | Fine adjust | Change parameter by a small step (1 Hz, 0.5 dB, 0.01 Q). `PgUp` behaves like `<` (decrease), `PgDn` behaves like `>` (increase). |
+| `<`/`>` / `PgUp`/`PgDn` | Fine adjust | Change parameter by a small step (1 Hz, 0.5 dB, 0.01 Q). `PgUp` behaves like `<` (decrease), `PgDn` behaves like `>` (increase). Also works on the Type (cycles) and Status (toggles) columns. |
+| `Shift+PgUp` / `Shift+PgDn` | Fine adjust + apply | Change the value and apply it to the device immediately (like pressing `a` after changing). Works on the table and on the status-bar "strip" (global gain / DAC filter). |
 | `Space`       | Toggle band                | Enable/disable the selected band (bypass filter).        |
+| `y`/`Y`       | Toggle all bands           | If any band is on, switch every band off; if all are off, switch every band on. |
 | `t`/`T`       | Cycle filter type          | PK → LSQ → HSQ → PK …                                    |
-| `e`/`E`       | Edit value numerically     | Opens a popup pre-filled with the current value; edit digit-by-digit with the cursor, Enter confirms, Esc cancels. Applies to Freq/Gain/Q. |
+| `e`/`E`       | Edit value numerically     | Opens a popup pre-filled with the current value; edit digit-by-digit with the cursor (←/→ move, Backspace deletes), `PgUp`/`PgDn` step the value up/down, Enter confirms, Esc cancels. Applies to Freq/Gain/Q. |
 | `Enter`       | Edit current value         | Opens the same popup as `e`; on Type it cycles the filter type, on Status it toggles the band. |
 | `a`/`A`       | Apply to RAM               | Write all bands + gain + filter to device RAM (hear changes instantly). |
-| `s` then `S`  | Save to flash              | Apply + persist to flash. Confirms with a second keypress. |
+| `s` then `S`  | Save to flash              | Apply + persist to flash. Confirms with a second keypress (4-second window). |
 | `r`/`R`       | Read from device           | Discard local changes and re-read full config from DSP.  |
 | `g`/`G`       | Set global gain            | Opens the numeric popup pre-filled with the current preamp (-12…+12 dB); edit with the arrow keys, Enter confirms, Esc cancels. The change stays **pending** (the `** MODIFICATIONS NOT APPLIED **` warning is shown) until you press `a`. |
 | `f`/`F`       | Cycle DAC filter           | FAST-LL → FAST-PC → Slow-LL → Slow-PC → NON-OS → …; the change stays **pending** (the `** MODIFICATIONS NOT APPLIED **` warning is shown) until you press `a`. |
@@ -478,5 +492,6 @@ during a session, not as long-term storage. Save your configuration to flash
 
 ## See also
 
+- [ja11-config](https://github.com/Ircama/ja11-config) — Standalone source repository (the Freetz-NG package downloads it from there).
 - [hidapi](https://github.com/libusb/hidapi) — Library used for raw HID I/O.
 - [FiiO](https://www.fiio.com/) — Official product page for JA11.
