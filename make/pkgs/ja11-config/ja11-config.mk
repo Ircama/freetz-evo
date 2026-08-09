@@ -1,7 +1,11 @@
 $(call PKG_INIT_BIN, 1.0)
-### WEBSITE:=https://github.com/mandy321/Audiocular-Aura
-### CHANGES:=
-### CVSREPO:=
+$(PKG)_SOURCE_DOWNLOAD_NAME:=1.0.tar.gz
+$(PKG)_SOURCE:=$(pkg)-1.0.tar.gz
+$(PKG)_HASH:=a1af2092417c7d53b23807cb1a3ec5d53f05318d38108e1c12e3f8c12e1ed988
+$(PKG)_SITE:=https://github.com/Ircama/ja11-config/archive/refs/tags
+### WEBSITE:=https://github.com/Ircama/ja11-config
+### CHANGES:=https://github.com/Ircama/ja11-config/releases
+### CVSREPO:=https://github.com/Ircama/ja11-config
 
 $(PKG)_CATEGORY:=Flasher tools
 
@@ -19,7 +23,8 @@ $(PKG)_BINARY_JA11FLASH_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/ja11-flash
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_JA11_CONFIG
 
-$(PKG_LOCALSOURCE_PACKAGE)
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 $($(PKG)_BINARY_BUILD): $($(PKG)_DIR)/.configured
