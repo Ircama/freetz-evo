@@ -26,13 +26,13 @@ cgi_print_textline_p "cert" "${HIDWS_CERT:-/mod/etc/hidws/server.crt}" 40/160 \
 cgi_print_textline_p "key" "${HIDWS_KEY:-/mod/etc/hidws/server.key}" 40/160 \
 	"$(lang de:"Schlüsselpfad" en:"Private key path"): "
 cgi_print_textline_p "token" "$HIDWS_TOKEN" 40/128 \
-	"$(lang de:"Zugriffstoken (optional, --token)" en:"Access token (optional, --token)"): "
+	"$(lang de:"Zugriffstoken (optional)" en:"Access token (optional)"): "
 cgi_print_textline_p "user" "$HIDWS_USER" 20/64 \
-	"$(lang de:"Benutzer (optional, --user)" en:"User (optional, --user)"): "
+	"$(lang de:"Benutzer (optional)" en:"User (optional)"): "
 cgi_print_password_p "password" "$HIDWS_PASSWORD" 20/128 \
-	"$(lang de:"Passwort (optional, --password)" en:"Password (optional, --password)"): "
+	"$(lang de:"Passwort (optional)" en:"Password (optional)"): "
 cgi_print_textline_p "allow" "$HIDWS_ALLOW" 40/512 \
-	"$(lang de:"Erlaubte IPs/CIDRs (optional, --allow, kommagetrennt)" en:"Allowed IPs/CIDRs (optional, --allow, comma-separated)"): "
+	"$(lang de:"Erlaubte IPs/CIDRs (optional, kommagetrennt)" en:"Allowed IPs/CIDRs (optional, comma-separated)"): "
 <p><small>$(lang de:"Zugriffskontrolle ist standardmäßig deaktiviert. Wenn ein Token/Benutzer gesetzt ist, müssen sich die Web-Apps authentifizieren (Feld in der App oder ?token= in der URL)." en:"Access control is disabled by default. If a token/user is set, the web apps must authenticate (a field in the app, or ?token= in the URL).")</small></p>
 cat << EOF
 <p>

@@ -56,21 +56,22 @@ start() {
 		ssl_args=" --no-ssl"
 	fi
 
-	# Optional access control (hidws >= 1.3.0): --token / --user /
-	# --password / --allow. All empty by default -> open server
-	# (backwards compatible with hidws < 1.3.0 clients).
+	# Optional access control (hidws >= 1.3.1): token / user / password /
+	# allowlist. Secrets are written to a 0600 config file and passed to hidws
+	# via --config so they never show up in the process command line (ps
+	# output). All empty by default -> open server (backwards compatible with
+	# hidws < 1.3.0 clients).
 	auth_args=""
-	if [ -n "${HIDWS_TOKEN}" ]; then
-		auth_args="$auth_args --token \"$HIDWS_TOKEN\""
-	fi
-	if [ -n "${HIDWS_USER}" ]; then
-		auth_args="$auth_args --user \"$HIDWS_USER\""
-	fi
-	if [ -n "${HIDWS_PASSWORD}" ]; then
-		auth_args="$auth_args --password \"$HIDWS_PASSWORD\""
-	fi
-	if [ -n "${HIDWS_ALLOW}" ]; then
-		auth_args="$auth_args --allow \"$HIDWS_ALLOW\""
+	if [ -n "${HIDWS_TOKEN}" ] || [ -n "${HIDWS_USER}" ] || [ -n "${HIDWS_PASSWORD}" ] || [ -n "${HIDWS_ALLOW}" ]; then
+		conf_file="/mod/etc/hidws/hidws.conf"
+		mkdir -p "$(dirname "$conf_file")" 2>/dev/null
+		: > "$conf_file"
+		chmod 600 "$conf_file"
+		[ -n "${HIDWS_TOKEN}" ] && echo "token=${HIDWS_TOKEN}" >> "$conf_file"
+		[ -n "${HIDWS_USER}" ] && echo "user=${HIDWS_USER}" >> "$conf_file"
+		[ -n "${HIDWS_PASSWORD}" ] && echo "password=${HIDWS_PASSWORD}" >> "$conf_file"
+		[ -n "${HIDWS_ALLOW}" ] && echo "allow=${HIDWS_ALLOW}" >> "$conf_file"
+		auth_args=" --config \"$conf_file\""
 	fi
 
 	# Check whether the port is already bound by another process
@@ -93,7 +94,7 @@ start() {
 	sleep 1
 	if is_running; then
 		echo 'done.'
-		if [ -n "$HIDWS_TOKEN" ] || [ -n "$HIDWS_USER" ]; then
+		if [ -n "$HIDWS_TOKEN" ] || [ -n "$HIDWS_USER" ] || [ -n "$HIDWS_PASSWORD" ]; then
 			log "started hidws, listening on port $port (authentication enabled)"
 		elif echo "$ssl_args" | grep -q -- "--cert"; then
 			log "started hidws, listening on port $port (ws:// and wss://)"

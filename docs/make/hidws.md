@@ -1,6 +1,6 @@
-# hidws 1.3.0 (binaries only)
+# hidws 1.3.1 (binaries only)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
-  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.3.0`
+  - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.3.1`
   - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
@@ -50,17 +50,30 @@ then reconnect.
 
 All access control is **disabled by default** (open server, fully backwards
 compatible). It only activates when credentials are configured on the hidws
-web config page (`http://fritz.box:81/cgi-bin/conf/hidws`) or on the command
-line:
+web config page (`http://fritz.box:81/cgi-bin/conf/hidws`).
 
-- `--token SECRET` — bearer token; clients must authenticate with
+Credentials and the allowlist can be supplied through **three sources**
+(lowest to highest precedence):
+
+1. **Config file** — `--config FILE` (or the `HIDWS_CONFIG` env var) reads a
+   simple `key=value` file (`#` comments allowed):
+   `token=`, `user=`, `password=`, `allow=`.
+2. **Environment variables** — `HIDWS_TOKEN`, `HIDWS_USER`,
+   `HIDWS_PASSWORD`, `HIDWS_ALLOW` (comma-separated allowlist).
+3. **Command line** — `--token SECRET`, `--user USER --password PASS`,
+   `--allow <ip|cidr>,...`.
+
+In Freetz the `rc.hidws` init script writes the configured values to a
+**0600 config file** (`/mod/etc/hidws/hidws.conf`) and passes it with
+`--config`, so the secrets never appear in the process command line (`ps`).
+
+- `token` — bearer token; clients must authenticate with
   `{"cmd":"auth","token":SECRET}` (or `?token=SECRET` in the WebSocket URL,
   or an `Authorization: Bearer SECRET` header).
-- `--user USER --password PASS` — alternative user/password pair
+- `user`/`password` — alternative user/password pair
   (`{"cmd":"auth","user":...,"password":...}` or Basic auth header).
-- `--allow <ip|cidr>,...` — IPv4 allowlist (addresses and CIDR prefixes);
-  connections from any other address are dropped **before** the WebSocket
-  handshake.
+- `allow` — IPv4 allowlist (addresses and CIDR prefixes); connections from
+  any other address are dropped **before** the WebSocket handshake.
 
 When enabled, sessions start **unauthenticated**: all HID commands
 (`list`, `open`, `send_report`, ...) are answered with
@@ -99,8 +112,9 @@ Server → Client:
 - On the router: `/usr/bin/hidws 9001` (serves `ws://fritz.box:9001`)
   or with a cert: `/usr/bin/hidws 9001 --cert /mod/etc/hidws/server.crt`
   (serves `ws://` **and** `wss://fritz.box:9001`)
-- With access control: `/usr/bin/hidws 9001 --token mysecret --allow 192.168.178.0/24`
-  — web apps must then send `{"cmd":"auth","token":"mysecret"}` (or use
+- With access control: `/usr/bin/hidws 9001 --config /mod/etc/hidws/hidws.conf`
+  (rc.hidws builds this file from the web config page values) — web apps must
+  then send `{"cmd":"auth","token":"mysecret"}` (or use
   `ws://fritz.box:9001/?token=mysecret`). Configured via the hidws web config
   page (token/user/password/allow fields).
 - From a web app served locally or over HTTPS (avoid mixed content), connect
