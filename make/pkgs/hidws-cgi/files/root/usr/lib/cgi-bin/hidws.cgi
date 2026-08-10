@@ -33,7 +33,9 @@ cgi_print_password_p "password" "$HIDWS_PASSWORD" 20/128 \
 	"$(lang de:"Passwort (optional)" en:"Password (optional)"): "
 cgi_print_textline_p "allow" "$HIDWS_ALLOW" 40/512 \
 	"$(lang de:"Erlaubte IPs/CIDRs (optional, kommagetrennt)" en:"Allowed IPs/CIDRs (optional, comma-separated)"): "
+cat << EOF
 <p><small>$(lang de:"Zugriffskontrolle ist standardmäßig deaktiviert. Wenn ein Token/Benutzer gesetzt ist, müssen sich die Web-Apps authentifizieren (Feld in der App oder ?token= in der URL)." en:"Access control is disabled by default. If a token/user is set, the web apps must authenticate (a field in the app, or ?token= in the URL).")</small></p>
+EOF
 cat << EOF
 <p>
 <strong>$(lang de:"Status" en:"Status"):</strong>
