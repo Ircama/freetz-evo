@@ -45,7 +45,7 @@ New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walk
 
 ### Compatibility
 
-Packages available only in Freetz-EVO, and not in Freetz-NG, are compiled for MIPS, 32-bit x86, and 32-bit ARM architectures using GCC 13.4.0 and uClibc 1.0.58. Packages inherited from Freetz-NG retain the compatibility of their original Freetz-NG implementations.
+Packages available only in Freetz-EVO, and not in Freetz-NG, are compiled for MIPS, 32-bit x86, and 32-bit ARM architectures using GCC >= 13.4.0 and uClibc >= 1.0.58. Packages inherited from Freetz-NG retain the compatibility of their original Freetz-NG implementations.
 
 All Freetz-EVO-only packages are currently developed and tested on an AVM FRITZ!Box 7590 AX running FRITZ!OS 8.25.
 

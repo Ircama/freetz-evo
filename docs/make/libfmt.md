@@ -11,4 +11,4 @@ libfmt is a modern C++ formatting library that provides a fast, safe alternative
 Requires uClibc 1.0.58 or newer: it uses C++ features not supported by
 the old GCC/uClibc toolchains (0.9.x, 1.0.14), which fail to compile
 `include/fmt/base.h`. The option is disabled on older toolchains
-(`FREETZ_TARGET_UCLIBC_1_0_58`).
+(`FREETZ_TARGET_UCLIBC_1_0_58_MIN`).

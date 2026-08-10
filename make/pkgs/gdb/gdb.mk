@@ -1,4 +1,8 @@
 $(call PKG_INIT_BIN, $(if $(FREETZ_GDB_VERSION_6_8),6.8,$(if $(FREETZ_GDB_VERSION_7_9),7.9.1,17.1)))
+# gdb 17.1 requires a C++17 compiler (absent on GCC 5.5/uClibc 0.9.x-1.0.14):
+# gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, so older
+# toolchains fall back to gdb 7.9.1 (6.8/7.9.1 are unaffected). No regression
+# for uClibc >= 1.0.58, where 17.1 remains selectable.
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION)$(if $(FREETZ_GDB_VERSION_6_8),a).tar.$(if $(FREETZ_GDB_VERSION_6_8),bz2,xz)
 $(PKG)_HASH_6.8   :=14cce3c259eb3563543a414fbf0f6b9dee4d7f2d1e89a2d8258b6918363ca522
 $(PKG)_HASH_7.9.1 :=cd9c543a411a05b2b647dd38936034b68c2b5d6f10e0d51dc168c166c973ba40

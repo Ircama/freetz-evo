@@ -1,6 +1,6 @@
 config FREETZ_LIB_libexiv2
 	bool "exiv2 (image metadata library)"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libexpat
 	select FREETZ_LIB_libz
 	default n

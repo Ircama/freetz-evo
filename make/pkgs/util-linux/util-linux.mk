@@ -4,7 +4,7 @@ $(PKG)_CATEGORY:=Disk Tools
 
 # util-linux 2.41 requires a recent toolchain: it fails to build on the old
 # GCC/uClibc toolchains (0.9.x, 1.0.14). The 2.41 version choice is gated by
-# "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, so older toolchains
+# "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, so older toolchains
 # fall back to the legacy 2.27.1 build.
 
 # Legacy version 2.27.1 (minimal, with patches)

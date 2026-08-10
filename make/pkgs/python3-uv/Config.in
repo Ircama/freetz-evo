@@ -1,7 +1,7 @@
 config FREETZ_PACKAGE_PYTHON3_UV
 	bool "uv 0.11.16"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		uv 0.11.16

@@ -1,6 +1,6 @@
 config FREETZ_PACKAGE_ATUIN
 	bool "atuin 18.16.1"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		atuin utility package built from source using Rust/Cargo.

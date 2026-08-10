@@ -1,6 +1,6 @@
 config FREETZ_LIB_libffmpegthumbnailer
 	bool "libffmpegthumbnailer (video thumbnail generator)"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libavcodec
 	select FREETZ_LIB_libavformat
 	select FREETZ_LIB_libavutil

@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, 1.1.1)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
-# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in (fails on 0.9.x/1.0.14).
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v1.1.1.tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=cf3570c396ba36987059729f2704a88b87e4f154914062cf390b038694496be9

@@ -19,7 +19,7 @@ if FREETZ_PACKAGE_FFMPEG
 			bool "7.1.1"
 			depends on !FREETZ_TARGET_GCC_4_MAX
 			depends on !FREETZ_PACKAGE_MEDIATOMB
-			depends on FREETZ_TARGET_UCLIBC_1_0_58
+			depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 			help
 				FFmpeg 7.1.1 requires uClibc 1.0.58 or newer: its
 				configure checks for C11 static assertions using

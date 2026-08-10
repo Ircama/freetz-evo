@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, 5.0.5)
 # pdns-recursor uses a Rust/Cargo build (via 650-rust-cargo.mk below): it
-# requires a recent toolchain, gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58"
+# requires a recent toolchain, gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN"
 # in Config.in (in addition to FREETZ_TARGET_GCC_8_MIN).
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
 $(PKG)_HASH:=02b9f053db64b32bd76ce6656cb35772c1d07a21fe0345ec13adb6f0fcfbf9ce

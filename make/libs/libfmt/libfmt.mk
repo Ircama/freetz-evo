@@ -4,7 +4,7 @@ $(PKG)_LIB_VERSION:=12.2.0
 # libfmt 12.x requires a recent toolchain: it uses C++ features not
 # supported by the old GCC/uClibc toolchains (0.9.x, 1.0.14), which fail to
 # compile include/fmt/base.h. The option is therefore gated by "depends on
-# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, which disables it on older
 # toolchains.
 
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz

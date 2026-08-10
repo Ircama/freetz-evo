@@ -4,7 +4,7 @@ comment "PowerDNS Recursor 5.0.5 (requires GCC 8+/C++17)"
 menuconfig FREETZ_PACKAGE_PDNS_RECURSOR
 	bool "PowerDNS Recursor 5.0.5"
 	depends on FREETZ_TARGET_GCC_8_MIN
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_libatomic if FREETZ_TARGET_ARCH_MIPS && FREETZ_TARGET_GCC_4_8_MIN
 	select FREETZ_LIB_libcrypto

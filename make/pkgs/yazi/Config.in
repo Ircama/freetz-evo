@@ -1,6 +1,6 @@
 config FREETZ_PACKAGE_YAZI
 	bool "yazi 26.5.6"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		yazi utility package built from source using Rust/Cargo.

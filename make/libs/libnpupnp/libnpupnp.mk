@@ -4,7 +4,7 @@ $(PKG)_LIB_VERSION:=13.3.2
 # libnpupnp 6.3.0 requires a recent toolchain: it uses C++17
 # std::scoped_lock (upnpapi.h), which the old GCC toolchains (uClibc 0.9.x,
 # 1.0.14) do not support. The option is therefore gated by "depends on
-# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, which disables it on older
 # toolchains.
 
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz

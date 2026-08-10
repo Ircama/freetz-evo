@@ -1,6 +1,6 @@
 config FREETZ_PACKAGE_GITUI
 	bool "gitui 0.28.1"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		gitui utility package built from source using Rust/Cargo.

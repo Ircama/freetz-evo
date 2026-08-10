@@ -5,7 +5,7 @@ $(PKG)_LIB_VERSION:=4.15.1
 # std::to_string/std::stoi, which the old uClibc toolchains (0.9.x, 1.0.14)
 # do not provide (libstdc++ disables them when _GLIBCXX_USE_C99 is not
 # defined for the C library). The option is therefore gated by "depends on
-# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, which disables it on older
 # toolchains.
 
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz

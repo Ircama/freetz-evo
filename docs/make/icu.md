@@ -11,4 +11,4 @@ ICU (International Components for Unicode) provides robust and full-featured Uni
 Requires uClibc 1.0.58 or newer. ICU 76.x uses C++17 `auto` non-type
 template parameters that the old GCC toolchains (uClibc 0.9.x, 1.0.14)
 cannot compile, so the option is disabled on older toolchains
-(`FREETZ_TARGET_UCLIBC_1_0_58`).
+(`FREETZ_TARGET_UCLIBC_1_0_58_MIN`).

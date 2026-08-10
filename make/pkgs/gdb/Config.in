@@ -5,7 +5,7 @@ if FREETZ_PACKAGE_GDB
 
 	choice
 		prompt "version"
-		default FREETZ_GDB_VERSION_7_9 if FREETZ_TARGET_GCC_4_6
+		default FREETZ_GDB_VERSION_7_9 if FREETZ_TARGET_GCC_4_6 || !FREETZ_TARGET_UCLIBC_1_0_58_MIN
 		default FREETZ_GDB_VERSION_17_1
 		help
 			Select the version of gdb you wish to use.
@@ -19,6 +19,12 @@ if FREETZ_PACKAGE_GDB
 		config FREETZ_GDB_VERSION_17_1
 			bool "gdb 17.1"
 			depends on !FREETZ_TARGET_GCC_4_6
+			depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+			help
+				gdb 17.1 requires a C++17 compiler. The old GCC 5.5
+				toolchain (uClibc 1.0.14 and older) does not support
+				C++17, so it is only selectable with uClibc 1.0.58
+				or newer. On older toolchains use gdb 7.9.1 instead.
 	endchoice
 
 	config FREETZ_PACKAGE_GDB_GDB

@@ -1,6 +1,6 @@
 config FREETZ_LIB_libfmt
 	bool "fmt (C++ formatting library)"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		libfmt is a modern C++ formatting library providing

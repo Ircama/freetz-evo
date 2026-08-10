@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 18.16.1)
 
 # atuin 18.16.1 requires a recent toolchain: the Rust/Cargo cross-build
 # fails on the old GCC/uClibc toolchains (0.9.x, 1.0.14). The option is
-# therefore gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in
+# therefore gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in
 # Config.in, which disables it on older toolchains.
 
 include $(MAKE_DIR)/include/650-rust-cargo.mk

@@ -3,7 +3,7 @@ $(PKG)_CATEGORY:=Data Migration and Disaster Recovery
 
 # partclone requires uClibc 1.0.58 or newer: it needs libblkid from
 # util-linux 2.41, which is unavailable on older toolchains. The option is
-# gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in.
+# gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in.
 
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz

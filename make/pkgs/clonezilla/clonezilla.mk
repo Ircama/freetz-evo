@@ -3,7 +3,7 @@ $(PKG)_CATEGORY:=Data Migration and Disaster Recovery
 
 # clonezilla requires uClibc 1.0.58 or newer: it depends on fsarchiver and
 # partclone, which need libblkid from util-linux 2.41. The option is gated
-# by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in.
+# by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in.
 
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=clonezilla-v$($(PKG)_VERSION).tar.gz

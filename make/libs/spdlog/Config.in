@@ -1,6 +1,6 @@
 config FREETZ_LIB_libspdlog
 	bool "spdlog (C++ logging library)"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libfmt
 	default n
 	help

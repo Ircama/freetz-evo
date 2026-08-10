@@ -1,7 +1,7 @@
 config FREETZ_PACKAGE_PYTHON3_ORJSON
 	bool "orjson 3.11.9"
 	depends on FREETZ_PACKAGE_PYTHON3
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		Fast, correct Python JSON library supporting dataclasses,

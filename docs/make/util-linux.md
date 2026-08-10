@@ -40,7 +40,7 @@ This package is available in two versions:
 - **Patches**: 1 Freetz-specific patch
   - `0905-blkid_mtdworkaround.freetz.patch` - Skip MTD devices in blkid probe
 - **Constraints**: 
-  - Requires uClibc 1.0.58 or newer (`FREETZ_TARGET_UCLIBC_1_0_58`); on older toolchains the version choice falls back to the legacy 2.27.1 build
+  - Requires uClibc 1.0.58 or newer (`FREETZ_TARGET_UCLIBC_1_0_58_MIN`); on older toolchains the version choice falls back to the legacy 2.27.1 build
   - Not available with uClibc 0.9.28/0.9.29
 - **Use case**: Modern devices (AVM 07.XX+), full disk/filesystem management capabilities
 - **Size**: Larger footprint (~200KB total for all utilities)

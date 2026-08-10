@@ -1,6 +1,6 @@
 config FREETZ_PACKAGE_NCMPCPP
 	bool "ncmpcpp 0.9.2"
-	depends on FREETZ_TARGET_UCLIBC_1_0_58
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libmpdclient
 	select FREETZ_LIB_libncursesw
 	select FREETZ_LIB_libcurl

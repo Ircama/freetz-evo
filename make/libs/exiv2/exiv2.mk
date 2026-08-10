@@ -4,7 +4,7 @@ $(PKG)_LIB_VERSION:=0.28.8
 # exiv2 0.28.x requires a recent toolchain: older uClibc versions (0.9.x,
 # 1.0.14) fail to compile the upstream headers due to -Werror=sign-compare
 # warnings. The option is therefore gated by "depends on
-# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, which disables it on older
 # toolchains.
 
 $(PKG)_SOURCE:=v$($(PKG)_VERSION).tar.gz
