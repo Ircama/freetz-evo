@@ -1,5 +1,12 @@
 $(call PKG_INIT_LIB, 0.28.8)
 $(PKG)_LIB_VERSION:=0.28.8
+
+# exiv2 0.28.x requires a recent toolchain: older uClibc versions (0.9.x,
+# 1.0.14) fail to compile the upstream headers due to -Werror=sign-compare
+# warnings. The option is therefore gated by "depends on
+# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# toolchains.
+
 $(PKG)_SOURCE:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=ea51b0609f58a9afa063b60daa1539948b62247721e154f4fff0ad3aec9f9756
 $(PKG)_SITE:=https://github.com/Exiv2/exiv2/archive/refs/tags

@@ -121,7 +121,7 @@ if FREETZ_PACKAGE_GERBERA
 
 	config FREETZ_PACKAGE_GERBERA_WITH_EXIV2
 		bool "Enable Exiv2 image metadata extraction"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libexiv2
 		default n
 		help

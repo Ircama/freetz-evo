@@ -20,7 +20,7 @@ Freetz-EVO includes:
 - over 70 python3 packages, including Rust support,
 - over 70 libraries,
 - over 40 improved packages and libraries,
-- USB audio stack, extensive playback and recording tools, local playlist management and web radio functions,
+- USB audio stack, extensive playback and recording tools, local playlist management and web radio functions — see the [Audio Subsystem](docs/AUDIO.md),
 - hidapi support for HID-Class USB device access and ja11-config support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs (TUI EQ configurator plus ja11-boot/ja11-flash firmware update),
 - X11 client libraries and tools,
 - microcontroller flasher tools to enable USB peripheral devices.
@@ -43,11 +43,13 @@ repository: upstream fixes, new firmware support, and toolchain updates are peri
 
 New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walks you through the complete workflow: setting up a Linux build environment (including WSL on Windows), configuring the firmware, building it, and flashing your device.
 
-### Improvements over Freetz-NG
+### Compatibility
 
-Note: all new packages are currently developed and tested on an AVM FRITZ!Box 7590 AX with firmware FRITZ!OS 8.25.
+Packages available only in Freetz-EVO, and not in Freetz-NG, are compiled for MIPS, 32-bit x86, and 32-bit ARM architectures using GCC 13.4.0 and uClibc 1.0.58. Packages inherited from Freetz-NG retain the compatibility of their original Freetz-NG implementations.
 
-Freetz-EVO is still in development.
+All Freetz-EVO-only packages are currently developed and tested on an AVM FRITZ!Box 7590 AX running FRITZ!OS 8.25.
+
+Freetz-EVO is still under development.
 
 #### UX and Web Interface
 
