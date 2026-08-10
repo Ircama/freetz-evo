@@ -1,5 +1,6 @@
 menuconfig FREETZ_PACKAGE_GERBERA
 	bool "Gerbera (UPnP media server)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_PACKAGE_SQLITE
 	select FREETZ_LIB_libupnp
 	select FREETZ_LIB_libfmt
@@ -11,6 +12,8 @@ menuconfig FREETZ_PACKAGE_GERBERA
 	help
 		Gerbera is a UPnP media server that streams your media
 		to UPnP/DLNA clients (smart TVs, game consoles, etc.).
+		
+		Requires uClibc 1.0.58 or newer (C++17 toolchain).
 		
 		Features:
 		- UPnP AV MediaServer v1.0 compliant
@@ -88,7 +91,7 @@ if FREETZ_PACKAGE_GERBERA
 
 	config FREETZ_PACKAGE_GERBERA_WITH_TAGLIB
 		bool "Enable TagLib metadata extraction (libtag)"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libtag
 		default n
 		help
@@ -105,7 +108,7 @@ if FREETZ_PACKAGE_GERBERA
 
 	config FREETZ_PACKAGE_GERBERA_WITH_NPUPNP
 		bool "Use libnpupnp instead of libupnp"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libnpupnp
 		default n
 		help
@@ -113,7 +116,7 @@ if FREETZ_PACKAGE_GERBERA
 
 	config FREETZ_PACKAGE_GERBERA_WITH_FFMPEGTHUMBNAILER
 		bool "Enable FFmpeg video thumbnails"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libffmpegthumbnailer
 		default n
 		help
@@ -145,7 +148,7 @@ if FREETZ_PACKAGE_GERBERA
 
 	config FREETZ_PACKAGE_GERBERA_WITH_ICU
 		bool "Enable ICU charset support"
-		depends on FREETZ_PACKAGE_GERBERA_DAEMON
+		depends on FREETZ_PACKAGE_GERBERA_DAEMON && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libicu
 		default n
 		help

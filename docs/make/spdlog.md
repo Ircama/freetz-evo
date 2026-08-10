@@ -4,5 +4,9 @@
   - Provides: `libspdlog.so` — Fast C++ logging library
   - Used by: `gerbera`
   - Externalization: supported
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 spdlog is a very fast, header-only/compiled C++ logging library. Built with `-DSPDLOG_FMT_EXTERNAL=ON` to use the external libfmt instead of bundling its own.
+
+Requires uClibc 1.0.58 or newer (it depends on libfmt, which is also
+gated on the same toolchain).

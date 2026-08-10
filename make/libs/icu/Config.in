@@ -1,5 +1,6 @@
 config FREETZ_LIB_libicu
 	bool "ICU (International Components for Unicode)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_STDCXXLIB_WITH_WCHAR
 	default n
@@ -7,5 +8,8 @@ config FREETZ_LIB_libicu
 		ICU is a mature, widely used set of C/C++ and Java libraries
 		providing Unicode and Globalization support for software applications.
 		WARNING: ICU is very large (~30MB source, hundreds of MB compiled).
+		
+		Requires uClibc 1.0.58 or newer (ICU 76.x uses C++17 features not
+		supported by the older GCC toolchains).
 		
 		https://icu.unicode.org/

@@ -1,10 +1,14 @@
 config FREETZ_LIB_libnpupnp
 	bool "libnpupnp (NPUPnP - modern UPnP library)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_libcurl
 	select FREETZ_LIB_libmicrohttpd
 	default n
 	help
 		libnpupnp is a new generation UPnP library based on libupnp,
 		providing better performance and modern TLS support.
+		
+		Requires uClibc 1.0.58 or newer (it uses C++17
+		std::scoped_lock, not supported by the older toolchains).
 		
 		https://www.lesbonscomptes.com/upmpdcli/pages/downloads.html

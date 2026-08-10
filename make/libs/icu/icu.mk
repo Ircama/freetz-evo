@@ -1,5 +1,12 @@
 $(call PKG_INIT_LIB, 76.1)
 $(PKG)_LIB_VERSION:=76.1
+
+# ICU 76.x requires a recent toolchain: it uses C++17 "auto" non-type
+# template parameters (localpointer.h) which the old GCC toolchains (uClibc
+# 0.9.x, 1.0.14) do not support. The option is therefore gated by "depends
+# on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# toolchains.
+
 $(PKG)_SOURCE:=icu4c-$(subst .,_,$($(PKG)_VERSION))-src.tgz
 $(PKG)_HASH:=dfacb46bfe4747410472ce3e1144bf28a102feeaa4e3875bac9b4c6cf30f4f3e
 $(PKG)_SITE:=https://github.com/unicode-org/icu/releases/download/release-$(subst .,-,$($(PKG)_VERSION))

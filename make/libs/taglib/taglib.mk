@@ -1,5 +1,12 @@
 $(call PKG_INIT_LIB, 2.3)
 $(PKG)_LIB_VERSION:=2.3.0
+
+# taglib 2.3 requires a recent toolchain: it fails to compile on the old
+# GCC/uClibc toolchains (0.9.x, 1.0.14) with errors in taglib/toolkit/
+# (e.g. tlist.tcc). The option is therefore gated by "depends on
+# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# toolchains.
+
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=7349f6fd942418bc7009ebe743eb7c9d055f02921ec56fa436ec25007c47fd38
 $(PKG)_SITE:=https://github.com/taglib/taglib/releases/download/v$($(PKG)_VERSION)

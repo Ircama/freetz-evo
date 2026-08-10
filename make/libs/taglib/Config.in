@@ -1,5 +1,6 @@
 config FREETZ_LIB_libtag
 	bool "taglib (libtag.so)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_STDCXXLIB_WITH_WCHAR
 	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
@@ -10,5 +11,8 @@ config FREETZ_LIB_libtag
 		popular audio formats. Currently it supports both ID3v1 and ID3v2
 		for MP3 files, Ogg Vorbis comments and ID3 tags and Vorbis comments
 		in FLAC, MPC, Speex, WavPack TrueAudio, WAV, AIFF, MP4 and ASF files.
+		
+		Requires uClibc 1.0.58 or newer (taglib 2.3 fails to compile
+		on the older toolchains).
 		
 		https://taglib.org/

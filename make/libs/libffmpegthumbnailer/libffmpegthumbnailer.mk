@@ -1,5 +1,13 @@
 $(call PKG_INIT_LIB, 2.2.3)
 $(PKG)_LIB_VERSION:=4.15.1
+
+# libffmpegthumbnailer 2.2.3 requires a recent toolchain: it uses C++11
+# std::to_string/std::stoi, which the old uClibc toolchains (0.9.x, 1.0.14)
+# do not provide (libstdc++ disables them when _GLIBCXX_USE_C99 is not
+# defined for the C library). The option is therefore gated by "depends on
+# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# toolchains.
+
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=8c9b9057c6cc8bce9d11701af224c8139c940f734c439a595525e073b09d19b8

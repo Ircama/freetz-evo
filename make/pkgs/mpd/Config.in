@@ -80,7 +80,7 @@ if FREETZ_PACKAGE_MPD
 
 	config FREETZ_PACKAGE_MPD_WITH_ICU
 		bool "Enable ICU (Unicode) support"
-		depends on FREETZ_SHOW_DEVELOPER
+		depends on FREETZ_SHOW_DEVELOPER && FREETZ_TARGET_UCLIBC_1_0_58
 		select FREETZ_LIB_libicu
 		default n
 		help

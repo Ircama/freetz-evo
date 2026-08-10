@@ -9,6 +9,7 @@
   - Build-only dependencies: Boost (date_time, system, filesystem, thread, program_options, regex, atomic) — statically linked
   - Provides: `/usr/bin/ncmpcpp`
   - Externalization: supported
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 `ncmpcpp` is a feature-rich ncurses-based MPD client and a successor/alternative to `ncmpc`. It extends the classic MPD client experience with a tag editor, media library browser, advanced playlist management, search functionality, clock display, configurable outputs screen, and a built-in audio visualizer.
 

@@ -1,5 +1,11 @@
 $(call PKG_INIT_LIB, 1.17.0)
 $(PKG)_LIB_VERSION:=1.17.0
+
+# spdlog requires a recent toolchain (and selects libfmt, which is also
+# gated). The option is therefore gated by "depends on
+# FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables it on older
+# toolchains.
+
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=d8862955c6d74e5846b3f580b1605d2428b11d97a410d86e2fb13e857cd3a744

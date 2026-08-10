@@ -1,5 +1,6 @@
 config FREETZ_LIB_libffmpegthumbnailer
 	bool "libffmpegthumbnailer (video thumbnail generator)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_libavcodec
 	select FREETZ_LIB_libavformat
 	select FREETZ_LIB_libavutil
@@ -8,5 +9,9 @@ config FREETZ_LIB_libffmpegthumbnailer
 	help
 		libffmpegthumbnailer is a library for generating thumbnail
 		images from video files, using FFmpeg for decoding.
+		
+		Requires uClibc 1.0.58 or newer (it uses C++11
+		std::to_string/std::stoi, which older uClibc toolchains do
+		not provide).
 		
 		https://github.com/dirkvdb/ffmpegthumbnailer
