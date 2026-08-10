@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_PARTCLONE
 	bool "partclone 0.3.31 (binary only)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_libcrypto
 	select FREETZ_LIB_libblkid
 	select FREETZ_LIB_libcom_err
@@ -13,3 +14,6 @@ config FREETZ_PACKAGE_PARTCLONE
 		This package installs generic engines plus extended filesystem
 		backends (extfs, xfs, ntfs, btrfs, exfat, f2fs, fat, minix, apfs,
 		hfsp) and ncursesw support.
+		
+		Requires uClibc 1.0.58 or newer (needs libblkid from
+		util-linux 2.41, which is unavailable on older toolchains).

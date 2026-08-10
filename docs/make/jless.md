@@ -1,4 +1,5 @@
 # jless 0.9.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/PaulJuliusMartinez/jless](https://github.com/PaulJuliusMartinez/jless)
   - Changelog: [https://github.com/PaulJuliusMartinez/jless/releases](https://github.com/PaulJuliusMartinez/jless/releases)
   - Repository: [https://github.com/PaulJuliusMartinez/jless](https://github.com/PaulJuliusMartinez/jless)

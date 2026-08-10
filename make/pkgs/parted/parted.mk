@@ -9,7 +9,13 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CVSREPO:=https://git.savannah.gnu.org/cgit/parted.git
 ### STEWARD:=Ircama
 
+# uClibc without full locale support (0.9.32, 1.0.14) fails to build
+# libparted/labels/atari.c: isalnum_l/newlocale/freelocale require the complete
+# locale API (incomplete 'struct __uclibc_locale_struct'). The
+# 130-atari-no-locale-api patch removes that usage and falls back to plain
+# isalnum. uClibc 1.0.58 has full locale support -> no patch needed.
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(and $(FREETZ_TARGET_ARCH_MIPS),$(FREETZ_TARGET_GCC_4_6),$(FREETZ_TARGET_UCLIBC_0_9_32)),gcc-4.6-uclibc-0.9.32)
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_TARGET_UCLIBC_1_0_14),uclibc-1.0.14)
 
 $(PKG)_BINARIES_ALL := parted partprobe
 $(PKG)_BINARIES := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))

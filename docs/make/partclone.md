@@ -1,4 +1,5 @@
 # partclone 0.3.31 (binary only)
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/Thomas-Tsai/partclone](https://github.com/Thomas-Tsai/partclone)
   - Manpage: [https://partclone.org/](https://partclone.org/)
   - Changelog: [https://github.com/Thomas-Tsai/partclone/releases](https://github.com/Thomas-Tsai/partclone/releases)

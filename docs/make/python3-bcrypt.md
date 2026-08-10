@@ -1,4 +1,5 @@
 # bcrypt 3.2.2
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/pyca/bcrypt/](https://github.com/pyca/bcrypt/)
   - Changelog: [https://github.com/pyca/bcrypt/releases](https://github.com/pyca/bcrypt/releases)
   - Repository: [https://github.com/pyca/bcrypt](https://github.com/pyca/bcrypt)

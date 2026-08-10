@@ -1,4 +1,5 @@
 # Disk Management (disk-mgmt)
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Package: [master/make/pkgs/disk-mgmt-cgi/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/disk-mgmt-cgi/)
   - CGI: `/usr/lib/cgi-bin/disk-mgmt.cgi`
   - Init script: `/etc/init.d/rc.disk-mgmt`

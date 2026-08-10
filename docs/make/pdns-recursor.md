@@ -1,4 +1,5 @@
 # PowerDNS Recursor 5.0.5
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://www.powerdns.com/recursor.html](https://www.powerdns.com/recursor.html)
   - Manpage: [https://doc.powerdns.com/recursor/](https://doc.powerdns.com/recursor/)
   - Changelog: [https://doc.powerdns.com/recursor/changelog/](https://doc.powerdns.com/recursor/changelog/)

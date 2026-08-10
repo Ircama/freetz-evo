@@ -1,4 +1,5 @@
 # clonezilla 5.15.23 (script bundle)
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://clonezilla.org/](https://clonezilla.org/)
   - Manpage: [https://clonezilla.org/clonezilla-live.php](https://clonezilla.org/clonezilla-live.php)
   - Changelog: [https://github.com/stevenshiau/clonezilla/tags](https://github.com/stevenshiau/clonezilla/tags)

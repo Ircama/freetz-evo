@@ -1,4 +1,5 @@
 # termscp 1.0.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/veeso/termscp](https://github.com/veeso/termscp)
   - Changelog: [https://github.com/veeso/termscp/releases](https://github.com/veeso/termscp/releases)
   - Repository: [https://github.com/veeso/termscp](https://github.com/veeso/termscp)

@@ -1,4 +1,5 @@
 # eza 0.23.4
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/eza-community/eza](https://github.com/eza-community/eza)
   - Changelog: [https://github.com/eza-community/eza/releases](https://github.com/eza-community/eza/releases)
   - Repository: [https://github.com/eza-community/eza](https://github.com/eza-community/eza)

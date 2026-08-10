@@ -1,4 +1,5 @@
 # fsarchiver 0.8.9 (binary only)
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://www.fsarchiver.org/](https://www.fsarchiver.org/)
   - Manpage: [https://www.fsarchiver.org/](https://www.fsarchiver.org/)
   - Changelog: [https://github.com/fdupoux/fsarchiver/releases](https://github.com/fdupoux/fsarchiver/releases)

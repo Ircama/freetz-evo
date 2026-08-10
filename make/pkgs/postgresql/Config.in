@@ -1,11 +1,15 @@
 config FREETZ_PACKAGE_POSTGRESQL
 	bool "PostgreSQL 16.3 (client tools)"
 	depends on FREETZ_TARGET_GCC_4_8_MIN
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_LIB_libpq
 	default n
 	help
 		PostgreSQL client package.
 		Installs psql and links against libpq.
+		
+		Requires uClibc 1.0.58 or newer (PostgreSQL 16.3 fails to
+		build on the older toolchains).
 
 if FREETZ_PACKAGE_POSTGRESQL
 

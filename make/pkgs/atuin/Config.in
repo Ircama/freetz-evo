@@ -1,5 +1,9 @@
 config FREETZ_PACKAGE_ATUIN
 	bool "atuin 18.16.1"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	default n
 	help
 		atuin utility package built from source using Rust/Cargo.
+		
+		Requires uClibc 1.0.58 or newer (the Rust/Cargo
+		cross-build is not supported on the older toolchains).

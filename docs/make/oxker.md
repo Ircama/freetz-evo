@@ -1,4 +1,5 @@
 # oxker 0.13.2
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/mrjackwills/oxker](https://github.com/mrjackwills/oxker)
   - Changelog: [https://github.com/mrjackwills/oxker/releases](https://github.com/mrjackwills/oxker/releases)
   - Repository: [https://github.com/mrjackwills/oxker](https://github.com/mrjackwills/oxker)

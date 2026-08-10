@@ -1,6 +1,7 @@
 config FREETZ_PACKAGE_CLONEZILLA
 	bool "clonezilla 5.15.23 (script bundle)"
 	depends on FREETZ_PACKAGE_BASH && !FREETZ_PACKAGE_BASH_MINIMAL
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	select FREETZ_BUSYBOX_DD
 	select FREETZ_PACKAGE_DIALOG
 	select FREETZ_UTIL_LINUX_MOUNTPOINT
@@ -16,3 +17,6 @@ config FREETZ_PACKAGE_CLONEZILLA
 		Clonezilla script bundle for disk/partition cloning workflows.
 		This package installs DRBL/Clonezilla scripts under /usr/share/drbl
 		and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly).
+		
+		Requires uClibc 1.0.58 or newer (depends on fsarchiver and
+		partclone, which need libblkid from util-linux 2.41).

@@ -7,6 +7,7 @@
 
   - Provides: `libpq.so.5.16`
   - Externalization: supported
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 This package exports the PostgreSQL client runtime (`libpq`) used by target-side
 software that needs PostgreSQL connectivity and can optionally install a minimal

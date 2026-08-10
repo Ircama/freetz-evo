@@ -1,4 +1,5 @@
 # gitui 0.28.1
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/extrawurst/gitui](https://github.com/extrawurst/gitui)
   - Changelog: [https://github.com/extrawurst/gitui/releases](https://github.com/extrawurst/gitui/releases)
   - Repository: [https://github.com/extrawurst/gitui](https://github.com/extrawurst/gitui)

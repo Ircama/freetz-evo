@@ -1,5 +1,11 @@
 $(call PKG_INIT_BIN, 16.3)
 $(PKG)_LIB_VERSION:=5.16
+
+# PostgreSQL 16.3 requires a recent toolchain: it fails to build on the
+# old GCC/uClibc toolchains (0.9.x, 1.0.14). The option is therefore gated
+# by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, which disables
+# it on older toolchains.
+
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=bd3798c399bc1b6d08b94340f9dd7a75a30a7fa076788ef2f4848be2be6a5fc5
 $(PKG)_SITE:=https://ftp.postgresql.org/pub/source/v$($(PKG)_VERSION)

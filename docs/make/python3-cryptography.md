@@ -1,4 +1,5 @@
 # cryptography 48.0.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://cryptography.io/](https://cryptography.io/)
   - Manpage: [https://cryptography.io/en/latest/](https://cryptography.io/en/latest/)
   - Changelog: [https://cryptography.io/en/latest/changelog/](https://cryptography.io/en/latest/changelog/)

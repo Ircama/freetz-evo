@@ -1,4 +1,5 @@
 # lnav 0.14.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://lnav.org/](https://lnav.org/)
   - Manpage: [https://docs.lnav.org/](https://docs.lnav.org/)
   - Changelog: [https://github.com/tstack/lnav/releases](https://github.com/tstack/lnav/releases)

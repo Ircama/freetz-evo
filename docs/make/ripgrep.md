@@ -1,4 +1,5 @@
 # ripgrep 15.1.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)
   - Manpage: [https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
   - Changelog: [https://github.com/BurntSushi/ripgrep/releases](https://github.com/BurntSushi/ripgrep/releases)

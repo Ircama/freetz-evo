@@ -1,4 +1,5 @@
 # ncspot 1.3.4
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/hrkfdn/ncspot](https://github.com/hrkfdn/ncspot)
   - Changelog: [https://github.com/hrkfdn/ncspot/releases](https://github.com/hrkfdn/ncspot/releases)
   - Repository: [https://github.com/hrkfdn/ncspot](https://github.com/hrkfdn/ncspot)

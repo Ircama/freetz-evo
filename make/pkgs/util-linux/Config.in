@@ -10,7 +10,7 @@ if FREETZ_PACKAGE_UTIL_LINUX
 
 choice
 	prompt "util-linux version"
-	default FREETZ_UTIL_LINUX_VERSION_2_27_1 if FREETZ_TARGET_UCLIBC_0_9_32 || FREETZ_TARGET_UCLIBC_0_9_33 || FREETZ_TARGET_GCC_5_MAX
+	default FREETZ_UTIL_LINUX_VERSION_2_27_1 if FREETZ_TARGET_UCLIBC_0_9_32 || FREETZ_TARGET_UCLIBC_0_9_33 || FREETZ_TARGET_GCC_5_MAX || !FREETZ_TARGET_UCLIBC_1_0_58
 	default FREETZ_UTIL_LINUX_VERSION_2_41
 
 	config FREETZ_UTIL_LINUX_VERSION_2_27_1
@@ -27,12 +27,14 @@ choice
 
 	config FREETZ_UTIL_LINUX_VERSION_2_41
 		bool "2.41 (modern - full featured)"
+		depends on FREETZ_TARGET_UCLIBC_1_0_58
 		help
 			Modern version 2.41 (August 2022) - full featured build.
 			
 			Provides configurable utilities (see below for selection).
 			
-			Requires modern toolchain (gcc >= 4.9, uClibc >= 0.9.32).
+			Requires uClibc 1.0.58 or newer (fails to build on the
+			older toolchains). On older toolchains use 2.27.1 instead.
 			All legacy patches applied upstream.
 
 endchoice

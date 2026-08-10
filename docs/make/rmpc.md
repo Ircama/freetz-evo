@@ -1,4 +1,5 @@
 # rmpc 0.11.0
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/mierak/rmpc](https://github.com/mierak/rmpc)
   - Changelog: [https://github.com/mierak/rmpc/releases](https://github.com/mierak/rmpc/releases)
   - Repository: [https://github.com/mierak/rmpc](https://github.com/mierak/rmpc)

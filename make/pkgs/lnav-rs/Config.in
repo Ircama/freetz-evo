@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_LNAV_RS
 	bool "lnav-rs 0.1.0"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	default n
 	help
 		lnav-rs utility package built from source using Rust/Cargo.

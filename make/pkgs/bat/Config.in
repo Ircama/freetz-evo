@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_BAT
 	bool "bat 0.26.1"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58
 	default n
 	help
 		bat is a cat clone with syntax highlighting, paging, and theme support.

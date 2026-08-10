@@ -2,6 +2,11 @@
 $(call PKG_INIT_BIN, $(if $(FREETZ_UTIL_LINUX_VERSION_2_27_1),2.27.1,2.41))
 $(PKG)_CATEGORY:=Disk Tools
 
+# util-linux 2.41 requires a recent toolchain: it fails to build on the old
+# GCC/uClibc toolchains (0.9.x, 1.0.14). The 2.41 version choice is gated by
+# "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in, so older toolchains
+# fall back to the legacy 2.27.1 build.
+
 # Legacy version 2.27.1 (minimal, with patches)
 $(PKG)_SOURCE_2.27.1:=util-linux-2.27.1.tar.xz
 $(PKG)_HASH_2.27.1:=0a818fcdede99aec43ffe6ca5b5388bff80d162f2f7bd4541dca94fecb87a290

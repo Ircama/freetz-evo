@@ -1,4 +1,6 @@
 $(call PKG_INIT_BIN, 0.14.0)
+# Uses a Rust/Cargo build (via make/include/rust/): requires a recent
+# toolchain, gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in.
 $(PKG)_SOURCE:=lnav-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=bf142441fc85e99c256ebe661e4199768acbd340da1344554da49a9e867a49ea

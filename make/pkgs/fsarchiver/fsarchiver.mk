@@ -1,5 +1,10 @@
 $(call PKG_INIT_BIN, 0.8.9)
 $(PKG)_CATEGORY:=Data Migration and Disaster Recovery
+
+# fsarchiver requires uClibc 1.0.58 or newer: it needs libblkid from
+# util-linux 2.41, which is unavailable on older toolchains. The option is
+# gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58" in Config.in.
+
 $(PKG)_SOURCE:=fsarchiver-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=ade1d9d3c7de815c0b40b54e24e39b53d4a3b0add69d47f23b36fc2fd8f21843
 $(PKG)_SITE:=https://github.com/fdupoux/fsarchiver/releases/download/$($(PKG)_VERSION)

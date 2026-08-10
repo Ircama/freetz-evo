@@ -1,4 +1,5 @@
 # bat 0.26.1
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
   - Changelog: [https://github.com/sharkdp/bat/releases](https://github.com/sharkdp/bat/releases)
   - Repository: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)

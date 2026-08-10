@@ -1,4 +1,5 @@
 # procs 0.14.11
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/dalance/procs](https://github.com/dalance/procs)
   - Changelog: [https://github.com/dalance/procs/releases](https://github.com/dalance/procs/releases)
   - Repository: [https://github.com/dalance/procs](https://github.com/dalance/procs)
