@@ -173,5 +173,40 @@
     "timestamp": "2026-08-08T19:14:53Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Access token (optional)": {
+    "original": "Access token (optional)",
+    "translation": "Token di accesso (facoltativo)",
+    "timestamp": "2026-08-10T11:09:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:User (optional)": {
+    "original": "User (optional)",
+    "translation": "Utente (facoltativo)",
+    "timestamp": "2026-08-10T11:09:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Password (optional)": {
+    "original": "Password (optional)",
+    "translation": "Password (opzionale)",
+    "timestamp": "2026-08-10T11:09:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Allowed IPs/CIDRs (optional, comma-separated)": {
+    "original": "Allowed IPs/CIDRs (optional, comma-separated)",
+    "translation": "IP/CIDR consentiti (facoltativo, separati da virgola)",
+    "timestamp": "2026-08-10T11:09:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Access control is disabled by default. If a token/user is set, the web apps must authenticate (a field in the app, or ?token= in the URL).": {
+    "original": "Access control is disabled by default. If a token/user is set, the web apps must authenticate (a field in the app, or ?token= in the URL).",
+    "translation": "Il controllo degli accessi è disabilitato per impostazione predefinita. Se è impostato un token/utente, le applicazioni web devono effettuare l’autenticazione (tramite un campo nell’app o tramite ?token= nell’URL).",
+    "timestamp": "2026-08-10T11:09:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

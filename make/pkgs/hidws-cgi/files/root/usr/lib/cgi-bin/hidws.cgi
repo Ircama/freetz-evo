@@ -59,6 +59,96 @@ EOF
 fi
 sec_end
 
+sec_begin "$(lang de:"Web-Check" en:"Web check")"
+cat << EOF
+<p><small>$(lang de:"Test der hidws-WebSocket-Schnittstelle auf diesem Gerät (Port ${HIDWS_PORT:-9001}). hidws liefert seine eingebaute Diagnoseseite unter http/https auf demselben Port aus." en:"Test the hidws WebSocket interface on this device (port ${HIDWS_PORT:-9001}). hidws serves its built-in diagnostic page under http/https on the same port.")</small></p>
+<p><strong>$(lang de:"Diagnoseseite" en:"Diagnostic page"):</strong>
+&nbsp;<a id="hidws-diag-http" href="#" target="_blank" rel="noopener"></a>
+&nbsp;|&nbsp;
+<a id="hidws-diag-https" href="#" target="_blank" rel="noopener"></a>
+</p>
+<p>$(lang de:"WebSocket-Test" en:"WebSocket test"):
+&nbsp;<button type="button" id="hidws-test-ws" onclick="hidwsDiagTest('ws')"></button>
+&nbsp;<button type="button" id="hidws-test-wss" onclick="hidwsDiagTest('wss')"></button>
+&nbsp;<span id="hidws-diag-state" style="font-weight:bold;"></span>
+</p>
+<p><small>$(lang de:"Hinweis: Wird diese Konfigurationsseite über HTTPS geladen, blockieren Browser eine unsichere ws://-Verbindung (gemischte Inhalte) - bitte wss:// verwenden. Bei wss:// mit selbstsigniertem Zertifikat fragt der Browser nach einer Bestätigung: zuerst die https-Diagnoseseite öffnen und das Zertifikat akzeptieren, sonst schlägt die WebSocket-Verbindung fehl." en:"Note: when this configuration page is loaded over HTTPS, browsers block an insecure ws:// connection (mixed content) - please use wss:// instead. For wss:// with a self-signed certificate the browser asks for confirmation: first open the https diagnostic page and accept the certificate, otherwise the WebSocket connection fails.")</small></p>
+<script>var HIDWS_DIAG={port:$(html "${HIDWS_PORT:-9001}")};</script>
+EOF
+cat << 'DIAGEOF'
+<script type="text/javascript">
+(function () {
+	var port = (window.HIDWS_DIAG && HIDWS_DIAG.port) ? HIDWS_DIAG.port : 9001;
+	var host = window.location.hostname;
+	var isHttps = (window.location.protocol === 'https:');
+
+	function el(id) { return document.getElementById(id); }
+
+	function urlFor(scheme) {
+		return scheme + '://' + host + ':' + port + '/';
+	}
+
+	function setState(color, msg) {
+		var s = el('hidws-diag-state');
+		if (!s) return;
+		s.style.color = color;
+		s.textContent = '\u25cf ' + msg;
+	}
+
+	function testWs(scheme) {
+		var url = urlFor(scheme);
+
+		if (scheme === 'ws' && isHttps) {
+			setState('#856404', 'ws:// blocked on HTTPS (mixed content) - use wss://');
+			return;
+		}
+
+		setState('#856404', 'Testing ' + url + ' ...');
+		var ws = null;
+		try {
+			ws = new WebSocket(url);
+		} catch (e) {
+			setState('#dc3545', 'FAILED: ' + e.message);
+			return;
+		}
+
+		var done = false;
+		function finish(ok, msg) {
+			if (done) return;
+			done = true;
+			try { ws.close(); } catch (e) {}
+			setState(ok ? '#28a745' : '#dc3545', msg);
+		}
+
+		ws.onopen = function () { finish(true, 'CONNECTED ' + url); };
+		ws.onerror = function () { finish(false, 'FAILED ' + url); };
+		ws.onclose = function () { if (!done) finish(false, 'FAILED ' + url); };
+		window.setTimeout(function () { finish(false, 'TIMEOUT ' + url); }, 8000);
+	}
+
+	window.hidwsDiagTest = testWs;
+
+	function init() {
+		var b1 = el('hidws-test-ws');
+		if (b1) b1.textContent = 'Test ws://' + host + ':' + port + '/';
+		var b2 = el('hidws-test-wss');
+		if (b2) b2.textContent = 'Test wss://' + host + ':' + port + '/';
+		var h = el('hidws-diag-http');
+		if (h) { h.href = urlFor('http'); h.textContent = urlFor('http'); }
+		var hs = el('hidws-diag-https');
+		if (hs) { hs.href = urlFor('https'); hs.textContent = urlFor('https'); }
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+})();
+</script>
+DIAGEOF
+sec_end
+
 sec_begin "$(lang de:"Web-Apps" en:"Web apps")"
 cat << EOF
 <p>$(lang de:"Diese Web-Apps verbinden sich über WebSocket mit hidws:" en:"These web apps connect to hidws over WebSocket:")</p>
