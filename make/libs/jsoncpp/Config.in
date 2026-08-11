@@ -1,8 +1,13 @@
 config FREETZ_LIB_libjsoncpp
 	bool "jsoncpp (C++ JSON library)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	default n
 	help
 		jsoncpp is a C++ library for parsing and generating JSON.
 		Required by Gerbera.
+
+		Requires uClibc 1.0.58 or newer (jsoncpp 1.9.8 needs the C++11
+		feature cxx_delegating_constructors, which the old GCC 4.6.4
+		toolchain does not support).
 		
 		https://github.com/open-source-parsers/jsoncpp

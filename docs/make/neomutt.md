@@ -5,6 +5,7 @@
   - Repository: [https://github.com/neomutt/neomutt](https://github.com/neomutt/neomutt)
   - Package: [master/make/pkgs/neomutt/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/neomutt/)
   - Steward: Ircama
+  - Toolchain: requires GCC 4.7 or newer (`FREETZ_TARGET_GCC_4_7_MIN` in `Config.in`): NeoMutt's configure requires C11 (`-std=c11`), which the old GCC 4.6.4 toolchain does not support (`Error: C11 is required`). This is a GCC issue, not uClibc-specific: uClibc 1.0.14 with GCC 5.5 builds fine.
 
 **NeoMutt** is a command-line mail user agent (MUA) derived from the classic Mutt client. It adds
 many features that were never merged into the Mutt upstream: improved sidebar, virtual mailboxes,

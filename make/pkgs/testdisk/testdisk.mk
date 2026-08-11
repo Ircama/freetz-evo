@@ -1,4 +1,13 @@
 $(call PKG_INIT_BIN, 7.2)
+# Patch 001-fix-gpt-sys-types-static-init.patch (src/partgpt.c): testdisk's
+# gpt_sys_types[] static array is initialized with the GPT_ENT_TYPE_* macros,
+# which are compound literals with a `(const efi_guid_t)` cast. The old
+# GCC 4.6.4 toolchain rejects such casts in static initializers ("initializer
+# element is not constant"). The patch expands the array entries to plain
+# brace initializers (no cast) inside the array only; the macros themselves
+# keep the cast because they are also used as expressions (guid_cmp).
+# This is a GCC 4.6 quirk, not uClibc-specific -> source patch (no gate, no
+# regression on any toolchain).
 $(PKG)_CATEGORY:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
@@ -26,6 +35,11 @@ $(PKG)_DEPENDS_ON += ncursesw
 # configure failures in the cross-compilation environment.
 $(PKG)_CONFIGURE_OPTIONS += --without-uuid
 $(PKG)_CONFIGURE_OPTIONS += --enable-missing-uuid-ok
+# testdisk's configure enables -fstack-protector-strong by default, which links
+# -lssp/-lssp_nonshared; uClibc (all versions) does not provide libssp, so the
+# link fails with "cannot find -lssp". Disable stack protection (not uClibc-gated;
+# works fine on every toolchain, no regression).
+$(PKG)_CONFIGURE_OPTIONS += --disable-stack-protector
 
 # Disable optional dependencies that are not available or needed in
 # the embedded freetz environment.

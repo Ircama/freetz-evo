@@ -108,6 +108,15 @@ filter to non-volatile flash, making the setting permanent.
 - `ja11-flash`: `1.0`
 - `hidapi`: `0.15.0` (shared library dependency)
 
+## Build notes
+
+- Requires GCC 4.7 or newer (`FREETZ_TARGET_GCC_4_7_MIN` in `Config.in`): the
+  sources are compiled with `-std=c11`, which the old GCC 4.6.4 toolchain does
+  not recognize (`cc1: error: unrecognized command line option '-std=c11'`).
+  This is a GCC issue, not uClibc-specific, so a GCC gate is used instead of a
+  uClibc gate: uClibc 1.0.14 with GCC 5.5 builds fine, and there is no
+  regression on any uClibc >= 1.0.58 toolchain either.
+
 ## Firmware update (ja11-boot and ja11-flash)
 
 Firmware updates use a two-step workflow:

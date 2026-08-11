@@ -1,4 +1,8 @@
-[ "$FREETZ_LIB_libglib_2_VERSION_ABANDON" == "y" ] && ELIBVER="0.3200.4" || ELIBVER="0.8800.0"
+# NOTE: The config symbol is FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON
+# (see Config.in); the "VERSION_ABANDON" spelling was a stale name that
+# never matched, causing the external lib version to fall back to the
+# current (0.8800.0) even when the abandoned 0.3200.4 was built.
+[ "$FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON" == "y" ] && ELIBVER="0.3200.4" || ELIBVER="0.8800.0"
 
 [ "$EXTERNAL_FREETZ_LIB_libgio_2"     == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libgio-2.0.so.$ELIBVER"
 [ "$EXTERNAL_FREETZ_LIB_libglib_2"    == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libglib-2.0.so.$ELIBVER"

@@ -4,6 +4,14 @@ $(call PKG_INIT_BIN, 0.7.1)
 # but uClibc provides no libresolv library (not even on uClibc-ng 1.0.58, which
 # removed it), so the link fails with "cannot find -lresolv". netgo keeps the
 # package buildable on every toolchain (no uClibc gating, no regressions).
+#
+# Gating (FREETZ_TARGET_GCC_4_7_MIN in Config.in, NOT uClibc): Go 1.25's cgo
+# runtime compiles gcc_libinit.c with the target compiler, and that file uses
+# the C11 atomic builtins (__atomic_load_n, __atomic_store_n, __ATOMIC_*).
+# Those require GCC >= 4.7; the old GCC 4.6.4 toolchain fails with
+# "implicit declaration of function '__atomic_load_n'". Gating on uClibc
+# >= 1.0.58 would be wrong: uClibc 1.0.14 with GCC 5.5 builds fine, so the
+# GCC gate keeps it available there too (no regression).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=25595b6dc1a4e030df74a2ca8ec9206052958b138f7453e75a0bb7233577df94

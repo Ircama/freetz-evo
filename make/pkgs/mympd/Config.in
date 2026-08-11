@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_MYMPD
 	bool "myMPD 25.0.2"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libcrypto
 	select FREETZ_LIB_libssl
 	select FREETZ_LIB_libpcre2
@@ -11,6 +12,11 @@ config FREETZ_PACKAGE_MYMPD
 
 		This freetz build uses embedded web assets and embedded
 		libmpdclient to keep the package self-contained.
+
+		Requires uClibc 1.0.58 or newer: myMPD needs OpenSSL >= 1.1.0
+		(CMake fails with "myMPD requires an OpenSSL version greater or
+		equal 1.1.0"). On the 1.0.58 toolchain OpenSSL 1.0.2 is not
+		selectable, so the default is 1.1.1 or newer.
 
 		Can be externalized to save flash memory.
 

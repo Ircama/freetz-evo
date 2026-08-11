@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_GO_LIBRESPOT
 	bool "go-librespot 0.7.1 (binary only)"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_LIB_libasound
 	select FREETZ_LIB_libFLAC
 	select FREETZ_LIB_libogg
@@ -12,6 +13,10 @@ config FREETZ_PACKAGE_GO_LIBRESPOT
 
 		This package cross-compiles the upstream Go daemon sources with
 		CGO and installs the go-librespot executable on the target.
+
+		Requires GCC 4.7 or newer: Go's cgo runtime (gcc_libinit.c)
+		uses the C11 atomic builtins (__atomic_load_n, __atomic_store_n,
+		__ATOMIC_*), which the old GCC 4.6.4 toolchain does not provide.
 
 		Can be externalized to save flash memory.
 

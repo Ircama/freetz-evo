@@ -1,9 +1,14 @@
 config FREETZ_LIB_libupnp
 	bool "libupnp (portable UPnP SDK)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libuuid
 	default n
 	help
 		libupnp is the open-source IGD UPnP library (pupnp).
 		Required by Gerbera and other UPnP media servers.
+
+		Requires uClibc 1.0.58 or newer (libupnp 1.14.31 sets
+		CMAKE_CXX_STANDARD 14 in CMakeLists.txt, which the old GCC
+		4.6.4 toolchain does not support).
 		
 		https://pupnp.github.io/pupnp/

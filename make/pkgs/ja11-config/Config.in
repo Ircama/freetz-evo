@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_JA11_CONFIG
 	bool "ja11-config 1.0 (binary only)"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_LIB_libncurses
 	select FREETZ_LIB_hidapi
 	default n
@@ -19,3 +20,6 @@ config FREETZ_PACKAGE_JA11_CONFIG
 		  ja11-config-tui               (EQ configuration)
 		  ja11-boot                     (enter update mode)
 		  ja11-flash /dev/ttyACM1 fw.bin (flash firmware)
+
+		Requires GCC 4.7 or newer: the sources are compiled with
+		-std=c11, which the old GCC 4.6.4 toolchain does not recognize.

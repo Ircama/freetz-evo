@@ -1,3 +1,8 @@
+# libmatroska 1.7.1 sets CMAKE_CXX_STANDARD 14 (REQUIRED ON) in CMakeLists.txt;
+# the old GCC 4.6.4 toolchain does not support C++14. It also selects
+# libebml, which has the same requirement, so both are gated on
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN in Config.in (no regression for
+# uClibc >= 1.0.58 with the new GCC 13.4 toolchain).
 $(call PKG_INIT_LIB, 1.7.1)
 $(PKG)_LIB_VERSION:=7.0.0
 $(PKG)_SOURCE_DOWNLOAD_NAME:=release-$($(PKG)_VERSION).tar.gz

@@ -1,4 +1,10 @@
 $(call PKG_INIT_BIN, 7.5)
+# smartmontools 7.5 is built as C++11; its configure checks -std=c++11 and
+# -std=gnu++11, which the old GCC 4.6.4 toolchain rejects ("cc1plus: error:
+# unrecognized command line option '-std=c++11'"), so the package is gated
+# on FREETZ_TARGET_GCC_4_7_MIN in Config.in. NOT a uClibc gate: uClibc 1.0.14
+# with GCC 5.5 supports C++11 and builds fine (no regression on any uClibc
+# >= 1.0.58 toolchain either).
 $(PKG)_CATEGORY:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=690b83ca331378da9ea0d9d61008c4b22dde391387b9bbad7f29387f2595f76e

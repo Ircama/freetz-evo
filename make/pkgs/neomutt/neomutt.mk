@@ -1,5 +1,8 @@
-$(call PKG_INIT_BIN, 20260504)
-$(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
+$(call PKG_INIT_BIN, 20260504)# NeoMutt's configure requires C11 (checks whether the compiler accepts
+# -std=c11). The old GCC 4.6.4 toolchain fails that check ("Error: C11 is
+# required"), so the package is gated on FREETZ_TARGET_GCC_4_7_MIN in
+# Config.in. NOT a uClibc gate: uClibc 1.0.14 with GCC 5.5 supports C11
+# and builds fine (no regression on any uClibc >= 1.0.58 toolchain either).$(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=93fd8344c12cd857f084f8d7cc1187479f79036ab9725cfdbc81c0cc845f1615
 $(PKG)_SITE:=https://github.com/neomutt/neomutt/archive/refs/tags

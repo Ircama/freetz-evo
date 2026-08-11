@@ -1,3 +1,8 @@
+# Compiled with -std=c11, which requires GCC >= 4.7; the old GCC 4.6.4
+# toolchain does not recognize the flag (error: unrecognized command line
+# option '-std=c11'), so the package is gated on FREETZ_TARGET_GCC_4_7_MIN
+# in Config.in. NOT a uClibc gate: uClibc 1.0.14 with GCC 5.5 builds fine
+# (no regression on any uClibc >= 1.0.58 toolchain either).
 $(call PKG_INIT_BIN, 1.0)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=1.0.tar.gz
 $(PKG)_SOURCE:=$(pkg)-1.0.tar.gz

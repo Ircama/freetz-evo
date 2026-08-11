@@ -1,3 +1,8 @@
+# jsoncpp 1.9.8 requires the C++11 feature cxx_delegating_constructors
+# (src/lib_json/CMakeLists.txt target_compile_features), which the old
+# GCC 4.6.4 toolchain does not know -> cmake configure fails. The new
+# toolchain (GCC 13.4 + uClibc 1.0.58) supports it, hence the
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN dependency in Config.in.
 $(call PKG_INIT_LIB, 1.9.8)
 $(PKG)_LIB_VERSION:=1.9.8
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz

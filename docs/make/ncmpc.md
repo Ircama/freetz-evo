@@ -5,10 +5,11 @@
   - Package: [master/make/pkgs/ncmpc/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/ncmpc/)
   - Steward: -
 
-  - Depends on: `libmpdclient`, `ncursesw`
+  - Depends on: `libmpdclient`, `ncursesw`, `libfmt`
   - Optional dependencies: `iconv` (character set conversion), `pcre2` (regex support), `gettext` (NLS), `lirc` (infrared remote control)
   - Provides: `/usr/bin/ncmpc`
   - Externalization: supported
+  - Toolchain: requires uClibc 1.0.58 or newer (`FREETZ_TARGET_UCLIBC_1_0_58_MIN` in `Config.in`): ncmpc depends on `fmt >= 9` and freetz's `libfmt` 12.2.0 is only available on uClibc >= 1.0.58. Without it the meson sanity check fails with `cc1plus: fatal error: fmt/format.h: No such file or directory`.
 
 `ncmpc` is the official ncurses client for the Music Player Daemon (MPD). It provides a full-featured terminal user interface for browsing the music library, editing the playlist, searching for songs, displaying lyrics, and controlling playback.
 

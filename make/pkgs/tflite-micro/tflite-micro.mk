@@ -16,6 +16,13 @@
 TFLITE_MICRO_COMMIT := f5302ed4fa99b7ec697e578057a1f61445a442fe
 
 $(call PKG_INIT_BIN, 20260318)
+# TFLM is compiled with -std=c++17, which requires GCC >= 7; the old GCC 4.6.4
+# toolchain rejects it ("cc1plus: error: unrecognized command line option
+# '-std=c++17'"). There is no FREETZ_TARGET_GCC_7_MIN symbol, so the package is
+# gated on FREETZ_TARGET_GCC_8_MIN in Config.in. NOT a uClibc gate: uClibc
+# 1.0.14 with GCC 5.5 would also fail on -std=c++17, so a uClibc gate would be
+# wrong; the GCC gate keeps uClibc >= 1.0.58 (GCC 13.4) working with no
+# regression.
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=f8073aa2e768f1429fe68b9d1d4b61a61496be4493d9352b9a6e56cc05052de4
 $(PKG)_SITE:=https://github.com/tensorflow/tflite-micro/archive/$(TFLITE_MICRO_COMMIT)

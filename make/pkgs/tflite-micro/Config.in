@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_TFLITE_MICRO
 	bool "tflite-micro (TensorFlow Lite for Microcontrollers)"
+	depends on FREETZ_TARGET_GCC_8_MIN
 	default n
 	help
 		TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow
@@ -12,6 +13,9 @@ config FREETZ_PACKAGE_TFLITE_MICRO
 		The build uses the official project-generation script
 		(create_tflm_tree.py) to produce a self-contained source tree, then
 		compiles it with the freetz cross-toolchain (C++17 required).
+
+		Requires GCC 8 or newer: TFLM is built with -std=c++17, which the
+		old GCC 4.6.4 toolchain does not recognize.
 
 		Requires Python 3 on the build host.
 

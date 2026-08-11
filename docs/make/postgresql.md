@@ -8,6 +8,7 @@
   - Provides: `libpq.so.5.16`
   - Externalization: supported
   - Toolchain: requires uClibc 1.0.58 or newer
+  - Build: `pg_config_paths.h` is generated once serially before the parallel sub-builds (prevents a race that corrupted the header under `make -j`)
 
 This package exports the PostgreSQL client runtime (`libpq`) used by target-side
 software that needs PostgreSQL connectivity and can optionally install a minimal

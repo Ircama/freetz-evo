@@ -5,6 +5,7 @@
   - Repository: [https://github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro)
   - Package: [master/make/pkgs/tflite-micro/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/tflite-micro/)
   - Steward: Ircama
+  - Toolchain: requires GCC 8 or newer (`FREETZ_TARGET_GCC_8_MIN` in `Config.in`): TFLM is compiled with `-std=c++17`, which the old GCC 4.6.4 toolchain does not recognize (`cc1plus: error: unrecognized command line option '-std=c++17'`). No `FREETZ_TARGET_GCC_7_MIN` symbol exists, so the package uses `GCC_8_MIN`. This is a GCC issue, not uClibc-specific: uClibc 1.0.14 with GCC 5.5 would also fail on `-std=c++17`.
 | | |
 |---|---|
 | **Homepage** | [github.com/tensorflow/tflite-micro](https://github.com/tensorflow/tflite-micro) |

@@ -1,12 +1,17 @@
 config FREETZ_PACKAGE_NCMPC
 	bool "ncmpc 0.52"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libmpdclient
 	select FREETZ_LIB_libncursesw
+	select FREETZ_LIB_libfmt
 	default n
 	help
 		Official ncurses client for the Music Player Daemon (MPD).
 		Feature-rich terminal user interface with library browser,
 		playlist editor, search, lyrics, and more.
+
+		Requires uClibc 1.0.58 or newer: ncmpc depends on fmt (>= 9),
+		and freetz's libfmt 12.2.0 is only available on uClibc >= 1.0.58.
 
 config FREETZ_PACKAGE_NCMPC_WITH_ICONV
 	bool "iconv support"

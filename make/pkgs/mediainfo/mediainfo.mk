@@ -1,4 +1,10 @@
 $(call PKG_INIT_BIN, 25.10)
+# MediaInfoLib compiles with -std=c++11 (AM_CXXFLAGS = -std=c++11 in
+# Project/GNU/Library/Makefile.am), which requires GCC >= 4.7. The old
+# GCC 4.6.4 toolchain fails with "cc1plus: error: unrecognized command
+# line option '-std=c++11'", hence the FREETZ_TARGET_GCC_4_7_MIN
+# dependency in Config.in. NOT a uClibc gate: uClibc 1.0.14 with GCC 5.5
+# supports -std=c++11 and builds fine (no regression on any toolchain).
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=2edaff16dfad9ee372d17d6d01eb2e3d2f8ee8dd4af606b1ee6f045c9b009662
 $(PKG)_SITE:=https://github.com/MediaArea/MediaInfo/archive/refs/tags

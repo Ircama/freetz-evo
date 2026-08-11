@@ -1,4 +1,11 @@
 $(call PKG_INIT_BIN, 1.27.0)
+# Requires GCC 8 or newer (FREETZ_TARGET_GCC_8_MIN in Config.in): the unix
+# port Makefile uses -Wfloat-conversion (GCC 4.9+) and the CFLAGS_EXTRA below
+# adds -Wno-stringop-overflow (GCC 8+). The old GCC 4.6.4 toolchain rejects
+# both flags ("cc1: error: unrecognized command line option"), failing the
+# qstr header generation step. NOT a uClibc gate: uClibc 1.0.14 with GCC 5.5
+# would also fail on -Wno-stringop-overflow, so a uClibc gate would be wrong;
+# the GCC gate keeps uClibc >= 1.0.58 (GCC 13.4) working with no regression.
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=9874b20646c3bbe81d524f779a16875e5d088b7065e175ffd2aa2a02f50573c9
 $(PKG)_SITE:=https://github.com/micropython/micropython/releases/download/v$($(PKG)_VERSION)

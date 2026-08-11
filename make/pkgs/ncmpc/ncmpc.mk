@@ -1,4 +1,10 @@
 $(call PKG_INIT_BIN, 0.52)
+# ncmpc 0.52 depends on fmt >= 9 (dependency('fmt', version: '>= 9') in
+# src/lib/fmt/meson.build). freetz's libfmt 12.2.0 is gated on uClibc
+# >= 1.0.58 (it needs a recent toolchain), so ncmpc must also be gated on
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN in Config.in (select FREETZ_LIB_libfmt)
+# and declare the DEPENDS_ON below. Without fmt the meson sanity check fails
+# with "cc1plus: fatal error: fmt/format.h: No such file or directory".
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=4240965253789479bd048c9b691c710418012edaec5d0000283a95dfcb55f1a5
@@ -15,6 +21,7 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ncmpc
 $(PKG)_DEPENDS_ON += meson-host
 $(PKG)_DEPENDS_ON += libmpdclient
 $(PKG)_DEPENDS_ON += ncursesw
+$(PKG)_DEPENDS_ON += libfmt
 
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_NCMPC_WITH_ICONV),iconv)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_NCMPC_WITH_REGEX),pcre2)

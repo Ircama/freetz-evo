@@ -1,4 +1,12 @@
 $(call PKG_INIT_BIN, 25.0.2)
+# myMPD requires OpenSSL >= 1.1.0 (CMake fails with "myMPD requires an
+# OpenSSL version greater or equal 1.1.0" when the target provides OpenSSL
+# 1.0.2). On the old toolchains (uClibc 0.9.x/1.0.14) OpenSSL 1.0.2 is
+# selectable, so the build fails. On the 1.0.58 toolchain
+# (FREETZ_SEPARATE_AVM_UCLIBC) OpenSSL 1.0.2 is not selectable (see the
+# OpenSSL version choice), so the default is 1.1.1 or newer -> hence the
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN dependency in Config.in (no regression
+# for uClibc >= 1.0.58).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=5e482074eb36a7fc6047ecd5bc1cfa707850a4ae936c36bbf0faebd6ed00cfef

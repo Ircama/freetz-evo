@@ -28,6 +28,17 @@ $(PKG)_TARGET_POSTGRES_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/postgres
 $(PKG)_TARGET_PG_CTL_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/pg_ctl
 $(PKG)_TARGET_INITDB_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/initdb
 
+# PostgreSQL regenerates src/port/pg_config_paths.h from Makefile.global
+# using non-atomic `echo >`/`echo >>` commands. With parallel builds
+# (make -j), the libpq/psql/postgres targets below each run their own
+# sub-make and can regenerate this header concurrently, corrupting it
+# (interleaved/duplicated lines -> compile error in path.c, seen on the
+# first uClibc 1.0.58 toolchain build). Generate it once, serially, as a
+# shared prerequisite so the parallel sub-makes find it up to date.
+$(PKG)_PG_CONFIG_PATHS_H:=$($(PKG)_DIR)/src/port/pg_config_paths.h
+$($(PKG)_PG_CONFIG_PATHS_H): $($(PKG)_DIR)/.configured
+	$(SUBMAKE1) -C $(POSTGRESQL_DIR)/src/port pg_config_paths.h
+
 $(PKG)_TARGET_SHARE_DIR:=$($(PKG)_DEST_DIR)/usr/share/postgresql
 $(PKG)_TARGET_SHARE_STAMP:=$($(PKG)_TARGET_SHARE_DIR)/.installed
 
@@ -50,19 +61,19 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
-$($(PKG)_LIB_BUILD_DIR): $($(PKG)_DIR)/.configured
+$($(PKG)_LIB_BUILD_DIR): $($(PKG)_PG_CONFIG_PATHS_H)
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/catalog generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/nodes generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/utils generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/interfaces/libpq
 
-$($(PKG)_PSQL_BINARY): $($(PKG)_DIR)/.configured
+$($(PKG)_PSQL_BINARY): $($(PKG)_PG_CONFIG_PATHS_H)
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/catalog generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/nodes generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/utils generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/bin/psql
 
-$($(PKG)_POSTGRES_BINARY) $($(PKG)_PG_CTL_BINARY) $($(PKG)_INITDB_BINARY): $($(PKG)_DIR)/.configured
+$($(PKG)_POSTGRES_BINARY) $($(PKG)_PG_CTL_BINARY) $($(PKG)_INITDB_BINARY): $($(PKG)_PG_CONFIG_PATHS_H)
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/catalog generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/nodes generated-header-symlinks
 	$(SUBMAKE) -C $(POSTGRESQL_DIR)/src/backend/utils generated-header-symlinks

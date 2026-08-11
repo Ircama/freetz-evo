@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_SMARTMONTOOLS
 	bool "Smartmontools 7.5"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
 	select FREETZ_LIB_STDCXXLIB
 	default n
@@ -8,4 +9,8 @@ config FREETZ_PACKAGE_SMARTMONTOOLS
 		control/monitor storage systems using the Self-Monitoring, Analysis
 		and Reporting Technology System (S.M.A.R.T.) built into most modern
 		ATA and SCSI disks. It is derived from smartsuite.
+
+		Requires GCC 4.7 or newer: smartmontools 7.5 is built as C++11
+		(-std=c++11/-std=gnu++11), which the old GCC 4.6.4 toolchain does
+		not recognize.
 

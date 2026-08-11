@@ -1,3 +1,8 @@
+# libebml 1.4.5 sets CMAKE_CXX_STANDARD 14 (REQUIRED ON) in CMakeLists.txt;
+# the old GCC 4.6.4 toolchain does not support C++14 -> cmake configure
+# fails ("Target \"ebml\" requires the language dialect \"CXX14\""). The new
+# toolchain (GCC 13.4 + uClibc 1.0.58) supports it, hence the
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN dependency in Config.in.
 $(call PKG_INIT_LIB, 1.4.5)
 $(PKG)_LIB_VERSION:=5.0.0
 $(PKG)_SOURCE_DOWNLOAD_NAME:=release-$($(PKG)_VERSION).tar.gz

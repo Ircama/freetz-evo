@@ -1,4 +1,8 @@
-[ "$FREETZ_LIB_libusb1_WITH_ABANDON" == "y" ] && ELIBVER="0.2.0" || ELIBVER="0.6.0"
+# NOTE: The config symbol is FREETZ_LIB_libusb1_WITH_VERSION_ABANDON
+# (see Config.in); the "WITH_ABANDON" spelling was a stale name that
+# never matched, causing the external lib version to fall back to the
+# current (0.6.0) even when the abandoned 0.2.0 was built.
+[ "$FREETZ_LIB_libusb1_WITH_VERSION_ABANDON" == "y" ] && ELIBVER="0.2.0" || ELIBVER="0.6.0"
 
 [ "$EXTERNAL_FREETZ_LIB_libusb1" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libusb-1.0.so.$ELIBVER"
 

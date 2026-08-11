@@ -8,6 +8,12 @@ $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXt.so.$($(PKG)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libXt.so.$($(PKG)_LIB_VERSION)
 $(PKG)_DEPENDS_ON += xorgproto libX11 libSM libICE
 $(PKG)_DEPENDS_ON += util-macros
+# autoconf 2.70+ runs AC_C_UNDECLARED_BUILTIN, which requires the compiler to
+# report undeclared builtins under -fno-builtin. GCC 4.6.4 does not, so the
+# configure fails with "cannot make ... report undeclared builtins". This is a
+# build-host/autoconf vs old-GCC issue, not uClibc-specific -> set the cache
+# var instead of gating (no regression on any toolchain).
+$(PKG)_CONFIGURE_ENV += ac_cv_c_undeclared_builtin_options='none needed'
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-appload --disable-composecache
 $(PKG)_CONFIGURE_OPTIONS += --disable-xkb

@@ -12,6 +12,12 @@ $(PKG)_DEPENDS_ON += util-macros
 
 $(PKG)_CONFIGURE_OPTIONS += --without-xft
 $(PKG)_CONFIGURE_OPTIONS += --without-xkb
+# xclock's configure.ac uses AC_SEARCH_LIBS(sincos, [m], ...). With the old
+# GCC 4.6.4 toolchain, sincos is treated as a builtin so the check succeeds
+# without adding -lm, and the final link fails with "undefined reference to
+# sin/cos". Force -lm explicitly (build/toolchain quirk, not uClibc-specific;
+# no regression on any toolchain).
+$(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -lm"
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)

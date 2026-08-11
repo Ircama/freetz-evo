@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_NEOMUTT
 	bool "NeoMutt 20260504 (binary only)"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_LIB_libatomic if FREETZ_OPENSSL_VERSION_30_MIN
 	select FREETZ_LIB_libncursesw
 	select FREETZ_LIB_libcrypto
@@ -14,5 +15,9 @@ config FREETZ_PACKAGE_NEOMUTT
 		This package builds a lean OpenSSL + ncursesw variant with optional
 		features such as GPGME, Lua, Notmuch, SASL and extra header-cache
 		backends disabled to keep the footprint suitable for Freetz.
+
+		Requires GCC 4.7 or newer: NeoMutt's configure requires C11
+		(checks for -std=c11), which the old GCC 4.6.4 toolchain does not
+		support (Error: C11 is required).
 
 		Can be externalized to save flash memory.

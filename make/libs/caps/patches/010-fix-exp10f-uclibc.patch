@@ -1,0 +1,23 @@
+--- dsp/v4f_IIR2.h	2018-02-01 10:20:59.000000000 +0100
++++ dsp/v4f_IIR2.h	2026-08-11 17:27:58.987707969 +0200
+@@ -29,11 +29,19 @@
+ #define DSP_V4F_IIR2_H
+ 
+ #include "v4f.h"
++#include <math.h>
+ 
+ namespace DSP {
+ 
+-#ifdef __APPLE__
++#if defined(__APPLE__)
+ inline float exp10f(float f) {return __exp10f(f);}
++#elif defined(__UCLIBC__)
++/* uClibc does not declare exp10f in <math.h> (not even in
++ * uClibc-ng 1.0.58), so provide it here via powf(10, f).
++ * powf is always available; glibc systems keep using the
++ * native exp10f declaration from <math.h>.
++ */
++inline float exp10f(float f) {return powf(10.0f, f);}
+ #endif
+ 
+ class RBJv4

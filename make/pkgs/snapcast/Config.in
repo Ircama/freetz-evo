@@ -1,5 +1,6 @@
 config FREETZ_PACKAGE_SNAPCAST
 	bool "snapcast 0.35.0"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
 	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_libatomic

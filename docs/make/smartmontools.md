@@ -5,6 +5,7 @@
   - Repository: [https://www.smartmontools.org/timeline](https://www.smartmontools.org/timeline)
   - Package: [master/make/pkgs/smartmontools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/smartmontools/)
   - Steward: [@fda77](https://github.com/fda77)
+  - Toolchain: requires GCC 4.7 or newer (`FREETZ_TARGET_GCC_4_7_MIN` in `Config.in`): smartmontools 7.5 is built as C++11 (`-std=c++11`/`-std=gnu++11`), which the old GCC 4.6.4 toolchain does not recognize. This is a GCC issue, not uClibc-specific: uClibc 1.0.14 with GCC 5.5 builds fine.
 
 Smartmontools, or more specifically smartctl, can read the "health
 values" of hard disks (also called

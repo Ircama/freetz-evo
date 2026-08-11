@@ -7,6 +7,11 @@ $(PKG)_SITE:=https://quitte.de/dsp
 ### CHANGES:=https://quitte.de/dsp/caps.html
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/libs/caps/
 
+# Patch 010-fix-exp10f-uclibc.patch (dsp/v4f_IIR2.h): uClibc (all versions,
+# including uClibc-ng 1.0.58) does not declare exp10f in <math.h>, so the
+# __APPLE__-only fallback in caps leaves 'exp10f was not declared' errors on
+# uClibc toolchains. The patch provides exp10f via powf(10.0f, f) when
+# __UCLIBC__ is defined. glibc is unaffected (native exp10f declaration).
 $(PKG)_BINARY:=$($(PKG)_DIR)/caps.so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/ladspa/caps.so
 $(PKG)_STAGING_RDF:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/ladspa/rdf/caps.rdf

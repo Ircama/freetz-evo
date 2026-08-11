@@ -1,3 +1,8 @@
+# libixml is built from the same source as libupnp, which sets
+# CMAKE_CXX_STANDARD 14 (REQUIRED ON); the old GCC 4.6.4 toolchain does
+# not support C++14. It also depends on the libupnp binary. Both are
+# gated on FREETZ_TARGET_UCLIBC_1_0_58_MIN in Config.in (no regression
+# for uClibc >= 1.0.58 with the new GCC 13.4 toolchain).
 $(call PKG_INIT_LIB, 11.1.7)
 $(PKG)_LIB_VERSION:=11.1.7
 # libixml is part of libupnp, built from the same source

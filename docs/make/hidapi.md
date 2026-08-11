@@ -10,6 +10,10 @@
     `libhidapi-hidraw.so.0` (`FREETZ_LIB_hidapi_hidraw`)
   - Externalization: supported
 
+## Build notes
+
+- **Patch `002-fix-bus-spi-fallback.patch`** (`linux/hid.c`): the hidraw backend uses `BUS_SPI`, which was added to `<linux/input.h>` only in kernel 4.10. AVM devices use older kernel headers (2.6.32/3.10/4.4/4.9, including with uClibc 1.0.58 on MIPS), so `BUS_SPI` is undefined there and `linux/hid.c` fails with `'BUS_SPI' undeclared`. The patch defines a fallback (`#define BUS_SPI 0x1A`). This is a kernel-headers issue, not uClibc-specific, so a source patch is used instead of a uClibc gate (no regression on any toolchain).
+
 `hidapi` is a multi-platform library that enables applications to interface with
 Bluetooth and USB HID-class devices.
 

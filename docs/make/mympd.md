@@ -11,6 +11,7 @@
   - Configuration URL: `http://fritz.box:81/cgi-bin/conf/mympd` (with `mympd-cgi`)
   - Status URL: `http://fritz.box:81/cgi-bin/status/mympd` (with `mympd-cgi`)
   - Externalization: supported
+  - Toolchain: requires uClibc 1.0.58 or newer (`FREETZ_TARGET_UCLIBC_1_0_58_MIN` in `Config.in`): myMPD needs OpenSSL >= 1.1.0 (CMake error `myMPD requires an OpenSSL version greater or equal 1.1.0`). On the 1.0.58 toolchain OpenSSL 1.0.2 is not selectable, so the default is 1.1.1 or newer.
 
 `myMPD` is a lightweight standalone web client for `MPD`. In Freetz-EVO it is packaged as a self-contained daemon with embedded web assets and embedded `libmpdclient`, so the target only needs a compact runtime stack.
 

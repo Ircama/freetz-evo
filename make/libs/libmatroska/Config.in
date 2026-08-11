@@ -1,9 +1,13 @@
 config FREETZ_LIB_libmatroska
 	bool "libmatroska (Matroska container library)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libebml
 	default n
 	help
 		libmatroska is a C++ library for handling Matroska container
 		formats (MKV, MKA, MKS).
-		
-		https://github.com/Matroska-Org/libmatroska
+
+		Requires uClibc 1.0.58 or newer (libmatroska 1.7.1 sets
+		CMAKE_CXX_STANDARD 14 in CMakeLists.txt, which the old GCC
+		4.6.4 toolchain does not support). Also depends on libebml,
+		which has the same requirement.

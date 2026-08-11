@@ -1,3 +1,8 @@
+# libupnp 1.14.31 sets CMAKE_CXX_STANDARD 14 (REQUIRED ON) in CMakeLists.txt;
+# the old GCC 4.6.4 toolchain does not support C++14 -> cmake configure
+# fails ("Target ... requires the language dialect \"CXX14\""). The new
+# toolchain (GCC 13.4 + uClibc 1.0.58) supports it, hence the
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN dependency in Config.in.
 $(call PKG_INIT_LIB, 1.14.31)
 $(PKG)_LIB_VERSION:=17.2.11
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2

@@ -1,4 +1,10 @@
 $(call PKG_INIT_BIN, 0.12.2)
+# Neovim's bundled libuv includes <stdatomic.h> (C11 atomics), which the
+# old GCC 4.6.4 toolchain does not provide ("fatal error: stdatomic.h: No
+# such file or directory"), so the package is gated on
+# FREETZ_TARGET_GCC_4_9_MIN in Config.in. NOT a uClibc gate: uClibc 1.0.14
+# with GCC 5.5 provides stdatomic.h and builds fine (no regression on any
+# uClibc >= 1.0.58 toolchain either).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=ef9f58da7d687ed4d1dad9715542bf0dabdeedbfe8089e2ce17fff21b920a268

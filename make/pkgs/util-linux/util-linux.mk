@@ -108,12 +108,10 @@ $(PKG)_BINARIES_NO_SUFFIX_TARGET_DIR:=$($(PKG)_BINARIES_NO_SUFFIX:%=$($(PKG)_DES
 $(PKG)_BLOCKDEV_WITH_SUFFIX_TARGET:=$($(PKG)_DEST_DIR)/sbin/blockdev$($(PKG)_BINARIES_SUFFIX)
 $(PKG)_BLOCKDEV_NG_TARGET:=$($(PKG)_DEST_DIR)/sbin/blockdev-ng
 
-# Version-specific configure commands
-ifeq ($(strip $(FREETZ_UTIL_LINUX_VERSION_2_27_1)),y)
-$(PKG)_CONFIGURE_PRE_CMDS += $(AUTORECONF)
-else
+# util-linux configure.ac uses GTK_DOC_CHECK, so gtkdocize must be neutralized
+# (host gtk-doc is not guaranteed and otherwise autoreconf fails with
+# "gtkdocize failed"). This is a build-host issue, not uClibc-specific.
 $(PKG)_CONFIGURE_PRE_CMDS += GTKDOCIZE=/bin/true $(AUTORECONF)
-endif
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
