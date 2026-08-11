@@ -3,6 +3,7 @@
   - Manpage: [https://github.com/devgianlu/go-librespot#readme](https://github.com/devgianlu/go-librespot#readme)
   - Changelog: [https://github.com/devgianlu/go-librespot/releases](https://github.com/devgianlu/go-librespot/releases)
   - Repository: [https://github.com/devgianlu/go-librespot](https://github.com/devgianlu/go-librespot)
+  - Toolchain: builds on all toolchains (built with `-tags netgo` so Go uses its pure-Go resolver instead of `-lresolv`, which uClibc does not provide)
   - Package: [master/make/pkgs/go-librespot/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/go-librespot/)
   - Steward: Ircama
 

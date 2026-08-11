@@ -1,8 +1,16 @@
 config FREETZ_LIB_libuv
 	bool "libuv (libuv.so)"
 	depends on FREETZ_TARGET_GCC_5_MIN
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	default n
 	help
 		libuv is a async IO library for various programs
 
+		Requires uClibc 1.0.58 or newer: on GCC <= 5 toolchains
+		(uClibc 0.9.x-1.0.14) libuv 1.44.2 is built, which uses
+		pthread_atfork. uClibc only provides pthread_atfork as a
+		hidden static-only symbol, so any program linking libuv.so
+		fails with "undefined reference to pthread_atfork". On
+		uClibc 1.0.58+ (GCC > 5) libuv 1.52.1 is used, which no
+		longer calls pthread_atfork.

@@ -1,4 +1,5 @@
 # hidws 1.3.1 (binaries only)
+  - Toolchain: requires uClibc 1.0.58 or newer (links libwebsockets/libuv, which fail to link on older uClibc with "undefined reference to pthread_atfork")
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
   - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.3.1`
   - Steward: Ircama

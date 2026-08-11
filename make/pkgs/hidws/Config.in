@@ -1,5 +1,6 @@
 menuconfig FREETZ_PACKAGE_HIDWS
         bool "hidws 1.2 (binary only)"
+        depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
         select FREETZ_LIB_hidapi
         select FREETZ_LIB_libwebsockets
         select FREETZ_LIB_libwebsockets_WITH_SSL
@@ -7,6 +8,11 @@ menuconfig FREETZ_PACKAGE_HIDWS
         default n
         help
                 Generic WebSocket to HID gateway daemon (libusb backend).
+
+                Requires uClibc 1.0.58 or newer: hidws links against
+                libwebsockets which needs libuv, and libuv on older
+                toolchains (GCC <= 5 / uClibc 0.9.x-1.0.14) fails to link
+                with "undefined reference to pthread_atfork".
 
                 hidws is a daemon that bridges WebSocket clients to USB
                 HID devices. It uses libwebsockets for the WebSocket

@@ -1,4 +1,11 @@
 $(call PKG_INIT_LIB, $(if $(FREETZ_TARGET_GCC_5_MAX),1.44.2,1.52.1))
+# On GCC <= 5 (uClibc 0.9.x-1.0.14) libuv 1.44.2 is built, which calls
+# pthread_atfork (src/unix/signal.c, src/threadpool.c). uClibc only ships
+# pthread_atfork as a hidden static-only symbol in libpthread_nonshared.a,
+# so linking against libuv.so fails with "undefined reference to
+# pthread_atfork" (binutils 2.25.1: hidden symbol referenced by DSO).
+# libuv 1.52.1 (GCC > 5 / uClibc 1.0.58) no longer uses pthread_atfork.
+# Gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in.
 $(PKG)_SHLIB_VERSION:=1.0.0
 $(PKG)_SOURCE:=$(pkg)-v$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH_ABANDON:=ccfcdc968c55673c6526d8270a9c8655a806ea92468afcbcabc2b16040f03cb4

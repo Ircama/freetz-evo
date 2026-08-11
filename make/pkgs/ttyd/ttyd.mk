@@ -1,4 +1,9 @@
 $(call PKG_INIT_BIN, 1.7.7)
+# ttyd needs libwebsockets + libuv; libuv on GCC <= 5 / uClibc 0.9.x-1.0.14
+# (libuv 1.44.2) fails to link with "undefined reference to pthread_atfork"
+# (uClibc ships pthread_atfork only as hidden static-only symbol). libuv
+# 1.52.1 (uClibc 1.0.58+) no longer uses pthread_atfork. Gated by "depends
+# on FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in.
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=039dd995229377caee919898b7bd54484accec3bba49c118e2d5cd6ec51e3650

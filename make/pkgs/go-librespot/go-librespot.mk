@@ -1,4 +1,9 @@
 $(call PKG_INIT_BIN, 0.7.1)
+# Built with `-tags netgo` so that Go uses its pure-Go DNS resolver instead of
+# the cgo resolver. The cgo resolver makes Go add `-lresolv` to the link line,
+# but uClibc provides no libresolv library (not even on uClibc-ng 1.0.58, which
+# removed it), so the link fails with "cannot find -lresolv". netgo keeps the
+# package buildable on every toolchain (no uClibc gating, no regressions).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=25595b6dc1a4e030df74a2ca8ec9206052958b138f7453e75a0bb7233577df94
@@ -59,6 +64,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 			-v \
 			-buildvcs=false \
 			-trimpath \
+			-tags netgo \
 			-ldflags="-s -w" \
 			-o go-librespot \
 			./cmd/daemon

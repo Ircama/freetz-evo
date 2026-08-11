@@ -1,4 +1,8 @@
 $(call PKG_INIT_BIN, 0.11.0)
+# vhs auto-selects ttyd at runtime, and ttyd needs libwebsockets + libuv.
+# libuv on GCC <= 5 / uClibc 0.9.x-1.0.14 fails to link with "undefined
+# reference to pthread_atfork", so vhs is gated by "depends on
+# FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (no regression for >= 1.0.58).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=c08b8502989fe7e9626c02938f3fc512c2a4ba21f839f455d20d7eb1da7bc39f
