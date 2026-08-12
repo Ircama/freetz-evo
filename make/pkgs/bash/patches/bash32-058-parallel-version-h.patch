@@ -1,0 +1,13 @@
+--- Makefile.in
++++ Makefile.in
+@@ -550,8 +550,8 @@
+ 	${MAKE} ${MFLAGS} CFLAGS='${GCC_LINT_FLAGS}' .made
+ 
+ version.h:  $(SOURCES) config.h Makefile 
+-	$(SHELL) $(SUPPORT_SRC)mkversion.sh -b -S ${topdir} -s $(RELSTATUS) -d $(Version) -o newversion.h \
+-		&& mv newversion.h version.h
++	$(SHELL) $(SUPPORT_SRC)mkversion.sh -b -S ${topdir} -s $(RELSTATUS) -d $(Version) -o newversion.h.$$$$ \
++		&& mv -f newversion.h.$$$$ version.h
+ 
+ bashversion$(EXEEXT):	patchlevel.h conftypes.h version.h buildversion.o $(SUPPORT_SRC)bashversion.c
+ 	$(CC_FOR_BUILD) $(CCFLAGS_FOR_BUILD) -o $@ $(SUPPORT_SRC)bashversion.c buildversion.o ${LIBS_FOR_BUILD}
