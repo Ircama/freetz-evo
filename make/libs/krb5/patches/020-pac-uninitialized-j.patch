@@ -1,0 +1,11 @@
+--- src/lib/krb5/krb/pac.c
++++ src/lib/krb5/krb/pac.c
+@@ -603,7 +603,7 @@
+     uint8_t z = 0;
+     krb5_authdata zpac = { KV5M_AUTHDATA, KRB5_AUTHDATA_WIN2K_PAC, 1, &z };
+     krb5_boolean is_service_tkt;
+-    size_t i, j;
++    size_t i, j = 0;
+ 
+     *pac_out = NULL;
+ 

@@ -1,0 +1,11 @@
+--- src/util/profile/prof_file.c
++++ src/util/profile/prof_file.c
+@@ -270,7 +270,7 @@
+     unsigned long frac;
+     time_t now;
+ #endif
+-    FILE *f;
++    FILE *f = NULL;
+     int isdir = 0;
+ 
+     if ((data->flags & PROFILE_FILE_NO_RELOAD) && data->root != NULL)

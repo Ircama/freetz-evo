@@ -1,0 +1,3 @@
+ifneq (,$(strip $(filter y,$(FREETZ_LIB_hidapi) $(FREETZ_LIB_hidapi_hidraw))))
+LIBS+=hidapi
+endif

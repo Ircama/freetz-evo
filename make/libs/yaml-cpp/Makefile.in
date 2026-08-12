@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libyaml_cpp)),y)
+LIBS+=yaml-cpp
+endif

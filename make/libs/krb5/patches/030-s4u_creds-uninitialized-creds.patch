@@ -1,0 +1,11 @@
+--- src/lib/krb5/krb/s4u_creds.c
++++ src/lib/krb5/krb/s4u_creds.c
+@@ -1151,7 +1151,7 @@
+ {
+     krb5_error_code code;
+     krb5_const_principal canonprinc;
+-    krb5_creds copy, *creds;
++    krb5_creds copy, *creds = NULL;
+     struct canonprinc iter = { in_creds->server, .no_hostrealm = TRUE };
+ 
+     *out_creds = NULL;

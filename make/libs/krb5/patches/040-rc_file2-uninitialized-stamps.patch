@@ -1,0 +1,11 @@
+--- src/lib/krb5/rcache/rc_file2.c
++++ src/lib/krb5/rcache/rc_file2.c
+@@ -143,7 +143,7 @@
+     ssize_t st;
+     int ind, nread;
+     uint8_t seed[K5_HASH_SEED_LEN], r1tag[TAG_LEN], r2tag[TAG_LEN];
+-    uint32_t r1stamp, r2stamp;
++    uint32_t r1stamp = 0, r2stamp = 0;
+ 
+     /* Read or generate the hash seed. */
+     st = read(fd, seed, sizeof(seed));

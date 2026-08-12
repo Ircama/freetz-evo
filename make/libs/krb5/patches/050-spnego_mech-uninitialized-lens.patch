@@ -1,0 +1,11 @@
+--- src/lib/gssapi/spnego/spnego_mech.c
++++ src/lib/gssapi/spnego/spnego_mech.c
+@@ -3704,7 +3704,7 @@
+ 			  send_token_flag sendtoken,
+ 			  gss_buffer_t outbuf)
+ {
+-	size_t f0len, f1len, f2len, f3len, fields_len, seq_len, choice_len;
++	size_t f0len = 0, f1len = 0, f2len = 0, f3len = 0, fields_len, seq_len, choice_len;
+ 	uint8_t *t;
+ 	struct k5buf buf;
+ 

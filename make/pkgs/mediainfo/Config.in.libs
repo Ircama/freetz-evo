@@ -1,4 +1,5 @@
 config FREETZ_LIB_libmediainfo
 	bool "libmediainfo"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_LIB_libzen
 

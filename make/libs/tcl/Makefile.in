@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_libtcl)),y)
+LIBS+=tcl
+endif

@@ -1,0 +1,3 @@
+ifeq ($(strip $(FREETZ_LIB_liblmdb)),y)
+LIBS+=lmdb
+endif

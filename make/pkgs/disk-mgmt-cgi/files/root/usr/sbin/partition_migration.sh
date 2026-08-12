@@ -672,6 +672,28 @@ echo "     ✔ END ${END} is within disk bounds (${DISK_SECTORS} sectors)."
 
 # Detect partition table type here; reused in step 4
 PTTYPE=$(parted -s -m "$DEVICE" unit s print | awk -F: 'NR==2 {print $6}')
+
+# If the target has no partition table yet, initialize one so that the
+# `parted mkpart` in step 4 does not fail with "unrecognised disk label".
+# The new table type mirrors the SOURCE disk's table type when detectable,
+# otherwise it defaults to msdos. (Only "unknown"/empty is auto-handled: a
+# "loop" type means a filesystem sits directly on the device, which we do
+# not silently destroy.)
+if [ -z "$PTTYPE" ] || [ "$PTTYPE" = "unknown" ]; then
+    _src_pttype=$(parted -s -m "$SOURCE_DEVICE" unit s print 2>/dev/null \
+        | awk -F: 'NR==2 {print $6}')
+    case "$_src_pttype" in
+        gpt|msdos) _new_pttype="$_src_pttype" ;;
+        *)         _new_pttype="msdos" ;;
+    esac
+    echo "     ℹ Target ${DEVICE} has no partition table — initializing ${_new_pttype}."
+    run parted -s "$DEVICE" mklabel "$_new_pttype" \
+        || die "Failed to initialize partition table on ${DEVICE}."
+    run partprobe "$DEVICE" 2>/dev/null || true
+    # Re-detect after mklabel (in dry-run this still reports unknown, which is
+    # fine: step 4 is simulated too).
+    PTTYPE=$(parted -s -m "$DEVICE" unit s print 2>/dev/null | awk -F: 'NR==2 {print $6}')
+fi
 # Also detect extended partition range (MBR only) for use in step 4.
 # EXT_START / EXT_END are set to the sector range of the first extended partition
 # found; they remain empty on GPT or when no extended partition exists.
@@ -937,6 +959,9 @@ if [ "$DRY_RUN" -eq 0 ]; then
     fi
     [ -n "$PARTCLONE_LOGFILE" ] && set -- "$@" --logfile "$PARTCLONE_LOGFILE"
     [ "$SKIP_WRITE_ERROR" = "1" ] && set -- "$@" --skip_write_error
+    # partclone 0.3.x NON riapre un logfile già esistente ("open logfile ...
+    # error", nessun dato scritto): rigeneriamolo pulito a ogni run.
+    [ -n "$PARTCLONE_LOGFILE" ] && rm -f "$PARTCLONE_LOGFILE"
     # shellcheck disable=SC2086
     printf '\033[36m── cmd:\033[0m \033[1;33m%s\033[0m\n' "$PARTCLONE_BIN $* $PARTCLONE_EXTRA"
     "$PARTCLONE_BIN" "$@" $PARTCLONE_EXTRA

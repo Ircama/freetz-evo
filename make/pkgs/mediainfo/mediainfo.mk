@@ -126,5 +126,6 @@ $(pkg)-clean:
 $(pkg)-uninstall:
 	$(RM) $(MEDIAINFO_BINARY_TARGET) $(MEDIAINFO_LIBMEDIAINFO_TARGET_LIB)
 
+$(call PKG_ADD_LIB,libmediainfo)
 $(PKG_FINISH)
 

@@ -22,7 +22,7 @@ MOVE_MODE=0           # -M  flag: delete source partitions after successful clon
 PHYSICAL_MODE=0       # -P  flag: raw dd copy (includes MBR/GPT)
 INCLUDE_TAIL=0        # -T  flag: (physical mode) include unallocated tail sectors
 CLONE_MODE="smart"    # -c  smart | dd
-ALIGN_BYTES=4096      # -a  512 | 4096
+ALIGN_BYTES=4096      # -a  512 | 4096 | 1048576
 UMOUNT_BEFORE=0       # -u  flag: unmount all source/target partitions before starting
 COPY_MBR=0            # -B  flag: (logical mode) copy MBR/GPT header from source to target
 WIPE_TARGET=0         # -W  flag: (logical mode) wipe all partitions on target before copy
@@ -154,7 +154,7 @@ DESCRIPTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   -c MODE       Clone method: smart | dd    Default: smart
-  -a BYTES      Alignment: 512 | 4096       Default: 4096
+  -a BYTES      Alignment: 512 | 4096 | 1048576   Default: 4096
   -W            Wipe target partitions before cloning.
   -B            Copy MBR/GPT header from source to target (logical mode).
   -V            Verify each cloned partition with partclone.chkimg.
@@ -245,8 +245,8 @@ case "$CLONE_MODE" in
 esac
 
 case "$ALIGN_BYTES" in
-    512|4096) ;;
-    *) ERRORS="${ERRORS}\n    -a  invalid value '${ALIGN_BYTES}'. Allowed: 512 | 4096" ;;
+    512|4096|1048576) ;;
+    *) ERRORS="${ERRORS}\n    -a  invalid value '${ALIGN_BYTES}'. Allowed: 512 | 4096 | 1048576" ;;
 esac
 
 case "$STEP_DELAY" in
@@ -522,9 +522,19 @@ if [ "$WIPE_TARGET" -eq 1 ]; then
     echo "🗑️   [3] Wiping all target partitions from ${TARGET_DEVICE}…"
     TGT_PTTYPE=$(parted -s -m "$TARGET_DEVICE" unit s print 2>/dev/null \
         | awk -F: 'NR==2 {print $6}')
-    [ -z "$TGT_PTTYPE" ] && TGT_PTTYPE=$(parted -s -m "$SOURCE_DEVICE" unit s print 2>/dev/null \
-        | awk -F: 'NR==2 {print $6}')
-    [ -z "$TGT_PTTYPE" ] && TGT_PTTYPE="gpt"
+    # Il target senza tabella riporta "unknown" (non stringa vuota): in quel
+    # caso rispecchia il tipo della sorgente (come per un target vuoto).
+    case "$TGT_PTTYPE" in
+        ''|unknown)
+            TGT_PTTYPE=$(parted -s -m "$SOURCE_DEVICE" unit s print 2>/dev/null \
+                | awk -F: 'NR==2 {print $6}')
+            ;;
+    esac
+    # Normalizza: valori accettati da `parted mklabel` (loop/altro → gpt).
+    case "$TGT_PTTYPE" in
+        gpt|msdos) : ;;
+        *) TGT_PTTYPE="gpt" ;;
+    esac
 
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' mklabel '${TGT_PTTYPE}'"
@@ -576,6 +586,30 @@ fi
 
 echo "🔄  [5] Cloning partitions (${PART_COUNT} partition(s))…"
 
+# Ensure the target has a partition table (mirroring the source when the target
+# is blank), otherwise the `parted mkpart` calls below fail with
+# "unrecognised disk label".
+_TGT_PTTYPE=$(parted -s -m "$TARGET_DEVICE" unit s print 2>/dev/null \
+    | awk -F: 'NR==2 {print $6}')
+if [ -z "$_TGT_PTTYPE" ] || [ "$_TGT_PTTYPE" = "unknown" ]; then
+    _SRC_PTTYPE=$(parted -s -m "$SOURCE_DEVICE" unit s print 2>/dev/null \
+        | awk -F: 'NR==2 {print $6}')
+    case "$_SRC_PTTYPE" in
+        gpt|msdos) _NEW_PTTYPE="$_SRC_PTTYPE" ;;
+        *)         _NEW_PTTYPE="msdos" ;;
+    esac
+    echo "     ℹ Target has no partition table — initializing ${_NEW_PTTYPE}."
+    if [ "$DRY_RUN" -eq 1 ]; then
+        echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' mklabel '${_NEW_PTTYPE}'"
+    else
+        parted -s "$TARGET_DEVICE" mklabel "$_NEW_PTTYPE" \
+            || die "Failed to initialize partition table on ${TARGET_DEVICE}."
+        run partprobe "$TARGET_DEVICE" 2>/dev/null || true
+        echo "     ✔ Target partition table initialized (${_NEW_PTTYPE})."
+    fi
+    step_pause
+fi
+
 # Scaling factor: if target < source, offset sectors must be scaled proportionally
 # so that all partitions fit.  Scale = TGT_TOTAL / SRC_TOTAL (capped at 1.0).
 if [ "$TGT_TOTAL" -lt "$SRC_TOTAL" ]; then
@@ -593,6 +627,24 @@ CLONED=0
 FAILED=0
 _CLONED_PARTS=""
 
+# Rileva il tipo di tabella della sorgente e, per MBR/msdos, il contenitore
+# extended: serve per ricreare le partizioni con il ruolo corretto.
+SRC_PTTYPE=$(parted -s -m "$SOURCE_DEVICE" unit s print 2>/dev/null \
+    | awk -F: 'NR==2 {print $6}')
+SRC_EXT_START=''
+SRC_EXT_END=''
+if [ "$SRC_PTTYPE" = "msdos" ]; then
+    _first_logical=$(printf '%s\n' "$SRC_PARTS" | awk '$1 >= 5 {print; exit}')
+    if [ -n "$_first_logical" ]; then
+        SRC_EXT_START=$(printf '%s\n' "$SRC_PARTS" | awk -v l="$_first_logical" '
+            BEGIN { split(l, a, " "); ls=a[2]; le=a[3] }
+            $1 <= 4 && $2 <= ls && $3 >= le { print $2; exit }')
+        SRC_EXT_END=$(printf '%s\n' "$SRC_PARTS" | awk -v l="$_first_logical" '
+            BEGIN { split(l, a, " "); ls=a[2]; le=a[3] }
+            $1 <= 4 && $2 <= ls && $3 >= le { print $3; exit }')
+    fi
+fi
+
 while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     [ -z "$_pnum" ] && continue
 
@@ -603,26 +655,44 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
 
     _src_part=$(partition_path "$SOURCE_DEVICE" "$_pnum")
 
-    # Compute scaled target start and end
-    _tgt_start=$(( _pstart * SCALE_NUM / SCALE_DEN ))
-    _tgt_end=$(( _pend * SCALE_NUM / SCALE_DEN ))
-
-    # Align start up, end down to alignment boundary
-    _tgt_start=$(align_up   "$_tgt_start" "$ALIGN_SECTORS")
-    _tgt_end=$(  align_down "$_tgt_end"   "$ALIGN_SECTORS")
-    # Adjust end to be ALIGN_SECTORS-1 mod ALIGN_SECTORS so length is a multiple
-    _len=$(( _tgt_end - _tgt_start + 1 ))
-    _rem=$(( _len % ALIGN_SECTORS ))
-    if [ "$_rem" -ne 0 ]; then
-        _tgt_end=$(( _tgt_end - _rem ))
+    # Ruolo per tabelle MBR/msdos (extended/logical/primary); su GPT nessun ruolo.
+    _part_role='primary'
+    if [ "$SRC_PTTYPE" = "msdos" ]; then
+        if [ "$_pnum" -ge 5 ]; then
+            _part_role='logical'
+        elif [ -n "$SRC_EXT_START" ] && [ "$_pstart" -eq "$SRC_EXT_START" ] 2>/dev/null; then
+            _part_role='extended'
+        fi
     fi
+
+    # Compute scaled target start (proportional when target < source)
+    _tgt_start=$(( _pstart * SCALE_NUM / SCALE_DEN ))
+    _tgt_start=$(align_up "$_tgt_start" "$ALIGN_SECTORS")
+
+    # Size the range from the SOURCE partition size, NOT from aligned endpoints.
+    # (Old code aligned _pend DOWN, silently losing up to ALIGN_SECTORS sectors,
+    # so the size check below always skipped the last partition of a disk even
+    # when the target was large enough.)
+    _tgt_size=$(( _psize * SCALE_NUM / SCALE_DEN ))
+    _tgt_end=$(( _tgt_start + _tgt_size - 1 ))
 
     # Make sure target range fits on disk
     if [ "$_tgt_end" -ge "$TGT_TOTAL" ]; then
         _tgt_end=$(( TGT_TOTAL - 1 ))
+        _tgt_size=$(( _tgt_end - _tgt_start + 1 ))
     fi
 
-    _tgt_size=$(( _tgt_end - _tgt_start + 1 ))
+    # If clamping trimmed the range below the source size, try to recover by
+    # moving the start one alignment unit earlier (still alignment-aligned).
+    if [ "$_tgt_size" -lt "$_psize" ] && [ "$_tgt_start" -ge "$ALIGN_SECTORS" ]; then
+        _tgt_start=$(( _tgt_start - ALIGN_SECTORS ))
+        _tgt_end=$(( _tgt_start + _tgt_size - 1 ))
+        if [ "$_tgt_end" -ge "$TGT_TOTAL" ]; then
+            _tgt_end=$(( TGT_TOTAL - 1 ))
+        fi
+        _tgt_size=$(( _tgt_end - _tgt_start + 1 ))
+    fi
+
     if [ "$_tgt_size" -lt "$_psize" ]; then
         echo "     ❌  SKIPPED: scaled target range (${_tgt_size} sectors) is smaller than source partition (${_psize} sectors)."
         FAILED=$(( FAILED + 1 ))
@@ -639,18 +709,38 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     fi
 
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart primary ${_fstype_hint} ${_tgt_start}s ${_tgt_end}s"
+        if [ "$SRC_PTTYPE" = "msdos" ]; then
+            echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart ${_part_role} ${_fstype_hint} ${_tgt_start}s ${_tgt_end}s"
+        else
+            echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart '' ${_tgt_start}s ${_tgt_end}s"
+        fi
         [ -n "$_pname" ] && echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' name ${_pnum} '${_pname}'"
         echo "🔸  [DRY-RUN] partprobe '${TARGET_DEVICE}'"
         _tgt_part=$(partition_path "$TARGET_DEVICE" "$_pnum")
         echo "     (Simulated target partition: ${_tgt_part})"
     else
-        if [ -n "$_fstype_hint" ]; then
-            parted -s "$TARGET_DEVICE" unit s mkpart primary "$_fstype_hint" "${_tgt_start}s" "${_tgt_end}s" \
-                || die "Failed to create partition ${_pnum} on ${TARGET_DEVICE}."
+        _mkpart_ok=1
+        if [ "$SRC_PTTYPE" = "msdos" ]; then
+            if [ -n "$_fstype_hint" ]; then
+                parted -s "$TARGET_DEVICE" unit s mkpart "$_part_role" "$_fstype_hint" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+            else
+                parted -s "$TARGET_DEVICE" unit s mkpart "$_part_role" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+            fi
         else
-            parted -s "$TARGET_DEVICE" unit s mkpart primary "${_tgt_start}s" "${_tgt_end}s" \
-                || die "Failed to create partition ${_pnum} on ${TARGET_DEVICE}."
+            parted -s "$TARGET_DEVICE" unit s mkpart "" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+        fi
+        # Tollerante: se mkpart fallisce ma esiste già una partizione con lo
+        # stesso start (es. tabella copiata con -B o run ripetuta), la riusa.
+        if [ "$_mkpart_ok" = "0" ]; then
+            _exists=$(parted -s -m "$TARGET_DEVICE" unit s print 2>/dev/null \
+                | awk -F: -v s="${_tgt_start}" 'NR>2 && $1 ~ /^[0-9]+$/ {
+                    gsub(/s/,"",$2); if ($2 == s) { print $1; exit } }')
+            if [ -n "$_exists" ]; then
+                echo "     ⚠️  Partition with start ${_tgt_start} already exists (${_exists}) — reusing it."
+                _mkpart_ok=1
+            else
+                die "Failed to create partition ${_pnum} on ${TARGET_DEVICE}."
+            fi
         fi
         [ -n "$_pname" ] && parted -s "$TARGET_DEVICE" name "$_pnum" "$_pname" 2>/dev/null || true
         partprobe "$TARGET_DEVICE" 2>/dev/null || true
@@ -680,6 +770,18 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     fi
 
     step_pause
+
+    # Il contenitore extended non contiene dati: viene solo creato (mkpart) e
+    # le partizioni logiche al suo interno vengono clonate singolarmente.
+    # Clonarlo con partclone.dd è inutile e su WSL2 corrompe la vista della
+    # tabella per parted (quirk cache dei loop device: "wrong signature 0").
+    if [ "$_part_role" = "extended" ]; then
+        echo "     ⏭️  Extended container (${_pnum}): no data to clone — logical partitions are cloned individually."
+        CLONED=$(( CLONED + 1 ))
+        _CLONED_PARTS="${_CLONED_PARTS} ${_pnum}"
+        step_pause
+        continue
+    fi
 
     # Clone data
     echo "💾  Cloning data: ${_src_part}  ──▶  ${_tgt_part}…"
@@ -715,18 +817,48 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
         _partclone_bin="partclone.dd"
     fi
 
+    # partclone.dd (v0.3.x) NON accetta --dev-to-dev (-b): solo i backend
+    # filesystem-aware lo supportano.
+    _pcdd=0
+    case "$_partclone_bin" in
+        partclone.dd) _pcdd=1 ;;
+    esac
+
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "🔸  [DRY-RUN] ${_partclone_bin} --clone --source '${_src_part}' --output '${_tgt_part}' ${PARTCLONE_EXTRA}"
+        if [ "$_pcdd" -eq 1 ]; then
+            echo "🔸  [DRY-RUN] ${_partclone_bin} --overwrite --quiet --source '${_src_part}' --output '${_tgt_part}' ${PARTCLONE_EXTRA}"
+        else
+            echo "🔸  [DRY-RUN] ${_partclone_bin} --dev-to-dev --overwrite --quiet --source '${_src_part}' --output '${_tgt_part}' ${PARTCLONE_EXTRA}"
+        fi
     else
         command -v "$_partclone_bin" >/dev/null 2>&1 \
             || die "${_partclone_bin} not found in PATH."
         # shellcheck disable=SC2086
-        "$_partclone_bin" \
-            --clone \
-            --source "$_src_part" \
-            --output "$_tgt_part" \
-            $PARTCLONE_EXTRA \
-            || die "partclone failed on partition ${_pnum}."
+        # --dev-to-dev (-b): sorgente e target sono ENTRAMBI device a blocchi →
+        # copia dati grezzi. NON usare --clone (-c): scriverebbe il formato
+        # immagine partclone (header + blocchi sparsi), non un filesystem
+        # montabile ("Bad magic number" da e2fsck/tune2fs/mount).
+        # --overwrite: la partizione target è appena stata creata e va
+        # sovrascritta; senza, partclone >= 0.3.x rifiuta di scrivere su un
+        # device che già esiste.
+        if [ "$_pcdd" -eq 1 ]; then
+            "$_partclone_bin" \
+                --overwrite \
+                --quiet \
+                --source "$_src_part" \
+                --output "$_tgt_part" \
+                $PARTCLONE_EXTRA \
+                || die "partclone failed on partition ${_pnum}."
+        else
+            "$_partclone_bin" \
+                --dev-to-dev \
+                --overwrite \
+                --quiet \
+                --source "$_src_part" \
+                --output "$_tgt_part" \
+                $PARTCLONE_EXTRA \
+                || die "partclone failed on partition ${_pnum}."
+        fi
         echo "     ✔ Data clone of partition ${_pnum} completed."
     fi
 
