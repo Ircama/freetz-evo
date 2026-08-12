@@ -6,6 +6,16 @@ $(call PKG_INIT_LIB, 0.15.0)
 # "'BUS_SPI' undeclared". The patch defines a fallback (#define BUS_SPI 0x1A).
 # This is a kernel-headers issue, NOT uClibc-specific -> source patch instead
 # of a uClibc gate (no regression on any toolchain).
+#
+# Patch 003-fix-libusb-pthread-barrier.patch (libusb/hidapi_thread_pthread.h):
+# the libusb backend uses pthread_barrier_* for the 2-party read-thread
+# startup handshake. Old uClibc (0.9.x, e.g. 0.9.32.1 on 3270v3) *declares*
+# pthread_barrier_* in <pthread.h> but does NOT implement them in libpthread,
+# so libhidapi-libusb.so ends up with undefined references and consumers like
+# avrdude fail to link. The patch replaces the barrier with an equivalent
+# mutex+cond handshake (only pthread_mutex/pthread_cond are used, available on
+# every libc), so it is applied unconditionally and causes no regression on
+# modern toolchains (uClibc-ng 1.0.58+, glibc, musl).
 $(PKG)_LIB_VERSION:=0.15.0
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=5d84dec684c27b97b921d2f3b73218cb773cf4ea915caee317ac8fc73cef8136

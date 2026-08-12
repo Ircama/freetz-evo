@@ -1,0 +1,59 @@
+--- libusb/hidapi_thread_pthread.h	2026-08-12 21:16:16.787479401 +0200
++++ libusb/hidapi_thread_pthread.h	2026-08-12 21:16:16.787479401 +0200
+@@ -92,7 +92,12 @@
+ 	pthread_t thread;
+ 	pthread_mutex_t mutex; /* Protects input_reports */
+ 	pthread_cond_t condition;
+-	pthread_barrier_t barrier; /* Ensures correct startup sequence */
++	/* 2-party startup handshake (replaces pthread_barrier_t):
++	   old uClibc (0.9.x) declares pthread_barrier_* but does not
++	   implement them, so avoid them entirely. */
++	pthread_mutex_t barrier_mutex;
++	pthread_cond_t barrier_cond;
++	int barrier_count;
+ 
+ } hidapi_thread_state;
+ 
+@@ -100,12 +105,15 @@
+ {
+ 	pthread_mutex_init(&state->mutex, NULL);
+ 	pthread_cond_init(&state->condition, NULL);
+-	pthread_barrier_init(&state->barrier, NULL, 2);
++	pthread_mutex_init(&state->barrier_mutex, NULL);
++	pthread_cond_init(&state->barrier_cond, NULL);
++	state->barrier_count = 0;
+ }
+ 
+ static void hidapi_thread_state_destroy(hidapi_thread_state *state)
+ {
+-	pthread_barrier_destroy(&state->barrier);
++	pthread_mutex_destroy(&state->barrier_mutex);
++	pthread_cond_destroy(&state->barrier_cond);
+ 	pthread_cond_destroy(&state->condition);
+ 	pthread_mutex_destroy(&state->mutex);
+ }
+@@ -145,7 +153,23 @@
+ 
+ static void hidapi_thread_barrier_wait(hidapi_thread_state *state)
+ {
+-	pthread_barrier_wait(&state->barrier);
++	/* 2-party barrier implemented with a mutex+cond handshake.
++	   pthread_barrier_* are declared by old uClibc (0.9.x, e.g.
++	   0.9.32.1 on 3270v3) but NOT implemented there, causing
++	   undefined references at link time (e.g. avrdude). Using only
++	   pthread_mutex/pthread_cond works on every libc, so this is
++	   applied unconditionally (no regression on modern toolchains). */
++	pthread_mutex_lock(&state->barrier_mutex);
++	state->barrier_count++;
++	if (state->barrier_count == 2) {
++		state->barrier_count = 0;
++		pthread_cond_broadcast(&state->barrier_cond);
++		pthread_mutex_unlock(&state->barrier_mutex);
++	} else {
++		while (state->barrier_count != 0)
++			pthread_cond_wait(&state->barrier_cond, &state->barrier_mutex);
++		pthread_mutex_unlock(&state->barrier_mutex);
++	}
+ }
+ 
+ static void hidapi_thread_create(hidapi_thread_state *state, void *(*func)(void*), void *func_arg)

@@ -20,6 +20,11 @@ $(PKG)_CONF_TARGET:=$($(PKG)_DEST_DIR)/etc/avrdude.conf
 
 $(PKG)_DEPENDS_ON += cmake-host
 $(PKG)_DEPENDS_ON += libelf libusb1 libftdi readline ncurses
+# avrdude links the freetz-built libhidapi-libusb.so (found in the toolchain
+# sysroot via PREFERRED_LIBHIDAPI) for USB HID programmers, so hidapi must be
+# staged first. hidapi 0.15.0 with patch 003 uses only pthread_mutex/cond,
+# so this stays compatible with old uClibc (0.9.32.1/3270v3) and modern ones.
+$(PKG)_DEPENDS_ON += hidapi
 
 $(PKG)_REBUILD_SUBOPTS += $(LIBELF_REBUILD_SUBOPTS)
 $(PKG)_REBUILD_SUBOPTS += $(LIBUSB1_REBUILD_SUBOPTS)
