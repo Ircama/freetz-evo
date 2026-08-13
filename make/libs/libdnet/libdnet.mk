@@ -6,6 +6,8 @@ $(PKG)_HASH:=139daed4c5158b20c1fd65d5152d48c4414bb9947b48f1961084e8409c4c8fb4
 # $(PKG)_SITE:=http://libdnet.googlecode.com/files
 $(PKG)_SITE:=svn@http://libdnet.googlecode.com/svn/trunk
 
+$(PKG)_CATEGORY_LIBS:=Networking
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

@@ -1,6 +1,9 @@
-# miniupnpd 2.3.10
-  - Package: [master/make/pkgs/miniupnpd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/miniupnpd/)
+# MiniUPnPd (UPnP IGD daemon)
   - Homepage: [https://miniupnp.tuxfamily.org/](https://miniupnp.tuxfamily.org/)
+  - Changelog: [https://github.com/miniupnp/miniupnp/releases](https://github.com/miniupnp/miniupnp/releases)
+  - Repository: [https://github.com/miniupnp/miniupnp](https://github.com/miniupnp/miniupnp)
+  - Package: [master/make/pkgs/miniupnpd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/miniupnpd/)
+  - Steward: -
   - Provides: UPnP-IGD daemon for automatic port forwarding
   - Used by: —
   - Externalization: supported

@@ -2,6 +2,10 @@ $(call TOOLS_INIT, 3.1.6)
 $(PKG)_SOURCE:=mpfr-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=7a62ac1a04408614fccdc506e4844b10cf0ad2c2b1677097f8f35d3a1344a950
 $(PKG)_SITE:=http://www.mpfr.org/mpfr-$($(PKG)_VERSION)
+### WEBSITE:=https://www.mpfr.org/
+### MANPAGE:=https://www.mpfr.org/faq.html
+### CHANGES:=https://ftp.gnu.org/gnu/mpfr/
+### CVSREPO:=https://gitlab.inria.fr/mpfr/mpfr
 
 $(PKG)_DEPENDS_ON+=gmp-host
 

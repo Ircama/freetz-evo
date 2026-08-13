@@ -1,0 +1,24 @@
+--- meson.build
++++ meson.build
+@@ -31,6 +31,8 @@
+ endif
+ if compiler.has_function('secure_getenv')
+   conf_data.set('HAVE_SECURE_GETENV', true)
++else
++  conf_data.set('HAVE_UID_GID_CHECK', true)
+ endif
+ if compiler.has_function('pthread_condattr_setclock')
+   conf_data.set('HAVE_PTHREAD_CONDATTR_SETCLOCK', true)
+--- src/sys_unix.c
++++ src/sys_unix.c
+@@ -169,6 +169,10 @@
+ {
+ #ifdef HAVE_SECURE_GETENV
+ 	return secure_getenv(name);
++#elif defined(HAVE_UID_GID_CHECK)
++	if (geteuid() != getuid() || getegid() != getgid())
++		return NULL;
++	return getenv(name);
+ #else
+ 	/* Otherwise, make sure current process is not tainted by uid or gid
+ 	 * changes */

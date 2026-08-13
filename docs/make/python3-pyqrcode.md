@@ -1,6 +1,7 @@
-# python3-pyqrcode 1.2.1
-  - Package: [master/make/pkgs/python3-pyqrcode/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-pyqrcode/)
+# PyQRCode 1.2.1 [^]
   - Homepage: [https://pypi.org/project/PyQRCode/](https://pypi.org/project/PyQRCode/)
+  - Package: [master/make/pkgs/python3-pyqrcode/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-pyqrcode/)
+  - Steward: Ircama
   - Provides: Python 3 QR code generator
   - Used by: —
   - Externalization: supported

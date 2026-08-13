@@ -1,8 +1,7 @@
-# ncmpcpp 0.10.1
+# ncmpcpp 0.9.2
   - Homepage: [https://github.com/ncmpcpp/ncmpcpp](https://github.com/ncmpcpp/ncmpcpp)
   - Changelog: [https://github.com/ncmpcpp/ncmpcpp/releases](https://github.com/ncmpcpp/ncmpcpp/releases)
-  - Repository: [https://github.com/ncmpcpp/ncmpcpp](https://github.com/ncmpcpp/ncmpcpp)
-  - Package: [master/make/pkgs/ncmpcpp/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/ncmpcpp/)
+  - Package: [master/make/pkgs/ncmpcpp/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ncmpcpp/)
   - Steward: -
 
   - Depends on: `libmpdclient`, `ncursesw`, `curl`, `taglib`

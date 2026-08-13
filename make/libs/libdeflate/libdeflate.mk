@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://github.com/ebiggers/libdeflate/releases/download/v$($(PKG)_
 ### CVSREPO:=https://github.com/ebiggers/libdeflate
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_LIBNAME=$(pkg).so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

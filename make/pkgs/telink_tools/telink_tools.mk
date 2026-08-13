@@ -3,7 +3,7 @@ $(call PKG_INIT_BIN, 1.0)
 ### CHANGES:=
 ### CVSREPO:=
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/telink_tools
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/telink_tools

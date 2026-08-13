@@ -7,7 +7,7 @@ PKGS=$(
 for dir in avm $(find "$INPWD" -maxdepth 1 -mindepth 1 -type d); do
 	pkg="${dir##*/}"
 	echo "$pkg" | grep -qE "^(busybox|linux)$" && continue
-	cat="$(sed -n 's/^$(PKG)_CATEGORY *:= *//p' $dir/$pkg.mk 2>/dev/null)"
+	cat="$(sed -n 's/^$(PKG)_CATEGORY_PKGS *:= *//p' $dir/$pkg.mk 2>/dev/null)"
 	[ "${#cat}" == "1" ] && cat="000Packages"
 	echo "${cat:-000Packages}##$pkg"
 done | sort )
@@ -35,9 +35,11 @@ echo "$PKGS" | sed 's/##.*//g' | uniq | while read cat; do
 			sed "/^  - Steward: .*$/d" -i "$MDPWD/$pkg.md"
 			lnk="$(sed -n "s/^### STEWARD:= *//p" "$INPWD/$pkg/$pkg.mk")"
 			case "$lnk" in
+				PIN)	lnk='`VERSION-PINNED`' ;;
+				EOL)	lnk='`END-OF-LIFE`' ;;
 				X)	lnk="" ;;
 				"")	lnk="-" ;;
-				Ircama)	lnk="Ircama" ;;
+				Ircama)	lnk="Ircama" ;; # Freetz-EVO maintainer, no link
 				*)	[ "$lnk" != "${lnk/:\/\//}" ] && lnk="\[$lnk\]($lnk)" || lnk="\[@$lnk\](https://github.com/$lnk)" ;; #"
 			esac
 			[ -n "$lnk" ] && sed "2i\  - Steward: $lnk" -i "$MDPWD/$pkg.md"

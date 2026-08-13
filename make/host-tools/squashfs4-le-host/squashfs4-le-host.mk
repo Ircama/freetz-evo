@@ -2,6 +2,7 @@ $(call TOOLS_INIT, 4.3)
 $(PKG)_SOURCE:=squashfs$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=0d605512437b1eb800b4736791559295ee5f60177e102e4d4ccd0ee241a5f3f6
 $(PKG)_SITE:=@SF/squashfs
+### STEWARD:=PIN
 
 $(PKG)_DEPENDS_ON+=lzma2-host
 

@@ -8,6 +8,8 @@ $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_libusb0_WITH_VERSION_ABANDON),ABAND
 $(PKG)_SITE:=@SF/libusb,https://github.com/libusb/libusb-compat-0.1/releases/download/v$($(PKG)_VERSION)
 ### VERSION:=0.1.12/0.1.9
 
+$(PKG)_CATEGORY_LIBS:=USB & related
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(if $(FREETZ_LIB_libusb0_WITH_VERSION_ABANDON),,libusb/).libs/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)

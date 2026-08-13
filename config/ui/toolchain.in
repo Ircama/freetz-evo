@@ -554,7 +554,7 @@ choice
 	default FREETZ_TARGET_UCLIBC_0_9_32 if FREETZ_AVM_UCLIBC_0_9_32
 	default FREETZ_TARGET_UCLIBC_0_9_33 if FREETZ_AVM_UCLIBC_0_9_33
 	default FREETZ_TARGET_UCLIBC_1_0_14 if FREETZ_AVM_UCLIBC_1_0_14
-	default FREETZ_TARGET_UCLIBC_1_0_58 if FREETZ_SEPARATE_AVM_UCLIBC
+	default FREETZ_TARGET_UCLIBC_1_0_59 if FREETZ_SEPARATE_AVM_UCLIBC
 
 	config FREETZ_TARGET_UCLIBC_0_9_28
 	bool "uclibc-0.9.28"
@@ -579,8 +579,8 @@ choice
 	bool "uclibc-1.0.14"
 	depends on FREETZ_AVM_UCLIBC_1_0_14
 
-	config FREETZ_TARGET_UCLIBC_1_0_58
-	bool "uclibc-1.0.58"
+	config FREETZ_TARGET_UCLIBC_1_0_59
+	bool "uclibc-1.0.59"
 	depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 endchoice
@@ -1202,7 +1202,7 @@ config FREETZ_TARGET_UCLIBC_0
 config FREETZ_TARGET_UCLIBC_1
 	bool
 	default y           if FREETZ_TARGET_UCLIBC_1_0_14
-	default y           if FREETZ_TARGET_UCLIBC_1_0_58
+	default y           if FREETZ_TARGET_UCLIBC_1_0_59
 	default n
 
 # "1.0.58 or newer": true for uClibc 1.0.58 and any future version.
@@ -1225,7 +1225,7 @@ config FREETZ_TARGET_UCLIBC_VERSION
 	default "0.9.32.1"  if FREETZ_TARGET_UCLIBC_0_9_32
 	default "0.9.33.2"  if FREETZ_TARGET_UCLIBC_0_9_33
 	default "1.0.14"    if FREETZ_TARGET_UCLIBC_1_0_14
-	default "1.0.58"    if FREETZ_TARGET_UCLIBC_1_0_58
+	default "1.0.59"    if FREETZ_TARGET_UCLIBC_1_0_59
 
 config FREETZ_TARGET_UCLIBC_MAJOR_VERSION
 	string

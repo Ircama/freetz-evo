@@ -25,8 +25,10 @@ for dir in $(find "$INPWD" -maxdepth 1 -mindepth 1 -type d | sort); do
 	sed "/^  - Steward: .*$/d" -i "$MDPWD/$tool.md"
 	lnk="$(sed -n "s/^### STEWARD:= *//p" $dir/*.mk)"
 	case "$lnk" in
+		PIN)	lnk='`VERSION-PINNED`' ;;
+		EOL)	lnk='`END-OF-LIFE`' ;;
 		X)	lnk="" ;;
-		"")	lnk="-" ;;
+		"")	lnk="???" ;;
 		*)	[ "$lnk" != "${lnk/:\/\//}" ] && lnk="\[$lnk\]($lnk)" || lnk="\[@$lnk\](https://github.com/$lnk)" ;; #"
 	esac
 	[ -n "$lnk" ] && sed "2i\  - Steward: $lnk" -i "$MDPWD/$tool.md"

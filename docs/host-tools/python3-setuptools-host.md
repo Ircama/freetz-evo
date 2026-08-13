@@ -1,4 +1,4 @@
-# python3-setuptools 82.0.1
+# python3-setuptools 84.0.0
   - Homepage: [https://pypi.org/project/setuptools/](https://pypi.org/project/setuptools/)
   - Manpage: [https://setuptools.pypa.io/](https://setuptools.pypa.io/)
   - Changelog: [https://pypi.org/project/setuptools/#history](https://pypi.org/project/setuptools/#history)

@@ -5,6 +5,8 @@ $(PKG)_HASH:=$(MPFR_HOST_HASH)
 $(PKG)_SITE:=$(MPFR_HOST_SITE)
 ### VERSION:=3.1.6
 
+$(PKG)_CATEGORY_LIBS:=Arithmetic
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libmpfr.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmpfr.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmpfr.so.$($(PKG)_LIB_VERSION)

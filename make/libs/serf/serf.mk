@@ -8,6 +8,8 @@ $(PKG)_SITE:=@APACHE/serf
 ### CHANGES:=https://serf.apache.org/download
 ### CVSREPO:=https://svn.apache.org/viewvc/serf/
 
+$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/libserf-1.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/libserf-1.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libserf-1.so.$($(PKG)_LIB_VERSION)

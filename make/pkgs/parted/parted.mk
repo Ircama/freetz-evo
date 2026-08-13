@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 3.6)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=3b43dbe33cca0f9a18601ebab56b7852b128ec1a3df3a9b30ccde5e73359e612
 $(PKG)_SITE:=@GNU/$(pkg)

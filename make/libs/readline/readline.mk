@@ -12,6 +12,8 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CVSREPO:=https://git.savannah.gnu.org/cgit/readline.git/
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Terminal##Readline
+
 $(PKG)_$(PKG)_BINARY:=$($(PKG)_DIR)/shlib/libreadline.so.$($(PKG)_LIB_VERSION)
 $(PKG)_HISTORY_BINARY:=$($(PKG)_DIR)/shlib/libhistory.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_$(PKG)_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libreadline.so.$($(PKG)_LIB_VERSION)

@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=342f30dc57bd4a6dad41398365baaa690429660b10d866b7d508e8f1179cb7a6
 $(PKG)_SITE:=http://downloads.xiph.org/releases/speex
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio
+
 $(PKG)_LIBNAMES_SHORT   := speex speexdsp
 $(PKG)_LIBNAMES_LONG    := $($(PKG)_LIBNAMES_SHORT:%=lib%.so.$($(PKG)_LIB_VERSION))
 $(PKG)_LIBS_BUILD_DIR   := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_DIR)/libspeex/.libs/%)

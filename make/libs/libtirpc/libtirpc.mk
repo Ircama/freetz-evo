@@ -7,6 +7,8 @@ $(PKG)_SITE:=@SF/libtirpc
 ### CHANGES:=http://git.linux-nfs.org/?p=steved/libtirpc.git;a=shortlog;h=refs/heads/master
 ### CVSREPO:=http://git.linux-nfs.org/?p=steved/libtirpc.git
 
+$(PKG)_CATEGORY_LIBS:=Networking
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtirpc.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libtirpc.so.$($(PKG)_LIB_VERSION)

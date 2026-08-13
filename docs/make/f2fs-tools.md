@@ -1,6 +1,6 @@
-# f2fs-tools 1.9.0
+# f2fs-tools 1.9.0 (binary only)
   - Package: [master/make/pkgs/f2fs-tools/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/f2fs-tools/)
-  - Homepage: [https://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs-tools.git/](https://git.kernel.org/pub/scm/linux/kernel/git/jaegeuk/f2fs-tools.git/)
+  - Steward: -
   - Provides: `mkfs.f2fs`, `fsck.f2fs`, `dump.f2fs` — F2FS filesystem utilities
   - Used by: —
   - Externalization: supported

@@ -9,7 +9,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/mpc-$($(PKG)_VERSION)
 ### CVSREPO:=https://github.com/MusicPlayerDaemon/mpc
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/mpd-mpc/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/mpc
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/mpc

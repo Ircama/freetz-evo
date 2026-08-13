@@ -1,0 +1,25 @@
+--- meson.build
++++ meson.build
+@@ -114,7 +114,7 @@
+       pcscd_dep += libbsd
+       libpcsclite_dep += libbsd
+     else
+-      error('Could not find right library for issetugid()')
++      conf_data.set('HAVE_UID_GID_CHECK', true)
+     endif
+   endif
+ endif
+ endif
+--- src/sys_unix.c
++++ src/sys_unix.c
+@@ -169,6 +169,10 @@
+ {
+ #ifdef HAVE_SECURE_GETENV
+ 	return secure_getenv(name);
++#elif defined(HAVE_UID_GID_CHECK)
++	if (geteuid() != getuid() || getegid() != getgid())
++		return NULL;
++	return getenv(name);
+ #else
+ 	/* Otherwise, make sure current process is not tainted by uid or gid
+ 	 * changes */

@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, 1.0)
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_TARGET_PLUGIN := $($(PKG)_DEST_DIR)$(FREETZ_LIBRARY_DIR)/ladspa/caps.so
 $(PKG)_TARGET_RDF := $($(PKG)_DEST_DIR)/usr/share/ladspa/rdf/caps.rdf

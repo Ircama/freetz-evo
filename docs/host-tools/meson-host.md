@@ -1,4 +1,4 @@
-# meson 1.11.2
+# meson 1.12.0
   - Homepage: [https://mesonbuild.com/](https://mesonbuild.com/)
   - Manpage: [https://mesonbuild.com/](https://mesonbuild.com/)
   - Changelog: [https://github.com/mesonbuild/meson/releases](https://github.com/mesonbuild/meson/releases)

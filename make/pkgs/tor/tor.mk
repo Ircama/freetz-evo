@@ -1,6 +1,8 @@
-$(call PKG_INIT_BIN, 0.4.8.25)
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_TOR_VERSION_ABANDON),0.4.8.25,0.4.9.11))
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=371cd22178fa4b35e64b03933403890795ce3e304c5850a5b59adcc68820a799
+$(PKG)_HASH_ABANDON:=371cd22178fa4b35e64b03933403890795ce3e304c5850a5b59adcc68820a799
+$(PKG)_HASH_CURRENT:=2e6c1720118c812acf0079fd47cf91b6bfaba5d766c321c4d3d2a28d6a11a8ed
+$(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_TOR_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=https://www.torproject.org/dist
 ### WEBSITE:=https://www.torproject.org/download/tor/
 ### MANPAGE:=https://trac.torproject.org/projects/tor/wiki/
@@ -18,6 +20,8 @@ $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_TOR_GEOIP_V6),,$(if $(FREETZ_PACKAGE_TO
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_TOR_GEOIP_V4),,$(if $(FREETZ_PACKAGE_TOR_GEOIP_V6),,/usr/share/))
 
 $(PKG)_DEPENDS_ON += libevent openssl zlib
+
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_TOR_VERSION_ABANDON),abandon,current)
 
 $(PKG)_CONFIGURE_ENV += tor_cv_malloc_zero_works=no
 $(PKG)_CONFIGURE_ENV += tor_cv_null_is_zero=yes

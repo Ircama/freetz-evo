@@ -1,7 +1,7 @@
-$(call TOOLS_INIT, 26.2)
+$(call TOOLS_INIT, 26.3)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=24d24b249ba8fb0213ac046d8e2c1cecf6b1013311a5febfb87a02093ef2c991
+$(PKG)_HASH:=7a3d06452739127aefbac07051d7bf7fccaa8f646a020192cd4a1db2f1a9fb45
 $(PKG)_SITE:=https://github.com/pypa/packaging/archive/refs/tags
 ### WEBSITE:=https://pypi.org/project/packaging/
 ### MANPAGE:=https://packaging.pypa.io/

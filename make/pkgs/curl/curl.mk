@@ -11,6 +11,8 @@ $(PKG)_SITE:=https://curl.se/download,https://curl.haxx.se/download
 ### CVSREPO:=https://github.com/curl/curl
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_LIB_libcurl_WITH_VERSION_ABANDON),abandon,current)
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/curl

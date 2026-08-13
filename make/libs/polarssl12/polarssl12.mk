@@ -3,6 +3,8 @@ $(PKG)_SOURCE:=polarssl-$($(PKG)_VERSION)-gpl.tgz
 $(PKG)_HASH:=24cb1608a160101ead3c7240f35fc447fe7880cd60f7ed6c9db7a1d773ccd4b8
 $(PKG)_SITE:=http://polarssl.org/code/releases
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##PolarSSL
+
 $(PKG)_LIBNAME:=lib$(pkg).so.$($(PKG)_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/library/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

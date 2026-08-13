@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/lz4/lz4/releases/download/v$($(PKG)_VERSION)
 ### CHANGES:=https://github.com/lz4/lz4/releases
 ### CVSREPO:=https://github.com/lz4/lz4
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/liblz4.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblz4.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/liblz4.so.$($(PKG)_LIB_VERSION)

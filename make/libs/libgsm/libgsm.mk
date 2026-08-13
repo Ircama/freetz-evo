@@ -3,6 +3,8 @@ $(PKG)_SOURCE:=$(pkg)_$($(PKG)_VERSION).orig.tar.gz
 $(PKG)_HASH:=52c518244d428c2e56c543b98c9135f4a76ff780c32455580b793f60a0a092ad
 $(PKG)_SITE:=@DEBIAN/libgsm
 
+$(PKG)_CATEGORY_LIBS:=Networking
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/$(pkg).so.$($(PKG)_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_VERSION)

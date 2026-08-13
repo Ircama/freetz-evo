@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic
 ### CVSREPO:=https://gitlab.freedesktop.org/fontconfig/fontconfig
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARIES:=fonts.conf
 $(PKG)_BINARIES_BUILD_DIR:=$($(PKG)_BINARIES:%=$($(PKG)_DIR)/%)
 $(PKG)_BINARIES_TARGET_DIR:=$($(PKG)_BINARIES:%=$($(PKG)_DEST_DIR)/etc/fonts/%)
@@ -19,6 +21,8 @@ $(PKG)_LIBRARIES_STAGING_DIR:=$($(PKG)_LIBRARIES:%=$(TARGET_TOOLCHAIN_STAGING_DI
 $(PKG)_LIBRARIES_TARGET_DIR:=$($(PKG)_LIBRARIES:%=$($(PKG)_TARGET_LIBDIR)/%)
 
 $(PKG)_DEPENDS_ON += gperf-host freetype libxml2 zlib
+
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
 $(PKG)_CONFIGURE_ENV += LIBXML2_CFLAGS=-I"$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 

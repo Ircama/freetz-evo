@@ -1,10 +1,10 @@
 # oxker 0.13.2
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/mrjackwills/oxker](https://github.com/mrjackwills/oxker)
   - Changelog: [https://github.com/mrjackwills/oxker/releases](https://github.com/mrjackwills/oxker/releases)
   - Repository: [https://github.com/mrjackwills/oxker](https://github.com/mrjackwills/oxker)
   - Package: [master/make/pkgs/oxker/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/oxker/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/mrjackwills/oxker
 - Changelog: https://github.com/mrjackwills/oxker/releases

@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.0)
-$(PKG)_CATEGORY:=Web interfaces
+$(PKG)_CATEGORY_PKGS:=Web interfaces
 
 $(PKG)_STAGING_SOURCES := \
 	$(GERBERA_CGI_MAKE_DIR)/files/.language \

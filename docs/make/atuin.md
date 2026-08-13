@@ -1,10 +1,10 @@
 # atuin 18.16.1
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/atuinsh/atuin](https://github.com/atuinsh/atuin)
   - Changelog: [https://github.com/atuinsh/atuin/releases](https://github.com/atuinsh/atuin/releases)
   - Repository: [https://github.com/atuinsh/atuin](https://github.com/atuinsh/atuin)
   - Package: [master/make/pkgs/atuin/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/atuin/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/atuinsh/atuin
 - Changelog: https://github.com/atuinsh/atuin/releases

@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=7593a01724bbc0fd9fe48e62bc721ceb61c76654f1d7b231b3c65f6dfbbaefa4
 $(PKG)_SITE:=https://www.kernel.org/pub/linux/utils/usb/usbutils
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/lsusb
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/lsusb-freetz

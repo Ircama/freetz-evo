@@ -6,11 +6,12 @@ $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_TOOLS_PATCHELF_VERSION_ABANDON),ABANDON
 $(PKG)_SITE_ABANDON:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSION)
 $(PKG)_SITE_CURRENT:=git@https://github.com/NixOS/patchelf.git
 $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_TOOLS_PATCHELF_VERSION_ABANDON),ABANDON,CURRENT))
+### VERSION:=0.14.5/0.18.0-b49de1b33
 ### WEBSITE:=https://opencollective.com/nixos
 ### MANPAGE:=https://sources.debian.org/patches/patchelf/
 ### CHANGES:=https://github.com/NixOS/patchelf/releases
 ### CVSREPO:=https://github.com/NixOS/patchelf
-### VERSION:=0.14.5/0.18.0-b49de1b33
+### STEWARD:=fda77
 
 $(PKG)_SRC_BINARY := $($(PKG)_DIR)/src/patchelf
 $(PKG)_DST_BINARY := $(TOOLS_DIR)/patchelf

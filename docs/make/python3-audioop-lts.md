@@ -1,4 +1,4 @@
-# audioop-lts 0.2.1
+# audioop-lts 0.2.2
   - Homepage: [https://github.com/AbstractUmbra/audioop](https://github.com/AbstractUmbra/audioop)
   - Changelog: [https://github.com/AbstractUmbra/audioop/releases](https://github.com/AbstractUmbra/audioop/releases)
   - Repository: [https://github.com/AbstractUmbra/audioop](https://github.com/AbstractUmbra/audioop)

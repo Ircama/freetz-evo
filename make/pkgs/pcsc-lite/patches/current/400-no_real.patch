@@ -1,0 +1,17 @@
+--- meson.build
++++ meson.build
+@@ -224,14 +224,6 @@
+     include_directories : incdir,
+     soversion : 1,
+     install : true)
+-
+-  shared_library('pcsclite_real',
+-    libpcsclite_real_src,
+-    include_directories : incdir,
+-    dependencies : libpcsclite_dep,
+-    c_args: '-DLIBPCSCLITE -DSIMCLIST_NO_DUMPRESTORE',
+-    soversion : 1,
+-    install : true)
+ endif
+ 
+ # static library

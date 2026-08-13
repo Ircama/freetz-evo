@@ -148,7 +148,7 @@ $(PKG)_SITE:=http://sourceforge.net/projects/$(pkg)/files/
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/nzbget
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/nzbget
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG)_DEPENDS_ON += libxml2
 

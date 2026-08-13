@@ -1,11 +1,11 @@
 # partclone 0.3.31 (binary only)
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/Thomas-Tsai/partclone](https://github.com/Thomas-Tsai/partclone)
   - Manpage: [https://partclone.org/](https://partclone.org/)
   - Changelog: [https://github.com/Thomas-Tsai/partclone/releases](https://github.com/Thomas-Tsai/partclone/releases)
   - Repository: [https://github.com/Thomas-Tsai/partclone](https://github.com/Thomas-Tsai/partclone)
   - Package: [master/make/pkgs/partclone/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/partclone/)
   - Steward: Ircama
+  - Toolchain: requires uClibc 1.0.58 or newer
 partclone provides block-level imaging/restore/check tools often used by
 disk cloning workflows.
 

@@ -11,7 +11,7 @@ $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_PACKAGE_LTRACE_VERSION_ABANDON),ABANDON
 ### CHANGES:=https://gitlab.com/cespedes/ltrace/commits/main
 ### CVSREPO:=https://gitlab.com/cespedes/ltrace
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_LTRACE_VERSION_ABANDON),abandon,current)
 

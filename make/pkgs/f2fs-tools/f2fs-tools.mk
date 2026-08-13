@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.9.0)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=77217562ae7011a6d81b7b3c43c42623db1796a57596408d6c8037def70d6cc7
 $(PKG)_SITE:=https://github.com/jaegeuk/f2fs-tools/archive/refs/tags/v$($(PKG)_VERSION)

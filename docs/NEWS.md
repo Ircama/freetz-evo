@@ -1,5 +1,27 @@
 # Neuigkeiten
 
+### 2026-08-01
+
+AVM hat die Paketbeschleunigung scheinbar noch immer nicht richtig im Griff.
+Es mehren sich die Hinweise dass die Internetverbindung von der Fritzbox wieder sinnfrei gedrosselt wird.
+Auslöser ist wie gehabt AVM's legendäre Hardwarebeschleunigung aka PacketAccelerator aka AVM-PA.<br>
+Dieser hat schon mit Fritzos 5 und einer 7390 vor 13 Jahren beim Abheben eines Telefonhörers am ISDN-Telefon die Bandbreit massiv beschnitten.
+Außerdem wurde mit jedem Tag längerer Laufzeit die Bandbreite mehr und mehr verringert.
+Freetz stellte den Spuk über Kernelpatches ab.<br>
+Dieses Kunstwerk ist auch die Ursache dafür dass seitdem eine Fritzbox nur von 1 Gerät gleichzeitig auf der externen IPv4 angepingt werden kann.
+Bei 2 gleichzeitigen Anfragen hat jedes Gerät ~50% Verlust, usw.<br>
+Zum Testen kann der PA bis zum nächsten Reboot mit einem beherzten `echo disable > /proc/net/avm_pa/control` deaktiviert werden, oder über die überflüssig umständlich zu erreichende "Support" Seite im GUI.
+
+Siehe<br>
+
+   - [Freetz: PA & 7390 5.52, 2013](https://github.com/Freetz-NG/freetz-ng/commit/ffafdd91269c625f47b65d3fd968a469c4b49ab7)<br>
+   - [IPPF: Unerklärliches Bandbreitenproblem](https://www.ip-phone-forum.de/threads/326676/)<br>
+   - [Heise: Hersteller bestätigt Fehler in FritzOS 8.20 ](https://heise.de/-11173525 )<br>
+   - [Reddit: FRITZ!Box 7690 seit 8.20 wlan Geschwindigkeit wird nach 1 Tag gedrosselt ](https://www.reddit.com/r/fritzbox/comments/1quwe5p/fritzbox_7690_seit_820_wlan_geschwindigkeit_wird/)<br>
+   - [AVM 7510 8.26 Changelog: **Behoben** In besonderen Konstellationen konnte über DSL-Verbindungen nur ein Internetdurchsatz von bis zu 10 MBit/s erreicht werden](https://download.avm.de/fritzbox/fritzbox-7510/deutschland/fritz.os/info_de.txt)<br>
+   - [AVM 7583 8.26 Changelog: **Behoben** Übertragungsrate zum Internet an bestimmten Anschlüssen beeinträchtigt.](https://download.avm.de/fritzbox/fritzbox-7583/deutschland/fritz.os/info_de.txt)<br>
+   - [AVM 7620 8.26 Changelog: **Verbesserung** Datendurchsatz im Upload bei Internetzugriff via WAN-Anschluss optimiert](https://download.avm.de/fritzbox/fritzbox-7620/deutschland/fritz.os/info_de.txt)<br>
+
 ### 2026-06-22
 Die Updateprüfung Juis benötigt mindestens für Geräte ab HWR277 zusätzlich eine Authorization mit einem Bearer-Token - ansonsten bleibt alles gleich.
 Ohne Token bekommt man eine gültige Antwort aber es wird kein Update gefunden!<br>

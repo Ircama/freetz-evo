@@ -1,10 +1,9 @@
 # rmpc 0.11.0
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/mierak/rmpc](https://github.com/mierak/rmpc)
   - Changelog: [https://github.com/mierak/rmpc/releases](https://github.com/mierak/rmpc/releases)
-  - Repository: [https://github.com/mierak/rmpc](https://github.com/mierak/rmpc)
-  - Package: [master/make/pkgs/rmpc/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/rmpc/)
+  - Package: [master/make/pkgs/rmpc/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rmpc/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
   - Depends on: `rust-host` (Rust/Cargo cross-compilation toolchain)
   - Provides: `/usr/bin/rmpc`

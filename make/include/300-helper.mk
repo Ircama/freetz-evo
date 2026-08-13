@@ -278,10 +278,10 @@ endef
 
 #
 # $1 - menuconfig file
-# $2 - (optional) dir name, if omitted "make/pkgs" is used
+# $2 - (optional) dir name, if omitted "make/*" is used
 #
 define genin-get-considered-packages
-$(shell cat $1 2>/dev/null | sed -r -n -e 's,^[ \t]*source[ \t]+"$(if $(strip $(2)),$(strip $(2)),make/pkgs)/([^/]+)/(Config|external)[.]in(.libs)?.*,\1,p' | sort -u)
+$(shell cat $1 2>/dev/null | sed -r -n -e 's,^[ \t]*source[ \t]+"$(if $(strip $(2)),$(strip $(2)),make/[^/]+)/([^/]+)/(Config|external)[.]in(.libs)?.*,\1,p' | sort -u)
 endef
 
 #
@@ -291,6 +291,16 @@ endef
 #
 define get-subdirs-containing
 $(shell find -L $(strip $(1)) -maxdepth 2 -name "$(strip $(2))" -printf "%h\n" $(if $(strip $(3)),| grep -v -E "$(strip $(1))/$(subst $(_space),|,$(strip $(3)))") | sed -r -e 's,^$(strip $(1))/,,' | sort -u)
+endef
+
+#
+# $1 - dir a
+# $2 - dir b
+# $3 - name of the file to look for in a
+# $4 - name of the file to look for in b
+#
+define get-subdirs-containing2
+$(shell { find -L $(strip $(1)) -maxdepth 2 -name "$(strip $(3))" -printf "%h\n";find -L $(strip $(2)) -maxdepth 2 -name "$(strip $(4))" -printf "%h\n"; } | sed -r -e 's,^$(strip $(1))/,,;s,^$(strip $(2))/,,' | sort -u)
 endef
 
 #

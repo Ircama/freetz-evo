@@ -1,0 +1,11 @@
+--- test/Makefile.in
++++ test/Makefile.in
+@@ -769,7 +769,7 @@
+ 
+ test_bz89617_LDADD = $(top_builddir)/src/libfontconfig.la
+ test_bz131804_LDADD = $(top_builddir)/src/libfontconfig.la
+-noinst_PROGRAMS = $(check_PROGRAMS)
++noinst_PROGRAMS =
+ @OS_WIN32_FALSE@test_migration_LDADD = $(top_builddir)/src/libfontconfig.la
+ test_bz96676_LDADD = $(top_builddir)/src/libfontconfig.la
+ test_name_parse_LDADD = $(top_builddir)/src/libfontconfig.la

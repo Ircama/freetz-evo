@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION)pre21.tgz
 $(PKG)_HASH:=bd152152bf0b204661ab9439c5a649098bcb8cefebcbfa959dd602442739aa50
 $(PKG)_SITE:=http://www.soft-switch.org/downloads/spandsp
 
+$(PKG)_CATEGORY_LIBS:=Networking
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libspandsp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libspandsp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libspandsp.so.$($(PKG)_LIB_VERSION)

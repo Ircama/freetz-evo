@@ -1,0 +1,19 @@
+--- meson.build
++++ meson.build
+@@ -321,16 +321,6 @@
+ configure_file(output : 'pcscd.h',
+   input : 'src/pcscd.h.in',
+   configuration : confgen_data)
+-configure_file(output : 'pcscd.8',
+-  input : 'doc/pcscd.8.in',
+-  install_dir : join_paths(get_option('mandir'), 'man8'),
+-  configuration : confgen_data)
+-if get_option('serial')
+-configure_file(output : 'reader.conf.5',
+-  input : 'doc/reader.conf.5.in',
+-  install_dir : join_paths(get_option('mandir'), 'man5'),
+-  configuration : confgen_data)
+-endif
+ 
+ # pkg-config libpcsclite.pc
+ pkg = import('pkgconfig')

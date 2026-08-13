@@ -7,6 +7,8 @@ $(PKG)_LIB_VERSION:=2.3.0
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in, which disables it on older
 # toolchains.
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##ID3 tag
+
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=7349f6fd942418bc7009ebe743eb7c9d055f02921ec56fa436ec25007c47fd38
 $(PKG)_SITE:=https://github.com/taglib/taglib/releases/download/v$($(PKG)_VERSION)

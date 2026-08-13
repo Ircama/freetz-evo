@@ -46,7 +46,7 @@ $(PKG)_CONFIGURE_OPTIONS += --without-docs \
 			    --with-pthread \
 			    --with-server
 
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)

@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://github.com/libexif/libexif/releases/download/v$($(PKG)_VERS
 ### CHANGES:=https://github.com/libexif/libexif/releases
 ### CVSREPO:=https://github.com/libexif/libexif
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/libexif/.libs/libexif.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libexif.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libexif.so.$($(PKG)_LIB_VERSION)

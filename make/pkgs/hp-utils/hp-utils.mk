@@ -4,7 +4,7 @@ $(PKG)_HASH:=07825e001ed1a2c2c519ab5abd1af618c718a56b8262558b1d96ee5f73892890
 $(PKG)_SITE:=http://www.michaeldenk.de/projects/hp-utils
 $(PKG)_BINARY:=$($(PKG)_DIR)/hp-levels
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/hp-levels
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG)_DEPENDS_ON+= hplip
 

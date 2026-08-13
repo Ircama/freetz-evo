@@ -2,6 +2,11 @@ $(call TOOLS_INIT, 6.3.0)
 $(PKG)_SOURCE:=gmp-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898
 $(PKG)_SITE:=@GNU/gmp
+### WEBSITE:=https://www.gnu.org/software/gmp/
+### MANPAGE:=https://www.gnu.org/software/gmp/manual/index.html
+### CHANGES:=https://ftp.gnu.org/gnu/gmp/
+### CVSREPO:=https://gmplib.org/repo/gmp
+### STEWARD:=fda77
 
 $(PKG)_BINARY:=$(HOST_TOOLS_DIR)/lib/libgmp.a
 

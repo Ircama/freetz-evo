@@ -1,0 +1,34 @@
+--- meson.build
++++ meson.build
+@@ -309,14 +309,6 @@
+   install_dir : polkit_dep.get_variable('policydir'))
+ endif
+ 
+-install_data('etc/fr.apdu.pcsclite.metainfo.xml',
+-  install_dir : 'share/metainfo'
+-  )
+-
+-install_data('etc/pcscd',
+-  install_dir : get_option('sysconfdir') / 'default'
+-  )
+-
+ # generate config.h
+ configure_file(output : 'config.h',
+   configuration : conf_data)
+@@ -329,16 +321,6 @@
+ configure_file(output : 'pcscd.h',
+   input : 'src/pcscd.h.in',
+   configuration : confgen_data)
+-configure_file(output : 'pcscd.socket',
+-  input : 'etc/pcscd.socket.in',
+-  install_dir : systemdsystemunitdir,
+-  configuration : confgen_data)
+-configure_file(output : 'pcscd.service',
+-  input : 'etc/pcscd.service.in',
+-  install_dir : systemdsystemunitdir,
+-  configuration : confgen_data)
+-install_data('etc/pcscd-sysusers.conf',
+-  install_dir : sysusersdir)
+ configure_file(output : 'pcscd.8',
+   input : 'doc/pcscd.8.in',
+   install_dir : join_paths(get_option('mandir'), 'man8'),

@@ -1,0 +1,89 @@
+#! /usr/bin/env bash
+
+PKGDIR=make/pkgs
+LIBDIR=make/libs
+CFILE=$LIBDIR/Config.in.generated
+EFILE=$LIBDIR/external.in.generated
+
+[ ! -d $PKGDIR/mod ] && exit 1
+#echo -n "genin_libs " 2>&1
+
+
+echo -n ""                                                                                                   >  ${CFILE}.tmp
+echo -n ""                                                                                                   >  ${EFILE}.tmp
+
+nix="zzzzzzzz"
+maj_nix="Other"
+min_nix="Misc"
+maj_last_text=""
+maj_last=""
+min_last="$nix"
+(
+for mak in $LIBDIR/*/*.mk $PKGDIR/*/*.mk; do
+	dir="${mak%/*}"
+	typ="${dir#*/}"
+	typ="${typ%/*}"
+	[ "$typ" == "libs" ] && cfg="Config.in"      && [ ! -e "$dir/$cfg" ] && continue
+	[ "$typ" == "pkgs" ] && cfg="Config.in.libs" && [ ! -e "$dir/$cfg" ] && continue
+
+	cat="$(grep '^$(PKG)_CATEGORY_LIBS:=' "$mak")"
+	cat="${cat#*:=}"
+	cat="${cat:-$nix}"
+	[ "${cat:0:2}" == "##" ] && cat="$nix##$cat"
+	[ "${cat/##}" != "$cat" ] && cat="$cat##$nix"
+
+	echo "$cat%%$dir/$cfg"
+done
+) | LC_ALL=C sort -f -t'/' -k1,1 -k3,3 | while read -r line; do
+	cin="${line##*%%}"
+	cat="${line%%%%*}"
+	maj="${cat%%##*}"
+	min="${cat##*##}"
+	maj_text="${maj/$nix/$maj_nix}"
+	min_text="${min/$nix/$min_nix}"
+	unc="n"
+
+#	c=$((c+1))
+#	[ "$((c%3))" == "0" ] && echo -n "." >&2
+
+	if [ "$maj" != "$maj_last" ]; then
+		[ -n "$maj_last" ] && echo -e "endmenu ### \"$maj_last_text\"\n"
+		maj_last_text="$maj_text"
+		maj_last="$maj"
+		[ "$maj" == "$nix" ] && echo -e "comment \" ---\"\n"
+		echo "menu \"$maj_text\""
+		min_last="$nix"
+		unc="y"
+	fi
+
+	if [ "$min" != "$min_last" ]; then
+		out="$min_text "
+		while [ ${#out} -lt 40 ]; do out="${out}-"; done
+		echo -e "\tcomment \"$out\""
+		min_last="$min"
+	fi
+
+	echo -e "\tsource \"$cin\""
+done                                                                                                         >> ${CFILE}.tmp
+echo "endmenu ### \"$maj_nix\""                                                                              >> ${CFILE}.tmp
+
+(
+find "$LIBDIR" -mindepth 2 -maxdepth 2 -type f -name 'external.in'      | sort | sed 's/^/source "/;s/$/"/'
+find "$PKGDIR" -mindepth 2 -maxdepth 2 -type f -name 'external.in.libs' | sort | sed 's/^/source "/;s/$/"/'
+) | sort -t'/' -k3,3                                                                                         >> ${EFILE}.tmp
+
+# Freetz-EVO: only replace the generated files when their content actually
+# changed, preserving timestamps to avoid spurious kconfig cache invalidation.
+changed=0
+for f in "$CFILE" "$EFILE"; do
+	if ! cmp -s "${f}.tmp" "$f" 2>/dev/null; then
+		echo -n "$(basename "$f") " >&2
+		mv "${f}.tmp" "$f"
+		changed=1
+	else
+		rm -f "${f}.tmp"
+	fi
+done
+[ "$changed" = "1" ] && echo "" >&2
+exit 0
+

@@ -3,9 +3,9 @@
   - Manpage: [https://github.com/devgianlu/go-librespot#readme](https://github.com/devgianlu/go-librespot#readme)
   - Changelog: [https://github.com/devgianlu/go-librespot/releases](https://github.com/devgianlu/go-librespot/releases)
   - Repository: [https://github.com/devgianlu/go-librespot](https://github.com/devgianlu/go-librespot)
-  - Toolchain: requires GCC 4.7 or newer (built with `-tags netgo` so Go uses its pure-Go resolver instead of `-lresolv`, which uClibc does not provide; Go 1.25's cgo runtime needs the C11 atomic builtins `__atomic_*`, missing in the old GCC 4.6.4 toolchain)
   - Package: [master/make/pkgs/go-librespot/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/go-librespot/)
   - Steward: Ircama
+  - Toolchain: requires GCC 4.7 or newer (built with `-tags netgo` so Go uses its pure-Go resolver instead of `-lresolv`, which uClibc does not provide; Go 1.25's cgo runtime needs the C11 atomic builtins `__atomic_*`, missing in the old GCC 4.6.4 toolchain)
 
   - Depends on: `alsa-lib`, `flac`, `libogg`, `libvorbis`
   - Provides: `/usr/bin/go-librespot`

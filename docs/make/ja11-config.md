@@ -1,4 +1,9 @@
-# ja11-config
+# ja11-config 1.0 (binary only)
+  - Homepage: [https://github.com/Ircama/ja11-config](https://github.com/Ircama/ja11-config)
+  - Changelog: [https://github.com/Ircama/ja11-config/releases](https://github.com/Ircama/ja11-config/releases)
+  - Repository: [https://github.com/Ircama/ja11-config](https://github.com/Ircama/ja11-config)
+  - Package: [master/make/pkgs/ja11-config/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config/)
+  - Steward: -
   - Homepage / Repository (source): [https://github.com/Ircama/ja11-config](https://github.com/Ircama/ja11-config)
   - Freetz-NG package: [master/make/pkgs/ja11-config/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ja11-config/)
   - Library: [master/make/libs/hidapi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/hidapi/)

@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://download.gnome.org/sources/libxml2/$(call GET_MAJOR_VERSION
 ### CVSREPO:=https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=XML & XSLT
+
 $(PKG)_LIBNAME:=$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

@@ -8,7 +8,7 @@ $(PKG)_SITE:=http://ftp.astron.com/pub/file,ftp://ftp.astron.com/pub/file
 ### CVSREPO:=https://github.com/file/file
 ### STEWARD:=Ircama
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_BINARY_BUILD := $($(PKG)_DIR)/src/file
 $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/file

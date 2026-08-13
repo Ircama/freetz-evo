@@ -1,9 +1,11 @@
 $(call PKG_INIT_BIN, 2022.10.3)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_LIB_VERSION:=89.0.0
 $(PKG)_SOURCE:=ntfs-3g_ntfsprogs-$($(PKG)_VERSION).tgz
 $(PKG)_HASH:=f20e36ee68074b845e3629e6bced4706ad053804cbaf062fbae60738f854170c
 $(PKG)_SITE:=https://download.tuxera.com/opensource
+
+$(PKG)_CATEGORY_LIBS:=File systems
 
 $(PKG)_LIB_BINARY:=$($(PKG)_DIR)/libntfs-3g/.libs/libntfs-3g.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libntfs-3g.so.$($(PKG)_LIB_VERSION)

@@ -9,6 +9,8 @@ $(PKG)_SITE:=git@https://github.com/JuliaStrings/utf8proc
 ### CHANGES:=https://juliastrings.github.io/utf8proc/releases/
 ### CVSREPO:=https://github.com/JuliaStrings/utf8proc
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
+
 $(PKG)_LIBNAME=lib$(pkg).so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

@@ -4,6 +4,10 @@ config EXTERNAL_FREETZ_PACKAGE_GIT
 	default n
 	help
 		externals the following file(s):
-		 /usr/bin/git*
-		 /usr/lib/git-core/
+		 /usr/bin/git
+		 /usr/bin/git-cvsserver
+		 /usr/bin/git-daemon
+		 /usr/bin/git-shell
+		 /usr/bin/git-upload-pack
+		 /usr/lib/git-core/ (only if external option "Keep subdirectories" is enabled)
 

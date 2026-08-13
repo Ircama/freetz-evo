@@ -9,7 +9,7 @@ $(PKG)_SITE:=ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof,https://people.freeb
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/lsof
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lsof
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_DEPENDS_ON += wget-host
 

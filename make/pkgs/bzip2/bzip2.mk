@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://sourceware.org/pub/bzip2
 ### CHANGES:=https://sourceware.org/bzip2/CHANGES
 ### CVSREPO:=https://sourceware.org/git/bzip2.git
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(if $(FREETZ_PACKAGE_BZIP2_STATIC),bzip2,bzip2-shared)
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/bzip2
 

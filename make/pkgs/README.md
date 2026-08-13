@@ -59,7 +59,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     The program atop is an interactive monitor to view the load on a Linux system. It shows the occupation of the most critical hardware resources (from a performance point of view) on system level, i.e. cpu, memory, disk and network.
 
   * **[atuin 18.16.1](../../docs/make/atuin.md)<a id='atuin'></a>**<br>
-    atuin utility package built from source using Rust/Cargo.
+    atuin utility package built from source using Rust/Cargo. Requires uClibc 1.0.58 or newer (the Rust/Cargo cross-build is not supported on the older toolchains).
 
   * **[AutoFS 5.0.5/5.1.9](../../docs/make/autofs.md)<a id='autofs'></a>**<br>
     Autofs is a kernel-based automounter for Linux. It performs a job similar to amd(8) but relies on a small stub of kernel code instead of pretending to be an NFS server. The result is simpler code, better reliability, and much faster operation in the common case (everything already mounted).
@@ -157,7 +157,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Callmonitor 1.20.9-git](../../docs/make/callmonitor.md)<a id='callmonitor'></a>**<br>
     Callmonitor enables you to perform arbitrary actions upon incoming calls on your AVM Fritz!Box (e.g., to send notifications to your favorite set-top box, to wake up your PC, or to send you a mail when you have missed a call).
 
-  * **[CCID 1.5.5 - DEPRECATED](../../docs/make/ccid.md)<a id='ccid'></a>**<br>
+  * **[CCID 1.8.2](../../docs/make/ccid.md)<a id='ccid'></a>**<br>
     ccid provides the source code for a generic USB CCID (Chip/Smart Card Interface Devices) driver and ICCD (Integrated Circuit(s) Card Devices).
 
   * **[Checkmaild 0.4.7 - DEPRECATED](../../docs/make/checkmaild.md)<a id='checkmaild'></a>**<br>
@@ -364,6 +364,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### G
 
+  * **[Gerbera (UPnP media server)](../../docs/make/gerbera.md)<a id='gerbera'></a>**<br>
+    Gerbera is a UPnP media server that streams your media to UPnP/DLNA clients (smart TVs, game consoles, etc.). Requires uClibc 1.0.58 or newer (C++17 toolchain). Features: - UPnP AV MediaServer v1.0 compliant - Metadata extraction from audio/video/image files - On-the-fly transcoding via FFmpeg - Web interface for management - SQLite database for media inventory https://gerbera.io/
+
   * **[getdns 1.7.3](../../docs/make/getdns.md)<a id='getdns'></a>**<br>
     getdns/Stubby is an application that acts as a local DNS Privacy stub resolver (using DNS-over-TLS). Stubby encrypts DNS queries sent from a client machine (desktop or laptop) to a DNS Privacy resolver increasing end user privacy.
 
@@ -373,7 +376,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Ghostscript fonts 8.11 (binary only) - DEPRECATED</u><a id='ghostscript-fonts'></a>**<br>
     This package provides the Ghostscript fonts.
 
-  * **[Git 2.26.2/2.53.0](../../docs/make/git.md)<a id='git'></a>**<br>
+  * **[Git 2.26.2/2.55.0](../../docs/make/git.md)<a id='git'></a>**<br>
     Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
   * **[gitui 0.28.1](../../docs/make/gitui.md)<a id='gitui'></a>**<br>
@@ -583,7 +586,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     mcabber is a small Jabber console client. http://www.lilotux.net/~mikael/mcabber/
 
   * **[MediaInfo 25.10](../../docs/make/mediainfo.md)<a id='mediainfo'></a>**<br>
-    MediaInfo - multimedia file analyzer MediaInfo is a convenient unified display of the most relevant technical and tag data for video and audio files. It displays general information about the file (name, size, creation date...) and technical information about the codecs used (audio: codec, bitrate, sample rate, language; video: codec, bitrate, frame rate, resolution...) This is the command line interface (CLI) version.
+    MediaInfo - multimedia file analyzer MediaInfo is a convenient unified display of the most relevant technical and tag data for video and audio files. It displays general information about the file (name, size, creation date...) and technical information about the codecs used (audio: codec, bitrate, sample rate, language; video: codec, bitrate, frame rate, resolution...) This is the command line interface (CLI) version. Requires GCC 4.7 or newer: MediaInfoLib compiles with -std=c++11 (AM_CXXFLAGS in Makefile.am), which the old GCC 4.6.4 toolchain does not recognize.
 
   * **[mediatomb 0.12.1 (binary only) - DEPRECATED](../../docs/make/mediatomb.md)<a id='mediatomb'></a>**<br>
     MediaTomb is an open source (GPL) UPnP MediaServer with a nice web user interface, it allows you to stream your digital media through your home network and listen to/watch it on a variety of UPnP compatible devices.
@@ -595,9 +598,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Perl without operating-specific functions such as readdir.
 
   * **[MicroPython 1.27.0 (binary + lib)](../../docs/make/micropython.md)<a id='micropython'></a>**<br>
-    programming language that includes a small subset of the Python standard library and is optimised to run on microcontrollers and in constrained environments - including Linux (unix port). This package provides the Unix port of MicroPython, which runs on the FritzBox like a standard executable. It includes the interactive REPL, script execution, all built-in modules (json, re, struct, asyncio, os, socket, hashlib, tls, etc.) and optionally selectable micropython-lib modules installed to /usr/lib/micropython/. The release tarball includes the micropython-lib submodule, providing 150+ additional library packages installable as plain .py files. Build requires Python 3 on the host (for header generation scripts). Size: ~600-900 KB compiled binary (stripped, -Os, MIPS32). Web: https://micropython.org/ Docs: https://docs.micropython.org/en/latest/
+    programming language that includes a small subset of the Python standard library and is optimised to run on microcontrollers and in constrained environments - including Linux (unix port). This package provides the Unix port of MicroPython, which runs on the FritzBox like a standard executable. It includes the interactive REPL, script execution, all built-in modules (json, re, struct, asyncio, os, socket, hashlib, tls, etc.) and optionally selectable micropython-lib modules installed to /usr/lib/micropython/. The release tarball includes the micropython-lib submodule, providing 150+ additional library packages installable as plain .py files. Build requires Python 3 on the host (for header generation scripts). Size: ~600-900 KB compiled binary (stripped, -Os, MIPS32). Requires GCC 8 or newer: the unix port Makefile uses -Wfloat-conversion (GCC 4.9+) and this package adds -Wno-stringop-overflow (GCC 8+); the old GCC 4.6.4 toolchain rejects both with "unrecognized command line option". Web: https://micropython.org/ Docs: https://docs.micropython.org/en/latest/
 
-  * **[mini-snmpd 1.6 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
+  * **[mini-snmpd 1.7/2.0 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
     This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
 
   * **[Minicom 2.11.1 (binary only)](../../docs/make/minicom.md)<a id='minicom'></a>**<br>
@@ -610,8 +613,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[minisatip 1.0.4/1.3.6 (binary only) - DEPRECATED](../../docs/make/minisatip.md)<a id='minisatip'></a>**<br>
     Minisatip is a multi-threaded satip server version 1.2 that runs under Linux and it was tested with DVB-S, DVB-S2, DVB-T, DVB-T2, DVB-C, DVB-C2, ATSC and ISDB-T cards.
 
-  * **[mini-snmpd 1.7/2.0 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
-    This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
+  * **[MiniUPnPd (UPnP IGD daemon)](../../docs/make/miniupnpd.md)<a id='miniupnpd'></a>**<br>
+    MiniUPnPd is a UPnP Internet Gateway Device daemon. It implements the UPnP IGDv1 and IGDv2 specifications, allowing clients on the LAN to manage port mappings on the router automatically. This is useful for: - Peer-to-peer applications - Game consoles (Xbox, PlayStation) - VoIP/instant messaging - Any application needing inbound ports https://github.com/miniupnp/miniupnp
 
   * **[mod: Freetz(-MOD)](../../docs/make/mod.md)<a id='mod'></a>**<br>
     This package is mandatory
@@ -632,7 +635,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[module-init-tools 3.12 (binary only) - DEPRECATED](../../docs/make/module-init-tools.md)<a id='module-init-tools'></a>**<br>
     The module-init-tools (m-i-t) package provides many of the utilities needed by Linux systems for managing loadable Linux Kernel Modules. This includes depmod, insmod, rmmod, modprobe and tools like modinfo.
 
-  * **[Mosquitto 2.0.22/2.1.2](../../docs/make/mosquitto.md)<a id='mosquitto'></a>**<br>
+  * **[Mosquitto 2.0.23/2.1.2](../../docs/make/mosquitto.md)<a id='mosquitto'></a>**<br>
     Eclipse Mosquitto™ is an open source (EPL/EDL licensed) message broker that implements the MQTT protocol versions 5.0, 3.1.1 and 3.1. MQTT provides a lightweight method of carrying out messaging using a publish/subscribe model. This makes it suitable for "Internet of Things" messaging such as with low power sensors or mobile devices such as phones, embedded computers or microcontrollers like the Arduino.
 
   * **[MTR 0.80/0.96 (binary only)](../../docs/make/mtr.md)<a id='mtr'></a>**<br>
@@ -644,7 +647,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Nagios is an Open Source host, service and network monitoring program.
      - [Further Information](../../docs/make/nagios.md#further-information)
 
-  * **[Nano 9.1 (binary only)](../../docs/make/nano.md)<a id='nano'></a>**<br>
+  * **[Nano 9.2 (binary only)](../../docs/make/nano.md)<a id='nano'></a>**<br>
     GNU GPL'd Pico clone with more functionality. GNU nano is a small and friendly text editor. Besides basic text editing, nano offers many extra features like an interactive search and replace, go to line and column number, auto-indentation, feature toggles and filename tab completion. The original goal for nano was a complete bug-for-bug compatible emulation of Pico, but nano's current goal is to be as compatible as possible while offering a superset of Pico's functionality. IMPORTANT NOTES: 1.) Selecting any option besides "Tiny binary" will make the nano binary bigger. The range is somewhere between 142 KB and 249 KB, depending on the options chosen. 2.) Please also be aware of the fact that changing any feature options results in an automatic rebuild of the package - just in case you were wondering. 3.) Note that UTF8 support and spell checking is disabled by default.
 
   * **<u>nc6 1.0 (binary only) - DEPRECATED</u><a id='nc6'></a>**<br>
@@ -670,13 +673,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Usages](../../docs/make/ndas.md#usages)
 
   * **[NeoMutt 20260504 (binary only)](../../docs/make/neomutt.md)<a id='neomutt'></a>**<br>
-    This package builds a lean OpenSSL + ncursesw variant with optional features such as GPGME, Lua, Notmuch, SASL and extra header-cache backends disabled to keep the footprint suitable for Freetz. Can be externalized to save flash memory.
+    This package builds a lean OpenSSL + ncursesw variant with optional features such as GPGME, Lua, Notmuch, SASL and extra header-cache backends disabled to keep the footprint suitable for Freetz. Requires GCC 4.7 or newer: NeoMutt's configure requires C11 (checks for -std=c11), which the old GCC 4.6.4 toolchain does not support (Error: C11 is required). Can be externalized to save flash memory.
      - [Minimal muttrc for a local Maildir](../../docs/make/neomutt.md#minimal-muttrc-for-a-local-maildir)
      - [IMAP with TLS (e.g. Gmail)](../../docs/make/neomutt.md#imap-with-tls-eg-gmail)
      - [Key bindings (defaults)](../../docs/make/neomutt.md#key-bindings-defaults)
 
   * **[Neovim 0.12.2](../../docs/make/neovim.md)<a id='neovim'></a>**<br>
-    This package builds Neovim with the upstream bundled dependencies needed by the editor and installs the runtime under /usr/share/nvim. Externalization is supported for the editor binary and, when EXTERNAL_SUBDIRS is enabled, for /usr/share/nvim and /usr/lib/nvim.
+    This package builds Neovim with the upstream bundled dependencies needed by the editor and installs the runtime under /usr/share/nvim. Externalization is supported for the editor binary and, when EXTERNAL_SUBDIRS is enabled, for /usr/share/nvim and /usr/lib/nvim. Requires GCC 4.9 or newer: the bundled libuv uses <stdatomic.h> (C11 atomics), which the old GCC 4.6.4 toolchain does not provide (fatal error: stdatomic.h: No such file or directory).
 
   * **<u>Netatalk 2.2.5 - DEPRECATED</u><a id='netatalk'></a>**<br>
     Netatalk is a kernel level implementation of the AppleTalk Protocol Suite which contains the AppleShare file server (AFP).
@@ -762,7 +765,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7 (binary only)](../../docs/make/openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.21/2.7.5](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.22/2.7.6](../../docs/make/openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
      - [Frequently Asked Questions / Howto](../../docs/make/openvpn.md#frequently-asked-questions--howto)
      - [Configuration Guide](../../docs/make/openvpn.md#configuration-guide)
@@ -788,7 +791,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[PCP client 1c783fb (binary only)](../../docs/make/pcp.md)<a id='pcp'></a>**<br>
     PCP client library implements client side of PCP (RFC 6887) and NATPMP (RFC 6886) protocols. Switch to NATPMP is done automatically by version negotiation. This library enables any network application to manage network edge device (e.g. to create NAT mapping or ask router for specific flow treatment).
 
-  * **[PCSC-lite 1.9.5/2.1.0 (binary only) - DEPRECATED](../../docs/make/pcsc-lite.md)<a id='pcsc-lite'></a>**<br>
+  * **[PCSC-lite 1.9.5/2.5.1 (binary only)](../../docs/make/pcsc-lite.md)<a id='pcsc-lite'></a>**<br>
     The purpose of PCSC Lite is to provide a Windows(R) SCard interface in a very small form factor for communicating to smart cards and readers.
 
   * **[pdns-authoritative: PowerDNS Authoritative Server 5.0.5](../../docs/make/pdns-authoritative.md)<a id='pdns-authoritative'></a>**<br>
@@ -826,10 +829,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [libxml2 Dependency](../../docs/make/php.md#libxml2-dependency)
      - [GNU libiconv](../../docs/make/php.md#gnu-libiconv)
      - [External Processing](../../docs/make/php.md#external-processing)
-
-  * **[PHP5 5.6.40 (binary only) - DEPRECATED](../../docs/make/php5.md)<a id='php5'></a>**<br>
-    PHP: Hypertext Preprocessor Note: This conflicts with PHP 8.x - only one can be selected. PHP is a widely-used general-purpose scripting language that is especially suited for Web development and can be embedded into HTML. Much of its syntax is borrowed from C, Java and Perl with a couple of unique PHP-specific features thrown in. The goal of the language is to allow web developers to write dynamically generated pages quickly.
-     - [Memory usage](../../docs/make/php5.md#memory-usage)
+     - [Memory usage](../../docs/make/php.md#memory-usage)
 
   * **[Pingtunnel 0.72 - DEPRECATED](../../docs/make/pingtunnel.md)<a id='pingtunnel'></a>**<br>
     Ptunnel is an application that allows you to reliably tunnel TCP connections to a remote host using ICMP echo request and reply packets, commonly known as ping requests and replies. At first glance, this might seem like a rather useless thing to do, but it can actually come in handy in some cases.
@@ -848,7 +848,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     portmap is a part of the ONCRPC collection of software for implementing remote procedure calls between computer programs. It is use widely by NFS and NIS, and assorted other systems.
 
   * **[PostgreSQL 16.3 (client tools)](../../docs/make/postgresql.md)<a id='postgresql'></a>**<br>
-    PostgreSQL client package. Installs psql and links against libpq.
+    PostgreSQL client package. Installs psql and links against libpq. Requires uClibc 1.0.58 or newer (PostgreSQL 16.3 fails to build on the older toolchains).
 
   * **[pppd 2.4.7 - DEPRECATED](../../docs/make/pppd.md)<a id='pppd'></a>**<br>
     An implementation of the Point-to-point protocol. http://www.samba.org/ppp/
@@ -903,6 +903,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ProxyChains-NG 4.17](../../docs/make/proxychains-ng.md)<a id='proxychains-ng'></a>**<br>
     A preloader which hooks calls to sockets in dynamically linked programs and redirects it through one or more socks/http proxies, tor is also supported. Usage: proxychains4 telnet mail.example.com 25
+
+  * **<u>Pseudo-Pi-hole DNS Sinkhole</u><a id='pseudo-pi-hole'></a>**<br>
+    Pi-hole-like DNS sinkhole for freetz-ng. Blocks DNS queries for known advertising and tracking domains. Uses dnsmasq for DNS blocking via addn-hosts. Shell scripts for blocklist management (gravity). This is NOT the official Pi-hole. It reimplements Pi-hole-like functionality using existing freetz components (dnsmasq + shell scripts). No pihole-FTL daemon is required. Requires: dnsmasq, wget for blocklist downloads. Web interface: http://fritz.box:81/cgi-bin/conf/pseudo-pi-hole
 
   * **[psl 0.21.5 (binary only)](../../docs/make/psl.md)<a id='psl'></a>**<br>
     Public Suffix List library functions This includes psl binary and public_suffix_list.dat
@@ -962,7 +965,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-aiohappyeyeballs: aiohappyeyeballs 2.6.1 (pure python, prerequisite)](../../docs/make/python3-aiohappyeyeballs.md)<a id='python3-aiohappyeyeballs'></a>**<br>
     It provides happy-eyeballs connector utilities for asyncio.
 
-  * **[python3-aiohttp: aiohttp 3.13.3](../../docs/make/python3-aiohttp.md)<a id='python3-aiohttp'></a>**<br>
+  * **[python3-aiohttp: aiohttp 3.13.5](../../docs/make/python3-aiohttp.md)<a id='python3-aiohttp'></a>**<br>
     aiohttp is an asynchronous HTTP client/server framework for asyncio.
 
   * **[python3-aiohttp-asyncmdnsresolver: aiohttp-asyncmdnsresolver 0.1.1](../../docs/make/python3-aiohttp-asyncmdnsresolver.md)<a id='python3-aiohttp-asyncmdnsresolver'></a>**<br>
@@ -983,22 +986,28 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-attrs: attrs 26.1.0 (pure python, prerequisite)](../../docs/make/python3-attrs.md)<a id='python3-attrs'></a>**<br>
     attrs is a pure-Python prerequisite module. It provides declarative class helpers.
 
-  * **[python3-audioop-lts: audioop-lts 0.2.1](../../docs/make/python3-audioop-lts.md)<a id='python3-audioop-lts'></a>**<br>
+  * **[python3-audioop-lts: audioop-lts 0.2.2](../../docs/make/python3-audioop-lts.md)<a id='python3-audioop-lts'></a>**<br>
     LTS port of the audioop module removed from Python 3.13+. Provides audio processing operations as a C extension.
 
   * **[python3-av: av 16.0.1](../../docs/make/python3-av.md)<a id='python3-av'></a>**<br>
     PyAV is Pythonic bindings for FFmpeg libraries. This package precompiles PyAV for the target, avoiding on-device build failures such as missing pkg-config during pip install. Requires FFmpeg "current" shared libraries at runtime. Website: https://pyav.basswood-io.com/ Source: https://github.com/PyAV-Org/PyAV
 
-  * **[python3-bcrypt: bcrypt 3.2.2](../../docs/make/python3-bcrypt.md)<a id='python3-bcrypt'></a>**<br>
-    Modern password hashing for your software and your servers. Uses CFFI with C implementation (no Rust required). bcrypt 5.0+ requires Rust; 3.2.2 is the last CFFI/C version.
+  * **[python3-bcrypt: bcrypt 5.0.0](../../docs/make/python3-bcrypt.md)<a id='python3-bcrypt'></a>**<br>
+    Modern password hashing for your software and your servers. Native Rust implementation via setuptools-rust (no CFFI). Requires Rust/Cargo (build time). Dependencies: - Python 3.x - Rust/Cargo (build time) Build: Uses pyproject/pip (PEP 517) with setuptools-rust
+
+  * **[python3-bluetooth-data-tools: bluetooth-data-tools 1.29.18 (pure python, prerequisite)](../../docs/make/python3-bluetooth-data-tools.md)<a id='python3-bluetooth-data-tools'></a>**<br>
+    Tools for converting bluetooth data and packets. Provides BLE advertisement parsing, address utilities, distance estimation and monotonic time.
 
   * **[python3-brotli: brotli 1.1.0](../../docs/make/python3-brotli.md)<a id='python3-brotli'></a>**<br>
     Python bindings for Brotli compression/decompression.
 
+  * **[python3-cached-ipaddress: cached-ipaddress 1.1.2 [^]](../../docs/make/python3-cached-ipaddress.md)<a id='python3-cached-ipaddress'></a>**<br>
+    cached-ipaddress provides a cached IP address resolution utility. Python 3 module for resolving and caching IP addresses. https://pypi.org/project/cached-ipaddress/
+
   * **[python3-certifi: certifi 2025.10.5 (pure python, prerequisite)](../../docs/make/python3-certifi.md)<a id='python3-certifi'></a>**<br>
     Mozilla CA bundle for Python TLS verification.
 
-  * **[python3-cffi: cffi 1.17.1](../../docs/make/python3-cffi.md)<a id='python3-cffi'></a>**<br>
+  * **[python3-cffi: cffi 2.0.0](../../docs/make/python3-cffi.md)<a id='python3-cffi'></a>**<br>
     CFFI (C Foreign Function Interface) for Python 3. Interact with almost any C code from Python, based on C-like declarations that you can often copy-paste from header files or documentation. Required by many modern Python packages including: - cryptography - PyNaCl - bcrypt - argon2-cffi Website: https://cffi.readthedocs.io/ GitHub: https://github.com/python-cffi/cffi
 
   * **[python3-charset-normalizer: charset-normalizer 3.4.6](../../docs/make/python3-charset-normalizer.md)<a id='python3-charset-normalizer'></a>**<br>
@@ -1013,13 +1022,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-dateutil: python-dateutil 2.9.0.post0 (pure python, prerequisite)](../../docs/make/python3-dateutil.md)<a id='python3-dateutil'></a>**<br>
     python-dateutil is a pure-Python prerequisite module. It provides extensions to the standard datetime module.
 
-  * **[python3-dbus-fast: dbus-fast 4.0.0](../../docs/make/python3-dbus-fast.md)<a id='python3-dbus-fast'></a>**<br>
+  * **[python3-dbus-fast: dbus-fast 5.0.22](../../docs/make/python3-dbus-fast.md)<a id='python3-dbus-fast'></a>**<br>
     High-performance DBus client/service library. Build is configured to require Cython extension compilation.
 
   * **[python3-faust-cchardet: faust-cchardet 2.1.19](../../docs/make/python3-faust-cchardet.md)<a id='python3-faust-cchardet'></a>**<br>
     Fast universal character encoding detector (C/C++ extension).
 
-  * **[python3-fnv-hash-fast: fnv-hash-fast 1.6.0](../../docs/make/python3-fnv-hash-fast.md)<a id='python3-fnv-hash-fast'></a>**<br>
+  * **[python3-fnv-hash-fast: fnv-hash-fast 2.0.3](../../docs/make/python3-fnv-hash-fast.md)<a id='python3-fnv-hash-fast'></a>**<br>
     A fast version of fnv1a hash using an optional Cython C extension. Falls back to pure Python fnvhash if Cython is not available.
 
   * **[python3-fnvhash: fnvhash 0.2.1 (pure python, prerequisite)](../../docs/make/python3-fnvhash.md)<a id='python3-fnvhash'></a>**<br>
@@ -1043,8 +1052,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-ha-ffmpeg: ha-ffmpeg 3.2.2](../../docs/make/python3-ha-ffmpeg.md)<a id='python3-ha-ffmpeg'></a>**<br>
     Home Assistant helper library for ffmpeg/ffprobe process handling.
 
+  * **[python3-habluetooth: habluetooth 6.8.3 (pure python, prerequisite)](../../docs/make/python3-habluetooth.md)<a id='python3-habluetooth'></a>**<br>
+    High availability Bluetooth library for Home Assistant. Provides reliable BLE scanning and connection management with automatic recovery.
+
   * **[python3-hass-nabucasa: hass-nabucasa 2.2.0](../../docs/make/python3-hass-nabucasa.md)<a id='python3-hass-nabucasa'></a>**<br>
     Nabu Casa client library used by Home Assistant cloud integrations.
+
+  * **[python3-hidapi: hidapi 0.15.0](../../docs/make/python3-hidapi.md)<a id='python3-hidapi'></a>**<br>
+    Cython-based Python bindings for the cross-platform HIDAPI library, built with the libusb backend (no kernel HID/INPUT required). Provides the "hid" module: import hid dev = hid.device() dev.open(0x2e8c, 0x0100) The hidraw/udev backend is intentionally not built (the target has no udev and no kernel HID stack). https://github.com/trezor/cython-hidapi
 
   * **[python3-httpcore: httpcore 1.0.9](../../docs/make/python3-httpcore.md)<a id='python3-httpcore'></a>**<br>
     Low-level HTTP client core used by httpx.
@@ -1073,16 +1088,16 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-multidict: multidict 6.7.1](../../docs/make/python3-multidict.md)<a id='python3-multidict'></a>**<br>
     Multidict is dict-like collection of key-value pairs.
 
-  * **[python3-numpy: NumPy 2.4.3 (for Python 3)](../../docs/make/python3-numpy.md)<a id='python3-numpy'></a>**<br>
-    NumPy is the fundamental package for scientific computing in Python. NEW: NumPy 2.4.3 with Meson build system (compatible with Python 3.14). Cross-compilation now uses openlibm for extended math support. Provides: - Powerful N-dimensional array object (ndarray) - Sophisticated broadcasting functions - Linear algebra, Fourier transform, random number capabilities - Tools for integrating C/C++ and Fortran code Common uses: - Data analysis and machine learning - Scientific and engineering computations - Image and signal processing - Statistical operations WARNING: NumPy is large (~15-20 MB) and MUST be externalized. Ensure sufficient USB storage is available. This build uses reference BLAS (slower but no extra dependencies). For performance-critical applications, consider optimized libraries. Website: https://numpy.org/ Docs: https://numpy.org/doc/stable/
+  * **[python3-numpy: NumPy 2.5.0/2.4.3/2.3.2 (for Python 3)](../../docs/make/python3-numpy.md)<a id='python3-numpy'></a>**<br>
+    NumPy is the fundamental package for scientific computing in Python. Available versions: - 2.3.2: stable older release - 2.4.3: previous release - 2.5.0: latest (recommended, adds PyDataType_TYPEOBJ/KIND/TYPE/BYTEORDER macros) Provides: - Powerful N-dimensional array object (ndarray) - Sophisticated broadcasting functions - Linear algebra, Fourier transform, random number capabilities - Tools for integrating C/C++ and Fortran code Common uses: - Data analysis and machine learning - Scientific and engineering computations - Image and signal processing - Statistical operations WARNING: NumPy is large (~15-20 MB) and MUST be externalized. Ensure sufficient USB storage is available. This build uses reference BLAS (slower but no extra dependencies). For performance-critical applications, consider optimized libraries. Website: https://numpy.org/ Docs: https://numpy.org/doc/stable/
 
-  * **[python3-orjson: orjson 3.10.7 (compat shim)](../../docs/make/python3-orjson.md)<a id='python3-orjson'></a>**<br>
-    Compatibility shim for orjson API using Python stdlib json.
+  * **[python3-orjson: orjson 3.11.9](../../docs/make/python3-orjson.md)<a id='python3-orjson'></a>**<br>
+    Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy. Native Rust implementation via maturin. Dependencies: - Python 3.x - Rust/Cargo (build time) Build: Uses pyproject/pip (PEP 517) with maturin
 
-  * **[python3-pandas: pandas 3.0.1 (for Python 3)](../../docs/make/python3-pandas.md)<a id='python3-pandas'></a>**<br>
-    pandas is a powerful data analysis and manipulation library. WARNING: Requires NumPy. Provides: - DataFrame and Series data structures - Data alignment and integrated handling of missing data - Reshaping and pivoting of data sets - Label-based slicing, indexing, and subsetting - Time series functionality - Data I/O (CSV, Excel, SQL, HDF5, JSON, Parquet) Common uses: - Data cleaning and preparation - Statistical analysis - Time series analysis - Data visualization (with matplotlib) WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy. Both MUST be externalized to USB storage. Website: https://pandas.pydata.org/ Docs: https://pandas.pydata.org/docs/
+  * **[python3-pandas: pandas 3.0.3/3.0.1/2.3.3 (for Python 3)](../../docs/make/python3-pandas.md)<a id='python3-pandas'></a>**<br>
+    pandas is a powerful data analysis and manipulation library. WARNING: Requires NumPy. Available versions: - 2.3.3: last 2.x release (NumPy 1.x compatible API) - 3.0.1: first 3.x release (NumPy 2.x API) - 3.0.3: latest (NumPy 2.x API, recommended) Provides: - DataFrame and Series data structures - Data alignment and integrated handling of missing data - Reshaping and pivoting of data sets - Label-based slicing, indexing, and subsetting - Time series functionality - Data I/O (CSV, Excel, SQL, HDF5, JSON, Parquet) Common uses: - Data cleaning and preparation - Statistical analysis - Time series analysis - Data visualization (with matplotlib) WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy.
 
-  * **[python3-pillow: Pillow 12.1.1 (for Python 3)](../../docs/make/python3-pillow.md)<a id='python3-pillow'></a>**<br>
+  * **[python3-pillow: Pillow 12.2.0 (for Python 3)](../../docs/make/python3-pillow.md)<a id='python3-pillow'></a>**<br>
     Pillow is the friendly PIL (Python Imaging Library) fork for Python 3. WARNING: Cross-compilation issues with host include paths. Provides extensive file format support, efficient internal representation, and powerful image processing capabilities. Supported formats: PNG, JPEG, GIF, TIFF, BMP, WebP, and many more. Common uses: - Image manipulation and processing - Thumbnail generation - Image format conversion - Computer vision preprocessing Website: https://python-pillow.org/ GitHub: https://github.com/python-pillow/Pillow
 
   * **[python3-pip: pip 26.0.1 (pure python, prerequisite)](../../docs/make/python3-pip.md)<a id='python3-pip'></a>**<br>
@@ -1112,14 +1127,23 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-pyopenssl: pyopenssl 26.0.0](../../docs/make/python3-pyopenssl.md)<a id='python3-pyopenssl'></a>**<br>
     Python wrapper around OpenSSL via cryptography.
 
+  * **[python3-pyqrcode: PyQRCode 1.2.1 [^]](../../docs/make/python3-pyqrcode.md)<a id='python3-pyqrcode'></a>**<br>
+    PyQRCode generates QR codes in PNG, EPS, SVG, and ANSI formats. Python 3 module for generating QR codes with various output formats. https://pypi.org/project/PyQRCode/
+
+  * **[python3-pyric: PyRIC 0.1.6.3 (pure python, prerequisite)](../../docs/make/python3-pyric.md)<a id='python3-pyric'></a>**<br>
+    Python Radio Interface Controller (pyric). Linux wireless library providing nl80211 interface for managing wireless interfaces, channels, and connections. Website: http://wraith-wireless.github.io/PyRIC/
+
   * **[python3-pyspeex-noise: pyspeex-noise 2.0.0](../../docs/make/python3-pyspeex-noise.md)<a id='python3-pyspeex-noise'></a>**<br>
     Speex-based noise suppression extension for Python.
 
-  * **[python3-pyturbojpeg: pyturbojpeg 2.2.0](../../docs/make/python3-pyturbojpeg.md)<a id='python3-pyturbojpeg'></a>**<br>
+  * **[python3-pyturbojpeg: pyturbojpeg 2.2.0/1.8.3](../../docs/make/python3-pyturbojpeg.md)<a id='python3-pyturbojpeg'></a>**<br>
     Python wrapper for libjpeg-turbo (TurboJPEG API).
 
   * **[python3-pyyaml: pyyaml 6.0.3](../../docs/make/python3-pyyaml.md)<a id='python3-pyyaml'></a>**<br>
     PyYAML is a full-featured YAML framework for Python. Provides: - Complete YAML 1.1 parser and emitter - Python object serialization/deserialization - Support for user-defined Python objects - Unicode support - Low-level event-based API (LibYAML binding) - High-level object-oriented API Common uses: - Configuration file parsing - Data serialization (alternative to JSON/XML) - DevOps and infrastructure automation - CI/CD pipeline configurations This build uses LibYAML C library for faster parsing. Website: https://pyyaml.org/ Docs: https://pyyaml.org/wiki/PyYAMLDocumentation
+
+  * **[python3-regex: regex 2026.5.9 (C extension)](../../docs/make/python3-regex.md)<a id='python3-regex'></a>**<br>
+    Alternative regular expression module for Python 3, backwards-compatible with the standard 're' module. Provides additional features including fuzzy matching, POSIX matching, recursive patterns and more. Website: https://github.com/mrabarnett/mrab-regex
 
   * **[python3-setuptools: setuptools 82.0.1 (pure python, prerequisite)](../../docs/make/python3-setuptools.md)<a id='python3-setuptools'></a>**<br>
     setuptools is a pure-Python prerequisite/tooling module. setuptools is a collection of enhancements to Python distutils. Required by pip and many Python packages for: - Package installation - Dependency management - Entry point discovery - Package resource management This is the runtime version of setuptools. The host version (python3-setuptools-host) is used during firmware build, while this version runs on the Fritz!Box. Automatically selected when you install pip. Website: https://setuptools.pypa.io/ Docs: https://setuptools.pypa.io/en/latest/
@@ -1142,10 +1166,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-webrtc-models: webrtc-models 0.3.0](../../docs/make/python3-webrtc-models.md)<a id='python3-webrtc-models'></a>**<br>
     Model definitions used by WebRTC-related Home Assistant components.
 
-  * **[python3-yarl: yarl 1.23.0](../../docs/make/python3-yarl.md)<a id='python3-yarl'></a>**<br>
+  * **[python3-yarl: yarl 1.24.2](../../docs/make/python3-yarl.md)<a id='python3-yarl'></a>**<br>
     yarl is a URL library for Python.
 
-  * **[python3-zeroconf: zeroconf 0.148.0](../../docs/make/python3-zeroconf.md)<a id='python3-zeroconf'></a>**<br>
+  * **[python3-zeroconf: zeroconf 0.149.16](../../docs/make/python3-zeroconf.md)<a id='python3-zeroconf'></a>**<br>
     Multicast DNS service discovery library (pure Python mode).
 
 ### Q
@@ -1188,7 +1212,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[RPCBind 1.2.7 (binary only)](../../docs/make/rpcbind.md)<a id='rpcbind'></a>**<br>
     The rpcbind utility is a server that converts RPC program numbers into universal addresses.
 
-  * **[RRDtool 1.2.30/1.10.3 (binary only)](../../docs/make/rrdtool.md)<a id='rrdtool'></a>**<br>
+  * **[RRDtool 1.2.30/1.11.0 (binary only)](../../docs/make/rrdtool.md)<a id='rrdtool'></a>**<br>
     RRDtool is the OpenSource industry standard, high performance data logging and graphing system for time series data. Use it to write your custom monitoring shell scripts or create whole applications using its PHP bindings.
      - [Introduction](../../docs/make/rrdtool.md#introduction)
      - [RRDstats](../../docs/make/rrdtool.md#rrdstats)
@@ -1316,7 +1340,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Streamripper records mp3 and ogg streams. For shoutcast style streams it finds the "meta data" or track separation data, and uses that as a marker for where the track should be separated.
      - [Libraries Used](../../docs/make/streamripper.md#libraries-used)
 
-  * **[Stunnel 5.79](../../docs/make/stunnel.md)<a id='stunnel'></a>**<br>
+  * **[Stunnel 5.80](../../docs/make/stunnel.md)<a id='stunnel'></a>**<br>
     Stunnel universal SSL proxy
      - [Configuration](../../docs/make/stunnel.md#configuration)
      - [Advanced](../../docs/make/stunnel.md#advanced)
@@ -1367,7 +1391,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Tesseract is an Open Source OCR engine Note: Tesseract including languages files is a huge package and requires a lot of RAM at run-time. It is NOT recommended to use it on boxes having less than 64MB RAM.
 
   * **[tflite-micro (TensorFlow Lite for Microcontrollers)](../../docs/make/tflite-micro.md)<a id='tflite-micro'></a>**<br>
-    TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow Lite designed to run ML inference on resource-constrained devices. This package cross-compiles TFLM into a static library (libtflm.a) and installs the public headers into the staging area so that other packages can link against it. The build uses the official project-generation script (create_tflm_tree.py) to produce a self-contained source tree, then compiles it with the freetz cross-toolchain (C++17 required). Requires Python 3 on the build host. Homepage:  https://github.com/tensorflow/tflite-micro Reference: https://www.tensorflow.org/lite/microcontrollers
+    TensorFlow Lite for Microcontrollers (TFLM) is a port of TensorFlow Lite designed to run ML inference on resource-constrained devices. This package cross-compiles TFLM into a static library (libtflm.a) and installs the public headers into the staging area so that other packages can link against it. The build uses the official project-generation script (create_tflm_tree.py) to produce a self-contained source tree, then compiles it with the freetz cross-toolchain (C++17 required). Requires GCC 8 or newer: TFLM is built with -std=c++17, which the old GCC 4.6.4 toolchain does not recognize. Requires Python 3 on the build host. Homepage:  https://github.com/tensorflow/tflite-micro Reference: https://www.tensorflow.org/lite/microcontrollers
 
   * **<u>tichksum: TI chksum 1.0</u><a id='tichksum'></a>**<br>
 
@@ -1388,7 +1412,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tmux 3.7b (binary only)](../../docs/make/tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.25 - DEPRECATED](../../docs/make/tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25/0.4.9.11](../../docs/make/tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
      - [Use Tor as a Proxy](../../docs/make/tor.md#use-tor-as-a-proxy)
      - [Tor and Privoxy](../../docs/make/tor.md#tor-and-privoxy)
@@ -1431,7 +1455,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[uMurmur 0.2.20/0.3.1](../../docs/make/umurmur.md)<a id='umurmur'></a>**<br>
     umurmur is a minimalistic Mumble server primarily targeted to run on routers using less resources. It targets to fill the needs of a pretty small group of users communicating, which in part originates from the other goal of working well on a small system with a limited CPU and limited amount of disk space. It also aims to minimize writing to the disk since these kinds of systems usually only has a flash memory for disk. umurmur supports a subset of the features of Murmur. https://github.com/umurmur/umurmur
 
-  * **[Unbound 1.25.2](../../docs/make/unbound.md)<a id='unbound'></a>**<br>
+  * **[Unbound 1.26.0](../../docs/make/unbound.md)<a id='unbound'></a>**<br>
     Unbound is designed as a set of modular components, so that also DNSSEC (secure DNS) validation and stub-resolvers (that do not run as a server, but are linked into an application) are easily possible.
 
   * **[UNFS3 0.9.23 - DEPRECATED](../../docs/make/unfs3.md)<a id='unfs3'></a>**<br>
@@ -1511,7 +1535,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[wireguard-linux-compat 1.0.20220627](../../docs/make/wireguard-linux-compat.md)<a id='wireguard-linux-compat'></a>**<br>
     This package provides the kernel module required for Wireguard
 
-  * **<u>wish 8.6.16</u><a id='wish'></a>**<br>
+  * **[wish 8.6.16](../../docs/make/wish.md)<a id='wish'></a>**<br>
     Wish is the Tcl/Tk shell interpreter. Use with DISPLAY=<remote-host>:0.
 
   * **[WOL 0.7.1 (binary only) - DEPRECATED](../../docs/make/wol.md)<a id='wol'></a>**<br>
@@ -1574,19 +1598,28 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     This build enables ALSA output together with MP3, FLAC and Vorbis playback support.
 
   * **[go-librespot 0.7.1 (binary only)](../../docs/make/go-librespot.md)<a id='go-librespot'></a>**<br>
-    This package cross-compiles the upstream Go daemon sources with CGO and installs the go-librespot executable on the target. Can be externalized to save flash memory.
+    This package cross-compiles the upstream Go daemon sources with CGO and installs the go-librespot executable on the target. Requires GCC 4.7 or newer: Go's cgo runtime (gcc_libinit.c) uses the C11 atomic builtins (__atomic_load_n, __atomic_store_n, __ATOMIC_*), which the old GCC 4.6.4 toolchain does not provide. Can be externalized to save flash memory.
 
   * **[MPD 0.24.13](../../docs/make/mpd.md)<a id='mpd'></a>**<br>
-    This build enables the local database, TCP control interface, ALSA output and the MP3, FLAC and Vorbis decoders. jemalloc is selected to work around allocator-related crashes observed on some uClibc target combinations. Libcurl-based URI input support is enabled by default and can be disabled below. Can be externalized to save flash memory.
+    This build enables the local database, TCP control interface, ALSA output and the MP3, FLAC and Vorbis decoders. jemalloc is selected to work around allocator-related crashes observed on some uClibc target combinations. Libcurl-based URI input support, SQLite, FFmpeg, ICU, WavPack, UPnP, Expat, Opus, iconv, Vorbis encoder, FAAD2, FluidSynth, libsamplerate, mpg123, NFS, shine, shout, soxr, Tremor, WildMIDI, WebDAV, IPv6, DSD, CUE, pipe, FIFO and HTTP output can be enabled in the sub-options below. Can be externalized to save flash memory.
 
   * **[mpd-mpc: mpc 0.35 (MPD CLI client)](../../docs/make/mpd-mpc.md)<a id='mpd-mpc'></a>**<br>
     It installs the `mpc` CLI and can be used with the local MPD package or any reachable MPD server. Can be externalized to save flash memory.
 
   * **[myMPD 25.0.2](../../docs/make/mympd.md)<a id='mympd'></a>**<br>
-    This freetz build uses embedded web assets and embedded libmpdclient to keep the package self-contained. Can be externalized to save flash memory.
+    This freetz build uses embedded web assets and embedded libmpdclient to keep the package self-contained. Requires uClibc 1.0.58 or newer: myMPD needs OpenSSL >= 1.1.0 (CMake fails with "myMPD requires an OpenSSL version greater or equal 1.1.0"). On the 1.0.58 toolchain OpenSSL 1.0.2 is not selectable, so the default is 1.1.1 or newer. Can be externalized to save flash memory.
+
+  * **[ncmpc 0.52](../../docs/make/ncmpc.md)<a id='ncmpc'></a>**<br>
+    Official ncurses client for the Music Player Daemon (MPD). Feature-rich terminal user interface with library browser, playlist editor, search, lyrics, and more. Requires uClibc 1.0.58 or newer: ncmpc depends on fmt (>= 9), and freetz's libfmt 12.2.0 is only available on uClibc >= 1.0.58.
+
+  * **[ncmpcpp 0.9.2](../../docs/make/ncmpcpp.md)<a id='ncmpcpp'></a>**<br>
+    Ncurses-based MPD client. Feature-rich terminal user interface for controlling the Music Player Daemon. Requires uClibc 1.0.58 or newer (it also depends on taglib).
 
   * **[ncspot 1.3.4](../../docs/make/ncspot.md)<a id='ncspot'></a>**<br>
     ncspot is a ncurses Spotify client built from source using Rust/Cargo. This freetz package builds a target-native ncspot binary with ALSA playback backend and crossterm terminal UI backend. Can be externalized to save flash memory.
+
+  * **[rmpc 0.11.0](../../docs/make/rmpc.md)<a id='rmpc'></a>**<br>
+    A beautiful, configurable TUI client for MPD written in Rust. Features album art, lyrics, playlist management, and more. Depends on Rust support enabled in toolchain settings.
 
   * **[shairport-sync 5.0.4](../../docs/make/shairport-sync.md)<a id='shairport-sync'></a>**<br>
     This build enables the lightweight tinysvcmdns backend and metadata support for the Freetz status page.
@@ -1594,19 +1627,22 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[snapcast 0.35.0](../../docs/make/snapcast.md)<a id='snapcast'></a>**<br>
     This Freetz build provides the upstream snapserver and snapclient binaries with ALSA output on the client side plus FLAC and Ogg/Vorbis codec support. mDNS discovery, Opus, PulseAudio, JACK, PipeWire, and SDL2 are disabled to keep the embedded footprint smaller. Can be externalized to save flash memory.
 
+  * **[SoX (Sound eXchange)](../../docs/make/sox.md)<a id='sox'></a>**<br>
+    SoX is a command-line audio processing tool that can convert, play, and record audio files in various formats. http://sox.sourceforge.net/
+
 # Data Migration and Disaster Recovery
 
   * **[clonezilla 5.15.23 (script bundle)](../../docs/make/clonezilla.md)<a id='clonezilla'></a>**<br>
-    Clonezilla script bundle for disk/partition cloning workflows. This package installs DRBL/Clonezilla scripts under /usr/share/drbl and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly).
+    Clonezilla script bundle for disk/partition cloning workflows. This package installs DRBL/Clonezilla scripts under /usr/share/drbl and wrappers in /usr/sbin (clonezilla, ocs-sr, ocs-onthefly). Requires uClibc 1.0.58 or newer (depends on fsarchiver and partclone, which need libblkid from util-linux 2.41).
 
   * **[ddrescue: GNU ddrescue 1.30 (gddrescue) (binary only)](../../docs/make/ddrescue.md)<a id='ddrescue'></a>**<br>
     GNU ddrescue is a data recovery tool with mapfile support. This package installs ddrescue and ddrescuelog.
 
   * **[fsarchiver 0.8.9 (binary only)](../../docs/make/fsarchiver.md)<a id='fsarchiver'></a>**<br>
-    fsarchiver is a filesystem archiver with restore capabilities. This package is built with conservative compression support (disabling lzma/lzo/lz4/zstd) to keep dependencies smaller.
+    fsarchiver is a filesystem archiver with restore capabilities. This package is built with conservative compression support (disabling lzma/lzo/lz4/zstd) to keep dependencies smaller. Requires uClibc 1.0.58 or newer (needs libblkid from util-linux 2.41, which is unavailable on older toolchains).
 
   * **[partclone 0.3.31 (binary only)](../../docs/make/partclone.md)<a id='partclone'></a>**<br>
-    Partclone provides block-level clone/restore/check tools. This package installs generic engines plus extended filesystem backends (extfs, xfs, ntfs, btrfs, exfat, f2fs, fat, minix, apfs, hfsp) and ncursesw support.
+    Partclone provides block-level clone/restore/check tools. This package installs generic engines plus extended filesystem backends (extfs, xfs, ntfs, btrfs, exfat, f2fs, fat, minix, apfs, hfsp) and ncursesw support. Requires uClibc 1.0.58 or newer (needs libblkid from util-linux 2.41, which is unavailable on older toolchains).
 
   * **[udpcast 20250223 (binary only)](../../docs/make/udpcast.md)<a id='udpcast'></a>**<br>
     udpcast is a multicast file transfer tool used by cloning workflows. This package installs udp-sender and udp-receiver.
@@ -1645,7 +1681,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Consolidate the Log File Regularly to Save Space](../../docs/make/inotify-tools.md#consolidate-the-log-file-regularly-to-save-space)
      - [Closing Word](../../docs/make/inotify-tools.md#closing-word)
 
-  * **[ldd 0.1/1.0.58 (binary only)](../../docs/make/ldd.md)<a id='ldd'></a>**<br>
+  * **[ldd 0.1/1.0.59 (binary only)](../../docs/make/ldd.md)<a id='ldd'></a>**<br>
     ldd prints the shared libraries required by each program or shared library specified on the command line.
 
   * **[lsof 4.89 (binary only) - DEPRECATED](../../docs/make/lsof.md)<a id='lsof'></a>**<br>
@@ -1661,7 +1697,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Usage](../../docs/make/nano-shell.md#usage)
 
   * **[PatchELF 0.18.0 (binary only)](../../docs/make/patchelf.md)<a id='patchelf'></a>**<br>
-    Modifies existing ELF executables and libraries. Can change the interpreter, RPATH, and other ELF metadata. Useful for modifying binaries to use different dynamic linker paths or library search paths (RPATH/RUNPATH).
+    Modifies existing ELF executables and libraries. Can change the interpreter, RPATH, and other ELF metadata. Useful for modifying binaries to use different dynamic linker paths or library search paths (RPATH/RUNPATH). Links against jemalloc to avoid segfault on uClibc MIPS targets.
 
   * **[pciutils 3.1.7 (binary only) - DEPRECATED](../../docs/make/pciutils.md)<a id='pciutils'></a>**<br>
     The PCI Utilities are a collection of programs for inspecting and manipulating configuration of PCI devices, all based on a common portable library libpci which offers access to the PCI configuration space on a variety of operating systems. lspci displays detailed information about all PCI buses and devices in the system. setpci allows reading from and writing to PCI device configuration registers. For example, you can adjust the latency timers with it.
@@ -1693,7 +1729,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[exfatprogs 1.3.2 (binary only)](../../docs/make/exfatprogs.md)<a id='exfatprogs'></a>**<br>
     exFAT userspace tools for create/check/label operations. Provides mkfs.exfat, fsck.exfat, exfatlabel and tune.exfat.
 
-  * **<u>f2fs-tools 1.9.0 (binary only)</u><a id='f2fs-tools'></a>**<br>
+  * **[f2fs-tools 1.9.0 (binary only)](../../docs/make/f2fs-tools.md)<a id='f2fs-tools'></a>**<br>
     Userspace tools to create, check and manage F2FS (Flash-Friendly File System) filesystems. Provides mkfs.f2fs and fsck.f2fs (v1.9.0).
 
   * **[fatresize 2026-04-03 snapshot (master, binary only)](../../docs/make/fatresize.md)<a id='fatresize'></a>**<br>
@@ -1701,9 +1737,6 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[fstyp 0.1 (binary only) - DEPRECATED](../../docs/make/fstyp.md)<a id='fstyp'></a>**<br>
     fstyp can be used to heuristically detect which filesystem type a block device contains.
-
-  * **[gptfdisk 1.0.10 (gdisk)](../../docs/make/gptfdisk.md)<a id='gptfdisk'></a>**<br>
-    Interactive GUID partition table (GPT) manipulator
 
   * **[hdparm 9.65 (binary only)](../../docs/make/hdparm.md)<a id='hdparm'></a>**<br>
     Hdparm can be used to show and set parameters of ATA-drives (e.g. hard disk drives).
@@ -1714,8 +1747,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[parted 3.6 (binary only)](../../docs/make/parted.md)<a id='parted'></a>**<br>
     GNU Parted is a disk partition editor. This package is linked with jemalloc to reduce allocator-related crashes observed on some target combinations.
 
-  * **[Smartmontools 7.5](../../docs/make/smartmontools.md)<a id='smartmontools'></a>**<br>
-    Smartmontools contains utility programs (smartctl, smartd) to control/monitor storage systems using the Self-Monitoring, Analysis and Reporting Technology System (S.M.A.R.T.) built into most modern ATA and SCSI disks. It is derived from smartsuite.
+  * **[Smartmontools 7.2/7.5](../../docs/make/smartmontools.md)<a id='smartmontools'></a>**<br>
+    Smartmontools contains utility programs (smartctl, smartd) to control/monitor storage systems using the Self-Monitoring, Analysis and Reporting Technology System (S.M.A.R.T.) built into most modern ATA and SCSI disks. It is derived from smartsuite. Version 7.5 is built as C++11 and requires GCC 4.7 or newer; on older toolchains (GCC < 4.7) or 2.6.39 kernels, version 7.2 is selected instead.
 
   * **[testdisk 7.2](../../docs/make/testdisk.md)<a id='testdisk'></a>**<br>
     TestDisk is a powerful data recovery tool designed to recover lost partitions and repair non-booting disks caused by software faults or accidental deletion of the partition table. PhotoRec is a companion tool focused on file data recovery, supporting over 480 file extensions. fidentify uses PhotoRec's signature database to identify file types from raw data. TestDisk and PhotoRec provide an ncurses TUI and are intended for use over SSH on the FRITZ!Box. Project home: https://www.cgsecurity.org/wiki/TestDisk GitHub:       https://github.com/cgsecurity/testdisk These are large binaries; can be externalized to save flash memory.
@@ -1736,6 +1769,27 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[esp-serial-flasher](../../docs/make/esp-serial-flasher.md)<a id='esp-serial-flasher'></a>**<br>
     ESP Serial Flasher for Linux hosts. Builds one CLI tool: - linux_flasher: upstream generic CLI (<addr> <file> pairs)
 
+  * **[hidws 1.3.1 (binary only)](../../docs/make/hidws.md)<a id='hidws'></a>**<br>
+    Generic WebSocket to HID gateway daemon (libusb backend). Requires uClibc 1.0.58 or newer: hidws links against libwebsockets which needs libuv, and libuv on older toolchains (GCC <= 5 / uClibc 0.9.x-1.0.14) fails to link with "undefined reference to pthread_atfork". hidws is a daemon that bridges WebSocket clients to USB HID devices. It uses libwebsockets for the WebSocket server and hidapi (libusb backend) for HID access, so it also works on routers where the kernel HID/INPUT subsystem is unavailable (e.g. GRX5 models). hid-list is a diagnostic utility that lists all USB HID devices and the reports they support. Any web app can use hidws to talk to HID devices remotely over WebSocket: - {"cmd":"list"} — list HID devices - {"cmd":"open","vendorId":...,"productId":...} - {"cmd":"send_report","reportId":...,"data":[...]} - {"cmd":"send_feature_report","reportId":...,"data":[...]} - {"cmd":"close"} Responses arrive as {"type":"device_list"}, {"type":"opened"}, {"type":"input_report"} or {"type":"error"}. Run: hidws [port]   (default port: 9001) Web app access: ws://fritz.box:9001 SSL/TLS (wss://) support is enabled: hidws serves both ws:// and wss:// on the same port, and generates a self-signed certificate automatically on first start (see the hidws web config page). This is required on HTTPS-hosted web apps (e.g. GitHub Pages) that block plain ws:// connections. Protocol based on the Audiocular Aura backend: https://github.com/mandy321/Audiocular-Aura
+
+  * **[ja11-config 1.0 (binary only)](../../docs/make/ja11-config.md)<a id='ja11-config'></a>**<br>
+    FiiO JA11 (KT02H20) tools: TUI configurator plus firmware update. - ja11-config-tui: interactive 5-band parametric EQ configurator. Communicates over HID using hidapi's libusb backend (like hidws), NOT hidraw: on startup it lists all HID devices and lets you choose which one to connect to. - ja11-boot: puts the device into firmware-update mode by sending an HID output report; the device then re-enumerates as a USB CDC serial port. - ja11-flash: flashes firmware over the update-mode serial port. Access via SSH: ja11-config-tui               (EQ configuration) ja11-boot                     (enter update mode) ja11-flash /dev/ttyACM1 fw.bin (flash firmware) Requires GCC 4.7 or newer: the sources are compiled with -std=c11, which the old GCC 4.6.4 toolchain does not recognize.
+     - [Communication protocol](../../docs/make/ja11-config.md#communication-protocol)
+     - [Pipeline](../../docs/make/ja11-config.md#pipeline)
+     - [Forcing the vendor/product ID of ja11-boot](../../docs/make/ja11-config.md#forcing-the-vendorproduct-id-of-ja11-boot)
+     - [Device selection](../../docs/make/ja11-config.md#device-selection)
+     - [Interface layout](../../docs/make/ja11-config.md#interface-layout)
+     - [Controls reference](../../docs/make/ja11-config.md#controls-reference)
+     - [Parametric EQ (PEQ)](../../docs/make/ja11-config.md#parametric-eq-peq)
+     - [Filter types](../../docs/make/ja11-config.md#filter-types)
+     - [Global Preamp (gain)](../../docs/make/ja11-config.md#global-preamp-gain)
+     - [DAC Digital Filters](../../docs/make/ja11-config.md#dac-digital-filters)
+     - [Known compatible devices](../../docs/make/ja11-config.md#known-compatible-devices)
+     - [udev rule](../../docs/make/ja11-config.md#udev-rule)
+     - [Device not found](../../docs/make/ja11-config.md#device-not-found)
+     - [Communication errors](../../docs/make/ja11-config.md#communication-errors)
+     - [Presets not loading](../../docs/make/ja11-config.md#presets-not-loading)
+
   * **[micronucleus 2.6](../../docs/make/micronucleus.md)<a id='micronucleus'></a>**<br>
     Installs: - micronucleus: USB uploader for Digispark/ATTiny Micronucleus bootloader targets. Usage example: micronucleus --run firmware.hex
 
@@ -1751,6 +1805,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[Collectd 4.10.3 - DEPRECATED](../../docs/make/collectd.md)<a id='collectd'></a>**<br>
     Collectd collects information about the system it is running on and stores this information. The information can then be used to do find current performance bottlenecks (i. e. performance analysis) and predict future system load (i. e. capacity planning). Or if you just want pretty graphs of your private server and are fed up with some homegrown solution you're at the right place, too.
+
+  * **[gptfdisk 1.0.10 (gdisk)](../../docs/make/gptfdisk.md)<a id='gptfdisk'></a>**<br>
+    Interactive GUID partition table (GPT) manipulator
 
   * **[hp-utils 0.3.2 - DEPRECATED](../../docs/make/hp-utils.md)<a id='hp-utils'></a>**<br>
     hp-utils is a collection of utility programs for HP printers. It's meant to be used on systems, which are unable to run the corresponding programs provided by HPLIP, e.g. because they only have limited memory and/or cpu power. hp-utils is primarily focused towards embedded systems, particularly towards the FRITZ!Box, a family of DSL routers produced by AVM.
@@ -1875,8 +1932,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Downloader CGI](../../docs/make/downloader.md)<a id='downloader'></a>**<br>
     Download files from HTTP or FTP server during the boot process. This is particularly useful for binary packages which do not fit into the firmware image, but should be used on the box anyway. As long as they fit into the RAM disk this solution helps to automate the downloads and keeps them out of debug.cfg. by hermann72pb (ip-phone-forum.de) Support thread: http://www.ip-phone-forum.de/showthread.php?t=134934
 
+  * **<u>Gerbera CGI web configuration interface</u><a id='gerbera'></a>**<br>
+    Provides a configuration interface for Gerbera media server. Access the configuration (e.g., http://fritz.box:81/cgi-bin/conf/gerbera)
+
   * **<u>go-librespot CGI (Spotify Connect config/status web UI)</u><a id='go-librespot'></a>**<br>
     go-librespot. Includes startup handling, runtime YAML generation and log-based service monitoring in the freetz web UI. http://fritz.box:81/cgi-bin/conf/go-librespot
+
+  * **[hidws CGI (freetz configuration web page)](../../docs/make/hidws-cgi.md)<a id='hidws'></a>**<br>
+    Provides the freetz CGI configuration page and execution log for the hidws WebSocket <-> USB HID gateway daemon. Includes the init script (rc.hidws), the default configuration and the CGI script for managing hidws via the freetz web UI, plus links to the supported web apps (fiiocontrol, kt02h20-control, Audiocular-Aura, fiiocontrol-oss, webhid-explorer) that connect to the daemon over WebSocket. http://fritz.box:81/cgi-bin/conf/hidws
 
   * **[Iptables-CGI - DEPRECATED](../../docs/make/iptables-cgi.md)<a id='iptables'></a>**<br>
 
@@ -1889,6 +1952,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Chain editor input](../../docs/make/iptables-ng.md#chain-editor-input)
      - [My setup is for example like this](../../docs/make/iptables-ng.md#my-setup-is-for-example-like-this)
      - [Other](../../docs/make/iptables-ng.md#other)
+
+  * **<u>MiniUPnPd CGI web configuration interface</u><a id='miniupnpd'></a>**<br>
+    Provides a web configuration interface for MiniUPnPd. Access the configuration (e.g., http://fritz.box:81/cgi-bin/conf/miniupnpd)
 
   * **<u>MPD CGI (Music Player Daemon config/status web UI)</u><a id='mpd'></a>**<br>
     Includes startup handling, generated mpd.conf management and auto-refresh monitoring in the freetz web UI. http://fritz.box:81/cgi-bin/conf/mpd
@@ -1942,6 +2008,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>ppp-cgi: ppp dial-up-network</u><a id='ppp'></a>**<br>
     Use this package to establish a dun connection
+
+  * **<u>Pseudo-Pi-hole CGI web configuration interface</u><a id='pseudo-pi-hole'></a>**<br>
+    Provides a web configuration interface for Pseudo-Pi-hole DNS Sinkhole. Access: http://fritz.box:81/cgi-bin/conf/pseudo-pi-hole
 
   * **[RRDstats for RRDtool](../../docs/make/rrdstats.md)<a id='rrdstats'></a>**<br>
     Lets you view graphically various stats of your Freetz Box. Selects BusyBox's 'nice' to save spare resources.

@@ -2,6 +2,7 @@ $(call TOOLS_INIT, 3.4)
 $(PKG)_SOURCE:=squashfs$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=9ea1a9b3bd4f387ca11b5e96f00f8ae996fb81c4c7ad41f7c7f359917628a339
 $(PKG)_SITE:=@SF/squashfs
+### STEWARD:=EOL
 
 $(PKG)_BUILD_DIR:=$($(PKG)_DIR)/squashfs-tools
 

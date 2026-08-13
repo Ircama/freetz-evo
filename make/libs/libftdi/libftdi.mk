@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://www.intra2net.com/en/developer/libftdi/download
 ### CHANGES:=https://www.intra2net.com/en/developer/libftdi/index.php
 ### CVSREPO:=http://developer.intra2net.com/git/?p=libftdi
 
+$(PKG)_CATEGORY_LIBS:=USB & related
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

@@ -8,6 +8,8 @@ $(PKG)_SITE:=@GNU/$(pkg),https://invisible-island.net/archives/ncurses
 ### MANPAGE:=https://invisible-island.net/ncurses/announce.html
 ### CHANGES:=https://invisible-island.net/ncurses/NEWS.html
 
+$(PKG)_CATEGORY_LIBS:=Terminal##ncurses
+
 $(PKG)_DEPENDS_ON += ncurses-host
 
 $(PKG)_LIBCONFIG_SHORT := ncurses6-config

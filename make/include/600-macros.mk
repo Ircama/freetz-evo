@@ -249,8 +249,8 @@ $($(PKG)_DIR)/.configured: $($(PKG)_DIR)/.build-prereq-checked $($(PKG)_DIR)/.un
 		-e 's!%TARGET_STRIP%!$(call qstrip,$(TARGET_STRIP))!g' \
 		\
 		-e 's!%PKGCONFIG%!$(call qstrip,$(TARGET_MAKE_PATH))/../lib/pkgconfig!g' \
-		-e 's!%PYTHON%!$(call qstrip,$(TOOLS_DIR))/path/cmake!g' \
-		-e 's!%CMAKE%!$(call qstrip,$(TOOLS_DIR))/path/python3!g' \
+		-e 's!%PYTHON%!$(call qstrip,$(TOOLS_DIR))/path/python3!g' \
+		-e 's!%CMAKE%!$(call qstrip,$(TOOLS_DIR))/path/cmake!g' \
 		\
 		$(INCLUDE_DIR)/meson.cross/common-linux-uclibc >> $($(PKG)_DIR)/meson.freetz
 #		$(INCLUDE_DIR)/meson.cross/dynamic-linux-uclibc > $($(PKG)_DIR)/meson.freetz

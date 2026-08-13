@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, $(if $(FREETZ_AVM_GCC_13),13.4.0,$(if $(FREETZ_AVM_GCC_14),14.3.0,15.2.0)))
 $(PKG)_CONDITIONAL:=y
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 $(PKG)_DEPENDS_ON += patchelf-target-host
 ### SUPPORT:=Ircama
 ### STEWARD:=Ircama

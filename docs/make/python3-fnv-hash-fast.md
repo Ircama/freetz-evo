@@ -1,4 +1,4 @@
-# fnv-hash-fast 1.6.0
+# fnv-hash-fast 2.0.3
   - Homepage: [https://github.com/bluetooth-devices/fnv-hash-fast](https://github.com/bluetooth-devices/fnv-hash-fast)
   - Changelog: [https://github.com/bluetooth-devices/fnv-hash-fast/releases](https://github.com/bluetooth-devices/fnv-hash-fast/releases)
   - Repository: [https://github.com/bluetooth-devices/fnv-hash-fast](https://github.com/bluetooth-devices/fnv-hash-fast)

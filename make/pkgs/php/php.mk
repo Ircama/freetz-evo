@@ -1,14 +1,14 @@
 # Version selection based on menuconfig
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_4)),y)
-$(call PKG_INIT_BIN,8.4.1)
-$(PKG)_HASH:=94c8a4fd419d45748951fa6d73bd55f6bdf0adaefb8814880a67baa66027311f
+$(call PKG_INIT_BIN,8.4.24)
+$(PKG)_HASH:=e127be09a8506f4327c5cfa78a614b00d210714484ec215ce0011b4a03c00731
 else ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_5)),y)
-$(call PKG_INIT_BIN,8.5.0)
-$(PKG)_HASH:=39cb6e4acd679b574d3d3276f148213e935fc25f90403eb84fb1b836a806ef1e
+$(call PKG_INIT_BIN,8.5.9)
+$(PKG)_HASH:=0db7855f25bcd0ab1d592cdb35e284d6f6a5d2ae0f6f621122e364cc39b708f4
 else
 # Default to 8.5
-$(call PKG_INIT_BIN,8.5.0)
-$(PKG)_HASH:=39cb6e4acd679b574d3d3276f148213e935fc25f90403eb84fb1b836a806ef1e
+$(call PKG_INIT_BIN,8.5.9)
+$(PKG)_HASH:=0db7855f25bcd0ab1d592cdb35e284d6f6a5d2ae0f6f621122e364cc39b708f4
 endif
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_SITE:=https://www.php.net/distributions
@@ -257,8 +257,8 @@ $(PKG)_CONFIGURE_ENV += ONIG_CFLAGS="-I$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/inclu
 $(PKG)_CONFIGURE_ENV += ONIG_LIBS="-L$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib -lonig"
 $(PKG)_CONFIGURE_OPTIONS+=--disable-phar
 $(PKG)_CONFIGURE_OPTIONS+=--disable-rpath
-$(PKG)_CONFIGURE_OPTIONS+=--with-config-file-path=/tmp/flash
-$(PKG)_CONFIGURE_OPTIONS+=--with-config-file-scan-dir=/tmp/flash/php
+$(PKG)_CONFIGURE_OPTIONS+=--with-config-file-path=/tmp/flash/php
+$(PKG)_CONFIGURE_OPTIONS+=--with-config-file-scan-dir=/tmp/flash/php/php.d
 $(PKG)_CONFIGURE_OPTIONS+=--without-pear
 
 # Apply optional phpinfo patch if enabled

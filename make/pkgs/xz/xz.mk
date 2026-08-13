@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/tukaani-project/xz/releases/download/v$($(PKG)_V
 ### CVSREPO:=https://git.tukaani.org/?p=xz.git
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/xz/.libs/xz
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/xz
 

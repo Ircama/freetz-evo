@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.0.10)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=2abed61bc6d2b9ec498973c0440b8b804b7a72d7144069b5a9209b2ad693a282
 $(PKG)_SITE:=@SF/project/gptfdisk/gptfdisk/$($(PKG)_VERSION)
@@ -13,6 +13,10 @@ $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/bin/%,$(filter-out $($(PK
 # log2/log are provided by libm in uClibc
 $(PKG)_PATCH_POST_CMDS += $(SED) -r -i -e 's,(-luuid),\1 -lm,g' Makefile;
 
+$(PKG)_CATEGORY_PKGS:=Unstable
+
+$(PKG)_BINARY:=$($(PKG)_DIR)/gdisk
+$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/gdisk
 $(PKG)_DEPENDS_ON += e2fsprogs
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 ifeq ($(strip $(FREETZ_PACKAGE_GPTFDISK_cgdisk)),y)

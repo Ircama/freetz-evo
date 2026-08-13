@@ -276,6 +276,9 @@ Currently supported devices and firmwares
     - 277.08.03 rev119187 {ALL} [Smart24 P1 FCS]
     - 277.08.25 rev134337 {ALL} [Smart24 P2 NL1]
 
+  * __Fritz!Box 6860 5G v2 (UNTESTED)__
+    - 314.08.25 rev134683 {ALL} [Smart24 P2 NL1]
+
   * __Fritz!Box 6890 LTE__
     - 162.06.87 rev59283 {ALL}
     - 162.07.03 rev68723 {ALL}

@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.47.4)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=fd5bf388cbdbe006a3d3b318d983b2948382440acc85a87f1e7d108653e8db0b
 $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)_VERSION)
@@ -7,6 +7,8 @@ $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)
 ### MANPAGE:=https://www.mankier.com/package/e2fsprogs
 ### CHANGES:=https://e2fsprogs.sourceforge.net/e2fsprogs-release.html
 ### CVSREPO:=https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+
+$(PKG)_CATEGORY_LIBS:=File systems##E2fsprogs
 
 $(PKG)_LIBNAMES_SHORT_ALL := com_err e2p ext2fs ss uuid
 $(PKG)_LIBNAMES_SHORT :=

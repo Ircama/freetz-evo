@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 5.15.23)
-$(PKG)_CATEGORY:=Data Migration and Disaster Recovery
+$(PKG)_CATEGORY_PKGS:=Data Migration and Disaster Recovery
 
 # clonezilla requires uClibc 1.0.58 or newer: it depends on fsarchiver and
 # partclone, which need libblkid from util-linux 2.41. The option is gated

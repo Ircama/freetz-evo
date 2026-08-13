@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://www.intra2net.com/en/developer/libftdi/download
 ### CVSREPO:=http://developer.intra2net.com/git/?p=libftdi
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=USB & related
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/ftdi_eeprom/ftdi_eeprom
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ftdi_eeprom
 

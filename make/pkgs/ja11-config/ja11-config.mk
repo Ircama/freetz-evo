@@ -12,7 +12,7 @@ $(PKG)_SITE:=https://github.com/Ircama/ja11-config/archive/refs/tags
 ### CHANGES:=https://github.com/Ircama/ja11-config/releases
 ### CVSREPO:=https://github.com/Ircama/ja11-config
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_DEPENDS_ON += hidapi
 $(PKG)_DEPENDS_ON += ncurses

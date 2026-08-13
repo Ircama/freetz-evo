@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://bitbucket.org/libgd/gd-libgd/downloads,https://github.com/l
 ### CHANGES:=https://github.com/libgd/libgd/releases
 ### CVSREPO:=https://github.com/libgd/libgd
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libgd.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libgd.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libgd.so.$($(PKG)_LIB_VERSION)

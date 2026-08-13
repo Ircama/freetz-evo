@@ -1,11 +1,11 @@
 # ripgrep 15.1.0
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)
   - Manpage: [https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
   - Changelog: [https://github.com/BurntSushi/ripgrep/releases](https://github.com/BurntSushi/ripgrep/releases)
   - Repository: [https://github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)
   - Package: [master/make/pkgs/ripgrep/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ripgrep/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/BurntSushi/ripgrep
 - Changelog: https://github.com/BurntSushi/ripgrep/releases

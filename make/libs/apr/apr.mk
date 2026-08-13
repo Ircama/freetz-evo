@@ -9,6 +9,8 @@ $(PKG)_SITE:=@APACHE/apr
 ### CHANGES:=https://downloads.apache.org/apr/CHANGES-APR-1.7
 ### CVSREPO:=https://svn.apache.org/viewvc/apr/apr/
 
+$(PKG)_CATEGORY_LIBS:=Apache Portable Runtime
+
 $(PKG)_MAJOR_LIBNAME=libapr-$(APR_MAJOR_VERSION)
 $(PKG)_LIBNAME=$($(PKG)_MAJOR_LIBNAME).so.$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/$($(PKG)_LIBNAME)

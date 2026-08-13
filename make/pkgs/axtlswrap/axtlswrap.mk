@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=axTLS-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=555ce7adf743c97ca7562e4e5644f8d678c9d88139aeeadb758282f1d37db8a9
 $(PKG)_SITE:=@SF/axtls
 
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/_stage/axtlswrap
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/axtlswrap

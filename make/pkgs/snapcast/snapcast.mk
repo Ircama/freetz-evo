@@ -10,7 +10,7 @@ $(PKG)_SITE:=https://github.com/badaix/snapcast/archive/refs/tags
 ### STEWARD:=Ircama
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/snapcast/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 SNAPCAST_BOOST_VERSION:=1.87.0
 SNAPCAST_BOOST_SOURCE:=boost_1_87_0.tar.bz2

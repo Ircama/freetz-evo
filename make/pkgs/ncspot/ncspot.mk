@@ -11,7 +11,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/ncspot-v1.3.4
 ### CHANGES:=https://github.com/hrkfdn/ncspot/releases
 ### CVSREPO:=https://github.com/hrkfdn/ncspot
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 NCSPOT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 NCSPOT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))

@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://www.cairographics.org/releases/
 ### CHANGES:=https://www.cairographics.org/releases/
 ### CVSREPO:=https://cgit.freedesktop.org/pixman/
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_LIBNAME_SHORT:=$(pkg)
 $(PKG)_LIBNAME_LONG:=$($(PKG)_LIBNAME_SHORT:%=lib%-1.so.$($(PKG)_LIB_VERSION))
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/pixman/$($(PKG)_LIBNAME_LONG)

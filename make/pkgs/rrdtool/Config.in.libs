@@ -6,7 +6,7 @@ choice
 		bool "1.2.30"
 
 	config FREETZ_LIB_librrd_WITH_VERSION_CURRENT
-		bool "1.10.3"
+		bool "1.11.0"
 		depends on FREETZ_SEPARATE_AVM_UCLIBC
 
 endchoice

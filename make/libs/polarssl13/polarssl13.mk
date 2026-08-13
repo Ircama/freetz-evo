@@ -3,6 +3,8 @@ $(PKG)_SOURCE:=mbedtls-$($(PKG)_VERSION)-gpl.tgz
 $(PKG)_HASH:=ded041aa4acf9a3e4d0c85bf334b0860135da996e75afdcc3abf22f403d14457
 $(PKG)_SITE:=http://polarssl.org/code/releases
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##PolarSSL
+
 $(PKG)_LIBNAME:=lib$(pkg).so.$($(PKG)_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/library/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

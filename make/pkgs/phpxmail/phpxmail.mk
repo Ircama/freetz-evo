@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=$(pkg)$($(PKG)_VERSION).zip
 $(PKG)_HASH:=08d814070d645dcbcb167d149b303c53fd66126c9880b247b8116256e1c77a88
 $(PKG)_SITE:=@SF/$(pkg)
 
-$(PKG)_CATEGORY:=Web interfaces
+$(PKG)_CATEGORY_PKGS:=Web interfaces
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/config.php
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/etc/default.$(pkg)/config.php.default

@@ -1,7 +1,7 @@
-# PHP 8.4.1/8.5.0 (binary only)
+# PHP (binary only)
   - Homepage: [https://www.php.net/](https://www.php.net/)
   - Manpage: [https://www.php.net/manual/en/](https://www.php.net/manual/en/)
-  - Changelog: [https://github.com/php/php-src/releases](https://github.com/php/php-src/releases)
+  - Changelog: [https://www.php.net/ChangeLog-8.php](https://www.php.net/ChangeLog-8.php)
   - Repository: [https://github.com/php/php-src](https://github.com/php/php-src)
   - Package: [master/make/pkgs/php/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/php/)
   - Steward: -

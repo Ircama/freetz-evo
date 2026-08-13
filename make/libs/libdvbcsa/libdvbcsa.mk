@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://download.videolan.org/pub/videolan/libdvbcsa/$($(PKG)_VERSI
 ### CHANGES:=https://code.videolan.org/videolan/libdvbcsa/blob/master/ChangeLog
 ### CVSREPO:=https://code.videolan.org/videolan/libdvbcsa/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libdvbcsa.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libdvbcsa.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libdvbcsa.so.$($(PKG)_LIB_VERSION)

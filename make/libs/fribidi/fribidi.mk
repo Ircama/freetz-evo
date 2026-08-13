@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/fribidi/fribidi/releases/download/v$($(PKG)_VERS
 ### CHANGES:=https://github.com/fribidi/fribidi/releases
 ### CVSREPO:=https://github.com/fribidi/fribidi
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
+
 $(PKG)_LIBNAME_SHORT:=$(pkg)
 $(PKG)_LIBNAME_LONG:=$($(PKG)_LIBNAME_SHORT:%=lib%.so.$($(PKG)_LIB_VERSION))
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/.libs/$($(PKG)_LIBNAME_LONG)

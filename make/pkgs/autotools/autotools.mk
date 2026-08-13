@@ -13,7 +13,7 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/bin/autoconf
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/autoconf
 $(PKG)_TARGET_MODULES_DIR:=$($(PKG)_DEST_DIR)/usr/share/autoconf
 $(PKG)_TARGET_MODULES:=$($(PKG)_TARGET_DIR)/.modules_installed
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_CONFIGURE_OPTIONS += --program-prefix=""
 

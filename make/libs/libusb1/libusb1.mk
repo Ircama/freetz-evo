@@ -12,6 +12,8 @@ $(PKG)_SITE:=https://github.com/libusb/libusb/releases/download/v$($(PKG)_VERSIO
 ### CHANGES:=https://github.com/libusb/libusb/milestones
 ### CVSREPO:=https://github.com/libusb/libusb
 
+$(PKG)_CATEGORY_LIBS:=USB & related
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/libusb/.libs/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libusb-$($(PKG)_SHORT_VERSION).so.$($(PKG)_LIB_VERSION)

@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=85bcbd8ee6095ade7870263a28ebcb8832f541ea7393975494926015c07568d3
 $(PKG)_SITE:=@GNU/$(pkg)
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL
+
 $(PKG)_LIBNAME_SHORT := lib$(pkg)
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/src/.libs/$($(PKG)_LIBNAME_SHORT).so.$($(PKG)_LIB_VERSION)

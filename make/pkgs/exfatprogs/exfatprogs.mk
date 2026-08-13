@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, 1.3.2)
 ### STEWARD:=Ircama
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=67ddb50543636292df8fde58117eefd54210d6cd7bf1eea5e91d2c4dccbc425e
 $(PKG)_SITE:=https://github.com/exfatprogs/exfatprogs/releases/download/$($(PKG)_VERSION)

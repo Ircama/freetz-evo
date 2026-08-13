@@ -4,5 +4,5 @@
   - Changelog: [https://bitbucket.org/fesc2000/uimg-tool/commits/](https://bitbucket.org/fesc2000/uimg-tool/commits/)
   - Repository: [https://bitbucket.org/fesc2000/uimg-tool/src/master/](https://bitbucket.org/fesc2000/uimg-tool/src/master/)
   - Host-Tool: [master/make/host-tools/uimg-host/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/host-tools/uimg-host/)
-  - Steward: [@fda77](https://github.com/fda77)
+  - Steward: `END-OF-LIFE`
 

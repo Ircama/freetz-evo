@@ -9,6 +9,8 @@ $(PKG)_SITE:=@SF/libpng
 ### CVSREPO:=https://github.com/glennrp/libpng
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libpng16.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libpng16.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libpng16.so.$($(PKG)_LIB_VERSION)

@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.0)
-$(PKG)_CATEGORY:=Web interfaces
+$(PKG)_CATEGORY_PKGS:=Web interfaces
 
 # disk-mgmt-cgi requires uClibc 1.0.58 or newer: it depends on partclone
 # (and other modern disk tools), which need libblkid from util-linux 2.41.

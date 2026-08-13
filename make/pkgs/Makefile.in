@@ -291,6 +291,26 @@ PKG_PREVENT_RPATH_HARDCODING = $(foreach f,$1,$(call PKG_PREVENT_RPATH_HARDCODIN
 # 1st level PKG_PREVENT_RPATH_HARDCODING
 PKG_PREVENT_RPATH_HARDCODING1 = $(subst $$$$,$$,$(call PKG_PREVENT_RPATH_HARDCODING,$1))
 
+# Fix meson scripts to prevent RPATH from being hardcoded.
+# Based on PKG_PREVENT_RPATH_HARDCODING
+#
+# Whether RPATH has been hardcoded or not could be tested using the following command:
+#   readelf -d <binary/library> | grep RPATH
+#
+# The macro is intended to be used in $(PKG)_CONFIGURE_PRE_CMDS variable in the following way:
+# $(PKG)_CONFIGURE_POST_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,builddir/build.ninja)
+#
+# Removes: -Wl,-rpath,/home/.../freetz/toolchain/build/.../.../usr/lib
+PKG_FIX_MESON_HARDCODED_BUILD_RPATH__INT  = -e "s@'?-Wl,-rpath,[^' ]*:?$(TARGET_TOOLCHAIN_STAGING_DIR)/[^' ]+:?[^' ]*'?@@g"
+#
+#
+PKG_PREVENT_MESON_BUILD_RPATH__INT = \
+	cp -a $1 $1.before_rpath_fix; \
+	$(SED) -i -r \
+		$(PKG_FIX_MESON_HARDCODED_BUILD_RPATH__INT) \
+	$1;
+PKG_PREVENT_MESON_BUILD_RPATH = $(foreach f,$1,$(call PKG_PREVENT_MESON_BUILD_RPATH__INT,$(f)))
+
 # Updates config.guess and config.sub for configure eg add aarch64.
 #   $(1) = directories of config.* files to be updated
 #

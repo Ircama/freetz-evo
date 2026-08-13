@@ -1,6 +1,6 @@
 config EXTERNAL_FREETZ_PACKAGE_E2FSPROGS
 	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_E2FSPROGS
-	bool "e2fsprogs binaries"
+	bool "e2fsprogs"
 	default n
 	help
 		external e2fsprogs file(s)

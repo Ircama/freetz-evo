@@ -1,11 +1,11 @@
 # ttyd 1.7.7
-  - Toolchain: requires uClibc 1.0.58 or newer (needs libuv, which fails to link on older uClibc with "undefined reference to pthread_atfork")
   - Homepage: [https://github.com/tsl0922/ttyd](https://github.com/tsl0922/ttyd)
   - Manpage: [https://github.com/tsl0922/ttyd/blob/main/man/ttyd.1](https://github.com/tsl0922/ttyd/blob/main/man/ttyd.1)
   - Changelog: [https://github.com/tsl0922/ttyd/releases](https://github.com/tsl0922/ttyd/releases)
   - Repository: [https://github.com/tsl0922/ttyd](https://github.com/tsl0922/ttyd)
   - Package: [master/make/pkgs/ttyd/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ttyd/)
   - Steward: Ircama
+  - Toolchain: requires uClibc 1.0.58 or newer (needs libuv, which fails to link on older uClibc with "undefined reference to pthread_atfork")
   - Maintainer: -
 
 # ttyd – Feature Overview

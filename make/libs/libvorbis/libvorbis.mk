@@ -3,6 +3,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=54f94a9527ff0a88477be0a71c0bab09a4c3febe0ed878b24824906cd4b0e1d1
 $(PKG)_SITE:=http://downloads.xiph.org/releases/vorbis
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Video
+
 $(PKG)_LIBVERSIONS      := 0.4.8 2.0.11 3.3.7
 $(PKG)_LIBNAMES_SHORT   := vorbis vorbisenc vorbisfile
 $(PKG)_LIBNAMES_LONG    := $(join $($(PKG)_LIBNAMES_SHORT:%=lib%.so.),$($(PKG)_LIBVERSIONS))

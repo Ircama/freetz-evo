@@ -3,6 +3,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=8372719b24e2dd75de6f59bb1315e600db4fd092805bd1201ed0cb651a2dab48
 $(PKG)_SITE:=http://avahi.org/download
 
+$(PKG)_CATEGORY_LIBS:=Avahi
+
 $(PKG)_BINARIES := avahi-daemon $(if $(FREETZ_PACKAGE_AVAHI_WITH_DNSCONFD),avahi-dnsconfd)
 $(PKG)_BINARIES_BUILD_DIR := $(join $($(PKG)_BINARIES:%=$($(PKG)_DIR)/%/.libs/),$($(PKG)_BINARIES))
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DEST_DIR)/usr/sbin/%)

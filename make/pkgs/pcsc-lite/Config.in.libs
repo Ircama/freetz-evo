@@ -6,13 +6,19 @@ config FREETZ_LIB_libpcsclite
 	help
 		Middleware to access smart cards using PC/SC.
 
+	choice
+		prompt "Version" if FALSE
+			default FREETZ_LIB_libpcsclite_WITH_VERSION_CURRENT
 
-if FREETZ_LIB_libpcsclite
+		config FREETZ_LIB_libpcsclite_WITH_VERSION_ABANDON
+			bool "1.9.5"
+			depends on FREETZ_TARGET_GCC_4_MAX
+			help
+				The C11 atomics are available since GCC v4.9 only.
 
-	config FREETZ_LIB_libpcsclite_WITH_ABANDON
-		bool
-		depends on FREETZ_TARGET_GCC_4_MAX
-		default y
+		config FREETZ_LIB_libpcsclite_WITH_VERSION_CURRENT
+			bool "2.5.1"
+			depends on !FREETZ_TARGET_GCC_4_MAX
 
-endif # FREETZ_LIB_libpcsclite
+	endchoice
 

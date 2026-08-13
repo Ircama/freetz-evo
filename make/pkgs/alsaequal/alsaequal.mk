@@ -10,7 +10,7 @@ $(PKG)_SITE:=https://github.com/bassdr/alsaequal/archive/refs/tags
 ### STEWARD:=Ircama
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/alsaequal/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_DEPENDS_ON += alsa-lib caps
 

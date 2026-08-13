@@ -1,10 +1,10 @@
 # rainfrog 0.3.18
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/achristmascarl/rainfrog](https://github.com/achristmascarl/rainfrog)
   - Changelog: [https://github.com/achristmascarl/rainfrog/releases](https://github.com/achristmascarl/rainfrog/releases)
   - Repository: [https://github.com/achristmascarl/rainfrog](https://github.com/achristmascarl/rainfrog)
   - Package: [master/make/pkgs/rainfrog/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/rainfrog/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/achristmascarl/rainfrog
 - Changelog: https://github.com/achristmascarl/rainfrog/releases

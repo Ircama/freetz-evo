@@ -23,7 +23,7 @@ source "config/ui/patches.in"
 
 comment "Additional components ------------------------------------"
 source "config/ui/packages.in"
-source "config/ui/shared-libraries.in"
+source "config/ui/libraries.in"
 source "config/ui/modules.in"
 source "config/ui/busybox.in"
 source "config/ui/external.in"

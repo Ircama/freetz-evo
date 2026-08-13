@@ -1,4 +1,4 @@
-# hidws-cgi 1.0 (binaries only)
+# hidws CGI (freetz configuration web page)
   - Package: [master/make/pkgs/hidws-cgi/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws-cgi/)
   - Steward: Ircama
   - Backend: [hidws](hidws.md) — [github.com/Ircama/hidws](https://github.com/Ircama/hidws)

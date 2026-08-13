@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.0)
-$(PKG)_CATEGORY:=Web interfaces
+$(PKG)_CATEGORY_PKGS:=Web interfaces
 
 # HTML editors from GitHub (pinned)
 # Note: avoid using $($(PKG)_...) in recipes/targets directly (PKG may change at execution time).

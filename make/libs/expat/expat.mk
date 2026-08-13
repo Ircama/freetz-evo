@@ -1,15 +1,17 @@
-$(call PKG_INIT_LIB, $(if $(FREETZ_LIB_libexpat_WITH_VERSION_ABANDON),2.7.5,2.8.2))
-$(PKG)_LIB_VERSION:=$(if $(FREETZ_LIB_libexpat_WITH_VERSION_ABANDON),1.11.3,1.12.2)
+$(call PKG_INIT_LIB, $(if $(FREETZ_LIB_libexpat_WITH_VERSION_ABANDON),2.7.5,2.8.3))
+$(PKG)_LIB_VERSION:=$(if $(FREETZ_LIB_libexpat_WITH_VERSION_ABANDON),1.11.3,1.12.3)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH_ABANDON:=1032dfef4ff17f70464827daa28369b20f6584d108bc36f17ab1676e1edd2f91
-$(PKG)_HASH_CURRENT:=3ad89b8588e6644bd4e49981480d48b21289eebbcd4f0a1a4afb1c29f99b6ab4
+$(PKG)_HASH_CURRENT:=f6256df90c906773d344da084402b7d3e4f22ed41b1a59c989098a83d3ea0c85
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_libexpat_WITH_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=@SF/expat,https://github.com/libexpat/libexpat/releases/download/R_$(subst .,_,$($(PKG)_VERSION))
-### VERSION:=2.7.5/2.8.2
+### VERSION:=2.7.5/2.8.3
 ### WEBSITE:=https://libexpat.github.io/
 ### MANPAGE:=https://libexpat.github.io/doc/
 ### CHANGES:=https://github.com/libexpat/libexpat/blob/master/expat/Changes
 ### CVSREPO:=https://github.com/libexpat/libexpat
+
+$(PKG)_CATEGORY_LIBS:=XML & XSLT
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/.libs/libexpat.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libexpat.so.$($(PKG)_LIB_VERSION)

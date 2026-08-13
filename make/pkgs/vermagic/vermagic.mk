@@ -4,7 +4,7 @@ $(PKG)_HASH:=3bf8aa5eefb77eeec85059dc237b1f34316e9de5990126602651bcff0ff535d5
 $(PKG)_SITE:=git@https://github.com/fanfuqiang/vc.git
 #$(PKG)_SITE:=git@https://github.com/D1W0U/vermagic
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg)
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/$(pkg)

@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://www.libssh2.org/download
 ### CHANGES:=https://github.com/libssh2/libssh2/releases
 ### CVSREPO:=https://github.com/libssh2/libssh2
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)

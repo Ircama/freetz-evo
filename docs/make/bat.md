@@ -1,10 +1,10 @@
 # bat 0.26.1
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
   - Changelog: [https://github.com/sharkdp/bat/releases](https://github.com/sharkdp/bat/releases)
   - Repository: [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
   - Package: [master/make/pkgs/bat/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bat/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/sharkdp/bat
 - Changelog: https://github.com/sharkdp/bat/releases

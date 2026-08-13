@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tgz
 $(PKG)_HASH:=393834df6b2d7a8e62a9b1ec7ac56b48e82b3192503d2e3956373181fcc365e5
 $(PKG)_SITE:=@SF/netpbm/super_stable/$($(PKG)_VERSION)
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_LIBNAME := libnetpbm.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_BUILD_DIR := $($(PKG)_DIR)/lib/$($(PKG)_LIBNAME)
 $(PKG)_LIB_STAGING_DIR := $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

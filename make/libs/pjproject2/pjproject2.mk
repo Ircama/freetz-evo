@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=pjproject-$($(PKG)_VERSION).tar.bz2
 $(PKG)_HASH:=da1933336b38b65ff2254bed05ea1076531b16915777a252ea999cf7f3284cb3
 $(PKG)_SITE:=http://www.pjsip.org/release/$($(PKG)_VERSION)
 
+$(PKG)_CATEGORY_LIBS:=PJ Project
+
 $(PKG)_INSTALL_SUBDIR:=_install
 
 $(PKG)_LIBNAMES_SHORT   := pj pjlib-util pjmedia pjmedia-audiodev pjmedia-codec pjmedia-videodev pjnath pjsip pjsip-simple pjsip-ua pjsua g7221codec ilbccodec milenage

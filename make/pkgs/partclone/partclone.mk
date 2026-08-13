@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 0.3.31)
-$(PKG)_CATEGORY:=Data Migration and Disaster Recovery
+$(PKG)_CATEGORY_PKGS:=Data Migration and Disaster Recovery
 
 # partclone requires uClibc 1.0.58 or newer: it needs libblkid from
 # util-linux 2.41, which is unavailable on older toolchains. The option is

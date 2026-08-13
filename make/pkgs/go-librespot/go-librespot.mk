@@ -25,7 +25,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/go-librespot-$($(PKG)_VERSION)
 ### STEWARD:=Ircama
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/go-librespot/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/go-librespot
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/go-librespot

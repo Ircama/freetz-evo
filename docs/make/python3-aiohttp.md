@@ -1,4 +1,4 @@
-# aiohttp 3.13.3
+# aiohttp 3.13.5
   - Homepage: [https://github.com/aio-libs/aiohttp](https://github.com/aio-libs/aiohttp)
   - Changelog: [https://github.com/aio-libs/aiohttp/releases](https://github.com/aio-libs/aiohttp/releases)
   - Repository: [https://github.com/aio-libs/aiohttp](https://github.com/aio-libs/aiohttp)

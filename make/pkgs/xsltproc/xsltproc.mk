@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://download.gnome.org/sources/libxslt/$(call GET_MAJOR_VERSION
 ### CVSREPO:=https://gitlab.gnome.org/GNOME/libxslt
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=XML & XSLT
+
 $(PKG)_BINARY_BUILD_DIR := $($(PKG)_DIR)/$(pkg)$(if $(FREETZ_PACKAGE_XSLTPROC_STATIC),,/.libs)/$(pkg)
 $(PKG)_BINARY_TARGET_DIR := $($(PKG)_DEST_DIR)/usr/bin/$(pkg)
 

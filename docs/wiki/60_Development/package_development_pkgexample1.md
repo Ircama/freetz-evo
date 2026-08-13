@@ -172,7 +172,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_SITE:=http://www.nocrew.org/software/httptunnel
 $(PKG)_BINARY:=$($(PKG)_DIR)/hts
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/hts
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -243,7 +243,7 @@ box.
 
 
 ```
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 ```
 
 This causes the package to be listed under the list of unstable packages

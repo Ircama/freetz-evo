@@ -17,6 +17,8 @@ $(PKG)_SITE_ABANDON:=@GNU/lib$(pkg)
 $(PKG)_SITE_CURRENT:=https://mirrors.kernel.org/gnu/lib$(pkg),https://ftp.gnu.org/gnu/lib$(pkg)
 $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_LIB_libiconv_WITH_VERSION_ABANDON),ABANDON,CURRENT))
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
+
 ifeq ($(strip $(FREETZ_TARGET_UCLIBC_0_9_28)),y)
 LIB$(PKG)_PREFIX:=/usr
 else

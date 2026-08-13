@@ -5,7 +5,7 @@ $(PKG)_SITE:=https://www.alsa-project.org/files/pub/utils
 ### WEBSITE:=https://www.alsa-project.org/wiki/Main_Page
 ### CHANGES:=https://www.alsa-project.org/wiki/Detailed_changes_v1.2.12_v1.2.13
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed
 

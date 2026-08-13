@@ -1,4 +1,4 @@
-# dbus-fast 4.0.0
+# dbus-fast 5.0.22
   - Homepage: [https://github.com/Bluetooth-Devices/dbus-fast](https://github.com/Bluetooth-Devices/dbus-fast)
   - Changelog: [https://github.com/Bluetooth-Devices/dbus-fast/releases](https://github.com/Bluetooth-Devices/dbus-fast/releases)
   - Repository: [https://github.com/Bluetooth-Devices/dbus-fast](https://github.com/Bluetooth-Devices/dbus-fast)

@@ -112,6 +112,9 @@ Content: [FritzBox](#fritzbox) - [FritzPowerline](#fritzpowerline) - [FritzSmart
   * fritzbox-6860-5g/
     - deutschland: [FRITZ.Box_6860_5G-08.25.image](https://download.avm.de/fritzbox/fritzbox-6860-5g/deutschland/fritz.os/FRITZ.Box_6860_5G-08.25.image)
     - other: [FRITZ.Box_6860_5G-08.25.image](https://download.avm.de/fritzbox/fritzbox-6860-5g/other/fritz.os/FRITZ.Box_6860_5G-08.25.image)
+  * fritzbox-6860-5g-v2/
+    - deutschland: [FRITZ.Box_6860_5G_v2-08.25.image](https://download.avm.de/fritzbox/fritzbox-6860-5g-v2/deutschland/fritz.os/FRITZ.Box_6860_5G_v2-08.25.image)
+    - other: [FRITZ.Box_6860_5G_v2-08.25.image](https://download.avm.de/fritzbox/fritzbox-6860-5g-v2/other/fritz.os/FRITZ.Box_6860_5G_v2-08.25.image)
   * fritzbox-6890-lte/
     - belgium: [FRITZ.Box_6890_LTE-07.57.image](https://download.avm.de/fritzbox/fritzbox-6890-lte/belgium/fritz.os/FRITZ.Box_6890_LTE-07.57.image)
     - deutschland: [FRITZ.Box_6890_LTE-07.57.image](https://download.avm.de/fritzbox/fritzbox-6890-lte/deutschland/fritz.os/FRITZ.Box_6890_LTE-07.57.image)

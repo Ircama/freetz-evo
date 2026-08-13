@@ -1,4 +1,4 @@
-# cffi 1.17.1
+# cffi 2.0.0
   - Homepage: [https://cffi.readthedocs.io/](https://cffi.readthedocs.io/)
   - Manpage: [https://cffi.readthedocs.io/en/latest/](https://cffi.readthedocs.io/en/latest/)
   - Changelog: [https://cffi.readthedocs.io/en/latest/whatsnew.html](https://cffi.readthedocs.io/en/latest/whatsnew.html)

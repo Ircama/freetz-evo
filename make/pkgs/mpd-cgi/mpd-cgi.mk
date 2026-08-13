@@ -1,6 +1,6 @@
 $(call PKG_INIT_BIN, 1.0)
 ### STEWARD:=Ircama
-$(PKG)_CATEGORY:=Web interfaces
+$(PKG)_CATEGORY_PKGS:=Web interfaces
 
 $(PKG)_STAGING_SOURCES := \
 	$(MPD_CGI_MAKE_DIR)/files/.language \

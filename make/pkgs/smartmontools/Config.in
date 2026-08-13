@@ -1,6 +1,5 @@
 config FREETZ_PACKAGE_SMARTMONTOOLS
-	bool "Smartmontools 7.5"
-	depends on FREETZ_TARGET_GCC_4_7_MIN
+	bool "Smartmontools 7.2/7.5"
 	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
 	select FREETZ_LIB_STDCXXLIB
 	default n
@@ -10,7 +9,23 @@ config FREETZ_PACKAGE_SMARTMONTOOLS
 		and Reporting Technology System (S.M.A.R.T.) built into most modern
 		ATA and SCSI disks. It is derived from smartsuite.
 
-		Requires GCC 4.7 or newer: smartmontools 7.5 is built as C++11
-		(-std=c++11/-std=gnu++11), which the old GCC 4.6.4 toolchain does
-		not recognize.
+		Version 7.5 is built as C++11 and requires GCC 4.7 or newer; on older
+		toolchains (GCC < 4.7) or 2.6.39 kernels, version 7.2 is selected instead.
 
+if FREETZ_PACKAGE_SMARTMONTOOLS
+
+	choice
+		prompt "Version"
+			default FREETZ_PACKAGE_SMARTMONTOOLS_VERSION_CURRENT
+
+		config FREETZ_PACKAGE_SMARTMONTOOLS_VERSION_ABANDON
+			bool "7.2"
+			depends on (FREETZ_KERNEL_VERSION_2_6_39 || !FREETZ_TARGET_GCC_4_7_MIN)
+
+		config FREETZ_PACKAGE_SMARTMONTOOLS_VERSION_CURRENT
+			bool "7.5"
+			depends on !(FREETZ_KERNEL_VERSION_2_6_39 || !FREETZ_TARGET_GCC_4_7_MIN)
+
+	endchoice
+
+endif # FREETZ_PACKAGE_SMARTMONTOOLS

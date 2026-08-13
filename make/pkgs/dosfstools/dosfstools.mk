@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 4.2)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527
 $(PKG)_SITE:=https://github.com/dosfstools/dosfstools/releases/download/v$($(PKG)_VERSION)

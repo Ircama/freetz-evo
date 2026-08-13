@@ -98,10 +98,16 @@ if EXTERNAL_ENABLED
 		help
 			Put your own files/directories here (space separated)
 
+	comment "packages -------------------------------"
 	source "make/pkgs/external.in.generated"
-	source "make/libs/external.in.generated"
-	source "make/kernel/external.in"
-	source "make/pkgs/ndas/external.in.modules"
+        comment "libraries ------------------------------"
+        source "make/libs/external.in.generated"
+
+        if FREETZ_SHOW_EXPERT
+                comment "modules --------------------------------"
+                source "make/kernel/external.in"
+                source "make/pkgs/ndas/external.in.modules"
+        endif # FREETZ_SHOW_EXPERT
 
 endif # EXTERNAL_ENABLED
 

@@ -1,6 +1,7 @@
-# python3-cached-ipaddress 1.1.2
-  - Package: [master/make/pkgs/python3-cached-ipaddress/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-cached-ipaddress/)
+# cached-ipaddress 1.1.2 [^]
   - Homepage: [https://pypi.org/project/cached-ipaddress/](https://pypi.org/project/cached-ipaddress/)
+  - Package: [master/make/pkgs/python3-cached-ipaddress/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-cached-ipaddress/)
+  - Steward: Ircama
   - Provides: Python 3 cached IP address module
   - Used by: —
   - Externalization: supported

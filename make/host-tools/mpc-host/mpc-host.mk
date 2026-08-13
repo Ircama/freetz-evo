@@ -2,6 +2,10 @@ $(call TOOLS_INIT, 1.1.0)
 $(PKG)_SOURCE:=mpc-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e
 $(PKG)_SITE:=@GNU/mpc
+### WEBSITE:=https://www.multiprecision.org/
+### MANPAGE:=https://www.multiprecision.org/mpc/documentation.html
+### CHANGES:=https://ftp.gnu.org/gnu/mpc/
+### CVSREPO:=https://gitlab.inria.fr/mpc/mpc
 
 $(PKG)_DEPENDS_ON+=gmp-host
 $(PKG)_DEPENDS_ON+=mpfr-host

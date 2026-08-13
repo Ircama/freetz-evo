@@ -1,6 +1,6 @@
 # Version selection based on Kconfig
 $(call PKG_INIT_BIN, $(if $(FREETZ_UTIL_LINUX_VERSION_2_27_1),2.27.1,2.41))
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 
 # util-linux 2.41 requires a recent toolchain: it fails to build on the old
 # GCC/uClibc toolchains (0.9.x, 1.0.14). The 2.41 version choice is gated by

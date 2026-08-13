@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://github.com/avrdudes/avrdude/archive/refs/tags
 ### CHANGES:=https://github.com/avrdudes/avrdude/releases
 ### CVSREPO:=https://github.com/avrdudes/avrdude
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/src/avrdude
 $(PKG)_ELF2TAG_BUILD:=$($(PKG)_DIR)/src/elf2tag

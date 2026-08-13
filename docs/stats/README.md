@@ -24,7 +24,7 @@
 </tbody></table>
 </details>
 
-<details><summary>135 verschiedene HWR</summary>
+<details><summary>136 verschiedene HWR</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -165,10 +165,11 @@
 <tr><td>FRITZ!Box 6690 Pro</td><td>308</td></tr>
 <tr><td>FRITZ!Box 7620</td><td>310</td></tr>
 <tr><td>FRITZ!Box 6850 5G v2</td><td>312</td></tr>
+<tr><td>FRITZ!Box 6860 5G v2</td><td>314</td></tr>
 </tbody></table>
 </details>
 
-<details><summary>136 verschiedene Produkte</summary>
+<details><summary>137 verschiedene Produkte</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -303,6 +304,7 @@
 <tr><td>FRITZ!Box 6690 Pro</td><td>Fritz_Box_HW308</td></tr>
 <tr><td>FRITZ!Box 7620</td><td>Fritz_Box_HW310</td></tr>
 <tr><td>FRITZ!Box 6850 5G v2</td><td>Fritz_Box_HW312</td></tr>
+<tr><td>FRITZ!Box 6860 5G v2</td><td>Fritz_Box_HW314</td></tr>
 <tr><td>FRITZ!WLAN Repeater 300E</td><td>Fritz_Box_Neon</td></tr>
 <tr><td>FRITZ!Box 6360 Cable</td><td>Fritz_Box_Puma</td></tr>
 <tr><td>FRITZ!Box SL WLAN</td><td>Fritz_Box_SL_WLAN</td></tr>
@@ -313,7 +315,7 @@
 </tbody></table>
 </details>
 
-<details><summary>132 verschiedene Geräte</summary>
+<details><summary>133 verschiedene Geräte</summary>
 
 <table>
 <caption style='background-color:gray'>T-Com (2)</caption>
@@ -395,7 +397,7 @@
 <tr><td>6690 Pro</td><td>FREETZ_TYPE_6690_PRO</td></tr>
 </tbody></table>
 <table>
-<caption style='background-color:gray'>Cellular (14)</caption>
+<caption style='background-color:gray'>Cellular (15)</caption>
 <thead><tr><th style='width:450px'>Name</th><th style='width:300px'>Symbol</th></tr></thead>
 <tbody>
 <tr><td>6810</td><td>FREETZ_TYPE_6810</td></tr>
@@ -410,7 +412,8 @@
 <tr><td>6850 4G</td><td>FREETZ_TYPE_6850_4G_V2</td></tr>
 <tr><td>6850 5G</td><td>FREETZ_TYPE_6850_5G_V1</td></tr>
 <tr><td>6850 5G v2</td><td>FREETZ_TYPE_6850_5G_V2</td></tr>
-<tr><td>6860 5G</td><td>FREETZ_TYPE_6860</td></tr>
+<tr><td>6860 5G</td><td>FREETZ_TYPE_6860_V1</td></tr>
+<tr><td>6860 5G v2</td><td>FREETZ_TYPE_6860_V2</td></tr>
 <tr><td>6890</td><td>FREETZ_TYPE_6890</td></tr>
 </tbody></table>
 <table>
@@ -509,7 +512,7 @@
 </tbody></table>
 </details>
 
-<details><summary>408 verschiedene Images</summary>
+<details><summary>409 verschiedene Images</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -738,8 +741,9 @@
 <tr><td>FRITZ.Box_6850_5G-08.03.image</td><td>FREETZ_TYPE_6850_5G_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_6850_5G-08.25.image</td><td>FREETZ_TYPE_6850_5G_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
 <tr><td>FRITZ.Box_6850_5G_v2-08.25.image</td><td>FREETZ_TYPE_6850_5G_V2 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
-<tr><td>FRITZ.Box_6860_5G-08.03.image</td><td>FREETZ_TYPE_6860 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
-<tr><td>FRITZ.Box_6860_5G-08.25.image</td><td>FREETZ_TYPE_6860 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_6860_5G-08.03.image</td><td>FREETZ_TYPE_6860_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
+<tr><td>FRITZ.Box_6860_5G-08.25.image</td><td>FREETZ_TYPE_6860_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_6860_5G_v2-08.25.image</td><td>FREETZ_TYPE_6860_V2 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
 <tr><td>FRITZ.Box_6890_LTE.en-de-es-it-fr-pl-nl.162.06.87.image</td><td>FREETZ_TYPE_6890 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_06_8X</td></tr>
 <tr><td>FRITZ.Box_6890_LTE.en-de-es-it-fr-pl-nl.162.07.03.image</td><td>FREETZ_TYPE_6890 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_0X</td></tr>
 <tr><td>FRITZ.Box_6890_LTE-en-de-es-it-fr-pl-nl-07.13.image</td><td>FREETZ_TYPE_6890 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_1X</td></tr>
@@ -1052,7 +1056,7 @@
 <tr><td>FRITZ!Box 6690 Pro</td><td>FREETZ_TYPE_6690_PRO</td></tr>
 </tbody></table>
 <table>
-<caption style='background-color:gray'>Gen5: fit-boot (28)</caption>
+<caption style='background-color:gray'>Gen5: fit-boot (29)</caption>
 <thead><tr><th style='width:450px'>Name</th><th style='width:300px'>Symbol</th></tr></thead>
 <tbody>
 <tr><td>FRITZ!Box 4050</td><td>FREETZ_TYPE_4050</td></tr>
@@ -1065,7 +1069,8 @@
 <tr><td>FRITZ!Box 5690 Pro</td><td>FREETZ_TYPE_5690_PRO</td></tr>
 <tr><td>FRITZ!Box 5690 XGS</td><td>FREETZ_TYPE_5690_XGS</td></tr>
 <tr><td>FRITZ!Box 6825 4G</td><td>FREETZ_TYPE_6825</td></tr>
-<tr><td>FRITZ!Box 6860 5G</td><td>FREETZ_TYPE_6860</td></tr>
+<tr><td>FRITZ!Box 6860 5G</td><td>FREETZ_TYPE_6860_V1</td></tr>
+<tr><td>FRITZ!Box 6860 5G v2</td><td>FREETZ_TYPE_6860_V2</td></tr>
 <tr><td>FRITZ!Box 7510</td><td>FREETZ_TYPE_7510</td></tr>
 <tr><td>FRITZ!Box 7530 AX</td><td>FREETZ_TYPE_7530_W6_V1</td></tr>
 <tr><td>FRITZ!Box 7530 AX</td><td>FREETZ_TYPE_7530_W6_V2</td></tr>
@@ -1092,26 +1097,26 @@
 <caption style='background-color:gray'>Kombinierte Toolchains (34)</caption>
 <thead><tr><th style='width:450px'>Target</th><th style='width:300px'>Kernel</th></tr></thead>
 <tbody>
-<tr><td>aarch64_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.4</td><td>aarch64_gcc-10.5.0</td></tr>
+<tr><td>aarch64_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.4</td><td>aarch64_gcc-10.5.0</td></tr>
 <tr><td>armeb_gcc-4.7.4_uClibc-0.9.32.1-nptl</td><td>armeb_gcc-4.7.4</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.19</td><td>arm_gcc-10.5.0</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.1</td><td>arm_gcc-5.5.0</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.4</td><td>arm_gcc-5.5.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.19</td><td>arm_gcc-10.5.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.1</td><td>arm_gcc-5.5.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.4</td><td>arm_gcc-5.5.0</td></tr>
 <tr><td>arm_gcc-5.5.0_uClibc-1.0.14-nptl_kernel-4.4</td><td>arm_gcc-5.5.0</td></tr>
-<tr><td>arm_gcc-13.4.0-bcm_uClibc-1.0.58-nptl_kernel-4.1</td><td>arm_gcc-5.5.0-bcm</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.4</td><td>arm_gcc-8.4.0</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.4</td><td>arm_gcc-8.4.0</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.19</td><td>arm_gcc-9.3.0</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.19</td><td>arm_gcc-9.4.0</td></tr>
+<tr><td>arm_gcc-13.4.0-bcm_uClibc-1.0.59-nptl_kernel-4.1</td><td>arm_gcc-5.5.0-bcm</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.4</td><td>arm_gcc-8.4.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.4</td><td>arm_gcc-8.4.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.19</td><td>arm_gcc-9.3.0</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.19</td><td>arm_gcc-9.4.0</td></tr>
 <tr><td>i686_gcc-4.7.4_uClibc-0.9.33.2-nptl</td><td>i686_gcc-4.7.4</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl</td><td>i686_gcc-5.5.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-3.12</td><td>i686_gcc-5.5.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>i686_gcc-5.5.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl</td><td>i686_gcc-5.5.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-3.12</td><td>i686_gcc-5.5.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>i686_gcc-5.5.0</td></tr>
 <tr><td>i686_gcc-5.5.0_uClibc-1.0.14-nptl</td><td>i686_gcc-5.5.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>i686_gcc-8.3.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>i686_gcc-8.4.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.15</td><td>i686_gcc-9.3.0</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.15</td><td>i686_gcc-9.4.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>i686_gcc-8.3.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>i686_gcc-8.4.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.15</td><td>i686_gcc-9.3.0</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.15</td><td>i686_gcc-9.4.0</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.28</td><td>mipsel_gcc-3.4.6</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.29</td><td>mipsel_gcc-3.4.6</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.32.1</td><td>mipsel_gcc-4.6.4</td></tr>
@@ -1119,37 +1124,37 @@
 <tr><td>mips_gcc-4.7.4_uClibc-0.9.33.2-nptl</td><td>mips_gcc-4.7.4</td></tr>
 <tr><td>mips_gcc-4.8.5_uClibc-0.9.33.2-nptl</td><td>mips_gcc-4.8.5</td></tr>
 <tr><td>mips_gcc-4.8.5_uClibc-0.9.33.2-nptl_kernel-3.10</td><td>mips_gcc-4.8.5</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-3.10</td><td>mips_gcc-5.5.0</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.4</td><td>mips_gcc-5.5.0</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-3.10</td><td>mips_gcc-5.5.0</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.4</td><td>mips_gcc-5.5.0</td></tr>
 <tr><td>mips_gcc-5.5.0_uClibc-0.9.33.2-nptl_kernel-3.10</td><td>mips_gcc-5.5.0</td></tr>
 <tr><td>mips_gcc-5.5.0_uClibc-1.0.14-nptl_kernel-3.10</td><td>mips_gcc-5.5.0</td></tr>
 <tr><td>mips_gcc-5.5.0_uClibc-1.0.14-nptl_kernel-4.4</td><td>mips_gcc-5.5.0</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>mips_gcc-8.3.0</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>mips_gcc-8.4.0</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>mips_gcc-8.3.0</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>mips_gcc-8.4.0</td></tr>
 <table>
 <caption style='background-color:gray'>Target Toolchains (27)</caption>
 <thead><tr><th style='width:450px'>Name</th><th style='width:300px'>Symbole</th></tr></thead>
 <tbody>
-<tr><td>aarch64_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.4</td><td>FREETZ_TARGET_ARCH_AARCH64 &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_4</td></tr>
+<tr><td>aarch64_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.4</td><td>FREETZ_TARGET_ARCH_AARCH64 &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_4</td></tr>
 <tr><td>armeb_gcc-4.7.4_uClibc-0.9.32.1-nptl</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_4_7 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_32 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
-<tr><td>arm_gcc-13.4.0-bcm_uClibc-1.0.58-nptl_kernel-4.1</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_1 &amp;&amp;<br> FREETZ_SYSTEM_TYPE_BCM63138</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.19</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_19</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.1</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_1</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.4</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_4</td></tr>
-<tr><td>arm_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.4</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_4</td></tr>
+<tr><td>arm_gcc-13.4.0-bcm_uClibc-1.0.59-nptl_kernel-4.1</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_1 &amp;&amp;<br> FREETZ_SYSTEM_TYPE_BCM63138</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.19</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_19</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.1</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_1</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.4</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_4</td></tr>
+<tr><td>arm_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.4</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_4</td></tr>
 <tr><td>arm_gcc-5.5.0_uClibc-1.0.14-nptl_kernel-4.4</td><td>FREETZ_TARGET_ARCH_ARM &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_5_5 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_14 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_4</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-3.12</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_3_12</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_9</td></tr>
-<tr><td>i686_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-5.15</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_15</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-3.12</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_3_12</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_9</td></tr>
+<tr><td>i686_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-5.15</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_5_15</td></tr>
 <tr><td>i686_gcc-4.7.4_uClibc-0.9.33.2-nptl</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_4_7 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_33 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>i686_gcc-5.5.0_uClibc-1.0.14-nptl</td><td>FREETZ_TARGET_ARCH_X86 &amp;&amp;<br> FREETZ_TARGET_GCC_5_5 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_14 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.28</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_4_6 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_28 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.29</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_4_6 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_29 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>mipsel_gcc-4.6.4_uClibc-0.9.32.1</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_LE &amp;&amp;<br> FREETZ_TARGET_GCC_4_6 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_32 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-3.10</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_3_10</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.4</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_4</td></tr>
-<tr><td>mips_gcc-13.4.0_uClibc-1.0.58-nptl_kernel-4.9</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_58 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_9</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-3.10</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_3_10</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.4</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_4</td></tr>
+<tr><td>mips_gcc-13.4.0_uClibc-1.0.59-nptl_kernel-4.9</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_13_4 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_1_0_59 &amp;&amp;<br> FREETZ_KERNEL_VERSION_4_9</td></tr>
 <tr><td>mips_gcc-4.6.4_uClibc-0.9.32.1</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_4_6 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_32 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>mips_gcc-4.7.4_uClibc-0.9.33.2-nptl</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_4_7 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_33 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>
 <tr><td>mips_gcc-4.8.5_uClibc-0.9.33.2-nptl</td><td>FREETZ_TARGET_ARCH_MIPS &amp;&amp;<br> FREETZ_TARGET_ARCH_BE &amp;&amp;<br> FREETZ_TARGET_GCC_4_8 &amp;&amp;<br> FREETZ_TARGET_UCLIBC_0_9_33 &amp;&amp;<br> FREETZ_KERNEL_VERSION_2</td></tr>

@@ -18,7 +18,7 @@ $(PKG)_SITE:=https://github.com/jcorporation/myMPD/archive/refs/tags
 ### STEWARD:=Ircama
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/mympd/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BUILD_DIR:=$($(PKG)_DIR)/builddir
 $(PKG)_BINARY:=$($(PKG)_BUILD_DIR)/bin/mympd

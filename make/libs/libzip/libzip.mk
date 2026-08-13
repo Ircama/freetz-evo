@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/nih-at/libzip/releases/download/v$($(PKG)_VERSIO
 ### CHANGES:=https://github.com/nih-at/libzip/releases
 ### CVSREPO:=https://github.com/nih-at/libzip
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/libzip.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libzip.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libzip.so.$($(PKG)_LIB_VERSION)

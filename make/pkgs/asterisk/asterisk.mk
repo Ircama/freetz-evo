@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=beb63953cb61b9822fc8f1d79842d821c5147f2a2944941d54a02f2e5fd4db20
 $(PKG)_SITE:=http://downloads.asterisk.org/pub/telephony/asterisk/releases
 
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG)_CONFIG_DIR:=/mod/etc/asterisk
 $(PKG)_MODULES_DIR:=/usr/lib/asterisk/modules

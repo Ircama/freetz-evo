@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/espressif/esp-serial-flasher/archive
 ### CHANGES:=https://github.com/espressif/esp-serial-flasher/releases
 ### CVSREPO:=https://github.com/espressif/esp-serial-flasher
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_BINARY_GENERIC_BUILD:=$($(PKG)_DIR)/linux_flasher
 $(PKG)_BINARY_GENERIC_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/linux_flasher

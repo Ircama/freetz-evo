@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://gnupg.org/ftp/gcrypt/libgcrypt,ftp://ftp.gnupg.org/gcrypt/l
 ### CHANGES:=https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgcrypt.git;a=blob;f=NEWS
 ### CVSREPO:=https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgcrypt.git
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##GnuPG
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

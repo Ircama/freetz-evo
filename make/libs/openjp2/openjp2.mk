@@ -9,6 +9,8 @@ $(PKG)_SITE:=git@https://github.com/uclouvain/openjpeg.git
 ### CHANGES:=https://github.com/uclouvain/openjpeg/blob/master/NEWS.md
 ### CVSREPO:=https://github.com/uclouvain/openjpeg
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_LIBNAME:=libopenjp2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/bin/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)

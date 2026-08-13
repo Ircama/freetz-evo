@@ -6,6 +6,8 @@ $(PKG)_SITE:=https://www.oberhumer.com/opensource/lzo/download
 ### WEBSITE:=https://www.oberhumer.com/opensource/lzo/
 ### CHANGES:=https://www.oberhumer.com/opensource/lzo/download/
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/liblzo2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblzo2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/liblzo2.so.$($(PKG)_LIB_VERSION)

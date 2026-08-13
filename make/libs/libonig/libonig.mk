@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/kkos/oniguruma/releases/download/v$($(PKG)_VERSI
 ### CHANGES:=https://github.com/kkos/oniguruma/releases
 ### CVSREPO:=https://github.com/kkos/oniguruma
 
+$(PKG)_CATEGORY_LIBS:=Regular expressions
+
 $(PKG)_LIBBASE:=libonig.so
 $(PKG)_LIBNAME:=$($(PKG)_LIBBASE).$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$($(PKG)_LIBNAME)

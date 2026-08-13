@@ -8,7 +8,7 @@ $(call PKG_INIT_BIN, 7.2)
 # keep the cast because they are also used as expressions (guid_cmp).
 # This is a GCC 4.6 quirk, not uClibc-specific -> source patch (no gate, no
 # regression on any toolchain).
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=f3fe7ec02cafcbe792a4c783976de3a6312963b0ce8a613d38adbcd8bdca0517

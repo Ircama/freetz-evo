@@ -6,6 +6,7 @@ $(PKG)_SITE:=@SF/scons
 ### MANPAGE:=https://github.com/SCons/scons/wiki
 ### CHANGES:=https://github.com/SCons/scons/releases
 ### CVSREPO:=https://github.com/SCons/scons
+### STEWARD:=PIN
 
 $(PKG)_DEPENDS_ON+=python2-host
 

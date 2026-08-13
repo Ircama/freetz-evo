@@ -65,28 +65,28 @@ Latest changes
 
   - Build system:
     * ccache 4.13.6
-    * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.57/1.0.58
+    * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.59
 
   - Host tools:
     * busybox 1.38.0
     * autoconf 2.73
     * ca-bundle 2026-05-14
-    * cmake 4.3.4
+    * cmake 4.4.2
     * dos2unix 7.5.5
     * dtc 1.8.1
     * fakeroot 2.0
     * file 5.47
     * kconfig 7.1
-    * meson 1.11.2
+    * meson 1.12.0
     * openssl 3.5.7
     * patch 2.8
-    * pseudo 1.9.8
-    * python3 3.14.6
+    * pseudo 1.9.11
+    * python3 3.14.7
     * python3-attrs 26.1.0
     * python3-jsonschema 4.26.0
-    * python3-packaging 26.2
-    * python3-pip 26.1.1
-    * python3-setuptools 82.0.1
+    * python3-packaging 26.3
+    * python3-pip 26.2.1
+    * python3-setuptools 84.0.0
     * sed 4.10
     * uboot 2026.04
     * util-linux 2.42
@@ -111,12 +111,13 @@ Latest changes
     * Binutils 2.46.0
     * BusyBox 1.27.2/1.38.0
     * CA-bundle 2026-05-14
+    * CCID 1.8.2
     * Curl 8.12.1/8.21.0
     * davfs2 1.5.2/1.7.3
     * Dnsmasq 2.80/2.93
     * Dropbear 2026.94
     * dtc 1.8.1
-    * Git 2.26.2/2.53.0
+    * Git 2.26.2/2.55.0
     * HAProxy 2.6.29
     * htop 1.0.3/3.5.2
     * htpdate 2.0.2
@@ -127,33 +128,35 @@ Latest changes
     * juis_check 1.4
     * LCD4linux 63fffafb
     * Iptables 1.4.11.1/1.4.21/1.6.2/1.8.13
-    * ldd 0.1/1.0.58
+    * ldd 0.1/1.0.59
     * Lighttpd 1.4.85
     * ltrace 0.7.3-git/0.8.1
     * mini-snmpd 1.7/2.0
     * Minicom 2.11.1
-    * Mosquitto 2.0.22/2.1.2
-    * Nano 9.1
+    * Mosquitto 2.0.23/2.1.2
+    * Nano 9.2
     * Nmap 4.76/5.51/7.99
     * OpenSSH 9.3p2/10.4p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7
-    * OpenVPN 2.4.12/2.5.11/2.6.21/2.7.5
+    * OpenVPN 2.4.12/2.5.11/2.6.22/2.7.6
+    * PCSC-lite 1.9.5/2.5.1
     * PHP 5.6.40/8.2.33/8.3.33/8.4.24/8.5.9
     * procps-ng 4.0.6
     * Python 3.14.3
-    * RRDtool 1.2.30/1.10.3
+    * RRDtool 1.2.30/1.11.0
     * radvd 1.9.3/2.21
     * rsync 3.4.1/3.4.4
+    * Smartmontools 7.2/7.5
     * sslh 2.2.4/2.3.1
-    * Stunnel 5.79
+    * Stunnel 5.80
     * SQLite 3.40.1/3.53.4
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
     * tmux 3.7b
-    * Tor 0.4.8.25
+    * Tor 0.4.8.25/0.4.9.11
     * Transmission 3.00/4.1.3
     * Tree 1.8.0/2.3.2
-    * Unbound 1.25.2
+    * Unbound 1.26.0
     * UnRAR 6.1.7/7.2.5
     * Virtualip-NG 1.0
     * wireguard-tools 1.0.20260223
@@ -162,18 +165,18 @@ Latest changes
     * XZ 5.8.3
 
   - Libraries:
-    * expat 2.7.5/2.8.2
+    * expat 2.7.5/2.8.3
     * file 5.47
     * FreeType 2.14.3
     * gettext 1.0
-    * GLib2 2.32.4/2.88.0
-    * harfbuzz 14.2.1
+    * GLib2 2.32.4/2.88.3
+    * harfbuzz 14.3.0
     * libcap 2.49/2.78
     * libcap-ng 0.9.3
     * libcjson 1.7.19
     * libevent 2.1.13
     * libexif 0.6.26
-    * libffi 3.7.1
+    * libffi 3.8.0
     * libmaxminddb 1.13.3
     * libpng 1.6.58
     * libusb(-compat) 0.1.12/0.1.9
@@ -183,7 +186,7 @@ Latest changes
     * libzip 1.11.4
     * MbedTLS 2.7.19/2.28.10/3.6.7
     * neon 0.30.2/0.37.0
-    * pango 1.58.0
+    * pango 1.58.2
 
   - Firmware updates:
     * Please see [FIRMWARES](FIRMWARES.md) for the list of currently supported devices and firmwares.

@@ -82,7 +82,7 @@ choice
 		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_32 if FREETZ_TARGET_UCLIBC_0_9_32
 		default FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_33 if FREETZ_TARGET_UCLIBC_0_9_33
 		default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_14 if FREETZ_TARGET_UCLIBC_1_0_14
-		default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58 if FREETZ_TARGET_UCLIBC_1_0_58
+		default FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_59 if FREETZ_TARGET_UCLIBC_1_0_59
 
 	config FREETZ_LIB_ld_uClibc_WITH_VERSION_0_9_28
 		bool "uclibc-0.9.28"
@@ -104,9 +104,9 @@ choice
 		bool "uclibc-1.0.14"
 		depends on FREETZ_TARGET_UCLIBC_1_0_14
 
-	config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_58
-		bool "uclibc-1.0.58"
-		depends on FREETZ_TARGET_UCLIBC_1_0_58
+	config FREETZ_LIB_ld_uClibc_WITH_VERSION_1_0_59
+		bool "uclibc-1.0.59"
+		depends on FREETZ_TARGET_UCLIBC_1_0_59
 
 endchoice
 

@@ -1,11 +1,11 @@
 # vhs 0.11.0 (binary only)
-  - Toolchain: requires uClibc 1.0.58 or newer (auto-selects ttyd, which needs libuv and fails to link on older uClibc with "undefined reference to pthread_atfork")
   - Homepage: [https://github.com/charmbracelet/vhs](https://github.com/charmbracelet/vhs)
   - Manpage: [https://github.com/charmbracelet/vhs#readme](https://github.com/charmbracelet/vhs#readme)
   - Changelog: [https://github.com/charmbracelet/vhs/releases](https://github.com/charmbracelet/vhs/releases)
   - Repository: [https://github.com/charmbracelet/vhs](https://github.com/charmbracelet/vhs)
   - Package: [master/make/pkgs/vhs/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/vhs/)
   - Steward: Ircama
+  - Toolchain: requires uClibc 1.0.58 or newer (auto-selects ttyd, which needs libuv and fails to link on older uClibc with "undefined reference to pthread_atfork")
   - Manpage / README: [https://github.com/charmbracelet/vhs#readme](https://github.com/charmbracelet/vhs#readme)
 
 `vhs` records scripted terminal sessions into media output from declarative tape

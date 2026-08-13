@@ -8,6 +8,8 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CHANGES:=https://gitlab.com/gnutls/libtasn1/blob/master/NEWS
 ### CVSREPO:=https://gitlab.com/gnutls/libtasn1.git
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##GnuTLS
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

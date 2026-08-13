@@ -6,6 +6,7 @@ $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)
 ### MANPAGE:=https://www.mankier.com/package/e2fsprogs
 ### CHANGES:=https://e2fsprogs.sourceforge.net/e2fsprogs-release.html
 ### CVSREPO:=https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
+### STEWARD:=PIN
 
 $(PKG)_E2FSCK_BINARY:=$($(PKG)_DIR)/e2fsck/e2fsck
 $(PKG)_DEBUGFS_BINARY:=$($(PKG)_DIR)/debugfs/debugfs

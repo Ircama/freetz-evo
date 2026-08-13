@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSIO
 ### CVSREPO:=https://github.com/NixOS/patchelf
 ### STEWARD:=Ircama
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
 $(PKG)_DEPENDS_ON += jemalloc

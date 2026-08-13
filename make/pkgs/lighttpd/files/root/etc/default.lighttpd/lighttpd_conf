@@ -322,8 +322,8 @@ fi
 
 if $_php ; then
 genchroot "$LIGHTTPD_MODFASTCGIPHPPATH" "$LIGHTTPD_DOCROOT"
-[ "$LIGHTTPD_CHROOT" = "yes" ] && getfiles "/tmp/flash/php.ini"
-[ "$LIGHTTPD_CHROOT" = "yes" ] && getfiles "/tmp/flash/php"
+[ "$LIGHTTPD_CHROOT" = "yes" ] && getfiles "/tmp/flash/php/php.ini"
+[ "$LIGHTTPD_CHROOT" = "yes" ] && getfiles "/tmp/flash/php/php.d"
 fi
 if $_ruby ; then
 genchroot "$LIGHTTPD_MODFASTCGIRUBYPATH" "$LIGHTTPD_DOCROOT"

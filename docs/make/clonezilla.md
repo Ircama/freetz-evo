@@ -1,11 +1,11 @@
 # clonezilla 5.15.23 (script bundle)
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://clonezilla.org/](https://clonezilla.org/)
   - Manpage: [https://clonezilla.org/clonezilla-live.php](https://clonezilla.org/clonezilla-live.php)
   - Changelog: [https://github.com/stevenshiau/clonezilla/tags](https://github.com/stevenshiau/clonezilla/tags)
   - Repository: [https://github.com/stevenshiau/clonezilla](https://github.com/stevenshiau/clonezilla)
   - Package: [master/make/pkgs/clonezilla/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/clonezilla/)
   - Steward: Ircama
+  - Toolchain: requires uClibc 1.0.58 or newer
   - Additional documentation: https://clonezilla.org/
 
 clonezilla is installed as a DRBL script bundle under /usr/share/drbl,

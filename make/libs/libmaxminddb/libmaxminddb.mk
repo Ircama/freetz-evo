@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://github.com/maxmind/libmaxminddb/releases/download/$($(PKG)_
 ### CHANGES:=https://github.com/maxmind/libmaxminddb/releases
 ### CVSREPO:=https://github.com/maxmind/libmaxminddb/
 
+$(PKG)_CATEGORY_LIBS:=Databases
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libmaxminddb.so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmaxminddb.so.$($(PKG)_SHLIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmaxminddb.so.$($(PKG)_SHLIB_VERSION)

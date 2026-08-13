@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://sourceware.org/pub/valgrind
 ### CHANGES:=https://valgrind.org/docs/manual/dist.news.html
 ### CVSREPO:=https://sourceware.org/git/?p=valgrind.git
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed
 $(PKG)_TARGET_BINARIES:= \

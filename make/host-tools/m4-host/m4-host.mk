@@ -4,7 +4,7 @@ $(PKG)_HASH:=f25c6ab51548a73a75558742fb031e0625d6485fe5f9155949d6486a2408ab66
 $(PKG)_SITE:=@GNU/$(pkg_short)
 ### WEBSITE:=https://www.gnu.org/software/m4/
 ### MANPAGE:=https://www.gnu.org/software/m4/manual/index.html
-### CHANGES:=http://ftp.gnu.org/gnu/m4/
+### CHANGES:=https://ftp.gnu.org/gnu/m4/
 ### CVSREPO:=http://git.savannah.gnu.org/gitweb/?p=m4.git
 ### STEWARD:=fda77
 

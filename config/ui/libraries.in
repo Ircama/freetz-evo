@@ -1,0 +1,8 @@
+menu "Shared libraries"
+	visible if FREETZ_SHOW_EXPERT
+	# Freetz-EVO: keep the curated static libraries menu.  The generated
+	# make/libs/Config.in.generated (upstream) cannot be used here because
+	# Freetz-EVO packages have no $(PKG)_CATEGORY_LIBS markers and all libs
+	# would collapse into the generic "Other" menu.
+	source "make/libs/Config.in"
+endmenu

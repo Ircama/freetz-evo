@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://www.gnupg.org/ftp/gcrypt/gnutls/v$(call GET_MAJOR_VERSION,$
 ### CHANGES:=https://www.gnutls.org/news.html
 ### CVSREPO:=https://gitlab.com/gnutls/gnutls
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##GnuTLS
+
 $(PKG)_CERTTOOL := certtool
 $(PKG)_UTILS := gnutls-cli gnutls-serv psktool srptool
 $(PKG)_LIB := libgnutls.so.$($(PKG)_LIB_VERSION)

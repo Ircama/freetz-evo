@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=4632654349aada3c4775e4d0aa844d6185ad232aef04666cf48e6bc727779751
 $(PKG)_SITE:=svn://svn.code.sf.net/p/usbip/code/obsolete/linux/tags/usbip-0.1.8
 
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG)_BINARIES            := usbipd usbip_bind_driver
 $(PKG)_BINARIES_BUILD_DIR  := $($(PKG)_BINARIES:%=$($(PKG)_DIR)/src/cmd/%)

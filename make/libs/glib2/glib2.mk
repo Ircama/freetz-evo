@@ -1,16 +1,18 @@
-$(call PKG_INIT_LIB, $(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),2.32.4,2.88.0))
-$(PKG)_LIB_VERSION:=$(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),0.3200.4,0.8800.0)
+$(call PKG_INIT_LIB, $(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),2.32.4,2.88.3))
+$(PKG)_LIB_VERSION:=$(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),0.3200.4,0.8800.3)
 $(PKG)_MAJOR_VERSION:=2.0
 $(PKG)_SOURCE:=glib-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH_ABANDON:=a5d742a4fda22fb6975a8c0cfcd2499dd1c809b8afd4ef709bda4d11b167fae2
-$(PKG)_HASH_CURRENT:=3546251ccbb3744d4bc4eb48354540e1f6200846572bab68e3a2b7b2b64dfd07
+$(PKG)_HASH_CURRENT:=ab24d24e698dfa1e408b7bcdb508f4aafc906185a8b8ce72fdf79bbbdc9b383b
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=https://download.gnome.org/sources/glib/$(call GET_MAJOR_VERSION,$($(PKG)_VERSION)),ftp://ftp.gnome.org/pub/gnome/sources/glib/$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
-### VERSION:=2.32.4/2.88.0
+### VERSION:=2.32.4/2.88.3
 ### WEBSITE:=https://www.gnu.org/software/libc/
 ### MANPAGE:=https://docs.gtk.org/glib/
 ### CHANGES:=https://gitlab.gnome.org/GNOME/glib/blob/main/NEWS
 ### CVSREPO:=https://gitlab.gnome.org/GNOME/glib
+
+$(PKG)_CATEGORY_LIBS:=libc##GLib2
 
 $(PKG)_LIBNAMES_SHORT := glib gio gobject gmodule gthread $(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),,girepository)
 $(PKG)_LIBNAMES_LONG := $($(PKG)_LIBNAMES_SHORT:%=lib%-$($(PKG)_MAJOR_VERSION).so.$($(PKG)_LIB_VERSION))
@@ -107,6 +109,8 @@ $(PKG)_CONFIGURE_PRE_CMDS += $(SED) -r -i \
 $(PKG)_CONFIGURE_PRE_CMDS += find . -type f -exec $(SED) -r -i \
 	-e "1s|^\#!/usr/bin/env python3|\#!$(abspath $(TOOLS_DIR)/path/python3)|" \
 	{} +;
+
+$(PKG)_CONFIGURE_POST_CMDS += $(call PKG_PREVENT_MESON_BUILD_RPATH,builddir/build.ninja)
 endif
 
 

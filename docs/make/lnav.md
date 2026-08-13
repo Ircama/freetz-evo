@@ -1,11 +1,11 @@
 # lnav 0.14.0
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://lnav.org/](https://lnav.org/)
   - Manpage: [https://docs.lnav.org/](https://docs.lnav.org/)
   - Changelog: [https://github.com/tstack/lnav/releases](https://github.com/tstack/lnav/releases)
   - Repository: [https://github.com/tstack/lnav](https://github.com/tstack/lnav)
   - Package: [master/make/pkgs/lnav/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/lnav/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://lnav.org/
 - Documentation: https://docs.lnav.org/

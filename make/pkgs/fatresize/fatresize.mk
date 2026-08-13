@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 20260403)
-$(PKG)_CATEGORY:=Disk Tools
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 $(PKG)_GIT_COMMIT:=75cbc388dc7fc6add789812a3f7ddaead2d44379
 $(PKG)_SOURCE_DOWNLOAD_NAME:=$($(PKG)_GIT_COMMIT).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz

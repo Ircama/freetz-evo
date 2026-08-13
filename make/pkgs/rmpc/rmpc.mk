@@ -10,7 +10,7 @@ $(PKG)_DIR:=$(SOURCE_DIR)/rmpc-$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/mierak/rmpc
 ### CHANGES:=https://github.com/mierak/rmpc/releases
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 RMPC_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 RMPC_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))

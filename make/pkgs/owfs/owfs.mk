@@ -3,7 +3,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=f2c6bf195d9574aafedb9ba5eb1ae33f884ac70fa980098c0da377feb1efe53a
 $(PKG)_SITE:=@SF/owfs
 
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 # Library
 $(PKG)_SHORT_VERSION:=2.7

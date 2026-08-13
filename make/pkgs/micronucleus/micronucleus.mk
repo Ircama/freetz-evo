@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/micronucleus/micronucleus/archive/refs/tags
 ### CHANGES:=https://github.com/micronucleus/micronucleus/releases
 ### CVSREPO:=https://github.com/micronucleus/micronucleus
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/commandline/micronucleus
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/micronucleus

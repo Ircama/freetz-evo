@@ -2,7 +2,7 @@
   - Homepage: [https://www.musicpd.org/clients/ncmpc/](https://www.musicpd.org/clients/ncmpc/)
   - Changelog: [https://github.com/MusicPlayerDaemon/ncmpc/releases](https://github.com/MusicPlayerDaemon/ncmpc/releases)
   - Repository: [https://github.com/MusicPlayerDaemon/ncmpc](https://github.com/MusicPlayerDaemon/ncmpc)
-  - Package: [master/make/pkgs/ncmpc/](https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/ncmpc/)
+  - Package: [master/make/pkgs/ncmpc/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ncmpc/)
   - Steward: -
 
   - Depends on: `libmpdclient`, `ncursesw`, `libfmt`

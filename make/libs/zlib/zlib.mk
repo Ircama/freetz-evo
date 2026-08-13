@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://www.zlib.net,https://github.com/madler/zlib/releases/downlo
 ### CHANGES:=https://www.zlib.net/
 ### CVSREPO:=https://github.com/madler/zlib
 
+$(PKG)_CATEGORY_LIBS:=Data compression
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/libz.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libz.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libz.so.$($(PKG)_LIB_VERSION)

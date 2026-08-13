@@ -1,10 +1,10 @@
 # gitui 0.28.1
-  - Toolchain: requires uClibc 1.0.58 or newer
   - Homepage: [https://github.com/extrawurst/gitui](https://github.com/extrawurst/gitui)
   - Changelog: [https://github.com/extrawurst/gitui/releases](https://github.com/extrawurst/gitui/releases)
   - Repository: [https://github.com/extrawurst/gitui](https://github.com/extrawurst/gitui)
   - Package: [master/make/pkgs/gitui/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/gitui/)
   - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer
 
 - Homepage: https://github.com/extrawurst/gitui
 - Changelog: https://github.com/extrawurst/gitui/releases

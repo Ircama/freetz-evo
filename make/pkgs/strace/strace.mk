@@ -25,7 +25,7 @@ $(PKG)_EXTRA_CPPFLAGS += $(if $(and $(FREETZ_SYSTEM_TYPE_IKS),$(FREETZ_AVM_VERSI
 
 $(PKG)_BINARY:=$($(PKG)_DIR)$(if $(FREETZ_PACKAGE_STRACE_VERSION_4),/,$(if $(FREETZ_PACKAGE_STRACE_VERSION_5),/,/src/))strace
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/strace
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_CONFIGURE_ENV += ac_cv_header_linux_netlink_h=yes
 

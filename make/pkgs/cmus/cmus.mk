@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/cmus/cmus/archive
 ### CHANGES:=https://github.com/cmus/cmus/releases
 ### CVSREPO:=https://github.com/cmus/cmus
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/cmus
 $(PKG)_TARGET_INSTALL_MARKER:=$($(PKG)_DEST_DIR)/.installed

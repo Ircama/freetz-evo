@@ -13,7 +13,7 @@ $(PKG)_SITE:=https://github.com/MusicPlayerDaemon/ncmpc/archive/refs/tags
 ### CHANGES:=https://github.com/MusicPlayerDaemon/ncmpc/releases
 ### CVSREPO:=https://github.com/MusicPlayerDaemon/ncmpc
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/ncmpc
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ncmpc

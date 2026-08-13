@@ -9,7 +9,7 @@ $(PKG)_SITE:=@GNU/binutils
 ### CVSREPO:=https://sourceware.org/git/binutils-gdb.git
 ### STEWARD:=fda77
 
-$(PKG)_CATEGORY:=Debug helpers
+$(PKG)_CATEGORY_PKGS:=Debug helpers
 
 $(PKG)_SRC_POSTFIX:=-new
 $(PKG)_SRC_BIN:=ar addr2line nm-new objcopy objdump ranlib readelf size strings strip-new cxxfilt elfedit

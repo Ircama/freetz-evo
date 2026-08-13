@@ -12,7 +12,7 @@ $(PKG)_SITE:=https://github.com/Ircama/hidws/archive/refs/tags
 ### CHANGES:=https://github.com/Ircama/hidws/releases
 ### CVSREPO:=https://github.com/Ircama/hidws
 
-$(PKG)_CATEGORY:=Flasher tools
+$(PKG)_CATEGORY_PKGS:=Flasher tools
 
 $(PKG)_DEPENDS_ON += hidapi
 $(PKG)_DEPENDS_ON += libwebsockets

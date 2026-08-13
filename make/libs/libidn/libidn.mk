@@ -8,6 +8,8 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CHANGES:=https://git.savannah.gnu.org/gitweb/?p=libidn.git;a=blob_plain;f=NEWS;hb=HEAD
 ### CVSREPO:=https://git.savannah.gnu.org/gitweb/?p=libidn.git
 
+$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+
 $(PKG)_LIBNAME_SHORT := $(pkg)
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/$(pkg).so.$($(PKG)_LIB_VERSION)

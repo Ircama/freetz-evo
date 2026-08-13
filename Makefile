@@ -96,8 +96,8 @@ DL_TOOL:=$(TOOLS_DIR)/freetz_download
 PATCH_TOOL:=$(TOOLS_DIR)/freetz_patch
 PARSE_CONFIG_TOOL:=$(TOOLS_DIR)/parse-config
 CHECK_PREREQ_TOOL:=$(TOOLS_DIR)/prerequisites
-GENERATE_IN_TOOL:=$(TOOLS_DIR)/genin
-GENERATE_IN_LIBS_TOOL:=$(TOOLS_DIR)/genin_libs
+GENERATE_IN_LIBS_TOOL:=$(TOOLS_DIR)/.genin_libs
+GENERATE_IN_PKGS_TOOL:=$(TOOLS_DIR)/.genin_pkgs
 TAR:=$(TOOLS_DIR)/tar-gnu
 SED:=sed
 PATCHELF_HOST:=patchelf
@@ -207,18 +207,47 @@ endif
 # genin: (re)generate .in files if necessary
 ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
 # Note: the list of the packages to be treated specially (the 3rd argument of get-subdirs-containing) should match that used in genin
-ifneq ($(call genin-get-considered-packages,make/pkgs/Config.in.generated),$(call get-subdirs-containing,make/pkgs,Config.in,asterisk[-].* iptables-cgi nhipt python[-].* python3-.* ruby-fcgi sg3_utils))
-ifneq ($(shell $(GENERATE_IN_TOOL) $(if $(findstring legacy,$(MAKECMDGOALS)),legacy) >&2 && echo OK),OK)
-$(error genin failed)
+
+GENIN_PKGS:=n
+#
+ifneq ($(GENIN_PKGS),y)
+ifneq ($(call genin-get-considered-packages,make/pkgs/Config.in.generated,make/pkgs),$(call get-subdirs-containing,make/pkgs,Config.in,asterisk[-].* iptables-cgi nhipt python[-].* python3[-].* ruby-fcgi sg3_utils))
+GENIN_PKGS:=y
 endif
+endif
+#
+ifneq ($(GENIN_PKGS),y)
+ifneq ($(call genin-get-considered-packages,make/pkgs/external.in.generated,make/pkgs),$(call get-subdirs-containing,make/pkgs,external.in))
+GENIN_PKGS:=y
+endif
+endif
+#
+ifeq ($(GENIN_PKGS),y)
+ifneq ($(shell $(GENERATE_IN_PKGS_TOOL) $(if $(findstring legacy,$(MAKECMDGOALS)),legacy) >&2 && echo OK),OK)
+$(error genin_pkgs failed)
 endif
 endif
 
-# genin_libs: (re)generate sorted make/libs/external.in.generated
-ifneq ($(findstring clean,$(MAKECMDGOALS)),clean)
+GENIN_LIBS:=n
+#
+ifneq ($(GENIN_LIBS),y)
+ifneq ($(call genin-get-considered-packages,make/libs/Config.in.generated),$(call get-subdirs-containing2,make/libs,make/pkgs,Config.in,Config.in.libs))
+GENIN_LIBS:=y
+endif
+endif
+#
+ifneq ($(GENIN_LIBS),y)
+ifneq ($(call genin-get-considered-packages,make/libs/external.in.generated),$(call get-subdirs-containing2,make/libs,make/pkgs,external.in,external.in.libs))
+GENIN_LIBS:=y
+endif
+endif
+#
+ifeq ($(GENIN_LIBS),y)
 ifneq ($(shell $(GENERATE_IN_LIBS_TOOL) >&2 && echo OK),OK)
 $(error genin_libs failed)
 endif
+endif
+
 endif
 
 all: step
@@ -675,7 +704,7 @@ $(eval $(call CONFIG_CLEAN_DEPS,config-clean-deps-keep-busybox,kernel modules$(_
 common-cacheclean:
 	[ ! -x .fwmod_custom ] || ./.fwmod_custom clean
 	./fwmod_custom clean
-	$(RM) make/pkgs/Config.in.generated make/pkgs/external.in.generated make/libs/external.in.generated
+	$(RM) make/pkgs/external.in.generated make/pkgs/Config.in.generated make/libs/external.in.generated make/libs/Config.in.generated
 	$(RM) .config.compressed .config.old .config.*.tmp
 	$(RM) .packages .exclude-release-tmp $(CONFIG_IN_CACHE)
 	$(RM) $(DL_FW_DIR)/*.detected.image $(DL_FW_DIR)/*.detected.image.url

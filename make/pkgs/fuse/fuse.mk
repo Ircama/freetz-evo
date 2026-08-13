@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://github.com/libfuse/libfuse/releases/download/fuse-$($(PKG)_
 ### CHANGES:=https://github.com/libfuse/libfuse/releases
 ### CVSREPO:=https://github.com/libfuse/libfuse/commits/master
 
+$(PKG)_CATEGORY_LIBS:=File systems
+
 $(PKG)_PATCH_POST_CMDS += $(SED) -i -r -e 's| -D_FILE_OFFSET_BITS=64||g;' fuse.pc.in {example,lib,util}/Makefile.{am,in};
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/util/fusermount

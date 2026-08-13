@@ -1,9 +1,8 @@
-$(call TOOLS_INIT, 823895ba708c63f6ae4dcbfc266210f26c02c698)
+$(call TOOLS_INIT, ba8887e5f1e922f866681ec7dec1a00b602a9328)
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=65a56a60bd61477cb9c585d61977b5f4bce69e94fc4ef6ef974bbad37f370289
+$(PKG)_HASH:=45664d3c25214b5d3d728a7a1d16aef9ec755325a9d2aaac9beb59a1ba10da47
 $(PKG)_SITE:=git@https://git.yoctoproject.org/pseudo
-#$(PKG)_SITE:=https://git.yoctoproject.org/pseudo/snapshot,https://downloads.yoctoproject.org/releases/pseudo
-### VERSION:=1.9.8
+### VERSION:=1.9.11
 ### WEBSITE:=https://www.yoctoproject.org/software-item/pseudo/
 ### MANPAGE:=https://manpages.debian.org/testing/pseudo/pseudo.1.en.html
 ### CHANGES:=https://git.yoctoproject.org/pseudo/log/?h=master

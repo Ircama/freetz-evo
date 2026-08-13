@@ -10,7 +10,7 @@ $(PKG)_SITE:=https://github.com/MusicPlayerDaemon/MPD/archive/refs/tags
 ### STEWARD:=Ircama
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/pkgs/mpd/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/mpd
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/mpd

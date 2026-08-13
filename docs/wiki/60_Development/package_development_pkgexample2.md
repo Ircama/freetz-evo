@@ -105,7 +105,7 @@ $(PKG)_SITE:=http://sourceforge.net/projects/parchive/files/$(pkg)/$($(PKG)_VERS
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/par2
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/par2
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -198,7 +198,7 @@ packages/target-mipsel_gcc-4.6.4_uClibc-0.9.32.1/par2cmdline-0.4/root/usr/sbin/p
 
 
 ```
-$(PKG)_CATEGORY:=Unstable
+$(PKG)_CATEGORY_PKGS:=Unstable
 ```
 
 This line determines where in the 'menuconfig' this package will be

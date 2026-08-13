@@ -1,5 +1,6 @@
 config FREETZ_LIB_libcairo
 	bool "Cairo (libcairo.so)"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
 	select FREETZ_LIB_libpixman_1
 	select FREETZ_LIB_libfontconfig
 	select FREETZ_LIB_libfreetype

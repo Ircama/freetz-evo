@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=b33014be72cd1030e171b1801a5cc90f8f727f03b197c7cc0d506c30c991ed44
 $(PKG)_SITE:=ftp://ftp.ossp.org/pkg/lib/js
 
+$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+
 $(PKG)_BINARY_BUILD_DIR:=$($(PKG)_DIR)/.libs/js
 $(PKG)_BINARY_TARGET_DIR:=$($(PKG)_DEST_DIR)/usr/bin/js
 

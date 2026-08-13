@@ -1,0 +1,30 @@
+--- os_linux.cpp
++++ os_linux.cpp
+@@ -43,9 +43,24 @@
+ #include <fcntl.h>
+ #include <glob.h>
+ 
+-#include <scsi/scsi.h>
+-#include <scsi/scsi_ioctl.h>
+-#include <scsi/sg.h>
++#ifndef SG_GET_SCSI_ID
++#define SG_GET_SCSI_ID 0x2289
++struct sg_scsi_id {
++  int host_no;
++  int channel;
++  int scsi_id;
++  int lun;
++  int scsi_type;
++  short h_cmd_per_lun;
++  short d_queue_depth;
++  int unused[2];
++};
++#endif
++
++#ifndef SCSI_IOCTL_GET_BUS_NUMBER
++#define SCSI_IOCTL_GET_BUS_NUMBER 0x5386
++#endif
++
+ #include <linux/bsg.h>
+ #include <stdlib.h>
+ #include <string.h>

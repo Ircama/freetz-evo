@@ -1,8 +1,11 @@
-# hidws 1.3.1 (binaries only)
-  - Toolchain: requires uClibc 1.0.58 or newer (links libwebsockets/libuv, which fail to link on older uClibc with "undefined reference to pthread_atfork")
+# hidws 1.3.1 (binary only)
+  - Homepage: [https://github.com/Ircama/hidws](https://github.com/Ircama/hidws)
+  - Changelog: [https://github.com/Ircama/hidws/releases](https://github.com/Ircama/hidws/releases)
+  - Repository: [https://github.com/Ircama/hidws](https://github.com/Ircama/hidws)
   - Package: [master/make/pkgs/hidws/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/hidws/)
+  - Steward: -
+  - Toolchain: requires uClibc 1.0.58 or newer (links libwebsockets/libuv, which fail to link on older uClibc with "undefined reference to pthread_atfork")
   - Upstream: [github.com/Ircama/hidws](https://github.com/Ircama/hidws) — tag `v1.3.1`
-  - Steward: Ircama
 
 `hidws` is a WebSocket/USB HID gateway daemon. It lets web apps (and
 any WebSocket client) talk to USB HID devices remotely through a small JSON

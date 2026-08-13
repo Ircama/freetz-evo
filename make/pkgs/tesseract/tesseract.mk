@@ -4,6 +4,8 @@ $(PKG)_SOURCE:=$(pkg)-ocr-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=26cd39cb3f2a6f6f1bf4050d1cc0aae35edee49eb49a92df3cb7f9487caa013d
 $(PKG)_SITE:=http://tesseract-ocr.googlecode.com/files
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARY_BUILD_DIR:=$($(PKG)_DIR)/api/.libs/$(pkg)
 $(PKG)_BINARY_TARGET_DIR:=$($(PKG)_DEST_DIR)/usr/bin/$(pkg)
 

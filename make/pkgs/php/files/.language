@@ -4,5 +4,8 @@ default
 { en }
 files
 {
-	etc/default.php/php_config.def
+	usr/lib/cgi-bin/php.cgi
+	usr/lib/cgi-bin/php/*.cgi
+	etc/default.php/php_*.def
+	etc/init.d/rc.php
 }

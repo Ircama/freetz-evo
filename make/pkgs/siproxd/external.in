@@ -5,5 +5,5 @@ config EXTERNAL_FREETZ_PACKAGE_SIPROXD
 	help
 		externals the following file(s):
 		 /usr/bin/siproxd
-		 ${FREETZ_LIBRARY_DIR}/siproxd (only if external option "Keep subdirectories" is enabled)
+		 ${FREETZ_LIBRARY_DIR}/siproxd/ (only if external option "Keep subdirectories" is enabled)
 

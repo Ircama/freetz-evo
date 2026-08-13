@@ -8,6 +8,8 @@ $(PKG)_SITE:=http://openjpeg.googlecode.com/files,@SF/openjpeg.mirror
 ### CHANGES:=https://github.com/uclouvain/openjpeg/blob/master/NEWS.md
 ### CVSREPO:=https://github.com/uclouvain/openjpeg
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/libopenjpeg/.libs/libopenjpeg.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libopenjpeg.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libopenjpeg.so.$($(PKG)_LIB_VERSION)

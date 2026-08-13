@@ -1,4 +1,4 @@
-# pyturbojpeg 2.2.0
+# pyturbojpeg 2.2.0/1.8.3
   - Homepage: [https://github.com/lilohuang/PyTurboJPEG](https://github.com/lilohuang/PyTurboJPEG)
   - Repository: [https://github.com/lilohuang/PyTurboJPEG](https://github.com/lilohuang/PyTurboJPEG)
   - Package: [master/make/pkgs/python3-pyturbojpeg/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/python3-pyturbojpeg/)

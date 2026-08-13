@@ -8,6 +8,8 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CHANGES:=https://ftp.gnu.org/pub/gnu/gettext/
 ### CVSREPO:=https://git.savannah.gnu.org/gitweb/?p=gettext.git
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
+
 # we only want libintl
 $(PKG)_BUILD_SUBDIR := gettext-runtime
 

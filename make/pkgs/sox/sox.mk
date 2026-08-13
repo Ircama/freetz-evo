@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 14.4.2)
 ### WEBSITE:=https://sourceforge.net/projects/sox/
 ### CHANGES:=https://sourceforge.net/p/sox/code/
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
 $(PKG)_HASH:=81a6956d4330e75b5827316e44ae381e6f1e8928003c6aa45896da9041ea149c

@@ -1,5 +1,5 @@
 $(call PKG_INIT_BIN, 1.30)
-$(PKG)_CATEGORY:=Data Migration and Disaster Recovery
+$(PKG)_CATEGORY_PKGS:=Data Migration and Disaster Recovery
 $(PKG)_SOURCE:=gddrescue_$($(PKG)_VERSION).orig.tar.gz
 $(PKG)_HASH:=d01c9ff0599a13d10261c9b435333cc4aaff016be226788cfe515329c221789a
 $(PKG)_SITE:=https://deb.debian.org/debian/pool/main/g/gddrescue

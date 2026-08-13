@@ -7,7 +7,7 @@ $(PKG)_SITE:=https://github.com/mikebrady/shairport-sync/archive/refs/tags
 ### CHANGES:=https://github.com/mikebrady/shairport-sync/releases
 ### CVSREPO:=https://github.com/mikebrady/shairport-sync
 
-$(PKG)_CATEGORY:=Audio
+$(PKG)_CATEGORY_PKGS:=Audio
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/shairport-sync
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/shairport-sync

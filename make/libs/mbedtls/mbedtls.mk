@@ -13,6 +13,8 @@ $(PKG)_SITE:=https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-$($(P
 ### CVSREPO:=https://github.com/Mbed-TLS/mbedtls
 ### STEWARD:=fda77
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##mbed TLS
+
 $(PKG)_CONDITIONAL_PATCHES+=$($(PKG)_MAJOR_VERSION)
 
 $(PKG)_HEADER_DIRS         := mbedtls $(if $(FREETZ_MBEDTLS_VERSION_207),,psa)

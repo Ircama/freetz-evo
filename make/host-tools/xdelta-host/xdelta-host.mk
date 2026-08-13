@@ -2,6 +2,7 @@ $(call TOOLS_INIT, 30q)
 $(PKG)_SOURCE:=xdelta$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=750ab5f9e0b8f5f85c396f5005439503cc4b7f7d006e6c30814064d64dd3a494
 $(PKG)_SITE:=http://xdelta.googlecode.com/files
+### STEWARD:=EOL
 
 $(PKG)_CFLAGS := $(TOOLS_CFLAGS)
 $(PKG)_CFLAGS += -std=gnu17
