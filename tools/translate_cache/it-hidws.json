@@ -208,5 +208,40 @@
     "timestamp": "2026-08-10T11:09:36Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Web check": {
+    "original": "Web check",
+    "translation": "Controllo web",
+    "timestamp": "2026-08-13T07:10:28Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Test the hidws WebSocket interface on this device (port ${HIDWS_PORT:-9001}). hidws serves its built-in diagnostic page under http/https on the same port.": {
+    "original": "Test the hidws WebSocket interface on this device (port ${HIDWS_PORT:-9001}). hidws serves its built-in diagnostic page under http/https on the same port.",
+    "translation": "Prova l’interfaccia WebSocket di hidws su questo dispositivo (porta ${HIDWS_PORT:-9001}). hidws serve la sua pagina di diagnostica integrata su http/https sulla stessa porta.",
+    "timestamp": "2026-08-13T07:10:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Diagnostic page": {
+    "original": "Diagnostic page",
+    "translation": "Pagina di diagnostica",
+    "timestamp": "2026-08-13T07:10:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebSocket test": {
+    "original": "WebSocket test",
+    "translation": "Test WebSocket",
+    "timestamp": "2026-08-13T07:10:31Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note: when this configuration page is loaded over HTTPS, browsers block an insecure ws:// connection (mixed content) - please use wss:// instead. For wss:// with a self-signed certificate the browser asks for confirmation: first open the https diagnostic page and accept the certificate, otherwise the WebSocket connection fails.": {
+    "original": "Note: when this configuration page is loaded over HTTPS, browsers block an insecure ws:// connection (mixed content) - please use wss:// instead. For wss:// with a self-signed certificate the browser asks for confirmation: first open the https diagnostic page and accept the certificate, otherwise the WebSocket connection fails.",
+    "translation": "Nota: quando questa pagina di configurazione viene caricata tramite HTTPS, i browser bloccano una connessione ws:// non sicura (contenuto misto) – si prega di utilizzare invece wss://. Per wss:// con un certificato autofirmato, il browser richiede una conferma: aprire prima la pagina di diagnostica https e accettare il certificato, altrimenti la connessione WebSocket fallirà.",
+    "timestamp": "2026-08-13T07:10:32Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
