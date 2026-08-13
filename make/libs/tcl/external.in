@@ -6,4 +6,6 @@ config EXTERNAL_FREETZ_LIB_libtcl
 		externals the following file(s):
 		 ${FREETZ_LIBRARY_DIR}/libtcl8.6.so
 		 ${FREETZ_LIBRARY_DIR}/libtcl8.6.so.1
+		 /usr/lib/tcl8.6/
+		 /usr/lib/tcl8/
 

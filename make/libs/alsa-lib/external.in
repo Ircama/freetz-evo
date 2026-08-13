@@ -6,3 +6,4 @@ config EXTERNAL_FREETZ_LIB_libasound
 		externals the following file(s):
 		 ${FREETZ_LIBRARY_DIR}/libasound.so.2.0.0
 		 /usr/share/alsa (with EXTERNAL_SUBDIRS)
+		 /usr/lib/alsa-lib/ (plugins)

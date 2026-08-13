@@ -1,0 +1,14 @@
+config EXTERNAL_FREETZ_PACKAGE_DISK_MGMT_CGI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DISK_MGMT_CGI
+	bool "Disk management web interface"
+	default n
+	help
+		externals the following file(s):
+		 /usr/lib/cgi-bin/disk-mgmt.cgi
+		 /usr/mww/ace/*
+		 /usr/mww/pace/pace.min.js
+		 /usr/sbin/disk_migration.sh
+		 /usr/sbin/partition_image.sh
+		 /usr/sbin/partition_migration.sh
+		 /etc/init.d/rc.disk-mgmt
+		 /etc/default.disk-mgmt/*

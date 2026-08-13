@@ -62,10 +62,18 @@ else
 endif
 	
 	# Copy all libraries (GCC, runtime, static, CRT files, etc.)
+	# NB: skip the shared libstdc++ (libstdc++.so*) here - the runtime libstdc++
+	# is provided and externalized by the libstdcxx package (make/libs/libstdcxx),
+	# so including it in the archive would duplicate it in external/ and conflict
+	# with the libstdcxx externalization. The static archive libstdc++.a is kept.
 	@echo "  - Copying all GCC and system libraries..."
 	if [ -d "$(GCC_TOOLCHAIN_SOURCE_DIR)/usr/lib" ]; then \
-		cp -a "$(GCC_TOOLCHAIN_SOURCE_DIR)/usr/lib"/* \
-		      "$(GCC_TOOLCHAIN_DEST_DIR)/$(GCC_TOOLCHAIN_ARCHIVE_MARKER)/usr/lib/"; \
+		for f in "$(GCC_TOOLCHAIN_SOURCE_DIR)/usr/lib"/*; do \
+			case "$$(basename "$$f")" in \
+				libstdc++.so*) continue ;; \
+			esac; \
+			cp -a "$$f" "$(GCC_TOOLCHAIN_DEST_DIR)/$(GCC_TOOLCHAIN_ARCHIVE_MARKER)/usr/lib/"; \
+		done; \
 	fi
 	
 	# Copy C runtime startup files (crt*.o) and static libraries from freetz directory

@@ -4,5 +4,5 @@ config EXTERNAL_FREETZ_LIB_libstdcxx
 	default n
 	help
 		externals the following file(s):
-		 ${FREETZ_LIBRARY_DIR}/libstdc++.so.6.0.x
+		 /usr/lib/libstdc++.so.6.0.x
 
