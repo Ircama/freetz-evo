@@ -1,12 +1,12 @@
-$(call PKG_INIT_BIN, 0.18.0)
+$(call PKG_INIT_BIN, 0.19.1)
 $(PKG)_SOURCE:=patchelf-$($(PKG)_VERSION).tar.bz2
-$(PKG)_HASH:=1952b2a782ba576279c211ee942e341748fdb44997f704dd53def46cd055470b
+$(PKG)_HASH:=2cce01de93653829f6ab68a20c2ec275e1c00a946110704a27e928d2e6e88716
 $(PKG)_SITE:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/NixOS/patchelf
 ### MANPAGE:=https://github.com/NixOS/patchelf/blob/master/README.md
 ### CHANGES:=https://github.com/NixOS/patchelf/releases
 ### CVSREPO:=https://github.com/NixOS/patchelf
-### STEWARD:=Ircama
+### STEWARD:=fda77
 
 $(PKG)_CATEGORY_PKGS:=Debug helpers
 

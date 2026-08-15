@@ -1,4 +1,4 @@
-# libtool 2.5.4
+# libtool 2.6.2
   - Homepage: [https://www.gnu.org/software/libtool/](https://www.gnu.org/software/libtool/)
   - Manpage: [https://www.gnu.org/software/libtool/manual/](https://www.gnu.org/software/libtool/manual/)
   - Changelog: [https://ftpmirror.gnu.org/libtool/](https://ftpmirror.gnu.org/libtool/)

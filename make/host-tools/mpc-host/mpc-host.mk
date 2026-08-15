@@ -1,11 +1,13 @@
-$(call TOOLS_INIT, 1.1.0)
-$(PKG)_SOURCE:=mpc-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e
+$(call TOOLS_INIT, 1.4.1)
+# Update libs/ too !
+$(PKG)_SOURCE:=mpc-$($(PKG)_VERSION).tar.xz
+$(PKG)_HASH:=91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931
 $(PKG)_SITE:=@GNU/mpc
 ### WEBSITE:=https://www.multiprecision.org/
 ### MANPAGE:=https://www.multiprecision.org/mpc/documentation.html
 ### CHANGES:=https://ftp.gnu.org/gnu/mpc/
 ### CVSREPO:=https://gitlab.inria.fr/mpc/mpc
+### STEWARD:=fda77
 
 $(PKG)_DEPENDS_ON+=gmp-host
 $(PKG)_DEPENDS_ON+=mpfr-host

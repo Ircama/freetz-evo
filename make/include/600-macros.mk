@@ -139,7 +139,8 @@ endef
 
 ## PKG_UNPACKED: Unpack and patch package
 define PKG_UNPACKED__ALL_INT
-$($(PKG)_DIR)/.unpacked: $(DL_DIR)/$($(PKG)_SOURCE) $(if $($(PKG)_CUSTOM_UNPACK),$($(PKG)_DIR)/.build-prereq-checked) | $($(PKG)_SOURCE_DIR)
+$(pkg)-source: | $(DL_DIR)/$($(PKG)_SOURCE)
+$($(PKG)_DIR)/.unpacked: $(if $($(PKG)_CUSTOM_UNPACK),$($(PKG)_DIR)/.build-prereq-checked) | $(pkg)-source $($(PKG)_SOURCE_DIR)
 	@$(call _ECHO,preparing)
 	@$(call RMDIR_KEEP_FILES__INT,$($(PKG)_DIR),.build-prereq-checked)
 	$(call PKG_UNPACK)
@@ -147,7 +148,6 @@ $($(PKG)_DIR)/.unpacked: $(DL_DIR)/$($(PKG)_SOURCE) $(if $($(PKG)_CUSTOM_UNPACK)
 	$(call PKG_PATCH)
 	$(call PKG_EXECUTE_WITHIN__INT,$($(PKG)_PATCH_POST_CMDS))
 	@touch $$@
-$(pkg)-source: $($(PKG)_DIR)/.unpacked
 $(pkg)-unpacked: $($(PKG)_DIR)/.unpacked
 .PHONY: $(pkg)-source $(pkg)-unpacked
 endef
@@ -155,13 +155,13 @@ endef
 
 ## "unpack" (actually copy) local source package
 define PKG_UNPACKED_LOCALSOURCE_PACKAGE__INT
-$($(PKG)_DIR)/.unpacked: $(wildcard $($(PKG)_MAKE_DIR)/src/*) | $($(PKG)_SOURCE_DIR)
+$(pkg)-source: | $($(PKG)_MAKE_DIR)/src/
+$($(PKG)_DIR)/.unpacked: | $(pkg)-source $($(PKG)_SOURCE_DIR)
 	@$(call _ECHO,preparing)
 	@$(call RMDIR_KEEP_FILES__INT,$($(PKG)_DIR),.build-prereq-checked)
 	mkdir -p $($(PKG)_DIR)
-	cp -a $$^ $($(PKG)_DIR)
+	cp -a $(wildcard $($(PKG)_MAKE_DIR)/src/*) $($(PKG)_DIR)
 	@touch $$@
-$(pkg)-source: $($(PKG)_DIR)/.unpacked
 $(pkg)-unpacked: $($(PKG)_DIR)/.unpacked
 .PHONY: $(pkg)-source $(pkg)-unpacked
 endef

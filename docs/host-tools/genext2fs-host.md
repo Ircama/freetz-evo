@@ -1,4 +1,4 @@
-# genext2fs 1.5.0-3b99f4a4
+# genext2fs 1.6.2
   - Homepage: [https://genext2fs.sourceforge.net/](https://genext2fs.sourceforge.net/)
   - Manpage: [https://sourceforge.net/projects/genext2fs/](https://sourceforge.net/projects/genext2fs/)
   - Changelog: [https://github.com/bestouff/genext2fs/tags](https://github.com/bestouff/genext2fs/tags)

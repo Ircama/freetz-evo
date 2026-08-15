@@ -38,7 +38,9 @@ $(TOOLS_SOURCE_DIR) \
 $(HOST_TOOLS_DIR):
 	@mkdir -p $@
 
-TOOLS:=$(sort $(basename $(notdir $(wildcard $(FREETZ_BASE_DIR)/$(MAKE_DIR)/host-tools/*/*.mk))))
+TOOLS_FAVORED:=kconfig-host tar-host busybox-host make-host pkgconf-host m4-host autoconf-host automake-host libtool-host
+TOOLS_ALLOFIT:=$(sort $(basename $(notdir $(wildcard $(FREETZ_BASE_DIR)/$(MAKE_DIR)/host-tools/*/*.mk))))
+TOOLS:=$(TOOLS_FAVORED) $(filter-out $(TOOLS_FAVORED),$(TOOLS_ALLOFIT))
 
 TOOLS_TARXZBUNDLE:=tools-host
 

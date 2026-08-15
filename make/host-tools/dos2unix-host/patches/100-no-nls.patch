@@ -1,0 +1,11 @@
+--- Makefile
++++ Makefile
+@@ -50,7 +50,7 @@
+ UNIX2MAC        = unix2mac
+ 
+ # Native Language Support (NLS)
+-ENABLE_NLS      = 1
++ENABLE_NLS      = 0
+ # Large File Support (LFS)
+ LFS             = 1
+ # DEBUG=1 adds the -g option to CFLAGS, for adding debug symbols.

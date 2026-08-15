@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 2.5.4)
+$(call TOOLS_INIT, 2.6.2)
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=f81f5860666b0bc7d84baddefa60d1cb9fa6fceb2398cc3baca6afaa60266675
+$(PKG)_HASH:=2ef1067c16c97db930fd740cc9bc3d3ba9a583804ae5ac42cc3e8719e49e191e
 $(PKG)_SITE:=@GNU/$(pkg_short)
 ### WEBSITE:=https://www.gnu.org/software/libtool/
 ### MANPAGE:=https://www.gnu.org/software/libtool/manual/
@@ -16,6 +16,7 @@ $(PKG)_BINARIES            := libtool libtoolize
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DESTDIR)/bin/%)
 
 $(PKG)_CONFIGURE_OPTIONS += --prefix=$(LIBTOOL_HOST_DESTDIR)
+$(PKG)_CONFIGURE_OPTIONS += --disable-ltdl-install
 
 
 $(TOOLS_SOURCE_DOWNLOAD)
@@ -34,8 +35,7 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 
 $(pkg)-fixhardcoded:
 	-@$(SED) -i "s!$(TOOLS_HARDCODED_DIR)!$(LIBTOOL_HOST_DESTDIR)!g" \
-		$(LIBTOOL_HOST_BINARIES_TARGET_DIR) \
-		$(LIBTOOL_HOST_DESTDIR)/lib/libltdl.la
+		$(LIBTOOL_HOST_BINARIES_TARGET_DIR)
 
 $(pkg)-precompiled: $($(PKG)_DIR)/.installed
 

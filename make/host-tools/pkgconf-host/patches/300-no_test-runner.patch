@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -94,7 +94,7 @@
+ build_triplet = @build@
+ host_triplet = @host@
+ bin_PROGRAMS = pkgconf$(EXEEXT)
+-noinst_PROGRAMS = test-runner$(EXEEXT) $(am__EXEEXT_1)
++noinst_PROGRAMS =
+ subdir = .
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_compile_flag.m4 \

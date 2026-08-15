@@ -1,8 +1,8 @@
-$(call TOOLS_INIT, 3b99f4a43f612b9ee74bbf24ca9890606295313f)
-$(PKG)_SOURCE:=genext2fs-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=2721c9e131324994ed6c001bfd0d4f176be437592aacf52644e06781a3952598
-$(PKG)_SITE:=git@https://github.com/bestouff/genext2fs.git
-### VERSION:=1.5.0-3b99f4a4
+$(call TOOLS_INIT, 1.6.2)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=genext2fs-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=b8aba9af48e664fa60134af696a57b3bb4ebd2b2878533d7611734e90b883ecc
+$(PKG)_SITE:=https://github.com/bestouff/genext2fs/archive/refs/tags
 ### WEBSITE:=https://genext2fs.sourceforge.net/
 ### MANPAGE:=https://sourceforge.net/projects/genext2fs/
 ### CHANGES:=https://github.com/bestouff/genext2fs/tags

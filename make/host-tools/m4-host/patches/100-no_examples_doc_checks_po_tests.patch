@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -2484,7 +2484,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-SUBDIRS = . examples lib src doc checks po tests
++SUBDIRS = .          lib src
+ EXTRA_DIST = bootstrap c-boxes.el cfg.mk maint.mk \
+ 	.prev-version .version m4/gnulib-cache.m4 ChangeLog-2014
+ 

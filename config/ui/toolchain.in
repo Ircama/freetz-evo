@@ -1457,19 +1457,27 @@ choice
 
 endchoice # "Root emulator" #
 
-config FREETZ_TOOLS_KCONFIG_OLDSCHOOL
-	bool "Additional load+save buttons in menuconfig"
-	depends on FREETZ_SHOW_EXPERT
-	default n
-	help
-		Not only select+exit+help buttons at bottom
-		but additional useless load+save buttons.
+choice
+
+	prompt "Fakeroot version" if FALSE
+		depends on !FREETZ_HOSTTOOLS_DOWNLOAD
+		default FREETZ_TOOLS_FAKEROOT_VERSION_CURRENT
+
+	config FREETZ_TOOLS_FAKEROOT_VERSION_ABANDON
+		bool "old"
+		depends on FREETZ_ANCIENT_SYSTEM
+
+	config FREETZ_TOOLS_FAKEROOT_VERSION_CURRENT
+		bool "new"
+		depends on !FREETZ_ANCIENT_SYSTEM
+
+endchoice # "Fakeroot version"
 
 choice
 
-	prompt "Patchelf version"
-		default FREETZ_TOOLS_PATCHELF_VERSION_CURRENT
+	prompt "Patchelf version" if FALSE
 		depends on !FREETZ_HOSTTOOLS_DOWNLOAD
+		default FREETZ_TOOLS_PATCHELF_VERSION_CURRENT
 
 	config FREETZ_TOOLS_PATCHELF_VERSION_ABANDON
 		bool "old"
@@ -1483,7 +1491,15 @@ choice
 		help
 			Requires at least gcc v7
 
-endchoice
+endchoice # "Patchelf version"
+
+config FREETZ_TOOLS_KCONFIG_OLDSCHOOL
+	bool "Additional load+save buttons in menuconfig"
+	depends on FREETZ_SHOW_EXPERT
+	default n
+	help
+		Not only select+exit+help buttons at bottom
+		but additional useless load+save buttons.
 
 endmenu # "Toolchain options" #
 

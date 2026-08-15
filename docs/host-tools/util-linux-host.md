@@ -1,4 +1,4 @@
-# util-linux 2.42
+# util-linux 2.42.2
   - Homepage: [https://en.wikipedia.org/wiki/Util-linux](https://en.wikipedia.org/wiki/Util-linux)
   - Manpage: [https://linux.die.net/man/1/uuidgen](https://linux.die.net/man/1/uuidgen)
   - Changelog: [https://github.com/util-linux/util-linux/tags](https://github.com/util-linux/util-linux/tags)

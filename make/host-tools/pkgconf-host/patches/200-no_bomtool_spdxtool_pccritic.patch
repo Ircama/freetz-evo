@@ -1,0 +1,12 @@
+--- Makefile.in
++++ Makefile.in
+@@ -93,8 +93,7 @@
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+-bin_PROGRAMS = pkgconf$(EXEEXT) bomtool$(EXEEXT) spdxtool$(EXEEXT) \
+-	pccritic$(EXEEXT)
++bin_PROGRAMS = pkgconf$(EXEEXT)
+ noinst_PROGRAMS = test-runner$(EXEEXT) $(am__EXEEXT_1)
+ subdir = .
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4

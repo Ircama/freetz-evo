@@ -1,4 +1,4 @@
-# mklibs 0.1.45
+# mklibs 0.1.46
   - Homepage: [https://packages.debian.org/sid/mklibs](https://packages.debian.org/sid/mklibs)
   - Manpage: [https://manpages.debian.org/unstable/mklibs/mklibs.1.html](https://manpages.debian.org/unstable/mklibs/mklibs.1.html)
   - Changelog: [https://salsa.debian.org/installer-team/mklibs/blob/master/debian/changelog](https://salsa.debian.org/installer-team/mklibs/blob/master/debian/changelog)

@@ -16,17 +16,17 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[ca-bundle 2026-07-16](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
+  * **[ca-bundle 2026-08-13](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
   * **[cmake 4.4.2](cmake-host.md)<a id='cmake-host'></a>**<br>
 
-  * **[config a2287c3041a3f2a204eb942e09c015eab00dc7dd](config-host.md)<a id='config-host'></a>**<br>
+  * **[config 4286648](config-host.md)<a id='config-host'></a>**<br>
 
   * **[cpio 2.15](cpio-host.md)<a id='cpio-host'></a>**<br>
 
 ### D
 
-  * **[dos2unix 7.5.5](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
+  * **[dos2unix 7.5.6](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
 
   * **[dtc 1.8.1](dtc-host.md)<a id='dtc-host'></a>**<br>
 
@@ -36,17 +36,17 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### F
 
-  * **[fakeroot 2.0](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
+  * **[fakeroot $(if $(FREETZ_TOOLS_FAKEROOT_VERSION_ABANDON),1.38.1,2.1.4)](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
 
   * **[fastjar 0.98](fastjar-host.md)<a id='fastjar-host'></a>**<br>
 
-  * **[file 5.47](file-host.md)<a id='file-host'></a>**<br>
+  * **[file 5.48](file-host.md)<a id='file-host'></a>**<br>
 
   * **[find-squashfs 1.0](find-squashfs-host.md)<a id='find-squashfs-host'></a>**<br>
 
 ### G
 
-  * **[genext2fs 1.5.0-3b99f4a4](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
+  * **[genext2fs 1.6.2](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
 
   * **[gennmtab 1.64.03](gennmtab-host.md)<a id='gennmtab-host'></a>**<br>
 
@@ -64,7 +64,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[libdtc 1.6.1](libdtc-host.md)<a id='libdtc-host'></a>**<br>
 
-  * **[libtool 2.5.4](libtool-host.md)<a id='libtool-host'></a>**<br>
+  * **[libtool 2.6.2](libtool-host.md)<a id='libtool-host'></a>**<br>
 
   * **[lzma1 465](lzma1-host.md)<a id='lzma1-host'></a>**<br>
 
@@ -80,11 +80,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[meson 1.12.0](meson-host.md)<a id='meson-host'></a>**<br>
 
-  * **[mklibs 0.1.45](mklibs-host.md)<a id='mklibs-host'></a>**<br>
+  * **[mklibs 0.1.46](mklibs-host.md)<a id='mklibs-host'></a>**<br>
 
-  * **[mpc 1.1.0](mpc-host.md)<a id='mpc-host'></a>**<br>
+  * **[mpc 1.4.1](mpc-host.md)<a id='mpc-host'></a>**<br>
 
-  * **[mpfr 3.1.6](mpfr-host.md)<a id='mpfr-host'></a>**<br>
+  * **[mpfr 4.2.2](mpfr-host.md)<a id='mpfr-host'></a>**<br>
 
 ### N
 
@@ -102,13 +102,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### P
 
-  * **[patchelf 0.14.5/0.18.0-b49de1b33](patchelf-host.md)<a id='patchelf-host'></a>**<br>
+  * **[patchelf 0.14.5/0.19.1](patchelf-host.md)<a id='patchelf-host'></a>**<br>
 
   * **[patchelf-target 0.14.5/0.15.0](patchelf-target-host.md)<a id='patchelf-target-host'></a>**<br>
 
   * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
 
-  * **[pkgconf 2.5.1](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
+  * **[pkgconf 3.0.5](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
 
   * **[prelink 20131005](prelink-host.md)<a id='prelink-host'></a>**<br>
 
@@ -160,15 +160,15 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-08-04](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-08-14](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 
-  * **[uboot 2026.04](uboot-host.md)<a id='uboot-host'></a>**<br>
+  * **[uboot 2026.07](uboot-host.md)<a id='uboot-host'></a>**<br>
 
   * **[uimg 871930d](uimg-host.md)<a id='uimg-host'></a>**<br>
 
-  * **[util-linux 2.42](util-linux-host.md)<a id='util-linux-host'></a>**<br>
+  * **[util-linux 2.42.2](util-linux-host.md)<a id='util-linux-host'></a>**<br>
 
 ### W
 

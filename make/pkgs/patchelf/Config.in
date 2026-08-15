@@ -1,6 +1,7 @@
 config FREETZ_PACKAGE_PATCHELF
-	bool "PatchELF 0.18.0 (binary only)"
+	bool "PatchELF 0.19.1 (binary only)"
 	depends on FREETZ_TARGET_GCC_13_MIN  # in fact min gcc11 for C++17
+	depends on FREETZ_TARGET_ARCH_LE  # BE is broken
 	select FREETZ_STDCXXLIB_FORCE_GNULIBSTDCXX
 	select FREETZ_LIB_STDCXXLIB
 	select FREETZ_LIB_libjemalloc

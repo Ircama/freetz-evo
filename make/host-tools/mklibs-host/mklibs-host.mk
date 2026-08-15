@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 0.1.45)
+$(call TOOLS_INIT, 0.1.46)
 $(PKG)_SOURCE:=mklibs_$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=dd92a904b3942566f713fe536cd77dd1a5cfc62243c0e0bc6bb5d866e37422f3
+$(PKG)_HASH:=1b2f64d93a8896ec9e47686e1a481cb4ac9e49fe59df84c33e0d12a28903bbae
 $(PKG)_SITE:=@DEBIAN/mklibs
 ### WEBSITE:=https://packages.debian.org/sid/mklibs
 ### MANPAGE:=https://manpages.debian.org/unstable/mklibs/mklibs.1.html

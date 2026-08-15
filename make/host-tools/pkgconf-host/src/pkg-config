@@ -1,11 +1,10 @@
 #! /usr/bin/env bash
 
-case "$(echo ${0##*/} | sed -n 's/-linux-.*//p')" in
-	mips)	SETPCVS="mips"		;;
-	i686)	SETPCVS="i686"		;;
-	arm)	SETPCVS="arm"		;;
-	"")	SETPCVS="no"		;;
-	*)	SETPCVS="unknown"	;;
+MDARC="$(echo ${0##*/} | sed -n 's/-linux-.*//p')"
+case "$MDARC" in
+	mipsel|mips|i686|arm|armeb|aarch64|aarch64_be)	SETPCVS="$MDARC"	;;
+	"")						SETPCVS="no"		;;
+	*)						SETPCVS="unknown"	;;
 esac
 
 if [ "$SETPCVS" != "no" ]; then
@@ -20,7 +19,7 @@ fi
 export PKG_CONFIG_DIR=""
 export PKG_CONFIG_SYSTEM_LIBRARY_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/lib"
 export PKG_CONFIG_SYSTEM_INCLUDE_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/include"
-export PKG_CONFIG_PATH="$PKG_CONFIG_LIBDIR"
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-$PKG_CONFIG_LIBDIR}"
 
 exec ${0%/*}/pkgconf "$@"
 

@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -406,7 +406,7 @@
+ # libtoolize and in case some developer needs to switch back to an
+ # old Automake version.
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = doc src tests tune tools/bench
++SUBDIRS =     src       tune
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = mpfr.pc
+ nobase_dist_doc_DATA = AUTHORS BUGS COPYING COPYING.LESSER NEWS TODO \

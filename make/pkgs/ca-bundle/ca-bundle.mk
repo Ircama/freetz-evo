@@ -1,6 +1,6 @@
-$(call PKG_INIT_BIN, 2026-07-16)
+$(call PKG_INIT_BIN, 2026-08-13)
 $(PKG)_SOURCE:=cacert-$($(PKG)_VERSION).pem
-$(PKG)_HASH:=3ff344e30b9b1ed2971044eabb438a08f2e2245ddb5f8ab1a3ad8b63ab4eaf91
+$(PKG)_HASH:=f66dff1bdf8f96060b8177976f8b7d9254bc89bc4db933d769f7384d28480bc9
 $(PKG)_SITE:=https://curl.se/ca,https://www.curl.se/ca,https://curl.haxx.se/ca
 ### WEBSITE:=https://www.curl.se/ca
 ### STEWARD:=fda77

@@ -1,8 +1,9 @@
-$(call TOOLS_INIT, a2287c3041a3f2a204eb942e09c015eab00dc7dd)
+$(call TOOLS_INIT, 428664896cf9e92d264976a960c76660938dffce)
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=c8e47963554b2fd58f6782f4b7fd4b2c02e3ae5a97aebc9992fa7e4120a4b364
+$(PKG)_HASH:=c1760d9a2a7d6bbe87031bc0c7570226feb46f1f4da8b11fd72cb6ef0d40c5aa
 $(PKG)_SITE:=git@https://https.git.savannah.gnu.org/git/config.git
 #$(PKG)_SITE:=https://cgit.git.savannah.gnu.org/cgit/config.git/snapshot
+### VERSION:=4286648
 ### WEBSITE:=https://savannah.gnu.org/projects/config
 ### CHANGES:=https://cgit.git.savannah.gnu.org/cgit/config.git/log/
 ### CVSREPO:=https://cgit.git.savannah.gnu.org/cgit/config.git

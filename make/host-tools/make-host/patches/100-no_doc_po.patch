@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -530,7 +530,7 @@
+ top_srcdir = @top_srcdir@
+ AUTOMAKE_OPTIONS = dist-lzip silent-rules std-options subdir-objects nostdinc
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = lib po doc
++SUBDIRS = lib
+ include_HEADERS = src/gnumake.h
+ man_MANS = doc/make.1
+ make_SRCS = src/ar.c src/arscan.c src/commands.c src/commands.h \
