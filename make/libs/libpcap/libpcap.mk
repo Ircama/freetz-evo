@@ -11,7 +11,7 @@ $(PKG)_SITE:=https://www.tcpdump.org/release/
 ### CHANGES:=https://github.com/the-tcpdump-group/libpcap/blob/master/CHANGES
 ### CVSREPO:=https://github.com/the-tcpdump-group/libpcap
 
-$(PKG)_CATEGORY_LIBS:=Networking
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)

@@ -5,6 +5,7 @@ $(PKG)_HASH:=731d572b54c708f81e197a6afa8016918e2e06dfd3025e066ca642a5b8c39c8f
 $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
 ### WEBSITE:=https://www.x.org/
 
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libXaw7.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXaw7.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libXaw7.so.$($(PKG)_LIB_VERSION)

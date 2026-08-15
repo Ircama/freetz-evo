@@ -5,6 +5,7 @@ $(PKG)_HASH:=7ad60056f01af4f786cfe93b3a7707447711626fc8da2637bec71a90409babe5
 $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
 ### WEBSITE:=https://www.x.org/
 
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libXi.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXi.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libXi.so.$($(PKG)_LIB_VERSION)

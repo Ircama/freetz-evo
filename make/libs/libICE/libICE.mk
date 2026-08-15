@@ -3,6 +3,8 @@ $(PKG)_LIB_VERSION:=6.3.0
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=03e77afaf72942c7ac02ccebb19034e6e20f456dcf8dddadfeb572aa5ad3e451
 $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
+
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libICE.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libICE.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libICE.so.$($(PKG)_LIB_VERSION)

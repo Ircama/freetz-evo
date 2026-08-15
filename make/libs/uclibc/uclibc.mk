@@ -5,5 +5,5 @@
 ### STEWARD:=fda77
 ### VERSION:=0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.59
 
-$(PKG)_CATEGORY_LIBS:=libc##uClibc
+$(PKG)_CATEGORY_LIBS:=libc
 

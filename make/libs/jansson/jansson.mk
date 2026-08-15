@@ -4,7 +4,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=7905e6590fb316c0ff943df3dc6a21cd81a59cff7a6d12514054c359d04d78d7
 $(PKG)_SITE:=http://www.digip.org/jansson/releases
 
-$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 
 $(PKG)_LIBNAME:=lib$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/$($(PKG)_LIBNAME)

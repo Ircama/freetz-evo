@@ -7,6 +7,7 @@ $(PKG)_HASH:=ffe12ef8add3eaca876f04087734e6e8e029350082f3251f565fa9da55b52121
 $(PKG)_SITE:=https://github.com/libsndfile/libsndfile/archive/refs/tags
 ### WEBSITE:=https://libsndfile.github.io/libsndfile/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libsndfile.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libsndfile.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libsndfile.so.$($(PKG)_LIB_VERSION)

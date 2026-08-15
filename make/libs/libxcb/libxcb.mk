@@ -5,6 +5,7 @@ $(PKG)_HASH:=599ebf9996710fea71622e6e184f3a8ad5b43d0e5fa8c4e407123c88a59a6d55
 $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
 ### WEBSITE:=https://www.x.org/
 
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libxcb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libxcb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libxcb.so.$($(PKG)_LIB_VERSION)

@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://git.uclibc.org/uClibc++/snapshot
 ### CHANGES:=https://git.busybox.net/uClibc++/log/
 ### CVSREPO:=https://git.busybox.net/uClibc++/
 
-$(PKG)_CATEGORY_LIBS:=libc##uClibc++
+$(PKG)_CATEGORY_LIBS:=libc
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libuClibc++.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libuClibc++.so.$($(PKG)_LIB_VERSION)

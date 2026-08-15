@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/zeux/pugixml/archive/refs/tags
 ### CHANGES:=https://github.com/zeux/pugixml/releases
 ### CVSREPO:=https://github.com/zeux/pugixml
 
+$(PKG)_CATEGORY_LIBS:=XML & XSLT
 $(PKG)_BINARY:=$($(PKG)_DIR)/libpugixml.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libpugixml.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libpugixml.so.$($(PKG)_LIB_VERSION)

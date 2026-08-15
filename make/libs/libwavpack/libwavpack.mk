@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/dbry/WavPack/archive/refs/tags
 ### CHANGES:=https://github.com/dbry/WavPack/releases
 ### CVSREPO:=https://github.com/dbry/WavPack
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libwavpack.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libwavpack.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libwavpack.so.$($(PKG)_LIB_VERSION)

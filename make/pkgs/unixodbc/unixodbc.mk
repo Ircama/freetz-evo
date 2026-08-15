@@ -8,6 +8,8 @@ $(PKG)_SITE:=http://www.unixodbc.org
 ### CHANGES:=https://github.com/lurcher/unixODBC/releases
 ### CVSREPO:=https://github.com/lurcher/unixODBC
 
+$(PKG)_CATEGORY_LIBS:=Database
+
 $(PKG)_LIBS_ALL := libodbc.so.$($(PKG)_LIB_VERSION) libodbcinst.so.$($(PKG)_LIB_VERSION) libodbccr.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIBS := $(if $(FREETZ_LIB_libodbc),libodbc.so.$($(PKG)_LIB_VERSION)) $(if $(FREETZ_LIB_libodbcinst),libodbcinst.so.$($(PKG)_LIB_VERSION)) $(if $(FREETZ_LIB_libodbccr),libodbccr.so.$($(PKG)_LIB_VERSION))
 

@@ -8,7 +8,7 @@ $(PKG)_SITE:=https://github.com/rockdaboot/libpsl/releases/download/$($(PKG)_VER
 ### CHANGES:=https://github.com/rockdaboot/libpsl/releases
 ### CVSREPO:=https://github.com/rockdaboot/libpsl
 
-$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 
 $(PKG)_LIST_BUILD       := $($(PKG)_DIR)/list/public_suffix_list.dat
 $(PKG)_LIST_TARGET      := $($(PKG)_DEST_DIR)/usr/share/psl/public_suffix_list.dat

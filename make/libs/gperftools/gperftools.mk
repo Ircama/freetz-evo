@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://github.com/gperftools/gperftools/releases/download/$(pkg)-$
 ### CHANGES:=https://github.com/gperftools/gperftools/releases
 ### CVSREPO:=https://github.com/gperftools/gperftools
 
+$(PKG)_CATEGORY_LIBS:=Memory allocators
+
 # libtool version-info current:revision:age
 # TCMALLOC_SO_VERSION=10:5:6  -> soname = current-age = 4
 # PROFILER_SO_VERSION=5:19:5  -> soname = current-age = 0

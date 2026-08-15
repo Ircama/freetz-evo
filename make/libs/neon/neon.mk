@@ -11,7 +11,7 @@ $(PKG)_SITE:=https://notroj.github.io/neon,http://www.webdav.org/neon
 ### CHANGES:=https://notroj.github.io/neon/
 ### CVSREPO:=https://github.com/notroj/neon
 
-$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libneon.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libneon.so.$($(PKG)_LIB_VERSION)

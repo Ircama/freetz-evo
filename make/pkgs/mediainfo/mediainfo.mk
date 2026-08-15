@@ -30,6 +30,7 @@ MEDIAINFO_PKG_VERSION := $($(PKG)_VERSION)
 MEDIAINFO_PKG_SITE := $($(PKG)_SITE)
 MEDIAINFO_PKG_HASH := $($(PKG)_HASH)
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Media analysis libraries
 $(PKG)_BINARY:=$($(PKG)_DIR)/Project/GNU/CLI/mediainfo
 $(PKG)_BINARY_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/mediainfo
 

@@ -6,6 +6,7 @@ $(PKG)_HASH:=16e881487f184250deb4fcb60432d7556ab12cb58caea71ef23960aec6c0405a
 $(PKG)_SITE:=https://github.com/libsndfile/libsamplerate/archive/refs/tags
 ### WEBSITE:=https://libsndfile.github.io/libsamplerate/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libsamplerate.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libsamplerate.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libsamplerate.so.$($(PKG)_LIB_VERSION)

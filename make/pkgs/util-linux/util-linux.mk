@@ -94,6 +94,8 @@ $(PKG)_CONDITIONAL_PATCHES+=$($(PKG)_VERSION)
 ### CHANGES:=https://mirrors.kernel.org/pub/linux/utils/util-linux/
 ### CVSREPO:=https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git
 
+$(PKG)_CATEGORY_LIBS:=File systems
+
 # Binaries configuration per version
 $(PKG)_BINARIES:=$($(PKG)_BINARIES_$($(PKG)_VERSION))
 $(PKG)_BINARIES_WITH_SUFFIX:=$($(PKG)_BINARIES_WITH_SUFFIX_$($(PKG)_VERSION))

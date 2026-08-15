@@ -7,7 +7,7 @@ $(PKG)_SITE:=git@https://codeberg.org/tenacityteam/libid3tag.git
 ### CHANGES:=https://codeberg.org/tenacityteam/libid3tag/releases
 ### CVSREPO:=https://codeberg.org/tenacityteam/libid3tag
 
-$(PKG)_CATEGORY_LIBS:=Multimedia##ID3 tag
+$(PKG)_CATEGORY_LIBS:=Multimedia##ID3 tag reading libs
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)

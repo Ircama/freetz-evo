@@ -4,7 +4,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=e0491a07cdb21fb9aa82773bbbedaeb7639cbd0e7f96147ab46141e0045db72a
 $(PKG)_SITE:=http://download.oracle.com/berkeley-db
 
-$(PKG)_CATEGORY_LIBS:=Databases
+$(PKG)_CATEGORY_LIBS:=Database
 
 $(PKG)_LIBNAME:=lib$(pkg)-$($(PKG)_LIB_VERSION).so
 $(PKG)_BUILD_SUBDIR:=build_unix

@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://www.unbound.net/downloads
 ### CVSREPO:=https://github.com/NLnetLabs/unbound
 ### STEWARD:=fda77
 
-$(PKG)_CATEGORY_LIBS:=Networking
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 
 $(PKG)_STARTLEVEL=40 # multid-wrapper may start it earlier!
 

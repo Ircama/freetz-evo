@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/thom311/libnl/releases/download/libnl3_11_0
 ### CHANGES:=https://github.com/thom311/libnl/releases
 ### CVSREPO:=https://github.com/thom311/libnl
 
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
+
 $(PKG)_LIBNAMES_SHORT := nl-3 nl-cli-3 nl-genl-3 nl-nf-3 nl-route-3
 $(PKG)_LIBNAMES_LONG := $($(PKG)_LIBNAMES_SHORT:%=lib%.so.$($(PKG)_LIB_VERSION))
 $(PKG)_LIBS_BUILD_DIR := \

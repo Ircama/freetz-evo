@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://www.openldap.org/software/download/OpenLDAP/openldap-releas
 ### CHANGES:=https://www.openldap.org/software/release/changes.html
 ### CVSREPO:=https://git.openldap.org/openldap/openldap
 
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
+
 $(PKG)_LIBS := $(if $(FREETZ_LIB_liblber),liblber.so.$($(PKG)_LIB_VERSION)) $(if $(FREETZ_LIB_libldap),libldap.so.$($(PKG)_LIB_VERSION))
 $(PKG)_LIBS_BUILD_DIR := \
 	$($(PKG)_DIR)/libraries/liblber/.libs/liblber.so.$($(PKG)_LIB_VERSION) \

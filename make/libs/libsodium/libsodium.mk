@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://download.libsodium.org/libsodium/releases
 ### CHANGES:=https://github.com/jedisct1/libsodium/releases
 ### CVSREPO:=https://github.com/jedisct1/libsodium
 
+$(PKG)_CATEGORY_LIBS:=Crypto & SSL##Misc
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libsodium/.libs/libsodium.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libsodium.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libsodium.so.$($(PKG)_LIB_VERSION)

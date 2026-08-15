@@ -5,6 +5,8 @@ $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
 ### WEBSITE:=https://www.x.org/
 
 # Header-only package, no shared library
+
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/include/X11/Xtrans/Xtrans.h
 
 $(PKG)_DEPENDS_ON += util-macros

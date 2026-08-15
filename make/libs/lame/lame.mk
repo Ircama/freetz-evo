@@ -5,6 +5,8 @@ $(PKG)_SITE:=https://downloads.sourceforge.net/project/lame/lame/$($(PKG)_VERSIO
 ### WEBSITE:=https://lame.sourceforge.io/
 
 $(PKG)_LIB_VERSION:=0.0.0
+
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libmp3lame/.libs/libmp3lame.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmp3lame.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmp3lame.so.$($(PKG)_LIB_VERSION)

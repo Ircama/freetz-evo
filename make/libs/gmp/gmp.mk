@@ -6,7 +6,7 @@ $(PKG)_SITE:=$(GMP_HOST_SITE)
 ### VERSION:=6.3.0
 ### STEWARD:=X
 
-$(PKG)_CATEGORY_LIBS:=Arithmetic
+$(PKG)_CATEGORY_LIBS:=Multi precision arithmetic libs
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libgmp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libgmp.so.$($(PKG)_LIB_VERSION)

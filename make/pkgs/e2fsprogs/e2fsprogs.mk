@@ -8,7 +8,7 @@ $(PKG)_SITE:=@SF/e2fsprogs,@KERNEL/linux/kernel/people/tytso/e2fsprogs/v$($(PKG)
 ### CHANGES:=https://e2fsprogs.sourceforge.net/e2fsprogs-release.html
 ### CVSREPO:=https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git
 
-$(PKG)_CATEGORY_LIBS:=File systems##E2fsprogs
+$(PKG)_CATEGORY_LIBS:=File systems
 
 $(PKG)_LIBNAMES_SHORT_ALL := com_err e2p ext2fs ss uuid
 $(PKG)_LIBNAMES_SHORT :=

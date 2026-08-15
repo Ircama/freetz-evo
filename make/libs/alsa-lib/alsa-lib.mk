@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://www.alsa-project.org/files/pub/lib
 ### WEBSITE:=https://www.alsa-project.org/wiki/Main_Page
 ### CHANGES:=https://www.alsa-project.org/wiki/Detailed_changes_v1.2.12_v1.2.13
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio I/O
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libasound.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libasound.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libasound.so.$($(PKG)_LIB_VERSION)

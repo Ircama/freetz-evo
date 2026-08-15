@@ -7,6 +7,7 @@ $(PKG)_HASH:=39cbd4f0efdfddc9755d88217e47f8f2d7108fa767f9d58a2ba26a16d8f7c910
 $(PKG)_SITE:=https://downloads.xiph.org/releases/libshout
 ### WEBSITE:=https://icecast.org/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libshout.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libshout.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libshout.so.$($(PKG)_LIB_VERSION)

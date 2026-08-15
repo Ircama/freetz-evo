@@ -5,6 +5,8 @@ $(PKG)_HASH:=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc
 $(PKG)_SITE:=https://downloads.xiph.org/releases/theora
 ### WEBSITE:=https://www.theora.org/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Video codecs
+
 # Three libraries: main (SO 0.3.10), decoder (SO 1.1.4), encoder (SO 1.1.2, stub if --disable-encode)
 $(PKG)_LIBVERSIONS      := 0.3.10 1.1.4 1.1.2
 $(PKG)_LIBNAMES_SHORT   := theora theoradec theoraenc

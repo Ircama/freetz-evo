@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/MediaArea/ZenLib/archive/refs/tags
 ### CHANGES:=https://github.com/MediaArea/ZenLib/releases
 ### CVSREPO:=https://github.com/MediaArea/ZenLib
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Media analysis libraries
 $(PKG)_BINARY:=$($(PKG)_DIR)/Project/GNU/Library/.libs/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

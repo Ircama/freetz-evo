@@ -6,6 +6,7 @@ $(PKG)_HASH:=87b2c17fe0c979d3ef38eeceff6362b35b28ac8589fbf1854b5be75c9ab6557c
 $(PKG)_SITE:=https://sourceforge.net/projects/mpg123/files/mpg123/$($(PKG)_VERSION)
 ### WEBSITE:=https://www.mpg123.de/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libmpg123/.libs/libmpg123.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmpg123.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmpg123.so.$($(PKG)_LIB_VERSION)

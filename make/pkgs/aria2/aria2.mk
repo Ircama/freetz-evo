@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://github.com/aria2/aria2/releases/download/release-$($(PKG)_V
 ### SUPPORT:=Ircama
 ### STEWARD:=Ircama
 
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
+
 $(PKG)_BINARIES := aria2c
 # aria2 uses libtool; src/aria2c is a shell wrapper and the real ELF is in src/.libs/aria2c
 $(PKG)_BINARIES_BUILD_DIR := $($(PKG)_DIR)/src/.libs/aria2c

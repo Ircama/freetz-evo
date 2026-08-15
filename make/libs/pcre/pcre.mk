@@ -6,7 +6,7 @@ $(PKG)_SITE:=@SF/pcre,ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre
 ### MANPAGE:=https://www.pcre.org/original/doc/html/
 ### CHANGES:=https://www.pcre.org/original/changelog.txt
 
-$(PKG)_CATEGORY_LIBS:=Regular expressions##PCRE
+$(PKG)_CATEGORY_LIBS:=Regular expressions
 
 $(PKG)_LIB_VERSION:=1.2.13
 $(PKG)_LIBNAME=libpcre.so.$($(PKG)_LIB_VERSION)

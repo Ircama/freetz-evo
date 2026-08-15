@@ -16,6 +16,7 @@ $(PKG)_SITE:=https://github.com/dirkvdb/ffmpegthumbnailer/archive/refs/tags
 ### CHANGES:=https://github.com/dirkvdb/ffmpegthumbnailer/releases
 ### CVSREPO:=https://github.com/dirkvdb/ffmpegthumbnailer
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio and video codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libffmpegthumbnailer.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libffmpegthumbnailer.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libffmpegthumbnailer.so.$($(PKG)_LIB_VERSION)

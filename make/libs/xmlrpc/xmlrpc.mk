@@ -9,6 +9,8 @@ $(PKG)_DIR:=$(SOURCE_DIR)/xmlrpc-$($(PKG)_VERSION)
 ### CVSREPO:=https://sourceforge.net/p/xmlrpc-c/code/
 ### SUPPORT:=Ircama
 
+$(PKG)_CATEGORY_LIBS:=XML & XSLT
+
 # xmlrpc-c provides multiple libraries
 $(PKG)_LIBS_SHORT := xmlrpc xmlrpc_server xmlrpc_server_abyss xmlrpc_server_cgi xmlrpc_client xmlrpc_abyss xmlrpc_util xmlrpc_xmlparse xmlrpc_xmltok
 

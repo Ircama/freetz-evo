@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://ftp.gnu.org/gnu/libunistring
 ### CHANGES:=https://ftp.gnu.org/gnu/libunistring/
 ### CVSREPO:=https://git.savannah.gnu.org/git/libunistring.git
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/.libs/libunistring.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libunistring.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libunistring.so.$($(PKG)_LIB_VERSION)

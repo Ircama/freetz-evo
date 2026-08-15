@@ -7,6 +7,7 @@ $(PKG)_HASH:=051b8c51699af594ddd3e4e3b06bad3564e9499c3c6b9e6f880cb2f92bcfa9c8
 $(PKG)_SITE:=https://github.com/Mindwerks/wildmidi/archive/refs/tags
 ### WEBSITE:=https://github.com/Mindwerks/wildmidi
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libWildMidi.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libWildMidi.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libWildMidi.so.$($(PKG)_LIB_VERSION)

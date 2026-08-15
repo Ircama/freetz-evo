@@ -6,7 +6,7 @@ $(PKG)_SITE:=$(MPC_HOST_SITE)
 ### VERSION:=1.4.1
 ### STEWARD:=X
 
-$(PKG)_CATEGORY_LIBS:=Arithmetic
+$(PKG)_CATEGORY_LIBS:=Multi precision arithmetic libs
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libmpc.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmpc.so.$($(PKG)_LIB_VERSION)

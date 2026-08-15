@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://www.ffmpeg.org/releases
 ### CHANGES:=https://www.ffmpeg.org/index.html#news
 ### CVSREPO:=https://git.ffmpeg.org/ffmpeg.git
 
-$(PKG)_CATEGORY_LIBS:=Multimedia##FFmpeg
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio and video codecs
 
 $(PKG)_DEPENDS_ON += zlib
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_FFMPEG_DECODER_libopenjpeg),openjpeg)

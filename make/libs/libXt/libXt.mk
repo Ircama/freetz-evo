@@ -3,6 +3,8 @@ $(PKG)_LIB_VERSION:=6.0.0
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH:=52820b3cdb827d08dc90bdfd1b0022a3ad8919b57a39808b12591973b331bf91
 $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/lib
+
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libXt.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libXt.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libXt.so.$($(PKG)_LIB_VERSION)

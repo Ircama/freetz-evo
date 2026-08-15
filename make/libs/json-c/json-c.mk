@@ -11,6 +11,8 @@ $(PKG)_SITE:=https://github.com/json-c/json-c/archive/refs/tags
 ### CVSREPO:=https://github.com/json-c/json-c
 
 $(PKG)_LIBNAME:=libjson-c.so.$($(PKG)_SHLIB_VERSION)
+
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 $(PKG)_BINARY:=$($(PKG)_DIR)/$($(PKG)_LIBNAME)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$($(PKG)_LIBNAME)

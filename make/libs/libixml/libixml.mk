@@ -8,6 +8,7 @@ $(PKG)_LIB_VERSION:=11.1.7
 # libixml is part of libupnp, built from the same source
 $(PKG)_DEPENDS_ON += libupnp
 
+$(PKG)_CATEGORY_LIBS:=Multimedia
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libixml.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libixml.so.$($(PKG)_LIB_VERSION)
 

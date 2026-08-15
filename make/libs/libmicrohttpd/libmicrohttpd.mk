@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://ftp.gnu.org/gnu/libmicrohttpd
 ### WEBSITE:=https://www.gnu.org/software/libmicrohttpd/
 ### CHANGES:=https://ftp.gnu.org/gnu/libmicrohttpd/
 
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/microhttpd/.libs/libmicrohttpd.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmicrohttpd.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmicrohttpd.so.$($(PKG)_LIB_VERSION)

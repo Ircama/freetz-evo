@@ -19,6 +19,7 @@ $(PKG)_SITE:=https://github.com/unicode-org/icu/releases/download/release-$(subs
 # ICU produces multiple shared libraries; define a list for automated install.
 $(PKG)_ICU_LIBS := libicudata libicui18n libicuio libicuuc
 
+$(PKG)_CATEGORY_LIBS:=Charsets & Internationalization
 $(PKG)_BINARY:=$($(PKG)_DIR)/source/lib/libicui18n.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libicui18n.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARIES := $($(PKG)_ICU_LIBS:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%.so.$($(PKG)_LIB_VERSION))

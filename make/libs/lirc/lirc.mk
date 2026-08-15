@@ -6,6 +6,8 @@ $(PKG)_SITE:=https://sourceforge.net/projects/lirc/files/LIRC/$($(PKG)_VERSION)
 ### CHANGES:=https://sourceforge.net/projects/lirc/files/LIRC/
 
 $(PKG)_LIB_VERSION:=0.6.0
+
+$(PKG)_CATEGORY_LIBS:=Multimedia
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/.libs/liblirc_client.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblirc_client.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/liblirc_client.so.$($(PKG)_LIB_VERSION)

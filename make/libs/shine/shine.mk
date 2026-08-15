@@ -7,6 +7,7 @@ $(PKG)_HASH:=565b87867d6f8e6616a236445d194e36f4daa9b4e7af823fcf5010af7610c49e
 $(PKG)_SITE:=https://github.com/toots/shine/archive/refs/tags
 ### WEBSITE:=https://github.com/toots/shine
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libshine.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libshine.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libshine.so.$($(PKG)_LIB_VERSION)

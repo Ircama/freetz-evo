@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://github.com/LMDB/lmdb/archive/refs/tags
 ### CHANGES:=https://github.com/LMDB/lmdb/releases
 ### CVSREPO:=https://github.com/LMDB/lmdb
 
+$(PKG)_CATEGORY_LIBS:=Database
 $(PKG)_BINARY:=$($(PKG)_DIR)/libraries/liblmdb/liblmdb.so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/liblmdb.so
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/liblmdb.so

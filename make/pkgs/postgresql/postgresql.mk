@@ -13,6 +13,8 @@ $(PKG)_SITE:=https://ftp.postgresql.org/pub/source/v$($(PKG)_VERSION)
 ### CHANGES:=https://www.postgresql.org/docs/release/
 ### CVSREPO:=https://git.postgresql.org/gitweb/?p=postgresql.git
 
+$(PKG)_CATEGORY_LIBS:=Database
+
 $(PKG)_LIB:=libpq.so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_BUILD_DIR:=$($(PKG)_DIR)/src/interfaces/libpq/$($(PKG)_LIB)
 $(PKG)_LIB_STAGING_DIR:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIB)

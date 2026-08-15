@@ -13,6 +13,7 @@ $(PKG)_SITE:=https://github.com/Matroska-Org/libmatroska/archive/refs/tags
 ### CHANGES:=https://github.com/Matroska-Org/libmatroska/releases
 ### CVSREPO:=https://github.com/Matroska-Org/libmatroska
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Multimedia container libs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libmatroska.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmatroska.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmatroska.so.$($(PKG)_LIB_VERSION)

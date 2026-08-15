@@ -14,6 +14,7 @@ $(PKG)_SITE:=https://www.lesbonscomptes.com/upmpdcli/downloads
 ### CHANGES:=https://framagit.org/medoc92/npupnp
 ### CVSREPO:=https://framagit.org/medoc92/npupnp
 
+$(PKG)_CATEGORY_LIBS:=Multimedia
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/libnpupnp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libnpupnp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libnpupnp.so.$($(PKG)_LIB_VERSION)

@@ -6,6 +6,7 @@ $(PKG)_HASH:=d945cb4f4c8f82ee1f3640893a168810f794a28e1010bb007ec5add345e9df3e
 $(PKG)_SITE:=https://github.com/sahlberg/libnfs/archive/refs/tags
 ### WEBSITE:=https://github.com/sahlberg/libnfs
 
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/libnfs.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libnfs.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libnfs.so.$($(PKG)_LIB_VERSION)

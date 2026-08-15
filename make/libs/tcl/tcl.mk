@@ -7,6 +7,7 @@ $(PKG)_SITE:=https://prdownloads.sourceforge.net/tcl
 ### CHANGES:=https://core.tcl-lang.org/tcl/timeline
 ### CVSREPO:=https://core.tcl-lang.org/tcl
 
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/unix/libtcl$(TCL_LIB_VERSION).so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtcl$(TCL_LIB_VERSION).so
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libtcl$(TCL_LIB_VERSION).so

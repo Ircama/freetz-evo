@@ -5,6 +5,8 @@ $(PKG)_SITE:=https://xorg.freedesktop.org/archive/individual/proto
 ### WEBSITE:=https://www.x.org/
 
 # Header-only package, no shared library
+
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/xcb/xcb.xsd
 
 $(PKG)_DEPENDS_ON += util-macros

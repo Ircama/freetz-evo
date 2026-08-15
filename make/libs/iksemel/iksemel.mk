@@ -5,7 +5,7 @@ $(PKG)_HASH:=26c1c01cb881424c08f2374452602c5abbeae218bb2ad77ec4f0f2a088549001
 $(PKG)_SITE:=https://github.com/timothytylee/iksemel-1.4/archive/refs/tags
 ### VERSION:=1.4.2
 
-$(PKG)_CATEGORY_LIBS:=Networking
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/lib$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/lib/lib$(pkg).so.$($(PKG)_LIB_VERSION)

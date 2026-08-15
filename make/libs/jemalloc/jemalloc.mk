@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/jemalloc/jemalloc/releases/download/$($(PKG)_VER
 ### CHANGES:=https://github.com/jemalloc/jemalloc/releases
 ### CVSREPO:=https://github.com/jemalloc/jemalloc
 
+$(PKG)_CATEGORY_LIBS:=Memory allocators
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/libjemalloc.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libjemalloc.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libjemalloc.so.$($(PKG)_LIB_VERSION)

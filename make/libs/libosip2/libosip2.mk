@@ -4,7 +4,7 @@ $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=dd955daa24d9ce2de6709b8c13e7c04ebc3afa8ac094d6a15a02a075be719a91
 $(PKG)_SITE:=@GNU/osip
 
-$(PKG)_CATEGORY_LIBS:=Networking
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/osip2/.libs/libosip2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libosip2.so.$($(PKG)_LIB_VERSION)

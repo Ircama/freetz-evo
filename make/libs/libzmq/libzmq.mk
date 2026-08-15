@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/zeromq/libzmq/releases/download/v$($(PKG)_VERSIO
 ### CHANGES:=https://github.com/zeromq/libzmq/releases
 ### CVSREPO:=https://github.com/zeromq/libzmq
 
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libzmq.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libzmq.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libzmq.so.$($(PKG)_LIB_VERSION)

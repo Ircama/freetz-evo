@@ -6,6 +6,7 @@ $(PKG)_HASH:=6eceff4526bd717c6956b3d49459e13b4cfcfe35781cf09a271790e4ace7315f
 $(PKG)_SITE:=https://gitlab.xiph.org/xiph/tremor/-/archive/master
 ### WEBSITE:=https://wiki.xiph.org/Tremor
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libvorbisidec.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libvorbisidec.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libvorbisidec.so.$($(PKG)_LIB_VERSION)

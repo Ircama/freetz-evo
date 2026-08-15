@@ -12,6 +12,7 @@ $(PKG)_SITE:=https://github.com/pupnp/pupnp/releases/download/release-$($(PKG)_V
 ### CHANGES:=https://github.com/pupnp/pupnp/releases
 ### CVSREPO:=https://github.com/pupnp/pupnp
 
+$(PKG)_CATEGORY_LIBS:=Multimedia
 $(PKG)_BINARY:=$($(PKG)_DIR)/upnp/libupnp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libupnp.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libupnp.so.$($(PKG)_LIB_VERSION)

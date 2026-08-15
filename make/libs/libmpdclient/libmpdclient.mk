@@ -9,6 +9,7 @@ $(PKG)_SITE:=https://www.musicpd.org/download/libmpdclient/2
 ### CVSREPO:=https://github.com/MusicPlayerDaemon/libmpdclient
 ### PKGSITE:=https://github.com/Ircama/freetz-evo/tree/master/make/libs/libmpdclient/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmpdclient.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libmpdclient.so.$($(PKG)_LIB_VERSION)
 

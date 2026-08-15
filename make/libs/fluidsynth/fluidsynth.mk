@@ -7,6 +7,7 @@ $(PKG)_HASH:=f89e8e983ecfb4a5b4f5d8c2b9157ed18d15ed2e36246fa782f18abaea550e0d
 $(PKG)_SITE:=https://github.com/FluidSynth/fluidsynth/archive/refs/tags
 ### WEBSITE:=https://www.fluidsynth.org/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libfluidsynth.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libfluidsynth.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libfluidsynth.so.$($(PKG)_LIB_VERSION)

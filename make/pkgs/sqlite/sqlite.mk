@@ -19,7 +19,7 @@ $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),AB
 ### CVSREPO:=https://www.sqlite.org/src/timeline
 ### STEWARD:=fda77
 
-$(PKG)_CATEGORY_LIBS:=Databases
+$(PKG)_CATEGORY_LIBS:=Database
 
 ifeq ($(strip $(FREETZ_PACKAGE_SQLITE_WITH_READLINE)),y)
 $(PKG)_DEPENDS_ON += readline

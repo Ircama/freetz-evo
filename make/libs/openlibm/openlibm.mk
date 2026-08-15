@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/JuliaMath/openlibm/archive/refs/tags
 ### CHANGES:=https://github.com/JuliaMath/openlibm/releases
 ### CVSREPO:=https://github.com/JuliaMath/openlibm
 
+$(PKG)_CATEGORY_LIBS:=Multi precision arithmetic libs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libopenlibm.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libopenlibm.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libopenlibm.so.$($(PKG)_LIB_VERSION)

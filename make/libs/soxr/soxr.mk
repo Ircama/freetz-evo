@@ -6,6 +6,7 @@ $(PKG)_HASH:=b111c15fdc8c029989330ff559184198c161100a59312f5dc19ddeb9b5a15889
 $(PKG)_SITE:=https://sourceforge.net/projects/soxr/files
 ### WEBSITE:=https://sourceforge.net/projects/soxr/
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/libsoxr.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libsoxr.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libsoxr.so.$($(PKG)_LIB_VERSION)

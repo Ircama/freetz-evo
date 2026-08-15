@@ -14,6 +14,7 @@ $(PKG)_SITE:=https://github.com/Exiv2/exiv2/archive/refs/tags
 ### CHANGES:=https://github.com/Exiv2/exiv2/releases
 ### CVSREPO:=https://github.com/Exiv2/exiv2
 
+$(PKG)_CATEGORY_LIBS:=Graphics & fonts
 $(PKG)_BINARY:=$($(PKG)_DIR)/lib/libexiv2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libexiv2.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libexiv2.so.$($(PKG)_LIB_VERSION)

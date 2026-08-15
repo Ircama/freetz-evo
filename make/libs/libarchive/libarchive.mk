@@ -8,6 +8,7 @@ $(PKG)_SITE:=https://github.com/libarchive/libarchive/releases/download/v$($(PKG
 ### CHANGES:=https://github.com/libarchive/libarchive/releases
 ### CVSREPO:=https://github.com/libarchive/libarchive
 
+$(PKG)_CATEGORY_LIBS:=Data compression
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libarchive.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libarchive.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libarchive.so.$($(PKG)_LIB_VERSION)

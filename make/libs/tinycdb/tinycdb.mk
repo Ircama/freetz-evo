@@ -5,6 +5,7 @@ $(PKG)_HASH:=469de2d445bf54880f652f4b6dc95c7cdf6f5502c35524a45b2122d70d47ebc2
 $(PKG)_SITE:=https://www.corpit.ru/mjt/tinycdb
 ### WEBSITE:=https://www.corpit.ru/mjt/tinycdb.html
 
+$(PKG)_CATEGORY_LIBS:=Database
 $(PKG)_BINARY:=$($(PKG)_DIR)/libcdb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcdb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libcdb.so.$($(PKG)_LIB_VERSION)

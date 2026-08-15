@@ -8,7 +8,7 @@ $(PKG)_SITE:=@GNU/$(pkg)
 ### CHANGES:=https://git.savannah.gnu.org/gitweb/?p=libidn.git;a=blob_plain;f=NEWS;hb=HEAD
 ### CVSREPO:=https://git.savannah.gnu.org/gitweb/?p=libidn.git
 
-$(PKG)_CATEGORY_LIBS:=Web & WebDAV
+$(PKG)_CATEGORY_LIBS:=Web and WebDAV
 
 $(PKG)_LIBNAME_SHORT := $(pkg)
 $(PKG)_BINARY:=$($(PKG)_DIR)/$(pkg).so.$($(PKG)_LIB_VERSION)

@@ -9,6 +9,8 @@ $(PKG)_SITE:=https://github.com/c-ares/c-ares/releases/download/v$($(PKG)_VERSIO
 ### CVSREPO:=https://github.com/c-ares/c-ares.git
 ### SUPPORT:=Ircama
 
+$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
+
 $(PKG)_LIBNAMES_SHORT   := libcares
 $(PKG)_LIBNAMES_LONG    := $($(PKG)_LIBNAMES_SHORT:%=%.so.$($(PKG)_LIB_VERSION))
 $(PKG)_LIBS_BUILD_DIR   := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_DIR)/src/lib/.libs/%)

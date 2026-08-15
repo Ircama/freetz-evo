@@ -6,6 +6,7 @@ $(PKG)_HASH:=72dbc0494de9ee38d240f670eccf2b10ef715fd0508c305532ca3def3225bb06
 $(PKG)_SITE:=https://github.com/knik0/faad2/archive/refs/tags
 ### WEBSITE:=https://github.com/knik0/faad2
 
+$(PKG)_CATEGORY_LIBS:=Multimedia##Audio codecs
 $(PKG)_BINARY:=$($(PKG)_DIR)/libfaad.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libfaad.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libfaad.so.$($(PKG)_LIB_VERSION)

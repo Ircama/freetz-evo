@@ -12,7 +12,7 @@ $(PKG)_SITE:=https://download.gnome.org/sources/glib/$(call GET_MAJOR_VERSION,$(
 ### CHANGES:=https://gitlab.gnome.org/GNOME/glib/blob/main/NEWS
 ### CVSREPO:=https://gitlab.gnome.org/GNOME/glib
 
-$(PKG)_CATEGORY_LIBS:=libc##GLib2
+$(PKG)_CATEGORY_LIBS:=libc
 
 $(PKG)_LIBNAMES_SHORT := glib gio gobject gmodule gthread $(if $(FREETZ_LIB_libglib_2_WITH_VERSION_ABANDON),,girepository)
 $(PKG)_LIBNAMES_LONG := $($(PKG)_LIBNAMES_SHORT:%=lib%-$($(PKG)_MAJOR_VERSION).so.$($(PKG)_LIB_VERSION))

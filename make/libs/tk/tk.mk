@@ -6,6 +6,7 @@ $(PKG)_SITE:=https://prdownloads.sourceforge.net/tcl
 ### WEBSITE:=https://www.tcl.tk/
 ### CHANGES:=https://core.tcl-lang.org/tk/timeline
 
+$(PKG)_CATEGORY_LIBS:=X11 graphics
 $(PKG)_BINARY:=$($(PKG)_DIR)/unix/libtk$(TK_LIB_VERSION).so
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtk$(TK_LIB_VERSION).so
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libtk$(TK_LIB_VERSION).so

@@ -9,7 +9,7 @@ $(PKG)_SITE:=https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$($(P
 ### CHANGES:=https://github.com/PCRE2Project/pcre2/blob/master/ChangeLog
 ### CVSREPO:=https://github.com/PCRE2Project/pcre2
 
-$(PKG)_CATEGORY_LIBS:=Regular expressions##PCRE2
+$(PKG)_CATEGORY_LIBS:=Regular expressions
 
 $(PKG)_LIBNAME=libpcre2-8.so.$($(PKG)_LIB_VERSION)
 $(PKG)_BINARY:=$($(PKG)_DIR)/.libs/$($(PKG)_LIBNAME)
