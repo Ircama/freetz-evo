@@ -46,6 +46,11 @@ $(PKG)_CFLAGS_EXTRA+=$(if $(FREETZ_PACKAGE_MICROPYTHON_BTREE),,-DMICROPY_PY_BTRE
 # --- Dependencies -------------------------------------------------------------
 
 $(PKG)_DEPENDS_ON+=$(if $(FREETZ_PACKAGE_MICROPYTHON_READLINE),ncurses readline)
+# The unix port only adds -lffi when pkg-config finds libffi.pc, which is NOT
+# the case in the freetz build environment (the generic tools/path/pkg-config
+# does not see the staging dir). So link against the freetz-packaged libffi
+# explicitly when the FFI module is enabled (see LDFLAGS_EXTRA below).
+$(PKG)_DEPENDS_ON+=$(if $(FREETZ_PACKAGE_MICROPYTHON_FFI),libffi)
 
 # --- Rebuild subopts (binary-affecting options) --------------------------------
 
@@ -215,7 +220,7 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		AR="$(TARGET_AR)" \
 		STRIP="$(TARGET_STRIP)" \
 		CFLAGS_EXTRA="$(MICROPYTHON_CFLAGS_EXTRA)" \
-		LDFLAGS_EXTRA="$(TARGET_LDFLAGS)" \
+		LDFLAGS_EXTRA="$(TARGET_LDFLAGS) $(if $(FREETZ_PACKAGE_MICROPYTHON_FFI),-lffi)" \
 		VARIANT=$(MICROPYTHON_VARIANT) \
 		BUILD=build-freetz \
 		FROZEN_MANIFEST="" \

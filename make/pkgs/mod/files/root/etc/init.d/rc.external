@@ -115,6 +115,21 @@ start_deferred_services() {
 start() {
 	log -x "Starting external ($EXTERNAL_DIRECTORY):"
 
+	# Serialize concurrent starts (e.g. from parallel udev-mount-sd triggers) and
+	# make start idempotent so the external system, its services and any custom
+	# hook (e.g. /tmp/flash/mod/rc.external) are never started twice.
+	if command -v flock >/dev/null 2>&1; then
+		exec 9>/var/run/rc.external.lock
+		flock -n 9 2>/dev/null || {
+			log "Another rc.external start is already running, skipping."
+			exit 0
+		}
+	fi
+	if status && [ -s /mod/etc/external.pkg ]; then
+		log "External is already running, skipping duplicate start."
+		exit 0
+	fi
+
 	# wait until it's external's turn
 	if [ ! -e /tmp/.mod.started ] || onlinechanged_busy; then
 		log -n "Waiting for mod-startup:"

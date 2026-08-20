@@ -33,29 +33,6 @@ PYTHON3_UV_CARGO_HOME:=$(PYTHON3_UV_WORKDIR)/.cargo
 PYTHON3_UV_RUSTUP_HOME:=$(HOME)/.rustup
 PYTHON3_UV_XDG_CACHE_HOME:=$(PYTHON3_UV_WORKDIR)/.cache
 
-define PYTHON3_UV_GETRANDOM_033_BACKEND_GLOB__INT
-$$HOME/.cargo/registry/src/*/getrandom-0.3.3/src/backends/getrandom.rs
-endef
-
-define PYTHON3_UV_APPLY_GETRANDOM_033_UCLIBC_PATCH__INT
-for getrandom_src in $(call PYTHON3_UV_GETRANDOM_033_BACKEND_GLOB__INT); do \
-	[ -f "$$getrandom_src" ] || continue; \
-	grep -q 'Freetz uClibc' "$$getrandom_src" && continue; \
-	perl -0pi -e 's@util_libc::sys_fill_exact\(dest, \|buf\| unsafe \{\n        libc::getrandom\(buf\.as_mut_ptr\(\)\.cast\(\), buf\.len\(\), 0\)\n    \}\)@util_libc::sys_fill_exact(dest, |buf| unsafe {\n        // Freetz uClibc mips syscall fallback for missing libc::getrandom\n        {\n            #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n            let ret = libc::syscall(\n                libc::SYS_getrandom,\n                buf.as_mut_ptr() as *mut libc::c_void,\n                buf.len(),\n                0,\n            ) as libc::ssize_t;\n            #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n            let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);\n            ret\n        }\n    })@s' "$$getrandom_src"; \
-done;
-endef
-
-define PYTHON3_UV_SOCKET2_063_SRC_GLOB__INT
-$$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs
-endef
-
-define PYTHON3_UV_APPLY_SOCKET2_063_UCLIBC_PATCH__INT
-for socket2_src in $(call PYTHON3_UV_SOCKET2_063_SRC_GLOB__INT); do \
-	[ -f "$$socket2_src" ] || continue; \
-	sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
-done;
-endef
-
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/uv/__init__.py
 
 $(PKG_SOURCE_DOWNLOAD)
@@ -77,8 +54,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		> "$$CARGO_HOME/config.toml"; \
 	RUST_TARGET_PATH="$(FREETZ_BASE_DIR)/toolchain/rust/targets" cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(PYTHON3_UV_RUST_TARGET_DIR)"; \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
-	$(call PYTHON3_UV_APPLY_GETRANDOM_033_UCLIBC_PATCH__INT) \
-	$(call PYTHON3_UV_APPLY_SOCKET2_063_UCLIBC_PATCH__INT) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
+	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.1) \
 	$(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,0.31.2) \
 	$(if $(PYTHON3_UV_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \

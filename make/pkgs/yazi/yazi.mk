@@ -40,6 +40,11 @@ $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
 	export CARGO_HOME="$(YAZI_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	export RUSTFLAGS="-C link-arg=-Wl,-no-pie"; \
+	# tikv-jemalloc-sys spawns a nested `make` from its build script; the MAKEFLAGS \
+	# inherited from the freetz envira wrapper may carry `-j`/--jobserver-* AFTER the \
+	# `--` separator, which the nested make treats as a target ("No rule to make \
+	# target '-j'"). Drop MAKEFLAGS so nested makes run without the broken flags. ;\
+	unset MAKEFLAGS; \
 	mkdir -p "$$CARGO_HOME"; \
 	# Fetch all deps so we can patch source files before build ;\
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(YAZI_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
@@ -51,16 +56,9 @@ $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	# Apply socket2 IPV6_TRANSPARENT fix for uClibc ;\
-	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs; do \
-		[ -f "$$socket2_src" ] || continue; \
-		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
-		echo "Patched socket2: $$socket2_src" >&2; \
-	done; \
+	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	# Apply AtomicU64→Mutex fix for async-priority-channel dependency ;\
-	for apc_src in $$HOME/.cargo/registry/src/*/async-priority-channel-0.2.0/src/awaitable_atomics.rs; do \
-		[ -f "$$apc_src" ] || continue; \
-		python3 -c "import re,sys;c=open(sys.argv[1]).read();c=c.replace('sync::atomic::{AtomicU64, Ordering}','sync::Mutex');c=c.replace('value: AtomicU64,','value: Mutex<u64>,');c=c.replace('value: AtomicU64::new(value),','value: Mutex::new(value),');c=c.replace('self.value.fetch_or(U64_TOP_BIT_MASK, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior | U64_TOP_BIT_MASK; prior }');c=c.replace('self.value.fetch_add(n, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior + n; prior }');c=c.replace('self.value.fetch_sub(1, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior - 1; prior }');c=c.replace('self.value.load(Ordering::SeqCst)','*self.value.lock().unwrap()');open(sys.argv[1],'w').write(c);print('Patched async-priority-channel')" "$$apc_src"; \
-	done; \
+	$(call ASYNC_PRIORITY_CHANNEL_APPLY_ATOMICU64_MUTEX_FALLBACK__INT) \
 	# Apply AtomicU64→AtomicU32 fix for yazi workspace (MIPS uClibc has no AtomicU64) ;\
 	python3 "$(YAZI_PKG_DIR)/patches/patch-yazi-shared-atomic64.py" && \
 	echo "Patched yazi-shared AtomicU64 -> AtomicU32/Mutex" >&2; \

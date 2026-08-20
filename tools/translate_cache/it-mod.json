@@ -3680,5 +3680,26 @@
     "timestamp": "2026-07-12T19:24:22Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:AVM Packet Accelerator (global)": {
+    "original": "AVM Packet Accelerator (global)",
+    "translation": "AVM Packet Accelerator (globale)",
+    "timestamp": "2026-08-20T04:29:44Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:AVM Packet Accelerator (Layer 2)": {
+    "original": "AVM Packet Accelerator (Layer 2)",
+    "translation": "AVM Packet Accelerator (Livello 2)",
+    "timestamp": "2026-08-20T04:29:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:AVM Packet Accelerator (Hardware)": {
+    "original": "AVM Packet Accelerator (Hardware)",
+    "translation": "AVM Packet Accelerator (Hardware)",
+    "timestamp": "2026-08-20T04:29:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

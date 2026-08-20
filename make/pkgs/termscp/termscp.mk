@@ -56,29 +56,19 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	echo "Patched termscp Cargo.toml: removed smb from default features" >&2; \
 	# Fetch all deps ;\
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(TERMSCP_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
+	# Patch ssh2-config: remove git2 build-dep (forces HOST openssl-sys failure);\
+	$(call SSH2_CONFIG_APPLY_UCLIBC_GIT2_PATCH__INT) \
 	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
 	# Apply source patches after fetch extracted everything ;\
-	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs $$HOME/.cargo/registry/src/*/socket2-0.6.4/src/socket.rs; do \
-		[ -f "$$socket2_src" ] || continue; \
-		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
-		echo "Patched socket2: $$socket2_src" >&2; \
-	done; \
+	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
 	# Patch russh-sftp to replace AtomicU64 with AtomicU32 (not available on MIPS uClibc);\
-	for russh_sftp_src in $$HOME/.cargo/registry/src/*/russh-sftp-*/src/client/rawsession.rs; do \
-		[ -f "$$russh_sftp_src" ] || continue; \
-		chmod u+w "$$russh_sftp_src"; \
-		python3 -c "import re,sys;c=open(sys.argv[1]).read();c=c.replace('atomic::{AtomicU32, AtomicU64, Ordering}','atomic::{AtomicU32, Ordering}');c=c.replace('AtomicU64','AtomicU32');c=re.sub(r'\.store\(([a-zA-Z_][a-zA-Z_0-9.]+), Ordering::(\w+)\)',r'.store(\1 as u32, Ordering::\2)',c);c=re.sub(r'(self\.(?:handles|timeout))\.load\((Ordering::\w+)\)',r'u64::from(\1.load(\2))',c);c=re.sub(r'AtomicU32::new\(([a-zA-Z_][a-zA-Z_0-9.]+)\)',r'AtomicU32::new(\1 as u32)',c);open(sys.argv[1],'w').write(c);print('Patched russh-sftp')" "$$russh_sftp_src"; \
-	done; \
-	# Patch nucleo to replace AtomicU64 with AtomicUsize (not available on MIPS uClibc);\
-	for nucleo_src in $$HOME/.cargo/registry/src/*/nucleo-*/src/boxcar.rs; do \
-		[ -f "$$nucleo_src" ] || continue; \
-		chmod u+w "$$nucleo_src"; \
-		python3 -c "import re,sys;f=sys.argv[1];c=open(f).read();c=c.replace('atomic::{AtomicBool, AtomicPtr, AtomicU64, Ordering}','atomic::{AtomicBool, AtomicPtr, AtomicU32, Ordering}');c=c.replace('AtomicU64','AtomicU32');c=re.sub(r'((?:self\.(?:vec\.)?)inflight)\.load\(Ordering::(\w+)\)',r'u64::from(\1.load(Ordering::\2))',c);c=re.sub(r'\.min\(MAX_ENTRIES as u64\) as u32',r'.min(MAX_ENTRIES as u32)',c);open(f,'w').write(c);print('Patched nucleo')" "$$nucleo_src"; \
-	done; \
+	$(call RUSSH_SFTP_APPLY_ATOMICU64_FALLBACK__INT) \
+	# Patch nucleo to replace AtomicU64 with AtomicU32 (not available on MIPS uClibc);\
+	$(call NUCLEO_APPLY_ATOMICU64_FALLBACK__INT) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie"]\n' \
 		"$(TERMSCP_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
@@ -86,6 +76,8 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 		> "$$CARGO_HOME/config.toml"; \
 	echo "CARGO_HOME=$$CARGO_HOME" >&2; \
 	cat "$$CARGO_HOME/config.toml" >&2; \
+	# Point cargo at the patched ssh2-config via [patch.crates-io] and re-resolve the lock ;\
+	$(call SSH2_CONFIG_APPLY_PATCH_CRATES_IO__INT) \
 	# Patch openssl-src to recognize armv7-unknown-linux-uclibceabi -> linux-armv4 ;\
 	$(OPENSSL_SRC_APPLY_UCLIBC_ARM_PATCH__INT) \
 	$(TERMSCP_CARGO_BUILD_CMD) --target "$(TERMSCP_RUST_TARGET_ARG)" --bin termscp

@@ -134,6 +134,7 @@ endef
 define GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT
 for getrandom_src in $(call GETRANDOM_BACKEND_PATH_GLOB__INT,$(1)); do \
 	[ -f "$$getrandom_src" ] || continue; \
+	grep -q 'Freetz uClibc' "$$getrandom_src" && continue; \
 	if grep -q 'util_libc::sys_fill_exact(dest, |buf| unsafe {' "$$getrandom_src"; then \
 		perl -0pi -e 's@util_libc::sys_fill_exact\(dest, \|buf\| unsafe \{\n(?:.|\n)*?\n    \}\)@util_libc::sys_fill_exact(dest, |buf| unsafe {\n        // Freetz uClibc mips syscall fallback for missing libc::getrandom.\n        #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n        let ret = libc::syscall(\n            libc::SYS_getrandom,\n            buf.as_mut_ptr() as *mut libc::c_void,\n            buf.len(),\n            0,\n        ) as libc::ssize_t;\n        #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n        let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);\n        ret\n    })@s' "$$getrandom_src"; \
 	elif grep -q 'utils::sys_fill_exact(dest, |buf| unsafe {' "$$getrandom_src"; then \
@@ -141,6 +142,54 @@ for getrandom_src in $(call GETRANDOM_BACKEND_PATH_GLOB__INT,$(1)); do \
 	else \
 		perl -0pi -e 's@let ret = libc::getrandom\(buf\.as_mut_ptr\(\)\.cast\(\), buf\.len\(\), 0\);@// Freetz uClibc mips syscall fallback for missing libc::getrandom.\n        #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n        let ret = libc::syscall(\n            libc::SYS_getrandom,\n            buf.as_mut_ptr() as *mut libc::c_void,\n            buf.len(),\n            0,\n        ) as libc::ssize_t;\n        #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n        let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);@s' "$$getrandom_src"; \
 	fi; \
+done;
+endef
+
+# Apply uClibc MIPS fallback for getrandom 0.2.x (src/getrandom.rs layout with a
+# bare libc::getrandom(buf_ptr, len, 0) call) when libc::getrandom is missing on MIPS.
+# Idempotent: skips files already carrying the Freetz marker.
+# $1: getrandom crate version (for example: 0.2.16)
+define GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH_02X__INT
+for getrandom_src in $$HOME/.cargo/registry/src/*/getrandom-$(1)/src/getrandom.rs; do \
+	[ -f "$$getrandom_src" ] || continue; \
+	grep -q 'Freetz uClibc' "$$getrandom_src" && continue; \
+	perl -0pi -e 's@libc::getrandom\(buf_ptr, len, 0\)@// Freetz uClibc mips syscall fallback for missing libc::getrandom\n            #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n            let ret = libc::syscall(\n                libc::SYS_getrandom,\n                buf_ptr,\n                len,\n                0,\n            ) as libc::ssize_t;\n            #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n            let ret = libc::getrandom(buf_ptr, len, 0)@s' "$$getrandom_src"; \
+done;
+endef
+
+# Apply AtomicU64 -> Mutex fallback to boxcar-style sources (the boxcar crate's
+# lib.rs or a vendored boxcar copy such as atuin's atuin-nucleo) on targets
+# without native 64-bit atomics (MIPS uClibc: target_has_atomic = "32" only).
+# Idempotent: skips files already carrying the Freetz marker.
+# $1: glob for the source file to patch (e.g. $$HOME/.cargo/registry/src/*/boxcar-*/src/lib.rs)
+define BOX_CAR_APPLY_ATOMICU64_MUTEX_FALLBACK__INT
+for boxcar_src in $(1); do \
+	[ -f "$$boxcar_src" ] || continue; \
+	if ! grep -q 'Freetz 32-bit AtomicU64 fallback' "$$boxcar_src"; then \
+		perl -0pi -e 's@(use std::sync::atomic::\{AtomicBool, AtomicPtr, AtomicU64, Ordering\};)@// Freetz 32-bit AtomicU64 fallback for targets without native 64-bit atomics.\n#[cfg(target_has_atomic = "64")]\nuse std::sync::atomic::{AtomicBool, AtomicPtr, AtomicU64, Ordering};\n#[cfg(not(target_has_atomic = "64"))]\nuse std::sync::{atomic::{AtomicBool, AtomicPtr, Ordering}, Mutex};\n\n#[cfg(not(target_has_atomic = "64"))]\n#[derive(Debug)]\nstruct AtomicU64(Mutex<u64>);\n\n#[cfg(not(target_has_atomic = "64"))]\nimpl AtomicU64 {\n    fn new(val: u64) -> Self { Self(Mutex::new(val)) }\n    fn load(&self, _: Ordering) -> u64 { *self.0.lock().unwrap() }\n    fn store(&self, val: u64, _: Ordering) { *self.0.lock().unwrap() = val; }\n    fn fetch_add(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock += val; prev }\n    fn fetch_or(&self, val: u64, _: Ordering) -> u64 { let mut lock = self.0.lock().unwrap(); let prev = *lock; *lock |= val; prev }\n    fn into_inner(self) -> u64 { self.0.into_inner().unwrap() }\n}@s' "$$boxcar_src"; \
+	fi; \
+done;
+endef
+
+# Add missing MFD_HUGE_* constants to libc's uClibc module (needed by crates using
+# memfd_create on uClibc). Idempotent: skips modules already carrying the constants.
+define LIBC_APPLY_UCLIBC_MFD_HUGE_CONSTANTS__INT
+for libc_uclibc_mod in $$HOME/.cargo/registry/src/*/libc-0.2.183/src/unix/linux_like/linux/uclibc/mod.rs; do \
+	[ -f "$$libc_uclibc_mod" ] || continue; \
+	if ! grep -q 'MFD_HUGE_1MB' "$$libc_uclibc_mod"; then \
+		perl -0pi -e 's@(pub const MAP_HUGE_16GB: c_int = 34 << MAP_HUGE_SHIFT;)@$$1\n\n// MFD_HUGE constants (from linux_l4re_shared, missing on uClibc)\npub const MFD_HUGETLB: c_uint = 0x0004;\npub const MFD_HUGE_64KB: c_uint = 0x40000000;\npub const MFD_HUGE_512KB: c_uint = 0x4c000000;\npub const MFD_HUGE_1MB: c_uint = 0x50000000;\npub const MFD_HUGE_2MB: c_uint = 0x54000000;\npub const MFD_HUGE_8MB: c_uint = 0x5c000000;\npub const MFD_HUGE_16MB: c_uint = 0x60000000;\npub const MFD_HUGE_32MB: c_uint = 0x64000000;\npub const MFD_HUGE_256MB: c_uint = 0x70000000;\npub const MFD_HUGE_512MB: c_uint = 0x74000000;\npub const MFD_HUGE_1GB: c_uint = 0x78000000;\npub const MFD_HUGE_2GB: c_uint = 0x7c000000;\npub const MFD_HUGE_16GB: c_uint = 0x88000000;\npub const MFD_HUGE_MASK: c_uint = 63;\npub const MFD_HUGE_SHIFT: c_uint = 26;@s' "$$libc_uclibc_mod"; \
+	fi; \
+done;
+endef
+
+# Apply AtomicU64 -> Mutex fallback to async-priority-channel's awaitable_atomics.rs
+# on targets without native 64-bit atomics (MIPS uClibc). Idempotent: skips files
+# where the original AtomicU64 field has already been replaced.
+define ASYNC_PRIORITY_CHANNEL_APPLY_ATOMICU64_MUTEX_FALLBACK__INT
+for apc_src in $$HOME/.cargo/registry/src/*/async-priority-channel-*/src/awaitable_atomics.rs; do \
+	[ -f "$$apc_src" ] || continue; \
+	grep -q 'value: AtomicU64,' "$$apc_src" || continue; \
+	python3 -c "import re,sys;c=open(sys.argv[1]).read();c=c.replace('sync::atomic::{AtomicU64, Ordering}','sync::Mutex');c=c.replace('value: AtomicU64,','value: Mutex<u64>,');c=c.replace('value: AtomicU64::new(value),','value: Mutex::new(value),');c=c.replace('self.value.fetch_or(U64_TOP_BIT_MASK, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior | U64_TOP_BIT_MASK; prior }');c=c.replace('self.value.fetch_add(n, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior + n; prior }');c=c.replace('self.value.fetch_sub(1, Ordering::SeqCst)','{ let mut v = self.value.lock().unwrap(); let prior = *v; *v = prior - 1; prior }');c=c.replace('self.value.load(Ordering::SeqCst)','*self.value.lock().unwrap()');open(sys.argv[1],'w').write(c);print('Patched async-priority-channel')" "$$apc_src"; \
 done;
 endef
 
@@ -178,6 +227,71 @@ define GITUI_APPLY_ASYNCGIT_GENERATION_ATOMIC_PATCH__INT
 if ! grep -q 'Freetz 32-bit atomic fallback for generation counter.' asyncgit/src/status.rs; then \
 	perl -0pi -e 's@atomic::\{AtomicU64, AtomicUsize, Ordering\}@atomic::{AtomicUsize, Ordering}@; s@/// Counter that increments after each completed fetch\.\n\tgeneration: Arc<AtomicU64>,@/// Freetz 32-bit atomic fallback for generation counter.\n\tgeneration: Arc<AtomicUsize>,@; s@generation: Arc::new\(AtomicU64::new\(0\)\),@generation: Arc::new(AtomicUsize::new(0)),@' asyncgit/src/status.rs; \
 fi;
+endef
+
+# Apply uClibc fix to socket2: IPV6_TRANSPARENT is missing from uClibc's libc,
+# use IP_TRANSPARENT instead. Shared by atuin/yazi/oxker/python3-uv/termscp.
+# Requires: CARGO_HOME exported, cargo fetch already run.
+define SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT
+for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.*/src/socket.rs; do \
+	[ -f "$$socket2_src" ] || continue; \
+	sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
+	echo "Patched socket2: $$socket2_src" >&2; \
+done;
+endef
+
+# Apply uClibc/HOST build fix to the ssh2-config crate in the Cargo registry.
+# ssh2-config 0.7.x declares git2 in [build-dependencies]; build-script deps run
+# on the HOST even in --target cross builds, forcing libgit2-sys/libssh2-sys/
+# openssl-sys to build for the HOST, where openssl-sys cannot find the host
+# OpenSSL behind freetz's cross pkg-config wrapper. ssh2-config only uses git2
+# when RELOAD_SSH_ALGO is set (never in freetz), so removing it is safe.
+# Requires: CARGO_HOME exported, cargo fetch already run.
+define SSH2_CONFIG_APPLY_UCLIBC_GIT2_PATCH__INT
+for ssh2_cfg_src in $$HOME/.cargo/registry/src/*/ssh2-config-0.7.*/Cargo.toml; do \
+	[ -f "$$ssh2_cfg_src" ] || continue; \
+	chmod -R u+w "$$(dirname "$$ssh2_cfg_src")"; \
+	perl -0pi -e 's/\n\[build-dependencies\.git2\]\nversion = "0\.20"/\n# git2 build-dep removed for host build compatibility\n# [build-dependencies.git2]\n# version = "0.20"/' "$$ssh2_cfg_src"; \
+done; \
+for ssh2_openssh_src in $$HOME/.cargo/registry/src/*/ssh2-config-0.7.*/build/openssh.rs; do \
+	[ -f "$$ssh2_openssh_src" ] || continue; \
+	chmod -R u+w "$$(dirname "$$ssh2_openssh_src")"; \
+	perl -0pi -e 's/fn clone_openssh\(path: \&Path\) -> anyhow::Result<\(\)> \{[^}]*\}/fn clone_openssh(path: \&Path) -> anyhow::Result<()> {\n    Err(anyhow::anyhow!("git2 not available: OpenSSH source cloning disabled"))\n}/' "$$ssh2_openssh_src"; \
+done;
+endef
+
+# Point cargo at the patched ssh2-config via [patch.crates-io] and re-resolve the
+# lock so the git2 build-dependency drops out of the active graph (otherwise
+# libgit2-sys/libssh2-sys/openssl-sys are built for the HOST and openssl-sys
+# cannot find the host OpenSSL behind the cross pkg-config).
+# Requires: $$CARGO_HOME/config.toml already written, $$CARGO_HOME exported.
+define SSH2_CONFIG_APPLY_PATCH_CRATES_IO__INT
+SSH2_CFG_DIR=$$(find "$$CARGO_HOME/registry/src" -maxdepth 2 -type d -name 'ssh2-config-0.7.*' | head -1); \
+printf '\n[patch.crates-io]\nssh2-config = { path = "%s" }\n' "$$SSH2_CFG_DIR" >> "$$CARGO_HOME/config.toml"; \
+cat "$$CARGO_HOME/config.toml" >&2; \
+cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) update -p ssh2-config || true;
+endef
+
+# Apply AtomicU64 -> AtomicU32 fallback to russh-sftp on targets without native
+# 64-bit atomics (MIPS uClibc: target_has_atomic = "32" only).
+define RUSSH_SFTP_APPLY_ATOMICU64_FALLBACK__INT
+for russh_sftp_src in $$HOME/.cargo/registry/src/*/russh-sftp-*/src/client/rawsession.rs; do \
+	[ -f "$$russh_sftp_src" ] || continue; \
+	grep -q 'AtomicU64' "$$russh_sftp_src" || continue; \
+	chmod u+w "$$russh_sftp_src"; \
+	python3 -c "import re,sys;c=open(sys.argv[1]).read();c=c.replace('atomic::{AtomicU32, AtomicU64, Ordering}','atomic::{AtomicU32, Ordering}');c=c.replace('AtomicU64','AtomicU32');c=re.sub(r'\.store\(([a-zA-Z_][a-zA-Z_0-9.]+), Ordering::(\w+)\)',r'.store(\1 as u32, Ordering::\2)',c);c=re.sub(r'(self\.(?:handles|timeout))\.load\((Ordering::\w+)\)',r'u64::from(\1.load(\2))',c);c=re.sub(r'AtomicU32::new\(([a-zA-Z_][a-zA-Z_0-9.]+)\)',r'AtomicU32::new(\1 as u32)',c);open(sys.argv[1],'w').write(c);print('Patched russh-sftp')" "$$russh_sftp_src"; \
+done;
+endef
+
+# Apply AtomicU64 -> AtomicU32 fallback to nucleo's boxcar.rs on targets without
+# native 64-bit atomics (MIPS uClibc: target_has_atomic = "32" only).
+define NUCLEO_APPLY_ATOMICU64_FALLBACK__INT
+for nucleo_src in $$HOME/.cargo/registry/src/*/nucleo-*/src/boxcar.rs; do \
+	[ -f "$$nucleo_src" ] || continue; \
+	grep -q 'inflight: AtomicU32,' "$$nucleo_src" && continue; \
+	chmod u+w "$$nucleo_src"; \
+	python3 -c "import re,sys;f=sys.argv[1];c=open(f).read();c=c.replace('atomic::{AtomicBool, AtomicPtr, AtomicU64, Ordering}','atomic::{AtomicBool, AtomicPtr, AtomicU32, Ordering}');c=c.replace('AtomicU64','AtomicU32');c=re.sub(r'((?:self\.(?:vec\.)?)inflight)\.load\(Ordering::(\w+)\)',r'u64::from(\1.load(Ordering::\2))',c);c=re.sub(r'\.min\(MAX_ENTRIES as u64\) as u32',r'.min(MAX_ENTRIES as u32)',c);open(f,'w').write(c);print('Patched nucleo')" "$$nucleo_src"; \
+done;
 endef
 
 # --- Rust package boilerplate helpers ---

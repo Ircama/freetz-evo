@@ -6,8 +6,6 @@ $(PKG)_SITE:=https://kerberos.org/dist/krb5/1.21
 ### CHANGES:=https://web.mit.edu/kerberos/dist/
 ### CVSREPO:=https://github.com/krb5/krb5
 
-$(PKG)_CATEGORY_LIBS:=Networking##Misc networking
-
 $(PKG)_BASE_LIBS := libcom_err.so.3.0 libk5crypto.so.3.1 libkrb5support.so.0.1
 $(PKG)_MAIN_LIBS := $(if $(FREETZ_LIB_libkrb5),libkrb5.so.3.3)
 $(PKG)_GSS_LIBS := $(if $(FREETZ_LIB_libgssapi_krb5),libgssapi_krb5.so.2.2)

@@ -130,12 +130,14 @@ if FREETZ_PACKAGE_MICROPYTHON
 	config FREETZ_PACKAGE_MICROPYTHON_FFI
 		bool "Enable FFI module (call shared libraries via ctypes-like API)"
 		default n
+		select FREETZ_LIB_libffi
 		help
 			Build the modffi.c module, which allows calling C functions in
 			shared libraries (similar to ctypes). Requires libffi to link
-			against. Cross-compiling libffi for MIPS/uClibc is handled
-			automatically using the libffi submodule included in the source
-			(set MICROPY_STANDALONE=1 automatically).
+			against. The freetz-packaged libffi (FREETZ_LIB_libffi) is
+			selected automatically and linked explicitly by the package
+			recipe, because pkg-config does not discover libffi.pc inside the
+			freetz build environment.
 
 			The unix-ffi micropython-lib modules (ffilib, machine, signal,
 			sqlite3, ...) require this option to be functional.

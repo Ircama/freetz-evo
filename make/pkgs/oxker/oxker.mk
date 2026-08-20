@@ -38,10 +38,7 @@ $($(PKG)_BINARY): $(OXKER_DIR)/.configured
 	mkdir -p "$$CARGO_HOME"; \
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(OXKER_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
 	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
-	for socket2_src in $$HOME/.cargo/registry/src/*/socket2-0.6.3/src/socket.rs; do \
-		[ -f "$$socket2_src" ] || continue; \
-		sed -i 's/libc::IPV6_TRANSPARENT/libc::IP_TRANSPARENT/g' "$$socket2_src"; \
-	done; \
+	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\n' \

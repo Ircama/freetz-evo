@@ -55,11 +55,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly -Zjson-target-spec) fetch --manifest-path src/_bcrypt/Cargo.toml --target "$(PYTHON3_BCRYPT_RUST_TARGET_ARG)"; \
-	for f in "$$CARGO_HOME"/registry/src/*/getrandom-0.3.3/src/backends/getrandom.rs; do \
-		[ -f "$$f" ] || continue; \
-		grep -q 'Freetz uClibc' "$$f" && continue; \
-		perl -0pi -e 's@util_libc::sys_fill_exact\(dest, \|buf\| unsafe \{\n        libc::getrandom\(buf\.as_mut_ptr\(\)\.cast\(\), buf\.len\(\), 0\)\n    \}\)@util_libc::sys_fill_exact(dest, |buf| unsafe {\n        // Freetz uClibc MIPS syscall fallback\n        {\n            #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n            let ret = libc::syscall(\n                libc::SYS_getrandom,\n                buf.as_mut_ptr() as *mut libc::c_void,\n                buf.len(),\n                0,\n            ) as libc::ssize_t;\n            #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n            let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);\n            ret\n        }\n    })@s' "$$f"; \
-	done; \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
 	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),find "$(PYTHON3_BCRYPT_WORKDIR)/src/_bcrypt/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 	$(call Build/PyMod3/Pip, PYTHON3_BCRYPT, , \

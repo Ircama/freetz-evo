@@ -321,9 +321,7 @@ $(GCC_BUILD_DIR3)/.configured: $(GCC_BUILD_DIR2)/.installed $(GCC_TARGET_PREREQ)
 
 $(GCC_BUILD_DIR3)/.compiled: $(GCC_BUILD_DIR3)/.configured
 	@$(call _ECHO,building,$(GCC_ECHO_TYPE),$(GCC_ECHO_MAKE),target)
-	# Force serial build (-j1) to avoid race conditions in toolchain dependencies
-	# uClibc header generation requires cross-compiler to be fully built first
-	$(MAKE_ENV) CFLAGS= CXXFLAGS= $(MAKE) -j1 $(GCC_EXTRA_MAKE_OPTIONS) -C $(GCC_BUILD_DIR3) all $(SILENT)
+	$(MAKE_ENV) $(MAKE) $(GCC_EXTRA_MAKE_OPTIONS) -C $(GCC_BUILD_DIR3) all $(SILENT)
 	touch $@
 
 GCC_INCLUDE_DIR:=include-fixed

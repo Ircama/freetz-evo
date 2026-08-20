@@ -1,0 +1,33 @@
+--- libc/misc/time/time.c
++++ libc/misc/time/time.c
+@@ -1912,6 +1912,30 @@
+ #ifndef __UCLIBC_HAS_TZ_FILE_READ_MANY__
+ 			TZ_file_read = 1;
+ #endif
++		} else if (r >= 5 && strncmp(buf, "TZif", 4) == 0
++			 && (unsigned char)buf[4] >= '2') {
++			/* Some firmwares (e.g. AVM FRITZ!Box) store a binary TZif2
++			 * file in /etc/TZ instead of a POSIX TZ string. uClibc only
++			 * understands a POSIX TZ string, so extract the
++			 * POSIX-TZ-environment-variable-style string that TZif2+
++			 * files carry at their end (see tzfile.h from the tzcode
++			 * database). */
++			if (lseek(fd, -TZ_BUFLEN, SEEK_END) < 0)
++				goto ERROR;
++			r = read(fd, buf, TZ_BUFLEN);
++			if (r <= 0 || buf[--r] != '\n')
++				goto ERROR;
++			buf[r] = 0;
++			p = NULL;
++			while (r != 0) {
++				if (buf[--r] == '\n') {
++					p = buf + r + 1;
++#ifndef __UCLIBC_HAS_TZ_FILE_READ_MANY__
++					TZ_file_read = 1;
++#endif
++					break;
++				}
++			} /* else ('\n' not found): p remains NULL */
+ 		} else {
+ ERROR:
+ 			p = NULL;

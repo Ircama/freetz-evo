@@ -38,10 +38,13 @@ $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CMAKE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
-	$(SUBMAKE) -C $(FLUIDSYNTH_DIR)
+	# Use serial make (SUBMAKE1): the CMake "gentables" ExternalProject spawns a
+	# nested make via "cmake -E env", which cannot inherit the parallel jobserver
+	# FIFO and aborts with "invalid --jobserver-auth string".
+	$(SUBMAKE1) -C $(FLUIDSYNTH_DIR)
 
 $($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
-	$(SUBMAKE) -C $(FLUIDSYNTH_DIR) \
+	$(SUBMAKE1) -C $(FLUIDSYNTH_DIR) \
 		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
 		install
 	@touch $@
@@ -54,7 +57,7 @@ $(pkg): $($(PKG)_STAGING_BINARY)
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 $(pkg)-clean:
-	-$(SUBMAKE) -C $(FLUIDSYNTH_DIR) clean
+	-$(SUBMAKE1) -C $(FLUIDSYNTH_DIR) clean
 
 $(pkg)-uninstall:
 	$(RM) $($(PKG)_TARGET_DIR)/libfluidsynth.so*

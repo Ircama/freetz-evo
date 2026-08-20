@@ -20,19 +20,6 @@ RAINFROG_CARGO_HOME:=$(RAINFROG_WORKDIR)/.cargo
 RAINFROG_RUSTUP_HOME:=$(HOME)/.rustup
 RAINFROG_XDG_CACHE_HOME:=$(RAINFROG_WORKDIR)/.cache
 
-# getrandom 0.2.x uses src/getrandom.rs (not src/backends/getrandom.rs like 0.3.x)
-define RAINFROG_GETRANDOM_0216_SRC_GLOB__INT
-$$HOME/.cargo/registry/src/*/getrandom-0.2.16/src/getrandom.rs
-endef
-
-define RAINFROG_APPLY_GETRANDOM_0216_UCLIBC_PATCH__INT
-for getrandom_src in $(call RAINFROG_GETRANDOM_0216_SRC_GLOB__INT); do \
-	[ -f "$$getrandom_src" ] || continue; \
-	grep -q 'Freetz uClibc' "$$getrandom_src" && continue; \
-	perl -0pi -e 's@libc::getrandom\(buf_ptr, len, 0\)@// Freetz uClibc mips syscall fallback for missing libc::getrandom\n            #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n            let ret = libc::syscall(\n                libc::SYS_getrandom,\n                buf_ptr,\n                len,\n                0,\n            ) as libc::ssize_t;\n            #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n            let ret = libc::getrandom(buf_ptr, len, 0)@s' "$$getrandom_src"; \
-done;
-endef
-
 $(PKG)_BINARY:=$(RAINFROG_DIR)/target/$(RAINFROG_RUST_TARGET_DIR)/release/rainfrog
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/rainfrog
 
@@ -61,11 +48,7 @@ $($(PKG)_BINARY): $(RAINFROG_DIR)/.configured
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,1.0.8) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LINUX_KERNEL__INT,0.38.44) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
-	for getrandom_src in "$(RAINFROG_CARGO_HOME)/registry/src/"*"/getrandom-0.3.3/src/backends/getrandom.rs"; do \
-		[ -f "$$getrandom_src" ] || continue; \
-		perl -0pi -e 's@util_libc::sys_fill_exact\(dest, \|buf\| unsafe \{\n(?:.|\n)*?\n    \}\)@util_libc::sys_fill_exact(dest, |buf| unsafe {\n        // Freetz uClibc mips syscall fallback for missing libc::getrandom.\n        #[cfg(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel")))]\n        let ret = libc::syscall(\n            libc::SYS_getrandom,\n            buf.as_mut_ptr() as *mut libc::c_void,\n            buf.len(),\n            0,\n        ) as libc::ssize_t;\n        #[cfg(not(all(target_os = "linux", target_env = "uclibc", any(target_arch = "mips", target_arch = "mipsel"))))]\n        let ret = libc::getrandom(buf.as_mut_ptr().cast(), buf.len(), 0);\n        ret\n    })@s' "$$getrandom_src"; \
-	done; \
-	$(call RAINFROG_APPLY_GETRANDOM_0216_UCLIBC_PATCH__INT) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH_02X__INT,0.2.16) \
 	$(call TUI_TEXTAREA_APPLY_ATOMICU64_FALLBACK__INT,0.7.0) \
 	$(RAINFROG_CARGO_BUILD_CMD) --target "$(RAINFROG_RUST_TARGET_ARG)" \
 		--bin rainfrog
