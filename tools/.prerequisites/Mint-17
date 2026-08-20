@@ -37,6 +37,7 @@ libsqlite3-dev
 libstring-crc32-perl
 libtool
 libusb-dev
+locales
 make
 netcat
 openssl

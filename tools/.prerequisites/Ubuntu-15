@@ -30,6 +30,7 @@ libreadline-dev
 libstring-crc32-perl
 libtool-bin
 libusb-dev
+locales
 make
 patch
 perl

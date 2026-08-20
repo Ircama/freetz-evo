@@ -170,6 +170,21 @@ setup_rust_host_toolchain() {
 	return 0
 }
 
+setup_uclibc_locales() {
+	# uClibc's gen_locale harvests locale data from the build host via
+	# setlocale()+nl_langinfo(). If en_US/de_DE (UTF-8 + ISO-8859-1) are not
+	# installed, all locales are skipped and the toolchain build fails in
+	# extra/locale/gen_ldc.c with '__LOCALE_DATA_CATEGORIES undeclared'.
+	# Best-effort: warn but do not abort the prerequisites install.
+	if ! command -v locale-gen >/dev/null 2>&1; then
+		$SUDO $APT install -y locales >/dev/null 2>&1
+	fi
+	if ! $SUDO locale-gen en_US.UTF-8 en_US de_DE.UTF-8 de_DE >/dev/null 2>&1; then
+		echo "Warning: could not generate uClibc build locales (en_US/de_DE)" >&2
+	fi
+	return 0
+}
+
 install_requisite() {
 	local OSV="$1" ARG="$2" DOY="$3"
 
@@ -204,11 +219,13 @@ install_requisite() {
 			$SUDO $APT update && $SUDO $APT install $DOY $vals || exit 1
 			extract_nodejs_host_multilib || exit 1
 			setup_rust_host_toolchain || exit 1
+			setup_uclibc_locales
 			;;
 		Ubuntu*|Mint*)
 			$SUDO $APT update && $SUDO $APT install $DOY $vals || exit 1
 			extract_nodejs_host_multilib || exit 1
 			setup_rust_host_toolchain || exit 1
+			setup_uclibc_locales
 			;;
 		*)
 			echo 'No known installer'

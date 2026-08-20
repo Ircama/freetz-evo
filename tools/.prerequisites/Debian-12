@@ -41,6 +41,7 @@ libtool-bin
 libusb-dev
 libxml2-dev
 libzstd-dev
+locales
 make
 netcat-traditional
 patch

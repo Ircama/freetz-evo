@@ -31,6 +31,18 @@ $(LIBTOOL_STAGING_DIR)/.unpacked: $(DL_DIR)/$(LIBTOOL_STAGING_SOURCE) | $(TARGET
 	for i in $$(find $(LIBTOOL_STAGING_DIR) -type f \( \( -name "*.m4" -o -name "*.am" \) -a ! -name "aclocal.m4" \)); do \
 		touch -t 200001010000.00 $$i; \
 	done; \
+# ... also normalize the patched generated files (configure, Makefile.in, config.sub,
+# configure.ac and the nested configure scripts) to a fixed past timestamp. This keeps
+# the AM_SANITY_CHECK in ./configure ("newly created file is older than distributed
+# files") deterministic even on clock-skewed hosts (e.g. WSL clock drift), where a
+# freshly patched ./configure can otherwise appear newer than the conftest.file that
+# the check creates a moment later.
+	for i in $(LIBTOOL_STAGING_DIR)/configure $(LIBTOOL_STAGING_DIR)/configure.ac \
+		$(LIBTOOL_STAGING_DIR)/Makefile.in $(LIBTOOL_STAGING_DIR)/config.sub \
+		$(LIBTOOL_STAGING_DIR)/libltdl/configure $(LIBTOOL_STAGING_DIR)/libltdl/config.sub \
+		$(LIBTOOL_STAGING_DIR)/demo/configure $(LIBTOOL_STAGING_DIR)/cdemo/configure; do \
+		[ -f $$i ] && touch -t 200001010000.00 $$i; \
+	done; \
 	touch $@
 
 libtool-staging-configured: $(LIBTOOL_STAGING_DIR)/.configured

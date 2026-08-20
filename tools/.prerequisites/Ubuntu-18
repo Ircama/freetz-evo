@@ -38,6 +38,7 @@ libstring-crc32-perl
 libtool-bin
 libusb-dev
 libzstd-dev
+locales
 make
 ncftp
 net-tools
