@@ -778,9 +778,7 @@ check-dot-config-uptodateness: $(CONFIG_IN_CACHE)
 	fi
 
 help:
-	@lang=$$(echo $(SYS_LANG) | sed 's/[-\.].*//;s/_.*//' ) ;\
-	[ -e "docs/wiki/20_Advanced/make_targets.$${lang}.md" ] || lang="en" ;\
-	sed 's/^# /\n/;/```/d' "docs/wiki/20_Advanced/make_targets.$${lang}.md"
+	@sed 's/^# /\n/;/```/d' "docs/wiki/20_Advanced/make_targets.md"
 
 .PHONY: all world step $(KCONFIG_TARGETS) config-flush-invalid config-cache config-cache-clean config-cache-refresh tools recover \
 	config-clean-deps-modules config-clean-deps-libs config-clean-deps-busybox config-clean-deps-terminfo config-clean-deps config-clean-deps-keep-busybox \
