@@ -4,6 +4,13 @@
 # e.g.: PKG_CARGO_HOME:=$(abspath $(PKG_DIR)/.cargo) + export HOME / CARGO_HOME.
 # Otherwise they share ~/.cargo/registry/src/ and overwrite each other's patches.
 
+# Nested `make` note (memo, see make/pkgs/yazi/yazi.mk): some crates spawn a
+# nested `make` from their build script (e.g. tikv-jemalloc-sys). The MAKEFLAGS
+# inherited from the freetz env wrapper may carry `-j`/--jobserver-* AFTER the
+# `--` separator, which the nested make treats as a target ("No rule to make
+# target '-j'"). If a package's build script spawns a nested make, `unset
+# MAKEFLAGS` before invoking cargo so the nested make runs without those flags.
+
 # Expand to the rustix crate directory glob in Cargo registry.
 # $1: rustix crate version (for example: 1.1.3)
 define RUSTIX_REGISTRY_DIR_GLOB__INT

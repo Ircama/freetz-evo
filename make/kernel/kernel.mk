@@ -1,6 +1,20 @@
 KERNEL_MAKE_DIR:=$(MAKE_DIR)/kernel
 KERNEL_PATCHES_DIR:=$(KERNEL_MAKE_DIR)/patches/$(KERNEL_VERSION)$(SYSTEM_TYPE_CORE_SUFFIX)
 
+# Optional kernel patches gated by FREETZ config options (see "Other patches"
+# in make menuconfig). Each entry is a subdirectory of $(KERNEL_PATCHES_DIR)
+# that is applied only when the matching option is enabled. These directories
+# live at the kernel version level (not per AVM firmware), so such an option
+# works for every firmware version using this kernel.
+KERNEL_CONDITIONAL_PATCHES := $(if $(FREETZ_PATCH_SILENCE_THERMAL_ZONE_READ_WARN),silence-thermal,)
+
+# Re-run kernel-unpacked (re-apply the patches above) whenever the selected set
+# of conditional kernel patches changes, so toggling the option in menuconfig
+# re-patches the kernel without a manual kernel clean.
+$(shell grep '^FREETZ_PATCH_SILENCE_THERMAL_ZONE_READ_WARN=' $(TOPDIR)/.config 2>/dev/null \
+	| diff -u --label old --label new "$(KERNEL_DIR)/.kernel-patches-state" - >/dev/null 2>&1 \
+	|| { $(RM) "$(KERNEL_DIR)/.unpacked" "$(KERNEL_DIR)/.kernel-patches-state" 2>/dev/null; })
+
 KERNEL_DEPENDS_ON += lzma1-host
 KERNEL_DEPENDS_ON += lzma2eva-host
 
@@ -101,7 +115,7 @@ endif
 	@echo "#applying patches" $(SILENT)
 	@echo "##kernel version specific patches dir: $(KERNEL_PATCHES_DIR)" $(SILENT)
 	@echo "##firmware version specific patches dir: $(KERNEL_PATCHES_DIR)/$(AVM_SOURCE_ID)" $(SILENT)
-	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR) $(KERNEL_PATCHES_DIR)/$(AVM_SOURCE_ID),$(KERNEL_DIR))
+	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR) $(KERNEL_PATCHES_DIR)/$(AVM_SOURCE_ID) $(if $(strip $(KERNEL_CONDITIONAL_PATCHES)),$(addprefix $(KERNEL_PATCHES_DIR)/,$(strip $(KERNEL_CONDITIONAL_PATCHES)))),$(KERNEL_DIR))
 	@echo "#additional generic fixes" $(SILENT)
 	@for i in $(KERNEL_LINKING_FILES); do \
 		f="$${i%%,*}"; symlink_location="$${i##*,}"; \
@@ -182,6 +196,7 @@ endif
 		fi; \
 	done; \
 	ln -s linux-$(KERNEL_VERSION_MAJOR) $(KERNEL_DIR)/linux
+	@grep '^FREETZ_PATCH_SILENCE_THERMAL_ZONE_READ_WARN=' $(TOPDIR)/.config 2>/dev/null > $(KERNEL_DIR)/.kernel-patches-state || true
 	touch $@
 
 kernel-configured-gen: $(KERNEL_DIR)/.configured

@@ -2093,6 +2093,57 @@ config FREETZ_PATCH_DISABLE_AVM_WATCHDOG
 		 - system start takes longer than 2, 4 or 8 minutes
 		 - some defined AVM daemon crashes
 
+config FREETZ_PATCH_DISABLE_AVM_PA
+	bool "Disable AVM Packet Accelerator (PA)"
+	default n
+	help
+		Disables AVM's Packet Accelerator (PA) on system start.
+
+		PA is AVM's hardware offload engine for routing/NAT throughput.
+		Disabling it can be useful to:
+		 - restore conntrack/iptables functionality (NAT, stateful
+		   firewall, transparent proxy), which does not work while PA
+		   is active
+		 - stop the frequent "avm_pa: pid change ..." kernel log messages
+		   that fill dmesg on some devices
+
+		Downside: routing/NAT throughput may be reduced, especially on
+		older/ATA models. On modern devices (e.g. GRX5) the impact is
+		smaller. The PA can also be disabled temporarily until the next
+		reboot with: echo disable > /proc/net/avm_pa/control
+
+config FREETZ_PATCH_DISABLE_THERMAL_ZONE_POLLING
+	bool "Disable thermal zone polling"
+	default n
+	help
+		Disables the polling of thermal zone 0 on system start.
+
+		On some devices the temperature sensor cannot be read and the
+		kernel logs "thermal thermal_zone0: failed to read out thermal
+		zone (-5)" repeatedly, filling dmesg. Enabling this stops the
+		polling and therefore the log spam.
+
+		Note: temperature monitoring for that zone is disabled (it was
+		not working anyway on affected devices).
+
+config FREETZ_PATCH_SILENCE_THERMAL_ZONE_READ_WARN
+	bool "Silence thermal zone read warning"
+	default n
+	help
+		Silences the "thermal thermal_zone0: failed to read out thermal
+		zone (-5)" kernel log message on devices whose temperature
+		sensor cannot be read (the kernel otherwise logs it on every
+		poll, filling dmesg).
+
+		This is a kernel source patch (drivers/thermal/thermal_core.c):
+		the dev_warn() is downgraded to dev_dbg(), so it is no longer
+		printed in normal operation but stays available for debugging.
+
+		Only the log message is affected - thermal monitoring behavior
+		is unchanged. The patch is applied at kernel build time and is
+		shared by all firmware versions using this kernel; toggling
+		this option re-patches the kernel automatically.
+
 config FREETZ_RESTORE_DEBUG_CFG_SUPPORT
 	bool "Restore support for /var/flash/debug.cfg"
 	depends on FREETZ_AVM_VERSION_07_1X_MAX

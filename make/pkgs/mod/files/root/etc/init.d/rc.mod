@@ -141,6 +141,26 @@ start() {
 		fi
 	fi
 
+	# avm packet accelerator
+	if [ "$FREETZ_PATCH_DISABLE_AVM_PA" == "y" ]; then
+		echo -n "Disabling avm packet accelerator ... "
+		if [ ! -e /proc/net/avm_pa/control ]; then
+			echo "unavailable."
+		else
+			echo disable > /proc/net/avm_pa/control && echo "done." || echo "failed."
+		fi
+	fi
+
+	# thermal zone polling
+	if [ "$FREETZ_PATCH_DISABLE_THERMAL_ZONE_POLLING" == "y" ]; then
+		echo -n "Disabling thermal zone polling ... "
+		if [ ! -e /sys/class/thermal/thermal_zone0/mode ]; then
+			echo "unavailable."
+		else
+			echo disabled > /sys/class/thermal/thermal_zone0/mode && echo "done." || echo "failed."
+		fi
+	fi
+
 	# set ipv6
 	if [ "$FREETZ_TARGET_IPV6_SUPPORT" == "y" -a -d /proc/sys/net/ipv6 ]; then
 		echo "$MOD_IPV6_ASSIGN" | grep -v "^ *#" | while read -r if6 ip6; do

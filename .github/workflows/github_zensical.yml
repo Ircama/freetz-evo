@@ -79,7 +79,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: "./_site/"
+          path: "./docs/site/"
 
   deploy:
     environment:
