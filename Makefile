@@ -107,12 +107,15 @@ MESON=meson
 CMAKE=cmake
 NINJA=ninja
 PERL=perl
-MAKE1=make
 ifeq ($(FREETZ_JLEVEL),0)
-MAKE=make -j$(shell echo $$(( $$(nproc || echo 1) +1 )) )
+NPROC=$(shell echo $$(( $$(nproc || echo 1) +1 )) )
 else
-MAKE=make -j$(FREETZ_JLEVEL)
+NPROC=$(FREETZ_JLEVEL)
 endif
+MAKE=make -j$(NPROC)
+MAKE1=make -j1
+
+
 ifeq ($(FREETZ_REPRODUCIBLE),y)
 export SOURCE_DATE_EPOCH:=$(shell tools/freetz_revision ticks)
 endif
@@ -370,6 +373,7 @@ export VERBOSE
 include $(MAKE_DIR)/include/400-host.mk
 include $(MAKE_DIR)/include/500-echo.mk
 include $(MAKE_DIR)/include/600-macros.mk
+include $(MAKE_DIR)/include/700-variables.mk
 
 # include by other packages used variables of packages first
 TOOLS_LIBS:=openssl python2 python3
@@ -425,7 +429,7 @@ endif
 -include .config.cmd
 
 include $(MAKE_DIR)/toolchain/Makefile.in
-include $(MAKE_DIR)/include/700-image.mk
+include $(MAKE_DIR)/include/800-image.mk
 include $(MAKE_DIR)/pkgs/Makefile.in
 include $(call sorted-wildcard,$(MAKE_DIR)/libs/*/Makefile.in)
 include $(call sorted-wildcard,$(MAKE_DIR)/pkgs/*/Makefile.in)
@@ -552,7 +556,7 @@ $(patsubst %,%-recompile,$(TOOLS)): %-recompile : %-distclean %-precompiled
 $(patsubst %,%-fixhardcoded,$(TOOLS)): %-fixhardcoded : 
 
 tools: $(DL_DIR) $(SOURCE_DIR_ROOT) $(filter-out $(TOOLS_CONDITIONAL),$(TOOLS))
-tools-all: $(DL_DIR) $(SOURCE_DIR_ROOT) $(filter-out $(TOOLS_TARXZBUNDLE),$(TOOLS))
+tools-all: $(DL_DIR) $(SOURCE_DIR_ROOT) $(filter-out $(if $(HOST_RUN32BIT),,$(TOOLS_32BIT_ONLY)) $(TOOLS_TARXZBUNDLE),$(TOOLS))
 tools-allexcept-local: $(DL_DIR) $(SOURCE_DIR_ROOT) $(filter-out $(TOOLS_BUILD_LOCAL),$(TOOLS))
 tools-distclean-local: $(patsubst %,%-distclean,$(filter-out $(TOOLS_TARXZBUNDLE),$(TOOLS_BUILD_LOCAL)))
 tools-dirclean: $(TOOLS_DIRCLEAN)

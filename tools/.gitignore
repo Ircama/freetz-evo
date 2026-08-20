@@ -36,6 +36,8 @@
 /makedevs
 /md5sum
 /meson
+/mklibs
+/mklibs-readelf
 /mksquashfs2-lzma
 /mksquashfs3-multi
 /mksquashfs4-avm-be

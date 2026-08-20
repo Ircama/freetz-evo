@@ -330,3 +330,4 @@ endef
 define fileset-complement
 	(cd $(strip $(1)); find . -type f $(if $(strip $(2)),\! \( $(subst =,$(_space),$(call join-with, -o ,$(foreach p,$(strip $(2)),-path="./$(p)"))) \)) | $(SED) -e 's,^./,,' | sort)
 endef
+

@@ -1447,7 +1447,7 @@ config FREETZ_HOSTTOOLS_BUILD
 
 choice
 	prompt "Root emulator"
-	default FREETZ_ROOTEMU_PSEUDO
+	default FREETZ_ROOTEMU_FAKEROOT
 
 	config FREETZ_ROOTEMU_FAKEROOT
 		bool "Use fakeroot"

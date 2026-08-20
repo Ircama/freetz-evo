@@ -9,39 +9,46 @@ $(PKG)_SITE:=https://github.com/bestouff/genext2fs/archive/refs/tags
 ### CVSREPO:=https://github.com/bestouff/genext2fs
 ### STEWARD:=fda77
 
+$(PKG)_BINARY:=$($(PKG)_DIR)/genext2fs
+$(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/genext2fs
+
 $(PKG)_CONFIGURE_PRE_CMDS += ./autogen.sh;
 $(PKG)_CONFIGURE_OPTIONS += --program-prefix=""
 $(PKG)_CONFIGURE_OPTIONS += --program-suffix=""
-$(PKG)_CONFIGURE_OPTIONS += --prefix=$(FREETZ_BASE_DIR)/$(TOOLS_DIR)
 
 
 $(TOOLS_SOURCE_DOWNLOAD)
 $(TOOLS_UNPACKED)
 $(TOOLS_CONFIGURED_CONFIGURE)
 
-$($(PKG)_DIR)/genext2fs: $($(PKG)_DIR)/.configured
-	$(TOOLS_SUBMAKE) CC="$(TOOLS_CC)" CXX="$(TOOLS_CXX)" CFLAGS="$(TOOLS_CFLAGS)" LDFLAGS="$(TOOLS_LDFLAGS)" -C $(GENEXT2FS_HOST_DIR) all
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(TOOLS_SUBMAKE) -C $(GENEXT2FS_HOST_DIR) \
+		CC="$(TOOLS_CC)" \
+		CXX="$(TOOLS_CXX)" \
+		CFLAGS="$(TOOLS_CFLAGS)" \
+		LDFLAGS="$(TOOLS_LDFLAGS)" \
+		all
 	touch -c $@
 
-$(pkg)-test: $($(PKG)_DIR)/.tests-passed
-$($(PKG)_DIR)/.tests-passed: $($(PKG)_DIR)/genext2fs
-	(cd $(GENEXT2FS_HOST_DIR); ./test.sh)
-	touch $@
-
-$(TOOLS_DIR)/genext2fs: $($(PKG)_DIR)/genext2fs
+$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_FILE)
 
-$(pkg)-precompiled: $(TOOLS_DIR)/genext2fs
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+
+.PHONY: $(pkg)-test
+$(pkg)-test: $($(PKG)_BINARY)
+	(cd $(GENEXT2FS_HOST_DIR) && ./test.sh)
 
 
 $(pkg)-clean:
 	-$(MAKE) -C $(GENEXT2FS_HOST_DIR) clean
-	$(RM) $(GENEXT2FS_HOST_DIR)/.configured $(GENEXT2FS_HOST_DIR)/.tests-passed
+	$(RM) $(GENEXT2FS_HOST_DIR)/.configured
 
 $(pkg)-dirclean:
 	$(RM) -r $(GENEXT2FS_HOST_DIR)
 
 $(pkg)-distclean: $(pkg)-dirclean
-	$(RM) $(TOOLS_DIR)/genext2fs
+	$(RM) $(GENEXT2FS_HOST_TARGET_BINARY)
 
 $(TOOLS_FINISH)

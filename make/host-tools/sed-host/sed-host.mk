@@ -11,7 +11,6 @@ $(PKG)_SITE:=@GNU/sed
 $(PKG)_BINARY:=$($(PKG)_DIR)/sed/sed
 $(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/sed
 
-$(PKG)_CONFIGURE_OPTIONS += --prefix=/usr
 $(PKG)_CONFIGURE_OPTIONS += --without-selinux
 $(PKG)_CONFIGURE_OPTIONS += --disable-acl
 $(PKG)_CONFIGURE_OPTIONS += --disable-xattr
@@ -22,8 +21,8 @@ $(TOOLS_UNPACKED)
 $(TOOLS_CONFIGURED_CONFIGURE)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
-	$(TOOLS_SUBMAKE) -C $(SED_HOST_DIR) all
-	touch -c $@
+	$(TOOLS_SUBMAKE) -C $(SED_HOST_DIR) \
+		all
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_FILE)

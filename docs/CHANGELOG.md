@@ -78,7 +78,7 @@ Latest changes
     * fakeroot 1.38.1/2.1.4
     * file 5.48
     * genext2fs 1.6.2
-    * kconfig 7.1
+    * kconfig 7.2
     * libtool 2.6.2
     * meson 1.12.0
     * mklibs 0.1.46
@@ -126,7 +126,7 @@ Latest changes
     * file 5.48
     * Git 2.26.2/2.55.0
     * HAProxy 2.6.29
-    * htop 1.0.3/3.5.2
+    * htop 1.0.3/3.5.3
     * htpdate 2.0.2
     * ImageMagick 7.1.0-62/7.1.2-27
     * iPerf3 3.3/3.21
@@ -143,7 +143,7 @@ Latest changes
     * Mosquitto 2.0.23/2.1.2
     * Nano 9.2
     * Nmap 4.76/5.51/7.99
-    * OpenSSH 9.3p2/10.4p1
+    * OpenSSH 9.3p2/10.5p1
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.21/3.5.7
     * OpenVPN 2.4.12/2.5.11/2.6.22/2.7.6
     * PatchELF 0.19.1
@@ -156,15 +156,16 @@ Latest changes
     * rsync 3.4.1/3.5.0
     * Smartmontools 7.2/7.5
     * sslh 2.2.4/2.3.1
+    * strace 4.9/5.0/7.2
     * Stunnel 5.80
     * SQLite 3.40.1/3.53.4
     * tinc 1.0.37/1.1pre18
     * Tinyproxy 1.11.3
-    * tmux 3.7b
+    * tmux 3.7c
     * Tor 0.4.8.25/0.4.9.11
     * Transmission 3.00/4.1.3
     * Tree 1.8.0/2.3.2
-    * uMurmur 0.2.20/0.4.0
+    * uMurmur 0.2.20/0.4.1
     * Unbound 1.26.0
     * UnRAR 6.1.7/7.2.5
     * Virtualip-NG 1.0

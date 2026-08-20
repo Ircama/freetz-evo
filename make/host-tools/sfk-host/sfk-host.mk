@@ -9,7 +9,8 @@ $(PKG)_SITE:=@SF/swissfileknife
 ### CVSREPO:=https://sourceforge.net/projects/swissfileknife/files/1-swissfileknife/
 ### STEWARD:=fda77
 
-$(PKG)_CONFIGURE_OPTIONS += --prefix=$(FREETZ_BASE_DIR)/$(TOOLS_DIR)
+$(PKG)_BINARY:=$($(PKG)_DIR)/sfk
+$(PKG)_TARGET_BINARY:=$(TOOLS_DIR)/sfk
 
 $(PKG)_CXXFLAGS := $(TOOLS_CFLAGS)
 $(PKG)_CXXFLAGS += -w
@@ -19,15 +20,15 @@ $(TOOLS_SOURCE_DOWNLOAD)
 $(TOOLS_UNPACKED)
 $(TOOLS_CONFIGURED_CONFIGURE)
 
-$($(PKG)_DIR)/sfk: $($(PKG)_DIR)/.configured
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(TOOLS_SUBMAKE) -C $(SFK_HOST_DIR) \
 		CXXFLAGS="$(SFK_HOST_CXXFLAGS)" \
 		all
 
-$(TOOLS_DIR)/sfk: $($(PKG)_DIR)/sfk
+$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_FILE)
 
-$(pkg)-precompiled: $(TOOLS_DIR)/sfk
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 
 $(pkg)-clean:
@@ -37,6 +38,6 @@ $(pkg)-dirclean:
 	$(RM) -r $(SFK_HOST_DIR)
 
 $(pkg)-distclean: $(pkg)-dirclean
-	$(RM) $(TOOLS_DIR)/sfk
+	$(RM) $(SFK_HOST_TARGET_BINARY)
 
 $(TOOLS_FINISH)

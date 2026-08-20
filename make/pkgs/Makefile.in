@@ -311,18 +311,6 @@ PKG_PREVENT_MESON_BUILD_RPATH__INT = \
 	$1;
 PKG_PREVENT_MESON_BUILD_RPATH = $(foreach f,$1,$(call PKG_PREVENT_MESON_BUILD_RPATH__INT,$(f)))
 
-# Updates config.guess and config.sub for configure eg add aarch64.
-#   $(1) = directories of config.* files to be updated
-#
-# The macro is intended to be used in $(PKG)_CONFIGURE_PRE_CMDS variable in the following way:
-# $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./)
-# Don't forget to make sure config.* are available with:
-# $(PKG)_DEPENDS_ON+=config-host
-#
-PKG_UPDATE_CONFIGS__INT = \
-	cp -a -f $(FREETZ_BASE_DIR)/$(TOOLS_BUILD_DIR)/etc/config.{guess,sub} $1;
-PKG_UPDATE_CONFIGS = $(foreach f,$1,$(call PKG_UPDATE_CONFIGS__INT,$(f)))
-
 # Changes a typical Makefile.in line from "FOO = @FOO@" to "FOO = @FOO@ $(EXTRA_FOO)", i.e. adds $(EXTRA_FOO) at the end
 # $1 - variable name or variable names separated by |, i.e. regex OR pattern
 # $2 - optional $($(PKG)_DIR) subdir

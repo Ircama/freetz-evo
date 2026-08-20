@@ -1,4 +1,4 @@
-# kconfig 7.1
+# kconfig 7.2
   - Manpage: [https://www.kernel.org/doc/html/next/kbuild/kconfig-language.html](https://www.kernel.org/doc/html/next/kbuild/kconfig-language.html)
   - Changelog: [https://github.com/torvalds/linux/tags](https://github.com/torvalds/linux/tags)
   - Repository: [https://github.com/torvalds/linux/tree/master/scripts/kconfig](https://github.com/torvalds/linux/tree/master/scripts/kconfig)

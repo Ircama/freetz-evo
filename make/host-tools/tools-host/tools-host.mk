@@ -4,6 +4,9 @@ $(PKG)_HASH:=9e9343307b9a0bc3fde4811042c809e8ac6de2846006ab86fa4535ab5c492c44
 $(PKG)_SITE:=@DLTOKEN/https://api.github.com/repos/Freetz-NG/internal/releases/tags/host-tools
 ### STEWARD:=fda77
 
+$(PKG)_BUILD_PREREQ += $(if $(filter x86_64,$(HOST_ARCH)),,x86_64-system)
+$(PKG)_BUILD_PREREQ_HINT := You have to use a x86_64 system to compile this
+
 $(PKG)_DEPENDS_ON:=kconfig-host
 
 $(PKG)_TARBALL_STRIP_COMPONENTS:=0

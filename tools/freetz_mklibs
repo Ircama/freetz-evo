@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 freetz_mklibs() {
-	local HOST_TOOLS_DIR="${FREETZ_BASE_DIR}/tools/build"
+	local HOST_TOOLS_DIR="${FREETZ_BASE_DIR}/tools"
 	local TARGET_TOOLCHAIN_STAGING_DIR="${FREETZ_BASE_DIR}/toolchain/target"
 	local GNU_TARGET_NAME=${FREETZ_TARGET_ARCH_ENDIANNESS_DEPENDENT}-linux
 	local REAL_GNU_TARGET_NAME=${GNU_TARGET_NAME}-uclibc
@@ -22,11 +22,12 @@ freetz_mklibs() {
 		file -r -N -F '' {} + | \
 		awk ' /shared object/ { print $1 }' >> "${MOD_DIR}/mklibs-progs"
 	# Run mklibs script, needs path to mklibs-readelf and objcopy
-	[ "$FREETZ_TOOLCHAIN_CCACHE" == "y" ] \
+	# Pseudo is to crappy to run mklibs with enabled ccache !
+	[ "$FREETZ_TOOLCHAIN_CCACHE" == "y" ] && [ "$FREETZ_ROOTEMU_PSEUDO" != "y" ] \
 	  && BINS_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/bin:${TARGET_TOOLCHAIN_STAGING_DIR}/bin-ccache" \
 	  || BINS_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/bin-ccache:${TARGET_TOOLCHAIN_STAGING_DIR}/bin"
-	PATH="${HOST_TOOLS_DIR}/path:${HOST_TOOLS_DIR}/bin:${HOST_TOOLS_DIR}/usr/bin:${BINS_PATH}:${PATH}" \
-		"${HOST_TOOLS_DIR}/bin/mklibs" \
+	PATH="${BINS_PATH}:${PATH}" \
+		mklibs \
 		-vvv \
 		-D \
 		-d "${MOD_DIR}/mklibs-out" \

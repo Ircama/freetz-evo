@@ -42,6 +42,7 @@ TOOLS_FAVORED:=kconfig-host tar-host busybox-host make-host pkgconf-host m4-host
 TOOLS_ALLOFIT:=$(sort $(basename $(notdir $(wildcard $(FREETZ_BASE_DIR)/$(MAKE_DIR)/host-tools/*/*.mk))))
 TOOLS:=$(TOOLS_FAVORED) $(filter-out $(TOOLS_FAVORED),$(TOOLS_ALLOFIT))
 
+TOOLS_32BIT_ONLY:=libdtc-host yf-akcarea-host
 TOOLS_TARXZBUNDLE:=tools-host
 
 # tools not built by default
