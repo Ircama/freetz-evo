@@ -25,6 +25,11 @@ $(PKG)_CONFIGURE_OPTIONS += --disable-encode
 $(PKG)_CONFIGURE_OPTIONS += --disable-spec
 $(PKG)_CONFIGURE_OPTIONS += --disable-doc
 
+# libtheora 1.1.1 ships an old config.guess/config.sub which do not recognize
+# aarch64 -> refresh them from config-host before configure (see 700-variables.mk)
+$(PKG)_DEPENDS_ON += config-host
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./)
+
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)

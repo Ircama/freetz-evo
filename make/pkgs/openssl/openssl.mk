@@ -91,6 +91,20 @@ $(PKG)_MAKE_FLAGS += $(if $(FREETZ_OPENSSL_VERSION_10_MAX),INSTALL_PREFIX,DESTDI
 $(PKG)_MAKE_FLAGS += CROSS_COMPILE=1
 $(PKG)_MAKE_FLAGS += $(if $(FREETZ_PACKAGE_OPENSSL_STATIC),STATIC_APPS=1)
 
+# OpenSSL's parallel build has a race on aarch64 (LE and BE): 'install_sw'
+# re-triggers build_libs/build_programs, and the rebuild of
+# providers/libdefault.a runs concurrently with the compilation of its member
+# objects. The resulting archive is incomplete and libcrypto.so.3 is linked
+# without the provider implementations, so the apps/openssl link fails with
+# hundreds of undefined references (masked as "Terminated" by the build
+# wrapper). Build serially on aarch64 to avoid the race; other targets are
+# unaffected and keep their parallel builds.
+ifeq ($(strip $(FREETZ_TARGET_ARCH_AARCH64)),y)
+OPENSSL_SUBMAKE := $(SUBMAKE1)
+else
+OPENSSL_SUBMAKE := $(SUBMAKE)
+endif
+
 
 # openssl-host and openssl using the same source
 ifneq ($($(PKG)_SOURCE),$(OPENSSL_HOST_SOURCE))
@@ -105,11 +119,11 @@ $($(PKG)_BINARY_BUILD_DIR) $($(PKG)_LIBS_BUILD_DIR): $($(PKG)_DIR)/.configured
 #	Remove installed libs also from freetz' packages dir to ensure
 #	that it doesn't contain files from previous builds (0.9.8 to/from 1.0.x switch).
 	$(MAKE) openssl-clean-staging openssl-uninstall $(SILENT)
-	$(SUBMAKE) $(OPENSSL_MAKE_FLAGS) depend
-	$(SUBMAKE) $(OPENSSL_MAKE_FLAGS) all
+	$(OPENSSL_SUBMAKE) $(OPENSSL_MAKE_FLAGS) depend
+	$(OPENSSL_SUBMAKE) $(OPENSSL_MAKE_FLAGS) all
 
 $($(PKG)_LIBS_STAGING_DIR): $($(PKG)_LIBS_BUILD_DIR)
-	$(SUBMAKE) $(OPENSSL_MAKE_FLAGS) $(if $(FREETZ_OPENSSL_VERSION_10_MAX),install,install_sw)
+	$(OPENSSL_SUBMAKE) $(OPENSSL_MAKE_FLAGS) $(if $(FREETZ_OPENSSL_VERSION_10_MAX),install,install_sw)
 	$(call PKG_FIX_LIBTOOL_LA,prefix) \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/{libcrypto,libssl,openssl}.pc
 

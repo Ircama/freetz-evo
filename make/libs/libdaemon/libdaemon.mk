@@ -11,6 +11,11 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libdaemon.so.$($(PKG)_LIB_VERSION)
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 $(PKG)_CONFIGURE_ENV += ac_cv_func_setpgrp_void=yes
 
+# libdaemon 0.14 ships 2008-era config.guess/config.sub which do not recognize
+# aarch64 -> refresh them from config-host before configure (see 700-variables.mk)
+$(PKG)_DEPENDS_ON += config-host
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./)
+
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --disable-lynx

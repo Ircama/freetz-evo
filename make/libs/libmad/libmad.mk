@@ -14,7 +14,14 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-debugging
 $(PKG)_CONFIGURE_OPTIONS += --enable-speed
-$(PKG)_CONFIGURE_OPTIONS += --enable-fpm="$(TARGET_ARCH)"
+# libmad has no aarch64-specific FPM (valid values: intel, arm, mips, sparc,
+# ppc, 64bit, ...); use the generic 64-bit one on aarch64.
+$(PKG)_CONFIGURE_OPTIONS += --enable-fpm="$(if $(filter aarch64,$(TARGET_ARCH)),64bit,$(TARGET_ARCH))"
+
+# libmad 0.15.1b ships 2004-era config.guess/config.sub which do not recognize
+# aarch64 -> refresh them from config-host before configure (see 700-variables.mk)
+$(PKG)_DEPENDS_ON += config-host
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
