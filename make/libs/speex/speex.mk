@@ -17,6 +17,11 @@ $(PKG)_DEPENDS_ON += libogg
 
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
+# speex 1.2rc1 ships an old config.guess/config.sub which do not recognize
+# aarch64 -> refresh them from config-host before configure (see 700-variables.mk)
+$(PKG)_DEPENDS_ON += config-host
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./)
+
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --enable-fixed-point
