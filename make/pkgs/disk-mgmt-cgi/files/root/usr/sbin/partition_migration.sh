@@ -694,6 +694,17 @@ if [ -z "$PTTYPE" ] || [ "$PTTYPE" = "unknown" ]; then
     # fine: step 4 is simulated too).
     PTTYPE=$(parted -s -m "$DEVICE" unit s print 2>/dev/null | awk -F: 'NR==2 {print $6}')
 fi
+# GPT requires ~34 sectors at the end of the disk for its backup header.
+# If the requested END falls inside that reserved area, cap it silently so
+# that 'parted mkpart' does not fail with an alignment/range error.
+if [ "$PTTYPE" = "gpt" ] && [ -n "$DISK_SECTORS" ] && [ "$DISK_SECTORS" -gt 34 ]; then
+    _gpt_safe_end=$(( DISK_SECTORS - 34 ))
+    if [ "$END" -gt "$_gpt_safe_end" ]; then
+        echo "⚠️   END adjusted from ${END} to ${_gpt_safe_end} (GPT backup header reservation)."
+        END=$_gpt_safe_end
+    fi
+    unset _gpt_safe_end
+fi
 # Also detect extended partition range (MBR only) for use in step 4.
 # EXT_START / EXT_END are set to the sector range of the first extended partition
 # found; they remain empty on GPT or when no extended partition exists.
@@ -825,7 +836,7 @@ if [ "$PTTYPE" = "msdos" ]; then
             || die "parted mkpart failed on ${DEVICE}."
     fi
 else
-    run parted -s "$DEVICE" unit s mkpart "" "${START}s" "${END}s" \
+    run parted -s "$DEVICE" unit s mkpart "Linux" "${START}s" "${END}s" \
         || die "parted mkpart failed on ${DEVICE}."
 fi
 

@@ -98,6 +98,41 @@ disk_size_sectors() {
         | awk -F: 'NR==2 {gsub(/s/,"",$2); print $2}'
 }
 
+# fs_declared_sectors PARTITION FSTYPE LOGICAL_SECTOR_SIZE
+# Returns the number of 512-byte sectors the filesystem's own metadata claims.
+# Used to detect when a filesystem was not shrunk to match the partition table
+# (e.g. after an MBR copy that shrank the partition entry without resize2fs).
+# Returns empty string if the filesystem type is unsupported or tools unavailable.
+fs_declared_sectors() {
+    _fd_part="$1"
+    _fd_fs=$(printf '%s' "${2:-}" | tr '[:upper:]' '[:lower:]')
+    _fd_lss="${3:-512}"
+    case "$_fd_fs" in
+        ext2|ext3|ext4|ext4dev)
+            if command -v tune2fs >/dev/null 2>&1; then
+                _fd_info=$(tune2fs -l "$_fd_part" 2>/dev/null)
+                _fd_bc=$(printf '%s\n' "$_fd_info" | awk '/^Block count:/ {print $3}')
+                _fd_bs=$(printf '%s\n' "$_fd_info" | awk '/^Block size:/  {print $3}')
+                if [ -n "$_fd_bc" ] && [ -n "$_fd_bs" ] && [ "$_fd_bs" -gt 0 ] 2>/dev/null; then
+                    # Round up to 512-byte sectors
+                    _fd_bytes=$(( _fd_bc * _fd_bs ))
+                    echo $(( (_fd_bytes + 511) / 512 ))
+                fi
+            fi
+            ;;
+        ntfs)
+            if command -v ntfsinfo >/dev/null 2>&1; then
+                _fd_sectors=$(ntfsinfo -m "$_fd_part" 2>/dev/null \
+                    | awk '/[Vv]olume [Ss]ize in [Ss]ectors/ {print $NF}')
+                [ -n "$_fd_sectors" ] && echo "$_fd_sectors"
+            fi
+            ;;
+        # FAT/exFAT: total sectors is stored in BPB; parted usually reports this
+        # accurately, so no special handling needed.
+    esac
+    unset _fd_part _fd_fs _fd_lss _fd_bc _fd_bs _fd_bytes _fd_sectors _fd_info
+}
+
 # ==============================================================================
 # USAGE / HELP
 # ==============================================================================
@@ -297,6 +332,12 @@ hr
 
 echo "📐  [1] Reading partition tables…"
 
+# Refresh the kernel's partition table view for both devices before reading.
+# The source device may have a stale kernel mapping from a previous operation
+# (e.g. an MBR copy that changed partition boundaries without a partprobe).
+partprobe "$SOURCE_DEVICE" 2>/dev/null || true
+partprobe "$TARGET_DEVICE" 2>/dev/null || true
+
 SRC_TOTAL=$(disk_size_sectors "$SOURCE_DEVICE")
 TGT_TOTAL=$(disk_size_sectors "$TARGET_DEVICE")
 
@@ -319,11 +360,20 @@ if [ -z "$SRC_PARTS" ]; then
     SRC_PARTS=""
 fi
 
-# Find last used sector on source
+# Find last used sector on source (accounting for filesystem declared sizes)
 SRC_LAST_USED_SECTOR=0
 while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     [ -z "$_pnum" ] && continue
-    [ "$_pend" -gt "$SRC_LAST_USED_SECTOR" ] && SRC_LAST_USED_SECTOR="$_pend"
+    _slus_end="$_pend"
+    # For smart mode, check if filesystem claims more space than the partition.
+    if [ "$CLONE_MODE" = "smart" ]; then
+        _slus_part=$(partition_path "$SOURCE_DEVICE" "$_pnum")
+        _slus_fs_secs=$(fs_declared_sectors "$_slus_part" "${_pfs:-}" 2>/dev/null)
+        if [ -n "$_slus_fs_secs" ] && [ "$_slus_fs_secs" -gt "$_psize" ] 2>/dev/null; then
+            _slus_end=$(( _pstart + _slus_fs_secs - 1 ))
+        fi
+    fi
+    [ "$_slus_end" -gt "$SRC_LAST_USED_SECTOR" ] && SRC_LAST_USED_SECTOR="$_slus_end"
 done <<EOF
 $SRC_PARTS
 EOF
@@ -569,9 +619,30 @@ if [ "$COPY_MBR" -eq 1 ]; then
     echo "     Partition table type: ${SRC_PTTYPE}  (copying first ${HEADER_SECTORS} sector(s))"
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "🔸  [DRY-RUN] dd if='${SOURCE_DEVICE}' of='${TARGET_DEVICE}' bs=512 count=${HEADER_SECTORS} conv=notrunc"
+        if [ "$SRC_PTTYPE" != "gpt" ]; then
+            echo "🔸  [DRY-RUN] dd if=/dev/zero of='${TARGET_DEVICE}' bs=512 seek=1 count=33 conv=notrunc  # zap GPT primary"
+            echo "🔸  [DRY-RUN] dd if=/dev/zero of='${TARGET_DEVICE}' bs=512 seek=$((TGT_TOTAL - 34)) count=34 conv=notrunc  # zap GPT backup"
+        fi
     else
         dd if="$SOURCE_DEVICE" of="$TARGET_DEVICE" bs=512 count="$HEADER_SECTORS" conv=notrunc \
             || die "Failed to copy MBR/GPT header."
+        # When the source is MBR/msdos, the target may still have stale GPT
+        # structures.  A previous GPT layout leaves:
+        #   • Sectors 1–33 : GPT primary header + partition entries
+        #   • Last 34 sectors: GPT secondary header (backup)
+        # If either survives, parted sees a "hybrid" disk and may report
+        # "closest location is 2047s to 2047s" (no free space), causing every
+        # mkpart attempt to fail.  Zero both GPT areas to leave a clean MBR.
+        if [ "$SRC_PTTYPE" != "gpt" ]; then
+            dd if=/dev/zero of="$TARGET_DEVICE" bs=512 \
+                seek=1 count=33 conv=notrunc 2>/dev/null || true
+            echo "     ✔ GPT primary header cleared (sectors 1–33)."
+            if [ -n "$TGT_TOTAL" ] && [ "$TGT_TOTAL" -gt 34 ]; then
+                dd if=/dev/zero of="$TARGET_DEVICE" bs=512 \
+                    seek=$(( TGT_TOTAL - 34 )) count=34 conv=notrunc 2>/dev/null || true
+                echo "     ✔ GPT secondary header cleared (last 34 sectors)."
+            fi
+        fi
         run partprobe "$TARGET_DEVICE" 2>/dev/null || true
         echo "     ✔ MBR/GPT header copied."
     fi
@@ -665,6 +736,21 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
         fi
     fi
 
+    # When in smart (filesystem-aware) mode, check if the filesystem inside the
+    # source partition declares a size LARGER than the parted partition entry.
+    # This can happen when an MBR copy shrank the partition table without running
+    # resize2fs (leaving the ext4 superblock claiming more blocks than the partition).
+    # partclone refuses to write to a target smaller than the source FS size, so
+    # we must size the target to fit the filesystem, not just the partition entry.
+    _effective_psize="$_psize"
+    if [ "$CLONE_MODE" = "smart" ] && [ "$_part_role" != "extended" ]; then
+        _fs_declared=$(fs_declared_sectors "$_src_part" "${_pfs:-}" 2>/dev/null)
+        if [ -n "$_fs_declared" ] && [ "$_fs_declared" -gt "$_effective_psize" ] 2>/dev/null; then
+            echo "     ⚠️  Filesystem declares ${_fs_declared} sectors but partition is only ${_psize} sectors — using filesystem size for target sizing."
+            _effective_psize="$_fs_declared"
+        fi
+    fi
+
     # Compute scaled target start (proportional when target < source)
     _tgt_start=$(( _pstart * SCALE_NUM / SCALE_DEN ))
     _tgt_start=$(align_up "$_tgt_start" "$ALIGN_SECTORS")
@@ -673,7 +759,8 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     # (Old code aligned _pend DOWN, silently losing up to ALIGN_SECTORS sectors,
     # so the size check below always skipped the last partition of a disk even
     # when the target was large enough.)
-    _tgt_size=$(( _psize * SCALE_NUM / SCALE_DEN ))
+    # Use _effective_psize (max of partition size and declared filesystem size).
+    _tgt_size=$(( _effective_psize * SCALE_NUM / SCALE_DEN ))
     _tgt_end=$(( _tgt_start + _tgt_size - 1 ))
 
     # Make sure target range fits on disk
@@ -682,9 +769,9 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
         _tgt_size=$(( _tgt_end - _tgt_start + 1 ))
     fi
 
-    # If clamping trimmed the range below the source size, try to recover by
+    # If clamping trimmed the range below the effective source size, try to recover by
     # moving the start one alignment unit earlier (still alignment-aligned).
-    if [ "$_tgt_size" -lt "$_psize" ] && [ "$_tgt_start" -ge "$ALIGN_SECTORS" ]; then
+    if [ "$_tgt_size" -lt "$_effective_psize" ] && [ "$_tgt_start" -ge "$ALIGN_SECTORS" ]; then
         _tgt_start=$(( _tgt_start - ALIGN_SECTORS ))
         _tgt_end=$(( _tgt_start + _tgt_size - 1 ))
         if [ "$_tgt_end" -ge "$TGT_TOTAL" ]; then
@@ -693,8 +780,8 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
         _tgt_size=$(( _tgt_end - _tgt_start + 1 ))
     fi
 
-    if [ "$_tgt_size" -lt "$_psize" ]; then
-        echo "     ❌  SKIPPED: scaled target range (${_tgt_size} sectors) is smaller than source partition (${_psize} sectors)."
+    if [ "$_tgt_size" -lt "$_effective_psize" ]; then
+        echo "     ❌  SKIPPED: scaled target range (${_tgt_size} sectors) is smaller than effective source size (${_effective_psize} sectors)."
         FAILED=$(( FAILED + 1 ))
         continue
     fi
@@ -712,7 +799,7 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
         if [ "$SRC_PTTYPE" = "msdos" ]; then
             echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart ${_part_role} ${_fstype_hint} ${_tgt_start}s ${_tgt_end}s"
         else
-            echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart '' ${_tgt_start}s ${_tgt_end}s"
+            echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' unit s mkpart 'Linux' ${_tgt_start}s ${_tgt_end}s"
         fi
         [ -n "$_pname" ] && echo "🔸  [DRY-RUN] parted -s '${TARGET_DEVICE}' name ${_pnum} '${_pname}'"
         echo "🔸  [DRY-RUN] partprobe '${TARGET_DEVICE}'"
@@ -727,17 +814,45 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
                 parted -s "$TARGET_DEVICE" unit s mkpart "$_part_role" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
             fi
         else
-            parted -s "$TARGET_DEVICE" unit s mkpart "" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+            parted -s "$TARGET_DEVICE" unit s mkpart "Linux" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
         fi
         # Tollerante: se mkpart fallisce ma esiste già una partizione con lo
-        # stesso start (es. tabella copiata con -B o run ripetuta), la riusa.
+        # stesso start (es. tabella copiata con -B o run ripetuta), la riusa —
+        # ma solo se la fine corrisponde.  Se la fine è diversa (es. residuo
+        # GPT di una sessione precedente), elimina e ricrea la partizione.
         if [ "$_mkpart_ok" = "0" ]; then
             _exists=$(parted -s -m "$TARGET_DEVICE" unit s print 2>/dev/null \
                 | awk -F: -v s="${_tgt_start}" 'NR>2 && $1 ~ /^[0-9]+$/ {
                     gsub(/s/,"",$2); if ($2 == s) { print $1; exit } }')
             if [ -n "$_exists" ]; then
-                echo "     ⚠️  Partition with start ${_tgt_start} already exists (${_exists}) — reusing it."
-                _mkpart_ok=1
+                _exist_end=$(parted -s -m "$TARGET_DEVICE" unit s print 2>/dev/null \
+                    | awk -F: -v n="${_exists}" 'NR>2 && $1==n {gsub(/s/,"",$3); print $3; exit}')
+                if [ -n "$_exist_end" ] && [ "$_exist_end" != "$_tgt_end" ]; then
+                    echo "     ⚠️  Existing partition ${_exists} end (${_exist_end}s) ≠ target end (${_tgt_end}s) — reinitializing partition table and recreating."
+                    # Reinitialize the partition table rather than deleting individual
+                    # partitions: 'parted rm' can silently fail when the partition
+                    # node is still referenced by the kernel (e.g. from a previous
+                    # e2fsck/resize2fs run), leaving the entry in place and causing
+                    # the subsequent mkpart to fail again.
+                    # 'mklabel' always clears all partition entries atomically.
+                    parted -s "$TARGET_DEVICE" mklabel "$SRC_PTTYPE" 2>/dev/null || true
+                    partprobe "$TARGET_DEVICE" 2>/dev/null || true
+                    sleep 1
+                    _mkpart_ok=1
+                    if [ "$SRC_PTTYPE" = "msdos" ]; then
+                        if [ -n "$_fstype_hint" ]; then
+                            parted -s "$TARGET_DEVICE" unit s mkpart "$_part_role" "$_fstype_hint" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+                        else
+                            parted -s "$TARGET_DEVICE" unit s mkpart "$_part_role" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+                        fi
+                    else
+                        parted -s "$TARGET_DEVICE" unit s mkpart "Linux" "${_tgt_start}s" "${_tgt_end}s" || _mkpart_ok=0
+                    fi
+                    [ "$_mkpart_ok" = "0" ] && die "Failed to recreate partition ${_pnum} on ${TARGET_DEVICE}."
+                else
+                    echo "     ⚠️  Partition with start ${_tgt_start} already exists (${_exists}) — reusing it."
+                    _mkpart_ok=1
+                fi
             else
                 die "Failed to create partition ${_pnum} on ${TARGET_DEVICE}."
             fi
@@ -790,9 +905,21 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
     [ -z "$_fstype" ] && _fstype="$_pfs"
     [ -z "$_fstype" ] && _fstype="unknown"
 
+    # Safety check: if filesystem declares more sectors than the SOURCE partition
+    # actually contains, partclone will fail with "source seek ERROR" when trying
+    # to read blocks beyond the partition boundary. In this case, fall back to dd.
+    # We detect this by checking if _effective_psize > _psize (set earlier).
+    _force_dd_mode=0
+    if [ "$CLONE_MODE" = "smart" ] && [ "$_effective_psize" -gt "$_psize" ] 2>/dev/null; then
+        echo "     ⚠️  Falling back to sector-by-sector copy (partclone.dd) to avoid read errors from inconsistent filesystem."
+        _force_dd_mode=1
+    fi
+
     # Select partclone backend
     _partclone_bin=""
-    if [ "$CLONE_MODE" = "smart" ]; then
+    if [ "$_force_dd_mode" -eq 1 ]; then
+        _partclone_bin="partclone.dd"
+    elif [ "$CLONE_MODE" = "smart" ]; then
         case "$_fstype" in
             ext2)                _partclone_bin="partclone.ext2"    ;;
             ext3)                _partclone_bin="partclone.ext3"    ;;
@@ -889,6 +1016,12 @@ while IFS=' ' read -r _pnum _pstart _pend _psize _pfs _pname; do
                 fi
                 if command -v e2fsck >/dev/null 2>&1; then
                     e2fsck -p -f "$_tgt_part" 2>/dev/null && echo "     → e2fsck passed."
+                fi
+                # If we detected filesystem > partition earlier and fell back to dd,
+                # the target filesystem needs to be expanded to fill the target partition.
+                if [ "$_force_dd_mode" -eq 1 ] && command -v resize2fs >/dev/null 2>&1; then
+                    echo "     → Running resize2fs to expand filesystem to partition size…"
+                    resize2fs "$_tgt_part" 2>/dev/null && echo "     → resize2fs completed."
                 fi
                 ;;
             vfat|fat|fat12|fat16|fat32)

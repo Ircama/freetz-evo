@@ -1658,36 +1658,25 @@ $CMD_PARTPROBE $_device"
 
 	# Locate current start and size of the extended partition from the dump.
 	# sfdisk dump lines look like: /dev/sda1 : start= 2048, size= 479948, type=5, attrs="LBA"
+	# Use POSIX-compatible AWK (busybox awk doesn't support match() with 3-arg array)
 	_cur_start=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
 		$0 ~ "^"p"[[:space:]]*:" {
-			match($0, /start=[[:space:]]*([0-9]+)/, a); print a[1]+0
-		}')
+			for(i=1;i<=NF;i++) {
+				if ($i ~ /^start=/ || ($i == "start=" && $(i+1)+0 > 0)) {
+					gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
+					gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
+				}
+			}
+		}' | head -1)
 	_cur_size=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
 		$0 ~ "^"p"[[:space:]]*:" {
-			match($0, /size=[[:space:]]*([0-9]+)/, a); print a[1]+0
-		}')
-
-	# POSIX awk fallback (no match() with 3-arg)
-	if [ -z "$_cur_start" ] || [ -z "$_cur_size" ]; then
-		_cur_start=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
-			$0 ~ "^"p"[[:space:]]*:" {
-				for(i=1;i<=NF;i++) {
-					if ($i ~ /^start=/ || ($i == "start=" && $(i+1)+0 > 0)) {
-						gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
-						gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
-					}
+			for(i=1;i<=NF;i++) {
+				if ($i ~ /^size=/ || ($i == "size=" && $(i+1)+0 > 0)) {
+					gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
+					gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
 				}
-			}' | head -1)
-		_cur_size=$(printf '%s\n' "$_dump" | awk -v p="$_part_path" '
-			$0 ~ "^"p"[[:space:]]*:" {
-				for(i=1;i<=NF;i++) {
-					if ($i ~ /^size=/ || ($i == "size=" && $(i+1)+0 > 0)) {
-						gsub(/[^0-9]/,"",$i); if ($i+0 > 0) { print $i+0; next }
-						gsub(/[^0-9]/,"",$((i+1))); print $(i+1)+0; next
-					}
-				}
-			}' | head -1)
-	fi
+			}
+		}' | head -1)
 
 	[ -n "$_cur_start" ] && [ "$_cur_start" -gt 0 ] 2>/dev/null || { emit_json_error "Could not read current start from sfdisk dump"; return; }
 	[ -n "$_cur_size" ]  && [ "$_cur_size"  -gt 0 ] 2>/dev/null || { emit_json_error "Could not read current size from sfdisk dump"; return; }
@@ -1992,7 +1981,22 @@ _target_kib=$(safe_uint "$_target_kib")
 
 _cmd_ck="$CMD_E2FSCK -v -f -p $_partition"
 exec_cmd_c "e2fsck before shrink" "$_cmd_ck" "$CMD_E2FSCK" -v -f -p "$_partition"
+_ck_rc=$EXEC_RC
 _ck="$EXEC_OUT"
+			
+# If e2fsck -p fails (exit 4 = serious inconsistency), retry with -y
+# Use 'yes no' to continuously answer "no" to "Abort?" prompts.
+if [ "$_ck_rc" -ne 0 ]; then
+	_cmd_ck_y="yes no | $CMD_E2FSCK -v -f -y $_partition"
+	exec_cmd_c "e2fsck before shrink (retry with -y)" "$_cmd_ck_y" \
+		/bin/sh -c "yes no | $CMD_E2FSCK -v -f -y '$_partition' 2>&1"
+	_ck_y_rc=$EXEC_RC
+	_ck_y="$EXEC_OUT"
+	_ck="$_ck
+
+Retry with -y (exit $_ck_y_rc):
+$_ck_y"
+fi
 
 _cmd_rs="$CMD_RESIZE2FS -p ${_opts_display}$_partition ${_target_kib}K"
 if [ -n "$_extra_opts" ]; then
@@ -2010,13 +2014,55 @@ $_rs"
 else
 _cmd_ck="$CMD_E2FSCK -v -f -p $_partition"
 exec_cmd_c "e2fsck before grow" "$_cmd_ck" "$CMD_E2FSCK" -v -f -p "$_partition"
+_ck_rc=$EXEC_RC
 _ck="$EXEC_OUT"
+			
+# If e2fsck -p fails (exit 4 = serious inconsistency), retry with -y
+# to force repair. This handles cases like filesystem-size > partition-size
+# where -p refuses to proceed but -y can fix it.
+# Use 'yes no' to continuously answer "no" to "Abort?" prompts.
+# e2fsck reads from /dev/tty, not stdin, so printf doesn't work.
+if [ "$_ck_rc" -ne 0 ]; then
+	_cmd_ck_y="yes no | $CMD_E2FSCK -v -f -y $_partition"
+	exec_cmd_c "e2fsck before grow (retry with -y)" "$_cmd_ck_y" \
+		/bin/sh -c "yes no | $CMD_E2FSCK -v -f -y '$_partition' 2>&1"
+	_ck_y_rc=$EXEC_RC
+	_ck_y="$EXEC_OUT"
+	_ck="$_ck
+
+Retry with -y (exit $_ck_y_rc):
+$_ck_y"
+				
+	# If e2fsck -y also fails (filesystem too corrupted), use resize2fs -f
+	# to force resize without fsck. This is a last resort for severely
+	# corrupted filesystems that refuse automated repair.
+	if [ "$_ck_y_rc" -ne 0 ]; then
+		_ck="$_ck
+
+⚠️  e2fsck failed to repair filesystem automatically.
+   Attempting forced resize with resize2fs -f (last resort)."
+		_force_resize=1
+	fi
+fi
+			
 _cmd_rs="$CMD_RESIZE2FS -p ${_opts_display}$_partition"
+# If e2fsck failed, add -f to force resize despite errors
+if [ "${_force_resize:-0}" -eq 1 ]; then
+	_cmd_rs="$CMD_RESIZE2FS -f -p ${_opts_display}$_partition"
+fi
 if [ -n "$_extra_opts" ]; then
 # shellcheck disable=SC2086
-exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p $_extra_opts "$_partition"
+if [ "${_force_resize:-0}" -eq 1 ]; then
+	exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -f -p $_extra_opts "$_partition"
 else
-exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p "$_partition"
+	exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p $_extra_opts "$_partition"
+fi
+else
+if [ "${_force_resize:-0}" -eq 1 ]; then
+	exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -f -p "$_partition"
+else
+	exec_cmd_c "resize2fs grow" "$_cmd_rs" "$CMD_RESIZE2FS" -p "$_partition"
+fi
 fi
 _rc=$EXEC_RC; _rs="$EXEC_OUT"
 _out="\$ $_cmd_ck
@@ -4647,6 +4693,28 @@ cat <<'EOF'
 	align-items: center;
 	margin-top: 12px;
 	margin-bottom: 10px;
+}
+#applyQueueBtn {
+	cursor: pointer;
+}
+#applyQueueBtn.pcgi-apply-active {
+	font-weight: 700;
+	background: linear-gradient(180deg, #e65c00 0%, #c44d00 100%);
+	color: #fff;
+	border: 2px solid #a33d00;
+	border-radius: 5px;
+	padding: 5px 16px;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+	letter-spacing: 0.02em;
+}
+#applyQueueBtn.pcgi-apply-active:hover:not(:disabled) {
+	background: linear-gradient(180deg, #ff6f20 0%, #d95500 100%);
+	border-color: #b34400;
+}
+#applyQueueBtn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+	box-shadow: none;
 }
 .pcgi-device-strip {
 	display: flex;
@@ -10284,7 +10352,8 @@ window.paceOptions = {
 			wf += ' \\\n  -S ' + v(params.start_sector);
 			wf += ' \\\n  -E ' + v(params.end_sector);
 			if (moveMode === 'sector') wf += ' \\\n  -c dd';
-			wf += ' \\\n  -a ' + (moveAlign === '512' ? '512' : '4096');
+			else if (moveMode === 'smart') wf += ' \\\n  -c smart';
+			wf += ' \\\n  -a ' + (moveAlign || '4096');
 			wf += ' \\\n  -w ' + (/^\d+$/.test(moveDelay) ? moveDelay : '0');
 			wf += ' \\\n  -M';
 			if (moveUnmount !== 'no') wf += ' -u';
@@ -10321,7 +10390,8 @@ window.paceOptions = {
 			out += ' \\\n  -S ' + cloneTargetStart;
 			out += ' \\\n  -E ' + cloneTargetEnd;
 			if (cloneMode === 'sector') out += ' \\\n  -c dd';
-			out += ' \\\n  -a ' + (cloneAlign === '512' ? '512' : '4096');
+			else if (cloneMode === 'smart') out += ' \\\n  -c smart';
+			out += ' \\\n  -a ' + (cloneAlign || '4096');
 			out += ' \\\n  -w ' + (/^\d+$/.test(cloneDelay) ? cloneDelay : '0');
 			if (cloneUnmount !== 'no') out += ' -u';
 			if (cloneVerify === 'yes') out += ' -V';
@@ -11109,6 +11179,14 @@ actionsWrap.appendChild(btnRemove);
 			tr.appendChild(tdCmd);
 			tr.appendChild(tdDel);
 			body.appendChild(tr);
+		}
+		var _aqBtn = document.getElementById('applyQueueBtn');
+		if (_aqBtn) {
+			if (state.queue.length > 0) {
+				_aqBtn.classList.add('pcgi-apply-active');
+			} else {
+				_aqBtn.classList.remove('pcgi-apply-active');
+			}
 		}
 	}
 
@@ -13061,6 +13139,46 @@ actionsWrap.appendChild(btnRemove);
 				_cBlock.textContent = 'clone';
 				_cBlock.title = 'Clone preview';
 				map.appendChild(_cBlock);
+			}
+		}
+		// During a right-edge resize that shrinks the partition, render a ghost "unallocated"
+		// block for the vacated area between the new end and the original end.
+		// During a left-edge resize shrink, render the vacated leading area.
+		if (state.dragCtx && (state.dragCtx.edge === 'right' || state.dragCtx.edge === 'left') &&
+				state.dragCtx.dev && String(state.dragCtx.dev.path || '') === String(dev.path || '') &&
+				state.dragCtx.part) {
+			var _rzOrigStart = Number(state.dragCtx.part.start || 0);
+			var _rzOrigEnd   = Number(state.dragCtx.part.end   || 0);
+			var _rzCurStart  = Number(state.dragCtx.currentStart);
+			var _rzCurEnd    = Number(state.dragCtx.currentEnd);
+			var _rzVacStart, _rzVacEnd;
+			if (state.dragCtx.edge === 'right' && _rzCurEnd < _rzOrigEnd) {
+				// Right edge dragged left (shrink): vacated area is the trailing portion.
+				_rzVacStart = _rzCurEnd + 1;
+				_rzVacEnd   = _rzOrigEnd;
+			} else if (state.dragCtx.edge === 'left' && _rzCurStart > _rzOrigStart) {
+				// Left edge dragged right (shrink): vacated area is the leading portion.
+				_rzVacStart = _rzOrigStart;
+				_rzVacEnd   = _rzCurStart - 1;
+			}
+			if (_rzVacStart !== undefined && _rzVacEnd >= _rzVacStart) {
+				var _rzLeft  = Math.round((_rzVacStart / total) * mapWidth);
+				var _rzRight = Math.round(((_rzVacEnd + 1) / total) * mapWidth);
+				if (_rzLeft < 0) _rzLeft = 0;
+				if (_rzLeft >= mapWidth) _rzLeft = mapWidth - 1;
+				if (_rzRight <= _rzLeft) _rzRight = _rzLeft + 1;
+				if (_rzRight > mapWidth) _rzRight = mapWidth;
+				var _rzWidth  = Math.max(1, _rzRight - _rzLeft);
+				var _rzInExt  = (_extSectorStart >= 0 && _rzVacStart >= _extSectorStart && _rzVacEnd <= _extSectorEnd);
+				var _rzBlock  = document.createElement('div');
+				_rzBlock.className     = 'pcgi-block free' + (_rzInExt ? ' pcgi-logical' : '');
+				_rzBlock.style.left    = _rzLeft  + 'px';
+				_rzBlock.style.width   = _rzWidth + 'px';
+				_rzBlock.style.zIndex  = '1';
+				_rzBlock.style.pointerEvents = 'none';
+				_rzBlock.textContent   = 'unallocated';
+				_rzBlock.title         = 'Unallocated (resize preview)';
+				map.appendChild(_rzBlock);
 			}
 		}
 	}
