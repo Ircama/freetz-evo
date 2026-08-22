@@ -22,7 +22,7 @@ RUST_TARGET_SPEC_DST:=$(if $(RUST_TARGET_SPEC_CUSTOM),$(FREETZ_BASE_DIR)/toolcha
 ifneq ($(RUST_TARGET_SPEC_DST),)
 $(FREETZ_BASE_DIR)/toolchain/rust/targets/%.json: $(FREETZ_BASE_DIR)/make/include/rust/%.json
 	@mkdir -p $(dir $@)
-	@cp -f $< $@
+	@cp -p -f $< $@
 	@echo "Re-materialized Rust target spec: $@"
 endif
 

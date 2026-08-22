@@ -14,6 +14,11 @@ ifeq ($(strip $(FREETZ_PACKAGE_BASH_READLINE)),y)
 $(PKG)_DEPENDS_ON += ncurses readline
 endif
 
+# bash 3.2.48's bundled config.guess/config.sub do not know aarch64:
+# refresh them from config-host before configure (see 700-variables.mk).
+$(PKG)_DEPENDS_ON += config-host
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,support)
+
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_BASH_MINIMAL
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_BASH_READLINE
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_BASH_STATIC

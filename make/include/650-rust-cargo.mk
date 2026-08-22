@@ -109,7 +109,7 @@ for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
 	perl -0pi -e 's/#\[cfg\(any\(target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "netbsd"\)\)\]\npub mod aio;/#[cfg(any(target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "macos",\n          target_os = "netbsd",\n          all(target_os = "linux", not(target_env = "uclibc"))))]\npub mod aio;/s; s/#\[cfg\(target_os = "linux"\)\]\npub mod personality;/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub mod personality;/g; s/#\[cfg\(any\(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "netbsd",\n          target_os = "openbsd"\)\)\]\npub mod ptrace;/#[cfg(any(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          all(target_os = "linux", not(target_env = "uclibc")),\n          target_os = "macos",\n          target_os = "netbsd",\n          target_os = "openbsd"))]\npub mod ptrace;/s; s/#\[cfg\(any\(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          target_os = "linux",\n          target_os = "macos",\n          target_os = "openbsd"\n\)\)\]\npub mod statfs;/#[cfg(any(target_os = "android",\n          target_os = "dragonfly",\n          target_os = "freebsd",\n          target_os = "ios",\n          all(target_os = "linux", not(target_env = "uclibc")),\n          target_os = "macos",\n          target_os = "openbsd"\n))]\npub mod statfs;/s' "$$nix_dir/src/sys/mod.rs"; \
 	perl -0pi -e 's/#\[cfg\(target_os = "linux"\)\]\n    Ib = libc::AF_IB,/#\[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\n    Ib = libc::AF_IB,/g; s/#\[cfg\(target_os = "linux"\)\]\n    Mpls = libc::AF_MPLS,/#\[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\n    Mpls = libc::AF_MPLS,/g' "$$nix_dir/src/sys/socket/addr.rs"; \
 	perl -0pi -e 's/libc::pwritev\(fd, iov\.as_ptr\(\) as \*const libc::iovec, iov\.len\(\) as c_int, offset\)/libc::pwritev(fd, iov.as_ptr() as *const libc::iovec, iov.len() as c_int, offset as i64)/g; s/libc::preadv\(fd, iov\.as_ptr\(\) as \*const libc::iovec, iov\.len\(\) as c_int, offset\)/libc::preadv(fd, iov.as_ptr() as *const libc::iovec, iov.len() as c_int, offset as i64)/g; s/#\[cfg\(target_os = "linux"\)\]\npub fn process_vm_writev\(/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub fn process_vm_writev(/g; s/#\[cfg\(any\(target_os = "linux"\)\)\]\npub fn process_vm_readv\(/#[cfg(all(target_os = "linux", not(target_env = "uclibc")))]\npub fn process_vm_readv(/g' "$$nix_dir/src/sys/uio.rs"; \
-	perl -0pi -e 's/#\[cfg\(not\(target_os = "redox"\)\)\]\ntype SaFlags_t = libc::c_int;/#[cfg(all(not(target_os = "redox"), target_env = "uclibc"))]\ntype SaFlags_t = libc::c_uint;\n#[cfg(all(not(target_os = "redox"), not(target_env = "uclibc")))]\ntype SaFlags_t = libc::c_int;/s' "$$nix_dir/src/sys/signal.rs"; \
+	perl -0pi -e 's/#\[cfg\(not\(target_os = "redox"\)\)\]\ntype SaFlags_t = libc::c_int;/#[cfg(all(not(target_os = "redox"), target_env = "uclibc", target_arch = "aarch64"))]\ntype SaFlags_t = libc::c_ulong;\n#[cfg(all(not(target_os = "redox"), target_env = "uclibc", not(target_arch = "aarch64")))]\ntype SaFlags_t = libc::c_uint;\n#[cfg(all(not(target_os = "redox"), not(target_env = "uclibc")))]\ntype SaFlags_t = libc::c_int;/s' "$$nix_dir/src/sys/signal.rs"; \
 	perl -0pi -e 's|(                #\[cfg\(any\(all\(target_os = "linux", target_env = "musl"\), target_arch = "mips"\)\)\]\n                SigevNotify::SigevThreadId\{\.\.\} => 4  // No SIGEV_THREAD_ID defined)|                #[cfg(all(target_os = "linux", target_env = "uclibc"))]\n                SigevNotify::SigevThreadId{..} => libc::SIGEV_THREAD_ID,\n$$1|' "$$nix_dir/src/sys/signal.rs"; \
 done; \
 $(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,$(1))
@@ -125,6 +125,7 @@ for nix_dir in $(call NIX_REGISTRY_DIR_GLOB__INT,$(1)); do \
 	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "linux"\)\)\]\n#\[cfg\(feature = "zerocopy"\)\]\nlibc_bitflags! \{/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\n#[cfg(feature = "zerocopy")]\nlibc_bitflags! {/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn splice\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn splice(/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn tee\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn tee(/g; s/#\[cfg\(any\(target_os = "linux", target_os = "android"\)\)\]\npub fn vmsplice\(/#[cfg(any(target_os = "android", all(target_os = "linux", not(target_env = "uclibc"))))]\npub fn vmsplice(/g' "$$nix_dir/src/fcntl.rs"; \
 	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\](?=\n#\[cfg\(feature = "net"\)\]\nsockopt_impl!\(\n    #\[cfg_attr\(docsrs, doc\(cfg\(feature = "net"\)\)\)\]\n    \/\/\/ The `recvmsg\(2\)` call will return the destination IP address for a UDP\n    \/\/\/ datagram\.\n    Ipv6OrigDstAddr,)/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]/s; s/#\[cfg\(any\(\n    target_os = "android",\n    target_os = "ios",\n    target_os = "linux",\n    target_os = "macos",\n\)\)\](\nsockopt_impl!\(\n(?:.|\n)*?\n    Ipv6DontFrag,)/#[cfg(any(\n    target_os = "android",\n    target_os = "ios",\n    all(target_os = "linux", not(target_env = "uclibc")),\n    target_os = "macos",\n))]$$1/s' "$$nix_dir/src/sys/socket/sockopt.rs"; \
 	perl -0pi -e 's/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\]\n            #\[cfg\(feature = "net"\)\]\n            \(libc::IPPROTO_IPV6, libc::IPV6_ORIGDSTADDR\) =>/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]\n            #[cfg(feature = "net")]\n            (libc::IPPROTO_IPV6, libc::IPV6_ORIGDSTADDR) =>/g; s/#\[cfg\(any\(target_os = "android", target_os = "freebsd", target_os = "linux"\)\)\]\n            #\[cfg\(feature = "net"\)\]\n            \(libc::IPPROTO_IPV6, libc::IPV6_DONTFRAG\) =>/#[cfg(any(target_os = "android", target_os = "freebsd", all(target_os = "linux", not(target_env = "uclibc"))))]\n            #[cfg(feature = "net")]\n            (libc::IPPROTO_IPV6, libc::IPV6_DONTFRAG) =>/g' "$$nix_dir/src/sys/socket/mod.rs"; \
+	perl -0pi -e 's/#\[cfg_attr\(all\(target_os = "linux", any\(target_env = "gnu", target_env = "uclibc"\)\), repr\(u32\)\)\]/#[cfg_attr(all(target_os = "linux", any(target_env = "gnu", target_env = "uclibc"), not(target_arch = "aarch64")), repr(u32))]\n    #[cfg_attr(all(target_os = "linux", target_env = "uclibc", target_arch = "aarch64"), repr(u64))]/' "$$nix_dir/src/sys/resource.rs"; \
 done; \
 $(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,$(1))
 endef
@@ -303,12 +304,25 @@ endef
 
 # --- Rust package boilerplate helpers ---
 
-# Define RUST_TARGET_DIR and RUST_TARGET_ARG for the current package.
-# $(PKG) must be set (typically by PKG_INIT_BIN).
+# Define RUST_TARGET_DIR, RUST_TARGET_ARG and RUST_ENV_TARGET for the current
+# package. $(PKG) must be set (typically by PKG_INIT_BIN).
+# NOTE: the whole macro body is expanded by $(call) before $(eval) parses it
+# line by line, so deferred references to variables defined earlier in the same
+# body MUST use `$$` (both the subst function and the RUST_TARGET_DIR lookup),
+# otherwise they are expanded while still undefined.
 # Usage: $(eval $(call RUST_TARGET_VARS))
 define RUST_TARGET_VARS
 $(PKG)_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
 $(PKG)_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(PKG)_RUST_ENV_TARGET:=$$(subst -,_,$$($(PKG)_RUST_TARGET_DIR))
+endef
+
+# Define CARGO_HOME for the current package (per-package private cargo home
+# under the package dir). $(PKG) must be set and $(PKG)_DIR finalized
+# (call this AFTER the package redefines $(PKG)_DIR, if it does).
+# Usage: $(eval $(call RUST_CARGO_HOME_VARS))
+define RUST_CARGO_HOME_VARS
+$(PKG)_CARGO_HOME:=$(abspath $($(PKG)_DIR)/.cargo)
 endef
 
 # Define CARGO_BUILD_STD_FLAGS and CARGO_BUILD_CMD for the current package.
@@ -319,14 +333,22 @@ $(PKG)_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUS
 $(PKG)_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $$($(PKG)_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
 endef
 
-# Define DEPENDS_ON and REBUILD_SUBOPTS for Rust packages.
-# $(PKG) must be set.
+# Define DEPENDS_ON and REBUILD_SUBOPTS for Rust packages, and tie the binary
+# target to the custom target spec file so cargo can never run before the spec
+# is materialized.
+# $(PKG) must be set. $(PKG)_BINARY must be defined BEFORE calling this macro.
 # Usage: $(eval $(call RUST_DEPENDS_VARS))
 define RUST_DEPENDS_VARS
 $(PKG)_DEPENDS_ON += rust-host
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+# The custom target spec JSON (aarch64/x86/armeb) must exist before the cargo
+# build. rust-host's pattern rule re-materializes it from make/include/rust/
+# with a preserved (stable) mtime, so this normal prerequisite never triggers
+# spurious rebuilds - it only guarantees the file exists. No-op on builtin
+# target arches (mips/arm32): RUST_TARGET_SPEC_FILE is empty there.
+$$($(PKG)_BINARY): $(RUST_TARGET_SPEC_FILE)
 endef
 
 # Shared module sources for the uClibc 32-bit x86 libc patch (see
@@ -344,6 +366,79 @@ endef
 RUST_LIBC_X86_UCLIBC_MODULE:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc.rs
 RUST_LIBC_X86_UCLIBC_MODULE_2021:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc-2021.rs
 RUST_LIBC_X86_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-x86-uclibc-159.rs
+
+# Shared module sources for the uClibc aarch64 libc patch (see
+# RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH below). aarch64 is a 64-bit arch, so the
+# module is modeled on the native uclibc x86_64 module with aarch64 ABI fixes
+# (64-bit time_t, blksize_t, sigset_t = 1 c_ulong, aarch64 stat layout,
+# aarch64 __SIZEOF_PTHREAD_* values). The right variant is chosen at patch time
+# by FEATURE DETECTION on the actual libc source (same as the x86 patch):
+#   * libc-aarch64-uclibc.rs      : prelude + Padding<T> style (libc >= 0.2.183;
+#     crate:: paths, crate::prelude, Padding<T> padding fields)
+#   * libc-aarch64-uclibc-2021.rs : prelude, edition 2021, but NO Padding<T>
+#     (libc 0.2.168..0.2.182: has src/primitives.rs so c_char/c_long/c_ulong
+#     come from there; crate:: paths; off_t/time_t/... owned by the arch module)
+#   * libc-aarch64-uclibc-159.rs  : old-style, edition 2015 (libc <= 0.2.159:
+#     no crate::prelude, no primitives.rs; `::`-prefixed paths;
+#     c_char/c_long/c_ulong defined inside the arch module)
+RUST_LIBC_AARCH64_UCLIBC_MODULE:=$(FREETZ_BASE_DIR)/make/include/rust/libc-aarch64-uclibc.rs
+RUST_LIBC_AARCH64_UCLIBC_MODULE_2021:=$(FREETZ_BASE_DIR)/make/include/rust/libc-aarch64-uclibc-2021.rs
+RUST_LIBC_AARCH64_UCLIBC_MODULE_OLD:=$(FREETZ_BASE_DIR)/make/include/rust/libc-aarch64-uclibc-159.rs
+
+# Apply the uClibc aarch64 libc module patch to every libc-0.2.x crate in the
+# cargo registry. Use in any Rust package built for aarch64-unknown-linux-uclibc.
+#
+# The upstream `libc` crate ships NO aarch64 uClibc module for ANY 0.2.x version
+# (only mips/arm/x86/x86_64), so `-Z build-std` on aarch64-uclibc falls into
+# `unsupported_target` in uclibc/mod.rs. Like RUST_APPLY_UCLIBC_X86_LIBC_PATCH,
+# this macro:
+#   1. Pre-fetches the EXACT libc version that the nightly's build-std pulls in
+#      (from library/std/Cargo.toml; falls back to 0.2.185).
+#   2. For every libc-0.2.* found, creates
+#      src/unix/linux_like/linux/uclibc/aarch64/mod.rs from the shared module
+#      source and wires it into the parent uclibc/mod.rs (cfg_if aarch64 branch
+#      inserted before the arm branch / final else).
+#
+# Safe on all architectures: the added aarch64 cfg_if branch/module is only
+# compiled when target_arch == "aarch64".
+#
+# After patching, deletes cargo's libc-* fingerprints under $(pwd)/target so the
+# patched module is not shadowed by a stale pre-patch libc artifact.
+#
+# Requires: CARGO_HOME exported, nightly toolchain with rust-src, and a PRIVATE
+# CARGO_HOME.
+define RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH
+	LIBC_BUILD_STD_VER="$$(sed -n 's/.*libc = { version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)".*/\1/p' \
+		"$$RUSTUP_HOME"/toolchains/nightly*/lib/rustlib/src/rust/library/std/Cargo.toml 2>/dev/null | head -1)"; \
+	[ -n "$$LIBC_BUILD_STD_VER" ] || LIBC_BUILD_STD_VER=0.2.185; \
+	echo "Patching build-std libc version: $$LIBC_BUILD_STD_VER" >&2; \
+	mkdir -p /tmp/libc-fetch/src; \
+	touch /tmp/libc-fetch/src/lib.rs; \
+	printf '[package]\nname = "tmp"\nversion = "0.1.0"\nedition = "2021"\n[dependencies]\nlibc = "=%s"\n' "$$LIBC_BUILD_STD_VER" > /tmp/libc-fetch/Cargo.toml; \
+	CARGO_HOME="$$CARGO_HOME" cargo +nightly fetch --manifest-path /tmp/libc-fetch/Cargo.toml 2>&1 || true; \
+	rm -rf /tmp/libc-fetch; \
+	for libc_mod_file in $$(find "$$CARGO_HOME/registry/src" -path "*/libc-0.2.*/src/unix/linux_like/linux/uclibc/mod.rs" 2>/dev/null); do \
+		echo "Patching libc at: $$libc_mod_file"; \
+		libc_dir="$${libc_mod_file%/src/unix/linux_like/linux/uclibc/mod.rs}"; \
+		libc_aarch64_dir="$$(dirname "$$libc_mod_file")/aarch64"; \
+		chmod -R u+w "$$libc_dir" 2>/dev/null || true; \
+		mkdir -p "$$libc_aarch64_dir"; \
+		if grep -q 'PartialEq.*Padding' "$$libc_dir"/src/types.rs 2>/dev/null; then \
+			cp -f $(RUST_LIBC_AARCH64_UCLIBC_MODULE) "$$libc_aarch64_dir/mod.rs"; \
+		elif [ -f "$$libc_dir/src/primitives.rs" ]; then \
+			cp -f $(RUST_LIBC_AARCH64_UCLIBC_MODULE_2021) "$$libc_aarch64_dir/mod.rs"; \
+		else \
+			cp -f $(RUST_LIBC_AARCH64_UCLIBC_MODULE_OLD) "$$libc_aarch64_dir/mod.rs"; \
+		fi; \
+		if [ -f "$$libc_dir/src/new/linux_uapi/linux/types.rs" ]; then \
+			sed -i '/^pub type __u64 = \(crate::\|::\)\?c_ulong;$$/d; /^pub type __s64 = \(crate::\|::\)\?c_long;$$/d' "$$libc_aarch64_dir/mod.rs"; \
+		fi; \
+		if ! grep -q 'target_arch = "aarch64")' "$$libc_mod_file"; then \
+			sed -i '/^    } else if #\[cfg(target_arch = "arm")\] {/i\    } else if #[cfg(target_arch = "aarch64")] {\n        mod aarch64;\n        pub use self::aarch64::*;' "$$libc_mod_file"; \
+		fi; \
+	done; \
+	find "$$(pwd)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;
+endef
 
 # Apply the uClibc 32-bit x86 libc module patch to every libc-0.2.x crate in the
 # cargo registry. Use this in any Rust package built for i686-unknown-linux-uclibc.
@@ -492,3 +587,15 @@ export RUSTFLAGS
 RUSTFLAGS_NO_PIE_GUARD := 1
 endif
 endif
+
+# The custom target spec JSON (aarch64/x86/armeb) must exist before any cargo
+# invocation. rust-host's pattern rule (make/host-tools/rust-host/rust-host.mk)
+# re-materializes it from make/include/rust/, but the plain `rust-host`
+# DEPENDS_ON alone can race with the package build: $(pkg)-precompiled lists
+# $(pkg)-precompiled--int (which builds rust-host) and $(pkg) as *parallel*
+# prerequisites. Make $(pkg) wait for $(pkg)-precompiled--int so the spec (and
+# every other dependency) is deterministically ready before the cargo build
+# starts. $(pkg)-precompiled--int is PHONY, so this adds no extra rebuilds.
+# No-op on builtin-target arches (mips/arm32): RUST_TARGET_SPEC_FILE stays
+# empty and rust-host's pattern rule expands to nothing.
+$(pkg): $(pkg)-precompiled--int

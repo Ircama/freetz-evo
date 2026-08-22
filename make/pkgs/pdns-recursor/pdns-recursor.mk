@@ -2,10 +2,10 @@ $(call PKG_INIT_BIN, 5.0.5)
 # pdns-recursor uses a Rust/Cargo build (via 650-rust-cargo.mk below): it
 # requires a recent toolchain, gated by "depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN"
 # in Config.in (in addition to FREETZ_TARGET_GCC_8_MIN).
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.bz2
+$(PKG)_SOURCE:=$(pkg)-$(PDNS_RECURSOR_VERSION).tar.bz2
 $(PKG)_HASH:=02b9f053db64b32bd76ce6656cb35772c1d07a21fe0345ec13adb6f0fcfbf9ce
 $(PKG)_SITE:=https://downloads.powerdns.com/releases
-$(PKG)_DIR:=$(SOURCE_DIR)/pdns-recursor-$($(PKG)_VERSION)
+$(PKG)_DIR:=$(SOURCE_DIR)/pdns-recursor-$(PDNS_RECURSOR_VERSION)
 ### WEBSITE:=https://www.powerdns.com/recursor.html
 ### MANPAGE:=https://doc.powerdns.com/recursor/
 ### CHANGES:=https://doc.powerdns.com/recursor/changelog/
@@ -29,17 +29,22 @@ PDNS_RECURSOR_BOOST_CXXFLAGS:=$(TARGET_CFLAGS) -fPIC $(if $(or $(FREETZ_TARGET_U
 # config/mod/boost.in (FREETZ_TARGET_B2_ARCH_OPTS).
 PDNS_RECURSOR_B2_ARCH_OPTS := $(FREETZ_TARGET_B2_ARCH_OPTS)
 
-PDNS_RECURSOR_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-PDNS_RECURSOR_RUST_TARGET_VALUE:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(eval $(call RUST_TARGET_VARS))
+# pdns-recursor passes the target as `--target <name>`; the shared macro defines
+# RUST_TARGET_ARG as the plain name, so capture that in _VALUE and re-derive the
+# `--target`-prefixed form here.
+PDNS_RECURSOR_RUST_TARGET_VALUE:=$(PDNS_RECURSOR_RUST_TARGET_ARG)
 PDNS_RECURSOR_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_BUILTIN_NAME),--target $(RUST_TARGET_SPEC_FILE))
 
-# The Rust `libc` crate has no x86 (32-bit) uClibc module, which breaks the
-# build-std `libc` (and the settings crate's own `libc` 0.2.150) on
-# i686-unknown-linux-uclibc. RUST_APPLY_UCLIBC_X86_LIBC_PATCH installs the
-# missing module into the ~/.cargo registry that the recursor's own build
-# system uses: unlike other Rust packages it invokes cargo internally (from
-# settings/rust) without a private CARGO_HOME, so we patch the shared registry.
+# The Rust `libc` crate has no x86 (32-bit) nor aarch64 uClibc module, which
+# breaks the build-std `libc` (and the settings crate's own `libc` 0.2.150) on
+# i686/aarch64-unknown-linux-uclibc. RUST_APPLY_UCLIBC_X86/AARCH64_LIBC_PATCH
+# install the missing modules into the ~/.cargo registry that the recursor's
+# own build system uses: unlike other Rust packages it invokes cargo internally
+# (from settings/rust) without a private CARGO_HOME, so we patch the shared
+# registry.
 PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PDNS_RECURSOR_RUST_TARGET_DIR))
+PDNS_RECURSOR_NEEDS_AARCH64_LIBC_PATCH:=$(filter aarch64-unknown-linux-uclibc,$(PDNS_RECURSOR_RUST_TARGET_DIR))
 PDNS_RECURSOR_RUST_BUILD_STD_VALUE:=std,panic_abort
 PDNS_RECURSOR_RUST_BUILD_STD_ARG:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),-Z build-std=std,panic_abort,)
 # Custom JSON target specs (x86, aarch64, arm-BE) require -Zjson-target-spec on
@@ -130,6 +135,15 @@ $(PDNS_RECURSOR_BUILD_BINARY): $(PDNS_RECURSOR_DIR)/.configured
 		cargo +nightly fetch --locked --manifest-path $(PDNS_RECURSOR_DIR)/settings/rust/Cargo.toml; \
 		$(if $(PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 		$(if $(PDNS_RECURSOR_NEEDS_X86_LIBC_PATCH),find "$(PDNS_RECURSOR_DIR)/settings/rust/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	fi; \
+	if [ -n "$(PDNS_RECURSOR_NEEDS_AARCH64_LIBC_PATCH)" ]; then \
+		export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+		export CARGO_HOME="$$HOME/.cargo"; \
+		export RUSTUP_HOME="$$HOME/.rustup"; \
+		echo "Applying uClibc aarch64 libc module patch (recursor Rust build)"; \
+		cargo +nightly fetch --locked --manifest-path $(PDNS_RECURSOR_DIR)/settings/rust/Cargo.toml; \
+		$(if $(PDNS_RECURSOR_NEEDS_AARCH64_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH)) \
+		$(if $(PDNS_RECURSOR_NEEDS_AARCH64_LIBC_PATCH),find "$(PDNS_RECURSOR_DIR)/settings/rust/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 	fi; \
 	$(SUBMAKE) -C $(PDNS_RECURSOR_DIR) \
 		RUST_TARGET="$(PDNS_RECURSOR_RUST_TARGET_ARG)" \

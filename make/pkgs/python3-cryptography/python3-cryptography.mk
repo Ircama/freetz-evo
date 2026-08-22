@@ -2,8 +2,8 @@ $(call PKG_INIT_BIN, 48.0.0)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 include $(MAKE_DIR)/include/650-rust-cargo.mk
-$(PKG)_SOURCE:=cryptography-py3-$($(PKG)_VERSION).tar.gz
-$(PKG)_SOURCE_DOWNLOAD_NAME:=cryptography-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=cryptography-py3-$(PYTHON3_CRYPTOGRAPHY_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=cryptography-$(PYTHON3_CRYPTOGRAPHY_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/c/cryptography
 $(PKG)_HASH:=5c3932f4436d1cccb036cb0eaef46e6e2db91035166f1ad6505c3c9d5a635920
 ### WEBSITE:=https://cryptography.io/
@@ -12,15 +12,12 @@ $(PKG)_HASH:=5c3932f4436d1cccb036cb0eaef46e6e2db91035166f1ad6505c3c9d5a635920
 ### CVSREPO:=https://github.com/pyca/cryptography
 ### STEWARD:=Ircama
 
-$(PKG)_DEPENDS_ON += openssl python3 python3-cffi python3-typing-extensions rust-host
+$(PKG)_DEPENDS_ON += openssl python3 python3-cffi python3-typing-extensions
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_CRYPTOGRAPHY
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 
-PYTHON3_CRYPTOGRAPHY_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-PYTHON3_CRYPTOGRAPHY_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_DEPENDS_VARS))
 PYTHON3_CRYPTOGRAPHY_RUST_BUILD_STD:=std\,panic_abort
 # Custom (non-builtin) targets like i686-unknown-linux-uclibc are provided as
 # JSON spec files under toolchain/rust/targets/. maturin does NOT accept a .json
@@ -32,25 +29,26 @@ PYTHON3_CRYPTOGRAPHY_RUST_BUILD_STD:=std\,panic_abort
 # env var with CARGO_ENCODED_RUSTFLAGS for the cargo build, but propagates
 # config.toml rustflags) AND the RUSTFLAGS env var (cargo metadata's target-info
 # rustc query uses ONLY env RUSTFLAGS and ignores config.toml rustflags).
-# Additionally, the Rust `libc` crate ships no x86 (32-bit) uClibc module for
-# ANY 0.2.x version, so on i686 the build-std libc must be patched with
-# RUST_APPLY_UCLIBC_X86_LIBC_PATCH.
+# Additionally, the Rust `libc` crate ships no x86 (32-bit) nor aarch64 uClibc
+# module for ANY 0.2.x version, so on i686/aarch64 the build-std libc must be
+# patched with RUST_APPLY_UCLIBC_X86/AARCH64_LIBC_PATCH.
 PYTHON3_CRYPTOGRAPHY_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PYTHON3_CRYPTOGRAPHY_RUST_TARGET_DIR))
+PYTHON3_CRYPTOGRAPHY_NEEDS_AARCH64_LIBC_PATCH:=$(filter aarch64-unknown-linux-uclibc,$(PYTHON3_CRYPTOGRAPHY_RUST_TARGET_DIR))
 PYTHON3_CRYPTOGRAPHY_WORKDIR:=$(abspath $(PYTHON3_CRYPTOGRAPHY_DIR))
 PYTHON3_CRYPTOGRAPHY_BUILD_PATH:=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH
 PYTHON3_CRYPTOGRAPHY_CARGO_HOME:=$(PYTHON3_CRYPTOGRAPHY_WORKDIR)/.cargo
 PYTHON3_CRYPTOGRAPHY_RUSTUP_HOME:=$(HOME)/.rustup
 PYTHON3_CRYPTOGRAPHY_XDG_CACHE_HOME:=$(PYTHON3_CRYPTOGRAPHY_WORKDIR)/.cache
 
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/cryptography/__init__.py
+$(PKG)_TARGET_BINARY:=$(PYTHON3_CRYPTOGRAPHY_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/cryptography/__init__.py
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
 # maturin rejects the generic 'python3' interpreter name; use versioned path
-$($(PKG)_TARGET_BINARY): HOST_PYTHON3_BIN = $(HOST_TOOLS_DIR)/usr/bin/$(PYTHON)
-$($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
+$(PYTHON3_CRYPTOGRAPHY_TARGET_BINARY): HOST_PYTHON3_BIN = $(HOST_TOOLS_DIR)/usr/bin/$(PYTHON)
+$(PYTHON3_CRYPTOGRAPHY_TARGET_BINARY): $(PYTHON3_CRYPTOGRAPHY_DIR)/.configured
 	cd $(PYTHON3_CRYPTOGRAPHY_DIR); \
 	export HOME="$(PYTHON3_CRYPTOGRAPHY_WORKDIR)"; \
 	export CARGO_HOME="$(PYTHON3_CRYPTOGRAPHY_CARGO_HOME)"; \
@@ -65,13 +63,15 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 		> "$$CARGO_HOME/config.toml"; \
 	RUST_TARGET_PATH="$(FREETZ_BASE_DIR)/toolchain/rust/targets" cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(PYTHON3_CRYPTOGRAPHY_RUST_TARGET_DIR)"; \
 	mkdir -p "$$CARGO_HOME/pyo3-config"; \
-	printf 'implementation=CPython\nversion=3.14\nshared=true\nabi3=true\nlib_name=python3.14\nld_version=3.14\npointer_width=32\nsuppress_build_script_link_lines=false\n' \
+	printf 'implementation=CPython\nversion=3.14\nshared=true\nabi3=true\nlib_name=python3.14\nld_version=3.14\npointer_width=$(if $(filter aarch64%,$(PYTHON3_CRYPTOGRAPHY_RUST_TARGET_DIR)),64,32)\nsuppress_build_script_link_lines=false\n' \
 		> "$$CARGO_HOME/pyo3-config/config.ini"; \
 	if ! grep -q 'PYO3_CROSS_INCLUDE_DIR' src/rust/cryptography-cffi/build.rs; then \
 		python3 -c "content = open('src/rust/cryptography-cffi/build.rs').read(); old = '    for python_include in env::split_paths(&python_includes) {'; new = '    // freetz-ng cross-compile: add PYO3_CROSS_INCLUDE_DIR first\n    if let Some(cross_include) = std::env::var_os(\"PYO3_CROSS_INCLUDE_DIR\") {\n        if !cross_include.is_empty() {\n            build.include(cross_include);\n        }\n    }\n\n    for python_include in env::split_paths(&python_includes) {'; assert old in content, 'Pattern not found'; content = content.replace(old, new, 1); open('src/rust/cryptography-cffi/build.rs', 'w').write(content)"; \
 	fi; \
 	$(if $(PYTHON3_CRYPTOGRAPHY_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 	$(if $(PYTHON3_CRYPTOGRAPHY_NEEDS_X86_LIBC_PATCH),find "$(PYTHON3_CRYPTOGRAPHY_WORKDIR)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	$(if $(PYTHON3_CRYPTOGRAPHY_NEEDS_AARCH64_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH)) \
+	$(if $(PYTHON3_CRYPTOGRAPHY_NEEDS_AARCH64_LIBC_PATCH),find "$(PYTHON3_CRYPTOGRAPHY_WORKDIR)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 	cd "$(FREETZ_BASE_DIR)"; \
 	$(call Build/PyMod3/Pip, PYTHON3_CRYPTOGRAPHY, , \
 		HOME="$(PYTHON3_CRYPTOGRAPHY_WORKDIR)" \
@@ -95,7 +95,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(PYTHON3_CRYPTOGRAPHY_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(RM) -r $(PYTHON3_CRYPTOGRAPHY_DIR)/.configured

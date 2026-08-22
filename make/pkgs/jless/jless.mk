@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 0.9.0)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v0.9.0.tar.gz
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$(JLESS_VERSION).tar.gz
 $(PKG)_HASH:=43527a78ba2e5e43a7ebd8d0da8b5af17a72455c5f88b4d1134f34908a594239
 $(PKG)_SITE:=https://github.com/PaulJuliusMartinez/jless/archive/refs/tags
 $(PKG)_DIR:=$(SOURCE_DIR)/jless-v0.9.0
@@ -10,27 +10,21 @@ $(PKG)_DIR:=$(SOURCE_DIR)/jless-v0.9.0
 ### CHANGES:=https://github.com/PaulJuliusMartinez/jless/releases
 ### CVSREPO:=https://github.com/PaulJuliusMartinez/jless
 
-JLESS_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-JLESS_RUST_ENV_TARGET:=$(subst -,_,$(JLESS_RUST_TARGET_DIR))
-JLESS_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-JLESS_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
-JLESS_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(JLESS_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_CARGO_BUILD_STD_VARS))
 JLESS_CARGO_HOME:=$(abspath $(JLESS_DIR)/.cargo)
 $(PKG)_BINARY:=$(JLESS_DIR)/target/$(JLESS_RUST_TARGET_DIR)/release/jless
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/jless
+$(PKG)_TARGET_BINARY:=$(JLESS_DEST_DIR)/usr/bin/jless
 
-$(PKG)_DEPENDS_ON += rust-host
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
-
-include $(MAKE_DIR)/include/650-rust-cargo.mk
+$(eval $(call RUST_DEPENDS_VARS))
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
-$($(PKG)_BINARY): $(JLESS_DIR)/.configured
+$(JLESS_BINARY): $(JLESS_DIR)/.configured
 	cd $(JLESS_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	export HOME="$(abspath $(JLESS_DIR))"; \
@@ -50,6 +44,7 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 	cargo update -p libc --precise 0.2.177; \
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --locked --target "$(JLESS_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
 	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
+	$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH) \
 	$(call NIX_APPLY_UCLIBC_MIPS_PATCHES_022__INT,0.22.1) \
 	perl -0pi -e 's/^extern crate libc_stdhandle;\n//m' src/main.rs; \
 	perl -0pi -e 's/let _ = libc::freopen\(filename\.as_ptr\(\), path\.as_ptr\(\), libc_stdhandle::stdin\(\)\);/let stdin_stream = libc::fdopen(libc::STDIN_FILENO, path.as_ptr());\n        if !stdin_stream.is_null() {\n            let _ = libc::freopen(filename.as_ptr(), path.as_ptr(), stdin_stream);\n        }/' src/input.rs; \
@@ -59,17 +54,17 @@ $($(PKG)_BINARY): $(JLESS_DIR)/.configured
 	fi; \
 	$(JLESS_CARGO_BUILD_CMD) --target "$(JLESS_RUST_TARGET_ARG)" --bin jless
 
-$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$(JLESS_BINARY),/usr/bin))
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(JLESS_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(JLESS_DIR) clean
-	$(RM) $($(PKG)_BINARY) $(JLESS_DIR)/.configured $(JLESS_DIR)/.cargo/config.toml
+	$(RM) $(JLESS_BINARY) $(JLESS_DIR)/.configured $(JLESS_DIR)/.cargo/config.toml
 
 $(pkg)-uninstall:
-	$(RM) $($(PKG)_TARGET_BINARY)
+	$(RM) $(JLESS_TARGET_BINARY)
 
 $(PKG_FINISH)

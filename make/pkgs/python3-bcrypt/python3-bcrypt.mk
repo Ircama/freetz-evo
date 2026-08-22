@@ -2,8 +2,8 @@ $(call PKG_INIT_BIN, 5.0.0)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 include $(MAKE_DIR)/include/650-rust-cargo.mk
-$(PKG)_SOURCE:=bcrypt-py3-$($(PKG)_VERSION).tar.gz
-$(PKG)_SOURCE_DOWNLOAD_NAME:=bcrypt-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=bcrypt-py3-$(PYTHON3_BCRYPT_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=bcrypt-$(PYTHON3_BCRYPT_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/b/bcrypt
 $(PKG)_HASH:=f748f7c2d6fd375cc93d3fba7ef4a9e3a092421b8dbf34d8d4dc06be9492dfdd
 ### WEBSITE:=https://github.com/pyca/bcrypt/
@@ -11,15 +11,12 @@ $(PKG)_HASH:=f748f7c2d6fd375cc93d3fba7ef4a9e3a092421b8dbf34d8d4dc06be9492dfdd
 ### CVSREPO:=https://github.com/pyca/bcrypt
 ### STEWARD:=Ircama
 
-$(PKG)_DEPENDS_ON += python3 rust-host
+$(PKG)_DEPENDS_ON += python3
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_BCRYPT
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 
-PYTHON3_BCRYPT_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-PYTHON3_BCRYPT_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_DEPENDS_VARS))
 PYTHON3_BCRYPT_RUST_BUILD_STD:=std$(_comma)panic_abort
 # Custom JSON target specs (x86, aarch64, ...) require -Zjson-target-spec on
 # recent cargo versions (>= 1.88). The pip/setuptools-rust-internal cargo
@@ -27,12 +24,16 @@ PYTHON3_BCRYPT_RUST_BUILD_STD:=std$(_comma)panic_abort
 # CARGO_UNSTABLE_JSON_TARGET_SPEC env var (honored on nightly, which the pip
 # build already uses for build-std) and the flag is passed explicitly to the
 # recipe's own cargo fetch below.
-# Additionally, the Rust `libc` crate ships no x86 (32-bit) uClibc module for
-# ANY 0.2.x version, so on i686 the build-std libc (and the app's own libc
-# 0.2.176) must be patched with RUST_APPLY_UCLIBC_X86_LIBC_PATCH.
+# Additionally, the Rust `libc` crate ships no x86 (32-bit) nor aarch64 uClibc
+# module for ANY 0.2.x version, so on those targets the build-std libc (and the
+# app's own libc 0.2.176) must be patched with RUST_APPLY_UCLIBC_{X86,AARCH64}
+# _LIBC_PATCH.
 PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PYTHON3_BCRYPT_RUST_TARGET_DIR))
+PYTHON3_BCRYPT_NEEDS_AARCH64_LIBC_PATCH:=$(filter aarch64-unknown-linux-uclibc,$(PYTHON3_BCRYPT_RUST_TARGET_DIR))
 
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/bcrypt/__init__.py
+$(PKG)_TARGET_BINARY:=$(PYTHON3_BCRYPT_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/bcrypt/__init__.py
+
+$(PYTHON3_BCRYPT_TARGET_BINARY): $(RUST_TARGET_SPEC_FILE)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -42,7 +43,7 @@ PYTHON3_BCRYPT_WORKDIR:=$(abspath $(PYTHON3_BCRYPT_DIR))
 PYTHON3_BCRYPT_CARGO_HOME:=$(PYTHON3_BCRYPT_WORKDIR)/.cargo
 PYTHON3_BCRYPT_RUSTUP_HOME:=$(HOME)/.rustup
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
+$(PYTHON3_BCRYPT_TARGET_BINARY): $(PYTHON3_BCRYPT_DIR)/.configured
 	cd "$(PYTHON3_BCRYPT_WORKDIR)" || exit 1; \
 	export HOME="$(PYTHON3_BCRYPT_WORKDIR)"; \
 	export CARGO_HOME="$(PYTHON3_BCRYPT_CARGO_HOME)"; \
@@ -58,6 +59,8 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.3) \
 	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 	$(if $(PYTHON3_BCRYPT_NEEDS_X86_LIBC_PATCH),find "$(PYTHON3_BCRYPT_WORKDIR)/src/_bcrypt/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	$(if $(PYTHON3_BCRYPT_NEEDS_AARCH64_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH)) \
+	$(if $(PYTHON3_BCRYPT_NEEDS_AARCH64_LIBC_PATCH),find "$(PYTHON3_BCRYPT_WORKDIR)/src/_bcrypt/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 	$(call Build/PyMod3/Pip, PYTHON3_BCRYPT, , \
 		HOME="$(PYTHON3_BCRYPT_WORKDIR)" \
 		CARGO_HOME="$(PYTHON3_BCRYPT_CARGO_HOME)" \
@@ -74,7 +77,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(PYTHON3_BCRYPT_TARGET_BINARY)
 
 
 $(pkg)-clean:

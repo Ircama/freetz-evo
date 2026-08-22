@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 1.1.1)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v1.1.1.tar.gz
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$(TERMSCP_VERSION).tar.gz
 $(PKG)_HASH:=cf3570c396ba36987059729f2704a88b87e4f154914062cf390b038694496be9
 $(PKG)_SITE:=https://github.com/veeso/termscp/archive/refs/tags
 $(PKG)_DIR:=$(SOURCE_DIR)/termscp-1.1.1
@@ -12,19 +12,15 @@ $(PKG)_DIR:=$(SOURCE_DIR)/termscp-1.1.1
 
 include $(MAKE_DIR)/include/650-rust-cargo.mk
 
-TERMSCP_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-TERMSCP_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-TERMSCP_RUST_ENV_TARGET:=$(subst -,_,$(TERMSCP_RUST_TARGET_DIR))
-TERMSCP_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_CARGO_BUILD_STD_VARS))
+# termscp builds without --locked
 TERMSCP_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release $(TERMSCP_CARGO_BUILD_STD_FLAGS),cargo build --release)
 TERMSCP_CARGO_HOME:=$(abspath $(TERMSCP_DIR)/.cargo)
 $(PKG)_BINARY:=$(TERMSCP_DIR)/target/$(TERMSCP_RUST_TARGET_DIR)/release/termscp
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/termscp
+$(PKG)_TARGET_BINARY:=$(TERMSCP_DEST_DIR)/usr/bin/termscp
 
-$(PKG)_DEPENDS_ON += rust-host
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+$(eval $(call RUST_DEPENDS_VARS))
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -33,7 +29,7 @@ $(PKG_CONFIGURED_NOP)
 # Fix termscp source: Parser<CB> doesn't have set_scrollback, use screen_mut().set_scrollback()
 $(PKG)_PATCH_POST_CMDS += sed -i 's/self\.parser\.set_scrollback(/self.parser.screen_mut().set_scrollback(/g' $(TERMSCP_DIR)/src/ui/activities/filetransfer/components/terminal/component.rs;
 
-$($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
+$(TERMSCP_BINARY): $(TERMSCP_DIR)/.configured
 	cd $(abspath $(TERMSCP_DIR)); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	export HOME="$(abspath $(TERMSCP_DIR))"; \
@@ -59,6 +55,7 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	# Patch ssh2-config: remove git2 build-dep (forces HOST openssl-sys failure);\
 	$(call SSH2_CONFIG_APPLY_UCLIBC_GIT2_PATCH__INT) \
 	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
+	$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH) \
 	# Apply source patches after fetch extracted everything ;\
 	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
@@ -82,18 +79,18 @@ $($(PKG)_BINARY): $(TERMSCP_DIR)/.configured
 	$(OPENSSL_SRC_APPLY_UCLIBC_ARM_PATCH__INT) \
 	$(TERMSCP_CARGO_BUILD_CMD) --target "$(TERMSCP_RUST_TARGET_ARG)" --bin termscp
 
-$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY),/usr/bin))
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$(TERMSCP_BINARY),/usr/bin))
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(TERMSCP_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(TERMSCP_DIR) clean
 	$(RM) -r $(TERMSCP_DIR)/target/release/build
-	$(RM) $($(PKG)_BINARY) $(TERMSCP_DIR)/.unpacked $(TERMSCP_DIR)/.configured $(TERMSCP_DIR)/.cargo/config.toml
+	$(RM) $(TERMSCP_BINARY) $(TERMSCP_DIR)/.unpacked $(TERMSCP_DIR)/.configured $(TERMSCP_DIR)/.cargo/config.toml
 
 $(pkg)-uninstall:
-	$(RM) $($(PKG)_TARGET_BINARY)
+	$(RM) $(TERMSCP_TARGET_BINARY)
 
 $(PKG_FINISH)

@@ -145,7 +145,7 @@ $(PKG)_CONFIGURE_PRE_CMDS += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_GEOIP),,sed 
 $(PKG)_CONFIGURE_ENV += BOOST_ROOT="$(abspath $(POWERDNS_BOOST_ROOT))"
 $(PKG)_CONFIGURE_ENV += BOOST_INCLUDEDIR="$(abspath $(POWERDNS_BOOST_ROOT))"
 $(PKG)_CONFIGURE_ENV += BOOST_LIBRARYDIR="$(abspath $(POWERDNS_BOOST_LIBDIR))"
-$(PKG)_CONFIGURE_ENV += CPPFLAGS="-I$(abspath $(POWERDNS_BOOST_ROOT))"
+$(PKG)_CONFIGURE_ENV += CPPFLAGS="-I$(abspath $(POWERDNS_BOOST_ROOT))$(if $(FREETZ_TARGET_ARCH_AARCH64), -D__GLIBC_HAVE_LONG_LONG)"
 $(PKG)_CONFIGURE_ENV += LDFLAGS="$(POWERDNS_EXTRA_LDFLAGS)"
 $(PKG)_CONFIGURE_ENV += $(if $(FREETZ_PACKAGE_POWERDNS_BACKEND_LDAP),KRB5_CONFIG="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/krb5-config")
 
@@ -194,7 +194,7 @@ $(POWERDNS_BOOST_MARKER): $(DL_DIR)/$(POWERDNS_BOOST_SOURCE) $(POWERDNS_DIR)/.un
 	mkdir -p $(POWERDNS_DIR)/.boost
 	$(call UNPACK_TARBALL,$<,$(POWERDNS_DIR)/.boost)
 	cd $(POWERDNS_BOOST_ROOT) && ./bootstrap.sh --with-libraries=program_options,serialization $(SILENT)
-	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(POWERDNS_BOOST_CONFIG)
+	printf "using gcc : : $(TARGET_CXX) : <archiver>$(TARGET_AR) <ranlib>$(TARGET_RANLIB) <compileflags>\"$(TARGET_CFLAGS) -fPIC$(if $(FREETZ_TARGET_ARCH_AARCH64), -D__GLIBC_HAVE_LONG_LONG)\" <linkflags>\"$(TARGET_LDFLAGS)\" ;\n" > $(POWERDNS_BOOST_CONFIG)
 	cd $(POWERDNS_BOOST_ROOT) && ./b2 --user-config=$(abspath $(POWERDNS_BOOST_CONFIG)) toolset=gcc $(subst ",,$(FREETZ_TARGET_B2_ARCH_OPTS)) target-os=linux link=static runtime-link=shared variant=release threading=multi cxxstd=17 --layout=system stage $(SILENT)
 	@touch $@
 

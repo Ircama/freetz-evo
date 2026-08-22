@@ -1,0 +1,32 @@
+--- a/src/rounding.rs
++++ b/src/rounding.rs
+@@ -227,7 +227,8 @@
+ 
+ #[cfg(any(
+     not(any(target_arch = "x86_64", target_arch = "aarch64")),
+-    target_os = "windows"
++    target_os = "windows",
++    target_env = "uclibc"
+ ))]
+ fn alter_fp_rounding_mode_conservative<const UPPER: bool, F>(
+     lhs: &ScalarValue,
+@@ -268,7 +269,8 @@
+ {
+     #[cfg(all(
+         any(target_arch = "x86_64", target_arch = "aarch64"),
+-        not(target_os = "windows")
++        not(target_os = "windows"),
++        not(target_env = "uclibc")
+     ))]
+     unsafe {
+         let current = fegetround();
+@@ -279,7 +281,8 @@
+     }
+     #[cfg(any(
+         not(any(target_arch = "x86_64", target_arch = "aarch64")),
+-        target_os = "windows"
++        target_os = "windows",
++        target_env = "uclibc"
+     ))]
+     alter_fp_rounding_mode_conservative::<UPPER, _>(lhs, rhs, operation)
+ }

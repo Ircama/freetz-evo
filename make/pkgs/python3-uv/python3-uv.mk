@@ -2,44 +2,42 @@ $(call PKG_INIT_BIN, 0.11.16)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 include $(MAKE_DIR)/include/650-rust-cargo.mk
-$(PKG)_SOURCE:=uv-py3-$($(PKG)_VERSION).tar.gz
-$(PKG)_SOURCE_DOWNLOAD_NAME:=uv-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=uv-py3-$(PYTHON3_UV_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=uv-$(PYTHON3_UV_VERSION).tar.gz
 $(PKG)_SITE:=https://files.pythonhosted.org/packages/source/u/uv
 $(PKG)_HASH:=4b435fcb0af8f34833dcc1903a8a223856437efd0d515c2160a2871def221238
 ### WEBSITE:=https://github.com/astral-sh/uv
 ### CVSREPO:=https://github.com/astral-sh/uv
 ### STEWARD:=Ircama
 
-$(PKG)_DEPENDS_ON += python3 rust-host
+$(PKG)_DEPENDS_ON += python3
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_PYTHON3_UV
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
 
-PYTHON3_UV_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-PYTHON3_UV_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_DEPENDS_VARS))
 PYTHON3_UV_RUST_BUILD_STD:=std\,panic_abort
 # Custom (non-builtin) targets (x86, aarch64, ...) must be passed to maturin by
 # triple NAME (it cannot parse a .json path) and resolved via RUST_TARGET_PATH;
 # loading them requires -Zunstable-options in both the cargo config.toml
 # rustflags and the RUSTFLAGS env var (see python3-cryptography for details).
-# i686 additionally needs the shared x86 uClibc libc module patch.
+# i686/aarch64 additionally need the shared uClibc libc module patches.
 PYTHON3_UV_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(PYTHON3_UV_RUST_TARGET_DIR))
+PYTHON3_UV_NEEDS_AARCH64_LIBC_PATCH:=$(filter aarch64-unknown-linux-uclibc,$(PYTHON3_UV_RUST_TARGET_DIR))
 PYTHON3_UV_WORKDIR:=$(abspath $(PYTHON3_UV_DIR))
 PYTHON3_UV_BUILD_PATH:=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH
 PYTHON3_UV_CARGO_HOME:=$(PYTHON3_UV_WORKDIR)/.cargo
 PYTHON3_UV_RUSTUP_HOME:=$(HOME)/.rustup
 PYTHON3_UV_XDG_CACHE_HOME:=$(PYTHON3_UV_WORKDIR)/.cache
 
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/uv/__init__.py
+$(PKG)_TARGET_BINARY:=$(PYTHON3_UV_DEST_DIR)$(PYTHON3_SITE_PKG_DIR)/uv/__init__.py
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
+$(PYTHON3_UV_TARGET_BINARY): $(PYTHON3_UV_DIR)/.configured
 	cd $(PYTHON3_UV_DIR); \
 	export HOME="$(PYTHON3_UV_WORKDIR)"; \
 	export CARGO_HOME="$(PYTHON3_UV_CARGO_HOME)"; \
@@ -58,8 +56,22 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 	$(call SOCKET2_APPLY_UCLIBC_IPV6_TRANSPARENT_PATCH__INT) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.1) \
 	$(call NIX_APPLY_LIBC_BITFLAGS_CAST_PATCH__INT,0.31.2) \
+	# nix 0.31.x Resource enum uses repr(u32) for uclibc, but libc::RLIMIT_* are \
+	# u64 on aarch64 uclibc (__rlimit_resource_t = c_ulong). Use repr(u64) there. ;\
+	for nix_dir in $$HOME/.cargo/registry/src/*/nix-0.31.2; do \
+		[ -d "$$nix_dir" ] || continue; \
+		grep -q 'target_arch = "aarch64"), repr(u64)' "$$nix_dir/src/sys/resource.rs" || \
+			perl -0pi -e 's/    #\[cfg_attr\(any\(\n            all\(target_os = "linux", any\(target_env = "gnu", target_env = "uclibc"\)\),\n            target_os = "hurd"\n        \), repr\(u32\)\)\]/    #[cfg_attr(any(\n            all(target_os = "linux", any(target_env = "gnu", target_env = "uclibc"), not(target_arch = "aarch64")),\n            target_os = "hurd"\n        ), repr(u32))]\n    #[cfg_attr(all(target_os = "linux", target_env = "uclibc", target_arch = "aarch64"), repr(u64))]/' "$$nix_dir/src/sys/resource.rs"; \
+	done; \
 	$(if $(PYTHON3_UV_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 	$(if $(PYTHON3_UV_NEEDS_X86_LIBC_PATCH),find "$(PYTHON3_UV_WORKDIR)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	$(if $(PYTHON3_UV_NEEDS_AARCH64_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH)) \
+	$(if $(PYTHON3_UV_NEEDS_AARCH64_LIBC_PATCH),find "$(PYTHON3_UV_WORKDIR)/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+	# tikv-jemalloc-sys spawns a nested `make` from its build script; the MAKEFLAGS \
+	# inherited from the freetz envira wrapper may carry `-j`/--jobserver-* AFTER the \
+	# `--` separator, which the nested make treats as a target ("No rule to make \
+	# target '-j'"). Drop MAKEFLAGS so maturin/cargo and the nested make run cleanly. ;\
+	unset MAKEFLAGS; \
 	cd "$(FREETZ_BASE_DIR)"; \
 	$(call Build/PyMod3/Pip, PYTHON3_UV, , \
 		HOME="$(PYTHON3_UV_WORKDIR)" \
@@ -82,7 +94,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.configured
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(PYTHON3_UV_TARGET_BINARY)
 
 
 $(pkg)-clean:

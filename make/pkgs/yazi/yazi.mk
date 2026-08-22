@@ -2,7 +2,7 @@ $(call PKG_INIT_BIN, 26.5.6)
 # Rust/Cargo cross-build requires a recent toolchain: gated by "depends on
 # FREETZ_TARGET_UCLIBC_1_0_58_MIN" in Config.in (fails on 0.9.x/1.0.14).
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v26.5.6.tar.gz
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$(YAZI_VERSION).tar.gz
 $(PKG)_HASH:=a18445df86a20068f7b17609d12d6f635de488958579ae7a2b143a244ba7e63f
 $(PKG)_SITE:=https://github.com/sxyazi/yazi/archive/refs/tags
 $(PKG)_DIR:=$(SOURCE_DIR)/yazi-v26.5.6
@@ -14,26 +14,23 @@ YAZI_PKG_DIR:=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 
 include $(MAKE_DIR)/include/650-rust-cargo.mk
 
-YAZI_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-YAZI_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
-YAZI_CARGO_BUILD_STD_FLAGS:=-Z build-std=std\,panic_abort$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), -Zjson-target-spec)
-YAZI_CARGO_BUILD_CMD:=$(if $(RUST_TARGET_NEEDS_STD_BUILD),cargo +nightly build --release --locked $(YAZI_CARGO_BUILD_STD_FLAGS),cargo build --release --locked)
+$(eval $(call RUST_TARGET_VARS))
+$(eval $(call RUST_CARGO_BUILD_STD_VARS))
 YAZI_CARGO_HOME:=$(abspath $(YAZI_DIR)/.cargo)
 $(PKG)_BINARY_YAZI:=$(YAZI_DIR)/target/$(YAZI_RUST_TARGET_DIR)/release/yazi
 $(PKG)_BINARY_YA:=$(YAZI_DIR)/target/$(YAZI_RUST_TARGET_DIR)/release/ya
-$(PKG)_TARGET_BINARY_YAZI:=$($(PKG)_DEST_DIR)/usr/bin/yazi
-$(PKG)_TARGET_BINARY_YA:=$($(PKG)_DEST_DIR)/usr/bin/ya
+$(PKG)_TARGET_BINARY_YAZI:=$(YAZI_DEST_DIR)/usr/bin/yazi
+$(PKG)_TARGET_BINARY_YA:=$(YAZI_DEST_DIR)/usr/bin/ya
 
-$(PKG)_DEPENDS_ON += rust-host
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_BUILTIN_TARGET
-$(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_RUST_CUSTOM_TARGET
+$(eval $(call RUST_DEPENDS_VARS))
+# yazi builds two binaries; tie both to the custom target spec file
+$(YAZI_BINARY_YAZI) $(YAZI_BINARY_YA): $(RUST_TARGET_SPEC_FILE)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_NOP)
 
-$($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
+$(YAZI_BINARY_YAZI) $(YAZI_BINARY_YA): $(YAZI_DIR)/.configured
 	cd $(YAZI_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	export HOME="$(abspath $(YAZI_DIR))"; \
@@ -49,6 +46,7 @@ $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
 	# Fetch all deps so we can patch source files before build ;\
 	cargo$(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)), +nightly) fetch --target "$(YAZI_RUST_TARGET_ARG)" $(if $(filter y,$(RUST_TARGET_NEEDS_CUSTOM_TARGET)),-Zjson-target-spec); \
 	$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH) \
+	$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH) \
 	# Apply getrandom uClibc MIPS syscall patch for missing libc::getrandom ;\
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.2) \
@@ -69,18 +67,18 @@ $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA): $(YAZI_DIR)/.configured
 		> "$$CARGO_HOME/config.toml"; \
 	$(YAZI_CARGO_BUILD_CMD) --target "$(YAZI_RUST_TARGET_ARG)" --bin yazi --bin ya
 
-$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY_YAZI),/usr/bin))
-$(eval $(call INSTALL_BINARY_STRIP_RULE,$($(PKG)_BINARY_YA),/usr/bin))
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$(YAZI_BINARY_YAZI),/usr/bin))
+$(eval $(call INSTALL_BINARY_STRIP_RULE,$(YAZI_BINARY_YA),/usr/bin))
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY_YAZI) $($(PKG)_TARGET_BINARY_YA)
+$(pkg)-precompiled: $(YAZI_TARGET_BINARY_YAZI) $(YAZI_TARGET_BINARY_YA)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(YAZI_DIR) clean
-	$(RM) $($(PKG)_BINARY_YAZI) $($(PKG)_BINARY_YA) $(YAZI_DIR)/.configured $(YAZI_DIR)/.cargo/config.toml
+	$(RM) $(YAZI_BINARY_YAZI) $(YAZI_BINARY_YA) $(YAZI_DIR)/.configured $(YAZI_DIR)/.cargo/config.toml
 
 $(pkg)-uninstall:
-	$(RM) $($(PKG)_TARGET_BINARY_YAZI) $($(PKG)_TARGET_BINARY_YA)
+	$(RM) $(YAZI_TARGET_BINARY_YAZI) $(YAZI_TARGET_BINARY_YA)
 
 $(PKG_FINISH)

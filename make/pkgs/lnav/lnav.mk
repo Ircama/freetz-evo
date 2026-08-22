@@ -1,6 +1,7 @@
 $(call PKG_INIT_BIN, 0.14.0)
-$(PKG)_SOURCE:=lnav-$($(PKG)_VERSION).tar.gz
-$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+include $(MAKE_DIR)/include/650-rust-cargo.mk
+$(PKG)_SOURCE:=lnav-$(LNAV_VERSION).tar.gz
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$(LNAV_VERSION).tar.gz
 $(PKG)_HASH:=bf142441fc85e99c256ebe661e4199768acbd340da1344554da49a9e867a49ea
 $(PKG)_SITE:=https://github.com/tstack/lnav/archive/refs/tags
 ### WEBSITE:=https://lnav.org/
@@ -8,8 +9,7 @@ $(PKG)_SITE:=https://github.com/tstack/lnav/archive/refs/tags
 ### CHANGES:=https://github.com/tstack/lnav/releases
 ### CVSREPO:=https://github.com/tstack/lnav
 
-LNAV_RUST_TARGET_DIR:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(basename $(notdir $(RUST_TARGET_CUSTOM_NAME))))
-LNAV_RUST_TARGET_ARG:=$(if $(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_BUILTIN_NAME),$(RUST_TARGET_SPEC_FILE))
+$(eval $(call RUST_TARGET_VARS))
 LNAV_RUST_BUILD_STD:=std,panic_abort
 # Custom JSON target specs (x86, aarch64, arm-BE) require -Zjson-target-spec on
 # recent cargo versions, otherwise cargo errors out when lnav's own Makefile
@@ -22,13 +22,14 @@ LNAV_RUST_MANIFEST:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/Cargo.toml
 LNAV_RUST_LIB_RS:=$(LNAV_DIR)/src/third-party/lnav-rs-ext/src/lib.rs
 LNAV_RUST_TARGET_ENV:=$(subst -,_,$(LNAV_RUST_TARGET_DIR))
 LNAV_NEEDS_UCLIBC_RUST_FIXES:=$(filter mips-unknown-linux-uclibc mipsel-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
-# The Rust `libc` crate has no x86 (32-bit) uClibc module, which breaks the
-# build-std `libc` (and the app's own `libc`) on i686-unknown-linux-uclibc.
-# RUST_APPLY_UCLIBC_X86_LIBC_PATCH installs the missing module.
+# The Rust `libc` crate has no x86 (32-bit) nor aarch64 uClibc module, which
+# breaks the build-std `libc` (and the app's own `libc`) on those targets.
+# RUST_APPLY_UCLIBC_X86/AARCH64_LIBC_PATCH install the missing modules.
 LNAV_NEEDS_X86_LIBC_PATCH:=$(filter i686-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
+LNAV_NEEDS_AARCH64_LIBC_PATCH:=$(filter aarch64-unknown-linux-uclibc,$(LNAV_RUST_TARGET_DIR))
 
-$(PKG)_BINARY:=$($(PKG)_DIR)/src/lnav
-$(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/lnav
+$(PKG)_BINARY:=$(LNAV_DIR)/src/lnav
+$(PKG)_TARGET_BINARY:=$(LNAV_DEST_DIR)/usr/bin/lnav
 
 $(PKG)_DEPENDS_ON += zlib bzip2 curl libarchive libunistring ncursesw pcre2 sqlite
 $(PKG)_DEPENDS_ON += $(STDCXXLIB)
@@ -57,7 +58,7 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
-$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+$(LNAV_BINARY): $(LNAV_DIR)/.configured
 	if [ "$(FREETZ_PACKAGE_LNAV_WITH_CARGO)" = "y" ]; then \
 		export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 		export HOME="$(abspath $(LNAV_DIR))"; \
@@ -72,6 +73,8 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 		$(LNAV_CARGO_CMD) fetch --locked --manifest-path "$(LNAV_RUST_MANIFEST)" --target "$(LNAV_RUST_TARGET_ARG)"; \
 		$(if $(LNAV_NEEDS_X86_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_X86_LIBC_PATCH)) \
 		$(if $(LNAV_NEEDS_X86_LIBC_PATCH),find "$(LNAV_DIR)/src/third-party/lnav-rs-ext/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
+		$(if $(LNAV_NEEDS_AARCH64_LIBC_PATCH),$(call RUST_APPLY_UCLIBC_AARCH64_LIBC_PATCH)) \
+		$(if $(LNAV_NEEDS_AARCH64_LIBC_PATCH),find "$(LNAV_DIR)/src/third-party/lnav-rs-ext/target" -type d -path '*/.fingerprint/libc-*' -exec rm -rf {} + 2>/dev/null || true;) \
 		if [ -n "$(LNAV_NEEDS_UCLIBC_RUST_FIXES)" ]; then \
 			$(call RUSTIX_APPLY_UCLIBC_PATCHES_RAW_DEP__INT,1.1.4) \
 			$(call LOG2SRC_APPLY_ATOMICU64_FALLBACK__INT) \
@@ -92,12 +95,12 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(LNAV_DIR)/src all; \
 	$(SUBMAKE1) -C $(LNAV_DIR)/src V=1 lnav
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
+$(LNAV_TARGET_BINARY): $(LNAV_BINARY)
 	$(INSTALL_BINARY_STRIP)
 
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$(pkg)-precompiled: $(LNAV_TARGET_BINARY)
 
 $(pkg)-clean:
 	@if [ -f "$(LNAV_DIR)/Makefile" ]; then \
