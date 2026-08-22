@@ -187,6 +187,74 @@ wsl -d Ubuntu-24.04-Freetz
 
 You should now be logged in as `myuser`.
 
+#### Step 5 — Tune WSL2 for large builds
+
+For large Freetz-EVO builds, especially those involving Rust and Cargo, it is recommended to tune the WSL2 virtual machine.
+
+By default, WSL2 can limit the virtual machine to approximately **50% of the host's physical RAM**. This can be restrictive for large builds because Rust/Cargo compilation and linking can temporarily require a substantial amount of memory.
+
+Create or edit the following file in the **Windows user's home directory**:
+
+```text
+%USERPROFILE%\.wslconfig
+```
+
+For example, a configuration can be structured as follows:
+
+```ini
+[wsl2]
+
+# Increase the RAM available to WSL2 beyond the default allocation.
+# Leave sufficient RAM available for Windows and other applications.
+memory=<RAM allocated to WSL2>
+
+# Use a large swap as an emergency buffer for temporary memory spikes,
+# especially during Rust/Cargo compilation and linking.
+swap=<swap size>
+
+# Do not necessarily expose all host CPUs to WSL2.
+# Limiting the number of CPUs reduces contention with Windows and
+# also limits the parallelism automatically selected by make/cargo.
+processors=<number of CPUs allocated to WSL2>
+
+[experimental]
+
+# Gradually return unused cached memory to Windows.
+autoMemoryReclaim=gradual
+
+# Allow the WSL virtual disk to use sparse allocation.
+sparseVhd=true
+```
+
+The values should be adapted to the hardware of the host PC. As a general guideline:
+
+* **Increase `memory` above the WSL2 default** when performing large builds. Do not allocate all physical RAM to WSL2; Windows and other applications still need sufficient memory.
+* **Use a substantially larger `swap`** than the default for particularly demanding builds. Swap is slower than RAM, but it can prevent temporary memory spikes from causing an OOM condition and terminating the build.
+* **Limit `processors` to somewhat fewer than the total number of host CPUs.** This reduces resource contention with Windows and limits the parallelism used by build systems such as `make` and Cargo.
+* `autoMemoryReclaim=gradual` allows unused cached memory to be progressively returned to Windows.
+* `sparseVhd=true` enables sparse allocation of the WSL virtual disk.
+
+After modifying `.wslconfig`, completely shut down WSL2:
+
+```powershell
+wsl --shutdown
+```
+
+Then start the distribution again:
+
+```powershell
+wsl -d Ubuntu-24.04-Freetz
+```
+
+You can verify the memory and swap available inside WSL with:
+
+```bash
+free -h
+```
+
+> For the official documentation on `.wslconfig`, see:
+> https://learn.microsoft.com/windows/wsl/wsl-config#configure-global-options-with-wslconfig
+
 > For the complete official guide to installing WSL, see:
 > <https://learn.microsoft.com/windows/wsl/install>
 
