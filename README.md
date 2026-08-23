@@ -45,7 +45,7 @@ New to Freetz-EVO? The **[Getting Started guide](docs/GETTING_STARTED.md)** walk
 
 ### Compatibility
 
-Packages available only in Freetz-EVO, and not in Freetz-NG, are compiled for MIPS, MIPSel, 32-bit x86, 32-bit ARM and Aarch64 architectures using GCC >= 13.4.0 and uClibc >= 1.0.58. Packages inherited from Freetz-NG retain the compatibility of their original Freetz-NG implementations. On older devices, such as those using the MIPSel architecture, only a subset of the Freetz-EVO enhancements is available.
+Packages available only in Freetz-EVO, and not in Freetz-NG, are compiled for MIPS, MIPSel, 32-bit x86, 32-bit ARM and [Aarch64](docs/5690_XGS_08.25.md) architectures using GCC >= 13.4.0 and uClibc >= 1.0.58. Packages inherited from Freetz-NG retain the compatibility of their original Freetz-NG implementations. On older devices, such as those using the MIPSel architecture, only a subset of the Freetz-EVO enhancements is available.
 
 All Freetz-EVO-only packages are currently developed and tested on an AVM FRITZ!Box 7590 AX running FRITZ!OS 8.25.
 
@@ -353,6 +353,16 @@ make
 
 This removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild. Also the `images` directory is preserved; notice that this directory can grow indefinitely as firmware images and their corresponding backup files are accumulated with each successful build. When running `make` multiple times, periodically check and manually clean the `images/` directory to prevent your build environment from running out of disk space.
 
+### host-tools tarball missing:
+
+When the host tools download fails because missing from the freetz-NG portal (e.g., `tools-yyy-mm-dd.tar.xz`, like `tools-2026-08-14.tar.xz`), host-tools tarball needs to be locally recreated using the following commands:
+
+```bash
+cp .config .config.backup  # This is important because the following command modifies the .config file.
+tools/dl-hosttools own --no-clean
+cp .config.backup .config
+```
+
 #### Delete all local Git changes
 
 To completely restore the repository to the current remote revision and remove all untracked files:
@@ -378,6 +388,7 @@ Use this command only when you want to reset the Git working tree. It is **not**
 ```bash
   git checkout HASH-OF-COMMIT # -b NEW-BRANCH
 ```
+
 ### Checkout another branch:
 ```bash
   git checkout EXISTING-BRANCH
