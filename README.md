@@ -309,6 +309,16 @@ After running `make menuconfig`, select the options appropriate for your target 
   tools/ssh_firmware_update.py --host <myIP> --password <myPassword> --batch
 ```
 
+### host-tools tarball missing:
+
+When the host tools download fails because missing from the freetz-NG portal (e.g., `tools-yyy-mm-dd.tar.xz`, like `tools-2026-08-14.tar.xz`), host-tools tarball needs to be locally recreated using the following commands:
+
+```bash
+cp .config .config.backup  # This is important because the following command modifies the .config file.
+tools/dl-hosttools own --no-clean
+cp .config.backup .config
+```
+
 ### Show GIT states:
 ```bash
   git status
@@ -352,16 +362,6 @@ make
 ```
 
 This removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild. Also the `images` directory is preserved; notice that this directory can grow indefinitely as firmware images and their corresponding backup files are accumulated with each successful build. When running `make` multiple times, periodically check and manually clean the `images/` directory to prevent your build environment from running out of disk space.
-
-### host-tools tarball missing:
-
-When the host tools download fails because missing from the freetz-NG portal (e.g., `tools-yyy-mm-dd.tar.xz`, like `tools-2026-08-14.tar.xz`), host-tools tarball needs to be locally recreated using the following commands:
-
-```bash
-cp .config .config.backup  # This is important because the following command modifies the .config file.
-tools/dl-hosttools own --no-clean
-cp .config.backup .config
-```
 
 #### Delete all local Git changes
 
