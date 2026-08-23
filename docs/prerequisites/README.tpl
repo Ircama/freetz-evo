@@ -109,7 +109,7 @@ sudo apt -y upgrade
 sudo apt -y dist-upgrade
 ```
 
-  - Debian 13 64-bit:
+  - Debian 13/14 64-bit:
 ```
 sudo apt -y install %%Debian-13%%
 ```

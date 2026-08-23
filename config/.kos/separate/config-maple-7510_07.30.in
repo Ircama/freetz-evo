@@ -3,6 +3,15 @@ if FREETZ_AVM_SOURCE_7510_07_30
 config FREETZ_AVM_HAS_FW_LOADER_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_HID_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_HID_GENERIC_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_INPUT_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_SCSI_MOD_BUILTIN
 	def_bool y
 

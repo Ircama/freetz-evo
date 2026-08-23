@@ -194,7 +194,7 @@ config FREETZ_AVM_HAS_FIT_SIZE
 	default 42   if FREETZ_TYPE_4050
 	default 80   if FREETZ_TYPE_4060
 	default 999  if FREETZ_TYPE_4630
-	default 999  if FREETZ_TYPE_4690
+	default 42   if FREETZ_TYPE_4690
 	default 42   if FREETZ_TYPE_5530
 	default 80   if FREETZ_TYPE_5590
 	default 999  if FREETZ_TYPE_5690_NIX

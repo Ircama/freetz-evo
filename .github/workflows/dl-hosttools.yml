@@ -95,14 +95,14 @@ jobs:
           tag: dl-hosttools
           name: dl-hosttools
           body: These files are internally used!
+          draft: true
           prerelease: true
           allowUpdates: true
           removeArtifacts: false
           artifacts: "dl/tools-${{ steps.version.outputs.version }}.tar.xz"
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: false
-          artifactErrorsFailBuild: false
-          draft: true
+          artifactErrorsFailBuild: true
 
       - name: bump
         env:

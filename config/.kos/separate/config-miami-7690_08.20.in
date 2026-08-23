@@ -84,6 +84,9 @@ config FREETZ_AVM_HAS_FUSE_FS_BUILTIN
 config FREETZ_AVM_HAS_FW_LOADER_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_INPUT_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_JBD2_BUILTIN
 	def_bool y
 

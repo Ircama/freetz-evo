@@ -52,6 +52,16 @@ KERNEL_COMMON_MAKE_OPTIONS += INSTALL_MOD_PATH="$(FREETZ_BASE_DIR)/$(KERNEL_DIR)
 ifeq ($(strip $(FREETZ_VERBOSITY_LEVEL)),2)
 KERNEL_COMMON_MAKE_OPTIONS += V=1
 endif
+ifeq ($(FREETZ_AVM_HAS_MODVERSIONS_BUILTIN),y)
+ifeq ($(filter kernel-symrefs,$(MAKECMDGOALS)),)
+ifneq ($(KERNEL_SYMREFS_HASH),X)
+KERNEL_SYMREFS_UNPACK:=y
+endif
+KERNEL_COMMON_MAKE_OPTIONS += KBUILD_PRESERVE=1
+else
+KERNEL_COMMON_MAKE_OPTIONS += KBUILD_SYMTYPES=1
+endif
+endif
 
 KERNEL_VANILLA_SOURCE:=$(call qstrip,$(FREETZ_DL_KERNEL_VANILLA_SOURCE))
 KERNEL_VANILLA_HASH:=$(call qstrip,$(FREETZ_DL_KERNEL_VANILLA_HASH))
@@ -60,6 +70,10 @@ KERNEL_VANILLA_SITE:=@KERNEL/linux/kernel/v$(call qstrip,$(FREETZ_KERNEL_VANILLA
 KERNEL_AVMDIFF_SOURCE:=$(call qstrip,$(FREETZ_DL_KERNEL_AVMDIFF_SOURCE))
 KERNEL_AVMDIFF_HASH:=$(call qstrip,$(FREETZ_DL_KERNEL_AVMDIFF_HASH))
 KERNEL_AVMDIFF_SITE:=@MIRROR
+
+KERNEL_SYMREFS_SOURCE:=$(call qstrip,$(FREETZ_DL_KERNEL_SYMREFS_SOURCE))
+KERNEL_SYMREFS_HASH:=$(call qstrip,$(FREETZ_DL_KERNEL_SYMREFS_HASH))
+KERNEL_SYMREFS_SITE:=@MIRROR
 
 KERNEL_ECHO_TYPE:=KRN
 
@@ -72,11 +86,20 @@ $(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE): | $(DL_DIR)
 	@$(call _ECHO,downloading,$(KERNEL_ECHO_TYPE))
 	$(DL_TOOL) $(DL_DIR) $(KERNEL_AVMDIFF_SOURCE) $(KERNEL_AVMDIFF_SITE) $(KERNEL_AVMDIFF_HASH) $(SILENT)
 
+$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE): | $(DL_DIR)
+	@$(call _ECHO,downloading,$(KERNEL_ECHO_TYPE))
+	$(DL_TOOL) $(DL_DIR) $(KERNEL_SYMREFS_SOURCE) $(KERNEL_SYMREFS_SITE) $(KERNEL_SYMREFS_HASH) $(SILENT)
+
 # Make sure that a perfectly clean build is performed whenever Freetz package
 # options have changed. The safest way to achieve this is by starting over
 # with the source directory.
 kernel-unpacked: $(KERNEL_DIR)/.unpacked
-$(KERNEL_DIR)/.unpacked: $(DL_DIR)/$(KERNEL_VANILLA_SOURCE) $(if $(FREETZ_KERNEL_AVMDIFF_AVAILABLE),$(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE)) | $(UNPACK_TARBALL_PREREQUISITES) gcc-kernel
+$(KERNEL_DIR)/.unpacked: $(DL_DIR)/$(KERNEL_VANILLA_SOURCE)
+$(KERNEL_DIR)/.unpacked: $(if $(FREETZ_KERNEL_AVMDIFF_AVAILABLE),$(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE))
+$(KERNEL_DIR)/.unpacked: $(if $(KERNEL_SYMREFS_UNPACK),$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE))
+$(KERNEL_DIR)/.unpacked: | $(UNPACK_TARBALL_PREREQUISITES)
+$(KERNEL_DIR)/.unpacked: | gcc-kernel
+$(KERNEL_DIR)/.unpacked:
 	@echo "Using kernel version: $(call qstrip,$(FREETZ_KERNEL_VERSION))" $(SILENT)
 	$(RM) -r $(KERNEL_DIR)
 	mkdir -p $(KERNEL_SOURCE_DIR)
@@ -97,6 +120,10 @@ ifeq ($(strip $(FREETZ_KERNEL_AVMDIFF_AVAILABLE)),y)
 	  [ "$$a" == "slink" ] && ln -s "$$c" "$(KERNEL_SOURCE_DIR)/$${b}"; \
 	  [ "$$a" == "touch" ] && touch       "$(KERNEL_SOURCE_DIR)/$${b}"; \
 	done $(SILENT) || true
+endif
+ifeq ($(KERNEL_SYMREFS_UNPACK),y)
+	@echo "#unpacking symrefs archive" $(SILENT)
+	@$(call UNPACK_TARBALL,$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE),$(KERNEL_SOURCE_DIR),1)
 endif
 	@if [ -e "$(KERNEL_SOURCE_DIR)/scripts/kconfig/lxdialog/check-lxdialog.sh" ]; then \
 		echo "#fixing ncurses detection bug" $(SILENT); \
@@ -274,6 +301,25 @@ kernel-autofix: kernel-dirclean
 	$(MAKE) AUTO_FIX_PATCHES=y $(KERNEL_DIR)/.configured
 kernel-recompile: kernel-distclean kernel-precompiled
 .PHONY: kernel-autofix kernel-recompile
+
+
+ifeq ($(FREETZ_AVM_HAS_MODVERSIONS_BUILTIN),y)
+kernel-symrefs: kernel-recompile
+	find $(KERNEL_SOURCE_DIR) -name '*.symtypes' -exec bash -c 'f="$$0"; sed "s/^/override /" "$$f" > "$${f%.*}.symref"' {} ';'
+	find $(KERNEL_SOURCE_DIR) -name '*.symref' -printf '%P\n' | LANG=C sort | \
+	  $(TAR) -c  --owner=0 --group=0 --numeric-owner  --mtime='@0'  -C $(KERNEL_SOURCE_DIR)  -T - | \
+	  $(LZMA) e -si $(DL_DIR)/$(KERNEL_SYMREFS_SOURCE) -d25
+	@ln -sf "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)"
+	@echo
+	@du -h "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)"
+	@sha256sum "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)" | sed 's/^/SHA256:=/;s/ .*//'
+	@echo "OUTPUT:=$(KERNEL_SYMREFS_SOURCE)"
+else
+kernel-symrefs:
+	@echo WARNING: This kernel has no MODVERSIONS
+endif
+.PHONY: kernel-symrefs
+
 
 $(KERNEL_SOURCE_DIR)/$(KERNEL_IMAGE_FILE): $(KERNEL_DIR)/.prepared $(KERNEL_BUILD_DEPENDENCIES) | $(KERNEL_DEPENDS_ON)
 	$(call _ECHO,image,$(KERNEL_ECHO_TYPE))

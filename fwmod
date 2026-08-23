@@ -1489,7 +1489,7 @@ if [ "$DO_MOD" -gt 0 ]; then
 			echo "kernel/drivers/char/audio/avm_audio.ko:" >> "$MODULES_DIR/modules.dep"
 		fi
 		# symvers
-		if [ "$FREETZ_REPLACE_KERNEL" == "y" ] && grep -q '^CONFIG_MODVERSIONS=y' "${BASE_DIR}/make/kernel/configs/freetz/config-${KERNEL_ID}"; then
+		if [ "$FREETZ_AVM_HAS_MODVERSIONS_BUILTIN" == "y" ]; then
 			DEPMOD_SYMVERS="${BASE_DIR}/${SOURCE_SUBDIR}/kernel/ref-${KERNEL_ID}/linux-${FREETZ_KERNEL_VERSION_MAJOR}/Module.symvers"
 			# Augment Module.symvers with inter-module CRC symbols exported by
 			# proprietary firmware .ko files (e.g. directconnect_datapath, eip123_hw).

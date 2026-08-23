@@ -33,9 +33,11 @@ TOOLS_HARDCODED_DIR:=/home/freetz/freetz-ng/tools/build
 
 TOOLS_SOURCE_DIR:=$(FREETZ_BASE_DIR)/source/host-tools
 HOST_TOOLS_DIR:=$(FREETZ_BASE_DIR)/$(TOOLS_BUILD_DIR)
+HOST_TOOLS_LIB_DIR:=$(FREETZ_BASE_DIR)/$(TOOLS_BUILD_DIR)/lib
 
 $(TOOLS_SOURCE_DIR) \
-$(HOST_TOOLS_DIR):
+$(HOST_TOOLS_DIR) \
+$(HOST_TOOLS_LIB_DIR):
 	@mkdir -p $@
 
 TOOLS_FAVORED:=kconfig-host tar-host busybox-host make-host pkgconf-host m4-host autoconf-host automake-host libtool-host

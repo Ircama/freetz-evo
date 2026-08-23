@@ -64,6 +64,7 @@ header      gnutls/gnutls.h        FREETZ_HOSTTOOLS_BUILD FREETZ_AVM_HAS_FWLAYOU
 header      readline/readline.h    FREETZ_PACKAGE_GDB_HOST
 header      sqlite3.h              FREETZ_ROOTEMU_PSEUDO
 lib         libsqlite3.so          FREETZ_ROOTEMU_PSEUDO
+lib         libatomic.so
 lib32       libatomic.so           FREETZ_HOSTTOOLS_BUILD  # yf-akcarea + pseudo + fakeroot
 pkgconf     libzstd.pc             FREETZ_TOOLCHAIN_CCACHE
 

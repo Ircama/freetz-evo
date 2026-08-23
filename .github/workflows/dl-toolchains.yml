@@ -163,6 +163,7 @@ jobs:
           tag: dl-toolchains_${{ steps.version.outputs.version }}
           name: dl-toolchains-${{ steps.version.outputs.version }}
           body: These files are internally used!
+          draft: true
           prerelease: true
           allowUpdates: true
           removeArtifacts: false
@@ -170,6 +171,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: true
           artifactErrorsFailBuild: true
-          draft: true
 
 

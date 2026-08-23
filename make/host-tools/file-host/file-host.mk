@@ -9,7 +9,7 @@ $(PKG)_SITE:=http://ftp.astron.com/pub/file,ftp://ftp.astron.com/pub/file
 ### STEWARD:=fda77
 
 $(PKG)_BINARY_BUILD:=$($(PKG)_DIR)/src/file
-$(PKG)_BINARY_TARGET:=$(TOOLS_BUILD_DIR)/usr/bin/file
+$(PKG)_BINARY_TARGET:=$(TOOLS_DIR)/file
 
 $(PKG)_MAGIC_BUILD := $($(PKG)_DIR)/magic/magic.mgc
 $(PKG)_MAGIC_TARGET := $(TOOLS_BUILD_DIR)/usr/share/misc/magic.mgc

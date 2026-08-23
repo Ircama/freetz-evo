@@ -108,6 +108,15 @@ config FREETZ_AVM_HAS_FW_LOADER_BUILTIN
 config FREETZ_AVM_HAS_HFSPLUS_FS_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_HID_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_HID_GENERIC_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_INPUT_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_ISO9660_FS_BUILTIN
 	def_bool y
 

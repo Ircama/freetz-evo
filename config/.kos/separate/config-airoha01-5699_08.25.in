@@ -78,6 +78,15 @@ config FREETZ_AVM_HAS_FS_MBCACHE_BUILTIN
 config FREETZ_AVM_HAS_FW_LOADER_BUILTIN
 	def_bool y
 
+config FREETZ_AVM_HAS_HID_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_HID_GENERIC_BUILTIN
+	def_bool y
+
+config FREETZ_AVM_HAS_INPUT_BUILTIN
+	def_bool y
+
 config FREETZ_AVM_HAS_JBD2_BUILTIN
 	def_bool y
 

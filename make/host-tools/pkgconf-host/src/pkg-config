@@ -1,25 +1,32 @@
 #! /usr/bin/env bash
 
-MDARC="$(echo ${0##*/} | sed -n 's/-linux-.*//p')"
-case "$MDARC" in
-	mipsel|mips|i686|arm|armeb|aarch64|aarch64_be)	SETPCVS="$MDARC"	;;
-	"")						SETPCVS="no"		;;
-	*)						SETPCVS="unknown"	;;
+case "$(echo ${0##*/} | sed -n 's/-linux-.*//p')" in
+
+	"")	# host
+		PKGCONFIG_ROOT="$(realpath $(dirname $(realpath $0))/..)"
+		PKGCONFIG_PATH=""
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/usr/lib64/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/usr/lib/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/usr/share/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/lib64/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/lib/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKGCONFIG_ROOT}/share/pkgconfig"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}$(PATH="${PATH#*:}" pkgconf --variable pc_path pkg-config)"
+		PKGCONFIG_PATH="${PKGCONFIG_PATH:+$PKGCONFIG_PATH:}${PKG_CONFIG_PATH}"
+
+		export PKG_CONFIG_PATH="${PKGCONFIG_PATH%%:}"
+		;;
+	*)	# target
+		PKGCONFIG_ROOT="${GLOBAL_LIBDIR%/usr/lib}"
+
+		export PKG_CONFIG_DIR=""
+		export PKG_CONFIG_LIBDIR="${PKGCONFIG_ROOT}/usr/lib/pkgconfig"
+		export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-$PKG_CONFIG_LIBDIR}"
+		;;
 esac
 
-if [ "$SETPCVS" != "no" ]; then
-	TARGET_TOOLCHAIN_STAGING_DIR="${GLOBAL_LIBDIR%/usr/lib}"
-	export PKG_CONFIG_LIBDIR="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/lib/pkgconfig"
-else
-	MDPWD="$(dirname $(realpath $0))"
-	TARGET_TOOLCHAIN_STAGING_DIR="$(realpath $MDPWD/..)"
-	export PKG_CONFIG_LIBDIR="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/lib64/pkgconfig:${TARGET_TOOLCHAIN_STAGING_DIR}/usr/lib/pkgconfig:${PKG_CONFIG_LIBDIR}"
-fi
-
-export PKG_CONFIG_DIR=""
-export PKG_CONFIG_SYSTEM_LIBRARY_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/lib"
-export PKG_CONFIG_SYSTEM_INCLUDE_PATH="${TARGET_TOOLCHAIN_STAGING_DIR}/usr/include"
-export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-$PKG_CONFIG_LIBDIR}"
+export PKG_CONFIG_SYSTEM_LIBRARY_PATH="${PKGCONFIG_ROOT}/usr/lib"
+export PKG_CONFIG_SYSTEM_INCLUDE_PATH="${PKGCONFIG_ROOT}/usr/include"
 
 exec ${0%/*}/pkgconf "$@"
 
