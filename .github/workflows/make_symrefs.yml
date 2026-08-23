@@ -156,8 +156,8 @@ jobs:
           truncate -s0 .config
           echo '# FREETZ_TOOLCHAIN_CCACHE is not set'                                                 >> .config
           echo 'FREETZ_VERBOSITY_FWMOD_2=y'                                                           >> .config
-          echo 'FREETZ_VERBOSITY_LEVEL_2=y'                                                           >> .config
-          echo 'FREETZ_VERBOSITY_LEVEL=2'                                                             >> .config
+          echo 'FREETZ_VERBOSITY_LEVEL_0=y'                                                           >> .config
+          echo 'FREETZ_VERBOSITY_LEVEL=0'                                                             >> .config
           echo 'FREETZ_SERIES_ALL=y'                                                                  >> .config
           echo 'FREETZ_USER_LEVEL_DEVELOPER=y'                                                        >> .config
           echo '# FREETZ_DL_IMAGE_AT_LAST is not set'                                                 >> .config
@@ -181,13 +181,8 @@ jobs:
           FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
         run: |
           make olddefconfig kernel-symrefs
-          [ -e symrefs-*.tar.lzma ] && echo "ABORT=false" >> "$GITHUB_OUTPUT" || echo "ABORT=true" >> "$GITHUB_OUTPUT"
-
-      - name: git-diff
-        if: steps.generate.outputs.ABORT != 'true'
-        run: |
-          echo "##########################################################"
-          git diff --no-prefix
+          [ -e symrefs-*.tar.lzma ] || echo "ABORT=true" >> "$GITHUB_OUTPUT"
+          tar tf symrefs-*.tar.lzma 2>/dev/null | grep -q . || echo "EMPTY=true" >> "$GITHUB_OUTPUT"
 
       - name: result
         if: steps.generate.outputs.ABORT != 'true'
@@ -198,7 +193,7 @@ jobs:
           sha256sum symrefs-*.tar.lzma
 
       - name: symrefs
-        if: steps.generate.outputs.ABORT != 'true'
+        if: steps.generate.outputs.ABORT != 'true' && steps.generate.outputs.EMPTY != 'true'
         run: |
           echo "##########################################################"
           tar tvf symrefs-*.tar.lzma

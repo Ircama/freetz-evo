@@ -1536,7 +1536,6 @@ if [ "$DO_MOD" -gt 0 ]; then
 				fi
 			fi
 			rm -f "${DEPMOD_BASELINE_SYMS}"
-			cp -f "${DEPMOD_SYMVERS}" "${BASE_DIR}/make/kernel/configs/symvers/symvers-${KERNEL_ID}"
 		fi
 		rm -f "$DEPMOD_TEMP"
 		# reproducible

@@ -64,7 +64,7 @@ Latest changes
 ### devel
 
   - Build system:
-    * ccache 4.13.6
+    * ccache 4.14
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.59
 
   - Host tools:
@@ -183,6 +183,7 @@ Latest changes
     * libcap 2.49/2.78
     * libcap-ng 0.9.3
     * libcjson 1.7.19
+    * libdeflate 1.26
     * libevent 2.1.13
     * libexif 0.6.26
     * libffi 3.8.0
