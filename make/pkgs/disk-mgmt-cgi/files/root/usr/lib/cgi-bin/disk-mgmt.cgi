@@ -248,12 +248,27 @@ human_bytes_sh() {
 find_cmd() {
 	for _cmd in "$@"; do
 		_cmd_path=$(command -v "$_cmd" 2>/dev/null)
+		# busybox ash riporta gli applet busybox col nome nudo (es. "mke2fs",
+		# "mount"), mascherando i tool GNU reali in /usr/sbin o /sbin (busybox
+		# mke2fs non supporta -t/-v; busybox mount non gestisce NTFS/ntfs-3g
+		# senza driver kernel). Se il nome è nudo, preferisci il binario reale.
+		case "$_cmd_path" in
+			*/*) : ;;
+			"$_cmd")
+				for _dir in /mod/usr/sbin /mod/external/usr/sbin /usr/sbin /sbin /usr/bin /bin; do
+					if [ -x "$_dir/$_cmd" ]; then
+						_cmd_path="$_dir/$_cmd"
+						break
+					fi
+				done
+				;;
+		esac
 		if [ -n "$_cmd_path" ]; then
 			echo "$_cmd_path"
 			return 0
 		fi
-		# Also search sbin directories that may not be in CGI PATH
-		for _dir in /mod/usr/sbin /mod/external/usr/sbin /usr/sbin /sbin; do
+		# Also search sbin/bin directories that may not be in CGI PATH
+		for _dir in /mod/usr/sbin /mod/external/usr/sbin /usr/sbin /sbin /usr/bin /bin; do
 			if [ -x "$_dir/$_cmd" ]; then
 				echo "$_dir/$_cmd"
 				return 0
@@ -1452,6 +1467,30 @@ ${CMD_MKNTFS:-mkntfs} -Q -f ${_device}<new_partnum>" ;;
 		fi
 	fi
 
+	# Avviso dati residui: se la partizione è stata creata SENZA formattazione
+	# (create_fs != 1) e blkid rileva un filesystem stantio da un layout
+	# precedente (es. dopo migrazioni ripetute che non azzerano i dati), avvisa
+	# l'utente — evita confusione in check_filesystem/mount successivi.
+	if [ "$_rc" -eq 0 ] && [ "$_create_fs" != "1" ] && [ -n "$CMD_BLKID" ]; then
+		_left_part_dev=''
+		if [ -n "$_new_part" ] && is_valid_partnum "$_new_part"; then
+			_left_part_dev=$(partition_path "$_device" "$_new_part")
+		fi
+		if [ -n "$_left_part_dev" ] && [ -b "$_left_part_dev" ]; then
+			_left_fs=$($CMD_BLKID -o value -s TYPE "$_left_part_dev" 2>/dev/null | head -n 1)
+			if [ -n "$_left_fs" ]; then
+				_warn="⚠️  Warning: the new partition was NOT formatted and contains leftover data from a previous layout (blkid: $_left_fs). Wipe it (wipefs) or recreate with 'Format' to make it truly empty."
+				# In streaming mode (queue apply) emit_cmd_result only writes the
+				# done-sentinel and drops _detail, so surface the warning on STREAM_LOG.
+				if [ -n "$STREAM_LOG" ]; then
+					printf '\n%s\n' "$_warn" >> "$STREAM_LOG"
+				else
+					_out="$_out\n$_warn"
+				fi
+			fi
+		fi
+	fi
+
 	if [ "$_rc" -eq 0 ]; then
 		emit_cmd_result true "$_rc" "Partition created" "$_out"
 	else
@@ -1510,10 +1549,23 @@ action_resize_partition() {
 	is_valid_sector "$_end_sector" || { emit_json_error "Invalid end sector"; return; }
 
 	if dry_run_enabled; then
-		_preview_cmd="$CMD_PARTED -s $_device unit s resizepart $_partnum ${_end_sector}s
+		_cur_end=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: -v p="$_partnum" '$1==p {gsub(/s/,"",$3); print $3; exit}')
+		_is_shrink=no
+		case "$_cur_end" in
+			''|*[!0-9]*) : ;;
+			*) [ "$_end_sector" -lt "$_cur_end" ] && _is_shrink=yes ;;
+		esac
+		if [ "$_is_shrink" = "yes" ]; then
+			# Shrink: parted -s (script mode) cannot answer the "Shrinking a
+			# partition can cause data loss" YES/NO prompt (ui.c returns
+			# PED_EXCEPTION_UNHANDLED) and aborts with rc=1, so run parted with
+			# --pretend-input-tty and feed "Yes" from a pipe.
+			_preview_cmd="printf 'Yes\\n' | $CMD_PARTED ---pretend-input-tty -f $_device unit s resizepart $_partnum ${_end_sector}s
 $CMD_PARTPROBE $_device"
-		_preview_cmd="$_preview_cmd
-# if shrink confirmation is requested, backend retries with scripted 'Yes'"
+		else
+			_preview_cmd="$CMD_PARTED -s $_device unit s resizepart $_partnum ${_end_sector}s
+$CMD_PARTPROBE $_device"
+		fi
 		if [ "$_resize_fs" = "yes" ]; then
 			_preview_cmd="$_preview_cmd
 # filesystem resize requested: backend auto-detects FS and runs ext/ntfs/fat resize tools when available"
@@ -1522,30 +1574,42 @@ $CMD_PARTPROBE $_device"
 		return
 	fi
 
-	exec_cmd_c "Resize partition p$_partnum on $_device" \
-		"$CMD_PARTED -s -f $_device unit s resizepart $_partnum ${_end_sector}s" \
-		"$CMD_PARTED" -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s"
+	# parted refuses to shrink a partition in -s (script) mode: it raises the
+	# YES/NO "Shrinking a partition can cause data loss" warning and script mode
+	# returns PED_EXCEPTION_UNHANDLED (parted/ui.c), so it aborts with rc=1 and
+	# nothing is resized. Detect a shrink up front and run parted with
+	# --pretend-input-tty feeding "Yes" from a pipe, so the first attempt never
+	# fails. (Also covers non-tty CGI stdin, which would otherwise be unhandled.)
+	_cur_end=$($CMD_PARTED -s -m "$_device" unit s print 2>/dev/null | awk -F: -v p="$_partnum" '$1==p {gsub(/s/,"",$3); print $3; exit}')
+	_is_shrink=no
+	case "$_cur_end" in
+		''|*[!0-9]*) : ;;
+		*) [ "$_end_sector" -lt "$_cur_end" ] && _is_shrink=yes ;;
+	esac
+
+	if [ "$_is_shrink" = "yes" ]; then
+		exec_cmd_c "Resize partition p$_partnum on $_device (shrink)" \
+			"printf 'Yes\\n' | $CMD_PARTED ---pretend-input-tty -f $_device unit s resizepart $_partnum ${_end_sector}s" \
+			/bin/sh -c "printf 'Yes\\n' | $CMD_PARTED ---pretend-input-tty -f '$_device' unit s resizepart '$_partnum' '${_end_sector}s' 2>&1"
+	else
+		exec_cmd_c "Resize partition p$_partnum on $_device" \
+			"$CMD_PARTED -s -f $_device unit s resizepart $_partnum ${_end_sector}s" \
+			"$CMD_PARTED" -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s"
+	fi
 	_rc=$EXEC_RC; _out="$EXEC_OUT"
 
-	# Some parted versions still require an explicit confirmation when shrinking.
-	# Retry with scripted confirmation so queued operations do not stop on rc=134.
+	# Safety net: if parted still asks for confirmation (e.g. detection above
+	# failed or a different prompt appears), retry with scripted confirmation.
 	if [ "$_rc" -ne 0 ]; then
 		case "$_out" in
 			*"Shrinking a partition can cause data loss"*|*"are you sure you want to continue"*)
 				exec_cmd_c "Resize partition (scripted-confirm retry)" \
-					"printf 'Yes\\nIgnore\\nIgnore\\nIgnore\\n' | $CMD_PARTED ---pretend-input-tty -f $_device unit s resizepart $_partnum ${_end_sector}s yes" \
-					/bin/sh -c "printf 'Yes\\nIgnore\\nIgnore\\nIgnore\\n' | $CMD_PARTED ---pretend-input-tty -f '$_device' unit s resizepart '$_partnum' '${_end_sector}s' yes 2>&1"
+					"printf 'Yes\\n' | $CMD_PARTED ---pretend-input-tty -f $_device unit s resizepart $_partnum ${_end_sector}s" \
+					/bin/sh -c "printf 'Yes\\n' | $CMD_PARTED ---pretend-input-tty -f '$_device' unit s resizepart '$_partnum' '${_end_sector}s' 2>&1"
 				_retry_rc=$EXEC_RC; _retry_out="$EXEC_OUT"
 				if [ "$_retry_rc" -eq 0 ]; then
 					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out"
 					_rc=0
-				else
-					exec_cmd_c "Resize partition (trailing-yes retry)" \
-						"$CMD_PARTED -s -f $_device unit s resizepart $_partnum ${_end_sector}s yes" \
-						"$CMD_PARTED" -s -f "$_device" unit s resizepart "$_partnum" "${_end_sector}s" yes
-					_retry_rc2=$EXEC_RC; _retry_out2="$EXEC_OUT"
-					_out="$_out\n\nRetry with scripted confirmation rc=$_retry_rc:\n$_retry_out\n\nRetry with trailing yes rc=$_retry_rc2:\n$_retry_out2"
-					_rc=$_retry_rc2
 				fi
 				;;
 		esac
@@ -2969,6 +3033,42 @@ action_move_partition_sfdisk() {
 		_end=$(( _start + _size - 1 ))
 	fi
 
+	# sfdisk --move-data è rotto per le partizioni logiche in un contenitore
+	# extended MBR: genera uno start corrotto (2^32 + start) e fallisce rc=1,
+	# riscrivendo la tabella con un valore sbagliato. Per le logiche si delega
+	# a partition_migration.sh (metodo robusto che le gestisce correttamente).
+	_is_logical=no
+	case "$_dump" in
+		*"label: dos"*|*"label: msdos"*)
+			if [ "$_partnum" -ge 5 ] 2>/dev/null; then _is_logical=yes; fi
+			;;
+	esac
+
+	if [ "$_is_logical" = "yes" ]; then
+		if [ -z "$CMD_PARTITION_MIGRATION" ]; then
+			emit_json_error "Logical partition move requires partition_migration.sh (not found in PATH)"
+			return
+		fi
+		_src_path=$(partition_path "$_device" "$_partnum")
+		_move_cmd="$CMD_PARTITION_MIGRATION -d $_device -D $_device -p $_src_path -n $_partnum -S $_start -E $_end -c smart -a ${_align_bytes:-1048576} -w 0 -M"
+		if dry_run_enabled; then
+			emit_dry_run_result "partition move (partition_migration.sh)" "$_move_cmd
+partprobe $_device"
+			return
+		fi
+		exec_cmd_c "Move partition p$_partnum on $_device (partition_migration.sh)" \
+			"$_move_cmd" \
+			/bin/sh -c "$_move_cmd 2>&1"
+		_rc=$EXEC_RC; _out="$EXEC_OUT"
+		[ "$_rc" -eq 0 ] && run_partprobe "$_device"
+		if [ "$_rc" -eq 0 ]; then
+			emit_cmd_result true "$_rc" "Partition p${_partnum} moved to sector ${_start}" "$_out"
+		else
+			emit_cmd_result false "$_rc" "Partition move failed" "$_out"
+		fi
+		return
+	fi
+
 	if dry_run_enabled; then
 		emit_dry_run_result "sfdisk --move-data" \
 			"printf 'start=%d, size=%d\\n' $_start $_size | sfdisk-ng --move-data -N $_partnum --no-reread $_device
@@ -4349,6 +4449,7 @@ action_start_job() {
 			set_partition_name)  action_set_partition_name ;;
 			set_partition_flag)  action_set_partition_flag ;;
 			convert_table_label) action_convert_table_label ;;
+			convert_label)       action_convert_table_label ;;
 			move_partition)      action_move_partition ;;
 			move_partition_sfdisk) action_move_partition_sfdisk ;;
 			clone_partition_dd)  action_clone_partition_dd ;;
@@ -4813,6 +4914,9 @@ cat <<'EOF'
 	justify-content: center;
 	z-index: 4500;
 }
+/* Confirmation dialog must stack above any open modal (e.g. the Freetz EVO
+   setup wizard), otherwise it can end up hidden behind it. */
+#pcgiConfirmModal { z-index: 4800; }
 .pcgi-modal-box {
 	background: #fff;
 	border-radius: 8px;
@@ -6967,11 +7071,12 @@ cat <<'EOF'
 <div class="pcgi-toolbar" style="margin-top:8px;">
 	<button type="button" id="applyQueueBtn" onclick="applyQueue()">Apply pending operations</button>
 	<button type="button" onclick="clearQueue()">Clear queue</button>
+	<button type="button" onclick="copyQueueToClipboard()" id="copyQueueBtn" title="Copy queue to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;margin-left:10px">&#x29C9;</button>
 </div>
 <div style="position:relative">
 	<div id="cmdLogBtnBar" style="position:absolute;top:4px;right:18px;z-index:10;display:flex;gap:3px;opacity:0.75">
 		<button type="button" onclick="toggleLogFullscreen()" id="fsLogBtn" title="Fullscreen" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x26F6;</button>
-		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2398;</button>
+		<button type="button" onclick="copyLogToClipboard()" id="copyLogBtn" title="Copy to clipboard" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x29C9;</button>
 		<button type="button" onclick="clearLogOutput()" id="clearLogBtn" title="Clear log" style="font-size:11px;padding:1px 6px;line-height:1.4;cursor:pointer;display:none">&#x2715;</button>
 	</div>
 	<pre id="cmdOutput" class="pcgi-log pcgi-ansi-log"></pre>
@@ -7081,7 +7186,7 @@ cat <<'EOF'
 		<div class="pcgi-mermaid-legend" id="pcgiMermaidLegend"></div>
 		<div class="pcgi-mermaid-toolbar">
 			<button type="button" id="pcgiMermaidRegenBtn">&#x21BA; Regenerate</button>
-			<button type="button" id="pcgiMermaidCopyBtn">&#x2398; Copy source</button>
+			<button type="button" id="pcgiMermaidCopyBtn">&#x29C9; Copy source</button>
 			<span class="pcgi-mermaid-copy-ok" id="pcgiMermaidCopyOk">Copied!</span>
 			<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
 				<input type="checkbox" id="pcgiMermaidShowSrc"> Show source
@@ -7099,8 +7204,8 @@ cat <<'EOF'
 			<label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
 				Layout:
 				<select id="pcgiMermaidDir" style="font-size:12px;padding:1px 4px">
+					<option value="LR" selected>Left → Right</option>
 					<option value="TB">Top → Bottom</option>
-					<option value="LR">Left → Right</option>
 				</select>
 			</label>
 		</div>
@@ -7260,7 +7365,8 @@ window.paceOptions = {
 			tQueueAllDone: 'All {0} operation(s) applied successfully.',
 			tQueueDiskWarning: 'WARNING: Disk operation is starting now. Do not interrupt power or disconnect storage. This may take several minutes.',
 			tQueueStoppedAt: 'Stopped due to failure at step {0}.',
-			tQueueErrorAt: 'Error at step {0}: {1}'
+			tQueueErrorAt: 'Error at step {0}: {1}',
+			tQueueCopied: 'Queue copied to clipboard.'
 		},
 		it: {
 			dangerTitle: 'Zona pericolosa',
@@ -7364,7 +7470,8 @@ window.paceOptions = {
 			tQueueAllDone: 'Tutte le {0} operazione/i applicate con successo.',
 			tQueueDiskWarning: 'ATTENZIONE: Operazione disco in corso. Non interrompere alimentazione o staccare lo storage. Potrebbe richiedere alcuni minuti.',
 			tQueueStoppedAt: 'Interrotto per errore al passo {0}.',
-			tQueueErrorAt: 'Errore al passo {0}: {1}'
+			tQueueErrorAt: 'Errore al passo {0}: {1}',
+			tQueueCopied: 'Coda copiata negli appunti.'
 		},
 		de: {
 			dangerTitle: 'Gefahrenbereich',
@@ -7468,7 +7575,8 @@ window.paceOptions = {
 			tQueueAllDone: 'Alle {0} Operation(en) erfolgreich angewendet.',
 			tQueueDiskWarning: 'WARNUNG: Festplattenoperation laeuft. Unterbrechung der Stromversorgung und Abtrennen des Speichers vermeiden. Dies kann einige Minuten dauern.',
 			tQueueStoppedAt: 'Bei Schritt {0} wegen Fehler gestoppt.',
-			tQueueErrorAt: 'Fehler bei Schritt {0}: {1}'
+			tQueueErrorAt: 'Fehler bei Schritt {0}: {1}',
+			tQueueCopied: 'Warteschlange in die Zwischenablage kopiert.'
 		}
 	};
 
@@ -7535,6 +7643,25 @@ window.paceOptions = {
 		ctxFreeRestore:    "Restore partition from image file",
 		ctxFreeReceive:    "Receive partition from network",
 		ctxDiskMoveClone: "Disk move or clone",
+		ctxDiskMoveCloneHere: "Move or clone disk here",
+		ctxDiskSelect: "Select disk",
+		ctxDiskDeleteAll: "Delete all disk partitions",
+		ctxDiskSetupFritzbox: "⚡ Freetz EVO disk setup",
+		ctxDiskConvertLabel: "Convert partition table (MBR/GPT…)",
+		ctxDiskImgExport: "Export disk to image file",
+		ctxDiskImgImport: "Restore disk from image file",
+		ctxDiskDdrescue: "Clone disk with ddrescue (data recovery)",
+		ctxDiskSmart: "SMART info (smartctl)",
+		ctxDiskHdparm: "Disk info (hdparm)",
+		ctxDiskGptInfo: "GPT info (sgdisk)",
+		ctxDiskBadblocks: "Badblocks scan",
+		ctxDiskBackupPt: "Backup partition table (sfdisk)",
+		ctxDiskRestorePt: "Restore partition table (sfdisk)",
+		ctxDiskChangeUuid: "Change disk UUID/ID (sfdisk)",
+		ctxDiskWipeSigs: "Wipe disk signatures (wipefs)",
+		ctxDiskReorder: "Reorder partitions (sfdisk)",
+		ctxDiskVerify: "Verify partitions (sfdisk)",
+		ctxDiskGeometry: "Partition table geometry (sfdisk -g)",
 		dmTitle: "Move or clone disk",
 		dmSourceDevLabel: "Source disk (-D)",
 		dmTargetDevLabel: "Target disk (-d)",
@@ -7616,6 +7743,25 @@ window.paceOptions = {
 		ctxFreeRestore:    "Ripristina partizione da immagine",
 		ctxFreeReceive:    "Ricevi partizione dalla rete",
 		ctxDiskMoveClone: "Sposta o clona disco",
+		ctxDiskMoveCloneHere: "Sposta o clona disco qui",
+		ctxDiskSelect: "Seleziona disco",
+		ctxDiskDeleteAll: "Elimina tutte le partizioni del disco",
+		ctxDiskSetupFritzbox: "⚡ Configurazione disco Freetz EVO",
+		ctxDiskConvertLabel: "Converti tabella partizioni (MBR/GPT…)",
+		ctxDiskImgExport: "Esporta disco in file immagine",
+		ctxDiskImgImport: "Ripristina disco da file immagine",
+		ctxDiskDdrescue: "Clona disco con ddrescue (recupero dati)",
+		ctxDiskSmart: "Informazioni SMART (smartctl)",
+		ctxDiskHdparm: "Informazioni disco (hdparm)",
+		ctxDiskGptInfo: "Informazioni GPT (sgdisk)",
+		ctxDiskBadblocks: "Scansione badblocks",
+		ctxDiskBackupPt: "Backup tabella partizioni (sfdisk)",
+		ctxDiskRestorePt: "Ripristina tabella partizioni (sfdisk)",
+		ctxDiskChangeUuid: "Cambia UUID/ID disco (sfdisk)",
+		ctxDiskWipeSigs: "Cancella firme disco (wipefs)",
+		ctxDiskReorder: "Riordina partizioni (sfdisk)",
+		ctxDiskVerify: "Verifica partizioni (sfdisk)",
+		ctxDiskGeometry: "Geometria tabella partizioni (sfdisk -g)",
 		dmTitle: "Sposta o clona disco",
 		dmSourceDevLabel: "Disco sorgente (-D)",
 		dmTargetDevLabel: "Disco destinazione (-d)",
@@ -7697,6 +7843,25 @@ window.paceOptions = {
 		ctxFreeRestore:    "Partition aus Image wiederherstellen",
 		ctxFreeReceive:    "Partition aus Netzwerk empfangen",
 		ctxDiskMoveClone: "Datentrager verschieben oder klonen",
+		ctxDiskMoveCloneHere: "Datentraeger hierher verschieben oder klonen",
+		ctxDiskSelect: "Datentraeger auswaehlen",
+		ctxDiskDeleteAll: "Alle Datentraegerpartitionen loeschen",
+		ctxDiskSetupFritzbox: "⚡ Freetz EVO Datentraeger einrichten",
+		ctxDiskConvertLabel: "Partitionstabelle konvertieren (MBR/GPT…)",
+		ctxDiskImgExport: "Datentraeger in Image-Datei exportieren",
+		ctxDiskImgImport: "Datentraeger aus Image-Datei wiederherstellen",
+		ctxDiskDdrescue: "Datentraeger mit ddrescue klonen (Datenrettung)",
+		ctxDiskSmart: "SMART-Info (smartctl)",
+		ctxDiskHdparm: "Datentraeger-Info (hdparm)",
+		ctxDiskGptInfo: "GPT-Info (sgdisk)",
+		ctxDiskBadblocks: "Badblocks-Scan",
+		ctxDiskBackupPt: "Partitionstabelle sichern (sfdisk)",
+		ctxDiskRestorePt: "Partitionstabelle wiederherstellen (sfdisk)",
+		ctxDiskChangeUuid: "Datentraeger-UUID/ID aendern (sfdisk)",
+		ctxDiskWipeSigs: "Datentraegersignaturen loeschen (wipefs)",
+		ctxDiskReorder: "Partitionen neu anordnen (sfdisk)",
+		ctxDiskVerify: "Partitionen pruefen (sfdisk)",
+		ctxDiskGeometry: "Partitionstabellen-Geometrie (sfdisk -g)",
 		dmTitle: "Datentrager verschieben oder klonen",
 		dmSourceDevLabel: "Quelldatentrager (-D)",
 		dmTargetDevLabel: "Zieldatentrager (-d)",
@@ -7907,7 +8072,28 @@ window.paceOptions = {
 		tQueueAllDone: "Les {0} operation(s) appliquees avec succes.",
 		tQueueDiskWarning: "ATTENTION: Operation disque en cours. Ne pas interrompre l'alimentation ni deconnecter le stockage. Cela peut prendre plusieurs minutes.",
 		tQueueStoppedAt: "Arret a l'etape {0} suite a une erreur.",
-		tQueueErrorAt: "Erreur a l'etape {0}: {1}"
+		tQueueErrorAt: "Erreur a l'etape {0}: {1}",
+		tQueueCopied: "File d'attente copiee dans le presse-papiers.",
+		ctxDiskMoveClone: "Deplacer ou cloner le disque",
+		ctxDiskMoveCloneHere: "Deplacer ou cloner le disque ici",
+		ctxDiskSelect: "Selectionner le disque",
+		ctxDiskDeleteAll: "Supprimer toutes les partitions du disque",
+		ctxDiskSetupFritzbox: "⚡ Configuration du disque Freetz EVO",
+		ctxDiskConvertLabel: "Convertir la table de partitions (MBR/GPT…)",
+		ctxDiskImgExport: "Exporter le disque vers un fichier image",
+		ctxDiskImgImport: "Restaurer le disque depuis un fichier image",
+		ctxDiskDdrescue: "Cloner le disque avec ddrescue (recuperation de donnees)",
+		ctxDiskSmart: "Infos SMART (smartctl)",
+		ctxDiskHdparm: "Infos disque (hdparm)",
+		ctxDiskGptInfo: "Infos GPT (sgdisk)",
+		ctxDiskBadblocks: "Analyse badblocks",
+		ctxDiskBackupPt: "Sauvegarder la table de partitions (sfdisk)",
+		ctxDiskRestorePt: "Restaurer la table de partitions (sfdisk)",
+		ctxDiskChangeUuid: "Changer l'UUID/ID du disque (sfdisk)",
+		ctxDiskWipeSigs: "Effacer les signatures du disque (wipefs)",
+		ctxDiskReorder: "Reordonner les partitions (sfdisk)",
+		ctxDiskVerify: "Verifier les partitions (sfdisk)",
+		ctxDiskGeometry: "Geometrie de la table de partitions (sfdisk -g)"
 	});
 	translations.es = Object.assign({}, translations.en, {
 		languageLabel: "Idioma",
@@ -7933,7 +8119,28 @@ window.paceOptions = {
 		tQueueAllDone: "Todas las {0} operacion(es) aplicadas con exito.",
 		tQueueDiskWarning: "ADVERTENCIA: Operacion de disco en curso. No interrumpir la alimentacion ni desconectar el almacenamiento. Puede tardar varios minutos.",
 		tQueueStoppedAt: "Detenido por error en el paso {0}.",
-		tQueueErrorAt: "Error en el paso {0}: {1}"
+		tQueueErrorAt: "Error en el paso {0}: {1}",
+		tQueueCopied: "Cola copiada al portapapeles.",
+		ctxDiskMoveClone: "Mover o clonar disco",
+		ctxDiskMoveCloneHere: "Mover o clonar disco aqui",
+		ctxDiskSelect: "Seleccionar disco",
+		ctxDiskDeleteAll: "Eliminar todas las particiones del disco",
+		ctxDiskSetupFritzbox: "⚡ Configuracion de disco Freetz EVO",
+		ctxDiskConvertLabel: "Convertir tabla de particiones (MBR/GPT…)",
+		ctxDiskImgExport: "Exportar disco a archivo de imagen",
+		ctxDiskImgImport: "Restaurar disco desde archivo de imagen",
+		ctxDiskDdrescue: "Clonar disco con ddrescue (recuperacion de datos)",
+		ctxDiskSmart: "Informacion SMART (smartctl)",
+		ctxDiskHdparm: "Informacion del disco (hdparm)",
+		ctxDiskGptInfo: "Informacion GPT (sgdisk)",
+		ctxDiskBadblocks: "Escaneo badblocks",
+		ctxDiskBackupPt: "Respaldar tabla de particiones (sfdisk)",
+		ctxDiskRestorePt: "Restaurar tabla de particiones (sfdisk)",
+		ctxDiskChangeUuid: "Cambiar UUID/ID del disco (sfdisk)",
+		ctxDiskWipeSigs: "Borrar firmas del disco (wipefs)",
+		ctxDiskReorder: "Reordenar particiones (sfdisk)",
+		ctxDiskVerify: "Verificar particiones (sfdisk)",
+		ctxDiskGeometry: "Geometria de la tabla de particiones (sfdisk -g)"
 	});
 
 	var state = {
@@ -10178,6 +10385,13 @@ window.paceOptions = {
 				base += '\nparted -s ' + v(params.device) + ' name "$NEW_PARTNUM" ' + v(params.part_name);
 			}
 			base += '\npartprobe ' + v(params.device);
+			if (v(params.create_fs) !== '1') {
+				// create_fs=0 (no format): parted only writes the partition table
+				// entry; any leftover data/filesystem from a previous layout in
+				// this region survives and blkid will still see it (e.g. a stale
+				// NTFS_Data label). Make this visible in the queue preview.
+				base += '\n# no filesystem — leftover data from previous layouts in this region is NOT wiped';
+			}
 			var _needsPartNum = (v(params.create_fs) === '1' && fsHint) || v(params.mount_point);
 			if (_needsPartNum && !v(params.part_name)) {
 				base += '\nNEW_PARTNUM="$(parted -s -m ' + v(params.device) + ' unit s print | awk -F: \'/^[0-9]+:/{n=$1} END{print n}\')"';
@@ -10208,6 +10422,11 @@ window.paceOptions = {
 		}
 		if (action === 'resize_partition') {
 			var txt = 'parted -s ' + v(params.device) + ' unit s resizepart ' + v(params.partnum) + ' ' + v(params.end_sector) + 's\npartprobe ' + v(params.device);
+			// On shrink, parted -s cannot answer the "Shrinking a partition can
+			// cause data loss" YES/NO prompt (returns PED_EXCEPTION_UNHANDLED and
+			// aborts with rc=1), so the backend detects the shrink and runs parted
+			// with --pretend-input-tty feeding "Yes" from a pipe instead.
+			txt += '\n# shrink runs parted with --pretend-input-tty + piped "Yes" (script mode cannot confirm)';
 			if (v(params.resize_fs) === 'yes') {
 				txt += '\n# backend will auto-detect filesystem and run ext/ntfs/fat resize tools when available';
 			}
@@ -10604,6 +10823,9 @@ window.paceOptions = {
 			out += ' \\\n  -w ' + (/^\d+$/.test(drDly) ? drDly : '1');
 			if (drXtra) out += ' \\\n  -x ' + JSON.stringify(drXtra);
 			return out;
+		}
+		if (action === 'convert_table_label' || action === 'convert_label') {
+			return 'parted -s ' + v(params.device) + ' mklabel ' + v(params.table_type) + '\npartprobe ' + v(params.device);
 		}
 		return '# preview unavailable for action: ' + v(action);
 	}
@@ -11234,7 +11456,16 @@ actionsWrap.appendChild(btnRemove);
 				if (model) info += ' | ' + model;
 				meta.textContent = info;
 
-				btn.title = String(dev.path || '-') + ' [' + String(dev.table || '-') + ']';
+				// Hover + tasto destro come il blocco disco della mappa: il menu di
+				// contesto mostra "Sposta o clona disco qui" se un altro disco è
+				// selezionato come sorgente e il destro è su un disco diverso.
+				btn.oncontextmenu = function (ev) {
+					if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+					showContextMenu(dev, ev, 'disk');
+				};
+				btn.onmouseenter = function (ev) { showHoverTooltip(ev, buildDiskTooltipHtml(dev)); };
+				btn.onmousemove = moveHoverTooltip;
+				btn.onmouseleave = hideHoverTooltip;
 				btn.onclick = function () {
 					var sel = document.getElementById('deviceSelect');
 					if (sel) sel.value = String(dev.path || '');
@@ -11868,27 +12099,41 @@ actionsWrap.appendChild(btnRemove);
 
 		var items = [];
 		if (menuType === 'disk') {
-			items = [
-				{ id: 'select_disk',         label: 'Select disk' },
-				{ id: 'delete_all_parts',    label: 'Delete all disk partitions' },
-				{ id: 'disk_setup_fritzbox', label: '⚡ Freetz EVO disk setup' },
-				{ id: 'disk_convert_label',  label: 'Convert partition table (MBR/GPT…)' },
-				{ id: 'disk_move_clone',     label: 'Disk move or clone' },
-				{ id: 'disk_img_export',     label: 'Export disk to image file' },
-				{ id: 'disk_img_import',     label: 'Restore disk from image file' },
-				{ id: 'disk_ddrescue',       label: 'Clone disk with ddrescue (data recovery)' },
-				{ id: 'disk_smart',          label: 'SMART info (smartctl)' },
-				{ id: 'disk_hdparm',         label: 'Disk info (hdparm)' },
-				{ id: 'disk_gpt_info',       label: 'GPT info (sgdisk)' },
-				{ id: 'disk_badblocks',      label: 'Badblocks scan' },
-				{ id: 'disk_backup_pt',      label: 'Backup partition table (sfdisk)' },
-				{ id: 'disk_restore_pt',     label: 'Restore partition table (sfdisk)' },
-				{ id: 'disk_change_uuid',    label: 'Change disk UUID/ID (sfdisk)' },
-				{ id: 'disk_wipe_sigs',      label: 'Wipe disk signatures (wipefs)' },
-				{ id: 'disk_reorder',        label: 'Reorder partitions (sfdisk)' },
-				{ id: 'disk_verify',         label: 'Verify partitions (sfdisk)' },
-			{ id: 'disk_geometry',        label: 'Partition table geometry (sfdisk -g)' }
-			];
+			var _srcDiskPath = '';
+			if (state.selectedComponent && state.selectedComponent.kind === 'disk') {
+				_srcDiskPath = String(state.selectedComponent.path || '');
+			}
+			if (!_srcDiskPath && state.selectedDevice) {
+				_srcDiskPath = String(state.selectedDevice || '');
+			}
+			var _tgtDiskPath = String(target && target.path || '');
+			items = [];
+			// Un altro disco è selezionato come sorgente: offri un'azione mirata
+			// "Sposta o clona disco qui" verso il disco su cui si è cliccato.
+			if (_srcDiskPath && _srcDiskPath !== _tgtDiskPath) {
+				items.push({ id: 'disk_move_clone_here', label: t('ctxDiskMoveCloneHere') });
+			}
+			items = items.concat([
+				{ id: 'select_disk',         label: t('ctxDiskSelect') },
+				{ id: 'delete_all_parts',    label: t('ctxDiskDeleteAll') },
+				{ id: 'disk_setup_fritzbox', label: t('ctxDiskSetupFritzbox') },
+				{ id: 'disk_convert_label',  label: t('ctxDiskConvertLabel') },
+				{ id: 'disk_move_clone',     label: t('ctxDiskMoveClone') },
+				{ id: 'disk_img_export',     label: t('ctxDiskImgExport') },
+				{ id: 'disk_img_import',     label: t('ctxDiskImgImport') },
+				{ id: 'disk_ddrescue',       label: t('ctxDiskDdrescue') },
+				{ id: 'disk_smart',          label: t('ctxDiskSmart') },
+				{ id: 'disk_hdparm',         label: t('ctxDiskHdparm') },
+				{ id: 'disk_gpt_info',       label: t('ctxDiskGptInfo') },
+				{ id: 'disk_badblocks',      label: t('ctxDiskBadblocks') },
+				{ id: 'disk_backup_pt',      label: t('ctxDiskBackupPt') },
+				{ id: 'disk_restore_pt',     label: t('ctxDiskRestorePt') },
+				{ id: 'disk_change_uuid',    label: t('ctxDiskChangeUuid') },
+				{ id: 'disk_wipe_sigs',      label: t('ctxDiskWipeSigs') },
+				{ id: 'disk_reorder',        label: t('ctxDiskReorder') },
+				{ id: 'disk_verify',         label: t('ctxDiskVerify') },
+				{ id: 'disk_geometry',       label: t('ctxDiskGeometry') }
+			]);
 		} else if (menuType === 'free') {
 			var hasSelectedPartition = !!(state.selectedPart && state.selectedComponent && state.selectedComponent.kind === 'partition');
 			items = [
@@ -11987,6 +12232,21 @@ actionsWrap.appendChild(btnRemove);
 			if (action === 'disk_setup_fritzbox') { showFritzSetupModal(target); return; }
 			if (action === 'disk_convert_label')  { showConvertLabelModal(target); return; }
 			if (action === 'disk_move_clone') { showDiskMoveCloneModal(target); return; }
+			if (action === 'disk_move_clone_here') {
+				// Sorgente = disco selezionato, destinazione = disco cliccato.
+				var _hereSrcPath = '';
+				if (state.selectedComponent && state.selectedComponent.kind === 'disk') {
+					_hereSrcPath = String(state.selectedComponent.path || '');
+				}
+				if (!_hereSrcPath) _hereSrcPath = String(state.selectedDevice || '');
+				var _hereSrcDev = null;
+				for (var _hi = 0; _hi < (state.devices || []).length; _hi++) {
+					if (String(state.devices[_hi].path || '') === _hereSrcPath) { _hereSrcDev = state.devices[_hi]; break; }
+				}
+				if (!_hereSrcDev) { showToast(t('tNoDevice'), 'warn'); return; }
+				showDiskMoveCloneModal(_hereSrcDev, target);
+				return;
+			}
 			if (action === 'disk_img_export') { showPartcloneExportModal(target, 'disk'); return; }
 			if (action === 'disk_img_import') { showPartcloneImportModal(target, 'disk'); return; }
 			if (action === 'disk_ddrescue')   { showDdrescueModal(target, 'disk'); return; }
@@ -14562,9 +14822,17 @@ function showFritzSetupModal(diskTarget) {
 	if (diskEl) diskEl.textContent = 'Device: ' + (devPath || '?') +
 		(totalSec ? '  —  ' + humanBytes(totalSec * lss) : '');
 
-	// Default partitions: NTFS_Data ~50%, MediaServer ~50%, FRITZBOX 4 GiB
+	// Default partitions: NTFS_Data ~50%, MediaServer ~50%, FRITZBOX 4 GiB.
+	// On small disks (e.g. the emulator's 192 MiB loop) a fixed 4 GiB FRITZBOX
+	// leaves no room for the data partitions, so NTFS_Data would collapse to
+	// the 1 MiB alignment minimum — too small for NTFS (minimum volume is 1 MiB),
+	// mkntfs fails and the subsequent mount fails too. Cap FRITZBOX at ~20% of
+	// the disk when the disk is smaller than 4 GiB so the data partitions always
+	// get usable space. On real disks (>= 20 GiB) 20% >= 4 GiB, so FRITZBOX
+	// stays at the intended 4 GiB.
 	var ALIGN = Math.max(1, Math.ceil(1048576 / lss));
-	var fritzSec = Math.ceil(4 * 1024 * 1024 * 1024 / lss / ALIGN) * ALIGN;
+	var fritzTarget = Math.min(4 * 1024 * 1024 * 1024 / lss, Math.floor(totalSec * 0.20 / ALIGN) * ALIGN);
+	var fritzSec = Math.max(ALIGN, Math.ceil(fritzTarget / ALIGN) * ALIGN);
 	// Available after GPT head (2048s min) + GPT tail (33s)
 	var avail = Math.max(0, totalSec - 2048 - 33 - fritzSec);
 	var ntfsSec  = Math.floor(avail * 0.50 / ALIGN) * ALIGN;
@@ -14653,7 +14921,14 @@ function showFritzSetupModal(diskTarget) {
 		var warnEl = document.getElementById('pcgiFritzSetupWarn');
 		var _existing = {};
 		var _devs = state.devices || [];
+		// When "Delete existing partitions first" is checked, the setup wipes the
+		// target disk before creating the new layout, so the target disk's own
+		// partition names/mounts are NOT real conflicts — skip them. Conflicts
+		// with partitions on OTHER disks are still reported.
+		var _delAllChk = document.getElementById('fsSetupDeleteAll');
+		var _delAll = !!_delAllChk && _delAllChk.checked;
 		for (var _di = 0; _di < _devs.length; _di++) {
+			if (_delAll && _devs[_di] && String(_devs[_di].path || '') === devPath) continue;
 			var _dparts = _devs[_di].partitions || [];
 			for (var _dpi = 0; _dpi < _dparts.length; _dpi++) {
 				var _pn = (_dparts[_dpi].part_name || _dparts[_dpi].name || '').trim();
@@ -14738,6 +15013,10 @@ function showFritzSetupModal(diskTarget) {
 		tbody.addEventListener('change', drawAndCheckClash);
 		tbody.addEventListener('input', drawAndCheckClash);
 	}
+	// Toggling "Delete existing partitions first" changes which disk's
+	// partitions count as conflicts, so re-run the clash check.
+	var _delAllChkEl = document.getElementById('fsSetupDeleteAll');
+	if (_delAllChkEl) _delAllChkEl.addEventListener('change', drawAndCheckClash);
 
 	drawSetupPreview();
 	updateClashWarning(); // re-run now that collectRows() is defined
@@ -14911,7 +15190,15 @@ function showFritzSetupModal(diskTarget) {
 	document.addEventListener('keydown', onEsc);
 	if (cancelBtn) cancelBtn.onclick = cleanup;
 	if (runBtn) runBtn.onclick = function() {
-		if (_setupHasClash) {
+		var _deleteAllChk = document.getElementById('fsSetupDeleteAll');
+		var _deleteAll = !!_deleteAllChk && _deleteAllChk.checked;
+		// When "Delete existing partitions first" is checked the user has already
+		// committed to wiping the disk, so don't block with a second conflict
+		// confirm dialog (the warning banner above still shows any real
+		// cross-disk conflicts). Without delete-all a genuine conflict still
+		// asks for confirmation (now readable thanks to the confirm modal's
+		// higher z-index).
+		if (_setupHasClash && !_deleteAll) {
 			showConfirmModal(
 				'⚠ Name conflict detected',
 				'One or more partition names or mount points already exist on another disk. ' +
@@ -16124,7 +16411,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 	}
 
-	function showDiskMoveCloneModal(srcDevArg) {
+	function showDiskMoveCloneModal(srcDevArg, tgtDevArg) {
 		var srcDev = srcDevArg || state.selectedDevice;
 		if (!srcDev || !srcDev.path) { showToast(t('tNoDevice'), 'warn'); return; }
 
@@ -16149,7 +16436,11 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 
 		populateDiskTargetDropdown(srcDev.path);
-		dmUpdateMethodFields();
+				// "Sposta o clona disco qui": pre-seleziona il disco di destinazione.
+				if (tgtDevArg && tgtDevArg.path) {
+					var _tgtSel = document.getElementById('dmTargetDevice');
+					if (_tgtSel) _tgtSel.value = String(tgtDevArg.path || '');
+				}
 
 		// Reset some fields
 		var delayEl = document.getElementById('dmStepDelay');
@@ -17554,6 +17845,51 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		renderMap();
 	}
 
+	// Copy every queued operation (all columns) as a tab-separated, paste-friendly
+	// dump useful for debugging/replaying. Multi-line commands are folded with a
+	// shell-style trailing backslash + tab continuation so each op stays one row.
+	function copyQueueToClipboard() {
+		if (!state.queue.length) {
+			showToast(t('tQueueEmpty'), 'warn');
+			return;
+		}
+		var _now = new Date();
+		var _ts = _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0')
+				+ ' ' + String(_now.getHours()).padStart(2, '0') + ':' + String(_now.getMinutes()).padStart(2, '0') + ':' + String(_now.getSeconds()).padStart(2, '0');
+		var lines = [];
+		lines.push('# disk-mgmt operation queue - ' + state.queue.length + ' op(s) - ' + _ts);
+		lines.push('');
+		lines.push('#\tOperation\tParameters\tCommand\tAction');
+		for (var i = 0; i < state.queue.length; i++) {
+			var op = state.queue[i];
+			var _params = op.params ? JSON.stringify(op.params) : '';
+			var _cmd = op.commandPreview || buildCommandPreview(op.action, op.params || {});
+			var _cmdFlat = String(_cmd || '').replace(/\r?\n/g, ' \\\n\t');
+			lines.push(String(i + 1) + '\t' + String(op.label || op.action) + '\t' + _params + '\t' + _cmdFlat + '\t' + String(op.action));
+		}
+		var text = lines.join('\n') + '\n';
+
+		var ta = document.createElement('textarea');
+		ta.value = text;
+		ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;pointer-events:none';
+		document.body.appendChild(ta);
+		ta.focus();
+		ta.select();
+		try { document.execCommand('copy'); } catch (e) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text);
+			}
+		}
+		document.body.removeChild(ta);
+		var btn = document.getElementById('copyQueueBtn');
+		if (btn) {
+			var origHTML = btn.innerHTML;
+			btn.textContent = 'Copied';
+			setTimeout(function () { btn.innerHTML = origHTML; }, 1000);
+		}
+		showToast(t('tQueueCopied'), 'success', 2500);
+	}
+
 	function queueTargetKey(device, startSector, endSector) {
 		var d = String(device || '').trim();
 		var s = String(startSector || '').trim();
@@ -18051,6 +18387,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	window.runFsck = runFsck;
 	window.clearQueue = clearQueue;
 	window.applyQueue = applyQueue;
+	window.copyQueueToClipboard = copyQueueToClipboard;
 	window.showFieldHelp = showFieldHelp;
 	window.clearLogOutput = clearLogOutput;
 	window.copyLogToClipboard = copyLogToClipboard;
@@ -18232,7 +18569,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/themes/blue/pace-theme-center-radar.css">
 <script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
 (function(){
 	'use strict';
@@ -18263,11 +18600,15 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	}
 
 	function _esc(str) {
-		/* Escape Mermaid label special chars, keep <br/> as literal. */
-		return String(str || '').replace(/["#{}|<>]/g, function(c) {
-			var map = {'"': '&quot;', '#': '&#35;', '{': '&#123;', '}': '&#125;', '|': '&#124;', '<': '&lt;', '>': '&gt;'};
-			return map[c] || c;
-		});
+		/* Escape Mermaid label special chars. Preserve <br/> so it renders as a
+		   real line break (htmlLabels) — if < becomes &lt;, mermaid shows the
+		   literal text "<br/>" instead of a break. */
+		return String(str || '').replace(/<br\s*\/?>/gi, '__MMD_BR__')
+			.replace(/["#{}|<>]/g, function(c) {
+				var map = {'"': '&quot;', '#': '&#35;', '{': '&#123;', '}': '&#125;', '|': '&#124;', '<': '&lt;', '>': '&gt;'};
+				return map[c] || c;
+			})
+			.replace(/__MMD_BR__/g, '<br/>');
 	}
 
 	/*
@@ -18276,7 +18617,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 	 * (same structure as state.devices[] / buildPreviewDevice output).
 	 */
 	function buildMermaidDiagram(dev, dir) {
-		dir = dir || 'TB';
+		dir = dir || 'LR';
 		var logical = Number(dev.logical_sector_size || 512);
 		var total   = Number(dev.total_sectors || 0);
 		var table   = String(dev.table || 'unknown');
@@ -18316,7 +18657,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			var extSz = Number(extPart.size || Math.max(1, extEnd - extStart + 1));
 			var extLabel = 'p' + extPart.number + ' Extended';
 			if (String(extPart.flags || '').toLowerCase() === 'lba') extLabel += ' (LBA)';
-			extLabel += '<br/>' + extStart + ' &#x2014; ' + extEnd;
+			extLabel += '<br/>' + extStart + ' — ' + extEnd;
 			extLabel += '<br/>' + extSz + ' s';
 			if (logical > 0) extLabel += '<br/>~' + _hb(extSz * logical);
 			lines.push('    EXT["' + _esc(extLabel) + '"]');
@@ -18340,12 +18681,12 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				if (isInner) {
 					freeInnerCount++;
 					var fiId = 'FI' + freeInnerCount;
-					lines.push('    ' + fiId + '(["Free space<br/>' + pStart + ' &#x2014; ' + pEnd + '<br/>' + _esc(szStr) + '"])');
+					lines.push('    ' + fiId + '(["Free space<br/>' + pStart + ' — ' + pEnd + '<br/>' + _esc(szStr) + '"])');
 					lines.push('    EXT --> ' + fiId);
 				} else {
 					freeOuterCount++;
 					var foId = 'FO' + freeOuterCount;
-					lines.push('    ' + foId + '(["Free space<br/>' + pStart + ' &#x2014; ' + pEnd + '<br/>' + _esc(szStr) + '"])');
+					lines.push('    ' + foId + '(["Free space<br/>' + pStart + ' — ' + pEnd + '<br/>' + _esc(szStr) + '"])');
 					lines.push('    DISK --> ' + foId);
 				}
 				lines.push('');
@@ -18369,7 +18710,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			if (p.name || p.label) lbl += ' &quot;' + _esc(p.name || p.label) + '&quot;';
 			if (p.fs && pRole !== 'logical') lbl += '<br/>' + _esc(p.fs);
 			else if (p.fs) lbl += '  ' + _esc(p.fs);
-			lbl += '<br/>' + pStart + ' &#x2014; ' + pEnd;
+			lbl += '<br/>' + pStart + ' — ' + pEnd;
 			lbl += '<br/>' + pSize + ' s';
 			if (logical > 0) lbl += '<br/>~' + _hb(pSize * logical);
 			if (p.flags) lbl += '<br/>[' + _esc(p.flags) + ']';
@@ -18450,7 +18791,7 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			(dev.model ? '  •  ' + dev.model : '');
 
 		function render() {
-			var dir   = dirEl  ? String(dirEl.value  || 'TB') : 'TB';
+			var dir   = dirEl  ? String(dirEl.value  || 'LR') : 'LR';
 			var theme = themeEl ? String(themeEl.value || 'default') : 'default';
 			var src   = buildMermaidDiagram(dev, dir);
 			srcTA.value = src;
@@ -18459,7 +18800,14 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			svgDiv.innerHTML = '';
 
 			if (typeof mermaid === 'undefined') {
-				errDiv.textContent = 'Mermaid library not loaded (check internet access).';
+				/* Offline/CDN-failure fallback: show the diagram source as
+				   readable text so the disk layout stays usable even without
+				   the (CDN) Mermaid library. */
+				var _pre = document.createElement('pre');
+				_pre.style.cssText = 'background:#f6f8fa;border:1px solid #d8dee6;border-radius:4px;padding:10px;font-family:monospace;font-size:11px;line-height:1.45;white-space:pre-wrap;max-height:60vh;overflow:auto;margin:8px 0';
+				_pre.textContent = src;
+				svgDiv.appendChild(_pre);
+				errDiv.textContent = 'Mermaid library not loaded (offline?) — showing diagram source.';
 				errDiv.style.display = 'block';
 				return;
 			}

@@ -29,8 +29,6 @@ $(PKG)_SITE:=https://github.com/libusb/hidapi/archive/refs/tags
 # hidraw backend (optional, FREETZ_LIB_hidapi_hidraw) — requires kernel HID support.
 # Uses out-of-source build (builddir/) to avoid cmake timestamp churn.
 $(PKG)_BUILD_SUBDIR:=builddir
-
-$(PKG)_CATEGORY_LIBS:=USB & related
 $(PKG)_BINARY:=$($(PKG)_DIR)/builddir/src/libusb/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libhidapi-libusb.so.$($(PKG)_LIB_VERSION)
