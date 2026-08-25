@@ -72,6 +72,7 @@ Preview the EVO skin, mobile behavior, and browser-based administration experien
 <div markdown="1"><strong>Responsive web UI</strong><span>Modernized pages, mobile navigation, dark mode, and persistent per-device preferences.</span></div>
 <div markdown="1"><strong>Device operations</strong><span>Disk management, cloning, recovery, download tools, torrent workflows, and browser-based file administration.</span></div>
 <div markdown="1"><strong>Runtime stacks</strong><span>Modern PHP, Python modules, QuickJS, Nginx, terminal tooling, and selected AI/ML packages.</span></div>
+<div markdown="1"><strong>Disk Management subsystem</strong><span>Freetz-EVO integrates low-level Unix disk tools into a highly interactive graphical interface that orchestrates them into complete storage operations.</span> [Read the overview](DISK-MGMT.md)</div>
 <div markdown="1"><strong>Audio subsystem</strong><span>USB DAC support, ALSA stack, MPD ecosystem, web radio, and AirPlay/Spotify receivers.</span> [Read the Audio Subsystem overview](AUDIO.md)</div>
 <div markdown="1"><strong>Build confidence</strong><span>Reviewed English documentation, stronger CI, upstream synchronization, and generated package listings.</span></div>
 </div>

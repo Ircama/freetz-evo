@@ -375,6 +375,7 @@ body.toc-has-content .toc-toggle-btn {
 [data-md-color-scheme="default"] {
     --evo-home-surface: #f7fafc;
     --evo-home-panel: #ffffff;
+    --evo-home-feature: #f3f7fa;
     --evo-home-muted: #4b6075;
     --evo-home-border: rgba(67, 101, 132, 0.22);
     --evo-home-hero: #eef6f7;
@@ -390,6 +391,7 @@ body.toc-has-content .toc-toggle-btn {
 [data-md-color-scheme="slate"] {
     --evo-home-surface: #101821;
     --evo-home-panel: #172231;
+    --evo-home-feature: #1b2939;
     --evo-home-muted: #b2c0d1;
     --evo-home-border: rgba(172, 190, 214, 0.2);
     --evo-home-hero: #111c29;
@@ -522,7 +524,7 @@ body.toc-has-content .toc-toggle-btn {
 .md-typeset .evo-card,
 .md-typeset .evo-feature-grid > div,
 .md-typeset .evo-link-columns > div {
-    background: var(--evo-home-panel);
+    background: var(--evo-home-feature);
     border: 1px solid var(--evo-home-border);
     border-radius: 8px;
 }

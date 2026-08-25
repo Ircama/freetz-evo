@@ -4206,6 +4206,31 @@ action_reload_table() {
 	fi
 }
 
+# Verify the device is reported by `smartctl --scan-open` before attempting a
+# SMART report. Returns 0 if the device is listed (or if the scan cannot be
+# performed, so we don't block the report), 1 if it is definitely not
+# SMART-capable. On 1, sets $_smart_scan_msg with a user-facing warning.
+_smart_check_scan_open() {
+	_smart_scan_msg=''
+	_scan_out=$("$CMD_SMARTCTL" --scan-open 2>&1)
+	_scan_rc=$?
+	if [ "$_scan_rc" -ne 0 ]; then
+		# Scan failed (e.g. unsupported option): don't block, fall through to
+		# the normal smartctl attempt which will surface the real error.
+		return 0
+	fi
+	if printf '%s\n' "$_scan_out" | awk '{print $1}' | grep -Fqx "$_device"; then
+		return 0
+	fi
+	# NOTE: use printf (not "..." with literal \n) so the message carries real
+	# newlines; json_escape then turns them into \n for the JSON payload.
+	_smart_scan_msg=$(printf 'Device %s is not reported by `smartctl --scan-open`: it is probably not SMART-capable (e.g. an unsupported USB/SAT bridge or a loop device).' "$_device")
+	if [ -n "$_scan_out" ]; then
+		_smart_scan_msg=$(printf '%s\n\nDevices found by smartctl --scan-open:\n%s' "$_smart_scan_msg" "$_scan_out")
+	fi
+	return 1
+}
+
 action_smart_info() {
 	resolve_tools
 	_device=$(cgi_param device)
@@ -4214,6 +4239,11 @@ action_smart_info() {
 
 	if dry_run_enabled; then
 		emit_dry_run_result "smart diagnostics" "smartctl --xall $_device\n# fallback for USB/SAT bridges: smartctl -d sat,auto -T permissive -x $_device\n# info-only fallback: smartctl -d sat,auto -T permissive -i $_device"
+		return
+	fi
+
+	if ! _smart_check_scan_open; then
+		emit_cmd_result false 1 "Device not SMART-capable" "$_smart_scan_msg"
 		return
 	fi
 
@@ -4259,6 +4289,11 @@ action_smart_selftest_short() {
 
 	if dry_run_enabled; then
 		emit_dry_run_result "SMART short self-test" "smartctl -t short $_device\n# wait for completion, then:\nsmartctl -l selftest $_device"
+		return
+	fi
+
+	if ! _smart_check_scan_open; then
+		emit_cmd_result false 1 "Device not SMART-capable" "$_smart_scan_msg"
 		return
 	fi
 
@@ -12146,6 +12181,30 @@ actionsWrap.appendChild(btnRemove);
 			}
 		} else {
 			var part = target;
+			/* Determine the partition-table type so the "Change type-id" label
+			   reflects the actual scheme (MBR hex type-id vs GPT type GUID). */
+			var _ctxDevPath = String(state.selectedDevice || '');
+			var _ctxPartPath = String(part.path || '');
+			var _ctxPartStart = Number(part.start || 0);
+			var _ctxPartEnd = Number(part.end || 0);
+			/* Find the device that actually contains this partition. */
+			for (var _cdi = 0; _cdi < (state.devices || []).length; _cdi++) {
+				var _cd = state.devices[_cdi];
+				var _cdPath = String(_cd.path || '');
+				var _foundIn = false;
+				for (var _cpi = 0; _cpi < (_cd.partitions || []).length; _cpi++) {
+					var _cp = _cd.partitions[_cpi];
+					if (_cp.kind !== 'partition') continue;
+					if (_ctxPartPath && String(_cp.path || '') === _ctxPartPath) { _foundIn = true; break; }
+					if (!_ctxPartPath && _ctxPartStart && _ctxPartEnd &&
+						Number(_cp.start || 0) === _ctxPartStart && Number(_cp.end || 0) === _ctxPartEnd) { _foundIn = true; break; }
+				}
+				if (_foundIn) { _ctxDevPath = _cdPath; break; }
+			}
+			var _ctxDev = getPreviewDeviceByPath(_ctxDevPath);
+			var _ctxTable = String(_ctxDev && _ctxDev.table || '').toLowerCase();
+			var _ctxIsGPT = (_ctxTable === 'gpt');
+			var _ctxTypeLabel = _ctxIsGPT ? 'Change type-id (GPT GUID, sfdisk)' : 'Change type-id (MBR, sfdisk)';
 			var _ctxRole = String(part.role || '');
 			if (!_ctxRole) {
 				if (Number(part.number || 0) >= 5) _ctxRole = 'logical';
@@ -12160,7 +12219,7 @@ actionsWrap.appendChild(btnRemove);
 					{ id: 'delete',           label: 'Delete partition' },
 					{ id: 'rename',           label: 'Rename partition' },
 					{ id: 'flag',             label: 'Set flag' },
-					{ id: 'part_change_type', label: 'Change type-id (MBR, sfdisk)' },
+					{ id: 'part_change_type', label: _ctxTypeLabel },
 					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' }
 				];
 			} else {
@@ -12180,7 +12239,7 @@ actionsWrap.appendChild(btnRemove);
 					{ id: 'net_send',         label: 'Send partition over network' },
 					{ id: 'net_recv',         label: 'Receive partition from network' },
 					{ id: 'ddrescue',         label: 'Clone with ddrescue (data recovery)' },
-					{ id: 'part_change_type', label: 'Change type-id (MBR, sfdisk)' },
+					{ id: 'part_change_type', label: _ctxTypeLabel },
 					{ id: 'part_change_uuid', label: 'Change partition UUID (GPT, sfdisk)' },
 					{ id: 'part_wipe_sigs',   label: 'Wipe signatures (wipefs)' },
 					{ id: 'part_move_sfdisk', label: 'Move partition (sfdisk, overlap-safe)' }
@@ -12291,7 +12350,7 @@ actionsWrap.appendChild(btnRemove);
 		if (action === 'select') return;
 		if (action === 'meta') { loadPartitionMetadata(); return; }
 		if (action === 'delete') { queueDeletePartition(); return; }
-		if (action === 'rename') { queueRenamePartition(); return; }
+		if (action === 'rename') { showRenamePartitionModal(part, state.selectedDevice); return; }
 		if (action === 'flag') { showSetFlagModal(part, state.selectedDevice || ''); return; }
 		if (action === 'mkfs') { document.getElementById('fsTypeSelect').value = 'auto'; queueMkfs(); return; }
 		if (action === 'mount') { showMountModal(); return; }
@@ -16344,10 +16403,11 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		}
 		var aligned = alignSectors(start, end, document.getElementById('pnpAlign') || document.getElementById('newPartAlign'));
 		start = aligned.start; end = aligned.end;
+		var partName = String((document.getElementById('newPartName') || { value: '' }).value || '').trim();
 		queueOpWithConfirm(
 			'create_partition',
-			{ device: dev, start_sector: start, end_sector: end, part_role: 'primary', fs_hint: '', part_name: '' },
-			'Create partition on ' + dev + ' [' + start + 's..' + end + 's] (quick mode)',
+			{ device: dev, start_sector: start, end_sector: end, part_role: 'primary', fs_hint: '', part_name: partName },
+			'Create partition on ' + dev + ' [' + start + 's..' + end + 's] (quick mode)' + (partName ? ' as ' + partName : ''),
 			t('confirmCreate'),
 			t('confirmCreateMsg')
 		);
@@ -17044,19 +17104,35 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var devP = String(devPath || state.selectedDevice || '');
 		var part = partArg || state.selectedPart;
 		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
+		var previewDev = devP ? getPreviewDeviceByPath(devP) : null;
+		var isGPT = String(previewDev && previewDev.table || '').toLowerCase() === 'gpt';
 		var currentType = String(part.type_id || '');
+		var msg, placeholder, validate;
+		if (isGPT) {
+			/* On GPT the partition type is a GUID; sfdisk --part-type accepts one. */
+			msg = 'Enter the new GPT partition type GUID.<br>' +
+				'Common GUIDs: <b>0FC63DAF-8483-4772-8E79-3D69D8477DE4</b> Linux, <b>0657FD6D-A4AB-43C4-84E5-0933C84B4F4F</b> Swap, <b>EBD0A0A2-B9E5-4433-87C0-68B6B72699C7</b> Windows basic data, <b>A19D880F-05FC-4D3B-A006-743F0F84911E</b> Linux RAID.';
+			placeholder = '0FC63DAF-8483-4772-8E79-3D69D8477DE4';
+			validate = function (v) {
+				var s = String(v || '').trim();
+				return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(s)
+					? null : 'Enter a valid GPT type GUID (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).';
+			};
+		} else {
+			msg = 'Enter the new hex partition type-id.<br>' +
+				'Common values: <b>83</b> Linux, <b>82</b> Swap, <b>8e</b> LVM, <b>fd</b> RAID, <b>0c</b> FAT32 LBA, <b>05</b>/<b>0f</b> Extended.';
+			placeholder = '83';
+			validate = function (v) { return /^[0-9a-fA-F]{1,2}$/.test(v) ? null : 'Enter a 1–2 digit hex value (e.g. 83).'; };
+		}
 		showInputModal(
-			'Change type-id for p' + part.number + ' on ' + devP,
-			'Enter the new hex partition type-id.<br>' +
-			'Common values: <b>83</b> Linux, <b>82</b> Swap, <b>8e</b> LVM, <b>fd</b> RAID, <b>0c</b> FAT32 LBA, <b>05</b>/<b>0f</b> Extended.' +
-			(currentType ? '<br>Current: <code>' + currentType + '</code>' : ''),
-			{ placeholder: '83', defaultValue: currentType, allowEmpty: false,
-			  validate: function (v) { return /^[0-9a-fA-F]{1,2}$/.test(v) ? null : 'Enter a 1–2 digit hex value (e.g. 83).'; } }
+			'Change type-id for p' + part.number + ' on ' + devP + (isGPT ? ' (GPT GUID)' : ' (MBR)'),
+			msg + (currentType ? '<br>Current: <code>' + currentType + '</code>' : ''),
+			{ placeholder: placeholder, defaultValue: currentType, allowEmpty: false, validate: validate }
 		).then(function (typeId) {
 			if (typeId === null || !typeId.trim()) return;
 			var params = { device: devP, partnum: String(part.number), type_id: typeId.trim() };
 			var label = 'Change type-id of p' + part.number + ' on ' + devP + ' to ' + typeId.trim();
-			showCommandPreviewModal('change_mbr_type', params, label, 'Confirm', 'Change the partition type-id (MBR) for p' + part.number + '.')
+			showCommandPreviewModal('change_mbr_type', params, label, 'Confirm', 'Change the partition type-id for p' + part.number + '.')
 			.then(function(previewText) {
 				if (previewText === null) return;
 				queueOp('change_mbr_type', params, label, previewText || buildCommandPreview('change_mbr_type', params), false);
@@ -17548,6 +17624,32 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 			t('confirmAction'),
 			'Partition name update will be added.'
 		);
+	}
+
+	/* Ask for the partition name in a modal BEFORE the confirm step, so
+	   "Rename partition" always presents a form (not only the toolbar input). */
+	function showRenamePartitionModal(partArg, devPathArg) {
+		var devP = String(devPathArg || state.selectedDevice || '');
+		var part = partArg || state.selectedPart;
+		if (!part || !part.number) { showToast(t('tNoPartition'), 'warn'); return; }
+		var currentName = String(part.name || part.part_name || '');
+		showInputModal(
+			'Rename partition p' + part.number + ' on ' + devP,
+			'Enter the new name for partition p' + part.number + '.' +
+			(currentName ? '<br>Current: <code>' + currentName + '</code>' : ''),
+			{ placeholder: 'new partition name', defaultValue: currentName, allowEmpty: false,
+			  validate: function (v) { return v && v.trim() ? null : 'Enter a partition name.'; } }
+		).then(function (name) {
+			if (name === null || !name.trim()) return;
+			var params = { device: devP, partnum: String(part.number), part_name: name.trim() };
+			var label = 'Set partition name p' + part.number + ' on ' + devP + ' to ' + name.trim();
+			showCommandPreviewModal('set_partition_name', params, label, t('confirmAction'), 'Partition name update will be added.')
+			.then(function(previewText) {
+				if (previewText === null) return;
+				queueOp('set_partition_name', params, label, previewText || buildCommandPreview('set_partition_name', params), false);
+				showToast(t('tQueued') + ' ' + label, 'info', 10000);
+			});
+		});
 	}
 
 	function showSetFlagModal(partArg, devPathArg) {
@@ -18771,6 +18873,19 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 		var showSrcCb = document.getElementById('pcgiMermaidShowSrc');
 		if (!modal) return;
 
+		/* Close wiring is installed on EVERY open (before the early returns below),
+		   so Close / ESC / overlay-click keep working even when no device is selected. */
+		function closeModal() {
+			modal.style.display = 'none';
+			modal.setAttribute('aria-hidden', 'true');
+			document.removeEventListener('keydown', _onEsc);
+		}
+		function _onEsc(ev) { if (ev.key === 'Escape') closeModal(); }
+		var closeBtn = document.getElementById('pcgiMermaidCloseBtn');
+		if (closeBtn) closeBtn.onclick = closeModal;
+		modal.onclick = function(ev) { if (ev.target === modal) closeModal(); };
+		document.addEventListener('keydown', _onEsc);
+
 		var baseDev = window._pcgi_getSelectedDeviceData ? window._pcgi_getSelectedDeviceData() : null;
 		var dev     = (baseDev && window._pcgi_buildPreviewDevice) ? window._pcgi_buildPreviewDevice(baseDev) : null;
 
@@ -18860,15 +18975,6 @@ showToast(t('tQueued') + ' ' + deleteLabel, 'info', 10000);
 				setTimeout(function() { okSpan.classList.remove('show'); }, 1800);
 			}
 		};
-
-		function closeModal() {
-			modal.style.display = 'none';
-			modal.setAttribute('aria-hidden', 'true');
-			document.removeEventListener('keydown', _onEsc);
-		}
-		function _onEsc(ev) { if (ev.key === 'Escape') closeModal(); }
-		document.addEventListener('keydown', _onEsc);
-		document.getElementById('pcgiMermaidCloseBtn').onclick = closeModal;
 
 		modal.style.display = 'flex';
 		modal.setAttribute('aria-hidden', 'false');
