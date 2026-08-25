@@ -14,12 +14,6 @@ All configuration options related to disk management are included in the dedicat
 
 ## The Disk Management CGI
 
-The `disk-mgmt` package provides:
-
-- CGI: `/usr/lib/cgi-bin/disk-mgmt.cgi`
-- Init script: `/etc/init.d/rc.disk-mgmt`
-- Configuration URL: `http://fritz.box:81/cgi-bin/conf/disk-mgmt`
-
 Disk Management turns the FRITZ!Box into a fully featured storage management system. It is implemented as a single large shell script, integrated into the Freetz web server as a shell CGI and providing, through an embedded JavaScript frontend, an interactive graphical environment for all disk operations. The toolchain requires uClibc 1.0.58 or newer.
 
 All operations are queued first, reviewed through editable operation parameters and an auto-generated command preview, then applied in order — providing a safety workflow similar to GParted's "apply pending operations" model. A real-time streaming output panel shows every command invoked, its full argument list, and its exit status as it runs.
@@ -78,6 +72,55 @@ The UI provides a rich interactive environment for managing disk operations:
 - **Safety confirmation**: destructive operations require an explicit `YES_I_UNDERSTAND` token plus per-operation confirmation.
 - **Multi-language UI**: full translations in English, Italian, and German; partial French and Spanish; browser language auto-detection.
 - **Keyboard shortcuts**: arrows to move between partitions, `Ctrl+R` (refresh), `Ctrl+Shift+A` (analyze toolchain), `Ctrl+M` (metadata), `Ctrl+Enter` (apply queue), `Delete` (queue delete), `F1`/`?` (help).
+
+### Creating the Freetz-EVO external disk
+
+#### Storage layout on FRITZ!Box devices
+
+Most FRITZ!Box devices provide two distinct storage areas: a very limited firmware area (typically a few tens of MB) and a larger data area (typically a few hundred MB) accessible at `/var/media/ftp/uStor01`. To overcome the tight firmware space constraint, Freetz supports package *externalization*: packages are installed on a separate filesystem and each file is linked back into the firmware area through symbolic links, so the system sees them in the expected locations without consuming firmware flash.
+
+The recommended approach for a large Freetz-EVO installation is to keep only the bare minimum non-externalized — in particular `dropbear` and `zlib` should always remain in the firmware area, so that SSH access to the device is available even if the external disk is not present or not yet mounted. Everything else can and should be externalized.
+
+The internal data area at `/var/media/ftp/uStor01` is too limited to host a full Freetz-EVO installation. An **external USB drive** (preferably a USB SSD, or a USB HDD) is the recommended externalization target. The external drive is also the right place for a swap partition if swap is desired — creating a swap file on `/var/media/ftp/uStor01/swapfile` is discouraged, as it would cause continuous wear on the device's internal NAND flash.
+
+#### The "Freetz-EVO disk setup" wizard
+
+Disk Management provides a dedicated disk context-menu option — **Freetz-EVO disk setup** — that guides the user through creating a complete, ready-to-use partition layout for Freetz-EVO on an attached USB drive. Selecting it opens a setup modal with the following fields:
+
+- **Partition table**: GPT (recommended) or MBR.
+- **Alignment**: optimal 1 MiB boundaries are pre-selected for best performance.
+- **Delete existing partitions first**: if checked, all existing partitions on the disk are erased before creating the new layout.
+- **Mount all partitions after creation**: if checked, each newly created partition is mounted immediately after formatting.
+- **Partitions to create**: an editable list of partitions (name/label, filesystem, size, and mountpoint), pre-populated with the recommended Freetz-EVO layout. Partitions can be resized, removed, or supplemented with additional entries using the **+ Add partition** button.
+- **Disk layout preview**: a live visual bar showing the proportional placement and size of each defined partition and any remaining free space.
+
+Clicking **Run setup** translates the defined layout into an ordered operation queue, which can be reviewed and then executed by clicking **Apply pending operations**.
+
+#### Default partition layout
+
+The pre-populated layout creates three partitions:
+
+**`NTFS_Data`** (NTFS) — a Windows-compatible volume for file exchange between the FRITZ!Box and a PC. Because NTFS is readable and writable on both Linux and Windows without additional drivers, this partition serves as a convenient transfer area for large files that need to be moved between the box and a Windows machine.
+
+**`MediaServer`** (ext4) — a Linux-native volume for multimedia assets such as audio libraries, video collections, and images. The ext4 filesystem offers better performance and reliability for large file workloads than NTFS or FAT. This partition is the natural home for MPD music libraries, Gerbera media server content, and similar storage-intensive data.
+
+**`FRITZBOX`** (ext4) — the core Freetz-EVO partition, hosting two subdirectories: `external/` (the externalization directory, mounted by Freetz as the package store) and `swap` (the swap file or swap partition). All sizes are adjustable in the setup modal; the defaults provide a balanced starting point that can be tailored to the available disk.
+
+#### What the wizard queues
+
+When the setup runs, it queues one operation per partition plus a table initialization step. For the default three-partition layout, the queue contains seven operations: (1) initialize a GPT partition table on the disk; (2–3) create the `NTFS_Data` partition and mount it; (4–5) create the `MediaServer` ext4 partition, format it with `mke2fs`, and mount it; (6–7) create the `FRITZBOX` ext4 partition, format it, and mount it. Each step is decorated in the streaming output panel with its full command line and exit status, so the exact `parted`, `mke2fs`, and `mount` invocations are visible as they run.
+
+#### Bootstrap procedure
+
+Because the full Disk Management tool suite may exceed the firmware flash capacity, setting up the external disk for a full Freetz-EVO installation is a two-phase process.
+
+**Phase 1 — bootstrap firmware.** Build a minimal Freetz-EVO image via `make menuconfig` that includes Disk Management and all desired packages configured as *external*, except `zlib` and `dropbear` which must stay internal. Set the external directory to the device's internal storage: `/var/media/ftp/uStor01/external`. Flash this image using `tools/push_firmware`.
+
+Boot the device and open the web interface at `http://fritz.box:81`. Upload the externalization archive to the device's internal storage using the web update pages at `http://fritz.box:81/cgi-bin/update/firmware.cgi` (firmware) and `http://fritz.box:81/cgi-bin/update/external.cgi` (external file), writing the externalization to `/var/media/ftp/uStor01/external`. Connect the target USB drive to the device.
+
+Open Disk Management, select the external USB drive, and choose **Freetz-EVO disk setup** from the disk context menu. Configure the partition sizes as needed, then click **Run setup** and **Apply** to create and format the partitions.
+
+**Phase 2 — full firmware.** Build the complete Freetz-EVO image via `make menuconfig`, selecting all required packages and marking them as external (except `zlib` and `dropbear`). The externalization archive for a large installation can approach or exceed 2 GB. In the Freetz settings page at `http://fritz.box:81/cgi-bin/conf/mod`, change the external directory to `/var/media/ftp/FRITZBOX/external`. Install the new firmware and its externalization over SSH using `tools/ssh_firmware_update.py`.
 
 ---
 
@@ -206,8 +249,6 @@ GNU ddrescue (`gddrescue`) is a robust data-recovery and block-copy tool with ma
 ### fsarchiver 0.8.9
 
 fsarchiver is a filesystem-level archiver that saves the content of a filesystem to a compressed archive file, preserving all POSIX attributes, extended attributes, and filesystem metadata. Unlike `partclone`, it can restore to a different-size partition and to different filesystem types (subject to driver availability). In Freetz-EVO, compression support is intentionally conservative to keep dependencies small (lzma/lzo/lz4/zstd disabled). Requires uClibc 1.0.58 or newer.
-
-### partclone 0.3.31 (see above)
 
 ### udpcast 20250223
 
