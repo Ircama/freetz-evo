@@ -1,10 +1,9 @@
 # Patch FAX pages
-Mit diesem Patch können mehrere Seiten in einem Fax verschickt werden.<br>
+With this patch, multiple pages can be sent in a single fax.<br>
 <br>
 
-Dazu im Upload-Dialog mehrere Bilddateien auswählen.
+To do this, select multiple image files in the upload dialog.
 
-### Alternative zu diesem Patch
-Es kann auch ein Browser-Script für Greasemonkey/Tampermonkey genutzt werden:<br>
+### Alternative to this patch
+A browser script for Greasemonkey/Tampermonkey can also be used:<br>
 [https://stadler-its.de/blog/stadler-its-blog-1/post/mehrseitige-fritz-box-faxe-12](https://stadler-its.de/blog/stadler-its-blog-1/post/mehrseitige-fritz-box-faxe-12#blog_content)
-

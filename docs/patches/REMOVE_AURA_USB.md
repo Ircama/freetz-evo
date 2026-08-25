@@ -1,14 +1,13 @@
 # Remove AURA (AVM USB Remote-Architecture)
-Entfernt die Unterstützung für den AVM-USB-Fernanschluss (hierfür hat FREETZ das Paket USB-IP zu bieten).<br>
+Removes support for the AVM USB remote connection (for this, FREETZ offers the USB-IP package).<br>
 <br>
 
-Als Ersatz für den AVM USB-Fernanschluss bietet sich das Freetz-Paket USB-IP an.
+As a replacement for the AVM USB remote connection, the Freetz package USB-IP is suitable.
 
-### Was ist ein USB-Fernanschluss?
+### What is a USB remote connection?
 
-Mittels des USB-Fernanschlusses lässt sich ein an der Box angeschlossenes USB Gerät von jedem an die Box angeschlossenen (Windows-) Computer so nutzen, als wäre es direkt an letzterem angeschlossen - vorausgesetzt es sind die passenden Treiber auf dem Computer installiert. So kann man z.B. einen USB-Drucker an die Box anschließen, und diesen bei allen angeschlossenen Computern wie einen lokalen Drucker benutzen. Gleiches gilt für USB Speichermedien, USB-Scanner, usw.
+With the USB remote connection, a USB device connected to the box can be used from any (Windows) computer connected to the box as if it were connected directly to that computer - provided the appropriate drivers are installed on the computer. For example, you can connect a USB printer to the box and use it as a local printer on all connected computers. The same applies to USB storage media, USB scanners, etc.
 
- * Laut diversen Foren-Einträgen gibt es den passenden Treiber nur für Windows - sodass Anwender mit einem Mac oder Linux im Dunkeln stehen bleiben. Hat man also keinen Windows-PC, kann man auf "aura USB" offensichtlich gut verzichten.
+ * According to various forum posts, the appropriate driver is only available for Windows - so users with a Mac or Linux are left in the dark. So if you don't have a Windows PC, you can obviously easily do without "aura USB".
 
-Weitere Informationen zum USB-Fernanschluss der Fritzbox finden sich auf den Seiten von ​AVM.
-
+Further information about the USB remote connection of the FRITZ!Box can be found on the pages of AVM.

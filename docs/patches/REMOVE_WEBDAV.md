@@ -1,5 +1,3 @@
 # Remove WebDAV (AVM Online-Speicher)
-Entfernt die Dateien die für Webdav benötigt werden.<br>
+Removes the files needed for WebDAV.<br>
 <br>
-
-

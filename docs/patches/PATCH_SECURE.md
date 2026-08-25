@@ -1,14 +1,13 @@
 # Patch web menu secure message
-Entfernt den Hinweis auf "unsichere Einstellungen" aus dem AVM WebIF.<br>
+Removes the "unsafe settings" notice from the AVM web interface.<br>
 <br>
 
 ```
-"Nicht empfohlene Einstellungen. Weitere Informationen"
+"Non-recommended settings. Further information"
 ```
 
-Diese Warnung wird aktuell ausgelöst durch:
- * IP-Phone von Aussen
- * 2-Faktor deaktiviert ("Ausführung bestimmter Einstellungen und Funktionen bestätigen")
+This warning is currently triggered by:
+ * IP-Phone from outside
+ * 2-factor disabled ("Confirm execution of certain settings and functions")
 
-Wenn dieser Schriftzug in der Weboberfläche nervt, sollte dieser Patch auswählen.
-
+If this notice in the web interface annoys you, you should select this patch.

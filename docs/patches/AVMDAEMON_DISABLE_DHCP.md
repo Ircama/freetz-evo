@@ -1,5 +1,3 @@
 # Disable DHCP
-Der DHCP-Port wird (mit Hilfe von libmultid) nicht von multid belegt. So kann ein anderer DHCP-Server wie Dnsmasq genutzt werden.<br>
+The DHCP port is no longer occupied by multid (with the help of libmultid). This allows another DHCP server such as Dnsmasq to be used.<br>
 <br>
-
-

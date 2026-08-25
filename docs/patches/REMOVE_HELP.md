@@ -1,8 +1,7 @@
 # Remove help
-Entfernt die Online-Hilfe zum AVM-WebIF.<br>
+Removes the online help for the AVM web interface.<br>
 <br>
 
-Wer auf die Online-Hilfe von AVM nicht (mehr) angewiesen ist,
-kann diese mit diesem Punkt aus dem Image entfernen lassen - und gewinnt damit ein paar Kilobyte zusätzlichen Platz für andere Dinge.
- U.U. gibt es dann an der einen oder anderen Stelle einen "hässlichen toten Link" - aber damit lässt sich sicher leben ;)
-
+If you no longer rely on AVM's online help,
+you can have it removed from the image with this option - and thus gain a few kilobytes of additional space for other things.
+There may then be an "ugly dead link" here and there - but that's certainly bearable ;)

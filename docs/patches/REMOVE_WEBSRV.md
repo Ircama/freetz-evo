@@ -1,5 +1,3 @@
 # Remove websrv
-Der Webserver für das AVM-Webinterface wird entfernt und durch httpd (immer in Freetz enthalten) ersetzt. (Zusammen mit UPnP kann auch die libwebsrv.so library entfernt werden.)<br>
+The web server for the AVM web interface is removed and replaced by httpd (always included in Freetz). (Together with UPnP, the libwebsrv.so library can also be removed.)<br>
 <br>
-
-

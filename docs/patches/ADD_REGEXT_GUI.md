@@ -1,5 +1,3 @@
 # Patch GUI to enable external SIP connections
-Es können externe SIP verbindungen konfiguriert werden<br>
+External SIP connections can be configured.<br>
 <br>
-
-

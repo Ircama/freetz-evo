@@ -1,5 +1,3 @@
 # Remove telephony
-Entfernt vollständig neben dem VoIP-daemon noch die Telefoniefunktionalität der Box. Achtung! Damit funktioniert die Box dann nicht mehr als Telefonanlage.<br>
+Completely removes the telephony functionality of the box in addition to the VoIP daemon. Caution! The box will then no longer function as a telephone system.<br>
 <br>
-
-

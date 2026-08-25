@@ -1,5 +1,3 @@
 # Remove brandings
-Es können verschieden Brandings entfernt werden. Das auf der Box aktive Branding darf nicht entfernt werden||?<br>
+Various brandings can be removed. The branding active on the box must not be removed||?<br>
 <br>
-
-

@@ -1,5 +1,3 @@
 # Remove UMTS (USB GSM)
-Danach kann die FritzBox keine UMTS Verbindung mehr aufbauen.<br>
+Afterwards the FRITZ!Box can no longer establish a UMTS connection.<br>
 <br>
-
-

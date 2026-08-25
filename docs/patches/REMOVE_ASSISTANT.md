@@ -1,8 +1,7 @@
 # Remove assistant (wizard)
-Entfernt den Einrichtungs-Assistenten. Achtung! Dadurch ist die automatische Einrichtung z.B. mit 1und1-Startcode nicht mehr möglich.<br>
+Removes the setup assistant. Caution! The automatic setup, e.g. with the 1&1 start code, is then no longer possible.<br>
 <br>
 
-Der Einrichtungs-Assistent wird, wenn überhaupt, ohnehin nur bei der erstmaligen Einrichtung der (neuen/jungfäulichen) Box benötigt.
-Um einzelne Einstellungen zu verändern, steuert man diese später direkt an - und ruft den Assistenten damit "nie wieder" auf.
-Ein guter Kandidat also, um ohne Funktionsverlust ein paar Kilobyte im Image "freizuschaufeln".
-
+The setup assistant is, if at all, only needed for the initial setup of a (new/fresh) box.
+To change individual settings, you configure them directly later - and thus "never again" call the assistant.
+A good candidate, therefore, to free up a few kilobytes in the image without loss of functionality.

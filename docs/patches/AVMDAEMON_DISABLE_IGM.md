@@ -1,5 +1,3 @@
 # Disable IGMP
-Der IGMP-Proxy von multid wird deaktiviert.<br>
+The IGMP proxy of multid is disabled.<br>
 <br>
-
-

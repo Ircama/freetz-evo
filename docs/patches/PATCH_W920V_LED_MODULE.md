@@ -1,5 +1,3 @@
 # Change LED semantics to W920V
-Passt die LEDs der Beschriftung vom Speedport an.<br>
+Adjusts the LEDs to the labeling of the Speedport.<br>
 <br>
-
-

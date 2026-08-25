@@ -1,5 +1,3 @@
 # Modify umtsd: only for known modems
-Der umtsd wird nur für bekannte Modems gestartet und blockiert so /dev/ttyUSB? nicht.<br>
+The umtsd is only started for known modems and therefore does not block /dev/ttyUSB?.<br>
 <br>
-
-

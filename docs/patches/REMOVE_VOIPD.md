@@ -1,5 +1,3 @@
 # Remove VoIP
-Entfernt Daten für VoIP-Betrieb.<br>
+Removes data for VoIP operation.<br>
 <br>
-
-

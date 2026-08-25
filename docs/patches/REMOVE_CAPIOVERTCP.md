@@ -1,35 +1,34 @@
 # Remove CAPIoverTCP
-Entfernt CapiOverTCP-Schnittstelle der FritzBox.
-Achtung! CapiOverTCP wird von mehreren nützlichen PC-Programmen für den Zugriff auf die Box benutzt!
-FritzFax nutzt z.B. diese Schnittstelle, um Faxe von PC aus über die FritzBox zu verschicken.<br>
+Removes the CAPIoverTCP interface of the FRITZ!Box.
+Caution! CAPIoverTCP is used by several useful PC programs for accessing the box!
+FritzFax, for example, uses this interface to send faxes from the PC via the FRITZ!Box.<br>
 <br>
 
-Dieser Patch entfernt das Binary "capiotcpserver" (Größe 13 KB) aus der Firmware. Dieses Binary lauscht normalerweise auf Port 5031.
+This patch removes the binary "capiotcpserver" (size 13 KB) from the firmware. This binary normally listens on port 5031.
 
-### CapiOverIP unter Windows
+### CAPIoverIP under Windows
 
-Unter Windows wird CapiOverIP u.a. benutzt von:
+Under Windows, CAPIoverIP is used, among others, by:
 
  * FritzFax
- * OutLook Wählhilfe (zum Zugriff auf die die FritzBox)
- * ​[isplayCall](http://www.lachenmann-net.de/displaycall/)
+ * Outlook dialing assistant (for accessing the FRITZ!Box)
+ * [DisplayCall](http://www.lachenmann-net.de/displaycall/)
  * [Phoner](http://www.phoner.de/)
 
-### CapiOverIP unter Linux
+### CAPIoverIP under Linux
 
-Auch unter Linux lässt sich das CapiOverTCP nutzen, wie es ​dieses [Howto](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:remotecapi) beschreibt, und zwar z.B. zum
+CAPIoverTCP can also be used under Linux, as described in this [Howto](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:remotecapi), for example to
 
- * Faxe versenden und empfangen mithilfe eines Soft-DSP
- * Telefonieren mit Headset
- * Verbinden mit Asterisk 
+ * send and receive faxes using a soft-DSP
+ * make phone calls with a headset
+ * connect to Asterisk
 
-### CapiOverIP auf dem Mac
+### CAPIoverIP on the Mac
 
-Wenn hier jemand was weiß, bitte eintragen!
-Weiterführende Links
+If anyone here knows something, please add it!
+Further links
 
- * [​CapiOverTCP im Fritzbox-Wiki](http://www.wehavemorefun.de/fritzbox/Nutzung_des_Capi-over-TCP_Server_der_Fritzbox)
- * ​[AVM FAQ zu Fritz!Fax](http://www.avm.de/de/Service/FAQs/FAQ_Sammlung/11843.php3)
- * ​[a-sa Wiki: Faxen über die Fritz!Box](http://a-sawicki.de/cms/index.php?option=com_content&task=view&id=38&Itemid=29)
- * ​[Howto: CapiOverIp unter Linux](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:remotecapi)
-
+ * [CAPIoverTCP in the Fritzbox Wiki](http://www.wehavemorefun.de/fritzbox/Nutzung_des_Capi-over-TCP_Server_der_Fritzbox)
+ * [AVM FAQ on Fritz!Fax](http://www.avm.de/de/Service/FAQs/FAQ_Sammlung/11843.php3)
+ * [a-sa Wiki: Faxing via the FRITZ!Box](http://a-sawicki.de/cms/index.php?option=com_content&task=view&id=38&Itemid=29)
+ * [Howto: CAPIoverIP under Linux](http://wiki.ip-phone-forum.de/gateways:avm:howtos:mods:remotecapi)

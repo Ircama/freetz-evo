@@ -1,6 +1,5 @@
 # Remove Samba/NQCS
-Entfernt den AVM-Samba-Server.<br>
+Removes the AVM Samba server.<br>
 <br>
 
- * ACHTUNG: Das Freetz Samba Paket ist kein vollständiger Ersatz für den AVM-Samba, sondern baut darauf auf - wer das Freetz Samba Paket nutzen möchte, sollte den Samba Daemon hier nicht entfernen!
-
+ * CAUTION: The Freetz Samba package is not a complete replacement for AVM Samba, but builds on it - if you want to use the Freetz Samba package, you should not remove the Samba daemon here!

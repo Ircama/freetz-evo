@@ -1,5 +1,3 @@
-# fok
-dtrace Entfernt trace Debugging-Utility für den D-Kanal von ISDN<br>
+# Remove dtrace
+Removes the trace debugging utility for the D-channel of ISDN.<br>
 <br>
-
-

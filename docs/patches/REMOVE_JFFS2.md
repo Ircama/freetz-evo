@@ -1,5 +1,3 @@
 # Remove jffs2.ko
-Entfernt das Kernelmodul für ​JFFS2. Benötigt zur Nutzung des optionalen, internen Speichers /data, wo z.B. Anrufbeantworterdaten und AVM-Plugins (7270_v1) gespeichert werden, sofern die Firmware genügend Platz im Flash-Speicher frei gelassen hat und kein USB-Speicher angeschlossen ist.<br>
+Removes the kernel module for JFFS2. Required for using the optional internal storage /data, where e.g. answering machine data and AVM plugins (7270_v1) are stored, provided the firmware has left enough free space in the flash memory and no USB storage is connected.<br>
 <br>
-
-

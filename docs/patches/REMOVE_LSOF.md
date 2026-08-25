@@ -1,5 +1,3 @@
 # Remove lsof
-Entfernt lsof.<br>
+Removes lsof.<br>
 <br>
-
-

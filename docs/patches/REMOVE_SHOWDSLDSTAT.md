@@ -1,5 +1,3 @@
 # Remove showdsldstat
-Entfernt showdsldstat, ein Werkzeug mit dem der Status der Internetverbindung (CPMAC-Modus, Verbindungszeit, DNS-Server und Router), IPv6, VoIP und TR069 angezeigt werden kann.<br>
+Removes showdsldstat, a tool that can display the status of the internet connection (CPMAC mode, connection time, DNS server and router), IPv6, VoIP and TR069.<br>
 <br>
-
-

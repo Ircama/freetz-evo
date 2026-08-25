@@ -1,5 +1,3 @@
 # Disable console on serial port
-Deaktiviert die Konsole am internen seriellen Port.<br>
+Disables the console on the internal serial port.<br>
 <br>
-
-

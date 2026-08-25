@@ -96,7 +96,7 @@ else
 		if [ -n "$$$$DL_SOURCE0_CONTAINER" ]; then \
 			if [ ! -r "$$(DL_FW_DIR)/$$$$DL_SOURCE0_CONTAINER" ]; then \
 				if ! $$(DL_TOOL) --delete-on-trap --no-append-servers --checksum-optional "$$(DL_FW_DIR)" "$$$$DL_SOURCE0_CONTAINER" "$$$$DL_SITE0" $$(DL_SOURCE$(1)_CONTAINER_HASH) $$(SILENT); then \
-					$$(call ERROR,3,Could not download firmware image. See https://freetz-ng.github.io/freetz-ng/wiki/FAQ#Couldnotdownloadfirmwareimage for details.) \
+					$$(call ERROR,3,Could not download firmware image. See https://ircama.github.io/freetz-evo/wiki/70_Various/origin_and_history/#could-not-download-firmware-image for details.) \
 				fi; \
 			fi; \
 			case "$$$${DL_SOURCE0_CONTAINER^^}" in \
@@ -146,7 +146,7 @@ else
 			fi; \
 		elif ! $$(DL_TOOL) $$(if $$(DL_SOURCE$(1)_REMOTE),--out-file "$$(DL_SOURCE$(1)_LOCAL)") --delete-on-trap --no-append-servers --checksum-optional "$$(DL_FW_DIR)" \
 			  "$$(if $$(DL_SOURCE$(1)_REMOTE),$$(DL_SOURCE$(1)_REMOTE),$$(DL_SOURCE$(1)_LOCAL))" "$$$$DL_SITE0" "$$(DL_SOURCE$(1)_HASH)" $$(SILENT); then \
-			$$(call ERROR,3,Could not download firmware image. See https://freetz-ng.github.io/freetz-ng/wiki/FAQ#Couldnotdownloadfirmwareimage for details.) \
+			$$(call ERROR,3,Could not download firmware image. See https://ircama.github.io/freetz-evo/wiki/70_Various/origin_and_history/#could-not-download-firmware-image for details.) \
 		fi; \
 	fi
 endif

@@ -1,5 +1,3 @@
 # Remove ethernet-over-usb
-Entfernt den Ethernet-over-USB Treiber der auch eine CDROM-Emulation über USB bereitstellt.<br>
+Removes the ethernet-over-USB driver, which also provides CD-ROM emulation over USB.<br>
 <br>
-
-

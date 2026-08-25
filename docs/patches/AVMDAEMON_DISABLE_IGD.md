@@ -1,5 +1,3 @@
 # Disable igd/upnp
-Es werden immer die Parameter gesetzt um dsld's IGD & multid's UPNP-device zu deaktivieren. Remove UPnP daemon nutzt diese Option.<br>
+The parameters to disable dsld's IGD and multid's UPnP device are always set. The "Remove UPnP daemon" patch uses this option.<br>
 <br>
-
-

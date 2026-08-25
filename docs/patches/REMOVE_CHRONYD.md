@@ -1,5 +1,3 @@
 # Remove chronyd
-Der chronyd zur Zeitsynchronisation wird entfernt. Dessen Aufgabe übernimmt dann multid.<br>
+The chronyd for time synchronization is removed. Its task is then taken over by multid.<br>
 <br>
-
-

@@ -1,12 +1,12 @@
 # Patch web menu signed message
-Entfernt den Hinweis auf "nicht unterstützte Modifikationen" aus dem AVM WebIF.<br>
+Removes the "unsupported changes" notice from the AVM web interface.<br>
 <br>
 
 ```
-"In Ihrer FRITZBox wurden vom Hersteller nicht unterstützte Änderungen durchgeführt."
+"Unsupported changes were performed on your FRITZ!Box."
 ```
 
-Wenn Ihr diesen Schriftzug in der Weboberfläche weg bekommen wollt, dann solltet ihr diesen Patch auswählen.
+If you want to get rid of this notice in the web interface, you should select this patch.
 
-Details und Hintergründe dazu gibt es in einem Artikel von Alexander [Wie die Fritz!Box Manipulationen erkennt](https://freetz-ng.github.io/freetz-ng/wiki/help/howtos/development/manipulation_detection.html).
+Details and background information can be found in an article by Alexander on [how the FRITZ!Box detects unsupported changes](https://ircama.github.io/freetz-evo/wiki/30_Expert/manipulation_detection/).
 

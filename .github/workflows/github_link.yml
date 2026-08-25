@@ -61,8 +61,8 @@ jobs:
           [ -z "$TYPE" ] && PKG=$PKG-host
           for x in make libs host-tools; do [ -e docs/$x/$PKG.md ] && TYPE=$x; done
           [ -z "$TYPE" ] && echo "No page." && exit
-          LINK="https://freetz-ng.github.io/freetz-ng/$TYPE/#$PKG"
-          LINK="https://freetz-ng.github.io/freetz-ng/$TYPE/$PKG"
+          LINK="https://ircama.github.io/freetz-evo/$TYPE/#$PKG"
+          LINK="https://ircama.github.io/freetz-evo/$TYPE/$PKG/"
           echo "link=$LINK" >> $GITHUB_OUTPUT
           echo "################################################################" && bash -c "echo LINK=$LINK"
 

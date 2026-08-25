@@ -1,14 +1,13 @@
 # Remove kids (usermand/contfiltd)
-Entfernt die ausschließlich für die Kindersicherung benötigten Dateien (usermand, userman.ko).
-Für die FBox WLAN 3170 bitte diesen Patch nicht auswählen, ansonsten gibt es Dauerreboot.<br>
+Removes the files needed exclusively for parental controls (usermand, userman.ko).
+For the FBox WLAN 3170, please do not select this patch, otherwise there will be a permanent reboot.<br>
 <br>
 
-Hiermit wird die Kindersicherung der Fritzbox entfernt.
-Wer alt genug ist, und noch keinen "gefährlichen" oder "gefährdeten" Nachwuchs im Hause hat, kann auf selbigen sicher verzichten.
-Und falls der Nachwuchs bereits zu schlau dafür ist, und die Kindersicherung umgeht - naja, dann braucht man sie wohl auch nicht mehr?
+This removes the parental controls of the FRITZ!Box.
+If you are old enough and have no "dangerous" or "at-risk" offspring in the house, you can safely do without it.
+And if the offspring is already too smart for it and bypasses the parental controls - well, then you probably don't need it anymore?
 
-### Weiterführende Links
+### Further links
 
- * [AVM: Kindersicherung](http://www.avm.de/de/News/artikel/newsletter/tipp_kindersicherung.html)
- * [Computerbild zur Kindersicherung](http://www.computerbild.de/artikel/cb-Ratgeber-Kurse-DSL-WLAN-Ratgeber-Fritz-Box-optimal-einstellen_468382.html) (damit kann man die Kleinen auch vor dem Zugriff auf selbige Website schützen ;))
-
+ * [AVM: Parental controls](http://www.avm.de/de/News/artikel/newsletter/tipp_kindersicherung.html)
+ * [Computerbild on parental controls](http://www.computerbild.de/artikel/cb-Ratgeber-Kurse-DSL-WLAN-Ratgeber-Fritz-Box-optimal-einstellen_468382.html) (with this you can also protect the little ones from accessing that very website ;))

@@ -509,7 +509,7 @@ Usage: $0 [image] [ -f ] [ -w ] [ -ip <ip> ] [ -map <hex> ] [ -ali <kb> ] [ -mem
 -hn               Only single-boot mode: Flash to an 'Alice/HanseNet' version of 7570.
 
 This scipt supports currently single-, ram-, dual-, uimg- and fit-boot modes, for more
-infomations see https://freetz-ng.github.io/freetz-ng/INSTALL#methoden
+infomations see https://ircama.github.io/freetz-evo/INSTALL/#methods
 If flashing ram-boot/nand/inmemory does not work...
 For ram-boot mode you may need to set a larger '-mem' value then the default of '208' MB.
 You could use '-mem 0' to detect the size and use the maximum. The value AVM uses is

@@ -1,5 +1,3 @@
 # Patch ATA
-Es kann die ATA Konfiguration bearbeitet werden<br>
+The ATA configuration can be edited.<br>
 <br>
-
-

@@ -1,5 +1,3 @@
 # Remove cdrom.iso
-Die cdrom.iso wird entfernt.<br>
+The cdrom.iso is removed.<br>
 <br>
-
-

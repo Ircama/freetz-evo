@@ -1,54 +1,47 @@
 # Remove tr069
-Entfernt tr069 (Remote-Konfiguration durch den Provider). Ohne tr069 ist keine Einrichtung mit 1und1-Startcode möglich.<br>
+Removes tr069 (remote configuration by the provider). Without tr069, setup with the 1&1 start code is not possible.<br>
 <br>
 
-"TR69 ist […] ein Protokoll, das die Kommunikation zwischen einem Endgerät und einem Kontrollserver regelt." So beschreibt es ein Blogeintrag (siehe unten).
-Verwendet wird dies bei der Fritzbox einerseits um komplexe Einstellungen bei der Einrichtung der Box zu automatisieren, andererseits damit der jeweilige Provider im Supportfall
-auf die Konfiguration der Box beim Kunden zugreifen kann. Das geht von der Veränderung einzelner Einstellungen bis hin zum Firmware-Upgrade oder der Feststellung von Modifikationen.
+"TR69 is [...] a protocol that regulates the communication between a device and a control server." That's how a blog post (see below) describes it.
+The FRITZ!Box uses it on the one hand to automate complex settings during box setup, and on the other hand so that the respective provider can access the customer's box configuration in support cases. This ranges from changing individual settings to firmware upgrades or detecting modifications.
 
-Zu den Nachteilen des aktivierten TR-069 siehe insbesondere die zweite Seite des zweiten Artikels in unten stehender Link-Liste:
-Offensichtlich ist TR-069 bei Fritzboxen ab Werk bereits aktiviert, so dass "Big Brother" seinen Schnüffel-Zugang bereits einsatzbereit vorfindet.
-Wer einmal das Helferscript /bin/supportdata ansieht braucht sich nicht zu wundern warum Modifikationen sofort vom Provider im Supportfall entdeckt
-werden, genauso wie Dienste dritter (z.B. VoIP).
+For the disadvantages of activated TR-069, see in particular the second page of the second article in the link list below:
+Obviously, TR-069 is already activated on FRITZ!Boxes from the factory, so that "Big Brother" already finds its snooping access ready for use.
+If you take a look at the help script /bin/supportdata, you don't need to wonder why modifications are immediately detected by the provider in support cases, as are third-party services (e.g. VoIP).
 
-Viele der im FAQ beschriebenen Gefahren beim Ersetzen der SSL libraries stehen auch in direktem Zusammenhang mit dem TR069 Dienst der scheinbar zur HTTPS gesicherten
-Verbindung zum ACS Server die "originalen" AVM SSL libraries braucht. Bei früheren Firmware Versionen reichte hier das Deaktivieren von TR069, jedoch tauchen die Probleme
-bei neueren Firmwares auch dann auf - vielleicht ein Indiz dafür das sich der Dienst garnicht mehr ganz deaktivieren lässt.
+Many of the dangers described in the FAQ when replacing the SSL libraries are also directly related to the TR069 service, which apparently needs the "original" AVM SSL libraries for the HTTPS-secured connection to the ACS server. With earlier firmware versions, disabling TR069 was sufficient here, but with newer firmwares the problems also appear then - perhaps an indication that the service can no longer be fully disabled at all.
 
- * Konflikte zwischen Freetz Modifikationen und TR069 tauchen meist erst bei angeschlossenem DSL auf, wodurch sich das Problem leicht eingrenzen lässt. Läuft eine Box stabil bis DSL angeschlossen bzw synchronisiert wird dann hilft dieser Patch. Warnung unten beachten!.
+ * Conflicts between Freetz modifications and TR069 usually only appear when DSL is connected, which makes the problem easy to narrow down. If a box runs stably until DSL is connected or synchronized, then this patch helps. Note the warning below!.
 
-Es ist also in vieler Hinsicht eventuell empfehlenswert, an dieser Stelle von der Möglichkeit der kompletten Entfernung von TR-069 Gebrauch zu machen.
-Wer also die Hilfestellung per TR-069 nicht dauerhaft benötigt (oder garnicht wünscht), kann sich den "tr069 stuff" im Image ersparen - und den
-freigewordenen Platz für andere Dinge nutzen.
+So in many respects it may be advisable to make use of the option of completely removing TR-069 here.
+If you don't permanently need the support via TR-069 (or don't want it at all), you can spare the "tr069 stuff" in the image - and use the freed space for other things.
 
-Warnung: Entfernt man TR069 funktioniert weder automatische Einrichtung noch Startcode.
-Manche Provider haben komplizierte Multi-PVC Einstellungen für Internet Telefonie die sich über das Webinterface in der Form oft nicht eingeben lassen.
-Eine manuelle Eingabe funktioniert oft auch ist aber von der Providerseite leicht zu erkennen und wird oft in den AGBs als nicht unterstützt benannt (Bsp: 1und1).
+Warning: If TR069 is removed, neither automatic setup nor the start code will work.
+Some providers have complicated multi-PVC settings for internet telephony that often cannot be entered via the web interface in that form.
+Manual entry often works too, but is easy for the provider to detect and is often declared as unsupported in the terms and conditions (e.g. 1&1).
 
-Auch zieht der Support im Fehlerfall eventuell jegliche Kooperationbereitschaft zurück wenn nicht mit TR069 konfiguriert wurde oder werden kann - bis
-hin zu angeblichem Garantieverlust des gelieferten Gerätes. Im gebrandeten Webinterface solcher Provider ist TR069 auch nicht abschaltbar.
-Daher empfiehlt sich folgende Vorgehensweise:
+Also, in the event of an error, the support may withdraw any willingness to cooperate if the device was not or cannot be configured with TR069 - up to an alleged loss of warranty of the delivered device. In the branded web interface of such providers, TR069 also cannot be disabled.
+Therefore the following procedure is recommended:
 
- * Vor dem Modifizieren der Firmware einen Werksreset machen (ausser bei Neugeräten).
- * Falls das Gerät bereits modifiziert wurde Freetz Einstellungen sichern und eine Recovery durchführen (vorher auf original Branding einstellen!).
- * Eventuell vorhandenen USB-Speicher entfernen.
- * Die vom Provider empfohlene Einstellungsprozedur durchführen (Bsp: Startcode bei 1und1).
- * Nach erfolgreicher Einrichtung und funktionierender Telefonie vom DSL trennen.
- * Freetz Firmware mit entfernter TR069 Funktionalität aufspielen - ggf. NUR Freetz Einstellungen wiederherstellen.
- * DSL wieder anschliessen - Ruhe ist.
- * Im Service Fall die Prozedur wiederholen (Ab Recovery). 
+ * Perform a factory reset before modifying the firmware (except for new devices).
+ * If the device has already been modified, save the Freetz settings and perform a recovery (set the original branding beforehand!).
+ * Remove any USB storage if present.
+ * Perform the setup procedure recommended by the provider (e.g. start code with 1&1).
+ * After successful setup and working telephony, disconnect from DSL.
+ * Flash the Freetz firmware with removed TR069 functionality - if applicable, restore ONLY the Freetz settings.
+ * Reconnect DSL - peace at last.
+ * In a service case, repeat the procedure (from recovery).
 
-Tip: Bevor man seine Box modifiziert sollte man sich eine Kopie des Environments machen um später vergleichen zu können.
-Das Environment bleibt bei einer Recovery unverändert und enthält eventuell Spuren von Modifikationen.
-Es gibt mehrere Methoden dies zu tun:
+Tip: Before modifying your box, you should make a copy of the environment so that you can compare it later.
+The environment remains unchanged during a recovery and may contain traces of modifications.
+There are several methods to do this:
 
- * FTP auf ADAM2 und dort PRINTENV
- * Uber telnet/ssh in die Box (hinterlässt Spuren ⇒ Werksreset danach) und cat /proc/sys/urlader/environment 
+ * FTP to ADAM2 and PRINTENV there
+ * Via telnet/ssh into the box (leaves traces => factory reset afterwards) and cat /proc/sys/urlader/environment
 
-### Weiterführende Links
+### Further links
 
- * [Infos zu TR-069](http://www.jodler.ch/bstocker/?p=335)
- * [TR-069: Router-Plug-and-Play mit Risiken](http://www.netzwelt.de/news/78076-tr-069-router-plug-and-play-mit-risiken.html)
- * [Heise: TR-069 im laufenden Betrieb](http://www.heise.de/netze/DSL-fernkonfiguriert--/artikel/99963/3)
- * [IPPF Thread: tr069 verstehen und nutzen](http://www.ip-phone-forum.de/showthread.php?t=146089)
-
+ * [Info on TR-069](http://www.jodler.ch/bstocker/?p=335)
+ * [TR-069: Router plug-and-play with risks](http://www.netzwelt.de/news/78076-tr-069-router-plug-and-play-mit-risiken.html)
+ * [Heise: TR-069 in operation](http://www.heise.de/netze/DSL-fernkonfiguriert--/artikel/99963/3)
+ * [IPPF thread: understanding and using tr069](http://www.ip-phone-forum.de/showthread.php?t=146089)

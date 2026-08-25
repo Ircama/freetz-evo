@@ -1,5 +1,3 @@
 # Remove run_clock
-Der Betriebsstundenzähler wird entfernt.<br>
+The operating hours counter is removed.<br>
 <br>
-
-

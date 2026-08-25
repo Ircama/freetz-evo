@@ -1,5 +1,3 @@
 # Disable DNS
-Der DNS-Port wird (mit Hilfe von libmultid) nicht von multid belegt. So kann ein anderer DNS-Server genutzt werden, das Dynamic-DNS Update sowie die Zeitsysnchronisation funktionieren weiterhin.<br>
+The DNS port is no longer occupied by multid (with the help of libmultid). This allows another DNS server to be used, while dynamic DNS updates and time synchronization continue to work.<br>
 <br>
-
-

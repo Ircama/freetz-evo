@@ -1,5 +1,3 @@
 # Remove DECT
-Es können keine DECT Geräte mehr verbunden werden.<br>
+No more DECT devices can be connected.<br>
 <br>
-
-

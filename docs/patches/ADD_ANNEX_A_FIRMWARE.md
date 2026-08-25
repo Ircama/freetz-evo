@@ -1,5 +1,3 @@
 # Add Annex A firmware file
-Fügt eine Annex firmware ins Image ein.<br>
+Adds an Annex firmware to the image.<br>
 <br>
-
-

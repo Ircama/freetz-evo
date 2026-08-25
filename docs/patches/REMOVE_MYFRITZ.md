@@ -1,16 +1,15 @@
 # Remove MyFritz
-Entfernt das MyFritz Web Interface (AVM's DynDNS).<br>
+Removes the MyFritz web interface (AVM's DynDNS).<br>
 <br>
 
-MyFritz ist AVMs DynDNS-Alternative für die FritzBox.
-AVM bietet für Softwareversionen ab FRITZ!OS 05.20 einen eigenen DDNS-Dienst namens MyFRITZ! an, der kostenfrei direkt aus dem Webinterface der FritzBox aus eingerichtet werden kann.
-Direct aus dem WebIF kann man sich dafür einen Account anlegen, und den Dienst einrichten.
+MyFritz is AVM's DynDNS alternative for the FRITZ!Box.
+For software versions from FRITZ!OS 05.20, AVM offers its own DDNS service called MyFRITZ!, which can be set up free of charge directly from the FRITZ!Box web interface.
+You can create an account for this directly from the web interface and set up the service.
 
-Wer diesen Dienst ohnehin nicht verwenden will, kann mit diesem Remove-Patch ein gutes Megabyte Platz schaffen.
+If you don't want to use this service anyway, you can free up a good megabyte of space with this remove patch.
 
-### Weiterführende Links
+### Further links
 
- * [MyFRITZ! – DynDNS-Alternative für die Fritz!Box](http://www.meintechblog.de/2012/02/myfritz-dyndns-alternative-fuer-die-fritzbox/)
- * [MyFRITZ!-Konto registrieren und in FRITZ!Box einrichten](http://avm.de/nc/service/fritzbox/fritzbox-7390/wissensdatenbank/publication/show/966_MyFRITZ-Konto-registrieren-und-in-FRITZ-Box-einrichten/) (für die 7390)
- * [Myfritz.net](http://www.wehavemorefun.de/fritzbox/Myfritz.net) im AVM Wiki bei WeHaveMoreFun.de
-
+ * [MyFRITZ! - DynDNS alternative for the FRITZ!Box](http://www.meintechblog.de/2012/02/myfritz-dyndns-alternative-fuer-die-fritzbox/)
+ * [Register MyFRITZ! account and set it up in FRITZ!Box](http://avm.de/nc/service/fritzbox/fritzbox-7390/wissensdatenbank/publication/show/966_MyFRITZ-Konto-registrieren-und-in-FRITZ-Box-einrichten/) (for the 7390)
+ * [Myfritz.net](http://www.wehavemorefun.de/fritzbox/Myfritz.net) in the AVM Wiki at WeHaveMoreFun.de

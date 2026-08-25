@@ -1,5 +1,3 @@
 # Remove printserv
-Die Fritzbox kann kein Druckserver mehr sein.<br>
+The FRITZ!Box can no longer be a print server.<br>
 <br>
-
-

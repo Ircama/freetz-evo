@@ -1,5 +1,3 @@
 # Remove v2 piglet file(s)
-Es wird nur eine Version abhängig von der Hardversion benötigt.<br>
+Only one version is needed depending on the hardware version.<br>
 <br>
-
-

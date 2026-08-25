@@ -1,5 +1,3 @@
 # Patch extended DSL settings
-Es können mehr DSL Optionen bearbeitet werden<br>
+More DSL options can be edited.<br>
 <br>
-
-

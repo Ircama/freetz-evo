@@ -1,5 +1,3 @@
 # Remove NAS
-Das AVM-NAS Webinterface wird entfernt und kann nicht mehr genutzt werden. Entfernt auch den AVM-Media-Server (s. u.)<br>
+The AVM NAS web interface is removed and can no longer be used. Also removes the AVM media server (see below).<br>
 <br>
-
-

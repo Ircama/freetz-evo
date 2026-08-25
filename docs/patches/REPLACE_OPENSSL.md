@@ -1,5 +1,3 @@
 # Replace OpenSSL libraries
-Die SSL Libs von AVM werden ersetzt.<br>
+The SSL libs of AVM are replaced.<br>
 <br>
-
-

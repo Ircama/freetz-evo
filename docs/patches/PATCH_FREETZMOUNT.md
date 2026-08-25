@@ -1,24 +1,23 @@
 # Add FREETZMOUNT
-Vergibt einheitliche Namen für USB-Speichermedien, verbessert deutlich die Unterstützung der USB-Speichermedien, ermöglicht mounten nach LABEL.
-FREETZMOUNT ist der Nachfolger vom USB-Storage-Patch und beinhaltet auch autorun/autoend patch.
-Nach dem Umstieg zu FREETZMOUNT wird es empfohlen das Paket fstyp manuell abzuwählen.<br>
+Assigns uniform names to USB storage media, significantly improves USB storage media support, and enables mounting by LABEL.
+FREETZMOUNT is the successor to the USB-Storage patch and also includes the autorun/autoend patch.
+After switching to FREETZMOUNT it is recommended to manually deselect the fstyp package.<br>
 <br>
 
-FREETZMOUNT ist der Nachfolger-Patch vom ehemaligen USB-Storage-Patch. Neben den Funktionen vom USB-Storage-Patch beinhaltet er auch die autorun/autoend-Funktionalität (konfigurierbar via Webinterface).
-FREETZMOUNT greift tiefer als die beiden Vorgänger-Patches in die AVM-Mount-Struktur ein und lagert Teile der Mountskripte von /etc/hotplug/storage und /etc/hotplug/run_mount in die FREETZ-eigene Bibliothek /usr/lib/libmodmount.sh aus. Dadurch wird der Wartungsaufwand für diese Patches reduziert, das Mount-Verhalten wird für alle Box-/Firmware-Versionen vereinheitlicht.
-FREETZMOUNT ermöglicht das Mounten der Medien nach einem sogenannten LABEL, einer einheitlicher Bezeichnung für die Medien. Dadurch wird gewährleistet, dass das Medium (Partition) immer unter dem selben Mount-Punkt zu finden sein wird (Bekämpfen vom uStor11-Problem).
+FREETZMOUNT is the successor patch to the former USB-Storage patch. In addition to the functions of the USB-Storage patch, it also includes the autorun/autoend functionality (configurable via the web interface).
+FREETZMOUNT integrates deeper into the AVM mount structure than its two predecessor patches and moves parts of the mount scripts from /etc/hotplug/storage and /etc/hotplug/run_mount into Freetz's own library /usr/lib/libmodmount.sh. This reduces the maintenance effort for these patches and unifies the mount behavior for all box/firmware versions.
+FREETZMOUNT enables mounting media by a so-called LABEL, a uniform designation for the media. This ensures that the medium (partition) will always be found under the same mount point (fighting the uStor11 problem).
 
-Anmerkungen:
+Notes:
 
- * Bei der Auswahl des "mount-by-label"-Features wird fstyp nicht mehr benötigt und kann abgewählt werden: Package-Selection → Testing → fstyp.
- * Obwohl es eigentlich offensichtlich sein sollte, hier noch einmal zur Verdeutlichung:
+ * When selecting the "mount-by-label" feature, fstyp is no longer required and can be deselected: Package-Selection -> Testing -> fstyp.
+ * Although it should actually be obvious, here again for clarification:
 
-Ein Programm, welches für's Mounten in irgendeiner Art und Weise zuständig ist, darf nicht auf einem zu mountenden Medium externalisiert sein.
-Dazu gehören zum Beispiel e2fsck,ntfs-3g und blkid.
+A program that is responsible for mounting in any way must not be externalized on a medium that is to be mounted.
+This includes, for example, e2fsck, ntfs-3g and blkid.
 
-Weiterführende Infos gibt es z.B. in folgenden Threads des IP-Phone-Forums:
+Further information can be found, for example, in the following IP-Phone-Forum threads:
 
- * [FREETZMOUNT: Mounten ohne 1000 und ein Mal zu patchen](http://www.ip-phone-forum.de/showthread.php?t=200293)
- * [​/etc/hotplug/run_mount modifizieren](http://www.ip-phone-forum.de/showthread.php?t=200293)
- * [​Skript für immer gleiche Mountpoints (auch nach Verlust des Mounts)](http://www.ip-phone-forum.de/showthread.php?t=181859)
-
+ * [FREETZMOUNT: Mounting without patching a thousand times](http://www.ip-phone-forum.de/showthread.php?t=200293)
+ * [Modifying /etc/hotplug/run_mount](http://www.ip-phone-forum.de/showthread.php?t=200293)
+ * [Script for always identical mount points (also after loss of the mount)](http://www.ip-phone-forum.de/showthread.php?t=181859)

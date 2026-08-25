@@ -1,33 +1,32 @@
 # Replace onlinechanged - EXPERIMENTAL
-Onlinechanged wird durch eigenen IP-Watchdog angestoßen (geht auch auf IP-Clients).<br>
+Onlinechanged is triggered by a custom IP watchdog (also works on IP clients).<br>
 <br>
 
-Dieser Patch sorgt dafür, daß die Onlinechanged-Skripten von
+This patch ensures that the onlinechanged scripts of
 
- * AVM-Diensten (Verzeichnis /etc/onlinechanged),
- * Freetz-Paketen (Verzeichnis /etc/onlinechanged),
- * Onlinechanged-CGI (Skript /tmp/flash/onlinechanged-cgi) und
- * manuell angelegten Skripten (Verzeichnisse /tmp/onlinechanged und /tmp/flash/onlinechanged) 
+ * AVM services (directory /etc/onlinechanged),
+ * Freetz packages (directory /etc/onlinechanged),
+ * onlinechanged CGI (script /tmp/flash/onlinechanged-cgi) and
+ * manually created scripts (directories /tmp/onlinechanged and /tmp/flash/onlinechanged)
 
-von einem eigenen IP-Watchdog angestoßen werden statt vom AVM multid.
+are triggered by a custom IP watchdog instead of AVM's multid.
 <br>
-Vorteile dieser Methode gegenüber dem AVM-Mechanismus sind:
+Advantages of this method over the AVM mechanism:
 
- * Sie funktioniert im Gegensatz zur AVM-Methode auch auf Geräten, die keine eigene Internet-Verbindung (z.B. via DSL oder PPPoE) aufbauen, also auf Geräten hinter einem NAT (z.B. bei "Internetverbindung mitbenutzen").
- * In Problemfällen, wo AVM Onlinechanged nicht zuverlässig funktioniert (siehe entsprechendes ​IPPF-Thema) bietet dieser Patch eine zuverlässige Alternative. 
+ * In contrast to the AVM method, it also works on devices that do not establish their own internet connection (e.g. via DSL or PPPoE), i.e. on devices behind a NAT (e.g. with "Share internet connection").
+ * In problem cases where AVM onlinechanged does not work reliably (see the corresponding IPPF topic), this patch offers a reliable alternative.
 
-Mehr Hintergründe zur Funktionsweise siehe Hilfetext im "menuconfig".
+More background on how it works can be found in the help text in "menuconfig".
 
 ### FAQ
 
- * AVM Onlinechanged konnte man auch manuell von der Konsole aus aufrufen via ```onlinechanged online```. Wie geht das beim IP-Watchdog, der doch ständig im Hintergrund läuft?<br>
-   Ganz einfach: ```killall ip_watchdog```. Der Befehl beendet die laufende Instanz, ```init``` startet den Watchdog daraufhin sofort neu (wegen der Direktive "respawn" in /etc/inittab).
-   Das führt dazu, daß sämtliche Onlinechanged-Skripten einmal ausgeführt werden. Danach läuft es dann normal weiter, d.h. der erneute Aufruf der Skripten erfolgt erst dann wieder,
-   wenn sich die externe IP-Adresse ändert. Im Gegensatz zu ```onlinechanged online``` (geht sowieso nur ohne diesen Patch) oder ```/bin/onlinechanged.sh online``` (geht auch mit diesem Patch)
-   sorgt die Killall-Methode dafür, daß alles sauber initialisiert wird (z.B. ```IPADDR```, vgl. auch nächste Frage).
+ * AVM onlinechanged could also be called manually from the console via ```onlinechanged online```. How does this work with the IP watchdog, which is constantly running in the background?<br>
+   Simply: ```killall ip_watchdog```. The command terminates the running instance, and ```init``` immediately restarts the watchdog (because of the "respawn" directive in /etc/inittab).
+   This causes all onlinechanged scripts to be executed once. Afterwards it continues to run normally, i.e. the scripts are only called again
+   when the external IP address changes. In contrast to ```onlinechanged online``` (only works without this patch anyway) or ```/bin/onlinechanged.sh online``` (works with this patch too),
+   the killall method ensures that everything is initialized cleanly (e.g. ```IPADDR```, see also the next question).
 
- * Wie ermittle ich in eigenen Onlinechanged-Skripten die externe IP-Adresse?<br>
-   Der IP-Watchdog ermittelt sie sowieso und übergibt sie in der Umgebungsvariablen ```IPADDR```, welche man in den entsprechenden Skripten verwenden kann.
-   Das spart Aufrufe von get_ip und somit ggf. auch Anfragen an externe STUN-Server. 
-   Dadurch wird auch ein Caching der IP-Adresse überflüssig. Die Variable ```IPADDR``` wird übrigens auch im AVM-Original von multid bei Aufruf von onlinechanged gesetzt.
-
+ * How do I determine the external IP address in my own onlinechanged scripts?<br>
+   The IP watchdog determines it anyway and passes it in the environment variable ```IPADDR```, which can be used in the corresponding scripts.
+   This saves calls to get_ip and thus possibly also requests to external STUN servers.
+   This also makes caching of the IP address unnecessary. The variable ```IPADDR``` is also set in the AVM original by multid when onlinechanged is called.

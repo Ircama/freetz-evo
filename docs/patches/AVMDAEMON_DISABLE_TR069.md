@@ -1,5 +1,3 @@
 # Disable tr069
-Das tr069discover von multid wird abgeschaltet. Wird vom Patch Remove tr069 stuff automatisch ausgewählt.<br>
+The tr069discover of multid is disabled. It is automatically selected by the "Remove tr069 stuff" patch.<br>
 <br>
-
-

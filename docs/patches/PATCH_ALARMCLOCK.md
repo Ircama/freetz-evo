@@ -1,6 +1,5 @@
 # Patch third alarm-clock
-Fügt einen 3. Wecker zum AVM WebIF hinzu.<br>
+Adds a 3rd alarm clock to the AVM web interface.<br>
 <br>
 
-Durch diesen Patch wird dem AVM-Webinterface ein dritter Wecker hinzugefügt. Dieser ist ohne den Patch nur per Telefon konfigurierbar.
-
+With this patch a third alarm clock is added to the AVM web interface. Without the patch it can only be configured via telephone.

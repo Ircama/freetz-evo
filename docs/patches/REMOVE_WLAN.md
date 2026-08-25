@@ -1,5 +1,3 @@
 # Remove WLAN
-Entfernt Daten für WLAN-Betrieb.<br>
+Removes data for WLAN operation.<br>
 <br>
-
-

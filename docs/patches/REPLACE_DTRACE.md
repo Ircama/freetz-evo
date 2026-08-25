@@ -1,5 +1,3 @@
 # Replace dtrace
-Statt dtrace wird ein eigenes Script (per Telefoncode) ausgeführt.<br>
+Instead of dtrace, a custom script (via phone code) is executed.<br>
 <br>
-
-

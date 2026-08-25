@@ -68,7 +68,7 @@ The same legal guidance also warns against publishing self-built full images pub
 
 ### What is Freetz-NG?
 
-[Freetz-NG](https://freetz-ng.github.io/freetz-ng/) is the actively maintained modern continuation of the Freetz ecosystem. It keeps the same core philosophy (augmenting original FRITZ!OS firmware), while extending device support, toolchains, package sets, and build-system maintenance. Its first commit was in mid 2008.
+[Freetz-NG](https://ircama.github.io/freetz-evo/) is the actively maintained modern continuation of the Freetz ecosystem. It keeps the same core philosophy (augmenting original FRITZ!OS firmware), while extending device support, toolchains, package sets, and build-system maintenance. Its first commit was in mid 2008.
 
 ---
 

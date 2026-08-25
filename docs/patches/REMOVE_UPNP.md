@@ -1,30 +1,29 @@
 # Remove UPnP (igdd/upnpd)
-Entfernt den UPnP-daemon. Achtung! Ohne UPnP-daemon ist keine Einrichtung von FritzFax möglich.<br>
+Removes the UPnP daemon. Caution! Without the UPnP daemon, FritzFax cannot be set up.<br>
 <br>
 
-uPnP steht für "universal Plug'n'Play". Hiermit lassen sich, sofern aktiviert und freigegeben, von Clients auf Verlangen Ports an der Box freischalten.
-Dies ist einerseits sicher ganz praktisch, da man dies dann nicht mehr manuell in der Web-Oberfläche erledigen muss - birgt aber auch seine Risiken:
-Auch ein Trojaner könnte auf diese Weise seine "Autobahn-nach-Hause" schalten - siehe dazu auch den Artikel ​Router hacken per uPnP.
-Bei aktiviertem uPnP auf der Box gibt man quasi die Kontrolle zumindest ein gutes Stück ab.
+uPnP stands for "universal Plug'n'Play". If enabled and released, clients can open ports on the box on demand.
+On the one hand this is certainly quite practical, because you no longer have to do this manually in the web interface - but it also carries risks:
+A trojan could also use this way to open its "highway home" - see also the article Hacking routers via uPnP.
+With uPnP enabled on the box, you essentially give up a good deal of control.
 
-Einige AVM Software benötigt diese Funktionalität (u.a. FritzFax) - andere Programme u.U. auch. Wer es hingegen nicht braucht, kann es hier entfernen.
-Und wer sich dessen nicht ganz sicher ist, kann es ja zunächst in der Web-Oberfläche deaktivieren und schauen, ob irgend ein Programm
-schreit - passiert dies bis zum nächsten Firmware-Update nicht, kann man den Kram dann rauswerfen ;)
+Some AVM software needs this functionality (including FritzFax) - other programs possibly too. If you don't need it, you can remove it here.
+And if you're not entirely sure, you can first disable it in the web interface and see if any program
+complains - if that doesn't happen until the next firmware update, you can throw the stuff out then ;)
 
-### Was wird entfernt?
+### What is removed?
 
-Mit dem Patch wird der uPnP Daemon (igdd) aus dem Image entfernt. Außerdem werden die Init-Skripte angepasst, damit sie nicht über dessen Fehlen stolpern.
+With this patch, the uPnP daemon (igdd) is removed from the image. In addition, the init scripts are adjusted so that they don't stumble over its absence.
 
-### Was ist zu beachten?
+### What needs to be considered?
 
-Zum einen, wie schon oben erwähnt: Einige Software ist auf den uPnP Server hier angewiesen - diese funktioniert dann mit großer Wahrscheinlichkeit maximal noch eingeschränkt.
+On the one hand, as already mentioned above: some software depends on the uPnP server here - it will most likely only work to a limited extent, if at all.
 
-Desweiteren sollte man vor Einspielen eines Images mit entferntem uPnP Server sicherstellen, dass alle uPnP Features im aktuellen Image deaktiviert wurden.
-Die entsprechenden Optionen finden sich unter "Einstellungen ⇒ System ⇒ Netzwerkeinstellungen ⇒ Statusinformationen über UPnP übertragen (empfohlen)".
+Furthermore, before flashing an image with the uPnP server removed, you should ensure that all uPnP features in the current image have been disabled.
+The corresponding options can be found under "Settings => System => Network settings => Transmit status information via UPnP (recommended)".
 
-### Weiterführende Links
+### Further links
 
  * [Wikipedia: uPnP](http://de.wikipedia.org/wiki/Universal_Plug_and_Play)
- * [DSL Re-Connect per uPnP](http://blog.jbbr.net/2008/01/03/fritzbox-schneller-reconnect-unter-linux/)
- * [Router hacken per uPnP](http://forum.ubuntuusers.de/topic/router-hacken-mit-hilfe-von-upnp/)
-
+ * [DSL re-connect via uPnP](http://blog.jbbr.net/2008/01/03/fritzbox-schneller-reconnect-unter-linux/)
+ * [Hacking routers via uPnP](http://forum.ubuntuusers.de/topic/router-hacken-mit-hilfe-von-upnp/)

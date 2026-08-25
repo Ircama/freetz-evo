@@ -3129,7 +3129,7 @@ For real-world examples, examine these packages in freetz-ng:
 
 ### External Resources
 
-- freetz-ng Wiki: https://freetz-ng.github.io/freetz-ng/
+- freetz-ng Wiki: https://ircama.github.io/freetz-evo/
 - modlibrc functions: `tools/freetz_functions`
 - ACE Editor: https://ace.c9.io/
 - FritzBox API: AVM documentation

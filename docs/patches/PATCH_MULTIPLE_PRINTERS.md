@@ -1,31 +1,29 @@
 # Add support for multiple printers
-Ermöglicht die Nutzung mehrere Drucker an der FritzBox.<br>
+Enables the use of multiple printers on the FRITZ!Box.<br>
 <br>
 
-Dieser Patch baut auf der Idee aus ​[diesem Beitrag](http://www.ip-phone-forum.de/showthread.php?t=161756&p=1075666) auf, angeschlossene Drucker und den jeweiligen Printserver-Port mittels des physikalischen USB-Ports aneinander zu koppeln. Damit ist eine feste Zuordnung gewährleistet.
+This patch is based on the idea from [this post](http://www.ip-phone-forum.de/showthread.php?t=161756&p=1075666) of coupling connected printers and their respective print server ports via the physical USB port. This ensures a fixed assignment.
 
-Da der AVM-Printserver jeweils zwei Ports belegt (n+1), wird immer ein Port übersprungen:
+Since the AVM print server occupies two ports each (n+1), one port is always skipped:
 
 ```
-phys. USB-Port 0 => Port 9100
-phys. USB-Port 1 => Port 9102
-phys. USB-Port 2 => Port 9104
+phys. USB port 0 => Port 9100
+phys. USB port 1 => Port 9102
+phys. USB port 2 => Port 9104
 ...
 ```
 
-Alle Drucker sollten an dem gleichen USB-Hub angeschlossen werden. Prinzipiell sind mit Einschränkungen aber auch unterschiedliche Hubs möglich.
-In der Übersicht "USB-Geräte" werden alle angeschlossenen Drucker mit den vergebenen Printserver-Ports aufgelistet.
-Der Drucker am phys. USB-Port 0 (Port 9100) wird zudem - sofern angeschlossen - immer als Standard-Drucker (Device-Node /dev/usblp0) registriert. Das macht spätestens dann Sinn, wenn die Fritz Box mal eigene Druckfunktionen (wie z.B. einen direkten Faxausdruck) mitbringen sollte.
+All printers should be connected to the same USB hub. In principle, different hubs are also possible with restrictions.
+The "USB devices" overview lists all connected printers with their assigned print server ports.
+The printer on physical USB port 0 (port 9100) is also always registered as the default printer (device node /dev/usblp0) - if connected. This makes sense at the latest when the FRITZ!Box should provide its own printing functions (such as direct fax printing).
 
-### Einschränkungen
+### Restrictions
 
-Der dargestellte Druckerstatus wechselt beliebig zwischen den angeschlossenen Druckern.
+The displayed printer status arbitrarily switches between the connected printers.
 
-—by IPPF User thimo
+-by IPPF user thimo
 
-### Weiterführende Links
+### Further links
 
-    ​http://www.ip-phone-forum.de/showthread.php?t=161756
-    ​http://www.ip-phone-forum.de/showthread.php?t=195811 
-
-
+    http://www.ip-phone-forum.de/showthread.php?t=161756
+    http://www.ip-phone-forum.de/showthread.php?t=195811
