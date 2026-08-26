@@ -14,7 +14,7 @@ All configuration options related to disk management are included in the dedicat
 
 ## The Disk Management CGI
 
-Disk Management turns the FRITZ!Box into a fully featured storage management system. It is implemented as a single large shell script, integrated into the Freetz web server as a shell CGI and providing, through an embedded JavaScript frontend, an interactive graphical environment for all disk operations. The toolchain requires uClibc 1.0.58 or newer.
+Disk Management turns the FRITZ!Box into a fully featured storage management system. It is implemented as a single large shell script ([source on GitHub](https://github.com/Ircama/freetz-evo/blob/master/docs/make/disk-mgmt.md)), integrated into the Freetz web server as a shell CGI and providing, through an embedded JavaScript frontend, an interactive graphical environment for all disk operations. The toolchain requires uClibc 1.0.58 or newer.
 
 All operations are queued first, reviewed through editable operation parameters and an auto-generated command preview, then applied in order — providing a safety workflow similar to GParted's "apply pending operations" model. A real-time streaming output panel shows every command invoked, its full argument list, and its exit status as it runs.
 

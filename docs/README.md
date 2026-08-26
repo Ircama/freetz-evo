@@ -69,11 +69,16 @@ Preview the EVO skin, mobile behavior, and browser-based administration experien
 ## EVO Focus Areas
 
 <div class="evo-feature-grid" markdown="1">
-<div markdown="1"><strong>Responsive web UI</strong><span>Modernized pages, mobile navigation, dark mode, and persistent per-device preferences.</span></div>
+<div markdown="1"><strong>Responsive web UI</strong><span>Modernized pages, mobile navigation, dark mode, PWA, and hardened session login.</span> [Read the EVO Skin overview](EVO-SKIN.md)</div>
 <div markdown="1"><strong>Device operations</strong><span>Disk management, cloning, recovery, download tools, torrent workflows, and browser-based file administration.</span></div>
 <div markdown="1"><strong>Runtime stacks</strong><span>Modern PHP, Python modules, QuickJS, Nginx, terminal tooling, and selected AI/ML packages.</span></div>
 <div markdown="1"><strong>Disk Management subsystem</strong><span>Freetz-EVO integrates low-level Unix disk tools into a highly interactive graphical interface that orchestrates them into complete storage operations.</span> [Read the overview](DISK-MGMT.md)</div>
 <div markdown="1"><strong>Audio subsystem</strong><span>USB DAC support, ALSA stack, MPD ecosystem, web radio, and AirPlay/Spotify receivers.</span> [Read the Audio Subsystem overview](AUDIO.md)</div>
+<div markdown="1"><strong>Multimedia and downloads</strong><span>rTorrent/ruTorrent, aria2/AriaNg, Transmission frontends, elFinder file manager, and Gerbera UPnP/DLNA media server.</span> [Read the Multimedia overview](MULTIMEDIA.md)</div>
+<div markdown="1"><strong>Rust packages</strong><span>Cross-compiled Rust tools for MIPS, x86, ARM, and Aarch64, with comprehensive uClibc compatibility patches.</span> [Read the Rust overview](RUST.md)</div>
+<div markdown="1"><strong>Go packages</strong><span>Go 1.25 cross-compilation for all FRITZ!Box architectures, with per-package module cache isolation and CGO support.</span> [Read the Go overview](GO.md)</div>
+<div markdown="1"><strong>Python ecosystem</strong><span>Python 3.14 with 70+ packages, Rust-built extensions, tkinter/X11, and Home Assistant support.</span> [Read the Python overview](PYTHON.md)</div>
+<div markdown="1"><strong>Package reference</strong><span>Full listing of all new packages, enhanced packages, and CI/tooling additions.</span> [Browse all packages](NEW-PACKAGES.md)</div>
 <div markdown="1"><strong>Build confidence</strong><span>Reviewed English documentation, stronger CI, upstream synchronization, and generated package listings.</span></div>
 </div>
 </section>
