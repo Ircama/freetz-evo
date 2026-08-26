@@ -1,6 +1,6 @@
 # Freetz-EVO — Multimedia, Download, and Media Server
 
-Freetz-EVO extends the standard Freetz package set with a comprehensive suite of tools for downloading, transferring, and serving media. The area covers three distinct concerns: **download and torrent clients** with modern web frontends, a **UPnP/DLNA media server** for streaming content to network devices, and **UPnP-IGD support** for automatic port-forwarding. All packages in this area are EVO-only additions.
+Freetz-EVO extends the standard Freetz package set with a comprehensive suite of tools for downloading, transferring, and serving media. The area covers three distinct concerns: **download and torrent clients** with modern web frontends, a **UPnP/DLNA media server** for streaming content to network devices, and **UPnP-IGD support** for automatic port-forwarding.
 
 All relevant options are available under **Packages** in `make menuconfig`.
 
@@ -39,10 +39,6 @@ Transmission is a lightweight BitTorrent client available in Freetz-NG. Freetz-E
 | **transmission-web-control** | snapshot | The classic enhanced Transmission web UI |
 
 Each frontend is independently selectable in `make menuconfig` and is installed alongside (not replacing) the default Transmission web interface, allowing the user to switch between them via URL.
-
-### aMUTorrent 3.5.0 (DEVELOPER)
-
-aMUTorrent is an experimental torrent client with a full **Node.js** backend and an **Express/WebSocket** frontend. Its bootstrap script preconfigures a local rTorrent connection via SCGI. Because it carries a large Node.js runtime dependency and is still experimental, it is flagged **DEVELOPER** and disabled by default.
 
 ---
 

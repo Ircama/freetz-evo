@@ -1,8 +1,8 @@
 # Freetz-EVO — Rust Cross-Compilation
 
-Freetz-EVO is one of the few Freetz-based projects to cross-compile Rust packages for FRITZ!Box targets. The implementation spans two layers: a host-tool wrapper that wires the system Rust toolchain into the build environment, and a comprehensive macro library in `make/include/650-rust-cargo.mk` that handles all the uClibc-specific compatibility work needed to build Rust crates for MIPS, x86, ARM, and Aarch64 targets.
+Freetz-EVO provides cross-compilation of Rust packages for FRITZ!Box targets. The implementation spans two layers: a host-tool wrapper that wires the system Rust toolchain into the build environment, and a comprehensive macro library in `make/include/650-rust-cargo.mk` that handles all the uClibc-specific compatibility work needed to build Rust crates for MIPS, x86, ARM, and Aarch64 targets.
 
-The result is a growing collection of ~30 Rust packages available for FRITZ!Box devices — terminal tools, music players, system monitors, file managers, and more — none of which would run out of the box on uClibc without the patches Freetz-EVO applies.
+The result is a collection of ~30 Rust packages available for FRITZ!Box devices — terminal tools, music players, system monitors, file managers, and more — none of which would run out of the box on uClibc without the patches Freetz-EVO applies.
 
 All relevant options are available under **Packages** in `make menuconfig`.
 
@@ -18,7 +18,7 @@ In addition to the symlinks, `rust-host` materializes **custom target specificat
 
 ## 650-rust-cargo.mk — cross-compilation macro library
 
-The core of the Freetz-EVO Rust support lives in `make/include/650-rust-cargo.mk`. This ~600-line file provides a set of Make macros that package makefiles call to configure `cargo build --target <triple>` for uClibc cross-compilation. The main macros are:
+The core of the Freetz-EVO Rust support lives in `make/include/650-rust-cargo.mk`. This file provides a set of Make macros that package makefiles call to configure `cargo build --target <triple>` for uClibc cross-compilation. The main macros are:
 
 **`RUST_TARGET_VARS`** sets the environment variables needed for each cross target: `CC`, `AR`, `RUSTFLAGS`, target-specific `CARGO_TARGET_*_LINKER`, and the sysroot paths. On MIPS targets it also adds `-C link-arg=-Wl,-no-pie` to `RUSTFLAGS` because PIE executables crash with `ld-uClibc.so.1` on MIPS.
 
@@ -34,7 +34,7 @@ The core of the Freetz-EVO Rust support lives in `make/include/650-rust-cargo.mk
 
 ## uClibc compatibility patches
 
-The most significant engineering in Freetz-EVO's Rust support is the set of **in-registry patches** applied to popular crates that do not build cleanly on uClibc. These patches are applied by Make macros that `sed`-edit the crate source inside `CARGO_HOME` before `cargo build` runs — without forking the crates or maintaining downstream patch queues.
+The most significant engineering in Freetz-EVO's Rust support is the set of **in-registry patches** applied to popular crates that do not build cleanly on uClibc. These patches are applied by Make macros that `sed`-edit the crate source inside `CARGO_HOME` before `cargo build` runs — without forking the crates or maintaining downstream patch queues. Where possible, patches are idempotent.
 
 ### rustix
 

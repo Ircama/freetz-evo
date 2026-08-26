@@ -40,13 +40,13 @@ Companion X11 applications (`xclock`, `xeyes`, `xterm`) are also available for t
 
 ## Home Assistant
 
-The Python 3 package set in Freetz-EVO is sized for running **Home Assistant** on-device. The combination of the full interpreter, the async runtime packages (`aiohttp`, `aiodns`, `aiosignal`, `async-timeout`), cryptographic packages (`python3-cryptography`, `pynacl`, `bcrypt`), and the various protocol/format libraries covers the bulk of Home Assistant's dependencies. External USB storage is recommended for the Home Assistant configuration directory and for the Python packages themselves (using `uv` or `pip` to install them on the external drive).
+The Python 3 package set in Freetz-EVO is sized for running **Home Assistant** on-device. The combination of the full interpreter, the async runtime packages (`aiohttp`, `aiodns`, `aiosignal`, `async-timeout`), cryptographic packages (`python3-cryptography`, `pynacl`, `bcrypt`), and the various protocol/format libraries covers the bulk of Home Assistant's dependencies.
 
 ---
 
 ## Third-party package list
 
-The following Python 3 packages are available in Freetz-EVO, all EVO-only additions:
+The following Python 3 packages are available in Freetz-EVO:
 
 | Package | Version | Notes |
 |---|---|---|
@@ -118,8 +118,6 @@ The following Python 3 packages are available in Freetz-EVO, all EVO-only additi
 | `python3-ulid-transform` | 2.2.9 | ULID handling (Rust-built) |
 | `python3-uv` | 0.11.16 | Fast package manager (Rust-built) |
 | `typing_extensions` | 4.15.0 | Typing backports |
-
-Packages that are pure-Python (no compiled extensions) and require no native build: `aiohappyeyeballs`, `aiosignal`, `async-timeout`, `attrs`, `charset-normalizer`, `dateutil`, `fnvhash`, `h11`, `idna`, `pycparser`, `six`, `voluptuous`, `python3-certifi`, `python3-ifaddr`, `python3-mashumaro`, `typing_extensions`.
 
 ---
 
