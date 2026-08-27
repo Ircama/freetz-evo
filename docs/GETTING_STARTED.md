@@ -14,12 +14,13 @@ This guide describes the complete workflow: preparing a Linux build environment,
    - [Option B — WSL on Windows](#option-b--wsl-on-windows)
 5. [Cloning the Repository](#5-cloning-the-repository)
 6. [Installing Freetz-EVO Prerequisites](#6-installing-freetz-evo-prerequisites)
-7. [Configuring Your Firmware](#7-configuring-your-firmware)
-8. [Building the Firmware](#8-building-the-firmware)
-9. [Flashing the Firmware](#9-flashing-the-firmware)
-10. [First Login](#10-first-login)
-11. [Keeping Freetz-EVO Up to Date](#11-keeping-freetz-evo-up-to-date)
-12. [Enabling Swap in the Web Interface (Optional)](#12-enabling-swap-in-the-web-interface-optional)
+7. [Setting Up Storage for Freetz-EVO](#7-setting-up-storage-for-freetz-evo)
+8. [Configuring Your Firmware](#8-configuring-your-firmware)
+9. [Building the Firmware](#9-building-the-firmware)
+10. [Flashing the Firmware](#10-flashing-the-firmware)
+11. [First Login](#11-first-login)
+12. [Keeping Freetz-EVO Up to Date](#12-keeping-freetz-evo-up-to-date)
+13. [Enabling Swap in the Web Interface (Optional)](#13-enabling-swap-in-the-web-interface-optional)
 
 ---
 
@@ -289,7 +290,56 @@ The script detects your distribution and installs all required packages automati
 
 ---
 
-## 7. Configuring Your Firmware
+## 7. Setting Up Storage for Freetz-EVO
+
+A large Freetz-EVO installation requires an external USB drive, as the internal flash storage available on FRITZ!Box devices is generally not sufficient. Freetz-EVO includes tools that simplify the configuration of an external USB drive. The overall process requires two build passes: a minimal first build to prepare the disk, and a full second build to install the complete firmware.
+
+### Step 1 — Build a minimal image for disk setup
+
+Run `make menuconfig` and configure a minimal image containing the disk management tools:
+
+1. Select **Hardware type** for your device.
+2. Under **Packages → Dropbear**, enable **Add SFTP support** and **With zlib Compression**.
+3. Under **Packages → Disk Tools**, enable **Disk Management**.
+   > It is advisable to select all packages under **Disk Tools**, not just those strictly required by Disk Management.
+4. Press **Esc** until you reach **External processing**. Select every item listed under
+   `--- packages ---` and `--- libraries ---`, **except** `Dropbear` and `libz`
+   (those must remain internal so the device stays reachable over SSH after booting).
+5. Save the configuration (this writes the `.config` file) and exit.
+
+Then build:
+
+```bash
+make
+```
+
+The build will take some time. When it finishes, the `images/` directory will contain two files: the firmware image and the externalization archive.
+
+### Step 2 — Flash the minimal image
+
+Connect the build machine to the device via direct Ethernet link, then flash the image using the FTP bootloader:
+
+```bash
+tools/push_firmware
+```
+
+### Step 3 — Prepare the external USB drive
+
+1. Boot the device and open the Freetz-EVO web interface at `http://fritz.box:81/`. Use the default credentials.
+2. Upload the externalization archive to the device's internal storage using the web update pages:
+   - Firmware image: `http://fritz.box:81/cgi-bin/update/firmware.cgi`
+   - Externalization archive: `http://fritz.box:81/cgi-bin/update/external.cgi`
+     Write the externalization to `/var/media/ftp/uStor01/external`.
+3. Connect the target USB drive to the device.
+4. Open **Disk Management**, select the external USB drive, and choose **Freetz-EVO disk setup** from the disk context menu. Configure the partition sizes as needed, then click **Run setup** and **Apply** to create and format the partitions.
+
+> For detailed guidance on the disk setup procedure, see [Disk Management documentation](https://ircama.github.io/freetz-evo/DISK-MGMT/#creating-the-freetz-evo-external-disk).
+
+With the external USB drive partitioned and formatted, proceed with the standard workflow: configure and build the complete image ([Chapter 8](#8-configuring-your-firmware) and [Chapter 9](#9-building-the-firmware)), then flash it onto the device ([Chapter 10](#10-flashing-the-firmware)).
+
+---
+
+## 8. Configuring Your Firmware
 
 Freetz-EVO uses the same **Kconfig** system as the Linux kernel. An interactive text-based menu lets you choose your device model, packages, language, and more.
 
@@ -316,9 +366,11 @@ When you are satisfied, press **Esc** until you reach the "Save configuration?" 
 
 FRITZ!Box devices have limited internal flash memory. If you select many packages and see a **"Filesystem image too big"** error, enable externalization for selected packages under **Advanced Options → External**. Externalized components are stored on a USB drive plugged into the device and loaded at boot time. Consider that externalization is generally needed.
 
+> **Storage setup (Chapter 7):** When building the complete image after preparing an external USB drive, mark **all** packages as external under **Advanced Options → External**, except `Dropbear` and `libz`, which must remain internal so the device stays reachable over SSH. The externalization archive for a large installation can approach or exceed 2 GB.
+
 ---
 
-## 8. Building the Firmware
+## 9. Building the Firmware
 
 ```bash
 make
@@ -360,7 +412,15 @@ The output files are placed in the `images/` directory:
 
 ---
 
-## 9. Flashing the Firmware
+## 10. Flashing the Firmware
+
+For most updates — when Freetz and SSH are already running on the device — a single command handles both the firmware image and the externalization archive in one unattended step:
+
+```bash
+tools/ssh_firmware_update.py --host <device-IP> --password <freetz-password> --batch
+```
+
+The sections below describe all available methods, including first-time installation and web-based updates.
 
 ### Method 1 — via FTP bootloader (initial installation)
 
@@ -390,6 +450,8 @@ This script updates both the firmware image and the external file in a single un
 
 The script assumes that a non-externalized Dropbear package is available in Freetz-EVO.
 
+> **Storage setup (Chapter 7):** Before running this command for the first time after preparing the external USB drive, open `http://fritz.box:81/cgi-bin/conf/mod` and change the external directory from `/var/media/ftp/uStor01/external` to `/var/media/ftp/FRITZBOX/external` (the partition created in Chapter 7, Step 3).
+
 ### Method 3 — via Freetz web interface
 
 1. Open your device's existing Freetz interface (if already installed) at `http://fritz.box:81/`
@@ -401,7 +463,7 @@ Notice that the `.external` file is typically larger than 250 MB, so the second 
 
 ---
 
-## 10. First Login
+## 11. First Login
 
 After flashing, the device reboots. Access the Freetz-EVO web interface at:
 
@@ -424,7 +486,7 @@ With `freetz_proxy`, you can access the device remotely via MyFRITZ!, then click
 
 ---
 
-## 11. Keeping Freetz-EVO Up to Date
+## 12. Keeping Freetz-EVO Up to Date
 
 Pull the latest commits:
 
@@ -448,7 +510,7 @@ See [docs/SYNC_UPSTREAM.md](docs/SYNC_UPSTREAM.md) for full details.
 
 ---
 
-## 12. Enabling Swap in the Web Interface (Optional)
+## 13. Enabling Swap in the Web Interface (Optional)
 
 If you do not see **Settings -> Swap** in the running web interface, the option was not included at build time.
 
