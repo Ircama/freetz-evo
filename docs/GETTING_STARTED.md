@@ -533,6 +533,8 @@ You should now see the **Swap** section, where you can:
 - Create a swap file from the web interface
 - Configure swappiness
 
+The external drive is the right place for a swap partition — creating a swap file on /var/media/ftp/uStor01/swapfile is discouraged, as it would cause continuous wear on the device's internal NAND flash.
+
 For a complete step-by-step guide, see [`docs/wiki/20_Advanced/create_swap.md`](wiki/20_Advanced/create_swap.md).
 
 ---
