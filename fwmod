@@ -1874,14 +1874,19 @@ FREETZ_LOGIN_PY
 
 	# External should run after modifying, stripping etc.
 	if [ "$EXTERNAL_ENABLED" == "y" ]; then
-		# Copy ICU data file to FILESYSTEM_MOD_DIR so the external script can find it
-		for icu_dat in ${TARGET_SPECIFIC_ROOT_DIR}/usr/share/icu/*/icudt*.dat; do
-			if [ -f "$icu_dat" ]; then
-				dat_dest="${FILESYSTEM_MOD_DIR}/usr/share/icu/${icu_dat##*/usr/share/icu/}"
-				mkdir -p "$(dirname "$dat_dest")"
-				cp -a "$icu_dat" "$dat_dest"
-			fi
-		done
+		# Copy ICU data file to FILESYSTEM_MOD_DIR so the external script can find it.
+		# Only when ICU is actually selected: a stale icudt*.dat left over from a
+		# previous build (e.g. after libicu was deselected) would otherwise add
+		# ~32 MB of mostly-incompressible data to the filesystem image for nothing.
+		if [ "$FREETZ_LIB_libicu" == "y" ]; then
+			for icu_dat in ${TARGET_SPECIFIC_ROOT_DIR}/usr/share/icu/*/icudt*.dat; do
+				if [ -f "$icu_dat" ]; then
+					dat_dest="${FILESYSTEM_MOD_DIR}/usr/share/icu/${icu_dat##*/usr/share/icu/}"
+					mkdir -p "$(dirname "$dat_dest")"
+					cp -a "$icu_dat" "$dat_dest"
+				fi
+			done
+		fi
 		echo0 "processing external"
 		[ ! -x "$EXTERNAL" ] && error 1 "cannot find the tool $EXTERNAL_TOOL"
 		source "${EXTERNAL}"

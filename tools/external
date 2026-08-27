@@ -46,7 +46,6 @@ fi
 if [ "$EXTERNAL_DYNAMIC" == "y" ]; then
 	# search files
 	for pkg in $EXTERNAL_SERVICES; do
-		pkg_ver="${pkg}-$(cat "$PACKAGES_DIR/.${pkg}")"
 		# check if along with ${pkg} a package named ${pkg}-cgi is available, for some packages (e.g. openvpn, ppp, transmission)
 		# pkg-files (rc.$pkg, etc.) are provided by the package named ${pkg}-cgi and not by ${pkg}.
 		pkg_files="$(collect_pkg_files ${pkg} ${pkg}-cgi ${pkg}-v2-cgi)"
@@ -402,7 +401,6 @@ done
 if [ "$EXTERNAL_CREATEPAK_DYNAMIC" == "y" ]; then
 	for pkg in $EXTERNAL_SERVICES; do
 		pkg_dir="${EXTERNAL_MOD_DIR}-${pkg}"
-		pkg_ver="${pkg}-$(cat "$PACKAGES_DIR/.${pkg}")"
 		# check if along with ${pkg} a package named ${pkg}-cgi is available, for some packages (e.g. openvpn, ppp, transmission)
 		# pkg-files (rc.$pkg, etc.) are provided by the package named ${pkg}-cgi and not by ${pkg}.
 		pkg_files="$(collect_pkg_files ${pkg} ${pkg}-cgi ${pkg}-v2-cgi)"
