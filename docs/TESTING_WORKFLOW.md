@@ -32,11 +32,13 @@ The following two paragraphs better explain the above commands.
 This is Freetz-EVO's implementation of the [Kconfig](https://docs.kernel.org/kbuild/kconfig-language.html) system (derived from Linux kernel configuration tools). It provides an interactive menu-driven [Ncurses](https://en.wikipedia.org/wiki/Ncurses) textual user interface for configuring the firmware build options. It generates the `.config` file that serves as the authoritative configuration for the subsequent `make`.
 
 **What it does:**
+
 - Displays a hierarchical menu structure based on `Config.in` files
 - Allows users to select/deselect packages, libraries, kernel options, and device-specific features
 - Generates the `.config` file that serves as the authoritative configuration for subsequent builds
 
 **Key files involved:**
+
 - `Config.in` - Main configuration skeleton written in Kconfig language
 - `.config` - User-generated configuration file (should not be edited manually)
 
@@ -128,6 +130,7 @@ For setting a swap space and for systems that will run database applications or 
 This is the main build command that compiles the complete firmware image based on the configuration in `.config`.
 
 **What it does:**
+
 - Downloads required source packages and firmware files
 - Builds the cross-compilation toolchain (GCC, binutils, etc.)
 - Compiles selected packages and libraries
@@ -135,6 +138,7 @@ This is the main build command that compiles the complete firmware image based o
 - Generates build artifacts in the `images/` directory
 
 **Build process overview:**
+
 1. **Preparation**: Downloads and extracts source packages
 2. **Toolchain**: Builds cross-compilation tools for target architecture
 3. **Kernel**: Compiles kernel modules and headers
@@ -148,12 +152,14 @@ Since `make` is the primary build tool that downloads, compiles everything, and 
 This is a validation tool that checks the consistency of package configurations.
 
 **What it does:**
+
 - Parses all `Config.in` files in the package directories
 - Validates menu structure and dependencies
 - Should return no errors if package configurations are properly set up
 - Helps catch configuration issues before attempting builds
 
 **Usage:**
+
 ```bash
 tools/genin
 ```
@@ -165,6 +171,7 @@ If `tools/genin` returns errors, it indicates problems with package configuratio
 This target updates an existing `.config` file to match the current menu structure, setting any new options to their default values.
 
 **What it does:**
+
 - Takes an existing `.config` file as input
 - Adds any new configuration options that have been added to `Config.in` files
 - Sets new options to their default values (usually 'n' for packages)
@@ -172,11 +179,13 @@ This target updates an existing `.config` file to match the current menu structu
 - Updates dependencies and selects based on current menu logic
 
 **When to use:**
+
 - After pulling updates that add new configuration options
 - When switching between different branches with different menu structures
 - To ensure `.config` is compatible with current codebase
 
 **Related targets:**
+
 - `make oldconfig` - Interactive version that prompts for new options
 - `make silentoldconfig` - Non-interactive version (same as olddefconfig)
 - `make defconfig` - Creates new config with all defaults
@@ -186,12 +195,14 @@ This target updates an existing `.config` file to match the current menu structu
 This target displays a summary of all available make targets and their descriptions.
 
 **What it shows:**
+
 - Package-specific targets (compile, clean, dirclean, etc.)
 - Global build targets (menuconfig, firmware, etc.)
 - Development and debugging targets
 - Tool-related targets
 
 **Usage:**
+
 ```bash
 make help
 ```
@@ -205,6 +216,7 @@ When you want to restart the build process from scratch, you need to use `make d
 #### make cacheclean
 
 **What it does:**
+
 - Removes small cached files and directories
 - Cleans temporary configuration files (`.config.*.tmp`, `.config.old`, `.config.compressed`)
 - Removes generated Config.in files (`make/pkgs/Config.in.generated`, `make/pkgs/external.in.generated`)
@@ -219,6 +231,7 @@ When you want to restart the build process from scratch, you need to use `make d
 #### make clean
 
 **What it does:**
+
 - Everything that `cacheclean` does
 - Additionally cleans tools (host tools, cross-compilation tools)
 
@@ -229,6 +242,7 @@ When you want to restart the build process from scratch, you need to use `make d
 #### make dirclean
 
 **What it does:**
+
 - Everything that `clean` does
 - Additionally removes:
   - Package build directories (`$(PACKAGES_DIR)`)
@@ -243,6 +257,7 @@ When you want to restart the build process from scratch, you need to use `make d
 #### make distclean
 
 **What it does:**
+
 - Everything that `dirclean` does
 - Additionally removes:
   - Configuration files (`.config.cmd`, `.tmpconfig.h`)
@@ -272,12 +287,14 @@ When you want to restart the build process from scratch, you need to use `make d
 ### Menuconfig Maintenance - Technical Notes
 
 #### Configuration File Properties
+
 - `.config` serves as the authoritative configuration file for all build processes
 - Manual editing is not recommended; always use `make menuconfig`
 - File is copied to `/etc/.config` in final firmware (unless disabled in menuconfig)
 - Primary debugging resource for configuration-related user issues
 
 #### Dependency Warning Analysis
+
 Configuration save operations may produce warnings such as:
 ```
 warning: (FREETZ_PACKAGE_AUTOFS_NFS && FREETZ_PACKAGE_NFSROOT) selects FREETZ_MODULE_nfs which has unmet direct dependencies (FREETZ_KERNEL_VERSION_2_6_13_1 || FREETZ_KERNEL_VERSION_2_6_28 || FREETZ_KERNEL_VERSION_2_6_32)
@@ -288,6 +305,7 @@ warning: (FREETZ_PACKAGE_AUTOFS_NFS && FREETZ_PACKAGE_NFSROOT) selects FREETZ_MO
 - Resolution options: update kernel dependencies or disable package for incompatible kernels
 
 #### Remove-Patch Configuration Pattern
+
 For remove-patches (AVM feature removal), implement this dependency structure:
 
 ```
@@ -304,16 +322,20 @@ FREETZ_HAS_AVM_MY_FEATURE
 **Purpose:** Ensures remove-patches are selectable only when AVM feature exists on target device.
 
 #### Syntax Error Diagnostics
+
 When `make menuconfig` reports syntax errors:
 
 **Cache-enabled diagnosis:**
+
 - Examine line number in `Config.in.cache`
 - Search backwards for `INCLUDE_BEGIN` to identify source file
 
 **Cache-disabled diagnosis:**
+
 - Execute `make menuconfig-nocache` for precise file and line error location
 
 ### Configuration Maintenance Procedures
+
 - Execute `tools/genin` after `Config.in` file modifications to validate syntax
 - Run `make olddefconfig` post-update to process new configuration options
 - Validate configurations across multiple device types to detect dependency conflicts
@@ -324,19 +346,25 @@ When `make menuconfig` reports syntax errors:
 Build processes can fail due to various reasons, including network issues, resource constraints, or configuration errors. Here are best practices for handling common failures:
 
 #### Network and Download Errors
+
 If `make` fails during the download phase (e.g., "curl: (56) Failure when receiving data" or "wget: unable to resolve host"), it may be a temporary network issue:
+
 - **Check connectivity**: Ensure stable internet access and retry `make`.
 - **Retry the build**: Most download failures are transient; relaunching `make` often succeeds on the second attempt.
 - **Inspect logs**: Look for messages like "Download failed" in the output. If persistent, check firewall settings or proxy configurations.
 
 #### Resource Constraints
+
 Builds require significant CPU, memory, and disk space. Errors like "No space left on device" or out-of-memory kills indicate resource issues:
+
 - **Free disk space**: Ensure at least enough free space. Use `df -h` to check and clean up if needed.
 - **Monitor resources**: Use `top` or `htop` during build to watch for memory/CPU bottlenecks.
 - **Reduce parallelism**: If using `-j` flag, lower the job count (e.g., `make -j4` instead of `-j8`).
 
 #### Workflow Job Failures
+
 In automated GitHub Actions workflows, jobs may fail due to temporary issues:
+
 - **Rerun failed jobs**: Use the "Re-run failed jobs" button in GitHub Actions if failures are due to download timeouts or "No space left on device" in cloud runners.
 - **Check logs**: Review job logs for patterns like network errors or resource exhaustion. Persistent failures may indicate code issues.
 
@@ -409,6 +437,7 @@ Here are the main target patterns:
 ### `make bzip2-clean`
 
 **What it does:**
+
 - Removes only compiled files and build artifacts
 - Preserves downloaded and extracted source code
 - Keeps local source code modifications
@@ -418,6 +447,7 @@ Here are the main target patterns:
 ### `make bzip2-dirclean`
 
 **What it does:**
+
 - Completely removes the package build directory (`$(BZIP2_DIR)`) and target directory
 - `bzip2-dirclean` is a superset of `bzip2-clean` - it includes everything `bzip2-clean` does plus more
 - Forces complete re-download and re-extraction of sources
@@ -429,6 +459,7 @@ Here are the main target patterns:
 ### `make bzip2-precompiled`
 
 **What it does:**
+
 - Compiles and installs the package in the target directory, making it ready for firmware inclusion
 - Main target for compiling the package
 - Includes automatic dependencies based on configuration (e.g., library if `FREETZ_LIB_libbz2=y`)
@@ -438,6 +469,7 @@ Here are the main target patterns:
 ### `make bzip2-recompile`
 
 **What it does:**
+
 - Combination of `dirclean` + `precompiled` - removes everything and recompiles from scratch
 - Ensures completely clean compilation
 
@@ -455,6 +487,7 @@ All packages support these target suffixes:
 | `-recompile` | Clean + recompile from scratch | Clean build |
 
 **Examples:**
+
 ```bash
 # Clean rebuild of bzip2
 make bzip2-clean bzip2-precompiled
@@ -476,14 +509,18 @@ make bzip2-recompile patchelf-recompile
 Freetz-EVO supports two main approaches for testing packages and firmware builds:
 
 ### Local Testing (Understanding Freetz-EVO Build System)
+
 The previous section explains how to compile the system or individual packages directly on your local machine. This approach is essential for:
+
 - Initial development and debugging
 - Testing on devices you physically own
 - Quick iteration during package development
 - Understanding the build process in detail
 
 ### Workflow-Based Testing (make_evo.yml)
+
 The following section describes automated testing using GitHub Actions workflows. This approach is crucial for:
+
 - Testing across multiple device/toolchain combinations simultaneously
 - Ensuring compatibility across the entire Freetz-EVO ecosystem
 - Automated regression testing
@@ -595,11 +632,13 @@ This section explains how to use GitHub Actions workflows for comprehensive auto
 | `create_artifacts` | boolean | No | `false` | Create and upload build artifacts |
 
 **Matrix Strategy**:
+
 - Tests packages across all available toolchains (when `add_or_override="add"` or no overrides)
 - Tests only custom configuration (when `add_or_override="override"`)
 - Maximum 16 parallel jobs
 
 **Target Suffixes**:
+
 - `package` → `-precompiled` (default)
 - `package-precompiled` → Compile precompiled package
 - `package-recompile` → Force recompilation from source
@@ -613,6 +652,7 @@ This section explains how to use GitHub Actions workflows for comprehensive auto
 - `=package` → Build package skipping library dependencies
 
 **Special Packages**:
+
 - `firmware` → Build complete firmware image instead of package
 - `-firmware` → Build firmware with native .config (no modifications, preserves configuration exactly as downloaded/loaded)
 - `fake-firmware` → Generate fake firmware structure for testing device configuration (no real firmware download required)
@@ -624,14 +664,17 @@ This section explains how to use GitHub Actions workflows for comprehensive auto
 ### make_target Options
 
 #### Multiple Packages
+
 You can compile multiple packages by listing them separated by commas. For example, `make_target="php,openssl,libxml2"` will build each package sequentially across all configured toolchains. This is useful for testing interdependent packages or validating that a set of packages compiles successfully together.
 
 #### Skipping Library Dependencies (=package)
+
 The `=package` syntax (e.g., `=php`) builds a package while skipping its library dependencies. This is implemented by setting `skip_libs="true"` in the workflow matrix.
 
 Use this option when you need quick package validation and are confident about library compatibility, but prefer full builds for comprehensive testing.
 
 #### Building Only Libraries (libs)
+
 The `make_target="libs"` option builds only the shared libraries without any packages. This is particularly useful in the following scenarios:
 
 - Validating library compilation across multiple toolchains
@@ -643,14 +686,17 @@ The `make_target="libs"` option builds only the shared libraries without any pac
 This target executes `make libs` and is ideal for isolating library-related problems or ensuring libraries are ready before package builds.
 
 #### Firmware Build Options
+
 - `firmware`: Builds a complete firmware image using the standard workflow configuration modifications
 - `-firmware`: Builds firmware preserving the `.config` file exactly as downloaded or from `myconfig` (no workflow modifications). This requires providing a configuration file via `url` parameter or having a `.github/workflows/myconfig` file. This is useful for testing custom configurations without workflow alterations, CI/CD testing of exact configuration files, and executing custom pre-build commands
 - `fake-firmware`: Creates a complete build process without downloading real AVM firmware, useful for testing device configurations when firmware is unavailable, validating build system configuration, and CI/CD testing without large downloads
 
 #### Single Package Builds
+
 When building a single package (e.g., `make_target="php"`), no configuration file is required. The workflow automatically generates a default `.config` file using `make olddefconfig` and enables the specified package. This simplifies testing by eliminating the need to create or maintain configuration files for individual package validation.
 
 In the build output, you'll typically see two phases:
+
 - **"Building library dependencies for package"**: This builds all required shared libraries first
 - **"Building package"**: This compiles the actual package using the pre-built libraries
 
@@ -661,6 +707,7 @@ When using `=package` (skip libraries), only the second phase occurs. When using
 The `custom_config` parameter allows specifying custom device/firmware/language combinations for testing. It supports flexible syntax with multiple separators (space, tab, comma, semicolon, pipe, dash) and can define multiple configurations separated by commas.
 
 **Single Configuration Examples:**
+
 - `custom_config="7530_W6_V1 08_2X EN"` - Device 7530_W6_V1, firmware 08_2X, language EN
 - `custom_config="7590 08_0X"` - Device 7590, firmware 08_0X (language defaults to DE)
 - `custom_config="7530"` - Device 7530 (firmware and language use defaults)
@@ -673,16 +720,20 @@ When used with `add_or_override="add"` (default), custom configurations are adde
 ### Workflow Control Options
 
 #### Branch/Reference Selection (-r)
+
 The `-r` parameter specifies the Git branch, tag, or commit SHA to run the workflow against. For example, `-r integration-testing` runs the workflow on the `integration-testing` branch. This allows testing on different branches without switching your local checkout.
 
 #### add_or_override
+
 - `"add"` (default): Adds custom configurations to the standard build matrix
 - `"override"`: Replaces the entire matrix with only the custom configurations
 
 Use `"override"` when you want to test only specific device/firmware combinations, which is faster for targeted testing but doesn't validate across the full ecosystem.
 
 #### create_artifacts
+
 When set to `true`, the workflow creates and uploads build artifacts (compiled packages, firmware images, etc.) to GitHub. This is useful for:
+
 - Downloading successful builds for local testing
 - Sharing builds with team members
 - Archiving builds for later use
@@ -691,12 +742,14 @@ When set to `true`, the workflow creates and uploads build artifacts (compiled p
 Note that artifacts consume GitHub storage and may take time to upload/download.
 
 #### cancel_previous
+
 - `true` (default): Automatically cancels previous runs of the same workflow when a new run starts
 - `false`: Allows multiple concurrent runs of the same workflow
 
 Set to `false` when you want to run multiple workflow instances simultaneously, such as testing different configurations in parallel.
 
 #### use_queue
+
 - `true` (default): Uses GitHub's workflow queue to prevent concurrent runs of the same workflow
 - `false`: Allows immediate execution without queuing
 
@@ -756,6 +809,7 @@ make menuconfig
 ### Upload Configuration
 
 **Option A - Copy to Workflow Directory:**
+
 ```bash
 cp .config .github/workflows/myconfig
 git add .github/workflows/myconfig
@@ -763,6 +817,7 @@ git commit -m "config: Update test configuration"
 ```
 
 **Option B - Upload via GitHub Releases (for URL-based workflows):**
+
 ```bash
 # Create a temporary release with your config file (example using label "none" for tag)
 gh release delete none --yes 2>/dev/null || true
@@ -782,6 +837,7 @@ This method creates a temporary release and provides a direct download URL that 
 ### Execute Workflow Manually
 
 **Via Web Interface:**
+
 1. Go to: https://github.com/.../Freetz-EVO/actions
 2. Click on: "make_evo"
 3. Click: "Run workflow"
@@ -803,6 +859,7 @@ gh run watch
 ```
 
 **Via Web:**
+
 - https://github.com/.../Freetz-EVO/actions
 
 ## Manual Workflow Triggers
@@ -1010,6 +1067,7 @@ git commit -m "test: libxml2"
 The package name must match an existing `make/pkgs/<package>` or `make/libs/<package>` directory, otherwise the workflow is skipped. These prefixes are only considered when the message contains no `make <target>` command — if both families match (e.g. `test: make php-recompile`), the `make` command syntax takes precedence.
 
 **Note**:
+
 - Commits starting with `CI:`, `workflow:` or `build:` are automatically skipped.
 - Custom labels (`make php#My label`) and custom pre-build commands (`custom_config`) only work with manual triggers:
   `gh workflow run make_evo.yml -f make_target="-firmware" -f custom_config="<commands>"`
@@ -1081,6 +1139,7 @@ gh pr list --repo Freetz-EVO/Freetz-EVO --state open
 ## Quick Reference
 
 ### Manual Triggers
+
 ```bash
 # Package testing
 gh workflow run make_evo.yml -f make_target="package-name"
@@ -1105,6 +1164,7 @@ gh workflow run make_evo.yml -f make_target="=package-name"
 ```
 
 ### Automatic Triggers
+
 ```bash
 # make command syntax
 git commit -m "test: make php-recompile"
