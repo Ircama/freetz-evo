@@ -68,8 +68,7 @@ Highlights include:
 | **[Rust packages](docs/RUST.md)** | ~30 cross-compiled tools (ripgrep, gitui, yazi, ncspot, rmpc…) with full uClibc compatibility. |
 | **[Go packages](docs/GO.md)** | Go 1.25 cross-compilation; lazygit, hugo, rclone, caddy, prometheus, and more. |
 | **[Python ecosystem](docs/PYTHON.md)** | Python 3.14 with 70+ packages, tkinter/X11, Rust-built extensions, Home Assistant support. |
-| **[All packages](docs/NEW-PACKAGES.md)** | Complete listing: 150+ new packages, enhanced packages, CI/tooling. |
-| **[llama.cpp](docs/make/llama-cpp.md)** | CPU-only LLM inference on-device; Nginx, PostgreSQL, PowerDNS, GDB, Valgrind, and much more. |
+| **[All packages](docs/NEW-PACKAGES.md)** | Complete listing: 150+ new packages, enhanced packages, CI/tooling. This includes GCC on-device, llama.cpp, Nginx, PostgreSQL, PowerDNS, GDB, Valgrind, and much more. |
 
 For the complete listing, see **[docs/NEW-PACKAGES.md](docs/NEW-PACKAGES.md)**.
 
