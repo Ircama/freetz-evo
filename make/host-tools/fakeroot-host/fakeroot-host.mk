@@ -4,6 +4,7 @@ $(PKG)_HASH_ABANDON:=37c5063942efe2e2aeefd6e71ae2690bcb9b7d512c53bc6409b54d0730c
 $(PKG)_HASH_CURRENT:=0822bd5a9f0cf19d2ba0546b88b0432d4d3d9917db62c57b74044ccadba06e49
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_TOOLS_FAKEROOT_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=@DEBIAN/fakeroot
+### VERSION:=1.38.1/2.1.4
 ### WEBSITE:=https://wiki.debian.org/FakeRoot
 ### MANPAGE:=https://man.archlinux.org/man/fakeroot.1.en
 ### TRACKER:=https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=fakeroot;dist=unstable

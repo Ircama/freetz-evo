@@ -1,0 +1,13 @@
+--- scripts/fakeroot.in
++++ scripts/fakeroot.in
+@@ -145,8 +145,8 @@
+ if [ "$WAITINTRAP" -eq 0 ]; then
+   trap "kill -s @signal@ $PID" EXIT INT
+ else
+-  @MACOSX_FALSE@trap 'FAKEROOTKEY=$FAKEROOTKEY @LDLIBPATHVAR@="$PATHS" @LDPRELOADVAR@="$FAKEROOT_LIB" /bin/ls -l / >/dev/null 2>&1; while kill -s @signal@ $PID 2>/dev/null; do sleep 0.1; done' EXIT INT
+-  @MACOSX_TRUE@trap 'FAKEROOTKEY=$FAKEROOTKEY @LDPRELOADVAR@="$FAKEROOT_LIB" /bin/ls -l / >/dev/null 2>&1; while kill -s @signal@ $PID 2>/dev/null; do sleep 0.1; done' EXIT INT
++  @MACOSX_FALSE@trap 'FAKEROOTKEY=$FAKEROOTKEY @LDLIBPATHVAR@="$PATHS" @LDPRELOADVAR@="$FAKEROOT_LIB" /bin/ls -l / >/dev/null 2>&1; while [ "$(cat /proc/$PID/stat 2>/dev/null | cut -d" " -f3)" != Z ] && kill -s @signal@ $PID 2>/dev/null; do sleep 0.1; done' EXIT INT
++  @MACOSX_TRUE@trap 'FAKEROOTKEY=$FAKEROOTKEY @LDPRELOADVAR@="$FAKEROOT_LIB" /bin/ls -l / >/dev/null 2>&1; while [ "$(cat /proc/$PID/stat 2>/dev/null | cut -d" " -f3)" != Z ] && kill -s @signal@ $PID 2>/dev/null; do sleep 0.1; done' EXIT INT
+ fi
+ 
+ if test -z "$FAKEROOTKEY" || test -z "$PID"; then

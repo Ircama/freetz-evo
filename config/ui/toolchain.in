@@ -199,6 +199,10 @@ choice
 		bool "kernel-5.15.153"
 		depends on FREETZ_AVM_PROP_KERNEL_5_15_153
 
+	config FREETZ_KERNEL_VERSION_5_15_176
+		bool "kernel-5.15.176"
+		depends on FREETZ_AVM_PROP_KERNEL_5_15_176
+
 	config FREETZ_KERNEL_VERSION_5_15_179
 		bool "kernel-5.15.179"
 		depends on FREETZ_AVM_PROP_KERNEL_5_15_179
@@ -225,7 +229,7 @@ config FREETZ_KERNEL_BINUTILS_2_36_DEFAULT
 	depends on FREETZ_AVM_GCC_9
 config FREETZ_KERNEL_BINUTILS_2_42_DEFAULT
 	def_bool y
-	depends on FREETZ_AVM_GCC_10 && FREETZ_TARGET_BITS_32
+	depends on (FREETZ_AVM_GCC_10 && FREETZ_TARGET_BITS_32) || FREETZ_AVM_GCC_13
 config FREETZ_KERNEL_BINUTILS_2_45_DEFAULT
 	def_bool y
 	depends on FREETZ_AVM_GCC_10 && FREETZ_TARGET_BITS_64
@@ -294,8 +298,9 @@ choice
 
 	config FREETZ_KERNEL_BINUTILS_2_42
 		bool "binutils-2.42"
-		depends on FREETZ_AVM_GCC_10 && FREETZ_TARGET_BITS_32
+		depends on (FREETZ_AVM_GCC_10 && FREETZ_TARGET_BITS_32) || FREETZ_AVM_GCC_13
 		# depends on any kernel version, used by avm for kernel 4.19 arm32 (1700+2700) only so far
+		# labor 1700+2700 for kernel 5.15 unknown, gpl seems to be optional for avm as public beta are "not public"
 		depends on FREETZ_KERNEL_BINUTILS_2_42_DEFAULT || (FREETZ_BUILD_TOOLCHAIN || FREETZ_DL_TOOLCHAIN_OVERRIDE)
 
 	config FREETZ_KERNEL_BINUTILS_2_45
@@ -320,6 +325,7 @@ choice
 	default FREETZ_KERNEL_GCC_9_3  if FREETZ_AVM_GCC_9_3
 	default FREETZ_KERNEL_GCC_9_4  if FREETZ_AVM_GCC_9_4
 	default FREETZ_KERNEL_GCC_10_5 if FREETZ_AVM_GCC_10_5
+	default FREETZ_KERNEL_GCC_13_3 if FREETZ_AVM_GCC_13_3
 
 	config FREETZ_KERNEL_GCC_3_4
 		bool "gcc-3.4.6"
@@ -369,6 +375,10 @@ choice
 		bool "gcc-10.5"
 		depends on FREETZ_AVM_GCC_10_5
 
+	config FREETZ_KERNEL_GCC_13_3
+		bool "gcc-13.3"
+		depends on FREETZ_AVM_GCC_13_3
+
 endchoice
 
 ###
@@ -411,6 +421,11 @@ config FREETZ_KERNEL_GCC_10
 	depends on \
 		FREETZ_KERNEL_GCC_10_5
 
+config FREETZ_KERNEL_GCC_13
+	def_bool y
+	depends on \
+		FREETZ_KERNEL_GCC_13_3
+
 ###
 ### FREETZ_KERNEL_GCC_x_MIN
 ###
@@ -448,7 +463,13 @@ config FREETZ_KERNEL_GCC_9_MIN
 config FREETZ_KERNEL_GCC_10_MIN
 	def_bool y
 	depends on \
-		FREETZ_KERNEL_GCC_10
+		FREETZ_KERNEL_GCC_10 || \
+		FREETZ_KERNEL_GCC_13_MIN
+
+config FREETZ_KERNEL_GCC_13_MIN
+	def_bool y
+	depends on \
+		FREETZ_KERNEL_GCC_13
 
 ###
 ### FREETZ_KERNEL_GCC_x_MAX
@@ -489,6 +510,12 @@ config FREETZ_KERNEL_GCC_10_MAX
 		FREETZ_KERNEL_GCC_9_MAX || \
 		FREETZ_KERNEL_GCC_10
 
+config FREETZ_KERNEL_GCC_13_MAX
+	def_bool y
+	depends on \
+		FREETZ_KERNEL_GCC_10_MAX || \
+		FREETZ_KERNEL_GCC_13
+
 ###
 ###
 ###
@@ -520,6 +547,7 @@ config FREETZ_KERNEL_GCC_VERSION
 	default "9.3.0"  if FREETZ_KERNEL_GCC_9_3
 	default "9.4.0"  if FREETZ_KERNEL_GCC_9_4
 	default "10.5.0" if FREETZ_KERNEL_GCC_10_5
+	default "13.3.0" if FREETZ_KERNEL_GCC_13_3
 
 
 comment "Target toolchain options ----------------------------------------"

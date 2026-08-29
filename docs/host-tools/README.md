@@ -36,7 +36,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### F
 
-  * **[fakeroot $(if $(FREETZ_TOOLS_FAKEROOT_VERSION_ABANDON),1.38.1,2.1.4)](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
+  * **[fakeroot 1.38.1/2.1.4](fakeroot-host.md)<a id='fakeroot-host'></a>**<br>
 
   * **[fastjar 0.98](fastjar-host.md)<a id='fastjar-host'></a>**<br>
 
@@ -160,7 +160,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-08-14](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-08-25](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

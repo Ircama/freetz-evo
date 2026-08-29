@@ -337,7 +337,7 @@ choice
 		bool "6690 Pro - UNTESTED"
 
 
-	comment "Cellular"
+	comment "LTE/4G/5G"
 		depends on FREETZ_SERIES_3 || FREETZ_SERIES_4 || FREETZ_SERIES_5
 
 	config FREETZ_TYPE_6810
@@ -946,7 +946,7 @@ choice
 			Enable this to use an AVM Inhaus firmware as base for modding.
 
 	config FREETZ_TYPE_FIRMWARE_08_2X_LABOR
-		bool "FRITZ!OS 08.10 Labor - UNTESTED"
+		bool "FRITZ!OS 08.10 Labor"
 		select FREETZ_AVM_VERSION_08_2X
 		depends on FREETZ_AVM_HAS_FIRMWARE_08_2X_LABOR && FREETZ_SHOW_EXPERT
 		help
@@ -954,12 +954,12 @@ choice
 			For more details see <http://www.avm.de/Labor/>.
 
 	config FREETZ_TYPE_FIRMWARE_08_2X
-		bool "FRITZ!OS 08.25+ - EXPERIMENTAL"
+		bool "FRITZ!OS 08.25+"
 		select FREETZ_AVM_VERSION_08_2X
 		depends on FREETZ_AVM_HAS_FIRMWARE_08_2X
 
 	config FREETZ_TYPE_FIRMWARE_08_2X_PLUS
-		bool "FRITZ!OS 08.25+ Plus - EXPERIMENTAL"
+		bool "FRITZ!OS 08.25+ Plus"
 		select FREETZ_AVM_VERSION_08_2X
 		depends on FREETZ_AVM_HAS_FIRMWARE_08_2X_PLUS && FREETZ_SHOW_EXPERT
 		help

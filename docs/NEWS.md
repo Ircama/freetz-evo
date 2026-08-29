@@ -1,5 +1,14 @@
 # Neuigkeiten
 
+### 2026-08-26
+Riesen Update bei AVM.<br>
+Es war scheinbar kein Fehler dass vor 2 Wochen eine via AVM-Juis ausgelieferte URL zu einem Firmware-Image als http**S**-URL ausgeliefert wurde.
+Heute kamen 2 weitere dazu! Es sind somit schon insgesammt 3!
+
+   - [855246b7](https://github.com/Freetz-NG/freetz-ng/commit/855246b7458c28207a6f8d034a32687222e413f6)<br>
+   - [644e6a28](https://github.com/Freetz-NG/freetz-ng/commit/644e6a28a529a1a77843b5754e46002f3ff949d7)<br>
+   - [Links von AVM-Juis](https://freetz-ng.github.io/freetz-ng/juis/)<br>
+
 ### 2026-08-01
 
 AVM hat die Paketbeschleunigung scheinbar noch immer nicht richtig im Griff.

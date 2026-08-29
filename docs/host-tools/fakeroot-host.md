@@ -1,4 +1,4 @@
-# fakeroot $(if $(FREETZ_TOOLS_FAKEROOT_VERSION_ABANDON),1.38.1,2.1.4)
+# fakeroot 1.38.1/2.1.4
   - Homepage: [https://wiki.debian.org/FakeRoot](https://wiki.debian.org/FakeRoot)
   - Manpage: [https://man.archlinux.org/man/fakeroot.1.en](https://man.archlinux.org/man/fakeroot.1.en)
   - Changelog: [https://launchpad.net/debian/+source/fakeroot/+changelog](https://launchpad.net/debian/+source/fakeroot/+changelog)

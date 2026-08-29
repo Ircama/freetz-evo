@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-# packs host-tools to dl/tools-VERSION.tar.xz in ~45min
+# packs host-tools to dl/tools-VERSION.tar.lzma in ~45min
 # Usage:
 #   tools/dl-hosttools own [--no-clean]
 #   tools/dl-hosttools [YYYY-MM-DD] [--no-clean]
@@ -74,7 +74,7 @@ EOF
 }
 
 SKIP="kconfig"
-OUTP="dl/tools-$VERSION.tar.xz"
+OUTP="dl/tools-$VERSION.tar.lzma"
 [ -s "$OUTP" ] && echo "File $OUTP exists" && exit 1
 
 miniconfig > .config
@@ -88,6 +88,7 @@ make olddefconfig
 time make tools-allexcept-local  # 4min
 PACK="$(sed -n 's,^/,tools/,p' tools/.gitignore | grep -vE "/(${SKIP// /|})$")"
 
+echo "Packing host-tools into $OUTP ..."
 # Abort if expected pack files are missing, otherwise tar may be silently incomplete.
 missing=0
 for p in $PACK; do
@@ -98,11 +99,10 @@ for p in $PACK; do
 done
 [ "$missing" -eq 0 ]
 
-echo "Packing host-tools into $OUTP ..."
 # Some executable entries are scripts or formats strip cannot handle.
 # Keep stripping as best-effort and continue with packaging.
 find $PACK -type f -a -executable -print0 | xargs -0 -r strip --strip-all -R .note -R .comment 2>/dev/null || true
-time tar cf - $PACK | xz -9 - > "$OUTP"  # 1min
+time tar cf - $PACK | tools/lzma e -si -so -d25 > "$OUTP"  # 2min
 if [ "$NO_CLEAN" -eq 0 ]; then
 	make tools-distclean-local
 else

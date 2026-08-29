@@ -119,6 +119,7 @@ config FREETZ_REMOVE_DSLD
 	bool "Remove dsld"
 	default n
 	depends on FREETZ_AVM_HAS_DSLD
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	select FREETZ_REMOVE_UPNP
 	select FREETZ_REMOVE_KIDS if FREETZ_AVM_HAS_KIDS
 	help
@@ -310,6 +311,7 @@ config FREETZ_REMOVE_NEXUS
 	bool "Remove NEXUS - EXPERIMENTAL"
 	default n
 	depends on FREETZ_AVM_HAS_NEXUS
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	help
 		Removes "nexus" related files like
 		the daemon, service and some scripts.
@@ -321,6 +323,7 @@ config FREETZ_REMOVE_AHA
 	bool "Remove AHA (AVM Home Automation)"
 	default n
 	depends on FREETZ_AVM_HAS_AHA
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	help
 		Remove the aha daemon and some related files.
 		Used for "Smart Home".
@@ -385,8 +388,9 @@ config FREETZ_REMOVE_MYFRITZ
 
 config FREETZ_REMOVE_DDNSD
 	bool "Remove DDNSD"
-	default n
 	depends on FREETZ_AVM_HAS_DDNSD
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
+	default n
 	help
 		Removes the Dynamic DNS daemon (saves about 70 KB in compressed image)
 
@@ -632,6 +636,7 @@ config FREETZ_REMOVE_CDROM_ISO
 config FREETZ_REMOVE_DECT
 	bool "Remove DECT"
 	depends on FREETZ_AVM_HAS_DECT
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove dect files (modules, dect_manager and dect related Web UI).
@@ -642,6 +647,7 @@ config FREETZ_REMOVE_DECT
 config FREETZ_REMOVE_DECT_UPDATE
 	bool "Remove dect_update"
 	depends on FREETZ_TYPE_7150
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove /usr/bin/dect_update. This utility is only needed to
@@ -680,6 +686,7 @@ config FREETZ_REMOVE_HELP
 config FREETZ_REMOVE_LIBFUSE
 	bool "Remove libfuse.so"
 	depends on FREETZ_AVM_HAS_LIBFUSE
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	select FREETZ_REMOVE_NTFS if FREETZ_AVM_HAS_NTFS && !FREETZ_AVMPLUGINS_NTFS
 	select FREETZ_REMOVE_WEBDAV if FREETZ_AVM_HAS_WEBDAV
 	default n
@@ -803,6 +810,7 @@ config FREETZ_REMOVE_NLS
 config FREETZ_REMOVE_USBHOST
 	bool "Remove USB Host"
 	depends on FREETZ_AVM_HAS_USB_HOST
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove USB Host
@@ -831,6 +839,7 @@ config FREETZ_REMOVE_PRINTSERV_MODULE
 
 config FREETZ_REMOVE_RUNCLOCK
 	bool "Remove run_clock"
+	depends on FREETZ_AVM_HAS_RUN_CLOCK
 	default n
 	help
 		Remove /bin/run_clock (operating hours meter) daemon.
@@ -962,6 +971,7 @@ config FREETZ_REMOVE_TR069_VOIPPROVIDERS
 config FREETZ_REMOVE_UMTSD
 	bool "Remove UMTS (USB GSM)"
 	depends on FREETZ_AVM_HAS_UMTS
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove UMTS support
@@ -971,6 +981,7 @@ config FREETZ_REMOVE_UMTSD
 config FREETZ_REMOVE_UPNP
 	bool "Remove UPnP (igdd/upnpd)"
 	depends on !FREETZ_TYPE_EXTENDER
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	select FREETZ_AVMDAEMON_DISABLE_IGD
 	select FREETZ_REMOVE_UPNP_LIBS if \
 		FREETZ_TYPE_2170 || \
@@ -1022,6 +1033,7 @@ config FREETZ_REMOVE_KIDS
 config FREETZ_REMOVE_QOS
 	bool "Remove QoS (tc)"
 	depends on FREETZ_AVM_HAS_TC
+	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Removes tc and some kernel modules.

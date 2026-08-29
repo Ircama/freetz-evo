@@ -13,7 +13,9 @@ define $(PKG)_CUSTOM_UNPACK
 	mkdir -p $($(PKG)_DIR)
 endef
 
+ifeq ($(FREETZ_PACKAGE_SUNDTEK),y)
 $(PKG_SOURCE_DOWNLOAD)
+endif
 $(PKG_UNPACKED)
 
 $($(PKG)_DEST_DIR)$($(PKG)_TARGET_PATH): $(DL_DIR)/$($(PKG)_SOURCE)

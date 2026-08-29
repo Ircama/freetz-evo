@@ -62,7 +62,7 @@ jobs:
         with:
           path: |
             dl/*
-            !dl/tools-*.tar.xz
+            !dl/tools-*.tar.lzma
           key: ${{ github.workflow }}-${{ github.run_id }}
           restore-keys: ${{ github.workflow }}
 
@@ -99,7 +99,7 @@ jobs:
           prerelease: true
           allowUpdates: true
           removeArtifacts: false
-          artifacts: "dl/tools-${{ steps.version.outputs.version }}.tar.xz"
+          artifacts: "dl/tools-${{ steps.version.outputs.version }}.tar.lzma"
           token: ${{ secrets.GITHUB_TOKEN }}
           replacesArtifacts: false
           artifactErrorsFailBuild: true
@@ -108,7 +108,7 @@ jobs:
         env:
           ACTIONS_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          SHA256="$(sha256sum dl/tools-$ACTIONS_VERSION.tar.xz)"
+          SHA256="$(sha256sum dl/tools-$ACTIONS_VERSION.tar.lzma)"
           sed -r "s/^(\\$\(call TOOLS_INIT,).*/\1 ${ACTIONS_VERSION})/"                                               -i make/host-tools/tools-host/tools-host.mk
           sed -r "s/^(\\$\(PKG\)_HASH:)=.*/\1=${SHA256%% *}/"                                                         -i make/host-tools/tools-host/tools-host.mk
           sed -r "s,^(\\$\(PKG\)_SITE:)=.*,\1=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/dl-hosttools,"  -i make/host-tools/tools-host/tools-host.mk

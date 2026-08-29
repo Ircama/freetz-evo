@@ -85,7 +85,7 @@ jobs:
           key: make_cache-${{ github.run_id }}
           restore-keys: make_cache
 
-      - name: download
+      - name: config
         run: |
           truncate -s0                                                                                  .config
           echo -n
@@ -141,7 +141,8 @@ jobs:
         env:
           FREETZ_DLTOKEN: ${{ secrets.FREETZ_DLTOKEN }}
         run: |
-          make && rm -f images/latest.image
+          make
+          rm -f images/latest.image
       - name: result
         run: |
           echo "##########################################################"

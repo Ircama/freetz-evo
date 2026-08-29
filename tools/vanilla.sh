@@ -1,34 +1,33 @@
 #! /usr/bin/env bash
 [ "$(echo $USER | sha256sum)" != "804d5ac72a104f79eb8b3d4f537ed05207b711f717f4378008486749473ba70f  -" ] && echo "You dont want this" && exit 1
-GITDIR="$HOME/freetz-ng"
 DL_DIR="$HOME/.freetz-dl"
+GITDIR="$HOME/freetz-ng"
+TOOLS_DIR="$GITDIR/tools"
 TEMPDIR="/tmp/avmpack"
 WORKDIR="$HOME/vanilla"
 AVM_DIR="$WORKDIR/avm"
 ORG_DIR="$WORKDIR/org"
-PXT_DIR="$WORKDIR/pxz"
-VERSION='rLOCAL'
-VERSION='ADv1'
-OLD_VER='avm'
+PAK_DIR="$WORKDIR/pak"
+VERSION='ADv2'
 
 
 # patches vanilla 2 avm
 # $1: avmdiff
 vanilla2avm() {
 	local avmdiff="$1"
-	[ ! -e "$avmdiff" ] && echo "Usage: $0 vanilla2avm ~/.freetz-dl/kernel_*.patch.xz" && exit 1
+	[ ! -e "$avmdiff" ] && echo "Usage: $0 vanilla2avm ~/.freetz-dl/avmdiff_*.patch.lzma" && exit 1
 	[ ! -e MAINTAINERS ] && echo "This direcory does not look like an unpacked kernel" && exit 1
-	local TOOLS_DIR="$GITDIR/tools"
 	local KERNEL_SOURCE_DIR='.'
 	"$TOOLS_DIR/freetz_patch" "$KERNEL_SOURCE_DIR" $avmdiff
 	find "$KERNEL_SOURCE_DIR" -type l -exec rm -f {} ';'
-	xz -d $avmdiff -c | grep -E '^    #FREETZ# (mkdir|chmod|slink|touch) .*' | while read x a b c; do
-		[ "$a" == "mkdir" ] && echo "$a: $b $c" && mkdir -p   "$KERNEL_SOURCE_DIR/${b}"
-		[ "$a" == "chmod" ] && echo "$a: $b $c" && chmod +x   "$KERNEL_SOURCE_DIR/${b}"
-		[ "$a" == "slink" ] && echo "$a: $b $c" && mkdir -p   "$KERNEL_SOURCE_DIR/${b%/*}"
-		[ "$a" == "slink" ] && echo "$a: $b $c" && ln -s "$c" "$KERNEL_SOURCE_DIR/${b}"
-		[ "$a" == "touch" ] && echo "$a: $b $c" && mkdir -p   "$KERNEL_SOURCE_DIR/${b%/*}"
-		[ "$a" == "touch" ] && echo "$a: $b $c" && touch      "$KERNEL_SOURCE_DIR/${b}"
+	"$TOOLS_DIR/lzma" d $avmdiff -so | grep -E '^    #FREETZ# (mkdir|chmod|slink|touch) .*' | while read x a b c; do
+		echo "$a: $b $c"
+		[ "$a" != "mkdir" ] && [ "$b" != "${b%/*}" ] && mkdir -p   "$KERNEL_SOURCE_DIR/${b%/*}"
+		[ "$a" == "mkdir" ] && mkdir -p   "$KERNEL_SOURCE_DIR/${b}"
+		[ "$a" == "chmod" ] && touch      "$KERNEL_SOURCE_DIR/${b}"
+		[ "$a" == "chmod" ] && chmod +x   "$KERNEL_SOURCE_DIR/${b}"
+		[ "$a" == "slink" ] && ln -s "$c" "$KERNEL_SOURCE_DIR/${b}"
+		[ "$a" == "touch" ] && touch      "$KERNEL_SOURCE_DIR/${b}"
 	done
 }
 
@@ -48,17 +47,17 @@ get_kernel_version() {
 # $3: (optional) SOURCE_ID = XXXX_XX.XX
 vanilla4avm() {
 	mkdir -p "$WORKDIR"
-	local xz="$1" avm="$2" org hwr="$3"
-	[ -z "$hwr" ] && hwr="${xz##*/}" && hwr="${hwr%%-*}"
+	local out="$1" avm="$2" org hwr="$3"
+	[ -z "$hwr" ] && hwr="${out##*/}" && hwr="${hwr%%-*}"
 
 	# check/unpack avmpack
-	if [ -n "$xz" ]; then
-		[ ! -e "$xz" ] && echo "Missinga: $xz" && exit 1
-		echo "Unpack ${xz##*/}"
+	if [ -n "$out" ]; then
+		[ ! -e "$out" ] && echo "Missing: $out" && exit 1
+		echo "Unpack ${out##*/}"
 		rm -rf "$TEMPDIR"
 		mkdir -p "$TEMPDIR"
 		ln -sf "$TEMPDIR" "$AVM_DIR"
-		tar xf $xz -C "$AVM_DIR"
+		tar xf "$out" -C "$AVM_DIR"
 	fi
 	[ ! -e $AVM_DIR ] && echo "echo Put AVM's kernel sources unpacked into $AVM_DIR" && exit 1
 
@@ -83,8 +82,8 @@ vanilla4avm() {
 	fi
 
 	# create avmdiff
-	mkdir -p "$PXT_DIR"
-	local output="$PXT_DIR/kernel_$avm-${hwr:-XXXX_XX.XX}-$VERSION.patch"
+	mkdir -p "$PAK_DIR"
+	local output="$PAK_DIR/avmdiff_$avm-${hwr:-XXXX_XX.XX}-$VERSION.patch"
 	cd "$WORKDIR"
 cat > "$output" <<EOX
 
@@ -100,17 +99,22 @@ EOX
 	diff -Naur --no-dereference org/linux-$org avm/linux* >> "$output" 2>/dev/null
 #	return
 	touch -d "2021-05-26 17:15:00.000000000 +0200" "$output"
-	local packed="$output.xz"
+	local packed="$output.lzma"
 	du -sh "$output"
 	echo "Packing $packed"
 	rm -f "$packed" 2>/dev/null
-	xz "$output"
+	"$TOOLS_DIR/lzma" e "$output" "$packed" -d25
 	du -sh "$packed"
 	sha256sum "$packed"
+	rm -f "$output" 2>/dev/null
+	touch -d "2021-05-26 17:15:00.000000000 +0200" "$packed"
 }
 
 
+# ADv0 -> ADv1
 generate_vanilla() {
+	local OLD_VER='avm'
+
 	for x in $DL_DIR/kernel_*-$OLD_VER.patch.xz; do
 		m="$(echo $x| sed "s/-$OLD_VER.patch.xz$//;s/.*-//")"
 		$0 vanilla4avm $DL_DIR/fw/$m-release_kernel.tar.xz
@@ -130,7 +134,7 @@ generate_vanilla() {
 	$0 vanilla4avm "" "4.1.38" "7582_07.15"
 
 	# update hash
-	for x in $PXT_DIR/*.patch.xz; do
+	for x in $PAK_DIR/kernel_*.patch.xz; do
 		local file=${x##*/}
 		local OLD_HASH="$(sha256sum $DL_DIR/${file/$VERSION/$OLD_VER})"
 		local NEW_HASH="$(sha256sum $x)"
@@ -148,19 +152,20 @@ cat <<'EOX'
         vanilla4avm - creates avmdiff file from vanilla kernel 4 avm sources
         generate_vanilla - initial used to create avmdiff from tiny kernel pack files
 
-        Add kernel source, create avmdiff (example: 7590 FOS 08.20):
+        Add kernel source, create avmdiff (example: 7590 FOS 08.50):
         Unpack avm sources
         #
         mkdir -p ~/vanilla
         rm -rf ~/vanilla/avm
         ln -sf $(realpath sources/kernel) ~/vanilla/avm
-        ~/freetz-ng/tools/vanilla.sh vanilla4avm "" "" "7590_08.20"  # generate avm-diff
+        ~/freetz-ng/tools/vanilla.sh vanilla4avm "" "" "7590_08.50"  # generate avm-diff
         #
-        ge ~/freetz-ng/config/mod/dl-kernel.in  # add hash
-        ls ~/vanilla/pxz/*.patch.xz  # upload file
         ge ~/freetz-ng/docs/CHANGELOG.md  # AVM sources
-        ge ~/freetz-ng/config/avm/kernel.in  # add kernel version
+        ge ~/freetz-ng/config/mod/dl-kernel.in  # add hash
+        ls ~/vanilla/pak/avmdiff_*.patch.lzma  # upload file
+        rm -rf ~/vanilla/  # cleanup vanilla.sh
         ge ~/freetz-ng/config/avm/source.in  # add avm-source
+        ge ~/freetz-ng/config/avm/kernel.in  # add kernel version (should exist)
         #
         #grep KCONFIG sources/kernel/linux*/.kernelvariables  # get config name
         realpath $(dirname sources/kernel/linux*/.kernelvariables)/$(sed -n 's,.*_KCONFIG_.* = ,,p' sources/kernel/linux*/.kernelvariables)
@@ -178,6 +183,8 @@ cat <<'EOX'
 EOX
 }
 
+
+[ -n "$1" ] && [ ! -x "$TOOLS_DIR/lzma" ] && echo "Tool 'lzma' missing. Run 'make lzma1-host' first." && exit 1
 
 case "$1" in
 	vanilla2avm)		shift; vanilla2avm "$@" ;;

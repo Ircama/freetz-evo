@@ -65,6 +65,7 @@ Latest changes
 
   - Build system:
     * ccache 4.14
+    * gcc (kernel) 3.4.6/4.6.4/4.7.4/4.8.5/5.5.0/8.3.0/8.4.0/9.3.0/9.4.0/10.5.0/13.3.0
     * uClibc 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.59
 
   - Host tools:
@@ -128,7 +129,7 @@ Latest changes
     * HAProxy 2.6.29
     * htop 1.0.3/3.5.3
     * htpdate 2.0.2
-    * ImageMagick 7.1.0-62/7.1.2-27
+    * ImageMagick 7.1.0-62/7.1.2-30
     * iPerf3 3.3/3.21
     * jq 1.8.2
     * juis_bearer 1.0
@@ -148,7 +149,7 @@ Latest changes
     * OpenVPN 2.4.12/2.5.11/2.6.22/2.7.6
     * PatchELF 0.19.1
     * PCSC-lite 1.9.5/2.5.1
-    * PHP 5.6.40/8.2.33/8.3.33/8.4.24/8.5.9
+    * PHP 5.6.40/8.2.33/8.3.33/8.4.25/8.5.10
     * procps-ng 4.0.6
     * Python 3.14.3
     * RRDtool 1.2.30/1.11.0

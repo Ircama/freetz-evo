@@ -167,6 +167,9 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
   * fritzbox-6360/
     - [fritzbox6360-source-files-04.91.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6360/fritzbox6360-source-files-04.91.tar.gz)
     - [fritzbox6360-source-files-05.29.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6360/fritzbox6360-source-files-05.29.tar.gz)
+  * fritzbox-6430-cable/
+    - [source-files-FRITZ.Box_6430_Cable-armp6-07.30.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6430-cable/source-files-FRITZ.Box_6430_Cable-armp6-07.30.tar.gz)
+    - [source-files-FRITZ.Box_6430_Cable-x86-07.30.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6430-cable/source-files-FRITZ.Box_6430_Cable-x86-07.30.tar.gz)
   * fritzbox-6490-cable/
     - [source-files-FRITZ.Box_6490_Cable-06.61.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6490-cable/source-files-FRITZ.Box_6490_Cable-06.61.tar.gz)
     - [source-files-FRITZ.Box_6490_Cable-07.01.tar.gz](https://osp.avm.de/fritzbox/fritzbox-6490-cable/source-files-FRITZ.Box_6490_Cable-07.01.tar.gz)

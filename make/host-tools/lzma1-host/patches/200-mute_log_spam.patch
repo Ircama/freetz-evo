@@ -1,0 +1,10 @@
+--- CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp
++++ CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp
+@@ -168,7 +168,6 @@
+   g_IsNT = IsItWindowsNT();
+   #endif
+ 
+-  fprintf(stderr, "\nLZMA " MY_VERSION_COPYRIGHT_DATE "\n");
+ 
+   if (n == 1)
+   {

@@ -25,14 +25,14 @@ choice
 	default FREETZ_PACKAGE_PHP_VERSION_8_5
 
 	config FREETZ_PACKAGE_PHP_VERSION_8_4
-		bool "PHP 8.4.24"
+		bool "PHP 8.4.25"
 		help
-			PHP 8.4.24 - Stable release with all 8.4.x features
+			PHP 8.4.25 - Stable release with all 8.4.x features
 
 	config FREETZ_PACKAGE_PHP_VERSION_8_5
-		bool "PHP 8.5.9"
+		bool "PHP 8.5.10"
 		help
-			PHP 8.5.9 - Latest release with new features
+			PHP 8.5.10 - Latest release with new features
 
 endchoice
 

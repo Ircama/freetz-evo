@@ -55,7 +55,7 @@ endif
 ifeq ($(FREETZ_AVM_HAS_MODVERSIONS_BUILTIN),y)
 ifeq ($(filter kernel-symrefs,$(MAKECMDGOALS)),)
 ifneq ($(filter-out X,$(call qstrip,$(FREETZ_DL_KERNEL_SYMREFS_HASH))),)
-KERNEL_SYMREFS_UNPACK:=y
+KERNEL_SYMREFS_AVAILABLE:=y
 endif
 KERNEL_COMMON_MAKE_OPTIONS += KBUILD_PRESERVE=1
 else
@@ -82,13 +82,17 @@ $(DL_DIR)/$(KERNEL_VANILLA_SOURCE): | $(DL_DIR)
 	@$(call _ECHO,downloading,$(KERNEL_ECHO_TYPE))
 	$(DL_TOOL) $(DL_DIR) $(KERNEL_VANILLA_SOURCE) $(KERNEL_VANILLA_SITE) $(KERNEL_VANILLA_HASH) $(SILENT)
 
+ifeq ($(FREETZ_KERNEL_AVMDIFF_AVAILABLE),y)
 $(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE): | $(DL_DIR)
 	@$(call _ECHO,downloading,$(KERNEL_ECHO_TYPE))
 	$(DL_TOOL) $(DL_DIR) $(KERNEL_AVMDIFF_SOURCE) $(KERNEL_AVMDIFF_SITE) $(KERNEL_AVMDIFF_HASH) $(SILENT)
+endif
 
+ifeq ($(KERNEL_SYMREFS_AVAILABLE),y)
 $(DL_DIR)/$(KERNEL_SYMREFS_SOURCE): | $(DL_DIR)
 	@$(call _ECHO,downloading,$(KERNEL_ECHO_TYPE))
 	$(DL_TOOL) $(DL_DIR) $(KERNEL_SYMREFS_SOURCE) $(KERNEL_SYMREFS_SITE) $(KERNEL_SYMREFS_HASH) $(SILENT)
+endif
 
 # Make sure that a perfectly clean build is performed whenever Freetz package
 # options have changed. The safest way to achieve this is by starting over
@@ -96,8 +100,9 @@ $(DL_DIR)/$(KERNEL_SYMREFS_SOURCE): | $(DL_DIR)
 kernel-unpacked: $(KERNEL_DIR)/.unpacked
 $(KERNEL_DIR)/.unpacked: $(DL_DIR)/$(KERNEL_VANILLA_SOURCE)
 $(KERNEL_DIR)/.unpacked: $(if $(FREETZ_KERNEL_AVMDIFF_AVAILABLE),$(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE))
-$(KERNEL_DIR)/.unpacked: $(if $(KERNEL_SYMREFS_UNPACK),$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE))
+$(KERNEL_DIR)/.unpacked: $(if $(KERNEL_SYMREFS_AVAILABLE),$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE))
 $(KERNEL_DIR)/.unpacked: | $(UNPACK_TARBALL_PREREQUISITES)
+$(KERNEL_DIR)/.unpacked: | $(KERNEL_DEPENDS_ON)
 $(KERNEL_DIR)/.unpacked: | gcc-kernel
 $(KERNEL_DIR)/.unpacked:
 	@echo "Using kernel version: $(call qstrip,$(FREETZ_KERNEL_VERSION))" $(SILENT)
@@ -112,7 +117,7 @@ ifeq ($(strip $(FREETZ_KERNEL_AVMDIFF_AVAILABLE)),y)
 	@$(call APPLY_PATCHES,$(DL_DIR),$(KERNEL_SOURCE_DIR),$(KERNEL_AVMDIFF_SOURCE),/dev/null)
 	@echo "#vanilla to avm fixes" $(SILENT)
 	@find $(KERNEL_SOURCE_DIR) -type l -exec rm -f {} ';'
-	@$(TOOLS_DIR)/unxz $(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE) -c | grep -E '^    #FREETZ# (mkdir|chmod|slink|touch) .*' | while read x a b c; do \
+	@$(LZMA) d $(DL_DIR)/$(KERNEL_AVMDIFF_SOURCE) -so | grep -E '^    #FREETZ# (mkdir|chmod|slink|touch) .*' | while read x a b c; do \
 	  [ "$$a" != "mkdir" ] && [ "$$b" != "$${b%/*}" ] && mkdir -p    "$(KERNEL_SOURCE_DIR)/$${b%/*}"; \
 	  [ "$$a" == "mkdir" ] && mkdir -p    "$(KERNEL_SOURCE_DIR)/$${b}"; \
 	  [ "$$a" == "chmod" ] && touch       "$(KERNEL_SOURCE_DIR)/$${b}"; \
@@ -121,9 +126,9 @@ ifeq ($(strip $(FREETZ_KERNEL_AVMDIFF_AVAILABLE)),y)
 	  [ "$$a" == "touch" ] && touch       "$(KERNEL_SOURCE_DIR)/$${b}"; \
 	done $(SILENT) || true
 endif
-ifeq ($(KERNEL_SYMREFS_UNPACK),y)
+ifeq ($(KERNEL_SYMREFS_AVAILABLE),y)
 	@echo "#unpacking symrefs archive" $(SILENT)
-	@$(call UNPACK_TARBALL,$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE),$(KERNEL_SOURCE_DIR),1)
+	@$(call UNPACK_TARBALL,$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE),$(KERNEL_SOURCE_DIR))
 endif
 	@if [ -e "$(KERNEL_SOURCE_DIR)/scripts/kconfig/lxdialog/check-lxdialog.sh" ]; then \
 		echo "#fixing ncurses detection bug" $(SILENT); \
@@ -321,7 +326,7 @@ endif
 .PHONY: kernel-symrefs
 
 
-$(KERNEL_SOURCE_DIR)/$(KERNEL_IMAGE_FILE): $(KERNEL_DIR)/.prepared $(KERNEL_BUILD_DEPENDENCIES) | $(KERNEL_DEPENDS_ON)
+$(KERNEL_SOURCE_DIR)/$(KERNEL_IMAGE_FILE): $(KERNEL_DIR)/.prepared $(KERNEL_BUILD_DEPENDENCIES)
 	$(call _ECHO,image,$(KERNEL_ECHO_TYPE))
 	$(SUBMAKE) $(KERNEL_COMMON_MAKE_OPTIONS) $(KERNEL_MAKE_TARGET)
 	touch -c $@

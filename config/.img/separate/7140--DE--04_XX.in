@@ -62,6 +62,9 @@ config FREETZ_AVM_HAS_DSLD
 config FREETZ_AVM_HAS_WEBSRV
 	def_bool y
 
+config FREETZ_AVM_HAS_RUN_CLOCK
+	def_bool y
+
 config FREETZ_AVM_HAS_DTRACE
 	def_bool y
 

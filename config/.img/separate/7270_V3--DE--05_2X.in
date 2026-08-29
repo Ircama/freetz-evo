@@ -125,6 +125,9 @@ config FREETZ_AVM_HAS_HOSTAPD
 config FREETZ_AVM_HAS_HOSTAPD_VERSION_0_5_9
 	def_bool y
 
+config FREETZ_AVM_HAS_RUN_CLOCK
+	def_bool y
+
 config FREETZ_AVM_HAS_DTRACE
 	def_bool y
 

@@ -1,0 +1,13 @@
+--- lib/arm/cpu_features.c
++++ lib/arm/cpu_features.c
+@@ -58,6 +58,10 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
++#ifndef O_CLOEXEC
++#define O_CLOEXEC 0
++#endif
++
+ #define AT_HWCAP	16
+ #define AT_HWCAP2	26
+ 

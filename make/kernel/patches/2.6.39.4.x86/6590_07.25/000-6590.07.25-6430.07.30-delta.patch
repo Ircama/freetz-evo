@@ -1,0 +1,116 @@
+This patch has been created from AVM's opensrc packages for 6590.07.25 and 6430.07.30
+by applying to the kernel sources they contain the following command:
+
+    diff -durN --no-dereference 6590.07.25 6430.07.30 > this.patch
+
+--- linux-2.6.39/arch/arm/mach-avalanche/include/arch-avalanche/generic/avalanche_pp_api.h	2021-02-12 13:50:24.000000000 +0100
++++ linux-2.6.39/arch/arm/mach-avalanche/include/arch-avalanche/generic/avalanche_pp_api.h	2022-01-19 12:47:14.000000000 +0100
+@@ -67,9 +67,13 @@
+ #ifdef __KERNEL__
+ #include <arch-avalanche/puma6/puma6_cppi_prv.h>
+ #include <arch-avalanche/generic/_tistdtypes.h>
++#include <linux/compiler.h>
+ #else
+ #include <puma6_cppi_prv.h>
+ #include <_tistdtypes.h>
++#ifndef __must_check
++#define __must_check
++#endif
+ #endif
+ 
+ #include <linux/ioctl.h>
+@@ -987,7 +991,9 @@
+ extern AVALANCHE_PP_RET_e    avalanche_pp_vpid_delete           ( Uint8     vpid_handle );
+ extern AVALANCHE_PP_RET_e    avalanche_pp_vpid_set_flags        ( Uint8     vpid_handle,    Uint32  new_flags );
+ extern AVALANCHE_PP_RET_e    avalanche_pp_vpid_get_list         ( Uint8     parent_pid_handle,  Uint8 *     num_entries, AVALANCHE_PP_VPID_INFO_t **     vpid_list );
+-extern AVALANCHE_PP_RET_e    avalanche_pp_vpid_get_info         ( Uint8     vpid_handle,                                 AVALANCHE_PP_VPID_INFO_t **     ptr_vpid );
++extern AVALANCHE_PP_RET_e __must_check avalanche_pp_vpid_get_info(
++					Uint8 vpid_handle,
++					AVALANCHE_PP_VPID_INFO_t **ptr_vpid);
+ 
+ #define AVALANCHE_PP_VPID_NAME_EXTENSION // AVM Extension
+ const char*                   avalanche_pp_vpid_get_name         ( Uint8     vpid_handle );
+--- linux-2.6.39/drivers/net/usb/cdc_ether.c	2021-02-12 13:50:24.000000000 +0100
++++ linux-2.6.39/drivers/net/usb/cdc_ether.c	2022-01-19 12:47:14.000000000 +0100
+@@ -333,6 +333,22 @@
+ 		usb_driver_release_interface(driver, info->data);
+ 		return -ENODEV;
+ 	}
++
++	/* Some devices don't initialise properly. In particular
++	 * the packet filter is not reset. There are devices that
++	 * don't do reset all the way. So the packet filter should
++	 * be set to a sane initial value.
++	 */
++	usb_control_msg(dev->udev,
++			usb_sndctrlpipe(dev->udev, 0),
++			USB_CDC_SET_ETHERNET_PACKET_FILTER,
++			USB_TYPE_CLASS | USB_RECIP_INTERFACE,
++			USB_CDC_PACKET_TYPE_ALL_MULTICAST | USB_CDC_PACKET_TYPE_DIRECTED | USB_CDC_PACKET_TYPE_BROADCAST,
++			intf->cur_altsetting->desc.bInterfaceNumber,
++			NULL,
++			0,
++			USB_CTRL_SET_TIMEOUT
++		);
+ 	return 0;
+ 
+ bad_desc:
+--- linux-2.6.39/.kernelvariables	2021-03-22 15:39:38.000000000 +0100
++++ linux-2.6.39/.kernelvariables	2022-01-19 12:47:14.000000000 +0100
+@@ -1,12 +1,12 @@
+ # vim: set autoread filetype=make:
+ #
+-# Auto-generated at build-87166-dirty
+-# while generating for Fritz_Box_HW220x
++# Auto-generated at 1.66.1.8-release_psq19p2-v1.66.8
++# while generating for x86
+ #
+ ARCH = x86
+ export ARCH
+ 
+-ADD_FILE_PID = Fritz_Box_HW220x
++ADD_FILE_PID = x86
+ export ADD_FILE_PID
+ 
+ CROSS_COMPILE = i686-buildroot-linux-uclibc-
+--- linux-2.6.39/net/ti/pp/hil_intrusive_pp2k.c	2021-02-12 13:50:24.000000000 +0100
++++ linux-2.6.39/net/ti/pp/hil_intrusive_pp2k.c	2022-01-19 12:47:14.000000000 +0100
+@@ -2825,7 +2825,9 @@
+             ingress_property->lookup.LUT1.u.fields.L2.eth_type = prot;
+ 
+             /* Set VPID's VLAN (if exists) */
+-            avalanche_pp_vpid_get_info(ingress_property->vpid_handle, &ptr_vpid);
++            if (avalanche_pp_vpid_get_info(ingress_property->vpid_handle,
++                                           &ptr_vpid) != PP_RC_SUCCESS)
++                    return -1;
+ 
+             /* If GRE L3, use external VPID VLAN */
+             if (ptr_vpid->type == AVALANCHE_PP_VPID_VLAN)
+@@ -3811,7 +3813,9 @@
+         {
+             AVALANCHE_PP_VPID_INFO_t *ptr_vpid;
+ 
+-            avalanche_pp_vpid_get_info(egress_property->vpid_handle, &ptr_vpid);
++            if (avalanche_pp_vpid_get_info(egress_property->vpid_handle,
++                                           &ptr_vpid) != PP_RC_SUCCESS)
++                    return -1;
+ 
+             if (ptr_vpid->type == AVALANCHE_PP_VPID_VLAN)
+             {
+@@ -4977,11 +4981,11 @@
+         AVALANCHE_PP_VPID_INFO_t * ptr_vpid;
+         
+         //  If Drop session configure to 1 second only
+-        avalanche_pp_vpid_get_info(session_info->egress.vpid_handle, &ptr_vpid);
+-        if (ptr_vpid->flags & (AVALANCHE_PP_VPID_FLG_TX_DISBL | AVALANCHE_PP_VPID_FLG_RX_DISBL))
+-        {
+-           return 0;
+-        }
++        if ((avalanche_pp_vpid_get_info(session_info->egress.vpid_handle,
++                                       &ptr_vpid) == PP_RC_SUCCESS) &&
++            (ptr_vpid->flags & (AVALANCHE_PP_VPID_FLG_TX_DISBL |
++                                AVALANCHE_PP_VPID_FLG_RX_DISBL)))
++                return 0;
+ 
+         /* Get active UDP session number from /to the WAN  */
+         if ( avalanche_pp_session_get_list( docsis_vpid_handle, PP_LIST_ID_EGRESS_UDP, &num_entries, NULL) == 0)
