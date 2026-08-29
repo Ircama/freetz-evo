@@ -8,7 +8,7 @@ Freetz-EVO provides a comprehensive testing framework that combines local develo
 
 During the development phase, when porting a package, testing the build procedure, or modifying configurations, you'll first work directly on your development machine and test on  devices you physically own. It's the foundation of the test and development process, where you can quickly iterate, debug issues, and verify that your changes work as expected. Local testing gives you full control over the build environment and immediate access to debugging tools.
 
-While local testing ensures your changes work on your specific setup, Freetz-EVO's ecosystem spans approximately tens of different device models, each with unique hardware characteristics, firmware versions, and toolchain requirements. To ensure compatibility across this diverse ecosystem, Freetz-EVO uses GitHub Actions workflows that automatically test your changes across all supported platforms. This automated testing catches platform-specific issues that might not appear in your local environment and provides confidence that your modifications work consistently across the entire Freetz-EVO user base.
+While local testing ensures your changes work on your specific setup, Freetz-EVO's ecosystem spans approximately tens of different device models, each with unique hardware characteristics, firmware versions, and toolchain requirements. To ensure compatibility across this diverse ecosystem, Freetz-EVO uses GitHub Actions workflows that automatically test your changes across a list of supported platforms. This automated testing catches platform-specific issues that might not appear in your local environment and provides confidence that your modifications work consistently across the entire Freetz-EVO user base.
 
 This guide first explains the local build system, then covers automated workflow testing to provide a complete testing strategy.
 
@@ -48,14 +48,14 @@ Freetz-EVO supports multiple web interface languages, selectable at build time v
 
 ##### AI Translation
 
-When a language other than `en` or `de` is selected, the **AI Translation** submenu becomes available in `make menuconfig`. This allows you to configure an external translation provider, which is called at build time to translate all web UI strings from English into the target language. Translation happens entirely at build time; target devices remain fully offline.
+When a language other than `en` or `de` is selected, the ** ** submenu becomes available in `make menuconfig`. This allows you to configure an external translation provider, which is called at build time to translate all web UI strings from English into the target language. Translation happens entirely at build time; target devices remain fully offline.
 
 Available translation providers:
 
 | Provider | Notes |
 |---|---|
 | **MyMemory** | Free with quota limits; no key required for basic use |
-| **DeepL API** | High quality; API key required |
+| **DeepL API** | Good quality; API key required |
 | **LibreTranslate** | Self-hostable, open-source; optional API key |
 | **Apertium** | Open-source rule-based MT; free, no key required |
 | **Lingva Translate** | Open frontend to Google Translate; free |
@@ -119,9 +119,9 @@ For initial installations or recovery scenarios, the `tools/push_firmware` scrip
 
 Once the device boots with Freetz-EVO installed, you can deploy the external components through the web interface under System → Firmware-Update using the "external file upload" option. Alternatively, the `tools/ssh_firmware_update.py` script provides a more powerful solution: running it with `--host <ip> --password <password> --batch` performs a complete unattended update of both the firmware image and the external file, making it ideal for interactive or unattended updates, or automated deployment workflows.
 
-When selecting components for externalization in menuconfig (under Advanced Options → External), you can choose from two categories: packages (binary programs and their associated files) and libraries (shared runtime libraries). Libraries require careful consideration of dependencies: any program linked against an externalized library won't function until that library is loaded from external storage.
+When selecting components for externalization in menuconfig (under Advanced Options → External), you can choose from two categories: packages (binary programs and their associated files) and libraries (shared runtime libraries). Libraries require careful consideration of dependencies: any program linked against an externalized library won't function until that library is loaded from external storage. At the end of `STEP 2: MODIFY` in the `make` output, the build prints a **deferred-service dependency summary** listing the services that link against externalized libraries and the library SONAMEs they require. Such services are deferred until the external storage is mounted, so this section tells you which services will not start immediately at boot. The full analysis is also saved to `build/modified/external.defer.report.txt`.
 
-For systems that will run database applications or services with heavy disk I/O, using an SSD or traditional hard drive is strongly recommended over SD cards or low-quality USB flash drives, which may fail under sustained write operations.
+For setting a swap space and for systems that will run database applications or services with heavy disk I/O, using an SSD or traditional hard drive is strongly recommended over SD cards or low-quality USB flash drives, which may fail under sustained write operations.
 
 ### `make` (without arguments)
 
@@ -331,7 +331,7 @@ If `make` fails during the download phase (e.g., "curl: (56) Failure when receiv
 
 #### Resource Constraints
 Builds require significant CPU, memory, and disk space. Errors like "No space left on device" or out-of-memory kills indicate resource issues:
-- **Free disk space**: Ensure at least 20-50 GB free space. Use `df -h` to check and clean up if needed.
+- **Free disk space**: Ensure at least enough free space. Use `df -h` to check and clean up if needed.
 - **Monitor resources**: Use `top` or `htop` during build to watch for memory/CPU bottlenecks.
 - **Reduce parallelism**: If using `-j` flag, lower the job count (e.g., `make -j4` instead of `-j8`).
 
@@ -340,14 +340,9 @@ In automated GitHub Actions workflows, jobs may fail due to temporary issues:
 - **Rerun failed jobs**: Use the "Re-run failed jobs" button in GitHub Actions if failures are due to download timeouts or "No space left on device" in cloud runners.
 - **Check logs**: Review job logs for patterns like network errors or resource exhaustion. Persistent failures may indicate code issues.
 
-**General Tips**:
-- Always run `make dirclean` before retrying major failures to ensure a clean state.
-- For complex issues, check the Freetz-EVO GitHub issues or discussions for similar problems.
-- If builds consistently fail, verify your environment matches the prerequisites in `docs/PREREQUISITES`.
-
 ## Host Tools
 
-Freetz-EVO uses host tools to support the cross-compilation process. These are essential because some commands need to be executed on the host during the firmware build for embedded targets. The list of host tools is available at [https://Freetz-EVO.github.io/Freetz-EVO/host-tools](https://Freetz-EVO.github.io/Freetz-EVO/host-tools).
+Freetz uses host tools to support the cross-compilation process. These are essential because some commands need to be executed on the host during the firmware build for embedded targets. The list of host tools is available at [https://Freetz-EVO.github.io/Freetz-EVO/host-tools](https://Freetz-EVO.github.io/Freetz-EVO/host-tools).
 
 Host tools are utilities compiled for the host system (your development machine) that assist in building firmware for embedded targets. They include build tools, compression utilities, file system tools, and other binaries required during the compilation process. Each host tool has its own documentation page with version information, homepage, repository, and maintainer details.
 
@@ -357,32 +352,51 @@ They are built with:
 
 - `make tools` - Builds the tools required by current selection
 - `make tools-all` - Builds all available tools of Freetz
-- `make tools-allexcept-local` - Builds all non-local tools of Freetz (dl-tools)
+- `make tools-allexcept-local` - Builds all non-local tools (i.e. all tools that come from the dl archive / precompiled tarball; the "local" tools are excluded)
 - `make tools-push_firmware` - Builds the tools required by push_firmware
 - `make tools-dirclean` - Cleans everything of all Freetz tools
-- `make tools-distclean-local` - Cleans everything of local tools (dl-tools)
+- `make tools-distclean-local` - Cleans everything of local tools (`gmp-host`, `kconfig-host`, `mpc-host`, `mpfr-host` - built locally, NOT part of the dl archive)
 - `make <tool>-host-precompiled` - Builds a specific tool using precompiled binaries if available
 
-Freetz-EVO uses GNU Make to manage package dependencies and host tools in a modular way. Host tools are typically built first via `make host-tools-precompiled`, followed by target packages. Dependencies are checked recursively. However, only file existence is verified (version mismatches are not automatically detected). If a dependency is missing, the build fails; otherwise, existing binaries are reused.
+Freetz uses GNU Make to manage package dependencies and host tools in a modular way. Host tools are typically built first via `make host-tools-precompiled`, followed by target packages. Dependencies are checked recursively. However, only file existence is verified (version mismatches are not automatically detected). If a dependency is missing, the build fails; otherwise, existing binaries are reused.
 
 Built host tools are cached in `tools/build`, `tools/build/usr/bin/` to avoid redundant rebuilds. The cache persists across builds, but can be invalidated manually (e.g., `make tool-host-dirclean` removes build directories and binaries). The cache is shared across packages.
 
-To reduce the build time of host tools, Freetz-EVO supports downloading precompiled host tools from a cloud repository. Freetz-EVO uses a shared cache hosted on GitHub at [https://github.com/Freetz-EVO/dl-mirror/releases/](https://github.com/Freetz-EVO/dl-mirror/releases/). The cache is updated by the Freetz-EVO team, who periodically release precompiled archives of host tools (e.g., `tools-VERSION.tar.xz`) for common architectures. Source archives are stored in the `dl` directory. Precompiled binaries are extracted directly to `tools/build`, bypassing local compilation when available.
+To reduce the build time of host tools, Freetz supports downloading precompiled host tools from a cloud repository. Freetz uses a shared cache hosted on GitHub at [https://github.com/Freetz-EVO/dl-mirror/releases/](https://github.com/Freetz-EVO/dl-mirror/releases/). The cache is updated by the Freetz team, who periodically release precompiled archives of host tools (e.g., `tools-VERSION.tar.xz`) for common architectures. Source archives are stored in the `dl` directory. Precompiled binaries are extracted directly to `tools/build`, bypassing local compilation when available.
 
 Specifically, Host tools are compiled locally from source (downloaded to `dl`) when:
 - The build directory is clean (e.g., after make tool-host-dirclean).
 - The build is forced (e.g., via `make tool-host-precompiled` after cleaning).
 - No precompiled version is available or selected, and the target is invoked.
 
-The `dl` directory is preserved by `make dirclean` and `make distclean`. To remove its contents manually if needed, use `rm -rf dl/*`.
+The `dl` directory (symlink of `.freetz-dl`) is preserved by `make dirclean` and `make distclean`. To remove its contents manually if needed, use `rm -rf dl .freetz-dl`.
 
 During the build process, if the configuration option `FREETZ_HOSTTOOLS_DOWNLOAD` is enabled (which is the default), the system checks if the required host tools archive is available in the cache based on its version and the related SHA256 hash. If the archive is present and matches the expected hash, it is downloaded and extracted for use; otherwise, the tools are compiled locally from source. If `FREETZ_HOSTTOOLS_DOWNLOAD` is disabled, the build always compiles the tools locally, which is useful for incompatible systems or custom modifications.
 
 The Freetz build system only checks for binary existence, not version compatibility. This process ensures efficient builds (but requires manual intervention for version issues).
 
+### host-tools tarball missing
+
+If the download of the precompiled host tools fails because the archive is missing from the Freetz-NG portal (e.g. `tools-YYYY-MM-DD.tar.xz`, like `tools-2026-08-14.tar.xz`), the tarball can be recreated locally and placed in `dl/`:
+
+```bash
+cp .config .config.backup  # Important: the following command overwrites .config.
+tools/dl-hosttools own --no-clean
+cp .config.backup .config
+```
+
+`tools/dl-hosttools` performs the following steps internally:
+
+1. Writes a minimal `.config` (with `FREETZ_HOSTTOOLS_DOWNLOAD` disabled) so all tools are compiled locally from source.
+2. Runs `make kconfig-host-conf` + `make olddefconfig`.
+3. Runs `make tools-allexcept-local` (about 4 min) - i.e. it builds all non-local tools, exactly the set that belongs in the tarball.
+4. Strips the executables and packs everything from `tools/` (except `kconfig`) into `dl/tools-<VERSION>.tar.xz`, printing `SHA256:=...` and `OUTPUT:=...`.
+
+The `own` mode derives `<VERSION>` from the `TOOLS_INIT` line of `make/host-tools/tools-host/tools-host.mk`, so the produced archive has exactly the name/hash the current tree expects. `--no-clean` skips the initial `make distclean` and the final `make tools-distclean-local`, so your current workspace (built tools, `.config`) is reused instead of being wiped.
+
 ## Package-Specific Make Targets
 
-As mentioned in a previous paragraph, Freetz-EVO provides specific make targets for individual packages in order to speed-up verification on a specific development. Each package supports several build operations with convenient shortcuts that combine multiple steps.
+As mentioned in a previous paragraph, Freetz provides specific make targets for individual packages in order to speed-up verification on a specific development. Each package supports several build operations with convenient shortcuts that combine multiple steps.
 
 For example, the `-recompile` target is equivalent to running `-dirclean` followed by `-precompiled` - both achieve a complete clean rebuild.
 
@@ -468,7 +482,7 @@ The previous section explains how to compile the system or individual packages d
 - Quick iteration during package development
 - Understanding the build process in detail
 
-### Workflow-Based Testing (make_package.yml)
+### Workflow-Based Testing (make_evo.yml)
 The following section describes automated testing using GitHub Actions workflows. This approach is crucial for:
 - Testing across multiple device/toolchain combinations simultaneously
 - Ensuring compatibility across the entire Freetz-EVO ecosystem
@@ -561,76 +575,9 @@ The workflow follows a structured process:
 
 This automated workflow ensures that changes to Freetz-EVO are validated across the full ecosystem, catching platform-specific issues that local testing might miss.
 
-## `make_package.yml` workflow
+## `make_evo.yml` workflow
 
-This section explains how to use GitHub Actions workflows for comprehensive automated testing. Workflows provide significant advantages over local testing alone:
-
-### Why Use GitHub Actions Workflows?
-
-GitHub Actions workflows automate the build process in isolated environments, allowing you to:
-
-1. **Test Multiple Configurations Simultaneously**: Instead of testing on just one device, workflows can test across dozens of device/firmware/toolchain combinations in parallel
-2. **Ensure Ecosystem Compatibility**: Freetz-EVO supports approximately 30 pre-configured devices with different hardware capabilities and firmware versions
-3. **Catch Platform-Specific Issues**: Different devices may have unique kernel versions, toolchain requirements, or hardware-specific code that needs validation
-4. **Automate Regression Testing**: Workflows can run automatically on code changes, catching issues before they reach users
-
-### The Testing Workflow
-
-A typical testing process follows this progression:
-
-1. **Local Testing**: Start by testing on devices you physically own and can access for debugging
-2. **Device-Specific Testing**: Test on specific device configurations you're targeting
-3. **Comprehensive Workflow Testing**: Use GitHub Actions to verify compilation across all supported devices and toolchains
-
-This multi-stage approach ensures both thorough testing and efficient development workflows.
-
-### Workflow Architecture
-
-The `make_package.yml` workflow uses a matrix strategy to test packages across multiple dimensions:
-
-#### What are GitHub Actions Workflows?
-
-GitHub Actions workflows are automated processes that run on GitHub's infrastructure. For Freetz-EVO, they provide:
-
-- **Isolated Build Environments**: Each test runs in a clean Ubuntu environment with no interference from local machine state
-- **Parallel Execution**: Multiple device/toolchain combinations can be tested simultaneously
-- **Version Control Integration**: Workflows can trigger automatically on pull requests, pushes, or scheduled intervals
-- **Artifact Storage**: Build outputs can be stored and downloaded for further analysis
-
-#### Pre-configured Devices and Toolchains
-
-Freetz-EVO comes with approximately 30 pre-configured device profiles, each representing different:
-
-- **Hardware Platforms**: Different router models (7590, 7530, 7490, etc.)
-- **Firmware Versions**: Various AVM firmware releases (08.0X, 08.2X, 08.3X, etc.)
-- **Kernel Versions**: Different Linux kernel versions with varying feature sets
-- **Toolchain Configurations**: GCC versions, optimization flags, and architecture-specific settings
-
-Additional device configurations can be added manually by modifying the workflow matrix or using the `custom_config` parameter.
-
-#### The Complete Testing Process
-
-A comprehensive testing approach follows this sequence:
-
-1. **Local Development Testing**:
-   - Test on devices you physically own
-   - Use local build system for quick iteration
-   - Debug issues directly on target hardware
-
-2. **Device-Specific Testing**:
-   - Test on specific device models you're targeting
-   - Verify functionality on particular firmware versions
-   - Check hardware-specific features
-
-3. **Workflow-Based Comprehensive Testing**:
-   - Use GitHub Actions to test across all supported devices
-   - Catch platform-specific compilation issues
-   - Ensure compatibility across the entire ecosystem
-   - Generate reports for all device combinations
-
-This multi-layered approach ensures both development efficiency and ecosystem-wide compatibility.
-
-**Purpose**: Comprehensive testing of packages and firmware builds across multiple toolchain configurations using a matrix build strategy. Supports both individual package testing and full firmware builds.
+This section explains how to use GitHub Actions workflows for comprehensive automated testing. Workflows provide significant advantages over local testing alone.
 
 **Parameters**:
 
@@ -681,18 +628,6 @@ You can compile multiple packages by listing them separated by commas. For examp
 
 #### Skipping Library Dependencies (=package)
 The `=package` syntax (e.g., `=php`) builds a package while skipping its library dependencies. This is implemented by setting `skip_libs="true"` in the workflow matrix.
-
-**Pros:**
-- Faster build times since libraries are not rebuilt
-- Useful for testing package compilation when you know libraries are already available or compatible
-- Reduces resource usage in CI/CD environments
-- Allows focused testing of package-specific code changes
-
-**Cons:**
-- May fail if required libraries are missing or incompatible
-- Doesn't validate the complete dependency chain
-- Not suitable for packages with complex or version-specific library requirements
-- Can mask issues with library integration
 
 Use this option when you need quick package validation and are confident about library compatibility, but prefer full builds for comprehensive testing.
 
@@ -788,65 +723,26 @@ git remote add upstream https://github.com/Freetz-EVO/Freetz-EVO.git
 
 ### 2. Enable GitHub Actions
 
-- Navigate to: `https://github.com/<your user>/Freetz-EVO/settings/actions`
-- Select: "Allow all actions and reusable workflows"
+* Sign in to GitHub and open your **Freetz-EVO** repository.
+* Open **Settings** from the repository navigation bar.
+* In the left-hand sidebar, go to **Actions → General**, or open:
+  `https://github.com/<your-user>/Freetz-EVO/settings/actions`
+* Under **Actions permissions**, select **Allow all actions and reusable workflows**.
+* Click **Save** if prompted.
 
-Abilita GitHub Pages !!!!!!!!!!!!!!!!!!!!
+### 3. Enable GitHub Pages
 
-### 3. Download Required Files !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1. Sign in to GitHub and open your repository.
+2. Select the **Settings** tab in the repository navigation bar.
+3. In the left-hand sidebar, open **Code, planning, and automation** and select **Pages**.
+4. Under **Build and deployment**, locate **Source** and select **GitHub Actions**.
+5. Verify that the deployment has completed successfully. The **Pages** page should display a message similar to:
 
-```bash
-# Download workflow documentation
-wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/TESTING_WORKFLOW.md
+   > Your site was last deployed to the `github-pages` environment by the `github_zensical` workflow.
 
-# Download make_package.yml workflow
-wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/make_package.yml
-
-# Download merge script
-wget https://raw.githubusercontent.com/Ircama/Freetz-EVO/testing-tools/merge_all_prs.sh
-chmod +x merge_all_prs.sh
-
-# Alternative: checkout testing branch
-git checkout testing-tools
-cp TESTING_WORKFLOW.md make_package.yml merge_all_prs.sh ..
-git checkout master
-```
+Once the workflow completes, GitHub Pages will publish the site using the configured GitHub Actions workflow.
 
 ## Testing Workflow
-
-### Step 1: Synchronize Master with Upstream
-
-⚠️ **WARNING**: This command will delete all local changes on master!
-
-```bash
-git checkout master
-git fetch upstream
-git reset --hard upstream/master  # Align with upstream
-git push origin master --force    # Force push to your fork
-```
-
-### Step 2: Generate Test Environment !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-**Option A - Merge All Open PRs:**
-```bash
-../merge_all_prs.sh
-# Or specify a particular PR:
-../merge_all_prs.sh 1276
-
-# If successful:
-git push origin master
-```
-
-**Option B - Merge Specific PRs:**
-```bash
-git merge ircama-python3 --no-edit
-git merge ircama-php --no-edit
-# ... add other PRs as needed
-
-git push origin master
-```
-
-### Step 3: Configure Packages to Test
 
 ```bash
 # Configure packages you want to test
@@ -857,7 +753,7 @@ git push origin master
 make menuconfig
 ```
 
-### Step 4: Upload Configuration
+### Upload Configuration
 
 **Option A - Copy to Workflow Directory:**
 ```bash
@@ -883,84 +779,49 @@ echo "Config uploaded to: $URL"
 
 This method creates a temporary release and provides a direct download URL that can be used with the `url` parameter in workflows.
 
-### Step 5: Copy Configurations !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-```bash
-git fetch origin
-git branch -D integration-testing
-git push origin --delete integration-testing
-git checkout -b integration-testing origin/ircama-python315a1
-git checkout origin/testing-tools -- .github/workflows/make_package.yml
-git add .github/workflows/make_package.yml
-git commit -m "Use make_package.yml from testing-tools"
-git push origin integration-testing
-
-URL=$(gh release create python315 -t ".config" -n ".config" --prerelease .config | sed 's#/releases/tag/#/releases/download/#; s#$#/default.config#')
-echo $URL
-
-
-gh workflow run make_package.yml -r integration-testing -f make_target='firmware' -f url='https://github.com/Ircama/Freetz-EVO/releases/download/python315/default.config' -f verbosity="0" -f cancel_previous="true" -f use_queue=false
-```
-
-```bash
-# Optionally clean existing workflows:
-# rm .github/workflows/*  # Remove all workflows
-
-# Alternatively to using URL configuration upload, copy current configuration to workflows directory
-cp .config .github/workflows/myconfig
-```
-
-### Step 6: Commit and Push
-
-```bash
-git add .github/workflows/.
-git commit -m "CI: Update myconfig for testing $(date +%Y-%m-%d)"
-git push origin master
-```
-
-### Step 7: Execute Workflow Manually !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+### Execute Workflow Manually
 
 **Via Web Interface:**
-1. Go to: https://github.com/Ircama/Freetz-EVO/actions
-2. Click on: "make_package"
+1. Go to: https://github.com/.../Freetz-EVO/actions
+2. Click on: "make_evo"
 3. Click: "Run workflow"
 4. Enter package name (e.g., `php-recompile` or `patchelf,ncurses`)
 5. Click: "Run workflow"
 
 **Via GitHub CLI:**
 ```bash
-gh repo set-default Ircama/Freetz-EVO
-gh workflow run make_package.yml -f make_target="util-linux-recompile"
+gh repo set-default ...
+gh workflow run make_evo.yml -f make_target="util-linux-recompile"
 ```
 
-### Step 8: Monitor Execution !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+### Monitor Execution
 
 **Via CLI:**
 ```bash
-gh repo set-default Ircama/Freetz-EVO
+gh repo set-default ...
 gh run watch
 ```
 
 **Via Web:**
-- https://github.com/Ircama/Freetz-EVO/actions
+- https://github.com/.../Freetz-EVO/actions
 
 ## Manual Workflow Triggers
 
-### make_package.yml Examples
+### make_evo.yml Examples
 
 ```bash
 
 # Test single package with all configured devices; use myconfig if exists, otherwise generates a default .config file   
-gh workflow run make_package.yml -f make_target="php"
+gh workflow run make_evo.yml -f make_target="php"
 
 # Build only libraries
-gh workflow run make_package.yml -f make_target="libs"
+gh workflow run make_evo.yml -f make_target="libs"
 
 # Build package skipping library dependencies
-gh workflow run make_package.yml -f make_target="=php-precompiled"
+gh workflow run make_evo.yml -f make_target="=php-precompiled"
 
 # Generate fake firmware for testing device configuration
-gh workflow run make_package.yml -f make_target="fake-firmware"
+gh workflow run make_evo.yml -f make_target="fake-firmware"
 ```
 
 ### Target Behavior Examples
@@ -1003,54 +864,54 @@ The workflow interprets different `make_target` inputs as follows:
 # It includes the standard download of the original firmware from AVM.
 # The assumption for make_target="firmware" to work is that AVM has the hosted
 # file of the requested firmware release. 
-gh workflow run make_package.yml -f make_target="firmware" -f url="$URL" -f verbosity="0" -f cancel_previous="false" -f custom_config="7590_W6 08_2X EN" -f add_or_override=override -f use_queue=false -f create_artifacts=true
+gh workflow run make_evo.yml -f make_target="firmware" -f url="$URL" -f verbosity="0" -f cancel_previous="false" -f custom_config="7590_W6 08_2X EN" -f add_or_override=override -f use_queue=false -f create_artifacts=true
 
 # Run a full build across all devices configured in the "integration-testing" branch.
 # The URL references the python2-based ".config" generated manually via "make menuconfig".
 # The "fake-firmware" target triggers a complete build ("make") for each device in the
 # matrix without requiring the original AVM firmware, enabling end-to-end workflow testing
 # even when the vendor firmware is unavailable.
-gh workflow run make_package.yml -r integration-testing -f make_target='fake-firmware # python2' -f url='https://github.com/<your user>/Freetz-EVO/releases/download/python2/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false
+gh workflow run make_evo.yml -r integration-testing -f make_target='fake-firmware # python2' -f url='https://github.com/<your user>/Freetz-EVO/releases/download/python2/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false
 
 # Test single package with all configured devices
-gh workflow run make_package.yml -f make_target="patchelf" -f url="$URL" -f verbosity="0" -f cancel_previous="false" -f use_queue=false
+gh workflow run make_evo.yml -f make_target="patchelf" -f url="$URL" -f verbosity="0" -f cancel_previous="false" -f use_queue=false
 
 # Test multiple packages
-gh workflow run make_package.yml -f make_target="php,openssl,libxml2"
+gh workflow run make_evo.yml -f make_target="php,openssl,libxml2"
 
 # Test with custom config URL (from GitHub Releases)
-gh workflow run make_package.yml -f make_target="php" -f url="https://github.com/Ircama/Freetz-EVO/releases/download/none/default.config"
+gh workflow run make_evo.yml -f make_target="php" -f url="https://github.com/.../Freetz-EVO/releases/download/none/default.config"
 
 # Force recompilation with verbose output
-gh workflow run make_package.yml -f make_target="patchelf-recompile,ncurses-recompile" -f verbosity="2"
+gh workflow run make_evo.yml -f make_target="patchelf-recompile,ncurses-recompile" -f verbosity="2"
 
 # Full firmware build for toolchain package
-gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware"
+gh workflow run make_evo.yml -f make_target="gcc-toolchain,firmware"
 
 # Test package on specific device/firmware (add to matrix)
-gh workflow run make_package.yml -f make_target="php" -f custom_config="6670 07_5X" -f add_or_override="add"
+gh workflow run make_evo.yml -f make_target="php" -f custom_config="6670 07_5X" -f add_or_override="add"
 
 # Test package ONLY on custom configuration (override matrix)
-gh workflow run make_package.yml -f make_target="php" -f custom_config="6670 07_5X EN" -f add_or_override="override"
+gh workflow run make_evo.yml -f make_target="php" -f custom_config="6670 07_5X EN" -f add_or_override="override"
 
 # Test package without workflow queue (allow concurrent runs)
-gh workflow run make_package.yml -f make_target="php" -f use_queue="false"
+gh workflow run make_evo.yml -f make_target="php" -f use_queue="false"
 
 # Test firmware build
-gh workflow run make_package.yml -f make_target="firmware"
+gh workflow run make_evo.yml -f make_target="firmware"
 
 # Test firmware build with native configuration (no workflow modifications)
-gh workflow run make_package.yml -f make_target="-firmware" -f url="$URL"
+gh workflow run make_evo.yml -f make_target="-firmware" -f url="$URL"
 
 # Test firmware build with custom pre-build commands (e.g., rebuild Python host tools)
-gh workflow run make_package.yml -f make_target="-firmware" -f url="$URL" -f custom_config="make python3-host-dirclean && make python3-host-precompiled"
+gh workflow run make_evo.yml -f make_target="-firmware" -f url="$URL" -f custom_config="make python3-host-dirclean && make python3-host-precompiled"
 
 # Test package with custom label for workflow run name
-gh workflow run make_package.yml -f make_target="php#Test PHP 8.4 with libxml2"
+gh workflow run make_evo.yml -f make_target="php#Test PHP 8.4 with libxml2"
 
 # Fake-firmware build example with detailed option breakdown
 # This creates a complete build without downloading real AVM firmware
-gh workflow run make_package.yml -r integration-test -f make_target='fake-firmware # Full build' -f url='https://github.com/<name>/Freetz-EVO/releases/download/<release name>/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false -f custom_config='7590_W6 08_2X DE,7530_W5 08_0X EN'
+gh workflow run make_evo.yml -r integration-test -f make_target='fake-firmware # Full build' -f url='https://github.com/<name>/Freetz-EVO/releases/download/<release name>/default.config' -f verbosity="0" -f cancel_previous="false" -f use_queue=false -f custom_config='7590_W6 08_2X DE,7530_W5 08_0X EN'
 
 # Option breakdown for the fake-firmware example:
 # -r integration-test: Specifies the Git branch or reference to run the workflow against
@@ -1062,39 +923,45 @@ gh workflow run make_package.yml -r integration-test -f make_target='fake-firmwa
 # -f custom_config='7590_W6 08_2X DE,7530_W5 08_0X EN': Tests specific device/firmware combinations
 
 # Test multiple packages with custom label
-gh workflow run make_package.yml -f make_target="php,openssl,libxml2#Test PHP dependencies"
+gh workflow run make_evo.yml -f make_target="php,openssl,libxml2#Test PHP dependencies"
 
 # Test device configuration with fake firmware
-gh workflow run make_package.yml -f make_target="fake-firmware" -f custom_config="7530 08_2X EN"
+gh workflow run make_evo.yml -f make_target="fake-firmware" -f custom_config="7530 08_2X EN"
 
 # Test multiple devices with fake firmware
-gh workflow run make_package.yml -f make_target="fake-firmware" -f custom_config="7530,7590,6670" -f add_or_override="override"
+gh workflow run make_evo.yml -f make_target="fake-firmware" -f custom_config="7530,7590,6670" -f add_or_override="override"
 
 # Test libraries build
-gh workflow run make_package.yml -f make_target="libs"
+gh workflow run make_evo.yml -f make_target="libs"
 
 # Test package skipping library dependencies
-gh workflow run make_package.yml -f make_target="=php-precompiled"
+gh workflow run make_evo.yml -f make_target="=php-precompiled"
 
 # Test with downloaded toolchain and hosttools
-gh workflow run make_package.yml -f make_target="php" -f download_toolchain="true" -f download_hosttools="true"
+gh workflow run make_evo.yml -f make_target="php" -f download_toolchain="true" -f download_hosttools="true"
 
 # Create and upload build artifacts
-gh workflow run make_package.yml -f make_target="php" -f create_artifacts="true"
+gh workflow run make_evo.yml -f make_target="php" -f create_artifacts="true"
 
 # Build firmware and package
-gh workflow run make_package.yml -f make_target="php-firmware"
+gh workflow run make_evo.yml -f make_target="php-firmware"
 
 # Build firmware and package with recompile
-gh workflow run make_package.yml -f make_target="php-recompile-firmware"
+gh workflow run make_evo.yml -f make_target="php-recompile-firmware"
 
 # Build firmware and package precompiled
-gh workflow run make_package.yml -f make_target="php-precompiled-firmware"
+gh workflow run make_evo.yml -f make_target="php-precompiled-firmware"
 ```
 
-## Automatic Triggers !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+## Automatic Triggers
 
-You can trigger workflows automatically by including build commands in commit messages:
+You can trigger the workflow automatically by pushing to the `master` branch a commit whose message contains a build command. Pushes are filtered by path: the commit must touch `make/pkgs/**`, `make/libs/**`, the workflow file itself, or `docs/CHANGELOG.md` (see the `paths` filter in `make_evo.yml`).
+
+Two families of commit patterns are recognized, checked in the following order of precedence.
+
+### `make` command syntax
+
+Any commit message containing a `make <target>` command runs the workflow for the given target. The prefix is arbitrary — `test:` is the conventional choice, but `fix: make php-recompile`, `bump: make php`, or even a bare `make php-recompile` all work, as long as the message doesn't start with `CI:`, `workflow:` or `build:` (see the note below):
 
 ```bash
 # Single package test
@@ -1109,10 +976,6 @@ git commit -m "test: make firmware"
 # Build firmware with native configuration (no modifications)
 git commit -m "test: make -firmware"
 
-# Note: custom pre-build commands (custom_config) only work with manual triggers
-# For custom commands use:
-# gh workflow run make_package.yml -f make_target="-firmware" -f custom_config="<commands>"
-
 # Build firmware and package
 git commit -m "test: make php-firmware"
 
@@ -1125,64 +988,57 @@ git commit -m "test: make fake-firmware"
 # Build package skipping library dependencies
 git commit -m "test: make =php-precompiled"
 
-# Build with custom label for workflow run name
-git commit -m "test: make php#Test PHP 8.4 with all dependencies"
-
 # Full build (not supported - will be skipped)
 git commit -m "test: make"
 ```
 
-**Note**: Commits starting with "CI:", "workflow:", "build:" are automatically skipped.
+### Upstream-style package prefixes
 
-**Supported Patterns**
+A commit message starting with `add`, `bump`, `fix` or `test` followed by a package name builds that package as `-precompiled`. The separator can be either a colon or a space, so `fix: php` and `fix php` are both accepted:
+
+```bash
+git commit -m "fix: php"
+
+git commit -m "bump: openssl"
+
+git commit -m "add: dropbear"
+
+git commit -m "test: libxml2"
+```
+
+The package name must match an existing `make/pkgs/<package>` or `make/libs/<package>` directory, otherwise the workflow is skipped. These prefixes are only considered when the message contains no `make <target>` command — if both families match (e.g. `test: make php-recompile`), the `make` command syntax takes precedence.
+
+**Note**:
+- Commits starting with `CI:`, `workflow:` or `build:` are automatically skipped.
+- Custom labels (`make php#My label`) and custom pre-build commands (`custom_config`) only work with manual triggers:
+  `gh workflow run make_evo.yml -f make_target="-firmware" -f custom_config="<commands>"`
 
 ### Multiple Inputs
 
-```bash
-# Different targets for different packages
-make php-recompile,patchelf-precompiled,ncurses-compile
-```
+Different targets for different packages can be combined in a single commit, separated by commas:
 
-**Other Examples**:
 ```bash
-# Enable in menuconfig:
-# Libraries → Compression, coding & regex → libxml2
-make menuconfig
-cp .config .github/workflows/myconfig
-git add .github/workflows/myconfig
-git commit -m "config: Enable libxml2"
-git push
+git commit -m "test: make php-recompile,patchelf-precompiled,ncurses-compile"
 ```
 
 ### Example: PHP Testing
 
 ```bash
-# 1. Reset and sync
-git checkout master
-git fetch upstream
-git reset --hard upstream/master
-git push origin master --force
-
-# 2. Merge PHP PR
-git merge ircama-php --no-edit
-
-# 3. Configure
+# 1. Configure
 make menuconfig
 # Enable: PHP, libxml2, libatomic, openssl
 
-# 4. Save config
+# 2. Save config
 cp .config .github/workflows/myconfig
 
-# 5. Commit
-git add .github/workflows/myconfig
-git commit -m "test: make php-recompile
+# 3. Commit (must touch make/pkgs/** or make/libs/** to pass the path filter)
+git add make/pkgs/php .github/workflows/myconfig
+git commit -m "test: make php-recompile"
 
-Enable PHP 8.4 with libxml2, libatomic, and openssl"
+# 4. Push (automatic trigger)
+git push
 
-# 6. Push (automatic trigger)
-git push origin master
-
-# 7. Monitor
+# 5. Monitor
 gh run watch
 ```
 
@@ -1190,24 +1046,21 @@ gh run watch
 
 ```bash
 # Test toolchain package across all configurations
-gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware"
+gh workflow run make_evo.yml -f make_target="gcc-toolchain,firmware"
 
 # Test with custom configuration (using uploaded config)
-URL="https://github.com/Ircama/Freetz-EVO/releases/download/none/default.config"
-gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware" -f url="$URL" -f verbosity="2"
-
-# Test with custom configuration (direct URL)
-gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware" -f url="https://example.com/toolchain-test.config" -f verbosity="2"
+URL="https://github.com/.../Freetz-EVO/releases/download/none/default.config"
+gh workflow run make_evo.yml -f make_target="gcc-toolchain,firmware" -f url="$URL" -f verbosity="2"
 
 # Test with downloaded toolchain and hosttools
-gh workflow run make_package.yml -f make_target="gcc-toolchain,firmware" -f download_toolchain="true" -f download_hosttools="true" -f verbosity="2"
+gh workflow run make_evo.yml -f make_target="gcc-toolchain,firmware" -f download_toolchain="true" -f download_hosttools="true" -f verbosity="2"
 ```
 
 ## Useful Commands
 
 ```bash
 # Check workflow status
-gh run list --workflow=make_package.yml --limit 5
+gh run list --workflow=make_evo.yml --limit 5
 
 # Cancel running workflow
 gh run cancel <run-id>
@@ -1220,26 +1073,6 @@ gh run view <run-id> --log
 
 # List upstream PRs
 gh pr list --repo Freetz-EVO/Freetz-EVO --state open
-
-# Interactive multi-merge
-./merge_all_prs.sh
-```
-
-## Reset After Testing
-
-```bash
-# 1. Reset master to upstream
-git fetch upstream
-git checkout master
-git reset --hard upstream/master
-git push origin master --force
-
-# 2. Clean local build files
-make distclean
-
-# 3. Optionally disable GitHub Actions
-# Go to: https://github.com/Ircama/Freetz-EVO/settings/actions
-# Select: "Disable actions"
 ```
 
 ---
@@ -1249,38 +1082,47 @@ make distclean
 ### Manual Triggers
 ```bash
 # Package testing
-gh workflow run make_package.yml -f make_target="package-name"
+gh workflow run make_evo.yml -f make_target="package-name"
 
 # Full firmware build
-gh workflow run make_package.yml -f make_target="firmware" -f verbosity="2"
+gh workflow run make_evo.yml -f make_target="firmware" -f verbosity="2"
 
 # Firmware build with native configuration (no modifications)
-gh workflow run make_package.yml -f make_target="-firmware" -f url="<config-url>"
+gh workflow run make_evo.yml -f make_target="-firmware" -f url="<config-url>"
 
 # Firmware build with native configuration and custom pre-build commands
-gh workflow run make_package.yml -f make_target="-firmware" -f url="<config-url>" -f custom_config="make python3-host-dirclean && make python3-host-precompiled"
+gh workflow run make_evo.yml -f make_target="-firmware" -f url="<config-url>" -f custom_config="make python3-host-dirclean && make python3-host-precompiled"
 
 # Fake firmware for device configuration testing
-gh workflow run make_package.yml -f make_target="fake-firmware"
+gh workflow run make_evo.yml -f make_target="fake-firmware"
 
 # Libraries build
-gh workflow run make_package.yml -f make_target="libs"
+gh workflow run make_evo.yml -f make_target="libs"
 
 # Package build skipping library dependencies
-gh workflow run make_package.yml -f make_target="=package-name"
+gh workflow run make_evo.yml -f make_target="=package-name"
 ```
 
-### Automatic Triggers !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+### Automatic Triggers
 ```bash
+# make command syntax
 git commit -m "test: make php-recompile"
-
 git commit -m "test: make -firmware"
-
 git commit -m "test: make fake-firmware"
-
 git commit -m "test: make libs"
-
 git commit -m "test: make =php-precompiled"
+
+# Upstream-style package prefixes (builds <pkg>-precompiled)
+
+git commit -m "fix: php"
+git commit -m "bump: openssl"
+git commit -m "add: dropbear"
+git commit -m "test: libxml2"
+
+git commit -m "fix php"
+git commit -m "bump openssl"
+git commit -m "add dropbear"
+git commit -m "test libxml2"
 ```
 
 ---
@@ -1289,11 +1131,11 @@ git commit -m "test: make =php-precompiled"
 
 ### Fake-Firmware Mode: Comprehensive Build Testing
 
-The `fake-firmware` workflow mode provides a sophisticated solution for testing Freetz-EVO builds across multiple device configurations without requiring actual firmware downloads. This mode is particularly valuable for comprehensive testing scenarios where real firmware availability is limited or when you need to validate build system behavior across the entire device matrix.
+The `fake-firmware` workflow mode enables comprehensive testing of Freetz-EVO builds across all supported device configurations without requiring actual AVM firmware downloads. It executes the complete `make` build pipeline—cross-compilation toolchain setup, host tools, dependency resolution, package compilation, and library linking—exactly as a real firmware build does.
 
-#### How Fake-Firmware Works
+Instead of downloading device-specific firmware from AVM, `fake-firmware` generates a minimal generic firmware stub containing the filesystem structure and configuration files required by the build system. The result is not an installable `.image` file, but a compressed `.tar` archive containing the compiled packages, along with detailed build statistics and artifacts for analysis.
 
-Unlike standard package compilation that focuses on individual components, `fake-firmware` executes the complete `make` build process - the same process used for creating actual firmware images. However, instead of downloading real firmware files from AVM, it uses a generic firmware stub that satisfies the build system's requirements.
+This approach removes Freetz-EVO's dependency on AVM firmware availability. AVM typically retains only recent firmware versions on its public servers, leaving older releases unavailable and limiting coverage across the roughly 30 supported devices. Firmware versions also differ in kernel modules, filesystem layouts, and configuration, while maintaining a complete historical archive would require significant storage and maintenance.
 
 ```mermaid
 flowchart TD
@@ -1317,43 +1159,11 @@ flowchart TD
     E --> Q[Real Firmware Download]
 ```
 
-#### Key Characteristics
-
-**Complete Build Pipeline**: Unlike targeted package builds, `fake-firmware` runs the entire build sequence:
-- Cross-compilation toolchain setup
-- Host tools compilation
-- Package dependency resolution and compilation
-- Library building and linking
-
-**Generic Firmware Stub**: Instead of downloading device-specific firmware from AVM, the system creates a minimal stub that provides the necessary filesystem structure and configuration files required for the build process to complete successfully.
-
-**Alternative Output**: Rather than producing an installable `.image` file, `fake-firmware` generates:
-- A compressed `.tar` archive containing all compiled packages
-- Detailed statistics about package compilation results
-- Build artifacts for analysis
-
-#### Firmware Availability Challenges
-
-Freetz-EVO supports testing across approximately 30 different device models, but AVM's firmware repository presents significant limitations:
-
-**Recent Firmware Only**: AVM typically maintains only the latest firmware versions on their public FTP servers. Older firmware releases are removed over time, creating gaps in testing coverage.
-
-**Version-Specific Dependencies**: Each firmware version contains device-specific kernel modules, filesystem layouts, and configuration files that may differ between versions.
-
-**Repository Management**: Maintaining a complete archive of all historical firmware files would require significant storage and maintenance overhead.
-
-#### Fake-Firmware Solution
-
-The `fake-firmware` mode elegantly addresses these challenges by:
-
-1. **Bypassing Firmware Downloads**: Using a generic stub eliminates dependency on external firmware availability
-2. **Preserving Build Logic**: All compilation steps, dependency resolution, and toolchain operations remain identical to real builds
-3. **Enabling Matrix Testing**: Allows comprehensive testing across all supported device configurations simultaneously
-4. **Providing Build Validation**: Ensures packages compile correctly and dependencies are properly resolved
+By replacing only the external firmware dependency with a generic stub, `fake-firmware` preserves the actual compilation, dependency resolution, and toolchain processes. It therefore allows all supported device configurations to be tested—even when the corresponding AVM firmware is unavailable—while verifying package compilation and dependency correctness across the entire device matrix.
 
 #### Workflow Variables and Secrets
 
-GitHub Actions workflows support encrypted secrets that can be used to customize build behavior and access external resources. The `make_package.yml` workflow leverages several secret variables:
+GitHub Actions workflows support encrypted secrets that can be used to customize build behavior and access external resources. The `make_evo.yml` workflow leverages several secret variables:
 
 **`ACTIONS_TESTER`**: Default configuration URL used when no explicit `url` parameter is provided. Typically points to a GitHub Release containing a base `.config` file for testing.
 
@@ -1381,16 +1191,4 @@ GitHub Actions workflows support encrypted secrets that can be used to customize
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-These secrets enable flexible deployment scenarios while maintaining security by keeping sensitive information encrypted and separate from the codebase.
-
-#### Practical Applications
-
-**Continuous Integration**: Automated testing of package compatibility across all supported devices without external dependencies.
-
-**Development Validation**: Ensuring new packages build correctly across the entire device matrix before release.
-
-**Legacy Testing**: Testing device configurations for older hardware models where original firmware is no longer available.
-
-**Build System Validation**: Verifying that toolchain configurations, package dependencies, and compilation flags work correctly across different architectures.
-
-The `fake-firmware` mode represents a sophisticated approach to comprehensive build testing, enabling robust validation of Freetz-EVO packages across diverse device configurations while maintaining efficiency and eliminating external dependencies.
+These secrets enable deployment scenarios while maintaining security by keeping sensitive information encrypted and separate from the codebase.

@@ -8,13 +8,13 @@ run-name: >-
   }}
 
 on:
-  # push:
-  #   branches: [ master ]
-  #   paths:
-  #     - '.github/workflows/make_package.yml'
-  #     - 'docs/CHANGELOG.md'
-  #     - 'make/pkgs/**'
-  #     - 'make/libs/**'
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/make_evo.yml'
+      - 'docs/CHANGELOG.md'
+      - 'make/pkgs/**'
+      - 'make/libs/**'
   workflow_dispatch:
     inputs:
       make_target:
@@ -372,15 +372,27 @@ jobs:
             # Check if commit contains "make" as a build command
             if echo "$commit_msg" | grep -q 'make '; then
               # Extract everything after "make "
-              pkg_part="$(echo "$commit_msg" | grep -o 'make [a-zA-Z0-9,_-]*' | head -1 | cut -d' ' -f2-)"
+              pkg_part="$(echo "$commit_msg" | grep -o 'make [a-zA-Z0-9,_=-]*' | head -1 | cut -d' ' -f2-)"
               make_cmd="make${pkg_part}"
               echo "Found make command in commit: $make_cmd"
             elif echo "$commit_msg" | grep -q 'make-'; then
               # Extract "make-package-precompiled"
               make_cmd="$(echo "$commit_msg" | grep -o 'make-[a-zA-Z0-9_-]*' | head -1)"
               echo "Found make command in commit: $make_cmd"
+            elif echo "$commit_msg" | grep -qiE '^(add|bump|fix|test)[: ]+[^ ,:]+'; then
+              # Upstream-style pattern: "<prefix> <package>" (e.g. "fix: php"),
+              # mirroring upstream make_precompiled.yml -> build <pkg>-precompiled
+              pkg_part="$(echo "$commit_msg" | sed -nE 's/^(add|bump|fix|test)[: ]+([^ ,:]+).*/\2/pI' | head -1)"
+              if [ -d "make/pkgs/$pkg_part" ] || [ -d "make/libs/$pkg_part" ]; then
+                make_cmd="make $pkg_part-precompiled"
+                echo "Found upstream-style commit pattern in commit: $make_cmd"
+              else
+                echo "Package '$pkg_part' not found - skipping workflow"
+                echo 'matrix=["skip"]' >> $GITHUB_OUTPUT
+                exit 0
+              fi
             else
-              echo "No 'make' build command found in commit message - skipping workflow"
+              echo "No build command found in commit message - skipping workflow"
               echo 'matrix=["skip"]' >> $GITHUB_OUTPUT
               exit 0
             fi

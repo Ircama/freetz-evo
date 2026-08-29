@@ -90,7 +90,7 @@ Some highlights compared to stock Freetz-NG are described in the [README](README
 ## 3. What You Need
 
 - An **AVM FRITZ!Box** device (tested primarily on FRITZ!Box 7590 AX with FRITZ!OS 8.25; the toolchain compiles successfully for MIPS and ARM, like 5690 Pro)
-- A USB storage device, such as a USB flash drive, an SD card, or preferably a USB SSD to store the "external" part of the firmware (1.8 GB for ARM to over 2 GB for MIPS).
+- A USB storage device, such as a USB flash drive, an SD card, or preferably a USB SSD to store the [external](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#externalization) part of the firmware (1.8 GB for ARM to over 2 GB for MIPS).
 - A **Linux build machine** — either native Linux or Windows with WSL2 (see next section)
 - About **100–200 GB of free disk space** for the build environment (configuring a comprehensive set of Freetz-EVO tools for a single device target requires around 70 GB; additionally, each compressed image occupies over 2 GB, split between a large external archive and a small 40–50 MB firmware file)
 - A reasonably fast internet connection to download source packages (the downloaded zipped source archives can take 4 GB or more)
@@ -305,13 +305,16 @@ Run `make menuconfig` and configure a minimal image containing the disk manageme
 4. Press **Esc** until you reach **External processing**. Select every item listed under
    `--- packages ---` and `--- libraries ---`, **except** `Dropbear` and `libz`
    (those must remain internal so the device stays reachable over SSH after booting).
-5. Save the configuration (this writes the `.config` file) and exit.
+5. Select **Web Interface** from the main menu, then **Freetz language**, and choose your desired language. **DE** and **EN** (default for Freetz-EVO) are the primary languages; the others are derived translations and require the [AI Translation](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#ai-translation) feature of Freetz-EVO.
+6. Save the configuration (this writes the `.config` file) and exit.
 
-Then build:
+Then [build the firmware](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#make-without-arguments):
 
 ```bash
 make
 ```
+
+(If you read "Please re-run.", issue `make` again.)
 
 The build will take some time. When it finishes, the `images/` directory will contain two files: the firmware image and the externalization archive.
 
@@ -356,7 +359,7 @@ Use the arrow keys to navigate, **Space** to toggle options, and **Enter** to en
 | **Target** | Select your exact FRITZ!Box model |
 | **Packages** | Choose optional packages (Nginx, PHP, Python, elFinder, …) |
 | **Web Interface → Freetz language** | Select UI language (English, German, Italian, …) |
-| **Advanced Options → User competence level** | Select **Expert** (or start with Beginner and switch to Expert later). |
+| **Advanced Options → User competence level** | Select **Expert** (or start with Beginner and [switch to Expert later](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#user-competence-levels)). |
 
 When you are satisfied, press **Esc** until you reach the "Save configuration?" prompt and confirm. This writes a `.config` file in the repository root.
 
@@ -364,7 +367,7 @@ When you are satisfied, press **Esc** until you reach the "Save configuration?" 
 
 ### About externalization
 
-FRITZ!Box devices have limited internal flash memory. If you select many packages and see a **"Filesystem image too big"** error, enable externalization for selected packages under **Advanced Options → External**. Externalized components are stored on a USB drive plugged into the device and loaded at boot time. Consider that externalization is generally needed.
+FRITZ!Box devices have limited internal flash memory. If you select many packages and see a **"Filesystem image too big"** error, enable [externalization](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#externalization) for selected packages under **Advanced Options → External**. Externalized components are stored on a USB drive plugged into the device and loaded at boot time. Consider that externalization is generally needed.
 
 > **Storage setup (Chapter 7):** When building the complete image after preparing an external USB drive, mark **all** packages as external under **Advanced Options → External**, except `Dropbear` and `libz`, which must remain internal so the device stays reachable over SSH. The externalization archive for a large installation can approach or exceed 2 GB.
 
@@ -399,16 +402,35 @@ The output files are placed in the `images/` directory:
 
 ### Useful make targets
 
+Freetz-EVO provides [several make options](https://ircama.github.io/freetz-evo/TESTING_WORKFLOW/#make-without-arguments) with different scopes:
+
 | Command | Purpose |
 |---|---|
 | `make menuconfig` | Open the configuration menu |
 | `make` | Build the full firmware |
 | `make help` | List all available make targets |
 | `make olddefconfig` | Update `.config` after a `git pull` adds new options |
-| `make distclean` | Full reset — removes everything while keeping your configuration (`.config`) and downloaded sources (`dl/`). |
-| `make dirclean` | Full clean — removes the build directories and extracted sources while keeping the existing toolchain and configuration. |
+| `make distclean` | Full reset — removes all generated build artifacts, including the images and the toolchain, while keeping your configuration (`.config`) and downloaded sources (`dl/`). |
+| `make dirclean` | Full clean — removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild. Also the `images` directory is preserved. |
 | `make clean` | Clean tools and caches, keep downloaded source packages |
 | `make cacheclean` | Minimal cleanup, keep compiled packages |
+
+### Cleaning the repository
+
+The repository contains both version-controlled files and generated build artifacts.
+
+Main directories:
+
+| Directory | Purpose | Can be safely deleted |
+|-----------|---------|-----------------------|
+| `dl/` | Downloaded source archives, toolchains and firmware images. Keeping this directory avoids downloading the same files again during subsequent builds. | **Yes.** It will be recreated automatically, but the next build will need to download all required files again. |
+| `source/` | Extracted source trees for the kernel, packages and host tools. These are recreated from the archives stored in `dl/`. | **Yes.** They will be recreated automatically during the next build. |
+| `packages/` | Intermediate package build directories and generated package files. | **Yes.** They will be recreated automatically. |
+| `kernel/` | Linux kernel build directory, including generated objects and intermediate files. | **Yes.** It will be recreated automatically. |
+| `build/` | Temporary firmware build tree used while assembling the final image. | **Yes.** It will be recreated automatically. |
+| `toolchain/` | Generated cross-compilation toolchain and host tools. Rebuilding this directory takes the longest time. | **Yes.** It will be recreated automatically, although rebuilding it can take a significant amount of time. |
+| `images/` | Generated firmware images and related output files. Each build creates a new image and updates the `latest.image` symbolic link to point to the most recent one. Previously generated images are preserved until removed manually or by `make distclean`. | **Yes.** New images will be generated by the next successful build. Notice that this directory can grow indefinitely as firmware images and their corresponding backup files are accumulated with each successful build. When running `make` multiple times, periodically check and manually clean the `images/` directory to prevent your build environment from running out of disk space. |
+| `.config` | Build configuration generated by `make menuconfig`. It contains all selected options for the target device and packages. | **No.** Deleting it resets the build configuration. A new `.config` must be manually created with `make menuconfig` (or restored from a backup). |
 
 ---
 
