@@ -142,6 +142,11 @@ jobs:
           cat > /usr/local/bin/make <<'EOF'
           #!/bin/bash
           if [ "$(id -u)" = "0" ]; then
+            # Files/dirs created by earlier root steps (e.g. .config, kernel
+            # symvers output) are root-owned and would block the build user;
+            # hand any root-owned artefact over to the build user before make.
+            find "$PWD" -maxdepth 1 -user root -exec chown builder:builder {} + 2>/dev/null || true
+            find "$PWD/make/kernel/configs" -user root -exec chown builder:builder {} + 2>/dev/null || true
             exec su builder -c "cd '$PWD' && exec /usr/bin/make.real $*"
           fi
           exec /usr/bin/make.real "$@"
