@@ -380,14 +380,24 @@ jobs:
               make_cmd="$(echo "$commit_msg" | grep -o 'make-[a-zA-Z0-9_-]*' | head -1)"
               echo "Found make command in commit: $make_cmd"
             elif echo "$commit_msg" | grep -qiE '^(add|bump|fix|test)[: ]+[^ ,:]+'; then
-              # Upstream-style pattern: "<prefix> <package>" (e.g. "fix: php"),
-              # mirroring upstream make_precompiled.yml -> build <pkg>-precompiled
-              pkg_part="$(echo "$commit_msg" | sed -nE 's/^(add|bump|fix|test)[: ]+([^ ,:]+).*/\2/pI' | head -1)"
-              if [ -d "make/pkgs/$pkg_part" ] || [ -d "make/libs/$pkg_part" ]; then
-                make_cmd="make $pkg_part-precompiled"
+              # Upstream-style pattern: "<prefix> <pkg>[, <pkg> ...]" (e.g. "fix: php, aria2")
+              # mirroring upstream make_precompiled.yml -> build <pkg>-precompiled.
+              # Supports multiple packages separated by commas and/or spaces.
+              rest="$(echo "$commit_msg" | sed -nE 's/^(add|bump|fix|test)[: ]+//pI')"
+              token_list="$(echo "$rest" | tr ',' ' ')"
+              pkg_list=""
+              for token in $token_list; do
+                token="$(echo "$token" | tr -d '[:space:]' | sed 's/,//g')"
+                [ -z "$token" ] && continue
+                if [ -d "make/pkgs/$token" ] || [ -d "make/libs/$token" ]; then
+                  pkg_list="${pkg_list:+${pkg_list},}${token}"
+                fi
+              done
+              if [ -n "$pkg_list" ]; then
+                make_cmd="make ${pkg_list}-precompiled"
                 echo "Found upstream-style commit pattern in commit: $make_cmd"
               else
-                echo "Package '$pkg_part' not found - skipping workflow"
+                echo "No valid package(s) found in commit message - skipping workflow"
                 echo 'matrix=["skip"]' >> $GITHUB_OUTPUT
                 exit 0
               fi

@@ -130,6 +130,23 @@ jobs:
           key: make_cache
           restore-keys: make_cache
 
+      - name: setup non-root build user
+        run: |
+          # Container jobs run as root by default; Freetz refuses to build as
+          # root (Makefile: "Running makefile as root is prohibited!").
+          # Create an unprivileged user and re-exec 'make' through it via a shim
+          # installed in /usr/local/bin (which precedes /usr/bin in PATH).
+          id builder >/dev/null 2>&1 || useradd -m builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          if [ ! -e /usr/bin/make.real ]; then mv "$(command -v make)" /usr/bin/make.real; fi
+          cat > /usr/local/bin/make <<'EOF'
+          #!/bin/bash
+          if [ "$(id -u)" = "0" ]; then
+            exec su builder -c "cd '$PWD' && exec /usr/bin/make.real $*"
+          fi
+          exec /usr/bin/make.real "$@"
+          EOF
+          chmod 755 /usr/local/bin/make
       - name: config
         run: |
           FOS="${{ matrix.fritz.fos }}"

@@ -110,6 +110,15 @@ config FREETZ_PACKAGE_PHP_WITH_FILEINFO
 	help
 		This option enables the FILEINFO support for PHP
 
+config FREETZ_PACKAGE_PHP_WITH_FFI
+	bool "FFI support (libffi.so.8)"
+	select FREETZ_LIB_libffi if !FREETZ_PACKAGE_PHP_STATIC
+	default n
+	help
+		Enables the Foreign Function Interface (FFI) support for PHP,
+		allowing PHP scripts to call C functions and access C data
+		structures directly (libffi.so.8).
+
 config FREETZ_PACKAGE_PHP_WITH_FTP
 	bool "FTP support"
 	default n
