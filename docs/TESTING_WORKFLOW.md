@@ -846,6 +846,7 @@ The workflow interprets different `make_target` inputs as follows:
 | `php#Test PHP 8.4` | `make php-precompiled` | Build package with custom label for workflow run name (spaces around `#` are optional) |
 
 **Notes:**
+
 - Firmware targets (`*-firmware`) build the complete firmware image with the specified package(s) included
 - `-firmware` builds firmware with native .config (no modifications applied by workflow, uses configuration exactly as downloaded or from myconfig). This is useful for:
   - Testing custom configurations without workflow alterations
