@@ -55,7 +55,9 @@ endif
 ifeq ($(FREETZ_AVM_HAS_MODVERSIONS_BUILTIN),y)
 ifeq ($(filter kernel-symrefs,$(MAKECMDGOALS)),)
 ifneq ($(filter-out X,$(call qstrip,$(FREETZ_DL_KERNEL_SYMREFS_HASH))),)
+ifeq ($(FREETZ_KERNEL_AVMDIFF_AVAILABLE),y)
 KERNEL_SYMREFS_AVAILABLE:=y
+endif
 endif
 KERNEL_COMMON_MAKE_OPTIONS += KBUILD_PRESERVE=1
 else

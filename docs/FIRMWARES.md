@@ -161,6 +161,12 @@ Currently supported devices and firmwares
     - 272.07.58 rev109907 {ALL} [MOVE21NL1]
     - 272.08.02 rev117989 {ALL} [Smart24 P1 NL1]
     - 272.08.25 rev133860 {ALL} [Smart24 P2 NL1]
+
+  * __Fritz!Box 5630 (UNTESTED)__
+    - 302.08.40 rev135923 {ALL} [MyFRITZOS P1] (Inhaus)
+  * __Fritz!Box 5630 XGS (UNTESTED)__
+    - 309.08.40 rev135925 {ALL} [MyFRITZOS P1] (Inhaus)
+
   * __Fritz!Box 5690 (UNTESTED)__
     - 298.08.04 rev119423 {ALL} [Smart24 P1 FCS]
     - 298.08.25 rev134002 {ALL} [Smart24 P2 NL1]
@@ -222,6 +228,7 @@ Currently supported devices and firmwares
     - 267.08.25 rev132475 {GER} [Smart24 P2 NL1]
   * __Fritz!Box 6690 PRO (UNTESTED)__
     - 308.08.24 rev130508 {GER} [Smart24 P2 NL1] (Inhaus)
+    - 308.08.40 rev136013 {GER} [MyFRITZOS P1] (Inhaus)
 
 ### Fritz!Box LTE/4G/5G (68xx)
 
@@ -658,6 +665,9 @@ Currently supported devices and firmwares
     - 253.07.31 rev109964 {ALL} [PSQ19P2NL4]
     - 253.07.58 rev113014 {ALL} [MOVE21NL1]
     - 253.08.25 rev133938 {ALL} [Smart24 P2 NL1]
+
+  * __Fritz!Repeater 6700 Pro (UNTESTED)__
+    - 315.08.40 rev136004 {ALL} [MyFRITZOS P1] (Inhaus)
 
 ### Fritz!Smart
 

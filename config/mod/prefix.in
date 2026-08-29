@@ -58,6 +58,8 @@ config FREETZ_TYPE_PREFIX
 	default "5491"              if FREETZ_TYPE_5491
 	default "5530"              if FREETZ_TYPE_5530
 	default "5590"              if FREETZ_TYPE_5590
+	default "5630"              if FREETZ_TYPE_5630_NIX
+	default "5630_XGS"          if FREETZ_TYPE_5630_XGS
 	default "5690"              if FREETZ_TYPE_5690_NIX
 	default "5690_Pro"          if FREETZ_TYPE_5690_PRO
 	default "5690_XGS"          if FREETZ_TYPE_5690_XGS
@@ -74,6 +76,7 @@ config FREETZ_TYPE_PREFIX
 	default "6670"              if FREETZ_TYPE_6670
 	default "6690"              if FREETZ_TYPE_6690_NIX
 	default "6690_Pro"          if FREETZ_TYPE_6690_PRO
+	default "6700_Pro"          if FREETZ_TYPE_6700
 	default "6810"              if FREETZ_TYPE_6810
 	default "6820_v1"           if FREETZ_TYPE_6820_V1
 	default "6820_v2"           if FREETZ_TYPE_6820_V2
