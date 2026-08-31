@@ -96,8 +96,6 @@ tools/ssh_firmware_update.py --host <IP address> --password <password> --batch
 
 The complete workflow — cloning the repository (main branch or a single [tag](../../tags)), installing prerequisites, configuring and building the firmware, flashing it, updating the Git tree, rebuilding, and resetting the working tree — is described step by step in the **[Getting Started guide](docs/GETTING_STARTED.md)**. Advanced build-system topics (make targets, clean/rebuild procedures, host-tools tarball recovery, package-specific targets) are covered in the **[Build Guide](docs/TESTING_WORKFLOW.md)**.
 
-Documentation is available at [https://ircama.github.io/freetz-evo/](https://ircama.github.io/freetz-evo/) (or [docs/](docs/README.md)); to test documentation changes locally, run `tools/zensical_httpserver.sh` from the repository root (see [Testing Documentation changes](docs/TESTING_WORKFLOW.md#testing-documentation-changes)).
-
 ---
 
 > **Language**: This repository uses **English** as its primary language for code, documentation, commit messages, and issues.
