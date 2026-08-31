@@ -69,7 +69,7 @@ jobs:
           grep -q '<html lang="en" class="no-js">' "$ENGLISH_HTML"
       - name: Verify syntax highlighting markup
         run: |
-          TARGET_HTML="./docs/site/REPO_README/index.html"
+          TARGET_HTML="./docs/site/GETTING_STARTED/index.html"
           test -f "$TARGET_HTML"
           grep -q '<div class="language-bash highlight">' "$TARGET_HTML"
           if grep -q '<pre><code class="language-bash">' "$TARGET_HTML"; then

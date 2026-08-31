@@ -1,4 +1,4 @@
-name: make_package
+name: make_evo
 
 run-name: >-
   ${{

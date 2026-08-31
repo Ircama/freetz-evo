@@ -10,7 +10,7 @@
 Compared with Freetz-NG, this tree adds **199+ package makefiles** and **71+ libraries**, modifies **33+ packages** and **50+ libraries**, and carries substantial documentation and tooling work.
 
 <p class="evo-actions" markdown="1">
-[Start with the full README](REPO_README.md){ .evo-button .evo-button--primary }
+[Repository README](REPO_README.md){ .evo-button .evo-button--primary }
 [Build an image](GETTING_STARTED.md){ .evo-button }
 [Try the UI mockup](screenshots/evo-demo.html){ .evo-button }
 </p>
@@ -19,7 +19,7 @@ Compared with Freetz-NG, this tree adds **199+ package makefiles** and **71+ lib
 <div class="evo-hero__panel" aria-label="Freetz-EVO identity">
   <img src="screenshots/000-TAG_freetz-evo.png" alt="Freetz-EVO logo" class="evo-logo">
   <div class="evo-terminal-card" aria-hidden="true">
-    <span>&gt; git clone github.com/Ircama/freetz-evo</span>
+    <span>&gt; git clone https://github.com/Ircama/freetz-evo</span>
     <span>&gt; cd freetz-evo</span>
     <span>&gt; tools/prerequisites install -y</span>
     <span>&gt; make menuconfig</span>

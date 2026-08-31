@@ -77,6 +77,18 @@ For the complete listing, see **[docs/NEW-PACKAGES.md](docs/NEW-PACKAGES.md)**.
 
 ## How to use
 
+Quick run:
+
+```bash
+git clone https://github.com/Ircama/freetz-evo
+cd freetz-evo
+tools/prerequisites install -y
+make menuconfig
+make
+tools/push_firmware
+tools/ssh_firmware_update.py --host <IP address> --password <password> --batch
+```
+
 ### Basic infos:
   * After flashing the firmware, a web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
   * Default credentials for shell/ssh/telnet access are: `root`/`freetz`<br>
