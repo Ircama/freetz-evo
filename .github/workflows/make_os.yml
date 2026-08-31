@@ -134,7 +134,7 @@ jobs:
     steps:
 
       - name: clone
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           set-safe-directory: true
@@ -197,7 +197,7 @@ jobs:
 #         echo -n "V6: " ; wget -q https://ipaddress.ai -6 -O - || echo none
 
 #     - name: preclone
-#       uses: actions/checkout@v6
+#       uses: actions/checkout@v7
 #       with:
 #         token: ${{ secrets.GITHUB_TOKEN }}
 #         repository: ${{ github.repository }}
@@ -229,7 +229,7 @@ jobs:
 #         fi  
 
       - name: clone
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           set-safe-directory: true
@@ -368,7 +368,7 @@ jobs:
           echo "################################################################" && bash -c "echo FRITZ_NAME=$FRITZ_NAME"
       
 #     - name: preclone
-#       uses: actions/checkout@v6
+#       uses: actions/checkout@v7
 #       with:
 #         token: ${{ secrets.GITHUB_TOKEN }}
 #         repository: ${{ github.repository }}
@@ -400,7 +400,7 @@ jobs:
 #         fi  
 
       - name: clone
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           set-safe-directory: true
