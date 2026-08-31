@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Checkout repository (full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.LOCAL_BRANCH }}
           fetch-depth: 0
