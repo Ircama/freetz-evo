@@ -1547,7 +1547,7 @@ jobs:
           
       - name: Upload build artifact
         if: steps.generate.outputs.bad == 'n' && github.event.inputs.create_artifacts == 'true'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.result.outputs.artifact_filename }}
           path: ${{ contains(steps.generate.outputs.pkg, 'firmware') && 'images/' || 'freetz-package-build/' }}
