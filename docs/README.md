@@ -80,10 +80,7 @@ Preview the EVO skin, mobile behavior, and browser-based administration experien
 <div markdown="1"><strong>Go packages</strong><span>Go 1.25 cross-compilation for all FRITZ!Box architectures, with per-package module cache isolation and CGO support.</span> [Read the Go overview](GO.md)</div>
 <div markdown="1"><strong>Python ecosystem</strong><span>Python 3.14 with 70+ packages, Rust-built extensions, tkinter/X11, and Home Assistant support.</span> [Read the Python overview](PYTHON.md)</div>
 <div markdown="1"><strong>Package reference</strong><span>Full listing of all new packages, enhanced packages, and CI/tooling additions.</span> [Browse all packages](NEW-PACKAGES.md)</div>
-<div markdown="1"><strong>Build confidence</strong><span>Reviewed English documentation, stronger CI, upstream synchronization, and generated package listings.
-Check full documentation.
-</span>
-[Testing workflow](TESTING_WORKFLOW.md)
+<div markdown="1"><strong>Build confidence</strong><span>Reviewed English documentation, stronger CI, upstream synchronization, and generated package listings.</span> [Check the testing workflow documentation](TESTING_WORKFLOW.md)
 </div>
 </div>
 </section>
