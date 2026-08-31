@@ -672,7 +672,7 @@ jobs:
           tools/prerequisites install -y
 
       - name: cache_load
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         if: always()
         with:
           path: |

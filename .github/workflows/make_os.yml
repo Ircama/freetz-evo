@@ -241,7 +241,7 @@ jobs:
           persist-credentials: true
 
       - name: cache_load
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         if: always()
         with:
           path: |
@@ -412,7 +412,7 @@ jobs:
           persist-credentials: true
 
       - name: cache_load
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         if: always()
         with:
           path: |
