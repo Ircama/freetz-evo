@@ -61,7 +61,12 @@ body {
 	background: var(--evo-surface);
 	box-shadow: var(--evo-shadow-lg);
 	border-radius: var(--evo-radius-lg);
-	overflow: hidden;
+	/* Clip horizontally (rounded corners) but let dropdowns extend below
+           #world on short pages instead of being cut off. Browsers without
+           two-value overflow support fall back to visible (harmless: header
+           and footer already carry the corner radius). */
+        overflow: visible;
+        overflow: clip visible;
 }
 
 /* --- Header --- */
@@ -1120,7 +1125,7 @@ html.dark-mode fieldset                        { border-color: var(--evo-border)
 	body:not(.evo-topnav) ul.menu.new.sub { display: none; }
 	body:not(.evo-topnav) .evo-hamburger { display: none; }
 	body:not(.evo-topnav) #container { padding: 0 10px 16px 10px; }
-	#world { border-radius: 0; margin: 0 auto 10px auto; overflow: clip; width: 100%; max-width: 100%; box-sizing: border-box; }
+	#world { border-radius: 0; margin: 0 auto 10px auto; overflow: visible; overflow: clip visible; width: 100%; max-width: 100%; box-sizing: border-box; }
 	/* Mobile: bottom nav must always be visible regardless of hammode */
 	html.evo-hammode ul.menu.new,
 	body.evo-hammode ul.menu.new { display: flex !important; }
