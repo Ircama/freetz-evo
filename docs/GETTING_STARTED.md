@@ -21,6 +21,7 @@ This guide describes the complete workflow: preparing a Linux build environment,
 11. [First Login](#11-first-login)
 12. [Keeping Freetz-EVO Up to Date](#12-keeping-freetz-evo-up-to-date)
 13. [Enabling Swap in the Web Interface (Optional)](#13-enabling-swap-in-the-web-interface-optional)
+14. [Git Maintenance and Rebuild Recipes](#14-git-maintenance-and-rebuild-recipes)
 
 ---
 
@@ -265,10 +266,18 @@ free -h
 
 Once inside your Linux/WSL environment, clone the [Freetz-EVO](https://github.com/Ircama/freetz-evo) repository.
 
+### Clone the main branch
+
 ```bash
 cd ~
 git clone https://github.com/Ircama/freetz-evo
 cd freetz-evo
+```
+
+### Or clone a single [tag](https://github.com/Ircama/freetz-evo/tags)
+
+```bash
+git clone https://github.com/Ircama/freetz-evo ~/freetz-evo --single-branch --branch TAGNAME
 ```
 
 ---
@@ -561,8 +570,85 @@ For a complete step-by-step guide, see [`docs/wiki/20_Advanced/create_swap.md`](
 
 ---
 
+## 14. Git Maintenance and Rebuild Recipes
+
+### Show GIT states
+
+```bash
+git status
+git diff --no-prefix # --cached # > file.patch
+git log --graph # --oneline
+```
+
+### Rebuild everything
+
+To rebuild everything while keeping your configuration (`.config`) and downloaded sources (`dl/`):
+
+```bash
+make distclean
+make
+```
+
+This removes all generated build artifacts, including the images and the toolchain, but preserves `.config` and the download cache.
+
+### Rebuild without rebuilding the toolchain
+
+```bash
+make dirclean
+make
+```
+
+This removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild. Also the `images` directory is preserved; notice that this directory can grow indefinitely as firmware images and their corresponding backup files are accumulated with each successful build. When running `make` multiple times, periodically check and manually clean the `images/` directory to prevent your build environment from running out of disk space.
+
+### Delete all local Git changes
+
+To completely restore the repository to the current remote revision and remove all untracked files:
+
+```bash
+git checkout master ; git fetch --all --prune ; git reset --hard origin/HEAD ; git clean -fd
+```
+
+**Warning:** this permanently discards:
+
+- local commits;
+- modifications to tracked files;
+- untracked files and directories.
+
+Use this command only when you want to reset the Git working tree. It is **not** required for performing a clean rebuild.
+
+### Update GIT
+
+```bash
+git pull
+```
+
+### Checkout old revision
+
+```bash
+git checkout HASH-OF-COMMIT # -b NEW-BRANCH
+```
+
+### Checkout another branch
+
+```bash
+git checkout EXISTING-BRANCH
+```
+
+### host-tools tarball missing
+
+When the host tools download fails because the tarball is missing from the Freetz-NG portal (e.g., `tools-yyy-mm-dd.tar.xz`, like `tools-2026-08-14.tar.xz`), the host-tools tarball needs to be locally recreated using the following commands:
+
+```bash
+cp .config .config.backup  # This is important because the following command modifies the .config file.
+tools/dl-hosttools own --no-clean
+cp .config.backup .config
+```
+
+See also the [host-tools tarball missing](TESTING_WORKFLOW.md#host-tools-tarball-missing) section of the Build Guide for details on what `tools/dl-hosttools` does internally.
+
+---
+
 For more detail, see:
 - Full documentation: <https://ircama.github.io/freetz-evo/>
-- Prerequisites list: [`docs/prerequisites/README.md`](prerequisites/README.md)
 - Source repository: <https://github.com/Ircama/freetz-evo>
 - Build system reference: [`docs/TESTING_WORKFLOW.md`](TESTING_WORKFLOW.md)

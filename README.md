@@ -16,9 +16,9 @@ Freetz-EVO is easier, sleeker, with more features and less bugs.
 
 Freetz-EVO includes:
 
-- over 120 new packages and libraries, including exclusive applications, Go and Rust support,
-- over 70 python3 packages, including Rust support,
+- almost 130 new packages, including exclusive applications, including Go and Rust packages,
 - over 70 libraries,
+- over 70 python3 packages, including Rust libraries,
 - over 40 improved packages and libraries,
 - USB audio stack, extensive playback and recording tools, local playlist management and web radio functions — see the [Audio Subsystem](docs/AUDIO.md),
 - hidapi support for HID-Class USB device access and ja11-config support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs (TUI EQ configurator plus ja11-boot/ja11-flash firmware update),
@@ -56,7 +56,7 @@ Freetz-EVO features a fully responsive, mobile-first EVO skin with dark mode, PW
 
 #### Packages and tooling
 
-For the full listing of new packages, enhanced packages, and CI/tooling additions, see **[docs/NEW-PACKAGES.md](docs/NEW-PACKAGES.md)**. Topic-specific deep dives are available for the [Audio Subsystem](docs/AUDIO.md), [Disk Management](docs/DISK-MGMT.md), [Multimedia and Downloads](docs/MULTIMEDIA.md), [Rust packages](docs/RUST.md), [Go packages](docs/GO.md), and [Python ecosystem](docs/PYTHON.md).
+For the full listing of new packages, enhanced packages, and CI/tooling additions, see **[docs/NEW-PACKAGES.md](docs/NEW-PACKAGES.md)**. Topic-specific deep dives are available for the [Audio Subsystem](docs/AUDIO.md), [Disk Management](docs/DISK-MGMT.md), [Flasher Tools](docs/FLASHER-TOOLS.md), [Multimedia and Downloads](docs/MULTIMEDIA.md), [Rust packages](docs/RUST.md), [Go packages](docs/GO.md), and [Python ecosystem](docs/PYTHON.md).
 
 Highlights include:
 
@@ -64,6 +64,7 @@ Highlights include:
 |---|---|
 | **[Disk Management](docs/DISK-MGMT.md)** | Web console for partitioning, formatting, cloning, and recovery, backed by 15+ disk tools. |
 | **[Audio subsystem](docs/AUDIO.md)** | ALSA stack, MPD ecosystem, USB DAC support, AirPlay/Spotify receivers. |
+| **[Flasher tools](docs/FLASHER-TOOLS.md)** | USB peripheral integration: avrdude, esp-serial-flasher, micronucleus, telink_tools, hidws, ja11-config, HID stack. |
 | **[Multimedia and downloads](docs/MULTIMEDIA.md)** | rTorrent/ruTorrent, aria2/AriaNg, Gerbera UPnP/DLNA, elFinder file manager, miniupnpd. |
 | **[Rust packages](docs/RUST.md)** | ~30 cross-compiled tools (ripgrep, gitui, yazi, ncspot, rmpc…) with full uClibc compatibility. |
 | **[Go packages](docs/GO.md)** | Go 1.25 cross-compilation; lazygit, hugo, rclone, caddy, prometheus, and more. |
@@ -77,129 +78,13 @@ For the complete listing, see **[docs/NEW-PACKAGES.md](docs/NEW-PACKAGES.md)**.
 ## How to use
 
 ### Basic infos:
-  * After flashing the formware, a web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
+  * After flashing the firmware, a web interface will be started on [port :81](http://fritz.box:81/), credentials: `admin`/`freetz`<br>
   * Default credentials for shell/ssh/telnet access are: `root`/`freetz`<br>
   * For more see: [ircama.github.io/freetz-evo](https://ircama.github.io/freetz-evo/)
 
-### Requirements:
-  * You need an up to date Linux System with some [prerequisites](docs/prerequisites/README.md).
-  * Or download a ready-to-use VM like Gismotro's [Freetz-Linux](https://freetz.digital-eliteboard.com/?dir=Teamserver/Freetz/Freetz-VM/VirtualBox/) (user & pass: `freetz`). To update it to Freetz-EVO, run again the installation of the prerequisites after cloning this repository.
-  * There are also Docker images available like [pfichtner-freetz](https://hub.docker.com/r/pfichtner/freetz) ([README](https://github.com/pfichtner/pfichtner-freetz#readme)). To update it to Freetz-EVO, run again the installation of the prerequisites after cloning this repository.
+The complete workflow — cloning the repository (main branch or a single [tag](../../tags)), installing prerequisites, configuring and building the firmware, flashing it, updating the Git tree, rebuilding, and resetting the working tree — is described step by step in the **[Getting Started guide](docs/GETTING_STARTED.md)**. Advanced build-system topics (make targets, clean/rebuild procedures, host-tools tarball recovery, package-specific targets) are covered in the **[Build Guide](docs/TESTING_WORKFLOW.md)**.
 
-### Clone the main branch:
-```bash
-git clone https://github.com/Ircama/freetz-evo ~/freetz-evo
-```
-
-### Or clone a single [tag](../../tags):
-```bash
-git clone https://github.com/Ircama/freetz-evo ~/freetz-evo --single-branch --branch TAGNAME
-```
-
-### Install prerequisites:
-```bash
-cd ~/freetz-evo
-tools/prerequisites install -y
-```
-
-### Build firmware:
-```bash
-cd ~/freetz-evo
-make menuconfig  # Configure your setup
-make  # Long-running operation
-# make help
-```
-
-After running `make menuconfig`, select the options appropriate for your target device and desired packages, then save the configuration when prompted. The selected configuration will be written to `.config`. If `.config` does not exist, it is created, otherwise it is updated.
-
-### Flash firmware (if SSH is not yet installed):
-```bash
-cd ~/freetz-evo
-tools/push_firmware -h
-```
-
-### Update freetz firmware via SSH:
-```bash
-cd ~/freetz-evo
-tools/ssh_firmware_update.py --host <myIP> --password <myPassword> --batch
-```
-
-### host-tools tarball missing:
-
-When the host tools download fails because missing from the freetz-NG portal (e.g., `tools-yyy-mm-dd.tar.xz`, like `tools-2026-08-14.tar.xz`), host-tools tarball needs to be locally recreated using the following commands:
-
-```bash
-cp .config .config.backup  # This is important because the following command modifies the .config file.
-tools/dl-hosttools own --no-clean
-cp .config.backup .config
-```
-
-### Show GIT states:
-```bash
-git status
-git diff --no-prefix # --cached # > file.patch
-git log --graph # --oneline
-```
-
-#### Rebuild everything
-
-To rebuild everything while keeping your configuration (`.config`) and downloaded sources (`dl/`):
-
-```bash
-make distclean
-make
-```
-
-This removes all generated build artifacts, including the images and the toolchain, but preserves `.config` and the download cache.
-
-#### Rebuild without rebuilding the toolchain
-
-```bash
-make dirclean
-make
-```
-
-This removes the build directories and extracted sources while keeping the existing toolchain, resulting in a much faster rebuild. Also the `images` directory is preserved; notice that this directory can grow indefinitely as firmware images and their corresponding backup files are accumulated with each successful build. When running `make` multiple times, periodically check and manually clean the `images/` directory to prevent your build environment from running out of disk space.
-
-#### Delete all local Git changes
-
-To completely restore the repository to the current remote revision and remove all untracked files:
-
-```bash
-git checkout master ; git fetch --all --prune ; git reset --hard origin/HEAD ; git clean -fd
-```
-
-**Warning:** this permanently discards:
-
-- local commits;
-- modifications to tracked files;
-- untracked files and directories.
-
-Use this command only when you want to reset the Git working tree. It is **not** required for performing a clean rebuild.
-
-### Update GIT:
-```bash
-git pull
-```
-
-### Checkout old revision:
-```bash
-git checkout HASH-OF-COMMIT # -b NEW-BRANCH
-```
-
-### Checkout another branch:
-```bash
-git checkout EXISTING-BRANCH
-```
-
-### Documentation:
-See [https://ircama.github.io/freetz-evo/](https://ircama.github.io/freetz-evo/) (or [docs/](docs/README.md)).
-
-#### Testing Documentation changes
-```bash
-cd ~/freetz-evo
-tools/zensical_httpserver.sh
-```
+Documentation is available at [https://ircama.github.io/freetz-evo/](https://ircama.github.io/freetz-evo/) (or [docs/](docs/README.md)); to test documentation changes locally, run `tools/zensical_httpserver.sh` from the repository root (see [Testing Documentation changes](docs/TESTING_WORKFLOW.md#testing-documentation-changes)).
 
 ---
 

@@ -7,7 +7,7 @@
 
 **Freetz-EVO** is an actively synchronized fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) for building enhanced firmware images for AVM FRITZ!Box devices. It keeps Freetz-NG as the technical base while adding EVO-only packages, package fixes, a responsive web interface, hardened session login, reverse-proxy tooling, and stronger build/test workflows.
 
-Compared with Freetz-NG, this tree adds **193 package makefiles** and **68 libraries**, modifies **28 packages** and **12 libraries**, and carries substantial documentation and tooling work.
+Compared with Freetz-NG, this tree adds **199+ package makefiles** and **71+ libraries**, modifies **33+ packages** and **50+ libraries**, and carries substantial documentation and tooling work.
 
 <p class="evo-actions" markdown="1">
 [Start with the full README](REPO_README.md){ .evo-button .evo-button--primary }
@@ -74,6 +74,7 @@ Preview the EVO skin, mobile behavior, and browser-based administration experien
 <div markdown="1"><strong>Runtime stacks</strong><span>Modern PHP, Python modules, QuickJS, Nginx, terminal tooling, and selected AI/ML packages.</span></div>
 <div markdown="1"><strong>Disk Management subsystem</strong><span>Freetz-EVO integrates low-level Unix disk tools into a highly interactive graphical interface that orchestrates them into complete storage operations.</span> [Read the overview](DISK-MGMT.md)</div>
 <div markdown="1"><strong>Audio subsystem</strong><span>USB DAC support, ALSA stack, MPD ecosystem, web radio, and AirPlay/Spotify receivers.</span> [Read the Audio Subsystem overview](AUDIO.md)</div>
+<div markdown="1"><strong>Flasher tools</strong><span>USB peripheral integration: microcontroller flashers (avrdude, esp-serial-flasher, micronucleus, telink_tools), HID gateway and configurators (hidws, ja11-config), HID libraries and cdc-acm support.</span> [Read the Flasher Tools overview](FLASHER-TOOLS.md)</div>
 <div markdown="1"><strong>Multimedia and downloads</strong><span>rTorrent/ruTorrent, aria2/AriaNg, Transmission frontends, elFinder file manager, and Gerbera UPnP/DLNA media server.</span> [Read the Multimedia overview](MULTIMEDIA.md)</div>
 <div markdown="1"><strong>Rust packages</strong><span>Cross-compiled Rust tools for MIPS, x86, ARM, and Aarch64, with comprehensive uClibc compatibility patches.</span> [Read the Rust overview](RUST.md)</div>
 <div markdown="1"><strong>Go packages</strong><span>Go 1.25 cross-compilation for all FRITZ!Box architectures, with per-package module cache isolation and CGO support.</span> [Read the Go overview](GO.md)</div>

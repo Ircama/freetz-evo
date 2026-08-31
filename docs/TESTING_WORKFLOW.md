@@ -795,6 +795,17 @@ git remote add upstream https://github.com/Freetz-EVO/Freetz-EVO.git
 
 Once the workflow completes, GitHub Pages will publish the site using the configured GitHub Actions workflow.
 
+## Testing Documentation changes
+
+The documentation site is generated with [Zensical](https://zensical.org/). To preview documentation changes locally before committing them:
+
+```bash
+cd ~/freetz-evo
+tools/zensical_httpserver.sh
+```
+
+This starts a local HTTP server; open the printed URL in a browser and the rendered documentation will reflect your edits under `docs/` as you save them.
+
 ## Testing Workflow
 
 ```bash
