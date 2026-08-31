@@ -358,7 +358,7 @@ jobs:
           steps.check.outputs.already_synced != 'true' &&
           github.event.inputs.dry_run != 'true' &&
           (steps.merge.outputs.conflict != 'true' || steps.llm.outputs.llm_resolved == 'true')
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const syncBranch = '${{ steps.merge.outputs.sync_branch }}';
@@ -399,7 +399,7 @@ jobs:
           steps.check.outputs.already_synced != 'true' &&
           steps.merge.outputs.conflict == 'true' &&
           steps.llm.outputs.llm_resolved != 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const conflictedFiles = `${{ steps.merge.outputs.conflicted_files }}`;
