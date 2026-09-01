@@ -643,7 +643,7 @@ jobs:
         fritz: ${{ fromJson(needs.parse_matrix.outputs.matrix) }}
     name: "${{ matrix.fritz.pkg }} - ${{ matrix.fritz.name }}"
     runs-on: ubuntu-latest
-    if: matrix.fritz != 'skip'
+    if: needs.parse_matrix.outputs.matrix != '["skip"]'
 
     env:
       CACHE_KEY: "make_freetz"
