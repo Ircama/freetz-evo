@@ -188,7 +188,34 @@ jobs:
           clean: false
           persist-credentials: true
 
+      - name: Check if push commit requests a build
+        id: trigger_check
+        run: |
+          # On push events, run only when the commit message matches a build
+          # pattern (make ..., add/bump/fix/test <pkg>, CI:/workflow:/build:
+          # prefixes are always skipped). Manual workflow_dispatch always runs.
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          MSG="$(git log --format=%B -n1 ${{ github.sha }})"
+          echo "Commit message: $MSG"
+          if echo "$MSG" | grep -qi '^CI:' || echo "$MSG" | grep -qi '^workflow:' || echo "$MSG" | grep -qi '^build:'; then
+            echo "run=false" >> $GITHUB_OUTPUT
+            echo "Push commit is a CI/workflow commit - skipping all further steps"
+          elif echo "$MSG" | grep -q 'make' || echo "$MSG" | grep -qiE '^(add|bump|fix|test)[: ]+[^ ,:]+'; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+            echo "Push commit has no build pattern - skipping all further steps"
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ⏭️ Workflow skipped" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Commit message does not request any build (no \\`make ...\\` and no \\`add|bump|fix|test <pkg>\\` pattern)." >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Extract workflow label from make_target
+        if: steps.trigger_check.outputs.run == 'true'
         id: extract_label
         run: |
           # Extract label from make_target if it contains '#'
@@ -249,6 +276,7 @@ jobs:
           fi
 
       - name: Check branch status vs previous commit
+        if: steps.trigger_check.outputs.run == 'true'
         run: |
           # Compare current commit with the previous commit on this branch.
           # Freetz-EVO is an independent fork, so comparing with Freetz-NG
@@ -323,6 +351,7 @@ jobs:
 
       - name: parse
         id: parse
+        if: steps.trigger_check.outputs.run == 'true'
         run: |
           # Produce the target list:
           # Remove label part (everything after #) before processing
@@ -960,12 +989,11 @@ jobs:
             
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "> **Note:** This mismatch may indicate naming errors in the configuration or that \`make olddefconfig\` resolved device/firmware to compatible alternatives. The build proceeded with the final configuration values." >> $GITHUB_STEP_SUMMARY
-          fi
-            echo "" >> $GITHUB_STEP_SUMMARY
           else
             echo "##########################################################"
             echo "✅ Configuration validation: Device and firmware match expected values"
             echo "##########################################################"
+          fi
           fi
           echo ""
           
