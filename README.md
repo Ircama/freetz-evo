@@ -104,7 +104,7 @@ The complete workflow — cloning the repository (main branch or a single [tag](
 
 ## AI disclosure
 
-The enhancements that turned Freetz-NG into Freetz-EVO are the result of a year of development, carried out largely with the assistance of AI coding agents such as DeepSeek V4 Flash/Pro, GPT-5.x, and Claude Sonnet 4.x. Humans have remained responsible for the ideas, software selection, architecture, in-depth testing, revision, and optimization.
+The enhancements that turned Freetz-NG into Freetz-EVO are the result of a year of development, carried out largely with the assistance of AI coding agents such as DeepSeek V4 Flash/Pro, GLM 5.3, GPT-5.x, and Claude Sonnet 4.x. Humans have remained responsible for the ideas, software selection, architecture, in-depth testing, revision, and optimization.
 
 If you are not comfortable with AI-assisted code, this software is not for you.
 
