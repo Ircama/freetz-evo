@@ -641,7 +641,7 @@ jobs:
       fail-fast: false
       matrix:
         fritz: ${{ fromJson(needs.parse_matrix.outputs.matrix) }}
-    name: "${{ matrix.fritz.pkg }} - ${{ matrix.fritz.name }}"
+    name: "${{ needs.parse_matrix.outputs.matrix == '[\"skip\"]' && 'make_evo (skipped)' || format('{0} - {1}', matrix.fritz.pkg, matrix.fritz.name) }}"
     runs-on: ubuntu-latest
     if: needs.parse_matrix.outputs.matrix != '["skip"]'
 
