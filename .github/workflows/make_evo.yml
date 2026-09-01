@@ -93,8 +93,13 @@ jobs:
           echo "##########################################################"
           echo "ℹ️ GitHub CLI command used to trigger this workflow:"
           
-          # Check if all parameters are at default values
+          # Only show parameters when triggered manually (workflow_dispatch);
+          # on push, github.event.inputs are empty and would produce misleading
+          # lines like: -f verbosity='' -f add_or_override=''
           HAS_PARAMS=""
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            HAS_PARAMS="__skip__"
+          fi
           [ -n "${{ github.event.inputs.make_target }}" ] && HAS_PARAMS="yes"
           [ -n "${{ github.event.inputs.url }}" ] && HAS_PARAMS="yes"
           [ "${{ github.event.inputs.verbosity }}" != "0" ] && HAS_PARAMS="yes"
@@ -105,7 +110,15 @@ jobs:
           [ "${{ github.event.inputs.create_artifacts }}" = "true" ] && HAS_PARAMS="yes"
           [ "${{ github.event.inputs.use_queue }}" = "false" ] && HAS_PARAMS="yes"
           
-          if [ -z "$HAS_PARAMS" ]; then
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            HAS_PARAMS="__skip__"
+          fi
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            HAS_PARAMS="__skip__"
+          fi
+          if [ "$HAS_PARAMS" = "__skip__" ]; then
+            echo "gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }}   # triggered by push to ${{ github.ref_name }}"
+          elif [ -z "$HAS_PARAMS" ]; then
             echo "gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }}"
           else
             echo "gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }} \\"
@@ -136,7 +149,9 @@ jobs:
           [ "${{ github.event.inputs.create_artifacts }}" = "true" ] && HAS_PARAMS="yes"
           [ "${{ github.event.inputs.use_queue }}" = "false" ] && HAS_PARAMS="yes"
           
-          if [ -z "$HAS_PARAMS" ]; then
+          if [ "$HAS_PARAMS" = "__skip__" ]; then
+            echo "gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }}   # triggered by push to ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          elif [ -z "$HAS_PARAMS" ]; then
             echo "gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           else
             CMD="gh workflow run ${{ github.workflow }}.yml -r ${{ github.ref_name }}"
@@ -233,108 +248,72 @@ jobs:
             fi
           fi
 
-      - name: Check branch status against upstream
+      - name: Check branch status vs previous commit
         run: |
-          # Compare current branch with upstream/master
+          # Compare current commit with the previous commit on this branch.
+          # Freetz-EVO is an independent fork, so comparing with Freetz-NG
+          # upstream/master is meaningless; show latest commit changes instead.
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Fetch upstream repository
-          git remote add upstream https://github.com/Freetz-NG/freetz-ng 2>/dev/null || true
-          git fetch upstream master
-          
-          # Check if branch is even with upstream/master
-          COMMITS_AHEAD=$(git rev-list --count upstream/master..HEAD 2>/dev/null || echo "0")
-          COMMITS_BEHIND=$(git rev-list --count HEAD..upstream/master 2>/dev/null || echo "0")
-          
-          if [ "$COMMITS_AHEAD" = "0" ] && [ "$COMMITS_BEHIND" = "0" ]; then
-            # Branch is even with upstream
-            echo "### ✅ Branch Status" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "This branch is **even** with [upstream/master](https://github.com/Freetz-NG/freetz-ng/tree/master) (\`Freetz-NG/freetz-ng\`)." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Branch Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Branch: \`${{ github.ref_name }}\` @ \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          PREV_COMMIT="$(git rev-parse HEAD~1 2>/dev/null || true)"
+          if [ -z "$PREV_COMMIT" ]; then
+            echo "_No previous commit available (initial commit or shallow clone)_" >> $GITHUB_STEP_SUMMARY
           else
-            # Branch has differences
-            echo "### 📊 Branch Status vs Upstream/master" >> $GITHUB_STEP_SUMMARY
+            SHORT="$(git rev-parse --short HEAD)"
+            PREV_SHORT="$(git rev-parse --short "$PREV_COMMIT")"
+            echo "- This commit: [\`$SHORT\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
+            echo "- Previous commit: [\`$PREV_SHORT\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$PREV_COMMIT)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-            echo "Upstream: [\`Freetz-NG/freetz-ng:master\`](https://github.com/Freetz-NG/freetz-ng/tree/master)" >> $GITHUB_STEP_SUMMARY
+
+            echo "#### 📝 Last Commit" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ "$COMMITS_AHEAD" != "0" ]; then
-              echo "- 🔼 **$COMMITS_AHEAD commit(s) ahead** of upstream" >> $GITHUB_STEP_SUMMARY
-            fi
-            if [ "$COMMITS_BEHIND" != "0" ]; then
-              echo "- 🔽 **$COMMITS_BEHIND commit(s) behind** upstream" >> $GITHUB_STEP_SUMMARY
-            fi
+            COMMIT_MSG="$(git log --format=%B -n1 HEAD | head -1)"
+            echo "- [\`$SHORT\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/${{ github.sha }}) $COMMIT_MSG" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Show commit differences if ahead
-            if [ "$COMMITS_AHEAD" != "0" ]; then
-              echo "#### 📝 Commits in this branch (not in upstream)" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-              git log --oneline --no-decorate upstream/master..HEAD | head -100 | while read -r line; do
-                COMMIT_HASH=$(echo "$line" | awk '{print $1}')
-                COMMIT_MSG=$(echo "$line" | cut -d' ' -f2-)
-                echo "- [\`$COMMIT_HASH\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$COMMIT_HASH) $COMMIT_MSG" >> $GITHUB_STEP_SUMMARY
-              done
-              
-              if [ "$COMMITS_AHEAD" -gt 100 ]; then
-                echo "- _... and $((COMMITS_AHEAD - 100)) more commits_" >> $GITHUB_STEP_SUMMARY
-              fi
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            # Show modified files
-            echo "#### 📂 Modified Files" >> $GITHUB_STEP_SUMMARY
+
+            echo "#### 📂 Modified Files (vs previous commit)" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Get list of modified files with their change types
-            MODIFIED_FILES=$(git diff --name-status upstream/master...HEAD 2>/dev/null || echo "")
-            
+            MODIFIED_FILES="$(git diff --name-status "$PREV_COMMIT" HEAD 2>/dev/null || true)"
             if [ -n "$MODIFIED_FILES" ]; then
-              FILE_COUNT=$(echo "$MODIFIED_FILES" | wc -l)
+              FILE_COUNT="$(echo "$MODIFIED_FILES" | wc -l)"
               echo "<details>" >> $GITHUB_STEP_SUMMARY
-              echo "<summary><strong>$FILE_COUNT file(s) modified</strong> (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+              echo "<summary><strong>$FILE_COUNT file(s) changed</strong> (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "| Status | File | Link |" >> $GITHUB_STEP_SUMMARY
               echo "|--------|------|------|" >> $GITHUB_STEP_SUMMARY
-              
               echo "$MODIFIED_FILES" | head -100 | while read -r line; do
-                status=$(echo "$line" | cut -f1)
-                filepath=$(echo "$line" | cut -f2)
+                status="$(echo "$line" | cut -f1)"
+                filepath="$(echo "$line" | cut -f2)"
                 case "$status" in
-                  A*) STATUS_ICON="✨ Added" ;;
+                  A*) STATUS_ICON="✅ Added" ;;
                   M*) STATUS_ICON="📝 Modified" ;;
                   D*) STATUS_ICON="🗑️ Deleted" ;;
                   R*) STATUS_ICON="🔄 Renamed" ;;
                   *) STATUS_ICON="$status" ;;
                 esac
-                
-                # Create link to file comparison
                 if [ "$status" != "D"* ]; then
                   FILE_LINK="[\`$filepath\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/${{ github.sha }}/$filepath)"
-                  DIFF_LINK="[📋 diff]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/Freetz-NG:master...${{ github.sha }}#diff-$(echo -n "$filepath" | md5sum | cut -d' ' -f1))"
+                  DIFF_LINK="[diff]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/$PREV_COMMIT...${{ github.sha }}#diff-$(echo -n "$filepath" | md5sum | cut -d' ' -f1))"
                 else
                   FILE_LINK="\`$filepath\`"
                   DIFF_LINK="—"
                 fi
-                
                 echo "| $STATUS_ICON | $FILE_LINK | $DIFF_LINK |" >> $GITHUB_STEP_SUMMARY
               done
-              
               if [ "$FILE_COUNT" -gt 100 ]; then
                 echo "" >> $GITHUB_STEP_SUMMARY
                 echo "_... and $((FILE_COUNT - 100)) more files_" >> $GITHUB_STEP_SUMMARY
               fi
-              
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "</details>" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
-              
-              # Add full diff comparison link
-              echo "🔗 [**View full comparison**]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/Freetz-NG:master...${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
+              echo "🔗 [**View full comparison**]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/$PREV_COMMIT...${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             else
               echo "_No modified files detected_" >> $GITHUB_STEP_SUMMARY
@@ -921,6 +900,11 @@ jobs:
           echo ""
           
           # Validate that device and firmware match expected values from matrix
+          # (skipped when there is no real matrix entry, e.g. matrix=["skip"])
+          MATRIX_NAME_VAL="${{ matrix.fritz.name }}"
+          if [ -z "$MATRIX_NAME_VAL" ] || [ "$MATRIX_NAME_VAL" = "skip" ]; then
+            echo "Info: configuration validation skipped (no matrix entry for this run)"
+          else
           DEVICE_FINAL="$(grep '^FREETZ_TYPE_[0-9A-Z_]*=y' .config 2>/dev/null | grep -v '_LANG\|_LANGUAGE\|_FIRMWARE\|_DSL\|_PREFIX' | sed 's/FREETZ_TYPE_//;s/=y//' | head -1)"
           FIRMWARE_FINAL="$(grep '^FREETZ_TYPE_FIRMWARE_.*=y' .config 2>/dev/null | sed 's/FREETZ_TYPE_FIRMWARE_//;s/=y//' | head -1)"
           
@@ -976,6 +960,7 @@ jobs:
             
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "> **Note:** This mismatch may indicate naming errors in the configuration or that \`make olddefconfig\` resolved device/firmware to compatible alternatives. The build proceeded with the final configuration values." >> $GITHUB_STEP_SUMMARY
+          fi
             echo "" >> $GITHUB_STEP_SUMMARY
           else
             echo "##########################################################"
