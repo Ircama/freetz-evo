@@ -643,7 +643,7 @@ jobs:
         fritz: ${{ fromJson(needs.parse_matrix.outputs.matrix) }}
     name: "${{ matrix.fritz.pkg }} - ${{ matrix.fritz.name }}"
     runs-on: ubuntu-latest
-#   if: github.repository == 'freetz-ng/freetz-ng'
+    if: matrix.fritz != 'skip'
 
     env:
       CACHE_KEY: "make_freetz"
@@ -725,7 +725,7 @@ jobs:
           echo "##########################################################" && echo -n "Number of lines in file: " && wc -l .config
           
       - name: config
-        if: matrix.fritz.name != 'native-configuration'
+        if: matrix.fritz != 'skip' && matrix.fritz.name != 'native-configuration'
         run: |
           # Prepare .config based on downloaded file (or myconfig fallback)
           TCS="${{ matrix.fritz.tcs }}"
@@ -1634,7 +1634,7 @@ jobs:
   config_summary:
     runs-on: ubuntu-latest
     needs: [build, parse_matrix]
-    if: always()
+    if: always() && needs.build.result == 'success'
     name: "Configuration Analysis"
     
     steps:
