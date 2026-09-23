@@ -79,6 +79,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>AVM Services</u><a id='avm'></a>**<br>
 
+  * **[avrdude 8.1](../../docs/make/avrdude.md)<a id='avrdude'></a>**<br>
+    Installs: - avrdude: main CLI programmer - elf2tag: helper tool to generate UPDI tags - /etc/avrdude.conf: default device/programmer definitions
+
 ### B
 
   * **[bandwhich 0.23.1](../../docs/make/bandwhich.md)<a id='bandwhich'></a>**<br>
@@ -567,6 +570,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[lnav-rs 0.1.0](../../docs/make/lnav-rs.md)<a id='lnav-rs'></a>**<br>
     lnav-rs utility package built from source using Rust/Cargo.
+
   * **[Lua 5.1.5/5.4.9 (binary only)](../../docs/make/lua.md)<a id='lua'></a>**<br>
     Lua Scripting Language. Lua is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. Lua combines simple procedural syntax with powerful data description constructs based on associative arrays and extensible semantics. Lua is dynamically typed, runs by interpreting bytecode with a register-based virtual machine, and has automatic memory management with incremental garbage collection, making it ideal for configuration, scripting, and rapid prototyping.
 
@@ -599,7 +603,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[MicroPython 1.27.0 (binary + lib)](../../docs/make/micropython.md)<a id='micropython'></a>**<br>
     programming language that includes a small subset of the Python standard library and is optimised to run on microcontrollers and in constrained environments - including Linux (unix port). This package provides the Unix port of MicroPython, which runs on the FritzBox like a standard executable. It includes the interactive REPL, script execution, all built-in modules (json, re, struct, asyncio, os, socket, hashlib, tls, etc.) and optionally selectable micropython-lib modules installed to /usr/lib/micropython/. The release tarball includes the micropython-lib submodule, providing 150+ additional library packages installable as plain .py files. Build requires Python 3 on the host (for header generation scripts). Size: ~600-900 KB compiled binary (stripped, -Os, MIPS32). Requires GCC 8 or newer: the unix port Makefile uses -Wfloat-conversion (GCC 4.9+) and this package adds -Wno-stringop-overflow (GCC 8+); the old GCC 4.6.4 toolchain rejects both with "unrecognized command line option". Web: https://micropython.org/ Docs: https://docs.micropython.org/en/latest/
 
-  * **[mini-snmpd 1.7/2.0 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
+  * **[mini-snmpd 1.7/2.1 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
     This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
 
   * **[Minicom 2.11.1 (binary only)](../../docs/make/minicom.md)<a id='minicom'></a>**<br>
@@ -611,9 +615,6 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[minisatip 1.0.4/1.3.6 (binary only) - DEPRECATED](../../docs/make/minisatip.md)<a id='minisatip'></a>**<br>
     Minisatip is a multi-threaded satip server version 1.2 that runs under Linux and it was tested with DVB-S, DVB-S2, DVB-T, DVB-T2, DVB-C, DVB-C2, ATSC and ISDB-T cards.
-
-  * **[mini-snmpd 1.7/2.1 (binary only)](../../docs/make/mini-snmpd.md)<a id='mini-snmpd'></a>**<br>
-    This program is an SNMP server for "embedded systems". The advantage in comparison to other products is the low usage of system resources.
 
   * **[MiniUPnPd (UPnP IGD daemon)](../../docs/make/miniupnpd.md)<a id='miniupnpd'></a>**<br>
     MiniUPnPd is a UPnP Internet Gateway Device daemon. It implements the UPnP IGDv1 and IGDv2 specifications, allowing clients on the LAN to manage port mappings on the router automatically. This is useful for: - Peer-to-peer applications - Game consoles (Xbox, PlayStation) - VoIP/instant messaging - Any application needing inbound ports https://github.com/miniupnp/miniupnp
@@ -1465,6 +1466,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[unixODBC 2.3.12 (tools)](../../docs/make/unixodbc.md)<a id='unixodbc'></a>**<br>
     unixODBC tools package. Installs isql, iusql and odbcinst.
+
   * **[UnRAR 6.1.7/7.3.1 (binary only)](../../docs/make/unrar.md)<a id='unrar'></a>**<br>
     Unarchiver for .rar files
 
@@ -1571,6 +1573,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[xterm 410](../../docs/make/xterm.md)<a id='xterm'></a>**<br>
     X11 terminal emulator. Use with DISPLAY=<remote-host>:0.
+
   * **[XZ 5.8.4 (binary only)](../../docs/make/xz.md)<a id='xz'></a>**<br>
     XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm compression format, which provides memory-hungry but powerful compression (often better than bzip2) and fast, easy decompression. This package provides the command line tools for working with XZ compression. They can also handle the older LZMA format, and if invoked via appropriate symlinks will emulate the behavior of the commands in the lzma package.
 
@@ -1762,9 +1765,6 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
      - [Version 2.27.1 Patches](../../docs/make/util-linux.md#version-2271-patches)
 
 # Flasher tools
-
-  * **[avrdude 8.1](../../docs/make/avrdude.md)<a id='avrdude'></a>**<br>
-    Installs: - avrdude: main CLI programmer - elf2tag: helper tool to generate UPDI tags - /etc/avrdude.conf: default device/programmer definitions
 
   * **[esp-serial-flasher](../../docs/make/esp-serial-flasher.md)<a id='esp-serial-flasher'></a>**<br>
     ESP Serial Flasher for Linux hosts. Builds one CLI tool: - linux_flasher: upstream generic CLI (<addr> <file> pairs)
