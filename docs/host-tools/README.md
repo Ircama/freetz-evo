@@ -68,7 +68,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[lzma1 465](lzma1-host.md)<a id='lzma1-host'></a>**<br>
 
-* **[lzma2 5.8.4](lzma2-host.md)<a id='lzma2-host'></a>**<br>
+  * **[lzma2 5.8.4](lzma2-host.md)<a id='lzma2-host'></a>**<br>
 
   * **[lzma2eva 1.0](lzma2eva-host.md)<a id='lzma2eva-host'></a>**<br>
 
@@ -102,11 +102,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### P
 
+  * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
+
   * **[patchelf 0.14.5/0.19.1](patchelf-host.md)<a id='patchelf-host'></a>**<br>
 
   * **[patchelf-target 0.14.5/0.15.0](patchelf-target-host.md)<a id='patchelf-target-host'></a>**<br>
-
-  * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
 
   * **[pkgconf 3.0.7](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
 
