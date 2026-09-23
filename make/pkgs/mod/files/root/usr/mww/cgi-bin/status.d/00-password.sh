@@ -9,6 +9,7 @@ default_password_set() {
 	fi
 	# Legacy Basic Auth mode: check MOD_HTTPD_PASSWD (and webmd5 as fallback)
 	[ "$MOD_HTTPD_PASSWD" == '$1$$zO6d3zi9DefdWLMB.OHaO.' ] && return 0
+        [ "$MOD_HTTPD_PASSWD" == '$1$freetzng$i0SVp/Hgvxd80q6MIUq701' ] && return 0
 	[ -f /tmp/flash/mod/webmd5 ] && \
 		[ "$(cat /tmp/flash/mod/webmd5 | tr -d '\n')" = "465d0ff27bb239292778dc3a0c2f28d9" ] && return 0
 	return 1

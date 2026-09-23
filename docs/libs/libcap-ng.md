@@ -1,4 +1,4 @@
-# libcap-ng (libcap-ng.so) 0.9.3
+# libcap-ng (libcap-ng.so) 0.9.6
   - Homepage: [https://github.com/stevegrubb/libcap-ng](https://github.com/stevegrubb/libcap-ng)
   - Changelog: [https://github.com/stevegrubb/libcap-ng/releases](https://github.com/stevegrubb/libcap-ng/releases)
   - Repository: [https://github.com/stevegrubb/libcap-ng](https://github.com/stevegrubb/libcap-ng)

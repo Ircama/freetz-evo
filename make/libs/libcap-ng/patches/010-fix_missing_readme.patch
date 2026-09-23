@@ -1,6 +1,6 @@
---- ./configure_org.ac	2024-04-09 23:11:23.000000000 +0200
-+++ ./configure.ac	2024-09-26 21:56:07.032497582 +0200
-@@ -38,7 +38,7 @@
+--- ./configure.ac
++++ ./configure.ac
+@@ -37,7 +37,7 @@
  echo Configuring libcap-ng $VERSION
  
  AC_CANONICAL_TARGET

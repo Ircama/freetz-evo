@@ -2307,9 +2307,10 @@ if [ "$DO_PACK" -gt 0 ]; then
 		else
 			FILESYSTEM_LIMIT="$(sed -nr 's/^filesystem_size=(.*)/\1/p' ${FIRMWARE_DIR}/var/install)"
 			[ "$FREETZ_AVM_HAS_FWLAYOUT_3" == "y" ] && FILESYSTEM_LIMIT="$(sed -nr 's/^ATOM_filesystem_size=(.*)/\1/p' ${FIRMWARE_DIR}/var/install)"
-			[ "$FREETZ_AVM_HAS_FWLAYOUT_4" == "y" ] && FILESYSTEM_LIMIT="75496960"  # https://bitbucket.org/fesc2000/ffritz/src/6591/README-6591.md
-			[ "$FREETZ_AVM_HAS_FWLAYOUT_5" == "y" ] && FILESYSTEM_LIMIT="$(( $FREETZ_AVM_HAS_FIT_SIZE *1024*1024 ))"
-			[ "$FILESYSTEM_LIMIT" == "0" ] && FILESYSTEM_LIMIT=""
+			[ "$FREETZ_AVM_HAS_FWLAYOUT_4" == "y" ] && FILESYSTEM_LIMIT="72"  # https://bitbucket.org/fesc2000/ffritz/src/6591/README-6591.md
+			[ "$FREETZ_AVM_HAS_FWLAYOUT_5" == "y" ] && FILESYSTEM_LIMIT="$(sed -rn 's/.*ubimkvol.*avm_filesys_0.* (.*)MiB.*/\1/p' ${FILESYSTEM_DIR}/etc/init.d/flash_update)"
+			[ "$FILESYSTEM_LIMIT" -le 1024 ] 2>/dev/null && FILESYSTEM_LIMIT="$(( $FILESYSTEM_LIMIT *1024*1024 ))"
+			[ "$FILESYSTEM_LIMIT" -le 0 ] 2>/dev/null && FILESYSTEM_LIMIT=""
 		fi
 		let FILESYSTEM_SIZE="$(wc -c < "$FILESYSTEM_MOD")"
 
@@ -2423,7 +2424,19 @@ if [ "$DO_PACK" -gt 0 ]; then
 		$TOOLS_DIR/yf/fit_tools/fit-add-avm-header.sh -k "$FIRMWARE_DIR/var/tmp/fit-image" "$FITIMAGE_MOD_DIR/image.itb" > "$FIRMWARE_MOD_DIR/var/tmp/fit-image" || error 1 "packing failed"
 		# size info
 		FITIMAGE_SIZE="$(wc -c < "$FIRMWARE_MOD_DIR/var/tmp/fit-image")"
-		echo1 "fitimg file size: $(byte_to_mb $FITIMAGE_SIZE)"
+		if [ -n "$FILESYSTEM_LIMIT" ]; then
+			echo1 "fitimg file size: $(byte_to_mb $FITIMAGE_SIZE)"
+		else
+			FITIMAGE_LIMIT="$(( $FREETZ_AVM_HAS_FIT_SIZE *1024*1024 ))"
+			[ "$FITIMAGE_LIMIT" -eq 0 ] && error 1 "maximum fit size is invalid"
+			let FITIMAGE_DIFF="FITIMAGE_SIZE-FITIMAGE_LIMIT"
+			echo1 "fitimg file size: $(byte_to_mb $FITIMAGE_SIZE), max $(byte_to_mb $FITIMAGE_LIMIT), free $(byte_to_mb $((-FITIMAGE_DIFF))) ($((-FITIMAGE_DIFF)) bytes)"
+			if [ "$FITIMAGE_SIZE" -gt "$FITIMAGE_LIMIT" ]; then
+				if [ "$FORCE_PACK" -eq 0 -a "$DO_ZIP" -eq 0 ] && [ "$FREETZ_MODULES_TEST" != "y" ]; then
+					error 1 -b "fitimg file is $FITIMAGE_DIFF bytes too big. See https://freetz-ng.github.io/freetz-ng/wiki/00_FAQ/FAQ.de#filesystem-image-too-big for details."
+				fi
+			fi
+		fi
 	fi
 	echo0 "packing ${img_name}"
 	[ "$FREETZ_REPRODUCIBLE" == "y" ] && sync_timestamps "$FIRMWARE_MOD_DIR" "$FIRMWARE_DIR"

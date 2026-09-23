@@ -1,4 +1,4 @@
-# pkgconf 3.0.5
+# pkgconf 3.0.7
   - Homepage: [http://pkgconf.org/](http://pkgconf.org/)
   - Manpage: [http://pkgconf.org/features.html](http://pkgconf.org/features.html)
   - Changelog: [https://github.com/pkgconf/pkgconf/blob/master/NEWS](https://github.com/pkgconf/pkgconf/blob/master/NEWS)

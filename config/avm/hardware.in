@@ -79,7 +79,8 @@ config FREETZ_SYSTEM_TYPE_BRCM6764
 	bool
 	default y
 	depends on \
-		FREETZ_TYPE_1700
+		FREETZ_TYPE_1700 || \
+		FREETZ_TYPE_6835
 
 config FREETZ_SYSTEM_TYPE_BRCM6766
 	bool

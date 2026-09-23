@@ -1,4 +1,4 @@
-# libonig: Oniguruma (libonig.so) 6.9.9
+# libonig: Oniguruma (libonig.so) 6.9.10
   - Homepage: [https://github.com/kkos/oniguruma/blob/master/README.md](https://github.com/kkos/oniguruma/blob/master/README.md)
   - Manpage: [https://github.com/kkos/oniguruma/blob/master/README.md#usage](https://github.com/kkos/oniguruma/blob/master/README.md#usage)
   - Changelog: [https://github.com/kkos/oniguruma/releases](https://github.com/kkos/oniguruma/releases)

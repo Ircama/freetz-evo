@@ -66,7 +66,7 @@
  
  .h2 SUFFIX_ORDER
  # With SUFFIX_ORDER the precedence of suffix mappings can be changed.
-@@ -2308,6 +2316,7 @@
+@@ -2309,6 +2317,7 @@
  # If you use xli, you may want to add the -quiet flag.
  #
  #XLOADIMAGE_COMMAND:xli %s &
@@ -74,7 +74,7 @@
  
  .h2 VIEWER
  # MIME types may be assigned to external viewers using
-@@ -2378,6 +2387,7 @@
+@@ -2379,6 +2388,7 @@
  #
  #	Sought in user's home (Unix) or sys$login (VMS) directory.
  #PERSONAL_MAILCAP:.mailcap

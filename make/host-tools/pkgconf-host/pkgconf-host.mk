@@ -1,6 +1,6 @@
-$(call TOOLS_INIT, 3.0.5)
+$(call TOOLS_INIT, 3.0.7)
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=3acd3a8a3cce65a8d620321855d92fb602e026cbe8e13ee36bdec58483b59ace
+$(PKG)_HASH:=c926ff491cbd9a331a589160811bd97ab1749b4d5198a519338f2cdfabe6940a
 $(PKG)_SITE:=https://distfiles.ariadne.space/pkgconf
 ### WEBSITE:=http://pkgconf.org/
 ### MANPAGE:=http://pkgconf.org/features.html

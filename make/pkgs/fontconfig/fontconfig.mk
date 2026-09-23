@@ -1,7 +1,9 @@
-$(call PKG_INIT_BIN, 2.17.1)
-$(PKG)_LIB_VERSION:=1.16.1
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON),2.17.1,2.18.3))
+$(PKG)_LIB_VERSION:=$(if $(FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON),1.16.1,1.16.1)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=9f5cae93f4fffc1fbc05ae99cdfc708cd60dfd6612ffc0512827025c026fa541
+$(PKG)_HASH_ABANDON:=9f5cae93f4fffc1fbc05ae99cdfc708cd60dfd6612ffc0512827025c026fa541
+$(PKG)_HASH_CURRENT:=4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3
+$(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/$(pkg)/$($(PKG)_VERSION)
 ### WEBSITE:=https://www.freedesktop.org/wiki/Software/fontconfig/
 ### CHANGES:=https://gitlab.freedesktop.org/fontconfig/fontconfig/tags
@@ -22,9 +24,17 @@ $(PKG)_LIBRARIES_TARGET_DIR:=$($(PKG)_LIBRARIES:%=$($(PKG)_TARGET_LIBDIR)/%)
 
 $(PKG)_DEPENDS_ON += gperf-host freetype libxml2 zlib
 
+$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON
+
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON),abandon,current)
+
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
 $(PKG)_CONFIGURE_ENV += LIBXML2_CFLAGS=-I"$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
+
+ifneq ($(strip $(FREETZ_PACKAGE_FONTCONFIG_VERSION_ABANDON)),y)
+$(PKG)_CONFIGURE_OPTIONS += ac_cv_va_copy=.C99
+endif
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-nls
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpath

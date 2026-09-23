@@ -8,3 +8,17 @@ config FREETZ_LIB_libfontconfig
 	help
 		Fontconfig is a library for configuring and customizing font access.
 
+	choice
+		prompt "Version" if FALSE
+			default FREETZ_LIB_libfontconfig_WITH_VERSION_CURRENT
+
+		config FREETZ_LIB_libfontconfig_WITH_VERSION_ABANDON
+			bool "2.17.1"
+			depends on FREETZ_TARGET_UCLIBC_0
+
+		config FREETZ_LIB_libfontconfig_WITH_VERSION_CURRENT
+			bool "2.18.3"
+			depends on !FREETZ_TARGET_UCLIBC_0
+
+	endchoice
+

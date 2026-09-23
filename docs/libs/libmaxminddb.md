@@ -1,4 +1,4 @@
-# libmaxminddb (libmaxminddb.so) 1.13.3
+# libmaxminddb (libmaxminddb.so) 1.14.1
   - Homepage: [https://maxmind.github.io/libmaxminddb/](https://maxmind.github.io/libmaxminddb/)
   - Changelog: [https://github.com/maxmind/libmaxminddb/releases](https://github.com/maxmind/libmaxminddb/releases)
   - Repository: [https://github.com/maxmind/libmaxminddb/](https://github.com/maxmind/libmaxminddb/)

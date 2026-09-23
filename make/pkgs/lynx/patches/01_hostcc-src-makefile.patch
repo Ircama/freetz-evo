@@ -23,7 +23,7 @@
  
  x		= @EXEEXT@
  o		= .@BUILD_OBJEXT@
-@@ -51,6 +59,15 @@
+@@ -52,6 +60,15 @@
  
  CTAGS		= @CTAGS@
  
@@ -39,21 +39,21 @@
  #
  # This file contains the font map for the default (hardware) font
  #
-@@ -117,7 +134,7 @@
+@@ -118,7 +135,7 @@
  C_SRC		= $(OBJS:$o=.c)
  
  $(MAKEUCTB) : $(OBJS)
--	$(BUILD_CC) $(CC_OPTS) $(BUILD_LDFLAGS) -o $@ $(OBJS) $(BUILD_LIBS)
+-	$(LINK) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ $(OBJS) $(BUILD_LIBS)
 +	$(HOSTCC) $(HOSTCC_OPTS) $(HOSTLDFLAGS) -o $@ $(OBJS) $(HOSTLIBS)
  
  makeuctb$o : $(srcdir)/UCkd.h $(srcdir)/makeuctb.c
  
-@@ -125,11 +142,11 @@
+@@ -126,11 +143,11 @@
  
  .c$o:
  	@RULE_CC@
--	@ECHO_CC@$(BUILD_CC) $(CC_OPTS) -c $(srcdir)/$*.c
-+	@ECHO_CC@$(HOSTCC) $(HOSTCC_OPTS) -c $(srcdir)/$*.c
+-	@ECHO_CC@$(BUILD_CC) $(CPP_OPTS) $(BUILD_CFLAGS) -c $(srcdir)/$*.c
++	@ECHO_CC@$(HOSTCC) $(HOSTCC_OPTS) $(BUILD_CFLAGS) -c $(srcdir)/$*.c
  
  .c.i:
  	@RULE_CC@

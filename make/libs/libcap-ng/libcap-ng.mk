@@ -1,8 +1,8 @@
-$(call PKG_INIT_LIB, 0.9.3)
+$(call PKG_INIT_LIB, 0.9.6)
 $(PKG)_LIB_VERSION:=0.0.0
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=fe11ebbb55904763b3532f19069f13ec319042634620180a03bd4653d301563e
+$(PKG)_HASH:=399040138e0ca62fa2bcabd63da9af4431a246ef7a654561a0ca3cb00010a539
 $(PKG)_SITE:=https://github.com/stevegrubb/libcap-ng/archive/refs/tags
 ### WEBSITE:=https://github.com/stevegrubb/libcap-ng
 ### CHANGES:=https://github.com/stevegrubb/libcap-ng/releases

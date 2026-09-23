@@ -1,7 +1,7 @@
-$(call PKG_INIT_LIB, 1.18.4)
-$(PKG)_LIB_VERSION:=2.11804.4
+$(call PKG_INIT_LIB, 1.18.6)
+$(PKG)_LIB_VERSION:=2.11806.6
 $(PKG)_SOURCE:=cairo-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
+$(PKG)_HASH:=1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4
 $(PKG)_SITE:=https://www.cairographics.org/releases,https://cairographics.org/snapshots
 ### WEBSITE:=https://www.cairographics.org/
 ### MANPAGE:=https://www.cairographics.org/documentation/

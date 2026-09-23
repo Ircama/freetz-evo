@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -387,7 +387,7 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ ACLOCAL_AMFLAGS = -I m4
+-SUBDIRS = gen.tab lib bin doc test
++SUBDIRS = gen.tab lib
+ EXTRA_DIST = autogen.sh ChangeLog.old \
+ 	meson.build meson_options.txt bin/meson.build doc/meson.build \
+ 	gen.tab/meson.build lib/meson.build test/meson.build \

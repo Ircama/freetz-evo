@@ -1,7 +1,7 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_RSYNC_VERSION_ABANDON),3.4.1,3.5.0))
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_RSYNC_VERSION_ABANDON),3.4.1,3.5.1))
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH_ABANDON:=2924bcb3a1ed8b551fc101f740b9f0fe0a202b115027647cf69850d65fd88c52
-$(PKG)_HASH_CURRENT:=c7ffd1ef653e99540f661e47cb00b7f9cad1ee6b972399b16f93d672656e0d33
+$(PKG)_HASH_CURRENT:=c55f9c9dc10fb8bec397b399a0fdded53cc9a2d8e30891bb0d63724d25c37bef
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_RSYNC_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=@SAMBA/rsync/src
 ### WEBSITE:=https://rsync.samba.org/
@@ -23,8 +23,6 @@ $(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_RSYNC_VERSION_ABANDON),abandon
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-debug
 $(PKG)_CONFIGURE_OPTIONS += --disable-md2man
-$(PKG)_CONFIGURE_OPTIONS += --disable-simd
-$(PKG)_CONFIGURE_OPTIONS += --disable-asm
 $(PKG)_CONFIGURE_OPTIONS += --disable-locale
 $(PKG)_CONFIGURE_OPTIONS += --disable-openssl
 $(PKG)_CONFIGURE_OPTIONS += --disable-xxhash
@@ -36,6 +34,13 @@ $(PKG)_CONFIGURE_OPTIONS += --without-included-popt
 $(PKG)_CONFIGURE_OPTIONS += --without-included-zlib
 $(PKG)_CONFIGURE_OPTIONS += --with-nobody-group=nobody
 $(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_TARGET_IPV6_SUPPORT),,--disable-ipv6)
+
+ifeq ($(strip $(FREETZ_PACKAGE_RSYNC_VERSION_ABANDON)),y)
+$(PKG)_CONFIGURE_OPTIONS += --disable-simd
+$(PKG)_CONFIGURE_OPTIONS += --disable-asm
+else
+$(PKG)_CONFIGURE_OPTIONS += --disable-idn
+endif
 
 
 $(PKG_SOURCE_DOWNLOAD)

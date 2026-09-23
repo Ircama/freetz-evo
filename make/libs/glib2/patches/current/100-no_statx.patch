@@ -1,6 +1,6 @@
 --- meson.build
 +++ meson.build
-@@ -500,9 +500,6 @@
+@@ -499,9 +499,6 @@
      return statx (AT_FDCWD, "/", AT_SYMLINK_NOFOLLOW, STATX_BASIC_STATS | STATX_BTIME, &stat_buf);
    }
    '''

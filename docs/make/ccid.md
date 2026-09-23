@@ -1,4 +1,4 @@
-# CCID 1.8.2
+# CCID 1.8.4
   - Homepage: [https://ccid.apdu.fr/](https://ccid.apdu.fr/)
   - Manpage: [https://salsa.debian.org/rousseau/CCID/blob/master/README.md](https://salsa.debian.org/rousseau/CCID/blob/master/README.md)
   - Changelog: [https://salsa.debian.org/rousseau/CCID/blob/master/README.md#history](https://salsa.debian.org/rousseau/CCID/blob/master/README.md#history)

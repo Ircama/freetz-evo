@@ -1,7 +1,7 @@
-$(call PKG_INIT_LIB, 6.9.9)
-$(PKG)_LIB_VERSION:=5.4.0
+$(call PKG_INIT_LIB, 6.9.10)
+$(PKG)_LIB_VERSION:=5.5.0
 $(PKG)_SOURCE:=onig-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=60162bd3b9fc6f4886d4c7a07925ffd374167732f55dce8c491bfd9cd818a6cf
+$(PKG)_HASH:=2a5cfc5ae259e4e97f86b68dfffc152cdaffe94e2060b770cb827238d769fc05
 $(PKG)_SITE:=https://github.com/kkos/oniguruma/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/kkos/oniguruma/blob/master/README.md
 ### MANPAGE:=https://github.com/kkos/oniguruma/blob/master/README.md#usage

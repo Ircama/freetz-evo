@@ -316,6 +316,7 @@ kernel-symrefs: kernel-recompile
 	find $(KERNEL_SOURCE_DIR) -name '*.symref' -printf '%P\n' | LANG=C sort | \
 	  $(TAR) -c  --owner=0 --group=0 --numeric-owner  --mtime='@0'  -C $(KERNEL_SOURCE_DIR)  -T - | \
 	  $(LZMA) e -si $(DL_DIR)/$(KERNEL_SYMREFS_SOURCE) -d25
+	@touch -d "2014-06-03 12:00:00.000000000 +0200" "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)"
 	@ln -sf "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)"
 	@echo
 	@du -h "$(DL_DIR)/$(KERNEL_SYMREFS_SOURCE)"

@@ -252,6 +252,8 @@ Currently supported devices and firmwares
 
   * __Fritz!Box 6825 4G (UNTESTED)__
     - 306.08.25 rev134130 {ALL} [Smart24 P2 NL1]
+  * __Fritz!Box 6835 5G (UNTESTED)__
+    - 313.08.40 rev136299 {ALL} [MyFRITZOS P1] (Inhaus)
 
   * __Fritz!Box 6840 LTE__
     - 105.06.30 rev31187 {GER}
@@ -339,13 +341,19 @@ Currently supported devices and firmwares
   * __Fritz!Box Fon WLAN 7270 v1__
     - 54.04.89 rev27422 {GER}
     - Alien 7270 v2 {GER+INT}
-  * __Fritz!Box Fon WLAN 7270 v2, v3__
-    - 54/74.05.23 rev27582 {GER} (Beta)
-    - 54/74.05.54 rev27373 {GER}
-    - 54/74.06.06 rev31461 {GER}
+  * __Fritz!Box Fon WLAN 7270 v2__
+    - 54.05.23 rev27582 {GER} (Beta)
+    - 54.05.54 rev27373 {GER}
+    - 54.06.06 rev31461 {GER}
     - Alien 7270 v1 {GER}
-    - 54/74.05.24 rev27630 {INT}
-    - 54/74.05.53 rev27445 {INT}
+    - 54.05.24 rev27630 {INT}
+    - 54.05.53 rev27445 {INT}
+  * __Fritz!Box Fon WLAN 7270 v3__
+    - 74.05.23 rev27582 {GER} (Beta)
+    - 74.05.54 rev27373 {GER}
+    - 74.06.06 rev31461 {GER}
+    - 74.05.24 rev27630 {INT}
+    - 74.05.53 rev27445 {INT}
 
   * __Fritz!Box Fon WLAN 7272__
     - 120.06.30 rev30889 {GER}

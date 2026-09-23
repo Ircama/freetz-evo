@@ -1,7 +1,7 @@
-$(call PKG_INIT_LIB, 1.0.16)
+$(call PKG_INIT_LIB, 1.0.17)
 $(PKG)_LIB_VERSION:=0.4.0
 $(PKG)_SOURCE:=fribidi-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=1b1cde5b235d40479e91be2f0e88a309e3214c8ab470ec8a2744d82a5a9ea05c
+$(PKG)_HASH:=6949dcde27d41cebad1fd741fcafc36d55a1020d2d872d4a6eb3914caabbada2
 $(PKG)_SITE:=https://github.com/fribidi/fribidi/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/fribidi/fribidi
 ### MANPAGE:=https://github.com/fribidi/fribidi/wiki
@@ -47,7 +47,7 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(FRIBIDI_DIR) clean
-	$(RM) \
+	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libfribidi.* \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/fribidi/ \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/fribidi.pc \

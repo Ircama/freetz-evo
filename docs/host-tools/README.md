@@ -6,7 +6,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[autoconf 2.73](autoconf-host.md)<a id='autoconf-host'></a>**<br>
 
-  * **[automake 1.18.1](automake-host.md)<a id='automake-host'></a>**<br>
+  * **[automake 1.19](automake-host.md)<a id='automake-host'></a>**<br>
 
   * **[avm-rle 1.0](avm-rle-host.md)<a id='avm-rle-host'></a>**<br>
 
@@ -26,7 +26,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### D
 
-  * **[dos2unix 7.5.6](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
+  * **[dos2unix 7.5.7](dos2unix-host.md)<a id='dos2unix-host'></a>**<br>
 
   * **[dtc 1.8.1](dtc-host.md)<a id='dtc-host'></a>**<br>
 
@@ -46,7 +46,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### G
 
-  * **[genext2fs 1.6.2](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
+  * **[genext2fs 1.6.3](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
 
   * **[gennmtab 1.64.03](gennmtab-host.md)<a id='gennmtab-host'></a>**<br>
 
@@ -68,7 +68,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[lzma1 465](lzma1-host.md)<a id='lzma1-host'></a>**<br>
 
-  * **[lzma2 5.8.3](lzma2-host.md)<a id='lzma2-host'></a>**<br>
+* **[lzma2 5.8.4](lzma2-host.md)<a id='lzma2-host'></a>**<br>
 
   * **[lzma2eva 1.0](lzma2eva-host.md)<a id='lzma2eva-host'></a>**<br>
 
@@ -78,7 +78,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[make 4.4.1](make-host.md)<a id='make-host'></a>**<br>
 
-  * **[meson 1.12.0](meson-host.md)<a id='meson-host'></a>**<br>
+  * **[meson 1.12.1](meson-host.md)<a id='meson-host'></a>**<br>
 
   * **[mklibs 0.1.46](mklibs-host.md)<a id='mklibs-host'></a>**<br>
 
@@ -108,7 +108,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
 
-  * **[pkgconf 3.0.5](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
+  * **[pkgconf 3.0.7](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
 
   * **[prelink 20131005](prelink-host.md)<a id='prelink-host'></a>**<br>
 
@@ -160,7 +160,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-09-06](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-09-21](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

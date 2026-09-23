@@ -7,7 +7,7 @@ FLASH=$TMP/flash
 
 case $1 in
 	freetz)
-		echo 'Changing password for freetz webconfig'
+		echo 'Changing password for freetz webif'
 		echo 'This password should be different from root'"'"'s password.'
 		echo 'No "weak password" warnings are generated.'
 		echo ''
@@ -20,9 +20,31 @@ case $1 in
 		read -p 'Enter old password: ' -r -s oldpasswd
 		echo
 
-		salt=${MOD_HTTPD_PASSWD#'$1$'}
-		salt=${salt%%\$*}
-		if [ "$(/usr/bin/mkpasswd -m md5 "$oldpasswd" "$salt")" != "$MOD_HTTPD_PASSWD" ]; then
+		# hash method number
+		meth="${MOD_HTTPD_PASSWD}"
+		meth="${meth#\$}"
+		meth="${meth%%\$*}"
+		[ "$meth" == "$MOD_HTTPD_PASSWD" ] && meth=0
+
+		# salt of hash
+		case "$meth" in
+			0)  salt="${MOD_HTTPD_PASSWD:0:2}" ;;
+			2*) salt="${MOD_HTTPD_PASSWD#\$2?$}" ; salt="${salt#*$}";;
+			*)  salt="${MOD_HTTPD_PASSWD#\$?$}" ;;
+		esac
+		salt="${salt%%\$*}"
+
+		# hash method name
+		case "$meth" in
+			0)  meth=des ;;
+			1)  meth=md5 ;;
+			2*) meth=bcrypt ;;
+			5)  meth=sha256 ;;
+			6)  meth=sha512 ;;
+			7)  meth=scrypt ;;
+		esac
+
+		if [ "$(/usr/bin/mkpasswd -m "$meth" "$oldpasswd" "$salt")" != "$MOD_HTTPD_PASSWD" ]; then
 			echo 'Wrong password.' >&2
 			exit 2
 		fi
@@ -32,16 +54,29 @@ case $1 in
 		read -p 'Re-enter new password: ' -r -s passwd2
 		echo
 
-		if [ "$passwd1" != "$passwd2" -o -z "$passwd1" ]; then
-			echo 'Passwords do not match or empty password.' 1>&2
-			echo 'modwebpw: The password for freetz webconfig is unchanged.' 1>&2
-			echo '' 1>&2
+		passfail=""
+		[ "$passwd1" != "$passwd2" ] && passfail="Passwords do not match."
+		[ -z "$passwd2" ] && passfail="New password(2) is empty."
+		[ -z "$passwd1" ] && passfail="New password(1) is empty."
+
+		if [ -n "$passfail" ]; then
+			echo "$passfail" 1>&2
+			echo "modwebpw: The password for freetz webif is unchanged." 1>&2
+			echo "" 1>&2
 			exit 1
 		fi
 
-		/usr/bin/modconf set mod MOD_HTTPD_PASSWD=$(/usr/sbin/httpd -m "$passwd1")
+		# best method available
+		for pair in "sha512:6" "sha256:5" "md5:1"; do
+			newpass="$(/usr/bin/mkpasswd -m "${pair%:*}" "$passwd1" 2>/dev/null)"
+			[ "${newpass:1:1}" == "${pair#*:}" ] && break
+			newpass=""
+		done
+		[ -z "$newpass" ] && newpass="$(/usr/bin/mkpasswd "$passwd1")"
 
-		echo 'modwebpw: Password for freetz webconfig changed.'
+		/usr/bin/modconf set mod MOD_HTTPD_PASSWD=$newpass
+
+		echo 'modwebpw: Password for freetz webif changed.'
 		echo ''
 
 		/usr/bin/modconf save mod

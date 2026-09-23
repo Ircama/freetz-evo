@@ -1,7 +1,7 @@
-$(call TOOLS_INIT, 1.6.2)
+$(call TOOLS_INIT, 1.6.3)
 $(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
 $(PKG)_SOURCE:=genext2fs-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=b8aba9af48e664fa60134af696a57b3bb4ebd2b2878533d7611734e90b883ecc
+$(PKG)_HASH:=e3503a5bae3fd4b5b2c2d4f49b5b7f8d08e7accb20ab28c0f9647389b2c8a079
 $(PKG)_SITE:=https://github.com/bestouff/genext2fs/archive/refs/tags
 ### WEBSITE:=https://genext2fs.sourceforge.net/
 ### MANPAGE:=https://sourceforge.net/projects/genext2fs/
