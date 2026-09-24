@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      matrix: ${{ steps.parse.outputs.matrix }}
+      matrix: ${{ steps.parse.outputs.matrix || '["skip"]' }}
 
     steps:
 
