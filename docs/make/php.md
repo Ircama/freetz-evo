@@ -1,4 +1,4 @@
-# PHP 8.4.26/8.5.11 (binary only)
+# PHP (binary only)
   - Homepage: [https://www.php.net/](https://www.php.net/)
   - Manpage: [https://www.php.net/manual/en/](https://www.php.net/manual/en/)
   - Changelog: [https://www.php.net/ChangeLog-8.php](https://www.php.net/ChangeLog-8.php)
