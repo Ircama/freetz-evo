@@ -3701,5 +3701,26 @@
     "timestamp": "2026-08-20T04:29:48Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:AVM partitions": {
+    "original": "AVM partitions",
+    "translation": "partizioni AVM",
+    "timestamp": "2026-10-07T09:15:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Toggle": {
+    "original": "Toggle",
+    "translation": "Toggle",
+    "timestamp": "2026-10-07T09:16:25Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Not available": {
+    "original": "Not available",
+    "translation": "Non disponibile",
+    "timestamp": "2026-10-07T09:16:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }
