@@ -259,6 +259,9 @@ else
         "docs/libs/README.md"
         # upstream GH-Pages deploy workflow – not used in our fork, always keep deleted
         ".github/workflows/github_ghpages.yml"
+        # upstream GitHub Sponsors config (fda77) – Freetz-EVO does not collect
+        # donations, always keep it deleted even if upstream re-adds/modifies it
+        ".github/FUNDING.yml"
     )
     AUTO_RESOLVED=()
     while IFS= read -r line; do
