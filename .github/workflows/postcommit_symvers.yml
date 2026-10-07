@@ -1,29 +1,31 @@
 name: postcommit_symvers
 
-on:
-  push:
-    branches: [ master ]
-    paths:
-      - '.github/workflows/postcommit_symvers.yml'
-      - 'make/kernel/configs/avm/*'
-  schedule:
-    - cron: '00 15 28 * *'
-  workflow_dispatch:
-    inputs:
-      fos:
-        description: "FOS Version to build"
-        required: true
-        default: "08_2X"
-        type: choice
-        options:
-          - "freetz-ng"
-          - "Fos07"
-          - "Fos08"
-          - "07_2X"
-          - "07_5X"
-          - "08_0X"
-          - "08_2X"
-
+# DISABLED: triggers commented out (no FREETZ_DLTOKEN access to Freetz-NG/internal host-tools)
+#
+#on:
+#  push:
+#    branches: [ master ]
+#    paths:
+#      - '.github/workflows/postcommit_symvers.yml'
+#      - 'make/kernel/configs/avm/*'
+#  schedule:
+#    - cron: '00 15 28 * *'
+#  workflow_dispatch:
+#    inputs:
+#      fos:
+#        description: "FOS Version to build"
+#        required: true
+#        default: "08_2X"
+#        type: choice
+#        options:
+#          - "freetz-ng"
+#          - "Fos07"
+#          - "Fos08"
+#          - "07_2X"
+#          - "07_5X"
+#          - "08_0X"
+#          - "08_2X"
+#
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
