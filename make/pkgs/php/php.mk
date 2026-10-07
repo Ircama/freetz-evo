@@ -20,6 +20,12 @@ $(PKG)_SITE:=https://www.php.net/distributions
 # Version-specific patches directory
 $(PKG)_CONDITIONAL_PATCHES+=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
 
+# Regenerate configure from configure.ac (upstream Freetz-NG parity).
+# Required so that the 200-copy_file_range-check.patch which patches
+# configure.ac takes effect. PHP 8.x buildconf --force only needs
+# autoconf/autoheader (autoconf-host 2.73); no bison/re2c required.
+$(PKG)_CONFIGURE_PRE_CMDS += ./buildconf --force $(SILENT);
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/sapi/cgi/php-cgi
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/php-cgi
 
@@ -28,6 +34,9 @@ $(PKG)_CLI_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/php
 
 $(PKG)_FPM_BINARY:=$($(PKG)_DIR)/sapi/fpm/php-fpm
 $(PKG)_FPM_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/php-fpm
+
+$(PKG)_APXS2_BINARY:=$($(PKG)_DIR)/libs/libphp.so
+$(PKG)_APXS2_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/lib/apache2/libphp.so
 
 $(PKG)_STARTLEVEL=90
 
@@ -39,6 +48,7 @@ endif
 
 $(PKG)_DEPENDS_ON+=pcre2
 $(PKG)_CONFIGURE_OPTIONS+=--with-external-pcre="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
+$(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_PCRE2_JIT),--with-pcre-jit,--without-pcre-jit)
 
 $(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_BCMATH),--enable-bcmath,--disable-bcmath)
 
@@ -65,7 +75,13 @@ $(PKG)_CONFIGURE_OPTIONS+=--disable-fpm
 $(PKG)_EXCLUDED+=usr/sbin/php-fpm
 endif
 
+ifeq ($(strip $(FREETZ_PACKAGE_PHP_apxs2)),y)
+$(PKG)_DEPENDS_ON+=apache2
+$(PKG)_CONFIGURE_OPTIONS+=--with-apxs2="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/apxs"
+endif
+
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_CURL)),y)
+$(PKG)_REBUILD_SUBOPTS += $(filter FREETZ_LIB_libcurl_%,$(CURL_REBUILD_SUBOPTS))
 $(PKG)_DEPENDS_ON+=curl
 $(PKG)_CONFIGURE_OPTIONS+=--with-curl="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 endif
@@ -85,8 +101,10 @@ $(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_FTP),--enable-ftp,--dis
 
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_GD)),y)
 $(PKG)_DEPENDS_ON+=libgd
-$(PKG)_CONFIGURE_OPTIONS+=--with-gd="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
-$(PKG)_CONFIGURE_OPTIONS+=--enable-gd-native-ttf
+# PHP 8.4+/8.5 requires the external libgd (bundled libgd removed in PHP 8.5);
+# configure finds it via pkg-config (gdlib.pc provided by the libgd package)
+$(PKG)_CONFIGURE_OPTIONS+=--enable-gd
+$(PKG)_CONFIGURE_OPTIONS+=--with-external-gd
 endif
 
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_GETTEXT)),y)
@@ -112,8 +130,6 @@ else
 $(PKG)_CONFIGURE_OPTIONS+=--without-iconv
 endif
 
-$(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_JSON),--enable-json,--disable-json)
-
 # PKG_CONFIG_PATH must include staging dir for PHP 8.5+ which uses pkg-config
 # to find libxml2 (--with-libxml-dir was dropped in PHP 8.5)
 $(PKG)_CONFIGURE_ENV += PKG_CONFIG_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig"
@@ -134,10 +150,6 @@ $(PKG)_CONFIGURE_OPTIONS+=--$(if $(FREETZ_PACKAGE_PHP_WITH_DOM),enable,disable)-
 $(PKG)_CONFIGURE_OPTIONS+=--$(PHP_XML_SUPPORT)-simplexml
 $(PKG)_CONFIGURE_OPTIONS+=--$(PHP_XML_SUPPORT)-xmlreader
 $(PKG)_CONFIGURE_OPTIONS+=--$(PHP_XML_SUPPORT)-xmlwriter
-
-$(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_MHASH),--with-mhash,--without-mhash)
-
-$(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_MEMORY_LIMIT),--enable-memory-limit,--disable-memory-limit)
 
 $(PKG)_CONFIGURE_OPTIONS+=$(if $(FREETZ_PACKAGE_PHP_WITH_PCNTL),--enable-pcntl,--disable-pcntl)
 
@@ -170,6 +182,8 @@ $(PKG)_CONFIGURE_OPTIONS+=--without-pdo-sqlite
 endif
 
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_OPENSSL)),y)
+$(PKG)_REBUILD_SUBOPTS += FREETZ_OPENSSL_SHORT_VERSION
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libcrypto_WITH_RC4
 $(PKG)_DEPENDS_ON+=openssl
 $(PKG)_CONFIGURE_OPTIONS+=--with-openssl="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_STATIC)),y)
@@ -186,14 +200,29 @@ ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_ZLIB)),y)
 $(PKG)_DEPENDS_ON+=zlib
 $(PKG)_CONFIGURE_OPTIONS+=--with-zlib
 $(PKG)_CONFIGURE_OPTIONS+=--with-zlib-dir="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr"
+else
+$(PKG)_CONFIGURE_OPTIONS+=--without-zlib
 endif
 
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_ZIP)),y)
-$(PKG)_CONFIGURE_OPTIONS+=--enable-zip
+$(PKG)_DEPENDS_ON+=libzip
+# PHP 8.x uses --with-zip (bundled libzip removed in PHP 8.0, --enable-zip obsolete)
+$(PKG)_CONFIGURE_OPTIONS+=--with-zip
+endif
+
+# MySQLi/PDO-MySQL via the built-in mysqlnd driver (upstream Freetz-NG parity;
+# no external libmysqlclient/libmariadb client library needed)
+ifeq ($(strip $(FREETZ_PACKAGE_PHP_WITH_MYSQLI)),y)
+$(PKG)_CONFIGURE_OPTIONS+=--with-mysqli
+$(PKG)_CONFIGURE_OPTIONS+=--with-pdo-mysql
+else
+$(PKG)_CONFIGURE_OPTIONS+=--without-mysqli
+$(PKG)_CONFIGURE_OPTIONS+=--without-pdo-mysql
 endif
 
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_STATIC
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_fpm
+$(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_apxs2
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_BCMATH
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_BZ2
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_CALENDAR
@@ -208,6 +237,8 @@ $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_GD
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_GETTEXT
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_ICONV FREETZ_PACKAGE_PHP_WITH_LIBICONV
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_LIBXML
+$(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_LIBXML2_HTML FREETZ_LIB_libxml2_WITH_HTML
+$(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_LIBXML2_FULL FREETZ_LIB_libxml2_WITH_RELAXNG
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_MBSTRING
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_MYSQLI
 $(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_WITH_OPCACHE
@@ -278,7 +309,7 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
-$($(PKG)_BINARY) $($(PKG)_CLI_BINARY) $($(PKG)_FPM_BINARY): $($(PKG)_DIR)/.configured
+$($(PKG)_BINARY) $($(PKG)_CLI_BINARY) $($(PKG)_FPM_BINARY) $($(PKG)_APXS2_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(PHP_DIR) \
 		EXTRA_CFLAGS="$(PHP_EXTRA_CFLAGS)" \
 		EXTRA_LDFLAGS_PROGRAM="$(PHP_EXTRA_LDFLAGS)" \
@@ -293,14 +324,17 @@ $($(PKG)_CLI_TARGET_BINARY): $($(PKG)_CLI_BINARY)
 $($(PKG)_FPM_TARGET_BINARY): $($(PKG)_FPM_BINARY)
 	$(INSTALL_BINARY_STRIP)
 
+$($(PKG)_APXS2_TARGET_BINARY): $($(PKG)_APXS2_BINARY)
+	$(INSTALL_BINARY_STRIP)
+
 $(pkg):
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CLI_TARGET_BINARY) $(if $(FREETZ_PACKAGE_PHP_fpm),$($(PKG)_FPM_TARGET_BINARY))
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CLI_TARGET_BINARY) $(if $(FREETZ_PACKAGE_PHP_fpm),$($(PKG)_FPM_TARGET_BINARY)) $(if $(FREETZ_PACKAGE_PHP_apxs2),$($(PKG)_APXS2_TARGET_BINARY))
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(PHP_DIR) clean
 
 $(pkg)-uninstall:
-	$(RM) $(PHP_TARGET_BINARY) $(PHP_CLI_TARGET_BINARY) $(PHP_FPM_TARGET_BINARY)
+	$(RM) $(PHP_TARGET_BINARY) $(PHP_CLI_TARGET_BINARY) $(PHP_FPM_TARGET_BINARY) $(PHP_APXS2_TARGET_BINARY)
 
 $(PKG_FINISH)

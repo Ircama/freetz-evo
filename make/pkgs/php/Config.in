@@ -53,6 +53,16 @@ config FREETZ_PACKAGE_PHP_fpm
 		Enable the FastCGI Process Manager (FPM) for PHP.
 		PHP-FPM is a FastCGI server implementation for high-traffic sites.
 
+config FREETZ_PACKAGE_PHP_apxs2
+	bool "Apache2 module (libphp.so)"
+	default n
+	select FREETZ_LIB_libapr_WITH_DSO
+	select FREETZ_BUSYBOX_STRINGS
+	help
+		Builds PHP as a loadable Apache2 module (libphp.so).
+		Installs to /usr/lib/apache2/libphp.so and requires the Apache2
+		package (apxs is taken from the toolchain staging dir).
+
 endmenu
 
 menu "PHP features"
@@ -168,11 +178,12 @@ config FREETZ_PACKAGE_PHP_WITH_MBSTRING
 		Enables multi-byte string functions (libonig.so.5 for regex support)
 
 config FREETZ_PACKAGE_PHP_WITH_MYSQLI
-	bool "MySQLi support (libmysqlclient.so or libmariadb.so)"
+	bool "MySQLi support (mysqlnd)"
 	depends on FREETZ_SHOW_DEVELOPER
 	default n
 	help
-		Enables MySQL/MariaDB database access (libmysqlclient.so or libmariadb.so)
+		Enables MySQL/MariaDB database access via the built-in mysqlnd
+		driver (mysqli and PDO_mysql; no external client library needed)
 
 config FREETZ_PACKAGE_PHP_WITH_OPCACHE
 	bool "OPcache support"

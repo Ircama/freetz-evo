@@ -94,6 +94,7 @@ When building PHP, you can enable/disable the following options via `make menuco
 - **CLI** - Command-line interpreter (php)
 - **CGI** - CGI binary (php-cgi)
 - **FPM** - FastCGI Process Manager (php-fpm)
+- **apxs2** - Apache2 loadable module (libphp.so, installed to /usr/lib/apache2/)
 
 ### Extension Options
 - **CURL** - Enables HTTP/HTTPS/FTP client functionality (libcurl.so.4)
@@ -107,7 +108,7 @@ When building PHP, you can enable/disable the following options via `make menuco
 - **LIBICONV** - Use GNU libiconv instead of uClibc iconv
 - **LIBXML** - Enables XML parsing and manipulation (libxml2.so.16, required for DOM, SimpleXML, etc.)
 - **MBSTRING** - Enables multi-byte string functions (libonig.so.5 for regex support)
-- **MYSQLI** - Enables MySQL/MariaDB database access (libmysqlclient.so or libmariadb.so)
+- **MYSQLI** - Enables MySQL/MariaDB database access via the built-in mysqlnd driver (mysqli and PDO_mysql; no external client library)
 - **OPCACHE** - Enable OPcache bytecode cache
 - **OPENSSL** - Enables cryptography and SSL/TLS (libssl.so.3, libcrypto.so.3)
 - **PCNTL** - Enable process control functions
@@ -120,7 +121,7 @@ When building PHP, you can enable/disable the following options via `make menuco
 - **SYSVIPC** - Enable System V IPC support (semaphores, shared memory, messages)
 - **TOKENIZER** - Enable tokenizer
 - **ZLIB** - Enables zlib compression/decompression (libz.so.1)
-- **ZIP** - Enables ZIP archive handling (built-in with zlib support)
+- **ZIP** - Enables ZIP archive handling via libzip (external library)
 
 ## Build Notes
 
@@ -137,12 +138,13 @@ PHP 8.4.1 has the following library dependencies:
 
 **Optional Libraries (enabled via menuconfig):**
 - `libcurl.so.4` - HTTP/HTTPS/FTP client (CURL extension)
-- `libgd.so.3` - Image manipulation (GD extension)
+- `libgd.so.3` - Image manipulation (GD extension, external libgd via pkg-config)
   - Requires: `libpng.so`, `libjpeg.so`, `libfreetype.so`
 - `libiconv.so.2` - Character set conversion (ICONV extension, alternative to uClibc)
 - `libsqlite3.so.3` - SQLite database (SQLite3 and PDO_SQLITE extensions)
 - `libssl.so.3` & `libcrypto.so.3` - Cryptography and SSL/TLS (OpenSSL extension)
-- `libmysqlclient.so` or `libmariadb.so` - MySQL/MariaDB (MySQLi extension)
+- `libzip.so` - ZIP archives (ZIP extension)
+- mysqlnd (built-in driver) - MySQL/MariaDB (MySQLi and PDO_mysql extensions; no external client library needed)
 
 All libraries can be externalized to save space in the main firmware image. See the "External processing" section in `make menuconfig`.
 
