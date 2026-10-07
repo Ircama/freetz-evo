@@ -31,6 +31,7 @@
 # ignore ide project files
 /.project
 /.vs
+/.vscode
 
 # Freetz-EVO:
 evo-eng-tools/

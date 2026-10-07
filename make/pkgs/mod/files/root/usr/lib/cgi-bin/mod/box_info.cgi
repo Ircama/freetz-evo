@@ -119,7 +119,7 @@ sec_begin "$(lang de:"Hardware" en:"Hardware")"
 
 echo "<dl class='info'>"
 echo "<dt>$(lang de:"Boxname" en:"Box name")</dt><dd>$CONFIG_PRODUKT_NAME</dd>"
-echo "<dt>ANNEX</dt><dd>$ANNEX</dd>"
+echo "<dt>ANNEX</dt><dd>${ANNEX:-$(cat /proc/sys/urlader/annex 2>/dev/null)}</dd>"
 echo "</dl>"
 
 echo "<dl class='info'>"

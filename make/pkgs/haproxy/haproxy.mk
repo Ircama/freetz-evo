@@ -6,7 +6,6 @@ $(PKG)_SITE:=https://www.haproxy.org/download/2.6/src
 ### MANPAGE:=https://linux.die.net/man/1/haproxy
 ### CHANGES:=https://www.haproxy.org/download/2.6/src/CHANGELOG
 ### CVSREPO:=https://git.haproxy.org/
-### STEWARD:=fda77
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/haproxy
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/haproxy

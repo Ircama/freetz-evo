@@ -1,14 +1,14 @@
 # Version selection based on menuconfig
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_4)),y)
-$(call PKG_INIT_BIN,8.4.25)
-$(PKG)_HASH:=dc1ad8b4109898d9db49744450403874858c23efc685b1032a50bd1e83906848
+$(call PKG_INIT_BIN,8.4.26)
+$(PKG)_HASH:=32a2de53862ad44ed4a5005244ce4f1b50c271e74dced215449a4443b40569f1
 else ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_5)),y)
-$(call PKG_INIT_BIN,8.5.10)
-$(PKG)_HASH:=6a8bebaa4d5a979a38db29a9373e9851f60c6b11f72172c585947e78f3081957
+$(call PKG_INIT_BIN,8.5.11)
+$(PKG)_HASH:=d9be75c08e8c316f4c8f4194d8fbe1750a15f6a6d9d4e3fe72082abeeb800360
 else
 # Default to 8.5
-$(call PKG_INIT_BIN,8.5.10)
-$(PKG)_HASH:=6a8bebaa4d5a979a38db29a9373e9851f60c6b11f72172c585947e78f3081957
+$(call PKG_INIT_BIN,8.5.11)
+$(PKG)_HASH:=d9be75c08e8c316f4c8f4194d8fbe1750a15f6a6d9d4e3fe72082abeeb800360
 endif
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_SITE:=https://www.php.net/distributions

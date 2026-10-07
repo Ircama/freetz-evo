@@ -323,7 +323,6 @@ config FREETZ_REMOVE_AHA
 	bool "Remove AHA (AVM Home Automation)"
 	default n
 	depends on FREETZ_AVM_HAS_AHA
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	help
 		Remove the aha daemon and some related files.
 		Used for "Smart Home".
@@ -389,7 +388,6 @@ config FREETZ_REMOVE_MYFRITZ
 config FREETZ_REMOVE_DDNSD
 	bool "Remove DDNSD"
 	depends on FREETZ_AVM_HAS_DDNSD
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Removes the Dynamic DNS daemon (saves about 70 KB in compressed image)
@@ -636,7 +634,6 @@ config FREETZ_REMOVE_CDROM_ISO
 config FREETZ_REMOVE_DECT
 	bool "Remove DECT"
 	depends on FREETZ_AVM_HAS_DECT
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove dect files (modules, dect_manager and dect related Web UI).
@@ -647,7 +644,6 @@ config FREETZ_REMOVE_DECT
 config FREETZ_REMOVE_DECT_UPDATE
 	bool "Remove dect_update"
 	depends on FREETZ_TYPE_7150
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove /usr/bin/dect_update. This utility is only needed to
@@ -971,12 +967,11 @@ config FREETZ_REMOVE_TR069_VOIPPROVIDERS
 config FREETZ_REMOVE_UMTSD
 	bool "Remove UMTS (USB GSM)"
 	depends on FREETZ_AVM_HAS_UMTS
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove UMTS support
-		This patch will remove UMTS-dependent files from firmware.
-		It saves about 12K compressed space in kernel.image.
+		This patch will remove UMTS and MOBILED dependent files from firmware.
+		It saves about 12 KB - 176 KB compressed space in kernel.image.
 
 config FREETZ_REMOVE_UPNP
 	bool "Remove UPnP (igdd/upnpd)"
@@ -1033,7 +1028,6 @@ config FREETZ_REMOVE_KIDS
 config FREETZ_REMOVE_QOS
 	bool "Remove QoS (tc)"
 	depends on FREETZ_AVM_HAS_TC
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Removes tc and some kernel modules.

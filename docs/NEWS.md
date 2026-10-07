@@ -1,5 +1,17 @@
 # Neuigkeiten
 
+### 2026-09-29
+AVM hat die Recovery für 1700, 2700 und 5690xgs gepimpt.
+Diese unterstützen nun U-Boot und recovern via IPv6.<br>
+Sie wurden mit [Slint](https://slint.dev/) erstellt welches auf Rust setzt...
+In VMs gibt es Probleme durch die schicke 3D-Grafik.<br>
+
+### 2026-09-25
+Es wurde ein neuer [Tag](https://github.com/Freetz-NG/freetz-ng/tags) `ng26090` erstellt.<br>
+Ein Tag sollte wie in der [README](https://github.com/Freetz-NG/freetz-ng#or-clone-a-single-tag) beschrieben mit git ausgecheckt werden.<br>
+
+  - Siehe [ng26090](https://github.com/Freetz-NG/freetz-ng/releases/tag/ng26090)<br>
+
 ### 2026-08-26
 Riesen Update bei AVM.<br>
 Es war scheinbar kein Fehler dass vor 2 Wochen eine via AVM-Juis ausgelieferte URL zu einem Firmware-Image als http**S**-URL ausgeliefert wurde.

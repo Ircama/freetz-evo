@@ -1,7 +1,7 @@
-$(call TOOLS_INIT, 3.5.8)
+$(call TOOLS_INIT, 3.5.9)
 $(PKG)_LIB_VERSION:=3
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=a8f84a39918ec6415ce765d9b429d313ba97b8143169c172e734b9514464f5b2
+$(PKG)_HASH:=603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a
 $(PKG)_SITE:=https://www.openssl.org/source,https://github.com/openssl/openssl/releases/download/openssl-$($(PKG)_VERSION)
 ### WEBSITE:=https://www.openssl.org/source/
 ### MANPAGE:=https://www.openssl.org/docs/

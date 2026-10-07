@@ -81,6 +81,18 @@ htmltab_remove() {
 	modsed '/'"$TAG_S"'/{:x;N;/'"$TAG_E"'/!bx};/'"$HREF"'/d' "$file"
 }
 
+#js3tab_remove <file> <j3s>
+#removes a js3-tab with destination href in file
+js3tab_remove() {
+	local file="$HTML_LANG_MOD_DIR$1"
+	local NAME="name=\\\"$2\\\""
+	local TAG="js3-tab-content"
+	local TAG_S="<$TAG "
+	local TAG_E="<\/$TAG>"
+	[ -e "$file" ] || return
+	modsed '/'"$TAG_S"'/{:x;N;/'"$TAG_E"'/!bx};/'"$NAME"'/d' "$file"
+}
+
 #modern_remove <menu-item>
 #removes liks within menu_data.lua (left menu, responsive)
 modern_remove() {

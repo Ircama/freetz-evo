@@ -466,6 +466,7 @@ Currently supported devices and firmwares
     - 271.07.59 rev113715 {ALL} [MOVE21NL2]
     - 271.08.02 rev117988 {ALL} [Smart24 P1 NL1]
     - 271.08.26 rev134664 {ALL} [Smart24 P2 NL1]
+    - 271.08.40 rev136585 {ALL} [MyFRITZOS P1] (Inhaus)
   * __Fritz!Box Fon WLAN 7520__
     - 175.07.14 rev73182 {GER} [MESH18 NL4]
     - 175.07.29 rev92061 {ALL} [PSQ19P2NL4]
@@ -648,7 +649,7 @@ Currently supported devices and firmwares
     - 305.08.25 rev134317 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 1700 (UNTESTED)__
     - 290.08.07 rev128069 {ALL} [Smart24 P1 FCS]
-    - 290.08.24 rev135212 {ALL} [Smart24 P2 NL1] (Labor)
+    - 290.08.26 rev136867 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 2400__
     - 169.07.12 rev71975 {ALL} [MESH18 NL2]
     - 169.07.29 rev93265 {ALL} [PSQ19P2NL4]
@@ -656,7 +657,7 @@ Currently supported devices and firmwares
     - 169.08.25 rev132922 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 2700 (UNTESTED)__
     - 301.08.07 rev128070 {ALL} [Smart24 P1 FCS]
-    - 301.08.24 rev135213 {ALL} [Smart24 P2 NL1] (Labor)
+    - 301.08.26 rev136868 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 3000__
     - 174.07.04 rev66458 {ALL}
     - 174.07.14 rev73940 {ALL} [MESH18 NL4]

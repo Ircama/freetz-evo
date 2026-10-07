@@ -1,0 +1,19 @@
+--- setup.py
++++ setup.py
+@@ -871,15 +871,7 @@
+                                       '/usr/contrib/ssl/lib/'
+                                      ] )
+ 
+-        if (ssl_incs is not None and
+-            ssl_libs is not None):
+-            exts.append( Extension('_ssl', ['_ssl.c'],
+-                                   include_dirs = ssl_incs,
+-                                   library_dirs = ssl_libs,
+-                                   libraries = ['ssl', 'crypto'],
+-                                   depends = ['socketmodule.h']), )
+-        else:
+-            missing.append('_ssl')
++        missing.append('_ssl')
+ 
+         # find out which version of OpenSSL we have
+         openssl_ver = 0

@@ -37,6 +37,8 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [fritz box wlan 3270v3 source files 05.05.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3270-v3/fritz%20box%20wlan%203270v3%20source%20files%2005.05.tar.gz)
     - [fritz box wlan 3270v3 source files 05.21.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3270-v3/fritz%20box%20wlan%203270v3%20source%20files%2005.21.tar.gz)
     - [fritz box wlan 3270v3 source files 05.50.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3270-v3/fritz%20box%20wlan%203270v3%20source%20files%2005.50.tar.gz)
+  * fritzbox-3272/
+    - [source-files-FRITZ.Box_3272-06.88.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3272/source-files-FRITZ.Box_3272-06.88.tar.gz)
   * fritzbox-3370/
     - [fritz_box_wlan_3370_source_files.05.21.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3370/fritz_box_wlan_3370_source_files.05.21.tar.gz)
     - [fritz_box_wlan_3370_source_files.05.50.tar.gz](https://osp.avm.de/fritzbox/fritzbox-3370/fritz_box_wlan_3370_source_files.05.50.tar.gz)
@@ -580,6 +582,7 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [source-files-FRITZ.Box_7682-alder-08.01.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7682/source-files-FRITZ.Box_7682-alder-08.01.tar.gz)
     - [source-files-FRITZ.Box_7682-alder-08.02.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7682/source-files-FRITZ.Box_7682-alder-08.02.tar.gz)
     - [source-files-FRITZ.Box_7682-alder-08.03.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7682/source-files-FRITZ.Box_7682-alder-08.03.tar.gz)
+    - [source-files-FRITZ.Box_7682-alder-08.25.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7682/source-files-FRITZ.Box_7682-alder-08.25.tar.gz)
   * fritzbox-7690/
     - [source-files-FRITZ.Box_7690-miami-07.61.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-07.61.tar.gz)
     - [source-files-FRITZ.Box_7690-miami-07.62.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-07.62.tar.gz)
@@ -588,6 +591,7 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [source-files-FRITZ.Box_7690-miami-08.20.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-08.20.tar.gz)
     - [source-files-FRITZ.Box_7690-miami-08.22.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-08.22.tar.gz)
     - [source-files-FRITZ.Box_7690-miami-08.25.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-08.25.tar.gz)
+    - [source-files-FRITZ.Box_7690-miami-08.50.tar.gz](https://osp.avm.de/fritzbox/fritzbox-7690/source-files-FRITZ.Box_7690-miami-08.50.tar.gz)
 
 ### FritzDect
   * fritzsmart-gateway/
@@ -627,11 +631,13 @@ Content: [FritzBox](#fritzbox) - [FritzDect](#fritzdect) - [FritzPowerline](#fri
     - [source-files-FRITZ.Repeater_1610_Outdoor-08.25.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-1610-outdoor/source-files-FRITZ.Repeater_1610_Outdoor-08.25.tar.gz)
   * fritzrepeater-1700/
     - [source-files-FRITZ.Repeater_1700-08.06.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-1700/source-files-FRITZ.Repeater_1700-08.06.tar.gz)
+    - [source-files-FRITZ.Repeater_1700-08.26.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-1700/source-files-FRITZ.Repeater_1700-08.26.tar.gz)
   * fritzrepeater-2400/
     - [source-files-FRITZ.Repeater_2400-08.20.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-2400/source-files-FRITZ.Repeater_2400-08.20.tar.gz)
     - [source-files-FRITZ.Repeater_2400-08.25.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-2400/source-files-FRITZ.Repeater_2400-08.25.tar.gz)
   * fritzrepeater-2700/
     - [source-files-FRITZ.Repeater_2700-08.06.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-2700/source-files-FRITZ.Repeater_2700-08.06.tar.gz)
+    - [source-files-FRITZ.Repeater_2700-08.26.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-2700/source-files-FRITZ.Repeater_2700-08.26.tar.gz)
   * fritzrepeater-3000/
     - [source-files-FRITZ.Repeater_3000-07.56.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-3000/source-files-FRITZ.Repeater_3000-07.56.tar.gz)
     - [source-files-FRITZ.Repeater_3000-08.20.tar.gz](https://osp.avm.de/fritzwlan/fritzrepeater-3000/source-files-FRITZ.Repeater_3000-08.20.tar.gz)

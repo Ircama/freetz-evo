@@ -6,6 +6,8 @@ modsed \
   's/^pageData\["dyndns"\] =/& nil ; dummy =/g' \
   "${MENU_DATA_LUA}"
 menulua_remove internet.dyn_dns
+htmltab_remove "/js3/views/internet/access/access.html" "/access/dyndns"
+js3tab_remove "/js3/views/internet/access/access.html" "dyndns"
 
 modsed -r \
   's/(AVMDAEMONS.* )ddnsd /\1/g' \

@@ -177,7 +177,7 @@ cat <<'EOX'
         #
         add ~/freetz-ng/make/kernel/patches/*/7590_*/
         ge ~/freetz-ng/config/mod/source.in  # enable kernel (modules)
-        ge ~/freetz-ng/make/pkgs/wireguard-linux-compat/Config.in  # verify skb_put_data
+        ge ~/freetz-ng/make/pkgs/wireguard-linux-compat/Config.in  # verify skb_put_data (kernel <4.13 only)
         check if avms .config matches with provided sources (unlikely)
 
 EOX

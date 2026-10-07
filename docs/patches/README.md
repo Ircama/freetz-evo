@@ -308,7 +308,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 ### U
 
   * **[REMOVE_UMTSD: Remove UMTS (USB GSM)](REMOVE_UMTSD.md)<a id='remove-umtsd'></a>**<br>
-    Remove UMTS support This patch will remove UMTS-dependent files from firmware. It saves about 12K compressed space in kernel.image.
+    Remove UMTS support This patch will remove UMTS and MOBILED dependent files from firmware. It saves about 12 KB - 176 KB compressed space in kernel.image.
 
   * **<u>Remove UNTRUSTEDD - DEVELOPER</u><a id='remove-untrustedd'></a>**<br>
     This removes the untrustedd daemon (10kB uncompressed) and related service script. Known so far: Nothing.

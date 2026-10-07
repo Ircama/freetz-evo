@@ -28,7 +28,7 @@ Usage: $0 [ export_tgz <tgz|hwr> | check_avm <pem|der|tgz|hwr> | kids_update <tg
 
   automatic (by juis_check):
 	u|unpack_tgz	unpacks an avmzertifikate/hwr
-	g|get_token	gets token of avm avmzertifikate/hwr
+	g|get_token	gets token of avm avmzertifikate/hwr (needs: curl)
 	s|show_auth	shows bearer from token of an avmzertifikate/hwr
 
   first step (on a fritzbox):
@@ -36,8 +36,8 @@ Usage: $0 [ export_tgz <tgz|hwr> | check_avm <pem|der|tgz|hwr> | kids_update <tg
 
   manual (by user):
 	c|check_avm	checks an certificate/avmzertifikate/hwr without import
-	k|kids_update	updates key-ids of pub-keys with avmzertifikate/hwr
-	t|token_data	show data of a bearer token for an avmzertifikate/hwr
+	k|kids_update	updates key-ids of pub-keys with avmzertifikate/hwr (needs: jq + xxd + curl)
+	t|token_data	show data of a bearer token for an avmzertifikate/hwr (needs: jq)
 
   additional:
 	On a fritzbox and without tgz/hwr parameters 'avmzertifikate' are used.
@@ -92,6 +92,9 @@ function import_tgz() {
 	[ -s "$CERT/$tgz.tgz" ] && \
 	  HWR="$tgz" && 
 	  tgz="$CERT/$tgz.tgz"
+
+	# fallback
+	[ ! -f "$tgz" ] && [ -f "$PROC_CRT" ] && [ "$tgz" == "$(env_hwrevision)" ] && tgz="$PROC_CRT"
 
 	[ -f "$tgz" ] || errnex "Source file does not exist: $tgz"
 

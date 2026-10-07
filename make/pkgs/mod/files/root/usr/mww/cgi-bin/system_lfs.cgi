@@ -128,20 +128,25 @@ resunm() {
 	rm -rf $DUMPS
 }
 
-# SWITCHABLE="y"
+SWITCHABLE="y"
 if [ -x "$(which bootslotctl)" ]; then
 	. /bin/env.mod.rcconf avm  # CONFIG_ENVIRONMENT_PATH
 	LFS_LIVE="$(bootslotctl get_active)"
 	LFS_DEAD="$(bootslotctl get_other)"
 	NEXT="$LFS_LIVE"
-	[ "$LFS_LIVE" == "$LFS_DEAD" ] && LFS_LIVE="$(( ($LFS_LIVE+1) %2 ))"  # && SWITCHABLE="n"
+	[ "$LFS_LIVE" == "$LFS_DEAD" ] && LFS_LIVE="$(( ($LFS_LIVE+1) %2 ))" && SWITCHABLE="n"
 	[ "$VISUALIZE" != "yes" ] || PRIB="$(imginfo /)"
 	if [ -x /usr/bin/bootmanager ]; then
 		SECB="$(fitinfo)"
 	else
 		SECB="$(cat $CACHE 2>/dev/null)"
 		if [ -z "$SECB" ]; then
-			[ "$FREETZ_AVM_PROP_INNER_FILESYSTEM_TYPE_CPIO" != "y" ] && fitmnt  # || TODO: cpio
+			DEAD="$(sed -rn 's/^(mtd)?(.*):.*"reserved-filesystem"$/\2/p' /proc/mtd)"
+			if [ -n "$DEAD" ]; then
+				resmnt
+			else
+				[ "$FREETZ_AVM_PROP_INNER_FILESYSTEM_TYPE_CPIO" != "y" ] && fitmnt  # || TODO: cpio
+			fi
 			SECB="$(imginfo $MNT | tee $CACHE)"
 		fi
 		resunm
@@ -181,8 +186,11 @@ cat << EOF | sed -r 's#(Running|Momentan| enabled| aktiviert)#<span class="succe
 <pre>$SECB</pre>
 EOF
 
-#	[ "$SWITCHABLE" != "n" ] && \
-	stat_button linux_fs_start "$(lang de:"Firmwarepartition wechseln" en:"Toggle firmware partition")"
+	if [ "$SWITCHABLE" == "y" ]; then
+		stat_button "linux_fs_start" "$(lang de:"Firmwarepartition wechseln" en:"Toggle firmware partition")" "$(lang de:"Umschalten" en:"Toggle")"
+	else
+		stat_button "messagebox"     "$(lang de:"Firmwarepartition wechseln" en:"Toggle firmware partition")" "$(lang de:"Nicht verf&uuml;gbar" en:"Not available")"
+	fi
 }
 [ "$VISUALIZE" != "yes" ] || visualize
 

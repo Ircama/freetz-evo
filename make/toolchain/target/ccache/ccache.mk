@@ -1,6 +1,6 @@
-CCACHE_VERSION:=4.14
+CCACHE_VERSION:=4.14.1
 CCACHE_SOURCE:=ccache-$(CCACHE_VERSION).tar.xz
-CCACHE_HASH:=b093ac5d38204cb4d9f29b0bbd570675aa5a592a78e6675b2c506dbe045234e7
+CCACHE_HASH:=29f10de481ac2c41c91bfabead63d803bd2fe823e09752aade5b0b8704cc4f30
 CCACHE_SITE:=https://github.com/ccache/ccache/releases/download/v$(CCACHE_VERSION)
 ### WEBSITE:=https://ccache.dev/
 ### MANPAGE:=https://ccache.dev/documentation.html

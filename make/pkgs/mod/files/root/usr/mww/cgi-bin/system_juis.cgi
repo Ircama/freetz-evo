@@ -40,5 +40,4 @@ if [ -n "$LAST" ]; then
 fi
 
 stat_button juis_check "$(lang de:"Firmwareversion pr&uuml;fen" en:"Check firmware version")"
-[ -f /proc/avm/calib/avmzertifikate ] && grep -q "FREETZ_PACKAGE_JUIS_BEARER=y" /etc/.config && stat_button juis_bearer "$(lang de:"Token abrufen" en:"Request token")"
 

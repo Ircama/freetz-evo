@@ -5,11 +5,11 @@
 
 stat_button() {
 	local CHECK=""
-	if [ "$1" == "reboot" ]; then
-		CHECK="onsubmit='return window.confirm(\"Reboot?\")'"
-	elif [ "$1" == "linux_fs_start" ] && [ -x "$(which bootslotctl)" ]; then
-		CHECK="onsubmit='return window.confirm(\"Toggle?\")'"
-	fi
+	case "$1" in
+		reboot)		CHECK="onsubmit='return window.confirm(\"$3?\")'" ;;
+		linux_fs_start)	CHECK="onsubmit='return window.confirm(\"$3?\")'" ;;
+		messagebox)	CHECK="onsubmit='alert(\"$3\"); return false'" ;;
+	esac
 	echo "<form action='/cgi-bin/exec.cgi/$1' $CHECK method='post'><p><input type='submit' value='$2'></p></form>"
 }
 
@@ -20,7 +20,7 @@ cgi_begin 'System'
 [ -e /usr/mww/cgi-bin/system_juis.cgi ] && . /usr/mww/cgi-bin/system_juis.cgi
 
 echo "<h1>$(lang de:"Box neustarten" en:"Restart box")</h1>"
-stat_button reboot "$(lang de:"Reboot" en:"Reboot")"
+stat_button reboot "$(lang de:"Reboot" en:"Reboot")" "$(lang de:"Reboot" en:"Reboot")"
 
 echo "<h1>$(lang de:"Nicht unterst&uuml;tzte &Auml;nderungen" en:"Unauthorized changes")</h1>"
 cat << EOF

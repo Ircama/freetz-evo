@@ -14,7 +14,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[aMUTorrent 3.5.0 - DEVELOPER](amutorrent.md)<a id='amutorrent'></a>**<br>
     Experimental package, needs Node.js: installs aMUTorrent as a service with full Node.js, with the frontend built on the host system and the Express/WebSocket backend running on the target. The bootstrap preconfigures a local rTorrent via SCGI directly to 127.0.0.1:${RTORRENT_SCGI_PORT:-16891} when available. The page http://fritz.box:81/amutorrent/ redirects to the service port (4000 by default) and displays a diagnostic page if the daemon is not running. Note: the Node.js porting on the target is not yet considered functional; for this reason the package remains in developer mode, disabled by default, and should not be considered ready for normal use.
 
-  * **[Apache2 2.4.68 (binary only)](apache2.md)<a id='apache2'></a>**<br>
+  * **[Apache2 2.4.69 (binary only)](apache2.md)<a id='apache2'></a>**<br>
     The Apache httpd server
 
   * **[aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)](aria2.md)<a id='aria2'></a>**<br>
@@ -106,7 +106,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[CA-bundle 2026-08-13](ca-bundle.md)<a id='ca-bundle'></a>**<br>
+  * **[CA-bundle 2026-09-25](ca-bundle.md)<a id='ca-bundle'></a>**<br>
     The Mozilla CA certificate store in PEM format, see https://www.curl.se/docs/caextract.html Size of uncompressed file is about 250 KB.
 
   * **[caddy 2.11.2 (binary only)](caddy.md)<a id='caddy'></a>**<br>
@@ -298,7 +298,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### H
 
-  * **[HAProxy 2.6.33](haproxy.md)<a id='haproxy'></a>**<br>
+  * **[HAProxy 2.6.33 - DEPRECATED](haproxy.md)<a id='haproxy'></a>**<br>
     HAProxy is a free, very fast and reliable solution offering high availability, load balancing, and proxying for TCP and HTTP-based applications.
 
   * **[Haserl 0.9.36 (binary only)](haserl.md)<a id='haserl'></a>**<br>
@@ -348,7 +348,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[IGMPproxy 0.4](igmpproxy.md)<a id='igmpproxy'></a>**<br>
     IGMPproxy is a simple dynamic Multicast Routing Daemon using only IGMP signalling. It's intended for simple forwarding of Multicast traffic between networks.
 
-  * **[ImageMagick 7.1.0-62/7.1.2-31 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
+  * **[ImageMagick 7.1.0-62/7.1.2-32 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
     ImageMagick is a robust collection of tools and libraries to read, write, and manipulate an image in many image formats, including popular formats like TIFF, JPEG, PNG, PDF, PhotoCD, and GIF. With ImageMagick, you can create images dynamically, making it suitable for Web applications. You can also resize, rotate, sharpen, color-reduce, or add special effects to an image and save your completed work in many different image formats. Image processing operations are available from the command line as well as through C, C++, and PERL-based programming interfaces.
 
   * **[Inadyn-mt 02.28.10 - DEPRECATED](inadyn-mt.md)<a id='inadyn-mt'></a>**<br>
@@ -366,7 +366,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[iodine 0.7.0 - DEPRECATED](iodine.md)<a id='iodine'></a>**<br>
     iodine lets you tunnel IPv4 data through a DNS server. This can be usable in different situations where internet access is firewalled, but DNS queries are allowed.
 
-  * **[iPerf3 3.3/3.21 (binary only)](iperf.md)<a id='iperf'></a>**<br>
+  * **[iPerf3 3.3/3.22 (binary only)](iperf.md)<a id='iperf'></a>**<br>
     iPerf3 is a tool for active measurements of the maximum achievable bandwidth on IP networks. It supports tuning of various parameters related to timing, buffers and protocols (TCP, UDP, SCTP with IPv4 and IPv6). For each test it reports the bandwidth, loss, and other parameters. S. https://github.com/esnet/iperf for more details.
 
   * **<u>IPsec-tools 0.7.2 - DEPRECATED</u><a id='ipsec-tools'></a>**<br>
@@ -581,10 +581,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[OpenSSH 9.3p2/10.5p1](openssh.md)<a id='openssh'></a>**<br>
     OpenSSH is the premier connectivity tool for remote login with the SSH protocol. It encrypts all traffic to eliminate eavesdropping, connection hijacking, and other attacks. In addition, OpenSSH provides a large suite of secure tunneling capabilities, several authentication methods, and sophisticated configuration options.
 
-  * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.22/3.5.8 (binary only)](openssl.md)<a id='openssl'></a>**<br>
+  * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.22/3.5.9 (binary only)](openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.22/2.7.7](openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.23/2.7.7](openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
 
   * **[oxker 0.13.2](oxker.md)<a id='oxker'></a>**<br>
@@ -1099,7 +1099,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tmux 3.7c (binary only)](tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.25/0.4.9.12](tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25/0.4.9.13](tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
 
   * **[tput (ncurses terminal control)](tput.md)<a id='tput'></a>**<br>
