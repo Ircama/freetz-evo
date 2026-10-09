@@ -2,7 +2,12 @@
 SCRIPT="$(readlink -f $0)"
 PARENT="$(dirname ${SCRIPT%/*})"
 ZENDIR="$PARENT/docs"
-ENVDIR="$ZENDIR/.venv"
+# NOTE: the virtual environment must stay OUTSIDE $ZENDIR. When zensical runs
+# from a venv located inside the docs directory (seen with 0.0.69) it silently
+# omits assets/ (plus 404.html and sitemap.xml) from the build output, so the
+# preview has no CSS at all: no Material layout, no right-hand "On this page"
+# column.
+ENVDIR="$PARENT/.venv-build"
 
 
 detect_linux() {
@@ -29,6 +34,9 @@ install_python() {
 }
 
 setup_virtenv() {
+	[ -d "$ZENDIR/.venv" ] && \
+	  echo "Note: $ZENDIR/.venv is no longer used, run '$0 cleanup' to remove it."
+
 	[ -x "$(command -v python3)" ] || \
 	  python3 -m venv -h >/dev/null 2>&1 || \
 	  [ -x "$(command -v pip3)" ] || \
@@ -42,16 +50,29 @@ setup_virtenv() {
 
 run_httpserver() {
 	local PORT="$1"
+	local BIND="0.0.0.0"
 	[ "$PORT" -gt 0 ] 2>/dev/null || PORT="8000"
 
 	[ -d "$ENVDIR" ] || setup_virtenv || exit 1
 
 	echo "########################################################################"
-	echo "     Starting zensical http server on [::]:$PORT, use CTRL+C to quit."
+	echo "     Building the docs site, then serving it on http://$BIND:$PORT (CTRL+C to quit)."
 	echo "########################################################################"
 
+	# Do not use "zensical serve" for this preview: zensical 0.0.69 deletes the
+	# theme bundles from $ZENDIR/site and does not serve them, so every
+	# /assets/... request returns 404 and the pages are rendered without any
+	# CSS (no Material layout, no right-hand "On this page" index column).
+	# Build the site first (this writes the bundles) and serve the output.
+	build_site || exit 1
+
+	echo "###################################################"
+	echo "     Serving $ZENDIR/site on http://$BIND:$PORT, use CTRL+C to quit."
+	echo "###################################################"
+
 	source "$ENVDIR/bin/activate"
-	zensical serve --dev-addr "[::]:$PORT" --config-file "$ZENDIR/zensical.toml"  # --open
+	cd "$ZENDIR/site" || exit 1
+	python3 -m http.server "$PORT" --bind "$BIND"
 }
 
 build_site() {
@@ -60,6 +81,16 @@ build_site() {
 	source "$ENVDIR/bin/activate"
 	zensical build --config-file "$ZENDIR/zensical.toml"  # --clean
 
+	# Guard against a build without the theme bundles (see ENVDIR above): such
+	# a site is unusable, so fail loudly instead of serving a broken preview.
+	if [ ! -d "$ZENDIR/site/assets" ]; then
+		echo "" >&2
+		echo "ERROR: $ZENDIR/site/assets is missing, the site was built without CSS." >&2
+		echo "       Make sure zensical does not run from a venv inside $ZENDIR." >&2
+		echo "       Current environment: $ENVDIR" >&2
+		exit 1
+	fi
+
 	echo "###################################################"
 	echo "     Site content can be found in ./docs/site/"
 	echo "###################################################"
@@ -67,6 +98,7 @@ build_site() {
 
 cleanup_virtenv() {
 	rm -rf "$ENVDIR"
+	rm -rf "$ZENDIR/.venv/"
 	rm -rf "$ZENDIR/.cache/"
 	rm -rf "$ZENDIR/site/"
 	echo "Done."
@@ -91,7 +123,7 @@ show_usage() {
 	   Executed by "run" if not yet done.
 
 	 - run [port]
-	   Runs Zensical http server listening on all ips.
+	   Builds the documentation and serves the built site on all ips.
 	   Default Port: 8000/tcp
 
 	 - build

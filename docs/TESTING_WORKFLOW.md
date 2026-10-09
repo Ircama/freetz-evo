@@ -801,10 +801,20 @@ The documentation site is generated with [Zensical](https://zensical.org/). To p
 
 ```bash
 cd ~/freetz-evo
-tools/zensical_httpserver.sh
+tools/zensical_httpserver.sh run
 ```
 
-This starts a local HTTP server; open the printed URL in a browser and the rendered documentation will reflect your edits under `docs/` as you save them.
+The `run` subcommand builds the site into `docs/site/` and then serves it on all interfaces (default port 8000, e.g. `tools/zensical_httpserver.sh run 8080`). The first invocation also creates the Python virtual environment `.venv-build/` in the repository root and installs Zensical in it. Open the printed URL in a browser; the pages are not rebuilt while the server is running, so re-run the command (or `tools/zensical_httpserver.sh build`) after editing the sources and reload the page.
+
+The virtual environment must not be placed inside `docs/`: when Zensical runs from a virtual environment located in the documentation directory (observed with Zensical 0.0.69) it silently omits `assets/`, `404.html` and `sitemap.xml` from the build output, so the pages are rendered without CSS (no Material layout and no right-hand "On this page" index column). For the same reason, do not use `zensical serve` for this preview: it removes the theme bundles from `docs/site/` and does not serve them, so every `/assets/...` request returns 404. `tools/zensical_httpserver.sh run` builds the site first and serves the built directory, and fails with a clear error if the theme bundles are missing.
+
+Other subcommands:
+
+```bash
+tools/zensical_httpserver.sh build      # build the site only (docs/site/)
+tools/zensical_httpserver.sh setup      # create the Python virtual environment only
+tools/zensical_httpserver.sh cleanup    # remove venv, cache and built site
+```
 
 ## Testing Workflow
 
