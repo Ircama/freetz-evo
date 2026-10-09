@@ -18,14 +18,19 @@ Compared with Freetz-NG, this tree adds **199+ package makefiles** and **71+ lib
 
 <div class="evo-hero__panel" aria-label="Freetz-EVO identity">
   <img src="screenshots/000-TAG_freetz-evo.png" alt="Freetz-EVO logo" class="evo-logo">
-  <div class="evo-terminal-card" aria-hidden="true" style="overflow-x:auto;white-space:nowrap">
-    <span>&gt; git clone https://github.com/Ircama/freetz-evo</span>
-    <span>&gt; cd freetz-evo</span>
-    <span>&gt; tools/prerequisites install -y</span>
-    <span>&gt; make menuconfig</span>
-    <span>&gt; make</span>
-    <span>&gt; tools/push_firmware</span>
-    <span>&gt; tools/ssh_firmware_update.py --host &lt;myIP&gt; --password &lt;myPassword&gt; --batch</span>
+  <div class="evo-terminal-card" data-evo-terminal>
+    <span class="evo-terminal-card__bar">
+      <button type="button" class="evo-terminal-card__expand" data-evo-terminal-toggle aria-expanded="false" aria-controls="evo-terminal-commands" aria-label="Expand command list" title="Expand command list"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+    </span>
+    <span class="evo-terminal-card__lines" id="evo-terminal-commands" aria-hidden="true">
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>git clone https://github.com/Ircama/freetz-evo</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>cd freetz-evo</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>tools/prerequisites install -y</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>make menuconfig</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>make</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>tools/push_firmware</span>
+    <span><span class="evo-terminal-card__prompt">&gt;&nbsp;</span>tools/ssh_firmware_update.py --host &lt;myIP&gt; --password &lt;myPassword&gt; --batch</span>
+    </span>
   </div>
 </div>
 </section>

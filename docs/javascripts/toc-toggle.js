@@ -297,11 +297,10 @@
     var hasToc = syncTocAvailability();
     var effectiveVisible = !!visible && hasToc;
 
-    if (effectiveVisible) {
-      document.body.classList.add("toc-visible");
-    } else {
-      document.body.classList.remove("toc-visible");
-    }
+    document.body.classList.toggle("toc-visible", effectiveVisible);
+    // The CSS shows the TOC column by default (so the first paint is already
+    // correct); this class is only set when the column must be hidden.
+    document.body.classList.toggle("toc-hidden", !effectiveVisible);
 
     document.body.classList.toggle('toc-mobile-open', effectiveVisible && isMobile());
 
@@ -388,8 +387,8 @@
     });
 
     window.addEventListener('resize', function () {
-      if (!document.body.classList.contains('toc-visible')) return;
-      applyState(true);
+      // Re-evaluate: the desktop default is "visible", the mobile one is not.
+      applyState(isVisible());
     }, { passive: true });
   }
 
@@ -426,25 +425,52 @@
       }
     }
 
-    function scrollCurrentActiveIntoView() {
-      var active = tocList.querySelector('.md-nav__link--active');
-      if (!active) return;
-      currentActive = active;
+    // At the top of the page the sidebar must show its beginning (title,
+    // "Filter index" box and first entries) instead of a scrolled position.
+    var TOP_RESET_PX = 4;
+
+    function alignTocScroll(active) {
+      currentActive = active || null;
+
+      if (!active || window.scrollY <= TOP_RESET_PX) {
+        if (scrollContainer.scrollTop !== 0) scrollContainer.scrollTop = 0;
+        return;
+      }
+
       scrollTocToActive(active);
     }
 
+    function scrollCurrentActiveIntoView() {
+      alignTocScroll(tocList.querySelector('.md-nav__link--active'));
+    }
+
     _scrollToActiveTocLink = scrollCurrentActiveIntoView;
+
+    // Back at the top of the page no link changes, so the reset needs its own
+    // (passive, rAF-throttled) scroll listener.
+    var rafPending = false;
+    function onWindowScroll() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(function () {
+        rafPending = false;
+        if (window.scrollY <= TOP_RESET_PX && scrollContainer.scrollTop !== 0) {
+          scrollContainer.scrollTop = 0;
+        }
+      });
+    }
+    window.addEventListener('scroll', onWindowScroll, { passive: true });
 
     // Use a MutationObserver on the TOC list to detect when
     // mkdocs-material's built-in JS adds/removes .md-nav__link--active
     var observer = new MutationObserver(function () {
       var active = tocList.querySelector('.md-nav__link--active');
-      if (active && active !== currentActive) {
+      if (active === currentActive) return;
+      if (!document.body.classList.contains('toc-visible')) {
         currentActive = active;
-        if (document.body.classList.contains('toc-visible')) {
-          scrollTocToActive(active);
-        }
+        return;
       }
+      alignTocScroll(active);
     });
 
     observer.observe(tocList, {
@@ -459,6 +485,7 @@
     // Return disconnect handle so we can clean up on page nav
     return function () {
       observer.disconnect();
+      window.removeEventListener('scroll', onWindowScroll);
       if (_scrollToActiveTocLink === scrollCurrentActiveIntoView) {
         _scrollToActiveTocLink = null;
       }

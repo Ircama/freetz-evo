@@ -1,11 +1,41 @@
 /* ── Secondary sidebar (right-side TOC) ────────────────────────────── */
-/* Hidden by default and enabled only when JS marks body.toc-has-content */
+/* Hidden by default; shown on desktop as soon as the page has TOC entries and
+   the user did not hide the column, so the layout is complete before
+   toc-toggle.js runs (no "page is wide, then the TOC appears and shrinks it"
+   reflow). toc-toggle.js only adds/removes body.toc-hidden. */
 .md-sidebar--secondary.md-sidebar {
     display: none;
 }
 
 /* Desktop behavior: keep native Material layout */
 @media (min-width: 76.25em) {
+    body:not(.toc-hidden) .md-sidebar--secondary.md-sidebar:has(.md-sidebar__inner .md-nav--secondary a) {
+        display: block;
+    }
+
+    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-nav--secondary {
+        display: block;
+    }
+
+    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__scrollwrap {
+        height: 85vh !important;
+        overflow-y: auto !important;
+    }
+
+    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 4px;
+    }
+
+    [data-md-color-scheme="slate"] body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    body:not(.toc-hidden):has(.md-sidebar--secondary .md-nav--secondary a) .md-grid {
+        max-width: 95%;
+    }
+
+    /* Fallback for browsers without :has(), driven by toc-toggle.js */
     body.toc-visible.toc-has-content .md-sidebar--secondary.md-sidebar,
     body.toc-visible.toc-has-content .md-nav--secondary {
         display: block;
@@ -501,16 +531,145 @@ body.toc-has-content .toc-toggle-btn {
 
 .md-typeset .evo-terminal-card {
     display: grid;
-    gap: 0.35rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.3rem;
     width: 100%;
-    max-width: 18rem;
-    padding: 0.85rem;
+    /* The widest command ("ssh_firmware_update.py …") needs ~30rem: the card
+       keeps every command on a single line; the overflow scrolls horizontally
+       and the expand button opens the full list in an overlay. */
+    max-width: min(100%, 22rem);
+    padding: 0.6rem 0.85rem 0.85rem;
     border: 1px solid rgba(120, 166, 255, 0.35);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.04);
     font-family: var(--md-code-font-family, monospace);
     font-size: 0.66rem;
     line-height: 1.5;
+}
+
+/* Top-right expand/collapse control.
+   NOTE: `__bar` and `__lines` are <span> (not <div>) in the markdown on
+   purpose: zensical's markdown parser drops closing tags when a raw HTML
+   block nests three levels of <div>, which breaks the whole page layout. */
+.md-typeset .evo-terminal-card__bar {
+    display: flex;
+    justify-content: flex-end;
+    min-height: 1.1rem;
+}
+
+.md-typeset .evo-terminal-card__expand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--evo-home-muted);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.md-typeset .evo-terminal-card__expand svg {
+    display: block;
+    width: 0.72rem;
+    height: 0.72rem;
+}
+
+.md-typeset .evo-terminal-card__expand:hover,
+.md-typeset .evo-terminal-card__expand:focus-visible {
+    border-color: var(--evo-home-accent-2);
+    background: var(--evo-home-panel);
+    color: var(--evo-home-accent-2);
+}
+
+/* One command per line; the overflow scrolls horizontally and a thin
+   scrollbar signals that more text is available */
+.md-typeset .evo-terminal-card__lines {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--evo-home-border) transparent;
+}
+
+.md-typeset .evo-terminal-card__lines::-webkit-scrollbar {
+    height: 4px;
+}
+
+.md-typeset .evo-terminal-card__lines::-webkit-scrollbar-thumb {
+    background: var(--evo-home-border);
+    border-radius: 2px;
+}
+
+.md-typeset .evo-terminal-card__lines::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.md-typeset .evo-terminal-card__lines > span {
+    display: block;
+    white-space: nowrap;
+}
+
+/* The "> " prompt is decoration: keep it out of copied selections */
+.md-typeset .evo-terminal-card__prompt {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Expanded state: centered terminal overlay showing the full command list */
+.md-typeset .evo-terminal-card--expanded {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    /* inset + auto margins center the box without a transform, so the
+       ::before backdrop below stays viewport-sized. */
+    margin: auto;
+    width: max-content;
+    min-width: min(22rem, 92vw);
+    max-width: min(92vw, 64rem);
+    height: max-content;
+    max-height: 84vh;
+    padding: 0.7rem 1rem 1rem;
+    border-color: var(--evo-home-accent-2);
+    background: var(--evo-home-terminal);
+    color: var(--evo-home-terminal-fg);
+    font-size: 0.78rem;
+    box-shadow: 0 24px 60px rgba(4, 10, 20, 0.5);
+}
+
+.md-typeset .evo-terminal-card--expanded::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: rgba(4, 10, 20, 0.62);
+}
+
+.md-typeset .evo-terminal-card--expanded .evo-terminal-card__lines {
+    max-height: calc(84vh - 3.4rem);
+    overflow-y: auto;
+}
+
+.md-typeset .evo-terminal-card--expanded .evo-terminal-card__expand {
+    color: var(--evo-home-terminal-fg);
+}
+
+.md-typeset .evo-terminal-card--expanded .evo-terminal-card__expand:hover,
+.md-typeset .evo-terminal-card--expanded .evo-terminal-card__expand:focus-visible {
+    border-color: var(--evo-home-accent-2);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+/* Lock page scrolling while the overlay is open */
+body.evo-terminal-open {
+    overflow: hidden;
 }
 
 .md-typeset .evo-metrics {
