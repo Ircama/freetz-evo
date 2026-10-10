@@ -51,9 +51,7 @@ setup_virtenv() {
 run_httpserver() {
 	local PORT="$1"
 	local BIND="0.0.0.0"
-	[ "$PORT" -gt 0 ] 2>/dev/null || PORT="8000"
-
-	[ -d "$ENVDIR" ] || setup_virtenv || exit 1
+	local LOG="${TMPDIR:-/tmp}/zensical_httpserver_${PORT:-8000}.log"
 
 	echo "########################################################################"
 	echo "     Building the docs site, then serving it on http://$BIND:$PORT (CTRL+C to quit)."
@@ -67,12 +65,16 @@ run_httpserver() {
 	build_site || exit 1
 
 	echo "###################################################"
-	echo "     Serving $ZENDIR/site on http://$BIND:$PORT, use CTRL+C to quit."
+	echo "     Serving $ZENDIR/site on http://$BIND:$PORT"
+	echo "     Open http://localhost:$PORT/ (the site root, not /freetz-evo/)"
+	echo "     Request log: $LOG"
 	echo "###################################################"
 
 	source "$ENVDIR/bin/activate"
 	cd "$ZENDIR/site" || exit 1
-	python3 -m http.server "$PORT" --bind "$BIND"
+	# python's http.server logs every single request to stderr: keep the log in
+	# a file instead of flooding the terminal.
+	python3 -m http.server "$PORT" --bind "$BIND" 2>"$LOG"
 }
 
 build_site() {
