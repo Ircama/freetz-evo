@@ -299,8 +299,10 @@
 
     document.body.classList.toggle("toc-visible", effectiveVisible);
     // The CSS shows the TOC column by default (so the first paint is already
-    // correct); this class is only set when the column must be hidden.
-    document.body.classList.toggle("toc-hidden", !effectiveVisible);
+    // correct); the html class is only set when the column must be hidden. It
+    // is pre-applied from localStorage by docs/overrides/main.html before the
+    // first paint, and re-applied here once the page is known.
+    document.documentElement.classList.toggle("toc-hidden", !effectiveVisible);
 
     document.body.classList.toggle('toc-mobile-open', effectiveVisible && isMobile());
 

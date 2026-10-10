@@ -23,6 +23,7 @@ generator = false
 
 [project.theme]
 variant = "classic"
+custom_dir = "overrides"
 
 favicon = "screenshots/000-TAG_freetz-evo.png"
 logo = "screenshots/000-TAG_freetz-evo.png"

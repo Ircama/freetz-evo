@@ -1,0 +1,27 @@
+{#-
+  Theme override (docs/zensical.toml -> theme.custom_dir = "overrides").
+
+  Mirrors the packaged `main.html`, which is nothing but `{% extends "base.html" %}`
+  plus the `extrahead` block used below.
+
+  The TOC column is shown by CSS from the first paint (see docs/zensical.css) and
+  hidden again only when the user turned the index off. That preference lives in
+  localStorage and was previously applied by toc-toggle.js after the load event,
+  which made the column appear and then vanish (a visible flash). Applying it in
+  <head> keeps `html.toc-hidden` correct before the first paint.
+
+  Keep the storage key in sync with docs/javascripts/toc-toggle.js (STORAGE_KEY).
+-#}
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <script>
+    try {
+      document.documentElement.classList.toggle(
+        "toc-hidden",
+        localStorage.getItem("__toc_visible") === "0"
+      );
+    } catch (e) {}
+  </script>
+{% endblock %}

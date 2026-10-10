@@ -51,7 +51,8 @@ setup_virtenv() {
 run_httpserver() {
 	local PORT="$1"
 	local BIND="0.0.0.0"
-	local LOG="${TMPDIR:-/tmp}/zensical_httpserver_${PORT:-8000}.log"
+	[ "$PORT" -gt 0 ] 2>/dev/null || PORT="8000"
+	local LOG="${TMPDIR:-/tmp}/zensical_httpserver_${PORT}.log"
 
 	echo "########################################################################"
 	echo "     Building the docs site, then serving it on http://$BIND:$PORT (CTRL+C to quit)."

@@ -2,39 +2,40 @@
 /* Hidden by default; shown on desktop as soon as the page has TOC entries and
    the user did not hide the column, so the layout is complete before
    toc-toggle.js runs (no "page is wide, then the TOC appears and shrinks it"
-   reflow). toc-toggle.js only adds/removes body.toc-hidden. */
+   reflow). The state lives in html.toc-hidden: docs/overrides/main.html applies the
+   stored preference from localStorage before the first paint and
+   toc-toggle.js keeps it in sync afterwards. */
 .md-sidebar--secondary.md-sidebar {
     display: none;
 }
 
 /* Desktop behavior: keep native Material layout */
 @media (min-width: 76.25em) {
-    body:not(.toc-hidden) .md-sidebar--secondary.md-sidebar:has(.md-sidebar__inner .md-nav--secondary a) {
+    html:not(.toc-hidden) .md-sidebar--secondary.md-sidebar:has(.md-sidebar__inner .md-nav--secondary a) {
         display: block;
     }
 
-    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-nav--secondary {
+    html:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-nav--secondary {
         display: block;
     }
 
-    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__scrollwrap {
+    html:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__scrollwrap {
         height: 85vh !important;
         overflow-y: auto !important;
     }
 
-    body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
+    html:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
         background: rgba(0, 0, 0, 0.03);
         border-radius: 4px;
     }
 
-    [data-md-color-scheme="slate"] body:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
+    [data-md-color-scheme="slate"] html:not(.toc-hidden) .md-sidebar--secondary:has(.md-nav--secondary a) .md-sidebar__inner {
         background: rgba(255, 255, 255, 0.04);
     }
 
-    body:not(.toc-hidden):has(.md-sidebar--secondary .md-nav--secondary a) .md-grid {
+    html:not(.toc-hidden):has(.md-sidebar--secondary .md-nav--secondary a) .md-grid {
         max-width: 95%;
     }
-
     /* Fallback for browsers without :has(), driven by toc-toggle.js */
     body.toc-visible.toc-has-content .md-sidebar--secondary.md-sidebar,
     body.toc-visible.toc-has-content .md-nav--secondary {
