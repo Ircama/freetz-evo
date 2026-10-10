@@ -804,9 +804,9 @@ cd ~/freetz-evo
 tools/zensical_httpserver.sh run
 ```
 
-The `run` subcommand builds the site into `docs/site/` and then serves it on all interfaces (default port 8000, e.g. `tools/zensical_httpserver.sh run 8080`). Open `http://localhost:8000/`: the site is served from its root, so the deployed path (`http://localhost:8000/freetz-evo/`) does not exist and returns 404. Request logging is written to `/tmp/zensical_httpserver_<port>.log` instead of the terminal. The first invocation also creates the Python virtual environment `.venv-build/` in the repository root and installs Zensical in it. The pages are not rebuilt while the server is running, so re-run the command (or `tools/zensical_httpserver.sh build`) after editing the sources and reload the page.
+Open `http://localhost:8000`.
 
-The virtual environment must not be placed inside `docs/`: when Zensical runs from a virtual environment located in the documentation directory (observed with Zensical 0.0.69) it silently omits `assets/`, `404.html` and `sitemap.xml` from the build output, so the pages are rendered without CSS (no Material layout and no right-hand "On this page" index column). For the same reason, do not use `zensical serve` for this preview: it removes the theme bundles from `docs/site/` and does not serve them, so every `/assets/...` request returns 404. `tools/zensical_httpserver.sh run` builds the site first and serves the built directory, and fails with a clear error if the theme bundles are missing.
+The `run` subcommand builds the site into `docs/site/` and then serves it on all interfaces (default port 8000, e.g. `tools/zensical_httpserver.sh run 8080`); the site is served from its root. Request logging is written to `/tmp/zensical_httpserver_<port>.log`. The first invocation also creates the Python virtual environment `.venv-build/` in the repository root and installs Zensical in it. The pages are not rebuilt while the server is running, so re-run the command (or `tools/zensical_httpserver.sh build`) after editing the sources and reload the page.
 
 Other subcommands:
 

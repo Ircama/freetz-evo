@@ -48,11 +48,37 @@ setup_virtenv() {
 	pip3 install "zensical"                                     || exit 1
 }
 
+check_port_free() {
+	local PORT="$1" BIND="$2"
+	python3 - "$PORT" "$BIND" <<'PY' 2>/dev/null
+import socket
+import sys
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+	server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	server_socket.bind((sys.argv[2], int(sys.argv[1])))
+except OSError:
+    sys.exit(1)
+finally:
+	server_socket.close()
+PY
+}
+
 run_httpserver() {
 	local PORT="$1"
 	local BIND="0.0.0.0"
 	[ "$PORT" -gt 0 ] 2>/dev/null || PORT="8000"
 	local LOG="${TMPDIR:-/tmp}/zensical_httpserver_${PORT}.log"
+
+	if ! check_port_free "$PORT" "$BIND"; then
+		echo "" >&2
+		echo "ERROR: Port $PORT is already in use on $BIND." >&2
+		echo "       Another preview server may already be running." >&2
+		echo "       Stop it first, or use a different port, e.g.:" >&2
+		echo "         $0 run $((PORT + 1))" >&2
+		echo "       (Find the process with: ss -ltnp 'sport = :$PORT')" >&2
+		return 1
+	fi
 
 	echo "########################################################################"
 	echo "     Building the docs site, then serving it on http://$BIND:$PORT (CTRL+C to quit)."
@@ -71,18 +97,29 @@ run_httpserver() {
 	echo "     Request log: $LOG"
 	echo "###################################################"
 
-	source "$ENVDIR/bin/activate"
+	source "$ENVDIR/bin/activate" || return 1
 	cd "$ZENDIR/site" || exit 1
 	# python's http.server logs every single request to stderr: keep the log in
 	# a file instead of flooding the terminal.
-	python3 -m http.server "$PORT" --bind "$BIND" 2>"$LOG"
+	python3 -m http.server "$PORT" --bind "$BIND" 2>"$LOG" || {
+		echo "" >&2
+		echo "ERROR: Cannot serve the site on $BIND:$PORT." >&2
+		if grep -q 'Address already in use' "$LOG" 2>/dev/null; then
+			echo "       Port $PORT is already in use (another preview server running?)." >&2
+			echo "       Stop it first, or use: $0 run $((PORT + 1))" >&2
+		else
+			echo "       See $LOG for details." >&2
+		fi
+		return 1
+	}
 }
 
 build_site() {
 	[ -d "$ENVDIR" ] || setup_virtenv || exit 1
 
-	source "$ENVDIR/bin/activate"
-	zensical build --config-file "$ZENDIR/zensical.toml"  # --clean
+	source "$ENVDIR/bin/activate" || return 1
+	cd "$PARENT" || return 1
+	zensical build --config-file "$ZENDIR/zensical.toml" || return 1
 
 	# Guard against a build without the theme bundles (see ENVDIR above): such
 	# a site is unusable, so fail loudly instead of serving a broken preview.
@@ -148,8 +185,8 @@ PORT="$1"
 case "$ARG" in
 	i|install)	install_python "$DOY" ;;
 	s|setup)	setup_virtenv ;;
-	r|run)		run_httpserver "$PORT" ;;
-	b|build)	build_site ;;
+	r|run)		run_httpserver "$PORT" || exit 1 ;;
+	b|build)	build_site || exit 1 ;;
 	c|cleanup)	cleanup_virtenv ;;
 	*)		show_usage ;;
 esac

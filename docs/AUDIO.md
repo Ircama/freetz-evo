@@ -1,8 +1,8 @@
-# Freetz-EVO — The Audio Subsystem
+# Freetz-EVO — A complete audio subsystem
 
-With the Freetz-EVO Audio Subsystem, a FRITZ!Box connected to a USB DAC can function as an audio endpoint, providing audio server, receiver, and player functionality, as well as control of the attached DAC, including some high-end features.
+With the Freetz-EVO Audio Subsystem, a FRITZ!Box connected to a USB DAC becomes a versatile, free, open-source, extensible, network-connected, always-on, low-power audio platform, providing audio server, receiver, and player functionality, as well as advanced control of compatible DACs. Its USB-based architecture enables high-quality audio streaming without a separate computer or dedicated streaming appliance; DACs with built-in DSP can also perform advanced equalization and digital filtering directly in the audio hardware, minimizing processing overhead on the router's CPU.
 
-FRITZ!Box devices do not provide an analog sound card, line-out, or onboard audio codec intended for direct user access. The stock firmware also does not expose the kernel's audio subsystem. Freetz-EVO therefore uses **USB audio** as its primary audio interface: the FRITZ!Box can provide audio playback and processing when a **USB Audio Class device — preferably a USB HiFi DAC, or alternatively a USB headset — is attached**. The required software and drivers are integrated into the custom firmware so that the USB audio device can be detected, accessed, and configured directly on the box.
+FRITZ!Box devices do not provide an analog sound card, line-out, or onboard audio codec intended for direct user access. The stock firmware also does not expose the kernel's audio subsystem. Freetz-EVO addresses these limitations by using **USB audio** as its primary audio interface: audio playback and processing become possible when a **USB Audio Class device — preferably a USB HiFi DAC, or alternatively a USB headset — is attached**. The required software and drivers are integrated into the custom firmware, enabling external USB DACs and other compatible USB audio devices to be detected, accessed, and configured directly on the box.
 
 "Activating audio" in Freetz-EVO consequently means three coordinated things:
 
