@@ -1,0 +1,28 @@
+config FREETZ_PACKAGE_TUYA_IOT_CORE_SDK
+	bool "tuya-iot-core-sdk (Tuya IoT Core SDK for C)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	default n
+	help
+		Tuya IoT Core SDK for C: MQTT/TLS connection of a device to the
+		Tuya Cloud, including the data model, OTA and sub-device APIs.
+		mbedTLS, coreMQTT, coreHTTP and coreJSON are bundled.
+
+		The upstream example programs are built and installed; they get
+		their device credentials from the environment (the upstream
+		values are only placeholders):
+
+		 TUYA_PRODUCT_ID=... TUYA_DEVICE_ID=... TUYA_DEVICE_SECRET=... \
+			/mnt/data/tuya/usr/bin/data_model_basic_demo
+
+		TUYA_MQTT_HOST can be set to select another data centre
+		(default: m1.tuyacn.com).
+
+		Installs:
+		 - /usr/bin/custom_protocol_basic_demo
+		 - /usr/bin/data_model_basic_demo
+		 - /usr/bin/ota_basic_demo
+		 - /usr/bin/subdevice_basic_demo
+
+		Requires uClibc 1.0.58 or newer.
+
+		https://github.com/tuya/tuya-iot-core-sdk

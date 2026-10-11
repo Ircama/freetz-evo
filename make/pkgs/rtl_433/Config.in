@@ -1,0 +1,49 @@
+config FREETZ_PACKAGE_RTL_433
+	bool "rtl_433 25.12"
+	depends on FREETZ_TARGET_GCC_4_8_MIN
+	select FREETZ_LIB_rtl_sdr
+	select FREETZ_LIB_libusb1
+	default n
+	help
+		rtl_433 is a generic data receiver, mainly for the 433.92 MHz,
+		868 MHz (SRD), 315 MHz, 345 MHz, and 915 MHz ISM bands. It
+		decodes radio transmissions from many wireless sensors,
+		weather stations, TPMS, and remote controls using an RTL-SDR
+		USB dongle.
+
+		Installs:
+		 - /usr/bin/rtl_433
+
+		Example usage:
+		 rtl_433 -f 433.92M -F json -M utc
+
+		Project homepage:
+		https://github.com/merbanan/rtl_433
+
+if FREETZ_PACKAGE_RTL_433
+
+	config FREETZ_PACKAGE_RTL_433_WITH_SOAPYSDR
+		bool "SoapySDR support"
+		depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+		default y
+		select FREETZ_LIB_libsoapysdr
+		help
+			Build rtl_433 with SoapySDR support, i.e. it can then use
+			any device for which a SoapySDR module is installed below
+			/usr/lib/SoapySDR/modules0.8 (e.g. soapyrtlsdr for RTL-SDR
+			dongles). The modules themselves are not part of this
+			package.
+
+			Requires uClibc 1.0.58 or newer.
+
+	config FREETZ_PACKAGE_RTL_433_WITH_OPENSSL
+		bool "OpenSSL (TLS) support"
+		depends on !FREETZ_PACKAGE_OPENSSL_STATIC
+		default y
+		select FREETZ_LIB_libcrypto
+		select FREETZ_LIB_libssl
+		help
+			Build rtl_433 with OpenSSL, which enables TLS for the MQTT
+			and InfluxDB outputs.
+
+endif # FREETZ_PACKAGE_RTL_433

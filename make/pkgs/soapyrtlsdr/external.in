@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_SOAPYRTLSDR
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_SOAPYRTLSDR
+	bool "soapyrtlsdr"
+	default n
+	help
+		Externals the following file(s):
+		 /usr/lib/SoapySDR/modules0.8/libsoapyrtlsdr.so

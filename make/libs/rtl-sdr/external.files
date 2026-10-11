@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_rtl_sdr" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/librtlsdr.so.2.0.3"

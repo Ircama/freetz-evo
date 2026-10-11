@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_rtl_sdr
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_rtl_sdr
+	bool "rtl-sdr"
+	default n
+	help
+		externals the following file(s):
+			${FREETZ_LIBRARY_DIR}/librtlsdr.so.2.0.3

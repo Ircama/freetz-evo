@@ -1,0 +1,16 @@
+config FREETZ_LIB_libsoapysdr
+	bool "soapysdr (libSoapySDR.so)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	default n
+	help
+		SoapySDR is a vendor and platform neutral SDR support library and
+		API. Hardware support is not part of it: it is provided by
+		loadable modules (e.g. soapyrtlsdr for RTL-SDR dongles) that have
+		to be installed below /usr/lib/SoapySDR/modules0.8.
+
+		Used by rtl_433 as an alternative input besides librtlsdr.
+
+		Resolution uClibc 1.0.58 or newer (SoapySDR needs a C++11 capable
+		toolchain).
+
+		https://github.com/pothosware/SoapySDR

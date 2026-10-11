@@ -1223,6 +1223,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[rsync 3.4.1/3.5.1](../../docs/make/rsync.md)<a id='rsync'></a>**<br>
     rsync is an open source utility that provides fast incremental file transfer.
 
+  * **[rtl_433 25.12](../../docs/make/rtl_433.md)<a id='rtl-433'></a>**<br>
+    868 MHz (SRD), 315 MHz, 345 MHz, and 915 MHz ISM bands. It decodes radio transmissions from many wireless sensors, weather stations, TPMS, and remote controls using an RTL-SDR USB dongle. Installs: - /usr/bin/rtl_433 Example usage: rtl_433 -f 433.92M -F json -M utc Project homepage: https://github.com/merbanan/rtl_433
+
   * **<u>RTMPDump 2.4-git (binary only) - DEPRECATED</u><a id='rtmpdump'></a>**<br>
     rtmpdump is a toolkit for RTMP streams. All forms of RTMP are supported, including rtmp://, rtmpt://, rtmpe://, rtmpte://, and rtmps://.
 
@@ -1314,6 +1317,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>smusbutil 1.1 (binary only)</u><a id='smusbutil'></a>**<br>
     Linux software for setting up the frequency and resetpolarity on WB Electronics ftdi devices. This utility is written and maintained by Carsten Sprung. WB Electronics does not currently provide official support for Linux, please contact the author directly for any support issues.
+
+  * **[soapyrtlsdr (SoapySDR module for RTL-SDR)](../../docs/make/soapyrtlsdr.md)<a id='soapyrtlsdr'></a>**<br>
+    SoapySDR hardware module for RTL-SDR (Realtek RTL2832U based DVB-T) USB dongles. It makes the dongle usable through SoapySDR by applications such as rtl_433. Installs: - /usr/lib/SoapySDR/modules0.8/libsoapyrtlsdr.so Example: rtl_433 -d driver=rtlsdr Requires uClibc 1.0.58 or newer. https://github.com/pothosware/SoapyRTLSDR
 
   * **[socat 1.8.1.3 (binary only)](../../docs/make/socat.md)<a id='socat'></a>**<br>
     socat is an extended netcat-like utility
@@ -1449,6 +1455,12 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[ttyd 1.7.7](../../docs/make/ttyd.md)<a id='ttyd'></a>**<br>
     ttyd is a simple command-line tool for sharing a terminal over the web. Powered by libwebsockets with an embedded xterm.js terminal frontend. The web interface is embedded in the CGI control page of this package and connects to the ttyd WebSocket server. Access: http://fritz.box:81/cgi-bin/conf/ttyd ttyd WebSocket: http://fritz.box:7681/ Project homepage: https://github.com/tsl0922/ttyd
+
+  * **[tuya-iot-core-sdk (Tuya IoT Core SDK for C)](../../docs/make/tuya-iot-core-sdk.md)<a id='tuya-iot-core-sdk'></a>**<br>
+    Tuya IoT Core SDK for C: MQTT/TLS connection of a device to the Tuya Cloud, including the data model, OTA and sub-device APIs. mbedTLS, coreMQTT, coreHTTP and coreJSON are bundled. The upstream example programs are built and installed; they get their device credentials from the environment (the upstream values are only placeholders): TUYA_PRODUCT_ID=... TUYA_DEVICE_ID=... TUYA_DEVICE_SECRET=... \ /mnt/data/tuya/usr/bin/data_model_basic_demo TUYA_MQTT_HOST can be set to select another data centre (default: m1.tuyacn.com). Installs: - /usr/bin/custom_protocol_basic_demo - /usr/bin/data_model_basic_demo - /usr/bin/ota_basic_demo - /usr/bin/subdevice_basic_demo Requires uClibc 1.0.58 or newer. https://github.com/tuya/tuya-iot-core-sdk
+
+  * **[tuyapp (local Tuya API client tools)](../../docs/make/tuyapp.md)<a id='tuyapp'></a>**<br>
+    tuyapp is a small C++ client library for the Local Tuya API, shipped together with a set of ready to use command line clients that talk directly to Tuya devices on the local network (no cloud round trip). It was written as a lightweight replacement for the Python based tinytuya project, specifically targeting embedded machines. Installs these clients in /usr/bin: - tuya_switch              read state, or switch on|off|toggle - tuya_status              dump all data points (DPS) - tuya_kwh_meter           poll a single energy meter - tuya_multi_kwh_meter     poll several energy meters - tuya_monitor_and_control combined monitor and control The clients that need device credentials read a "tuya-devices.json" file from the current directory. A documented sample is installed at /usr/share/tuyapp/tuya-devices.json.sample Protocol versions 3.3, 3.4 and 3.5 are supported and the OpenSSL crypto backend is used. Requires uClibc 1.0.58 or newer (C++14 toolchain and the jsoncpp dependency). https://github.com/gordonb3/tuyapp
 
 ### U
 

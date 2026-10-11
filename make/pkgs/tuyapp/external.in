@@ -1,0 +1,11 @@
+config EXTERNAL_FREETZ_PACKAGE_TUYAPP
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TUYAPP
+	bool "tuyapp"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/tuya_switch
+		 /usr/bin/tuya_status
+		 /usr/bin/tuya_kwh_meter
+		 /usr/bin/tuya_multi_kwh_meter
+		 /usr/bin/tuya_monitor_and_control

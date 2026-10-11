@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_PACKAGE_RTL_433
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_RTL_433
+	bool "rtl_433"
+	default n
+	help
+		externals the following file(s):
+		 /usr/bin/rtl_433

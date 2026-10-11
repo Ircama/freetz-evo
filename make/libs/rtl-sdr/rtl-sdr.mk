@@ -1,0 +1,70 @@
+$(call PKG_INIT_LIB, 2.0.3)
+$(PKG)_SOURCE_DOWNLOAD_NAME:=v$($(PKG)_VERSION).tar.gz
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
+$(PKG)_HASH:=23dec530f40456a8396e7c897f313859877e18b4c6432c6d323645871e351f6f
+$(PKG)_SITE:=https://github.com/osmocom/rtl-sdr/archive/refs/tags
+### VERSION:=2.0.3
+### WEBSITE:=https://osmocom.org/projects/rtl-sdr/
+### CHANGES:=https://github.com/osmocom/rtl-sdr/commits/master
+### CVSREPO:=https://github.com/osmocom/rtl-sdr
+
+$(PKG)_CATEGORY_LIBS:=USB & related
+
+# The library file installed by upstream cmake is librtlsdr.so.2.0.3
+# (upstream VERSION/LIBVER). Its SONAME is librtlsdr.so.0.
+$(PKG)_LIB_VERSION:=2.0.3
+$(PKG)_LIBNAME:=librtlsdr.so.$($(PKG)_LIB_VERSION)
+$(PKG)_BINARY:=$($(PKG)_DIR)/src/librtlsdr.so.$($(PKG)_LIB_VERSION)
+$(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)
+$(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$($(PKG)_LIBNAME)
+
+$(PKG)_DEPENDS_ON += cmake-host
+$(PKG)_DEPENDS_ON += libusb1
+
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_INSTALL_PREFIX="/usr"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SKIP_RPATH=YES
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_BUILD_TYPE=Release
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SYSTEM_NAME=Linux
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_SYSTEM_PROCESSOR=$(FREETZ_TARGET_ARCH)
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_FIND_ROOT_PATH="$(TARGET_TOOLCHAIN_STAGING_DIR)"
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY
+$(PKG)_CONFIGURE_OPTIONS += -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
+$(PKG)_CONFIGURE_OPTIONS += -DINSTALL_UDEV_RULES=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DDETACH_KERNEL_DRIVER=OFF
+$(PKG)_CONFIGURE_OPTIONS += -DENABLE_ZEROCOPY=OFF
+
+$(PKG_SOURCE_DOWNLOAD)
+$(PKG_UNPACKED)
+$(PKG_CONFIGURED_CMAKE)
+
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+	$(SUBMAKE) -C $(RTL_SDR_DIR)
+
+$($(PKG)_STAGING_BINARY): $($(PKG)_BINARY)
+	$(SUBMAKE) -C $(RTL_SDR_DIR) \
+		DESTDIR="$(TARGET_TOOLCHAIN_STAGING_DIR)" \
+		install
+	@touch $@
+
+$($(PKG)_TARGET_BINARY): $($(PKG)_STAGING_BINARY)
+	$(INSTALL_LIBRARY_STRIP)
+
+$(pkg): $($(PKG)_STAGING_BINARY)
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
+
+$(pkg)-clean:
+	-$(SUBMAKE) -C $(RTL_SDR_DIR) clean
+	$(RM) -r \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/rtl-sdr.h \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/rtl-sdr_export.h \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/librtlsdr.* \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/librtlsdr.pc \
+		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/cmake/rtlsdr/
+
+$(pkg)-uninstall:
+	$(RM) $(RTL_SDR_TARGET_DIR)/librtlsdr.so*
+
+$(PKG_FINISH)

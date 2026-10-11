@@ -1138,6 +1138,10 @@ if [ "$DO_MOD" -gt 0 ]; then
 					libwildmidi)	files=$(shopt -s nocaseglob nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn}*[-.]*so*) ;;
 					libfaad2)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libfaad[-.]*so*) ;;
 					hidapi)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libhidapi*so*) ;;
+					# The freetz symbols FREETZ_LIB_rtl_sdr and FREETZ_LIB_libsoapysdr do
+					# not match the real file names, so map them explicitly.
+					rtl_sdr)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/librtlsdr[-.]*so*) ;;
+					libsoapysdr)	files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/libSoapySDR[-.]*so*) ;;
 					*)		files=$(shopt -s nullglob; echo ${TARGET_SPECIFIC_ROOT_DIR}/$dn/${bn//_/[-+._]}[-.]*so*) ;;
 				esac
 				if [ -z "$files" ]; then

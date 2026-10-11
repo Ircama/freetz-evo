@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libsoapysdr
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libsoapysdr
+	bool "soapysdr"
+	default n
+	help
+		Externals the following file(s):
+			${FREETZ_LIBRARY_DIR}/libSoapySDR.so.0.8.1

@@ -1,0 +1,36 @@
+config FREETZ_PACKAGE_TUYAPP
+	bool "tuyapp (local Tuya API client tools)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	select FREETZ_LIB_libjsoncpp
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libssl
+	default n
+	help
+		tuyapp is a small C++ client library for the Local Tuya API,
+		shipped together with a set of ready to use command line
+		clients that talk directly to Tuya devices on the local
+		network (no cloud round trip).
+
+		It was written as a lightweight replacement for the Python
+		based tinytuya project, specifically targeting embedded
+		machines.
+
+		Installs these clients in /usr/bin:
+		 - tuya_switch              read state, or switch on|off|toggle
+		 - tuya_status              dump all data points (DPS)
+		 - tuya_kwh_meter           poll a single energy meter
+		 - tuya_multi_kwh_meter     poll several energy meters
+		 - tuya_monitor_and_control combined monitor and control
+
+		The clients that need device credentials read a
+		"tuya-devices.json" file from the current directory.
+		A documented sample is installed at
+		 /usr/share/tuyapp/tuya-devices.json.sample
+
+		Protocol versions 3.3, 3.4 and 3.5 are supported and the
+		OpenSSL crypto backend is used.
+
+		Requires uClibc 1.0.58 or newer (C++14 toolchain and the
+		jsoncpp dependency).
+
+		https://github.com/gordonb3/tuyapp

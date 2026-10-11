@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_SOAPYRTLSDR
+	bool "soapyrtlsdr (SoapySDR module for RTL-SDR)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	select FREETZ_LIB_libsoapysdr
+	select FREETZ_LIB_rtl_sdr
+	default n
+	help
+		SoapySDR hardware module for RTL-SDR (Realtek RTL2832U based
+		DVB-T) USB dongles. It makes the dongle usable through SoapySDR
+		by applications such as rtl_433.
+
+		Installs:
+		 - /usr/lib/SoapySDR/modules0.8/libsoapyrtlsdr.so
+
+		Example:
+		 rtl_433 -d driver=rtlsdr
+
+		Requires uClibc 1.0.58 or newer.
+
+		https://github.com/pothosware/SoapyRTLSDR

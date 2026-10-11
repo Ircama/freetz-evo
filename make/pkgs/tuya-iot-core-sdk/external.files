@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_PACKAGE_TUYA_IOT_CORE_SDK" == "y" ] && EXTERNAL_FILES+=" /usr/bin/custom_protocol_basic_demo /usr/bin/data_model_basic_demo /usr/bin/ota_basic_demo /usr/bin/subdevice_basic_demo"

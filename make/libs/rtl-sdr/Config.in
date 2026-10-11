@@ -1,0 +1,11 @@
+config FREETZ_LIB_rtl_sdr
+	bool "rtl-sdr (librtlsdr.so)"
+	select FREETZ_LIB_libusb1
+	default n
+	help
+		Turn a Realtek RTL2832U based DVB-T USB dongle into an SDR
+		receiver. This library (librtlsdr) is the driver used by
+		rtl_433 and other SDR applications to access RTL-SDR devices.
+
+		Project homepage:
+		https://osmocom.org/projects/rtl-sdr/
