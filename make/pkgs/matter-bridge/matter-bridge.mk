@@ -91,7 +91,13 @@ $($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup: $(MATTER_BRIDGE_MAKE_DIR)/files/
 	cp $< $@
 	chmod 755 $@
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup
+# Web interface page (Freetz menu entry "Matter bridge (Domoticz)")
+$($(PKG)_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi: $(MATTER_BRIDGE_MAKE_DIR)/files/root/usr/lib/cgi-bin/matter-bridge.cgi
+	mkdir -p $(dir $@)
+	cp $< $@
+	chmod 755 $@
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi
 
 $(pkg)-clean:
 	$(RM) -r $(MATTER_BRIDGE_BUILD_DIR) $(MATTER_BRIDGE_DIR)/controller/target

@@ -189,7 +189,11 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_DIR)/.installed
 ifneq ($(strip $(FREETZ_PACKAGE_PYTHON3_STATIC)),y)
 $($(PKG)_LIB_PYTHON3_TARGET_DIR): $($(PKG)_DIR)/.installed
 	@mkdir -p $(dir $@); \
-	cp -a $(PYTHON3_LOCAL_INSTALL_DIR)/usr/lib/libpython$(PYTHON3_MAJOR_VERSION).so* $(dir $@)
+	cp -a $(PYTHON3_LOCAL_INSTALL_DIR)/usr/lib/libpython$(PYTHON3_MAJOR_VERSION).so* $(dir $@); \
+	for lib in $(dir $@)libpython$(PYTHON3_MAJOR_VERSION).so*; do \
+		[ -e "$$lib" ] || continue; \
+		if [ ! -L "$$lib" ]; then $(TARGET_STRIP) "$$lib"; fi; \
+	done
 endif
 
 $(pkg): $($(PKG)_TARGET_DIR)/.exclude-extra

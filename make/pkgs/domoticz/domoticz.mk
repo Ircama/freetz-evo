@@ -192,9 +192,11 @@ $(PKG)_DATA_TARGETS:=$(foreach file,$($(PKG)_DATA_FILES),$($(PKG)_DATA_DIR)/$(fi
 # /mod/etc/default.domoticz by the mod package, the saved values end up in
 # /mod/etc/conf/domoticz.cfg).
 $(PKG)_STAGING_SOURCES := \
+	$(DOMOTICZ_MAKE_DIR)/files/.language \
 	$(DOMOTICZ_MAKE_DIR)/files/root/etc/default.domoticz/domoticz.cfg \
 	$(DOMOTICZ_MAKE_DIR)/files/root/etc/default.domoticz/domoticz.save \
-	$(DOMOTICZ_MAKE_DIR)/files/root/etc/init.d/rc.domoticz
+	$(DOMOTICZ_MAKE_DIR)/files/root/etc/init.d/rc.domoticz \
+	$(DOMOTICZ_MAKE_DIR)/files/root/usr/lib/cgi-bin/domoticz.cgi
 $(PKG)_STAGING_TARGET := $($(PKG)_DEST_DIR)/etc/init.d/rc.domoticz
 
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
@@ -202,7 +204,8 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	$(call COPY_USING_TAR,$(DOMOTICZ_MAKE_DIR)/files,$(DOMOTICZ_TARGET_DIR))
 	chmod 755 \
 		$(DOMOTICZ_DEST_DIR)/etc/init.d/rc.domoticz \
-		$(DOMOTICZ_DEST_DIR)/etc/default.domoticz/domoticz.save
+		$(DOMOTICZ_DEST_DIR)/etc/default.domoticz/domoticz.save \
+		$(DOMOTICZ_DEST_DIR)/usr/lib/cgi-bin/domoticz.cgi
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)

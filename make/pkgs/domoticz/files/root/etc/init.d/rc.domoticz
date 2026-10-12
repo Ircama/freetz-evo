@@ -41,6 +41,12 @@ build_args() {
 }
 
 config() {
+	# Domoticz cannot create its database before the folder exists, and on a
+	# freshly prepared stick nobody else creates it: do it here as soon as the
+	# storage is mounted. Both the manual start and the boot wait rely on this.
+	[ -z "$DOMOTICZ_USERDATA" ] || [ -d "$DOMOTICZ_USERDATA" ] || \
+		mkdir -p "$DOMOTICZ_USERDATA" 2>/dev/null
+
 	build_args
 	return 0
 }
@@ -48,10 +54,15 @@ config() {
 # Wait for the storage device holding the Domoticz database (USB stick, NAS).
 # Must never block the boot sequence, therefore it is executed in background.
 wait_for_userdata() {
+	mkdir -p "$DOMOTICZ_USERDATA" 2>/dev/null
+	[ -d "$DOMOTICZ_USERDATA" ] && return 0
+
 	elapsed=0
-	while [ ! -d "$DOMOTICZ_USERDATA" ] && [ $elapsed -lt "$DOMOTICZ_CONFIG_WAIT" ]; do
+	while [ $elapsed -lt "$DOMOTICZ_CONFIG_WAIT" ]; do
 		sleep 2
 		elapsed=$((elapsed + 2))
+		mkdir -p "$DOMOTICZ_USERDATA" 2>/dev/null
+		[ -d "$DOMOTICZ_USERDATA" ] && return 0
 	done
 	if [ ! -d "$DOMOTICZ_USERDATA" ]; then
 		echo "$(date): $DOMOTICZ_USERDATA not available after ${DOMOTICZ_CONFIG_WAIT}s" >> $LOG
@@ -61,6 +72,11 @@ wait_for_userdata() {
 }
 
 start() {
+	# DOMOTICZ_ARGS is built by config(). modlib_startdaemon() calls config()
+	# too, but only *after* this command line has been expanded, so the daemon
+	# would be started with an empty argument list: no -approot/-wwwroot (the
+	# web server then answers 400 Bad Request on "/") and no -userdata.
+	config || return 1
 	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE -x /usr/bin/$DAEMON_BIN -- $DOMOTICZ_ARGS
 }
 
@@ -86,6 +102,7 @@ stop() {
 case "$1" in
 	""|load)
 		modreg daemon $DAEMON
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
 		if [ "$DOMOTICZ_ENABLED" != "yes" ]; then
 			modlib_start "$DOMOTICZ_ENABLED"
 		else
@@ -111,6 +128,7 @@ case "$1" in
 		fi
 		;;
 	unload)
+		modunreg cgi $DAEMON
 		modunreg daemon $DAEMON
 		modlib_stop
 		;;

@@ -124,6 +124,9 @@ $($(PKG)_TARGET_BINARY) $($(PKG)_INSTALLED_STAMP): $($(PKG)_BINARY)
 ifneq ($(strip $(FREETZ_PACKAGE_GERBERA_WITH_WEBUI)),y)
 	$(RM) -r $(GERBERA_DEST_DIR)/usr/share/gerbera/web 2>/dev/null || true
 endif
+	# CMake installs the executable unstripped; strip it here so fwmod's
+	# leftover-binary pass does not have to touch the 30 MB binary.
+	$(TARGET_STRIP) $(GERBERA_TARGET_BINARY)
 	@touch $@
 
 $(pkg)-precompiled: \

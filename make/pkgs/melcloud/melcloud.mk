@@ -1,3 +1,5 @@
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 $(call PKG_INIT_BIN, 1.0)
 ### STEWARD:=Ircama
 
@@ -22,6 +24,7 @@ $($(PKG)_TARGET_BINARY): $(MELCLOUD_MAKE_DIR)/files/src/melcloud_cli.c | $(PACKA
 		$(MELCLOUD_MAKE_DIR)/files/src/melcloud_cli.c \
 		-o $(MELCLOUD_TARGET_BINARY) -lcurl
 	chmod 755 $(MELCLOUD_TARGET_BINARY)
+	$(TARGET_STRIP) $(MELCLOUD_TARGET_BINARY)
 
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	mkdir -p $(MELCLOUD_TARGET_DIR)/root

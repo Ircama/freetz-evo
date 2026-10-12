@@ -163,6 +163,15 @@ else
 	@echo "  - Skipping headers (FREETZ_PACKAGE_GCC_TOOLCHAIN_HEADERS disabled)"
 endif
 	
+	# Strip the copied ELF executables and shared objects here, so that fwmod's
+	# "leftover unstripped binaries" pass no longer has to touch the toolchain
+	# archive. The archive ships no separate symbol files, so nothing is lost.
+	@echo "  - Stripping toolchain binaries..."
+	@find "$(GCC_TOOLCHAIN_DEST_DIR)/$(GCC_TOOLCHAIN_ARCHIVE_MARKER)" -type f \
+		\( -perm /100 -o -name "*.so*" \) -exec file {} + | \
+		sed -n 's|^\(.*\):.* not stripped.*|\1|p' | \
+		while read -r bin; do $(TARGET_STRIP) "$$bin"; done
+
 	@echo "GCC toolchain packaged into archive marker directory"
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)

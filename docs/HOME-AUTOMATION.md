@@ -179,7 +179,7 @@ The remaining work on this path is verification on a real box with a real contro
 | `soapysdr` (lib) | `${FREETZ_LIBRARY_DIR}/libSoapySDR.so.0.8.1` |
 | `boost` (lib) | `${FREETZ_LIBRARY_DIR}/libboost_{thread,system}.so.1.87.0` |
 
-`tools/check-external-files.sh` and `tools/check-external-wiring.sh` verify the declarations (file existence in the build output and Kconfig wiring), and `make` itself performs the move at image assembly; externalizing a library also defers the services that depend on it until external storage is mounted (handled by `tools/external`).
+`make` itself performs the move at image assembly; externalizing a library also defers the services that depend on it until external storage is mounted (handled by `tools/external`). Every declaration above was checked by hand against the built artifacts.
 
 ## Design constraints and caveats
 

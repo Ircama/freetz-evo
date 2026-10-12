@@ -75,7 +75,13 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 
 $(pkg): $($(PKG)_BINARY)
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+# Web interface page (Freetz menu entry "freetz-matter (Matter device)")
+$($(PKG)_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi: $(FREETZ_MATTER_MAKE_DIR)/files/root/usr/lib/cgi-bin/freetz-matter.cgi
+	mkdir -p $(dir $@)
+	cp $< $@
+	chmod 755 $@
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi
 
 $(pkg)-clean:
 	$(RM) -r $(FREETZ_MATTER_DIR)/target

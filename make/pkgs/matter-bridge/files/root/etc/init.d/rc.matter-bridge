@@ -62,9 +62,11 @@ stop() {
 case "$1" in
 	""|load)
 		modreg daemon $DAEMON
+		modreg cgi $DAEMON "Matter bridge (Domoticz)"
 		modlib_start "$MATTER_BRIDGE_ENABLED"
 		;;
 	unload)
+		modunreg cgi $DAEMON
 		modunreg daemon $DAEMON
 		modlib_stop
 		;;
