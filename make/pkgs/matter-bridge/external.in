@@ -1,0 +1,13 @@
+config EXTERNAL_FREETZ_PACKAGE_MATTER_BRIDGE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_MATTER_BRIDGE
+	bool "matter-bridge"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/matter-bridge
+
+		The WebSocket server binary lives on USB/NAS storage. Its seed node
+		store (/etc/matter-bridge/nodes.json) and the persisted state
+		(/mod/etc/matter-bridge/nodes.json) are not externalized: the seed is
+		small and the state must stay in /mod/etc to survive reboots. Both are
+		reached through absolute paths, so the binary works from /mod/external.

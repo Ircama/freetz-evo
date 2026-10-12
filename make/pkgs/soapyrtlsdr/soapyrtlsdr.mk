@@ -8,6 +8,8 @@ $(PKG)_SITE:=https://github.com/pothosware/SoapyRTLSDR/archive/refs/tags
 ### CHANGES:=https://github.com/pothosware/SoapyRTLSDR/blob/master/CHANGELOG.TXT
 ### CVSREPO:=https://github.com/pothosware/SoapyRTLSDR
 
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 # SoapySDR loads its hardware modules from <SOAPY_SDR_ROOT>/lib/SoapySDR/modules<abi>.
 # SOAPY_SDR_ROOT is baked into libSoapySDR at build time and is "/usr" here.
 # Upstream's CMake target is called "rtlsdrSupport", so the shared object is

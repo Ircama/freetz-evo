@@ -1,0 +1,86 @@
+#!/bin/sh
+
+DAEMON=freetz-matter
+DAEMON_LONG_NAME=freetz-matter
+DAEMON_BIN=freetz-matter
+PID_FILE=/var/run/$DAEMON.pid
+LOG=/tmp/rc.$DAEMON.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+FREETZ_MATTER_PORT="${FREETZ_MATTER_PORT:-5540}"
+FREETZ_MATTER_STORE="${FREETZ_MATTER_STORE:-/tmp/flash/freetz-matter}"
+
+FREETZ_MATTER_ARGS=
+
+# Called by modlib_startdaemon before the daemon is spawned.
+config() {
+	# The default fabric store is included in the modsave archive:
+	# it holds the commissioned fabrics and the subscription state.
+	umask 077
+	mkdir -p "$FREETZ_MATTER_STORE" || return 1
+	chmod 700 "$FREETZ_MATTER_STORE" || return 1
+
+	FREETZ_MATTER_ARGS="-p $FREETZ_MATTER_PORT -d $FREETZ_MATTER_STORE"
+	[ "$FREETZ_MATTER_VERBOSE" = "yes" ] && FREETZ_MATTER_ARGS="$FREETZ_MATTER_ARGS -v"
+	[ -n "$FREETZ_MATTER_EXTRA_ARGS" ] && FREETZ_MATTER_ARGS="$FREETZ_MATTER_ARGS $FREETZ_MATTER_EXTRA_ARGS"
+
+	return 0
+}
+
+start() {
+	# While the device is not commissioned the QR code and the manual pairing
+	# code are printed on stdout, so they end up in the service log.
+	config || return 1
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE \
+		-x /bin/sh -- -c 'exec /usr/bin/freetz-matter "$@" >>/tmp/rc.freetz-matter.log 2>&1' \
+		freetz-matter $FREETZ_MATTER_ARGS
+}
+
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		# Give the device a moment to close its exchanges and flush the store.
+		kill "$pid" 2>/dev/null
+		timeout=15
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modlib_start "$FREETZ_MATTER_ENABLED"
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

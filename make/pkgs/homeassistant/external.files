@@ -1,0 +1,4 @@
+# Home Assistant is installed on demand (by this helper) into external storage,
+# so the helper script is the only package file worth externalizing. The init
+# script stays in the firmware because the autorun has to be available at boot.
+[ "$EXTERNAL_FREETZ_PACKAGE_HOMEASSISTANT" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ha-setup"

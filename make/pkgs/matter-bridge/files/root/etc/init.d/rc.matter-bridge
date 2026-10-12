@@ -1,0 +1,89 @@
+#!/bin/sh
+
+DAEMON=matter-bridge
+DAEMON_LONG_NAME="Matter bridge (Matter WebSocket server for Domoticz)"
+DAEMON_BIN=matter-bridge
+PID_FILE=/var/run/matter-bridge.pid
+LOG=/tmp/rc.matter-bridge.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+MATTER_BRIDGE_PORT="${MATTER_BRIDGE_PORT:-5580}"
+MATTER_BRIDGE_BIND="${MATTER_BRIDGE_BIND:-127.0.0.1}"
+MATTER_BRIDGE_STATE="${MATTER_BRIDGE_STATE:-/mod/etc/matter-bridge/nodes.json}"
+MATTER_BRIDGE_SEED="${MATTER_BRIDGE_SEED:-/etc/matter-bridge/nodes.json}"
+MATTER_BRIDGE_STORE="${MATTER_BRIDGE_STORE:-/tmp/flash/matter-bridge}"
+MATTER_BRIDGE_PEER="${MATTER_BRIDGE_PEER:-[::1]:5540}"
+MATTER_BRIDGE_AUTO_LOCAL="${MATTER_BRIDGE_AUTO_LOCAL:-yes}"
+
+MATTER_BRIDGE_ARGS=
+
+config() {
+	# The default controller store is included in the modsave archive.
+	state_dir="$MATTER_BRIDGE_STORE"
+	umask 077
+	mkdir -p "$state_dir" || return 1
+	chmod 700 "$state_dir" || return 1
+
+	MATTER_BRIDGE_ARGS="-p $MATTER_BRIDGE_PORT --bind $MATTER_BRIDGE_BIND --store $MATTER_BRIDGE_STORE --peer $MATTER_BRIDGE_PEER"
+	[ "$MATTER_BRIDGE_AUTO_LOCAL" = "yes" ] && MATTER_BRIDGE_ARGS="$MATTER_BRIDGE_ARGS --auto-local"
+	[ "$MATTER_BRIDGE_VERBOSE" = "yes" ] && export RUST_LOG=debug
+	[ -n "$MATTER_BRIDGE_EXTRA_ARGS" ] && MATTER_BRIDGE_ARGS="$MATTER_BRIDGE_ARGS $MATTER_BRIDGE_EXTRA_ARGS"
+
+	return 0
+}
+
+start() {
+	config || return 1
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE -x /bin/sh -- -c \
+		'exec /usr/bin/matter-bridge "$@" >>/tmp/rc.matter-bridge.log 2>&1' matter-bridge $MATTER_BRIDGE_ARGS
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null
+		timeout=15
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modlib_start "$MATTER_BRIDGE_ENABLED"
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1,0 +1,6 @@
+# otbr-agent (2.4 MB) and the ot-ctl that drives it are externalized together;
+# ot-ctl speaks to the agent over its control socket, so both belong in the same
+# filesystem. The agent is started with absolute paths from rc.otbr and takes
+# the radio URL and the infrastructure interface from the Freetz configuration,
+# so no in-firmware file is required.
+[ "$EXTERNAL_FREETZ_PACKAGE_OT_BR_POSIX" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/otbr-agent /usr/sbin/ot-ctl"

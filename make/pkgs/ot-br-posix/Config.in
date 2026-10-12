@@ -1,0 +1,47 @@
+config FREETZ_PACKAGE_OT_BR_POSIX
+	bool "OpenThread Border Router (ot-br-posix) 2026.10.0"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	select FREETZ_PACKAGE_OPENTHREAD
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libutil     if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_librt       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		ot-br-posix is the OpenThread Border Router for Linux: otbr-agent
+		attaches an 802.15.4 Radio Co-Processor (RCP) and connects the
+		Thread mesh network to the IPv6 home network, so that Thread
+		devices can be reached from the LAN.
+
+		Installed binaries:
+
+		 - /usr/sbin/otbr-agent   the Border Router daemon
+		 - /usr/sbin/ot-ctl       control client (talks to otbr-agent)
+
+		The Freetz configuration page offers the settings needed to start
+		the agent: the infrastructure interface (default br0), the spinel
+		URL of the RCP (default spinel+hdlc+uart:///dev/ttyACM0), the boot
+		wait time for the RCP device and extra command line options.
+
+		Runtime requirements on the Fritz!Box:
+
+		 - an 802.15.4 RCP (for example an nRF52840 dongle) flashed with
+		   the OpenThread RCP firmware, connected over USB/serial
+		 - /dev/net/tun (the agent creates the Thread interface wpan0)
+		 - IPv6 forwarding (net.ipv6.conf.all.forwarding=1)
+
+		This is the Thread side of a Matter installation: Matter/Thread
+		devices become reachable for a Matter controller (for example
+		python-matter-server, which the Domoticz Matter driver talks to).
+
+		All optional upstream components (D-Bus API, web GUI, REST server,
+		NAT64, DHCPv6-PD, backbone router, nftables firewall) are disabled,
+		which avoids the protobuf, dbus, jsoncpp, cJSON, cpp-httplib and
+		libsystemd dependencies entirely. mDNS/DNS-SD is served by the
+		OpenThread core (OTBR_MDNS=openthread), so no Avahi or
+		mDNSResponder port is required.
+
+		Can be externalized (External menu): otbr-agent (2.4 MB) and ot-ctl are
+		moved to external storage; the agent takes its radio URL and
+		infrastructure interface from the Freetz configuration.

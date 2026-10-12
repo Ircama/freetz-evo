@@ -1,0 +1,5 @@
+# The daemon itself is externalized; the seed store, the runtime state and the
+# init script stay in the firmware (small, and the state has to be in /mod/etc
+# to survive reboots). The daemon is started with absolute paths, so running it
+# from /mod/external/usr/bin needs no adjustment.
+[ "$EXTERNAL_FREETZ_PACKAGE_MATTER_BRIDGE" == "y" ] && EXTERNAL_FILES+=" /usr/bin/matter-bridge /usr/bin/matter-bridge-ctl"

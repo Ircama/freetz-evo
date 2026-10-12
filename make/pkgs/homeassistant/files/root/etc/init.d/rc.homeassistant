@@ -1,0 +1,162 @@
+#!/bin/sh
+
+DAEMON=homeassistant
+DAEMON_LONG_NAME="Home Assistant"
+DAEMON_BIN=hass
+PID_FILE=/var/run/$DAEMON.pid
+LOG=/tmp/rc.$DAEMON.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+HOMEASSISTANT_BASEDIR="${HOMEASSISTANT_BASEDIR:-/var/media/ftp/$DAEMON}"
+HOMEASSISTANT_PYTHON_PREFIX="${HOMEASSISTANT_PYTHON_PREFIX:-}"
+HOMEASSISTANT_CONFIG="${HOMEASSISTANT_CONFIG:-}"
+HOMEASSISTANT_CONFIG_WAIT="${HOMEASSISTANT_CONFIG_WAIT:-120}"
+HOMEASSISTANT_NICE="${HOMEASSISTANT_NICE:-5}"
+
+PREFIX=
+CONFIG_DIR=
+HASS_BIN=
+SITE_PACKAGES=
+HOMEASSISTANT_ARGS=
+
+# The installed prefix holds the site-packages, the launcher and its shebang;
+# everything is resolved at run time because the base directory may only appear
+# after the USB stick or the NAS is mounted.
+resolve_paths() {
+	PREFIX="${HOMEASSISTANT_PYTHON_PREFIX:-${HOMEASSISTANT_BASEDIR%/}/python}"
+	CONFIG_DIR="${HOMEASSISTANT_CONFIG:-${HOMEASSISTANT_BASEDIR%/}/config}"
+
+	if [ -x "$PREFIX/bin/hass" ]; then
+		HASS_BIN="$PREFIX/bin/hass"
+	elif [ -x "$PREFIX/bin/ha" ]; then
+		HASS_BIN="$PREFIX/bin/ha"
+	else
+		HASS_BIN=
+	fi
+
+	# lib/python3.x/site-packages, whatever the minor version is
+	SITE_PACKAGES="$(ls -d "$PREFIX"/lib/python3.*/site-packages 2>/dev/null | tail -n 1)"
+
+	[ -d "$CONFIG_DIR" ] || mkdir -p "$CONFIG_DIR" 2>/dev/null
+
+	HOMEASSISTANT_ARGS="-c $CONFIG_DIR"
+	[ "$HOMEASSISTANT_LOG_TO_FILE" = "yes" ] && \
+		HOMEASSISTANT_ARGS="$HOMEASSISTANT_ARGS --log-file $CONFIG_DIR/home-assistant.log"
+	[ -n "$HOMEASSISTANT_HTTP_PORT" ] && \
+		echo "http://$(hostname):$HOMEASSISTANT_HTTP_PORT (server_port in $CONFIG_DIR/configuration.yaml)" >>$LOG
+	[ -n "$HOMEASSISTANT_EXTRA_ARGS" ] && HOMEASSISTANT_ARGS="$HOMEASSISTANT_ARGS $HOMEASSISTANT_EXTRA_ARGS"
+
+	return 0
+}
+
+config() {
+	resolve_paths
+
+	DAEMON_ENV="PYTHONPATH=$SITE_PACKAGES PYTHONUNBUFFERED=1"
+	[ "$HOMEASSISTANT_VERBOSE" = "yes" ] && DAEMON_ENV="$DAEMON_ENV PYTHONVERBOSE=1"
+
+	return 0
+}
+
+# Wait for the storage holding the installation: must never block the boot
+# sequence, so it always runs in a background subshell.
+wait_for_basedir() {
+	elapsed=0
+	while [ ! -x "$HASS_BIN" ] && [ $elapsed -lt "$HOMEASSISTANT_CONFIG_WAIT" ]; do
+		sleep 2
+		elapsed=$((elapsed + 2))
+		resolve_paths
+	done
+
+	if [ ! -x "$HASS_BIN" ]; then
+		echo "$(date): $DAEMON not installed below ${HOMEASSISTANT_BASEDIR%/} (run ha-setup)" >> $LOG
+		return 1
+	fi
+
+	return 0
+}
+
+start() {
+	resolve_paths
+
+	if [ ! -x "$HASS_BIN" ]; then
+		echo "not installed (run ha-setup --basedir ${HOMEASSISTANT_BASEDIR%/}), failed."
+		exit 1
+	fi
+
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE \
+		-N "$HOMEASSISTANT_NICE" -x "$HASS_BIN" -- $HOMEASSISTANT_ARGS
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null
+		timeout=30
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+
+		if [ "$HOMEASSISTANT_ENABLED" != "yes" ]; then
+			modlib_start "$HOMEASSISTANT_ENABLED"
+		else
+			resolve_paths
+			if [ -x "$HASS_BIN" ]; then
+				modlib_start "$HOMEASSISTANT_ENABLED"
+			elif [ "$HOMEASSISTANT_CONFIG_WAIT" = "0" ]; then
+				echo "$DAEMON is not installed, skipped." 1>&2
+			else
+				# wait for the storage in background, then start for real
+				(
+					. /etc/init.d/modlibrc
+					[ -r /mod/etc/conf/homeassistant.cfg ] && . /mod/etc/conf/homeassistant.cfg
+					HOMEASSISTANT_BASEDIR="${HOMEASSISTANT_BASEDIR:-/var/media/ftp/homeassistant}"
+					HOMEASSISTANT_CONFIG_WAIT="${HOMEASSISTANT_CONFIG_WAIT:-120}"
+					wait_for_basedir && /etc/init.d/rc.homeassistant start
+				) >>$LOG 2>&1 &
+			fi
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	setup)
+		shift
+		/usr/bin/ha-setup "$@"
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status|setup]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

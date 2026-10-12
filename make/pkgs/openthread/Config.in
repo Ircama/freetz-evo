@@ -1,0 +1,45 @@
+config FREETZ_PACKAGE_OPENTHREAD
+	bool "OpenThread 2026.10.0"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libutil     if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_librt       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		OpenThread is Google's open source implementation of the Thread
+		networking protocol (Thread 1.4.0: IPv6, 6LoWPAN, 802.15.4 MAC
+		security, MLE, mesh routing, Border Router support).
+
+		This package builds the POSIX (Linux) version of the Thread stack:
+
+		 - /usr/bin/ot-daemon   the Thread stack running as a daemon
+		 - /usr/bin/ot-ctl      control client with the full CLI command set
+		                        (talks to a running ot-daemon)
+
+		Upstream selects the POSIX application as either/or: OT_APP_DAEMON
+		(used here, ot-daemon + ot-ctl) or OT_APP_CLI for a standalone
+		interactive ot-cli. ot-ctl offers the same command set while the
+		Thread stack keeps running in the background.
+
+		No 802.15.4 radio is built: the Thread interface requires an
+		external Radio Co-Processor (RCP), for example an nRF52840 dongle
+		flashed with the OpenThread RCP firmware, connected over UART
+		(spinel+hdlc+uart:///dev/ttyACM0) or reached through a unix socket.
+
+		Build notes:
+
+		 - mbedTLS is the only git submodule of this tag and is fetched as a
+		   pinned tarball (third_party/mbedtls/repo) before configure runs;
+		   third_party/tcplp is vendored in the source archive.
+		 - Upstream requires CMake >= 3.10.2, so the tree's CMake 4 is used
+		   with -DCMAKE_POLICY_VERSION_MINIMUM=3.10.
+		 - The Border Router daemon (otbr-agent) is provided by the separate
+		   ot-br-posix package, which reuses this package's source tree.
+
+		Useful for a Thread network that Matter controllers (and therefore
+		Domoticz via python-matter-server) can reach.
+
+		Can be externalized (External menu): ot-daemon and ot-ctl are moved to
+		external storage; the daemon only needs the uClibc runtime.

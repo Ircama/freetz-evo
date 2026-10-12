@@ -1,0 +1,49 @@
+config FREETZ_PACKAGE_DOMOTICZ
+	bool "Domoticz 2026.4"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	depends on FREETZ_TARGET_IPV6_SUPPORT
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libboost_thread
+	select FREETZ_LIB_libz
+	select FREETZ_LIB_libcurl
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libsqlite3
+	select FREETZ_LIB_liblua
+	select FREETZ_LIB_libusb0
+	select FREETZ_LIB_libusb1
+	select FREETZ_LIB_libatomic
+	select FREETZ_PACKAGE_PYTHON3
+	select FREETZ_LIB_libpython3
+	select FREETZ_PACKAGE_MOSQUITTO
+	select FREETZ_PACKAGE_MOSQUITTO_CLIENTS
+	default n
+	help
+		Domoticz is a lightweight home automation system: it lets you monitor
+		and control lights, switches, sensors, thermostats, media players and
+		many other devices from a web browser.
+
+		Build characteristics in Freetz:
+
+		 - Boost (Boost.Asio, Boost.Signals2, Boost.Thread) is provided by the
+		   boost package, which is cross-built with b2 and also installs the
+		   BoostConfig.cmake that CMake 4 requires (FindBoost was removed).
+		 - SQLite, OpenSSL, zlib, libcurl, libusb, Lua 5.4 and libmosquitto
+		   (the MQTT client library) come from the tree.
+		 - The four git submodules of the 2026.4 tag (extern/jsoncpp,
+		   extern/minizip, extern/jwtcpp, extern/libwebem) are downloaded and
+		   unpacked by the package, because GitHub source archives never
+		   contain submodule contents.
+		 - Embedded Python plugin support is enabled (links libpython3.14),
+		   dzVents/Lua event scripts use the tree's Lua 5.4.
+		 - The built-in updater is disabled, OpenZWave and Telldus are not
+		   available in this tree (support is silently disabled upstream).
+
+		The binary is quite large (~20 MB unstripped) and the web UI assets
+		(www/, dzVents/, plugins/, scripts/ - installed below
+		/usr/share/domoticz) add roughly 25 MB, so installing Domoticz into
+		the firmware image only makes sense on devices with enough space;
+		externalizing the binary is recommended.
+
+		Web interface: http://fritz.box:8080/ (configurable in
+		/mod/etc/default.domoticz/domoticz.cfg)

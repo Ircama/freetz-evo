@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the OpenThread
+# Border Router settings are saved. pkg_pre_save() runs before the values are
+# stored (validation only, it may abort the save), pkg_apply_save() runs
+# afterwards.
+
+pkg_pre_save() {
+	case "$OTBR_CONFIG_WAIT" in
+		''|*[!0-9]*)
+			echo "Error: the RCP wait time must be numeric" >&2
+			return 1
+			;;
+	esac
+
+	if [ "$OTBR_ENABLED" = "yes" ]; then
+		if [ -z "$OTBR_INFRA_IF" ]; then
+			echo "Error: an infrastructure interface is required when the Border Router is enabled" >&2
+			return 1
+		fi
+		if [ -z "$OTBR_RADIO_URL" ]; then
+			echo "Error: a spinel URL for the Radio Co-Processor is required when the Border Router is enabled" >&2
+			return 1
+		fi
+		case "$OTBR_RADIO_URL" in
+			spinel*)
+				;;
+			*)
+				echo "Warning: '$OTBR_RADIO_URL' does not look like a spinel URL, otbr-agent expects e.g. spinel+hdlc+uart:///dev/ttyACM0" >&2
+				;;
+		esac
+		if [ ! -e /dev/net/tun ]; then
+			echo "Warning: /dev/net/tun is missing, otbr-agent needs it to create the Thread interface wpan0" >&2
+		fi
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The init script passes all settings to otbr-agent on the command line, so
+	# there is no runtime configuration file to update here. The settings take
+	# effect the next time the daemon is (re)started.
+	return 0
+}

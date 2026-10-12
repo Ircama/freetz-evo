@@ -1,0 +1,5 @@
+# The daemon is externalized together with its 21 MB web UI/dzVents payload, so
+# that Domoticz can be installed on devices with little free flash space. The
+# init script passes -approot/-wwwroot explicitly, therefore running the binary
+# from /mod/external/usr/bin works.
+[ "$EXTERNAL_FREETZ_PACKAGE_DOMOTICZ" == "y" ] && EXTERNAL_FILES+=" /usr/bin/domoticz /usr/share/domoticz"

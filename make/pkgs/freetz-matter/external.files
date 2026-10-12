@@ -1,0 +1,5 @@
+# The Matter device binary is the entire payload of this package (4.5 MB), so it
+# is the useful thing to externalize. The rc script and the modconf files remain
+# in the firmware: they are a few kilobytes, they are needed at boot, and the
+# fabric store has to be in /mod/etc regardless.
+[ "$EXTERNAL_FREETZ_PACKAGE_FREETZ_MATTER" == "y" ] && EXTERNAL_FILES+=" /usr/bin/freetz-matter"

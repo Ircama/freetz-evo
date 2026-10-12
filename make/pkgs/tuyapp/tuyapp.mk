@@ -14,6 +14,8 @@ $(PKG)_SITE:=https://github.com/gordonb3/tuyapp/archive
 ### CHANGES:=https://github.com/gordonb3/tuyapp/commits/master
 ### CVSREPO:=https://github.com/gordonb3/tuyapp
 
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 # Clients built by upstream "make examples"
 $(PKG)_TOOLS_LIST:=tuya_switch tuya_kwh_meter tuya_status tuya_multi_kwh_meter tuya_monitor_and_control
 $(PKG)_TOOLS_BUILD:=$($(PKG)_TOOLS_LIST:%=$($(PKG)_DIR)/%)

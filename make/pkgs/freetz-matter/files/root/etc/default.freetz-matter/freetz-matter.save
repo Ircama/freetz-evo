@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the
+# freetz-matter settings are saved. pkg_pre_save() runs before the values are
+# stored (validation only, it may abort the save), pkg_apply_save() runs
+# afterwards.
+
+pkg_pre_save() {
+	case "$FREETZ_MATTER_PORT" in
+		''|*[!0-9]*)
+			echo "Error: the Matter port must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "$FREETZ_MATTER_PORT" -lt 1 ] || [ "$FREETZ_MATTER_PORT" -gt 65535 ]; then
+		echo "Error: the Matter port must be in the range 1-65535" >&2
+		return 1
+	fi
+
+	case "$FREETZ_MATTER_STORE" in
+		''|/*)
+			;;
+		*)
+			echo "Error: the fabric store must be an absolute path" >&2
+			return 1
+			;;
+	esac
+
+	if [ "$FREETZ_MATTER_ENABLED" = "yes" ]; then
+		case "$FREETZ_MATTER_STORE" in
+			/tmp/flash/*|/var/media/ftp/*)
+				;;
+			*)
+				echo "Warning: $FREETZ_MATTER_STORE is not persistent, the box has to be re-commissioned after a reboot" >&2
+				;;
+		esac
+
+		# The Smart Speaker endpoint drives ALSA through amixer.
+		if ! command -v amixer >/dev/null 2>&1; then
+			echo "Warning: amixer (alsa-utils) not found, the speaker endpoint will not control the audio path" >&2
+		fi
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The init script passes all settings to the daemon on the command line, so
+	# there is no runtime configuration file to update here. The new values take
+	# effect the next time the daemon is (re)started.
+	return 0
+}

@@ -1,0 +1,14 @@
+config EXTERNAL_FREETZ_PACKAGE_DOMOTICZ
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_DOMOTICZ
+	bool "domoticz"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/domoticz
+			/usr/share/domoticz (web UI, dzVents, plugins, scripts)
+
+		Recommended: the daemon (12 MB stripped) and its payload (21 MB) are
+		kept on USB/NAS storage, which leaves the firmware image untouched
+		and fits devices with little free flash space. The init script
+		passes -approot/-wwwroot explicitly, so the externalized binary still
+		finds the web UI and the dzVents runtime.

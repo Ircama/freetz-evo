@@ -7,6 +7,8 @@ $(PKG)_SITE:=https://github.com/merbanan/rtl_433/archive/refs/tags
 ### CHANGES:=https://github.com/merbanan/rtl_433/releases
 ### CVSREPO:=https://github.com/merbanan/rtl_433
 
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 $(PKG)_BINARY:=$($(PKG)_DIR)/src/rtl_433
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/rtl_433
 

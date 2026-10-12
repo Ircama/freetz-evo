@@ -37,11 +37,16 @@ if FREETZ_PACKAGE_MOSQUITTO
 			Adds the mosquitto broker to the image
 
 	config FREETZ_PACKAGE_MOSQUITTO_CLIENTS
-		bool # "libmosquitto"
+		bool "libmosquitto (shared library)"
 		select FREETZ_LIB_librt       if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 		select FREETZ_LIB_libpthread  if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
-		depends on FREETZ_PACKAGE_MOSQUITTO_CLIENT_PUB || FREETZ_PACKAGE_MOSQUITTO_CLIENT_SUB || FREETZ_PACKAGE_MOSQUITTO_CLIENT_RR
-		default y
+		default n
+		help
+			Adds libmosquitto.so, the Eclipse Mosquitto client library, to the
+			image. Packages that link the MQTT client library (e.g. Domoticz)
+			select this option; it is independent of the mosquitto command line
+			clients below. The mosquitto headers are always installed into the
+			toolchain staging directory.
 
 	config FREETZ_PACKAGE_MOSQUITTO_CLIENT_PUB
 		bool "include publish client"

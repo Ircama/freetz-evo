@@ -1,0 +1,109 @@
+config FREETZ_PACKAGE_HOMEASSISTANT
+	bool "Home Assistant (setup helper + autorun)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	select FREETZ_PACKAGE_PYTHON3
+	select FREETZ_LIB_libffi
+	select FREETZ_LIB_libz
+	select FREETZ_LIB_libatomic
+	default n
+	help
+		Installs the "ha-setup" helper, a modconf configuration set and the
+		init script that can start Home Assistant at boot.
+
+		Home Assistant itself is NOT cross-compiled: /usr/bin/ha-setup
+		bootstraps pip and installs it (plus its dependencies) into a prefix
+		on external storage, e.g.
+
+		    ha-setup --basedir /var/media/ftp/homeassistant
+
+		Requires a USB stick or NAS formatted with ext4, at least ~1.5 GB
+		free, swap (Home Assistant is memory hungry) and Internet access
+		during the setup. Configuration: /mod/etc/default.homeassistant/
+
+		Web interface: http://fritz.box:8123 (after the first setup)
+		Authorun: enable "homeassistant" in the Freetz init-script list.
+
+		Can be externalized (External menu): only /usr/bin/ha-setup is moved to
+		external storage, since Home Assistant itself is installed there anyway
+		by the setup helper.
+
+choice
+	prompt "Python support for Home Assistant"
+	depends on FREETZ_PACKAGE_HOMEASSISTANT
+	default FREETZ_PACKAGE_HOMEASSISTANT_PY_MINIMAL
+
+config FREETZ_PACKAGE_HOMEASSISTANT_PY_MINIMAL
+	bool "Minimal - modules required to run Home Assistant"
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libsqlite3
+	select FREETZ_LIB_libreadline
+	select FREETZ_LIB_libncurses
+	select FREETZ_PACKAGE_PYTHON3_MOD_SSL
+	select FREETZ_PACKAGE_PYTHON3_MOD_CTYPES
+	select FREETZ_PACKAGE_PYTHON3_MOD_SQLITE
+	select FREETZ_PACKAGE_PYTHON3_MOD_MULTIPROCESSING
+	select FREETZ_PACKAGE_PYTHON3_MOD_JSON
+	select FREETZ_PACKAGE_PYTHON3_MOD_ELEMENTTREE
+	select FREETZ_PACKAGE_PYTHON3_MOD_CSV
+	select FREETZ_PACKAGE_PYTHON3_MOD_UNICODEDATA
+	select FREETZ_PACKAGE_PYTHON3_MOD_READLINE
+	select FREETZ_PACKAGE_PYTHON3_MOD_MMAP
+	select FREETZ_PACKAGE_PYTHON3_MOD_CRYPT
+	select FREETZ_PACKAGE_PYTHON3_MOD_SYSLOG
+	select FREETZ_PACKAGE_PYTHON3_MOD_TERMIOS
+	help
+		Selected by default: the interpreter modules the Home Assistant core
+		and its C-based dependencies (cryptography, orjson, aiohttp,
+		SQLAlchemy) really need, plus the libraries they link against.
+
+config FREETZ_PACKAGE_HOMEASSISTANT_PY_FULL
+	bool "Full - every Python module Freetz can build"
+	select FREETZ_LIB_libssl
+	select FREETZ_LIB_libcrypto
+	select FREETZ_LIB_libsqlite3
+	select FREETZ_LIB_libreadline
+	select FREETZ_LIB_libncurses
+	select FREETZ_LIB_libtinfo
+	select FREETZ_LIB_libgmp
+	select FREETZ_LIB_libexpat
+	select FREETZ_LIB_libxml2
+	select FREETZ_LIB_libyaml
+	select FREETZ_LIB_libjpeg
+	select FREETZ_LIB_libpng16
+	select FREETZ_PACKAGE_PYTHON3_MOD_SSL
+	select FREETZ_PACKAGE_PYTHON3_MOD_CTYPES
+	select FREETZ_PACKAGE_PYTHON3_MOD_SQLITE
+	select FREETZ_PACKAGE_PYTHON3_MOD_MULTIPROCESSING
+	select FREETZ_PACKAGE_PYTHON3_MOD_JSON
+	select FREETZ_PACKAGE_PYTHON3_MOD_ELEMENTTREE
+	select FREETZ_PACKAGE_PYTHON3_MOD_CSV
+	select FREETZ_PACKAGE_PYTHON3_MOD_UNICODEDATA
+	select FREETZ_PACKAGE_PYTHON3_MOD_READLINE
+	select FREETZ_PACKAGE_PYTHON3_MOD_MMAP
+	select FREETZ_PACKAGE_PYTHON3_MOD_CRYPT
+	select FREETZ_PACKAGE_PYTHON3_MOD_SYSLOG
+	select FREETZ_PACKAGE_PYTHON3_MOD_TERMIOS
+	select FREETZ_PACKAGE_PYTHON3_MOD_CMATH
+	select FREETZ_PACKAGE_PYTHON3_MOD_CPROFILE
+	select FREETZ_PACKAGE_PYTHON3_MOD_CURSES
+	select FREETZ_PACKAGE_PYTHON3_MOD_AUDIODEV
+	select FREETZ_PACKAGE_PYTHON3_MOD_AUDIOOP
+	select FREETZ_PACKAGE_PYTHON3_MOD_BSDDB
+	select FREETZ_PACKAGE_PYTHON3_MOD_EASTERN_CODECS
+	select FREETZ_PACKAGE_PYTHON3_MOD_GRP
+	select FREETZ_PACKAGE_PYTHON3_MOD_HOTSHOT
+	select FREETZ_PACKAGE_PYTHON3_MOD_SPWD
+	select FREETZ_PACKAGE_PYTHON3_MOD_TEST
+	select FREETZ_PACKAGE_PYTHON3_MOD_UNITTEST
+	select FREETZ_PACKAGE_PYTHON3_MOD_WSGIREF
+	select FREETZ_PACKAGE_PYTHON3_MOD_TKINTER
+	help
+		Selects every Python module available in this tree. Useful when
+		installing extra Home Assistant integrations with pip at runtime
+		(the interpreter modules cannot be added later without a rebuild).
+
+		Note: the Tkinter module also pulls the X11 libraries, and the
+		AUDIODEV/AUDIOOP modules pull the OSS devices; both are rarely
+		useful on a router.
+endchoice

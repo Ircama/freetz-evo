@@ -11,6 +11,8 @@ $(PKG)_SITE:=https://mosquitto.org/files/source,https://ftp.fau.de/gentoo/distfi
 ### CVSREPO:=https://github.com/eclipse/mosquitto
 ### STEWARD:=pfichtner
 
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 $(PKG)_BINARY_BROKER:=$($(PKG)_DIR)/src/mosquitto
 $(PKG)_BINARY_MOSQUITTO_PASSWD:=$($(PKG)_DIR)/apps/mosquitto_passwd/mosquitto_passwd
 $(PKG)_BINARY_CLIENT_PUB:=$($(PKG)_DIR)/client/mosquitto_pub
@@ -26,6 +28,12 @@ $(PKG)_TARGET_BINARY_CLIENT_RR:=$($(PKG)_DEST_DIR)/usr/bin/mosquitto_rr
 $(PKG)_LIBNAME:=lib$(pkg).so.$($(PKG)_LIB_VERSION)
 $(PKG)_LIB_BINARY:=$($(PKG)_DIR)/lib/$($(PKG)_LIBNAME)
 $(PKG)_LIB_TARGET_BINARY:=$($(PKG)_DEST_LIBDIR)/$($(PKG)_LIBNAME)
+
+# Headers for consumers that compile against libmosquitto (e.g. domoticz).
+# They are only installed into the staging directory, never into the image.
+$(PKG)_STAGING_HEADERS:=$($(PKG)_DIR)/.headers-staged
+$(PKG)_LIB_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/$($(PKG)_LIBNAME)
+$(PKG)_STAGED:=$($(PKG)_DIR)/.staged
 
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_MOSQUITTO_BROKER),,usr/bin/mosquitto etc/default.mosquitto/mosquitto.cfg etc/default.mosquitto/mosquitto_conf etc/default.mosquitto/mosquitto_extra.def etc/init.d/rc.mosquitto usr/lib/cgi-bin/mosquitto.cgi)
 $(PKG)_EXCLUDED += $(if $(FREETZ_PACKAGE_MOSQUITTO_PASSWD),,usr/bin/mosquitto_passwd)
@@ -58,6 +66,13 @@ $(PKG)_CONFIGURE_OPTIONS += -DDOCUMENTATION=NO
 else
 $(PKG)_CONFIGURE_OPTIONS += -DWITH_DOCS=NO
 $(PKG)_CONFIGURE_OPTIONS += -DWITH_TESTS=NO
+# Mosquitto 2.x (current) enables an HTTP API for listeners by default
+# (src/CMakeLists.txt: WITH_HTTP_API) and pulls in libmicrohttpd when it is
+# present in the staging directory. The tree ships libmicrohttpd >= 1.0, which
+# no longer exports the deprecated MHD_basic_auth_get_username_password /
+# MHD_queue_basic_auth_fail_response symbols used by mosquitto's http_api.c,
+# so the broker cannot link and the feature is disabled explicitly.
+$(PKG)_CONFIGURE_OPTIONS += -DWITH_HTTP_API=OFF
 
 $(PKG)_CONFIGURE_OPTIONS += -DWITH_PLUGIN_ACL_FILE=NO
 $(PKG)_CONFIGURE_OPTIONS += -DWITH_PLUGIN_DYNAMIC_SECURITY=NO
@@ -112,7 +127,19 @@ $($(PKG)_TARGET_BINARY_CLIENT_RR): $($(PKG)_BINARY_CLIENT_RR)
 $($(PKG)_LIB_TARGET_BINARY): $($(PKG)_LIB_BINARY)
 	$(INSTALL_LIBRARY_STRIP)
 
-$(pkg):
+$(MOSQUITTO_STAGING_HEADERS): $(MOSQUITTO_DIR)/.unpacked $(MAKE_DIR)/pkgs/mosquitto/mosquitto.mk
+	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include
+	cp -a $(MOSQUITTO_DIR)/include/. $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/
+	@touch $@
+
+# The client library is staged as well, so that packages can link against it
+# (the image copy is controlled by FREETZ_PACKAGE_MOSQUITTO_CLIENTS).
+$(MOSQUITTO_STAGED): $(MOSQUITTO_LIB_BINARY) $(MOSQUITTO_STAGING_HEADERS)
+	mkdir -p $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib
+	cp -a $(MOSQUITTO_DIR)/lib/libmosquitto.so* $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/
+	@touch $@
+
+$(pkg): $(MOSQUITTO_STAGED)
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY_BROKER) $(if $(FREETZ_PACKAGE_MOSQUITTO_PASSWD),$($(PKG)_TARGET_BINARY_MOSQUITTO_PASSWD)) $($(PKG)_TARGET_BINARY_CLIENT_PUB) $($(PKG)_TARGET_BINARY_CLIENT_SUB) $($(PKG)_TARGET_BINARY_CLIENT_RR) $($(PKG)_LIB_TARGET_BINARY)
 

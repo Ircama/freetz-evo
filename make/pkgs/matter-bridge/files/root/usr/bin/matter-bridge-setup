@@ -1,0 +1,55 @@
+#!/bin/sh
+
+set -e
+
+find_init() {
+	for directory in /mod/etc/init.d /etc/init.d /mod/external/etc/init.d; do
+		if [ -x "$directory/rc.$1" ]; then
+			printf '%s\n' "$directory/rc.$1"
+			return 0
+		fi
+	done
+	echo "Missing rc.$1; include freetz-matter and matter-bridge in the firmware." >&2
+	return 1
+}
+
+device_init="$(find_init freetz-matter)"
+bridge_init="$(find_init matter-bridge)"
+
+for package in freetz-matter matter-bridge; do
+	[ -r "/mod/etc/default.$package/$package.cfg" ] || {
+		echo "Missing configuration for $package" >&2
+		exit 1
+	}
+	[ -r "/mod/etc/conf/$package.cfg" ] || modconf load "$package"
+done
+
+. /mod/etc/default.freetz-matter/freetz-matter.cfg
+. /mod/etc/conf/freetz-matter.cfg
+. /mod/etc/default.matter-bridge/matter-bridge.cfg
+. /mod/etc/conf/matter-bridge.cfg
+
+if [ "$MATTER_BRIDGE_PEER" != "[::1]:${FREETZ_MATTER_PORT:-5540}" ]; then
+	echo "Existing peer differs from the local accessory; refusing to overwrite it." >&2
+	exit 1
+fi
+
+if [ "$MATTER_BRIDGE_AUTO_LOCAL" != "yes" ] && "$bridge_init" status >/dev/null 2>&1; then
+	echo "Stop matter-bridge before setup: the running daemon has automatic commissioning disabled." >&2
+	exit 1
+fi
+
+modconf set freetz-matter FREETZ_MATTER_ENABLED=yes
+modconf set matter-bridge MATTER_BRIDGE_ENABLED=yes MATTER_BRIDGE_AUTO_LOCAL=yes
+modconf save freetz-matter
+modconf save matter-bridge
+modsave
+
+"$device_init" status >/dev/null 2>&1 || "$device_init" start
+"$bridge_init" status >/dev/null 2>&1 || "$bridge_init" start
+
+printf '%s\n' \
+	'Services enabled. Local commissioning is automatic when the device window is open.' \
+	"Domoticz: add Matter hardware, host ${MATTER_BRIDGE_BIND:-127.0.0.1}, port ${MATTER_BRIDGE_PORT:-5580}." \
+	'After the node appears, run modsave again to persist both fabrics.' \
+	'Log: /tmp/rc.matter-bridge.log'

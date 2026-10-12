@@ -1,0 +1,14 @@
+config EXTERNAL_FREETZ_PACKAGE_FREETZ_MATTER
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_FREETZ_MATTER
+	bool "freetz-matter"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/freetz-matter
+
+		The Matter device binary is the whole payload (4.5 MB stripped), so it
+		can be kept on USB/NAS storage and leave the firmware image untouched.
+		The init script, the Freetz configuration and the fabric store are not
+		externalized: they are tiny, needed at boot, and the store must live in
+		/mod/etc anyway to survive reboots. The rs-matter stack is linked in
+		statically, so the binary has no companion files to carry along.

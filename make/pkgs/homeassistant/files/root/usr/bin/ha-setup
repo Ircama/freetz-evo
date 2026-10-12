@@ -1,0 +1,333 @@
+#!/bin/sh
+#
+# ha-setup - install, update or remove Home Assistant on a FRITZ!Box.
+#
+# Home Assistant is a pure-Python application, so instead of cross-compiling a
+# moving target with hundreds of dependencies it is installed on the box into a
+# prefix on external storage:
+#
+#   <basedir>/python/lib/python3.x/site-packages   Python packages (pip --prefix)
+#   <basedir>/python/bin/hass                      launcher
+#   <basedir>/config/configuration.yaml            Home Assistant config
+#   <basedir>/pip/get-pip.py                       pip bootstrap (kept for upgrades)
+#
+# Freetz builds its Python with --with-ensurepip=no, therefore pip is
+# bootstrapped from https://bootstrap.pypa.io/get-pip.py.
+#
+# Usage:
+#   ha-setup [--basedir DIR] [--version VER] [--index-url URL] [--update]
+#            [--check] [--uninstall] [--help]
+#
+set -u
+
+BASEDIR="${HOMEASSISTANT_BASEDIR:-/var/media/ftp/homeassistant}"
+VERSION="${HOMEASSISTANT_VERSION:-}"
+INDEX_URL="${HOMEASSISTANT_PIP_INDEX_URL:-}"
+PYTHON_PREFIX="${HOMEASSISTANT_PYTHON_PREFIX:-}"
+CONFIG_DIR="${HOMEASSISTANT_CONFIG:-}"
+HTTP_PORT="${HOMEASSISTANT_HTTP_PORT:-8123}"
+ACTION="install"
+MIN_PYTHON_MINOR=13
+
+die() {
+	echo "ha-setup: error: $*" >&2
+	exit 1
+}
+
+info() {
+	echo "ha-setup: $*"
+}
+
+usage() {
+	sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
+	exit "${1:-0}"
+}
+
+# --------------------------------------------------------------- primitives
+
+need_cmd() {
+	command -v "$1" >/dev/null 2>&1 || die "required command '$1' not found"
+}
+
+download() {
+	# $1 = url, $2 = destination
+	if command -v curl >/dev/null 2>&1; then
+		curl -fsSL -o "$2" "$1"
+	elif command -v wget >/dev/null 2>&1; then
+		wget -q -O "$2" "$1"
+	else
+		die "neither curl nor wget is available"
+	fi
+}
+
+python_bin() {
+	local candidate="$1/bin/python3"
+
+	if [ -x "$candidate" ]; then
+		echo "$candidate"
+		return 0
+	fi
+	command -v python3 2>/dev/null || command -v python 2>/dev/null
+}
+
+check_python() {
+	PY="$(python_bin "$PYTHON_PREFIX")"
+	[ -n "$PY" ] || die "python3 not found: enable FREETZ_PACKAGE_PYTHON3 in the image"
+
+	PY_VERSION="$($PY -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])' 2>/dev/null)"
+	[ -n "$PY_VERSION" ] || die "'$PY' does not run (missing modules?)"
+
+	PY_MAJOR="${PY_VERSION%%.*}"
+	PY_MINOR="$(echo "$PY_VERSION" | cut -d. -f2)"
+
+	if [ "$PY_MAJOR" -lt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt "$MIN_PYTHON_MINOR" ]; }; then
+		die "python $PY_VERSION is too old: Home Assistant needs 3.$MIN_PYTHON_MINOR or newer"
+	fi
+
+	# libssl is mandatory for requests/cryptography and the pip download itself
+	$PY -c 'import ssl, ctypes, sqlite3' 2>/dev/null || \
+		die "this python lacks ssl/ctypes/sqlite3 - rebuild with the 'Full' or 'Minimal' Python support"
+}
+
+site_packages() {
+	echo "${PYTHON_PREFIX}/lib/python${PY_MAJOR}.${PY_MINOR}/site-packages"
+}
+
+check_space() {
+	[ -d "$BASEDIR" ] || die "base directory '$BASEDIR' does not exist (is the storage mounted?)"
+
+	AVAIL="$(df -k "$BASEDIR" 2>/dev/null | awk 'NR == 2 { print $4 }')"
+	if [ -n "$AVAIL" ] && [ "$AVAIL" -lt 1500000 ] 2>/dev/null; then
+		info "WARNING: only $((AVAIL / 1024)) MB free on $BASEDIR, Home Assistant needs ~1.5 GB"
+	fi
+
+	case "$(df -T "$BASEDIR" 2>/dev/null | awk 'NR == 2 { print $2 }')" in
+		ext2|ext3|ext4|'')
+			;;
+		*)
+			info "WARNING: Home Assistant on $(df -T "$BASEDIR" | awk 'NR == 2 { print $2 }') is not recommended, use ext4"
+			;;
+	esac
+
+	if [ -z "$(swapon -s 2>/dev/null)" ] && [ "$(awk '/MemTotal/ { print int($2 / 1024) }' /proc/meminfo 2>/dev/null)" -lt 900 ]; then
+		info "WARNING: no swap active and less than ~900 MB RAM: Python may be killed by the OOM handler"
+	fi
+}
+
+ensure_pip() {
+	PIP="${PYTHON_PREFIX}/bin/pip3"
+
+	if [ -x "$PIP" ]; then
+		return 0
+	fi
+
+	mkdir -p "$BASEDIR/pip" || die "cannot create $BASEDIR/pip"
+
+	if [ ! -s "$BASEDIR/pip/get-pip.py" ]; then
+		info "downloading the pip bootstrap"
+		download "https://bootstrap.pypa.io/get-pip.py" "$BASEDIR/pip/get-pip.py" || \
+			die "cannot download get-pip.py (Internet access required during setup)"
+	fi
+
+	info "bootstrapping pip into $PYTHON_PREFIX"
+	$PY "$BASEDIR/pip/get-pip.py" --prefix="$PYTHON_PREFIX" --no-warn-script-location || \
+		die "pip bootstrap failed"
+
+	[ -x "$PIP" ] || die "pip3 was not installed into $PYTHON_PREFIX/bin"
+}
+
+pip_install() {
+	# $@ = pip arguments
+	PIP_ARGS="install --prefix=$PYTHON_PREFIX --no-cache-dir --no-warn-script-location"
+	[ -n "$INDEX_URL" ] && PIP_ARGS="$PIP_ARGS --index-url $INDEX_URL"
+
+	# shellcheck disable=SC2086
+	PYTHONPATH="$(site_packages)" $PIP $PIP_ARGS "$@"
+}
+
+write_config() {
+	mkdir -p "$CONFIG_DIR" || die "cannot create $CONFIG_DIR"
+
+	if [ -s "$CONFIG_DIR/configuration.yaml" ]; then
+		info "keeping the existing $CONFIG_DIR/configuration.yaml"
+		return 0
+	fi
+
+	cat > "$CONFIG_DIR/configuration.yaml" <<EOF
+# Home Assistant configuration created by ha-setup on $(date)
+# Documentation: https://www.home-assistant.io/docs/configuration/
+default_config:
+
+http:
+  server_port: $HTTP_PORT
+
+# freetz_evo_matter is the bridge towards a Matter controller (see MATTER.md):
+#   matter:
+#     url: ws://127.0.0.1:5580/ws
+# The Domoticz integration can talk to a local Domoticz instance:
+#   domoticz:
+#     host: 127.0.0.1
+#     port: 8080
+
+logger:
+  default: warning
+
+recorder:
+  # keep the database on the external storage, the flash must not be used
+  db_url: sqlite:///$BASEDIR/config/home-assistant_v2.db
+EOF
+
+	info "wrote a starter configuration to $CONFIG_DIR/configuration.yaml"
+}
+
+do_install() {
+	check_python
+	check_space
+	ensure_pip
+
+	if [ -n "$VERSION" ]; then
+		info "installing homeassistant==$VERSION (this can take a long time)"
+		pip_install "homeassistant==$VERSION" || die "pip install homeassistant failed"
+	else
+		info "installing the latest homeassistant (this can take a long time)"
+		pip_install --upgrade homeassistant || die "pip install homeassistant failed"
+	fi
+
+	write_config
+
+	HASS="${PYTHON_PREFIX}/bin/hass"
+	[ -x "$HASS" ] || [ -x "$PYTHON_PREFIX/bin/ha" ] || \
+		die "the launcher was not installed into $PYTHON_PREFIX/bin"
+
+	info "installation finished"
+	info "  python   : $PY ($PY_VERSION)"
+	info "  packages : $(site_packages)"
+	info "  config   : $CONFIG_DIR"
+	info "start it with:"
+	info "  /etc/init.d/rc.homeassistant start     # after setting HOMEASSISTANT_ENABLED=yes"
+	info "  http://$(hostname):$HTTP_PORT"
+}
+
+do_update() {
+	check_python
+	check_space
+	ensure_pip
+	info "updating pip"
+	pip_install --upgrade pip || info "WARNING: pip self-update failed, continuing"
+	info "updating Home Assistant (and its dependencies)"
+	if [ -n "$VERSION" ]; then
+		pip_install --upgrade "homeassistant==$VERSION" || die "update failed"
+	else
+		pip_install --upgrade homeassistant || die "update failed"
+	fi
+	info "update finished - restart the service to apply it"
+}
+
+do_status() {
+	PY="$(python_bin "$PYTHON_PREFIX")"
+	echo "base directory : $BASEDIR"
+	echo "python         : ${PY:-not found}"
+	[ -n "$PY" ] && echo "python version : $($PY -c 'import sys; print(sys.version.split()[0])' 2>/dev/null)"
+	echo "python prefix  : $PYTHON_PREFIX"
+	echo "config         : $CONFIG_DIR"
+	if [ -x "$PYTHON_PREFIX/bin/pip3" ]; then
+		echo "pip            : $($PYTHON_PREFIX/bin/pip3 --version 2>/dev/null)"
+	fi
+	$PY - <<-'EOF' 2>/dev/null || echo "homeassistant  : not installed"
+		import importlib.metadata as md
+		print("homeassistant  :", md.version("homeassistant"))
+	EOF
+	[ -d "$BASEDIR/python/lib" ] && echo "installed size : $(du -sh "$BASEDIR/python" 2>/dev/null | cut -f1)"
+	/etc/init.d/rc.homeassistant status 2>/dev/null
+}
+
+do_uninstall() {
+	[ -n "$BASEDIR" ] || die "refusing to remove an empty path"
+	case "$BASEDIR" in
+		/|/var|/var/media|/var/media/ftp|/mod)
+			die "refusing to remove '$BASEDIR'"
+			;;
+	esac
+
+	/etc/init.d/rc.homeassistant stop 2>/dev/null
+	info "removing $BASEDIR/python and $BASEDIR/pip, keeping $BASEDIR/config and backups"
+	rm -rf "$BASEDIR/python" "$BASEDIR/pip"
+	info "the Home Assistant configuration is preserved in $BASEDIR/config"
+}
+
+# ------------------------------------------------------------------- main
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--basedir)
+			[ $# -ge 2 ] || die "--basedir needs a value"
+			BASEDIR="$2"
+			shift 2
+			;;
+		--version)
+			[ $# -ge 2 ] || die "--version needs a value"
+			VERSION="$2"
+			shift 2
+			;;
+		--index-url)
+			[ $# -ge 2 ] || die "--index-url needs a value"
+			INDEX_URL="$2"
+			shift 2
+			;;
+		--update)
+			ACTION="update"
+			shift
+			;;
+		--check)
+			ACTION="check"
+			shift
+			;;
+		--status)
+			ACTION="status"
+			shift
+			;;
+		--uninstall)
+			ACTION="uninstall"
+			shift
+			;;
+		--install)
+			ACTION="install"
+			shift
+			;;
+		-h|--help)
+			usage 0
+			;;
+		*)
+			echo "ha-setup: unknown argument '$1'" >&2
+			usage 1
+			;;
+	esac
+done
+
+BASEDIR="${BASEDIR%/}"
+PYTHON_PREFIX="${PYTHON_PREFIX:-$BASEDIR/python}"
+CONFIG_DIR="${CONFIG_DIR:-$BASEDIR/config}"
+
+case "$ACTION" in
+	install)
+		info "installing Home Assistant into $BASEDIR"
+		do_install
+		;;
+	update)
+		info "updating the Home Assistant installation in $BASEDIR"
+		do_update
+		;;
+	check)
+		check_python
+		check_space
+		info "the box looks ready for a Home Assistant installation"
+		;;
+	status)
+		do_status
+		;;
+	uninstall)
+		do_uninstall
+		;;
+esac
+
+exit 0

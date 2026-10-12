@@ -1,0 +1,13 @@
+config EXTERNAL_FREETZ_PACKAGE_OPENTHREAD
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_OPENTHREAD
+	bool "openthread"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/ot-daemon
+			/usr/bin/ot-ctl
+
+		The Thread stack daemon (1.3 MB) and its control client are kept on
+		USB/NAS storage. ot-daemon is a self-contained binary that only needs
+		the uClibc runtime, so externalizing it leaves the firmware image
+		untouched without any companion file to carry along.

@@ -1,0 +1,119 @@
+#!/bin/sh
+
+DAEMON=otbr
+DAEMON_LONG_NAME="OpenThread Border Router"
+DAEMON_BIN=otbr-agent
+PID_FILE=/var/run/$DAEMON_BIN.pid
+LOG=/tmp/rc.otbr.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+OTBR_INFRA_IF="${OTBR_INFRA_IF:-br0}"
+OTBR_RADIO_URL="${OTBR_RADIO_URL:-spinel+hdlc+uart:///dev/ttyACM0}"
+OTBR_CONFIG_WAIT="${OTBR_CONFIG_WAIT:-120}"
+
+OTBR_ARGS=
+
+build_args() {
+	OTBR_ARGS="-I $OTBR_INFRA_IF $OTBR_RADIO_URL"
+	if [ -n "$OTBR_LOG_LEVEL" ]; then
+		OTBR_ARGS="$OTBR_ARGS -d $OTBR_LOG_LEVEL"
+	fi
+	if [ -n "$OTBR_EXTRA_ARGS" ]; then
+		OTBR_ARGS="$OTBR_ARGS $OTBR_EXTRA_ARGS"
+	fi
+	return 0
+}
+
+config() {
+	build_args
+	return 0
+}
+
+# The RCP device (usually a USB dongle) may show up late, so wait for it in the
+# background: the boot sequence must never be blocked.
+get_rcp_device() {
+	echo "$OTBR_RADIO_URL" | sed -n 's#.*uart://\(/dev/[^,]*\).*#\1#p'
+}
+
+wait_for_rcp() {
+	device="$(get_rcp_device)"
+	# no local device in the URL (e.g. a unix socket or a TCP RCP): nothing to wait for
+	[ -z "$device" ] && return 0
+	elapsed=0
+	while [ ! -e "$device" ] && [ $elapsed -lt "$OTBR_CONFIG_WAIT" ]; do
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	if [ ! -e "$device" ]; then
+		echo "$(date): $device not available after ${OTBR_CONFIG_WAIT}s" >> $LOG
+		return 1
+	fi
+	return 0
+}
+
+start() {
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE -x /usr/sbin/$DAEMON_BIN -- $OTBR_ARGS
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null
+		timeout=15
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		if [ "$OTBR_ENABLED" != "yes" ]; then
+			modlib_start "$OTBR_ENABLED"
+		elif [ "$OTBR_CONFIG_WAIT" = "0" ]; then
+			modlib_start "$OTBR_ENABLED"
+		else
+			(
+				# do not block the boot sequence
+				. /etc/init.d/modlibrc
+				[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+				OTBR_RADIO_URL="${OTBR_RADIO_URL:-spinel+hdlc+uart:///dev/ttyACM0}"
+				OTBR_CONFIG_WAIT="${OTBR_CONFIG_WAIT:-120}"
+				wait_for_rcp && /etc/init.d/rc.otbr start
+			) >>$LOG 2>&1 &
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

@@ -1,0 +1,47 @@
+[package]
+name = "freetz-matter"
+version = "0.1.0"
+edition = "2021"
+description = "Expose a FRITZ!Box running Freetz-EVO as a Matter device (temperature, firmware info, audio)"
+license = "MIT"
+
+[dependencies]
+log = "0.4"
+env_logger = "0.11"
+embassy-futures = "0.1"
+embassy-sync = "0.8"
+embassy-time = { version = "0.5", features = ["std"] }
+embassy-time-queue-utils = { version = "0.3", features = ["generic-queue-64"] }
+static_cell = "2"
+if-addrs = "0.15"
+async-io = "2"
+async-compat = "0.2"
+blocking = "1"
+futures-lite = "2"
+rand = { version = "0.10", features = ["std", "std_rng", "thread_rng"] }
+async-signal = "0.2"
+socket2 = "0.6"
+async-executor = "1"
+# Pinned to the revision this application is verified against; the same rev is
+# documented in freetz-matter.mk. Keep both in sync when updating.
+rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "7d5684f495fe5bca03d993647543508ab7587f10", features = [
+    "async-io",
+    "groups",
+    "persistent-subscriptions",
+    "max-groups-per-fabric-12",
+    "max-group-keys-per-fabric-3",
+    "max-group-endpoints-per-fabric-3",
+    "max-sessions-32",
+] }
+
+# rs-matter's build.rs generates ~30 MB of cluster code from the Matter IDL, so
+# the upstream profile (fat LTO + codegen-units=1) needs several GB of RAM for a
+# single rustc job and gets OOM-killed on a small build host. This profile keeps
+# the binary small enough for the box while staying buildable.
+[profile.release]
+opt-level = "s"
+lto = false
+codegen-units = 16
+debug = false
+strip = true
+overflow-checks = false

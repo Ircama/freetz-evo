@@ -1,0 +1,15 @@
+config EXTERNAL_FREETZ_LIB_libboost_thread
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libboost_thread
+	bool "boost (Boost.Thread)"
+	default n
+	help
+		Externalizes the following file(s):
+			${FREETZ_LIBRARY_DIR}/libboost_thread.so.1.87.0
+
+config EXTERNAL_FREETZ_LIB_libboost_system
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libboost_system
+	bool "boost (Boost.System)"
+	default n
+	help
+		Externalizes the following file(s):
+			${FREETZ_LIBRARY_DIR}/libboost_system.so.1.87.0

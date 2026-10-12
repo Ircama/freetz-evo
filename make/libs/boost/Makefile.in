@@ -1,0 +1,3 @@
+ifneq ($(strip $(FREETZ_LIB_libboost_thread)$(FREETZ_LIB_libboost_system)),)
+LIBS+=boost
+endif

@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the
+# matter-bridge settings are saved. pkg_pre_save() runs before the values are
+# stored (validation only, it may abort the save), pkg_apply_save() runs
+# afterwards.
+
+pkg_pre_save() {
+	case "$MATTER_BRIDGE_PORT" in
+		''|*[!0-9]*)
+			echo "Error: the WebSocket port must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "$MATTER_BRIDGE_PORT" -lt 1 ] || [ "$MATTER_BRIDGE_PORT" -gt 65535 ]; then
+		echo "Error: the WebSocket port must be in the range 1-65535" >&2
+		return 1
+	fi
+
+	case "$MATTER_BRIDGE_STORE" in
+		/*) ;;
+		*) echo "Error: controller store must be an absolute path" >&2; return 1 ;;
+	esac
+	case "$MATTER_BRIDGE_STORE$MATTER_BRIDGE_PEER$MATTER_BRIDGE_BIND" in
+		*[[:space:]]*) echo "Error: paths and peer must not contain whitespace" >&2; return 1 ;;
+	esac
+	if [ "$MATTER_BRIDGE_ENABLED" = "yes" ]; then
+		case "$MATTER_BRIDGE_STORE" in
+			/tmp/flash/*|/var/media/ftp/*)
+				;;
+			*)
+				echo "Warning: $MATTER_BRIDGE_STORE is not persistent, the controller fabric is lost on reboot" >&2
+				;;
+		esac
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The init script passes all settings to the daemon on the command line, so
+	# there is no runtime configuration file to update here. The settings take
+	# effect the next time the daemon is (re)started.
+	return 0
+}

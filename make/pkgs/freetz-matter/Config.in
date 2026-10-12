@@ -1,0 +1,49 @@
+config FREETZ_PACKAGE_FREETZ_MATTER
+	bool "freetz-matter 0.1 (FRITZ!Box as a Matter device)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	depends on FREETZ_TARGET_IPV6_SUPPORT
+	default n
+	select FREETZ_PACKAGE_ALSA_UTILS
+	help
+		Exposes the FRITZ!Box itself as a Matter device, so a Matter
+		controller (Apple Home, Google Home, Alexa, Home Assistant,
+		python-matter-server, ...) can commission and read or control the
+		box without any hub software and without Node.js.
+
+		Built on project-chip/rs-matter, the pure-Rust Matter stack.
+
+		Endpoints:
+		 - Temperature Sensor (0x0302 / cluster 0x0402): the same
+		   sensor chain the box_info page uses
+		   (/proc/chip_temperature, the thermal zone, the AVM
+		   power-management temperature and /proc/avm/temp_sensors).
+		 - Smart Speaker (0x0022, OnOff + LevelControl): mute/unmute and
+		   volume of the ALSA playback path (amixer, from alsa-utils).
+		 - Root node BasicInformation carries the real vendor, model,
+		   firmware version and serial number of the box.
+
+		The application is built with Rust/Cargo and installs
+		/usr/bin/freetz-matter, the rc.freetz-matter init script and the
+		Freetz configuration (port, fabric store location, verbosity).
+
+		After the first start the commissioning QR code and manual pairing
+		code are written to the service log
+		(http://fritz.box:81/cgi-bin/status/mod/logs -> rc.freetz-matter),
+		because the device starts uncommissioned.
+
+		No other Freetz-EVO package is required, in either direction.
+		Optional companions: openthread/ot-br-posix if the box should also
+		serve as a Thread border router, and any Matter controller (Home
+		Assistant, or python-matter-server on a glibc host) to commission
+		this device.
+
+		matter-bridge is optional: its native controller can commission
+		this device automatically for the local Domoticz Matter driver.
+		Run matter-bridge-setup for that local chain.
+		The two packages coexist without conflicts:
+		matter-bridge serves WebSocket on TCP 5580, this device is a Matter
+		node on UDP 5540.
+
+		Can be externalized (External menu): /usr/bin/freetz-matter is the
+		whole payload (4.5 MB) and is moved to external storage; the init
+		script, the configuration and the fabric store stay in the firmware.

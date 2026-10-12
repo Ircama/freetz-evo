@@ -1,0 +1,14 @@
+config EXTERNAL_FREETZ_PACKAGE_OT_BR_POSIX
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_OT_BR_POSIX
+	bool "ot-br-posix"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/sbin/otbr-agent
+			/usr/sbin/ot-ctl
+
+		The Thread Border Router agent (2.4 MB) and its control client are kept
+		on USB/NAS storage, which is the single largest saving among the
+		Matter/Thread packages. otbr-agent owns the RCP over spinel and picks up
+		the infrastructure interface from the Freetz configuration, so it needs
+		no in-firmware companion file.

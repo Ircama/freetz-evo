@@ -1,0 +1,135 @@
+#!/bin/sh
+
+DAEMON=domoticz
+DAEMON_LONG_NAME=Domoticz
+DAEMON_BIN=domoticz
+DAEMON_APPDIR=/usr/share/domoticz
+DAEMON_LOG=/var/log/$DAEMON.log
+PID_FILE=/var/run/$DAEMON.pid
+LOG=/tmp/rc.$DAEMON.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+DOMOTICZ_USERDATA="${DOMOTICZ_USERDATA:-/var/media/ftp/$DAEMON}"
+DOMOTICZ_WWW_PORT="${DOMOTICZ_WWW_PORT:-8080}"
+DOMOTICZ_CONFIG_WAIT="${DOMOTICZ_CONFIG_WAIT:-120}"
+
+DOMOTICZ_ARGS=
+
+build_args() {
+	# -approot/-wwwroot are passed explicitly: the web UI and the dzVents,
+	# plugins and scripts folders live in /usr/share/domoticz and must also be
+	# found when the binary is externalized (e.g. /mod/external/usr/bin).
+	DOMOTICZ_ARGS="-approot $DAEMON_APPDIR -wwwroot $DAEMON_APPDIR/www"
+	DOMOTICZ_ARGS="$DOMOTICZ_ARGS -userdata $DOMOTICZ_USERDATA"
+	DOMOTICZ_ARGS="$DOMOTICZ_ARGS -log $DAEMON_LOG"
+	if [ -n "$DOMOTICZ_WWW_PORT" ]; then
+		DOMOTICZ_ARGS="$DOMOTICZ_ARGS -www $DOMOTICZ_WWW_PORT"
+	fi
+	if [ -n "$DOMOTICZ_SSL_PORT" ] && [ "$DOMOTICZ_SSL_PORT" != "0" ]; then
+		DOMOTICZ_ARGS="$DOMOTICZ_ARGS -sslwww $DOMOTICZ_SSL_PORT -sslcert $DOMOTICZ_USERDATA/server_cert.pem"
+	fi
+	if [ -n "$DOMOTICZ_LOGLEVEL" ]; then
+		DOMOTICZ_ARGS="$DOMOTICZ_ARGS -loglevel $DOMOTICZ_LOGLEVEL"
+	fi
+	if [ -n "$DOMOTICZ_EXTRA_ARGS" ]; then
+		DOMOTICZ_ARGS="$DOMOTICZ_ARGS $DOMOTICZ_EXTRA_ARGS"
+	fi
+	return 0
+}
+
+config() {
+	build_args
+	return 0
+}
+
+# Wait for the storage device holding the Domoticz database (USB stick, NAS).
+# Must never block the boot sequence, therefore it is executed in background.
+wait_for_userdata() {
+	elapsed=0
+	while [ ! -d "$DOMOTICZ_USERDATA" ] && [ $elapsed -lt "$DOMOTICZ_CONFIG_WAIT" ]; do
+		sleep 2
+		elapsed=$((elapsed + 2))
+	done
+	if [ ! -d "$DOMOTICZ_USERDATA" ]; then
+		echo "$(date): $DOMOTICZ_USERDATA not available after ${DOMOTICZ_CONFIG_WAIT}s" >> $LOG
+		return 1
+	fi
+	return 0
+}
+
+start() {
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE -x /usr/bin/$DAEMON_BIN -- $DOMOTICZ_ARGS
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		# Domoticz flushes its database on SIGTERM, give it time to shut down
+		kill "$pid" 2>/dev/null
+		timeout=30
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		if [ "$DOMOTICZ_ENABLED" != "yes" ]; then
+			modlib_start "$DOMOTICZ_ENABLED"
+		else
+			case "$DOMOTICZ_USERDATA" in
+				/var/media/ftp/*)
+					if [ "$DOMOTICZ_CONFIG_WAIT" = "0" ]; then
+						modlib_start "$DOMOTICZ_ENABLED"
+					else
+						(
+							# do not block the boot sequence
+							. /etc/init.d/modlibrc
+							[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+							DOMOTICZ_USERDATA="${DOMOTICZ_USERDATA:-/var/media/ftp/$DAEMON}"
+							DOMOTICZ_CONFIG_WAIT="${DOMOTICZ_CONFIG_WAIT:-120}"
+							wait_for_userdata && /etc/init.d/rc.$DAEMON start
+						) >>$LOG 2>&1 &
+					fi
+					;;
+				*)
+					modlib_start "$DOMOTICZ_ENABLED"
+					;;
+			esac
+		fi
+		;;
+	unload)
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

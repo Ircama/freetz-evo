@@ -19,5 +19,40 @@
     "timestamp": "2026-02-15T23:36:27Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-11T08:54:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced options": {
+    "original": "Advanced options",
+    "translation": "Opzioni avanzate",
+    "timestamp": "2026-10-11T08:54:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Options": {
+    "original": "Options",
+    "translation": "Opzioni",
+    "timestamp": "2026-10-11T08:54:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porta",
+    "timestamp": "2026-10-11T08:54:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Optional. Mosquitto typical syntax": {
+    "original": "Optional. Mosquitto typical syntax",
+    "translation": "Facoltativo. Sintassi tipica di Mosquitto",
+    "timestamp": "2026-10-11T08:54:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

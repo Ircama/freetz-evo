@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the
+# homeassistant settings are saved. pkg_pre_save() runs before the values are
+# stored (validation only, it may abort the save), pkg_apply_save() runs
+# afterwards.
+
+pkg_pre_save() {
+	case "$HOMEASSISTANT_NICE" in
+		''|*[!0-9]*)
+			echo "Error: the nice level must be numeric" >&2
+			return 1
+			;;
+	esac
+
+	case "$HOMEASSISTANT_CONFIG_WAIT" in
+		''|*[!0-9]*)
+			echo "Error: the boot wait time must be numeric" >&2
+			return 1
+			;;
+	esac
+
+	case "$HOMEASSISTANT_HTTP_PORT" in
+		''|*[!0-9]*)
+			echo "Error: the HTTP port must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "$HOMEASSISTANT_HTTP_PORT" -lt 1 ] || [ "$HOMEASSISTANT_HTTP_PORT" -gt 65535 ]; then
+		echo "Error: the HTTP port must be in the range 1-65535" >&2
+		return 1
+	fi
+
+	if [ "$HOMEASSISTANT_ENABLED" = "yes" ]; then
+		case "$HOMEASSISTANT_BASEDIR" in
+			/var/media/ftp/*|/mod/*)
+				;;
+			*)
+				echo "Warning: $HOMEASSISTANT_BASEDIR is not on external storage, a router flash is too small" >&2
+				;;
+		esac
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The installation lives in HOMEASSISTANT_BASEDIR and is created by
+	# /usr/bin/ha-setup, so there is no runtime configuration file to rewrite
+	# here: the init script resolves all paths when the daemon is started.
+	if [ ! -x "${HOMEASSISTANT_PYTHON_PREFIX:-${HOMEASSISTANT_BASEDIR%/}/python}/bin/hass" ]; then
+		echo "Note: Home Assistant is not installed in ${HOMEASSISTANT_BASEDIR%/} yet, run 'ha-setup'" >&2
+	fi
+
+	return 0
+}

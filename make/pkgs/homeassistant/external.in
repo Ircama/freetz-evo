@@ -1,0 +1,13 @@
+config EXTERNAL_FREETZ_PACKAGE_HOMEASSISTANT
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_HOMEASSISTANT
+	bool "homeassistant"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/ha-setup
+
+		Only the setup helper is externalized. Home Assistant itself is not part
+		of the firmware at all: /usr/bin/ha-setup installs it with pip into a
+		base directory on external storage, so the interpreter and its
+		dependencies never occupy flash space. The init script and the modconf
+		files stay in the firmware.

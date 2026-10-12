@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the Domoticz
+# settings are saved. pkg_pre_save() runs before the values are stored (only
+# validation, it may abort the save), pkg_apply_save() runs afterwards.
+
+pkg_pre_save() {
+	case "$DOMOTICZ_WWW_PORT" in
+		''|*[!0-9]*)
+			echo "Error: the web interface port must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "$DOMOTICZ_WWW_PORT" -gt 49151 ]; then
+		echo "Error: the web interface port must be in the range 0-49151 (0 disables it)" >&2
+		return 1
+	fi
+
+	case "$DOMOTICZ_SSL_PORT" in
+		''|*[!0-9]*)
+			echo "Error: the HTTPS port must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "$DOMOTICZ_SSL_PORT" -gt 49151 ]; then
+		echo "Error: the HTTPS port must be in the range 0-49151 (0 disables it)" >&2
+		return 1
+	fi
+
+	case "$DOMOTICZ_CONFIG_WAIT" in
+		''|*[!0-9]*)
+			echo "Error: the storage wait time must be numeric" >&2
+			return 1
+			;;
+	esac
+
+	if [ "$DOMOTICZ_ENABLED" = "yes" ]; then
+		if [ -z "$DOMOTICZ_USERDATA" ]; then
+			echo "Error: a user data folder is required when Domoticz is enabled" >&2
+			return 1
+		fi
+		case "$DOMOTICZ_USERDATA" in
+			/var/media/ftp/*|/mod/*) ;;
+			*)
+				echo "Warning: $DOMOTICZ_USERDATA is not on persistent storage, the database is lost on reboot" >&2
+				;;
+		esac
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The init script passes all settings to the daemon on the command line, so
+	# no runtime configuration file has to be generated here. The settings take
+	# effect the next time the daemon is started.
+	return 0
+}

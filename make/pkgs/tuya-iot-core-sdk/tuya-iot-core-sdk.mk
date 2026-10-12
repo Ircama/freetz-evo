@@ -10,6 +10,8 @@ $(PKG)_SITE:=https://github.com/tuya/tuya-iot-core-sdk/archive
 ### CHANGES:=https://github.com/tuya/tuya-iot-core-sdk/commits/main
 ### CVSREPO:=https://github.com/tuya/tuya-iot-core-sdk
 
+$(PKG)_CATEGORY_PKGS:=Home Automation
+
 # Upstream explicitly refuses in-source builds, so configure and build in
 # "build/" and install the demo programs by hand (the project has no install
 # rules; the SDK itself is linked statically into the demos).
