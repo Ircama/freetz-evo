@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the telldus
+# settings are saved. pkg_pre_save() runs before the values are stored
+# (validation only, it may abort the save), pkg_apply_save() runs afterwards
+# and writes the configuration file of the daemon.
+
+TELLDUS_CONF_DIR=/mod/etc/conf
+TELLDUS_CONF=$TELLDUS_CONF_DIR/tellstick.conf
+
+pkg_pre_save() {
+	# telldusd switches to the configured user and group right after it
+	# started as root and exits when either of them is missing, so a text
+	# area without those lines would stop the service without an obvious
+	# reason.
+	if [ -n "$TELLDUS_DEVICES" ]; then
+		echo "$TELLDUS_DEVICES" | grep -q '^[[:space:]]*user[[:space:]]*=' || {
+			echo "Error: the device configuration needs a 'user = \"root\"' line" >&2
+			return 1
+		}
+		echo "$TELLDUS_DEVICES" | grep -q '^[[:space:]]*group[[:space:]]*=' || {
+			echo "Error: the device configuration needs a 'group = \"root\"' line" >&2
+			return 1
+		}
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# Re-source the saved configuration to work with the persisted values.
+	[ -r /mod/etc/conf/telldus.cfg ] && . /mod/etc/conf/telldus.cfg
+
+	mkdir -p "$TELLDUS_CONF_DIR" 2>/dev/null
+
+	# An empty text area would leave the daemon without any configuration, so
+	# the file is only replaced by a non-empty one.
+	if [ -z "$TELLDUS_DEVICES" ]; then
+		echo "Warning: empty device configuration, $TELLDUS_CONF left unchanged" >&2
+		return 0
+	fi
+
+	printf '%s\n' "$TELLDUS_DEVICES" > "$TELLDUS_CONF" || {
+		echo "Error: cannot write $TELLDUS_CONF" >&2
+		return 1
+	}
+
+	# The daemon reads the file once at start.
+	return 0
+}

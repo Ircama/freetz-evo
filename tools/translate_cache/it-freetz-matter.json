@@ -1,0 +1,93 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-12T20:47:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Matter device": {
+    "original": "Matter device",
+    "translation": "dispositivo Matter",
+    "timestamp": "2026-10-12T20:47:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The FRITZ!Box itself is exposed as a Matter device. Any Matter controller can commission it.": {
+    "original": "The FRITZ!Box itself is exposed as a Matter device. Any Matter controller can commission it.",
+    "translation": "Il FRITZ!Box stesso è esposto come dispositivo Matter. Qualsiasi controller Matter può metterlo in funzione.",
+    "timestamp": "2026-10-12T20:47:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Matter port (UDP)": {
+    "original": "Matter port (UDP)",
+    "translation": "Matter Port (UDP)",
+    "timestamp": "2026-10-12T20:47:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Fabric store": {
+    "original": "Fabric store",
+    "translation": "Fabric store",
+    "timestamp": "2026-10-12T20:47:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The store is created automatically on every save and on start.": {
+    "original": "The store is created automatically on every save and on start.",
+    "translation": "Lo store viene creato automaticamente ad ogni salvataggio e all’avvio.",
+    "timestamp": "2026-10-12T20:47:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device endpoints": {
+    "original": "Device endpoints",
+    "translation": "Endpoint dei dispositivi",
+    "timestamp": "2026-10-12T20:47:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Temperature sensor": {
+    "original": "Temperature sensor",
+    "translation": "Sensore di temperatura",
+    "timestamp": "2026-10-12T20:47:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Speaker (on/off, volume)": {
+    "original": "Speaker (on/off, volume)",
+    "translation": "Altoparlante (on/off, volume)",
+    "timestamp": "2026-10-12T20:47:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Basic information (model, firmware, serial)": {
+    "original": "Basic information (model, firmware, serial)",
+    "translation": "Informazioni di base (modello, firmware, numero di serie)",
+    "timestamp": "2026-10-12T20:47:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced": {
+    "original": "Advanced",
+    "translation": "Avanzato",
+    "timestamp": "2026-10-12T20:47:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Debug logging": {
+    "original": "Debug logging",
+    "translation": "Registrazione di debug",
+    "timestamp": "2026-10-12T20:47:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command line options": {
+    "original": "Additional command line options",
+    "translation": "Opzioni aggiuntive della riga di comando",
+    "timestamp": "2026-10-12T20:47:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

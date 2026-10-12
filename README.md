@@ -16,7 +16,7 @@ Freetz-EVO is easier, sleeker, with more features and less bugs.
 
 Freetz-EVO includes:
 
-- almost 140 new packages, including exclusive applications, including Go and Rust packages,
+- over 140 new packages, including exclusive applications, including Go and Rust packages,
 - over 70 libraries,
 - over 70 python3 packages, including Rust libraries,
 - over 40 improved packages and libraries,

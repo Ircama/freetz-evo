@@ -1,4 +1,6 @@
-# matter-bridge 0.1 (Native Matter Controller for Domoticz)
+# matter-bridge 0.1 (native Matter controller for Domoticz)
+  - Package: [master/make/pkgs/matter-bridge/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/matter-bridge/)
+  - Steward: Ircama
 
 `matter-bridge` combines the Rust/rs-matter controller and Domoticz-compatible
 WebSocket API in one daemon. No Node.js, Python server or IPC backend is needed:

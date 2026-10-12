@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libopenzwave
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libopenzwave
+	bool "libopenzwave"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libopenzwave.so.1.6

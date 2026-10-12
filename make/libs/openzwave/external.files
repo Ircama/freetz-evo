@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libopenzwave" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libopenzwave.so.1.6"

@@ -1,0 +1,1 @@
+[ "$EXTERNAL_FREETZ_LIB_libtelldus_core" == "y" ] && EXTERNAL_FILES+=" ${FREETZ_LIBRARY_DIR}/libtelldus-core.so.2.1.1"

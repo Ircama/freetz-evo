@@ -1,0 +1,26 @@
+config FREETZ_PACKAGE_TELLDUS
+	bool "telldusd (Tellstick daemon)"
+	select FREETZ_LIB_libconfuse
+	select FREETZ_LIB_libftdi
+	select FREETZ_LIB_libtelldus_core
+	default n
+	help
+		telldusd is the daemon of telldus-core, the open source driver of
+		the Tellstick 433 MHz transmitter/receiver. It owns the USB stick
+		(Tellstick Classic or Duo, driven through libftdi) and serves the
+		client library over a local socket, so that programs like Domoticz
+		(its Telldus hardware type) or the tdtool command line client -
+		shipped by this package - can send and receive 433 MHz codes.
+
+		A Tellstick Duo can also receive, which is what makes it useful
+		for remote controls and sensors of that frequency.
+
+		The configuration of the known devices is stored in
+		/mod/etc/conf/tellstick.conf and can be edited from the web
+		interface below; devices learned at run time are written to
+		/mod/etc/conf/tellstick-state.conf. Both files live in the
+		persistent part of the freetz configuration framework, because
+		the firmware image itself is read only.
+
+		Web interface: http://fritz.box:81/cgi-bin/conf/telldus
+		Log file: /tmp/rc.telldus.log

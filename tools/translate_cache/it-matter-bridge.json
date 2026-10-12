@@ -1,0 +1,86 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-12T20:48:40Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:WebSocket API (python-matter-server)": {
+    "original": "WebSocket API (python-matter-server)",
+    "translation": "API WebSocket (python-matter-server)",
+    "timestamp": "2026-10-12T20:48:41Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The Domoticz 'Matter' hardware connects to this address": {
+    "original": "The Domoticz 'Matter' hardware connects to this address",
+    "translation": "L’hardware «Matter» di Domoticz si connette a questo indirizzo",
+    "timestamp": "2026-10-12T20:48:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Port": {
+    "original": "Port",
+    "translation": "Porta",
+    "timestamp": "2026-10-12T20:48:42Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Bind address (127.0.0.1 = local only)": {
+    "original": "Bind address (127.0.0.1 = local only)",
+    "translation": "Indirizzo di binding (127.0.0.1 = solo locale)",
+    "timestamp": "2026-10-12T20:48:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Matter controller": {
+    "original": "Matter controller",
+    "translation": "Matter controller",
+    "timestamp": "2026-10-12T20:48:45Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Address of the Matter device (IPv6, port 5540)": {
+    "original": "Address of the Matter device (IPv6, port 5540)",
+    "translation": "Indirizzo del dispositivo Matter (IPv6, porta 5540)",
+    "timestamp": "2026-10-12T20:48:46Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Fabric and node store": {
+    "original": "Fabric and node store",
+    "translation": "Fabric e node store",
+    "timestamp": "2026-10-12T20:48:47Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Automatic commissioning of the local device": {
+    "original": "Automatic commissioning of the local device",
+    "translation": "Messa in servizio automatica del dispositivo locale",
+    "timestamp": "2026-10-12T20:48:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced": {
+    "original": "Advanced",
+    "translation": "Avanzato",
+    "timestamp": "2026-10-12T20:48:48Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Debug logging (RUST_LOG=debug)": {
+    "original": "Debug logging (RUST_LOG=debug)",
+    "translation": "Registrazione di debug (RUST_LOG=debug)",
+    "timestamp": "2026-10-12T20:48:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command line options": {
+    "original": "Additional command line options",
+    "translation": "Opzioni aggiuntive della riga di comando",
+    "timestamp": "2026-10-12T20:48:49Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

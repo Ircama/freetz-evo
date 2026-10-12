@@ -530,8 +530,12 @@ $(PKG)_TARGET_DIR:
 # kept the previous copy in the image (the staging directory is only wiped when
 # the package configuration itself changes). The trailing touch advances the
 # directory timestamp past the prerequisites, so the copy runs once per change
-# instead of on every make.
-$($(PKG)_TARGET_DIR)/root: $(wildcard $($(PKG)_MAKE_DIR)/$(pkg).mk) $(shell [ -d "$($(PKG)_MAKE_DIR)/files" ] && find "$($(PKG)_MAKE_DIR)/files" \( -type f -o -type l \) 2>/dev/null) | $(PACKAGES_DIR)
+# instead of on every make. Directories are included because a broken symlink
+# (e.g. fsck.ext3 -> e2fsck, where the target only exists after the package was
+# built) cannot be a prerequisite: make would look for a rule to create it and
+# abort. Adding, removing or retargeting such a link changes the timestamp of
+# the directory that holds it, so the change is still noticed.
+$($(PKG)_TARGET_DIR)/root: $(wildcard $($(PKG)_MAKE_DIR)/$(pkg).mk) $(shell [ -d "$($(PKG)_MAKE_DIR)/files" ] && find "$($(PKG)_MAKE_DIR)/files" \( -type f -o -type d \) 2>/dev/null) | $(PACKAGES_DIR)
 	mkdir -p $($(PKG)_TARGET_DIR)/root
 	if test -d $($(PKG)_MAKE_DIR)/files; then \
 		$(call COPY_USING_TAR,$($(PKG)_MAKE_DIR)/files,$($(PKG)_TARGET_DIR)) \

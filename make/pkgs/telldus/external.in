@@ -1,0 +1,14 @@
+config EXTERNAL_FREETZ_PACKAGE_TELLDUS
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_TELLDUS
+	bool "telldusd"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/sbin/telldusd
+			/usr/bin/tdtool
+
+		The daemon and its command line client live on USB/NAS storage. The
+		device configuration (/mod/etc/conf/tellstick.conf) and the learned
+		devices (/mod/etc/conf/tellstick-state.conf) are not externalized:
+		they have to stay in /mod/etc to survive reboots. Both are reached
+		through absolute paths, so the daemon works from /mod/external.

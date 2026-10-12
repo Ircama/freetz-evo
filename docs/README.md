@@ -7,7 +7,7 @@
 
 **Freetz-EVO** is an actively synchronized fork of [Freetz-NG](https://github.com/Freetz-NG/freetz-ng) for building enhanced firmware images for AVM FRITZ!Box devices. It keeps Freetz-NG as the technical base while adding EVO-only packages, package fixes, a responsive web interface, hardened session login, reverse-proxy tooling, and stronger build/test workflows.
 
-Compared with Freetz-NG, this tree adds **about 140 package makefiles** and **73+ libraries**, modifies **33+ packages** and **50+ libraries**, and carries substantial documentation and tooling work.
+Compared with Freetz-NG, this tree adds **over 140 package makefiles** and **over 70 libraries**, modifies **over 30 packages** and **over 50 libraries**, and carries substantial documentation and tooling work.
 
 <p class="evo-actions" markdown="1">
 [Repository README](REPO_README.md){ .evo-button .evo-button--primary }

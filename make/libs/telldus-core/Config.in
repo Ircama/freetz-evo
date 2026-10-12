@@ -1,0 +1,16 @@
+config FREETZ_LIB_libtelldus_core
+	bool "libtelldus-core (libtelldus-core.so)"
+	select FREETZ_LIB_libstdcxx
+	default n
+	help
+		libtelldus-core is the client library of telldus-core, the
+		open source driver of the Tellstick (USB and Duo) 433 MHz
+		transmitter/receiver. Programs using it (e.g. Domoticz) talk to
+		the telldusd daemon through a local socket, so the daemon is
+		required at run time to actually reach a Tellstick.
+
+		Only the client library and its header are installed here; the
+		telldusd daemon needs libftdi and libconfuse and is not part of
+		this package.
+
+		https://github.com/telldus/telldus

@@ -21,9 +21,12 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[bluez-libs (libbluetooth.so) 2.25](bluez-libs.md)<a id='bluez-libs'></a>**<br>
     The overall goal of the bluez project is to make an implementation of the Bluetooth wireless standards specifications for Linux.
 
+  * **[boost (headers, libboost_thread, libboost_system) 1.87.0](boost.md)<a id='boost'></a>**<br>
+    Boost 1.87.0 C++ libraries, cross-built with b2 exactly like the Boost copy bundled in this tree by the pdns-recursor package. Installs the complete Boost header tree below /usr/include/boost plus: - libboost_thread.so (Boost.Thread, requires nptl pthreads) - libboost_system.so (Boost.System) A minimal CMake package config is installed into the staging prefix as well, because CMake 4.x no longer ships the FindBoost module. CMake based consumers therefore use: find_package(Boost CONFIG REQUIRED COMPONENTS thread) Required by the Domoticz package (Boost.Asio, Boost.Signals2 and Boost.Thread are used throughout its source).
+
 ### C
 
-  * **[Cairo (libcairo.so) 1.18.4](cairo.md)<a id='cairo'></a>**<br>
+  * **[Cairo (libcairo.so) 1.18.6](cairo.md)<a id='cairo'></a>**<br>
     Cairo is a 2D graphics library with support for multiple output devices. Cairo is designed to produce consistent output on all output media while taking advantage of display hardware acceleration when available.
 
   * **[CAPS LADSPA plugins (caps.so) 0.9.26](caps.md)<a id='caps'></a>**<br>
@@ -37,28 +40,43 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[devmapper: libdevmapper (libdevmapper.so) 1.02.27](devmapper.md)<a id='devmapper'></a>**<br>
     Device-mapper library.
 
+  * **[duktape (Embedded JavaScript engine) 2.6.0](duktape.md)<a id='duktape'></a>**<br>
+    Duktape is a small, portable, embeddable JavaScript engine, written in C. It implements ES5/E5.1 with some features from ES2015+. Required by Gerbera for JavaScript scripting support. https://duktape.org/
+
 ### E
 
-  * **[expat: libexpat (libexpat.so) 2.7.5/2.8.1](expat.md)<a id='expat'></a>**<br>
+  * **[exiv2 (image metadata library) 0.28.8](exiv2.md)<a id='exiv2'></a>**<br>
+    Exiv2 is a C++ library for reading and writing image metadata, supporting Exif, IPTC, XMP, ICC profiles and more. Requires uClibc 1.0.58 or newer (older uClibc versions fail to compile exiv2 0.28.x due to -Werror=sign-compare warnings). https://exiv2.org/
+
+  * **[expat: libexpat (libexpat.so) 2.7.5/2.9.0](expat.md)<a id='expat'></a>**<br>
     This is Expat, a C library for parsing XML, written by James Clark. Expat is a stream-oriented XML parser. This means that you register handlers with the parser before starting the parse. These handlers are called when the parser discovers the associated structures in the document being parsed. A start tag is an example of the kind of structures for which you may register handlers.
 
 ### F
 
+  * **[FAAD2 (libfaad2.so) 2.11.1](faad2.md)<a id='faad2'></a>**<br>
+    FAAD2 is a HE-AAC/AAC audio decoder library.
+
   * **[FLAC (libFLAC.so) 1.3.2](flac.md)<a id='flac'></a>**<br>
     Free Lossless Audio Codec library.
+
+  * **[fluidsynth (libfluidsynth.so) 2.3.5](fluidsynth.md)<a id='fluidsynth'></a>**<br>
+    FluidSynth is a real-time software synthesizer library.
 
   * **[FreeType (freetype.so) 2.14.3](freetype.md)<a id='freetype'></a>**<br>
     FreeType 2 is a software font engine that is designed to be small, efficient, highly customizable, and portable while capable of producing high-quality output (glyph images). It can be used in graphics libraries, display servers, font conversion tools, text image generation tools, and many other products as well.
 
-  * **[FriBidi (libfribidi.so) 1.0.16](fribidi.md)<a id='fribidi'></a>**<br>
+  * **[FriBidi (libfribidi.so) 1.0.17](fribidi.md)<a id='fribidi'></a>**<br>
     The Free Implementation of the Unicode Bidirectional Algorithm.
 
 ### G
 
+  * **[gensio: libgensio (libgensio.so) 2.8.15](gensio.md)<a id='gensio'></a>**<br>
+    Gensio - a library for abstracting stream I/O. Provides network and serial I/O with support for TCP, UDP, serial devices, telnet, SSL/TLS, and more.
+
   * **[gettext (libintl.so) 1.0](gettext.md)<a id='gettext'></a>**<br>
     GNU Internationalization library
 
-  * **[glib2: libglib (libglib-2.0.so) 2.32.4/2.88.0](glib2.md)<a id='glib2'></a>**<br>
+  * **[glib2: libglib (libglib-2.0.so) 2.32.4/2.90.0](glib2.md)<a id='glib2'></a>**<br>
     GLib is a library containing many useful C routines for things such as trees, hashes, and lists.
 
   * **[gmp: GNU MP Bignum Library (libgmp.so) 6.3.0](gmp.md)<a id='gmp'></a>**<br>
@@ -72,10 +90,16 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### H
 
-  * **[HarfBuzz (libharfbuzz.so) 14.2.1](harfbuzz.md)<a id='harfbuzz'></a>**<br>
+  * **[HarfBuzz (libharfbuzz.so) 14.6.0](harfbuzz.md)<a id='harfbuzz'></a>**<br>
     HarfBuzz is a text shaping engine. It primarily supports OpenType, but also Apple Advanced Typography.
 
+  * **[hidapi (libhidapi-libusb.so) 0.15.0](hidapi.md)<a id='hidapi'></a>**<br>
+    HIDAPI is a multi-platform library enabling applications to easily interface with Bluetooth and USB HID-class devices. This builds the libusb backend (libhidapi-libusb), which uses the Linux kernel's usbfs interface directly and does NOT require the kernel HID/INPUT subsystem (not available on GRX5 devices).
+
 ### I
+
+  * **[ICU (International Components for Unicode) 76.1](icu.md)<a id='icu'></a>**<br>
+    ICU is a mature, widely used set of C/C++ and Java libraries providing Unicode and Globalization support for software applications. WARNING: ICU is very large (~30MB source, hundreds of MB compiled). Requires uClibc 1.0.58 or newer (ICU 76.x uses C++17 features not supported by the older GCC toolchains). https://icu.unicode.org/
 
   * **[iksemel: libiksemel (libiksemel.so) 1.4.2](iksemel.md)<a id='iksemel'></a>**<br>
     iksemel is an XML (eXtensible Markup Language) parser library designed for Jabber applications.
@@ -94,12 +118,18 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[json-c (libjson-c.so) json-c-0.17-20230812](json-c.md)<a id='json-c'></a>**<br>
     json-c is a JSON library implementing an object model allowing the creation and manipulation of JSON formatted strings. This library is required by ttyd. Project homepage: https://github.com/json-c/json-c
 
+  * **[jsoncpp (C++ JSON library) 1.9.8](jsoncpp.md)<a id='jsoncpp'></a>**<br>
+    jsoncpp is a C++ library for parsing and generating JSON. Required by Gerbera. Requires uClibc 1.0.58 or newer (jsoncpp 1.9.8 needs the C++11 feature cxx_delegating_constructors, which the old GCC 4.6.4 toolchain does not support). https://github.com/open-source-parsers/jsoncpp
+
 ### K
 
   * **[krb5: MIT Kerberos core library (libkrb5.so) 1.21.3](krb5.md)<a id='krb5'></a>**<br>
     MIT Kerberos 5 core runtime library required by software using Kerberos authentication.
 
 ### L
+
+  * **[lame: libmp3lame (libmp3lame.so) 3.100](lame.md)<a id='lame'></a>**<br>
+    LAME is a high quality MP3 (MPEG Audio Layer 3) encoding library.
 
   * **[ldns: libldns (libldns.so) 1.7.1](ldns.md)<a id='ldns'></a>**<br>
     The goal of ldns is to simplify DNS programming, it supports recent RFCs like the DNSSEC documents, and allows developers to easily create software conforming to current RFCs, and experimental software for current Internet Drafts. A secondary benefit of using ldns is speed; ldns is written in C it should be a lot faster than Perl.
@@ -159,7 +189,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libcap (libcap.so) 2.49/2.78](libcap.md)<a id='libcap'></a>**<br>
     A library for getting and setting POSIX.1e (formerly POSIX 6) draft 15 capabilities.
 
-  * **[libcap-ng (libcap-ng.so) 0.9.3](libcap-ng.md)<a id='libcap-ng'></a>**<br>
+  * **[libcap-ng (libcap-ng.so) 0.9.6](libcap-ng.md)<a id='libcap-ng'></a>**<br>
     The libcap-ng library should make programming with posix capabilities easier. The library has some utilities to help you analyse a system for apps that may have too much privileges.
 
   * **[libcapi: CAPI 2.0 (libcapi20.so) avm-7390.05.50](libcapi.md)<a id='libcapi'></a>**<br>
@@ -192,20 +222,29 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libdvbcsa (libdvbcsa.so) 1.1.0](libdvbcsa.md)<a id='libdvbcsa'></a>**<br>
     libdvbcsa is a free implementation of the DVB Common Scrambling Algorithm (DVB/CSA) with encryption and decryption capabilities.
 
+  * **[libebml (EBML parser library) 1.4.5](libebml.md)<a id='libebml'></a>**<br>
+    libebml is a C++ library for parsing EBML (Extensible Binary Markup Language) data, used as the foundation for Matroska container format. Requires uClibc 1.0.58 or newer (libebml 1.4.5 sets CMAKE_CXX_STANDARD 14 in CMakeLists.txt, which the old GCC 4.6.4 toolchain does not support). https://github.com/Matroska-Org/libebml
+
   * **[libelf (libelf.so) 0.8.13](libelf.md)<a id='libelf'></a>**<br>
     libelf - ELF object file access library
 
   * **[libev (libev.so) 4.33](libev.md)<a id='libev'></a>**<br>
     libev provides a full-featured and high-performance event loop that is loosely modelled after libevent. It includes relative timers, absolute timers with customized rescheduling, synchronous signals, process status change events, event watchers dealing with the event loop itself, file watchers, and even limited support for fork events. It uses a priority queue to manage timers and uses arrays as fundamental data structure. It has no artificial limitations on the number of watchers waiting for the same event.
 
-  * **[libevent (libevent.so) 2.1.12-stable](libevent.md)<a id='libevent'></a>**<br>
+  * **[libevent (libevent.so) 2.1.13](libevent.md)<a id='libevent'></a>**<br>
     libevent is an asynchronous event notification software library. The libevent API provides a mechanism to execute a callback function when a specific event occurs on a file descriptor or after a timeout has been reached. Furthermore, libevent also support callbacks due to signals or regular timeouts. libevent is meant to replace the event loop found in event-driven network servers. An application just needs to call event_dispatch() and then add or remove events dynamically without having to change the event loop.
 
   * **[libexif: EXIF library (libexif.so) 0.6.26](libexif.md)<a id='libexif'></a>**<br>
     libexif is a library for parsing, editing, and saving EXIF data.
 
-  * **[libffi (libffi.so) 3.5.2](libffi.md)<a id='libffi'></a>**<br>
+  * **[libffi (libffi.so) 3.8.0](libffi.md)<a id='libffi'></a>**<br>
     libffi is a library that really only provides the lowest, machine dependent layer of a fully featured foreign function interface. A layer must exist above libffi that handles type conversions for values passed between the two languages. ffi stands for Foreign Function Interface. A foreign function interface is the popular name for the interface that allows code written in one language to call code written in another language.
+
+  * **[libffmpegthumbnailer (video thumbnail generator) 2.2.3](libffmpegthumbnailer.md)<a id='libffmpegthumbnailer'></a>**<br>
+    libffmpegthumbnailer is a library for generating thumbnail images from video files, using FFmpeg for decoding. Requires uClibc 1.0.58 or newer (it uses C++11 std::to_string/std::stoi, which older uClibc toolchains do not provide). https://github.com/dirkvdb/ffmpegthumbnailer
+
+  * **[libfmt: fmt (C++ formatting library) 12.2.0](libfmt.md)<a id='libfmt'></a>**<br>
+    libfmt is a modern C++ formatting library providing a fast and safe alternative to C stdio and C++ iostreams. Required by spdlog and Gerbera. Requires uClibc 1.0.58 or newer (it needs a recent C++ compiler, not available on the older toolchains). https://fmt.dev/
 
   * **[libftdi (libftdi.so) 0.20](libftdi.md)<a id='libftdi'></a>**<br>
     A library (using libusb) to talk to FTDI's FT232BM/245BM, FT2232C/D and FT232/245R type chips including the popular bitbang mode.
@@ -231,11 +270,26 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libidn (libidn.so) 1.42](libidn.md)<a id='libidn'></a>**<br>
     GNU Libidn is a fully documented implementation of the Stringprep, Punycode and IDNA 2003 specifications. Libidn's purpose is to encode and decode internationalized domain names.
 
+  * **[libixml (XML parser library, part of libupnp) 11.1.7](libixml.md)<a id='libixml'></a>**<br>
+    libixml is a lightweight XML parser library, part of the libupnp SDK. Required by Gerbera and other UPnP applications. Requires uClibc 1.0.58 or newer (built from the same source as libupnp, which needs C++14; see libupnp).
+
+  * **[liblastfm (Last.fm API client) 1.0.9](liblastfm.md)<a id='liblastfm'></a>**<br>
+    liblastfm is a C++ library for the Last.fm webservices API. NOTE: This library requires Qt (QtCore + QtNetwork), which is not available in the freetz cross-compilation toolchain. Packaging this is currently not feasible. https://github.com/lastfm/liblastfm
+
   * **[libmad (libmad.so) 0.15.1b](libmad.md)<a id='libmad'></a>**<br>
     MAD is a high-quality MPEG audio decoder. It currently supports MPEG-1 and the MPEG-2 extension to Lower Sampling Frequencies, as well as the so-called MPEG 2.5 format. All three audio layers (Layer I, Layer II, and Layer III a.k.a. MP3) are fully implemented.
 
-  * **[libmaxminddb (libmaxminddb.so) 1.13.3](libmaxminddb.md)<a id='libmaxminddb'></a>**<br>
+  * **[libmagic (file type identification) 5.47](libmagic.md)<a id='libmagic'></a>**<br>
+    libmagic is the library component of the file(1) command, providing file type identification based on magic numbers. https://www.darwinsys.com/file/
+
+  * **[libmatroska (Matroska container library) 1.7.1](libmatroska.md)<a id='libmatroska'></a>**<br>
+    libmatroska is a C++ library for handling Matroska container formats (MKV, MKA, MKS). Requires uClibc 1.0.58 or newer (libmatroska 1.7.1 sets CMAKE_CXX_STANDARD 14 in CMakeLists.txt, which the old GCC 4.6.4 toolchain does not support). Also depends on libebml, which has the same requirement.
+
+  * **[libmaxminddb (libmaxminddb.so) 1.14.1](libmaxminddb.md)<a id='libmaxminddb'></a>**<br>
     C library for the MaxMind DB file format. You'll need an additional .mmdb file, put it on storage. Get it here: https://github.com/P3TERX/GeoLite.mmdb/
+
+  * **[libmicrohttpd (GNU libmicrohttpd - embedded HTTP server) 0.9.77](libmicrohttpd.md)<a id='libmicrohttpd'></a>**<br>
+    GNU libmicrohttpd is a small C library that provides an HTTP server as part of a C library, making it easy to embed HTTP server functionality into applications. Required by libnpupnp (NPUPnP library). https://www.gnu.org/software/libmicrohttpd/
 
   * **[libmnl (libmnl.so) 1.0.4](libmnl.md)<a id='libmnl'></a>**<br>
     libmnl is a minimalistic user-space library oriented to Netlink developers. There are a lot of common tasks in parsing, validating, constructing of both the Netlink header and TLVs that are repetitive and easy to get wrong. This library aims to provide simple helpers that allows you to re-use code and to avoid re-inventing the wheel.
@@ -249,16 +303,22 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libnet (libnet.so) 1.1.4](libnet.md)<a id='libnet'></a>**<br>
     A C library for portable packet creation and injection. Libnet is an API to help with the construction and handling of network packets.  It provides a portable framework for low-level network packet writing and handling (use libnet in conjunction with libpcap and you can write some really cool stuff).  Libnet includes packet creation at the IP layer and at the link layer as well as a host of supplementary and complementary functionality.  Libnet is very handy with which to write network tools and network test code.  See the manpage and sample test code for more detailed information. http://github.com/sam-github/libnet Contact Sam Roberts <vieuxtech@gmail.com> if you have patches or have found bugs.
 
+  * **[libnfs (libnfs.so) 5.0.3](libnfs.md)<a id='libnfs'></a>**<br>
+    libnfs is a client library for accessing NFS shares.
+
   * **[libnfsidmap (libnfsidmap.so) 0.27](libnfsidmap.md)<a id='libnfsidmap'></a>**<br>
     This library provides support for the idmapd service used by NFSv4.
 
   * **[libnl (libnl-3, libnl-cli-3, libnl-genl-3, libnl-route-3) 3.11.0](libnl.md)<a id='libnl'></a>**<br>
     libnl is a collection of libraries providing APIs to netlink protocol based Linux kernel interfaces.
 
+  * **[libnpupnp (NPUPnP - modern UPnP library) 6.3.0](libnpupnp.md)<a id='libnpupnp'></a>**<br>
+    libnpupnp is a new generation UPnP library based on libupnp, providing better performance and modern TLS support. Requires uClibc 1.0.58 or newer (it uses C++17 std::scoped_lock, not supported by the older toolchains). https://www.lesbonscomptes.com/upmpdcli/pages/downloads.html
+
   * **[libogg (libogg.so) 1.3.2](libogg.md)<a id='libogg'></a>**<br>
     Libogg is a library for manipulating ogg bitstreams. It handles both making ogg bitstreams and getting packets from ogg bitstreams.
 
-  * **[libonig: Oniguruma (libonig.so) 6.9.9](libonig.md)<a id='libonig'></a>**<br>
+  * **[libonig: Oniguruma (libonig.so) 6.9.10](libonig.md)<a id='libonig'></a>**<br>
     Oniguruma is a modern and flexible regular expressions library. It encompasses features from different regular expression implementations that traditionally exist in different languages. It comes close to being a complete superset of all regular expression features found in other regular expression implementations.
 
   * **[liboping (liboping.so) 1.6.1](liboping.md)<a id='liboping'></a>**<br>
@@ -267,11 +327,20 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libosip2 (libosip2.so) 3.5.0](libosip2.md)<a id='libosip2'></a>**<br>
     GNU oSIP library, a Session Initiation Protocol (SIP) implementation.
 
-  * **[libpcap (libpcap.so) 1.1.1/1.10.6](libpcap.md)<a id='libpcap'></a>**<br>
+  * **[libpcap (libpcap.so) 1.1.1/1.10.7](libpcap.md)<a id='libpcap'></a>**<br>
     libpcap is a system-independent interface for user-level packet capture. libpcap provides a portable framework for low-level network monitoring. Applications include network statistics collection, security monitoring, network debugging, etc.
 
-  * **[libpng: PNG library (libpng.so) 1.6.58](libpng.md)<a id='libpng'></a>**<br>
+  * **[libpng: PNG library (libpng.so) 1.6.59](libpng.md)<a id='libpng'></a>**<br>
     libpng is the official PNG reference library. It supports almost all PNG features, is extensible, and has been extensively tested for over 12 years. The home site for development versions (i.e., may be buggy or subject to change or include experimental features) is http://libpng.sourceforge.net/, and the place to go for questions about the library is the png-mng-implement mailing list.
+
+  * **[libsamplerate (libsamplerate.so) 0.2.2](libsamplerate.md)<a id='libsamplerate'></a>**<br>
+    Secret Rabbit Code (libsamplerate) is a sample-rate conversion library.
+
+  * **[libshout (libshout.so) 2.4.6](libshout.md)<a id='libshout'></a>**<br>
+    libshout is a library for communicating with Icecast servers.
+
+  * **[libsndfile (libsndfile.so) 1.2.2](libsndfile.md)<a id='libsndfile'></a>**<br>
+    libsndfile is a C library for reading and writing sampled audio data.
 
   * **[libsodium (libsodium.so) 1.0.20](libsodium.md)<a id='libsodium'></a>**<br>
 
@@ -287,13 +356,19 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libtasn1: GNU ASN1 library (libtasn1.so) 4.19.0](libtasn1.md)<a id='libtasn1'></a>**<br>
     A small ASN.1 library.
 
-  * **[libtirpc (libtirpc.so) 1.3.7](libtirpc.md)<a id='libtirpc'></a>**<br>
+  * **[libtheora (libtheora.so) 1.1.1](libtheora.md)<a id='libtheora'></a>**<br>
+    libtheora is a video codec library for the Theora format.
+
+  * **[libtirpc (libtirpc.so) 1.3.8](libtirpc.md)<a id='libtirpc'></a>**<br>
     Libtirpc is a port of Suns Transport-Independent RPC library to Linux. It's being developed by the Bull GNU/Linux NFSv4 project.
 
   * **[libtool (libltdl.so) 1.5.26](libtool.md)<a id='libtool'></a>**<br>
     A generic dynamic object loading library
 
   * **[libunistring (libunistring.so) 1.4](libunistring.md)<a id='libunistring'></a>**<br>
+
+  * **[libupnp (portable UPnP SDK) 1.14.31](libupnp.md)<a id='libupnp'></a>**<br>
+    libupnp is the open-source IGD UPnP library (pupnp). Required by Gerbera and other UPnP media servers. Requires uClibc 1.0.58 or newer (libupnp 1.14.31 sets CMAKE_CXX_STANDARD 14 in CMakeLists.txt, which the old GCC 4.6.4 toolchain does not support). https://pupnp.github.io/pupnp/
 
   * **[liburcu (liburcu.so) 0.15.6](liburcu.md)<a id='liburcu'></a>**<br>
     liburcu is a LGPLv2.1 userspace RCU (read-copy-update) library. This data synchronization library provides read-side access which scales linearly with the number of cores.
@@ -304,28 +379,40 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libusb1: libusb-1.0 (libusb-1.0.so) 1.0.23/1.0.30](libusb1.md)<a id='libusb1'></a>**<br>
     A library for accessing Linux USB devices (current API).
 
-  * **[libuv (libuv.so) 1.44.2/1.52.1](libuv.md)<a id='libuv'></a>**<br>
-    libuv is a async IO library for various programs
+  * **[libuv (libuv.so) 1.44.2/1.53.0](libuv.md)<a id='libuv'></a>**<br>
+    libuv is a async IO library for various programs Requires uClibc 1.0.58 or newer: on GCC <= 5 toolchains (uClibc 0.9.x-1.0.14) libuv 1.44.2 is built, which uses pthread_atfork. uClibc only provides pthread_atfork as a hidden static-only symbol, so any program linking libuv.so fails with "undefined reference to pthread_atfork". On uClibc 1.0.58+ (GCC > 5) libuv 1.52.1 is used, which no longer calls pthread_atfork.
 
   * **[libvorbis (libvorbis.so) 1.3.5](libvorbis.md)<a id='libvorbis'></a>**<br>
     Vorbis is the name of a specific audio compression scheme that's designed to be contained in Ogg. libvorbis is a BSD-style license software implementation of the Vorbis specification by the Xiph.Org Foundation.
 
+  * **[libwavpack (WavPack audio compression) 5.7.0](libwavpack.md)<a id='libwavpack'></a>**<br>
+    WavPack is a completely open audio compression format providing lossless, lossy, and hybrid compression modes. https://www.wavpack.com/
+
   * **[libwebsockets (libwebsockets.so) 4.3.9](libwebsockets.md)<a id='libwebsockets'></a>**<br>
     libwebsockets is a lightweight, low-latency C library for WebSocket clients and servers, HTTP/2, and more. Required by ttyd (web-based terminal). Project homepage: https://libwebsockets.org/
+
+  * **[libwildmidi (libWildMidi.so) 0.4.6](libwildmidi.md)<a id='libwildmidi'></a>**<br>
+    WildMIDI is a software MIDI player library.
 
   * **[libxcb (X11 C Binding) 1.17.0](libxcb.md)<a id='libxcb'></a>**<br>
     X C-language Binding library (libxcb.so). Replaces the core X11 protocol library for modern X11. Website: https://www.x.org/
 
-  * **[libxml2 (libxml2.so) 2.15.3](libxml2.md)<a id='libxml2'></a>**<br>
+  * **[libxml2 (libxml2.so) 2.15.4](libxml2.md)<a id='libxml2'></a>**<br>
     XML toolkit from the GNOME project
 
   * **[libzen (libzen.so) 0.4.41](libzen.md)<a id='libzen'></a>**<br>
     ZenLib is a C++ library that supplements the standard library. It is used by MediaInfo as a dependency.
 
+  * **[libzip (libzip.so) 1.11.4](libzip.md)<a id='libzip'></a>**<br>
+    libzip is a C library for reading, creating, and modifying zip archives. It supports encryption, compression, and Zip64 extensions. Required by Gerbera. https://libzip.org/
+
   * **[libzmq: ZeroMQ (libzmq.so) 4.3.5](libzmq.md)<a id='libzmq'></a>**<br>
 
   * **[linux-atm (libatm.so) 2.5.2](linux-atm.md)<a id='linux-atm'></a>**<br>
     Libatm is a library for accessing the Linux ATM subsystem.
+
+  * **[lirc: liblirc_client 0.10.2 0.10.2](lirc.md)<a id='lirc'></a>**<br>
+    LIRC client library. Provides infrared remote control support for client applications like ncmpc.
 
   * **[LMDB (liblmdb.so) 0.9.33](lmdb.md)<a id='lmdb'></a>**<br>
 
@@ -339,14 +426,17 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### M
 
-  * **[mbedtls: mbedCrypto (libmbedcrypto.so) 2.7.19/2.28.10/3.6.6](mbedtls.md)<a id='mbedtls'></a>**<br>
+  * **[mbedtls: mbedCrypto (libmbedcrypto.so) 2.7.19/2.28.10/3.6.7](mbedtls.md)<a id='mbedtls'></a>**<br>
     Enables support for the Blowfish block cipher.
 
-  * **[mpc: GNU MPC Library (libmpc.so) 1.1.0](mpc.md)<a id='mpc'></a>**<br>
+  * **[mpc: GNU MPC Library (libmpc.so) 1.4.1](mpc.md)<a id='mpc'></a>**<br>
     MPC is a C library for the arithmetic of complex numbers with arbitrarily high precision and correct rounding of the result. It is built upon and follows the same principles as MPFR.
 
-  * **[mpfr: GNU MPFR Library (libmpfr.so) 3.1.6](mpfr.md)<a id='mpfr'></a>**<br>
+  * **[mpfr: GNU MPFR Library (libmpfr.so) 4.2.2](mpfr.md)<a id='mpfr'></a>**<br>
     MPFR provides a library for multiple-precision floating-point computation with correct rounding. The computation is both efficient and has a well-defined semantics. It copies the good ideas from the ANSI/IEEE-754 standard for double-precision floating-point arithmetic (53-bit mantissa).
+
+  * **[mpg123 (libmpg123.so) 1.32.10](mpg123.md)<a id='mpg123'></a>**<br>
+    mpg123 is a fast MPEG audio decoder library.
 
 ### N
 
@@ -376,18 +466,21 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[openobex: libopenobex (libopenobex.so) 1.3](openobex.md)<a id='openobex'></a>**<br>
     The overall goal of this project is to make an open source implementation of the Object Exchange (OBEX) protocol.
 
+  * **[openzwave: libopenzwave (libopenzwave.so) 1.6](openzwave.md)<a id='openzwave'></a>**<br>
+    OpenZWave is a C++ library that provides an interface to the Z-Wave home automation protocol. It talks to the controller stick through a plain serial device (/dev/ttyUSB*, /dev/ttyACM*), so it does not need libusb; the bundled hidapi back end (and with it libudev) stays disabled on this target. The Z-Wave device database lives in Domoticz's own Config directory, which is why it is not installed twice. The Domoticz package points its build at this library explicitly, because its own detection would not find the headers in usr/include/openzwave. This is the master branch of OpenZWave, not the v1.6 release: Domoticz includes ValueIDIndexesDefines.h, a header that the release predates. The commit is pinned, the build is the same as the release one (same soname, same install layout).
+
   * **[opus: libopus (libopus.so) 1.1.4](opus.md)<a id='opus'></a>**<br>
     Opus is a totally open, royalty-free, highly versatile audio codec. It is primarily designed for interactive speech and music transmission over the Internet, but is also applicable to storage and streaming applications. It incorporates technology from Skype's SILK codec and Xiph.Org's CELT codec. It has been standardized by the Internet Engineering Task Force (IETF) as RFC 6716.
 
 ### P
 
-  * **[Pango (libpango-1.0.so) 1.57.1](pango.md)<a id='pango'></a>**<br>
+  * **[Pango (libpango-1.0.so) 1.58.2](pango.md)<a id='pango'></a>**<br>
     Pango is a library for layout and rendering of text, with an emphasis on internationalization. Pango can be used anywhere that text layout is needed; however, most of the work on Pango so far has been done using the GTK widget toolkit as a test platform. Pango forms the core of text and font handling for GTK.
 
   * **[pcre: libpcre (libpcre.so) - DEPRECATED 8.45](pcre.md)<a id='pcre'></a>**<br>
     A Perl Compatible Regular Expression library
 
-  * **[pcre2: libpcre2 (libpcre2-8.so) 10.47](pcre2.md)<a id='pcre2'></a>**<br>
+  * **[pcre2: libpcre2 (libpcre2-8.so) 10.49](pcre2.md)<a id='pcre2'></a>**<br>
     A Perl Compatible Regular Expression library
 
   * **[Pixman (libpixman-1.so) 0.46.4](pixman.md)<a id='pixman'></a>**<br>
@@ -409,18 +502,36 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[protobuf-c: libprotobuf-c (libprotobuf-c.so) 1.1.0](protobuf-c.md)<a id='protobuf-c'></a>**<br>
     Library providing a flexible, efficient, automated mechanism for serializing structured data.
 
+  * **[pugixml (C++ XML processing library) 1.16](pugixml.md)<a id='pugixml'></a>**<br>
+    pugixml is a lightweight C++ XML processing library. Required by Gerbera. https://pugixml.org/
+
 ### R
 
   * **[readline: libreadline (libreadline.so) 6.3-p8/8.3](readline.md)<a id='readline'></a>**<br>
     The Readline library provides a set of functions for use by applications that allow users to edit command lines as they are typed in. Both Emacs and vi editing modes are available. The Readline library includes additional functions to maintain a list of previously-entered command lines, to recall and perhaps reedit those lines, and perform csh-like history expansion on previous commands.
+
+  * **[rtl-sdr (librtlsdr.so) 2.0.3](rtl-sdr.md)<a id='rtl-sdr'></a>**<br>
+    receiver. This library (librtlsdr) is the driver used by rtl_433 and other SDR applications to access RTL-SDR devices. Project homepage: https://osmocom.org/projects/rtl-sdr/
 
 ### S
 
   * **[serf: libserf (libserf.so) 1.3.10](serf.md)<a id='serf'></a>**<br>
     High-performance asynchronous HTTP client library
 
+  * **[shine (libshine.so) 3.1.1](shine.md)<a id='shine'></a>**<br>
+    Shine is a fast, fixed-point MP3 encoding library.
+
+  * **[soapysdr (libSoapySDR.so) 0.8.1](soapysdr.md)<a id='soapysdr'></a>**<br>
+    SoapySDR is a vendor and platform neutral SDR support library and API. Hardware support is not part of it: it is provided by loadable modules (e.g. soapyrtlsdr for RTL-SDR dongles) that have to be installed below /usr/lib/SoapySDR/modules0.8. Used by rtl_433 as an alternative input besides librtlsdr. Resolution uClibc 1.0.58 or newer (SoapySDR needs a C++11 capable toolchain). https://github.com/pothosware/SoapySDR
+
+  * **[soxr (libsoxr.so) 0.1.3](soxr.md)<a id='soxr'></a>**<br>
+    The SoX Resampler library performs sample-rate conversion.
+
   * **[spandsp: libspandsp (libspandsp.so) 0.0.6](spandsp.md)<a id='spandsp'></a>**<br>
     SpanDSP is a library of DSP functions for telephony, in the 8000 sample per second world of E1s, T1s, and higher order PCM channels. It contains low level functions, such as basic filters. It also contains higher level functions, such as cadenced supervisory tone detection, and a complete software FAX machine.
+
+  * **[spdlog (C++ logging library) 1.17.0](spdlog.md)<a id='spdlog'></a>**<br>
+    spdlog is a fast C++ logging library. Required by Gerbera. Requires uClibc 1.0.58 or newer. https://github.com/gabime/spdlog
 
   * **[speex: libspeex (libspeex.so) 1.2rc1](speex.md)<a id='speex'></a>**<br>
     Speex is an Open Source/Free Software patent-free audio compression format designed for speech. This package contains the shared codec library.
@@ -433,20 +544,26 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### T
 
-  * **[taglib (libtag.so) 1.6.3](taglib.md)<a id='taglib'></a>**<br>
-    TagLib is a library for reading and editing the meta-data of several popular audio formats. Currently it supports both ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC, MPC, Speex, WavPack TrueAudio, WAV, AIFF, MP4 and ASF files.
+  * **[taglib (libtag.so) 2.3](taglib.md)<a id='taglib'></a>**<br>
+    TagLib is a library for reading and editing the meta-data of several popular audio formats. Currently it supports both ID3v1 and ID3v2 for MP3 files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC, MPC, Speex, WavPack TrueAudio, WAV, AIFF, MP4 and ASF files. Requires uClibc 1.0.58 or newer (taglib 2.3 fails to compile on the older toolchains). https://taglib.org/
 
   * **[Tcl (libtcl8.6.so) 8.6.16](tcl.md)<a id='tcl'></a>**<br>
     Tcl is a very powerful but easy to learn dynamic programming language, providing a wide range of useful features. This package provides the Tcl shared library (libtcl8.6.so) required by Python's tkinter module. Website: https://www.tcl.tk/ Source: https://core.tcl-lang.org/tcl/
+
+  * **[telldus-core: libtelldus-core (libtelldus-core.so) 2.1.1](telldus-core.md)<a id='telldus-core'></a>**<br>
+    libtelldus-core is the client library of telldus-core, the open source driver of the Tellstick (USB and Duo) 433 MHz transmitter/receiver. Programs using it (e.g. Domoticz) talk to the telldusd daemon through a local socket, so the daemon is required at run time to actually reach a Tellstick. Only the client library and its header are installed here; the telldusd daemon needs libftdi and libconfuse and is not part of this package. https://github.com/telldus/telldus
 
   * **[tinycdb (libcdb.so) 0.81](tinycdb.md)<a id='tinycdb'></a>**<br>
 
   * **[Tk (libtk8.6.so) 8.6.16](tk.md)<a id='tk'></a>**<br>
     Tk is a cross-platform toolkit for creating graphical user interfaces. This package provides the Tk shared library (libtk8.6.so) required by Python's tkinter module. Tk requires X11 client libraries (libX11, libXt) to build and to connect to a remote X11 display server via DISPLAY=<host>:<screen>. Website: https://www.tcl.tk/ Source: https://core.tcl-lang.org/tk/
 
+  * **[tremor (libvorbisidec.so) master](tremor.md)<a id='tremor'></a>**<br>
+    Tremor is a low-memory Vorbis decoder library (libvorbisidec).
+
 ### U
 
-  * **[uClibc (ld-uClibc-x.y.z.so) 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.58](uclibc.md)<a id='uclibc'></a>**<br>
+  * **[uClibc (ld-uClibc-x.y.z.so) 0.9.28/0.9.29/0.9.32.1/0.9.33.2/1.0.14/1.0.59](uclibc.md)<a id='uclibc'></a>**<br>
     uClibc is a small C standard library intended for embedded Linux systems. uClibc was created to support uClinux, a version of Linux not requiring a memory management unit and thus suited for microcontrollers (hence the "uC" in the name - "u" is a replacement for the Greek character "miu" often used as an abbreviation for the prefix "micro"). uClibc is much smaller than GNU C Library (glibc), the C library normally used with Linux distributions. While glibc is intended to fully support all relevant C standards across a wide range of platforms, uClibc is specifically focused on embedded Linux. Features can be enabled or disabled according to space requirements.
 
   * **[uclibcxx: uClibc++ (libuClibc++.so.0.2.6) 6687fc9276fa52defaf8592f2001c19b826aec93](uclibcxx.md)<a id='uclibcxx'></a>**<br>

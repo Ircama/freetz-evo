@@ -1,0 +1,6 @@
+# The daemon and its command line client are externalized; the configuration
+# stays in the firmware (/mod/etc/conf/tellstick.conf is the writable copy of
+# the shipped default, the state file holds the devices learned at run time and
+# both have to survive reboots). Both programs use absolute paths, so running
+# them from /mod/external/usr needs no adjustment.
+[ "$EXTERNAL_FREETZ_PACKAGE_TELLDUS" == "y" ] && EXTERNAL_FILES+=" /usr/sbin/telldusd /usr/bin/tdtool"

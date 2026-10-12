@@ -1,0 +1,104 @@
+#!/bin/sh
+
+DAEMON=telldus
+DAEMON_LONG_NAME="Tellstick daemon (telldusd)"
+DAEMON_BIN=telldusd
+PID_FILE=/var/run/telldusd.pid
+LOG=/tmp/rc.telldus.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults in
+# /etc/default.telldus/telldus.cfg)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+TELLDUS_ENABLED="${TELLDUS_ENABLED:-no}"
+TELLDUS_DEBUG="${TELLDUS_DEBUG:-no}"
+TELLDUS_EXTRA_ARGS="${TELLDUS_EXTRA_ARGS:-}"
+
+# The daemon reads and writes these two files (the paths are patched into the
+# sources by the package): the controller/device list edited from the web
+# interface and the state of the devices learned at run time. Both live in
+# /mod/etc/conf, the directory the freetz configuration framework saves to
+# flash, because the firmware image is read only and /var is a ram disk.
+TELLDUS_CONF_DIR=/mod/etc/conf
+TELLDUS_CONF=$TELLDUS_CONF_DIR/tellstick.conf
+TELLDUS_DEFAULT_CONF=/etc/tellstick.conf
+
+TELLDUS_ARGS=
+
+config() {
+	mkdir -p "$TELLDUS_CONF_DIR" || return 1
+
+	# First start, or a configuration that was removed: seed the daemon
+	# configuration with the one shipped in the image.
+	if [ ! -s "$TELLDUS_CONF" ] && [ -s "$TELLDUS_DEFAULT_CONF" ]; then
+		cp -f "$TELLDUS_DEFAULT_CONF" "$TELLDUS_CONF"
+	fi
+	if [ ! -s "$TELLDUS_CONF" ]; then
+		echo "Error: no device configuration at $TELLDUS_CONF" >&2
+		return 1
+	fi
+
+	# telldusd stays in the foreground and logs to stdout, so that
+	# start-stop-daemon owns the pid file and everything ends up in one log.
+	TELLDUS_ARGS="--nodaemon"
+	[ "$TELLDUS_DEBUG" = "yes" ] && TELLDUS_ARGS="$TELLDUS_ARGS --debug"
+	[ -n "$TELLDUS_EXTRA_ARGS" ] && TELLDUS_ARGS="$TELLDUS_ARGS $TELLDUS_EXTRA_ARGS"
+
+	return 0
+}
+
+start() {
+	config || return 1
+	modlib_startdaemon start-stop-daemon -S -b -q -m -p $PID_FILE -x /bin/sh -- -c \
+		'exec /usr/sbin/telldusd "$@" >>/tmp/rc.telldus.log 2>&1' telldusd $TELLDUS_ARGS
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		kill "$pid" 2>/dev/null
+		timeout=15
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
+		modlib_start "$TELLDUS_ENABLED"
+		;;
+	unload)
+		modunreg cgi $DAEMON
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

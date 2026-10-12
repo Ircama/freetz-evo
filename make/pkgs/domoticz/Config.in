@@ -13,6 +13,8 @@ config FREETZ_PACKAGE_DOMOTICZ
 	select FREETZ_LIB_libusb0
 	select FREETZ_LIB_libusb1
 	select FREETZ_LIB_libatomic
+	select FREETZ_LIB_libopenzwave
+	select FREETZ_LIB_libtelldus_core
 	select FREETZ_PACKAGE_PYTHON3
 	select FREETZ_LIB_libpython3
 	select FREETZ_PACKAGE_MOSQUITTO
@@ -29,21 +31,18 @@ config FREETZ_PACKAGE_DOMOTICZ
 		   boost package, which is cross-built with b2 and also installs the
 		   BoostConfig.cmake that CMake 4 requires (FindBoost was removed).
 		 - SQLite, OpenSSL, zlib, libcurl, libusb, Lua 5.4 and libmosquitto
-		   (the MQTT client library) come from the tree.
+		   (the MQTT client library).
 		 - The four git submodules of the 2026.4 tag (extern/jsoncpp,
 		   extern/minizip, extern/jwtcpp, extern/libwebem) are downloaded and
 		   unpacked by the package, because GitHub source archives never
 		   contain submodule contents.
 		 - Embedded Python plugin support is enabled (links libpython3.14),
 		   dzVents/Lua event scripts use the tree's Lua 5.4.
-		 - The built-in updater is disabled, OpenZWave and Telldus are not
-		   available in this tree (support is silently disabled upstream).
-
-		The binary is quite large (~20 MB unstripped) and the web UI assets
-		(www/, dzVents/, plugins/, scripts/ - installed below
-		/usr/share/domoticz) add roughly 25 MB, so installing Domoticz into
-		the firmware image only makes sense on devices with enough space;
-		externalizing the binary is recommended.
+		 - The built-in updater is disabled. OpenZWave (Z-Wave) and Telldus
+		   (Tellstick) are compiled in: the OpenZWave device database is
+		   installed in /usr/share/domoticz/Config, from which Domoticz loads
+		   it at run time. Telldus only provides the client library here, so
+		   a Tellstick additionally needs the telldusd daemon.
 
 		Web interface: http://fritz.box:8080/ (configurable in
 		/mod/etc/default.domoticz/domoticz.cfg)

@@ -1,0 +1,7 @@
+config EXTERNAL_FREETZ_LIB_libtelldus_core
+	depends on EXTERNAL_ENABLED && FREETZ_LIB_libtelldus_core
+	bool "libtelldus-core"
+	default n
+	help
+		externals the following file(s):
+		 ${FREETZ_LIBRARY_DIR}/libtelldus-core.so.2.1.1

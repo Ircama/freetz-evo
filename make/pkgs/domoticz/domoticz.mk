@@ -92,12 +92,16 @@ $(PKG)_DEPENDS_ON += lua
 $(PKG)_DEPENDS_ON += mosquitto
 $(PKG)_DEPENDS_ON += libusb1
 $(PKG)_DEPENDS_ON += python3
+$(PKG)_DEPENDS_ON += openzwave
+$(PKG)_DEPENDS_ON += telldus-core
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libboost_thread
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MOSQUITTO_CLIENTS
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libsqlite3
 $(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_liblua
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libopenzwave
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_libtelldus_core
 
 # --------------------------------------------------------------------------
 # Configure
@@ -128,9 +132,11 @@ $(PKG)_CONFIGURE_OPTIONS += -DUSE_STATIC_BOOST=OFF
 $(PKG)_CONFIGURE_OPTIONS += -DUSE_STATIC_LIBSTDCXX=NO
 $(PKG)_CONFIGURE_OPTIONS += -DUSE_STATIC_OPENZWAVE=NO
 
-# Feature switches: Python plugins on, Tellus off, I2C/SPI auto-detected.
+# Feature switches: Python plugins on, Tellus on (the daemon has to be
+# started separately, telldus-core only provides the client library),
+# I2C/SPI auto-detected.
 $(PKG)_CONFIGURE_OPTIONS += -DUSE_PYTHON=YES
-$(PKG)_CONFIGURE_OPTIONS += -DWITH_TELLDUSCORE=NO
+$(PKG)_CONFIGURE_OPTIONS += -DWITH_TELLDUSCORE=YES
 $(PKG)_CONFIGURE_OPTIONS += -DWITH_LIBUSB=YES
 $(PKG)_CONFIGURE_OPTIONS += -DINCLUDE_LINUX_I2C=YES
 $(PKG)_CONFIGURE_OPTIONS += -DINCLUDE_SPI=YES
@@ -157,11 +163,19 @@ $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_CXX_FLAGS="$(TARGET_CFLAGS) -I$(TARGET_TOOLC
 $(PKG)_CONFIGURE_OPTIONS += -DMQTT_LIBRARIES="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libmosquitto.so"
 $(PKG)_CONFIGURE_OPTIONS += -DMQTT_INCLUDE_DIRS="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
 
+# OpenZWave and telldus-core are optional upstream and detected with find_*()
+# calls that abort the configure step when they fail, so both are pointed at
+# the staging tree explicitly. OpenZWave needs this in any case: its headers
+# live in usr/include/openzwave, a subdirectory CMake never searches.
+$(PKG)_CONFIGURE_OPTIONS += -DOpenZWave="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libopenzwave.so"
+$(PKG)_CONFIGURE_OPTIONS += -DOPENZWAVE_INCLUDE_DIRS="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/openzwave"
+$(PKG)_CONFIGURE_OPTIONS += -DTELLDUSCORE_INCLUDE="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include"
+$(PKG)_CONFIGURE_OPTIONS += -DTELLDUS_LIBRARIES="$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libtelldus-core.so"
+
 # libpython3 and libcurl list libatomic.so.1 in their DT_NEEDED entries, so the
 # DSO has to be named on the link line (ld defaults to
 # --no-copy-dt-needed-entries). Same workaround as ffmpeg/cmus/openssl.
 $(PKG)_CONFIGURE_OPTIONS += -DCMAKE_EXE_LINKER_FLAGS="-latomic"
-
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 
@@ -183,7 +197,12 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 # --------------------------------------------------------------------------
 $(PKG)_DATA_DIR:=$($(PKG)_DEST_DIR)/usr/share/domoticz
 $(PKG)_DATA_FILES:=History.txt License.txt server_cert.pem
-$(PKG)_DATA_DIRS:=www dzVents plugins scripts
+# Config is the OpenZWave device database (855 files, 7.8 MB of XML, around
+# 1 MB once the image is compressed). Domoticz reads it from
+# <approot>/Config, and without it Z-Wave devices cannot be identified; the
+# network state is written to the userdata directory instead (see
+# hardware/OpenZWave.cpp), so the read-only root filesystem is not a problem.
+$(PKG)_DATA_DIRS:=www dzVents plugins scripts Config
 $(PKG)_DATA_TARGETS:=$(foreach file,$($(PKG)_DATA_FILES),$($(PKG)_DATA_DIR)/$(file)) \
 	$(foreach dir,$($(PKG)_DATA_DIRS),$($(PKG)_DATA_DIR)/$(dir))
 

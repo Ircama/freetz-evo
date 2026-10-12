@@ -1,0 +1,20 @@
+config FREETZ_LIB_libopenzwave
+	bool "libopenzwave (libopenzwave.so)"
+	default n
+	select FREETZ_LIB_libstdcxx
+	help
+		OpenZWave is a C++ library that provides an interface to the
+		Z-Wave home automation protocol. It talks to the controller
+		stick through a plain serial device (/dev/ttyUSB*,
+		/dev/ttyACM*), so it does not need libusb; the bundled hidapi
+		back end (and with it libudev) stays disabled on this target.
+		The Z-Wave device database lives in Domoticz's own Config
+		directory, which is why it is not installed twice. The Domoticz
+		package points its build at this library explicitly, because its
+		own detection would not find the headers in
+		usr/include/openzwave.
+
+		This is the master branch of OpenZWave, not the v1.6 release:
+		Domoticz includes ValueIDIndexesDefines.h, a header that the
+		release predates. The commit is pinned, the build is the same as
+		the release one (same soname, same install layout).

@@ -1,0 +1,86 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-12T20:50:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration": {
+    "original": "Configuration",
+    "translation": "Configurazione",
+    "timestamp": "2026-10-12T20:50:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:File": {
+    "original": "File",
+    "translation": "File",
+    "timestamp": "2026-10-12T20:50:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Same layout as /etc/tellstick.conf: controllers and devices in libconfuse syntax. The user and group lines are mandatory.": {
+    "original": "Same layout as /etc/tellstick.conf: controllers and devices in libconfuse syntax. The user and group lines are mandatory.",
+    "translation": "Stesso layout di /etc/tellstick.conf: controller e dispositivi nella sintassi libconfuse. Le righe relative a utente e gruppo sono obbligatorie.",
+    "timestamp": "2026-10-12T20:50:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced": {
+    "original": "Advanced",
+    "translation": "Avanzato",
+    "timestamp": "2026-10-12T20:50:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Debug logging (telldusd --debug)": {
+    "original": "Debug logging (telldusd --debug)",
+    "translation": "Registrazione di debug (telldusd --debug)",
+    "timestamp": "2026-10-12T20:50:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command line options": {
+    "original": "Additional command line options",
+    "translation": "Opzioni aggiuntive della riga di comando",
+    "timestamp": "2026-10-12T20:50:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Notes": {
+    "original": "Notes",
+    "translation": "Note",
+    "timestamp": "2026-10-12T20:50:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:tdtool is the command line client of the daemon": {
+    "original": "tdtool is the command line client of the daemon",
+    "translation": "tdtool è il client da riga di comando del demone",
+    "timestamp": "2026-10-12T20:50:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Domoticz reaches the daemon through the unix socket": {
+    "original": "Domoticz reaches the daemon through the unix socket",
+    "translation": "Domoticz raggiunge il daemon tramite il socket Unix",
+    "timestamp": "2026-10-12T20:50:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log": {
+    "original": "Log",
+    "translation": "Log",
+    "timestamp": "2026-10-12T20:50:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The Tellstick has to be recognised as a USB device": {
+    "original": "The Tellstick has to be recognised as a USB device",
+    "translation": "Il Tellstick deve essere riconosciuto come dispositivo USB",
+    "timestamp": "2026-10-12T20:50:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

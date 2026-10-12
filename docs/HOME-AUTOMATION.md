@@ -9,52 +9,56 @@ This document describes the whole subsystem: what is packaged, what it can do, h
 ```mermaid
 graph LR
     subgraph box["FRITZ!Box (Freetz-EVO)"]
-        RTL["rtl_433<br/>433/868 MHz sensors"]
-        SDR["SoapySDR + rtl-sdr"]
-        OT["ot-daemon / otbr-agent<br/>Thread border router"]
-        MB["matter-bridge<br/>WebSocket :5580"]
-        FM["freetz-matter<br/>Matter device UDP :5540"]
         MQ["mosquitto<br/>MQTT broker"]
         DZ["domoticz<br/>:8080"]
-        HA["homeassistant<br/>:8123 (helper)"]
+        MB["matter-bridge<br/>WebSocket :5580"]
+        FM["freetz-matter<br/>Matter device UDP :5540"]
+        RADIO["rtl_433 + SDR<br/>433/868 MHz sensors"]
+        OT["otbr-agent<br/>Thread border router"]
         AUD["audio stack<br/>MPD / AirPlay / DAC"]
-        TY["tuya-iot-core-sdk<br/>+ tuyapp"]
     end
-    SENSORS["433 MHz / Zigbee /<br/>ESPHome devices"] --> RTL
-    SENSORS --> MQ
-    TY --> CLOUD["Tuya cloud"]
-    DZ <-->|"WebSocket,<br/>python-matter-server JSON API"| MB
-    MB -.->|"Matter: commissioning, CASE,<br/>interaction model over UDP 5540<br/>(controller role, milestone 2: commissioning implemented)"| FM
-    MQ --> HA
+    SENS["433 MHz / Zigbee /<br/>ESPHome devices"] --> RADIO
+    SENS --> MQ
     MQ --> DZ
-    DZ -.HTTP-.-> HA
-    AUD --> HA
+    DZ <-->|"WebSocket :5580"| MB
+    MB -.->|"Matter, UDP 5540"| FM
+    OT --> TH["Matter over Thread<br/>devices"]
     AUD --> DZ
-    OT --> MBR["Matter over Thread<br/>devices"]
-    DZ -.->|"WebSocket :5580<br/>(works today, off-box)"| PS["python-matter-server<br/>or Home Assistant<br/>(off-box Matter controller)"]
-    PS -->|"Matter: commissioning, CASE,<br/>interaction model over UDP 5540"| FM
-    PS -->|same protocol| MBR
-    HA --> APPLE["Apple Home / Google Home<br/>Alexa / HomeKit style apps"]
+    HA["homeassistant<br/>setup helper"] --> MQ
+    DZ -.->|"WebSocket :5580<br/>(off-box)"| PS["python-matter-server<br/>or Home Assistant"]
+    PS -.-> FM
+    PS -.-> TH
 ```
 
-Read the diagram by keeping the **two directions** apart, because the protocols on the two hops are different:
+Three roles, in short:
 
-| Chain | Hops | State |
-|---|---|---|
-| Domoticz → local freetz-matter, no off-box software | `domoticz` → WebSocket TCP 5580 → `matter-bridge` → Matter/CASE UDP 5540 → `freetz-matter` | Native single-daemon controller: automatic local PASE/CASE, real attributes/commands/subscriptions and stable fabric. Host integration tested; router temperature/audio and boot testing remain. No multicast discovery or Wi-Fi/Thread provisioning. |
-| Domoticz → Matter devices, today | `domoticz` —WebSocket/JSON API→ `python-matter-server` (off-box, glibc) —Matter (UDP 5540)→ device | works |
-| Any Matter controller → the FRITZ!Box itself | controller —Matter (UDP 5540)→ `freetz-matter` | works: `freetz-matter` is a Matter *device* (rs-matter), independent of both `matter-bridge` and Domoticz |
+* **hub** — [`domoticz`](make/domoticz.md) is the only hub that runs entirely on
+  the box: web UI on port 8080, MQTT, Z-Wave, 433 MHz, Matter and the audio stack;
+* **Matter** — [`matter-bridge`](make/matter-bridge.md) serves the WebSocket API
+  Domoticz expects and acts as the controller, [`freetz-matter`](make/freetz-matter.md)
+  is the accessory that turns the box into a Matter device. The off-box
+  `python-matter-server` on a glibc host remains a valid alternative, and any
+  Matter controller can commission the accessory directly;
+* **radios and glue** — [`mosquitto`](make/mosquitto.md) for MQTT,
+  [`rtl_433`](make/rtl_433.md) with [`soapyrtlsdr`](make/soapyrtlsdr.md) for
+  433/868 MHz sensors, [`telldus`](make/telldus.md) for the Tellstick
+  (433 MHz, receiver *and* transmitter), [`openthread`](make/openthread.md) and
+  [`ot-br-posix`](make/ot-br-posix.md) for Thread, the [audio subsystem](AUDIO.md)
+  as actuator, [`tuya-iot-core-sdk`](make/tuya-iot-core-sdk.md) for cloud devices
+  and Home Assistant as an optional helper.
 
-The WebSocket hop exists because that is how the reference server exposes its API; Matter itself uses UDP and a TLV interaction model. `matter-bridge` embeds the WebSocket API and controller; `freetz-matter` is the accessory. `matter-bridge-ctl` is an optional diagnostic CLI, not a second required service.
-
+The WebSocket hop exists because that is how the reference server exposes its
+API; Matter itself uses UDP and a TLV interaction model. Details in
+[MATTER.md](MATTER.md).
 
 ## Domoticz — the fully built-in hub
 
-[`domoticz`](make/domoticz.md) 2026.4 is a complete port (SubGHz/433, MQTT, Lua, Python, I2C/SPI, USB): a 12 MB stripped MIPS binary plus a 21 MB payload (`www`, `dzVents`, `plugins`, `scripts`). It is the only hub in the tree that runs entirely on the router without external dependencies, which is why it is the natural partner of `matter-bridge`.
+[`domoticz`](make/domoticz.md) 2026.4 is a complete port (Z-Wave, SubGHz/433, MQTT, Lua, Python, I2C/SPI, USB): a 12 MB stripped MIPS binary plus a 29 MB payload (`www`, `dzVents`, `plugins`, `scripts` and the 7.8 MB OpenZWave device database in `Config`). It is the only hub in the tree that runs entirely on the router without external dependencies, which is why it is the natural partner of `matter-bridge`.
 
 * web interface on port 8080, `-userdata` on external storage, `-log` in `/var/log`;
 * async boot start: the init script waits for the USB stick in a background subshell, the boot sequence is never blocked;
 * the Matter hardware entry connects to `ws://127.0.0.1:5580/ws`, so the bridge and the hub can live on the same box;
+* radio drivers compiled in, not loaded as Python plugins: `libopenzwave` 1.6 for Z-Wave and `libtelldus-core` 2.1.1 for the Tellstick, so a USB stick is enough to see real devices;
 * dependency set built and verified: Boost 1.87 thread, libmosquitto, Lua 5.4, Python 3.14, SQLite, OpenSSL, libusb, libcurl.
 
 ## Matter without Node.js
@@ -87,6 +91,7 @@ The package is built without the HTTP API to keep the broker small.
 
 * [`rtl_433`](make/rtl_433.md) — decodes hundreds of 433/868 MHz protocols (temperature/humidity sensors, door contacts, remote controls, energy meters). Built with `SoapySDR` support and OpenSSL, so both USB DVB-T sticks and SDR frontends work.
 * [`soapyrtlsdr`](make/soapyrtlsdr.md) + [`rtl-sdr`] — the driver layer, with the kernel driver `dvb_usb_rtl28xxu` blacklisted when needed.
+* [`telldus`](make/telldus.md) — the `telldusd` daemon and `tdtool` for the Tellstick USB transceiver: it both decodes the classic 433 MHz protocols (temperature, humidity, self-learning switches) and **transmits**, so the same stick can read a sensor and switch a socket. Configuration is a `tellstick.conf` edited from the web interface, devices learned at run time are kept in `/mod/etc/conf`. Domoticz talks to it through `libtelldus-core`, so a Tellstick shows up as a native hardware entry; a Z-Wave USB stick shows up through the built-in OpenZWave support.
 * decoded sensors are published to MQTT and/or written to files, and are then visible to Domoticz and Home Assistant. This is the cheapest way to get real automation data on a router: one USB stick, no cloud, no hubs.
 
 ## Cloud devices: Tuya
@@ -149,6 +154,7 @@ The remaining work on this path is verification on a real box with a real contro
 | Package | Version | Role | Status |
 |---|---|---|---|
 | [`domoticz`](make/domoticz.md) | 2026.4 | full hub, web UI on 8080 | built, verified, installable |
+| [`telldus`](make/telldus.md) | 2.1.1 | `telldusd` + `tdtool`, Tellstick 433 MHz driver | built, verified |
 | [`matter-bridge`](make/matter-bridge.md) | 0.1 | native Matter WebSocket API, port 5580 | built, protocol verified against upstream |
 | [`openthread`](make/openthread.md) | 2026.10.0 | `ot-daemon`, `ot-ctl` | built, verified |
 | [`ot-br-posix`](make/ot-br-posix.md) | 2026.10.0 | Thread border router (`otbr-agent`) | built, verified (`otbr-agent` 2.4 MB + `ot-ctl`) |
@@ -161,11 +167,12 @@ The remaining work on this path is verification on a real box with a real contro
 | [`tuyapp`](make/tuyapp.md) | 0.1 | Tuya CLI | built, verified |
 | [`boost`](make/boost.md) | 1.87.0 | thread/pool library required by Domoticz | built, verified |
 
-**Externalization**: every package in the table (and the `rtl-sdr`, `soapysdr` and `boost` libraries) can be moved to external storage from the *External* menu, which keeps the firmware image untouched — the whole point of running a home automation stack on a device with a few megabytes of free flash. Declared files, verified against the built artifacts:
+**Externalization**: every package in the table (and the `rtl-sdr`, `soapysdr`, `boost`, `openzwave` and `telldus-core` libraries) can be moved to external storage from the *External* menu, which keeps the firmware image untouched — the whole point of running a home automation stack on a device with a few megabytes of free flash. Declared files, verified against the built artifacts:
 
 | Entry | Files moved to external storage |
 |---|---|
-| `domoticz` | `/usr/bin/domoticz`, `/usr/share/domoticz` (daemon + 21 MB payload) |
+| `domoticz` | `/usr/bin/domoticz`, `/usr/share/domoticz` (daemon + 29 MB payload) |
+| `telldus` | `/usr/sbin/telldusd`, `/usr/bin/tdtool` (the configuration in `/mod/etc/conf` stays in the firmware) |
 | `matter-bridge` | `/usr/bin/matter-bridge` |
 | `ot-br-posix` | `/usr/sbin/otbr-agent`, `/usr/sbin/ot-ctl` |
 | `openthread` | `/usr/bin/ot-daemon`, `/usr/bin/ot-ctl` |
