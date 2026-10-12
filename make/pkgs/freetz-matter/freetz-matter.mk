@@ -75,13 +75,27 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 
 $(pkg): $($(PKG)_BINARY)
 
-# Web interface page (Freetz menu entry "freetz-matter (Matter device)")
-$($(PKG)_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi: $(FREETZ_MATTER_MAKE_DIR)/files/root/usr/lib/cgi-bin/freetz-matter.cgi
-	mkdir -p $(dir $@)
-	cp $< $@
-	chmod 755 $@
+# Static files (config defaults, save hook, init script, web page) are staged
+# through an explicit target: the generic $($(PKG)_TARGET_DIR)/root rule has only
+# an order-only prerequisite, so an existing staging directory is never
+# refreshed and later rebuilds would keep stale copies of files/root.
+$(PKG)_STAGING_SOURCES := \
+	$(FREETZ_MATTER_MAKE_DIR)/files/.language \
+	$(FREETZ_MATTER_MAKE_DIR)/files/root/etc/default.freetz-matter/freetz-matter.cfg \
+	$(FREETZ_MATTER_MAKE_DIR)/files/root/etc/default.freetz-matter/freetz-matter.save \
+	$(FREETZ_MATTER_MAKE_DIR)/files/root/etc/init.d/rc.freetz-matter \
+	$(FREETZ_MATTER_MAKE_DIR)/files/root/usr/lib/cgi-bin/freetz-matter.cgi
+$(PKG)_STAGING_TARGET := $($(PKG)_DEST_DIR)/etc/init.d/rc.freetz-matter
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi
+$($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
+	mkdir -p $(FREETZ_MATTER_TARGET_DIR)/root
+	$(call COPY_USING_TAR,$(FREETZ_MATTER_MAKE_DIR)/files,$(FREETZ_MATTER_TARGET_DIR))
+	chmod 755 \
+		$(FREETZ_MATTER_DEST_DIR)/etc/init.d/rc.freetz-matter \
+		$(FREETZ_MATTER_DEST_DIR)/etc/default.freetz-matter/freetz-matter.save \
+		$(FREETZ_MATTER_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:
 	$(RM) -r $(FREETZ_MATTER_DIR)/target

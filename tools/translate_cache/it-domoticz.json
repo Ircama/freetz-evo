@@ -1,0 +1,93 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-12T04:53:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Web interface": {
+    "original": "Web interface",
+    "translation": "Interfaccia web",
+    "timestamp": "2026-10-12T04:53:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Web interface URL": {
+    "original": "Web interface URL",
+    "translation": "URL dell’interfaccia web",
+    "timestamp": "2026-10-12T04:53:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP port (1-49151, 0 = off)": {
+    "original": "HTTP port (1-49151, 0 = off)",
+    "translation": "Porta HTTP (1-49151, 0 = disattivato)",
+    "timestamp": "2026-10-12T04:53:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTPS port (1-49151, 0 = off)": {
+    "original": "HTTPS port (1-49151, 0 = off)",
+    "translation": "Porta HTTPS (1-49151, 0 = disattivata)",
+    "timestamp": "2026-10-12T04:53:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Data directory": {
+    "original": "Data directory",
+    "translation": "Directory di dati",
+    "timestamp": "2026-10-12T04:53:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database, logs and certificate": {
+    "original": "Database, logs and certificate",
+    "translation": "Database, log e certificato",
+    "timestamp": "2026-10-12T04:53:10Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Wait for the storage device (seconds, 0 = immediately)": {
+    "original": "Wait for the storage device (seconds, 0 = immediately)",
+    "translation": "Attendere il dispositivo di archiviazione (secondi, 0 = immediatamente)",
+    "timestamp": "2026-10-12T04:53:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Logging": {
+    "original": "Logging",
+    "translation": "Registrazione",
+    "timestamp": "2026-10-12T04:53:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log level (empty = default)": {
+    "original": "Log level (empty = default)",
+    "translation": "Livello di log (vuoto = predefinito)",
+    "timestamp": "2026-10-12T04:53:11Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command line options": {
+    "original": "Additional command line options",
+    "translation": "Opzioni aggiuntive della riga di comando",
+    "timestamp": "2026-10-12T04:53:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Status": {
+    "original": "Status",
+    "translation": "Stato",
+    "timestamp": "2026-10-12T04:53:12Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:The status is refreshed after saving and when the service is started.": {
+    "original": "The status is refreshed after saving and when the service is started.",
+    "translation": "Lo stato viene aggiornato dopo il salvataggio e all’avvio del servizio.",
+    "timestamp": "2026-10-12T04:53:13Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

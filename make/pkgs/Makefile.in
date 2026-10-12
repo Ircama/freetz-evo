@@ -523,11 +523,20 @@ $(PKG)_TARGET_DIR:
 	@mkdir -p $($(PKG)_TARGET_DIR)
 .PHONY: $(PKG)_TARGET_DIR
 
-$($(PKG)_TARGET_DIR)/root: | $(PACKAGES_DIR)
+# The files below $(PKG)_MAKE_DIR/files are real prerequisites of the staging
+# directory on purpose. With an order-only prerequisite make treats an existing
+# $($(PKG)_TARGET_DIR)/root as up to date and never copies files/ again, so a
+# rebuild after editing an init script, CGI, config default or helper silently
+# kept the previous copy in the image (the staging directory is only wiped when
+# the package configuration itself changes). The trailing touch advances the
+# directory timestamp past the prerequisites, so the copy runs once per change
+# instead of on every make.
+$($(PKG)_TARGET_DIR)/root: $(wildcard $($(PKG)_MAKE_DIR)/$(pkg).mk) $(shell [ -d "$($(PKG)_MAKE_DIR)/files" ] && find "$($(PKG)_MAKE_DIR)/files" \( -type f -o -type l \) 2>/dev/null) | $(PACKAGES_DIR)
 	mkdir -p $($(PKG)_TARGET_DIR)/root
 	if test -d $($(PKG)_MAKE_DIR)/files; then \
 		$(call COPY_USING_TAR,$($(PKG)_MAKE_DIR)/files,$($(PKG)_TARGET_DIR)) \
 	fi
+	@touch $($(PKG)_TARGET_DIR)/root
 
 # create marker containing package version
 $(PACKAGES_DIR)/.$(pkg): | $(PACKAGES_DIR)

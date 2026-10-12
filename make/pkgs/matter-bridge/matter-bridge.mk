@@ -86,18 +86,32 @@ $($(PKG)_CTL_TARGET_BINARY): $($(PKG)_CTL_BINARY)
 
 $(pkg): $($(PKG)_BINARY) $($(PKG)_CTL_BINARY)
 
-$($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup: $(MATTER_BRIDGE_MAKE_DIR)/files/root/usr/bin/matter-bridge-setup
-	mkdir -p $(dir $@)
-	cp $< $@
-	chmod 755 $@
+# Static files (config defaults, save hook, init script, setup helper, web page)
+# are staged through an explicit target on purpose: the generic
+# $($(PKG)_TARGET_DIR)/root rule has only an order-only prerequisite, so once the
+# staging directory exists it is never refreshed again and a rebuild keeps stale
+# copies of files/root. That is how an earlier image ended up with an
+# rc.matter-bridge that still lacked its modreg calls, leaving the package
+# without a web menu entry.
+$(PKG)_STAGING_SOURCES := \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/.language \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/root/etc/default.matter-bridge/matter-bridge.cfg \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/root/etc/default.matter-bridge/matter-bridge.save \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/root/etc/init.d/rc.matter-bridge \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/root/usr/bin/matter-bridge-setup \
+	$(MATTER_BRIDGE_MAKE_DIR)/files/root/usr/lib/cgi-bin/matter-bridge.cgi
+$(PKG)_STAGING_TARGET := $($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup
 
-# Web interface page (Freetz menu entry "Matter bridge (Domoticz)")
-$($(PKG)_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi: $(MATTER_BRIDGE_MAKE_DIR)/files/root/usr/lib/cgi-bin/matter-bridge.cgi
-	mkdir -p $(dir $@)
-	cp $< $@
-	chmod 755 $@
+$($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
+	mkdir -p $(MATTER_BRIDGE_TARGET_DIR)/root
+	$(call COPY_USING_TAR,$(MATTER_BRIDGE_MAKE_DIR)/files,$(MATTER_BRIDGE_TARGET_DIR))
+	chmod 755 \
+		$(MATTER_BRIDGE_DEST_DIR)/etc/init.d/rc.matter-bridge \
+		$(MATTER_BRIDGE_DEST_DIR)/etc/default.matter-bridge/matter-bridge.save \
+		$(MATTER_BRIDGE_DEST_DIR)/usr/bin/matter-bridge-setup \
+		$(MATTER_BRIDGE_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_DEST_DIR)/usr/bin/matter-bridge-setup $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:
 	$(RM) -r $(MATTER_BRIDGE_BUILD_DIR) $(MATTER_BRIDGE_DIR)/controller/target
