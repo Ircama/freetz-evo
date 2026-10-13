@@ -169,27 +169,6 @@ The remaining work on this path is verification on a real box with a real contro
 | [`tuyapp`](make/tuyapp.md) | 0.1 | Tuya CLI | built, verified |
 | [`boost`](make/boost.md) | 1.87.0 | thread/pool library required by Domoticz | built, verified |
 
-**Externalization**: every package in the table (and the `rtl-sdr`, `soapysdr`, `boost`, `openzwave` and `telldus-core` libraries) can be moved to external storage from the *External* menu, which keeps the firmware image untouched — the whole point of running a home automation stack on a device with a few megabytes of free flash. The Domoticz plugin packages are the exception that proves the rule: they install *inside* `/usr/share/domoticz`, which the `domoticz` entry already moves, so they have no *External* entry of their own. Declared files, verified against the built artifacts:
-
-| Entry | Files moved to external storage |
-|---|---|
-| `domoticz` | `/usr/bin/domoticz`, `/usr/share/domoticz` (daemon + 29 MB payload) |
-| `telldus` | `/usr/sbin/telldusd`, `/usr/bin/tdtool` (the configuration in `/mod/etc/conf` stays in the firmware) |
-| `matter-bridge` | `/usr/bin/matter-bridge` |
-| `ot-br-posix` | `/usr/sbin/otbr-agent`, `/usr/sbin/ot-ctl` |
-| `openthread` | `/usr/bin/ot-daemon`, `/usr/bin/ot-ctl` |
-| `freetz-matter` | `/usr/bin/freetz-matter` |
-| `homeassistant` | `/usr/bin/ha-setup` (Home Assistant itself is installed to external storage by the helper) |
-| `rtl_433` | `/usr/bin/rtl_433` |
-| `soapyrtlsdr` | `/usr/lib/SoapySDR/modules0.8/libsoapyrtlsdr.so` |
-| `tuya-iot-core-sdk` | the four demo binaries |
-| `tuyapp` | the five `tuya_*` tools and the sample device list |
-| `rtl-sdr` (lib) | `${FREETZ_LIBRARY_DIR}/librtlsdr.so.2.0.3` |
-| `soapysdr` (lib) | `${FREETZ_LIBRARY_DIR}/libSoapySDR.so.0.8.1` |
-| `boost` (lib) | `${FREETZ_LIBRARY_DIR}/libboost_{thread,system}.so.1.87.0` |
-
-`make` itself performs the move at image assembly; externalizing a library also defers the services that depend on it until external storage is mounted (handled by `tools/external`). Every declaration above was checked by hand against the built artifacts.
-
 ## Design constraints and caveats
 
 * **Storage**: Domoticz, Home Assistant and the recorder databases must live on ext4 external storage, never on the flash.
