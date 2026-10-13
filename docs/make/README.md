@@ -701,7 +701,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>python-yenc: yEnc 0.4.0 - DEPRECATED</u><a id='python-yenc'></a>**<br>
 
-  * **[python3: Python 3.14.3 - EXPERIMENTAL](python3.md)<a id='python3'></a>**<br>
+  * **[python3: Python 3.14](python3.md)<a id='python3'></a>**<br>
     Python is a remarkably powerful dynamic programming language that is used in a wide variety of application domains. CAUTION: Python 3.14 with all modules requires approximately 59 MB (core) + 24 MB (addon packages) = ~83 MB total. Consider using external storage for complete installations. Size: ~59 MB (core), up to ~83 MB (with all addons)
 
   * **[python3-aiodns: aiodns 4.0.0](python3-aiodns.md)<a id='python3-aiodns'></a>**<br>
@@ -722,8 +722,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-aiosignal: aiosignal 1.4.0 (pure python, prerequisite)](python3-aiosignal.md)<a id='python3-aiosignal'></a>**<br>
     aiosignal is a pure-Python prerequisite module. It manages callbacks in asyncio projects.
 
+  * **[python3-android-backup: android_backup 0.2.0](python3-android-backup.md)<a id='python3-android-backup'></a>**<br>
+    Helper to back up and restore Android devices over ADB (pure Python helper used by micloud).
+
   * **[python3-annotatedyaml: annotatedyaml 1.0.2](python3-annotatedyaml.md)<a id='python3-annotatedyaml'></a>**<br>
     Annotated YAML that supports secrets for Python. Used by Home Assistant for YAML configuration handling. Optionally uses Cython for performance.
+
+  * **[python3-appdirs: appdirs 1.4.4](python3-appdirs.md)<a id='python3-appdirs'></a>**<br>
+    Small module that returns the platform specific user data, cache and config directories.
 
   * **[python3-async-timeout: async-timeout 5.0.1 (pure python, prerequisite)](python3-async-timeout.md)<a id='python3-async-timeout'></a>**<br>
     async-timeout is a pure-Python prerequisite module. It provides timeout context management for asyncio.
@@ -761,6 +767,15 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-ciso8601: ciso8601 2.3.3](python3-ciso8601.md)<a id='python3-ciso8601'></a>**<br>
     Fast ISO 8601 date/time parser written in C.
 
+  * **[python3-click: click 8.5.0](python3-click.md)<a id='python3-click'></a>**<br>
+    Composable command line interface toolkit (used by the miiocli tools and python-miio).
+
+  * **[python3-construct: construct 2.10.70](python3-construct.md)<a id='python3-construct'></a>**<br>
+    Declarative parser and builder for binary data, used by python-miio to encode the device protocol.
+
+  * **[python3-croniter: croniter 6.2.4](python3-croniter.md)<a id='python3-croniter'></a>**<br>
+    Evaluate cron style schedules (used by micloud and by scheduler code).
+
   * **[python3-cryptography: cryptography 48.0.0](python3-cryptography.md)<a id='python3-cryptography'></a>**<br>
     cryptography 48.0.0 cryptography is a package which provides cryptographic recipes and primitives to Python developers. Features: - SSL/TLS support - X.509 certificate handling - Symmetric encryption (AES, ChaCha20, etc.) - Asymmetric encryption (RSA, ECDSA, etc.) - Message digests and signatures - Key derivation functions Dependencies: - Python 3.x - cffi (Python C Foreign Function Interface) - typing-extensions - OpenSSL - Rust/Cargo (build time) Build: Uses pyproject/pip (PEP 517) Size: ~2-3 MB installed WWW: https://cryptography.io/
 
@@ -770,14 +785,26 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-dbus-fast: dbus-fast 5.0.22](python3-dbus-fast.md)<a id='python3-dbus-fast'></a>**<br>
     High-performance DBus client/service library. Build is configured to require Cython extension compilation.
 
+  * **[python3-defusedxml: defusedxml 0.7.1](python3-defusedxml.md)<a id='python3-defusedxml'></a>**<br>
+    XML parsers protected against the common XML attacks (used by python-miio for the miIO responses).
+
   * **[python3-faust-cchardet: faust-cchardet 2.1.19](python3-faust-cchardet.md)<a id='python3-faust-cchardet'></a>**<br>
     Fast universal character encoding detector (C/C++ extension).
+
+  * **[python3-feedparser: feedparser 6.0.14](python3-feedparser.md)<a id='python3-feedparser'></a>**<br>
+    Parsing di feed RSS e Atom, con gestione dei formati piu' comuni: e' la dipendenza di MeteoAlarmEU.
+
+  * **[python3-feedparser-sgmllib: feedparser-sgmllib 2.1.0](python3-feedparser-sgmllib.md)<a id='python3-feedparser-sgmllib'></a>**<br>
+    Parser SGML permissivo richiesto da feedparser 6 (modulo `sgmllib`).
 
   * **[python3-fnv-hash-fast: fnv-hash-fast 2.0.3](python3-fnv-hash-fast.md)<a id='python3-fnv-hash-fast'></a>**<br>
     A fast version of fnv1a hash using an optional Cython C extension. Falls back to pure Python fnvhash if Cython is not available.
 
   * **[python3-fnvhash: fnvhash 0.2.1 (pure python, prerequisite)](python3-fnvhash.md)<a id='python3-fnvhash'></a>**<br>
     fnvhash is a pure-Python prerequisite module. It provides FNV hash implementations (fnv1, fnv1a).
+
+  * **[python3-fritzconnection: fritzconnection 1.15.1](python3-fritzconnection.md)<a id='python3-fritzconnection'></a>**<br>
+    Library to talk to the TR-064 interface of a FRITZ!Box from Python: it reads the device and network status and it can call the actions of the router, for example for presence detection (devices seen by the WLAN) or for rebooting the box. It is installed for the Domoticz plugin that uses it (domoticz-fritz-presence), but it can also be used by scripts on the box, for example from the Freetz configuration pages.
 
   * **[python3-frozenlist: frozenlist 1.8.0](python3-frozenlist.md)<a id='python3-frozenlist'></a>**<br>
     A list-like structure which implements collections.abc.MutableSequence.
@@ -818,6 +845,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-ifaddr: ifaddr 0.2.0 (pure python, prerequisite)](python3-ifaddr.md)<a id='python3-ifaddr'></a>**<br>
     Cross-platform network interface/address discovery library.
 
+  * **[python3-invoke: invoke 3.0.3](python3-invoke.md)<a id='python3-invoke'></a>**<br>
+    Task execution library for Python: it runs shell commands and defines tasks out of Python functions (it is a requirement of python-paramiko).
+
   * **[python3-lru-dict: lru-dict 1.4.1](python3-lru-dict.md)<a id='python3-lru-dict'></a>**<br>
     Fast C implementation of a dictionary with LRU eviction.
 
@@ -830,8 +860,20 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-mashumaro: mashumaro 3.17 (pure python, prerequisite)](python3-mashumaro.md)<a id='python3-mashumaro'></a>**<br>
     Fast dataclass serialization/deserialization framework.
 
+  * **[python3-micloud: micloud 0.6](python3-micloud.md)<a id='python3-micloud'></a>**<br>
+    Client for the Xiaomi cloud API (python-miio uses it for the device tokens).
+
+  * **[python3-miio: python-miio 0.5.12](python3-miio.md)<a id='python3-miio'></a>**<br>
+    python-miio: control of Xiaomi devices over the LAN (the `miio` module and `miiocli`).
+
+  * **[python3-minimalmodbus: minimalmodbus 2.1.1](python3-minimalmodbus.md)<a id='python3-minimalmodbus'></a>**<br>
+    Client Modbus RTU/ASCII semplice ed essenziale, sopra pyserial: i plugin CreasolTech ne includono una copia propria, quindi questo pacchetto serve a script e ad altri plugin.
+
   * **[python3-multidict: multidict 6.7.1](python3-multidict.md)<a id='python3-multidict'></a>**<br>
     Multidict is dict-like collection of key-value pairs.
+
+  * **[python3-netifaces: netifaces 0.11.0](python3-netifaces.md)<a id='python3-netifaces'></a>**<br>
+    Portable access to the network interfaces and their addresses (compiled extension, used by python-miio).
 
   * **[python3-numpy: NumPy 2.5.0/2.4.3/2.3.2 (for Python 3)](python3-numpy.md)<a id='python3-numpy'></a>**<br>
     NumPy is the fundamental package for scientific computing in Python. Available versions: - 2.3.2: stable older release - 2.4.3: previous release - 2.5.0: latest (recommended, adds PyDataType_TYPEOBJ/KIND/TYPE/BYTEORDER macros) Provides: - Powerful N-dimensional array object (ndarray) - Sophisticated broadcasting functions - Linear algebra, Fourier transform, random number capabilities - Tools for integrating C/C++ and Fortran code Common uses: - Data analysis and machine learning - Scientific and engineering computations - Image and signal processing - Statistical operations WARNING: NumPy is large (~15-20 MB) and MUST be externalized. Ensure sufficient USB storage is available. This build uses reference BLAS (slower but no extra dependencies). For performance-critical applications, consider optimized libraries. Website: https://numpy.org/ Docs: https://numpy.org/doc/stable/
@@ -839,8 +881,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-orjson: orjson 3.11.9](python3-orjson.md)<a id='python3-orjson'></a>**<br>
     Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy. Native Rust implementation via maturin. Dependencies: - Python 3.x - Rust/Cargo (build time) Build: Uses pyproject/pip (PEP 517) with maturin
 
+  * **[python3-paho-mqtt: paho-mqtt 2.1.0](python3-paho-mqtt.md)<a id='python3-paho-mqtt'></a>**<br>
+    MQTT client library of the Eclipse Paho project (module `paho`). Most Domoticz plugins that subscribe to an MQTT broker use it, for example the Zigbee2MQTT and Shelly bridges; on this box the broker itself is the `mosquitto` package.
+
   * **[python3-pandas: pandas 3.0.3/3.0.1/2.3.3 (for Python 3)](python3-pandas.md)<a id='python3-pandas'></a>**<br>
     pandas is a powerful data analysis and manipulation library. WARNING: Requires NumPy. Available versions: - 2.3.3: last 2.x release (NumPy 1.x compatible API) - 3.0.1: first 3.x release (NumPy 2.x API) - 3.0.3: latest (NumPy 2.x API, recommended) Provides: - DataFrame and Series data structures - Data alignment and integrated handling of missing data - Reshaping and pivoting of data sets - Label-based slicing, indexing, and subsetting - Time series functionality - Data I/O (CSV, Excel, SQL, HDF5, JSON, Parquet) Common uses: - Data cleaning and preparation - Statistical analysis - Time series analysis - Data visualization (with matplotlib) WARNING: pandas is large (~10-15 MB) and REQUIRES NumPy.
+
+  * **[python3-paramiko: paramiko 5.0.0](python3-paramiko.md)<a id='python3-paramiko'></a>**<br>
+    SSH2 protocol library (client and server) implemented in Python on top of cryptography: it opens SSH sessions and it runs commands on remote hosts, for example to list the clients of a router (used by domoticz-idetect).
 
   * **[python3-pillow: Pillow 12.2.0 (for Python 3)](python3-pillow.md)<a id='python3-pillow'></a>**<br>
     Pillow is the friendly PIL (Python Imaging Library) fork for Python 3. WARNING: Cross-compilation issues with host include paths. Provides extensive file format support, efficient internal representation, and powerful image processing capabilities. Supported formats: PNG, JPEG, GIF, TIFF, BMP, WebP, and many more. Common uses: - Image manipulation and processing - Thumbnail generation - Image format conversion - Computer vision preprocessing Website: https://python-pillow.org/ GitHub: https://github.com/python-pillow/Pillow
@@ -869,6 +917,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-pynacl: pynacl 1.6.2](python3-pynacl.md)<a id='python3-pynacl'></a>**<br>
     Python bindings to libsodium (NaCl cryptographic library).
 
+  * **[python3-pynetgear: pynetgear 0.10.10](python3-pynetgear.md)<a id='python3-pynetgear'></a>**<br>
+    Library for the SOAP API of NETGEAR routers: it reads the state of the router and the list of the connected devices (used by domoticz-idetect).
+
   * **[python3-pyopenssl: pyopenssl 26.0.0](python3-pyopenssl.md)<a id='python3-pyopenssl'></a>**<br>
     Python wrapper around OpenSSL via cryptography.
 
@@ -878,11 +929,17 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-pyric: PyRIC 0.1.6.3 (pure python, prerequisite)](python3-pyric.md)<a id='python3-pyric'></a>**<br>
     Python Radio Interface Controller (pyric). Linux wireless library providing nl80211 interface for managing wireless interfaces, channels, and connections. Website: http://wraith-wireless.github.io/PyRIC/
 
+  * **[python3-pyserial: pyserial 3.5](python3-pyserial.md)<a id='python3-pyserial'></a>**<br>
+    Accesso alle porte seriali (modulo `serial`): e' la dipendenza dei plugin modbus (DDS238, DTS238, PZEM-016, Emmeti) e di quasi tutte le librerie che parlano con lettori e contatori via RS-485/USB.
+
   * **[python3-pyspeex-noise: pyspeex-noise 2.0.0](python3-pyspeex-noise.md)<a id='python3-pyspeex-noise'></a>**<br>
     Speex-based noise suppression extension for Python.
 
   * **[python3-pyturbojpeg: pyturbojpeg 2.2.0/1.8.3](python3-pyturbojpeg.md)<a id='python3-pyturbojpeg'></a>**<br>
     Python wrapper for libjpeg-turbo (TurboJPEG API).
+
+  * **[python3-pytz: pytz 2026.5](python3-pytz.md)<a id='python3-pytz'></a>**<br>
+    World timezone definitions (dependency of micloud and of the Xiaomi cloud API).
 
   * **[python3-pyyaml: pyyaml 6.0.3](python3-pyyaml.md)<a id='python3-pyyaml'></a>**<br>
     PyYAML is a full-featured YAML framework for Python. Provides: - Complete YAML 1.1 parser and emitter - Python object serialization/deserialization - Support for user-defined Python objects - Unicode support - Low-level event-based API (LibYAML binding) - High-level object-oriented API Common uses: - Configuration file parsing - Data serialization (alternative to JSON/XML) - DevOps and infrastructure automation - CI/CD pipeline configurations This build uses LibYAML C library for faster parsing. Website: https://pyyaml.org/ Docs: https://pyyaml.org/wiki/PyYAMLDocumentation
@@ -890,17 +947,26 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-regex: regex 2026.5.9 (C extension)](python3-regex.md)<a id='python3-regex'></a>**<br>
     Alternative regular expression module for Python 3, backwards-compatible with the standard 're' module. Provides additional features including fuzzy matching, POSIX matching, recursive patterns and more. Website: https://github.com/mrabarnett/mrab-regex
 
+  * **[python3-requests: requests 2.34.2](python3-requests.md)<a id='python3-requests'></a>**<br>
+    The de-facto standard HTTP client library for Python. It is the most common dependency of the Domoticz plugins that talk to cloud services (EV chargers, heat pumps, solar inverters, LED strips).
+
   * **[python3-setuptools: setuptools 82.0.1 (pure python, prerequisite)](python3-setuptools.md)<a id='python3-setuptools'></a>**<br>
     setuptools is a pure-Python prerequisite/tooling module. setuptools is a collection of enhancements to Python distutils. Required by pip and many Python packages for: - Package installation - Dependency management - Entry point discovery - Package resource management This is the runtime version of setuptools. The host version (python3-setuptools-host) is used during firmware build, while this version runs on the Fritz!Box. Automatically selected when you install pip. Website: https://setuptools.pypa.io/ Docs: https://setuptools.pypa.io/en/latest/
 
   * **[python3-six: six 1.17.0 (pure python, prerequisite)](python3-six.md)<a id='python3-six'></a>**<br>
     six is a pure-Python prerequisite module. It is a Python 2 and 3 compatibility library.
 
+  * **[python3-tqdm: tqdm 4.70.1](python3-tqdm.md)<a id='python3-tqdm'></a>**<br>
+    Progress bars for loops and downloads (used by micloud).
+
   * **[python3-typing-extensions: typing-extensions 4.15.0 (pure python, prerequisite)](python3-typing-extensions.md)<a id='python3-typing-extensions'></a>**<br>
     Backported and experimental typing helpers for Python.
 
   * **[python3-ulid-transform: ulid-transform 2.2.9](python3-ulid-transform.md)<a id='python3-ulid-transform'></a>**<br>
     ulid-transform 2.2.9 Create and transform ULIDs. This package builds a native extension and requires Rust/Cargo at build time. WWW: https://pypi.org/project/ulid-transform/
+
+  * **[python3-urllib3: urllib3 2.8.0](python3-urllib3.md)<a id='python3-urllib3'></a>**<br>
+    HTTP client with connection pooling, TLS verification and retry handling. It is the transport below requests and it is also used directly by some Domoticz plugins.
 
   * **[python3-uv: uv 0.11.16](python3-uv.md)<a id='python3-uv'></a>**<br>
     uv 0.11.16 An extremely fast Python package and project manager, written in Rust. WWW: https://github.com/astral-sh/uv
@@ -1361,6 +1427,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[fstyp 0.1 (binary only) - DEPRECATED](fstyp.md)<a id='fstyp'></a>**<br>
     fstyp can be used to heuristically detect which filesystem type a block device contains.
 
+  * **[gptfdisk 1.0.10 (gdisk)](gptfdisk.md)<a id='gptfdisk'></a>**<br>
+    Interactive GUID partition table (GPT) manipulator
+
   * **[hdparm 9.65 (binary only)](hdparm.md)<a id='hdparm'></a>**<br>
     Hdparm can be used to show and set parameters of ATA-drives (e.g. hard disk drives).
 
@@ -1400,6 +1469,168 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[Domoticz 2026.4](domoticz.md)<a id='domoticz'></a>**<br>
     Domoticz is a lightweight home automation system: it lets you monitor and control lights, switches, sensors, thermostats, media players and many other devices from a web browser. Build characteristics in Freetz: - Boost (Boost.Asio, Boost.Signals2, Boost.Thread) is provided by the boost package, which is cross-built with b2 and also installs the BoostConfig.cmake that CMake 4 requires (FindBoost was removed). - SQLite, OpenSSL, zlib, libcurl, libusb, Lua 5.4 and libmosquitto (the MQTT client library). - The four git submodules of the 2026.4 tag (extern/jsoncpp, extern/minizip, extern/jwtcpp, extern/libwebem) are downloaded and unpacked by the package, because GitHub source archives never contain submodule contents. - Embedded Python plugin support is enabled (links libpython3.14), dzVents/Lua event scripts use the tree's Lua 5.4. - The built-in updater is disabled. OpenZWave (Z-Wave) and Telldus (Tellstick) are compiled in: the OpenZWave device database is installed in /usr/share/domoticz/Config, from which Domoticz loads it at run time. Telldus only provides the client library here, so a Tellstick additionally needs the telldusd daemon. Web interface: http://fritz.box:8080/ (configurable in /mod/etc/default.domoticz/domoticz.cfg)
+
+  * **[domoticz-ada-p1-meter: Domoticz plugin: ADA P1 meter](domoticz-ada-p1-meter.md)<a id='domoticz-ada-p1-meter'></a>**<br>
+    Support for the ADA P1 meter (greenhess.com), a reader that publishes the P1 telegram of a smart meter on the local network: the plugin polls it and creates the energy devices of the installation — imported and exported energy, the per-tariff counters, current power, and the gas/water values when the meter reports them. It is the counterpart of the FREETZ_PACKAGE_DOMOTICZ_HOMEWIZARD_P1 plugin for owners of an ADA reader. Both can coexist: they create independent device sets. The plugin uses only the Domoticz module and the Python standard library, and its labels follow the language of the hardware entry (17 translations). Setup: Setup -> Hardware -> add the ADA P1 meter, enter the IP address of the reader and, where required, the Domoticz address (127.0.0.1) and its HTTP port (8080). Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it; the build fetches a pinned commit of the main branch because there are no release tags.
+
+  * **[domoticz-airpurifier: Domoticz plugin: Xiaomi air purifiers](domoticz-airpurifier.md)<a id='domoticz-airpurifier'></a>**<br>
+    control of the Xiaomi / Mi air purifiers that answer the miIO protocol (AirPurifier 2 and the related models) over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-AirPurifier, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin needs python-miio (installed as a dependency of this package) in addition to the standard library. python-miio speaks to the device directly on the LAN, so no Xiaomi account is used: the address of the purifier and its token are the settings of the plugin (the token is read out of the Xiaomi Home app or of a miiocli based tool once). Setup: Setup -> Hardware -> AirPurifier, enter the address of the purifier in Address and its token in Mode1. The upstream repository has no release tags, so the build fetches a pinned commit of the default branch. Upstream ships no license file: the README is installed with the plugin.
+
+  * **[domoticz-alphaess: Domoticz plugin: alphaESS battery](domoticz-alphaess.md)<a id='domoticz-alphaess'></a>**<br>
+    battery status of an alphaESS storage system through its cloud API It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/alphaESS-battery-plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> alphaESS, enter the credentials of the alphaESS portal. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-apc-ups: Domoticz plugin: APC UPS monitor](domoticz-apc-ups.md)<a id='domoticz-apc-ups'></a>**<br>
+    monitor an APC UPS through the apcupsd daemon or its SNMP interface It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-apc-ups-plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> APC UPS, enter the address and the community of the UPS. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-awtrix3: Domoticz plugin: AWTRIX 3](domoticz-awtrix3.md)<a id='domoticz-awtrix3'></a>**<br>
+    notifications and data on an AWTRIX 3 clock or LED matrix (it uses requests for the HTTP API of AWTRIX 3 and installs the icons it sends to the matrix). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-AWTRIX3-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> AWTRIX3, enter the address of the device. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-battery-level: Domoticz plugin: BatteryLevel](domoticz-battery-level.md)<a id='domoticz-battery-level'></a>**<br>
+    monitoring of the battery level of the devices, with notifications on the thresholds (it connects to the MQTT broker with paho-mqtt). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/BatteryLevel, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> BatteryLevel, enter the MQTT broker and the devices to follow. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-camera-bridge: Domoticz plugin: RTSP camera bridge](domoticz-camera-bridge.md)<a id='domoticz-camera-bridge'></a>**<br>
+    publish RTSP camera snapshots as still JPEG images for the Domoticz camera devices It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-camera-bridge, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Camera bridge, add one entry per camera with its RTSP URL. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-dahua-vto: Domoticz plugin: Dahua VTO door intercom](domoticz-dahua-vto.md)<a id='domoticz-dahua-vto'></a>**<br>
+    read a Dahua VTO door intercom (calls, door release, snapshots) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/dahua-vto-dz, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Dahua VTO, enter the address and the credentials of the intercom. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-dds238: Domoticz plugin: DDS238 energy meter (Modbus RS-485)](domoticz-dds238.md)<a id='domoticz-dds238'></a>**<br>
+    readings of the DDS238 energy meters and of the devices that speak the same Modbus protocol (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-dds238, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> DDS238, enter the serial port, the Modbus address and the model. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-denon: Domoticz plugin: Denon/Marantz AV receiver](domoticz-denon.md)<a id='domoticz-denon'></a>**<br>
+    control Denon and Marantz AV receivers over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-Denon-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Denon/Marantz, enter the address of the receiver. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-dsvt: Domoticz plugin: DSVT zone heating/cooling control](domoticz-dsvt.md)<a id='domoticz-dsvt'></a>**<br>
+    DSVT is a multi-zone heating, cooling and domestic hot water control system for Domoticz: up to 12 zones with individual room thermostats (or TRV valves), several heat sources (heat pump, boiler, electric heater), floor/radiator/wall/ceiling emitters, per-zone door and window detection, and a dashboard page served by the Domoticz web server. Unlike a plain thermostat script it creates the whole device tree and the control logic itself, and it keeps its state in a small SQLite database (hence the selected Python sqlite3 module); the Duinzicht/MiHome style viewers are not required. The plugin uses the Domoticz module and the Python standard library, and its labels follow the language of the hardware entry (16 translations; the dashboard page brings its own set). Setup: Setup -> Hardware -> add the DSVT hardware, then open the DSVT setup page of the plugin (linked from the hardware page) to define zones and heat sources. Licensed MIT upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the main branch.
+
+  * **[domoticz-dts238: Domoticz plugin: DTS238 three-phase meter (Modbus RS-485)](domoticz-dts238.md)<a id='domoticz-dts238'></a>**<br>
+    readings of the DTS238 three-phase energy meters and of the devices that speak the same Modbus protocol (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-dts238, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> DTS238, enter the serial port, the Modbus address and the model. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-ebusd: Domoticz plugin: ebusd heating bridge](domoticz-ebusd.md)<a id='domoticz-ebusd'></a>**<br>
+    read a heating system through an ebusd daemon (Vaillant, Wolf, ...) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/DomoticzEbusd, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> ebusd, enter the address and port of the ebusd daemon. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-emmeti-eq2021: Domoticz plugin: Emmeti EQ2021 thermostat (Modbus)](domoticz-emmeti-eq2021.md)<a id='domoticz-emmeti-eq2021'></a>**<br>
+    control of the Emmeti EQ2021 thermostats over Modbus (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-emmeti-eq2021, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Emmeti EQ2021, enter the serial port and the Modbus address. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-emmeti-mirai: Domoticz plugin: Emmeti Mirai thermostat (Modbus)](domoticz-emmeti-mirai.md)<a id='domoticz-emmeti-mirai'></a>**<br>
+    control of the Emmeti Mirai thermostats over Modbus (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-emmeti-mirai, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Emmeti Mirai, enter the serial port and the Modbus address. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-ev-charge-control: Domoticz plugin: timed EV charger control](domoticz-ev-charge-control.md)<a id='domoticz-ev-charge-control'></a>**<br>
+    Timed charging control for an electric vehicle: the plugin switches an existing Domoticz device (the switch or contactor that enables the wallbox) ON and OFF according to a schedule configured on the hardware page, and it can be disabled temporarily without losing the schedule. A safety function refuses to switch the charger ON again within 30 minutes of a switch OFF, which protects the on-board charger of the car from being cycled when the schedule is changed or the box restarts. The controlled device is any Domoticz switch, for example a Wi-Fi or Zigbee relay; the plugin only uses the Domoticz module and the Python standard library. Setup: Setup -> Hardware -> add "EV charger timer" (or similar), then select the switch device and the ON/OFF times. Licensed MIT upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the main branch.
+
+  * **[domoticz-ewpe-smart-mqtt: Domoticz plugin: EWPE Smart air conditioners (MQTT)](domoticz-ewpe-smart-mqtt.md)<a id='domoticz-ewpe-smart-mqtt'></a>**<br>
+    control of the EWPE Smart/Gree air conditioners over MQTT, with encrypted commands (it encrypts the commands with pycryptodome and ships its own MQTT client). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/ewpe-smart-mqtt, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> EWPE Smart MQTT, enter the MQTT broker and the device. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-fritz-presence: Domoticz plugin: presence detection via the FRITZ!Box](domoticz-fritz-presence.md)<a id='domoticz-fritz-presence'></a>**<br>
+    presence detection driven by the FRITZ!Box (devices seen by the router) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-FritzPresence, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin needs python3-fritzconnection (installed as a dependency of this package) in addition to the standard library. Setup: Setup -> Hardware -> Fritz Presence, enter the address and credentials of the FRITZ!Box. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-fronius: Domoticz plugin: Fronius solar inverter](domoticz-fronius.md)<a id='domoticz-fronius'></a>**<br>
+    read a Fronius inverter through its local HTTP API It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/froniusHttp, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Fronius, enter the address of the inverter (or of its Datamanager). Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-goodwe: Domoticz plugin: GoodWe solar inverter (SEMS API)](domoticz-goodwe.md)<a id='domoticz-goodwe'></a>**<br>
+    read a GoodWe inverter through the SEMS cloud API It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-GoodWeSEMS, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin needs python3-requests (installed as a dependency of this package) in addition to the standard library. Setup: Setup -> Hardware -> GoodWe, enter the account and station data of the SEMS portal. Licensed upstream (LICENSE.md is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-govee: Domoticz plugin: Govee devices (LAN discovery)](domoticz-govee.md)<a id='domoticz-govee'></a>**<br>
+    discover Govee devices on the local network and create their Domoticz devices It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-Govee-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Govee, let the plugin discover the devices on the LAN. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-growatt: Domoticz plugin: Growatt solar inverter](domoticz-growatt.md)<a id='domoticz-growatt'></a>**<br>
+    read a Growatt photovoltaic inverter through its local web server It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-Growatt-Webserver-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Growatt, enter the address of the inverter, then its serial number and the API password of the web server. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-home-presence: Domoticz plugin: presence detection from network devices](domoticz-home-presence.md)<a id='domoticz-home-presence'></a>**<br>
+    detect whether somebody is at home from the devices seen on the network It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Detect-Presence-at-Home, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Home presence, then list the devices that count as presence and the timeout. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-homewizard-p1: Domoticz plugin: HomeWizard Wi-Fi P1 meter](domoticz-homewizard-p1.md)<a id='domoticz-homewizard-p1'></a>**<br>
+    Extended version of the HomeWizard Wi-Fi P1 Domoticz plugin: it reads the P1 telegram of a HomeWizard Wi-Fi P1 meter over the local network (no cloud account, no HomeWizard app) and creates the energy devices of a smart meter installation: imported and exported energy, the per-tariff counters, current power per phase and in total, voltage and current per phase, gas and water, plus a few computed utility devices (daily and monthly totals, peak consumption, power factor and the like). Labels, units and the date formats of the devices follow the language of the hardware entry (17 translation files are shipped with the plugin). Only the Python standard library and the Domoticz module are used, so no additional Python package is needed. The plugin is installed into /usr/share/domoticz/plugins/HomeWizard-Wifi-p1-plugin-Extended, the plugin directory that Domoticz is started with (-approot of the domoticz package init script). Setup: Setup -> Hardware -> "HomeWizard P1 meter", then enter the IP address of the meter, the Domoticz address (127.0.0.1) and its HTTP port (8080); the data interval and the debug switch follow. Upstream publishes neither release tags nor a license file, so the build fetches a pinned commit of the main branch (the version of this package is that commit) and the plugin keeps the licensing status upstream gave it.
+
+  * **[domoticz-hw-energysocket: Domoticz plugin: HomeWizard Wi-Fi energy socket](domoticz-hw-energysocket.md)<a id='domoticz-hw-energysocket'></a>**<br>
+    read a HomeWizard Wi-Fi energy socket over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/HomeWizard-Wifi-Energy-Socket, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> HomeWizard energy socket, enter the IP address of the socket. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-hw-watermeter: Domoticz plugin: HomeWizard Wi-Fi water meter](domoticz-hw-watermeter.md)<a id='domoticz-hw-watermeter'></a>**<br>
+    read a HomeWizard Wi-Fi water meter over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/HomeWizard-Wifi-Watermeter, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> HomeWizard water meter, enter the IP address of the meter. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-idetect: Domoticz plugin: presence detection from the router (iDetect)](domoticz-idetect.md)<a id='domoticz-idetect'></a>**<br>
+    presence detection driven by the clients of the home router: the devices that the router lists as connected are reported as present in Domoticz It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz_iDetect, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin needs python3-fritzconnection, python-paramiko, pynetgear and requests (installed as dependencies of this package) in addition to the standard library: the trackers of the repository query the router over TR-064, SSH, HTTP or the SOAP API of NETGEAR. The supported routers include FRITZ!Box, OpenWrt (brctl), RouterOS, UniFi, USG, Zyxel, NETGEAR, TP-Link Omada, Orbi, AiMesh and every host that answers a ping; the credentials and the tracker to use are the settings of the plugin. Setup: Setup -> Hardware -> iDetect, choose the tracker of the router and enter its address and credentials. The upstream repository has no release tags, so the build fetches a pinned commit of the default branch. Upstream ships no license file: the README and the images it refers to are installed with the plugin.
+
+  * **[domoticz-ir-climate-controller: Domoticz plugin: Tasmota IR climate controller](domoticz-ir-climate-controller.md)<a id='domoticz-ir-climate-controller'></a>**<br>
+    Control of IR air conditioners and heat pumps through a Tasmota IR bridge: the plugin talks to a Tasmota device with an IR LED (an ESP8266/ESP32 with the IRremoteESP8266 firmware, or a commercial IR bridge flashed with Tasmota) and sends the IR commands of the selected air conditioner model. It works for devices that have no Wi-Fi interface of their own, which is typical of split air conditioners: the climate device in Domoticz (mode, fan speed, temperature setpoint, swing) is translated into IR codes by Tasmota, so no cloud account and no vendor app are involved. The plugin uses only the Domoticz module and the Python standard library, and its labels follow the language of the hardware entry (17 translations). Setup: Setup -> Hardware -> add the IR climate controller, enter the IP address of the Tasmota device and select the air conditioner model. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it; the build fetches a pinned commit of the main branch because there are no release tags.
+
+  * **[domoticz-knmi: Domoticz plugin: KNMI weather (NL)](domoticz-knmi.md)<a id='domoticz-knmi'></a>**<br>
+    read the KNMI (Dutch weather service) forecast and warnings It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-KNMI-Weather-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> KNMI, enter the location and the API key. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-linky: Domoticz plugin: Linky smart meter (FR, Enedis account)](domoticz-linky.md)<a id='domoticz-linky'></a>**<br>
+    consumption of a Linky (French) smart meter read from the Enedis web services of the distribution network operator It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/DomoticzLinky, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. It reads the hourly data of an Enedis account (the same figures as the Enedis web site), not the teleinformation output of the meter: Domoticz has a native Teleinfo driver for the local serial/TCP reading, so the two do not overlap, and this plugin keeps working when the box is far from the meter or the meter has no local output wired to it. It needs an Enedis account and the public authentication proxy the plugin relies on; upstream states that support and updates will probably be very limited. Setup: Setup -> Hardware -> Linky, enter the Enedis account data. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-maxcube: Domoticz plugin: eQ-3 MAX! heating system](domoticz-maxcube.md)<a id='domoticz-maxcube'></a>**<br>
+    control an eQ-3 MAX! Cube heating system (thermostats, wall thermostats, window contacts) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/maxcube-Domoticz-plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> MAX! Cube, enter the IP address of the cube. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-meteoalarm: Domoticz plugin: MeteoAlarm EU](domoticz-meteoalarm.md)<a id='domoticz-meteoalarm'></a>**<br>
+    European weather alerts (MeteoAlarm) as sensors and notifications in Domoticz (it reads the feeds with feedparser). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/MeteoAlarmEU, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> MeteoAlarmEU, enter the region and the feed to follow. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-milight-esp8266: Domoticz plugin: Milight ESP8266 hub](domoticz-milight-esp8266.md)<a id='domoticz-milight-esp8266'></a>**<br>
+    control of the groups and lamps driven by the ESP8266 gateway for Milight/AppLamp, over MQTT (it speaks to the ESP8266 gateway with its own MQTT client, so the native RF driver of Domoticz is not involved). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/espmilighthub-domoticz, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> espmilighthub, enter the address of the ESP8266 gateway. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-moonphases: Domoticz plugin: moon phases](domoticz-moonphases.md)<a id='domoticz-moonphases'></a>**<br>
+    create devices with the moon phase, the moonrise and the moonset It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/MoonPhases, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Moon phases, then set the latitude and longitude of the location. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-nut-ups: Domoticz plugin: NUT UPS monitor](domoticz-nut-ups.md)<a id='domoticz-nut-ups'></a>**<br>
+    monitor a UPS through a NUT (network ups tools) server It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/NUT_UPS, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> UPS monitor, enter the NUT server address, then the UPS name and credentials. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-owrtwifi2domo: Domoticz plugin: presence detection from an OpenWrt router (owrtwifi2domo)](domoticz-owrtwifi2domo.md)<a id='domoticz-owrtwifi2domo'></a>**<br>
+    presence detection driven by the WiFi clients associated to an OpenWrt router (it ships its own MQTT client and needs no additional Python module). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/owrtwifi2domo, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> owrtwifi2domo, enter the address and the credentials of the OpenWrt router. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-plugins-manager: Domoticz plugin: Plugins Manager](domoticz-plugins-manager.md)<a id='domoticz-plugins-manager'></a>**<br>
+    install, update and remove the Python plugins of Domoticz from the web interface, using the upstream plugin index (it downloads the plugins from the upstream Plugins Manager index and installs them into the plugins folder of Domoticz). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/plugins-manager, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Plugins Manager; the Plugins page of the Custom menu shows the catalogue with the install, update and remove buttons. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-pzem-016: Domoticz plugin: PZEM-016 (Modbus RS-485)](domoticz-pzem-016.md)<a id='domoticz-pzem-016'></a>**<br>
+    readings of the PZEM-016 energy monitors (voltage, current, power, energy) (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-pzem-016, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> PZEM-016, enter the serial port and the Modbus address. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-quatt: Domoticz plugin: Quatt heat pump](domoticz-quatt.md)<a id='domoticz-quatt'></a>**<br>
+    read the status of a Quatt hybrid heat pump It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-Quatt-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Quatt, enter the address of the heat pump controller. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-smogtok: Domoticz plugin: SmogTok air quality monitor](domoticz-smogtok.md)<a id='domoticz-smogtok'></a>**<br>
+    read a SmogTok air quality monitor over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/smogtokdomoticzplug, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> SmogTok, enter the address of the monitor. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-sony-bravia: Domoticz plugin: Sony Bravia TV](domoticz-sony-bravia.md)<a id='domoticz-sony-bravia'></a>**<br>
+    control Sony Bravia televisions over the LAN, with a Kodi remote It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/sony-bravia, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Sony Bravia, enter the address of the television and its pre-shared key. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-sync-timer: Domoticz plugin: sync timer](domoticz-sync-timer.md)<a id='domoticz-sync-timer'></a>**<br>
+    periodic synchronisation of timers and switches between Domoticz and external devices (it uses requests for the endpoints it synchronises). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Update_timer, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> sync timer, enter the broker and the devices to synchronise. Upstream ships no license file: the README is installed with the plugin. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-synology: Domoticz plugin: Synology Surveillance Station](domoticz-synology.md)<a id='domoticz-synology'></a>**<br>
+    read the cameras and the events of a Synology Surveillance Station It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/SurveillanceStationDomoticz, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Synology Surveillance Station, enter the address and credentials of the NAS. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-sysfs-switches: Domoticz plugin: GPIO switches via sysfs](domoticz-sysfs-switches.md)<a id='domoticz-sysfs-switches'></a>**<br>
+    expose the GPIOs of the system in Domoticz as switches, reading and writing the sysfs filesystem (it reaches the GPIOs through sysfs and needs no additional Python module). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/SYSFS-Switches, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> SYSFS-Switches, name the GPIOs to expose. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-tasmota-h801: Domoticz plugin: Tasmota H801](domoticz-tasmota-h801.md)<a id='domoticz-tasmota-h801'></a>**<br>
+    control of the H801 LED controllers (and of the Tasmota devices with PWM channels) from Domoticz (it ships its own MQTT client and the device controllers). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/h801-tasmota-plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Tasmota H801, enter the MQTT broker. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-tasmoticz: Domoticz plugin: Tasmoticz](domoticz-tasmoticz.md)<a id='domoticz-tasmoticz'></a>**<br>
+    expose the Tasmota devices of an MQTT broker in Domoticz, with automatic configuration and sync commands (it ships its own MQTT client and the Tasmota support). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Tasmoticz, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Tasmoticz, enter the MQTT broker and the Tasmota topic prefix. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-theme-manager: Domoticz plugin: theme manager](domoticz-theme-manager.md)<a id='domoticz-theme-manager'></a>**<br>
+    install and update the web interface themes of Domoticz from its own page It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-theme-manager, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Use the page registered in the Domoticz web interface to install a theme. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-wan-ip-checker: Domoticz plugin: WAN IP checker](domoticz-wan-ip-checker.md)<a id='domoticz-wan-ip-checker'></a>**<br>
+    watch the public IP address of the WAN connection and alert on changes It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/WAN-IP-CHECKER, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> WAN IP checker, choose the check interval. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-wlan-thermo: Domoticz plugin: WLANThermo](domoticz-wlan-thermo.md)<a id='domoticz-wlan-thermo'></a>**<br>
+    temperature readings of the WLANThermo probes (grills and barbecues) (it uses requests for the HTTP API of WLANThermo). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-WLANThermo-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> WLANThermo, enter the address of the device. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-wled: Domoticz plugin: WLED](domoticz-wled.md)<a id='domoticz-wled'></a>**<br>
+    control of the LED strips running the WLED firmware (power, brightness, colour, effects) (it uses requests for the HTTP API of WLED). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/wled, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> WLED, enter the address of the WLED controller. Upstream ships no license file: the README is installed with the plugin. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-wudirect: Domoticz plugin: local weather station (WuDirect)](domoticz-wudirect.md)<a id='domoticz-wudirect'></a>**<br>
+    receive a local weather station that sends Weather Underground formatted data It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-wudirect, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> WuDirect, enter the UDP port to listen on and map the fields of the station. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-yamaha: Domoticz plugin: Yamaha AV receiver](domoticz-yamaha.md)<a id='domoticz-yamaha'></a>**<br>
+    control Yamaha AV receivers over the LAN, with a Kodi remote It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-yamaha, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Yamaha, enter the address of the receiver. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-yi-hack: Domoticz plugin: Yi camera with yi-hack firmware](domoticz-yi-hack.md)<a id='domoticz-yi-hack'></a>**<br>
+    control Xiaomi Yi cameras with the yi-hack firmware (snapshots, motion events) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/Domoticz-Yi-Hack-Plugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Yi Hack, enter the address of each camera. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-zigbee2mqtt: Domoticz plugin: Zigbee2MQTT](domoticz-zigbee2mqtt.md)<a id='domoticz-zigbee2mqtt'></a>**<br>
+    expose the Zigbee devices managed by Zigbee2MQTT in Domoticz, with adapters for hundreds of models and a configuration frontend (it ships its own model adapters and talks to Zigbee2MQTT through an MQTT broker). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/zigbee2mqtt, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Zigbee2MQTT, enter the address and port of the MQTT broker used by Zigbee2MQTT. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
   * **[freetz-matter 0.1 (FRITZ!Box as a Matter device)](freetz-matter.md)<a id='freetz-matter'></a>**<br>
     Exposes the FRITZ!Box itself as a Matter device, so a Matter controller (Apple Home, Google Home, Alexa, Home Assistant, python-matter-server, ...) can commission and read or control the box without any hub software and without Node.js. Built on project-chip/rs-matter, the pure-Rust Matter stack. Endpoints: - Temperature Sensor (0x0302 / cluster 0x0402): the same sensor chain the box_info page uses (/proc/chip_temperature, the thermal zone, the AVM power-management temperature and /proc/avm/temp_sensors). - Smart Speaker (0x0022, OnOff + LevelControl): mute/unmute and volume of the ALSA playback path (amixer, from alsa-utils). - Root node BasicInformation carries the real vendor, model, firmware version and serial number of the box. The application is built with Rust/Cargo and installs /usr/bin/freetz-matter, the rc.freetz-matter init script and the Freetz configuration (port, fabric store location, verbosity). After the first start the commissioning QR code and manual pairing code are written to the service log (http://fritz.box:81/cgi-bin/status/mod/logs -> rc.freetz-matter), because the device starts uncommissioned. No other Freetz-EVO package is required, in either direction. Optional companions: openthread/ot-br-posix if the box should also serve as a Thread border router, and any Matter controller (Home Assistant, or python-matter-server on a glibc host) to commission this device. matter-bridge is optional: its native controller can commission this device automatically for the local Domoticz Matter driver. Run matter-bridge-setup for that local chain. The two packages coexist without conflicts: matter-bridge serves WebSocket on TCP 5580, this device is a Matter node on UDP 5540. Can be externalized (External menu): /usr/bin/freetz-matter is the whole payload (4.5 MB) and is moved to external storage; the init script, the configuration and the fabric store stay in the firmware.
@@ -1446,9 +1677,6 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[Collectd 4.10.3 - DEPRECATED](collectd.md)<a id='collectd'></a>**<br>
     Collectd collects information about the system it is running on and stores this information. The information can then be used to do find current performance bottlenecks (i. e. performance analysis) and predict future system load (i. e. capacity planning). Or if you just want pretty graphs of your private server and are fed up with some homegrown solution you're at the right place, too.
-
-  * **[gptfdisk 1.0.10 (gdisk)](gptfdisk.md)<a id='gptfdisk'></a>**<br>
-    Interactive GUID partition table (GPT) manipulator
 
   * **[hp-utils 0.3.2 - DEPRECATED](hp-utils.md)<a id='hp-utils'></a>**<br>
     hp-utils is a collection of utility programs for HP printers. It's meant to be used on systems, which are unable to run the corresponding programs provided by HPLIP, e.g. because they only have limited memory and/or cpu power. hp-utils is primarily focused towards embedded systems, particularly towards the FRITZ!Box, a family of DSL routers produced by AVM.

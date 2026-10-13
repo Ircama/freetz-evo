@@ -1,0 +1,17 @@
+config FREETZ_PACKAGE_DOMOTICZ_SYSFS_SWITCHES
+	bool "Domoticz plugin: GPIO switches via sysfs"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		expose the GPIOs of the system in Domoticz as switches, reading and writing the sysfs filesystem (it reaches the GPIOs through sysfs and needs no additional Python module).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/SYSFS-Switches, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> SYSFS-Switches, name the GPIOs to expose.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

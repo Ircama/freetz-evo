@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_DEFUSEDXML
+	bool "defusedxml 0.7.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		XML parsers protected against the common XML attacks (used by python-miio for the miIO responses).

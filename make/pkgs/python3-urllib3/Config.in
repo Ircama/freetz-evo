@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_URLLIB3
+	bool "urllib3 2.8.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		HTTP client with connection pooling, TLS verification and retry
+		handling. It is the transport below requests and it is also used
+		directly by some Domoticz plugins.

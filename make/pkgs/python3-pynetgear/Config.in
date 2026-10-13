@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PYTHON3_PYNETGEAR
+	bool "pynetgear 0.10.10"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		Library for the SOAP API of NETGEAR routers: it reads the state
+		of the router and the list of the connected devices (used by
+		domoticz-idetect).

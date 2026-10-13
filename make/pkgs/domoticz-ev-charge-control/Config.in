@@ -1,0 +1,26 @@
+config FREETZ_PACKAGE_DOMOTICZ_EV_CHARGE_CONTROL
+	bool "Domoticz plugin: timed EV charger control"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		Timed charging control for an electric vehicle: the plugin
+		switches an existing Domoticz device (the switch or contactor
+		that enables the wallbox) ON and OFF according to a schedule
+		configured on the hardware page, and it can be disabled
+		temporarily without losing the schedule.
+
+		A safety function refuses to switch the charger ON again within
+		30 minutes of a switch OFF, which protects the on-board charger
+		of the car from being cycled when the schedule is changed or the
+		box restarts.
+
+		The controlled device is any Domoticz switch, for example a
+		Wi-Fi or Zigbee relay; the plugin only uses the Domoticz module
+		and the Python standard library.
+
+		Setup: Setup -> Hardware -> add "EV charger timer" (or similar),
+		then select the switch device and the ON/OFF times.
+
+		Licensed MIT upstream (LICENSE is installed with the plugin).
+		The repository has no release tags, so the build fetches a
+		pinned commit of the main branch.

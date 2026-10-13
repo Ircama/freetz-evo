@@ -1,0 +1,29 @@
+config FREETZ_PACKAGE_DOMOTICZ_DSVT
+	bool "Domoticz plugin: DSVT zone heating/cooling control"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_MOD_SQLITE
+	default n
+	help
+		DSVT is a multi-zone heating, cooling and domestic hot water
+		control system for Domoticz: up to 12 zones with individual room
+		thermostats (or TRV valves), several heat sources (heat pump,
+		boiler, electric heater), floor/radiator/wall/ceiling emitters,
+		per-zone door and window detection, and a dashboard page served
+		by the Domoticz web server.
+
+		Unlike a plain thermostat script it creates the whole device tree
+		and the control logic itself, and it keeps its state in a small
+		SQLite database (hence the selected Python sqlite3 module); the
+		Duinzicht/MiHome style viewers are not required.
+
+		The plugin uses the Domoticz module and the Python standard
+		library, and its labels follow the language of the hardware entry
+		(16 translations; the dashboard page brings its own set).
+
+		Setup: Setup -> Hardware -> add the DSVT hardware, then open the
+		DSVT setup page of the plugin (linked from the hardware page) to
+		define zones and heat sources.
+
+		Licensed MIT upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned
+		commit of the main branch.

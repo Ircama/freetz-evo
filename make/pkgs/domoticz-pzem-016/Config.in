@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_PZEM_016
+	bool "Domoticz plugin: PZEM-016 (Modbus RS-485)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYSERIAL
+	default n
+	help
+		readings of the PZEM-016 energy monitors (voltage, current, power, energy) (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-pzem-016, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> PZEM-016, enter the serial port and the Modbus address.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

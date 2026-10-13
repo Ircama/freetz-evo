@@ -1,0 +1,8 @@
+config FREETZ_PACKAGE_PYTHON3_INVOKE
+	bool "invoke 3.0.3"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Task execution library for Python: it runs shell commands and
+		defines tasks out of Python functions (it is a requirement of
+		python-paramiko).

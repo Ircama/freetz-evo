@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_EWPE_SMART_MQTT
+	bool "Domoticz plugin: EWPE Smart air conditioners (MQTT)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYCRYPTODOME
+	default n
+	help
+		control of the EWPE Smart/Gree air conditioners over MQTT, with encrypted commands (it encrypts the commands with pycryptodome and ships its own MQTT client).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/ewpe-smart-mqtt, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> EWPE Smart MQTT, enter the MQTT broker and the device.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

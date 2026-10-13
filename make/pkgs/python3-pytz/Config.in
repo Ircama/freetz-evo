@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_PYTZ
+	bool "pytz 2026.5"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		World timezone definitions (dependency of micloud and of the Xiaomi cloud API).

@@ -1,0 +1,17 @@
+config FREETZ_PACKAGE_DOMOTICZ_TASMOTA_H801
+	bool "Domoticz plugin: Tasmota H801"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		control of the H801 LED controllers (and of the Tasmota devices with PWM channels) from Domoticz (it ships its own MQTT client and the device controllers).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/h801-tasmota-plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Tasmota H801, enter the MQTT broker.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

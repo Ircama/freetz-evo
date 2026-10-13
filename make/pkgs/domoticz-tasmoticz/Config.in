@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_TASMOTICZ
+	bool "Domoticz plugin: Tasmoticz"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		expose the Tasmota devices of an MQTT broker in Domoticz, with automatic configuration and sync commands (it ships its own MQTT client and the Tasmota support).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Tasmoticz, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Tasmoticz, enter the MQTT broker and the Tasmota topic prefix.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

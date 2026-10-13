@@ -1,0 +1,21 @@
+config FREETZ_PACKAGE_DOMOTICZ_HW_ENERGYSOCKET
+	bool "Domoticz plugin: HomeWizard Wi-Fi energy socket"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		read a HomeWizard Wi-Fi energy socket over the LAN
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/HomeWizard-Wifi-Energy-Socket, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> HomeWizard energy socket, enter the IP address of the socket.
+
+		Upstream publishes no license file, so the plugin keeps the licensing
+		status upstream gave it. The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

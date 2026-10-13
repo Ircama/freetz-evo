@@ -59,6 +59,7 @@ API; Matter itself uses UDP and a TLV interaction model. Details in
 * async boot start: the init script waits for the USB stick in a background subshell, the boot sequence is never blocked;
 * the Matter hardware entry connects to `ws://127.0.0.1:5580/ws`, so the bridge and the hub can live on the same box;
 * radio drivers compiled in, not loaded as Python plugins: `libopenzwave` 1.6 for Z-Wave and `libtelldus-core` 2.1.1 for the Tellstick, so a USB stick is enough to see real devices;
+* **36 Python plugin packages** install into `<approot>/plugins`, without touching the Domoticz build: energy and PV ([`homewizard-p1`](make/domoticz-homewizard-p1.md), [`ada-p1-meter`](make/domoticz-ada-p1-meter.md), [`hw-watermeter`](make/domoticz-hw-watermeter.md), [`hw-energysocket`](make/domoticz-hw-energysocket.md), [`growatt`](make/domoticz-growatt.md), [`goodwe`](make/domoticz-goodwe.md), [`fronius`](make/domoticz-fronius.md), [`alphaess`](make/domoticz-alphaess.md), [`apc-ups`](make/domoticz-apc-ups.md), [`nut-ups`](make/domoticz-nut-ups.md), [`linky`](make/domoticz-linky.md)), presence and cameras ([`fritz-presence`](make/domoticz-fritz-presence.md), [`home-presence`](make/domoticz-home-presence.md), [`dahua-vto`](make/domoticz-dahua-vto.md), [`camera-bridge`](make/domoticz-camera-bridge.md)), climate ([`dsvt`](make/domoticz-dsvt.md), [`ebusd`](make/domoticz-ebusd.md), [`daikin`](make/domoticz-daikin.md), [`quatt`](make/domoticz-quatt.md), [`maxcube`](make/domoticz-maxcube.md), [`ir-climate-controller`](make/domoticz-ir-climate-controller.md)) and actuation/AV/utility ([`ev-charge-control`](make/domoticz-ev-charge-control.md), [`denon`](make/domoticz-denon.md), [`onkyo`](make/domoticz-onkyo.md), [`yamaha`](make/domoticz-yamaha.md), [`sony-bravia`](make/domoticz-sony-bravia.md), [`synology`](make/domoticz-synology.md), [`yi-hack`](make/domoticz-yi-hack.md), [`govee`](make/domoticz-govee.md), [`milight`](make/domoticz-milight.md), [`moonphases`](make/domoticz-moonphases.md), [`wan-ip-checker`](make/domoticz-wan-ip-checker.md), [`wudirect`](make/domoticz-wudirect.md), [`knmi`](make/domoticz-knmi.md), [`smogtok`](make/domoticz-smogtok.md), [`theme-manager`](make/domoticz-theme-manager.md)); most of them are standard-library only, and the ones that are not pull `python3-requests`, `python3-paho-mqtt` or `python3-fritzconnection`. They are all moved to external storage together with `/usr/share/domoticz`;
 * dependency set built and verified: Boost 1.87 thread, libmosquitto, Lua 5.4, Python 3.14, SQLite, OpenSSL, libusb, libcurl.
 
 ## Matter without Node.js
@@ -154,6 +155,7 @@ The remaining work on this path is verification on a real box with a real contro
 | Package | Version | Role | Status |
 |---|---|---|---|
 | [`domoticz`](make/domoticz.md) | 2026.4 | full hub, web UI on 8080 | built, verified, installable |
+| [`domoticz-*` plugins](make/domoticz-homewizard-p1.md) | 54 packages | Python plugins in `<approot>/plugins`: energy/PV, presence and cameras, climate, AV and utility — one page per plugin in `docs/make/domoticz-*.md` | built and installed; each one needs its own device/reader to be exercised |
 | [`telldus`](make/telldus.md) | 2.1.1 | `telldusd` + `tdtool`, Tellstick 433 MHz driver | built, verified |
 | [`matter-bridge`](make/matter-bridge.md) | 0.1 | native Matter WebSocket API, port 5580 | built, protocol verified against upstream |
 | [`openthread`](make/openthread.md) | 2026.10.0 | `ot-daemon`, `ot-ctl` | built, verified |
@@ -167,7 +169,7 @@ The remaining work on this path is verification on a real box with a real contro
 | [`tuyapp`](make/tuyapp.md) | 0.1 | Tuya CLI | built, verified |
 | [`boost`](make/boost.md) | 1.87.0 | thread/pool library required by Domoticz | built, verified |
 
-**Externalization**: every package in the table (and the `rtl-sdr`, `soapysdr`, `boost`, `openzwave` and `telldus-core` libraries) can be moved to external storage from the *External* menu, which keeps the firmware image untouched — the whole point of running a home automation stack on a device with a few megabytes of free flash. Declared files, verified against the built artifacts:
+**Externalization**: every package in the table (and the `rtl-sdr`, `soapysdr`, `boost`, `openzwave` and `telldus-core` libraries) can be moved to external storage from the *External* menu, which keeps the firmware image untouched — the whole point of running a home automation stack on a device with a few megabytes of free flash. The Domoticz plugin packages are the exception that proves the rule: they install *inside* `/usr/share/domoticz`, which the `domoticz` entry already moves, so they have no *External* entry of their own. Declared files, verified against the built artifacts:
 
 | Entry | Files moved to external storage |
 |---|---|

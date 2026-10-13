@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_ZIGBEE2MQTT
+	bool "Domoticz plugin: Zigbee2MQTT"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		expose the Zigbee devices managed by Zigbee2MQTT in Domoticz, with adapters for hundreds of models and a configuration frontend (it ships its own model adapters and talks to Zigbee2MQTT through an MQTT broker).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/zigbee2mqtt, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Zigbee2MQTT, enter the address and port of the MQTT broker used by Zigbee2MQTT.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

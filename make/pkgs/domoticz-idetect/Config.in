@@ -1,0 +1,34 @@
+config FREETZ_PACKAGE_DOMOTICZ_IDETECT
+	bool "Domoticz plugin: presence detection from the router (iDetect)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_FRITZCONNECTION
+	select FREETZ_PACKAGE_PYTHON3_PARAMIKO
+	select FREETZ_PACKAGE_PYTHON3_PYNETGEAR
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		presence detection driven by the clients of the home router: the
+		devices that the router lists as connected are reported as
+		present in Domoticz
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Domoticz_iDetect, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin needs python3-fritzconnection, python-paramiko,
+		pynetgear and requests (installed as dependencies of this
+		package) in addition to the standard library: the trackers of the
+		repository query the router over TR-064, SSH, HTTP or the SOAP
+		API of NETGEAR. The supported routers include FRITZ!Box, OpenWrt
+		(brctl), RouterOS, UniFi, USG, Zyxel, NETGEAR, TP-Link Omada,
+		Orbi, AiMesh and every host that answers a ping; the credentials
+		and the tracker to use are the settings of the plugin.
+
+		Setup: Setup -> Hardware -> iDetect, choose the tracker of the
+		router and enter its address and credentials.
+
+		The upstream repository has no release tags, so the build fetches a
+		pinned commit of the default branch. Upstream ships no license
+		file: the README and the images it refers to are installed with
+		the plugin.

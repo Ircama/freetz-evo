@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_DDS238
+	bool "Domoticz plugin: DDS238 energy meter (Modbus RS-485)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYSERIAL
+	default n
+	help
+		readings of the DDS238 energy meters and of the devices that speak the same Modbus protocol (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-dds238, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> DDS238, enter the serial port, the Modbus address and the model.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

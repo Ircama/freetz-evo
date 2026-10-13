@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_MICLOUD
+	bool "micloud 0.6"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		Client for the Xiaomi cloud API (python-miio uses it for the device tokens).

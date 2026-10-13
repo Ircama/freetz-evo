@@ -1,0 +1,17 @@
+config FREETZ_PACKAGE_DOMOTICZ_OWRTWIFI2DOMO
+	bool "Domoticz plugin: presence detection from an OpenWrt router (owrtwifi2domo)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		presence detection driven by the WiFi clients associated to an OpenWrt router (it ships its own MQTT client and needs no additional Python module).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/owrtwifi2domo, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> owrtwifi2domo, enter the address and the credentials of the OpenWrt router.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

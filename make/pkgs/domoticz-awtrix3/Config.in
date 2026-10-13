@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_AWTRIX3
+	bool "Domoticz plugin: AWTRIX 3"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		notifications and data on an AWTRIX 3 clock or LED matrix (it uses requests for the HTTP API of AWTRIX 3 and installs the icons it sends to the matrix).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Domoticz-AWTRIX3-Plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> AWTRIX3, enter the address of the device.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

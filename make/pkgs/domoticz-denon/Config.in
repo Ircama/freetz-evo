@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_DENON
+	bool "Domoticz plugin: Denon/Marantz AV receiver"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		control Denon and Marantz AV receivers over the LAN
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Domoticz-Denon-Plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Denon/Marantz, enter the address of the receiver.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

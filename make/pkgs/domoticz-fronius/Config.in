@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_FRONIUS
+	bool "Domoticz plugin: Fronius solar inverter"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		read a Fronius inverter through its local HTTP API
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/froniusHttp, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Fronius, enter the address of the inverter (or of its Datamanager).
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

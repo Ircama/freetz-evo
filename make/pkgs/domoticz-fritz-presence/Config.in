@@ -1,0 +1,21 @@
+config FREETZ_PACKAGE_DOMOTICZ_FRITZ_PRESENCE
+	bool "Domoticz plugin: presence detection via the FRITZ!Box"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_FRITZCONNECTION
+	default n
+	help
+		presence detection driven by the FRITZ!Box (devices seen by the router)
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-FritzPresence, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin needs python3-fritzconnection (installed as a
+		dependency of this package) in addition to the standard library.
+
+		Setup: Setup -> Hardware -> Fritz Presence, enter the address and credentials of the FRITZ!Box.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

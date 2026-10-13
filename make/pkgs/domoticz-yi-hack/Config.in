@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_YI_HACK
+	bool "Domoticz plugin: Yi camera with yi-hack firmware"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		control Xiaomi Yi cameras with the yi-hack firmware (snapshots, motion events)
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Domoticz-Yi-Hack-Plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Yi Hack, enter the address of each camera.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_THEME_MANAGER
+	bool "Domoticz plugin: theme manager"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		install and update the web interface themes of Domoticz from its own page
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-theme-manager, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Use the page registered in the Domoticz web interface to install a theme.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

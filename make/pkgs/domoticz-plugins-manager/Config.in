@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_PLUGINS_MANAGER
+	bool "Domoticz plugin: Plugins Manager"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		install, update and remove the Python plugins of Domoticz from the web interface, using the upstream plugin index (it downloads the plugins from the upstream Plugins Manager index and installs them into the plugins folder of Domoticz).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/plugins-manager, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Plugins Manager; the Plugins page of the Custom menu shows the catalogue with the install, update and remove buttons.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

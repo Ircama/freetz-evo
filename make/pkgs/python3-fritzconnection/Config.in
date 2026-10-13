@@ -1,0 +1,14 @@
+config FREETZ_PACKAGE_PYTHON3_FRITZCONNECTION
+	bool "fritzconnection 1.15.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		Library to talk to the TR-064 interface of a FRITZ!Box from
+		Python: it reads the device and network status and it can call the
+		actions of the router, for example for presence detection
+		(devices seen by the WLAN) or for rebooting the box.
+
+		It is installed for the Domoticz plugin that uses it
+		(domoticz-fritz-presence), but it can also be used by scripts on
+		the box, for example from the Freetz configuration pages.

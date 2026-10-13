@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_EMMETI_EQ2021
+	bool "Domoticz plugin: Emmeti EQ2021 thermostat (Modbus)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYSERIAL
+	default n
+	help
+		control of the Emmeti EQ2021 thermostats over Modbus (it ships its own copy of minimalmodbus and uses pyserial for the RS-485 port).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-emmeti-eq2021, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Emmeti EQ2021, enter the serial port and the Modbus address.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

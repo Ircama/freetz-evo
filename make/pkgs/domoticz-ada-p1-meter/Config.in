@@ -1,0 +1,27 @@
+config FREETZ_PACKAGE_DOMOTICZ_ADA_P1_METER
+	bool "Domoticz plugin: ADA P1 meter"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		Support for the ADA P1 meter (greenhess.com), a reader that
+		publishes the P1 telegram of a smart meter on the local network:
+		the plugin polls it and creates the energy devices of the
+		installation — imported and exported energy, the per-tariff
+		counters, current power, and the gas/water values when the meter
+		reports them.
+
+		It is the counterpart of the
+		FREETZ_PACKAGE_DOMOTICZ_HOMEWIZARD_P1 plugin for owners of an ADA
+		reader. Both can coexist: they create independent device sets.
+
+		The plugin uses only the Domoticz module and the Python standard
+		library, and its labels follow the language of the hardware entry
+		(17 translations).
+
+		Setup: Setup -> Hardware -> add the ADA P1 meter, enter the IP
+		address of the reader and, where required, the Domoticz address
+		(127.0.0.1) and its HTTP port (8080).
+
+		Upstream publishes no license file, so the plugin keeps the
+		licensing status upstream gave it; the build fetches a pinned
+		commit of the main branch because there are no release tags.

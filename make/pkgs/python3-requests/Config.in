@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_PYTHON3_REQUESTS
+	bool "requests 2.34.2"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_CERTIFI
+	select FREETZ_PACKAGE_PYTHON3_CHARSET_NORMALIZER
+	select FREETZ_PACKAGE_PYTHON3_IDNA
+	select FREETZ_PACKAGE_PYTHON3_URLLIB3
+	default n
+	help
+		The de-facto standard HTTP client library for Python. It is the
+		most common dependency of the Domoticz plugins that talk to cloud
+		services (EV chargers, heat pumps, solar inverters, LED strips).

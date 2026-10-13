@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_APC_UPS
+	bool "Domoticz plugin: APC UPS monitor"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		monitor an APC UPS through the apcupsd daemon or its SNMP interface
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-apc-ups-plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> APC UPS, enter the address and the community of the UPS.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

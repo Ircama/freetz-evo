@@ -1,0 +1,21 @@
+config FREETZ_PACKAGE_DOMOTICZ_SONY_BRAVIA
+	bool "Domoticz plugin: Sony Bravia TV"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		control Sony Bravia televisions over the LAN, with a Kodi remote
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/sony-bravia, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Sony Bravia, enter the address of the television and its pre-shared key.
+
+		Upstream publishes no license file, so the plugin keeps the licensing
+		status upstream gave it. The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

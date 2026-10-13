@@ -1,0 +1,28 @@
+config FREETZ_PACKAGE_DOMOTICZ_IR_CLIMATE_CONTROLLER
+	bool "Domoticz plugin: Tasmota IR climate controller"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		Control of IR air conditioners and heat pumps through a Tasmota
+		IR bridge: the plugin talks to a Tasmota device with an IR LED
+		(an ESP8266/ESP32 with the IRremoteESP8266 firmware, or a
+		commercial IR bridge flashed with Tasmota) and sends the
+		IR commands of the selected air conditioner model.
+
+		It works for devices that have no Wi-Fi interface of their own,
+		which is typical of split air conditioners: the climate device in
+		Domoticz (mode, fan speed, temperature setpoint, swing) is
+		translated into IR codes by Tasmota, so no cloud account and no
+		vendor app are involved.
+
+		The plugin uses only the Domoticz module and the Python standard
+		library, and its labels follow the language of the hardware entry
+		(17 translations).
+
+		Setup: Setup -> Hardware -> add the IR climate controller, enter
+		the IP address of the Tasmota device and select the air
+		conditioner model.
+
+		Upstream publishes no license file, so the plugin keeps the
+		licensing status upstream gave it; the build fetches a pinned
+		commit of the main branch because there are no release tags.

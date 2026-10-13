@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_TQDM
+	bool "tqdm 4.70.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Progress bars for loops and downloads (used by micloud).

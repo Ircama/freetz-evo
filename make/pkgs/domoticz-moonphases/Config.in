@@ -1,0 +1,21 @@
+config FREETZ_PACKAGE_DOMOTICZ_MOONPHASES
+	bool "Domoticz plugin: moon phases"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		create devices with the moon phase, the moonrise and the moonset
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/MoonPhases, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Moon phases, then set the latitude and longitude of the location.
+
+		Upstream publishes no license file, so the plugin keeps the licensing
+		status upstream gave it. The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

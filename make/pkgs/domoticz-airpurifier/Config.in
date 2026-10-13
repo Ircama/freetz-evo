@@ -1,0 +1,27 @@
+config FREETZ_PACKAGE_DOMOTICZ_AIRPURIFIER
+	bool "Domoticz plugin: Xiaomi air purifiers"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_MIIO
+	default n
+	help
+		control of the Xiaomi / Mi air purifiers that answer the miIO
+		protocol (AirPurifier 2 and the related models) over the LAN
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/domoticz-AirPurifier, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin needs python-miio (installed as a dependency of this
+		package) in addition to the standard library. python-miio speaks
+		to the device directly on the LAN, so no Xiaomi account is used:
+		the address of the purifier and its token are the settings of the
+		plugin (the token is read out of the Xiaomi Home app or of a
+		miiocli based tool once).
+
+		Setup: Setup -> Hardware -> AirPurifier, enter the address of the
+		purifier in Address and its token in Mode1.
+
+		The upstream repository has no release tags, so the build fetches a
+		pinned commit of the default branch. Upstream ships no license
+		file: the README is installed with the plugin.

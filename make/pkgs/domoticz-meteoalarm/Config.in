@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_METEOALARM
+	bool "Domoticz plugin: MeteoAlarm EU"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_FEEDPARSER
+	default n
+	help
+		European weather alerts (MeteoAlarm) as sensors and notifications in Domoticz (it reads the feeds with feedparser).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/MeteoAlarmEU, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> MeteoAlarmEU, enter the region and the feed to follow.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

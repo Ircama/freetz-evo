@@ -13,7 +13,7 @@ $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)/usr/bin/%,$(filter-out $($(PK
 # log2/log are provided by libm in uClibc
 $(PKG)_PATCH_POST_CMDS += $(SED) -r -i -e 's,(-luuid),\1 -lm,g' Makefile;
 
-$(PKG)_CATEGORY_PKGS:=Unstable
+$(PKG)_CATEGORY_PKGS:=Disk Tools
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/gdisk
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/gdisk

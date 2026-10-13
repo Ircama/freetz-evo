@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_NETIFACES
+	bool "netifaces 0.11.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Portable access to the network interfaces and their addresses (compiled extension, used by python-miio).

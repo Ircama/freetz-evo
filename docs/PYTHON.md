@@ -1,6 +1,6 @@
 # Freetz-EVO — Python Support
 
-Freetz-EVO includes an extensive Python 3 ecosystem for FRITZ!Box devices, covering the interpreter itself, over 70 third-party packages, X11/tkinter support, Rust-built extension modules, and installation support for [Home Assistant](https://www.home-assistant.io). The Python 2 cross-compilation infrastructure has also been fixed for the 13 legacy `python-*` modules.
+Freetz-EVO includes an extensive Python 3 ecosystem for FRITZ!Box devices, covering the interpreter itself, over 90 third-party packages, X11/tkinter support, Rust-built extension modules, and installation support for [Home Assistant](https://www.home-assistant.io). The Python 2 cross-compilation infrastructure has also been fixed for the 13 legacy `python-*` modules.
 
 All relevant options are available under **Packages** in `make menuconfig`.
 
@@ -8,7 +8,7 @@ All relevant options are available under **Packages** in `make menuconfig`.
 
 ## Python 3.14 interpreter
 
-Freetz-EVO ships **Python 3.14.3** with a number of FRITZ!Box-specific additions on top of the Freetz-NG base:
+Freetz-EVO ships **Python 3.14** with a number of FRITZ!Box-specific additions on top of the Freetz-NG base:
 
 - A **zip-importer fix** that correctly handles compressed `.zip` archives on the cramfs/squashfs firmware filesystem.
 - **patchelf RPATH support**: the Python binary's RPATH is fixed at install time so shared extension modules resolve correctly regardless of the firmware's library paths.

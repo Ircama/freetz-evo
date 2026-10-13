@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_GOVEE
+	bool "Domoticz plugin: Govee devices (LAN discovery)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		discover Govee devices on the local network and create their Domoticz devices
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/Domoticz-Govee-Plugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		Setup: Setup -> Hardware -> Govee, let the plugin discover the devices on the LAN.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

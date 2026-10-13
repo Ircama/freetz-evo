@@ -1,0 +1,30 @@
+config FREETZ_PACKAGE_DOMOTICZ_LINKY
+	bool "Domoticz plugin: Linky smart meter (FR, Enedis account)"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	default n
+	help
+		consumption of a Linky (French) smart meter read from the Enedis
+		web services of the distribution network operator
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/DomoticzLinky, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		The plugin imports the Domoticz module and the Python standard
+		library only, so no additional Python package is required.
+
+		It reads the hourly data of an Enedis account (the same figures
+		as the Enedis web site), not the teleinformation output of the
+		meter: Domoticz has a native Teleinfo driver for the local
+		serial/TCP reading, so the two do not overlap, and this plugin
+		keeps working when the box is far from the meter or the meter has
+		no local output wired to it. It needs an Enedis account and the
+		public authentication proxy the plugin relies on; upstream states
+		that support and updates will probably be very limited.
+
+		Setup: Setup -> Hardware -> Linky, enter the Enedis account data.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

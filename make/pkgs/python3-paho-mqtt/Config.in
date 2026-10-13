@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PYTHON3_PAHO_MQTT
+	bool "paho-mqtt 2.1.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		MQTT client library of the Eclipse Paho project (module `paho`).
+		Most Domoticz plugins that subscribe to an MQTT broker use it, for
+		example the Zigbee2MQTT and Shelly bridges; on this box the broker
+		itself is the `mosquitto` package.
