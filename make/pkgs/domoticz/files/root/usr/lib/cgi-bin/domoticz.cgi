@@ -7,8 +7,13 @@ cgi_print_radiogroup_service_starttype "enabled" "$DOMOTICZ_ENABLED" "" "" 0
 sec_end
 
 sec_begin "$(lang de:"Webinterface" en:"Web interface")"
+# DOMOTICZ_HOSTNAME may be empty (it has no field in the form): fall back to the
+# name or address the browser asked the page with, so that the URL is the one
+# the web interface is really reachable at.
+DOMOTICZ_WEBHOST="${DOMOTICZ_HOSTNAME:-${HTTP_HOST%%:*}}"
+[ -n "$DOMOTICZ_WEBHOST" ] || DOMOTICZ_WEBHOST="${SERVER_NAME:-fritz.box}"
 cat << EOF
-<p>$(lang de:"Webinterface-URL" en:"Web interface URL"): <a href="http://$(html "$DOMOTICZ_HOSTNAME"):$(html "$DOMOTICZ_WWW_PORT")/" target="_blank">http://&lt;$DOMOTICZ_HOSTNAME&gt;:$DOMOTICZ_WWW_PORT/</a></p>
+<p>$(lang de:"Webinterface-URL" en:"Web interface URL"): <a href="http://$(html "$DOMOTICZ_WEBHOST"):$(html "$DOMOTICZ_WWW_PORT")/" target="_blank">http://$(html "$DOMOTICZ_WEBHOST"):$(html "$DOMOTICZ_WWW_PORT")/</a></p>
 <p>$(lang de:"HTTP-Port (1-49151, 0 = aus)" en:"HTTP port (1-49151, 0 = off)"): <input type="text" name="www_port" size="8" maxlength="5" value="$(html "$DOMOTICZ_WWW_PORT")"></p>
 <p>$(lang de:"HTTPS-Port (1-49151, 0 = aus)" en:"HTTPS port (1-49151, 0 = off)"): <input type="text" name="ssl_port" size="8" maxlength="5" value="$(html "$DOMOTICZ_SSL_PORT")"></p>
 EOF

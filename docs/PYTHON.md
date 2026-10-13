@@ -1,6 +1,6 @@
 # Freetz-EVO — Python Support
 
-Freetz-EVO includes an extensive Python 3 ecosystem for FRITZ!Box devices, covering the interpreter itself, over 90 third-party packages, X11/tkinter support, Rust-built extension modules, and installation support for [Home Assistant](https://www.home-assistant.io). The Python 2 cross-compilation infrastructure has also been fixed for the 13 legacy `python-*` modules.
+Freetz-EVO includes an extensive Python 3 ecosystem for FRITZ!Box devices, covering the interpreter itself, over 100 third-party packages, X11/tkinter support, Rust-built extension modules, and installation support for [Home Assistant](https://www.home-assistant.io). The Python 2 cross-compilation infrastructure has also been fixed for the 13 legacy `python-*` modules.
 
 All relevant options are available under **Packages** in `make menuconfig`.
 
@@ -118,6 +118,48 @@ The following Python 3 packages are available in Freetz-EVO:
 | `python3-ulid-transform` | 2.2.9 | ULID handling (Rust-built) |
 | `python3-uv` | 0.11.16 | Fast package manager (Rust-built) |
 | `typing_extensions` | 4.15.0 | Typing backports |
+
+### Python modules added for Domoticz and for the requested plugins
+
+These module packages were added to this tree together with the Domoticz packages;
+each one has its own page under `docs/make/`.
+
+| Module | Version | Notes |
+|---|---|---|
+| `android-backup` | 0.2.0 | Helper to back up and restore Android devices over ADB (pure Python helper used by micloud). |
+| `appdirs` | 1.4.4 | Small module that returns the platform specific user data, cache and config directories. |
+| `casttube` | 0.2.1 | YouTube casting to Chromecast devices, used by pychromecast. |
+| `click` | 8.5.0 | Composable command line interface toolkit (used by the miiocli tools and python-miio). |
+| `construct` | 2.10.70 | Declarative parser and builder for binary data, used by python-miio to encode the device protocol. |
+| `croniter` | 6.2.4 | Evaluate cron style schedules (used by micloud and by scheduler code). |
+| `defusedxml` | 0.7.1 | XML parsers protected against the common XML attacks (used by python-miio for the miIO responses). |
+| `feedparser-sgmllib` | 2.1.0 | Parser SGML permissivo richiesto da feedparser 6 (modulo `sgmllib`). |
+| `feedparser` | 6.0.14 | Parsing di feed RSS e Atom, con gestione dei formati piu' comuni: e' la dipendenza di MeteoAlarmEU. |
+| `fritzconnection` | 1.15.1 | Library to talk to the TR-064 interface of a FRITZ!Box from Python: it reads the device and network status... |
+| `gevent` | 26.9.0 | Coroutine-based networking library built on libev and greenlet: dependency of the Domoticz plugin for the... |
+| `greenlet` | 3.5.6 | Lightweight coroutines with their own stacks (C extension): the basis of gevent. |
+| `invoke` | 3.0.3 | Task execution library for Python: it runs shell commands and defines tasks out of Python functions (it is... |
+| `micloud` | 0.6 | Client for the Xiaomi cloud API (python-miio uses it for the device tokens). |
+| `miio` | 0.5.12 | python-miio: control of Xiaomi devices over the LAN (the `miio` module and `miiocli`). |
+| `minimalmodbus` | 2.1.1 | Client Modbus RTU/ASCII semplice ed essenziale, sopra pyserial: i plugin CreasolTech ne includono una... |
+| `msgpack` | 1.2.3 | Compact binary serialisation (MessagePack), with its C extension: used between processes and services. |
+| `netifaces` | 0.11.0 | Portable access to the network interfaces and their addresses (compiled extension, used by python-miio). |
+| `paho-mqtt` | 2.1.0 | MQTT client library of the Eclipse Paho project (module `paho`). Most Domoticz plugins that subscribe to... |
+| `paramiko` | 5.0.0 | SSH2 protocol library (client and server) implemented in Python on top of cryptography: it opens SSH... |
+| `protobuf` | 7.36.2 | Protocol Buffers runtime (module `google.protobuf` with its C extension), required by pychromecast. |
+| `pyasn1-modules` | 0.4.2 | ASN.1 data modules built on pyasn1 (SNMP, PKCS, X.509 and related). |
+| `pyasn1` | 0.6.4 | ASN.1 encoder and decoder in pure Python: the basis of the SNMP tooling. |
+| `pychromecast` | 14.0.10 | Control of Chromecast and Google Cast devices (discovery and media playback): dependency of the Domoticz... |
+| `pynetgear` | 0.10.10 | Library for the SOAP API of NETGEAR routers: it reads the state of the router and the list of the... |
+| `pyserial` | 3.5 | Accesso alle porte seriali (modulo `serial`): e' la dipendenza dei plugin modbus (DDS238, DTS238,... |
+| `pysnmp` | 7.1.30 | SNMP v1, v2c and v3 client and agent in pure Python: dependency of the Domoticz SNMP reader plugin. |
+| `pytz` | 2026.5 | World timezone definitions (dependency of micloud and of the Xiaomi cloud API). |
+| `requests` | 2.34.2 | The de-facto standard HTTP client library for Python. It is the most common dependency of the Domoticz... |
+| `tqdm` | 4.70.1 | Progress bars for loops and downloads (used by micloud). |
+| `tradfricoap` | 0.1.0 | IKEA TRADFRI CoAPs client library. Its two back ends (`coapcmd`, `py3coap`) are Go programs, so it cannot reach a gateway with this tree alone |
+| `urllib3` | 2.8.0 | HTTP client with connection pooling, TLS verification and retry handling. It is the transport below... |
+| `zope-event` | 6.2 | Event dispatch used by the Zope interface stack and by gevent. |
+| `zope-interface` | 8.6 | Interfaces and adapters (C extension) used by gevent and by the Zope stack. |
 
 ---
 

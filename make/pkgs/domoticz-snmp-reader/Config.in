@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_DOMOTICZ_SNMP_READER
+	bool "Domoticz plugin: SNMP reader"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYSNMP
+	default n
+	help
+		readings from SNMP v1, v2c and v3 agents (switches, printers, NAS, UPS) exposed as Domoticz sensors (it queries the agents with pysnmp).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/SNMPreader, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> SNMP reader, enter the address of the agent, the SNMP version, the community or credentials and the OIDs to read.
+
+		Licensed upstream (LICENSE is installed with the plugin). The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

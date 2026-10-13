@@ -84,7 +84,7 @@ Preview the EVO skin, mobile behavior, and browser-based administration experien
 <div markdown="1"><strong>Multimedia and downloads</strong><span>rTorrent/ruTorrent, aria2/AriaNg, Transmission frontends, elFinder file manager, and Gerbera UPnP/DLNA media server.</span> [Read the Multimedia overview](MULTIMEDIA.md)</div>
 <div markdown="1"><strong>Rust packages</strong><span>Cross-compiled Rust tools for MIPS, x86, ARM, and Aarch64, with comprehensive uClibc compatibility patches.</span> [Read the Rust overview](RUST.md)</div>
 <div markdown="1"><strong>Go packages</strong><span>Go 1.25 cross-compilation for all FRITZ!Box architectures, with per-package module cache isolation and CGO support.</span> [Read the Go overview](GO.md)</div>
-<div markdown="1"><strong>Python ecosystem</strong><span>Python 3.14 with over 90 libraries, Rust-built extensions, tkinter/X11, and Home Assistant support.</span> [Read the Python overview](PYTHON.md)</div>
+<div markdown="1"><strong>Python ecosystem</strong><span>Python 3.14 with over 100 modules, Rust-built extensions, tkinter/X11, and Home Assistant support.</span> [Read the Python overview](PYTHON.md)</div>
 <div markdown="1"><strong>Package reference</strong><span>Full listing of all new packages, enhanced packages, and CI/tooling additions.</span> [Browse all packages](NEW-PACKAGES.md)</div>
 <div markdown="1"><strong>Build confidence</strong><span>Reviewed English documentation, stronger CI, upstream synchronization, and generated package listings.</span> [Check the testing workflow documentation](TESTING_WORKFLOW.md)
 </div>

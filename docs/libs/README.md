@@ -201,6 +201,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[libcjson (libcjson.so) 1.7.19](libcjson.md)<a id='libcjson'></a>**<br>
     Ultralightweight JSON parser in ANSI C.
 
+  * **[libcoap (CoAP and CoAPs/DTLS implementation) 4.3.5b](libcoap.md)<a id='libcoap'></a>**<br>
+    libcoap is a C implementation of a lightweight application-protocol for devices that are constrained by their resources (RFC 7252, CoAP) with the secure DTLS variants (CoAPs, RFC 6347/7925). The package installs the shared library, the headers, the pkg-config file and the command line tools `coap-client-openssl`, `coap-server-openssl` and `coap-rd-openssl` (plus the plain `coap-client` alias) that talk CoAP and CoAPs/DTLS. It provides the CoAP primitives for Python bindings and scripts; the `coapcmd` helper of the IKEA TRADFRI tooling is a different program written in Go and is not provided here. https://libcoap.net/
+
   * **[libconfig (libconfig.so) 1.5](libconfig.md)<a id='libconfig'></a>**<br>
     Libconfig is a simple library for processing structured configuration files. Libconfig is very compact - just 46K for the stripped C shared library. This makes it well-suited for memory-constrained systems.
 

@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_CASTTUBE
+	bool "casttube 0.2.1"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		YouTube casting to Chromecast devices, used by pychromecast.

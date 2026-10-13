@@ -1,0 +1,12 @@
+config FREETZ_PACKAGE_PYTHON3_GEVENT
+	bool "gevent 26.9.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_LIB_libev
+	select FREETZ_LIB_libcares
+	select FREETZ_PACKAGE_PYTHON3_GREENLET
+	select FREETZ_PACKAGE_PYTHON3_CFFI
+	select FREETZ_PACKAGE_PYTHON3_ZOPE_EVENT
+	select FREETZ_PACKAGE_PYTHON3_ZOPE_INTERFACE
+	default n
+	help
+		Coroutine-based networking library built on libev and greenlet: dependency of the Domoticz plugin for the Xiaomi robot vacuum.

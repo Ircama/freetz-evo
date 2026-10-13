@@ -72,6 +72,13 @@ The reference Matter controllers are `matterjs-server` (Node.js) and `python-mat
 
 The practical consequence: a Domoticz or Home Assistant instance can talk to a Matter setup where **no Node.js process runs on the box**, and where the Thread infrastructure is native.
 
+### Upstream projects behind Thread and Matter
+
+| Upstream project | Size (repository only) | Status in Freetz-EVO | What actually runs on the box |
+|---|---|---|---|
+| [`openthread/openthread`](https://github.com/openthread/openthread) (BSD-3-Clause) | 127 MB | **ported** → [`openthread`](make/openthread.md) 2026.10.0, pinned tag archive plus `mbedtls` and `mbedtls-framework` at fixed commits | `ot-daemon` and `ot-ctl` in `/usr/bin`: the Thread 1.4.0 stack (IPv6, 6LoWPAN, IEEE 802.15.4 MAC security, mesh routing, border router support) |
+| [`openthread/ot-br-posix`](https://github.com/openthread/ot-br-posix) (BSD-3-Clause) | 31 MB | **ported** → [`ot-br-posix`](make/ot-br-posix.md) 2026.10.0, compiled from the *same* OpenThread source tree through a symlinked `third_party/openthread/repo` | `otbr-agent` (2.4 MB stripped) + `ot-ctl`, init script `rc.otbr`, configuration in `/mod/etc/default.otbr/otbr.cfg` |
+
 ## Home Assistant — a setup helper
 
 [`homeassistant`](make/homeassistant.md) ships the **installation helper** (`/usr/bin/ha-setup`), the modconf configuration set and the autorun init script, plus the Kconfig selection of the Python modules and libraries Home Assistant needs (*Minimal* and *Full* profiles). The application itself is installed on demand on external storage (`pip --prefix`, no `venv` required) and can be pinned or upgraded with one command.
@@ -155,7 +162,7 @@ The remaining work on this path is verification on a real box with a real contro
 | Package | Version | Role | Status |
 |---|---|---|---|
 | [`domoticz`](make/domoticz.md) | 2026.4 | full hub, web UI on 8080 | built, verified, installable |
-| [`domoticz-*` plugins](make/domoticz-homewizard-p1.md) | 54 packages | Python plugins in `<approot>/plugins`: energy/PV, presence and cameras, climate, AV and utility — one page per plugin in `docs/make/domoticz-*.md` | built and installed; each one needs its own device/reader to be exercised |
+| [`domoticz-*` plugins](make/domoticz-homewizard-p1.md) | 57 packages | Python plugins in `<approot>/plugins`: energy/PV, presence and cameras, climate, AV and utility — one page per plugin in `docs/make/domoticz-*.md` | built and installed; each one needs its own device/reader to be exercised |
 | [`telldus`](make/telldus.md) | 2.1.1 | `telldusd` + `tdtool`, Tellstick 433 MHz driver | built, verified |
 | [`matter-bridge`](make/matter-bridge.md) | 0.1 | native Matter WebSocket API, port 5580 | built, protocol verified against upstream |
 | [`openthread`](make/openthread.md) | 2026.10.0 | `ot-daemon`, `ot-ctl` | built, verified |

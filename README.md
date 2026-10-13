@@ -18,7 +18,7 @@ Freetz-EVO includes:
 
 - over 140 new packages, including exclusive applications, including Go and Rust packages,
 - over 70 libraries,
-- over 90 Python3 packages, including Rust libraries,
+- over 100 Python3 packages, including Rust libraries,
 - over 40 improved packages and libraries,
 - USB audio stack, extensive playback and recording tools, local playlist management and web radio functions — see the [Audio Subsystem](docs/AUDIO.md),
 - hidapi support for HID-Class USB device access and ja11-config support for configuring FiiO JA11 and other KT02H20 DSP-based USB DACs (TUI EQ configurator plus ja11-boot/ja11-flash firmware update),

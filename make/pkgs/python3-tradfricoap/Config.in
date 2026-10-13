@@ -1,0 +1,16 @@
+config FREETZ_PACKAGE_PYTHON3_TRADFRICOAP
+	bool "tradfricoap 0.1.0"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_APPDIRS
+	default n
+	help
+		Access to IKEA TRADFRI gateways over CoAPs (DTLS): it is the library
+		that the Domoticz IKEA Tradfri plugin uses.
+
+		Both back ends of tradfricoap need a helper that speaks the CLI or the
+		Python API of the project and both of them are written in **Go**
+		(`coapcmd` and `py3coap`), so they are not provided by this tree: with
+		this package alone tradfricoap cannot reach a gateway. The library is
+		still installed for completeness and it would work as soon as a Go
+		cross toolchain helper is available; the CoAP and CoAPs primitives
+		themselves come from the `libcoap` package.

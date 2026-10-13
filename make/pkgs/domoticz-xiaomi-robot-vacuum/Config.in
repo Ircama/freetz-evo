@@ -1,0 +1,20 @@
+config FREETZ_PACKAGE_DOMOTICZ_XIAOMI_ROBOT_VACUUM
+	bool "Domoticz plugin: Xiaomi robot vacuum"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_GEVENT
+	select FREETZ_PACKAGE_PYTHON3_MSGPACK
+	select FREETZ_PACKAGE_PYTHON3_MIIO
+	default n
+	help
+		control of the Xiaomi and roborock robot vacuums: start, stop, return to base, status and battery (it runs a helper server next to Domoticz with gevent and talks to the vacuum through python-miio).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/xiaomi-mirobot, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Xiaomi MI Robot, enter the address and the token of the vacuum.
+
+		Upstream ships no license file: the README is installed with the plugin. The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

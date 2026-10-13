@@ -1,0 +1,9 @@
+config FREETZ_PACKAGE_PYTHON3_PYCHROMECAST
+	bool "pychromecast 14.0.10"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_PROTOBUF
+	select FREETZ_PACKAGE_PYTHON3_CASTTUBE
+	select FREETZ_PACKAGE_PYTHON3_ZEROCONF
+	default n
+	help
+		Control of Chromecast and Google Cast devices (discovery and media playback): dependency of the Domoticz Chromecast plugin.

@@ -1,0 +1,8 @@
+# libcoap (CoAP and CoAPs/DTLS implementation) 4.3.5b
+  - Homepage: [https://libcoap.net/](https://libcoap.net/)
+  - Changelog: [https://github.com/obgm/libcoap/blob/develop/ChangeLog](https://github.com/obgm/libcoap/blob/develop/ChangeLog)
+  - Repository: [https://github.com/obgm/libcoap](https://github.com/obgm/libcoap)
+  - Library: [master/make/libs/libcoap/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/libs/libcoap/)
+  - Steward: -
+
+libcoap is a C implementation of a lightweight application-protocol for devices that are constrained by their resources (RFC 7252, CoAP) with the secure DTLS variants (CoAPs, RFC 6347/7925). The package installs the shared library, the headers, the pkg-config file and the command line tools `coap-client-openssl`, `coap-server-openssl` and `coap-rd-openssl` (plus the plain `coap-client` alias) that talk CoAP and CoAPs/DTLS. It provides the CoAP primitives for Python bindings and scripts; the `coapcmd` helper of the IKEA TRADFRI tooling is a different program written in Go and is not provided here. https://libcoap.net/

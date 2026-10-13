@@ -1,0 +1,6 @@
+config FREETZ_PACKAGE_PYTHON3_GREENLET
+	bool "greenlet 3.5.6"
+	depends on FREETZ_PACKAGE_PYTHON3
+	default n
+	help
+		Lightweight coroutines with their own stacks (C extension): the basis of gevent.

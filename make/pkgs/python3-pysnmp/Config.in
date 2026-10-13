@@ -1,0 +1,7 @@
+config FREETZ_PACKAGE_PYTHON3_PYSNMP
+	bool "pysnmp 7.1.30"
+	depends on FREETZ_PACKAGE_PYTHON3
+	select FREETZ_PACKAGE_PYTHON3_PYASN1
+	default n
+	help
+		SNMP v1, v2c and v3 client and agent in pure Python: dependency of the Domoticz SNMP reader plugin.

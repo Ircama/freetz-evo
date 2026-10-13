@@ -1,0 +1,19 @@
+config FREETZ_PACKAGE_DOMOTICZ_CHROMECAST
+	bool "Domoticz plugin: Chromecast"
+	depends on FREETZ_PACKAGE_DOMOTICZ
+	select FREETZ_PACKAGE_PYTHON3_PYCHROMECAST
+	select FREETZ_PACKAGE_PYTHON3_REQUESTS
+	default n
+	help
+		discovery and control of Chromecast and Google Cast devices: media, playback state and volume (it uses pychromecast, which brings protobuf and zeroconf).
+
+		It is a Python plugin of Domoticz: the package installs it into
+		/usr/share/domoticz/plugins/ChromecastPlugin, the directory Domoticz is
+		started with (-approot of the domoticz package), and it needs no
+		change of the Domoticz build.
+
+		Setup -> Hardware -> Chromecast, enter the address of the device or let the plugin discover it.
+
+		Upstream ships no license file: the README is installed with the plugin. The
+		repository has no release tags, so the build fetches a pinned commit of
+		the default branch.

@@ -755,6 +755,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-cached-ipaddress: cached-ipaddress 1.1.2 [^]](python3-cached-ipaddress.md)<a id='python3-cached-ipaddress'></a>**<br>
     cached-ipaddress provides a cached IP address resolution utility. Python 3 module for resolving and caching IP addresses. https://pypi.org/project/cached-ipaddress/
 
+  * **[python3-casttube: casttube 0.2.1](python3-casttube.md)<a id='python3-casttube'></a>**<br>
+    YouTube casting to Chromecast devices, used by pychromecast.
+
   * **[python3-certifi: certifi 2025.10.5 (pure python, prerequisite)](python3-certifi.md)<a id='python3-certifi'></a>**<br>
     Mozilla CA bundle for Python TLS verification.
 
@@ -808,6 +811,12 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python3-frozenlist: frozenlist 1.8.0](python3-frozenlist.md)<a id='python3-frozenlist'></a>**<br>
     A list-like structure which implements collections.abc.MutableSequence.
+
+  * **[python3-gevent: gevent 26.9.0](python3-gevent.md)<a id='python3-gevent'></a>**<br>
+    Coroutine-based networking library built on libev and greenlet: dependency of the Domoticz plugin for the Xiaomi robot vacuum.
+
+  * **[python3-greenlet: greenlet 3.5.6](python3-greenlet.md)<a id='python3-greenlet'></a>**<br>
+    Lightweight coroutines with their own stacks (C extension): the basis of gevent.
 
   * **[python3-grpcio: grpcio 1.78.0](python3-grpcio.md)<a id='python3-grpcio'></a>**<br>
     gRPC Python bindings with native C/C++ core extensions.
@@ -869,6 +878,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-minimalmodbus: minimalmodbus 2.1.1](python3-minimalmodbus.md)<a id='python3-minimalmodbus'></a>**<br>
     Client Modbus RTU/ASCII semplice ed essenziale, sopra pyserial: i plugin CreasolTech ne includono una copia propria, quindi questo pacchetto serve a script e ad altri plugin.
 
+  * **[python3-msgpack: msgpack 1.2.3](python3-msgpack.md)<a id='python3-msgpack'></a>**<br>
+    Compact binary serialisation (MessagePack), with its C extension: used between processes and services.
+
   * **[python3-multidict: multidict 6.7.1](python3-multidict.md)<a id='python3-multidict'></a>**<br>
     Multidict is dict-like collection of key-value pairs.
 
@@ -899,11 +911,23 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-propcache: propcache 0.4.1](python3-propcache.md)<a id='python3-propcache'></a>**<br>
     propcache provides cached property helpers for Python.
 
+  * **[python3-protobuf: protobuf 7.36.2](python3-protobuf.md)<a id='python3-protobuf'></a>**<br>
+    Protocol Buffers runtime (module `google.protobuf` with its C extension), required by pychromecast.
+
   * **[python3-psutil: psutil 7.2.2](python3-psutil.md)<a id='python3-psutil'></a>**<br>
     Cross-platform process and system monitoring library.
 
+  * **[python3-pyasn1: pyasn1 0.6.4](python3-pyasn1.md)<a id='python3-pyasn1'></a>**<br>
+    ASN.1 encoder and decoder in pure Python: the basis of the SNMP tooling.
+
+  * **[python3-pyasn1-modules: pyasn1-modules 0.4.2](python3-pyasn1-modules.md)<a id='python3-pyasn1-modules'></a>**<br>
+    ASN.1 data modules built on pyasn1 (SNMP, PKCS, X.509 and related).
+
   * **[python3-pycares: pycares 5.0.1](python3-pycares.md)<a id='python3-pycares'></a>**<br>
     Python interface for c-ares (asynchronous DNS requests).
+
+  * **[python3-pychromecast: pychromecast 14.0.10](python3-pychromecast.md)<a id='python3-pychromecast'></a>**<br>
+    Control of Chromecast and Google Cast devices (discovery and media playback): dependency of the Domoticz Chromecast plugin.
 
   * **[python3-pycparser: pycparser 3.0 (pure python, prerequisite)](python3-pycparser.md)<a id='python3-pycparser'></a>**<br>
     pycparser is a pure-Python prerequisite module. It is a complete parser for the C language in pure Python.
@@ -932,6 +956,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-pyserial: pyserial 3.5](python3-pyserial.md)<a id='python3-pyserial'></a>**<br>
     Accesso alle porte seriali (modulo `serial`): e' la dipendenza dei plugin modbus (DDS238, DTS238, PZEM-016, Emmeti) e di quasi tutte le librerie che parlano con lettori e contatori via RS-485/USB.
 
+  * **[python3-pysnmp: pysnmp 7.1.30](python3-pysnmp.md)<a id='python3-pysnmp'></a>**<br>
+    SNMP v1, v2c and v3 client and agent in pure Python: dependency of the Domoticz SNMP reader plugin.
+
   * **[python3-pyspeex-noise: pyspeex-noise 2.0.0](python3-pyspeex-noise.md)<a id='python3-pyspeex-noise'></a>**<br>
     Speex-based noise suppression extension for Python.
 
@@ -959,6 +986,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[python3-tqdm: tqdm 4.70.1](python3-tqdm.md)<a id='python3-tqdm'></a>**<br>
     Progress bars for loops and downloads (used by micloud).
 
+  * **[python3-tradfricoap: tradfricoap 0.1.0](python3-tradfricoap.md)<a id='python3-tradfricoap'></a>**<br>
+    Access to IKEA TRADFRI gateways over CoAPs (DTLS): it is the library that the Domoticz IKEA Tradfri plugin uses. Both back ends of tradfricoap need a helper that speaks the CLI or the Python API of the project and both of them are written in **Go** (`coapcmd` and `py3coap`), so they are not provided by this tree: with this package alone tradfricoap cannot reach a gateway. The library is still installed for completeness and it would work as soon as a Go cross toolchain helper is available; the CoAP and CoAPs primitives themselves come from the `libcoap` package.
+
   * **[python3-typing-extensions: typing-extensions 4.15.0 (pure python, prerequisite)](python3-typing-extensions.md)<a id='python3-typing-extensions'></a>**<br>
     Backported and experimental typing helpers for Python.
 
@@ -982,6 +1012,12 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python3-zeroconf: zeroconf 0.149.16](python3-zeroconf.md)<a id='python3-zeroconf'></a>**<br>
     Multicast DNS service discovery library (pure Python mode).
+
+  * **[python3-zope-event: zope.event 6.2](python3-zope-event.md)<a id='python3-zope-event'></a>**<br>
+    Event dispatch used by the Zope interface stack and by gevent.
+
+  * **[python3-zope-interface: zope.interface 8.6](python3-zope-interface.md)<a id='python3-zope-interface'></a>**<br>
+    Interfaces and adapters (C extension) used by gevent and by the Zope stack.
 
 ### Q
 
@@ -1491,6 +1527,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[domoticz-camera-bridge: Domoticz plugin: RTSP camera bridge](domoticz-camera-bridge.md)<a id='domoticz-camera-bridge'></a>**<br>
     publish RTSP camera snapshots as still JPEG images for the Domoticz camera devices It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-camera-bridge, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Camera bridge, add one entry per camera with its RTSP URL. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
+  * **[domoticz-chromecast: Domoticz plugin: Chromecast](domoticz-chromecast.md)<a id='domoticz-chromecast'></a>**<br>
+    discovery and control of Chromecast and Google Cast devices: media, playback state and volume (it uses pychromecast, which brings protobuf and zeroconf). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/ChromecastPlugin, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Chromecast, enter the address of the device or let the plugin discover it. Upstream ships no license file: the README is installed with the plugin. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
   * **[domoticz-dahua-vto: Domoticz plugin: Dahua VTO door intercom](domoticz-dahua-vto.md)<a id='domoticz-dahua-vto'></a>**<br>
     read a Dahua VTO door intercom (calls, door release, snapshots) It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/dahua-vto-dz, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Dahua VTO, enter the address and the credentials of the intercom. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
@@ -1590,6 +1629,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[domoticz-smogtok: Domoticz plugin: SmogTok air quality monitor](domoticz-smogtok.md)<a id='domoticz-smogtok'></a>**<br>
     read a SmogTok air quality monitor over the LAN It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/smogtokdomoticzplug, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> SmogTok, enter the address of the monitor. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
+  * **[domoticz-snmp-reader: Domoticz plugin: SNMP reader](domoticz-snmp-reader.md)<a id='domoticz-snmp-reader'></a>**<br>
+    readings from SNMP v1, v2c and v3 agents (switches, printers, NAS, UPS) exposed as Domoticz sensors (it queries the agents with pysnmp). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/SNMPreader, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> SNMP reader, enter the address of the agent, the SNMP version, the community or credentials and the OIDs to read. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
   * **[domoticz-sony-bravia: Domoticz plugin: Sony Bravia TV](domoticz-sony-bravia.md)<a id='domoticz-sony-bravia'></a>**<br>
     control Sony Bravia televisions over the LAN, with a Kodi remote It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/sony-bravia, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Sony Bravia, enter the address of the television and its pre-shared key. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
@@ -1622,6 +1664,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[domoticz-wudirect: Domoticz plugin: local weather station (WuDirect)](domoticz-wudirect.md)<a id='domoticz-wudirect'></a>**<br>
     receive a local weather station that sends Weather Underground formatted data It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-wudirect, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> WuDirect, enter the UDP port to listen on and map the fields of the station. Upstream publishes no license file, so the plugin keeps the licensing status upstream gave it. The repository has no release tags, so the build fetches a pinned commit of the default branch.
+
+  * **[domoticz-xiaomi-robot-vacuum: Domoticz plugin: Xiaomi robot vacuum](domoticz-xiaomi-robot-vacuum.md)<a id='domoticz-xiaomi-robot-vacuum'></a>**<br>
+    control of the Xiaomi and roborock robot vacuums: start, stop, return to base, status and battery (it runs a helper server next to Domoticz with gevent and talks to the vacuum through python-miio). It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/xiaomi-mirobot, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. Setup -> Hardware -> Xiaomi MI Robot, enter the address and the token of the vacuum. Upstream ships no license file: the README is installed with the plugin. The repository has no release tags, so the build fetches a pinned commit of the default branch.
 
   * **[domoticz-yamaha: Domoticz plugin: Yamaha AV receiver](domoticz-yamaha.md)<a id='domoticz-yamaha'></a>**<br>
     control Yamaha AV receivers over the LAN, with a Kodi remote It is a Python plugin of Domoticz: the package installs it into /usr/share/domoticz/plugins/domoticz-yamaha, the directory Domoticz is started with (-approot of the domoticz package), and it needs no change of the Domoticz build. The plugin imports the Domoticz module and the Python standard library only, so no additional Python package is required. Setup: Setup -> Hardware -> Yamaha, enter the address of the receiver. Licensed upstream (LICENSE is installed with the plugin). The repository has no release tags, so the build fetches a pinned commit of the default branch.
