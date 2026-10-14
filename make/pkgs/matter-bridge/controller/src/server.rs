@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::Write;
-use std::net::{SocketAddr, SocketAddrV6, TcpListener, UdpSocket};
+use std::net::{SocketAddr, SocketAddrV6, TcpListener, TcpStream, UdpSocket};
 use std::num::NonZeroU8;
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+use std::os::unix::io::{AsRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
@@ -34,6 +35,21 @@ mod mdns;
 
 const FABRIC_ID: u64 = 1;
 const CONTROLLER_ID: u64 = 112233;
+
+/// How often the watchdog looks for a subscription that has to be
+/// re-established. Short on purpose: it also bounds how fast an mDNS
+/// announcement turns into a re-subscribe, and a tick costs a few microseconds.
+const WATCHDOG_TICK: Duration = Duration::from_secs(2);
+
+/// How old the last report of a subscription must be before an mDNS announcement
+/// of the peer is taken as "the peer restarted".
+///
+/// rs-matter announces at startup (and when its records change), but it also
+/// announces when a session is established, i.e. right after our own
+/// re-subscribe: the grace period is what keeps that from turning into a
+/// re-subscribe loop, because the first report of a fresh subscription arrives
+/// well within it.
+const ANNOUNCE_GRACE: Duration = Duration::from_secs(5);
 
 #[derive(Serialize, Deserialize)]
 struct FabricMaterial {
@@ -123,11 +139,10 @@ impl Hub {
         self.clients.lock().unwrap().retain(|client| {
             let sent = client.sender.try_send(message.clone()).is_ok();
             if !sent { client.sender.close(); }
-            // Wake the connection thread only when there is something to send (or
-            // when it has to notice that the channel is gone): the thread parks
-            // with a timeout, so an explicit wake-up keeps the events immediate
-            // without polling.
-            client.thread.unpark();
+            // Wake the connection thread (it is blocked in `poll`) only when there
+            // is something to send, or when it has to notice that the channel is
+            // gone: an explicit wake-up keeps the events immediate without polling.
+            client.wake.wake();
             sent
         });
     }
@@ -139,12 +154,16 @@ impl Hub {
     /// re-subscribes on its next tick instead of waiting for the periodic report
     /// to time out.
     ///
-    /// Only a subscription whose reports are already late is dropped. The pinned
-    /// rs-matter re-broadcasts its records every 30 seconds, so an announcement on
-    /// its own says nothing; acting on a healthy subscription would run a CASE
-    /// handshake (P-256, tens of milliseconds on this CPU) and a re-subscribe
-    /// every 30 seconds for nothing. rs-matter's "Stop broadcasting every 30s"
-    /// (#598) removes that ambiguity, and this guard can then be relaxed.
+    /// The peer announced its Matter service again on mDNS: with this rs-matter
+    /// revision (>= 4d4fd3a, "Stop broadcasting every 30s") the responder
+    /// announces at startup and on changes only, so an announcement that arrives
+    /// while our subscription is not fresh means the peer has (re)started: drop
+    /// the subscription so the watchdog of `commands` re-subscribes on its next
+    /// tick, instead of waiting for the periodic report to time out.
+    ///
+    /// A subscription whose reports still arrive is left alone (see
+    /// [`ANNOUNCE_GRACE`]), and so is a healthy one when a reconnect attempt is
+    /// already pending.
     fn peer_announced(&self) {
         let now = Instant::now();
         let mut nodes = self.nodes.write().unwrap();
@@ -152,11 +171,12 @@ impl Hub {
             if node.interview_version == 0 {
                 continue;
             }
-            let late = node.subscription.map_or(true, |sub| sub.1.elapsed().as_secs() > sub.2 as u64);
-            if !late {
+            let silent = node.subscription.map_or(true, |sub| sub.1.elapsed() > ANNOUNCE_GRACE);
+            let retrying = node.retry_at.map_or(false, |when| now < when);
+            if !silent && !retrying {
                 continue;
             }
-            log::info!("node {}: the peer re-announced itself and its reports are late; re-subscribing now", node.node_id);
+            log::info!("node {}: the peer re-announced itself while the subscription is not fresh; re-subscribing now", node.node_id);
             node.subscription = None;
             node.retry_at = Some(now);
         }
@@ -363,21 +383,73 @@ fn server_info(hub: &Hub) -> Value {
         "sdk_version":"rs-matter-0.4.1","wifi_credentials_set":false,"thread_credentials_set":false,"bluetooth_enabled":false})
 }
 
-struct Request { message: Value, reply: Sender<Value> }
+/// A request coming from a WebSocket client, with the channel its reply has to be
+/// queued on and the pipe of that connection: a queued reply must wake the
+/// connection thread, which is otherwise blocked in `poll()` (it waits for the
+/// socket and for the pipe), or the reply would only be written when the next
+/// event happens to arrive.
+struct Request { message: Value, reply: Sender<Value>, wake: Option<Arc<WakePipe>> }
 
-/// One WebSocket client: the channel its events are queued on, plus the thread
-/// that owns the connection (woken through `Thread::unpark` when an event has to
-/// be written).
-struct Client { sender: Sender<Value>, thread: std::thread::Thread }
+/// One WebSocket client: the channel its events are queued on, plus the pipe the
+/// connection thread is woken with when an event has to be written.
+struct Client { sender: Sender<Value>, wake: Arc<WakePipe> }
 
-/// How long the WebSocket thread sleeps before looking at the socket again.
+/// A pipe used to wake a thread that is blocked in `poll()` on a socket.
 ///
-/// The socket is non-blocking and the thread must also serve the outgoing event
-/// channel; the hub wakes it with `unpark()` as soon as an event is queued, so
-/// this timeout only bounds the latency of *incoming* commands. A short 10 ms
-/// timeout was measured at ~100 wake-ups/s and 4.3% of a CPU core per connected
-/// client on a 7590AX, i.e. more than everything else the daemon does.
-const WS_POLL: Duration = Duration::from_millis(100);
+/// The WebSocket connection thread serves both the socket (commands from
+/// Domoticz) and the outgoing event channel. With a non-blocking socket and
+/// `Thread::park_timeout` the thread wakes up once per timeout even when nothing
+/// happens: measured 100 wake-ups/s and 4.3% of a CPU core per connected client
+/// with a 10 ms timeout, more than everything else the daemon does. Blocking in
+/// `poll()` on the socket and on this pipe instead costs nothing while idle and
+/// still writes events immediately.
+struct WakePipe { read: RawFd, write: RawFd }
+
+impl WakePipe {
+    fn new() -> Option<Self> {
+        let mut fds = [0i32; 2];
+        if unsafe { libc::pipe(fds.as_mut_ptr()) } != 0 {
+            return None;
+        }
+        for fd in fds {
+            unsafe { libc::fcntl(fd, libc::F_SETFL, libc::O_NONBLOCK) };
+        }
+        Some(Self { read: fds[0], write: fds[1] })
+    }
+    /// Wake a thread blocked in [`wait`](Self::wait).
+    fn wake(&self) {
+        // A full pipe is not a problem: it is drained on the next wake-up and the
+        // pending byte makes `poll` return immediately anyway.
+        unsafe { libc::write(self.write, b"w".as_ptr().cast(), 1) };
+    }
+    /// Block until the socket has something to read or [`wake`](Self::wake) has
+    /// been called; `false` when the wait itself failed.
+    fn wait(&self, socket: &TcpStream) -> bool {
+        let mut fds = [
+            libc::pollfd { fd: socket.as_raw_fd(), events: libc::POLLIN, revents: 0 },
+            libc::pollfd { fd: self.read, events: libc::POLLIN, revents: 0 },
+        ];
+        if unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) } < 0 {
+            return false;
+        }
+        if fds[1].revents != 0 {
+            let mut buffer = [0u8; 64];
+            while unsafe { libc::read(self.read, buffer.as_mut_ptr().cast(), buffer.len()) } > 0 {}
+        }
+        // On POLLERR/POLLHUP the caller reads the socket as well and sees the
+        // error, which closes the connection.
+        true
+    }
+}
+
+impl Drop for WakePipe {
+    fn drop(&mut self) {
+        unsafe {
+            libc::close(self.read);
+            libc::close(self.write);
+        }
+    }
+}
 
 fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
     for stream in listener.incoming() {
@@ -390,6 +462,7 @@ fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
             if socket.send(Message::Text(server_info(&hub).to_string().into())).is_err() { return; }
             let _ = socket.get_mut().set_nonblocking(true);
             let (send, receive) = async_channel::bounded::<Value>(256);
+            let Some(wake) = WakePipe::new().map(Arc::new) else { return; };
             let mut listening = false;
             loop {
                 while let Ok(message) = receive.try_recv() {
@@ -398,14 +471,15 @@ fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
                 match socket.flush() {
                     Ok(()) => (), Err(WsError::Io(ref error)) if error.kind() == std::io::ErrorKind::WouldBlock => (), _ => return,
                 }
+                if !wake.wait(socket.get_ref()) { break; }
                 match socket.read() {
                     Ok(Message::Text(text)) => {
                         let Ok(message) = serde_json::from_str::<Value>(&text) else { break; };
                         if message["command"] == "start_listening" && !listening {
-                            hub.clients.lock().unwrap().push(Client { sender: send.clone(), thread: std::thread::current() });
+                            hub.clients.lock().unwrap().push(Client { sender: send.clone(), wake: Arc::clone(&wake) });
                             listening = true;
                         }
-                        if requests.try_send(Request { message, reply: send.clone() }).is_err() { break; }
+                        if requests.try_send(Request { message, reply: send.clone(), wake: Some(Arc::clone(&wake)) }).is_err() { break; }
                     }
                     Ok(Message::Close(_)) => break,
                     Ok(_) => (),
@@ -413,10 +487,6 @@ fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
                     Err(_) => break,
                 }
                 if receive.is_closed() { break; }
-                // Nothing to do: sleep until the hub queues an event (it then
-                // calls `unpark`) or until it is time to look at the socket
-                // again for a command from Domoticz.
-                std::thread::park_timeout(WS_POLL);
             }
             send.close();
         });
@@ -555,7 +625,7 @@ async fn execute<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, mat
 
 async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, material: &FabricMaterial, hub: &Hub, receiver: Receiver<Request>) -> Result<(), Error> {
     let mut auto_retry = Instant::now();
-    let mut next_tick = Instant::now() + Duration::from_secs(5);
+    let mut next_tick = Instant::now() + WATCHDOG_TICK;
     loop {
         let tick = async_io::Timer::at(next_tick);
         match select(receiver.recv(), tick).await {
@@ -579,10 +649,11 @@ async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, ma
                     }
                 };
                 let _ = request.reply.try_send(response);
+                if let Some(wake) = &request.wake { wake.wake(); }
             }
             Either::First(Err(_)) => return Err(ErrorCode::Failure.into()),
             Either::Second(_) => {
-                next_tick = Instant::now() + Duration::from_secs(5);
+                next_tick = Instant::now() + WATCHDOG_TICK;
                 log::debug!("watchdog tick");
                 let needs_local = hub.auto_local && hub.peer.ip().is_loopback()
                     && !hub.nodes.read().unwrap().values().any(|node|node.peer==hub.peer && node.interview_version>0);

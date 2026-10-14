@@ -147,7 +147,7 @@ The **opposite** mapping uses the native controller embedded in `matter-bridge` 
 
 `project-chip/rs-matter` is the only realistic Rust implementation for the "box as a Matter device" direction: Matter 1.6, `no_std`-capable, pure Rust, with examples for `onoff_light`, `dimmable_light`, `speaker`, `thermostat` and — most relevant here — a **`bridge.rs`** example that exposes non-Matter devices through a Matter bridge.
 
-That direction is now packaged as **`freetz-matter`** ([package page](make/freetz-matter.md)): the crate pins `rs-matter` at revision `7d5684f` and exposes three endpoints on the box itself — a Temperature Sensor fed by the same sensors the `box_info` page reads, a Smart Speaker that drives ALSA through `amixer`, and root `BasicInformation` carrying the real model, FRITZ!OS version, AVM revision and LAN MAC.
+That direction is now packaged as **`freetz-matter`** ([package page](make/freetz-matter.md)): the crate pins `rs-matter` at revision `4d4fd3a` and exposes three endpoints on the box itself — a Temperature Sensor fed by the same sensors the `box_info` page reads, a Smart Speaker that drives ALSA through `amixer`, and root `BasicInformation` carrying the real model, FRITZ!OS version, AVM revision and LAN MAC.
 
 Making that dependency graph build for uClibc/MIPS needed three fixes, two of which are now shared with the other Rust packages in the tree:
 

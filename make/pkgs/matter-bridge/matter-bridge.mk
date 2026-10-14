@@ -20,7 +20,7 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MATTER_BRIDGE
 # revision are the same ones the freetz-matter package is verified against;
 # keep the rev in sync with controller/Cargo.toml.
 # ---------------------------------------------------------------------------
-FREETZ_MATTER_BRIDGE_RS_MATTER_REV:=7d5684f495fe5bca03d993647543508ab7587f10
+FREETZ_MATTER_BRIDGE_RS_MATTER_REV:=4d4fd3a2d821fb0105a340e244b10be44efd3646
 
 include $(MAKE_DIR)/include/650-rust-cargo.mk
 
@@ -32,6 +32,18 @@ $(PKG)_BINARY:=$($(PKG)_DIR)/controller/target/$($(PKG)_RUST_TARGET_DIR)/release
 $(PKG)_CTL_BINARY:=$($(PKG)_DIR)/controller/target/$($(PKG)_RUST_TARGET_DIR)/release/matter-bridge-ctl
 $(PKG)_CARGO_HOME:=$(abspath $($(PKG)_DIR)/controller/.cargo)
 $(eval $(call RUST_DEPENDS_VARS))
+
+# ---------------------------------------------------------------------------
+# The download phase: rs-matter is a git dependency fetched by cargo (pinned by
+# the `rev` in controller/Cargo.toml plus controller/Cargo.lock), so there is no
+# tarball to download. The rule below fills a cache shared with freetz-matter
+# (`build/cargo-matter-cache`), applies the uClibc patches there and is what
+# `make matter-bridge-download` (or `make sources`) runs; the build hard-links
+# the cache into the package Cargo home and builds `--offline`.
+# ---------------------------------------------------------------------------
+MATTER_BRIDGE_CARGO_CACHE:=$(abspath $(TOPDIR)/$(BUILD_DIR))/cargo-matter-cache
+MATTER_BRIDGE_CARGO_DL_DIR:=$(MATTER_BRIDGE_CARGO_CACHE)/$(pkg)
+MATTER_BRIDGE_CARGO_DL_STAMP:=$(MATTER_BRIDGE_CARGO_CACHE)/$(pkg).fetched
 
 # This package has no tarball to download: the sources are copied from the
 # package directory into the (freetz owned) source directory.
@@ -47,13 +59,38 @@ $($(PKG)_DIR)/.unpacked: $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml \
 
 $(PKG_CONFIGURED_NOP)
 
+# Download phase of a package without a tarball (see the cache variables above).
+$(pkg)-download: $(MATTER_BRIDGE_CARGO_DL_STAMP)
+
+$(MATTER_BRIDGE_CARGO_DL_STAMP): $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml \
+		$(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.lock \
+		$(wildcard $(MATTER_BRIDGE_MAKE_DIR)/controller/src/*.rs)
+	@$(call _ECHO,downloading)
+	rm -rf $(MATTER_BRIDGE_CARGO_DL_DIR)
+	mkdir -p $(MATTER_BRIDGE_CARGO_DL_DIR)/src
+	cp $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.lock $(MATTER_BRIDGE_CARGO_DL_DIR)/
+	cp $(MATTER_BRIDGE_MAKE_DIR)/controller/src/*.rs $(MATTER_BRIDGE_CARGO_DL_DIR)/src/
+	cd $(MATTER_BRIDGE_CARGO_DL_DIR); \
+	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
+	export HOME="$(MATTER_BRIDGE_CARGO_CACHE)"; \
+	export CARGO_HOME="$$HOME/.cargo"; \
+	export RUSTUP_HOME="$(HOME)/.rustup"; \
+	mkdir -p "$$CARGO_HOME"; \
+	cargo +nightly fetch --locked $(MATTER_BRIDGE_CARGO_BUILD_STD_FLAGS) --target "$(MATTER_BRIDGE_RUST_TARGET_DIR)" && \
+	cargo +nightly fetch --locked && \
+	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LIBC_NORAW__INT,1.1.5) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
+	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.3) \
+	true
+	@touch $@
+
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
 
 # Same serialization as freetz-matter: rs-matter's IDL codegen emits ~30 MB of
 # Rust and a single rustc job already peaks at ~5.6 GB RSS, so one cargo job and
 # one rustc thread are used on purpose.
-$($(PKG)_BINARY): $($(PKG)_DIR)/.configured
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured | $(MATTER_BRIDGE_CARGO_DL_STAMP)
 	@$(call _ECHO,building)
 	cd $(MATTER_BRIDGE_DIR)/controller; \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
@@ -61,17 +98,18 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	export CARGO_HOME="$(MATTER_BRIDGE_CARGO_HOME)"; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
 	mkdir -p "$$CARGO_HOME"; \
+	$(call CARGO_LINK_DL_CACHE__INT,$(MATTER_BRIDGE_CARGO_CACHE)/.cargo,$$CARGO_HOME) \
 	printf '[target.%s]\nlinker = "%s"\nar = "%s"\nrustflags = ["-C", "link-arg=-Wl,-no-pie", "-Zthreads=1"]\n' \
 		"$(MATTER_BRIDGE_RUST_TARGET_DIR)" \
 		"$(TARGET_CROSS)gcc" \
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
 	export CARGO_BUILD_JOBS=1; \
-	cargo +nightly fetch --locked --target "$(MATTER_BRIDGE_RUST_TARGET_DIR)" && \
+	cargo +nightly fetch --locked --offline --target "$(MATTER_BRIDGE_RUST_TARGET_DIR)" && \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LIBC_NORAW__INT,1.1.5) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.4.3) \
-	cargo +nightly build --locked --release $(MATTER_BRIDGE_CARGO_BUILD_STD_FLAGS) \
+	cargo +nightly build --locked --offline --release $(MATTER_BRIDGE_CARGO_BUILD_STD_FLAGS) \
 		--target "$(MATTER_BRIDGE_RUST_TARGET_ARG)"
 
 $($(PKG)_CTL_BINARY): $($(PKG)_BINARY)

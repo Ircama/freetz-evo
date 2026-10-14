@@ -11,6 +11,29 @@
 # target '-j'"). If a package's build script spawns a nested make, `unset
 # MAKEFLAGS` before invoking cargo so the nested make runs without those flags.
 
+# Hard-link a Cargo download cache filled by a package download rule into the
+# package private Cargo home ($CARGO_HOME must be exported in the shell).
+#
+# Downloaded crates and checkouts are added only when missing (`-n`): a build may
+# already have patched them, and re-linking would give them a new mtime and
+# invalidate the whole incremental build. The registry index is the exception: it
+# is plain metadata that must always be refreshed, otherwise an offline build
+# only sees the crate versions that were known when the package Cargo home was
+# created and fails with "failed to select a version for the requirement ...
+# candidate versions found which didn't match" (#offline).
+# $1: Cargo home of the download cache, $2: target Cargo home (e.g. $$CARGO_HOME)
+define CARGO_LINK_DL_CACHE__INT
+for dir in registry/cache registry/src git; do \
+	[ -d "$(1)/$$dir" ] || continue; \
+	mkdir -p "$(2)/$$dir"; \
+	cp -aln "$(1)/$$dir/." "$(2)/$$dir/" 2>/dev/null || cp -an "$(1)/$$dir/." "$(2)/$$dir/"; \
+done; \
+if [ -d "$(1)/registry/index" ]; then \
+	mkdir -p "$(2)/registry/index"; \
+	cp -a "$(1)/registry/index/." "$(2)/registry/index/"; \
+fi;
+endef
+
 # Expand to the rustix crate directory glob in Cargo registry.
 # $1: rustix crate version (for example: 1.1.3)
 define RUSTIX_REGISTRY_DIR_GLOB__INT

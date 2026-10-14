@@ -41,7 +41,7 @@ async-channel = "2"
 base64 = "0.22"
 time = { version = "0.3", features = ["formatting"] }
 
-rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "7d5684f495fe5bca03d993647543508ab7587f10", features = [
+rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "4d4fd3a2d821fb0105a340e244b10be44efd3646", features = [
     "async-io",
     "groups",
     "persistent-subscriptions",

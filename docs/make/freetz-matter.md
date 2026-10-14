@@ -3,7 +3,7 @@
   - Steward: Ircama
   - Provides: `/usr/bin/freetz-matter`, init script `rc.freetz-matter`
   - Configuration: `/mod/etc/default.freetz-matter/freetz-matter.cfg`
-  - Matter stack: [`project-chip/rs-matter`](https://github.com/project-chip/rs-matter) 0.4.1, pinned to revision `7d5684f`
+  - Matter stack: [`project-chip/rs-matter`](https://github.com/project-chip/rs-matter) 0.4.1, pinned to revision `4d4fd3a`
   - Endpoints: Temperature Sensor (0x0302), Smart Speaker (0x0022), root BasicInformation
   - Status: **implementation complete, cross-compilation of the stack verified up to the IDL codegen compile** — see [Build status](#build-status)
 

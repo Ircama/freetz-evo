@@ -24,10 +24,9 @@ socket2 = "0.6"
 async-executor = "1"
 # Pinned to the revision this application is verified against; the same rev is
 # documented in freetz-matter.mk. Keep both in sync when updating.
-rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "7d5684f495fe5bca03d993647543508ab7587f10", features = [
+rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "4d4fd3a2d821fb0105a340e244b10be44efd3646", features = [
     "async-io",
     "groups",
-    "persistent-subscriptions",
     "max-groups-per-fabric-12",
     "max-group-keys-per-fabric-3",
     "max-group-endpoints-per-fabric-3",
@@ -41,7 +40,10 @@ rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "7d5684f4
 [profile.release]
 opt-level = "s"
 lto = false
-codegen-units = 16
+# High on purpose, like matter-bridge: codegen units are the knob that decides
+# how much a single rustc job needs, and rs-matter (30 MB of IDL-generated code)
+# is killed by the OOM killer with the upstream profile on a small build host.
+codegen-units = 256
 debug = false
 strip = true
 overflow-checks = false
