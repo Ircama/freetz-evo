@@ -25,6 +25,7 @@ sec_end
 sec_begin "$(lang de:"Erweitert" en:"Advanced")"
 cgi_print_radiogroup_active "verbose" "$MATTER_BRIDGE_VERBOSE" "" "$(lang de:"Debug-Protokoll (RUST_LOG=debug)" en:"Debug logging (RUST_LOG=debug)")"
 cat << EOF
+<p>$(lang de:"Warten auf das Programm im externen Speicher (Sekunden, 0 = sofort)" en:"Wait for the binary on external storage (seconds, 0 = immediately)"): <input type="text" name="config_wait" size="8" maxlength="5" value="$(html "$MATTER_BRIDGE_CONFIG_WAIT")"></p>
 <p>$(lang de:"Zusaetzliche Kommandozeilenoptionen" en:"Additional command line options"): <input type="text" name="extra_args" size="60" maxlength="255" value="$(html "$MATTER_BRIDGE_EXTRA_ARGS")"></p>
 EOF
 sec_end

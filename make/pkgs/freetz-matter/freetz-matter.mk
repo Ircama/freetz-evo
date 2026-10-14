@@ -37,7 +37,8 @@ $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_ALSA_UTILS
 # package directory into the (freetz owned) source directory.
 $($(PKG)_DIR)/.unpacked: $(FREETZ_MATTER_MAKE_DIR)/Cargo.toml \
 		$(FREETZ_MATTER_MAKE_DIR)/src/main.rs \
-		$(FREETZ_MATTER_MAKE_DIR)/src/boxdata.rs | $(SOURCE_DIR)
+		$(FREETZ_MATTER_MAKE_DIR)/src/boxdata.rs \
+		$(FREETZ_MATTER_MAKE_DIR)/src/mdns.rs | $(SOURCE_DIR)
 	@$(call _ECHO,preparing)
 	mkdir -p $(FREETZ_MATTER_DIR)/src
 	cp $(FREETZ_MATTER_MAKE_DIR)/src/*.rs $(FREETZ_MATTER_DIR)/src/

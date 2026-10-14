@@ -177,9 +177,11 @@ start() {
 
 	# Static Packages
 	if [ -x /mod/etc/init.d/rc.external ]; then
-		[ "$MOD_EXTERNAL_FREETZ_SERVICES" == "yes" ] && EXTERNAL_SERVICES="$(cat /mod/etc/external.pkg 2>/dev/null)"
+		[ "$MOD_EXTERNAL_FREETZ_SERVICES" == "yes" ] && EXTERNAL_SERVICES="$(echo $(cat /mod/etc/external.pkg 2>/dev/null))"
 		EXTERNAL_SERVICES=" $EXTERNAL_SERVICES $(echo $MOD_EXTERNAL_OWN_SERVICES | tr '\n' ' ') "
-		DEFERRED_SERVICES=" $(cat /mod/etc/external.defer.pkg 2>/dev/null) "
+		# Both files may hold one package per line or a single space separated
+		# list; the checks below are line based, so normalize the whitespace.
+		DEFERRED_SERVICES=" $(echo $(cat /mod/etc/external.defer.pkg 2>/dev/null)) "
 	fi
 	for pkg in $(cat /etc/static.pkg 2>/dev/null); do
 		[ "$pkg" = mod ] && continue

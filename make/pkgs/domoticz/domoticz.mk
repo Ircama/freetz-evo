@@ -230,11 +230,20 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
 
 # $* is the name of the file or directory to copy (History.txt, www, dzVents,
-# plugins, scripts, ...). The rule only depends on the unpacked stamp, because
-# the sources do not exist yet when make parses the package.
+# plugins, scripts, ...). A directory is copied *into* the target directory
+# instead of over it: the plugin packages stage their plugins in the very same
+# /usr/share/domoticz/plugins directory, and "cp -a src/plugins dest/plugins"
+# nests a second plugins/ level there once the target already exists. The rule
+# only depends on the unpacked stamp, because the sources do not exist yet when
+# make parses the package.
 $($(PKG)_DATA_DIR)/%: $($(PKG)_DIR)/.unpacked
 	mkdir -p $(DOMOTICZ_DATA_DIR)
-	cp -a $(DOMOTICZ_DIR)/$* $@
+	if [ -d $(DOMOTICZ_DIR)/$* ]; then \
+		mkdir -p $@; \
+		cp -a $(DOMOTICZ_DIR)/$*/. $@/; \
+	else \
+		cp -a $(DOMOTICZ_DIR)/$* $@; \
+	fi
 
 $(pkg):
 

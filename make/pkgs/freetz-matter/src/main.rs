@@ -14,6 +14,7 @@
 //!   playback path through `amixer`.
 
 mod boxdata;
+mod mdns;
 
 use core::cell::Cell;
 use core::pin::pin;
@@ -444,16 +445,13 @@ fn main() -> Result<(), Error> {
     futures_lite::future::block_on(all)
 }
 
-/// Minimal mDNS advertisement task.
+/// mDNS/DNS-SD advertisement task.
 ///
-/// The full mDNS responder of the upstream examples is not vendored here
-/// (`examples/src/common/mdns.rs` lives outside the published crate); this
-/// placeholder keeps the task graph identical so the device can be added to a
-/// test harness. Commissioning over IP still works when the controller is
-/// given the manual pairing code, and the Thread/Wi-Fi setup codes are printed
-/// on startup.
+/// Publishes `_matterc._udp` (and `_matter._tcp` once commissioned) on UDP 5353
+/// through `mdns::run_or_wait`, which shares the port with the closed mDNS
+/// responder of FRITZ!OS and never aborts the daemon when it is unavailable:
+/// commissioning over IP always works when the controller is given the manual
+/// pairing code, and the Thread/Wi-Fi setup codes are printed on startup.
 async fn mdns_run<C: Crypto>(matter: &Matter<'_>, crypto: &C) -> Result<(), Error> {
-    let _ = (matter, crypto);
-
-    core::future::pending::<Result<(), Error>>().await
+    crate::mdns::run_or_wait(matter, crypto).await
 }

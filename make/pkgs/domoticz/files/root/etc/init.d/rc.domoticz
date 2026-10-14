@@ -40,6 +40,35 @@ build_args() {
 	return 0
 }
 
+# Domoticz looks for Python plugins only in <userdata>/plugins
+# (hardware/plugins/PluginManager.cpp, CPluginSystem::BuildManifest), while the
+# plugin packages install them in <approot>/plugins. Expose the packaged tree in
+# the userdata directory there: a symlink while the user keeps no plugin of his
+# own, or single links for the packaged plugins that are missing besides them.
+link_plugins() {
+	plugin_dir="$DOMOTICZ_USERDATA/plugins"
+	packaged_dir="$DAEMON_APPDIR/plugins"
+	link_path=
+
+	[ -n "$DOMOTICZ_USERDATA" ] || return 0
+	[ -d "$DOMOTICZ_USERDATA" ] || return 0
+	[ -d "$packaged_dir" ] || return 0
+	[ -L "$plugin_dir" ] && return 0
+
+	if [ ! -e "$plugin_dir" ]; then
+		ln -s "$packaged_dir" "$plugin_dir" 2>/dev/null
+		return 0
+	fi
+	[ -d "$plugin_dir" ] || return 0
+
+	for entry in "$packaged_dir"/*; do
+		[ -d "$entry" ] || continue
+		link_path="$plugin_dir/${entry##*/}"
+		[ -e "$link_path" ] || ln -s "$entry" "$link_path" 2>/dev/null
+	done
+	return 0
+}
+
 config() {
 	# Domoticz cannot create its database before the folder exists, and on a
 	# freshly prepared stick nobody else creates it: do it here as soon as the
@@ -47,6 +76,7 @@ config() {
 	[ -z "$DOMOTICZ_USERDATA" ] || [ -d "$DOMOTICZ_USERDATA" ] || \
 		mkdir -p "$DOMOTICZ_USERDATA" 2>/dev/null
 
+	link_plugins
 	build_args
 	return 0
 }

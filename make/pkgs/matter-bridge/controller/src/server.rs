@@ -30,6 +30,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tungstenite::{Message, Error as WsError};
 
+mod mdns;
+
 const FABRIC_ID: u64 = 1;
 const CONTROLLER_ID: u64 = 112233;
 
@@ -107,7 +109,7 @@ impl Node {
 
 struct Hub {
     nodes: RwLock<BTreeMap<u64, Node>>,
-    clients: Mutex<Vec<Sender<Value>>>,
+    clients: Mutex<Vec<Client>>,
     path: PathBuf,
     peer: SocketAddrV6,
     allow_test: bool,
@@ -119,11 +121,50 @@ impl Hub {
     fn event(&self, event: &str, data: Value) {
         let message = json!({"event":event,"data":data});
         self.clients.lock().unwrap().retain(|client| {
-            if client.try_send(message.clone()).is_err() { client.close(); false } else { true }
+            let sent = client.sender.try_send(message.clone()).is_ok();
+            if !sent { client.sender.close(); }
+            // Wake the connection thread only when there is something to send (or
+            // when it has to notice that the channel is gone): the thread parks
+            // with a timeout, so an explicit wake-up keeps the events immediate
+            // without polling.
+            client.thread.unpark();
+            sent
         });
     }
     fn save(&self) -> Result<(), Error> {
         save_json(&self.path, &*self.nodes.read().unwrap()).map_err(|_| ErrorCode::Failure.into())
+    }
+    /// The peer announced its Matter service again on mDNS, i.e. it has
+    /// (re)started: drop our subscription to it, so the watchdog of `commands`
+    /// re-subscribes on its next tick instead of waiting for the periodic report
+    /// to time out.
+    ///
+    /// Only a subscription whose reports are already late is dropped. The pinned
+    /// rs-matter re-broadcasts its records every 30 seconds, so an announcement on
+    /// its own says nothing; acting on a healthy subscription would run a CASE
+    /// handshake (P-256, tens of milliseconds on this CPU) and a re-subscribe
+    /// every 30 seconds for nothing. rs-matter's "Stop broadcasting every 30s"
+    /// (#598) removes that ambiguity, and this guard can then be relaxed.
+    fn peer_announced(&self) {
+        let now = Instant::now();
+        let mut nodes = self.nodes.write().unwrap();
+        for node in nodes.values_mut() {
+            if node.interview_version == 0 {
+                continue;
+            }
+            let late = node.subscription.map_or(true, |sub| sub.1.elapsed().as_secs() > sub.2 as u64);
+            if !late {
+                continue;
+            }
+            log::info!("node {}: the peer re-announced itself and its reports are late; re-subscribing now", node.node_id);
+            node.subscription = None;
+            node.retry_at = Some(now);
+        }
+    }
+    /// [`mdns::watch_peer`] callback for this hub.
+    fn announcer(self: &Arc<Self>) -> mdns::PeerSeen {
+        let hub = Arc::clone(self);
+        Arc::new(move || hub.peer_announced())
     }
     fn node(&self, id: u64) -> Result<Node, Error> {
         self.nodes.read().unwrap().get(&id).cloned().ok_or(ErrorCode::NotFound.into())
@@ -217,7 +258,15 @@ fn json_tlv(writer: &mut impl TLVWrite, tag: &TLVTag, value: &Value) -> Result<(
     }
 }
 
-async fn resolver(matter: &Matter<'_>, hub: &Hub) -> Result<(), Error> {
+/// Serves the mDNS advertisement of this node and the resolve requests the
+/// responder produces (`Transport::wait_mdns_resolve_request`).
+async fn resolver<C: Crypto>(matter: &Matter<'_>, hub: &Hub, crypto: &C) -> Result<(), Error> {
+    let _ = select(mdns::run_or_wait(matter, crypto), resolve_requests(matter, hub)).await;
+
+    Ok(())
+}
+
+async fn resolve_requests(matter: &Matter<'_>, hub: &Hub) -> Result<(), Error> {
     loop {
         let service = matter.transport().wait_mdns_resolve_request().await;
         if let MatterRemoteService::Operational { node_id, .. } = &service {
@@ -229,6 +278,7 @@ async fn resolver(matter: &Matter<'_>, hub: &Hub) -> Result<(), Error> {
                     addrs: std::iter::once(IpAddr::V6(*node.peer.ip())),
                     txt: std::iter::empty::<(&str, &str)>(), scope_id: node.peer.scope_id(),
                 }, &[]);
+                log::debug!("mDNS resolve for node {node_id} answered with {}", node.peer);
             }
         }
     }
@@ -315,6 +365,20 @@ fn server_info(hub: &Hub) -> Value {
 
 struct Request { message: Value, reply: Sender<Value> }
 
+/// One WebSocket client: the channel its events are queued on, plus the thread
+/// that owns the connection (woken through `Thread::unpark` when an event has to
+/// be written).
+struct Client { sender: Sender<Value>, thread: std::thread::Thread }
+
+/// How long the WebSocket thread sleeps before looking at the socket again.
+///
+/// The socket is non-blocking and the thread must also serve the outgoing event
+/// channel; the hub wakes it with `unpark()` as soon as an event is queued, so
+/// this timeout only bounds the latency of *incoming* commands. A short 10 ms
+/// timeout was measured at ~100 wake-ups/s and 4.3% of a CPU core per connected
+/// client on a 7590AX, i.e. more than everything else the daemon does.
+const WS_POLL: Duration = Duration::from_millis(100);
+
 fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
     for stream in listener.incoming() {
         let Ok(stream) = stream else { continue; };
@@ -338,7 +402,7 @@ fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
                     Ok(Message::Text(text)) => {
                         let Ok(message) = serde_json::from_str::<Value>(&text) else { break; };
                         if message["command"] == "start_listening" && !listening {
-                            hub.clients.lock().unwrap().push(send.clone());
+                            hub.clients.lock().unwrap().push(Client { sender: send.clone(), thread: std::thread::current() });
                             listening = true;
                         }
                         if requests.try_send(Request { message, reply: send.clone() }).is_err() { break; }
@@ -349,7 +413,10 @@ fn websocket(listener: TcpListener, hub: Arc<Hub>, requests: Sender<Request>) {
                     Err(_) => break,
                 }
                 if receive.is_closed() { break; }
-                std::thread::park_timeout(Duration::from_millis(10));
+                // Nothing to do: sleep until the hub queues an event (it then
+                // calls `unpark`) or until it is time to look at the socket
+                // again for a command from Domoticz.
+                std::thread::park_timeout(WS_POLL);
             }
             send.close();
         });
@@ -516,6 +583,7 @@ async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, ma
             Either::First(Err(_)) => return Err(ErrorCode::Failure.into()),
             Either::Second(_) => {
                 next_tick = Instant::now() + Duration::from_secs(5);
+                log::debug!("watchdog tick");
                 let needs_local = hub.auto_local && hub.peer.ip().is_loopback()
                     && !hub.nodes.read().unwrap().values().any(|node|node.peer==hub.peer && node.interview_version>0);
                 if needs_local && Instant::now() >= auto_retry {
@@ -528,18 +596,32 @@ async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, ma
                 }
                 let ids = hub.nodes.read().unwrap().values().filter(|node| node.interview_version > 0
                     && node.retry_at.map_or(true,|when| Instant::now() >= when)
-                    && node.subscription.map_or(true,|sub| sub.1.elapsed().as_secs() > sub.2 as u64 + 10))
+                    && node.subscription.map_or(true,|sub| sub.1.elapsed().as_secs() > sub.2 as u64 + 5))
                     .map(|node| node.node_id).collect::<Vec<_>>();
+                log::debug!("watchdog: {} node(s) to (re)subscribe", ids.len());
                 for id in ids {
-                    let result = select(subscribe(matter,crypto,fab,hub,id),async_io::Timer::after(Duration::from_secs(15))).await;
-                    if !matches!(result,Either::First(Ok(()))) {
-                        let mut nodes = hub.nodes.write().unwrap();
-                        let node = nodes.get_mut(&id).unwrap();
-                        node.available = false;
-                        node.retry_at = Some(Instant::now() + Duration::from_secs(30));
-                        let wire = node.wire(); drop(nodes);
-                        hub.event("node_updated",wire);
+                    log::debug!("node {id}: subscription missing or silent, reconnecting");
+                    let result = select(subscribe(matter,crypto,fab,hub,id),async_io::Timer::after(Duration::from_secs(25))).await;
+                    let mut nodes = hub.nodes.write().unwrap();
+                    let node = nodes.get_mut(&id).unwrap();
+                    match result {
+                        Either::First(Ok(())) => log::info!("node {id}: subscription re-established"),
+                        Either::First(Err(error)) => {
+                            // A peer that has just restarted has no session yet: retry on the
+                            // next tick instead of waiting for the backoff.
+                            let delay = if error.code() == ErrorCode::NoSession { 5 } else { 15 };
+                            log::warn!("node {id}: reconnect failed ({error:?}); retrying in {delay} seconds");
+                            node.available = false;
+                            node.retry_at = Some(Instant::now() + Duration::from_secs(delay));
+                        }
+                        Either::Second(_) => {
+                            log::warn!("node {id}: no CASE session within 25 s; retrying in 15 seconds");
+                            node.available = false;
+                            node.retry_at = Some(Instant::now() + Duration::from_secs(15));
+                        }
                     }
+                    let wire = node.wire(); drop(nodes);
+                    hub.event("node_updated",wire);
                 }
             }
         }
@@ -596,10 +678,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind((bind,port))?;
     let ws_hub = hub.clone();
     std::thread::spawn(move || websocket(listener,ws_hub,send));
+    mdns::spawn_peer_watch(mdns::PEER_HOSTNAME,hub.announcer());
     let udp_bind = if peer.ip().is_loopback() { "[::1]:0" } else { "[::]:0" };
     let socket = async_io::Async::<UdpSocket>::bind(udp_bind.parse::<SocketAddr>()?)?;
     log::info!("WebSocket :{port}/ws; local Matter device {peer}; fabric loaded from {}",fabric_path.display());
-    futures_lite::future::block_on(select4(matter.run(&crypto,&socket,&socket,NoNetwork),resolver(&matter,&hub),
+    futures_lite::future::block_on(select4(matter.run(&crypto,&socket,&socket,NoNetwork),resolver(&matter,&hub,&crypto),
         reports(&matter,&hub),commands(&matter,&crypto,fab,&material,&hub,receive)).coalesce())?;
     Ok(())
 }

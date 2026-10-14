@@ -56,6 +56,7 @@ modconf set `/mod/etc/default.freetz-matter/freetz-matter.cfg` (all values edita
 | `FREETZ_MATTER_PORT` | `5540` | Matter UDP port (the standard one) |
 | `FREETZ_MATTER_STORE` | `/tmp/flash/freetz-matter` | fabric store: commissioned fabrics, ACLs, subscriptions; run modsave after commissioning |
 | `FREETZ_MATTER_VERBOSE` | `no` | debug logging |
+| `FREETZ_MATTER_CONFIG_WAIT` | `120` | seconds to wait for `/usr/bin/freetz-matter` when the binary lives on external storage; the wait runs in a background subshell, `0` disables it |
 | `FREETZ_MATTER_EXTRA_ARGS` | *(empty)* | extra daemon options |
 
 `pkg_pre_save` validates the port and the store path, warns when the store is not on persistent storage and when `amixer` is missing; nothing is restarted implicitly.
@@ -63,6 +64,25 @@ modconf set `/mod/etc/default.freetz-matter/freetz-matter.cfg` (all values edita
 ### Externalization
 
 `freetz-matter` can be moved to external storage from the **External** menu (`EXTERNAL_FREETZ_PACKAGE_FREETZ_MATTER`): `/usr/bin/freetz-matter` is the entire payload (4.5 MB stripped) and is the only declared file. The init script, the Freetz configuration and the fabric store remain in the firmware — they are a few kilobytes, needed at boot, and `/mod/etc` is where the store has to live anyway to survive reboots. Because the rs-matter stack is linked in statically, the binary has no companion files to carry along, and everything it opens is addressed by absolute paths.
+
+### mDNS / DNS-SD
+
+The daemon advertises the device with rs-matter's built-in mDNS responder:
+`_matterc._udp` while it is uncommissioned, `_matter._tcp` — with the
+`_I<compressed-fabric-id>._sub._matter._tcp` subtypes controllers look for — and
+the A/AAAA records of `freetz-matter.local` once it holds a fabric. A controller
+on the LAN therefore finds the box without knowing its address.
+
+FRITZ!OS has its own closed mDNS responder (`libavmdnsdomains.so`,
+`libavmdnsnotify.so`, used by `ctlmgr`, `multid`, `upnpd`, ...) which already
+holds UDP 5353 for `fritz.box` and the AVM services. The socket of
+`freetz-matter` is opened with `SO_REUSEADDR` and binds `[::]:5353` next to it:
+each responder answers only for its own records, so `fritz.box` keeps working
+(verified on a FRITZ!Box 7590AX: both the AVM `_http._tcp` record and the Matter
+`_matter._tcp` records answer the same query). The LAN interface is selected
+automatically — `lan` on a FRITZ!Box, a bridge elsewhere, `MATTER_MDNS_INTERFACE`
+to override it — the IPv4 address is optional, and a missing or busy mDNS socket
+only disables the advertisement, never the local chain.
 
 ## Usage
 

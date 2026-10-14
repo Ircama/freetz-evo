@@ -82,5 +82,12 @@
     "timestamp": "2026-10-12T20:48:49Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Wait for the binary on external storage (seconds, 0 = immediately)": {
+    "original": "Wait for the binary on external storage (seconds, 0 = immediately)",
+    "translation": "Attendere il file binario sulla memoria esterna (secondi, 0 = immediatamente)",
+    "timestamp": "2026-10-14T08:20:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

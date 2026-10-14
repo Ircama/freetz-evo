@@ -50,6 +50,8 @@ rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "7d5684f4
     "max-group-endpoints-per-fabric-3",
     "max-sessions-32",
 ] }
+socket2 = "0.6"
+libc = "0.2"
 
 # Same build profile as the freetz-matter package: uClibc/MIPS toolchains
 # cannot afford fat LTO or a single codegen unit of a crate this size.

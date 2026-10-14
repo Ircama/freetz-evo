@@ -1,5 +1,5 @@
-# The daemon itself is externalized; the seed store, the runtime state and the
-# init script stay in the firmware (small, and the state has to be in /mod/etc
-# to survive reboots). The daemon is started with absolute paths, so running it
-# from /mod/external/usr/bin needs no adjustment.
+# The two binaries are externalized; the init script, the Freetz configuration
+# and the fabric/node store stay in the firmware (the store has to live in
+# /tmp/flash to be archived by modsave). The daemon is started with absolute
+# paths, so running it from /mod/external/usr/bin needs no adjustment.
 [ "$EXTERNAL_FREETZ_PACKAGE_MATTER_BRIDGE" == "y" ] && EXTERNAL_FILES+=" /usr/bin/matter-bridge /usr/bin/matter-bridge-ctl"

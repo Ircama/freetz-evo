@@ -12,11 +12,10 @@ LOG=/tmp/rc.matter-bridge.log
 
 MATTER_BRIDGE_PORT="${MATTER_BRIDGE_PORT:-5580}"
 MATTER_BRIDGE_BIND="${MATTER_BRIDGE_BIND:-127.0.0.1}"
-MATTER_BRIDGE_STATE="${MATTER_BRIDGE_STATE:-/mod/etc/matter-bridge/nodes.json}"
-MATTER_BRIDGE_SEED="${MATTER_BRIDGE_SEED:-/etc/matter-bridge/nodes.json}"
 MATTER_BRIDGE_STORE="${MATTER_BRIDGE_STORE:-/tmp/flash/matter-bridge}"
 MATTER_BRIDGE_PEER="${MATTER_BRIDGE_PEER:-[::1]:5540}"
 MATTER_BRIDGE_AUTO_LOCAL="${MATTER_BRIDGE_AUTO_LOCAL:-yes}"
+MATTER_BRIDGE_CONFIG_WAIT="${MATTER_BRIDGE_CONFIG_WAIT:-120}"
 
 MATTER_BRIDGE_ARGS=
 
@@ -33,6 +32,22 @@ config() {
 	[ -n "$MATTER_BRIDGE_EXTRA_ARGS" ] && MATTER_BRIDGE_ARGS="$MATTER_BRIDGE_ARGS $MATTER_BRIDGE_EXTRA_ARGS"
 
 	return 0
+}
+
+# The daemon may live on external storage (the package can be externalized): at
+# boot that storage is mounted asynchronously, so wait for the binary in a
+# background subshell instead of failing with "not found". This complements the
+# deferred-service mechanism of rc.external, and covers the case where the
+# service is not (yet) listed in /mod/etc/external.defer.pkg.
+binary_ready() {
+	[ -x /usr/bin/$DAEMON_BIN ] && return 0
+	elapsed=0
+	while [ "$elapsed" -lt "$MATTER_BRIDGE_CONFIG_WAIT" ]; do
+		sleep 2
+		elapsed=$((elapsed + 2))
+		[ -x /usr/bin/$DAEMON_BIN ] && return 0
+	done
+	return 1
 }
 
 start() {
@@ -63,7 +78,21 @@ case "$1" in
 	""|load)
 		modreg daemon $DAEMON
 		modreg cgi $DAEMON "Matter bridge (Domoticz)"
-		modlib_start "$MATTER_BRIDGE_ENABLED"
+		if [ "$MATTER_BRIDGE_ENABLED" != "yes" ] || [ -x /usr/bin/$DAEMON_BIN ]; then
+			modlib_start "$MATTER_BRIDGE_ENABLED"
+		else
+			(
+				. /etc/init.d/modlibrc
+				[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+				MATTER_BRIDGE_CONFIG_WAIT="${MATTER_BRIDGE_CONFIG_WAIT:-120}"
+				echo "$(date): waiting for /usr/bin/$DAEMON_BIN (external storage)"
+				if binary_ready; then
+					/etc/init.d/rc.$DAEMON start
+				else
+					echo "$(date): /usr/bin/$DAEMON_BIN not available after ${MATTER_BRIDGE_CONFIG_WAIT}s"
+				fi
+			) >>$LOG 2>&1 &
+		fi
 		;;
 	unload)
 		modunreg cgi $DAEMON

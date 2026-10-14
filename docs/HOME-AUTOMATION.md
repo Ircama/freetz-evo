@@ -183,7 +183,8 @@ The remaining work on this path is verification on a real box with a real contro
 * **No FPU** on several SoCs: avoid DSP-heavy integrations, see [AUDIO.md](AUDIO.md).
 * **Boot**: every service waits for its storage in a **background subshell**; automations must never delay the boot sequence.
 * **Matter controller role**: embedded in the single `matter-bridge` daemon. Domoticz connects to `127.0.0.1:5580`; freetz-matter commissioning is automatic when its commissioning window is open. No external server or diagnostic CLI is required for this local chain.
-* **Verification**: the Matter bridge was validated with the upstream reference dataclasses and with the Domoticz driver's own parsing rules, on a host build of the same sources that are cross-compiled for MIPS.
+* **mDNS**: both Matter daemons advertise through rs-matter's built-in responder and share UDP 5353 with the closed responder of FRITZ!OS (`libavmdns*`): the socket is opened with `SO_REUSEADDR`, each responder answers only for its own records and `fritz.box` keeps working. The advertisement is optional — without it the local chain (Domoticz → 5580 → 5540) is unaffected.
+* **Verification**: the WebSocket protocol follows the `python-matter-server` schema (`schema_version` 11, `min_supported_schema_version` 9) and the message dispatch of the Domoticz Matter driver; the native end-to-end test (`make/pkgs/matter-bridge/tests/native-controller-test.py`) covers PASE/CASE, interview, commands, delayed subscription reports and restart on host builds of the same sources that are cross-compiled for MIPS.
 
 ## See also
 

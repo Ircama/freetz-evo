@@ -1,26 +1,24 @@
 # matter-bridge -- native Matter WebSocket server for Domoticz (no Node.js).
 #
-# The C++ sources of this package live in its src/ directory in the repository
-# and are copied into the package source directory under source/ before the
-# build, because freetz removes $(PKG)_DIR while preparing a package (setting
+# The Rust sources of this package (the daemon and the matter-bridge-ctl
+# diagnostic tool) live in the controller/ directory in the repository and are
+# copied into the package source directory under source/ before the build,
+# because freetz removes $(PKG)_DIR while preparing a package (setting
 # $(PKG)_DIR to the repository directory would delete the package itself).
 # Same pattern as the ariang package.
 $(call PKG_INIT_BIN, 0.1)
 ### STEWARD:=Ircama
 $(PKG)_CATEGORY_PKGS:=Home Automation
 
-$(PKG)_BUILD_DIR:=$($(PKG)_DIR)/freetz-build
-$(PKG)_BINARY:=$($(PKG)_BUILD_DIR)/matter-bridge
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/matter-bridge
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MATTER_BRIDGE
 
 # ---------------------------------------------------------------------------
-# matter-bridge-ctl -- milestone 2: the native Matter controller (rs-matter).
-#
-# Second binary of the same package. rs-matter and its revision are the same
-# ones the freetz-matter package is verified against; keep the rev in sync with
-# controller/Cargo.toml.
+# matter-bridge (the WebSocket server) and matter-bridge-ctl (a standalone
+# diagnostic tool) are both built by cargo from controller/. rs-matter and its
+# revision are the same ones the freetz-matter package is verified against;
+# keep the rev in sync with controller/Cargo.toml.
 # ---------------------------------------------------------------------------
 FREETZ_MATTER_BRIDGE_RS_MATTER_REV:=7d5684f495fe5bca03d993647543508ab7587f10
 
@@ -37,13 +35,11 @@ $(eval $(call RUST_DEPENDS_VARS))
 
 # This package has no tarball to download: the sources are copied from the
 # package directory into the (freetz owned) source directory.
-$($(PKG)_DIR)/.unpacked: $(MATTER_BRIDGE_MAKE_DIR)/src/matter-bridge.cpp \
-		$(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml \
+$($(PKG)_DIR)/.unpacked: $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml \
 		$(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.lock \
 		$(wildcard $(MATTER_BRIDGE_MAKE_DIR)/controller/src/*.rs) | $(SOURCE_DIR)
 	@$(call _ECHO,preparing)
-	mkdir -p $(MATTER_BRIDGE_DIR)/src $(MATTER_BRIDGE_DIR)/controller/src
-	cp $(MATTER_BRIDGE_MAKE_DIR)/src/matter-bridge.cpp $(MATTER_BRIDGE_DIR)/src/
+	mkdir -p $(MATTER_BRIDGE_DIR)/controller/src
 	cp $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.toml $(MATTER_BRIDGE_DIR)/controller/
 	cp $(MATTER_BRIDGE_MAKE_DIR)/controller/Cargo.lock $(MATTER_BRIDGE_DIR)/controller/
 	cp $(MATTER_BRIDGE_MAKE_DIR)/controller/src/*.rs $(MATTER_BRIDGE_DIR)/controller/src/
@@ -114,7 +110,7 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:
-	$(RM) -r $(MATTER_BRIDGE_BUILD_DIR) $(MATTER_BRIDGE_DIR)/controller/target
+	$(RM) -r $(MATTER_BRIDGE_DIR)/controller/target
 
 $(pkg)-uninstall:
 	$(RM) $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY)

@@ -48,8 +48,13 @@ and `2/8/0`. These are device attributes, not a seed-node simulation.
 - Positional `attribute_updated`: `[node_id, "ep/cluster/attr", value]`.
 
 This is not a certified Matter controller or full python-matter-server
-replacement. Multicast discovery, Bluetooth, Wi-Fi/Thread provisioning,
-fabric removal and opening commissioning windows are not implemented.
+replacement. The daemon advertises itself and answers mDNS resolve queries with
+rs-matter's built-in responder (`_matter._tcp`, plus the A/AAAA records of
+`matter-bridge.local`), sharing UDP 5353 with the closed mDNS responder of
+FRITZ!OS: both sockets set `SO_REUSEADDR` and each one answers only for its own
+records. Browsing for other commissionable devices, Bluetooth and Wi-Fi/Thread
+provisioning, fabric removal and opening commissioning windows are not
+implemented.
 Unsupported commands fail rather than simulating success.
 rs-matter lacks production Device Attestation verification. Loopback test
 commissioning is accepted locally; remote use needs explicit
@@ -71,12 +76,12 @@ Overrides: `/mod/etc/conf/matter-bridge.cfg`.
 | `MATTER_BRIDGE_PEER` | `[::1]:5540` | Accessory address |
 | `MATTER_BRIDGE_AUTO_LOCAL` | `yes` | Automatic local commissioning |
 | `MATTER_BRIDGE_VERBOSE` | `no` | Debug logs |
+| `MATTER_BRIDGE_CONFIG_WAIT` | `120` | Seconds to wait for `/usr/bin/matter-bridge` when the binary lives on external storage; the wait runs in a background subshell, `0` disables it |
 | `MATTER_BRIDGE_EXTRA_ARGS` | empty | Additional native options |
 
-Settings are applied after an explicit restart, not implicitly on Save.
-Legacy `STATE`/`SEED` settings are retained but ignored. The unauthenticated
-WebSocket API must not be exposed to untrusted networks. Local Matter UDP
-also binds to loopback.
+Settings are applied after an explicit restart, not implicitly on Save. The
+unauthenticated WebSocket API must not be exposed to untrusted networks. Local
+Matter UDP also binds to loopback.
 
 Freetz archives `/tmp/flash`, not arbitrary `/mod/etc` directories. The device
 store defaults to `/tmp/flash/freetz-matter`. Existing store overrides are not
@@ -107,5 +112,5 @@ and automatic commissioning. The freetz variant restarts both daemons.
 The recipe uses Rust nightly, pinned rs-matter, Cargo.lock and isolated
 uClibc patches. Both Rust binaries are externalizable; init/config/fabric stay
 on the box. Router temperature/audio, actual Domoticz UI and boot persistence
-require target-device testing. Historical C++ conformance fixtures do not
-establish native-server certification or full API equivalence.
+require target-device testing. Host-level testing does not establish
+native-server certification or full API equivalence.

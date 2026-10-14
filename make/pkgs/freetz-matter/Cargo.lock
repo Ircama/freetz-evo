@@ -805,7 +805,7 @@ dependencies = [
  "embassy-time-queue-utils",
  "env_logger",
  "futures-lite",
- "if-addrs",
+ "libc",
  "log",
  "rand",
  "rs-matter",
