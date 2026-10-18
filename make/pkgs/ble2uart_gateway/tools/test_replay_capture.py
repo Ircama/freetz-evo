@@ -11,6 +11,7 @@ from pathlib import Path
 import pickle
 import select
 import signal
+import sqlite3
 import subprocess
 import tempfile
 import threading
@@ -235,6 +236,54 @@ class ReplayTests(unittest.TestCase):
                     self.assertRegex(result.stderr, r"child \d+: flooding=0")
                     self.assertIn("ble.decode", result.stderr)
                     self.assertEqual(source.read_bytes(), original)
+
+    def test_real_gateway_writes_complete_multimeasure_frames_to_sqlite(self):
+        binary = Path(os.environ.get("BLE2UART_TEST_BINARY", str(Path(__file__).resolve().parents[1] / "src/target/debug/ble2uart-gateway")))
+        if not binary.is_file():
+            self.skipTest("build the native ble2uart-gateway binary first")
+        vectors = json.loads((Path(__file__).resolve().parents[1] / "src/tests/vectors.json").read_text())
+        vector = next(item for item in vectors["roundtrips"] if item["format"] == "custom_format")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            database = root / "history.sqlite3"
+            capture = root / "capture.pickle"
+            capture.write_bytes(pickle.dumps(({
+                str(index): {"binary": bytes.fromhex(vector["encoded"]), "mac_address": "AABBCCDDEEFF"}
+                for index in range(3)
+            }, {})))
+            source = root / "source.yaml"
+            source.write_text(json.dumps({
+                "version": 1,
+                "frontends": {"sqlite": {"enabled": True, "path": str(database), "flush_interval_ms": 10}},
+                "devices": [{"mac": "AABBCCDDEEFF", "label": "Outside", "manufacturer": "Test", "enabled": True}],
+            }))
+            original = source.read_bytes()
+            result = subprocess.run([
+                "python3", str(Path(__file__).with_name("replay_capture.py")), str(capture), "--binary", str(binary),
+                "--config", str(source), "--allow-frontends", "--interval", "0.02", "--settle", "0.5", "--start-timeout", "10",
+            ], capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("sqlite:on", result.stderr)
+            self.assertEqual(source.read_bytes(), original)
+            with sqlite3.connect(f"file:{database}?mode=ro", uri=True) as connection:
+                frames = connection.execute("SELECT id,received_at_ns,mac,sensor_name,state_json FROM frames").fetchall()
+                self.assertEqual(len(frames), 3, result.stderr)
+                for frame_id, stamp, mac, label, raw in frames:
+                    self.assertGreater(stamp, 0)
+                    self.assertEqual((mac, label), ("AABBCCDDEEFF", "Outside"))
+                    state = json.loads(raw)
+                    self.assertEqual(state["device"]["manufacturer"], "Test")
+                    rows = connection.execute(
+                        "SELECT attribute,unit,type,value_real,value_int,value_text FROM measurements WHERE frame_id=? ORDER BY ordinal",
+                        (frame_id,),
+                    ).fetchall()
+                    self.assertEqual(len(rows), len(state["measurements"]))
+                    by_attribute = {row[0]: row for row in rows}
+                    for attribute in ("temperature", "humidity", "battery_level", "battery_v"):
+                        row = by_attribute[attribute]
+                        self.assertEqual(row[3] if row[2] == "real" else row[4], vector["decoded"][attribute])
+                    self.assertEqual(connection.execute("PRAGMA integrity_check").fetchone()[0], "ok")
+                self.assertEqual(connection.execute("PRAGMA foreign_key_check").fetchall(), [])
 
     def test_real_gateway_writes_decoded_measurements_to_isolated_influxdb3(self):
         binary = Path(os.environ.get("BLE2UART_TEST_BINARY", str(Path(__file__).resolve().parents[1] / "src/target/debug/ble2uart-gateway")))

@@ -41,6 +41,10 @@ BLE2UART_GATEWAY_SOURCES := \
 	$(wildcard $(BLE2UART_GATEWAY_MAKE_DIR)/src/src/codec/*.rs) \
 	$(wildcard $(BLE2UART_GATEWAY_MAKE_DIR)/src/src/frontend/*.rs)
 
+# These recipes expand after PKG_FINISH clears the global package context.
+$($(PKG)_DIR)/.unpacked $(BLE2UART_GATEWAY_CARGO_DL_STAMP) $($(PKG)_BINARY): private pkg := $(pkg)
+$($(PKG)_DIR)/.unpacked $(BLE2UART_GATEWAY_CARGO_DL_STAMP) $($(PKG)_BINARY): private PKG_TYPE := $(PKG_TYPE)
+
 # The sources are copied from the package directory into the (freetz owned)
 # source directory.
 $($(PKG)_DIR)/.unpacked: $(BLE2UART_GATEWAY_SOURCES) | $(SOURCE_DIR)
