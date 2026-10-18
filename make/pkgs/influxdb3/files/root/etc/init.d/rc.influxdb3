@@ -1,0 +1,153 @@
+#!/bin/sh
+
+DAEMON=influxdb3
+DAEMON_LONG_NAME="InfluxDB 3"
+DAEMON_BIN=influxdb3
+PID_FILE=/var/run/influxdb3.pid
+WAIT_PID_FILE=/var/run/influxdb3.wait.pid
+LOG=/tmp/rc.influxdb3.log
+SIGTERM_WAIT_SECS=60
+. /etc/init.d/modlibrc
+. /mod/etc/default.influxdb3/influxdb3.cfg
+[ ! -r /mod/etc/conf/influxdb3.cfg ] || . /mod/etc/conf/influxdb3.cfg
+. /mod/etc/default.influxdb3/influxdb3.save
+
+find_binary() {
+	INFLUX_BIN=/usr/bin/influxdb3
+	[ -x "$INFLUX_BIN" ] || INFLUX_BIN=/mod/external/usr/bin/influxdb3
+	[ -x "$INFLUX_BIN" ]
+}
+
+resources_ready() {
+	find_binary && [ -n "$INFLUXDB3_DATA_DIR" ] &&
+		[ -d "$INFLUXDB3_DATA_DIR" ] && [ -w "$INFLUXDB3_DATA_DIR" ]
+}
+
+wait_for_resources() {
+	elapsed=0
+	while ! resources_ready; do
+		if [ "$elapsed" -ge "$INFLUXDB3_CONFIG_WAIT" ]; then
+			echo "Error: InfluxDB executable or writable data directory unavailable after ${INFLUXDB3_CONFIG_WAIT}s" >&2
+			return 1
+		fi
+		sleep 1
+		elapsed=$((elapsed + 1))
+	done
+}
+
+cancel_waiter() {
+	[ -r "$WAIT_PID_FILE" ] || return 0
+	wait_pid=$(cat "$WAIT_PID_FILE")
+	case "$wait_pid" in
+		''|*[!0-9]*) echo "Error: invalid InfluxDB boot waiter PID" >&2; return 1 ;;
+	esac
+	[ "$wait_pid" -gt 1 ] || { echo "Error: invalid InfluxDB boot waiter PID" >&2; return 1; }
+	if kill -0 "$wait_pid" 2>/dev/null; then
+		kill "$wait_pid" || return 1
+	fi
+	rm -f "$WAIT_PID_FILE"
+}
+
+health_check() {
+	wget -q -T 2 -O /dev/null "$HEALTH_URL" 2>/dev/null
+}
+
+startdaemon_post() {
+	started_pid=$(cat "$PID_FILE" 2>/dev/null)
+	case "$started_pid" in
+		''|*[!0-9]*) echo "Error: InfluxDB did not create a valid PID file; see $LOG" >&2; return 1 ;;
+	esac
+	[ "$started_pid" -gt 1 ] || { echo "Error: invalid InfluxDB PID" >&2; return 1; }
+	started_at=$(date +%s)
+	while kill -0 "$started_pid" 2>/dev/null; do
+		if health_check; then
+			return 0
+		fi
+		[ "$(($(date +%s) - started_at))" -lt "$INFLUXDB3_STARTUP_WAIT" ] || break
+		sleep 1
+	done
+	echo "Error: InfluxDB did not become healthy; see $LOG" >&2
+	if kill -0 "$started_pid" 2>/dev/null; then
+		kill "$started_pid" || return 1
+	fi
+	return 1
+}
+
+start() {
+	influxdb3_validate || return 1
+	if ! resources_ready; then
+		echo "Error: executable or writable data directory missing; create the data directory on mounted storage first" >&2
+		return 1
+	fi
+	case "$INFLUXDB3_BIND" in
+		*:*) listener="[$INFLUXDB3_BIND]:$INFLUXDB3_PORT" ;;
+		*) listener="$INFLUXDB3_BIND:$INFLUXDB3_PORT" ;;
+	esac
+	case "$INFLUXDB3_BIND" in
+		0.0.0.0) health_host=127.0.0.1 ;;
+		::) health_host='[::1]' ;;
+		*:*) health_host="[$INFLUXDB3_BIND]" ;;
+		*) health_host="$INFLUXDB3_BIND" ;;
+	esac
+	HEALTH_URL="http://$health_host:$INFLUXDB3_PORT/health"
+	if health_check; then
+		echo "Error: an unmanaged HTTP service already answers at $HEALTH_URL; stop it before starting this service" >&2
+		return 1
+	fi
+	set -- serve --node-id "$INFLUXDB3_NODE_ID" --object-store file \
+		--data-dir "$INFLUXDB3_DATA_DIR" --http-bind "$listener" --wal-replay-fail-on-error
+	[ "$INFLUXDB3_WITHOUT_AUTH" != "yes" ] || set -- "$@" --without-auth
+	umask 077
+	modlib_startdaemon start-stop-daemon -S -b -m -p "$PID_FILE" -x /bin/sh -- -c \
+		'log=$1; shift; exec "$@" >>"$log" 2>&1' sh "$LOG" "$INFLUX_BIN" "$@"
+}
+
+case "$1" in
+	""|load)
+		modreg cgi "$DAEMON" "$DAEMON_LONG_NAME"
+		modreg daemon "$DAEMON"
+		[ "$INFLUXDB3_ENABLED" = "yes" ] || exit 0
+		influxdb3_validate || exit 1
+		if [ "$INFLUXDB3_CONFIG_WAIT" = "0" ]; then
+			modlib_start
+		else
+			cancel_waiter || exit 1
+			umask 077
+			(
+				trap 'rm -f "$WAIT_PID_FILE"' 0
+				. /etc/init.d/modlibrc
+				. /mod/etc/default.influxdb3/influxdb3.cfg
+				[ ! -r /mod/etc/conf/influxdb3.cfg ] || . /mod/etc/conf/influxdb3.cfg
+				# The parent must publish the PID before this worker can exit.
+				while [ ! -s "$WAIT_PID_FILE" ]; do sleep 1; done
+				echo "$(date): waiting for InfluxDB executable and data directory"
+				wait_for_resources && modlib_start
+			) >>"$LOG" 2>&1 &
+			echo "$!" > "$WAIT_PID_FILE"
+		fi
+		;;
+	unload)
+		cancel_waiter || exit 1
+		modunreg daemon "$DAEMON"
+		modunreg cgi "$DAEMON"
+		modlib_stop
+		;;
+	start)
+		modlib_start
+		;;
+	stop)
+		cancel_waiter || exit 1
+		modlib_stop
+		;;
+	restart)
+		cancel_waiter || exit 1
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" >&2
+		exit 1
+		;;
+esac

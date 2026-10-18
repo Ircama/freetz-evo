@@ -1,0 +1,73 @@
+#!/bin/sh
+
+influxdb3_number() {
+	case "$1" in
+		''|*[!0-9]*)
+			echo "Error: $4 must be numeric" >&2
+			return 1
+			;;
+	esac
+	if [ "${#1}" -gt 5 ] || [ "$1" -lt "$2" ] || [ "$1" -gt "$3" ]; then
+		echo "Error: $4 must be in the range $2-$3" >&2
+		return 1
+	fi
+}
+
+influxdb3_validate() {
+	case "$INFLUXDB3_ENABLED:$INFLUXDB3_WITHOUT_AUTH" in
+		yes:yes|yes:no|no:yes|no:no) ;;
+		*) echo "Error: invalid InfluxDB startup/authentication setting" >&2; return 1 ;;
+	esac
+	case "$INFLUXDB3_NODE_ID" in
+		''|*[!A-Za-z0-9_-]*)
+			echo "Error: node ID must contain only ASCII letters, digits, underscores or hyphens" >&2
+			return 1
+			;;
+	esac
+	if [ "${#INFLUXDB3_NODE_ID}" -gt 64 ]; then
+		echo "Error: node ID must not exceed 64 characters" >&2
+		return 1
+	fi
+	case "$INFLUXDB3_DATA_DIR" in
+		'')
+			if [ "$INFLUXDB3_ENABLED" = "yes" ]; then
+				echo "Error: select a data directory before enabling InfluxDB" >&2
+				return 1
+			fi
+			;;
+		/*) ;;
+		*) echo "Error: data directory must be an absolute path" >&2; return 1 ;;
+	esac
+	case "$INFLUXDB3_DATA_DIR" in
+		*[[:cntrl:]]*) echo "Error: control characters are not allowed in the data directory" >&2; return 1 ;;
+	esac
+	case "$INFLUXDB3_BIND" in
+		''|*[!0-9A-Fa-f:.]*)
+			echo "Error: bind address must be a numeric IPv4 or IPv6 address (without brackets)" >&2
+			return 1
+			;;
+	esac
+	case "$INFLUXDB3_BIND" in
+		*.*|*:*) ;;
+		*) echo "Error: invalid bind address" >&2; return 1 ;;
+	esac
+	influxdb3_number "$INFLUXDB3_PORT" 1 65535 "HTTP port" || return 1
+	influxdb3_number "$INFLUXDB3_CONFIG_WAIT" 0 600 "boot resource wait" || return 1
+	influxdb3_number "$INFLUXDB3_STARTUP_WAIT" 1 600 "startup health timeout" || return 1
+	if [ "$INFLUXDB3_WITHOUT_AUTH" = "yes" ]; then
+		case "$INFLUXDB3_BIND" in
+			127.0.0.1|::1) ;;
+			*) echo "Warning: authentication is disabled on a non-loopback listener; anyone who can reach it can access the database" >&2 ;;
+		esac
+	fi
+	return 0
+}
+
+pkg_pre_save() {
+	influxdb3_validate
+}
+
+pkg_apply_save() {
+	# All server settings are command-line arguments; Save does not restart it.
+	return 0
+}

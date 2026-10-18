@@ -21,6 +21,14 @@ $(eval $(call RUST_DEPENDS_VARS))
 $(PKG)_CACHE_DIR:=$(abspath $(TOPDIR)/$(BUILD_DIR))/cargo-influxdb3-cache/$($(PKG)_VERSION)-$($(PKG)_RUST_TARGET_DIR)
 $(PKG)_CARGO_PATCH_SOURCES:=$($(PKG)_MAKE_DIR)/tools/apply-cargo-patches.py $(wildcard $($(PKG)_MAKE_DIR)/cargo-patches/*.patch)
 $(PKG)_DEPENDS_ON += cmake-host protobuf-host python3
+$(PKG)_STAGING_SOURCES := $(wildcard $($(PKG)_MAKE_DIR)/files/root/etc/default.influxdb3/*) \
+	$($(PKG)_MAKE_DIR)/files/root/etc/init.d/rc.influxdb3 \
+	$($(PKG)_MAKE_DIR)/files/root/usr/lib/cgi-bin/influxdb3.cgi \
+	$($(PKG)_MAKE_DIR)/files/.language
+$(PKG)_STAGING_TARGET := $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/influxdb3.cgi
+
+$(pkg)-download $($(PKG)_BINARY): private pkg := $(pkg)
+$(pkg)-download $($(PKG)_BINARY): private PKG_TYPE := $(PKG_TYPE)
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -30,6 +38,7 @@ $(pkg)-download:
 	@$(call _ECHO,downloading)
 
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(INFLUXDB3_CARGO_PATCH_SOURCES)
+	@$(call _ECHO,building)
 	cd $(INFLUXDB3_DIR); \
 	export PATH=$(HOST_TOOLS_DIR)/usr/bin:$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin:$(TARGET_MAKE_PATH):$$PATH; \
 	export RUSTUP_HOME="$(HOME)/.rustup"; \
@@ -64,14 +73,24 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(INFLUXDB3_CARGO_PATCH_SOURCES)
 		-- -C "link-arg=-Wl,--dynamic-linker=$(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1"
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
-	$(INSTALL_BINARY_STRIP)
+	# The interpreter is selected at link time; patchelf can corrupt MIPS headers.
+	$(INSTALL_FILE)
+	$(TARGET_STRIP) $@
 
 $(pkg): $($(PKG)_BINARY)
 
-$(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+$($(PKG)_STAGING_TARGET): $(INFLUXDB3_STAGING_SOURCES)
+	mkdir -p $(INFLUXDB3_TARGET_DIR)/root
+	$(call COPY_USING_TAR,$(INFLUXDB3_MAKE_DIR)/files,$(INFLUXDB3_TARGET_DIR))
+	chmod 755 \
+		$(INFLUXDB3_DEST_DIR)/etc/init.d/rc.influxdb3 \
+		$(INFLUXDB3_DEST_DIR)/etc/default.influxdb3/influxdb3.save \
+		$(INFLUXDB3_DEST_DIR)/usr/lib/cgi-bin/influxdb3.cgi
+
+$(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:
-	$(RM) $(INFLUXDB3_BINARY) $(INFLUXDB3_TARGET_BINARY)
+	$(RM) $(INFLUXDB3_CACHE_DIR)/target/$(INFLUXDB3_RUST_TARGET_DIR)/release/influxdb3 $(INFLUXDB3_TARGET_BINARY)
 
 $(pkg)-cargo-clean:
 	$(RM) -r $(INFLUXDB3_CACHE_DIR)/target $(INFLUXDB3_DIR)/target

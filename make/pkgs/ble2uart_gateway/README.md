@@ -485,6 +485,28 @@ lists still apply; with both empty, all MACs reach USB, but the daemon still
 processes only configured enabled devices. Save and restart after scanner
 changes. Discovery manages temporary unrestricted scans itself.
 
+This is a daemon behavior, not an RC-only option: the firmware filter is
+programmed after **every serial connection/reconnection**, including automatic
+Freetz boot startup, manual RC start/restart and ordinary CLI gateway startup.
+The sequence is stop scan, clear the old list, add the effective WMAC/BMAC
+entries while checking firmware acknowledgements, then start scanning. Failure
+keeps scanning stopped. The firmware cannot hold an active whitelist and
+blacklist simultaneously:
+
+| Configuration | Effective firmware list |
+|---------------|-------------------------|
+| `filter_known_devices: true` (default) | Whitelist of enabled configured devices, restricted by explicit whitelist prefixes and excluding blacklist prefixes |
+| `filter_known_devices: false`, explicit whitelist | Explicit whitelist |
+| `filter_known_devices: false`, explicit blacklist | Explicit blacklist |
+| `filter_known_devices: false`, both lists empty | Empty list: no MAC restriction in firmware |
+
+With registered-only filtering enabled and an empty effective list, the scanner
+stays stopped instead of admitting every MAC. Discovery temporarily clears MAC
+filters (and random/RPA/duplicate restrictions), then restores configured filters
+on Stop or timeout. Summary logs are at INFO; individual effective entries are
+at DEBUG. Saving settings alone does not reprogram a running scanner; restart
+the service to apply them.
+
 ## Diagnostics
 
 The service log is `/tmp/rc.ble2uart_gateway.log`. In Settings, choose a log

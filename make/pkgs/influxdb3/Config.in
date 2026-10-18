@@ -4,6 +4,8 @@ config FREETZ_PACKAGE_INFLUXDB3
 	select FREETZ_LIB_libatomic
 	select FREETZ_PACKAGE_PYTHON3
 	select FREETZ_LIB_libpython3
+	select FREETZ_BUSYBOX_START_STOP_DAEMON
+	select FREETZ_BUSYBOX_WGET
 	default n
 	help
 		InfluxDB 3 Core time-series database with SQL and InfluxQL.
@@ -16,4 +18,6 @@ config FREETZ_PACKAGE_INFLUXDB3
 		WASM UDFs are unavailable on targets without native 64-bit atomics,
 		including MIPS; requesting them returns an explicit unsupported error.
 		Substantial RAM and persistent external storage are required.
-		No automatic startup or public network listener is installed.
+		Includes a configuration page and rc.influxdb3 service script.
+		Startup is disabled by default, with an authenticated loopback
+		listener. Select an existing data directory before enabling it.

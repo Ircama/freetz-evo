@@ -5,4 +5,5 @@ config EXTERNAL_FREETZ_PACKAGE_INFLUXDB3
 	help
 		Externalizes /usr/bin/influxdb3. Database files must be placed on
 		persistent storage separately; externalizing the binary does not
-		configure or start the database server.
+		configure the database directory. Configure the service through
+		the InfluxDB 3 page; boot startup can wait for external storage.

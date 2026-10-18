@@ -11,7 +11,10 @@ A complete MIPS/uClibc release build and package staging now pass. The packaged
 at link time. A real-router smoke test passes startup, line-protocol writes,
 SQL queries and recovery of the same rows after a graceful restart. This is
 not certification of production workloads or the other target architectures.
-No init script, automatic startup or public listener is installed.
+The package includes an RC service and Freetz CGI. Startup is disabled by
+default, with an authenticated loopback listener and an explicitly selected
+existing data directory. See the [service settings, limitations and CLI smoke
+test](../../../docs/make/influxdb3.md).
 
 The reported `rustix` 1.1.4 uClibc errors have passed a feature-equivalent MIPS
 cross-compilation probe. The subsequent DataFusion disk-space counter error is
@@ -111,6 +114,10 @@ and compiled dependencies. The source checkout still has its own configuration.
 `make influxdb3-clean` removes the package executables, retaining compiled
 dependencies. Use `make influxdb3-cargo-clean` only when an intentional full
 recompilation is needed; it removes the target cache but retains downloads.
+`make influxdb3-recompile` uses the standard distclean/precompiled targets,
+retains dependency caches and stages the executable plus RC/CGI/default files.
+Its clean target removes the cached final executable independently of the
+workspace symlink, so distclean cannot accidentally retain a stale executable.
 
 `tests/rustix` contains the focused dependency probe and `atomic64-check`:
 the latter checks values above 4 GiB and concurrent increments. Host execution
@@ -121,7 +128,8 @@ confirms recovery after restart.
 The recipe selects the Freetz ELF interpreter at link time. Post-link interpreter
 rewriting with the local `patchelf` produced invalid MIPS program headers and a
 startup crash in this probe. The directly linked executable has valid headers
-and passes the same runtime test.
+and passes the same runtime test. Package installation copies and strips it
+without invoking the generic post-link interpreter rewriting helper.
 
 ## Router Runtime Smoke Test
 
@@ -142,6 +150,10 @@ bitmap iteration could select or remove the wrong rows, and Parquet primitive,
 string-length and RLE conversions used native byte order in little-endian paths.
 The build uses checksum-verified private `arrow-buffer` and `parquet` 57.3.1
 overrides; the shared Cargo registry is not edited by these fixes.
+The rebuilt candidate passes the 579-row count but still fails the exact
+attribute-filter comparison on the big-endian router. It has not replaced the
+live server. The port is not yet reliable for production sensor history;
+successful startup or a simple CLI query does not resolve this limitation.
 
 `tests/check_endian_runtime.py` checks all 579 expected sparse rows, exact
 floating-point/integer/boolean values, tag filtering and field-preserving
@@ -162,7 +174,8 @@ Patch application can be checked separately with
 
 The small test uses one I/O thread, one DataFusion thread and a 32 MiB query
 pool. Observed resident memory after the query is about 88 MiB; this is not a
-load benchmark or a memory bound for production. No autostart is configured.
+load benchmark or a memory bound for production. The smoke test does not enable
+service autostart.
 
 ## Storage And Resources
 
