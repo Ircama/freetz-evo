@@ -336,6 +336,23 @@ SELECT time, label, value_float, unit FROM ble
 WHERE mac = 'AABBCCDDEE01' AND attribute = 'temperature' ORDER BY time DESC
 ```
 
+`measurement` is the Influx table name, not the sensor attribute: if configured
+as `ble_live`, query `ble_live` instead of `ble`. `label` is the configured
+sensor name, `mac` is its stable identity and `attribute` identifies the reading.
+There is no generic `value` column. Fields are created when first written, so
+querying a typed value column that has never been used can fail schema validation.
+To inspect all available fields, including their values:
+
+```sql
+SELECT * FROM ble_live ORDER BY time DESC LIMIT 100;
+```
+
+For InfluxQL clients, select the correct typed field, for example
+`SELECT value_float FROM ble_live WHERE attribute = 'temperature' AND time > now() - 6h`.
+Do not combine different sensors into a single graph series: group by `mac` and
+`attribute`, or filter the desired MAC and attribute explicitly. The timestamp
+is stored in UTC; clients may display local time.
+
 The token is sent as a bearer token and is not logged or published. Tokens
 over plain HTTP are accepted only for loopback endpoints; use HTTPS remotely.
 URL credentials, query strings and redirects are rejected. Writes run in a

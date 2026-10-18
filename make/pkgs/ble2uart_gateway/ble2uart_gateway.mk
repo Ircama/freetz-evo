@@ -100,6 +100,8 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured | $(BLE2UART_GATEWAY_CARGO_DL_STAMP)
 		"$(TARGET_CROSS)ar" \
 		> "$$CARGO_HOME/config.toml"; \
 	export CARGO_BUILD_JOBS=1; \
+	export CC_$(BLE2UART_GATEWAY_RUST_ENV_TARGET)="$(TARGET_CROSS)gcc"; \
+	export AR_$(BLE2UART_GATEWAY_RUST_ENV_TARGET)="$(TARGET_CROSS)ar"; \
 	cargo +nightly fetch --locked --offline --target "$(BLE2UART_GATEWAY_RUST_TARGET_DIR)" && \
 	$(call RUSTIX_APPLY_UCLIBC_PATCHES_LIBC_NORAW__INT,1.1.5) \
 	$(call GETRANDOM_APPLY_UCLIBC_MIPS_SYSCALL_PATCH__INT,0.3.4) \

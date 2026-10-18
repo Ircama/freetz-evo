@@ -451,6 +451,8 @@ impl Default for MatterConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Frontends {
     #[serde(default)]
+    pub sqlite: crate::sqlite::SqliteConfig,
+    #[serde(default)]
     pub influx: crate::influx::InfluxConfig,
     #[serde(default)]
     pub mysensors: MySensorsConfig,
@@ -504,6 +506,7 @@ impl Default for Config {
             devices: Vec::new(),
             rules: Vec::new(),
             frontends: Frontends {
+                sqlite: crate::sqlite::SqliteConfig::default(),
                 influx: crate::influx::InfluxConfig::default(),
                 mysensors: MySensorsConfig {
                     enabled: true,
@@ -603,6 +606,7 @@ impl Config {
         }
         self.mac_filters()?;
         if self.frontends.influx.enabled { self.frontends.influx.validate()?; }
+        if self.frontends.sqlite.enabled { self.frontends.sqlite.validate()?; }
         if self.frontends.matter.enabled { self.frontends.matter.validate_mdns()?; }
         for rule in self.rules.iter().chain(self.devices.iter().flat_map(|d| d.rules.iter())) {
             if rule.name.trim().is_empty() || rule.source.trim().is_empty() {

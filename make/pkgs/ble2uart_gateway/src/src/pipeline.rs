@@ -544,6 +544,7 @@ pub struct Gateway {
     pub mysensors: Option<MySensors>,
     pub mqtt: Option<crate::mqtt::MqttPublisher>,
     pub influx: Option<crate::influx::InfluxPublisher>,
+    pub sqlite: Option<crate::sqlite::SqlitePublisher>,
     pub matter: Option<crate::matter::MatterPublisher>,
     /// Statistics for the log, so a silent gateway can be told apart from an
     /// empty radio.
@@ -568,6 +569,9 @@ impl Gateway {
         let influx = if config.frontends.influx.enabled {
             Some(crate::influx::InfluxPublisher::start(&config.frontends.influx)?)
         } else { None };
+        let sqlite = if config.frontends.sqlite.enabled {
+            Some(crate::sqlite::SqlitePublisher::start(&config.frontends.sqlite)?)
+        } else { None };
         #[cfg(feature = "matter")]
         let matter = if config.frontends.matter.enabled {Some(crate::matter_server::start(&config.frontends.matter,&config.devices)?)} else {None};
         #[cfg(not(feature = "matter"))]
@@ -575,7 +579,7 @@ impl Gateway {
             if config.frontends.matter.enabled {return Err("Matter support is not built into this binary".into());}
             None
         };
-        let gateway = Gateway { spec, registry, mysensors, mqtt, influx, matter, decoded: 0, skipped: 0 };
+        let gateway = Gateway { spec, registry, mysensors, mqtt, influx, sqlite, matter, decoded: 0, skipped: 0 };
         if let Some(frontend) = &gateway.mysensors {
             frontend.present(&gateway.registry);
         }
@@ -639,10 +643,11 @@ impl Gateway {
         self.decoded += 1;
         crate::logger::phy(report, "decode", "ok", &format);
 
-        if self.mqtt.is_some() || self.matter.is_some() || self.influx.is_some() {
+        if self.mqtt.is_some() || self.matter.is_some() || self.influx.is_some() || self.sqlite.is_some() {
             let state=decoded_state(device,report,&format,&decoded);
             if let Some(mqtt)=&self.mqtt {mqtt.publish(&mac,&state);}
             if let Some(influx)=&self.influx {influx.publish(&state);}
+            if let Some(sqlite)=&self.sqlite {sqlite.publish(&state);}
             if let Some(matter)=&self.matter {matter.publish(&mac,&state);}
         }
 

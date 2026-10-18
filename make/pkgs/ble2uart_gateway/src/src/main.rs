@@ -25,6 +25,7 @@ mod pipeline;
 mod web;
 mod mqtt;
 mod influx;
+mod sqlite;
 mod managed_process;
 mod matter;
 mod profile;
@@ -628,7 +629,7 @@ fn run_daemon(args: &Args) -> Result<(), String> {
     configure_logging(args, Some(&config))?;
     install_signals()?;
     log::info!(
-        "ble2uart-gateway {} starting: serial={} baudrate={} config={} devices={} frontends=mysensors:{} mqtt:{} matter:{} influx:{}",
+        "ble2uart-gateway {} starting: serial={} baudrate={} config={} devices={} frontends=mysensors:{} mqtt:{} matter:{} influx:{} sqlite:{}",
         env!("CARGO_PKG_VERSION"),
         config.serial.port,
         config.serial.baudrate,
@@ -638,6 +639,7 @@ fn run_daemon(args: &Args) -> Result<(), String> {
         if config.frontends.mqtt.enabled { "on" } else { "off" },
         if config.frontends.matter.enabled { "on" } else { "off" },
         if config.frontends.influx.enabled { "on" } else { "off" },
+        if config.frontends.sqlite.enabled { "on" } else { "off" },
     );
 
     // The specification is parsed once: it is the schema of every supported

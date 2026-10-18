@@ -135,6 +135,31 @@ through SQL before and after a clean stop/start using the same data directory.
 Both processes exit successfully and no test listener is left running.
 This checks catalog/WAL recovery, not Parquet snapshot/compaction coverage.
 
+### Big-endian regression checks
+
+The MIPS router exposed endian defects beyond the original smoke test:
+bitmap iteration could select or remove the wrong rows, and Parquet primitive,
+string-length and RLE conversions used native byte order in little-endian paths.
+The build uses checksum-verified private `arrow-buffer` and `parquet` 57.3.1
+overrides; the shared Cargo registry is not edited by these fixes.
+
+`tests/check_endian_runtime.py` checks all 579 expected sparse rows, exact
+floating-point/integer/boolean values, tag filtering and field-preserving
+overwrites. Run it against an isolated loopback test server:
+
+```sh
+python3 tests/check_endian_runtime.py --endpoint http://127.0.0.1:18281 --table endian_probe
+```
+
+After snapshotting and restarting that server, repeat with `--verify-only`
+and the same database/table. A row-count-only check is insufficient to detect
+these failures. The test server must not expose its unauthenticated listener
+on the LAN. Existing files written by the old encoder are not automatically
+repaired by rebuilding.
+
+Patch application can be checked separately with
+`python3 -m unittest discover -s tests -p 'test_endian_patches.py'`.
+
 The small test uses one I/O thread, one DataFusion thread and a 32 MiB query
 pool. Observed resident memory after the query is about 88 MiB; this is not a
 load benchmark or a memory bound for production. No autostart is configured.
@@ -146,6 +171,10 @@ cross-compiled binary would not prove it is practical on a low-memory FRITZ!Box.
 Externalize the executable rather than putting a large server binary in flash.
 Database files must also be placed on persistent storage, never the flash
 configuration archive or a small RAM filesystem.
+The tested VFAT USB mount rejects the catalog's atomic publication operation;
+use a filesystem with the required atomic file operations, such as ext4.
+Internal flash can be used for a bounded diagnostic test, but is not recommended
+for continuous WAL/database writes because of wear.
 
 ## Upstream
 
