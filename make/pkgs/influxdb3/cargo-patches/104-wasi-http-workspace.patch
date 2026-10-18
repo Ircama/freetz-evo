@@ -1,0 +1,30 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -325,6 +325,8 @@
+ 
+ # Patching Datafusion
+ [patch.crates-io]
++wasmtime-wasi-http = { path = ".cargo/freetz-sources/wasmtime-wasi-http-48.0.1" }
++
+ # Use DataFusion fork
+ # Pinned to https://github.com/influxdata/arrow-datafusion/tree/upgrade-df-ver5250-d
+ # See for contents:
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -9462,8 +9462,6 @@
+ [[package]]
+ name = "wasmtime-wasi-http"
+ version = "48.0.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1d75e17f0c94810a34a51dccee9a5e9733eb423dff5176aaeb9152a7a03b2812"
+ dependencies = [
+  "async-trait",
+  "bytes",
+@@ -9473,6 +9471,7 @@
+  "http-body-util",
+  "hyper 1.11.1",
+  "pin-project-lite",
++ "portable-atomic",
+  "tokio",
+  "tracing",
+  "wasmtime",

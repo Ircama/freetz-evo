@@ -1,0 +1,40 @@
+--- a/influxdb3_cache/Cargo.toml
++++ b/influxdb3_cache/Cargo.toml
+@@ -33,6 +33,9 @@
+ serde.workspace = true
+ thiserror.workspace = true
+ tokio.workspace = true
++
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
+ 
+ [dev-dependencies]
+ # core deps
+--- a/influxdb3_cache/src/parquet_cache/mod.rs
++++ b/influxdb3_cache/src/parquet_cache/mod.rs
+@@ -5,10 +5,14 @@
+     ops::Range,
+     sync::{
+         Arc,
+-        atomic::{AtomicI64, AtomicUsize, Ordering},
++        atomic::{AtomicUsize, Ordering},
+     },
+     time::Duration,
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicI64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicI64;
+ 
+ use anyhow::bail;
+ use async_trait::async_trait;
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -3765,6 +3765,7 @@
+  "object_store",
+  "observability_deps",
+  "parking_lot",
++ "portable-atomic",
+  "pretty_assertions",
+  "schema",
+  "serde",

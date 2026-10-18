@@ -1,0 +1,71 @@
+--- a/core/iox_query_udf/build.rs
++++ b/core/iox_query_udf/build.rs
+@@ -39,6 +39,15 @@
+     "sha256:a25fec27067332f63cd342e5a87967b0848d836124387a0d9f48f7b56fc99fd7";
+ 
+ fn main() {
++    println!("cargo::rerun-if-env-changed=CARGO_CFG_TARGET_HAS_ATOMIC");
++    if !std::env::var("CARGO_CFG_TARGET_HAS_ATOMIC")
++        .unwrap_or_default()
++        .split(',')
++        .any(|width| width == "64")
++    {
++        return;
++    }
++
+     let sha256sum_txt_checksum = SHA256_TXT_CHECKSUM.to_lowercase().replace("sha256:", "");
+     let sha256sum_txt = fetch_artifact("sha256sum.txt", &sha256sum_txt_checksum);
+     let checksums = std::fs::read_to_string(&sha256sum_txt)
+--- a/core/iox_query_udf/src/lib.rs
++++ b/core/iox_query_udf/src/lib.rs
+@@ -1,11 +1,17 @@
+ //! Bundled UDF payload.
+ 
+-use std::{collections::HashMap, sync::OnceLock};
++use std::collections::HashMap;
++#[cfg(target_has_atomic = "64")]
++use std::sync::OnceLock;
+ 
++#[cfg(target_has_atomic = "64")]
+ use datafusion_udf_wasm_host::WasmComponentPrecompiled;
++#[cfg(target_has_atomic = "64")]
+ use datafusion_udf_wasm_query::{
+     ComponentFn, Lang, UdfQueryParser, format::StripIndentationFormatter,
+ };
++#[cfg(not(target_has_atomic = "64"))]
++use datafusion_udf_wasm_query::UdfQueryParser;
+ 
+ #[cfg(test)]
+ use tokio as _;
+@@ -17,6 +23,7 @@
+ ///
+ ///
+ /// [`WasmScalarUdf`]: datafusion_udf_wasm_host::WasmScalarUdf
++#[cfg(target_has_atomic = "64")]
+ fn python_component() -> &'static WasmComponentPrecompiled {
+     static COMPONENT: OnceLock<WasmComponentPrecompiled> = OnceLock::new();
+ 
+@@ -32,11 +39,16 @@
+ 
+ /// Pre-configured UDF parser.
+ pub fn udf_parser() -> UdfQueryParser<'static> {
+-    UdfQueryParser::new(HashMap::from([(
+-        "python".to_owned(),
+-        Lang {
+-            component: ComponentFn::eager(python_component()),
+-            formatter: Box::new(StripIndentationFormatter),
+-        },
+-    )]))
++    #[cfg(target_has_atomic = "64")]
++    {
++        UdfQueryParser::new(HashMap::from([(
++            "python".to_owned(),
++            Lang {
++                component: ComponentFn::eager(python_component()),
++                formatter: Box::new(StripIndentationFormatter),
++            },
++        )]))
++    }
++    #[cfg(not(target_has_atomic = "64"))]
++    UdfQueryParser::new(HashMap::new())
+ }

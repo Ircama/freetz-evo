@@ -1,0 +1,10 @@
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2373,6 +2373,7 @@
+  "hyper 1.11.1",
+  "ipnet",
+  "log",
++ "portable-atomic",
+  "rand 0.10.2",
+  "reqwest 0.13.4",
+  "rustls 0.23.46",

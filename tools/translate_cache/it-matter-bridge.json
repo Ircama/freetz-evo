@@ -89,5 +89,54 @@
     "timestamp": "2026-10-14T08:20:03Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Store location": {
+    "original": "Store location",
+    "translation": "Ubicazione del negozio",
+    "timestamp": "2026-10-15T07:00:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device": {
+    "original": "Device",
+    "translation": "Dispositivo",
+    "timestamp": "2026-10-15T07:00:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Type": {
+    "original": "Type",
+    "translation": "Tipo",
+    "timestamp": "2026-10-15T07:00:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Free / total": {
+    "original": "Free / total",
+    "translation": "Gratuito / totale",
+    "timestamp": "2026-10-15T07:00:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:directory": {
+    "original": "directory",
+    "translation": "directory",
+    "timestamp": "2026-10-15T07:00:21Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clicking a path uses it as store. On save the previous content (fabric, nodes) is moved along, then restart the service.": {
+    "original": "Clicking a path uses it as store. On save the previous content (fabric, nodes) is moved along, then restart the service.",
+    "translation": "Cliccando su un percorso, questo viene utilizzato come archivio. Al momento del salvataggio, il contenuto precedente (fabric, nodi) viene spostato, quindi il servizio viene riavviato.",
+    "timestamp": "2026-10-15T07:00:23Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note: /tmp/flash is a ramdisk. It is written to the box flash by modsave when the service stops and on every save; a power cut loses the fabric - a disk is safer.": {
+    "original": "Note: /tmp/flash is a ramdisk. It is written to the box flash by modsave when the service stops and on every save; a power cut loses the fabric - a disk is safer.",
+    "translation": "Nota: /tmp/flash è un ramdisk. Viene scritto nella memoria flash del dispositivo da modsave all’arresto del servizio e ad ogni salvataggio; un’interruzione di corrente comporta la perdita dei dati – un disco è più sicuro.",
+    "timestamp": "2026-10-15T07:00:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -1,0 +1,116 @@
+--- a/influxdb3_clap_blocks/src/size_units.rs
++++ b/influxdb3_clap_blocks/src/size_units.rs
+@@ -5,16 +5,16 @@
+ pub const KB: usize = 1024;
+ pub const MB: usize = 1024 * KB;
+ pub const GB: usize = 1024 * MB;
+-pub const TB: usize = 1024 * GB;
++pub const TB: u64 = 1024 * GB as u64;
+ 
+ /// Unit suffixes with their display name and byte multiplier.
+ /// Order matters for parsing: a suffix must come before its own suffixes
+ /// ("kb" before "b"), since the first match is stripped.
+-pub(crate) const UNITS: &[(&str, &str, usize)] = &[
++pub(crate) const UNITS: &[(&str, &str, u64)] = &[
+     ("tb", "TB", TB),
+-    ("gb", "GB", GB),
+-    ("mb", "MB", MB),
+-    ("kb", "KB", KB),
++    ("gb", "GB", GB as u64),
++    ("mb", "MB", MB as u64),
++    ("kb", "KB", KB as u64),
+     ("b", "bytes (b)", 1),
+ ];
+ 
+@@ -32,15 +32,49 @@
+ pub(crate) fn parse_unit_suffix(s: &str) -> Option<Result<usize, String>> {
+     for (suffix, name, multiplier) in UNITS {
+         if let Some(num_str) = s.strip_suffix(suffix) {
+-            let result = usize::from_str(num_str.trim())
++            let result = u64::from_str(num_str.trim())
+                 .map_err(|e| format!("failed to parse '{}' as a size in {}: {}", s, name, e))
+                 .and_then(|num| {
+-                    num.checked_mul(*multiplier).ok_or_else(|| {
+-                        format!("'{}' overflows the maximum representable size in bytes", s)
+-                    })
++                    num.checked_mul(*multiplier)
++                        .and_then(|bytes| usize::try_from(bytes).ok())
++                        .ok_or_else(|| {
++                            format!("'{}' overflows the maximum representable size in bytes", s)
++                        })
+                 });
+             return Some(result);
+         }
+     }
+     None
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn terabyte_multiplier_is_exact_on_every_pointer_width() {
++        assert_eq!(TB, 1_099_511_627_776);
++        assert_eq!(parse_unit_suffix("1tb").unwrap(), usize::try_from(TB)
++            .map_err(|_| "'1tb' overflows the maximum representable size in bytes".to_string()));
++    }
++
++    #[test]
++    fn sizes_are_checked_against_the_pointer_width() {
++        assert_eq!(parse_unit_suffix(&format!("{}b", usize::MAX)).unwrap().unwrap(), usize::MAX);
++        assert!(parse_unit_suffix(&format!("{}b", u128::from(usize::MAX as u64) + 1)).unwrap().is_err());
++        assert_eq!(parse_unit_suffix("1gb").unwrap().unwrap(), GB);
++        assert_eq!(parse_unit_suffix("0tb").unwrap().unwrap(), 0);
++        assert!(parse_unit_suffix("18446744073709551615tb").unwrap().is_err());
++    }
++
++    #[test]
++    fn suffix_rules_and_invalid_values_are_preserved() {
++        assert_eq!(parse_unit_suffix("5 mb").unwrap().unwrap(), 5 * MB);
++        assert!(parse_unit_suffix("-1gb").unwrap().is_err());
++        assert!(parse_unit_suffix("1.5gb").unwrap().is_err());
++        assert!(parse_unit_suffix("gb").unwrap().is_err());
++        assert!(parse_unit_suffix("1xb").unwrap().is_err());
++        assert!(parse_unit_suffix("100").is_none());
++        assert_eq!(unit_suffixes(), "b, kb, mb, gb, tb");
++    }
++}
+--- a/influxdb3_clap_blocks/src/disk_size/tests.rs
++++ b/influxdb3_clap_blocks/src/disk_size/tests.rs
+@@ -8,13 +8,21 @@
+         100 * MB
+     );
+     assert_eq!("2gb".parse::<DiskSize>().unwrap().as_num_bytes(), 2 * GB);
+-    assert_eq!("1tb".parse::<DiskSize>().unwrap().as_num_bytes(), TB);
++    if let Ok(bytes) = usize::try_from(TB) {
++        assert_eq!("1tb".parse::<DiskSize>().unwrap().as_num_bytes(), bytes);
++    } else {
++        assert!("1tb".parse::<DiskSize>().is_err());
++    }
+ }
+ 
+ #[test]
+ fn parsing_is_case_insensitive_and_allows_whitespace() {
+-    assert_eq!("1TB".parse::<DiskSize>().unwrap().as_num_bytes(), TB);
+-    assert_eq!("5 gb".parse::<DiskSize>().unwrap().as_num_bytes(), 5 * GB);
++    if let Ok(bytes) = usize::try_from(TB) {
++        assert_eq!("1TB".parse::<DiskSize>().unwrap().as_num_bytes(), bytes);
++    } else {
++        assert!("1TB".parse::<DiskSize>().is_err());
++    }
++    assert_eq!("1 gb".parse::<DiskSize>().unwrap().as_num_bytes(), GB);
+     assert_eq!(" 2Gb ".parse::<DiskSize>().unwrap().as_num_bytes(), 2 * GB);
+ }
+ 
+@@ -67,6 +75,10 @@
+ #[test]
+ fn parsed_sizes_are_block_aligned() {
+     for input in ["1mb", "3mb", "7gb", "2tb"] {
++        if usize::BITS == 32 && matches!(input, "7gb" | "2tb") {
++            assert!(input.parse::<DiskSize>().is_err());
++            continue;
++        }
+         let size = input.parse::<DiskSize>().unwrap();
+         assert_eq!(
+             size.as_num_bytes() % 4096,

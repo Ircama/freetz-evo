@@ -24,20 +24,53 @@ pkg_pre_save() {
 	case "$MATTER_BRIDGE_STORE$MATTER_BRIDGE_PEER$MATTER_BRIDGE_BIND" in
 		*[[:space:]]*) echo "Error: paths and peer must not contain whitespace" >&2; return 1 ;;
 	esac
+
+	# Remember the store that is currently in use: pkg_apply_save() runs after
+	# the framework has written the new values and moves its content over, so a
+	# relocated store does not cost the fabric and the commissioned nodes.
+	MB_STORE_OLD=$(
+		[ -r /mod/etc/conf/matter-bridge.cfg ] && . /mod/etc/conf/matter-bridge.cfg
+		echo "${MATTER_BRIDGE_STORE:-/tmp/flash/matter-bridge}"
+	)
+	[ -n "$MB_STORE_OLD" ] || MB_STORE_OLD=/tmp/flash/matter-bridge
+
 	if [ "$MATTER_BRIDGE_ENABLED" = "yes" ]; then
 		case "$MATTER_BRIDGE_STORE" in
-			/tmp/flash/*|/var/media/ftp/*)
+			/var/media/ftp/*)
+				# On a disk: nothing to archive, the state is already safe.
+				;;
+			/tmp/flash/*)
+				echo "Note: $MATTER_BRIDGE_STORE is the box ramdisk. It is written to the box flash by modsave when the service stops and on every save, so a clean reboot keeps the fabric - a power cut loses it. A directory on a disk (see the list in the web interface, for example /var/media/ftp/<disk>/matter-bridge) is safer." >&2
 				;;
 			*)
-				echo "Warning: $MATTER_BRIDGE_STORE is not persistent, the controller fabric is lost on reboot" >&2
+				echo "Warning: $MATTER_BRIDGE_STORE is neither on /tmp/flash nor on /var/media/ftp, the controller fabric is lost on reboot" >&2
 				;;
 		esac
+
+		MB_PARENT="${MATTER_BRIDGE_STORE%/*}"
+		if [ -n "$MB_PARENT" ] && [ ! -d "$MB_PARENT" ]; then
+			echo "Note: $MB_PARENT does not exist (yet); the store is created as soon as the disk is mounted" >&2
+		fi
 	fi
 
 	return 0
 }
 
 pkg_apply_save() {
+	# The store moved: take the fabric, the commissioned nodes and the
+	# subscription state along, otherwise the device has to be commissioned
+	# again.
+	if [ -n "$MB_STORE_OLD" ] && [ "$MB_STORE_OLD" != "$MATTER_BRIDGE_STORE" ] && [ -d "$MB_STORE_OLD" ]; then
+		umask 077
+		if mkdir -p "$MATTER_BRIDGE_STORE" 2>/dev/null &&
+			cp -a "$MB_STORE_OLD"/. "$MATTER_BRIDGE_STORE"/ 2>/dev/null; then
+			chmod 700 "$MATTER_BRIDGE_STORE" 2>/dev/null
+			echo "matter-bridge store moved from $MB_STORE_OLD to $MATTER_BRIDGE_STORE - restart the service to use it." >&2
+		else
+			echo "Warning: could not move the store from $MB_STORE_OLD to $MATTER_BRIDGE_STORE; the device may have to be commissioned again" >&2
+		fi
+	fi
+
 	# The init script passes all settings to the daemon on the command line, so
 	# there is no runtime configuration file to update here. The settings take
 	# effect the next time the daemon is (re)started.

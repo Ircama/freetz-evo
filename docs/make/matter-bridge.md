@@ -72,7 +72,7 @@ Overrides: `/mod/etc/conf/matter-bridge.cfg`.
 | `MATTER_BRIDGE_ENABLED` | `no` | Boot autostart |
 | `MATTER_BRIDGE_PORT` | `5580` | WebSocket port |
 | `MATTER_BRIDGE_BIND` | `127.0.0.1` | WebSocket bind address |
-| `MATTER_BRIDGE_STORE` | `/tmp/flash/matter-bridge` | Fabric/node directory archived by modsave |
+| `MATTER_BRIDGE_STORE` | `/tmp/flash/matter-bridge` | Directory of the fabric and the commissioned nodes; the configuration page lists the writable disks (file system and free space), one click uses `<disk>/matter-bridge` |
 | `MATTER_BRIDGE_PEER` | `[::1]:5540` | Accessory address |
 | `MATTER_BRIDGE_AUTO_LOCAL` | `yes` | Automatic local commissioning |
 | `MATTER_BRIDGE_VERBOSE` | `no` | Debug logs |
@@ -83,13 +83,25 @@ Settings are applied after an explicit restart, not implicitly on Save. The
 unauthenticated WebSocket API must not be exposed to untrusted networks. Local
 Matter UDP also binds to loopback.
 
-Freetz archives `/tmp/flash`, not arbitrary `/mod/etc` directories. The device
-store defaults to `/tmp/flash/freetz-matter`. Existing store overrides are not
-moved automatically; use external persistent storage or migrate both stores
-while the services are stopped, then save the corresponding configuration.
-On devices with a 32 KiB flash archive limit, check the result of `modsave`;
-use persistent external storage for larger stores. There is no automatic
-flash write for every attribute report.
+### Where the store should live
+
+Freetz archives `/tmp/flash` only when `modsave` runs: the web interface calls
+it on every save, and `rc.matter-bridge stop` now calls `/usr/bin/modsave flash`
+as well, so a clean stop or reboot keeps the fabric and the commissioned nodes.
+A power cut still loses them, because `/tmp/flash` is a ramdisk. For that reason
+the configuration page lists the writable disks with file system and free space:
+clicking a path sets the store to `<disk>/matter-bridge` (for example
+`/var/media/ftp/FRITZBOX/matter-bridge`; an ext4 disk is the safest place for a
+few kilobytes of state).
+
+Changing the store in the web interface copies the previous content (fabric,
+commissioned nodes, subscriptions) to the new directory in `pkg_apply_save()`,
+so the devices do not have to be commissioned again; restart the service to use
+the new path. The directory is created on every start and on every save.
+
+On devices with a 32 KiB flash archive limit, check the result of `modsave` (it
+is printed); a store on a disk is not part of the archive at all. There is no
+automatic flash write for every attribute report.
 
 `matter-bridge-ctl` is a separate diagnostic commissioner that generates a
 fresh fabric per invocation. It is not used by the service; do not point it

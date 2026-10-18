@@ -71,6 +71,19 @@ stop() {
 		kill -9 "$pid" 2>/dev/null
 	fi
 
+	# Archiving the ramdisk: fabric and commissioned nodes live in /tmp/flash
+	# unless the store was moved to a disk in the web interface. modsave writes
+	# the whole /tmp/flash to the box flash, so a clean stop (and a reboot that
+	# goes through rc.mod stop) keeps them.
+	case "$MATTER_BRIDGE_STORE" in
+		/tmp/flash/*)
+			if [ -x /usr/bin/modsave ]; then
+				/usr/bin/modsave flash >/dev/null 2>&1 &&
+					echo "$(date): $MATTER_BRIDGE_STORE archived to the box flash" >> $LOG
+			fi
+			;;
+	esac
+
 	return 0
 }
 

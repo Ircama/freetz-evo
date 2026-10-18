@@ -1,0 +1,20 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -8,7 +8,7 @@
+ use rustix::fd::{AsFd, BorrowedFd, OwnedFd};
+ use rustix::ffi::CStr;
+ use rustix::fs::{
+-    fstat, fstatfs, major, openat, readlinkat_raw, renameat, seek, FileType, FsWord, Mode, OFlags,
++    fstat, fstatfs, major, openat, readlinkat_raw, renameat, seek, FileType, Mode, OFlags,
+     RawDir, SeekFrom, Stat, CWD, PROC_SUPER_MAGIC,
+ };
+ use rustix::io;
+@@ -187,7 +187,7 @@
+ fn check_procfs(file: BorrowedFd<'_>) -> io::Result<()> {
+     let statfs = fstatfs(file)?;
+     let f_type = statfs.f_type;
+-    if f_type != FsWord::from(PROC_SUPER_MAGIC) {
++    if f_type != PROC_SUPER_MAGIC as _ {
+         return Err(io::Errno::NOTSUP);
+     }
+ 

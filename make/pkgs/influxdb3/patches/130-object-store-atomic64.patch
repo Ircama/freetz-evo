@@ -1,0 +1,46 @@
+--- a/object_store_utils/Cargo.toml
++++ b/object_store_utils/Cargo.toml
+@@ -23,6 +23,9 @@
+ tokio = { workspace = true, optional = true }
+ uuid.workspace = true
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ tokio.workspace = true
+ 
+--- a/object_store_utils/src/object_store_health.rs
++++ b/object_store_utils/src/object_store_health.rs
+@@ -7,7 +7,11 @@
+ 
+ use iox_time::Time;
+ use std::sync::Arc;
+-use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::{AtomicI64, AtomicU64};
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::{AtomicI64, AtomicU64};
+ 
+ /// Operator-friendly classification of an [`object_store::Error`].
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+@@ -77,7 +81,7 @@
+     }
+ }
+ 
+-/// Lock-free shared state recording the last successful and last failed object
++/// Thread-safe shared state recording the last successful and last failed object
+ /// store operation.
+ ///
+ /// `last_success_at` is nanoseconds since the Unix epoch in an [`AtomicI64`],
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5761,6 +5761,7 @@
+  "metric",
+  "object_store",
+  "observability_deps",
++ "portable-atomic",
+  "tokio",
+  "uuid",
+ ]

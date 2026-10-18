@@ -1,0 +1,93 @@
+#!/bin/sh
+
+# Hook script called by the freetz configuration framework when the ble2uart_gateway
+# settings are saved. pkg_pre_save() runs before the values are stored
+# (validation only, it may abort the save), pkg_apply_save() runs afterwards.
+
+pkg_pre_save() {
+	case "$BLE2UART_GATEWAY_BAUDRATE" in
+		''|*[!0-9]*)
+			echo "Error: the baud rate must be numeric" >&2
+			return 1
+			;;
+	esac
+
+	case "$BLE2UART_GATEWAY_SERIAL" in
+		''|/dev/*)
+			;;
+		*)
+			echo "Error: the serial device must be an absolute path below /dev or empty" >&2
+			return 1
+			;;
+	esac
+
+	case "$BLE2UART_GATEWAY_STORE" in
+		/*) ;;
+		*) echo "Error: the store directory must be an absolute path" >&2; return 1 ;;
+	esac
+	case "$BLE2UART_GATEWAY_STORE$BLE2UART_GATEWAY_SERIAL$BLE2UART_GATEWAY_EXTRA_ARGS" in
+		*[[:space:]]*)
+			case "$BLE2UART_GATEWAY_EXTRA_ARGS" in
+				*[[:space:]]*) ;;
+				*) echo "Error: paths must not contain whitespace" >&2; return 1 ;;
+			esac
+			;;
+	esac
+
+	# Remember the store that is currently in use: pkg_apply_save() runs after
+	# the framework has written the new values and moves its content over, so a
+	# relocated store does not lose the devices and their bind keys.
+	BB_STORE_OLD=$(
+		[ -r /mod/etc/conf/ble2uart_gateway.cfg ] && . /mod/etc/conf/ble2uart_gateway.cfg
+		echo "${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
+	)
+	[ -n "$BB_STORE_OLD" ] || BB_STORE_OLD=/tmp/flash/ble2uart_gateway
+
+	if [ "$BLE2UART_GATEWAY_ENABLED" = "yes" ]; then
+		case "$BLE2UART_GATEWAY_STORE" in
+			/var/media/ftp/*)
+				# On a disk: nothing to archive, the state is already safe.
+				;;
+			/tmp/flash/*)
+				echo "Note: $BLE2UART_GATEWAY_STORE is the box ramdisk. It is written to the box flash by modsave when the service stops and on every save, so a clean reboot keeps the devices and their keys - a power cut loses them. A directory on a disk (see the storage list, for example /var/media/ftp/<disk>/ble2uart_gateway) is safer." >&2
+				;;
+			*)
+				echo "Warning: $BLE2UART_GATEWAY_STORE is neither on /tmp/flash nor on /var/media/ftp, the configuration is lost on reboot" >&2
+				;;
+		esac
+
+		BB_PARENT="${BLE2UART_GATEWAY_STORE%/*}"
+		if [ -n "$BB_PARENT" ] && [ ! -d "$BB_PARENT" ]; then
+			echo "Note: $BB_PARENT does not exist (yet); the store is created as soon as the disk is mounted" >&2
+		fi
+
+		# The configuration file is validated by the daemon itself, so that the
+		# web interface and the daemon always agree on the schema.
+		if [ -r "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" ] && [ -x /usr/bin/ble2uart-gateway ]; then
+			if ! OUT=$(/usr/bin/ble2uart-gateway --check-config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" 2>&1); then
+				echo "Error: ble2uart_gateway.yaml is not valid:" >&2
+				echo "$OUT" >&2
+				return 1
+			fi
+		fi
+	fi
+
+	return 0
+}
+
+pkg_apply_save() {
+	# The store moved: take the configuration and the exposed-id state along.
+	if [ -n "$BB_STORE_OLD" ] && [ "$BB_STORE_OLD" != "$BLE2UART_GATEWAY_STORE" ] && [ -d "$BB_STORE_OLD" ]; then
+		umask 077
+		if mkdir -p "$BLE2UART_GATEWAY_STORE" 2>/dev/null &&
+			cp -a "$BB_STORE_OLD"/. "$BLE2UART_GATEWAY_STORE"/ 2>/dev/null; then
+			chmod 700 "$BLE2UART_GATEWAY_STORE" 2>/dev/null
+			chmod 600 "$BLE2UART_GATEWAY_STORE"/ble2uart_gateway.yaml 2>/dev/null
+			echo "ble2uart_gateway store moved from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE - restart the service to use it." >&2
+		else
+			echo "Warning: could not move the store from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE; the devices have to be configured again" >&2
+		fi
+	fi
+
+	return 0
+}

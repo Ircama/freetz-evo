@@ -1,0 +1,162 @@
+#!/bin/sh
+
+DAEMON=ble2uart_gateway
+DAEMON_LONG_NAME=ble2uart_gateway
+DAEMON_BIN=ble2uart-gateway
+PID_FILE=/var/run/$DAEMON.pid
+LOG=/tmp/rc.$DAEMON.log
+. /etc/init.d/modlibrc
+
+# Configuration written by the web interface (falls back to the defaults below)
+[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+
+BLE2UART_GATEWAY_SERIAL="${BLE2UART_GATEWAY_SERIAL:-/dev/ttyACM0}"
+BLE2UART_GATEWAY_BAUDRATE="${BLE2UART_GATEWAY_BAUDRATE:-115200}"
+BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
+BLE2UART_GATEWAY_CONFIG_WAIT="${BLE2UART_GATEWAY_CONFIG_WAIT:-120}"
+
+BLE2UART_GATEWAY_ARGS=
+GATEWAY_BIN=/usr/bin/ble2uart-gateway
+[ -x "$GATEWAY_BIN" ] || GATEWAY_BIN=/mod/external/usr/bin/ble2uart-gateway
+
+# Called by modlib_startdaemon before the daemon is spawned.
+config() {
+	# The store holds the device list with the bind keys (secrets) and the
+	# exposed-id state: keep it private, and create a first configuration when
+	# there is none, so that the web interface has something to edit.
+	umask 077
+	mkdir -p "$BLE2UART_GATEWAY_STORE" || return 1
+	chmod 700 "$BLE2UART_GATEWAY_STORE" || return 1
+	if [ ! -s "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" ]; then
+		"$GATEWAY_BIN" --write-default-config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" \
+			>>$LOG 2>&1
+		"$GATEWAY_BIN" --config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" --set "serial.port=$BLE2UART_GATEWAY_SERIAL" >>$LOG 2>&1 || return 1
+		"$GATEWAY_BIN" --config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" --set "serial.baudrate=$BLE2UART_GATEWAY_BAUDRATE" >>$LOG 2>&1 || return 1
+		chmod 600 "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" 2>/dev/null
+	fi
+
+	BLE2UART_GATEWAY_ARGS="--config $BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml"
+	[ "$BLE2UART_GATEWAY_VERBOSE" = "yes" ] && DAEMON_ENV="RUST_LOG=debug"
+	[ -n "$BLE2UART_GATEWAY_EXTRA_ARGS" ] && BLE2UART_GATEWAY_ARGS="$BLE2UART_GATEWAY_ARGS $BLE2UART_GATEWAY_EXTRA_ARGS"
+
+	return 0
+}
+
+# The daemon may live on external storage (the package can be externalized): at
+# boot that storage is mounted asynchronously, so wait for the binary in a
+# background subshell instead of failing with "not found". This complements the
+# deferred-service mechanism of rc.external, and covers the case where the
+# service is not (yet) listed in /mod/etc/external.defer.pkg.
+binary_ready() {
+	[ -x /usr/bin/$DAEMON_BIN ] && return 0
+	timeout=$BLE2UART_GATEWAY_CONFIG_WAIT
+	while [ "$timeout" -gt 0 ]; do
+		sleep 2
+		timeout=$((timeout - 2))
+		[ -x /usr/bin/$DAEMON_BIN ] && return 0
+	done
+	return 1
+}
+
+# The serial device of the module is also mounted asynchronously (USB). Wait for
+# it before spawning the daemon when a fixed path is configured.
+serial_ready() {
+	[ -z "$BLE2UART_GATEWAY_SERIAL" ] && return 0
+	[ -c "$BLE2UART_GATEWAY_SERIAL" ] && return 0
+	timeout=$BLE2UART_GATEWAY_CONFIG_WAIT
+	while [ "$timeout" -gt 0 ]; do
+		sleep 2
+		timeout=$((timeout - 2))
+		[ -c "$BLE2UART_GATEWAY_SERIAL" ] && return 0
+	done
+	return 1
+}
+
+start() {
+	[ -x "$GATEWAY_BIN" ] || return 1
+	config || return 1
+	SERIAL_DEVICE=$("$GATEWAY_BIN" --config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" --get serial.port) || return 1
+	[ -c "$SERIAL_DEVICE" ] || return 1
+	modlib_startdaemon start-stop-daemon -S -b -m -p "$PID_FILE" \
+		-x /bin/sh -- -c 'log=$1; shift; exec "$@" >>"$log" 2>&1' \
+		sh "$LOG" "$GATEWAY_BIN" $BLE2UART_GATEWAY_ARGS >>"$LOG" 2>&1
+}
+
+# Terminates the daemon. modlib_stop() calls this function, therefore it must
+# never call modlib_stop() again (that would recurse forever).
+stop() {
+	pid="$(cat $PID_FILE 2>/dev/null)"
+
+	if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+		# Flush the configuration and the exposed-id state before stopping.
+		kill "$pid" 2>/dev/null
+		timeout=15
+		while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+			timeout=$((timeout - 1))
+		done
+		kill -9 "$pid" 2>/dev/null
+	fi
+
+	# Archiving the ramdisk: the configuration with the bind keys lives in
+	# /tmp/flash unless the store was moved to a disk in the web interface.
+	# modsave writes the whole /tmp/flash to the box flash, so a clean stop (and
+	# a reboot that goes through rc.mod stop) keeps it.
+	case "$BLE2UART_GATEWAY_STORE" in
+		/tmp/flash/*)
+			if [ -x /usr/bin/modsave ]; then
+				/usr/bin/modsave flash >/dev/null 2>&1 &&
+					echo "$(date): $BLE2UART_GATEWAY_STORE archived to the box flash" >> $LOG
+			fi
+			;;
+	esac
+
+	return 0
+}
+
+case "$1" in
+	""|load)
+		modreg daemon $DAEMON
+		modreg cgi $DAEMON "ble2uart_gateway"
+		modreg extra $DAEMON '' 2 api
+		if [ "$BLE2UART_GATEWAY_ENABLED" != "yes" ] || [ -x /usr/bin/$DAEMON_BIN ]; then
+			modlib_start "$BLE2UART_GATEWAY_ENABLED"
+		else
+			(
+				. /etc/init.d/modlibrc
+				[ -r /mod/etc/conf/$DAEMON.cfg ] && . /mod/etc/conf/$DAEMON.cfg
+				BLE2UART_GATEWAY_CONFIG_WAIT="${BLE2UART_GATEWAY_CONFIG_WAIT:-120}"
+				echo "$(date): waiting for /usr/bin/$DAEMON_BIN (external storage)"
+				if binary_ready; then
+					/etc/init.d/rc.$DAEMON start
+				else
+					echo "$(date): /usr/bin/$DAEMON_BIN not available after ${BLE2UART_GATEWAY_CONFIG_WAIT}s"
+				fi
+			) >>$LOG 2>&1 &
+		fi
+		;;
+	unload)
+		modunreg cgi $DAEMON
+		modunreg extra $DAEMON
+		modunreg daemon $DAEMON
+		modlib_stop
+		;;
+	start)
+		modlib_start || exit $?
+		;;
+	stop)
+		modlib_stop
+		;;
+	restart)
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" 1>&2
+		exit 1
+		;;
+esac
+
+exit 0

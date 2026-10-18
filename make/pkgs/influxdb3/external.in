@@ -1,0 +1,8 @@
+config EXTERNAL_FREETZ_PACKAGE_INFLUXDB3
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_INFLUXDB3
+	bool "InfluxDB 3"
+	default n
+	help
+		Externalizes /usr/bin/influxdb3. Database files must be placed on
+		persistent storage separately; externalizing the binary does not
+		configure or start the database server.

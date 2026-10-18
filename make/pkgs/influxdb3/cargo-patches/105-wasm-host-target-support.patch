@@ -1,0 +1,83 @@
+--- a/host/Cargo.toml
++++ b/host/Cargo.toml
+@@ -36,6 +36,9 @@
+ wasmtime-wasi-http.workspace = true
+ wasmtime-wasi-io.workspace = true
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ bytes.workspace = true
+ datafusion-udf-wasm-bundle = { workspace = true, features = ["evil", "example", "python"] }
+--- a/host/src/component.rs
++++ b/host/src/component.rs
+@@ -29,6 +29,7 @@
+ };
+ 
+ /// Create WASM engine.
++#[cfg(target_has_atomic = "64")]
+ fn create_engine<F>(flags: &F) -> DataFusionResult<Engine>
+ where
+     F: CompilationFlagsInterface,
+@@ -45,6 +46,16 @@
+     Engine::new(&config).context("create WASM engine", None)
+ }
+ 
++#[cfg(not(target_has_atomic = "64"))]
++fn create_engine<F>(_flags: &F) -> DataFusionResult<Engine>
++where
++    F: CompilationFlagsInterface,
++{
++    datafusion_common::not_impl_err!(
++        "WASM UDFs are unavailable on targets without native 64-bit atomics"
++    )
++}
++
+ /// Interface for different ways of conveying compilation flags.
+ trait CompilationFlagsInterface {
+     /// Apply compilation flags.
+@@ -260,6 +271,7 @@
+ 
+ impl WasmComponentInstance {
+     /// Create new instance.
++    #[cfg(target_has_atomic = "64")]
+     pub(crate) async fn new(
+         component: &WasmComponentPrecompiled,
+         permissions: &WasmPermissions,
+@@ -363,6 +375,18 @@
+         })
+     }
+ 
++    #[cfg(not(target_has_atomic = "64"))]
++    pub(crate) async fn new(
++        _component: &WasmComponentPrecompiled,
++        _permissions: &WasmPermissions,
++        _io_rt: Handle,
++        _memory_pool: &Arc<dyn MemoryPool>,
++    ) -> DataFusionResult<Self> {
++        datafusion_common::not_impl_err!(
++            "WASM UDFs are unavailable on targets without native 64-bit atomics"
++        )
++    }
++
+     /// Get bindings.
+     pub(crate) fn bindings(&self) -> &bindings::Datafusion {
+         &self.bindings
+--- a/host/src/vfs/mod.rs
++++ b/host/src/vfs/mod.rs
+@@ -10,9 +10,13 @@
+     hash::Hash,
+     sync::{
+         Arc, RwLock, Weak,
+-        atomic::{AtomicU64, Ordering},
++        atomic::Ordering,
+     },
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ 
+ use rand::RngExt;
+ use siphasher::sip128::{Hasher128, SipHasher24};

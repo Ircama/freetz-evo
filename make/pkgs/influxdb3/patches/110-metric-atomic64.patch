@@ -1,0 +1,48 @@
+--- a/core/metric/src/counter.rs
++++ b/core/metric/src/counter.rs
+@@ -3 +3,5 @@
+-use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+--- a/core/metric/src/cumulative.rs
++++ b/core/metric/src/cumulative.rs
+@@ -2 +2,5 @@
+-use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+--- a/core/metric/src/gauge.rs
++++ b/core/metric/src/gauge.rs
+@@ -3 +3,5 @@
+-use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+--- a/core/metric/Cargo.toml
++++ b/core/metric/Cargo.toml
+@@ -11,4 +11,7 @@
+ [dependencies] # In alphabetical order
+ parking_lot = "0.12"
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies] # In alphabetical order
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5255,6 +5255,7 @@
+ version = "3.12.1"
+ dependencies = [
+  "parking_lot",
++ "portable-atomic",
+ ]
+ 
+ [[package]]
+

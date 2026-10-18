@@ -1,0 +1,12 @@
+config EXTERNAL_FREETZ_PACKAGE_BLE2UART_GATEWAY
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_BLE2UART_GATEWAY
+	bool "ble2uart_gateway"
+	default n
+	help
+		Externalizes the following file(s):
+			/usr/bin/ble2uart-gateway
+
+		The gateway binary lives on USB/NAS storage, while the init
+		script, the Freetz configuration and the codec specification
+		stay in the firmware. The daemon is started through absolute
+		paths, so the binary works from /mod/external.

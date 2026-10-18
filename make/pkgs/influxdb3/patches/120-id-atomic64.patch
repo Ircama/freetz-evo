@@ -1,0 +1,47 @@
+--- a/influxdb3_id/Cargo.toml
++++ b/influxdb3_id/Cargo.toml
+@@ -10,6 +10,9 @@
+ rustc-hash.workspace = true
+ serde = { workspace = true, features = [ "rc" ] }
+ thiserror.workspace = true
++
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
+ 
+ [dev-dependencies]
+ serde_json.workspace = true
+--- a/influxdb3_id/src/lib.rs
++++ b/influxdb3_id/src/lib.rs
+@@ -7,8 +7,12 @@
+ use std::str::FromStr;
+ use std::sync::{
+     Arc,
+-    atomic::{AtomicU64, Ordering},
++    atomic::Ordering,
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ 
+ mod serialize;
+ pub use serialize::{SerdeVecMap, SerdeVecSet};
+@@ -117,7 +121,7 @@
+     pub fn new() -> Self {
+         Self(
+             NEXT_FILE_ID
+-                .try_update(Ordering::SeqCst, Ordering::SeqCst, |n| n.checked_add(1))
++                .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |n| n.checked_add(1))
+                 .expect("Overflowed with Parquet File IDs"),
+         )
+     }
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -3932,6 +3932,7 @@
+ dependencies = [
+  "criterion 0.5.1",
+  "indexmap 2.14.1",
++ "portable-atomic",
+  "rustc-hash",
+  "serde",
+  "serde_json",

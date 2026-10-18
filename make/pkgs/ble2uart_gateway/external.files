@@ -1,0 +1,4 @@
+# The daemon binary is the only file big enough to be worth externalizing; the
+# init script, the modconf files and the codec specification stay in the
+# firmware (they are small and needed at boot).
+[ "$EXTERNAL_FREETZ_PACKAGE_BLE2UART_GATEWAY" == "y" ] && EXTERNAL_FILES+=" /usr/bin/ble2uart-gateway"

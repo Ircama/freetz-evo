@@ -1,0 +1,216 @@
+--- a/hardware/Matter.h
++++ b/hardware/Matter.h
+@@ -27,6 +27,9 @@
+ 
+ 	struct EndpointState {
+ 		std::string label;
++		std::vector<int> parts;
++		bool isAggregator = false;
++		bool hasBatteryPercent = false;
+ 		float  temp_C = 0;   bool hasTemp = false;
+ 		int    hum_pct    = 0;   bool hasHum       = false;
+ 		float  baro_hPa   = 0;   bool hasBaro      = false;
+--- a/hardware/Matter.cpp
++++ b/hardware/Matter.cpp
+@@ -1,5 +1,6 @@
+ #include "stdafx.h"
+ #include "Matter.h"
++#include "MatterEnvironmentGroups.h"
+ #include "../main/Logger.h"
+ #include "../main/Helper.h"
+ #include "../main/mainworker.h"
+@@ -666,20 +667,29 @@
+ 		case CLUSTER_DESCRIPTION:
+ 			if (attr_id == ATTR_DEVICE_TYPE_LIST && v.isArray())
+ 			{
++				state.isAggregator = false;
+ 				for (const auto& dt : v)
+ 				{
+ 					if (!dt.isObject() || !dt.isMember("0") || !dt["0"].isIntegral())
+ 						continue;
+ 					int devType = dt["0"].asInt();
++					if (devType == 0x000E)
++						state.isAggregator = true;
+ 					if (devType == DEVICE_TYPE_CONTACT_SENSOR || devType == DEVICE_TYPE_WATER_FREEZE_DETECTOR ||
+ 					    devType == DEVICE_TYPE_WATER_LEAK_DETECTOR || devType == DEVICE_TYPE_RAIN_SENSOR)
+ 					{
+ 						state.deviceType    = devType;
+ 						state.hasDeviceType = true;
+-						break;
+ 					}
+ 				}
+ 			}
++			else if (attr_id == 3 && v.isArray())
++			{
++				state.parts.clear();
++				for (const auto& part : v)
++					if (part.isIntegral() && part.asInt() > 0 && part.asInt() <= 255)
++						state.parts.push_back(part.asInt());
++			}
+ 			break;
+ 		case 31: //0x001F AccessControl
+ 		case CLUSTER_BASIC_INFORMATION:
+@@ -697,6 +707,7 @@
+ 			if (attr_id == ATTR_BATTERY_PERCENT_REMAINING && v.isIntegral())
+ 			{
+ 				state.rechargeable_battery_pct = v.asInt() / 2;
++				state.hasBatteryPercent = v.asInt() >= 0 && v.asInt() <= 200;
+ 				state.hasRechargeableBattery = true;
+ 			}	
+ 			else if (attr_id == ATTR_BATTERY_CHARGE_STATE && v.isIntegral())
+@@ -1321,48 +1332,64 @@
+ 
+ 	node.lastSeen = time(nullptr);
+ 
+-	// Aggregate environmental sensor readings across all endpoints of this node.
+-	float setpoint_C = 0;  bool hasSetpoint = false;
+-	float temp_C   = 0;  bool hasTemp = false;
+-	int   hum_pct  = 0;  bool hasHum  = false;
+-	float baro_hPa = 0;  bool hasBaro = false;
+-	int   battery  = node.battery_pct;
+-	std::string label;
++	std::map<int, std::vector<int>> topology;
++	std::set<int> aggregators;
++	for (const auto& endpoint : node.endpoints)
++	{
++		topology[endpoint.first] = endpoint.second.parts;
++		if (endpoint.second.isAggregator)
++			aggregators.insert(endpoint.first);
++	}
++	const auto groups = matter_environment::groups(topology, aggregators);
++	std::set<int> anchors;
++	for (const auto& endpoint : groups)
++		anchors.insert(endpoint.second);
++	for (int anchor : anchors)
++	{
++		const int domoticzID = anchor == 0 ? nodeId : nodeId * 256 + anchor;
++		float setpoint_C = 0;  bool hasSetpoint = false;
++		float temp_C   = 0;  bool hasTemp = false;
++		int   hum_pct  = 0;  bool hasHum  = false;
++		float baro_hPa = 0;  bool hasBaro = false;
++		int   battery  = node.battery_pct;
++		std::string label = anchor == 0 ? "" : node.endpoints.at(anchor).label;
+ 
+-	for (const auto& kv : node.endpoints)
+-	{
+-		const auto& s = kv.second;
+-		if (!hasTemp && s.hasTemp)  { temp_C   = s.temp_C;   hasTemp = true; }
+-		if (!hasHum  && s.hasHum)   { hum_pct  = s.hum_pct;  hasHum  = true; }
+-		if (!hasBaro && s.hasBaro)  { baro_hPa = s.baro_hPa; hasBaro = true; }
+-		if (!hasSetpoint && s.hasSetpoint) { setpoint_C = s.setpoint_C; hasSetpoint = true; }
+-		if (label.empty() && !s.label.empty()) label = s.label;
+-	}
++		for (const auto& kv : node.endpoints)
++		{
++			if (groups.at(kv.first) != anchor)
++				continue;
++			const auto& s = kv.second;
++			if (!hasTemp && s.hasTemp)  { temp_C   = s.temp_C;   hasTemp = true; }
++			if (!hasHum  && s.hasHum)   { hum_pct  = s.hum_pct;  hasHum  = true; }
++			if (!hasBaro && s.hasBaro)  { baro_hPa = s.baro_hPa; hasBaro = true; }
++			if (!hasSetpoint && s.hasSetpoint) { setpoint_C = s.setpoint_C; hasSetpoint = true; }
++			if (s.hasBatteryPercent) battery = s.rechargeable_battery_pct;
++			if (label.empty() && !s.label.empty()) label = s.label;
++		}
+ 
+-	// Aggregated environmental sensors use nodeId as domoticzID (1-255),
+-	// giving users a direct mapping: device ID == Matter node number.
+-	if (hasSetpoint)
+-	{
+-		if (hasTemp && hasHum && hasBaro)
+-			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, hum_pct, baro_hPa, label);
++		if (hasSetpoint)
++		{
++			if (hasTemp && hasHum && hasBaro)
++				SendThermostatSensor(0, 0, 0, domoticzID, 1, battery, setpoint_C, temp_C, hum_pct, baro_hPa, label);
++			else if (hasTemp && hasHum)
++				SendThermostatSensor(0, 0, 0, domoticzID, 1, battery, setpoint_C, temp_C, hum_pct, label);
++			else if (hasTemp)
++				SendThermostatSensor(0, 0, 0, domoticzID, 1, battery, setpoint_C, temp_C, label);
++			else
++				SendSetPointSensor(0, 0, 0, domoticzID, 1, battery, setpoint_C, label);
++		}
++		else if (hasTemp && hasHum && hasBaro)
++			SendTempHumBaroSensor(domoticzID, battery, temp_C, hum_pct, baro_hPa, 0, label);
+ 		else if (hasTemp && hasHum)
+-			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, hum_pct, label);
++			SendTempHumSensor(domoticzID, battery, temp_C, hum_pct, label);
+ 		else if (hasTemp)
+-			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, label);
+-		else
+-			SendSetPointSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, label);
+-	}
+-	else if (hasTemp && hasHum && hasBaro)
+-		SendTempHumBaroSensor(nodeId, battery, temp_C, hum_pct, baro_hPa, 0, label);
+-	else if (hasTemp && hasHum)
+-		SendTempHumSensor(nodeId, battery, temp_C, hum_pct, label);
+-	else if (hasTemp)
+-		SendTempSensor(nodeId, battery, temp_C, label);
+-	else if (hasHum)
+-		SendHumiditySensor(nodeId, battery, hum_pct, label);
++			SendTempSensor(domoticzID, battery, temp_C, label);
++		else if (hasHum)
++			SendHumiditySensor(domoticzID, battery, hum_pct, label);
+ 
+-	if (hasBaro && !hasTemp)
+-		SendPressureSensor(nodeId, 0, battery, baro_hPa, label);
++		if (hasBaro && !hasTemp)
++			SendPressureSensor(domoticzID, 0, battery, baro_hPa, label);
++	}
+ 
+ 	// Per-endpoint non-environmental sensors (on/off, power, CO2, etc.)
+ 	for (const auto& kv : node.endpoints)
+--- /dev/null
++++ b/hardware/MatterEnvironmentGroups.h
+@@ -0,0 +1,50 @@
++#pragma once
++
++#include <algorithm>
++#include <limits>
++#include <map>
++#include <set>
++#include <vector>
++
++namespace matter_environment
++{
++inline std::map<int, int> groups(const std::map<int, std::vector<int>>& parts, const std::set<int>& aggregators)
++{
++    std::map<int, int> result;
++    for (const auto& endpoint : parts)
++    {
++        if (aggregators.empty() || endpoint.first == 0 || aggregators.count(endpoint.first))
++        {
++            result[endpoint.first] = 0;
++            continue;
++        }
++        int anchor = endpoint.first;
++        std::set<int> visited;
++        while (true)
++        {
++            if (!visited.insert(anchor).second)
++            {
++                anchor = endpoint.first;
++                break;
++            }
++            int parent = -1;
++            std::size_t smallest = std::numeric_limits<std::size_t>::max();
++            for (const auto& candidate : parts)
++            {
++                if (candidate.first == 0 || candidate.first == anchor || aggregators.count(candidate.first))
++                    continue;
++                if (candidate.second.size() < smallest && std::find(candidate.second.begin(), candidate.second.end(), anchor) != candidate.second.end())
++                {
++                    parent = candidate.first;
++                    smallest = candidate.second.size();
++                }
++            }
++            if (parent < 0)
++                break;
++            anchor = parent;
++        }
++        result[endpoint.first] = anchor;
++    }
++    return result;
++}
++}
+\ No newline at end of file

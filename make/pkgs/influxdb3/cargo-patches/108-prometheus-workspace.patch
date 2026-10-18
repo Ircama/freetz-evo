@@ -1,0 +1,28 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -340,3 +340,6 @@
+ datafusion-expr = { git = "https://github.com/influxdata/arrow-datafusion.git", rev = "676dd338f8fe8464a861b5c74ec3c4de8325d382" }
+ datafusion-proto = { git = "https://github.com/influxdata/arrow-datafusion.git", rev = "676dd338f8fe8464a861b5c74ec3c4de8325d382" }
+ datafusion-sql = { git = "https://github.com/influxdata/arrow-datafusion.git", rev = "676dd338f8fe8464a861b5c74ec3c4de8325d382" }
++
++[patch.crates-io.prometheus]
++path = ".cargo/freetz-sources/prometheus-0.14.0"
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -6344,8 +6344,6 @@
+ [[package]]
+ name = "prometheus"
+ version = "0.14.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3ca5326d8d0b950a9acd87e6a3f94745394f62e4dae1b1ee22b2bc0c394af43a"
+ dependencies = [
+  "cfg-if",
+  "fnv",
+@@ -6354,6 +6352,7 @@
+  "lazy_static",
+  "memchr",
+  "parking_lot",
++ "portable-atomic",
+  "thiserror 2.0.18",
+ ]
+ 

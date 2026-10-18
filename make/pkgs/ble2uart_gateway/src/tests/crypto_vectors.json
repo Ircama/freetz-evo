@@ -1,0 +1,381 @@
+{
+ "generated_by": "tools/gen_crypto_vectors.py",
+ "vectors": [
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD432567F206142D3FA448",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "A54DCA182530",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD5D75C0F90FFA8F4BA44C",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "BB1D6D132CDE",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD304BD6C4FA3A284DB03C",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "D6237B2ED91E",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BDD91AB2213A5503A45415",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "3F721FCB1971",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BDF12C393C6A18D0EB3A17",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "174494D6493C",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD7B34998A9D1530497147",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "9D5C3460BE31",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BDC676C414F98480D39FC5",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "201E69FEDAA0",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD088014735C78083320EF",
+   "codec": "atc_mi",
+   "format": "custom_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "EEE8B9997F5C",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BDE66E56C3B7ED13",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "7C2999",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD67E82A0AE6BA3F",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "FDAFE5",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD0962F30D91298E",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "93253C",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD4C13602A630D3E",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "D654AF",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BDD7BD1895AD5745",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "4DFAD7",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD8E606FF859031A",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "1427A0",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD34F431A80EBF56",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "AEB3FE",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1A18BD7364E01F8236F5",
+   "codec": "atc_mi",
+   "format": "atc1441_enc",
+   "mac": "AABBCCDDEEFF",
+   "payload": "E9232F",
+   "uuid": "1A18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "05028ACC6EDA932DC5B10B0081FA28",
+   "codec": "mi_like",
+   "counter": "8A",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "C5B10B211F9EE491"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "0502EC396BB99B6F93426D0B0240",
+   "codec": "mi_like",
+   "counter": "EC",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "6F9342563BFC1E"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "05027E76C9B67A8ECD8E4697BBD1C1",
+   "codec": "mi_like",
+   "counter": "7E",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "CD8E46C8FE2955E5"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "0502DCB227D1AF56462A5A4DB95FC6D0",
+   "codec": "mi_like",
+   "counter": "DC",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "2A5A4D8ED4B7C2764D"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "05027614746603FA6CAE4AD6BD39DDE333",
+   "codec": "mi_like",
+   "counter": "76",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "4AD6BD7706F85D869002"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "0502A37F7679CBCCC9C2C4CFB0",
+   "codec": "mi_like",
+   "counter": "A3",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "CBCCC91BE9C8"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "0502351267CA8488E15338ACF38DEF",
+   "codec": "mi_like",
+   "counter": "35",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "E15338CD1F61226A"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "0502AE2E8E83A444D60D246AA1B2A236",
+   "codec": "mi_like",
+   "counter": "AE",
+   "device_id": "0502",
+   "format": "mi_like",
+   "header": 3,
+   "mac": "AABBCCDDEEFF",
+   "payload": "0D246A1A34004D33BA"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E18B5EE1C76B6243E3BF9EE551B178C",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "3E3BF9EEC04C81B1BAF2",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E184797357335AF87F5520257781F",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "AF87F552F79F2B4934",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E18D3182366DA1D2E85BB55C4C82BB4",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "2E85BB550B69B94B0D98",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E184AD0D5ED7ACD746685A0A2A2",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "7ACD746672A87263",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E1828AB092162338463B0E41E0A003A",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "8463B0E4FCB60E0E8FF1",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E1850F2F48F5DDF7364AC68F73B7BA8CA",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "64AC68F7B2BA29703474F0",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E180136425025EA66F45BDE64510B2E",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "66F45BDE00F5B02B3DC6",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "1E188464F0A447A51257410E4D8253AFCC",
+   "codec": "bt_home",
+   "format": "bt_home",
+   "mac": "AABBCCDDEEFF",
+   "payload": "57410E4DAA2CCAEDCD2B51",
+   "uuid": "1E18"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC41CD64B0DB038B0A073447FFDFB01B",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "0A073447EE4AF2B34F43",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC41429DA8A1D7957BA68403EA0FF1",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "957BA684636C0E806C",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC41859B3457591A424D09E1911C87DA",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "424D09E1D6431FB5EAD7",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC4152AFF148F23D1F9D703614",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "48F23D1F024C58",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC41B0E4B849618D15322A11101E",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "618D1532F7361D7F",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC41E2FDBDBC0A8C8DE7F47EF6413856",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "8DE7F47EE70E20E2A666",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC419F72043A936CCEE2A1257B3BEBF207",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "E2A1257B8467E546D53EC8",
+   "uuid": "D2FC"
+  },
+  {
+   "bindkey": "000102030405060708090A0B0C0D0E0F",
+   "blob": "D2FC417DB8404350BB49814641E64C64",
+   "codec": "bt_home_v2",
+   "format": "bt_home_v2",
+   "mac": "AABBCCDDEEFF",
+   "payload": "BB498146256C9B3E4F",
+   "uuid": "D2FC"
+  }
+ ]
+}

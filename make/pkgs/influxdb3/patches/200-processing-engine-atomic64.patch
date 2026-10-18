@@ -1,0 +1,72 @@
+--- a/influxdb3_processing_engine/Cargo.toml
++++ b/influxdb3_processing_engine/Cargo.toml
+@@ -40,6 +40,9 @@
+ uuid.workspace = true
+ walkdir.workspace = true
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ datafusion_util.workspace = true
+ influxdb3_cache = { path = "../influxdb3_cache" }
+--- a/influxdb3_processing_engine/src/scheduler.rs
++++ b/influxdb3_processing_engine/src/scheduler.rs
+@@ -22,6 +22,10 @@
+ use std::num::NonZeroUsize;
+ use std::pin::Pin;
+ use std::sync::Arc;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ use std::time::Duration;
+ use tokio::sync::{Semaphore, mpsc, oneshot};
+ use tokio_util::sync::CancellationToken;
+@@ -39,7 +43,7 @@
+ 
+ impl TriggerRuntimeId {
+     fn next() -> Self {
+-        static NEXT_RUNTIME_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
++        static NEXT_RUNTIME_ID: AtomicU64 = AtomicU64::new(1);
+         Self(NEXT_RUNTIME_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+     }
+ }
+@@ -475,8 +479,7 @@
+ 
+ impl RetryDelayId {
+     fn next() -> Self {
+-        static NEXT_RETRY_DELAY_ID: std::sync::atomic::AtomicU64 =
+-            std::sync::atomic::AtomicU64::new(1);
++        static NEXT_RETRY_DELAY_ID: AtomicU64 = AtomicU64::new(1);
+         Self(NEXT_RETRY_DELAY_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+     }
+ }
+--- a/influxdb3_processing_engine/src/worker/local.rs
++++ b/influxdb3_processing_engine/src/worker/local.rs
+@@ -35,10 +35,14 @@
+     fmt::Debug,
+     sync::{
+         Arc, Weak,
+-        atomic::{AtomicU64, Ordering},
++        atomic::Ordering,
+     },
+     time::SystemTime,
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ use tokio_util::sync::CancellationToken;
+ 
+ /// Await a spawned blocking plugin run, returning `None` if `cancel` fires
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -4022,6 +4022,7 @@
+  "observability_deps",
+  "parking_lot",
+  "parquet_file",
++ "portable-atomic",
+  "proptest",
+  "pyo3",
+  "reqwest 0.12.28",

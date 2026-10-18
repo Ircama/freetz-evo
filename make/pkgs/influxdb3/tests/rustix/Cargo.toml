@@ -1,0 +1,12 @@
+[package]
+name = "influxdb3-rustix-cross-check"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+rustix = { version = "=1.1.4", features = ["event", "fs", "mm", "net", "param", "process", "stdio", "termios", "time"] }
+portable-atomic = { version = "=1.13.1", features = ["std"] }
+rustix-linux-procfs = "=0.1.1"

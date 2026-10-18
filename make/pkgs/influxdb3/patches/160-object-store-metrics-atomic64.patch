@@ -1,0 +1,37 @@
+--- a/core/object_store_metrics/Cargo.toml
++++ b/core/object_store_metrics/Cargo.toml
+@@ -21,6 +21,9 @@
+ tokio = { version = "1.52", features = ["io-util"] }
+ tracker = { path = "../tracker" }
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies] # In alphabetical order
+ futures_test_utils = { path = "../futures_test_utils" }
+ insta = { version = "1", features = ["yaml"] }
+--- a/core/object_store_metrics/src/multipart_upload.rs
++++ b/core/object_store_metrics/src/multipart_upload.rs
+@@ -1,7 +1,11 @@
+ use std::sync::{
+     Arc,
+-    atomic::{AtomicBool, AtomicU64, Ordering},
++    atomic::{AtomicBool, Ordering},
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ 
+ use async_trait::async_trait;
+ use futures::FutureExt;
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5717,6 +5717,7 @@
+  "object_store_mock",
+  "object_store_size_hinting",
+  "pin-project",
++ "portable-atomic",
+  "rust_decimal",
+  "tempfile",
+  "test_helpers",

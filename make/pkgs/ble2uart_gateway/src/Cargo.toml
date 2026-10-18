@@ -1,0 +1,66 @@
+[package]
+name = "ble2uart-gateway"
+version = "0.1.0"
+edition = "2021"
+description = "BLE advertisement gateway: ESP32 ADV_BLE2UART -> MySensors/MQTT/Matter/InfluxDB 3"
+readme = "README.md"
+license = "EUPL-1.2"
+
+# Frontends use dedicated workers; optional HTTP output supports verified TLS.
+# The daemon is a few threads
+# (serial reader, rules ticker, one per front-end connection) and a handful of
+# pure-Rust dependencies, which keeps the MIPS binary small and the uClibc
+# cross build simple.
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = { version = "1", features = ["float_roundtrip"] }
+log = { version = "0.4", features = ["std"] }
+libc = "0.2"
+rumqttc = { version = "0.25.1", default-features = false }
+ureq = { version = "=3.4.0", default-features = false, features = ["rustls"] }
+rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "c69916a5a78957d46500145486df375acf4ab490", optional = true, features = ["async-io"] }
+rand = { version = "0.10", optional = true }
+async-io = { version = "2", optional = true }
+futures-lite = { version = "2", optional = true }
+embassy-futures = { version = "0.1", optional = true }
+socket2 = { version = "0.6", optional = true }
+embassy-time = { version = "0.5", features = ["std"], optional = true }
+embassy-time-queue-utils = { version = "0.3", features = ["generic-queue-64"], optional = true }
+
+# AES-128-CCM for the encrypted advertisement formats (bindkey) and the ATC
+# device configuration structures.
+aes = "0.8"
+ccm = { version = "0.5", features = ["alloc"] }
+aead = { version = "0.5", features = ["alloc"] }
+
+[features]
+default = ["matter"]
+matter = ["dep:rs-matter", "dep:rand", "dep:async-io", "dep:futures-lite", "dep:embassy-futures", "dep:socket2", "dep:embassy-time", "dep:embassy-time-queue-utils"]
+# Platform profile: Freetz-EVO helper paths and FRITZ!Box
+# interface preference. Enabled by make/pkgs/ble2uart_gateway.
+freetz = []
+# Optional Matter DNS-SD backends besides the always available builtin
+# responder (frontends.matter.mdns_backend). avahi/resolved talk D-Bus (pure
+# Rust zbus); zeroconf links the native Avahi/Bonjour client libraries;
+# astro uses macOS dns_sd.
+mdns-avahi = ["matter", "rs-matter/zbus"]
+mdns-resolved = ["matter", "rs-matter/zbus"]
+mdns-zeroconf = ["matter", "rs-matter/zeroconf"]
+mdns-astro = ["matter", "rs-matter/astro-dnssd"]
+mdns-linux = ["mdns-avahi", "mdns-resolved"]
+
+[profile.dev]
+debug = 0
+codegen-units = 256
+
+[profile.test]
+debug = 0
+codegen-units = 256
+
+[profile.release]
+opt-level = "s"
+lto = false
+codegen-units = 256
+panic = "abort"
+strip = true

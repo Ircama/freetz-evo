@@ -1,0 +1,41 @@
+config FREETZ_PACKAGE_BLE2UART_GATEWAY
+	bool "ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3)"
+	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+	depends on FREETZ_TARGET_IPV6_SUPPORT
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_librt if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Rust gateway between an ESP32-C3 running pvvx ADV_BLE2UART
+		(ble50_scan, USB CDC-ACM) and home automation front-ends.
+
+		It implements scanner control and serial framing for that firmware
+		(frame layout, INFO/SCAN/WMAC/BMAC/CLRM/PRNT/GPIO/UART/RFSDK
+		command builders, CRC-16/MODBUS) and decodes/encodes the BLE advertisement
+		payloads and the device configuration structures of the ATC_Mi
+		interface codec (ATC1441, ATC1441-enc, Xiaomi MiBeacon-like,
+		BTHome v1/v2 and the encrypted variants, AES-128-CCM with the
+		per-device bind key). New formats are added by editing the
+		codec specification YAML, no rebuild needed.
+
+		Four front-ends can be enabled in the configuration file:
+		  * MySensors  - TCP gateway for Domoticz (recommended: Domoticz
+		    understands the protocol natively, so devices, units and
+		    commands need no mapping on its side)
+		  * MQTT       - complete decoded JSON state via MQTT 3.1.1,
+		    QoS 1, retained state and latest-state reconnect replay
+		  * Matter     - read-only standard sensor clusters plus a vendor
+		    cluster containing complete decoded JSON in byte chunks;
+		    proprietary values require a controller that understands it
+		    (rs-matter, development attestation credentials)
+		  * InfluxDB 3 - decoded measurements as line protocol through the
+		    v3 write API, bounded in-memory batches, optional token over
+		    HTTPS (plain HTTP tokens only on loopback)
+
+		Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one
+		structured YAML store (serial port, devices with MAC and bind
+		key, filters, derived rules, front-ends) that the web interface
+		edits and the daemon validates.
+
+		Standalone daemon: ble2uart-gateway (Linux, not tied to Freetz).
+		Can be externalized: /usr/bin/ble2uart-gateway.

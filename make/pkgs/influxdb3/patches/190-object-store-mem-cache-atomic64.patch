@@ -1,0 +1,56 @@
+--- a/core/object_store_mem_cache/Cargo.toml
++++ b/core/object_store_mem_cache/Cargo.toml
+@@ -25,6 +25,9 @@
+ tokio-util = "0.7.18"
+ tracker = { path = "../tracker" }
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ clap = { version = "4", features = ["derive"] }
+ futures-concurrency = "7"
+--- a/core/object_store_mem_cache/src/cache_system/loader.rs
++++ b/core/object_store_mem_cache/src/cache_system/loader.rs
+@@ -3,9 +3,13 @@
+     hash::Hash,
+     sync::{
+         Arc, Weak,
+-        atomic::{AtomicBool, AtomicU64, Ordering},
++        atomic::{AtomicBool, Ordering},
+     },
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ 
+ use crate::cache_system::{
+     DynError,
+--- a/core/object_store_mem_cache/src/cache_system/s3_fifo_cache/mod.rs
++++ b/core/object_store_mem_cache/src/cache_system/s3_fifo_cache/mod.rs
+@@ -9,9 +9,13 @@
+     hash::Hash,
+     sync::{
+         Arc, Mutex, Weak,
+-        atomic::{AtomicU64, Ordering},
++        atomic::Ordering,
+     },
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ use tracing::warn;
+ use tracker::{
+     AsyncSemaphoreMetrics, InstrumentedAsyncOwnedSemaphorePermit, InstrumentedAsyncSemaphore,
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -5693,6 +5693,7 @@
+  "object_store_metrics",
+  "object_store_mock",
+  "object_store_size_hinting",
++ "portable-atomic",
+  "rand 0.9.4",
+  "tokio",
+  "tokio-util",

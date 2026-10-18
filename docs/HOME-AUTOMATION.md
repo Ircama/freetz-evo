@@ -53,7 +53,7 @@ API; Matter itself uses UDP and a TLV interaction model. Details in
 
 ## Domoticz — the fully built-in hub
 
-[`domoticz`](make/domoticz.md) 2026.4 is a complete port (Z-Wave, SubGHz/433, MQTT, Lua, Python, I2C/SPI, USB): a 12 MB stripped MIPS binary plus a 29 MB payload (`www`, `dzVents`, `plugins`, `scripts` and the 7.8 MB OpenZWave device database in `Config`). It is the only hub in the tree that runs entirely on the router without external dependencies, which is why it is the natural partner of `matter-bridge`.
+[`domoticz`](make/domoticz.md) 2026.4 is a complete port (Z-Wave, SubGHz/433, MQTT, Lua, Python, I2C/SPI, USB). It is the only hub in the tree that runs entirely on the router without external dependencies, which is why it is the natural partner of `matter-bridge`.
 
 * web interface on port 8080, `-userdata` on external storage, `-log` in `/var/log`;
 * async boot start: the init script waits for the USB stick in a background subshell, the boot sequence is never blocked;
@@ -64,7 +64,7 @@ API; Matter itself uses UDP and a TLV interaction model. Details in
 
 ## Matter without Node.js
 
-The reference Matter controllers are `matterjs-server` (Node.js) and `python-matter-server` (Python): both embed the CHIP SDK, which is not portable to a uClibc/MIPS router. Freetz-EVO therefore ships a **native** implementation of the WebSocket API these clients expect:
+The reference Matter controllers are `matterjs-server` (Node.js) and `python-matter-server` (Python). Freetz-EVO therefore ships a **native** implementation of the WebSocket API these clients expect:
 
 * [`matter-bridge`](make/matter-bridge.md) — native Rust/rs-matter controller with WebSocket API on loopback port 5580. Automatic local commissioning, PASE/CASE, reads/writes, actuator commands, subscription reports and restart recovery are covered by a real host integration test. See [simple setup and limitations](make/matter-bridge.md).
 * [`openthread`](make/openthread.md) — `ot-daemon` and `ot-ctl` for Thread networks.
@@ -149,7 +149,7 @@ The **opposite** mapping uses the native controller embedded in `matter-bridge` 
 
 That direction is now packaged as **`freetz-matter`** ([package page](make/freetz-matter.md)): the crate pins `rs-matter` at revision `4d4fd3a` and exposes three endpoints on the box itself — a Temperature Sensor fed by the same sensors the `box_info` page reads, a Smart Speaker that drives ALSA through `amixer`, and root `BasicInformation` carrying the real model, FRITZ!OS version, AVM revision and LAN MAC.
 
-Making that dependency graph build for uClibc/MIPS needed three fixes, two of which are now shared with the other Rust packages in the tree:
+Making that dependency graph build needed three fixes, two of which are now shared with the other Rust packages in the tree:
 
 * rustix on the **libc backend without `linux_raw_dep`** (what rs-matter pulls) — `linux_raw_sys` is not linked there, so the missing uClibc items are substituted at their use sites instead of being declared in rustix's private `c` module. New macro `RUSTIX_APPLY_UCLIBC_PATCHES_LIBC_NORAW__INT` in `make/include/650-rust-cargo.mk`.
 * `getrandom` — uClibc's `libc` crate has no `getrandom()`, so the `SYS_getrandom` syscall fallback is applied (existing shared macro).
@@ -169,7 +169,7 @@ The remaining work on this path is verification on a real box with a real contro
 | [`ot-br-posix`](make/ot-br-posix.md) | 2026.10.0 | Thread border router (`otbr-agent`) | built, verified (`otbr-agent` 2.4 MB + `ot-ctl`) |
 | [`mosquitto`](make/mosquitto.md) | 2.x | MQTT broker + client tools | built, verified |
 | [`homeassistant`](make/homeassistant.md) | 1.0 (helper) | setup script + autorun for Home Assistant | helper shipped, installs on demand |
-| [`freetz-matter`](make/freetz-matter.md) | 0.1 | the box **as** a Matter device (rs-matter, no Node.js) | built end-to-end: `rs-matter` cross-compiles for MIPS/uClibc, the package installs a 4.5 MB binary linking only `libc`/`ld-uClibc`/`libgcc_s`; on-box commissioning not tested yet |
+| [`freetz-matter`](make/freetz-matter.md) | 0.1 | the box **as** a Matter device (rs-matter, no Node.js) | built end-to-end: `rs-matter` cross-compiles for uClibc, the package installs a 4.5 MB binary linking only `libc`/`ld-uClibc`/`libgcc_s`; on-box commissioning not tested yet |
 | [`rtl_433`](make/rtl_433.md) | 25.02 | 433/868 MHz sensor decoding | built, verified |
 | [`soapyrtlsdr`](make/soapyrtlsdr.md) | 0.3.3 | SDR front end for RTL sticks | built, verified |
 | [`tuya-iot-core-sdk`](make/tuya-iot-core-sdk.md) | 0.1 | Tuya cloud devices | built, verified |
@@ -184,7 +184,6 @@ The remaining work on this path is verification on a real box with a real contro
 * **Boot**: every service waits for its storage in a **background subshell**; automations must never delay the boot sequence.
 * **Matter controller role**: embedded in the single `matter-bridge` daemon. Domoticz connects to `127.0.0.1:5580`; freetz-matter commissioning is automatic when its commissioning window is open. No external server or diagnostic CLI is required for this local chain.
 * **mDNS**: both Matter daemons advertise through rs-matter's built-in responder and share UDP 5353 with the closed responder of FRITZ!OS (`libavmdns*`): the socket is opened with `SO_REUSEADDR`, each responder answers only for its own records and `fritz.box` keeps working. The advertisement is optional — without it the local chain (Domoticz → 5580 → 5540) is unaffected.
-* **Verification**: the WebSocket protocol follows the `python-matter-server` schema (`schema_version` 11, `min_supported_schema_version` 9) and the message dispatch of the Domoticz Matter driver; the native end-to-end test (`make/pkgs/matter-bridge/tests/native-controller-test.py`) covers PASE/CASE, interview, commands, delayed subscription reports and restart on host builds of the same sources that are cross-compiled for MIPS.
 
 ## See also
 

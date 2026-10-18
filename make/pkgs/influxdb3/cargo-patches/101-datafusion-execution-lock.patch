@@ -1,0 +1,10 @@
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1974,6 +1974,7 @@
+  "log",
+  "object_store",
+  "parking_lot",
++ "portable-atomic",
+  "rand 0.9.4",
+  "tempfile",
+  "url",

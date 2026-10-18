@@ -26,14 +26,32 @@ pkg_pre_save() {
 			;;
 	esac
 
+	# Remember the store that is currently in use: pkg_apply_save() runs after
+	# the framework has written the new values and moves its content over, so a
+	# relocated store does not cost the fabric.
+	FM_STORE_OLD=$(
+		[ -r /mod/etc/conf/freetz-matter.cfg ] && . /mod/etc/conf/freetz-matter.cfg
+		echo "${FREETZ_MATTER_STORE:-/tmp/flash/freetz-matter}"
+	)
+	[ -n "$FM_STORE_OLD" ] || FM_STORE_OLD=/tmp/flash/freetz-matter
+
 	if [ "$FREETZ_MATTER_ENABLED" = "yes" ]; then
 		case "$FREETZ_MATTER_STORE" in
-			/tmp/flash/*|/var/media/ftp/*)
+			/var/media/ftp/*)
+				# On a disk: nothing to archive, the state is already safe.
+				;;
+			/tmp/flash/*)
+				echo "Note: $FREETZ_MATTER_STORE is the box ramdisk. It is written to the box flash by modsave when the service stops and on every save, so a clean reboot keeps the fabric - a power cut loses it and the device has to be commissioned again. A directory on a disk (see the list in the web interface, for example /var/media/ftp/<disk>/freetz-matter) is safer." >&2
 				;;
 			*)
-				echo "Warning: $FREETZ_MATTER_STORE is not persistent, the box has to be re-commissioned after a reboot" >&2
+				echo "Warning: $FREETZ_MATTER_STORE is neither on /tmp/flash nor on /var/media/ftp, the box has to be commissioned again after a reboot" >&2
 				;;
 		esac
+
+		FM_PARENT="${FREETZ_MATTER_STORE%/*}"
+		if [ -n "$FM_PARENT" ] && [ ! -d "$FM_PARENT" ]; then
+			echo "Note: $FM_PARENT does not exist (yet); the store is created as soon as the disk is mounted" >&2
+		fi
 
 		# The Smart Speaker endpoint drives ALSA through amixer.
 		if ! command -v amixer >/dev/null 2>&1; then
@@ -45,6 +63,20 @@ pkg_pre_save() {
 }
 
 pkg_apply_save() {
+	# The store moved: take the commissioned fabrics, the ACLs and the
+	# subscription state along, otherwise the device has to be commissioned
+	# again.
+	if [ -n "$FM_STORE_OLD" ] && [ "$FM_STORE_OLD" != "$FREETZ_MATTER_STORE" ] && [ -d "$FM_STORE_OLD" ]; then
+		umask 077
+		if mkdir -p "$FREETZ_MATTER_STORE" 2>/dev/null &&
+			cp -a "$FM_STORE_OLD"/. "$FREETZ_MATTER_STORE"/ 2>/dev/null; then
+			chmod 700 "$FREETZ_MATTER_STORE" 2>/dev/null
+			echo "freetz-matter store moved from $FM_STORE_OLD to $FREETZ_MATTER_STORE - restart the service to use it." >&2
+		else
+			echo "Warning: could not move the store from $FM_STORE_OLD to $FREETZ_MATTER_STORE; the device may have to be commissioned again" >&2
+		fi
+	fi
+
 	# The init script passes all settings to the daemon on the command line, so
 	# there is no runtime configuration file to update here. The new values take
 	# effect the next time the daemon is (re)started.

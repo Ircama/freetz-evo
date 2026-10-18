@@ -1,0 +1,40 @@
+--- a/influxdb3_write/Cargo.toml
++++ b/influxdb3_write/Cargo.toml
+@@ -70,6 +70,9 @@
+ backon.workspace = true
+ regex.workspace = true
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ # Core Crates
+ arrow_util = { path = "../core/arrow_util" }
+--- a/influxdb3_write/src/table_index_cache.rs
++++ b/influxdb3_write/src/table_index_cache.rs
+@@ -7,10 +7,14 @@
+     collections::BTreeSet,
+     sync::{
+         Arc, LazyLock,
+-        atomic::{AtomicU64, Ordering},
++        atomic::Ordering,
+     },
+     time::{Duration, Instant},
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ 
+ use futures::TryStreamExt;
+ use hashbrown::{HashMap, HashSet};
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -4430,6 +4430,7 @@
+  "parking_lot",
+  "parquet",
+  "parquet_file",
++ "portable-atomic",
+  "pretty_assertions",
+  "query_functions",
+  "regex",

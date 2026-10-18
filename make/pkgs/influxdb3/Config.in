@@ -1,0 +1,19 @@
+config FREETZ_PACKAGE_INFLUXDB3
+	bool "InfluxDB 3.12.1 (experimental port)"
+	select FREETZ_LIB_STDCXXLIB
+	select FREETZ_LIB_libatomic
+	select FREETZ_PACKAGE_PYTHON3
+	select FREETZ_LIB_libpython3
+	default n
+	help
+		InfluxDB 3 Core time-series database with SQL and InfluxQL.
+		This is an experimental source port, not a prebuilt 64-bit binary.
+		All Freetz Rust target mappings are used, including 32-bit targets;
+		selection alone does not certify architecture or runtime compatibility.
+		Top-level cloud backend and jemalloc features are not selected;
+		transitive dependencies may still contain these libraries.
+		The embedded Python processing engine remains part of the server.
+		WASM UDFs are unavailable on targets without native 64-bit atomics,
+		including MIPS; requesting them returns an explicit unsupported error.
+		Substantial RAM and persistent external storage are required.
+		No automatic startup or public network listener is installed.

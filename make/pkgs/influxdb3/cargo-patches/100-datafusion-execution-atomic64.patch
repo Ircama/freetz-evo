@@ -1,0 +1,30 @@
+diff --git a/datafusion/execution/Cargo.toml b/datafusion/execution/Cargo.toml
+index ca1fba07c..390a59d50 100644
+--- a/datafusion/execution/Cargo.toml
++++ b/datafusion/execution/Cargo.toml
+@@ -64,5 +64,8 @@ rand = { workspace = true }
+ tempfile = { workspace = true }
+ url = { workspace = true }
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies]
+ insta = { workspace = true }
+diff --git a/datafusion/execution/src/disk_manager.rs b/datafusion/execution/src/disk_manager.rs
+index cb87053d8..1e7a36bcb 100644
+--- a/datafusion/execution/src/disk_manager.rs
++++ b/datafusion/execution/src/disk_manager.rs
+@@ -25,7 +25,11 @@ use parking_lot::Mutex;
+ use rand::{Rng, rng};
+ use std::path::{Path, PathBuf};
+ use std::sync::Arc;
+-use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ use tempfile::{Builder, NamedTempFile, TempDir};
+ 
+ use datafusion_common::human_readable_size;

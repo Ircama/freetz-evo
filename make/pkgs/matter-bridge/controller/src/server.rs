@@ -625,9 +625,9 @@ async fn execute<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, mat
 
 async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, material: &FabricMaterial, hub: &Hub, receiver: Receiver<Request>) -> Result<(), Error> {
     let mut auto_retry = Instant::now();
-    let mut next_tick = Instant::now() + WATCHDOG_TICK;
+    let mut next_tick = embassy_time::Instant::now() + embassy_time::Duration::from_secs(WATCHDOG_TICK.as_secs());
     loop {
-        let tick = async_io::Timer::at(next_tick);
+        let tick = embassy_time::Timer::at(next_tick);
         match select(receiver.recv(), tick).await {
             Either::First(Ok(request)) => {
                 let timeout = async_io::Timer::after(Duration::from_secs(120));
@@ -653,7 +653,7 @@ async fn commands<C: Crypto>(matter: &Matter<'_>, crypto: &C, fab: NonZeroU8, ma
             }
             Either::First(Err(_)) => return Err(ErrorCode::Failure.into()),
             Either::Second(_) => {
-                next_tick = Instant::now() + WATCHDOG_TICK;
+                next_tick = embassy_time::Instant::now() + embassy_time::Duration::from_secs(WATCHDOG_TICK.as_secs());
                 log::debug!("watchdog tick");
                 let needs_local = hub.auto_local && hub.peer.ip().is_loopback()
                     && !hub.nodes.read().unwrap().values().any(|node|node.peer==hub.peer && node.interview_version>0);

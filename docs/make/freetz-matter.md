@@ -54,16 +54,31 @@ modconf set `/mod/etc/default.freetz-matter/freetz-matter.cfg` (all values edita
 |---|---|---|
 | `FREETZ_MATTER_ENABLED` | `no` | autostart on boot |
 | `FREETZ_MATTER_PORT` | `5540` | Matter UDP port (the standard one) |
-| `FREETZ_MATTER_STORE` | `/tmp/flash/freetz-matter` | fabric store: commissioned fabrics, ACLs, subscriptions; run modsave after commissioning |
+| `FREETZ_MATTER_STORE` | `/tmp/flash/freetz-matter` | fabric store: commissioned fabrics, ACLs, subscriptions; the configuration page lists the writable disks, one click uses `<disk>/freetz-matter` |
 | `FREETZ_MATTER_VERBOSE` | `no` | debug logging |
 | `FREETZ_MATTER_CONFIG_WAIT` | `120` | seconds to wait for `/usr/bin/freetz-matter` when the binary lives on external storage; the wait runs in a background subshell, `0` disables it |
 | `FREETZ_MATTER_EXTRA_ARGS` | *(empty)* | extra daemon options |
 
 `pkg_pre_save` validates the port and the store path, warns when the store is not on persistent storage and when `amixer` is missing; nothing is restarted implicitly.
 
+### Where the store should live
+
+Freetz archives `/tmp/flash` only when `modsave` runs: the web interface calls it
+on every save, and `rc.freetz-matter stop` now calls `/usr/bin/modsave flash` as
+well, so a clean stop or reboot keeps the fabric. A power cut still loses it,
+because `/tmp/flash` is a ramdisk — and a lost fabric means the box has to be
+commissioned again. The configuration page therefore lists the writable disks
+with file system and free space; clicking a path sets the store to
+`<disk>/freetz-matter` (an ext4 disk is the safest place).
+
+Changing the store in the web interface copies the previous content (fabrics,
+ACLs, subscriptions) to the new directory in `pkg_apply_save()`, so nothing has
+to be paired again; restart the service to use the new path. The directory is
+created on every start and on every save.
+
 ### Externalization
 
-`freetz-matter` can be moved to external storage from the **External** menu (`EXTERNAL_FREETZ_PACKAGE_FREETZ_MATTER`): `/usr/bin/freetz-matter` is the entire payload (4.5 MB stripped) and is the only declared file. The init script, the Freetz configuration and the fabric store remain in the firmware — they are a few kilobytes, needed at boot, and `/mod/etc` is where the store has to live anyway to survive reboots. Because the rs-matter stack is linked in statically, the binary has no companion files to carry along, and everything it opens is addressed by absolute paths.
+`freetz-matter` can be moved to external storage from the **External** menu (`EXTERNAL_FREETZ_PACKAGE_FREETZ_MATTER`): `/usr/bin/freetz-matter` is the entire payload (4.5 MB stripped) and is the only declared file. The init script, the Freetz configuration and the fabric store remain in the firmware by default — they are a few kilobytes and they are needed at boot. The store can be moved to a disk of your choice from the configuration page (see above), which is the recommended setting when the box is not shut down cleanly. Because the rs-matter stack is linked in statically, the binary has no companion files to carry along, and everything it opens is addressed by absolute paths.
 
 ### mDNS / DNS-SD
 

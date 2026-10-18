@@ -1,0 +1,56 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -133,6 +133,9 @@
+ [dependencies.thiserror]
+ version = "^2.0"
+ 
++[target.'cfg(not(target_has_atomic = "64"))'.dependencies]
++portable-atomic = { version = "=1.13.1", features = ["std"] }
++
+ [dev-dependencies.criterion]
+ version = "0.5"
+ 
+--- a/src/atomic64.rs
++++ b/src/atomic64.rs
+@@ -4,7 +4,11 @@
+ use std::cmp::*;
+ use std::f64;
+ use std::ops::*;
+-use std::sync::atomic::{AtomicI64 as StdAtomicI64, AtomicU64 as StdAtomicU64, Ordering};
++use std::sync::atomic::Ordering;
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::{AtomicI64 as StdAtomicI64, AtomicU64 as StdAtomicU64};
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::{AtomicI64 as StdAtomicI64, AtomicU64 as StdAtomicU64};
+ 
+ /// An interface for numbers. Used to generically model float metrics and integer metrics, i.e.
+ /// [`Counter`](crate::Counter) and [`IntCounter`](crate::Counter).
+--- a/src/histogram.rs
++++ b/src/histogram.rs
+@@ -5,9 +5,13 @@
+ use std::collections::HashMap;
+ use std::convert::From;
+ use std::sync::{
+-    atomic::{AtomicU64 as StdAtomicU64, Ordering},
++    atomic::Ordering,
+     Arc, Mutex,
+ };
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64 as StdAtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64 as StdAtomicU64;
+ use std::time::{Duration, Instant as StdInstant};
+ 
+ use crate::atomic64::{Atomic, AtomicF64, AtomicU64};
+--- a/src/timer.rs
++++ b/src/timer.rs
+@@ -1,4 +1,8 @@
+-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
++use std::sync::atomic::{AtomicBool, Ordering};
++#[cfg(target_has_atomic = "64")]
++use std::sync::atomic::AtomicU64;
++#[cfg(not(target_has_atomic = "64"))]
++use portable_atomic::AtomicU64;
+ use std::thread;
+ use std::time::{Duration, Instant};
+ 
