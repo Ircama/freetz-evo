@@ -1,0 +1,106 @@
+#!/bin/sh
+
+DAEMON=grafana
+DAEMON_LONG_NAME=Grafana
+. /etc/init.d/modlibrc
+. /mod/etc/default.grafana/grafana.save
+
+WAIT_PID_FILE=/var/run/grafana-wait.pid
+
+cancel_wait() {
+	if [ -s "$WAIT_PID_FILE" ]; then
+		kill "$(cat "$WAIT_PID_FILE")" 2>/dev/null
+		rm -f "$WAIT_PID_FILE"
+	fi
+}
+
+start() {
+	pkg_pre_save || return 1
+	local basedir="${GRAFANA_BASEDIR%/}"
+	if [ ! -d "$basedir" ]; then
+		echo "Grafana storage is unavailable: $basedir" >&2
+		return 1
+	fi
+	[ -r /usr/share/grafana/conf/defaults.ini ] && [ -x /usr/bin/grafana ] || return 1
+	modlib_add_user_and_group grafana grafana
+	umask 077
+	mkdir -p "$basedir/data" "$basedir/logs" "$basedir/plugins" "$basedir/provisioning" || return 1
+	if [ ! -e "$basedir/grafana.ini" ]; then
+		cp /mod/etc/default.grafana/grafana.ini.template "$basedir/grafana.ini" || return 1
+	fi
+	chown grafana:grafana "$basedir" "$basedir/grafana.ini" \
+		"$basedir/data" "$basedir/logs" "$basedir/plugins" "$basedir/provisioning" || return 1
+	modlib_startdaemon start-stop-daemon -S -b -m -p "$PID_FILE" \
+		-c grafana:grafana -N "$GRAFANA_NICE" -- /bin/sh -c \
+		'log_file=$1; shift; exec /usr/bin/grafana "$@" >>"$log_file" 2>&1' \
+		grafana "$basedir/logs/startup.log" server \
+		--homepath /usr/share/grafana --config "$basedir/grafana.ini" \
+		"cfg:default.paths.data=$basedir/data" \
+		"cfg:default.paths.logs=$basedir/logs" \
+		"cfg:default.paths.plugins=$basedir/plugins" \
+		"cfg:default.paths.provisioning=$basedir/provisioning" \
+		"cfg:server.http_addr=$GRAFANA_BIND" "cfg:server.http_port=$GRAFANA_PORT" || return 1
+	sleep 1
+	if [ ! -s "$PID_FILE" ] || ! kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+		echo "Grafana exited during startup; see $basedir/logs/startup.log" >&2
+		rm -f "$PID_FILE"
+		return 1
+	fi
+}
+
+case "$1" in
+	''|load)
+		modreg cgi grafana Grafana
+		modreg daemon grafana
+		if [ "$GRAFANA_ENABLED" = yes ]; then
+			pkg_pre_save || exit 1
+			if [ "$GRAFANA_CONFIG_WAIT" = 0 ]; then
+				modlib_start
+			elif [ ! -s "$WAIT_PID_FILE" ] || ! kill -0 "$(cat "$WAIT_PID_FILE")" 2>/dev/null; then
+				/etc/init.d/rc.grafana waitstart >>/tmp/rc.grafana.log 2>&1 &
+				echo $! > "$WAIT_PID_FILE"
+			fi
+		fi
+		;;
+	waitstart)
+		trap 'rm -f "$WAIT_PID_FILE"' EXIT
+		trap 'exit 0' TERM INT
+		pkg_pre_save || exit 1
+		elapsed=0
+		while [ "$elapsed" -lt "$GRAFANA_CONFIG_WAIT" ]; do
+			if [ -d "$GRAFANA_BASEDIR" ] && [ -x /usr/bin/grafana ] && [ -r /usr/share/grafana/conf/defaults.ini ] && [ "$(date +%Y)" -ge 2025 ]; then
+				modlib_start
+				exit $?
+			fi
+			sleep 2
+			elapsed=$((elapsed + 2))
+		done
+		echo 'Grafana: timed out waiting for storage or clock synchronization.' >&2
+		exit 1
+		;;
+	unload)
+		cancel_wait
+		modunreg daemon grafana
+		modunreg cgi grafana
+		modlib_stop
+		;;
+	start)
+		cancel_wait
+		modlib_start
+		;;
+	stop)
+		cancel_wait
+		modlib_stop
+		;;
+	restart)
+		cancel_wait
+		modlib_restart
+		;;
+	status)
+		modlib_status
+		;;
+	*)
+		echo "Usage: $0 [load|unload|start|stop|restart|status]" >&2
+		exit 1
+		;;
+esac

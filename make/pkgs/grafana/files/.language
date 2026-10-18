@@ -1,0 +1,8 @@
+languages
+{ de en it fr es }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/grafana.cgi
+}

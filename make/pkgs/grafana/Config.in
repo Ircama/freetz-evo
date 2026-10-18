@@ -1,0 +1,18 @@
+config FREETZ_PACKAGE_GRAFANA
+	bool "Grafana 13.2.4"
+	depends on FREETZ_TARGET_GCC_4_7_MIN
+	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	select FREETZ_LIB_libdl if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+	default n
+	help
+		Grafana is an open-source monitoring and visualization platform.
+		Cross-compiles the OSS backend and installs the matching official
+		frontend assets. The build downloads the Go 1.26.9 toolchain.
+
+		Requires persistent USB storage and substantial free RAM (upstream
+		recommends at least 512 MB). Externalize the binary and web assets:
+		they are much too large for normal router flash memory.
+
+		Configure through the Freetz web interface; Grafana listens on port
+		3000. The service is disabled by default. Keep it on a trusted LAN.
+		See https://grafana.com/oss/grafana/

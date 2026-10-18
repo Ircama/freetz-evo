@@ -1,0 +1,6 @@
+config EXTERNAL_FREETZ_PACKAGE_GRAFANA
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_GRAFANA
+	bool "Grafana"
+	default y
+	help
+		Externalize /usr/bin/grafana and /usr/share/grafana.

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+pkg_pre_save() {
+	case "$GRAFANA_BASEDIR" in
+		*..*|*[!a-zA-Z0-9_./\ -]*) echo 'Invalid Grafana storage path.' >&2; return 1 ;;
+	esac
+	case "$GRAFANA_BASEDIR" in
+		/var/media/ftp/*/*|/mod/external/*) ;;
+		*) echo 'Grafana requires a directory on persistent storage.' >&2; return 1 ;;
+	esac
+	case "$GRAFANA_PORT" in
+		''|*[!0-9]*) return 1 ;;
+	esac
+	[ "${#GRAFANA_PORT}" -le 5 ] && [ "$GRAFANA_PORT" -ge 1024 ] && [ "$GRAFANA_PORT" -le 65535 ] || return 1
+	case "$GRAFANA_BIND" in
+		''|*[!0-9.]*) return 1 ;;
+	esac
+	printf '%s\n' "$GRAFANA_BIND" | awk -F. '
+		NF != 4 { exit 1 }
+		{ for (octet = 1; octet <= NF; octet++)
+			if ($octet == "" || length($octet) > 3 || $octet + 0 > 255) exit 1 }
+	' || return 1
+	case "$GRAFANA_NICE" in
+		''|*[!0-9]*) return 1 ;;
+	esac
+	[ "${#GRAFANA_NICE}" -le 2 ] && [ "$GRAFANA_NICE" -le 19 ] || return 1
+	case "$GRAFANA_CONFIG_WAIT" in
+		''|*[!0-9]*) return 1 ;;
+	esac
+	[ "${#GRAFANA_CONFIG_WAIT}" -le 3 ] && [ "$GRAFANA_CONFIG_WAIT" -le 600 ]
+}

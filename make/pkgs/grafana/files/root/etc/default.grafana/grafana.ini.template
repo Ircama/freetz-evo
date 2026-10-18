@@ -1,0 +1,17 @@
+[analytics]
+reporting_enabled = false
+check_for_updates = false
+check_for_plugin_updates = false
+
+[users]
+allow_sign_up = false
+
+[auth.anonymous]
+enabled = false
+
+[log]
+mode = file
+level = warn
+
+[plugins]
+preinstall_disabled = true
