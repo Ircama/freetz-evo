@@ -3,13 +3,14 @@
 A standalone Linux daemon for ESP32 adapters running ADV_BLE2UART
 (`ble50_scan`). It decodes BLE advertisements and publishes MySensors TCP,
 MQTT, standard Matter sensors plus a complete vendor-specific state, and
-InfluxDB 3 line protocol.
+InfluxDB 3 line protocol and SQLite history.
 
 ## Build And Run
 
 Use a current Rust toolchain on Linux with serial-device access, usually through
 the `dialout` group. The default build includes Matter; disable default features
-for a smaller MySensors/MQTT-only binary.
+for a smaller binary without Matter. SQLite is bundled and needs a C compiler
+at build time, but no separate SQLite installation or server at runtime.
 
 ```sh
 cargo build --release
@@ -63,6 +64,96 @@ The Cargo feature `freetz` selects the Freetz-EVO profile (enabled by the
 Freetz package build): FRITZ!Box interface preference and helper lookup in
 `/mod/external/usr/bin`. Runtime identifiers are the same in both builds. Without it, helpers such as
 `mosquitto` and `matter-bridge` are searched in `/usr/bin` and `$PATH`.
+
+## SQLite History
+
+SQLite is an independent frontend, disabled by default, and can run together
+with any of the network frontends. Configure `frontends.sqlite` through the
+same YAML/CLI controls as the others:
+
+```yaml
+frontends:
+  sqlite:
+    enabled: true
+    path: /absolute/path/on/local-storage/readings.sqlite3
+    batch_size: 100
+    queue_capacity: 1024
+    flush_interval_ms: 1000
+    busy_timeout_ms: 1000
+```
+
+The path has no default: explicitly select storage before enabling it. Its
+parent directory must already exist and be writable. The gateway does not
+create parent directories, which avoids silently creating a missing mount
+directory on internal storage. New database files are private (0600).
+Existing databases must have this gateway's application ID and schema version;
+unrelated databases are rejected. Startup fails explicitly if storage or WAL
+initialization is unavailable.
+
+Each successfully decoded advertisement for an enabled configured device
+creates one `frames` row, independent of `expose`:
+
+| Column | Meaning |
+|--------|---------|
+| `id` | Monotonically allocated frame ID, not reused after retention deletes |
+| `received_at_ns` | Unix nanoseconds captured before enqueueing, not a sensor-provided clock |
+| `mac`, `sensor_name`, `wire_format` | Sensor identity and format at reception |
+| `state_json` | Complete decoded state, including device metadata, radio/RSSI, decoded payload and measurements; no bindkeys |
+
+All measurements from that frame are stored in `measurements`, linked by
+`frame_id`. `ordinal` preserves their order and permits repeated attribute names
+in one frame. `attribute` and `unit` identify the measure. `type` selects exactly
+one value representation:
+
+| `type` | Column |
+|--------|--------|
+| `real` | `value_real` (SQLite REAL / double) |
+| `integer` | `value_int` (exact signed 64-bit integer) |
+| `boolean` | `value_int` (0 or 1, distinguished from integers by `type`) |
+| `unsigned` | `value_text` (decimal string for integers above signed 64-bit range, without precision loss) |
+| `text`, `json` | `value_text` |
+| `null` | All value columns NULL |
+
+Other value columns are NULL by design. CHECK constraints prevent incompatible
+combinations. There is no last-value carry-forward: an absent attribute stays
+absent from that frame. Complete JSON retains the decoder's representation,
+including calculated attributes, rather than labelling them all as raw readings.
+Successfully decoded repeats are separate receptions, not timestamp upserts.
+
+For example, query complete frames and typed values:
+
+```sql
+SELECT f.id, f.received_at_ns, f.sensor_name, f.mac, f.wire_format,
+       m.ordinal, m.attribute, m.type,
+       m.value_real, m.value_int, m.value_text, m.unit
+FROM frames AS f
+JOIN measurements AS m ON m.frame_id = f.id
+ORDER BY f.received_at_ns DESC, f.id DESC, m.ordinal
+LIMIT 100;
+```
+
+A dedicated worker writes bounded batches in transactions. Batch size and
+queue capacity count **frames**, not individual measures. Frame metadata and
+all its measurements commit together. Write errors retain the pending batch
+for retry and are logged; a full queue drops whole incoming frames, with a
+logged counter, without blocking serial reception or other frontends. Pending
+frames are flushed on orderly shutdown. The memory queue is not a persistent
+spool: crashes, forced stops and persistent storage errors can lose uncommitted
+frames. Busy timeout is 1-5000 ms; flush interval is 10-60000 ms; batch size is
+1-1024 and must not exceed queue capacity (1-16384).
+
+The writer uses WAL and `synchronous=FULL`. Other local processes may query the
+same tables, ideally through read-only connections, with a busy timeout and
+short read transactions. They see committed frames only. One writer at a time
+is allowed: an external maintenance writer must use short transactions and
+handle contention. Set `PRAGMA foreign_keys=ON` on maintenance connections so
+deleting a frame also deletes its measurements. Use SQLite's backup API rather
+than copying only the main file of a live database; do not delete its WAL/SHM.
+
+Prefer local USB ext4 storage with reliable locking/shared memory, not a network
+share or continuous writes to router internal flash. WAL does not bypass
+filesystem requirements. Retention, downsampling and rendering are **not**
+performed automatically by this frontend; without maintenance the DB grows.
 
 ## Logging
 

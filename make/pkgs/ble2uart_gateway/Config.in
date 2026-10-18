@@ -1,5 +1,5 @@
 config FREETZ_PACKAGE_BLE2UART_GATEWAY
-	bool "ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3)"
+	bool "ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3/SQLite)"
 	depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
 	depends on FREETZ_TARGET_IPV6_SUPPORT
 	select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
@@ -18,7 +18,7 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
 		per-device bind key). New formats are added by editing the
 		codec specification YAML, no rebuild needed.
 
-		Four front-ends can be enabled in the configuration file:
+		Five front-ends can be enabled in the configuration file:
 		  * MySensors  - TCP gateway for Domoticz (recommended: Domoticz
 		    understands the protocol natively, so devices, units and
 		    commands need no mapping on its side)
@@ -31,6 +31,9 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
 		  * InfluxDB 3 - decoded measurements as line protocol through the
 		    v3 write API, bounded in-memory batches, optional token over
 		    HTTPS (plain HTTP tokens only on loopback)
+		  * SQLite     - local frame and typed measurement history, atomic
+		    batches and WAL for concurrent readers; no separate server.
+		    Choose an existing directory on local external storage.
 
 		Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one
 		structured YAML store (serial port, devices with MAC and bind

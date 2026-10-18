@@ -2,7 +2,7 @@
 
 Native Rust gateway for an ESP32 BLE USB adapter running ADV_BLE2UART
 `esp32-c3/ble50_scan`. It decodes advertisements and publishes values through
-MySensors TCP, MQTT, a Matter bridge and InfluxDB 3.
+MySensors TCP, MQTT, a Matter bridge, InfluxDB 3 and SQLite.
 
 The standalone daemon is named `ble2uart-gateway`; see [the portable daemon
 guide](src/README.md) for ordinary Linux builds and a separate repository layout.
@@ -238,6 +238,41 @@ UniqueIDs, or MySensors node/child IDs. Keep device order and child IDs unchange
 Controllers may retain existing names or user aliases; metadata does not rewrite
 Domoticz history, user names or its legacy subtype labels. Save and restart the
 gateway after metadata changes.
+
+## SQLite
+
+The optional SQLite frontend is available in **Settings → Frontends → SQLite**.
+It uses the same validated YAML store and Save/Restart workflow as the other
+frontends; saving does not restart the service implicitly.
+
+```yaml
+frontends:
+  sqlite:
+    enabled: true
+    path: /var/media/ftp/USB/ble2uart_gateway/readings.sqlite3
+    batch_size: 100
+    queue_capacity: 1024
+    flush_interval_ms: 1000
+    busy_timeout_ms: 1000
+```
+
+Replace `USB` with an actual local mount, preferably ext4, and create the parent
+directory there first. The default database path is empty and must be set
+explicitly. Do not place continuously written history in `/tmp/flash` or on
+internal flash. SQLite is bundled into the binary; no SQLite daemon, shell
+command, or additional shared library is required.
+
+One `frames` row stores each decoded reception and its complete JSON metadata;
+linked `measurements` rows store each attribute, unit and exact typed value,
+including fields not listed in `expose`. Frame and measurement rows commit
+atomically. A bounded worker queue keeps disk writes off the serial reader.
+WAL permits concurrent local rendering readers. Database errors, queue overflow
+and shutdown losses are reported in the service log.
+
+See [SQLite configuration, schema, queries and operational limits](src/README.md#sqlite-history).
+Retention/downsampling is not automatic. An external maintenance process can
+write concurrently by taking short transactions and handling SQLite's single
+writer lock; enable foreign keys on that connection for cascade deletion.
 
 ## MQTT And Matter
 

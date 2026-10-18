@@ -9,8 +9,8 @@ license = "EUPL-1.2"
 # Frontends use dedicated workers; optional HTTP output supports verified TLS.
 # The daemon is a few threads
 # (serial reader, rules ticker, one per front-end connection) and a handful of
-# pure-Rust dependencies, which keeps the MIPS binary small and the uClibc
-# cross build simple.
+# Rust dependencies plus a bundled SQLite library, with no database server
+# or system SQLite dependency.
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"

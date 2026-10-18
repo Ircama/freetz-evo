@@ -1,4 +1,4 @@
-# ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3)
+# ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3/SQLite)
   - Package: [master/make/pkgs/ble2uart_gateway/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ble2uart_gateway/)
   - Steward: Ircama
   - Provides: `/usr/bin/ble2uart-gateway`, init script `rc.ble2uart_gateway`, web page `/cgi-bin/conf/ble2uart_gateway`
@@ -8,7 +8,8 @@
 `ble2uart_gateway` is a native Rust gateway for an ESP32-C3 USB adapter running
 pvvx ADV_BLE2UART (`esp32-c3/ble50_scan`). It decodes BLE advertisements
 (ATC1441, MiBeacon, BTHome v1/v2 and their encrypted variants) and publishes the
-values through MySensors TCP (Domoticz), MQTT, a Matter bridge and InfluxDB 3.
+values through MySensors TCP (Domoticz), MQTT, a Matter bridge, InfluxDB 3 and
+an optional local SQLite history frontend.
 
 The package documentation lives next to the sources:
 
@@ -61,3 +62,6 @@ make ble2uart_gateway-precompiled
 
 The cross build uses the Freetz Rust toolchain (`-Z build-std` for
 `mips-unknown-linux-uclibc`) and enables the `freetz` Cargo feature.
+SQLite is bundled and cross-compiled with the target C compiler; no SQLite
+server or target shared library is required. Configure its file path explicitly
+in Settings/YAML; see the [SQLite frontend guide](../../make/pkgs/ble2uart_gateway/src/README.md#sqlite-history).
