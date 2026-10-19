@@ -55,6 +55,8 @@ the JSON result plus radio state. Commands use the running configuration, not
 unsaved edits; they do not save settings or implicitly restart the service.
 The command controls and tooltips follow the browser language (English, German,
 Italian, French or Spanish). Existing configuration/discovery views are unchanged.
+The Freetz startup form declares German and English in `files/.language`;
+other firmware languages use the framework's translation or fallback mechanism.
 
 An active scan is paused for diagnostics/GATT, then restored even after a
 command error. GATT connects to one peer and disconnects/cancels before scan

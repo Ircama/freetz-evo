@@ -8,6 +8,8 @@ config FREETZ_PACKAGE_GRAFANA
 		Grafana is an open-source monitoring and visualization platform.
 		Cross-compiles the OSS backend and installs the matching official
 		frontend assets. The build downloads the Go 1.26.9 toolchain.
+		Uses the bundled C SQLite driver through CGO, including on MIPS
+		where the upstream pure-Go SQLite driver is not supported.
 
 		Requires persistent USB storage and substantial free RAM (upstream
 		recommends at least 512 MB). Externalize the binary and web assets:

@@ -1,0 +1,137 @@
+--- a/pkg/storage/sqlite/sqlite.go
++++ b/pkg/storage/sqlite/sqlite.go
+@@ -19,8 +19,7 @@
+ 	"google.golang.org/protobuf/proto"
+ 	"google.golang.org/protobuf/types/known/structpb"
+ 	"google.golang.org/protobuf/types/known/timestamppb"
+-	"modernc.org/sqlite"
+-	sqlite3 "modernc.org/sqlite/lib"
++	sqlite3 "github.com/mattn/go-sqlite3"
+ 
+ 	openfgav1 "github.com/openfga/api/proto/openfga/v1"
+ 
+@@ -1336,6 +1335,6 @@
+-	var sqliteErr *sqlite.Error
++	var sqliteErr sqlite3.Error
+ 	if errors.As(err, &sqliteErr) {
+-		if sqliteErr.Code()&0xFF == sqlite3.SQLITE_CONSTRAINT {
++		if sqliteErr.Code == sqlite3.ErrConstraint {
+ 			if len(args) > 0 {
+ 				if tk, ok := args[0].(*openfgav1.TupleKey); ok {
+ 					return storage.InvalidWriteInputError(tk, openfgav1.TupleOperation_TUPLE_OPERATION_WRITE)
+@@ -1373,18 +1372,8 @@
+-var busyErrors = map[int]struct{}{
+-	sqlite3.SQLITE_BUSY_RECOVERY:      {},
+-	sqlite3.SQLITE_BUSY_SNAPSHOT:      {},
+-	sqlite3.SQLITE_BUSY_TIMEOUT:       {},
+-	sqlite3.SQLITE_BUSY:               {},
+-	sqlite3.SQLITE_LOCKED_SHAREDCACHE: {},
+-	sqlite3.SQLITE_LOCKED:             {},
+-}
+-
+ func isBusyError(err error) bool {
+-	var sqliteErr *sqlite.Error
++	var sqliteErr sqlite3.Error
+ 	if !errors.As(err, &sqliteErr) {
+ 		return false
+ 	}
+ 
+-	_, ok := busyErrors[sqliteErr.Code()]
+-	return ok
++	return sqliteErr.Code == sqlite3.ErrBusy || sqliteErr.Code == sqlite3.ErrLocked
+ }
+--- /dev/null
++++ b/pkg/storage/sqlite/sqlite_freetz.go
+@@ -0,0 +1,41 @@
++package sqlite
++
++import (
++	"database/sql"
++	"database/sql/driver"
++	"fmt"
++	"net/url"
++	"strings"
++
++	sqlite3 "github.com/mattn/go-sqlite3"
++)
++
++type freetzDriver struct{}
++
++func (d *freetzDriver) Open(dsn string) (driver.Conn, error) {
++	var pragmas []string
++	if pos := strings.IndexByte(dsn, '?'); pos >= 0 {
++		query, err := url.ParseQuery(dsn[pos+1:])
++		if err != nil {
++			return nil, fmt.Errorf("parse SQLite DSN: %w", err)
++		}
++		pragmas = query["_pragma"]
++		query.Del("_pragma")
++		dsn = dsn[:pos] + "?" + query.Encode()
++	}
++	driver := sqlite3.SQLiteDriver{
++		ConnectHook: func(conn *sqlite3.SQLiteConn) error {
++			for _, pragma := range pragmas {
++				if _, err := conn.Exec("PRAGMA "+pragma, nil); err != nil {
++					return fmt.Errorf("apply SQLite pragma %q: %w", pragma, err)
++				}
++			}
++			return nil
++		},
++	}
++	return driver.Open(dsn)
++}
++
++func init() {
++	sql.Register("sqlite", &freetzDriver{})
++}
+--- /dev/null
++++ b/pkg/storage/sqlite/sqlite_freetz_test.go
+@@ -0,0 +1,48 @@
++package sqlite
++
++import (
++	"database/sql"
++	"net/url"
++	"path/filepath"
++	"testing"
++)
++
++func TestFreetzPragmas(t *testing.T) {
++	query := url.Values{}
++	query.Add("_pragma", "journal_mode(WAL)")
++	query.Add("_pragma", "busy_timeout(100)")
++	query.Add("_pragma", "foreign_keys(ON)")
++	query.Set("_txlock", "immediate")
++	db, err := sql.Open("sqlite", "file:"+filepath.Join(t.TempDir(), "test.db")+"?"+query.Encode())
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer db.Close()
++	db.SetMaxOpenConns(1)
++	for pragma, want := range map[string]string{
++		"journal_mode": "wal",
++		"busy_timeout": "100",
++		"foreign_keys": "1",
++	} {
++		var got string
++		if err := db.QueryRow("PRAGMA " + pragma).Scan(&got); err != nil {
++			t.Fatal(err)
++		}
++		if got != want {
++			t.Fatalf("%s: got %q, want %q", pragma, got, want)
++		}
++	}
++}
++
++func TestFreetzInvalidDSN(t *testing.T) {
++	for _, dsn := range []string{
++		"file::memory:?_pragma=%zz",
++		"file::memory:?_pragma=busy_timeout(",
++	} {
++		conn, err := (&freetzDriver{}).Open(dsn)
++		if err == nil {
++			conn.Close()
++			t.Fatalf("expected invalid DSN or pragma to fail: %s", dsn)
++		}
++	}
++}

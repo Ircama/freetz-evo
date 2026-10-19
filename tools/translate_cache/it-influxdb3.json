@@ -1,0 +1,86 @@
+{
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-19T19:35:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Database and HTTP": {
+    "original": "Database and HTTP",
+    "translation": "Database e HTTP",
+    "timestamp": "2026-10-19T19:35:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Node ID": {
+    "original": "Node ID",
+    "translation": "ID nodo",
+    "timestamp": "2026-10-19T19:35:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Data directory (must already exist)": {
+    "original": "Data directory (must already exist)",
+    "translation": "Directory dei dati (deve già esistere)",
+    "timestamp": "2026-10-19T19:35:55Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:IP address (IPv6 without brackets)": {
+    "original": "IP address (IPv6 without brackets)",
+    "translation": "Indirizzo IP (IPv6 senza parentesi)",
+    "timestamp": "2026-10-19T19:35:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP port": {
+    "original": "HTTP port",
+    "translation": "Porta HTTP",
+    "timestamp": "2026-10-19T19:35:56Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Disable authentication (trusted networks only)": {
+    "original": "Disable authentication (trusted networks only)",
+    "translation": "Disabilita l’autenticazione (solo reti affidabili)",
+    "timestamp": "2026-10-19T19:35:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Startup and storage": {
+    "original": "Startup and storage",
+    "translation": "Avvio e archiviazione",
+    "timestamp": "2026-10-19T19:35:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Boot resource wait (seconds, 0 = synchronous)": {
+    "original": "Boot resource wait (seconds, 0 = synchronous)",
+    "translation": "Attesa delle risorse di avvio (secondi, 0 = sincrono)",
+    "timestamp": "2026-10-19T19:35:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:HTTP startup timeout (seconds)": {
+    "original": "HTTP startup timeout (seconds)",
+    "translation": "Timeout di avvio HTTP (secondi)",
+    "timestamp": "2026-10-19T19:35:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Use local external storage with a suitable filesystem (e.g. ext4). Database files are not backed up by modsave. Saving does not restart the service.": {
+    "original": "Use local external storage with a suitable filesystem (e.g. ext4). Database files are not backed up by modsave. Saving does not restart the service.",
+    "translation": "Utilizzare una memoria esterna locale con un filesystem adeguato (ad es. ext4). I file del database non vengono sottoposti a backup da modsave. Il salvataggio non riavvia il servizio.",
+    "timestamp": "2026-10-19T19:35:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default: loopback only, authentication enabled. With authentication disabled, every client that can reach the listener can access the database.": {
+    "original": "Default: loopback only, authentication enabled. With authentication disabled, every client that can reach the listener can access the database.",
+    "translation": "Impostazione predefinita: solo loopback, autenticazione abilitata. Con l’autenticazione disabilitata, ogni client in grado di raggiungere il listener può accedere al database.",
+    "timestamp": "2026-10-19T19:36:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}

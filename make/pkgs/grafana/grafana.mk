@@ -16,12 +16,17 @@ $(PKG)_DEPENDS_ON += go-host
 $(PKG)_GO_MODCACHE:=$(abspath $($(PKG)_DIR)/.gomodcache)
 $(PKG)_GO_CACHE:=$(abspath $($(PKG)_DIR)/.gocache)
 $(PKG)_MYSQL_TYPES:=$($(PKG)_GO_MODCACHE)/github.com/grafana/go-mysql-server@v0.20.2-grafana-4/sql/types
+$(PKG)_OPENFGA_DIR:=$($(PKG)_GO_MODCACHE)/github.com/openfga/openfga@v1.18.3
 $(PKG)_WEB_SOURCE:=grafana-$($(PKG)_VERSION).linux-amd64.tar.gz
 $(PKG)_WEB_HASH:=c48765988fd88572607e4ea670251af8a8e64ab3e360d0f3cf67a6f3587b92ab
 $(PKG)_WEB_DIR:=$($(PKG)_DIR)/.web
 $(PKG)_TARGET_ASSETS:=$($(PKG)_DEST_DIR)/usr/share/grafana/conf/defaults.ini
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_GO_ARCH FREETZ_TARGET_GO_MIPS FREETZ_TARGET_GO_ARM
+
+ifeq ($(strip $(FREETZ_TARGET_ARCH_MIPS)),y)
+$(PKG)_GO_EXTLDFLAGS := -extldflags=-Wl,-T,$(abspath $($(PKG)_MAKE_DIR))/mips-plt.ld
+endif
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -45,7 +50,7 @@ $(GRAFANA_WEB_DIR)/.unpacked: $(DL_DIR)/$(GRAFANA_WEB_SOURCE) | grafana-precompi
 	test -d $(GRAFANA_WEB_DIR)/public/build
 	touch $@
 
-$($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(wildcard $($(PKG)_MAKE_DIR)/module-patches/*.patch)
+$($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(wildcard $($(PKG)_MAKE_DIR)/module-patches/*.patch) $($(PKG)_MAKE_DIR)/mips-plt.ld
 	cd $(GRAFANA_DIR) && \
 		export PATH=$(abspath $(TOOLS_DIR))/go-host/bin:$$PATH \
 		GOTOOLCHAIN=go1.26.9 GOFLAGS=-modcacherw \
@@ -55,7 +60,14 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(wildcard $($(PKG)_MAKE_DIR)/module
 		$(if $(FREETZ_TARGET_GO_ARM),GOARM=$(FREETZ_TARGET_GO_ARM),) \
 		CGO_ENABLED=1 CC="$(TARGET_CC)" \
 		CGO_CFLAGS='$(TARGET_CFLAGS)' && \
+		if ! test -f pkg/util/sqlite/sqlite_freetz.go; then \
+			patch -p1 < $(abspath $(GRAFANA_MAKE_DIR))/module-patches/sqlite-cgo.patch || exit 1; \
+		fi && \
 		go mod download && \
+		chmod u+w $(GRAFANA_OPENFGA_DIR)/pkg/storage/sqlite $(GRAFANA_OPENFGA_DIR)/pkg/storage/sqlite/sqlite.go && \
+		if ! test -f $(GRAFANA_OPENFGA_DIR)/pkg/storage/sqlite/sqlite_freetz.go; then \
+			patch -d $(GRAFANA_OPENFGA_DIR) -p1 < $(abspath $(GRAFANA_MAKE_DIR))/module-patches/openfga-sqlite-cgo.patch || exit 1; \
+		fi && \
 		chmod u+w $(GRAFANA_MYSQL_TYPES)/number.go $(GRAFANA_MYSQL_TYPES)/geometry.go && \
 		sed -i 's/math.MaxUint64 - uint(-v-1)/math.MaxUint64 - uint64(-v-1)/g' $(GRAFANA_MYSQL_TYPES)/number.go && \
 		sed -i 's/srid > math.MaxUint32/uint64(srid) > math.MaxUint32/g' $(GRAFANA_MYSQL_TYPES)/geometry.go && \
@@ -67,8 +79,8 @@ $($(PKG)_BINARY): $($(PKG)_DIR)/.configured $(wildcard $($(PKG)_MAKE_DIR)/module
 		if ! grep -q 'loopIteration := int64(0)' $(GRAFANA_MYSQL_TYPES)/../rowexec/proc.go; then \
 			patch -d $(GRAFANA_MYSQL_TYPES)/../.. -p1 < $(abspath $(GRAFANA_MAKE_DIR))/module-patches/mysql-rowexec-32bit.patch || exit 1; \
 		fi && \
-		go build -buildvcs=false -trimpath -tags 'oss netgo' \
-			-ldflags='-s -w -X main.version=$(GRAFANA_VERSION)' \
+		go build -buildvcs=false -trimpath -tags 'oss netgo freetz_sqlite_cgo' \
+			-ldflags='-s -w -X main.version=$(GRAFANA_VERSION) $(GRAFANA_GO_EXTLDFLAGS)' \
 			-o bin/grafana ./pkg/cmd/grafana
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)

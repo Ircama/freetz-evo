@@ -1,1 +1,8 @@
-ble2uart_gateway language file -- see the .language files of the other packages.
+languages
+{ de en }
+default
+{ en }
+files
+{
+	usr/lib/cgi-bin/ble2uart_gateway.cgi
+}

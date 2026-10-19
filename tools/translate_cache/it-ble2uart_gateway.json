@@ -1,0 +1,135 @@
+{
+  "deepl:Startup and storage": {
+    "original": "Startup and storage",
+    "translation": "Avvio e archiviazione",
+    "timestamp": "2026-10-19T19:33:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Start type": {
+    "original": "Start type",
+    "translation": "Tipo di avvio",
+    "timestamp": "2026-10-19T19:33:00Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Serial link": {
+    "original": "Serial link",
+    "translation": "Collegamento seriale",
+    "timestamp": "2026-10-19T19:33:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Initial serial device": {
+    "original": "Initial serial device",
+    "translation": "Dispositivo seriale iniziale",
+    "timestamp": "2026-10-19T19:33:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Initial baud rate": {
+    "original": "Initial baud rate",
+    "translation": "Velocità di trasmissione iniziale",
+    "timestamp": "2026-10-19T19:33:02Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Wait for the binary/device (seconds, 0 = immediately)": {
+    "original": "Wait for the binary/device (seconds, 0 = immediately)",
+    "translation": "Attesa per il file binario/dispositivo (secondi, 0 = immediatamente)",
+    "timestamp": "2026-10-19T19:33:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Store location": {
+    "original": "Store location",
+    "translation": "Ubicazione del negozio",
+    "timestamp": "2026-10-19T19:33:03Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Configuration directory (devices, bind keys, rules)": {
+    "original": "Configuration directory (devices, bind keys, rules)",
+    "translation": "Directory di configurazione (dispositivi, chiavi di associazione, regole)",
+    "timestamp": "2026-10-19T19:33:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device": {
+    "original": "Device",
+    "translation": "Dispositivo",
+    "timestamp": "2026-10-19T19:33:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Type": {
+    "original": "Type",
+    "translation": "Tipo",
+    "timestamp": "2026-10-19T19:33:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Free / total": {
+    "original": "Free / total",
+    "translation": "Gratuito / totale",
+    "timestamp": "2026-10-19T19:33:05Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:directory": {
+    "original": "directory",
+    "translation": "directory",
+    "timestamp": "2026-10-19T19:33:06Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Clicking uses the path. The existing store is moved along when saving.": {
+    "original": "Clicking uses the path. The existing store is moved along when saving.",
+    "translation": "Cliccando si utilizza il percorso. Il negozio esistente viene spostato durante il salvataggio.",
+    "timestamp": "2026-10-19T19:33:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Note: /tmp/flash is a ramdisk; it is archived by modsave on stop and on every save. A disk is safer for the bind keys.": {
+    "original": "Note: /tmp/flash is a ramdisk; it is archived by modsave on stop and on every save. A disk is safer for the bind keys.",
+    "translation": "Nota: /tmp/flash è un ramdisk; viene archiviato da modsave all’arresto e ad ogni salvataggio. Un disco è più sicuro per le chiavi di associazione.",
+    "timestamp": "2026-10-19T19:33:08Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Gateway configuration": {
+    "original": "Gateway configuration",
+    "translation": "Configurazione del gateway",
+    "timestamp": "2026-10-19T19:33:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Advanced": {
+    "original": "Advanced",
+    "translation": "Avanzato",
+    "timestamp": "2026-10-19T19:33:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Debug logging": {
+    "original": "Debug logging",
+    "translation": "Registrazione di debug",
+    "timestamp": "2026-10-19T19:33:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Additional command line options": {
+    "original": "Additional command line options",
+    "translation": "Opzioni aggiuntive della riga di comando",
+    "timestamp": "2026-10-19T19:33:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Log: Status -> Logs -> rc.ble2uart_gateway": {
+    "original": "Log: Status -> Logs -> rc.ble2uart_gateway",
+    "translation": "Log: Stato -> Log -> rc.ble2uart_gateway",
+    "timestamp": "2026-10-19T19:33:09Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  }
+}
