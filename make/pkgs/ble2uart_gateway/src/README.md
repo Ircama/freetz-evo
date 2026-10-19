@@ -28,6 +28,104 @@ Optional managed broker/controller modes require Mosquitto or matter-bridge;
 ordinary MQTT publication and the Matter server do not require those services.
 Matter uses development attestation, not certified product credentials.
 
+## Firmware Commands While The Daemon Is Running
+
+`--command '<JSON>'` sends a validated request to the running daemon through its
+private Unix socket. Use `--command -` to read JSON from stdin. This never opens
+the serial device in a second process and does not change saved configuration.
+Failures return JSON with `success: false` and a nonzero CLI exit status.
+The same operations are available in the authenticated Freetz **Commands** tab.
+
+The target firmware is the
+[`esp32-c3` branch of ADV_BLE2UART](https://github.com/pvvx/ADV_BLE2UART/tree/esp32-c3/source/esp32ble/ble50_scan),
+not the older scanner under `master/source/esp32-c3`. Requests and limits follow
+the C implementation; some README parameter layouts differ from that parser.
+Unsupported firmware commands fail explicitly, without restarting the service.
+
+```sh
+ble2uart-gateway --command '{"command":"diagnostic","name":"version"}'
+ble2uart-gateway --command '{"command":"diagnostic","name":"gpio-read","pin":9}'
+ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","addr_type":0,"operation":"discover"}'
+ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","operation":"read","handle":42}'
+ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","operation":"write","handle":42,"value":"0102"}'
+ble2uart-gateway --command '{"command":"txadv-start","phy":0,"interval_units":160,"data":"020106"}'
+ble2uart-gateway --command '{"command":"txadv-stop"}'
+ble2uart-gateway --command '{"command":"scan-start"}'
+```
+
+### Scan Lifecycle
+
+- Diagnostics and GATT transactions pause an active scan, then restore its
+  previous PHY/window settings without clearing MAC filters, on success **or
+  error**. An inactive scan stays inactive. An active Discovery uses its temporary
+  scan settings and its remaining duration is preserved during the command.
+- GATT transactions connect to one peer, perform one operation, then disconnect
+  (or cancel an unsuccessful open) before restoring scanning. A pre-existing
+  connection is not taken over or disconnected.
+- **Starting TXADV stops scanning indefinitely for this daemon session.**
+  It also cancels Discovery. Stopping TXADV, running diagnostics, or reconnecting
+  the serial link does **not** restart scanning. If a TXADV start result is
+  uncertain, scanning remains suppressed and TXADV is conservatively considered
+  active until explicitly stopped.
+- `scan-start` explicitly stops any daemon-tracked TXADV and reapplies the
+  configured filters/scanner. `scan-stop` explicitly disables scanning without
+  stopping TXADV. `txadv-stop` only stops transmission. Discovery cannot start
+  while TXADV is active; stop TXADV first.
+- These overrides are runtime state, not persisted YAML: an explicit service
+  restart returns to the saved scanner configuration. Stop TXADV before
+  restarting the service; the adapter may retain advertising across host restarts.
+- Restoration/cleanup failures are reported, not disguised as command success.
+  The daemon retries connection recovery after reopening the link. Commands
+  themselves are never automatically retried.
+
+`--control status` includes a `radio` object with `scanning`, `scan_suppressed`,
+`txadv_active` and `recovery_required`. These represent daemon-tracked/requested
+state, not a guarantee that every radio packet was received. Scan suspension
+necessarily loses advertisements transmitted during that interval. Requests
+are serialized; other control requests wait while a transaction is running,
+but the serial reader continues collecting unrelated events.
+
+### Command Parameters And Confirmation
+
+Diagnostics are read-only queries: `info`, `version`, `uart`, `rfsdk`, `vbat`,
+`gpio-events`, `gpio-status`, `gpio-read`, `analog-read`, `connection-status`,
+`txadv-status`. GPIO queries accept `pin`. Results include raw response hex and,
+where applicable, firmware metadata.
+
+GATT accepts `mac`, `addr_type` (0 public, 1 random), `coded` (default false),
+`operation`, and `timeout_ms` (100-30000; default 10000 for the whole operation,
+excluding bounded cleanup/scan restoration). Operations:
+
+| Operation | Additional fields | Reported confirmation |
+|-----------|-------------------|-----------------------|
+| `discover` | None | Discovery-complete event, up to 512 raw typed entries |
+| `read`, `read-descriptor` | Nonzero decimal `handle` | Asynchronous read result, hex `value` |
+| `write`, `write-descriptor` | `handle`, hex `value` | Stack acceptance only; `att_confirmed: false` |
+| `write-without-response` | `handle`, hex `value` | Stack acceptance only; `att_confirmed: false` |
+| `mtu` | None | Negotiated MTU result |
+| `unpair` | None | Request acceptance only; `security_confirmed: false` |
+
+Writes are limited to 20 bytes; values are never silently truncated. The current
+firmware has a CONN write length guard that uses the high handle byte rather than
+the value length. Requests that this guard would reject are rejected before
+serial access with an explicit firmware-fix message; bytes are never padded to
+work around it. Empty writes are allowed if the firmware/device accepts them.
+Unknown fields, invalid addresses, odd/nonhex values and oversized requests fail
+before scanning is changed.
+
+The firmware does not send structured final ATT-write or pairing-completion
+events. A successful write response therefore means **submitted to the stack**,
+not remotely executed or read-back verified; final ATT failures cannot be
+reported by this API with the current firmware. Interactive pairing is not
+exposed. Notifications received during a bounded transaction are preserved for
+normal event logging, not treated as arbitrary application acknowledgements.
+
+TXADV accepts `phy` (0 legacy 1M, 1 extended 1M, 2 coded),
+`interval_units` (32-65535, in 0.625 ms units), and hex `data` (at most 31 bytes).
+It periodically broadcasts until explicitly stopped; it is not an addressed
+GATT write, and only devices implementing that advertisement protocol will act
+on it. Stop TXADV before requesting GATT transactions.
+
 The Matter SDK is reproducibly pinned to `rs-matter` revision
 `c69916a5a78957d46500145486df375acf4ab490`, upstream `main` checked on 2026-10-17.
 

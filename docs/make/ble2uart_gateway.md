@@ -19,6 +19,14 @@ The package documentation lives next to the sources:
     standalone `ble2uart-gateway` for ordinary Linux hosts, Cargo features,
     Matter DNS-SD backends, logging options.
 
+Live diagnostic, GATT and TXADV commands are available through the **Commands**
+web tab or `ble2uart-gateway --command '<JSON>'`; both use the running daemon's
+serial link. Temporary commands pause/resume an active scan even after errors.
+TXADV start instead leaves scanning disabled until an explicit `scan-start`
+request (or service restart); TXADV stop alone never resumes it.
+See the [command reference](../../make/pkgs/ble2uart_gateway/src/README.md#firmware-commands-while-the-daemon-is-running)
+for the required `esp32-c3` firmware branch, payload limits and confirmation levels.
+
 ## Host build for testing
 
 The daemon also builds and runs on the development host, without the Freetz
@@ -37,6 +45,13 @@ unit tests run with:
 
 ```sh
 cargo test --offline --manifest-path make/pkgs/ble2uart_gateway/src/Cargo.toml
+```
+
+After building the host binary, the command/scan lifecycle can also be checked
+end-to-end without hardware:
+
+```sh
+python3 make/pkgs/ble2uart_gateway/tools/test_commands.py
 ```
 
 The host binary is `make/pkgs/ble2uart_gateway/src/target/debug/ble2uart-gateway`.

@@ -22,6 +22,8 @@ const observations = [
 ];
 let active = false;
 let restarts = 0;
+let scanning = true, txadv = false;
+const commands = [];
 let browser;
 const escaped = text => text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const server = http.createServer(async (request, response) => {
@@ -41,7 +43,16 @@ const server = http.createServer(async (request, response) => {
     } else if (['status','discover-start','discover-stop'].includes(action)) {
         if (action === 'discover-start') {assert.equal(request.method,'POST'); active = true;}
         if (action === 'discover-stop') {assert.equal(request.method,'POST'); active = false;}
-        result = {success:true, connected:true, active, remaining_s:active?30:0, reports:8, devices:observations, overflow:0, error:''};
+        result = {success:true, connected:true, active, remaining_s:active?30:0, reports:8, devices:observations, overflow:0, error:'', radio:{scanning,scan_suppressed:!scanning,txadv_active:txadv}};
+    } else if (action === 'command') {
+        assert.equal(request.method,'POST');
+        assert.equal(request.headers['content-type'],'application/json');
+        const command=JSON.parse(input);commands.push(command);
+        if(command.command==='txadv-start'){scanning=false;txadv=true;active=false;}
+        if(command.command==='txadv-stop')txadv=false;
+        if(command.command==='scan-start'){scanning=true;txadv=false;}
+        if(command.command==='scan-stop')scanning=false;
+        result={success:true,result:{confirmation:'stack-accepted'},radio:{scanning,scan_suppressed:!scanning,txadv_active:txadv}};
     } else if (action === 'restart') {restarts++;result={success:true};}
     else result={success:true};
     response.setHeader('Content-Type','text/html');
@@ -58,7 +69,7 @@ const server = http.createServer(async (request, response) => {
         await page.getByRole('status').filter({hasText:'Configuration loaded'}).waitFor();
         await page.getByRole('button',{name:'Add device',exact:true}).click();
         await page.getByLabel('MAC',{exact:true}).fill('AABBCCDDEEFF');
-        await page.getByLabel('Label',{exact:true}).fill('Test } </pre><script>window.injected=true</script>');
+        await page.getByLabel('Device name',{exact:true}).fill('Test } </pre><script>window.injected=true</script>');
         await page.getByLabel('Bindkey (32 hexadecimal digits)',{exact:true}).fill('1'.repeat(32));
         await page.getByRole('button',{name:'Show bindkey',exact:true}).click();
         assert.equal(await page.getByLabel('Bindkey (32 hexadecimal digits)',{exact:true}).getAttribute('type'),'text');
@@ -102,6 +113,39 @@ const server = http.createServer(async (request, response) => {
         await page.locator('#bbDeviceDialog').waitFor({state:'hidden'});
         await page.getByRole('button',{name:'Stop',exact:true}).click();
         await page.locator('#bbDiscoveryStatus').filter({hasText:'Idle'}).waitFor();
+        await page.getByRole('tab',{name:'Commands',exact:true}).click();
+        await page.locator('#bbRadio').filter({hasText:'"scanning": true'}).waitFor();
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Cancel',exact:true}).filter({visible:true}).click();
+        assert.equal(commands.length,0);
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Continue',exact:true}).click();
+        await page.locator('#bbCommandResult').filter({hasText:'stack-accepted'}).waitFor();
+        assert.deepEqual(commands.at(-1),{command:'diagnostic',name:'info',pin:0});
+        await page.locator('#bbCommandType').selectOption('gatt');
+        await page.locator('#bbCmd_mac').fill('AABBCCDDEEFF');
+        await page.locator('#bbCmd_operation').selectOption('write');
+        await page.locator('#bbCmd_handle').fill('42');
+        await page.locator('#bbCmd_value').fill('0102');
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Continue',exact:true}).click();
+        await page.locator('#bbCommandResult').filter({hasText:'stack-accepted'}).waitFor();
+        assert.deepEqual(commands.at(-1),{command:'gatt',mac:'AABBCCDDEEFF',addr_type:0,coded:false,operation:'write',handle:42,value:'0102',timeout_ms:10000});
+        await page.locator('#bbCommandType').selectOption('txadv-start');
+        await page.locator('#bbCmd_data').fill('020106');
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Continue',exact:true}).click();
+        await page.locator('#bbRadio').filter({hasText:'"scanning": false'}).waitFor();
+        assert.equal(commands.at(-1).command,'txadv-start');
+        await page.locator('#bbCommandType').selectOption('txadv-stop');
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Continue',exact:true}).click();
+        await page.waitForFunction(()=>document.getElementById('bbRadio').textContent.includes('"txadv_active": false'));
+        assert.equal(scanning,false);
+        await page.locator('#bbCommandType').selectOption('scan-start');
+        await page.getByRole('button',{name:'Send command',exact:true}).click();
+        await page.getByRole('button',{name:'Continue',exact:true}).click();
+        await page.locator('#bbRadio').filter({hasText:'"scanning": true'}).waitFor();
         await page.screenshot({path:'/tmp/ble-web-desktop.png',fullPage:true});
         await page.setViewportSize({width:390,height:844});
         await page.screenshot({path:'/tmp/ble-web-mobile.png',fullPage:true});
@@ -113,8 +157,16 @@ const server = http.createServer(async (request, response) => {
         const saved = JSON.parse(spawnSync(binary,['--config',config,'--web-config','read'],{encoding:'utf8'}).stdout);
         assert.equal(saved.config.devices.length,2);
         assert.equal(saved.config.scanner.filter_known_devices,false);
+        for(const [locale,tab,send] of [['de-DE','Befehle','Befehl senden'],['it-IT','Comandi','Invia comando'],['fr-FR','Commandes','Envoyer la commande'],['es-ES','Comandos','Enviar comando']]){
+            const localized=await browser.newPage({locale});
+            await localized.goto('http://127.0.0.1:'+server.address().port);
+            await localized.locator('#bbMsg').filter({hasText:'Configuration loaded'}).waitFor();
+            await localized.getByRole('tab',{name:tab,exact:true}).click();
+            assert(await localized.getByRole('button',{name:send,exact:true}).getAttribute('title'));
+            await localized.close();
+        }
         assert.deepEqual(errors,[]);
-        console.log('UI PASS: device editing/saving, escaped labels, masked keys, settings/YAML sync, discovery/vendor filter/inspection/configure/stop, desktop/mobile layout; no implicit restart.');
+        console.log('UI PASS: configuration, discovery, command confirmation/cancellation, diagnostic/GATT POST payloads, TXADV scan suppression and explicit resume, desktop/mobile layout; no implicit restart.');
     } finally {
         if (browser) await browser.close();
         server.close();

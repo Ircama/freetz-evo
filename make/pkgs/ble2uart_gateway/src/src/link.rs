@@ -792,6 +792,10 @@ impl Drop for Link {
 }
 
 impl Link {
+    pub fn send(&mut self, frame: &[u8]) -> Result<(), String> {
+        self.port.write_all(frame)
+    }
+
     /// Open the port and start the reader thread. `reset_on_open` pulses DTR/RTS
     /// (the ESP32-C3 resets on that pulse).
     pub fn open(

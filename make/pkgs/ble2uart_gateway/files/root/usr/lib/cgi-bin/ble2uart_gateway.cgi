@@ -50,6 +50,14 @@ EOF
 				fi
 				;;
 			status|discover-stop) "$DAEMON_BIN" --control "$ACTION" ;;
+			command)
+				case "$CONTENT_LENGTH" in ''|*[!0-9]*) echo '{"success":false,"error":"invalid request length"}'; return ;; esac
+				if [ "$CONTENT_LENGTH" -gt 4096 ] || [ "$CONTENT_TYPE" != application/json ]; then
+					echo '{"success":false,"error":"expected command JSON, at most 4096 bytes"}'
+				else
+					"$DAEMON_BIN" --command -
+				fi
+				;;
 			discover-start)
 				SECONDS=$(cgi_param seconds)
 				case "$SECONDS" in ''|*[!0-9]*) echo '{"success":false,"error":"invalid duration"}' ;; *) "$DAEMON_BIN" --control discover-start "$SECONDS" ;; esac
@@ -204,6 +212,7 @@ cat << 'EOF'
 <div class="bbBar bbTabs" role="tablist" aria-label="Gateway views">
 <button type="button" role="tab" data-tab="devices" aria-selected="true">Devices</button>
 <button type="button" role="tab" data-tab="discovery" aria-selected="false">Discovery</button>
+<button type="button" role="tab" data-tab="commands" id="bbCommandsTab" aria-selected="false">Commands</button>
 <button type="button" role="tab" data-tab="settings" aria-selected="false">Settings</button>
 <button type="button" role="tab" data-tab="yaml" aria-selected="false">YAML</button>
 </div>
@@ -218,6 +227,13 @@ cat << 'EOF'
 <details><summary>Selected advertisement</summary><pre id="bbPacket"></pre></details>
 </section>
 <section data-panel="settings" role="tabpanel" hidden><div id="bbSettings"></div></section>
+<section data-panel="commands" role="tabpanel" hidden>
+<p id="bbCommandNote"></p>
+<div class="bbBar"><label><span id="bbCommandTypeLabel"></span> <select id="bbCommandType"></select></label><button type="button" id="bbCommandSend"></button><button type="button" id="bbRadioRefresh"></button></div>
+<div id="bbCommandFields" class="bbGrid"></div>
+<pre id="bbRadio" role="status"></pre>
+<pre id="bbCommandResult" role="status" aria-live="polite"></pre>
+</section>
 <section data-panel="yaml" role="tabpanel" hidden><div id="bbYaml" aria-label="Complete gateway YAML configuration"></div><div class="bbBar"><button type="button" id="bbDownload">Download YAML</button><label>Import YAML <input type="file" id="bbImport" accept=".yaml,.yml,text/plain"></label></div><div class="bbBar"><button type="button" id="bbHistory">List backups</button><select id="bbBackups" aria-label="Configuration backup"><option value="">Select backup</option></select><button type="button" id="bbRestore">Load backup</button></div></section>
 <datalist id="bbFormats"><option value="custom"><option value="custom_enc"><option value="atc1441"><option value="atc1441_enc"><option value="mi_like"><option value="bt_home"><option value="bt_home_enc"><option value="bt_home_v2"></datalist>
 <datalist id="bbAttributes"><option value="temperature"><option value="humidity"><option value="battery_level"><option value="battery_v"><option value="switch"><option value="opened"><option value="boolean"><option value="humidity_trigger"><option value="temp_trigger"><option value="out_gpio_trg_flag"><option value="out_gpio_trg_value"><option value="input_gpio_value"></datalist>
@@ -290,6 +306,56 @@ cat << 'EOF'
 			dialog.showModal();
 		});
 	}
+	const commandTranslations = {
+		en: {tab:'Commands',type:'Command',send:'Send command',refresh:'Refresh radio status',note:'Temporary commands pause scanning and restore it afterwards, including on error. TXADV start leaves scanning OFF until explicitly restarted. Commands use the running daemon, not unsaved settings.',confirm:'Send this command to the device? Writes and pairing can change the device. TXADV start stops scanning until you explicitly restart it.',pending:'Command running; do not retry while awaiting its result.',done:'Command completed; inspect the confirmation level below.',diagnostic:'Firmware diagnostics',gatt:'BLE GATT transaction',start:'Start TXADV (leave scan OFF)',stop:'Stop TXADV (leave scan OFF)',scanStart:'Start configured scan (stop TXADV)',scanStop:'Stop scan',name:'Diagnostic',pin:'GPIO pin',mac:'Peer MAC',addr_type:'Address type (0 public, 1 random)',coded:'Connect on Coded PHY',operation:'GATT operation',handle:'ATT handle (decimal, reads/writes only)',value:'Write value (hex, at most 20 bytes)',timeout_ms:'Transaction timeout (100-30000 ms)',phy:'TX PHY (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'TX interval (0.625 ms units, minimum 32)',data:'Advertisement data (hex, at most 31 bytes)'},
+		de: {tab:'Befehle',type:'Befehl',send:'Befehl senden',refresh:'Funkstatus aktualisieren',note:'Temporäre Befehle pausieren den Scan und stellen ihn auch bei Fehlern wieder her. TXADV lässt den Scan bis zum manuellen Neustart AUS. Es gelten die laufenden Einstellungen.',confirm:'Befehl senden? Schreiben und Pairing können das Gerät ändern. TXADV stoppt den Scan bis zum manuellen Neustart.',pending:'Befehl läuft; nicht erneut senden.',done:'Befehl beendet; Bestätigungsstufe unten prüfen.',diagnostic:'Firmware-Diagnose',gatt:'BLE-GATT-Transaktion',start:'TXADV starten (Scan AUS)',stop:'TXADV stoppen (Scan bleibt AUS)',scanStart:'Scan starten (TXADV stoppen)',scanStop:'Scan stoppen',name:'Diagnose',pin:'GPIO-Pin',mac:'Geräte-MAC',addr_type:'Adresstyp (0 öffentlich, 1 zufällig)',coded:'Coded-PHY-Verbindung',operation:'GATT-Operation',handle:'ATT-Handle (dezimal, nur Lesen/Schreiben)',value:'Schreibwert (Hex, maximal 20 Bytes)',timeout_ms:'Zeitlimit (100-30000 ms)',phy:'TX-PHY (0 Legacy 1M, 1 Extended 1M, 2 Coded)',interval_units:'TX-Intervall (0,625 ms, mindestens 32)',data:'Advertisement-Daten (Hex, maximal 31 Bytes)'},
+		it: {tab:'Comandi',type:'Comando',send:'Invia comando',refresh:'Aggiorna stato radio',note:'I comandi temporanei sospendono lo scan e lo ripristinano anche in caso di errore. TXADV lascia lo scan SPENTO fino a un riavvio esplicito. Si usano le impostazioni del daemon, non le modifiche non salvate.',confirm:'Inviare il comando? Scritture e pairing possono modificare il dispositivo. TXADV interrompe lo scan fino al riavvio esplicito.',pending:'Comando in corso; non reinviarlo in attesa del risultato.',done:'Comando terminato; verificare il livello di conferma qui sotto.',diagnostic:'Diagnostica firmware',gatt:'Transazione BLE GATT',start:'Avvia TXADV (scan SPENTO)',stop:'Ferma TXADV (scan resta SPENTO)',scanStart:'Avvia scan configurato (ferma TXADV)',scanStop:'Ferma scan',name:'Diagnostica',pin:'Pin GPIO',mac:'MAC destinatario',addr_type:'Tipo indirizzo (0 pubblico, 1 casuale)',coded:'Connessione su PHY Coded',operation:'Operazione GATT',handle:'Handle ATT (decimale, solo letture/scritture)',value:'Valore da scrivere (hex, massimo 20 byte)',timeout_ms:'Timeout transazione (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervallo TX (unità 0,625 ms, minimo 32)',data:'Dati advertisement (hex, massimo 31 byte)'},
+		fr: {tab:'Commandes',type:'Commande',send:'Envoyer la commande',refresh:'Actualiser la radio',note:'Les commandes temporaires suspendent puis rétablissent le scan, même en cas d’erreur. TXADV laisse le scan ARRÊTÉ jusqu’au redémarrage explicite. Les paramètres actifs du daemon sont utilisés.',confirm:'Envoyer cette commande ? Écriture et appairage peuvent modifier le périphérique. TXADV arrête le scan jusqu’au redémarrage explicite.',pending:'Commande en cours ; ne pas la renvoyer.',done:'Commande terminée ; vérifier le niveau de confirmation ci-dessous.',diagnostic:'Diagnostic firmware',gatt:'Transaction BLE GATT',start:'Démarrer TXADV (scan ARRÊTÉ)',stop:'Arrêter TXADV (scan reste ARRÊTÉ)',scanStart:'Démarrer le scan (arrêter TXADV)',scanStop:'Arrêter le scan',name:'Diagnostic',pin:'Broche GPIO',mac:'MAC du périphérique',addr_type:'Type d’adresse (0 publique, 1 aléatoire)',coded:'Connexion PHY Coded',operation:'Opération GATT',handle:'Handle ATT (décimal, lecture/écriture)',value:'Valeur (hex, 20 octets maximum)',timeout_ms:'Délai (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalle TX (0,625 ms, minimum 32)',data:'Données advertisement (hex, 31 octets maximum)'},
+		es: {tab:'Comandos',type:'Comando',send:'Enviar comando',refresh:'Actualizar radio',note:'Los comandos temporales pausan el escaneo y lo restauran incluso si fallan. TXADV deja el escaneo APAGADO hasta reiniciarlo explícitamente. Se usan los ajustes activos del daemon.',confirm:'¿Enviar el comando? Escritura y emparejamiento pueden modificar el dispositivo. TXADV detiene el escaneo hasta reiniciarlo explícitamente.',pending:'Comando en curso; no volver a enviarlo.',done:'Comando terminado; comprobar el nivel de confirmación abajo.',diagnostic:'Diagnóstico del firmware',gatt:'Transacción BLE GATT',start:'Iniciar TXADV (escaneo APAGADO)',stop:'Detener TXADV (escaneo sigue APAGADO)',scanStart:'Iniciar escaneo (detener TXADV)',scanStop:'Detener escaneo',name:'Diagnóstico',pin:'Pin GPIO',mac:'MAC del dispositivo',addr_type:'Tipo de dirección (0 pública, 1 aleatoria)',coded:'Conexión PHY Coded',operation:'Operación GATT',handle:'Handle ATT (decimal, lectura/escritura)',value:'Valor (hex, máximo 20 bytes)',timeout_ms:'Tiempo límite (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalo TX (0,625 ms, mínimo 32)',data:'Datos advertisement (hex, máximo 31 bytes)'}
+	};
+	const ct = commandTranslations[(navigator.language || 'en').split('-')[0]] || commandTranslations.en;
+	let commandDraft;
+	const commandOptions = {
+		name:['info','version','uart','rfsdk','vbat','gpio-events','gpio-status','gpio-read','analog-read','connection-status','txadv-status'],
+		operation:['discover','read','write','write-without-response','read-descriptor','write-descriptor','mtu','unpair']
+	};
+	function renderCommand() {
+		const command = element('bbCommandType').value;
+		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : command === 'gatt' ? {command,mac:'',addr_type:0,coded:false,operation:'discover',handle:0,value:'',timeout_ms:10000} : command === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
+		const parent = element('bbCommandFields'); parent.replaceChildren();
+		Object.entries(commandDraft).filter(([key])=>key!=='command').forEach(([key,value])=>{
+			const label=document.createElement('label');label.className='bbField';label.append(ct[key]);
+			const input=document.createElement(commandOptions[key]?'select':'input');
+			if(commandOptions[key])commandOptions[key].forEach(option=>input.add(new Option(option,option)));
+			else input.type=typeof value==='boolean'?'checkbox':typeof value==='number'?'number':'text';
+			input.id='bbCmd_'+key;input.title=ct[key];input.autocomplete='off';
+			if(input.type==='checkbox')input.checked=value;else input.value=value;
+			if(input.type==='number'){input.min='0';input.step='1';}
+			if(key==='timeout_ms'){input.min='100';input.max='30000';}
+			if(key==='interval_units'){input.min='32';input.max='65535';}
+			if(key==='handle')input.max='65535';
+			if(key==='addr_type')input.max='1';
+			if(key==='phy')input.max='2';
+			input.oninput=()=>{commandDraft[key]=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;};
+			label.append(input);parent.append(label);
+		});
+	}
+	async function radioStatus() {const status=await api('status');element('bbRadio').textContent=JSON.stringify({connected:status.connected,...status.radio},null,2);}
+	element('bbCommandsTab').textContent=ct.tab;element('bbCommandTypeLabel').textContent=ct.type;element('bbCommandNote').textContent=ct.note;
+	[['diagnostic','diagnostic'],['gatt','gatt'],['txadv-start','start'],['txadv-stop','stop'],['scan-start','scanStart'],['scan-stop','scanStop']].forEach(([value,key])=>element('bbCommandType').add(new Option(ct[key],value)));
+	element('bbCommandType').title=ct.type;element('bbCommandType').onchange=renderCommand;
+	element('bbCommandSend').textContent=ct.send;element('bbCommandSend').title=ct.send;
+	element('bbRadioRefresh').textContent=ct.refresh;element('bbRadioRefresh').title=ct.refresh;
+	element('bbRadioRefresh').onclick=()=>run(radioStatus);
+	element('bbCommandSend').onclick=()=>run(async()=>{
+		if(!Array.from(element('bbCommandFields').querySelectorAll('input')).every(input=>input.reportValidity()))return;
+		if(!await confirmAction(ct.confirm))return;
+		element('bbCommandSend').disabled=true;message(ct.pending);element('bbCommandResult').textContent='';
+		try {const response=await api('command',commandDraft);element('bbCommandResult').textContent=JSON.stringify(response,null,2);message(ct.done);}
+		catch(error){element('bbCommandResult').textContent=error.message;throw error;}
+		finally{element('bbCommandSend').disabled=false;await radioStatus();}
+	});
+	renderCommand();
 	function fields(parent, object, onChange) {
 		const grid = document.createElement('div'); grid.className = 'bbGrid'; parent.append(grid);
 		Object.keys(object).forEach(key => {
@@ -386,6 +452,7 @@ cat << 'EOF'
 		if(next==='yaml'){const result=await api('check',{config});setYaml(result.yaml);rawDirty=false;await ensureYamlEditor();}
 		tab=next;app.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==tab);app.querySelectorAll('[data-tab]').forEach(control=>control.setAttribute('aria-selected',String(control.dataset.tab===tab)));if(tab==='discovery')poll();
 		if(tab==='yaml')yamlEditor.resize(true);
+		if(tab==='commands')await radioStatus();
 	}
 	function payload(){return {...(tab==='yaml'&&rawDirty?{yaml:getYaml()}:{config}),revision};}
 	function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const link=document.createElement('a');link.href=url;link.download=name;link.click();URL.revokeObjectURL(url);}

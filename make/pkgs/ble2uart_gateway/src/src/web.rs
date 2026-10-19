@@ -72,10 +72,16 @@ pub fn reply(mut stream: UnixStream, response: Value) {
 }
 
 pub fn control_client(action: &str, seconds: u64) -> Result<Value, String> {
+    control_request(&json!({"action": action, "seconds": seconds}))
+}
+
+pub fn control_request(request: &Value) -> Result<Value, String> {
+    let encoded = serde_json::to_string(request).map_err(|error| error.to_string())?;
+    if encoded.len() > 4096 { return Err("control request exceeds 4096 bytes".into()); }
     let mut stream = UnixStream::connect(control_socket()).map_err(|_| "gateway is not running or control socket is unavailable")?;
-    stream.set_read_timeout(Some(Duration::from_secs(30))).map_err(|error| error.to_string())?;
+    stream.set_read_timeout(Some(Duration::from_secs(90))).map_err(|error| error.to_string())?;
     stream.set_write_timeout(Some(Duration::from_secs(2))).map_err(|error| error.to_string())?;
-    writeln!(stream, "{}", json!({"action": action, "seconds": seconds})).map_err(|error| error.to_string())?;
+    writeln!(stream, "{encoded}").map_err(|error| error.to_string())?;
     let mut response = String::new();
     std::io::BufReader::new(stream).take(2097153).read_line(&mut response).map_err(|error| error.to_string())?;
     serde_json::from_str(&response).map_err(|_| "invalid gateway control response".into())

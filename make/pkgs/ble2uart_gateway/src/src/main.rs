@@ -20,6 +20,7 @@ mod codec;
 mod config;
 mod crypto;
 mod link;
+mod commands;
 mod logger;
 mod pipeline;
 mod web;
@@ -78,6 +79,7 @@ enum Comando {
     WebConfig(String),
     DecodeCaptures,
     Control(String, u64),
+    FirmwareCommand(String),
     Encode(String),
     Decode(String),
     Benchmark(String),
@@ -110,6 +112,8 @@ fn usage() -> ! {
          \x20 --trace-decode / --no-trace-decode  enable/disable codec steps\n\
          \x20 --trace-phy / --no-trace-phy   trace received PHYs and decode outcomes\n\
          \x20 --info                        talk to the module: INFO and VERSION\n\
+         \x20 --command <JSON|->            firmware transaction via running daemon (- = stdin)\n\
+         \x20 --control <action>            status / discover-start [seconds] / discover-stop\n\
          \x20 --scan [seconds]              print the advertisement stream (60 s)\n\
          \x20 --version                     print the version"
     );
@@ -189,6 +193,7 @@ fn parse_args_from(mut iterator: impl Iterator<Item = String>) -> Args {
             "--dump" => args.comando = Comando::Dump,
             "--web-config" => args.comando = Comando::WebConfig(iterator.next().unwrap_or_else(|| usage())),
             "--decode-captures" => args.comando = Comando::DecodeCaptures,
+            "--command" => args.comando = Comando::FirmwareCommand(iterator.next().unwrap_or_else(|| usage())),
             "--control" => {
                 let action = iterator.next().unwrap_or_else(|| usage());
                 let seconds = if action == "discover-start" { iterator.next().and_then(|value| value.parse().ok()).unwrap_or(30) } else { 0 };
@@ -268,6 +273,12 @@ fn main() -> std::process::ExitCode {
             println!("{}", web::control_client(action, *seconds).unwrap_or_else(|error| serde_json::json!({"success":false, "error":error})));
             Ok(())
         },
+        Comando::FirmwareCommand(input) => {
+            let result = firmware_command(input);
+            let success = result.as_ref().is_ok_and(|value| value["success"] == true);
+            println!("{}", result.unwrap_or_else(|error| serde_json::json!({"success":false,"error":error})));
+            if success { Ok(()) } else { Err("firmware command failed (see JSON response)".into()) }
+        },
         Comando::Encode(format) => codec_command(&args, format, true, 1),
         Comando::Decode(format) => codec_command(&args, format, false, 1),
         Comando::Benchmark(format) => codec_command(&args, format, false, 10000),
@@ -283,6 +294,18 @@ fn main() -> std::process::ExitCode {
             std::process::ExitCode::FAILURE
         }
     }
+}
+
+fn firmware_command(input: &str) -> Result<serde_json::Value, String> {
+    let text = if input == "-" {
+        let mut text = String::new();
+        std::io::stdin().take(4097).read_to_string(&mut text).map_err(|error| error.to_string())?;
+        text
+    } else { input.to_string() };
+    if text.len() > 4096 { return Err("command exceeds 4096 bytes".into()); }
+    let payload: serde_json::Value = serde_json::from_str(&text).map_err(|error| format!("invalid command JSON: {error}"))?;
+    commands::parse(payload.clone())?;
+    web::control_request(&serde_json::json!({"action":"command","payload":payload}))
 }
 
 fn decode_captures(args: &Args) -> Result<(), String> {
@@ -563,7 +586,7 @@ fn configure_scanner(link: &mut Link, config: &Config) -> Result<bool, String> {
         return Err(format!("SCAN: {}", status.as_str()));
     }
     log::info!("scanner started: requested_1m={} requested_coded={}", flags.phy_1m, flags.phy_coded);
-    Ok(true)
+    Ok(flags.phy_1m || flags.phy_coded)
 }
 
 fn scan(args: &Args, seconds: u64) -> Result<(), String> {
@@ -618,12 +641,8 @@ fn scan(args: &Args, seconds: u64) -> Result<(), String> {
     Ok(())
 }
 
-/// The daemon.
-///
-/// Step 1 (this build): keep the scanner configured, watch the advertisement
-/// stream and log the events, including the spontaneous GPIO edges. The codec,
-/// the registry with the derived rules and the three front-ends plug into this
-/// loop (see the roadmap in docs/make/ble2uart_gateway.md).
+/// Run the scanner and publication pipeline. Control transactions temporarily
+/// own the adapter while the serial reader continues collecting events.
 fn run_daemon(args: &Args) -> Result<(), String> {
     let config = Config::load(&args.config, args.serial.as_deref(), args.baudrate)?;
     configure_logging(args, Some(&config))?;
@@ -649,10 +668,11 @@ fn run_daemon(args: &Args) -> Result<(), String> {
     let mut gateway = pipeline::Gateway::new(&config, spec)?;
     let control = web::ControlServer::bind()?;
     let mut discovery = web::Discovery::default();
+    let mut radio = commands::Radio::default();
 
     while !STOP_REQUESTED.load(Ordering::Relaxed) {
         reload_logging(args);
-        serve_control(&control, &mut discovery, None, &config)?;
+        serve_control(&control, &mut discovery, &mut radio, None, &config)?;
         match Link::open(
             &config.serial.port,
             config.serial.baudrate,
@@ -680,24 +700,48 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                     Err(error) => log::warn!("{error}"),
                 }
 
-                if let Err(error) = configure_scanner(&mut link, &config) {
-                    log::warn!("scanner configuration failed; scanning will not start: {error}");
-                    let _ = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(1));
-                    std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
-                    continue;
+                if radio.recovery_required {
+                    if let Err(error) = commands::set_scan(&mut link, None, Duration::from_secs(3)) {
+                        log::warn!("cannot stop scanner for GATT recovery: {error}");
+                        std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
+                        continue;
+                    }
+                    if radio.gatt_recovery_required {
+                        if let Err(error) = commands::recover_connection(&mut link, Duration::from_secs(3)) {
+                            log::warn!("GATT recovery failed: {error}");
+                            std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
+                            continue;
+                        }
+                        radio.gatt_recovery_required = false;
+                    }
+                    radio.recovery_required = false;
+                }
+                let mut initial = config.clone();
+                if radio.scan_suppressed {
+                    initial.scanner.phy_1m = false;
+                    initial.scanner.phy_coded = false;
+                }
+                match configure_scanner(&mut link, &initial) {
+                    Ok(scanning) => radio.scanning = scanning,
+                    Err(error) => {
+                        log::warn!("scanner configuration failed; scanning will not start: {error}");
+                        let _ = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(1));
+                        std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
+                        continue;
+                    }
                 }
 
                 while !STOP_REQUESTED.load(Ordering::Relaxed) {
                     reload_logging(args);
                     if discovery.expired() {
                         discovery.until = None;
-                        if let Err(error) = configure_scanner(&mut link, &config) {
-                            discovery.error = error;
-                            break;
-                        }
+                        match configure_scanner(&mut link, &config) {
+                            Ok(scanning) => radio.scanning = scanning,
+                            Err(error) => { discovery.error = error; break; }
+                        };
                         log::info!("discovery finished; configured firmware MAC filters restored");
                     }
-                    if let Err(error) = serve_control(&control, &mut discovery, Some(&mut link), &config) {
+                    if let Err(error) = serve_control(&control, &mut discovery, &mut radio, Some(&mut link), &config) {
                         discovery.error = error;
                         break;
                     }
@@ -734,6 +778,7 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                     return Ok(());
                 }
                 log::warn!("serial link lost, reconnecting");
+                radio.scanning = false;
                 discovery.until = None;
                 discovery.error = "serial link lost; discovery cancelled".into();
             }
@@ -749,7 +794,20 @@ fn run_daemon(args: &Args) -> Result<(), String> {
     Ok(())
 }
 
-fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, mut link: Option<&mut Link>, config: &Config) -> Result<(), String> {
+fn discovery_config(config: &Config) -> Config {
+    let mut unfiltered = config.clone();
+    unfiltered.scanner.filter_known_devices = false;
+    unfiltered.scanner.whitelist.clear();
+    unfiltered.scanner.blacklist.clear();
+    unfiltered.scanner.discard_random = false;
+    unfiltered.scanner.discard_rpa = false;
+    unfiltered.scanner.dup_filter = false;
+    unfiltered.scanner.phy_1m = true;
+    unfiltered.scanner.phy_coded = true;
+    unfiltered
+}
+
+fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, radio: &mut commands::Radio, mut link: Option<&mut Link>, config: &Config) -> Result<(), String> {
     let Some((stream, request)) = server.next() else { return Ok(()); };
     let action = request["action"].as_str().unwrap_or("");
     let mut restore_failed = None;
@@ -760,37 +818,70 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, mu
                 let seconds = request["seconds"].as_u64().unwrap_or(0);
                 if !(1..=300).contains(&seconds) { return Err("discovery duration must be between 1 and 300 seconds".into()); }
                 if discovery.until.is_some() { return Err("discovery is already running".into()); }
+                if radio.txadv_active { return Err("stop TXADV before starting discovery".into()); }
                 let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
-                let mut unfiltered = config.clone();
-                unfiltered.scanner.filter_known_devices = false;
-                unfiltered.scanner.whitelist.clear();
-                unfiltered.scanner.blacklist.clear();
-                unfiltered.scanner.discard_random = false;
-                unfiltered.scanner.discard_rpa = false;
-                unfiltered.scanner.dup_filter = false;
-                unfiltered.scanner.phy_1m = true;
-                unfiltered.scanner.phy_coded = true;
+                let unfiltered = discovery_config(config);
                 if let Err(error) = configure_scanner(serial, &unfiltered) {
-                    if let Err(restore) = configure_scanner(serial, config) { restore_failed = Some(restore); }
+                    match configure_scanner(serial, config) {
+                        Ok(scanning) => radio.scanning = scanning,
+                        Err(restore) => { radio.scanning = false; restore_failed = Some(restore); }
+                    }
                     return Err(error);
                 }
                 discovery.start(seconds)?;
+                radio.scanning = true;
+                radio.scan_suppressed = false;
                 log::info!("unfiltered discovery started for {seconds} seconds");
             },
             "discover-stop" => {
                 if discovery.until.take().is_some() {
                     let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
-                    if let Err(error) = configure_scanner(serial, config) {
-                        restore_failed = Some(error.clone());
-                        return Err(error);
+                    match configure_scanner(serial, config) {
+                        Ok(scanning) => radio.scanning = scanning,
+                        Err(error) => { restore_failed = Some(error.clone()); return Err(error); }
                     }
                 }
             },
+            "command" => {
+                let command = commands::parse(request["payload"].clone())?;
+                let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
+                let timeout = Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000));
+                if matches!(command, commands::Command::ScanStart) {
+                    if radio.txadv_active {
+                        commands::execute(serial, radio, &config.scanner, timeout, &commands::Command::TxadvStop)?;
+                    }
+                    discovery.until = None;
+                    radio.scanning = false;
+                    match configure_scanner(serial, config) {
+                        Ok(scanning) => radio.scanning = scanning,
+                        Err(error) => { radio.recovery_required = true; return Err(error); }
+                    }
+                    radio.scan_suppressed = false;
+                    return Ok(serde_json::json!({"success":true,"radio":radio.snapshot()}));
+                }
+                let scanner = if discovery.until.is_some() { discovery_config(config).scanner } else { config.scanner.clone() };
+                let started = std::time::Instant::now();
+                let result = commands::execute(serial, radio, &scanner, timeout, &command);
+                if radio.scan_suppressed {
+                    discovery.until = None;
+                } else if let Some(until) = discovery.until.as_mut() {
+                    *until += started.elapsed();
+                }
+                let mut response = match result {
+                    Ok(result) => serde_json::json!({"success":true,"result":result}),
+                    Err(error) => serde_json::json!({"success":false,"error":error}),
+                };
+                response["radio"] = radio.snapshot();
+                return Ok(response);
+            },
             _ => return Err("unknown control action".into()),
         }
-        Ok(discovery.snapshot(link.is_some()))
+        let mut status = discovery.snapshot(link.is_some());
+        status["radio"] = radio.snapshot();
+        Ok(status)
     })();
     web::reply(stream, result.unwrap_or_else(|error| serde_json::json!({"success":false,"error":error})));
+    if radio.recovery_required { return Err("firmware connection recovery required".into()); }
     if let Some(error) = restore_failed { return Err(error); }
     Ok(())
 }

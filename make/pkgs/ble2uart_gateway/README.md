@@ -47,6 +47,41 @@ share the same archive reader; frontend integration tests share the emulator.
 4. Save and restart the service. In Domoticz, configure a MySensors TCP
    gateway using the same listener address and port.
 
+## Live Firmware / BLE Commands
+
+The **Commands** tab sends firmware diagnostics, bounded GATT transactions and
+TXADV requests through the running daemon. It requires confirmation and shows
+the JSON result plus radio state. Commands use the running configuration, not
+unsaved edits; they do not save settings or implicitly restart the service.
+The command controls and tooltips follow the browser language (English, German,
+Italian, French or Spanish). Existing configuration/discovery views are unchanged.
+
+An active scan is paused for diagnostics/GATT, then restored even after a
+command error. GATT connects to one peer and disconnects/cancels before scan
+restoration. Discovery filters and remaining time are preserved for temporary
+commands. Starting **TXADV instead leaves scanning OFF**, cancels Discovery and
+keeps scanning suppressed across serial reconnects. Stopping TXADV does not
+restart scanning: use **Start configured scan** explicitly. This starts the
+saved scanner with its filters and stops daemon-tracked TXADV. Runtime overrides
+are reset by an explicit service restart; stop TXADV before that restart.
+
+The CLI has the same interface:
+
+```sh
+ble2uart-gateway --command '{"command":"diagnostic","name":"info"}'
+ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","operation":"read","handle":42}'
+ble2uart-gateway --command '{"command":"txadv-start","phy":0,"interval_units":160,"data":"020106"}'
+ble2uart-gateway --command '{"command":"txadv-stop"}'
+ble2uart-gateway --command '{"command":"scan-start"}'
+```
+
+Use the firmware from the upstream **esp32-c3** branch under
+`source/esp32ble/ble50_scan`, not the old `master` scanner. See
+[the command reference](src/README.md#firmware-commands-while-the-daemon-is-running)
+for all operations, limits, failure semantics and firmware limitations.
+In particular, writes report stack acceptance, **not confirmed remote execution**;
+the current firmware does not expose final ATT write completion to the host.
+
 The active file is `<store>/ble2uart_gateway.yaml`. Runtime serial settings
 come from YAML; the startup serial fields only initialize a new store.
 
@@ -552,6 +587,6 @@ keep converted captures and keys outside the repository.
 only observes real updates and opens the database read-only; it never publishes
 synthetic measurements or opens the serial port.
 
-Derived rules, daemon-owned GATT writes and SQLite-backed MySensors stable
-IDs/persistence are not yet implemented. MQTT last-state replay is in memory;
+Derived rules and SQLite-backed MySensors stable IDs/persistence are not yet
+implemented. MQTT last-state replay is in memory;
 Matter persists its fabric and endpoint identities, not historical BLE samples.
