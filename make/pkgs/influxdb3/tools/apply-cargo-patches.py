@@ -21,11 +21,11 @@ ENDIAN_OVERRIDES = {
 
 def replace_checked(path, old, new, count=1):
     source = path.read_text()
-    if source.count(new) == count:
+    if old in new and source.count(new) == count:
         return
     if source.count(old) == count:
         path.write_text(source.replace(old, new))
-    else:
+    elif source.count(new) != count:
         raise RuntimeError(f"endian fix does not match the pinned source: {path}")
 
 

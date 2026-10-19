@@ -35,6 +35,11 @@ the same fallback and unchanged length checks. Its dependency override is
 extracted from the checksum-verified 48.0.1 archive and declared explicitly to
 Cargo; production fetch/build operations remain locked.
 
+The private Arrow/Parquet path overrides also remove the corresponding registry
+source and checksum from `Cargo.lock`. This normalization is idempotent even
+when the replacement is a prefix of the original entry, so a freshly unpacked
+workspace can resolve with `--locked` without changing dependency versions.
+
 The table-index cache correction in `influxdb3_write` also compiles in the
 production MIPS server graph, retaining full-width atomic access timestamps.
 The final server link and the basic real-router runtime checks pass.
