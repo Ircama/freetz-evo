@@ -62,6 +62,23 @@ make ble2uart_gateway-precompiled
 
 The cross build uses the Freetz Rust toolchain (`-Z build-std` for
 `mips-unknown-linux-uclibc`) and enables the `freetz` Cargo feature.
+
+### Warnings and completion output
+
+Unused GPIO/GATT protocol helpers are retained with narrowly scoped, documented
+`dead_code` exceptions. Other compiler warnings remain enabled.
+
+`make ble2uart_gateway-recompile` runs the package's `-distclean` and
+`-precompiled` targets. The latter calls the framework's `_ECHO_DONE`; Cargo's
+`Finished release` message only confirms compilation, not staging.
+
+The framework prints `done.` only while its shared `source/.echo_item_1st`,
+`source/.echo_item_new` and `source/.echo_item_end` markers all exist. An
+up-to-date package can finish without printing it, and simultaneous Freetz
+builds in the same tree can clear or consume each other's markers. Avoid
+concurrent builds in one checkout. Check the exit status of `make` rather than
+using `done.` as a success indicator; the staged executable is under
+`packages/target-<toolchain>/ble2uart_gateway-0.1/root/usr/bin/ble2uart-gateway`.
 SQLite is bundled and cross-compiled with the target C compiler; no SQLite
 server or target shared library is required. Configure its file path explicitly
 in Settings/YAML; see the [SQLite frontend guide](../../make/pkgs/ble2uart_gateway/src/README.md#sqlite-history).

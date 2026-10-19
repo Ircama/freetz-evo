@@ -24,7 +24,7 @@ use std::collections::BTreeMap;
 use std::net::UdpSocket;
 use std::path::Path;
 use std::pin::pin;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 const ROOT_ENDPOINT: Endpoint<'static> = root_endpoint!(eth);

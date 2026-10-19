@@ -185,7 +185,7 @@ impl AdvReport {
 
     /// "AABBCCDDEEFF".
     pub fn mac_string(&self) -> String {
-        self.mac_display().iter().map(|b| format!("{b:02X}")).collect()
+        crate::config::mac_string(&self.mac_display())
     }
 
     /// "AA:BB:CC:DD:EE:FF".
@@ -219,11 +219,13 @@ impl AdvReport {
     }
 
     /// True when a primary or secondary 1M PHY is reported.
+    #[cfg(test)]
     pub fn hint_1m(&self) -> bool {
         self.primary_phy() == 1 || self.secondary_phy() == 1
     }
 
     /// True when a primary or secondary Coded PHY is reported.
+    #[cfg(test)]
     pub fn hint_coded(&self) -> bool {
         self.primary_phy() == 3 || self.secondary_phy() == 3
     }
@@ -237,6 +239,7 @@ pub enum Event {
     Response {
         cmd: u8,
         status: Status,
+        #[allow(dead_code, reason = "Preserve the raw command header alongside the combined payload")]
         data: [u8; CMD_DATA_MAX],
         payload: Vec<u8>,
     },
@@ -245,6 +248,7 @@ pub enum Event {
     Spontaneous {
         cmd: u8,
         sub: u8,
+        #[allow(dead_code, reason = "Preserve the raw event header alongside the combined payload")]
         data: [u8; CMD_DATA_MAX],
         payload: Vec<u8>,
     },
@@ -331,6 +335,7 @@ pub fn clear_mac_list_command() -> Vec<u8> {
 /// GPIO op codes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+#[allow(dead_code, reason = "Complete firmware GPIO operations, not yet exposed by the gateway")]
 pub enum GpioOp {
     StatusQuery = 0,
     ReadLevel = 1,
@@ -342,6 +347,7 @@ pub enum GpioOp {
 }
 
 /// Build a GPIO command: `[op, pin_id, ...]`.
+#[allow(dead_code, reason = "Firmware GPIO command builder retained for protocol support")]
 pub fn gpio_command(op: GpioOp, pin: u8, extra: &[u8]) -> Vec<u8> {
     let mut payload = Vec::with_capacity(2 + extra.len());
     payload.push(op as u8);
@@ -351,13 +357,17 @@ pub fn gpio_command(op: GpioOp, pin: u8, extra: &[u8]) -> Vec<u8> {
 }
 
 /// Pull mode of GPIO op 4 (configure).
+#[allow(dead_code, reason = "Firmware GPIO configuration value retained for protocol support")]
 pub const GPIO_PULL_FLOAT: u8 = 0;
+#[allow(dead_code, reason = "Firmware GPIO configuration value retained for protocol support")]
 pub const GPIO_PULL_UP: u8 = 1;
+#[allow(dead_code, reason = "Firmware GPIO configuration value retained for protocol support")]
 pub const GPIO_PULL_DOWN: u8 = 2;
 
 /// GPIOEVT sub-operations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+#[allow(dead_code, reason = "The gateway queries GPIO events but retains all firmware operations")]
 pub enum GpioEvtOp {
     Query = 0,
     Enable = 1,
@@ -376,6 +386,7 @@ pub fn gpio_evt_command(op: GpioEvtOp, pin: u8) -> Vec<u8> {
 /// CONN (GATT central) op codes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
+#[allow(dead_code, reason = "Complete firmware GATT operations, not yet exposed by the gateway")]
 pub enum ConnOp {
     StatusQuery = 0,
     Open1M = 1,
@@ -393,6 +404,7 @@ pub enum ConnOp {
 }
 
 /// Connection state reported by CONN op 0-4 responses.
+#[allow(dead_code, reason = "Firmware GATT state names retained for protocol support")]
 pub fn conn_state_name(state: u8) -> &'static str {
     match state {
         0 => "idle",
@@ -402,6 +414,7 @@ pub fn conn_state_name(state: u8) -> &'static str {
     }
 }
 
+#[allow(dead_code, reason = "Firmware GATT command builder retained for protocol support")]
 pub fn conn_open_command(addr_type: u8, mac: &[u8; 6], coded: bool) -> Vec<u8> {
     let mut payload = Vec::with_capacity(7);
     payload.push(addr_type);
@@ -418,6 +431,7 @@ pub fn conn_open_command(addr_type: u8, mac: &[u8; 6], coded: bool) -> Vec<u8> {
 }
 
 /// Read a characteristic: `[op, handle_lo, handle_hi]`.
+#[allow(dead_code, reason = "Firmware GATT command builder retained for protocol support")]
 pub fn conn_read_command(handle: u16) -> Vec<u8> {
     build_command(
         Cmd::Conn,
@@ -431,6 +445,7 @@ pub fn conn_read_command(handle: u16) -> Vec<u8> {
 }
 
 /// Write a characteristic: `[op, handle_lo, handle_hi, len, data...]`.
+#[allow(dead_code, reason = "Firmware GATT command builder retained for protocol support")]
 pub fn conn_write_command(handle: u16, value: &[u8]) -> Vec<u8> {
     let mut payload = vec![
         ConnOp::WriteCharacteristic as u8,
@@ -443,6 +458,7 @@ pub fn conn_write_command(handle: u16, value: &[u8]) -> Vec<u8> {
 }
 
 /// ATT write without response: `[handle_lo, handle_hi, len, data...]`.
+#[allow(dead_code, reason = "Firmware ATT command builder retained for protocol support")]
 pub fn tx_data_command(handle: u16, value: &[u8]) -> Vec<u8> {
     let mut payload = vec![
         (handle & 0xFF) as u8,
@@ -456,12 +472,11 @@ pub fn tx_data_command(handle: u16, value: &[u8]) -> Vec<u8> {
 /// Incremental frame parser: feeds bytes, yields complete frames.
 pub struct FrameParser {
     buffer: Vec<u8>,
-    expected: usize,
 }
 
 impl Default for FrameParser {
     fn default() -> Self {
-        FrameParser { buffer: Vec::new(), expected: 0 }
+        FrameParser { buffer: Vec::new() }
     }
 }
 
@@ -797,6 +812,7 @@ impl Link {
     }
 
     /// Take the next event, if one is already queued.
+    #[allow(dead_code, reason = "Nonblocking serial API retained alongside the timed next method")]
     pub fn try_next(&mut self) -> Option<Event> {
         if !self.pending.is_empty() {
             return Some(self.pending.remove(0));
@@ -927,6 +943,37 @@ mod tests {
         let write = conn_write_command(0x1234, &[0xAA, 0xBB]);
         assert_eq!(&write[..write.len() - 2], &[0x0C, 7, 0x34, 0x12, 2, 0xAA, 0xBB]);
         assert_eq!(crc16_arc(&write), 0);
+    }
+
+    #[test]
+    fn gpio_and_gatt_protocol_helpers_preserve_wire_layout() {
+        for (frame, expected) in [
+            (gpio_command(GpioOp::Configure, 9, &[GPIO_PULL_UP]), vec![6, 4, 9, 1]),
+            (gpio_evt_command(GpioEvtOp::Query, 9), vec![0x10, 0]),
+            (gpio_evt_command(GpioEvtOp::Enable, 9), vec![0x10, 1, 9]),
+            (gpio_evt_command(GpioEvtOp::Disable, 9), vec![0x10, 2, 9]),
+            (gpio_evt_command(GpioEvtOp::DisableAll, 9), vec![0x10, 3]),
+            (conn_open_command(1, &[1, 2, 3, 4, 5, 6], false), vec![0x0C, 1, 1, 1, 2, 3, 4, 5, 6]),
+            (conn_open_command(1, &[1, 2, 3, 4, 5, 6], true), vec![0x0C, 2, 1, 1, 2, 3, 4, 5, 6]),
+            (tx_data_command(0x1234, &[0xAA, 0xBB]), vec![0x0D, 0x34, 0x12, 2, 0xAA, 0xBB]),
+        ] {
+            assert_eq!(&frame[..frame.len() - 2], expected);
+            assert_eq!(crc16_arc(&frame), 0);
+        }
+    }
+
+    #[test]
+    fn command_events_retain_raw_header_and_combined_payload() {
+        for status in [0, 0x80] {
+            let frame = [2, Cmd::Gpio as u8, status, 8, 0xFF, 1, 2, 3, 4, 5, 6, 7, 8];
+            let (data, payload) = match decode_frame(&frame).unwrap() {
+                Event::Response { data, payload, .. } if status == 0 => (data, payload),
+                Event::Spontaneous { data, payload, .. } if status == 0x80 => (data, payload),
+                other => panic!("unexpected command event: {other:?}"),
+            };
+            assert_eq!(data, [1, 2, 3, 4, 5, 6]);
+            assert_eq!(payload, [1, 2, 3, 4, 5, 6, 7, 8]);
+        }
     }
 
     #[test]

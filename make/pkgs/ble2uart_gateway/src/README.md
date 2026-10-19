@@ -30,6 +30,7 @@ Matter uses development attestation, not certified product credentials.
 
 The Matter SDK is reproducibly pinned to `rs-matter` revision
 `c69916a5a78957d46500145486df375acf4ab490`, upstream `main` checked on 2026-10-17.
+
 ### Matter DNS-SD Backends
 
 `frontends.matter.mdns_backend` selects the publisher of the Matter DNS-SD

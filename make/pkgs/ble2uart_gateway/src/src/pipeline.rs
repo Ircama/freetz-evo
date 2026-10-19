@@ -136,10 +136,6 @@ impl Registry {
         Registry { devices, last: HashMap::new(), unknown: HashMap::new() }
     }
 
-    fn find(&self, mac: &str) -> Option<&Device> {
-        self.devices.iter().find(|device| device.mac == mac)
-    }
-
     /// Remember a published value so a new front-end connection can replay it.
     fn remember(&mut self, node: u16, child: u8, text: String) {
         self.last.insert((node, child), text);
@@ -657,11 +653,7 @@ impl Gateway {
         }
         let mut published = Vec::new();
         for measure in &measures {
-            let Some(child) = device
-                .children
-                .iter()
-                .find(|(attribute, _)| *attribute == measure.name)
-                .map(|(_, child)| *child)
+            let Some(child) = device.child_of(&measure.name)
             else {
                 continue;
             };

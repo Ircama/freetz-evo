@@ -66,8 +66,7 @@ python3 -m venv ~/.venvs/ble2uart-codec
 . ~/.venvs/ble2uart-codec/bin/activate
 python3 -m pip install construct==2.10.70 PyYAML pycryptodome arrow
 ATC="atc_mi_interface"
-python3 make/pkgs/ble2uart_gateway/tools/atc2spec.py \
-  --codec "$ATC" --out /tmp/ble-codec/codec.yaml
+python3 make/pkgs/ble2uart_gateway/tools/atc2spec.py --codec "$ATC" --out /tmp/ble-codec/codec.yaml
 ```
 
 Check the conversion report before using the result. Unmapped constructs must
@@ -546,7 +545,6 @@ make ble2uart_gateway-precompiled
 ```
 
 The deployment helper preserves existing YAML and publishes the English CGI.
-Provide credentials through `DEVICE_PASS` or `SSHPASS`, not in the script.
 `tools/test_captures.py --help` documents private pickle regression testing;
 keep converted captures and keys outside the repository.
 `tools/test_frontends_target.py --help` covers isolated frontend tests and
