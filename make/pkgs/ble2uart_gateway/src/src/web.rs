@@ -363,6 +363,31 @@ mod tests {
     }
 
     #[test]
+    fn web_configuration_exposes_all_frontends_for_legacy_yaml() {
+        let directory = std::env::temp_dir().join(format!("ble-web-frontends-{}", std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        let path = directory.join("config.yaml");
+        let legacy = "frontends:\n  mqtt: {enabled: false}\n  mysensors: {enabled: false}\n  matter: {enabled: false}\n  influx: {enabled: false}\n";
+        std::fs::write(&path, legacy).unwrap();
+        let mut request = config_action(&path, "read", "").unwrap();
+        let frontends = request["config"]["frontends"].as_object().unwrap();
+        assert_eq!(frontends.len(), 5);
+        for name in ["mysensors", "mqtt", "matter", "influx", "sqlite"] {
+            assert!(frontends.contains_key(name), "missing frontend {name}");
+        }
+        assert_eq!(frontends["sqlite"], serde_json::to_value(crate::sqlite::SqliteConfig::default()).unwrap());
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), legacy);
+        request["config"]["frontends"]["sqlite"]["enabled"] = json!(true);
+        request["config"]["frontends"]["sqlite"]["path"] = json!(directory.join("readings.sqlite3"));
+        let checked = config_action(&path, "check", &request.to_string()).unwrap();
+        assert_eq!(checked["config"]["frontends"]["sqlite"], request["config"]["frontends"]["sqlite"]);
+        config_action(&path, "save", &request.to_string()).unwrap();
+        let loaded = config_action(&path, "read", "").unwrap();
+        assert_eq!(loaded["config"]["frontends"]["sqlite"], request["config"]["frontends"]["sqlite"]);
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
     fn web_configuration_is_validated_atomic_and_conflict_checked() {
         let directory = std::env::temp_dir().join(format!("ble-web-config-{}", std::process::id()));
         std::fs::create_dir_all(&directory).unwrap();

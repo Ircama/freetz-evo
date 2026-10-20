@@ -8,6 +8,7 @@ $(call PKG_INIT_BIN, 0.1)
 $(PKG)_CATEGORY_PKGS:=Home Automation
 
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/ble2uart-gateway
+$(PKG)_DEPENDS_ON += $(if $(FREETZ_SEPARATE_AVM_UCLIBC),patchelf-target-host)
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_BLE2UART_GATEWAY
 
@@ -83,9 +84,8 @@ $(BLE2UART_GATEWAY_CARGO_DL_STAMP): $(BLE2UART_GATEWAY_SOURCES)
 	true
 	@touch $@
 
-$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
-	$(INSTALL_BINARY_STRIP)
-	$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $@
+$($(PKG)_TARGET_BINARY): $($(PKG)_BINARY) | $(if $(FREETZ_SEPARATE_AVM_UCLIBC),$(TOOLS_DIR)/patchelf-target)
+	set -e; $(INSTALL_BINARY_STRIP)
 
 # `-Z build-std` is required for mips-unknown-linux-uclibc. Build serially:
 # the Matter SDK's generated cluster code has significant peak memory use.

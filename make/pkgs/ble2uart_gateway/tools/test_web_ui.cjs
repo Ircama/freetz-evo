@@ -12,22 +12,24 @@ const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ble-web-ui-'));
 const config = path.join(directory, 'gateway.yaml');
 const source = fs.readFileSync(path.join(root, 'files/root/usr/lib/cgi-bin/ble2uart_gateway.cgi'), 'utf8');
 const start = source.indexOf('<style>\n#bbApp');
-const html = '<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gateway UI test</title><body style="margin:16px;font:14px sans-serif"><form>' + source.slice(start, source.indexOf('</script>', start) + 9) + '</form></body></html>';
+const html = '<!doctype html><html lang="en"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gateway UI test</title><body style="margin:16px;font:14px sans-serif"><form>' + source.slice(start, source.indexOf('</script>', start) + 9) + '</form></body></html>';
 assert(start > 0);
 const created = spawnSync(binary, ['--write-default-config', config]);
 assert.equal(created.status, 0, created.stderr.toString());
 const observations = [
-    {mac:'A4C1383406CE', name:'ATC sensor', vendor:'Telink Semiconductor', format:'bt_home_v2', rssi:-70, phy:'phy_raw=0x33 primary=Coded secondary=Coded', count:6, last_seen:'2026-10-16T18:00:00Z', data:'0D16D2FC4000EB0C3E0B10001101', configured:false},
-    {mac:'54EF44001122', name:'Other sensor', vendor:'Xiaomi Communications', format:'custom', rssi:-80, phy:'phy_raw=0x01 primary=1M secondary=none', count:2, last_seen:'2026-10-16T18:00:00Z', data:'020106', configured:false},
+    {addr_type:0, mac:'A4C1383406CE', name:'ATC sensor', vendor:'Telink Semiconductor', format:'bt_home_v2', rssi:-70, phy:'phy_raw=0x33 primary=Coded secondary=Coded', count:6, last_seen:'2026-10-16T18:00:00Z', data:'0201060D16D2FC40008A0C0E0B100011010B094154435F333430364345', configured:false},
+    {addr_type:1, mac:'54EF44001122', name:'Other sensor', vendor:'Random / local address', format:'custom', rssi:-80, phy:'phy_raw=0x01 primary=1M secondary=none', count:2, last_seen:'2026-10-16T18:00:00Z', data:'020106', configured:false},
 ];
 let active = false;
 let restarts = 0;
 let scanning = true, txadv = false;
+let failInspect = false;
+let legacyFrontends = false;
 const commands = [];
 let browser;
 const escaped = text => text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const server = http.createServer(async (request, response) => {
-    const assets = {'/ace/ace.js':path.resolve(root,'../disk-mgmt-cgi/files/root/usr/mww/ace/ace.js'),'/ble2uart_gateway/mode-yaml.js':path.join(root,'files/root/usr/mww/ble2uart_gateway/mode-yaml.js')};
+    const assets = {'/ace/ace.js':path.resolve(root,'../disk-mgmt-cgi/files/root/usr/mww/ace/ace.js'),'/ace/mode-json.js':path.resolve(root,'../disk-mgmt-cgi/files/root/usr/mww/ace/mode-json.js'),'/ble2uart_gateway/mode-yaml.js':path.join(root,'files/root/usr/mww/ble2uart_gateway/mode-yaml.js')};
     if (assets[request.url]) {response.setHeader('Content-Type','application/javascript');response.end(fs.readFileSync(assets[request.url]));return;}
     if (!request.url.startsWith('/cgi-bin/extra/')) {
         response.setHeader('Content-Type','text/html'); response.end(html); return;
@@ -36,10 +38,12 @@ const server = http.createServer(async (request, response) => {
     for await (const chunk of request) input += chunk;
     const action = new URL(request.url, 'http://localhost').searchParams.get('action');
     assert(!request.url.includes('11111111111111111111111111111111'));
+    if(action==='inspect'&&failInspect){response.setHeader('Content-Type','text/html');response.end('<p>Login required</p>');return;}
     let result;
     if (['read','save','check','backups','restore','inspect'].includes(action)) {
         const child = spawnSync(binary, ['--config',config,'--web-config',action], {input, encoding:'utf8'});
         result = JSON.parse(child.stdout);
+        if(action==='read'&&legacyFrontends)delete result.config.frontends.sqlite;
     } else if (['status','discover-start','discover-stop'].includes(action)) {
         if (action === 'discover-start') {assert.equal(request.method,'POST'); active = true;}
         if (action === 'discover-stop') {assert.equal(request.method,'POST'); active = false;}
@@ -59,6 +63,22 @@ const server = http.createServer(async (request, response) => {
     response.end('<div class="ajax-json-box"><div class="ajax-json-content"><pre>Content-Type: application/json\n\n'+escaped(JSON.stringify(result))+'</pre></div></div>');
 });
 
+async function hoverPacketField(page,key,{nested=false,value=false}={}) {
+    await page.locator('#bbPacket').scrollIntoViewIfNeeded();
+    const point=await page.evaluate(async({key,nested,value})=>{
+        const editor=ace.edit('bbPacket'), lines=editor.getValue().split('\n');
+        const row=lines.findIndex(line=>line.trimStart().startsWith(JSON.stringify(key)+':')&&(!nested||line.startsWith('    ')));
+        if(row<0)throw new Error('Missing JSON field: '+key);
+        editor.scrollToLine(row,true,false);
+        await new Promise(resolve=>requestAnimationFrame(resolve));
+        await new Promise(resolve=>requestAnimationFrame(resolve));
+        const column=value?lines[row].indexOf(':')+3:lines[row].indexOf('"')+2;
+        const result=editor.renderer.textToScreenCoordinates(row,column);
+        return {x:result.pageX+2,y:result.pageY+7};
+    },{key,nested,value});
+    await page.mouse.move(point.x,point.y);
+}
+
 (async () => {
     try {
         await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
@@ -69,6 +89,16 @@ const server = http.createServer(async (request, response) => {
         await page.getByRole('status').filter({hasText:'Configuration loaded'}).waitFor();
         await page.getByRole('button',{name:'Add device',exact:true}).click();
         await page.getByLabel('MAC',{exact:true}).fill('AABBCCDDEEFF');
+        assert.match(await page.locator('#bbDeviceApply').getAttribute('title'),/page draft/);
+        assert.match(await page.locator('#bbDeviceCancel').getAttribute('title'),/Other unsaved page changes/);
+        assert.match(await page.locator('#bbDeviceFields legend').filter({hasText:'Rules'}).getAttribute('title'),/does not execute/);
+        assert.match(await page.locator('#bbDeviceFields').textContent(),/does not evaluate them/);
+        assert.match(await page.getByRole('button',{name:'Add rule',exact:true}).getAttribute('title'),/does not save/);
+        await page.getByRole('button',{name:'Add rule',exact:true}).click();
+        await page.getByRole('button',{name:'Keep changes',exact:true}).click();
+        await page.locator('#bbDeviceError').filter({hasText:'every rule needs a name'}).waitFor();
+        await page.locator('#bbDeviceFields').getByRole('button',{name:'Remove 1',exact:true}).click();
+        assert.match(await page.locator('#bbDeviceFields').textContent(),/does not evaluate them/);
         await page.getByLabel('Device name',{exact:true}).fill('Test } </pre><script>window.injected=true</script>');
         await page.getByLabel('Bindkey (32 hexadecimal digits)',{exact:true}).fill('1'.repeat(32));
         await page.getByRole('button',{name:'Show bindkey',exact:true}).click();
@@ -77,17 +107,50 @@ const server = http.createServer(async (request, response) => {
         assert.equal(await page.getByLabel('Bindkey (32 hexadecimal digits)',{exact:true}).getAttribute('type'),'password');
         await page.getByRole('button',{name:'Keep changes',exact:true}).click();
         await page.locator('#bbDeviceDialog').waitFor({state:'hidden'});
+        assert.equal(JSON.parse(spawnSync(binary,['--config',config,'--web-config','read'],{encoding:'utf8'}).stdout).config.devices.length,0);
+        await page.locator('#bbDevices tr').first().getByRole('button',{name:'Edit',exact:true}).click();
+        await page.getByLabel('Device name',{exact:true}).fill('Discard this draft');
+        await page.getByRole('button',{name:'Cancel',exact:true}).click();
+        assert.match(await page.locator('#bbDevices').textContent(),/Test }/);
+        assert.equal(await page.locator('#bbDirty').textContent(),'Unsaved changes');
         await page.getByRole('button',{name:'Save configuration',exact:true}).click();
         await page.locator('#bbMsg').filter({hasText:'Saved.'}).waitFor();
         assert.equal(restarts,0);
         assert.equal(await page.evaluate(()=>window.injected), undefined);
         await page.getByRole('tab',{name:'Settings',exact:true}).click();
+        assert.deepEqual((await page.locator('#bbFrontends [data-frontend]').evaluateAll(groups=>groups.map(group=>group.dataset.frontend))).sort(),['influx','matter','mqtt','mysensors','sqlite'],'Rebuild the native daemon before testing: cargo build --manifest-path make/pkgs/ble2uart_gateway/src/Cargo.toml --offline --no-default-features');
+        assert.equal(await page.locator('#bbFrontendNotice').count(),0);
+        const sqlite=page.locator('#bbFrontends [data-frontend="sqlite"]');
+        assert.equal(await sqlite.getByLabel('Enabled',{exact:true}).isChecked(),false);
+        await sqlite.getByLabel('Enabled',{exact:true}).check();
+        await sqlite.getByLabel('Database file (absolute local path)',{exact:true}).fill(path.join(directory,'readings.sqlite3'));
+        await sqlite.getByLabel('Batch size',{exact:true}).fill('128');
+        await sqlite.getByLabel('Queue capacity',{exact:true}).fill('2048');
+        await sqlite.getByLabel('Flush interval (ms)',{exact:true}).fill('250');
+        await sqlite.getByLabel('SQLite busy timeout (ms)',{exact:true}).fill('1500');
+        assert.match(await page.locator('#bbFilterState').textContent(),/filtering is ON/);
+        assert.match(await page.locator('#bbFilterCommon').textContent(),/does not reload saved edits/);
+        assert.match(await page.locator('#bbWhitelist').getAttribute('title'),/no wildcard/);
+        assert.equal(await page.locator('#bbMacFilters #bbWhitelist').count(),1);
+        assert.equal(await page.locator('#bbMacFilters #bbBlacklist').count(),1);
+        assert.equal(await page.locator('#bbMacFilters').getByLabel('Filter registered devices in ESP32',{exact:true}).count(),1);
+        assert.match(await page.locator('#bbMacFilterLists label').first().textContent(),/Include MACs/);
+        await page.locator('#bbWhitelist').fill('A4:C1:38, A4C1383406CE');
+        await page.locator('#bbBlacklist').fill('54:EF:44');
+        assert.match(await page.locator('#bbFilterState').textContent(),/Both lists are populated/);
+        await page.getByRole('button',{name:'Validate',exact:true}).click();
+        await page.locator('#bbMsg').filter({hasText:'mutually exclusive'}).waitFor();
+        assert.equal(await page.locator('#bbWhitelist').inputValue(),'A4:C1:38, A4C1383406CE');
+        await page.locator('#bbBlacklist').fill('');
         await page.getByLabel('Filter registered devices in ESP32',{exact:true}).uncheck();
+        assert.match(await page.locator('#bbFilterState').textContent(),/filtering is OFF/);
+        await page.screenshot({path:'/tmp/ble-filters.png',fullPage:true});
         await page.getByRole('button',{name:'Validate',exact:true}).click();
         await page.locator('#bbMsg').filter({hasText:'Configuration is valid'}).waitFor();
         await page.getByRole('tab',{name:'YAML',exact:true}).click();
         await page.locator('#bbYaml.ace_editor').waitFor();
         assert(await page.evaluate(()=>ace.edit('bbYaml').getValue().includes('filter_known_devices: false')));
+        assert.match(await page.evaluate(()=>ace.edit('bbYaml').getValue()),/whitelist:\s+- A4:C1:38\s+- A4C1383406CE/);
         assert.equal(await page.evaluate(()=>ace.edit('bbYaml').session.getMode().$id),'ace/mode/yaml');
         await page.getByRole('tab',{name:'Discovery',exact:true}).click();
         await page.locator('#bbFound tr').filter({hasText:'ATC sensor'}).waitFor();
@@ -95,12 +158,83 @@ const server = http.createServer(async (request, response) => {
         await page.locator('#bbDiscoveryStatus').filter({hasText:'Scanning'}).waitFor();
         await page.getByLabel('Filter by OUI vendor',{exact:true}).selectOption('Telink Semiconductor');
         assert.equal(await page.locator('#bbFound tr').count(),1);
+        const dirtyBeforeInspect=await page.locator('#bbDirty').textContent();
         await page.getByRole('button',{name:'Inspect',exact:true}).click();
-        await page.waitForFunction(()=>document.getElementById('bbPacket').textContent.includes('"decode_status": "ok"'));
-        const inspected=JSON.parse(await page.locator('#bbPacket').textContent());
+        await page.locator('#bbPacket.ace_editor').waitFor();
+        await page.waitForFunction(()=>ace.edit('bbPacket').getValue().includes('"decode_status": "ok"'));
+        const inspected=JSON.parse(await page.evaluate(()=>ace.edit('bbPacket').getValue()));
         assert.equal(inspected.wire_format,'bt_home_v2');
         assert.equal(inspected.measurements.opened,'1');
         assert.equal(inspected.measurements.switch,'0');
+        assert.equal(inspected.measurements.packet_id,'138');
+        assert.equal(inspected.measurements.battery_v,'2.83');
+        assert.equal(inspected.phy,'phy_raw=0x33 primary=Coded secondary=Coded');
+        assert.equal(await page.evaluate(()=>ace.edit('bbPacket').session.getMode().$id),'ace/mode/json');
+        assert.equal(await page.evaluate(()=>ace.edit('bbPacket').getReadOnly()),true);
+        assert(await page.evaluate(()=>ace.edit('bbPacket').session.getFoldWidgetRange(0).end.row>0));
+        assert.equal(await page.locator('#bbPacketError').isVisible(),false);
+        assert.equal(await page.locator('#bbPacketFields dt').count(),16);
+        assert.equal(await page.locator('#bbPacketHelp').evaluate(element=>element.open),false);
+        await hoverPacketField(page,'addr_type');
+        await page.locator('#bbFieldTooltip').waitFor({state:'visible'});
+        assert.match(await page.locator('#bbFieldTooltip').textContent(),/0 = public, 1 = random/);
+        const tooltipBounds=await page.locator('#bbFieldTooltip').boundingBox();
+        assert(tooltipBounds.x>=8&&tooltipBounds.y>=8&&tooltipBounds.x+tooltipBounds.width<=1272&&tooltipBounds.y+tooltipBounds.height<=892);
+        await page.evaluate(()=>document.activeElement.blur());
+        await page.keyboard.press('Escape');
+        assert.equal(await page.locator('#bbFieldTooltip').isVisible(),false);
+        await hoverPacketField(page,'vendor');
+        await page.locator('#bbFieldTooltip').waitFor({state:'visible'});
+        assert.match(await page.locator('#bbFieldTooltip').textContent(),/separate from decoded.mac_vendor/);
+        assert.match(await page.locator('#bbFieldTooltip').textContent(),/bit 0x02/);
+        await page.screenshot({path:'/tmp/ble-field-tooltip.png'});
+        await hoverPacketField(page,'vendor',{value:true});
+        assert.equal(await page.locator('#bbFieldTooltip').isVisible(),false);
+        await hoverPacketField(page,'packet_id',{nested:true});
+        await page.locator('#bbFieldTooltip').waitFor({state:'visible'});
+        assert.match(await page.locator('#bbFieldTooltip').textContent(),/independent of Discovery count/);
+        await page.evaluate(()=>ace.edit('bbPacket').session.setScrollTop(0));
+        await page.locator('#bbFieldTooltip').waitFor({state:'hidden'});
+        await hoverPacketField(page,'phy');
+        await page.locator('#bbFieldTooltip').waitFor({state:'visible'});
+        assert.match(await page.locator('#bbFieldTooltip').textContent(),/Coded packet can carry BTHome v2/);
+        await page.mouse.move(0,0);
+        assert.equal(await page.locator('#bbFieldTooltip').isVisible(),false);
+        await page.locator('#bbPacketHelpTitle').focus();
+        await page.keyboard.press('Enter');
+        assert.equal(await page.locator('#bbPacketHelp').evaluate(element=>element.open),true);
+        assert.match(await page.locator('#bbPacketFields [data-field="decode_error"] + dd').textContent(),/web response was not the expected API envelope/);
+        await page.locator('#bbPacketHelpTitle').click();
+        assert.deepEqual(JSON.parse(await page.evaluate(()=>ace.edit('bbPacket').getValue())),inspected);
+        assert.equal(await page.locator('#bbDirty').textContent(),dirtyBeforeInspect);
+        await page.screenshot({path:'/tmp/ble-inspect-desktop.png',fullPage:true});
+        await page.locator('#bbPacketDetails > summary').click();
+        await page.locator('#bbPacketDetails > summary').click();
+        await page.getByRole('tab',{name:'Devices',exact:true}).click();
+        await page.getByRole('tab',{name:'Discovery',exact:true}).click();
+        assert(await page.locator('#bbPacket .ace_scroller').evaluate(element=>element.clientWidth>0&&element.clientHeight>0));
+        await page.setViewportSize({width:390,height:844});
+        await page.locator('#bbPacketHelpTitle').click();
+        assert.equal(await page.locator('#bbPacketFields dt').first().isVisible(),true);
+        assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+        await page.screenshot({path:'/tmp/ble-inspect-mobile.png',fullPage:true});
+        await page.locator('#bbPacketHelpTitle').click();
+        await page.setViewportSize({width:1280,height:900});
+        failInspect=true;
+        await page.getByRole('button',{name:'Inspect',exact:true}).click();
+        await page.waitForFunction(()=>ace.edit('bbPacket').getValue().includes('"decode_status": "failed"'));
+        assert.equal(JSON.parse(await page.evaluate(()=>ace.edit('bbPacket').getValue())).decode_error,'Invalid response or session expired');
+        assert.match(await page.locator('#bbPacketNotice').textContent(),/does not establish.*BLE packet is invalid/);
+        failInspect=false;
+        await page.getByLabel('Filter by OUI vendor',{exact:true}).selectOption('');
+        await page.locator('#bbFound tr').filter({hasText:'Other sensor'}).getByRole('button',{name:'Inspect',exact:true}).click();
+        await page.waitForFunction(()=>ace.edit('bbPacket').getValue().includes('"decode_status": "unsupported_format"'));
+        assert.equal(await page.locator('#bbPacketNotice').isVisible(),false);
+        assert.equal(JSON.parse(await page.evaluate(()=>ace.edit('bbPacket').getValue())).mac,'54EF44001122');
+        await page.getByLabel('Filter by OUI vendor',{exact:true}).selectOption('Telink Semiconductor');
+        await page.getByRole('button',{name:'Inspect',exact:true}).click();
+        await page.waitForFunction(()=>ace.edit('bbPacket').getValue().includes('"decode_status": "ok"'));
+        assert.equal(await page.locator('#bbPacket.ace_editor').count(),1);
         await page.getByRole('button',{name:'Configure',exact:true}).click();
         assert.equal(await page.getByLabel('MAC',{exact:true}).inputValue(),'A4C1383406CE');
         await page.getByRole('button',{name:'Keep changes',exact:true}).click();
@@ -157,16 +291,67 @@ const server = http.createServer(async (request, response) => {
         const saved = JSON.parse(spawnSync(binary,['--config',config,'--web-config','read'],{encoding:'utf8'}).stdout);
         assert.equal(saved.config.devices.length,2);
         assert.equal(saved.config.scanner.filter_known_devices,false);
-        for(const [locale,tab,send] of [['de-DE','Befehle','Befehl senden'],['it-IT','Comandi','Invia comando'],['fr-FR','Commandes','Envoyer la commande'],['es-ES','Comandos','Enviar comando']]){
+        assert.deepEqual(saved.config.scanner.whitelist,['A4:C1:38','A4C1383406CE']);
+        assert.deepEqual(saved.config.scanner.blacklist,[]);
+        assert.deepEqual(saved.config.frontends.sqlite,{enabled:true,path:path.join(directory,'readings.sqlite3'),batch_size:128,queue_capacity:2048,flush_interval_ms:250,busy_timeout_ms:1500});
+        assert.equal(restarts,0);
+        legacyFrontends=true;
+        const legacy=await browser.newPage({locale:'it-IT'});
+        legacy.on('pageerror',error=>errors.push(error.message));
+        await legacy.goto('http://127.0.0.1:'+server.address().port);
+        await legacy.locator('#bbMsg').filter({hasText:'Configuration loaded'}).waitFor();
+        legacyFrontends=false;
+        await legacy.getByRole('tab',{name:'Settings',exact:true}).click();
+        assert.match(await legacy.locator('#bbFrontendNotice').textContent(),/SQLite.*Aggiorna\/ricompila/);
+        assert.equal(await legacy.locator('#bbFrontends [data-frontend="sqlite"]').count(),0);
+        assert.equal(await legacy.locator('#bbFrontends [data-frontend]').count(),4);
+        await legacy.close();
+        for(const asset of ['ace.js','mode-json.js']){
+            const fallback=await browser.newPage();
+            fallback.on('pageerror',error=>errors.push(error.message));
+            const blocked='**/ace/'+asset;
+            await fallback.route(blocked,route=>route.abort());
+            await fallback.goto('http://127.0.0.1:'+server.address().port);
+            await fallback.locator('#bbMsg').filter({hasText:'Configuration loaded'}).waitFor();
+            await fallback.getByRole('tab',{name:'Discovery',exact:true}).click();
+            await fallback.locator('#bbFound tr').filter({hasText:'ATC sensor'}).getByRole('button',{name:'Inspect',exact:true}).click();
+            await fallback.locator('#bbPacketError').filter({hasText:asset}).waitFor();
+            await fallback.waitForFunction(()=>document.getElementById('bbPacket').textContent.includes('"decode_status": "ok"'));
+            assert.equal(JSON.parse(await fallback.locator('#bbPacket').textContent()).measurements.packet_id,'138');
+            await fallback.locator('#bbPacketHelpTitle').click();
+            assert.match(await fallback.locator('#bbPacketFields [data-field="vendor"] + dd').textContent(),/Offline IEEE OUI/);
+            await fallback.locator('#bbPacketHelpTitle').click();
+            await fallback.unroute(blocked);
+            await fallback.locator('#bbFound tr').filter({hasText:'ATC sensor'}).getByRole('button',{name:'Inspect',exact:true}).click();
+            await fallback.locator('#bbPacket.ace_editor').waitFor();
+            await fallback.waitForFunction(()=>ace.edit('bbPacket').getValue().includes('"decode_status": "ok"'));
+            assert.equal(await fallback.locator('#bbPacketError').isVisible(),false);
+            await fallback.getByRole('tab',{name:'YAML',exact:true}).click();
+            await fallback.locator('#bbYaml.ace_editor').waitFor();
+            assert(await fallback.evaluate(()=>ace.edit('bbYaml').getValue().includes('filter_known_devices: false')));
+            assert.equal(await fallback.locator('#bbDirty').textContent(),'');
+            await fallback.close();
+        }
+        for(const [locale,tab,send,guide] of [['de-DE','Befehle','Befehl senden','Hilfe zu Advertisement-Feldern'],['it-IT','Comandi','Invia comando','Guida ai campi dell’advertisement'],['fr-FR','Commandes','Envoyer la commande','Guide des champs advertisement'],['es-ES','Comandos','Enviar comando','Guía de campos del advertisement']]){
             const localized=await browser.newPage({locale});
             await localized.goto('http://127.0.0.1:'+server.address().port);
             await localized.locator('#bbMsg').filter({hasText:'Configuration loaded'}).waitFor();
+            assert.equal(await localized.locator('#bbPacketFields dt').count(),16);
+            assert.equal(await localized.locator('#bbPacketHelpTitle').textContent(),guide);
+            assert(await localized.locator('#bbDeviceApply').getAttribute('title'));
+            await localized.getByRole('tab',{name:'Discovery',exact:true}).click();
+            await localized.locator('#bbOpenFilters').click();
+            assert.equal(await localized.getByRole('tab',{name:'Settings',exact:true}).getAttribute('aria-selected'),'true');
+            assert.equal(await localized.evaluate(()=>document.activeElement.id),'bbMacFilters');
+            assert.notEqual(await localized.locator('#bbFilterCommon').textContent(),await page.locator('#bbFilterCommon').textContent());
+            await localized.setViewportSize({width:390,height:844});
+            assert(await localized.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
             await localized.getByRole('tab',{name:tab,exact:true}).click();
             assert(await localized.getByRole('button',{name:send,exact:true}).getAttribute('title'));
             await localized.close();
         }
         assert.deepEqual(errors,[]);
-        console.log('UI PASS: configuration, discovery, command confirmation/cancellation, diagnostic/GATT POST payloads, TXADV scan suppression and explicit resume, desktop/mobile layout; no implicit restart.');
+        console.log('UI PASS: all five frontends, complete SQLite editing/persistence, explicit old-backend warning, configuration, discovery, read-only ACE JSON inspection/folding, contextual key-only tooltips and keyboard/mobile field guide, session error guidance, rule warnings and draft/cancel semantics, MAC filter conflicts/persistence/shortcut, five-language help, asset failure fallback/retry, YAML interoperability, command confirmation/cancellation, diagnostic/GATT POST payloads, TXADV scan suppression and explicit resume, desktop/mobile layout; no implicit restart.');
     } finally {
         if (browser) await browser.close();
         server.close();

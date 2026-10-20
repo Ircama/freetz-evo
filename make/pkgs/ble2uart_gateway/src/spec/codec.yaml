@@ -284,6 +284,18 @@ structures:
           func: affine
           factor: 0.5
           offset: -40.0
+          decoder:
+            op: subtract
+            left:
+              op: divide
+              left:
+                op: input
+              right:
+                op: literal
+                value: 2
+            right:
+              op: literal
+              value: 40
           encoder:
             op: int
             argument:
@@ -311,6 +323,13 @@ structures:
           func: affine
           factor: 0.5
           offset: 0.0
+          decoder:
+            op: divide
+            left:
+              op: input
+            right:
+              op: literal
+              value: 2
           encoder:
             op: int
             argument:
@@ -5858,6 +5877,18 @@ structures:
               func: affine
               factor: 0.5
               offset: -40.0
+              decoder:
+                op: subtract
+                left:
+                  op: divide
+                  left:
+                    op: input
+                  right:
+                    op: literal
+                    value: 2
+                right:
+                  op: literal
+                  value: 40
               encoder:
                 op: int
                 argument:
@@ -5885,6 +5916,13 @@ structures:
               func: affine
               factor: 0.5
               offset: 0.0
+              decoder:
+                op: divide
+                left:
+                  op: input
+                right:
+                  op: literal
+                  value: 2
               encoder:
                 op: int
                 argument:
@@ -11408,6 +11446,13 @@ structures:
       func: affine
       factor: 0.1
       offset: 0.0
+      decoder:
+        op: divide
+        left:
+          op: input
+        right:
+          op: literal
+          value: 10
       encoder:
         op: int
         argument:
@@ -11430,6 +11475,13 @@ structures:
       func: affine
       factor: 0.1
       offset: 0.0
+      decoder:
+        op: divide
+        left:
+          op: input
+        right:
+          op: literal
+          value: 10
       encoder:
         op: int
         argument:
@@ -11452,6 +11504,13 @@ structures:
       func: affine
       factor: 0.0625
       offset: 0.0
+      decoder:
+        op: multiply
+        left:
+          op: input
+        right:
+          op: literal
+          value: 0.0625
       encoder:
         op: int
         argument:
@@ -11535,6 +11594,18 @@ structures:
       func: affine
       factor: 0.02
       offset: 0.02
+      decoder:
+        op: multiply
+        left:
+          op: add
+          left:
+            op: input
+          right:
+            op: literal
+            value: 1
+        right:
+          op: literal
+          value: 0.02
       encoder:
         op: subtract
         left:
@@ -11562,6 +11633,13 @@ structures:
       func: affine
       factor: 0.05
       offset: 0.0
+      decoder:
+        op: multiply
+        left:
+          op: input
+        right:
+          op: literal
+          value: 0.05
       encoder:
         op: int
         argument:

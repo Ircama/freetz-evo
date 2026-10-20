@@ -137,6 +137,95 @@ then run `make ble2uart_gateway-precompiled`. A runtime `codec.yaml` still
 overrides those embedded definitions. Python is only needed for generation,
 not for decoding on the router. No SQLite device database is generated.
 
+### Reconstruct Python/Construct From The Codec Specification
+
+`tools/spec2atc.py` implements the reverse direction: **codec specification
+JSON/YAML -> executable Python/Construct definitions**. It does not infer
+binary layouts from Discovery/Inspect observations or create device entries.
+
+Use the same development environment described above:
+
+```sh
+python3 make/pkgs/ble2uart_gateway/tools/spec2atc.py \
+  --spec make/pkgs/ble2uart_gateway/src/spec/codec.yaml \
+  --out /tmp/ble-codec/atc_mi_construct_generated.py
+```
+
+For JSON, use `--spec /path/to/codec.json`. The input must contain
+`"version": 1` and `"structures"`; optional `"formats"` associations are
+preserved. JSON conversion itself needs only the Python standard library;
+YAML input additionally needs PyYAML.
+
+The generated module includes its helpers and does not import the original
+`atc_mi_interface` package or the converter. Executing it requires Construct
+2.10.70, Arrow for timestamp structures, and PyCryptodome when encrypted
+formats are used. Its original top-level names are available as Python
+variables when they are valid, nonreserved identifiers; `STRUCTURES` always
+provides lookup by the exact original name, and `FORMATS` retains format
+metadata.
+
+For example, from the generated module's directory:
+
+```python
+from atc_mi_construct_generated import bt_home_v2_format
+
+# Service data: UUID + DevInfo + objects, without AD length/type, flags or name.
+raw = bytes.fromhex("D2FC40008A0C0E0B10001101")
+decoded = bt_home_v2_format.parse(raw)
+assert decoded.data_point[1].data.battery_v == 2.83
+assert bt_home_v2_format.build(decoded) == raw
+```
+
+Encrypted structures accept `mac_address=bytes.fromhex(...)` (6 bytes, display
+order) and `bindkey=bytes.fromhex(...)` (16 bytes) in both `parse` and `build`.
+Missing parameters or failed CCM authentication raise explicit Construct
+validation errors; there are no default keys.
+
+This reconstructs equivalent supported declarations, not the original source:
+comments, shared helper names and arbitrary Python callbacks cannot be recovered
+from the exported schema. Known callbacks/predicates and the four BLE encryption
+codecs are implemented explicitly. Unsupported nodes and ambiguous/incomplete
+transforms are rejected with their schema location, without replacing an
+existing output file. See [CODEC.md](CODEC.md) for the detailed limits.
+
+Run the inverse converter's tests on the development PC:
+
+```sh
+python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_spec2atc.py -v
+```
+
+For an independent comparison with the **original Construct model**, rather than
+only stored vectors, also set:
+
+```sh
+ATC_CODEC_REFERENCE="$ATC" \
+ATC_GENERATED_MODULE=/tmp/ble-codec/atc_mi_construct_generated.py \
+python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_spec2atc.py -v
+```
+
+Use the same original package revision that generated the specification.
+Without `ATC_CODEC_REFERENCE`, the four original-source comparison tests are
+explicitly skipped. With it, the suite re-exports the original schema, directly
+compares 1,000 stored and 4,200 independent packets, and exhaustively checks
+all 256 byte values of each of the seven distinct affine adapters.
+
+Affine nodes now preserve the original `decoder` expression as well as the
+`encoder`: reducing `(obj + 1) * 0.02` to `obj * 0.02 + 0.02` changes floating
+point rounding and can change the re-encoded byte. Older specifications without
+`decoder` remain readable, but cannot recover evaluation order that was lost.
+Regenerate them from the original model to obtain the exact expressions.
+The updated schema requires an updated gateway binary: older binaries reject
+the new `decoder` property. Do not deploy it alone to an older router build.
+
+The generated encryption helpers also use the current input/output stream when
+building edited parsed objects, rather than a stale stream retained in a
+Construct Container. A separate test records a known reference discrepancy:
+the original BTHome v2 encoder hardcodes DevInfo `0x41` in its nonce. With
+`Trigger=true`, it emits header `0x45` but cannot decrypt its own output.
+The reconstructed helper deliberately uses the actual header and produces a
+valid authenticated packet; this case is not claimed to be byte-equivalent
+to the defective original encoder.
+
 ## Add Devices Through The GUI
 
 ### From Discovery
@@ -160,6 +249,59 @@ Discovery temporarily removes ESP32 filters, then restores the configured
 scanner on Stop or timeout, even if the page is closed. It never enrolls a
 device automatically. Inspect reports unsupported formats and decoding errors;
 a discovered MAC alone does not imply a supported device.
+The selected advertisement is shown as formatted, read-only JSON in ACE, with
+syntax highlighting, collapsible objects/arrays and selectable text. If editor
+assets cannot load, an explicit error is shown and the JSON remains readable
+as plain text. Inspect does not modify the configuration or restart the service.
+Hover a JSON **field name** for contextual help without changing the displayed
+data. The collapsible **Advertisement field guide** provides the same root-field
+explanations for keyboard/touch users and remains available without ACE. Nested
+codec fields have protocol-specific or generic guidance. Help covers address
+types, OUI/vendor lookup, configured state, PHY versus payload format, reception
+counters/timestamps, and decoded values. Failed inspection also displays a
+notice: an unexpected API response or expired web session does not establish
+that the received BLE packet is invalid.
+
+The device dialog explains **Keep changes** and **Cancel** through tooltips and
+an expandable help section. Keep validates the device and updates only the page
+draft; Cancel discards only edits in that dialog, preserving other page changes.
+Neither action writes the saved configuration or restarts the daemon.
+
+**Rules** and **Add rule** include help and a visible limitation warning:
+this daemon stores and validates rule definitions but does **not execute
+automations**. Adding a rule changes only the current draft. Rule validation
+requires a name/source and a positive delay unless mirror mode is selected;
+saving a definition does not activate an automation.
+
+### Configure Advertisement Filters
+
+Open **Settings → Scanner → Advertisement MAC filters**, or use
+**Configure advertisement filters** in Discovery:
+
+1. Choose whether **Filter registered devices in ESP32** is enabled. When on,
+   only enabled configured devices are eligible; an include list further
+   restricts them and an exclude list removes matches. With no eligible devices
+   the scanner stays stopped.
+2. Fill **one** list: **Include MACs/prefixes (whitelist)** to admit matches, or
+   **Exclude MACs/prefixes (blacklist)** to reject matches. Both populated is an
+   error, shown immediately and rejected by validation/save; neither list is
+   automatically cleared.
+3. Enter full MACs or 1-6-byte prefixes, for example `A4:C1:38` or
+   `A4C1383406CE`, separated by newlines, spaces or commas. Prefixes start at
+   the first displayed MAC byte; no wildcard is needed. The effective firmware
+   list may contain at most 64 entries.
+4. To receive unregistered addresses in normal scanning, turn registered-device
+   filtering off. With it off and both lists empty, all addresses are admitted
+   by the MAC filter; other scanner settings still apply. Reception alone does
+   not configure devices or publish their measurements.
+5. Select **Save configuration**, then **Restart service**. **Start configured
+   scan** resumes the configuration already loaded by the daemon; it does not
+   reload newly saved edits.
+
+Discovery's search, vendor and unconfigured-only controls filter the displayed
+table, not the radio. Active Discovery temporarily bypasses configured MAC,
+random/private-address and duplicate filters and enables both PHYs. Stop or
+timeout restores the scanner configuration loaded by the daemon.
 
 ### From A Known MAC
 
@@ -278,8 +420,17 @@ gateway after metadata changes.
 ## SQLite
 
 The optional SQLite frontend is available in **Settings → Frontends → SQLite**.
-It uses the same validated YAML store and Save/Restart workflow as the other
-frontends; saving does not restart the service implicitly.
+Settings exposes all five frontends: MySensors, MQTT, Matter, InfluxDB 3 and
+SQLite. It uses the same validated YAML store and Save/Restart workflow as the
+other frontends; saving does not restart the service implicitly.
+
+The CGI renders the typed configuration returned by the daemon binary, not just
+sections already present in the saved YAML. The current daemon supplies default,
+disabled SQLite settings even for older YAML without `frontends.sqlite`; reading
+does not rewrite that file. If a frontend is missing from the API response, the
+CGI explicitly warns that the backend is incomplete/outdated. Update the daemon
+binary together with the CGI and reload the page; updating only the CGI or
+restarting an old binary cannot add SQLite support.
 
 ```yaml
 frontends:
@@ -582,6 +733,21 @@ make ble2uart_gateway-precompiled
 ```
 
 The deployment helper preserves existing YAML and publishes the English CGI.
+For targets with separate AVM/Freetz uClibc, the package depends on
+`patchelf-target-host` and waits for `tools/patchelf-target` before installing the
+binary. The shared install helper sets the ELF interpreter once, only when
+required. A missing `patchelf-target` after Cargo reports success is an
+installation dependency error, not a Rust compilation error.
+
+Browser regression tests require Playwright/Chromium and a freshly built native
+daemon, so they exercise the current frontend schema rather than a stale binary:
+
+```sh
+cargo build --manifest-path make/pkgs/ble2uart_gateway/src/Cargo.toml --offline --no-default-features
+node make/pkgs/ble2uart_gateway/tools/test_web_ui.cjs
+python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_build_progress.py -v
+```
+
 `tools/test_captures.py --help` documents private pickle regression testing;
 keep converted captures and keys outside the repository.
 `tools/test_frontends_target.py --help` covers isolated frontend tests and

@@ -76,6 +76,8 @@ pub mod spec {
         #[serde(default)]
         pub offset: Option<f64>,
         #[serde(default)]
+        pub decoder: Option<Expression>,
+        #[serde(default)]
         pub encoder: Option<Expression>,
         #[serde(default)]
         pub calculation: Option<Expression>,
@@ -892,7 +894,10 @@ pub mod decode {
             match name.as_str() {
                 "affine" => {
                     let raw = self.node(sub)?.as_f64().ok_or_else(|| Error("affine transform requires a number".into()))?;
-                    Ok(Value::Float(raw * node.factor.unwrap_or(1.0) + node.offset.unwrap_or(0.0)))
+                    let decoded = node.decoder.as_ref().map(|expression| expression.evaluate(raw, &Value::Map(self.context.clone())))
+                        .unwrap_or_else(|| raw * node.factor.unwrap_or(1.0) + node.offset.unwrap_or(0.0));
+                    if !decoded.is_finite() { return Err(Error("non-finite arithmetic result".into())); }
+                    Ok(Value::Float(decoded))
                 }
                 // `bytes2bits` is the plumbing that turns a Struct into a
                 // bit-packed container: not data, a container marker.
@@ -1513,6 +1518,22 @@ mod tests {
             let decoded = decoder.decode(format).unwrap_or_else(|error| panic!("{format}: {error}"));
             assert!(same(&vector["decoded"], &decoded), "decoder mismatch: {format} {:?}", decoded);
         }
+    }
+
+    #[test]
+    fn affine_decoder_preserves_reference_operation_order() {
+        let spec = Spec::embedded().unwrap();
+        for raw in 0..=255u8 {
+            let mut bytes = [0u8; 12];
+            bytes[8] = raw;
+            let decoded = Decoder::new(&spec, &bytes).decode("cfg").unwrap();
+            let expected = (f64::from(raw) + 1.0) * 0.02;
+            assert_eq!(decoded.get("connect_latency").and_then(Value::as_f64), Some(expected));
+            let encoded = super::encode::Encoder::new(&spec).encode("cfg", &decoded).unwrap();
+            assert_eq!(encoded[8], ((expected / 0.02).trunc() as i64 - 1) as u8, "raw={raw}");
+        }
+        let legacy = Spec::parse("version: 1\nstructures:\n  value: {kind: transform, func: affine, factor: 0.5, offset: -40, sub: {kind: int, fmt: '<B'}}\n").unwrap();
+        assert_eq!(Decoder::new(&legacy, &[82]).decode("value").unwrap(), Value::Float(1.0));
     }
 
     #[test]

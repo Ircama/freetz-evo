@@ -59,7 +59,7 @@ def arithmetic(node):
             node = node.value
         if isinstance(node, ast.Name) and node.id == "this":
             return {"op": "field", "path": path}
-    if isinstance(node, ast.Name) and node.id == "obj":
+    if isinstance(node, ast.Name) and node.id in ("obj", "obj_"):
         return {"op": "input"}
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
         return {"op": "literal", "value": node.value}
@@ -72,6 +72,18 @@ def arithmetic(node):
     if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ("int", "float") and len(node.args) == 1:
         return {"op": node.func.id, "argument": arithmetic(node.args[0])}
     raise Unmapped("unsupported arithmetic expression: " + ast.dump(node))
+
+
+def adapter_arithmetic(func):
+    if isinstance(func, (cs.BinExpr, cs.UniExpr, cs.Path)):
+        return arithmetic(ast.parse(str(func), mode="eval").body)
+    filename = inspect.getsourcefile(func)
+    code = getattr(func, "__code__", None)
+    if filename and code:
+        body = source_lambdas(filename).get(code.co_firstlineno)
+        if body is not None:
+            return arithmetic(body)
+    raise Unmapped("adapter arithmetic needs a Construct expression or source lambda")
 
 
 def describe(obj):
@@ -385,10 +397,11 @@ class Converter(object):
                 one = obj._decode(1, {}, "")
                 two = obj._decode(2, {}, "")
                 if isinstance(zero, (int, float)) and math.isclose(two - one, one - zero, rel_tol=1e-10, abs_tol=1e-12):
+                    decoder = inspect.getclosurevars(obj._decode).nonlocals["decoder"]
                     encoder = inspect.getclosurevars(obj._encode).nonlocals["encoder"]
-                    expression = arithmetic(source_lambdas(inspect.getsourcefile(encoder))[encoder.__code__.co_firstlineno])
                     return {"kind": "transform", "func": "affine", "factor": one - zero,
-                        "offset": zero, "encoder": expression, "sub": self.node(obj.subcon)}
+                        "offset": zero, "decoder": adapter_arithmetic(decoder),
+                        "encoder": adapter_arithmetic(encoder), "sub": self.node(obj.subcon)}
             func = getattr(obj, "decodefunc", None) or getattr(obj, "encodefunc", None) or obj
             name = func_name(func)
             if name.endswith(".<lambda>"):
