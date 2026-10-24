@@ -7,6 +7,7 @@
 //!
 //! ```text
 //! ble2uart-gateway --config <file>                     run the daemon
+//! ble2uart-gateway --config <file> --codec <file>      use an explicit codec overlay
 //! ble2uart-gateway --write-default-config <file>       create a configuration
 //! ble2uart-gateway --check-config <file>               validate, print nothing on success
 //! ble2uart-gateway --config <file> --get <key>         print one value (dotted path)
@@ -21,14 +22,17 @@ mod config;
 mod crypto;
 mod link;
 mod commands;
+mod gatt;
 mod logger;
 mod pipeline;
 mod web;
 mod mqtt;
 mod influx;
 mod sqlite;
+mod automation;
 mod managed_process;
 mod matter;
+mod portal;
 mod profile;
 #[cfg(feature = "matter")]
 mod matter_server;
@@ -56,6 +60,7 @@ static RELOAD_LOGGING: AtomicBool = AtomicBool::new(false);
 
 struct Args {
     config: PathBuf,
+    codec: Option<PathBuf>,
     serial: Option<String>,
     baudrate: Option<u32>,
     device: Option<String>,
@@ -77,6 +82,7 @@ enum Comando {
     Set(String, String),
     Dump,
     WebConfig(String),
+    Portal,
     DecodeCaptures,
     Control(String, u64),
     FirmwareCommand(String),
@@ -90,7 +96,7 @@ enum Comando {
 
 fn usage() -> ! {
     eprintln!(
-        "usage: ble2uart-gateway [--config <file>] [--serial <dev>] [--baudrate <n>] <action>\n\
+        "usage: ble2uart-gateway [--config <file>] [--codec <file>] [--serial <dev>] [--baudrate <n>] <action>\n\
          actions:\n\
          \x20 (none)                        run the daemon\n\
          \x20 --write-default-config        create a valid configuration file\n\
@@ -98,11 +104,14 @@ fn usage() -> ! {
          \x20 --get <key>                   print one value (dotted path)\n\
          \x20 --set <key>=<value>           change one value and write the file\n\
          \x20 --dump                        print the configuration\n\
+         \x20 --web-config <action>         configuration API for the web interface (JSON stdin/stdout)\n\
+         \x20 --portal                      read-only sensor dashboard CGI (use through the CGI wrapper)\n\
          \x20 --decode-captures             decode private JSONL stdin offline, without serial\n\
          \x20 --encode <structure>          JSON stdin to wire hex\n\
          \x20 --decode <structure>          wire hex stdin to JSON\n\
          \x20 --benchmark-codec <structure> decode stdin 10000 times, report timings\n\
          \x20 --device <MAC>                use configured device key for codec\n\
+         \x20 --codec <file>                merge this codec over embedded definitions instead of adjacent codec.yaml\n\
          \x20 --foreground                  run normally, send logs to stdout\n\
          \x20 --log-level <level>           off/error/warn/info/debug/trace\n\
          \x20 --log-stdout                  send logs to stdout instead of stderr\n\
@@ -112,7 +121,7 @@ fn usage() -> ! {
          \x20 --trace-decode / --no-trace-decode  enable/disable codec steps\n\
          \x20 --trace-phy / --no-trace-phy   trace received PHYs and decode outcomes\n\
          \x20 --info                        talk to the module: INFO and VERSION\n\
-         \x20 --command <JSON|->            firmware transaction via running daemon (- = stdin)\n\
+         \x20 --command <JSON|->            firmware/GATT request via running daemon (- = stdin)\n\
          \x20 --control <action>            status / discover-start [seconds] / discover-stop\n\
          \x20 --scan [seconds]              print the advertisement stream (60 s)\n\
          \x20 --version                     print the version"
@@ -124,9 +133,11 @@ fn parse_args() -> Args {
     parse_args_from(std::env::args().skip(1))
 }
 
-fn parse_args_from(mut iterator: impl Iterator<Item = String>) -> Args {
+fn parse_args_from(iterator: impl Iterator<Item = String>) -> Args {
+    let mut iterator = iterator.peekable();
     let mut args = Args {
         config: DEFAULT_CONFIG.into(),
+        codec: None,
         serial: None,
         baudrate: None,
         device: None,
@@ -144,6 +155,12 @@ fn parse_args_from(mut iterator: impl Iterator<Item = String>) -> Args {
             "--config" | "--store" => {
                 let value = iterator.next().unwrap_or_else(|| usage());
                 args.config = PathBuf::from(value);
+            }
+            "--codec" => {
+                let value = iterator.next()
+                    .filter(|value| !value.is_empty() && !value.starts_with('-'))
+                    .unwrap_or_else(|| usage());
+                args.codec = Some(PathBuf::from(value));
             }
             "--serial" => args.serial = iterator.next(),
             "--foreground" | "--log-stdout" => args.log_stdout = true,
@@ -166,13 +183,13 @@ fn parse_args_from(mut iterator: impl Iterator<Item = String>) -> Args {
                 args.baudrate = iterator.next().and_then(|v| v.parse().ok())
             }
             "--write-default-config" => {
-                if let Some(path) = iterator.next() {
+                if let Some(path) = iterator.next_if(|value| !value.starts_with('-')) {
                     args.config = PathBuf::from(path);
                 }
                 args.comando = Comando::WriteDefault;
             }
             "--check-config" => {
-                if let Some(path) = iterator.next() {
+                if let Some(path) = iterator.next_if(|value| !value.starts_with('-')) {
                     args.config = PathBuf::from(path);
                 }
                 args.comando = Comando::CheckConfig;
@@ -192,6 +209,7 @@ fn parse_args_from(mut iterator: impl Iterator<Item = String>) -> Args {
             }
             "--dump" => args.comando = Comando::Dump,
             "--web-config" => args.comando = Comando::WebConfig(iterator.next().unwrap_or_else(|| usage())),
+            "--portal" => args.comando = Comando::Portal,
             "--decode-captures" => args.comando = Comando::DecodeCaptures,
             "--command" => args.comando = Comando::FirmwareCommand(iterator.next().unwrap_or_else(|| usage())),
             "--control" => {
@@ -255,7 +273,7 @@ fn main() -> std::process::ExitCode {
         Comando::DecodeCaptures => decode_captures(&args),
         Comando::WebConfig(action) => {
             let mut input = String::new();
-            if action != "read" {
+            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups") {
                 let _ = std::io::stdin().take(262145).read_to_string(&mut input);
             }
             let response = if input.len() > 262144 {
@@ -269,6 +287,7 @@ fn main() -> std::process::ExitCode {
             Ok(())
         },
         Comando::Info => module_info(&args),
+        Comando::Portal => portal::run(&args.config),
         Comando::Control(action, seconds) => {
             println!("{}", web::control_client(action, *seconds).unwrap_or_else(|error| serde_json::json!({"success":false, "error":error})));
             Ok(())
@@ -387,13 +406,13 @@ fn reload_logging(args: &Args) {
 
 fn load_spec(args: &Args) -> Result<codec::spec::Spec, String> {
     let mut spec = codec::spec::Spec::embedded()?;
-    let override_path = args.config.with_file_name("codec.yaml");
+    let override_path = args.codec.clone().unwrap_or_else(|| args.config.with_file_name("codec.yaml"));
     match std::fs::read_to_string(&override_path) {
         Ok(text) => {
-            spec.merge(codec::spec::Spec::parse(&text)?);
+            spec.merge(codec::spec::Spec::parse(&text).map_err(|error| format!("{}: {error}", override_path.display()))?);
             log::info!("loaded codec overrides: {}", override_path.display());
         }
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {},
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound && args.codec.is_none() => {},
         Err(error) => return Err(format!("{}: {error}", override_path.display())),
     }
     spec.validate()?;
@@ -672,7 +691,7 @@ fn run_daemon(args: &Args) -> Result<(), String> {
 
     while !STOP_REQUESTED.load(Ordering::Relaxed) {
         reload_logging(args);
-        serve_control(&control, &mut discovery, &mut radio, None, &config)?;
+        serve_control(&control, &mut discovery, &mut radio, None, &config, &gateway.spec)?;
         match Link::open(
             &config.serial.port,
             config.serial.baudrate,
@@ -714,6 +733,11 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                         }
                         radio.gatt_recovery_required = false;
                     }
+                    if let Err(error) = commands::restore_radio(&mut link, &mut radio, Duration::from_secs(3)) {
+                        log::warn!("radio recovery failed: {error}");
+                        std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
+                        continue;
+                    }
                     radio.recovery_required = false;
                 }
                 let mut initial = config.clone();
@@ -733,15 +757,21 @@ fn run_daemon(args: &Args) -> Result<(), String> {
 
                 while !STOP_REQUESTED.load(Ordering::Relaxed) {
                     reload_logging(args);
+                    let timeout = Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000));
+                    if let Err(error) = commands::maintain_gatt(&mut link, &mut radio, timeout) {
+                        log::warn!("GATT timeout cleanup failed: {error}");
+                        break;
+                    }
+                    if !radio.has_session() { discovery.resume(); }
                     if discovery.expired() {
-                        discovery.until = None;
+                        discovery.cancel();
                         match configure_scanner(&mut link, &config) {
                             Ok(scanning) => radio.scanning = scanning,
                             Err(error) => { discovery.error = error; break; }
                         };
                         log::info!("discovery finished; configured firmware MAC filters restored");
                     }
-                    if let Err(error) = serve_control(&control, &mut discovery, &mut radio, Some(&mut link), &config) {
+                    if let Err(error) = serve_control(&control, &mut discovery, &mut radio, Some(&mut link), &config, &gateway.spec) {
                         discovery.error = error;
                         break;
                     }
@@ -753,6 +783,16 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                             break;
                         }
                     };
+                    match commands::observe_gatt(&mut link, &mut radio, timeout, &event) {
+                        Ok(true) => continue,
+                        Ok(false) => {},
+                        Err(error) => {
+                            log::warn!("GATT event: {error}");
+                            discovery.resume();
+                            if radio.recovery_required { break; }
+                            continue;
+                        }
+                    }
                     match event {
                         Event::Adv(report) => {
                             discovery.observe(&report, &gateway.spec, &config);
@@ -772,14 +812,18 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                         }
                     }
                 }
+                let cleanup = commands::abort_gatt(&mut link, &mut radio,
+                    Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000)),
+                    if STOP_REQUESTED.load(Ordering::Relaxed) { "gateway is stopping" } else { "serial link lost" });
+                if let Err(error) = &cleanup { log::warn!("GATT cleanup: {error}"); }
                 if STOP_REQUESTED.load(Ordering::Relaxed) {
                     let _ = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(1));
                     log::info!("gateway stopped");
-                    return Ok(());
+                    return cleanup;
                 }
                 log::warn!("serial link lost, reconnecting");
                 radio.scanning = false;
-                discovery.until = None;
+                discovery.cancel();
                 discovery.error = "serial link lost; discovery cancelled".into();
             }
             Err(error) => {
@@ -807,17 +851,22 @@ fn discovery_config(config: &Config) -> Config {
     unfiltered
 }
 
-fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, radio: &mut commands::Radio, mut link: Option<&mut Link>, config: &Config) -> Result<(), String> {
+fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, radio: &mut commands::Radio, mut link: Option<&mut Link>, config: &Config, spec: &codec::spec::Spec) -> Result<(), String> {
     let Some((stream, request)) = server.next() else { return Ok(()); };
     let action = request["action"].as_str().unwrap_or("");
     let mut restore_failed = None;
     let result: Result<serde_json::Value, String> = (|| {
         match action {
             "status" => {},
+            "advertisement-events" => {
+                let after = request["after"].as_u64().ok_or("after must be an unsigned sequence number")?;
+                return Ok(discovery.advertisement_events(after));
+            },
             "discover-start" => {
                 let seconds = request["seconds"].as_u64().unwrap_or(0);
                 if !(1..=300).contains(&seconds) { return Err("discovery duration must be between 1 and 300 seconds".into()); }
                 if discovery.until.is_some() { return Err("discovery is already running".into()); }
+                if radio.has_session() { return Err("close the active GATT session before starting discovery".into()); }
                 if radio.txadv_active { return Err("stop TXADV before starting discovery".into()); }
                 let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
                 let unfiltered = discovery_config(config);
@@ -834,7 +883,9 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, ra
                 log::info!("unfiltered discovery started for {seconds} seconds");
             },
             "discover-stop" => {
+                if radio.has_session() { return Err("close the active GATT session before stopping discovery".into()); }
                 if discovery.until.take().is_some() {
+                    discovery.cancel();
                     let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
                     match configure_scanner(serial, config) {
                         Ok(scanning) => radio.scanning = scanning,
@@ -847,10 +898,11 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, ra
                 let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
                 let timeout = Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000));
                 if matches!(command, commands::Command::ScanStart) {
+                    if radio.has_session() { return Err("close the active GATT session before starting scan".into()); }
                     if radio.txadv_active {
-                        commands::execute(serial, radio, &config.scanner, timeout, &commands::Command::TxadvStop)?;
+                        commands::execute(serial, radio, &config.scanner, timeout, spec, &commands::Command::TxadvStop)?;
                     }
-                    discovery.until = None;
+                    discovery.cancel();
                     radio.scanning = false;
                     match configure_scanner(serial, config) {
                         Ok(scanning) => radio.scanning = scanning,
@@ -860,13 +912,10 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, ra
                     return Ok(serde_json::json!({"success":true,"radio":radio.snapshot()}));
                 }
                 let scanner = if discovery.until.is_some() { discovery_config(config).scanner } else { config.scanner.clone() };
-                let started = std::time::Instant::now();
-                let result = commands::execute(serial, radio, &scanner, timeout, &command);
-                if radio.scan_suppressed {
-                    discovery.until = None;
-                } else if let Some(until) = discovery.until.as_mut() {
-                    *until += started.elapsed();
-                }
+                discovery.pause();
+                let result = commands::execute(serial, radio, &scanner, timeout, spec, &command);
+                if !radio.has_session() { discovery.resume(); }
+                if radio.scan_suppressed && !radio.has_session() { discovery.cancel(); }
                 let mut response = match result {
                     Ok(result) => serde_json::json!({"success":true,"result":result}),
                     Err(error) => serde_json::json!({"success":false,"error":error}),
@@ -881,7 +930,7 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, ra
         Ok(status)
     })();
     web::reply(stream, result.unwrap_or_else(|error| serde_json::json!({"success":false,"error":error})));
-    if radio.recovery_required { return Err("firmware connection recovery required".into()); }
+    if radio.recovery_required && link.is_some() { return Err("firmware connection recovery required".into()); }
     if let Some(error) = restore_failed { return Err(error); }
     Ok(())
 }
@@ -904,6 +953,21 @@ mod cli_tests {
     fn default_config_path_can_be_overridden() {
         assert_eq!(arguments(&[]).config, PathBuf::from(DEFAULT_CONFIG));
         assert_eq!(arguments(&["--config", "/tmp/private.yaml"]).config, PathBuf::from("/tmp/private.yaml"));
+    }
+
+    #[test]
+    fn codec_option_is_independent_of_config_and_optional_action_paths() {
+        assert!(arguments(&[]).codec.is_none());
+        for values in [
+            vec!["--codec", "mycodec.yaml", "--check-config", "gateway.yaml"],
+            vec!["--check-config", "gateway.yaml", "--codec", "mycodec.yaml"],
+            vec!["--config", "gateway.yaml", "--check-config", "--codec", "mycodec.yaml"],
+            vec!["--write-default-config", "--codec", "mycodec.yaml", "--config", "gateway.yaml"],
+        ] {
+            let args = arguments(&values);
+            assert_eq!(args.config, PathBuf::from("gateway.yaml"));
+            assert_eq!(args.codec, Some(PathBuf::from("mycodec.yaml")));
+        }
     }
 
     fn arguments(values: &[&str]) -> Args {

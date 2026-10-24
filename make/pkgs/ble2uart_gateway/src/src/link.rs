@@ -386,7 +386,7 @@ pub fn gpio_evt_command(op: GpioEvtOp, pin: u8) -> Vec<u8> {
 /// CONN (GATT central) op codes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
-#[allow(dead_code, reason = "Complete firmware GATT operations, not yet exposed by the gateway")]
+#[allow(dead_code, reason = "Retain the optional firmware pairing operation")]
 pub enum ConnOp {
     StatusQuery = 0,
     Open1M = 1,
@@ -401,6 +401,7 @@ pub enum ConnOp {
     ExchangeMtu = 10,
     Pair = 11,
     Unpair = 12,
+    Subscribe = 13,
 }
 
 /// Connection state reported by CONN op 0-4 responses.
@@ -430,7 +431,14 @@ pub fn conn_open_command(addr_type: u8, mac: &[u8; 6], coded: bool) -> Vec<u8> {
     )
 }
 
-/// Read a characteristic: `[op, handle_lo, handle_hi]`.
+pub fn conn_open_managed_command(addr_type: u8, mac: &[u8; 6], coded: bool) -> Vec<u8> {
+    let mut payload = vec![if coded { ConnOp::OpenCoded } else { ConnOp::Open1M } as u8, addr_type];
+    payload.extend_from_slice(mac);
+    payload.push(1);
+    build_command(Cmd::Conn, [0; CMD_DATA_MAX], &payload)
+}
+
+/// Read a characteristic: `[op, reserved_zero, handle_lo, handle_hi]`.
 #[allow(dead_code, reason = "Firmware GATT command builder retained for protocol support")]
 pub fn conn_read_command(handle: u16) -> Vec<u8> {
     build_command(
@@ -438,35 +446,39 @@ pub fn conn_read_command(handle: u16) -> Vec<u8> {
         [0; CMD_DATA_MAX],
         &[
             ConnOp::ReadCharacteristic as u8,
+            0,
             (handle & 0xFF) as u8,
             (handle >> 8) as u8,
         ],
     )
 }
 
-/// Write a characteristic: `[op, handle_lo, handle_hi, len, data...]`.
+/// Write a characteristic: `[op, reserved_zero, handle_lo, handle_hi, len, data...]`.
 #[allow(dead_code, reason = "Firmware GATT command builder retained for protocol support")]
-pub fn conn_write_command(handle: u16, value: &[u8]) -> Vec<u8> {
+pub fn conn_write_command(handle: u16, value: &[u8]) -> Result<Vec<u8>, String> {
+    if value.len() > 56 { return Err("CONN writes carry at most 56 bytes".into()); }
     let mut payload = vec![
         ConnOp::WriteCharacteristic as u8,
+        0,
         (handle & 0xFF) as u8,
         (handle >> 8) as u8,
-        value.len().min(255) as u8,
+        value.len() as u8,
     ];
-    payload.extend_from_slice(&value[..value.len().min(255)]);
-    build_command(Cmd::Conn, [0; CMD_DATA_MAX], &payload)
+    payload.extend_from_slice(value);
+    Ok(build_command(Cmd::Conn, [0; CMD_DATA_MAX], &payload))
 }
 
 /// ATT write without response: `[handle_lo, handle_hi, len, data...]`.
 #[allow(dead_code, reason = "Firmware ATT command builder retained for protocol support")]
-pub fn tx_data_command(handle: u16, value: &[u8]) -> Vec<u8> {
+pub fn tx_data_command(handle: u16, value: &[u8]) -> Result<Vec<u8>, String> {
+    if value.len() > 58 { return Err("TXDATA writes carry at most 58 bytes".into()); }
     let mut payload = vec![
         (handle & 0xFF) as u8,
         (handle >> 8) as u8,
-        value.len().min(20) as u8,
+        value.len() as u8,
     ];
-    payload.extend_from_slice(&value[..value.len().min(20)]);
-    build_command(Cmd::TxData, [0; CMD_DATA_MAX], &payload)
+    payload.extend_from_slice(value);
+    Ok(build_command(Cmd::TxData, [0; CMD_DATA_MAX], &payload))
 }
 
 /// Incremental frame parser: feeds bytes, yields complete frames.
@@ -940,13 +952,25 @@ mod tests {
     }
 
     #[test]
-    fn gatt_handles_follow_the_operation_without_padding() {
+    fn gatt_handles_follow_the_reserved_byte_without_value_padding() {
         let read = conn_read_command(0x1234);
-        assert_eq!(&read[..read.len() - 2], &[0x0C, 6, 0x34, 0x12]);
+        assert_eq!(&read[..read.len() - 2], &[0x0C, 6, 0, 0x34, 0x12]);
         assert_eq!(crc16_arc(&read), 0);
-        let write = conn_write_command(0x1234, &[0xAA, 0xBB]);
-        assert_eq!(&write[..write.len() - 2], &[0x0C, 7, 0x34, 0x12, 2, 0xAA, 0xBB]);
+        let write = conn_write_command(0x1234, &[0xAA, 0xBB]).unwrap();
+        assert_eq!(&write[..write.len() - 2], &[0x0C, 7, 0, 0x34, 0x12, 2, 0xAA, 0xBB]);
         assert_eq!(crc16_arc(&write), 0);
+        let maximum = conn_write_command(0xFF01, &[0xAB; 56]).unwrap();
+        assert_eq!(maximum.len(), 64);
+        assert_eq!(maximum[5], 56);
+        assert_eq!(&maximum[6..62], &[0xAB; 56]);
+        assert_eq!(crc16_arc(&maximum), 0);
+        let maximum = tx_data_command(0xFF01, &[0xCD; 58]).unwrap();
+        assert_eq!(maximum.len(), 64);
+        assert_eq!(maximum[3], 58);
+        assert_eq!(&maximum[4..62], &[0xCD; 58]);
+        assert_eq!(crc16_arc(&maximum), 0);
+        assert!(conn_write_command(1, &[0; 57]).is_err());
+        assert!(tx_data_command(1, &[0; 59]).is_err());
     }
 
     #[test]
@@ -959,7 +983,8 @@ mod tests {
             (gpio_evt_command(GpioEvtOp::DisableAll, 9), vec![0x10, 3]),
             (conn_open_command(1, &[1, 2, 3, 4, 5, 6], false), vec![0x0C, 1, 1, 1, 2, 3, 4, 5, 6]),
             (conn_open_command(1, &[1, 2, 3, 4, 5, 6], true), vec![0x0C, 2, 1, 1, 2, 3, 4, 5, 6]),
-            (tx_data_command(0x1234, &[0xAA, 0xBB]), vec![0x0D, 0x34, 0x12, 2, 0xAA, 0xBB]),
+            (conn_open_managed_command(1, &[1, 2, 3, 4, 5, 6], true), vec![0x0C, 2, 1, 1, 2, 3, 4, 5, 6, 1]),
+            (tx_data_command(0x1234, &[0xAA, 0xBB]).unwrap(), vec![0x0D, 0x34, 0x12, 2, 0xAA, 0xBB]),
         ] {
             assert_eq!(&frame[..frame.len() - 2], expected);
             assert_eq!(crc16_arc(&frame), 0);

@@ -40,5 +40,9 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
 		key, filters, derived rules, front-ends) that the web interface
 		edits and the daemon validates.
 
-		Standalone daemon: ble2uart-gateway (Linux, not tied to Freetz).
-		Can be externalized: /usr/bin/ble2uart-gateway.
+                Two web interfaces, both behind the standard freetz login:
+                  * /cgi-bin/conf/ble2uart_gateway       configuration editor
+                  * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard
+                    with the latest value of every sensor and its charts; the
+                    sensors, units and value types are read from the SQLite
+                    database, nothing is hard-coded

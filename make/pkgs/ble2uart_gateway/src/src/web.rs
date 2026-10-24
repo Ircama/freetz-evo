@@ -90,10 +90,13 @@ pub fn control_request(request: &Value) -> Result<Value, String> {
 #[derive(Default)]
 pub struct Discovery {
     pub until: Option<Instant>,
+    paused_at: Option<Instant>,
     devices: BTreeMap<String, Value>,
     reports: u64,
     overflow: u64,
     pub error: String,
+    advertisement_sequence: u64,
+    advertisements: std::collections::VecDeque<Value>,
 }
 
 impl Discovery {
@@ -106,18 +109,38 @@ impl Discovery {
         self.overflow = 0;
         self.error.clear();
         self.until = Some(Instant::now() + Duration::from_secs(seconds));
+        self.paused_at = None;
         Ok(())
     }
 
+    pub fn pause(&mut self) {
+        if self.until.is_some() && self.paused_at.is_none() { self.paused_at = Some(Instant::now()); }
+    }
+
+    pub fn resume(&mut self) {
+        if let Some(paused) = self.paused_at.take() {
+            if let Some(until) = self.until.as_mut() { *until += paused.elapsed(); }
+        }
+    }
+
+    pub fn cancel(&mut self) { self.until = None; self.paused_at = None; }
+
     pub fn expired(&self) -> bool {
-        self.until.is_some_and(|until| Instant::now() >= until)
+        self.paused_at.is_none() && self.until.is_some_and(|until| Instant::now() >= until)
     }
 
     pub fn snapshot(&self, connected: bool) -> Value {
-        json!({"success":true, "connected": connected, "active":self.until.is_some(), "remaining_s":self.until.map(|until| until.saturating_duration_since(Instant::now()).as_secs() + 1).unwrap_or(0), "reports": self.reports, "overflow":self.overflow, "error":self.error, "devices":self.devices.values().collect::<Vec<_>>()})
+        json!({"success":true, "connected": connected, "active":self.until.is_some(), "paused":self.paused_at.is_some(), "remaining_s":self.until.map(|until| until.saturating_duration_since(self.paused_at.unwrap_or_else(Instant::now)).as_secs() + 1).unwrap_or(0), "reports": self.reports, "overflow":self.overflow, "error":self.error, "devices":self.devices.values().collect::<Vec<_>>()})
     }
 
     pub fn observe(&mut self, report: &crate::link::AdvReport, spec: &crate::codec::spec::Spec, config: &Config) {
+        self.advertisement_sequence += 1;
+        self.advertisements.push_back(json!({
+            "sequence":self.advertisement_sequence, "mac":report.mac_string(),
+            "rssi":report.rssi, "addr_type":report.addr_type,
+            "data":crate::codec::value::hex(&report.data)
+        }));
+        if self.advertisements.len() > 256 { self.advertisements.pop_front(); }
         if self.until.is_none() { return; }
         self.reports += 1;
         let mac = report.mac_string();
@@ -141,6 +164,17 @@ impl Discovery {
         if name.is_empty() { name = old.and_then(|device| device["name"].as_str()).unwrap_or("").to_string(); }
         let configured = config.devices.iter().any(|device| crate::config::parse_mac(&device.mac).is_ok_and(|address| address.iter().rev().eq(report.mac.iter())));
         self.devices.insert(mac.clone(), json!({"mac":mac, "name":name, "vendor":vendor(&report.mac, report.addr_type), "format":format, "rssi":report.rssi, "phy":report.phy_summary(), "addr_type":report.addr_type, "count":count, "last_seen":crate::logger::timestamp(), "configured":configured, "data":crate::codec::value::hex(&report.data)}));
+    }
+
+    pub fn advertisement_events(&self, after: u64) -> Value {
+        let first = self.advertisements.front()
+            .and_then(|event| event["sequence"].as_u64())
+            .unwrap_or(self.advertisement_sequence.saturating_add(1));
+        json!({"success":true, "cursor":self.advertisement_sequence,
+            "dropped":first.saturating_sub(after.saturating_add(1)),
+            "events":self.advertisements.iter()
+                .filter(|event| event["sequence"].as_u64().is_some_and(|sequence|sequence > after))
+                .collect::<Vec<_>>()})
     }
 }
 
@@ -205,6 +239,28 @@ fn inspect_limited(path: &Path, spec: &crate::codec::spec::Spec, input: &str, ma
 }
 
 pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, String> {
+    if matches!(action,"availability-presets"|"automation-presets") {
+        return Ok(json!({"success":true,"rule":crate::automation::AutomationRule::default()}));
+    }
+    if matches!(action,"availability-status"|"automation-status") {
+        let config=Config::load(path,None,None)?;
+        return crate::automation::status(&config.availability_state_file,&config.devices);
+    }
+    if matches!(action,"availability-test"|"automation-test") {
+        let request:Value=serde_json::from_str(input).map_err(|_|"invalid webhook test request")?;
+        if let Some(rule)=request.get("rule") {
+            let rule=serde_json::from_value(rule.clone()).map_err(|_|"invalid availability test rule")?;
+            return crate::automation::test_rule(&rule);
+        }
+        let webhook=request.get("rule").and_then(|rule|rule.get("webhook"))
+            .or_else(||request.get("webhook")).or_else(||request.get("automation").and_then(|automation|automation.get("webhook")))
+            .ok_or("missing availability webhook configuration")?;
+        let webhook=serde_json::from_value(webhook.clone()).map_err(|_|"invalid availability webhook configuration")?;
+        return crate::automation::test_webhook(&webhook);
+    }
+    if action == "history-presets" {
+        return Ok(json!({"success":true,"maintenance":crate::sqlite::MaintenanceConfig::default()}));
+    }
     if action == "attributes" {
         return Ok(json!({"success":true,"attributes":crate::pipeline::supported_attributes().collect::<Vec<_>>()}));
     }
@@ -238,13 +294,14 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
         return Err("unknown configuration action".into());
     }
     let request: Value = serde_json::from_str(input).map_err(|_| "invalid JSON request")?;
-    let config: Config = if let Some(config) = request.get("config") {
+    let mut config: Config = if let Some(config) = request.get("config") {
         serde_json::from_value(config.clone()).map_err(|_| "invalid configuration structure")?
     } else if let Some(yaml) = request.get("yaml").and_then(Value::as_str) {
         serde_yaml::from_str(yaml).map_err(|_| "invalid YAML configuration")?
     } else {
         return Err("missing configuration".into());
     };
+    config.prepare_availability(path)?;
     config.validate()?;
     if action == "save" {
         if request.get("revision").and_then(Value::as_str) != Some(revision(path)?.as_str()) {
@@ -331,6 +388,25 @@ mod tests {
     }
 
     #[test]
+    fn advertisement_cursors_are_independent_bounded_and_work_without_discovery() {
+        let spec = crate::codec::spec::Spec::embedded().unwrap();
+        let mut discovery = Discovery::default();
+        let config = Config::default();
+        let report = crate::link::AdvReport {rssi:-70, event_type:1, addr_type:0,
+            directed:false, phys:0x33, mac:[0xCE,0x06,0x34,0x38,0xC1,0xA4],
+            data:vec![2,1,6]};
+        for _ in 0..300 { discovery.observe(&report, &spec, &config); }
+        let first = discovery.advertisement_events(0);
+        assert_eq!(first["cursor"], 300);
+        assert_eq!(first["dropped"], 44);
+        assert_eq!(first["events"].as_array().unwrap().len(), 256);
+        assert_eq!(first, discovery.advertisement_events(0));
+        assert_eq!(discovery.advertisement_events(299)["events"].as_array().unwrap().len(), 1);
+        assert_eq!(discovery.advertisement_events(300)["events"], json!([]));
+        assert!(discovery.until.is_none());
+    }
+
+    #[test]
     fn discovery_tracks_mac_name_format_vendor_and_deadline() {
         let spec = crate::codec::spec::Spec::embedded().unwrap();
         let mut discovery = Discovery::default();
@@ -384,6 +460,15 @@ mod tests {
         config_action(&path, "save", &request.to_string()).unwrap();
         let loaded = config_action(&path, "read", "").unwrap();
         assert_eq!(loaded["config"]["frontends"]["sqlite"], request["config"]["frontends"]["sqlite"]);
+        let presets = config_action(&path, "history-presets", "").unwrap();
+        request["revision"] = loaded["revision"].clone();
+        request["config"]["frontends"]["sqlite"]["maintenance"] = presets["maintenance"].clone();
+        request["config"]["frontends"]["sqlite"]["maintenance"]["enabled"] = json!(true);
+        config_action(&path, "save", &request.to_string()).unwrap();
+        let history = config_action(&path, "read", "").unwrap();
+        assert_eq!(history["config"]["frontends"]["sqlite"]["maintenance"], request["config"]["frontends"]["sqlite"]["maintenance"]);
+        request["config"]["frontends"]["sqlite"]["maintenance"]["policies"][0]["tiers"][1]["max_age_s"] = json!(1);
+        assert!(config_action(&path, "check", &request.to_string()).is_err());
         std::fs::remove_dir_all(directory).unwrap();
     }
 

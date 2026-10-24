@@ -9,6 +9,17 @@ guide](src/README.md) for ordinary Linux builds and a separate repository layout
 The Freetz package, its CGI, service script, settings and default store are all
 named `ble2uart_gateway`; the installed binary is `ble2uart-gateway`.
 
+For sensor configuration, see the Italian [ATC parameter and patch
+reference](ATC_PARAMETERS.md): C/JavaScript comparison, versioned layouts,
+all configuration families, examples and current codec limitations.
+The separate [Construct schema review (Italian)](ATC_CONSTRUCT_REVIEW.md)
+identifies firmware-driven format revisions, native Xiaomi distinctions,
+missing command layouts and reproducible codec mismatches.
+The local [ATC Python package](../../../atc_mi_interface/README.md) uses only
+Bleak's public application API, with native OS, dedicated ADV2UART and shared
+gateway backends. The gateway backend leaves this daemon running and restores
+its radio state when the GATT session ends.
+
 ## Parallel Applications And Simulation
 
 Domoticz does not reserve the gateway exclusively. MySensors accepts multiple
@@ -47,11 +58,50 @@ share the same archive reader; frontend integration tests share the emulator.
 4. Save and restart the service. In Domoticz, configure a MySensors TCP
    gateway using the same listener address and port.
 
+Both baudrate controls offer the supported presets: 9600, 19200, 38400, 57600,
+115200, 230400, 460800, 921600, 1000000 and 2000000. Previously stored non-preset
+values remain visible rather than silently changing when the page opens.
+**Initial baud rate** applies only when creating a new YAML configuration;
+change an existing connection under **Settings → Serial → Baudrate**, then
+**Save configuration → Status → restart**. The ESP32-C3 native USB Serial/JTAG
+firmware ignores host baudrate; USB/UART adapters must match their firmware.
+Startup validation uses the pending settings prepared by the framework, not
+stale/unset shell variables. Apply-save reads the newly saved configuration.
+
+**Startup and storage** is expanded and shows the selected YAML path. Its
+dedicated save button applies only Freetz startup/storage options and explicitly
+confirms the framework's restart of a running service. Save or reload any gateway
+draft first. The unrelated framework **Default** button is hidden because it does
+not reset the gateway YAML. Service restart is available once, under **Status**.
+**Save configuration** writes the validated YAML without restarting; for stores
+under `/tmp/flash` it also invokes `modsave flash`, reporting archive failures.
+Freetz restores that archive at boot: `/tmp/flash` is not an ordinary disposable
+temporary directory. Prefer external persistent storage for databases and Matter
+state; select the configuration directory in **Startup and storage**.
+
 ## Live Firmware / BLE Commands
 
-The **Commands** tab sends firmware diagnostics, bounded GATT transactions and
-TXADV requests through the running daemon. It requires confirmation and shows
-the JSON result plus radio state. Commands use the running configuration, not
+The **Commands** tab sends firmware diagnostics, host-managed GATT sessions and
+TXADV requests through the **already running daemon**, without stopping or
+restarting the service. **Read ATC configuration** and **Apply ATC configuration
+patch** send their requests directly after confirmation: no second **Send command**
+click is needed. Select the peer MAC/address type/PHY or an existing session first.
+The generic **Send command** remains available for all other operations.
+
+The confirmation and request/result/radio views use read-only Ace JSON editors.
+The patch uses an **editable Ace JSON editor**: invalid or empty objects cannot
+be sent. A prepared ATC patch initially enables `bt5phy` and `longrange`; edited
+patch fields are retained when applying it. To edit before sending, choose the
+`patch` operation or cancel the confirmation, edit the patch, then apply it again.
+All command buttons are locked while a request is pending. If the service is
+stopped or unavailable, an explicit error is shown; commands never start it
+implicitly.
+
+JSON views use syntax highlighting and folding; command errors use Ace's
+plain-text mode. The YAML tab remains editable in Ace's YAML mode. If editor
+assets cannot load, an explicit error is shown and radio data remains readable;
+retry refreshing the radio status after restoring the assets.
+Commands use the running configuration, not
 unsaved edits; they do not save settings or implicitly restart the service.
 The command controls and tooltips follow the browser language (English, German,
 Italian, French or Spanish). Existing configuration/discovery views are unchanged.
@@ -59,9 +109,13 @@ The Freetz startup form declares German and English in `files/.language`;
 other firmware languages use the framework's translation or fallback mechanism.
 
 An active scan is paused for diagnostics/GATT, then restored even after a
-command error. GATT connects to one peer and disconnects/cancels before scan
-restoration. Discovery filters and remaining time are preserved for temporary
-commands. Starting **TXADV instead leaves scanning OFF**, cancels Discovery and
+command error. GATT also temporarily stops daemon-configured TXADV and restores
+its original PHY, interval and payload after disconnect/cancel. Open / operation
+in open session / Close allow discovery, arbitrary characteristic subscriptions,
+ATT writes and application-notification responses without reconnecting.
+Sessions have ownership tokens and an idle timeout; other radio commands cannot
+interfere. Discovery filters and remaining time are preserved throughout.
+Starting **TXADV instead leaves scanning OFF**, cancels Discovery and
 keeps scanning suppressed across serial reconnects. Stopping TXADV does not
 restart scanning: use **Start configured scan** explicitly. This starts the
 saved scanner with its filters and stops daemon-tracked TXADV. Runtime overrides
@@ -72,17 +126,24 @@ The CLI has the same interface:
 ```sh
 ble2uart-gateway --command '{"command":"diagnostic","name":"info"}'
 ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","operation":"read","handle":42}'
+ble2uart-gateway --command '{"command":"gatt","mac":"AA:BB:CC:DD:EE:FF","operation":"exchange","uuid":"1F1F","value":"55","prefix":"55","codec":"cfg","offset":1}'
 ble2uart-gateway --command '{"command":"txadv-start","phy":0,"interval_units":160,"data":"020106"}'
 ble2uart-gateway --command '{"command":"txadv-stop"}'
 ble2uart-gateway --command '{"command":"scan-start"}'
 ```
 
-Use the firmware from the upstream **esp32-c3** branch under
-`source/esp32ble/ble50_scan`, not the old `master` scanner. See
+Use firmware under `source/esp32ble/ble50_scan` implementing host-managed open
+flag `1`, subscription op `13` and typed ATT completion events (`0x84`), not the
+old `master` scanner. See
 [the command reference](src/README.md#firmware-commands-while-the-daemon-is-running)
 for all operations, limits, failure semantics and firmware limitations.
-In particular, writes report stack acceptance, **not confirmed remote execution**;
-the current firmware does not expose final ATT write completion to the host.
+Writes with response now wait for confirmed ATT completion, but that is **not**
+the sensor's application response. `exchange` additionally awaits a matching
+notification. The ATC read/patch actions send `0x55` requests; generic raw and
+codec-backed requests work for other commands too. A configuration patch preserves
+unmodified fields and refuses codec mismatches before committing. See the
+[ATC/Coded PHY example](src/README.md#persistent-sessions-and-atc-configuration)
+for version-byte handling and verification from actual advertisements.
 
 The active file is `<store>/ble2uart_gateway.yaml`. Runtime serial settings
 come from YAML; the startup serial fields only initialize a new store.
@@ -136,6 +197,55 @@ To update the database embedded in a firmware build instead, use
 then run `make ble2uart_gateway-precompiled`. A runtime `codec.yaml` still
 overrides those embedded definitions. Python is only needed for generation,
 not for decoding on the router. No SQLite device database is generated.
+
+### Select An External Codec
+
+The gateway always starts from its embedded codec. Choose one external overlay:
+
+| Selection | Behavior |
+|---|---|
+| No option, no `<store>/codec.yaml` | Embedded codec only |
+| No option, `<store>/codec.yaml` exists | Automatically merge that file |
+| `--codec /path/to/mycodec.yaml` | Merge this file instead; do not load `<store>/codec.yaml` |
+
+Merge adds new structures/formats and replaces matching names; unrelated embedded
+definitions remain available. An explicit path is mandatory after `--codec`.
+Missing, unreadable or invalid selected files are errors, not a fallback to the
+embedded codec. A relative codec path is relative to the working directory,
+whereas automatic lookup is relative to the `--config` file.
+
+```sh
+# Named overlay for a direct daemon invocation:
+ble2uart-gateway --config /path/to/store/ble2uart_gateway.yaml \
+  --codec /path/to/mycodec.yaml --foreground
+
+# Validate without opening the serial device:
+ble2uart-gateway --config /path/to/store/ble2uart_gateway.yaml \
+  --check-config --codec /path/to/mycodec.yaml
+```
+
+`--codec` is supported by daemon startup, `--check-config`, `--encode`,
+`--decode`, `--benchmark-codec`, `--decode-captures` and `--web-config inspect`.
+It is process-local and is not saved in the gateway YAML. To use it on service
+startup, put `--codec /absolute/path/mycodec.yaml` in **Additional command line
+options**, then restart the service. Use a path without spaces in that field:
+the init script splits additional arguments on whitespace.
+
+**CGI consistency:** the CGI starts separate helper processes and does not
+forward the daemon's additional arguments. Its Inspect and validation helpers
+continue to use the automatic adjacent `codec.yaml`; setting `--codec` only for
+the daemon does not change them. To share one custom codec between the service,
+CGI and CLI, prefer automatic lookup: copy the file to `<store>/codec.yaml`,
+or retain its name with a symlink (only when `codec.yaml` does not already exist):
+
+```sh
+ln -s /absolute/path/mycodec.yaml /path/to/store/codec.yaml
+```
+
+Back up an existing overlay before replacing it. The daemon needs a restart
+after file changes; standalone helper commands load it on each invocation.
+Recompilation is only required to change the embedded copy or implement new
+codec operations.
 
 ### Reconstruct Python/Construct From The Codec Specification
 
@@ -238,12 +348,15 @@ to the defective original encoder.
 3. Select **Configure** and enter a label. For encrypted advertisements, enter
    the device's **Bindkey**: exactly 32 hexadecimal digits. Leave it empty for
    unencrypted devices. **Show/Hide** changes only the key's visibility.
-4. Leave **Forced wire format** empty for automatic detection. Under **Exposed
-   attributes**, add the measurements to publish and assign child IDs unique
-   within that device.
-5. Select **Keep changes**. Use **Inspect** to check the decoded structure and
-   available measurements with the current device configuration and bindkey.
-6. Select **Save configuration**, then **Restart service** to apply the changes.
+4. Leave **Forced wire format** empty for automatic detection. Configure decodes
+  the selected packet and prefills supported **Exposed attributes**, not protocol
+  metadata. For encrypted packets, enter the bindkey and select **Detect
+  attributes**. Later packets can contain additional measurements; review and
+  supplement the list, keeping existing child IDs stable.
+5. Select **Add to configuration draft** (or **Update configuration draft** for
+  an existing device). The dialog closes and returns to **Devices**, focusing
+  the configuration save action. Use **Inspect** to check decoded data.
+6. Select **Save configuration**, then **Status → restart** to activate changes.
 
 Discovery temporarily removes ESP32 filters, then restores the configured
 scanner on Stop or timeout, even if the page is closed. It never enrolls a
@@ -262,16 +375,15 @@ counters/timestamps, and decoded values. Failed inspection also displays a
 notice: an unexpected API response or expired web session does not establish
 that the received BLE packet is invalid.
 
-The device dialog explains **Keep changes** and **Cancel** through tooltips and
-an expandable help section. Keep validates the device and updates only the page
-draft; Cancel discards only edits in that dialog, preserving other page changes.
+The device dialog explains the draft action and **Cancel** through tooltips.
+Adding/updating validates the device and updates only the page draft; Cancel
+discards only edits in that dialog, preserving other page changes.
 Neither action writes the saved configuration or restarts the daemon.
 
-**Rules** and **Add rule** include help and a visible limitation warning:
-this daemon stores and validates rule definitions but does **not execute
-automations**. Adding a rule changes only the current draft. Rule validation
-requires a name/source and a positive delay unless mirror mode is selected;
-saving a definition does not activate an automation.
+**Availability monitoring** in each device dialog manages missing-reading
+notifications. Add a rule, select its attribute and timeout, configure its own
+HTTPS webhook and enable it when ready. Each rule has an independent test button.
+See [device availability monitoring](src/README.md#device-availability-monitoring).
 
 ### Configure Advertisement Filters
 
@@ -294,7 +406,7 @@ Open **Settings → Scanner → Advertisement MAC filters**, or use
    filtering off. With it off and both lists empty, all addresses are admitted
    by the MAC filter; other scanner settings still apply. Reception alone does
    not configure devices or publish their measurements.
-5. Select **Save configuration**, then **Restart service**. **Start configured
+5. Select **Save configuration**, then **Status → restart**. **Start configured
    scan** resumes the configuration already loaded by the daemon; it does not
    reload newly saved edits.
 
@@ -305,8 +417,10 @@ timeout restores the scanner configuration loaded by the daemon.
 
 ### From A Known MAC
 
-Open **Devices → Add device**, enter its MAC, label, optional bindkey and exposed
-attributes, then follow the same Keep changes, Save and Restart sequence.
+Open **Devices → Add manually**, enter its MAC, label, optional bindkey and exposed
+attributes, then follow the same draft, Save and Restart sequence. **Discover
+devices** opens the assisted path; the separate labeled search filters only the
+configured-device list below it.
 Accepted MAC spellings include `AABBCCDDEE01` and `AA:BB:CC:DD:EE:01`.
 
 **Edit** and **Remove** change the configuration draft; removing an entry does
@@ -423,6 +537,9 @@ The optional SQLite frontend is available in **Settings → Frontends → SQLite
 Settings exposes all five frontends: MySensors, MQTT, Matter, InfluxDB 3 and
 SQLite. It uses the same validated YAML store and Save/Restart workflow as the
 other frontends; saving does not restart the service implicitly.
+Each frontend has a distinct bordered group, an enabled/disabled status and its
+**Enabled** checkbox first. Parameter tooltips and keyboard/touch-accessible **?**
+buttons explain units, limits and consequences such as queue overflow.
 
 The CGI renders the typed configuration returned by the daemon binary, not just
 sections already present in the saved YAML. The current daemon supplies default,
@@ -456,10 +573,102 @@ atomically. A bounded worker queue keeps disk writes off the serial reader.
 WAL permits concurrent local rendering readers. Database errors, queue overflow
 and shutdown losses are reported in the service log.
 
+`batch_size` limits frames per transaction, not a mandatory minimum. A full batch
+commits immediately; otherwise `flush_interval_ms` triggers the write (default
+1000 ms), subject to locks, backlog, storage errors and retries. Sensor/radio
+arrival frequency, including duplicate filtering, is independent of this timer.
+Normal SQLite readers of the original database see committed WAL rows without
+waiting for a checkpoint of the main `.db` file. Its modification time alone can
+therefore look minutes old. A long-lived read transaction retains its snapshot:
+end it before querying for fresh data. Do not copy only `.db` while recording;
+use SQLite's backup API rather than an incomplete file copy or `immutable=1`.
+
 See [SQLite configuration, schema, queries and operational limits](src/README.md#sqlite-history).
-Retention/downsampling is not automatic. An external maintenance process can
-write concurrently by taking short transactions and handling SQLite's single
-writer lock; enable foreign keys on that connection for cascade deletion.
+Optional **History maintenance** runs in a dedicated gateway thread, not cron.
+It is disabled by default. The CGI provides enable/cadence/work-budget controls
+and per-attribute policies with optional MAC overrides. Edit age bands with
+duration/unit fields, add/remove bands and restore temperature/battery presets.
+The temperature defaults preserve every sample for ten minutes, then use
+1 minute / 150 seconds / 1 hour / 4 hours / 6 hours until respectively one hour /
+one day / one week / eight weeks / 24 months, then expire older numeric samples.
+Battery percentage and voltage use much sparser intervals. Recognized counters
+are excluded from consolidated history by default, configurable through
+**Default counter history** or explicit per-attribute/MAC policies. Other unknown
+attributes and boolean/discrete states preserve every sample indefinitely.
+
+Each series is related to its device by MAC and identified by attribute/unit.
+Old complete frames are atomically split into `history_samples` through
+`history_series` and `history_devices`; one typed JSON value avoids sparse
+sensor columns. Consolidation keeps real samples, not min/max or averages.
+**Back up before enabling:** schema 2 is not readable by older binaries, and
+discarded samples/full packet JSON cannot be reconstructed. Query the `history`
+view to combine recent raw measurements and consolidated series. Disabling
+maintenance stops future reductions without removing existing archives.
+See [maintenance settings and schema](src/README.md#progressive-history-maintenance)
+for presets, transaction limits and migration/downgrade precautions.
+
+## Sensor Dashboard
+
+`/cgi-bin/extra/ble2uart_gateway/portal` is a read-only dashboard for the SQLite
+database: it shows the latest value of every sensor and draws their charts. It
+uses the standard freetz login, the same authentication as
+`/cgi-bin/conf/ble2uart_gateway`, elfinder and rutorrent; there is no separate
+password. Open **Settings** with the gear button in the top bar to go back to the
+configuration editor.
+
+Nothing is hard-coded. Devices, sensor names, attributes, units and value types
+are discovered from the database on every request:
+
+* consolidated series come from `history_devices` / `history_series`, so the
+  dashboard also lists attributes that are no longer present in recent frames;
+* raw-only attributes come from the most recent frames, so it works with history
+  maintenance disabled as well;
+* `real`/`integer`/`unsigned` values are charted as lines, `boolean` values as
+  step lines (`0`/`1`), and `text`/`json` values are shown as a value only.
+
+Tap a sensor card to add it to the chart (up to six series, shared time axis) and
+tap it again, or a legend chip, to remove it. The range buttons cover 1 hour to
+the whole history; the chart is downsampled server-side with weighted per-bucket
+averages, merging archived samples and the recent raw frames. Values are never
+interpolated. The page refreshes the values every 30 seconds.
+
+Resource use (measured on the FRITZ!Box 7590 AX with the production database,
+one CGI request): peak RSS about 7 MB for this implementation against about
+19 MB for an equivalent PHP `php-cgi` script (PHP 8.5 with `pdo_sqlite`) that runs
+the same queries, and about 14 MB for PHP alone. A PHP request also starts an
+interpreter per call, while this CGI execs the gateway binary that is already
+installed. The wrapper is `/usr/lib/cgi-bin/ble2uart_gateway/portal.cgi` (POSIX
+shell: login guard, then `exec ble2uart-gateway --portal`); the HTML shell, CSS
+and JavaScript are in `/usr/mww/ble2uart_gateway/portal.*` and need no Internet
+access, no CDN and no charting library.
+
+The CGI never writes: the connection is opened with `PRAGMA query_only=ON`, so
+the dashboard cannot modify or lock the history. It uses short read transactions
+and reads the WAL, so it always sees the committed data even while the gateway is
+writing. If the database does not exist yet the page reports it instead of
+failing.
+
+## Availability Monitoring
+
+Open **Devices → Edit → Availability monitoring**. Each device owns its rules;
+Settings contains no global ITTT, availability-rule or webhook section.
+Each rule can be added, edited, removed, enabled and disabled independently.
+Set the attribute and **Notify if no reading received for more than (seconds)**,
+then open its **Webhook configuration** for ntfy/Gotify, HTTPS URL, private token,
+priority/tags, IPv4 selection, timeouts/retries and optional trusted PEM CA.
+
+New rules start disabled with temperature/600-second defaults. Each rule has a
+confirmed **Test webhook** button using its draft without saving or restarting.
+The rule's optional notification message overrides automatic alert/recovery/test
+text only when filled. Its optional **tgs** field overrides `webhook.tags` for
+that rule; blank fields retain the existing defaults. Missing webhook URLs open
+the configuration panel automatically. Device status is read-only Ace JSON.
+Save the device draft, Save configuration and explicitly restart to apply.
+Identical temperatures refresh freshness; battery-only packets do not. One stale
+episode and one recovery are retained across restarts; no periodic reminders run.
+There is no external rule engine or editable workflow language. Earlier global
+configurations migrate to their devices without placing private URLs in sources.
+See [monitoring settings and delivery semantics](src/README.md#device-availability-monitoring).
 
 ## MQTT And Matter
 
@@ -746,6 +955,8 @@ daemon, so they exercise the current frontend schema rather than a stale binary:
 cargo build --manifest-path make/pkgs/ble2uart_gateway/src/Cargo.toml --offline --no-default-features
 node make/pkgs/ble2uart_gateway/tools/test_web_ui.cjs
 python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_build_progress.py -v
+python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_save_hooks.py -v
+python3 -m unittest discover -s make/pkgs/ble2uart_gateway/tools -p test_codec_cli.py -v
 ```
 
 `tools/test_captures.py --help` documents private pickle regression testing;
@@ -755,6 +966,6 @@ keep converted captures and keys outside the repository.
 only observes real updates and opens the database read-only; it never publishes
 synthetic measurements or opens the serial port.
 
-Derived rules and SQLite-backed MySensors stable IDs/persistence are not yet
-implemented. MQTT last-state replay is in memory;
+SQLite-backed MySensors stable IDs/persistence are not yet implemented.
+MQTT last-state replay is in memory;
 Matter persists its fabric and endpoint identities, not historical BLE samples.

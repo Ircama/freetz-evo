@@ -19,7 +19,7 @@ log = { version = "0.4", features = ["std"] }
 libc = "0.2"
 rumqttc = { version = "0.25.1", default-features = false }
 ureq = { version = "=3.4.0", default-features = false, features = ["rustls"] }
-rusqlite = { version = "0.32.1", features = ["bundled"] }
+rusqlite = { version = "0.32.1", features = ["bundled", "hooks"] }
 rs-matter = { git = "https://github.com/project-chip/rs-matter", rev = "c69916a5a78957d46500145486df375acf4ab490", optional = true, features = ["async-io"] }
 rand = { version = "0.10", optional = true }
 async-io = { version = "2", optional = true }

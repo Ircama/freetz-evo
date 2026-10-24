@@ -131,5 +131,12 @@
     "timestamp": "2026-10-19T19:33:09Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:These values initialize a new YAML configuration only. Change an existing connection under Settings → Serial, then save and restart.": {
+    "original": "These values initialize a new YAML configuration only. Change an existing connection under Settings → Serial, then save and restart.",
+    "translation": "Questi valori inizializzano solo una nuova configurazione YAML. Modifica una connessione esistente in Impostazioni → Seriale, quindi salva e riavvia.",
+    "timestamp": "2026-10-20T10:46:04Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

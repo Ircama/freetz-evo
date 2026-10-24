@@ -524,6 +524,19 @@ pub mod decode {
         /// reference: a payload that does not match the format must be rejected
         /// rather than silently truncated.
         pub fn decode(mut self, format: &str) -> Result<Value> {
+            self.decode_format(format)
+        }
+
+        pub fn decode_exact(mut self, format: &str) -> Result<Value> {
+            let value = self.decode_format(format)?;
+            if self.position != self.buffer.len() || self.bit != 0 {
+                return Err(Error(format!("{format}: codec consumed {} of {} bytes; use a firmware-matched codec",
+                    self.position, self.buffer.len())));
+            }
+            Ok(value)
+        }
+
+        fn decode_format(&mut self, format: &str) -> Result<Value> {
             let spec = self.spec;
             let structure: &'a Node = spec
                 .structure(format)

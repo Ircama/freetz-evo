@@ -28,7 +28,7 @@ Content-Type: text/html; charset=UTF-8
 EOF
 
 	api_reply() {
-		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ]; then
+		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ] && [ "$ACTION" != attributes ] && [ "$ACTION" != history-presets ] && [ "$ACTION" != availability-presets ] && [ "$ACTION" != availability-status ]; then
 			echo '{"success":false,"error":"POST is required"}'
 			return
 		fi
@@ -40,14 +40,26 @@ EOF
 			return
 		fi
 		case "$ACTION" in
-			read|backups) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
-			check|save|restore|inspect)
+			read|backups|attributes|history-presets|availability-presets|availability-status) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
+			check|save|restore|inspect|availability-test)
 				case "$CONTENT_LENGTH" in ''|*[!0-9]*) echo '{"success":false,"error":"invalid request length"}'; return ;; esac
 				if [ "$CONTENT_LENGTH" -gt 262144 ] || [ "$CONTENT_TYPE" != application/json ]; then
 					echo '{"success":false,"error":"expected JSON, at most 256 KiB"}'
 				else
 					"$DAEMON_BIN" --config "$YAML" --web-config "$ACTION"
 				fi
+				;;
+			persist)
+				case "$BLE2UART_GATEWAY_STORE" in
+					/tmp/flash/*)
+						if /usr/bin/modsave flash >/dev/null 2>&1; then
+							echo '{"success":true,"message":"configuration archived to flash"}'
+						else
+							echo '{"success":false,"error":"modsave flash failed; YAML is saved in RAM but not confirmed persistent"}'
+						fi
+						;;
+					*) echo '{"success":true,"message":"configuration saved at the selected storage path"}' ;;
+				esac
 				;;
 			status|discover-stop) "$DAEMON_BIN" --control "$ACTION" ;;
 			command)
@@ -89,7 +101,8 @@ fi
 # ---------------------------------------------------------------------------
 # Page
 # ---------------------------------------------------------------------------
-echo '<details><summary>'"$(lang de:"Start und Speicher" en:"Startup and storage")"'</summary>'
+echo '<details id="bbStartup" open><summary>'"$(lang de:"Start und Speicher" en:"Startup and storage")"'</summary>'
+echo '<p><strong>'"$(lang de:"Konfigurationsdatei" en:"Configuration file" it:"File di configurazione")"':</strong> <code>'"$(html "$YAML")"'</code></p>'
 sec_begin "$(lang de:"Starttyp" en:"Start type")"
 cgi_print_radiogroup_service_starttype "enabled" "$BLE2UART_GATEWAY_ENABLED" "" "" 0
 sec_end
@@ -97,7 +110,23 @@ sec_end
 sec_begin "$(lang de:"Serielle Schnittstelle" en:"Serial link")"
 cat << EOF
 <p>$(lang de:"Serielles Gerät bei Erstinstallation" en:"Initial serial device"): <input type="text" name="serial" size="24" maxlength="64" value="$(html "$BLE2UART_GATEWAY_SERIAL")"></p>
-<p>$(lang de:"Baudrate bei Erstinstallation" en:"Initial baud rate"): <input type="text" name="baudrate" size="8" maxlength="8" value="$(html "$BLE2UART_GATEWAY_BAUDRATE")"></p>
+<p><label for="bbInitialBaudrate">$(lang de:"Baudrate bei Erstinstallation" en:"Initial baud rate"):</label> <select name="baudrate" id="bbInitialBaudrate">
+EOF
+BB_BAUDRATE_FOUND=
+for BB_BAUDRATE in 9600 19200 38400 57600 115200 230400 460800 921600 1000000 2000000; do
+	BB_SELECTED=
+	if [ "$BLE2UART_GATEWAY_BAUDRATE" = "$BB_BAUDRATE" ]; then
+		BB_SELECTED=' selected'
+		BB_BAUDRATE_FOUND=yes
+	fi
+	printf '<option value="%s"%s>%s</option>\n' "$BB_BAUDRATE" "$BB_SELECTED" "$BB_BAUDRATE"
+done
+if [ -z "$BB_BAUDRATE_FOUND" ]; then
+	printf '<option value="%s" selected>%s</option>\n' "$(html "$BLE2UART_GATEWAY_BAUDRATE")" "$(html "$BLE2UART_GATEWAY_BAUDRATE")"
+fi
+cat << EOF
+</select></p>
+<p>$(lang de:"Diese Werte gelten nur für eine neue YAML-Konfiguration. Bestehende Verbindungen unter Settings → Serial ändern; danach speichern und neu starten." en:"These values initialize a new YAML configuration only. Change an existing connection under Settings → Serial, then save and restart.")</p>
 <p>$(lang de:"Warten auf Programm/Gerät (Sekunden, 0 = sofort)" en:"Wait for the binary/device (seconds, 0 = immediately)"): <input type="text" name="config_wait" size="6" maxlength="5" value="$(html "$BLE2UART_GATEWAY_CONFIG_WAIT")"></p>
 EOF
 sec_end
@@ -105,7 +134,7 @@ sec_end
 # Storage chooser: same pattern as the other freetz packages; the bind keys are
 # secrets, so the store should live on a disk and never in a world readable
 # place.
-sec_begin "$(lang de:"Speicherort" en:"Store location")"
+sec_begin "$(lang de:"Speicherort" en:"Store location" it:"Percorso di configurazione")"
 cat << EOF
 <p>$(lang de:"Verzeichnis der Konfiguration (Geräte, Bindkeys, Regeln)" en:"Configuration directory (devices, bind keys, rules)"): <input type="text" id="store" name="store" size="40" maxlength="255" value="$(html "$BLE2UART_GATEWAY_STORE")"></p>
 <table style="width:100%; font-size:11px; border-collapse:collapse;">
@@ -148,12 +177,12 @@ if [ -d /var/media/ftp ]; then
 fi
 cat << EOF
 </table>
-<p style="font-size:10px;color:#666;">$(lang de:"Klick übernimmt den Pfad. Der bisherige Speicher wird beim Speichern mitgenommen." en:"Clicking uses the path. The existing store is moved along when saving.")</p>
+<div id="bbStartupActions"></div>
 EOF
 case "$BLE2UART_GATEWAY_STORE" in
 	/tmp/flash/*)
 		cat << EOF
-<p style="font-size:10px;color:#a60;">$(lang de:"Hinweis: /tmp/flash ist ein RAM-Disk; sie wird beim Stoppen und Speichern per modsave archiviert. Für Bindkeys ist eine Platte sicherer." en:"Note: /tmp/flash is a ramdisk; it is archived by modsave on stop and on every save. A disk is safer for the bind keys.")</p>
+<p>$(lang de:"/tmp/flash wird beim Speichern mit modsave in Flash archiviert und beim Booten wiederhergestellt. Laufende Datenbanken und Matter-Zustand auf externem Speicher ablegen." en:"/tmp/flash is archived to flash by modsave on save and restored at boot. Store live databases and Matter state on persistent external storage." it:"/tmp/flash viene archiviato in flash con modsave al salvataggio e ripristinato al boot. Database e stato Matter vanno conservati su memoria esterna persistente.")</p>
 EOF
 		;;
 esac
@@ -161,6 +190,7 @@ sec_end
 
 echo '</details>'
 sec_begin "$(lang de:"Gateway-Konfiguration" en:"Gateway configuration")"
+printf '<span id="bbLocale" data-language="%s" hidden></span>\n' "$(lang de:"de" en:"en" it:"it" fr:"fr" es:"es")"
 cat << 'EOF'
 <style>
 #bbApp {--bb-line:var(--evo-border,#c9ced1);--bb-accent:var(--evo-accent,#087e83);color:inherit;font:inherit;min-width:0;}
@@ -184,6 +214,9 @@ cat << 'EOF'
 #bbApp label.bbField input:not([type=checkbox]),#bbApp label.bbField select {width:100%;}
 #bbApp .bbGroup {border:0;border-top:1px solid var(--bb-line);padding:14px 0;margin:12px 0;min-width:0;}
 #bbApp .bbGroup legend {font-weight:bold;padding:0 8px 0 0;}
+#bbApp #bbFrontends > [data-frontend] {border:1px solid var(--bb-line);border-left:4px solid var(--bb-accent);border-radius:4px;padding:12px 16px;margin:18px 0;}
+#bbApp #bbFrontends > [data-frontend] > legend {color:var(--bb-accent);padding:0 8px;}
+#bbApp #bbFrontends > [data-frontend] > .bbGrid > .bbField:first-child {grid-column:1 / -1;border-bottom:1px solid var(--bb-line);padding-bottom:10px;}
 #bbApp .bbItem {border-left:2px solid var(--bb-line);padding:4px 0 12px 12px;margin:8px 0;}
 #bbApp .bbStatus {min-height:24px;margin:8px 0;overflow-wrap:anywhere;}
 #bbApp .bbError {color:#b73030;}
@@ -199,6 +232,10 @@ cat << 'EOF'
 #bbApp .bbSecret button {flex:0 0 64px;}
 #bbApp #bbYaml,#bbApp #bbPacket {height:480px;min-height:280px;max-height:65vh;width:100%;border:1px solid var(--bb-line);}
 #bbApp #bbPacket:not(.ace_editor) {white-space:pre-wrap;overflow:auto;font:12px/1.5 monospace;}
+#bbApp .bbOutput {height:280px;min-height:160px;max-height:65vh;width:100%;border:1px solid var(--bb-line);margin:12px 0;}
+#bbApp #bbRadio {height:180px;}
+#bbApp #bbCommandRequest,#bbApp #bbConfirmRequest,#bbApp #bbCmd_patch {height:220px;}
+#bbApp .bbOutput:not(.ace_editor) {white-space:pre-wrap;overflow:auto;font:12px/1.5 monospace;}
 #bbApp .bbHelp {margin:8px 0;line-height:1.5;}
 #bbApp .bbHelp summary {cursor:pointer;}
 #bbApp .bbHelp dl {margin:8px 0;}
@@ -209,13 +246,29 @@ cat << 'EOF'
 #bbApp #bbFieldTooltip strong {display:block;font-family:monospace;margin-bottom:4px;}
 #bbApp #bbMacFilters {scroll-margin-top:16px;}
 #bbApp #bbRegisteredFilter {margin:12px 0;}
+#bbApp .bbFieldName {display:flex;align-items:center;gap:8px;}
+#bbApp .bbParameterHelp {padding:0;width:24px;min-height:24px;flex:0 0 24px;border:1px solid var(--bb-line);border-radius:50%;background:transparent;color:var(--bb-accent);font-weight:bold;}
+#bbApp .bbFilterBar {border-top:1px solid var(--bb-line);padding-top:12px;margin-top:20px;}
+#bbApp .bbFilterBar input {flex:1;min-width:160px;}
+#bbApp .bbInactive {border-left-color:var(--bb-line)!important;}
+#bbApp .bbHistoryPolicy {border-top:1px solid var(--bb-line);margin-top:18px;padding-top:12px;min-width:0;}
+#bbApp .bbTier {display:grid;grid-template-columns:repeat(2,minmax(185px,1fr)) 32px;gap:12px;align-items:end;margin:12px 0;}
+#bbApp .bbDuration {display:flex;gap:4px;min-width:0;}
+#bbApp .bbDuration input {width:110px;min-width:100px;flex:1 1 110px;}
+#bbApp .bbDuration select {width:90px;min-width:76px;flex:0 0 90px;}
+#bbApp .bbTier > button {width:30px;padding:4px;}
+#bbApp #bbHistoryMaintenance {container-type:inline-size;}
+#bbApp #bbHistoryMaintenance > summary {cursor:pointer;font-weight:bold;padding:8px 0;}
+#bbApp #bbHistoryMaintenance input[type=number] {min-height:36px;}
+#bbApp .bbAvailabilityRule {border-top:1px solid var(--bb-line);padding-top:12px;margin-top:14px;min-width:0;}
+#bbApp .bbAvailabilityWebhook > summary {cursor:pointer;font-weight:bold;padding:8px 0;}
+@container(max-width:470px) {#bbApp .bbTier {grid-template-columns:minmax(0,1fr) 32px;}#bbApp .bbTier > .bbField {grid-column:1;}#bbApp .bbTier > button {grid-column:2;grid-row:1 / 3;align-self:center;}}
 </style>
 <div id="bbApp">
 <div class="bbBar">
 <button type="button" id="bbReload">Reload</button>
 <button type="button" id="bbCheck">Validate</button>
 <button type="button" id="bbSave">Save configuration</button>
-<button type="button" id="bbRestart">Restart service</button>
 <button type="button" id="bbLogging">Reload logging</button>
 <span id="bbDirty"></span>
 </div>
@@ -228,7 +281,8 @@ cat << 'EOF'
 <button type="button" role="tab" data-tab="yaml" aria-selected="false">YAML</button>
 </div>
 <section data-panel="devices" role="tabpanel">
-<div class="bbBar"><button type="button" id="bbAdd">Add device</button><input id="bbDeviceSearch" type="search" placeholder="MAC, name, manufacturer or model" aria-label="Filter configured devices"></div>
+<div class="bbBar"><button type="button" id="bbDiscoverDevices">Discover devices</button><button type="button" id="bbAdd">Add manually</button></div>
+<div class="bbBar bbFilterBar"><label for="bbDeviceSearch" id="bbDeviceFilterLabel">Filter configured devices</label><input id="bbDeviceSearch" type="search" placeholder="MAC, name, manufacturer or model"></div>
 <div class="bbScroll"><table><thead><tr><th>Enabled</th><th>MAC</th><th>Name / manufacturer / model</th><th>Format</th><th>Exposed attributes</th><th>Actions</th></tr></thead><tbody id="bbDevices"></tbody></table></div>
 </section>
 <section data-panel="discovery" role="tabpanel" hidden>
@@ -243,14 +297,19 @@ cat << 'EOF'
 <p id="bbCommandNote"></p>
 <div class="bbBar"><label><span id="bbCommandTypeLabel"></span> <select id="bbCommandType"></select></label><button type="button" id="bbCommandSend"></button><button type="button" id="bbRadioRefresh"></button></div>
 <div id="bbCommandFields" class="bbGrid"></div>
-<pre id="bbRadio" role="status"></pre>
-<pre id="bbCommandResult" role="status" aria-live="polite"></pre>
+<div id="bbCommandPatch" hidden><p id="bbCommandPatchLabel"></p><div id="bbCmd_patch" class="bbOutput" aria-labelledby="bbCommandPatchLabel" aria-describedby="bbCommandPatchError"></div><p id="bbCommandPatchError" class="bbError" role="alert" hidden></p></div>
+<p id="bbGattHelp" class="bbHint"></p>
+<div class="bbBar"><button type="button" id="bbAtcRead"></button><button type="button" id="bbAtcPatch"></button></div>
+<details id="bbCommandRequestDetails" class="bbHelp"><summary id="bbCommandRequestLabel"></summary><div id="bbCommandRequest" class="bbOutput">{}</div></details>
+<div id="bbRadio" class="bbOutput"></div>
+<div id="bbCommandResult" class="bbOutput"></div>
 </section>
 <section data-panel="yaml" role="tabpanel" hidden><div id="bbYaml" aria-label="Complete gateway YAML configuration"></div><div class="bbBar"><button type="button" id="bbDownload">Download YAML</button><label>Import YAML <input type="file" id="bbImport" accept=".yaml,.yml,text/plain"></label></div><div class="bbBar"><button type="button" id="bbHistory">List backups</button><select id="bbBackups" aria-label="Configuration backup"><option value="">Select backup</option></select><button type="button" id="bbRestore">Load backup</button></div></section>
 <datalist id="bbFormats"><option value="custom"><option value="custom_enc"><option value="atc1441"><option value="atc1441_enc"><option value="mi_like"><option value="bt_home"><option value="bt_home_enc"><option value="bt_home_v2"></datalist>
 <datalist id="bbAttributes"><option value="temperature"><option value="humidity"><option value="battery_level"><option value="battery_v"><option value="switch"><option value="opened"><option value="boolean"><option value="humidity_trigger"><option value="temp_trigger"><option value="out_gpio_trg_flag"><option value="out_gpio_trg_value"><option value="input_gpio_value"></datalist>
-<dialog id="bbDeviceDialog"><h3 id="bbDeviceTitle">Device</h3><div id="bbDeviceFields"></div><details id="bbDeviceHelp" class="bbHelp"><summary>Keep changes / Cancel</summary><p id="bbKeepHelp"></p><p id="bbCancelHelp"></p></details><div class="bbBar"><button type="button" id="bbDeviceApply">Keep changes</button><button type="button" id="bbDeviceCancel">Cancel</button></div><div id="bbDeviceError" role="alert" class="bbError"></div></dialog>
-<dialog id="bbConfirm"><h3>Confirm</h3><p id="bbConfirmText"></p><div class="bbBar"><button type="button" id="bbConfirmOk">Continue</button><button type="button" id="bbConfirmCancel">Cancel</button></div></dialog>
+<dialog id="bbDeviceDialog"><h3 id="bbDeviceTitle">Device</h3><div id="bbDeviceFields"></div><div class="bbBar"><button type="button" id="bbSuggestAttributes" hidden>Detect attributes</button></div><div class="bbBar"><button type="button" id="bbDeviceApply">Add to configuration draft</button><button type="button" id="bbDeviceCancel">Cancel</button></div><div id="bbDeviceError" role="alert" class="bbError"></div></dialog>
+<dialog id="bbParameterDialog"><h3 id="bbParameterTitle"></h3><p><code id="bbParameterPath"></code></p><p id="bbParameterText"></p><button type="button" id="bbParameterClose">Close</button></dialog>
+<dialog id="bbConfirm"><h3>Confirm</h3><p id="bbConfirmText"></p><div id="bbConfirmRequest" class="bbOutput" hidden></div><div class="bbBar"><button type="button" id="bbConfirmOk">Continue</button><button type="button" id="bbConfirmCancel">Cancel</button></div></dialog>
 <div id="bbFieldTooltip" role="tooltip" hidden><strong></strong><span></span></div>
 </div>
 <script>
@@ -260,9 +319,12 @@ cat << 'EOF'
 	const copy = value => JSON.parse(JSON.stringify(value));
 	const normalize = mac => String(mac).replace(/[:-]/g, '').toUpperCase();
 	let config = null, revision = '', dirty = false, rawDirty = false, tab = 'devices';
-	let observations = [], editIndex = -1, draft = null, polling = false, busy = false;
+	let observations = [], editIndex = -1, draft = null, editObservation = null, polling = false, busy = false;
 	let yamlEditor=null, yamlText='', syncingYaml=false, inspectionSequence=0;
 	let aceLoading=null, packetEditor=null, packetEditorLoading=null, packetText='';
+	let jsonModeLoading=null, commandEditorsLoading=null;
+	let availabilityStatusEditor=null;
+	const commandEditors={};
 	let packetKeys=[];
 	const helpTranslations = {
 		en: {
@@ -476,7 +538,7 @@ cat << 'EOF'
 			frontendMissing:'El daemon no expone la configuración de estos frontends: {frontends}. Actualice/recompile el binario del daemon junto con el CGI y recargue la página. Este backend no puede configurar las secciones que faltan.'
 		}
 	};
-	const helpLanguage=(navigator.language||'en').split('-')[0];
+	const helpLanguage=(element('bbLocale')?.dataset.language||navigator.language||document.documentElement.lang||'en').split('-')[0];
 	const ht=helpTranslations[helpLanguage]||helpTranslations.en;
 	function setYaml(text) {yamlText=text;if(yamlEditor){syncingYaml=true;yamlEditor.setValue(text,-1);syncingYaml=false;}}
 	function getYaml() {return yamlEditor?yamlEditor.getValue():yamlText;}
@@ -485,6 +547,36 @@ cat << 'EOF'
 		if(window.ace)return Promise.resolve();
 		if(!aceLoading)aceLoading=loadScript('/ace/ace.js').catch(error=>{aceLoading=null;throw error;});
 		return aceLoading;
+	}
+	async function jsonEditor(id, readOnly = true) {
+		await ensureAce();
+		if(!jsonModeLoading){
+			ace.config.setModuleUrl('ace/mode/json','/ace/mode-json.js');
+			jsonModeLoading=loadScript('/ace/mode-json.js').catch(error=>{jsonModeLoading=null;throw error;});
+		}
+		await jsonModeLoading;
+		const editor=ace.edit(id);editor.session.setUseWorker(false);editor.session.setMode('ace/mode/json');editor.setTheme('ace/theme/textmate');
+		editor.setOptions({fontSize:'12px',showPrintMargin:false,wrap:true,tabSize:2,useSoftTabs:true,readOnly,highlightActiveLine:!readOnly,highlightGutterLine:!readOnly});
+		return editor;
+	}
+	function ensureCommandEditors() {
+		if(!commandEditorsLoading)commandEditorsLoading=(async()=>{
+			for(const id of ['bbRadio','bbCommandRequest','bbCommandResult']){
+				if(!commandEditors[id]){
+					const text=element(id).textContent;
+					commandEditors[id]=await jsonEditor(id);
+					commandEditors[id].setValue(text,-1);
+				}
+				commandEditors[id].resize(true);
+			}
+		})().catch(error=>{commandEditorsLoading=null;throw error;});
+		return commandEditorsLoading;
+	}
+	function setCommandOutput(id,value,mode='json') {
+		const text=mode==='json'?JSON.stringify(value,null,2):value;
+		const editor=commandEditors[id];
+		if(editor){editor.session.setMode('ace/mode/'+mode);editor.setValue(text,-1);editor.resize(true);}
+		else element(id).textContent=text;
 	}
 	async function ensureYamlEditor() {
 		if(yamlEditor)return;
@@ -532,11 +624,7 @@ cat << 'EOF'
 	}
 	function ensurePacketEditor() {
 		if(!packetEditorLoading)packetEditorLoading=(async()=>{
-			await ensureAce();
-			ace.config.setModuleUrl('ace/mode/json','/ace/mode-json.js');
-			await loadScript('/ace/mode-json.js');
-			packetEditor=ace.edit('bbPacket');packetEditor.session.setUseWorker(false);packetEditor.session.setMode('ace/mode/json');packetEditor.setTheme('ace/theme/textmate');
-			packetEditor.setOptions({fontSize:'12px',showPrintMargin:false,wrap:true,tabSize:2,useSoftTabs:true,readOnly:true,highlightActiveLine:false,highlightGutterLine:false});
+			packetEditor=await jsonEditor('bbPacket');
 			packetEditor.setValue(packetText,-1);packetEditor.resize(true);
 			element('bbPacket').addEventListener('mousemove',packetHover);
 			element('bbPacket').addEventListener('mouseleave',hidePacketTooltip);
@@ -548,6 +636,96 @@ cat << 'EOF'
 	const labels = {filter_known_devices:'Filter registered devices in ESP32', phy_1m:'1M PHY', phy_coded:'Coded PHY', dup_filter:'Duplicate filter', discard_random:'Discard random addresses', discard_rpa:'Discard resolvable private addresses', active_scan:'Active scan', window_1m:'1M window (0.625 ms units)', window_coded:'Coded window (0.625 ms units)', whitelist:'Whitelist MAC prefixes', blacklist:'Blacklist MAC prefixes', reset_on_open:'Reset ESP32 on open', command_timeout_ms:'Command timeout (ms)', reconnect_delay_ms:'Reconnect delay (ms)', bindkey:'Bindkey (32 hexadecimal digits)', format:'Forced wire format (empty = automatic)', expose:'Exposed attributes', child:'MySensors child ID', node_id_base:'First MySensors node ID', tx_hex:'Raw TX trace', rx_hex:'Raw RX trace', decode:'Codec decode trace', phy:'PHY reception / decode trace', after_s:'Delay (seconds)', kind:'Kind override', mysensors:'MySensors / Domoticz', mqtt:'MQTT', matter:'Matter', influx:'InfluxDB 3', advertise:'Advertise via DNS-SD', mdns_backend:'DNS-SD backend', mdns_hostname:'mDNS host name (empty = default)', mdns_interface:'mDNS interface (empty = automatic)', endpoint:'Endpoint URL', batch_size:'Batch size', queue_capacity:'Queue capacity', flush_interval_ms:'Flush interval (ms)', timeout_ms:'Timeout (ms)', diagnostics:'Diagnostics', rules:'Rules', serial:'Serial', scanner:'Scanner', log_level:'Log level', frontends:'Frontends', mac:'MAC', rssi:'RSSI'};
 	Object.assign(labels, {manufacturer:'Manufacturer',model:'Device model',firmware_version:'Device firmware version',label:'Device name',sqlite:'SQLite',path:'Database file (absolute local path)',busy_timeout_ms:'SQLite busy timeout (ms)'});
 	const title = key => key==='whitelist'?ht.include:key==='blacklist'?ht.exclude:labels[key] || key.replace(/_/g, ' ').replace(/^./, letter => letter.toUpperCase());
+	const workflowTranslations={
+		en:{manual:'Add manually',discover:'Discover devices',filter:'Filter configured devices',add:'Add to configuration draft',update:'Update configuration draft',detected:'Configure discovered device',manualTitle:'Add device manually',edit:'Edit device',detect:'Detect attributes',close:'Close',help:'Help',enabled:'Enabled',disabled:'Disabled',rules:'Rules (not executed)',saved:'Saved',pending:'Device added to draft. Save configuration to write it to disk, then restart from Status to activate it.',detectionFailed:'Attributes could not be detected. Check the bindkey/format, then retry, or add attributes manually.',startup:'Save startup/storage and restart if running',startupConfirm:'Save startup and storage settings? Freetz restarts a running service. Gateway draft changes are not included.',unsaved:'Save or reload the gateway draft before changing startup/storage.',sqlite:'SQLite reads include committed WAL data. The .db file timestamp alone does not indicate freshness.'},
+		it:{manual:'Aggiungi manualmente',discover:'Scopri dispositivi',filter:'Filtra dispositivi configurati',add:'Aggiungi alla bozza',update:'Aggiorna nella bozza',detected:'Configura dispositivo rilevato',manualTitle:'Aggiungi dispositivo manualmente',edit:'Modifica dispositivo',detect:'Rileva attributi',close:'Chiudi',help:'Aiuto',enabled:'Abilitato',disabled:'Disabilitato',rules:'Rules (non eseguite)',saved:'Salvato',pending:'Dispositivo nella bozza. Premi Save configuration per salvarlo su disco, poi riavvia dalla sezione Stato per attivarlo.',detectionFailed:'Impossibile rilevare gli attributi. Verifica bindkey/formato e riprova, oppure aggiungi gli attributi manualmente.',startup:'Salva avvio/percorso e riavvia se attivo',startupConfirm:'Salvare avvio e percorso? Freetz riavvia il servizio se attivo. Le modifiche alla bozza del gateway non sono incluse.',unsaved:'Salva o ricarica la bozza del gateway prima di modificare avvio/percorso.',sqlite:'Le letture SQLite includono i dati WAL confermati. La data del solo file .db non indica la freschezza dei dati.'},
+		de:{manual:'Manuell hinzufügen',discover:'Geräte suchen',filter:'Konfigurierte Geräte filtern',add:'Zum Entwurf hinzufügen',update:'Im Entwurf aktualisieren',detected:'Gefundenes Gerät konfigurieren',manualTitle:'Gerät manuell hinzufügen',edit:'Gerät bearbeiten',detect:'Attribute erkennen',close:'Schließen',help:'Hilfe',enabled:'Aktiviert',disabled:'Deaktiviert',rules:'Regeln (nicht ausgeführt)',saved:'Gespeichert',pending:'Gerät im Entwurf. Save configuration schreibt auf Datenträger; danach unter Status neu starten.',detectionFailed:'Attribute nicht erkannt. Bindkey/Format prüfen oder manuell ergänzen.',startup:'Start/Speicher speichern und laufenden Dienst neu starten',startupConfirm:'Start und Speicher speichern? Freetz startet einen laufenden Dienst neu. Der Gateway-Entwurf wird nicht gespeichert.',unsaved:'Gateway-Entwurf zuerst speichern oder neu laden.',sqlite:'SQLite liest auch bestätigte WAL-Daten. Der .db-Zeitstempel allein zeigt nicht die Aktualität.'},
+		fr:{manual:'Ajouter manuellement',discover:'Découvrir les appareils',filter:'Filtrer les appareils configurés',add:'Ajouter au brouillon',update:'Modifier le brouillon',detected:'Configurer cet appareil',manualTitle:'Ajouter un appareil manuellement',edit:'Modifier cet appareil',detect:'Détecter les attributs',close:'Fermer',help:'Aide',enabled:'Activé',disabled:'Désactivé',rules:'Règles (non exécutées)',saved:'Enregistré',pending:'Appareil dans le brouillon. Save configuration écrit sur disque ; redémarrer ensuite depuis État.',detectionFailed:'Attributs non détectés. Vérifier bindkey/format ou les ajouter manuellement.',startup:'Enregistrer démarrage/stockage et redémarrer si actif',startupConfirm:'Enregistrer démarrage et stockage ? Freetz redémarre le service actif. Le brouillon du gateway est exclu.',unsaved:'Enregistrer ou recharger le brouillon du gateway avant de continuer.',sqlite:'SQLite lit aussi les données WAL validées. La date du fichier .db seule ne prouve pas leur fraîcheur.'},
+		es:{manual:'Añadir manualmente',discover:'Descubrir dispositivos',filter:'Filtrar dispositivos configurados',add:'Añadir al borrador',update:'Actualizar borrador',detected:'Configurar dispositivo detectado',manualTitle:'Añadir dispositivo manualmente',edit:'Editar dispositivo',detect:'Detectar atributos',close:'Cerrar',help:'Ayuda',enabled:'Activado',disabled:'Desactivado',rules:'Reglas (no ejecutadas)',saved:'Guardado',pending:'Dispositivo en el borrador. Save configuration guarda en disco; después reiniciar desde Estado.',detectionFailed:'No se detectaron atributos. Revisar bindkey/formato o añadirlos manualmente.',startup:'Guardar inicio/ruta y reiniciar si está activo',startupConfirm:'¿Guardar inicio y ruta? Freetz reinicia el servicio activo. El borrador del gateway no se incluye.',unsaved:'Guardar o recargar el borrador del gateway antes de continuar.',sqlite:'SQLite incluye los datos WAL confirmados. La fecha del archivo .db no indica por sí sola su actualidad.'}
+	};
+	const ui=workflowTranslations[helpLanguage]||workflowTranslations.en;
+	const parameterHelp={
+		enabled:['Enable this device or frontend after saving and explicitly restarting the service. Other frontends are independent.','Abilita questo dispositivo o frontend dopo il salvataggio e il riavvio esplicito. Gli altri frontend sono indipendenti.'],
+		batch_size:['Maximum items per write: SQLite counts advertisement frames, InfluxDB counts measurement lines. Writes also happen when the flush interval expires, even with a smaller batch. Range 1-1024; must not exceed queue capacity.','Massimo per scrittura: SQLite conta i frame advertisement, InfluxDB le righe di misura. La scrittura avviene anche allo scadere del flush, senza attendere un batch pieno. Da 1 a 1024, non oltre la capacità della coda.'],
+		queue_capacity:['Maximum waiting items in RAM: SQLite frames or InfluxDB measurement lines. Range 1-16384. A full queue drops new items and logs an error; it is not a persistent disk spool.','Massimo di elementi in attesa in RAM: frame SQLite o righe di misura InfluxDB. Da 1 a 16384. Se piena, scarta i nuovi elementi e segnala un errore nel log; non è una coda persistente su disco.'],
+		flush_interval_ms:['Flush deadline in milliseconds (10-60000), not a sensor polling interval. A full batch writes earlier. Locks, slow storage and retries can increase latency.','Scadenza di scrittura in millisecondi (10-60000), non frequenza di interrogazione del sensore. Un batch pieno viene scritto prima. Lock, disco lento e tentativi successivi possono aumentare la latenza.'],
+		busy_timeout_ms:['SQLite waits this many milliseconds for a write lock (1-5000). Failed batches are retained for retry. Long reader transactions can continue to see an older snapshot; finish the transaction before querying again.','SQLite attende un lock di scrittura per questi millisecondi (1-5000). I batch falliti restano in attesa di un nuovo tentativo. Una lunga transazione di lettura può vedere una vecchia istantanea: terminarla prima della nuova query.'],
+		path:['Absolute database path on local persistent storage; its parent directory must already exist. SQLite uses WAL: committed rows are visible through SQLite before the .db file is checkpointed. Do not copy only the .db file while the service runs; use the SQLite backup API.','Percorso assoluto del DB su disco locale persistente; la directory deve già esistere. SQLite usa WAL: le righe confermate sono leggibili tramite SQLite prima del checkpoint del file .db. Non copiare solo il .db a servizio attivo: usare la API di backup SQLite.'],
+		endpoint:['InfluxDB 3 HTTP(S) server URL, for example http://127.0.0.1:8181. Remote token authentication requires HTTPS. No credentials, query or fragment in the URL.','URL HTTP(S) di InfluxDB 3, ad esempio http://127.0.0.1:8181. Il token su server remoto richiede HTTPS. Niente credenziali, query o frammenti nella URL.'],
+		database:['InfluxDB destination database name (1-128 bytes).','Nome del database di destinazione InfluxDB (1-128 byte).'],
+		measurement:['InfluxDB measurement/table name (1-128 bytes). Each decoded value is a measurement line.','Nome della measurement/tabella InfluxDB (1-128 byte). Ogni valore decodificato produce una riga di misura.'],
+		token:['InfluxDB bearer token. Leave empty if the server does not require authentication. Stored privately in YAML.','Token bearer InfluxDB. Lasciare vuoto se il server non richiede autenticazione. Memorizzato nel file YAML privato.'],
+		timeout_ms:['InfluxDB HTTP request timeout in milliseconds (100-30000). Unavailable servers retry within the bounded RAM queue.','Timeout richiesta HTTP InfluxDB in millisecondi (100-30000). Se non disponibile, ritenta entro i limiti della coda RAM.'],
+		bind:['Local listener IP address. Loopback restricts access to this router; 0.0.0.0 or :: exposes the listener on network interfaces, subject to firewall rules.','IP locale di ascolto. Loopback limita l’accesso al router; 0.0.0.0 o :: espone il listener sulle interfacce di rete, secondo le regole firewall.'],
+		port:['Network port for this frontend (1-65535). Avoid conflicts with other running services.','Porta di rete del frontend (1-65535). Evitare conflitti con altri servizi attivi.'],
+		node_id_base:['First MySensors node ID assigned in configured device order. Changing the base or reordering devices can change controller identities.','Primo ID nodo MySensors, assegnato secondo l’ordine dei dispositivi. Cambiare base o ordine può cambiare le identità nel controller.'],
+		host:['MQTT broker host name or IP address. This is the broker to connect to, not a local listener.','Nome host o IP del broker MQTT a cui connettersi, non indirizzo locale di ascolto.'],
+		local_broker:['Start a gateway-managed Mosquitto broker on loopback using the configured MQTT port. Requires Mosquitto and an available port.','Avvia un broker Mosquitto gestito dal gateway su loopback alla porta MQTT configurata. Richiede Mosquitto e una porta libera.'],
+		domoticz_discovery:['Publish native MQTT Auto Discovery descriptions for compatible controllers such as Domoticz. This is not the legacy domoticz/in protocol.','Pubblica descrizioni MQTT Auto Discovery per controller compatibili come Domoticz. Non è il protocollo legacy domoticz/in.'],
+		discovery_prefix:['MQTT Auto Discovery topic prefix; must match the controller subscription, typically homeassistant.','Prefisso dei topic MQTT Auto Discovery; deve corrispondere alla sottoscrizione del controller, tipicamente homeassistant.'],
+		client_id:['Unique MQTT client identifier. Do not reuse it for a second client on the same broker.','Identificativo univoco del client MQTT. Non riutilizzarlo per un secondo client sullo stesso broker.'],
+		base_topic:['MQTT topic prefix for gateway device states. Changing it changes the topics clients must subscribe to.','Prefisso dei topic MQTT per lo stato dei dispositivi. Cambiarlo modifica i topic da sottoscrivere nei client.'],
+		username:['MQTT broker username; empty for anonymous access when permitted by the broker.','Nome utente del broker MQTT; vuoto per accesso anonimo se consentito dal broker.'],
+		password:['MQTT broker password. Requires a username; saved privately in YAML.','Password del broker MQTT. Richiede un nome utente; salvata nel file YAML privato.'],
+		retain:['Ask the MQTT broker to retain the latest published state for new subscribers. Retained state is not an event history.','Chiede al broker di conservare l’ultimo stato pubblicato per i nuovi sottoscrittori. Non è uno storico degli eventi.'],
+		domoticz_port:['WebSocket port of a gateway-managed dedicated Matter controller for Domoticz. Set 0 to disable this extra controller; the Matter bridge is configured separately.','Porta WebSocket di un controller Matter dedicato gestito dal gateway per Domoticz. Con 0 lo disabilita; il bridge Matter è configurato separatamente.'],
+		store:['Private persistent directory for Matter fabrics and endpoint identities. This is not the gateway YAML location. Keep it across restarts to preserve pairing.','Directory privata persistente per fabric Matter e identità degli endpoint. Non è il percorso del file YAML del gateway. Conservarla tra i riavvii per mantenere gli abbinamenti.'],
+		advertise:['Announce the Matter bridge using DNS-SD/mDNS. Disabling announcements does not disable direct-IP Matter traffic.','Annuncia il bridge Matter tramite DNS-SD/mDNS. Disabilitare gli annunci non disabilita il traffico Matter via IP diretto.'],
+		mdns_backend:['DNS-SD publisher: auto chooses an available compiled backend; builtin uses the internal responder. Other choices require the matching build feature.','Publisher DNS-SD: auto sceglie un backend disponibile nella build; builtin usa il responder interno. Gli altri richiedono la relativa funzionalità compilata.'],
+		mdns_hostname:['Single DNS host label, up to 63 letters/digits/hyphens, without .local. Empty uses the build default.','Singola etichetta DNS: massimo 63 lettere/cifre/trattini, senza .local. Vuoto usa il valore predefinito della build.'],
+		mdns_interface:['Network interface used for mDNS, for example lan. Empty selects automatically. This is not an IP address.','Interfaccia di rete per mDNS, ad esempio lan. Vuota: selezione automatica. Non è un indirizzo IP.'],
+		baudrate:['Serial speed in bits per second. Match a USB/UART adapter to its firmware. Native ESP32-C3 USB Serial/JTAG ignores host baudrate.','Velocità seriale in bit al secondo. Un adattatore USB/UART deve corrispondere al firmware; USB Serial/JTAG nativo ESP32-C3 ignora il baudrate host.'],
+		command_timeout_ms:['Maximum wait in milliseconds for a firmware command response. Too short can cause timeouts on a busy USB link.','Attesa massima in millisecondi della risposta a un comando firmware. Un valore troppo basso può causare timeout su USB occupata.'],
+		reconnect_delay_ms:['Wait in milliseconds before retrying a failed serial connection.','Attesa in millisecondi prima di ritentare una connessione seriale fallita.'],
+		reset_on_open:['Pulse DTR/RTS when opening the serial device. This can reset the ESP32; leave off unless required by your adapter.','Impulso DTR/RTS all’apertura della seriale: può resettare ESP32. Lasciare disattivo se non richiesto dall’adattatore.'],
+		phy_1m:['Receive standard Bluetooth LE 1M advertisements. Independent of payload format.','Riceve advertisement Bluetooth LE 1M standard. Indipendente dal formato dei dati.'],
+		phy_coded:['Receive long-range Coded PHY advertisements. Requires compatible adapter firmware and sensors; does not change sensor firmware.','Riceve advertisement Coded PHY long-range. Richiede firmware adattatore e sensori compatibili; non modifica il firmware del sensore.'],
+		window_1m:['1M scan window in units of 0.625 milliseconds; 320 means 200 ms.','Finestra di scansione 1M in unità di 0,625 millisecondi: 320 equivale a 200 ms.'],
+		window_coded:['Coded scan window in units of 0.625 milliseconds; 64 means 40 ms.','Finestra di scansione Coded in unità di 0,625 millisecondi: 64 equivale a 40 ms.'],
+		active_scan:['Request scan responses from advertisers. This adds radio traffic; passive scanning only listens.','Richiede scan response ai dispositivi. Aumenta il traffico radio; la scansione passiva si limita all’ascolto.'],
+		dup_filter:['Ask adapter firmware to suppress duplicate advertisements. This can reduce repeated values; it is not a database flush interval.','Chiede al firmware di sopprimere advertisement duplicati. Può ridurre i valori ripetuti; non è l’intervallo di scrittura del database.'],
+		discard_random:['Discard BLE random addresses. Some legitimate sensors use random addresses; enabling this can hide them.','Scarta indirizzi BLE casuali. Alcuni sensori legittimi li usano: abilitarlo può nasconderli.'],
+		discard_rpa:['Discard resolvable private BLE addresses, which may rotate over time.','Scarta indirizzi BLE privati risolvibili, che possono cambiare nel tempo.'],
+		mac:['Bluetooth advertiser MAC: 12 hexadecimal digits, optionally separated by colons. Discovery fills the observed address automatically.','MAC del trasmettitore Bluetooth: 12 cifre esadecimali, con separatori opzionali. Discovery compila l’indirizzo osservato.'],
+		label:['Friendly device name shared with frontends. Inside a rule this labels the proposed derived attribute.','Nome leggibile del dispositivo condiviso con i frontend. In una regola etichetta l’attributo derivato proposto.'],
+		manufacturer:['Physical device manufacturer, if known. Leave empty rather than guessing from the address-block vendor.','Produttore fisico, se noto. Lasciare vuoto invece di dedurlo dal titolare del blocco MAC.'],
+		model:['Physical device model, if known. It does not select the decoder.','Modello fisico, se noto. Non seleziona il decoder.'],
+		firmware_version:['Known physical sensor firmware version, not the gateway or BLE protocol version.','Versione nota del firmware del sensore fisico, non del gateway o protocollo BLE.'],
+		bindkey:['AES-128 key for encrypted advertisements: exactly 32 hexadecimal digits. Not needed for unencrypted packets. Never share exported YAML containing keys.','Chiave AES-128 per advertisement cifrati: esattamente 32 cifre esadecimali. Non serve per pacchetti in chiaro. Non condividere YAML esportati contenenti chiavi.'],
+		format:['Empty detects the payload format automatically. Force a format only if you know the actual sensor protocol; it does not choose the radio PHY.','Vuoto rileva automaticamente il formato. Forzarlo solo conoscendo il protocollo effettivo; non seleziona la PHY radio.'],
+		attribute:['Canonical decoded measurement name, for example temperature, humidity, battery_level or opened. An attribute must exist in received data to produce values.','Nome canonico della misura decodificata, ad esempio temperature, humidity, battery_level o opened. Deve esistere nei dati ricevuti per produrre valori.'],
+		child:['Optional MySensors child ID, 0-255. Keep existing IDs stable to preserve controller device associations.','ID child MySensors opzionale, 0-255. Conservare gli ID esistenti per mantenere le associazioni nel controller.'],
+		kind:['Optional MySensors type override. Empty uses the supported attribute mapping.','Override opzionale del tipo MySensors. Vuoto usa la mappatura prevista per l’attributo.'],
+		name:['Name of the proposed derived attribute. Rules are stored and validated but are not executed in this daemon.','Nome dell’attributo derivato proposto. Le Rules sono salvate e validate ma non eseguite da questo daemon.'],
+		source:['Decoded attribute watched by the proposed rule. Rules are not executed in this version.','Attributo decodificato osservato dalla regola proposta. Le Rules non sono eseguite in questa versione.'],
+		equals:['Comparison value for the proposed rule; empty means any change. Definitions only, not an active automation.','Valore di confronto proposto; vuoto significa qualsiasi variazione. Solo definizione, non automazione attiva.'],
+		after_s:['Proposed rule delay in seconds. A timer definition requires a positive value; rules are not executed.','Ritardo proposto in secondi. Un timer richiede valore positivo; le Rules non sono eseguite.'],
+		mirror:['Proposed immediate comparison mode without a timer. Rules are not executed.','Modalità proposta di confronto immediato senza timer. Le Rules non sono eseguite.'],
+		log_level:['Minimum logging detail: off, error, warn, info, debug or trace. Reload logging applies only logging/diagnostic settings, not scanner/devices/frontends.','Dettaglio log: off, error, warn, info, debug o trace. Reload logging applica solo log/diagnostica, non scanner/dispositivi/frontend.'],
+		tx_hex:['Log raw serial transmissions. Diagnostic dumps can contain sensitive device data; enable only when needed.','Registra trasmissioni seriali grezze. I dump possono contenere dati sensibili: abilitare solo se necessario.'],
+		rx_hex:['Log raw serial receive chunks, including noise and incomplete frames. Can produce large sensitive logs.','Registra blocchi seriali ricevuti, anche rumore e frame incompleti. Può produrre log voluminosi e sensibili.'],
+		decode:['Log codec field decoding details. High volume; use for diagnosis, not normal operation.','Registra dettagli dei campi decodificati. Alto volume: usare per diagnosi, non funzionamento ordinario.'],
+		phy:['Log reception PHY and decoding status for advertisements, including unconfigured devices.','Registra PHY di ricezione ed esito decodifica degli advertisement, anche di dispositivi non configurati.']
+	};
+	function fieldExplanation(key,scope) {
+		if(scope==='device.rules[]'&&key==='enabled')return helpLanguage==='it'?'Abilita questa regola e il relativo webhook dopo il salvataggio e il riavvio del servizio.':'Enable this availability rule and its webhook after saving and restarting the service.';
+		if(scope==='device.rules[].webhook'&&key==='token')return helpLanguage==='it'?'Token privato: Bearer per ntfy o chiave applicazione Gotify. Inviato solo negli header HTTPS, mai nella URL o nello stato.':'Private ntfy bearer or Gotify application token. Sent only in HTTPS headers, never in URLs or saved episode state.';
+		if(scope==='device.rules[].webhook'&&key==='timeout_ms')return helpLanguage==='it'?'Timeout HTTPS in millisecondi (100-10000). Le richieste non bloccano la ricezione BLE.':'HTTPS timeout in milliseconds (100-10000). Requests do not block BLE reception.';
+		if(scope==='frontends.sqlite.maintenance'&&key==='enabled')return historyUi.warning;
+		if(scope==='frontends.sqlite.maintenance'&&key==='batch_size')return helpLanguage==='it'?'Massimo di frame trasferiti o campioni esaminati per blocco (1-1000). Non è il batch del ricevitore.':'Maximum frames archived or samples examined per chunk (1-1000). Independent of receiver batching.';
+		if(key==='port'&&scope==='serial')return helpLanguage==='it'?'Percorso della seriale attiva, ad esempio /dev/ttyACM0. Richiede salvataggio e riavvio.':'Active serial device path, for example /dev/ttyACM0. Save and restart to apply.';
+		if(key==='filter_known_devices')return ht.filterKnown+' '+ht.filterAll;
+		if(['whitelist','blacklist'].includes(key))return ht.filterList;
+		const text=parameterHelp[key];
+		return text?text[helpLanguage==='it'?1:0]:title(key);
+	}
+	function fieldHelp(label,key,scope) {
+		const text=fieldExplanation(key,scope);
+		label.title=text;
+		const heading=document.createElement('span');heading.className='bbFieldName';heading.append(title(key));
+		const help=button('?',event=>{event.preventDefault();element('bbParameterTitle').textContent=title(key);element('bbParameterPath').textContent=(scope?scope+'.':'')+key;element('bbParameterText').textContent=text;element('bbParameterDialog').showModal();},text);
+		help.className='bbParameterHelp';help.setAttribute('aria-label',ui.help+': '+title(key));heading.append(help);label.append(heading);
+	}
 	const message = (text, error = false) => {element('bbMsg').textContent = text; element('bbMsg').classList.toggle('bbError', error);};
 	const changed = () => {dirty = true; element('bbDirty').textContent = 'Unsaved changes';};
 	const button = (text, action, tooltip) => {const node = document.createElement('button'); node.type = 'button'; node.textContent = text; node.onclick = action; if (tooltip) node.title = tooltip; return node;};
@@ -559,10 +737,10 @@ cat << 'EOF'
 			config.devices.splice(index,1);changed();renderDevices();renderFound();
 		}
 	}
-	async function api(action, body, params = {}) {
+	async function api(action, body, params = {}, keepalive = false) {
 		const url = new URL('/cgi-bin/extra/ble2uart_gateway/api', location.href);
 		url.search = new URLSearchParams({ajax:'1', action, ...params}).toString();
-		const response = await fetch(url, {method: ['read','status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
+		const response = await fetch(url, {method: ['read','status','attributes','history-presets','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
 		const document = new DOMParser().parseFromString(await response.text(), 'text/html');
 		const pre = document.querySelector('.ajax-json-content pre');
 		if (!pre) throw new Error('Invalid response or session expired');
@@ -577,10 +755,16 @@ cat << 'EOF'
 	async function run(action) {
 		if (busy) return;
 		busy = true;
-		['bbSave','bbCheck','bbReload','bbRestart','bbLogging'].forEach(id => element(id).disabled = true);
-		try {await action();} catch (error) {message(error.message, true);} finally {busy = false; ['bbSave','bbCheck','bbReload','bbRestart','bbLogging'].forEach(id => element(id).disabled = !config);}
+		['bbSave','bbCheck','bbReload','bbLogging'].forEach(id => element(id).disabled = true);
+		try {await action();} catch (error) {message(error.message, true);} finally {busy = false; ['bbSave','bbCheck','bbReload','bbLogging'].forEach(id => element(id).disabled = !config);}
 	}
-	function confirmAction(text) {
+	async function confirmAction(text, request) {
+		const preview=element('bbConfirmRequest');
+		preview.hidden=request===undefined;
+		if(request!==undefined){
+			if(!commandEditors.bbConfirmRequest)commandEditors.bbConfirmRequest=await jsonEditor('bbConfirmRequest');
+			setCommandOutput('bbConfirmRequest',request);
+		}
 		return new Promise(resolve => {
 			const dialog = element('bbConfirm'); element('bbConfirmText').textContent = text;
 			const finish = answer => {dialog.close(); resolve(answer);};
@@ -588,6 +772,7 @@ cat << 'EOF'
 			element('bbConfirmCancel').onclick = () => finish(false);
 			dialog.oncancel = event => {event.preventDefault(); finish(false);};
 			dialog.showModal();
+			if(request!==undefined)commandEditors.bbConfirmRequest.resize(true);
 		});
 	}
 	const commandTranslations = {
@@ -597,57 +782,201 @@ cat << 'EOF'
 		fr: {tab:'Commandes',type:'Commande',send:'Envoyer la commande',refresh:'Actualiser la radio',note:'Les commandes temporaires suspendent puis rétablissent le scan, même en cas d’erreur. TXADV laisse le scan ARRÊTÉ jusqu’au redémarrage explicite. Les paramètres actifs du daemon sont utilisés.',confirm:'Envoyer cette commande ? Écriture et appairage peuvent modifier le périphérique. TXADV arrête le scan jusqu’au redémarrage explicite.',pending:'Commande en cours ; ne pas la renvoyer.',done:'Commande terminée ; vérifier le niveau de confirmation ci-dessous.',diagnostic:'Diagnostic firmware',gatt:'Transaction BLE GATT',start:'Démarrer TXADV (scan ARRÊTÉ)',stop:'Arrêter TXADV (scan reste ARRÊTÉ)',scanStart:'Démarrer le scan (arrêter TXADV)',scanStop:'Arrêter le scan',name:'Diagnostic',pin:'Broche GPIO',mac:'MAC du périphérique',addr_type:'Type d’adresse (0 publique, 1 aléatoire)',coded:'Connexion PHY Coded',operation:'Opération GATT',handle:'Handle ATT (décimal, lecture/écriture)',value:'Valeur (hex, 20 octets maximum)',timeout_ms:'Délai (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalle TX (0,625 ms, minimum 32)',data:'Données advertisement (hex, 31 octets maximum)'},
 		es: {tab:'Comandos',type:'Comando',send:'Enviar comando',refresh:'Actualizar radio',note:'Los comandos temporales pausan el escaneo y lo restauran incluso si fallan. TXADV deja el escaneo APAGADO hasta reiniciarlo explícitamente. Se usan los ajustes activos del daemon.',confirm:'¿Enviar el comando? Escritura y emparejamiento pueden modificar el dispositivo. TXADV detiene el escaneo hasta reiniciarlo explícitamente.',pending:'Comando en curso; no volver a enviarlo.',done:'Comando terminado; comprobar el nivel de confirmación abajo.',diagnostic:'Diagnóstico del firmware',gatt:'Transacción BLE GATT',start:'Iniciar TXADV (escaneo APAGADO)',stop:'Detener TXADV (escaneo sigue APAGADO)',scanStart:'Iniciar escaneo (detener TXADV)',scanStop:'Detener escaneo',name:'Diagnóstico',pin:'Pin GPIO',mac:'MAC del dispositivo',addr_type:'Tipo de dirección (0 pública, 1 aleatoria)',coded:'Conexión PHY Coded',operation:'Operación GATT',handle:'Handle ATT (decimal, lectura/escritura)',value:'Valor (hex, máximo 20 bytes)',timeout_ms:'Tiempo límite (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalo TX (0,625 ms, mínimo 32)',data:'Datos advertisement (hex, máximo 31 bytes)'}
 	};
-	const ct = commandTranslations[(navigator.language || 'en').split('-')[0]] || commandTranslations.en;
-	let commandDraft;
+	const gattTranslations = {
+		en: {
+			open:'Open BLE GATT session',sessionCommand:'GATT operation in open session',close:'Close GATT session',session:'Session token (returned by Open)',idle_timeout_ms:'Idle timeout (1000-300000 ms)',uuid:'Characteristic/descriptor UUID (leave handle 0)',handle:'ATT handle (decimal; 0 selects UUID)',value:'Write/request value (hex; 56 bytes, 58 without response)',prefix:'Notification prefix filter (hex; empty = any)',mode:'Subscription (0 disable, 1 notify, 2 indicate)',count:'Matching notifications to await (1-64)',codec:'Codec structure (empty = raw bytes)',offset:'Response bytes to skip before decoding',write_offset:'Decoded bytes to omit when writing (response-only fields)',write_prefix:'Write prefix (hex; empty = request value)',patch:'JSON patch (only existing fields)',invalidJson:'Enter a nonempty JSON object',
+			atcRead:'Read ATC configuration (0x55)',atcPatch:'Apply ATC configuration patch (0x55)',request:'Request JSON',cancelled:'Command cancelled; nothing sent.',
+			help:'Open a session to discover, subscribe, write and await notifications without reconnecting. Copy its token for CLI use and close it when finished. ATC buttons send the read or patch after confirmation, using the selected peer/session. Edit the patch in Ace; the initial ATC patch enables bt5phy and longrange. Verify the installed firmware and codec first. Coded PHY needs compatible ATC firmware (4.2+ for LYWSD03MMC); confirm it from received advertisements, not the connection PHY.',
+			note:'Commands require the running daemon; the service stays active. GATT pauses scan and daemon-configured TXADV, then restores them on close or error. Discovery time is paused; other radio commands are blocked during an open session. TXADV start leaves scan OFF. No settings are saved and the service is not restarted.',closeFailed:'Page-exit GATT cleanup failed; the idle timeout remains active'
+		},
+		de: {
+			open:'BLE-GATT-Sitzung öffnen',sessionCommand:'GATT-Operation in offener Sitzung',close:'GATT-Sitzung schließen',session:'Sitzungstoken (vom Öffnen)',idle_timeout_ms:'Inaktivitätslimit (1000-300000 ms)',uuid:'UUID von Merkmal/Deskriptor (Handle 0)',handle:'ATT-Handle (dezimal; 0 wählt UUID)',value:'Schreib-/Anfragewert (Hex; 56 Bytes, 58 ohne Antwort)',prefix:'Benachrichtigungspräfix (Hex; leer = alle)',mode:'Abonnement (0 aus, 1 Notify, 2 Indicate)',count:'Passende Benachrichtigungen (1-64)',codec:'Codec-Struktur (leer = Rohdaten)',offset:'Vor dem Dekodieren übersprungene Antwortbytes',write_offset:'Beim Schreiben ausgelassene dekodierte Antwortbytes',write_prefix:'Schreibpräfix (Hex; leer = Anfragewert)',patch:'JSON-Patch (nur vorhandene Felder)',invalidJson:'Ein nicht leeres JSON-Objekt eingeben',
+			atcRead:'ATC-Konfiguration lesen (0x55)',atcPatch:'ATC-Konfigurationspatch anwenden (0x55)',request:'JSON-Anfrage',cancelled:'Befehl abgebrochen; nichts gesendet.',
+			help:'Eine Sitzung öffnen, um ohne Neuverbindung zu suchen, abonnieren, schreiben und Benachrichtigungen abzuwarten. Token auch für CLI nutzbar; danach schließen. Die ATC-Tasten senden Lesen oder Patch nach Bestätigung an das gewählte Gerät bzw. die Sitzung. Patch in Ace bearbeiten; anfangs werden bt5phy und longrange aktiviert. Firmware und Codec vorher prüfen. Coded PHY erfordert passende ATC-Firmware (4.2+ bei LYWSD03MMC); empfangene Advertisements prüfen, nicht die Verbindungs-PHY.',
+			note:'Befehle erfordern den laufenden Daemon; der Dienst bleibt aktiv. GATT pausiert Scan und vom Daemon konfiguriertes TXADV bis zum Schließen, auch bei Fehlern. Die Discovery-Zeit pausiert; andere Funkbefehle sind während der Sitzung gesperrt. TXADV-Start lässt den Scan AUS. Kein Speichern oder Dienstneustart.',closeFailed:'GATT-Bereinigung beim Seitenende fehlgeschlagen; Inaktivitätslimit bleibt aktiv'
+		},
+		it: {
+			open:'Apri sessione BLE GATT',sessionCommand:'Operazione GATT nella sessione aperta',close:'Chiudi sessione GATT',session:'Token sessione (restituito da Apri)',idle_timeout_ms:'Timeout inattività (1000-300000 ms)',uuid:'UUID caratteristica/descrittore (lasciare handle 0)',handle:'Handle ATT (decimale; 0 seleziona UUID)',value:'Valore scrittura/richiesta (hex; 56 byte, 58 senza risposta)',prefix:'Prefisso notifiche (hex; vuoto = qualsiasi)',mode:'Sottoscrizione (0 disabilita, 1 notify, 2 indicate)',count:'Notifiche corrispondenti da attendere (1-64)',codec:'Struttura codec (vuota = byte grezzi)',offset:'Byte risposta da saltare prima della decodifica',write_offset:'Byte decodificati da omettere in scrittura (sola risposta)',write_prefix:'Prefisso scrittura (hex; vuoto = valore richiesta)',patch:'Patch JSON (solo campi esistenti)',invalidJson:'Inserire un oggetto JSON non vuoto',
+			atcRead:'Leggi configurazione ATC (0x55)',atcPatch:'Applica patch configurazione ATC (0x55)',request:'Richiesta JSON',cancelled:'Comando annullato; nessun invio.',
+			help:'Aprire una sessione per discovery, sottoscrizioni, scritture e attesa notifiche senza riconnettersi. Il token è utilizzabile dalla CLI; chiudere la sessione al termine. I pulsanti ATC inviano lettura o patch dopo conferma, usando il destinatario o la sessione selezionati. Modificare la patch in Ace; quella ATC iniziale abilita bt5phy e longrange. Verificare prima firmware installato e codec. Coded PHY richiede firmware ATC compatibile (4.2+ per LYWSD03MMC); verificarlo negli advertisement ricevuti, non nella PHY della connessione.',
+			note:'I comandi richiedono il daemon in esecuzione; il servizio resta attivo. GATT sospende scan e TXADV configurato dal daemon e li ripristina alla chiusura o in caso di errore. Il tempo di Discovery è sospeso; altri comandi radio sono bloccati durante la sessione. Avviare TXADV lascia lo scan SPENTO. Nessun salvataggio o riavvio del servizio.',closeFailed:'Pulizia GATT in uscita dalla pagina fallita; resta attivo il timeout di inattività'
+		},
+		fr: {
+			open:'Ouvrir une session BLE GATT',sessionCommand:'Opération GATT dans la session ouverte',close:'Fermer la session GATT',session:'Jeton de session (fourni à l’ouverture)',idle_timeout_ms:'Délai d’inactivité (1000-300000 ms)',uuid:'UUID caractéristique/descripteur (handle 0)',handle:'Handle ATT (décimal ; 0 sélectionne UUID)',value:'Valeur écrite/requête (hex ; 56 octets, 58 sans réponse)',prefix:'Préfixe des notifications (hex ; vide = toutes)',mode:'Abonnement (0 arrêt, 1 notify, 2 indicate)',count:'Notifications correspondantes attendues (1-64)',codec:'Structure codec (vide = octets bruts)',offset:'Octets de réponse à ignorer avant décodage',write_offset:'Octets décodés à omettre en écriture (réponse seule)',write_prefix:'Préfixe écrit (hex ; vide = requête)',patch:'Patch JSON (champs existants uniquement)',invalidJson:'Saisir un objet JSON non vide',
+			atcRead:'Lire la configuration ATC (0x55)',atcPatch:'Appliquer le patch ATC (0x55)',request:'Requête JSON',cancelled:'Commande annulée ; aucun envoi.',
+			help:'Ouvrir une session pour découvrir, s’abonner, écrire et attendre les notifications sans reconnexion. Le jeton fonctionne en CLI ; fermer ensuite. Les boutons ATC envoient lecture ou patch après confirmation vers le périphérique ou la session sélectionnés. Modifier le patch dans Ace ; le patch ATC initial active bt5phy et longrange. Vérifier firmware et codec. Coded PHY nécessite un firmware ATC compatible (4.2+ pour LYWSD03MMC) ; vérifier les advertisements reçus, pas la PHY de connexion.',
+			note:'Les commandes nécessitent le daemon en cours ; le service reste actif. GATT suspend scan et TXADV configuré par le daemon, puis les rétablit à la fermeture ou sur erreur. Le temps Discovery est suspendu ; les autres commandes radio sont bloquées pendant la session. Démarrer TXADV laisse le scan ARRÊTÉ. Aucun enregistrement ni redémarrage du service.',closeFailed:'Échec du nettoyage GATT à la sortie ; le délai d’inactivité reste actif'
+		},
+		es: {
+			open:'Abrir sesión BLE GATT',sessionCommand:'Operación GATT en sesión abierta',close:'Cerrar sesión GATT',session:'Token de sesión (devuelto al abrir)',idle_timeout_ms:'Tiempo de inactividad (1000-300000 ms)',uuid:'UUID de característica/descriptor (handle 0)',handle:'Handle ATT (decimal; 0 selecciona UUID)',value:'Valor escrito/solicitud (hex; 56 bytes, 58 sin respuesta)',prefix:'Prefijo de notificaciones (hex; vacío = todas)',mode:'Suscripción (0 desactivar, 1 notify, 2 indicate)',count:'Notificaciones coincidentes esperadas (1-64)',codec:'Estructura codec (vacía = bytes sin procesar)',offset:'Bytes de respuesta a omitir antes de decodificar',write_offset:'Bytes decodificados a omitir al escribir (solo respuesta)',write_prefix:'Prefijo escrito (hex; vacío = solicitud)',patch:'Parche JSON (solo campos existentes)',invalidJson:'Introducir un objeto JSON no vacío',
+			atcRead:'Leer configuración ATC (0x55)',atcPatch:'Aplicar parche ATC (0x55)',request:'Solicitud JSON',cancelled:'Comando cancelado; no se ha enviado.',
+			help:'Abrir una sesión para descubrir, suscribirse, escribir y esperar notificaciones sin reconectar. El token también sirve en CLI; cerrar al terminar. Los botones ATC envían lectura o parche tras confirmar, usando el dispositivo o la sesión seleccionados. Editar el parche en Ace; el inicial activa bt5phy y longrange. Verificar firmware y codec. Coded PHY necesita firmware ATC compatible (4.2+ para LYWSD03MMC); comprobar los advertisements recibidos, no la PHY de conexión.',
+			note:'Los comandos necesitan el daemon en ejecución; el servicio sigue activo. GATT pausa escaneo y TXADV configurado por el daemon y los restaura al cerrar o fallar. Se pausa el tiempo de Discovery; otras órdenes de radio se bloquean durante la sesión. Iniciar TXADV deja el escaneo APAGADO. No se guarda ni reinicia el servicio.',closeFailed:'Falló la limpieza GATT al salir; sigue activo el tiempo de inactividad'
+		}
+	};
+	const commandLanguage = (navigator.language || 'en').split('-')[0];
+	const ct = {...(commandTranslations[commandLanguage] || commandTranslations.en),...(gattTranslations[commandLanguage] || gattTranslations.en)};
+	let commandDraft, gattToken = '', commandRunning = false;
+	let patchEditor=null, patchEditorLoading=null, patchText='{}', patchInitialized=false, syncingPatch=false;
+	// Live command validation must not block the enclosing Freetz settings form.
+	const commandForm=document.createElement('form');commandForm.id='bbCommandForm';commandForm.hidden=true;
+	commandForm.onsubmit=event=>event.preventDefault();document.body.append(commandForm);
 	const commandOptions = {
 		name:['info','version','uart','rfsdk','vbat','gpio-events','gpio-status','gpio-read','analog-read','connection-status','txadv-status'],
-		operation:['discover','read','write','write-without-response','read-descriptor','write-descriptor','mtu','unpair']
+		operation:['discover','read','write','write-without-response','read-descriptor','write-descriptor','mtu','unpair','subscribe','notifications','exchange','patch']
 	};
-	function renderCommand() {
-		const command = element('bbCommandType').value;
-		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : command === 'gatt' ? {command,mac:'',addr_type:0,coded:false,operation:'discover',handle:0,value:'',timeout_ms:10000} : command === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
+	function validatePatch() {
+		let result;
+		try {
+			const value=JSON.parse(patchEditor?patchEditor.getValue():patchText);
+			result=value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length?{value}:{error:ct.invalidJson};
+		} catch(error) {
+			if(!(error instanceof SyntaxError))throw error;
+			result={error:ct.invalidJson+': '+error.message};
+		}
+		element('bbCommandPatchError').textContent=result.error||'';
+		element('bbCommandPatchError').hidden=!result.error;
+		if(patchEditor)patchEditor.session.setAnnotations(result.error?[{row:0,column:0,text:result.error,type:'error'}]:[]);
+		return result;
+	}
+	function patchValue() {
+		const result=validatePatch();
+		if(result.error)throw new Error(result.error);
+		return result.value;
+	}
+	function setPatch(value) {
+		patchText=JSON.stringify(value,null,2);patchInitialized=true;
+		if(patchEditor){syncingPatch=true;patchEditor.setValue(patchText,-1);syncingPatch=false;}
+		commandDraft.patch=value;
+		validatePatch();
+	}
+	function ensurePatchEditor() {
+		if(!patchEditorLoading)patchEditorLoading=(async()=>{
+			patchEditor=await jsonEditor('bbCmd_patch',false);patchEditor.setValue(patchText,-1);
+			patchEditor.session.on('change',()=>{
+				if(syncingPatch)return;
+				patchText=patchEditor.getValue();patchInitialized=true;
+				const result=validatePatch();
+				if(!result.error&&commandDraft.operation==='patch')commandDraft.patch=result.value;
+			});
+			validatePatch();
+		})().catch(error=>{patchEditorLoading=null;throw error;});
+		return patchEditorLoading.then(()=>{patchEditor.setReadOnly(commandRunning);patchEditor.resize(true);});
+	}
+	function commandBusy(pending) {
+		commandRunning=pending;
+		for(const id of ['bbCommandSend','bbAtcRead','bbAtcPatch','bbCommandType','bbRadioRefresh'])element(id).disabled=pending;
+		element('bbCommandFields').querySelectorAll('input,select').forEach(input=>input.disabled=pending);
+		if(patchEditor)patchEditor.setReadOnly(pending);
+	}
+	function renderCommand(previous = {}) {
+		const type = element('bbCommandType').value, command = type === 'gatt-session' ? 'gatt' : type;
+		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : type === 'gatt-open' ? {command,mac:'',addr_type:0,coded:false,timeout_ms:10000,idle_timeout_ms:60000} : type === 'gatt-close' ? {command,session:gattToken} : type === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
+		if(command === 'gatt') {
+			const operation = previous.operation || 'discover';
+			Object.assign(commandDraft,type === 'gatt-session' ? {session:gattToken} : {mac:'',addr_type:0,coded:false},{operation,timeout_ms:10000});
+			if(!['discover','mtu','unpair'].includes(operation))Object.assign(commandDraft,{handle:0,uuid:''});
+			if(['write','write-descriptor','write-without-response','exchange','patch'].includes(operation))commandDraft.value='';
+			if(['subscribe','exchange','patch'].includes(operation))commandDraft.mode=1;
+			if(['notifications','exchange','patch'].includes(operation))Object.assign(commandDraft,{prefix:'',count:1});
+			if(['read','read-descriptor','notifications','exchange','patch'].includes(operation))Object.assign(commandDraft,{codec:'',offset:0});
+			if(operation==='patch')Object.assign(commandDraft,{write_offset:0,write_prefix:'',patch:{}});
+		}
+		Object.keys(commandDraft).forEach(key=>{if(key!=='command'&&Object.hasOwn(previous,key))commandDraft[key]=previous[key];});
 		const parent = element('bbCommandFields'); parent.replaceChildren();
-		Object.entries(commandDraft).filter(([key])=>key!=='command').forEach(([key,value])=>{
+		Object.entries(commandDraft).filter(([key])=>key!=='command'&&key!=='patch').forEach(([key,value])=>{
 			const label=document.createElement('label');label.className='bbField';label.append(ct[key]);
 			const input=document.createElement(commandOptions[key]?'select':'input');
 			if(commandOptions[key])commandOptions[key].forEach(option=>input.add(new Option(option,option)));
 			else input.type=typeof value==='boolean'?'checkbox':typeof value==='number'?'number':'text';
 			input.id='bbCmd_'+key;input.title=ct[key];input.autocomplete='off';
+			if(key==='mac'||key==='session')input.required=true;
+			input.setAttribute('form',commandForm.id);
 			if(input.type==='checkbox')input.checked=value;else input.value=value;
 			if(input.type==='number'){input.min='0';input.step='1';}
 			if(key==='timeout_ms'){input.min='100';input.max='30000';}
+			if(key==='idle_timeout_ms'){input.min='1000';input.max='300000';}
 			if(key==='interval_units'){input.min='32';input.max='65535';}
 			if(key==='handle')input.max='65535';
 			if(key==='addr_type')input.max='1';
 			if(key==='phy')input.max='2';
-			input.oninput=()=>{commandDraft[key]=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;};
+			if(key==='mode')input.max='2';
+			if(key==='count'){input.min='1';input.max='64';}
+			if(['offset','write_offset'].includes(key))input.max='197';
+			input.oninput=()=>{
+				commandDraft[key]=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;
+				if(key==='operation')renderCommand(commandDraft);
+			};
 			label.append(input);parent.append(label);
 		});
+		element('bbCommandPatch').hidden=commandDraft.operation!=='patch';
+		if(commandDraft.operation==='patch')ensurePatchEditor().catch(error=>{element('bbCommandPatchError').textContent=error.message;element('bbCommandPatchError').hidden=false;message(error.message,true);});
+		commandBusy(commandRunning);
 	}
-	async function radioStatus() {const status=await api('status');element('bbRadio').textContent=JSON.stringify({connected:status.connected,...status.radio},null,2);}
+	async function radioStatus() {
+		const status=await api('status');setCommandOutput('bbRadio',{connected:status.connected,...status.radio});
+		if(status.radio?.gatt===null&&gattToken){
+			if(commandDraft?.session===gattToken){commandDraft.session='';const input=element('bbCmd_session');if(input)input.value='';}
+			gattToken='';
+		}
+		await ensureCommandEditors();
+		if(commandDraft.operation==='patch')await ensurePatchEditor();
+	}
 	element('bbCommandsTab').textContent=ct.tab;element('bbCommandTypeLabel').textContent=ct.type;element('bbCommandNote').textContent=ct.note;
-	[['diagnostic','diagnostic'],['gatt','gatt'],['txadv-start','start'],['txadv-stop','stop'],['scan-start','scanStart'],['scan-stop','scanStop']].forEach(([value,key])=>element('bbCommandType').add(new Option(ct[key],value)));
-	element('bbCommandType').title=ct.type;element('bbCommandType').onchange=renderCommand;
+	element('bbGattHelp').textContent=ct.help;
+	element('bbCommandPatchLabel').textContent=ct.patch;element('bbCmd_patch').title=ct.patch;element('bbCmd_patch').setAttribute('aria-label',ct.patch);
+	element('bbCommandRequestLabel').textContent=ct.request;
+	for(const id of ['bbCommandRequest','bbConfirmRequest'])element(id).setAttribute('aria-label',ct.request);
+	element('bbCommandRequestDetails').addEventListener('toggle',()=>commandEditors.bbCommandRequest?.resize(true));
+	[['diagnostic','diagnostic'],['gatt','gatt'],['gatt-open','open'],['gatt-session','sessionCommand'],['gatt-close','close'],['txadv-start','start'],['txadv-stop','stop'],['scan-start','scanStart'],['scan-stop','scanStop']].forEach(([value,key])=>element('bbCommandType').add(new Option(ct[key],value)));
+	element('bbCommandType').title=ct.type;element('bbCommandType').onchange=()=>renderCommand();
+	function prepareAtc(operation) {
+		const previous=commandDraft,type=element('bbCommandType').value;
+		const sessionMode=['gatt-session','gatt-close'].includes(type)||(!['gatt','gatt-open'].includes(type)&&!!gattToken);
+		const session=['gatt-session','gatt-close'].includes(type)?previous.session:['gatt','gatt-open'].includes(type)?'':gattToken;
+		const patch=operation==='patch'?(patchInitialized?patchValue():{flg2:{bt5phy:true,longrange:true}}):null;
+		element('bbCommandType').value=sessionMode?'gatt-session':'gatt';
+		const draft={operation,uuid:'1F1F',handle:0,value:'55',prefix:'55',codec:'cfg',offset:1,write_offset:1};
+		if(sessionMode)draft.session=session;
+		else for(const key of ['mac','addr_type','coded','timeout_ms'])if(Object.hasOwn(previous,key))draft[key]=previous[key];
+		renderCommand(draft);
+		if(patch)setPatch(patch);
+	}
+	for(const [id,key,operation] of [['bbAtcRead','atcRead','exchange'],['bbAtcPatch','atcPatch','patch']]){
+		element(id).textContent=ct[key];element(id).title=ct.help;element(id).onclick=()=>run(()=>sendCommand(operation));
+	}
 	element('bbCommandSend').textContent=ct.send;element('bbCommandSend').title=ct.send;
 	element('bbRadioRefresh').textContent=ct.refresh;element('bbRadioRefresh').title=ct.refresh;
+	element('bbRadio').setAttribute('aria-label',ct.refresh);element('bbCommandResult').setAttribute('aria-label',ct.done);
 	element('bbRadioRefresh').onclick=()=>run(radioStatus);
-	element('bbCommandSend').onclick=()=>run(async()=>{
-		if(!Array.from(element('bbCommandFields').querySelectorAll('input')).every(input=>input.reportValidity()))return;
-		if(!await confirmAction(ct.confirm))return;
-		element('bbCommandSend').disabled=true;message(ct.pending);element('bbCommandResult').textContent='';
-		try {const response=await api('command',commandDraft);element('bbCommandResult').textContent=JSON.stringify(response,null,2);message(ct.done);}
-		catch(error){element('bbCommandResult').textContent=error.message;throw error;}
-		finally{element('bbCommandSend').disabled=false;await radioStatus();}
-	});
-	renderCommand();
-	function ruleHelp() {
-		const fragment=document.createDocumentFragment();
-		const warning=document.createElement('p');warning.className='bbHint';warning.textContent=ht.ruleWarning;
-		const details=document.createElement('details');details.className='bbHelp';
-		const summary=document.createElement('summary');summary.textContent='Rules — ?';
-		const note=document.createElement('p');note.textContent=ht.ruleDetails;
-		details.append(summary,note);fragment.append(warning,details);return fragment;
+	async function sendCommand(atcOperation) {
+		let sent=false;
+		try {
+			if(atcOperation)prepareAtc(atcOperation);
+			if(!Array.from(element('bbCommandFields').querySelectorAll('input,select')).every(input=>input.reportValidity()))return;
+			commandBusy(true);
+			await ensureCommandEditors();
+			if(commandDraft.operation==='patch')await ensurePatchEditor();
+			const payload=copy(commandDraft);
+			if(payload.operation==='patch')payload.patch=patchValue();
+			if(payload.write_prefix==='')delete payload.write_prefix;
+			setCommandOutput('bbCommandRequest',payload);element('bbCommandRequestDetails').open=true;
+			commandEditors.bbCommandRequest.resize(true);
+			if(!await confirmAction(ct.confirm,payload)){message(ct.cancelled);setCommandOutput('bbCommandResult',ct.cancelled,'text');return;}
+			message(ct.pending);setCommandOutput('bbCommandResult','','text');sent=true;
+			const response=await api('command',payload);setCommandOutput('bbCommandResult',response);message(ct.done);
+			if(response.result?.session){gattToken=response.result.session;element('bbCommandType').value='gatt-session';renderCommand();}
+			if(response.result?.confirmation==='disconnected'){gattToken='';element('bbCommandType').value='gatt-open';renderCommand();}
+		}
+		catch(error){setCommandOutput('bbCommandResult',error.message,'text');throw error;}
+		finally{
+			commandBusy(false);
+			if(sent)try{await radioStatus();}catch(error){setCommandOutput('bbRadio',error.message,'text');message(error.message,true);}
+		}
 	}
+	element('bbCommandSend').onclick=()=>run(()=>sendCommand());
+	renderCommand();
+	window.addEventListener('pagehide',()=>{if(gattToken)api('command',{command:'gatt-close',session:gattToken},{},true).catch(error=>console.warn(ct.closeFailed,error.message));});
 	function scannerHelp(parent) {
 		const section=document.createElement('div');section.id='bbMacFilters';section.tabIndex=-1;
 		const heading=document.createElement('h4');heading.textContent=ht.filterTitle;
@@ -664,49 +993,177 @@ cat << 'EOF'
 		const text=conflict?ht.filterConflict:scanner.filter_known_devices?ht.filterKnown:ht.filterAll;
 		if(status.textContent!==text)status.textContent=text;
 	}
+	const historyTranslations={
+		en:{maintenance:'History maintenance',policies:'Per-measurement policies',policy:'Policy',attribute:'Attribute',mac:'MAC (empty = all devices)',mode:'History mode',keep:'Keep every sample, forever',progressive:'Progressive resolution',age:'Until age',spacing:'Sample interval',all:'Every sample',add:'Add policy',band:'Add age band',remove:'Remove',temperature:'Temperature preset',battery:'Battery preset',warning:'Irreversible consolidation: back up the database before enabling. Older full frames are replaced by related measurement series; discarded samples cannot be recovered.',expiry:'After the last age band: delete numeric samples.',units:['s','min','h','days','weeks','months'],close:'Close'},
+		it:{maintenance:'Manutenzione storico',policies:'Politiche per singola misura',policy:'Politica',attribute:'Attributo',mac:'MAC (vuoto = tutti i dispositivi)',mode:'Trattamento storico',keep:'Conserva tutti i campioni, per sempre',progressive:'Risoluzione progressiva',age:'Fino all’età',spacing:'Intervallo campioni',all:'Tutti i campioni',add:'Aggiungi politica',band:'Aggiungi fascia',remove:'Rimuovi',temperature:'Preset temperatura',battery:'Preset batteria',warning:'Consolidamento irreversibile: eseguire un backup del database prima di abilitare. I vecchi frame completi vengono sostituiti da serie di misure correlate; i campioni scartati non sono recuperabili.',expiry:'Oltre l’ultima fascia: elimina i campioni numerici.',units:['s','min','h','giorni','settimane','mesi'],close:'Chiudi'},
+		de:{maintenance:'Verlaufspflege',policies:'Richtlinien je Messwert',policy:'Richtlinie',attribute:'Attribut',mac:'MAC (leer = alle Geräte)',mode:'Verlaufsmodus',keep:'Alle Werte unbegrenzt behalten',progressive:'Abgestufte Auflösung',age:'Bis zum Alter',spacing:'Werteintervall',all:'Alle Werte',add:'Richtlinie hinzufügen',band:'Altersstufe hinzufügen',remove:'Entfernen',temperature:'Temperaturvorgabe',battery:'Batterievorgabe',warning:'Nicht umkehrbare Verdichtung: Datenbank vorher sichern. Alte vollständige Frames werden durch verknüpfte Messreihen ersetzt; entfernte Werte sind nicht wiederherstellbar.',expiry:'Nach der letzten Altersstufe: numerische Werte löschen.',units:['s','min','h','Tage','Wochen','Monate'],close:'Schließen'},
+		fr:{maintenance:'Maintenance historique',policies:'Politiques par mesure',policy:'Politique',attribute:'Attribut',mac:'MAC (vide = tous)',mode:'Mode historique',keep:'Conserver tous les échantillons',progressive:'Résolution progressive',age:'Jusqu’à cet âge',spacing:'Intervalle',all:'Tous les échantillons',add:'Ajouter une politique',band:'Ajouter une tranche',remove:'Supprimer',temperature:'Profil température',battery:'Profil batterie',warning:'Consolidation irréversible : sauvegarder la base avant activation. Les anciens paquets complets sont remplacés par des séries liées ; les échantillons supprimés sont irrécupérables.',expiry:'Après la dernière tranche : supprimer les échantillons numériques.',units:['s','min','h','jours','semaines','mois'],close:'Fermer'},
+		es:{maintenance:'Mantenimiento histórico',policies:'Políticas por medida',policy:'Política',attribute:'Atributo',mac:'MAC (vacío = todos)',mode:'Modo histórico',keep:'Conservar todas las muestras',progressive:'Resolución progresiva',age:'Hasta esta edad',spacing:'Intervalo',all:'Todas las muestras',add:'Añadir política',band:'Añadir tramo',remove:'Eliminar',temperature:'Perfil temperatura',battery:'Perfil batería',warning:'Consolidación irreversible: hacer una copia antes de activar. Los paquetes antiguos se sustituyen por series relacionadas; las muestras eliminadas no se recuperan.',expiry:'Tras el último tramo: eliminar muestras numéricas.',units:['s','min','h','días','semanas','meses'],close:'Cerrar'}
+	};
+	const historyUi=historyTranslations[helpLanguage]||historyTranslations.en;
+	const availabilityTranslations={
+		en:{title:'Availability monitoring',rule:'Rule',add:'Add rule',remove:'Remove rule',test:'Test webhook',status:'Device availability status',confirm:'Send one test notification using this rule’s webhook? Device changes will not be saved.',webhook:'Webhook configuration',timeout:'Notify if no reading received for more than (seconds)'},
+		it:{title:'Monitoraggio disponibilità',rule:'Regola',add:'Aggiungi regola',remove:'Elimina regola',test:'Prova webhook',status:'Stato disponibilità dispositivo',confirm:'Inviare una sola notifica di prova usando il webhook di questa regola? Le modifiche al dispositivo non verranno salvate.',webhook:'Configurazione webhook',timeout:'Notifica se il dato non perviene da oltre (secondi)'},
+		de:{title:'Verfügbarkeitsüberwachung',rule:'Regel',add:'Regel hinzufügen',remove:'Regel entfernen',test:'Webhook testen',status:'Geräteverfügbarkeit',confirm:'Eine Testnachricht mit dem Webhook dieser Regel senden, ohne Änderungen zu speichern?',webhook:'Webhook-Konfiguration',timeout:'Benachrichtigen nach fehlender Messung (Sekunden)'},
+		fr:{title:'Surveillance de disponibilité',rule:'Règle',add:'Ajouter une règle',remove:'Supprimer la règle',test:'Tester le webhook',status:'Disponibilité de l’appareil',confirm:'Envoyer une notification avec le webhook de cette règle sans enregistrer les modifications ?',webhook:'Configuration du webhook',timeout:'Notifier sans mesure depuis plus de (secondes)'},
+		es:{title:'Supervisión de disponibilidad',rule:'Regla',add:'Añadir regla',remove:'Eliminar regla',test:'Probar webhook',status:'Disponibilidad del dispositivo',confirm:'¿Enviar una notificación con el webhook de esta regla sin guardar los cambios?',webhook:'Configuración del webhook',timeout:'Notificar sin lectura durante más de (segundos)'}
+	};
+	const availabilityUi=availabilityTranslations[helpLanguage]||availabilityTranslations.en;
+	const notificationLabels={
+		en:{message:'Notification message (empty = automatic)',tgs:'tgs (override webhook tags)'},
+		it:{message:'Messaggio notifica (vuoto = automatico)',tgs:'tgs (sostituisce tags del webhook)'},
+		de:{message:'Nachricht (leer = automatisch)',tgs:'tgs (überschreibt Webhook-Tags)'},
+		fr:{message:'Message (vide = automatique)',tgs:'tgs (remplace les tags du webhook)'},
+		es:{message:'Mensaje (vacío = automático)',tgs:'tgs (sustituye los tags del webhook)'}
+	};
+	Object.assign(labels,notificationLabels[helpLanguage]||notificationLabels.en);
+	Object.assign(labels,{rules:availabilityUi.title,webhook:availabilityUi.webhook,startup_grace_s:helpLanguage==='it'?'Tolleranza iniziale (secondi)':'Startup grace (seconds)',stale_after_s:availabilityUi.timeout,notify_recovery:helpLanguage==='it'?'Notifica ripristino':'Notify recovery',provider:helpLanguage==='it'?'Servizio webhook':'Webhook provider',url:'HTTPS URL',max_attempts:helpLanguage==='it'?'Tentativi massimi per evento':'Maximum attempts per event',retry_s:helpLanguage==='it'?'Attesa tra tentativi (secondi)':'Retry interval (seconds)',ca_file:helpLanguage==='it'?'File CA PEM (opzionale)':'PEM CA file (optional)'});
+	Object.assign(parameterHelp,{
+		message:['Optional message transmitted verbatim for this rule’s alert, recovery and explicit webhook test. Empty or whitespace-only uses the corresponding automatic message. Up to 4096 UTF-8 bytes; multiline text is supported.','Messaggio opzionale trasmesso così com’è per allarme, ripristino e prova webhook di questa regola. Vuoto o composto solo da spazi usa il corrispondente messaggio automatico. Massimo 4096 byte UTF-8; sono consentite più righe.'],
+		tgs:['Optional per-rule ntfy tag override. If nonempty, this replaces webhook.tags; otherwise webhook.tags is used. Comma-separated ASCII tags, at most 256 bytes. Not used by Gotify.','Override ntfy opzionale per questa regola. Se compilato, sostituisce webhook.tags; altrimenti viene usato webhook.tags. Tag ASCII separati da virgole, massimo 256 byte. Non usato da Gotify.'],
+		ipv4_only:['Use IPv4 only for this HTTPS destination when the router cannot route its IPv6 address. TLS and hostname verification remain enabled.','Usa soltanto IPv4 per questa destinazione HTTPS quando il router non può raggiungere l’indirizzo IPv6. TLS e verifica del nome restano attivi.'],
+		priority:['Notification priority, 1-5. ntfy sends it as Priority; Gotify includes it in the JSON message.','Priorità della notifica, 1-5. ntfy la invia come Priority; Gotify nel messaggio JSON.'],
+		tags:['Optional ntfy tags, comma-separated ASCII names such as thermometer. Not used by Gotify.','Tag ntfy opzionali: nomi ASCII separati da virgole, ad esempio thermometer. Non usati da Gotify.'],
+		startup_grace_s:['Suppress new stale alerts for this many seconds after startup (0-86400). A saved active alarm is not sent again; fresh readings can still recover it during the grace period.','Sopprime nuovi allarmi per questi secondi dopo l’avvio (0-86400). Un allarme attivo salvato non viene reinviato; nuove letture possono ripristinarlo anche durante la tolleranza.'],
+		stale_after_s:['Age of the last valid reading of this attribute, not the last BLE packet or last value change. Default 600 seconds. Repeated equal temperatures refresh freshness; battery packets do not.','Età dell’ultima lettura valida di questo attributo, non dell’ultimo pacchetto BLE o cambiamento. Default 600 secondi. Temperature uguali rinnovano la freschezza, i pacchetti batteria no.'],
+		notify_recovery:['Send one recovery only if the corresponding stale alert was successfully delivered. Undelivered stale alerts are cancelled when readings resume.','Invia un solo ripristino se l’allarme corrispondente è stato consegnato. Gli allarmi non consegnati vengono annullati al ritorno delle letture.'],
+		provider:['ntfy uses a topic URL and optional bearer token; Gotify uses the /message endpoint and an application token.','ntfy usa la URL del topic e un eventuale token bearer; Gotify usa /message e un token applicazione.'],
+		url:['Complete HTTPS destination, for example https://ntfy.example/topic or https://gotify.example/message. Certificates are verified, redirects/proxies disabled. No credentials or token query parameters in the URL.','Destinazione HTTPS completa, ad esempio https://ntfy.example/topic o https://gotify.example/message. Certificati verificati, redirect/proxy disabilitati. Niente credenziali o token nei parametri URL.'],
+		max_attempts:['Default 1 gives one delivery attempt per event, persisted before network I/O. Higher values explicitly enable retries, which can duplicate a message if a server received it but its response was lost.','Default 1: un tentativo per evento, registrato prima dell’invio. Valori maggiori abilitano tentativi successivi, che possono duplicare un messaggio se il server lo ha ricevuto ma la risposta è persa.'],
+		retry_s:['Seconds between explicitly enabled delivery retries (1-86400). No repeated reminder messages are generated.','Secondi tra tentativi successivi esplicitamente abilitati (1-86400). Non vengono generati promemoria ripetuti.'],
+		ca_file:['Optional absolute path to a trusted PEM CA for a private HTTPS server. Empty uses bundled public roots; certificate verification is never disabled.','Percorso assoluto opzionale di una CA PEM fidata per un server privato. Vuoto usa le CA pubbliche incluse; la verifica non viene mai disabilitata.'],
+	});
+	const counterUi=({en:{mode:'Default counter history',discard:'Exclude from consolidated history'},it:{mode:'Storico predefinito dei contatori',discard:'Escludi dallo storico consolidato'},de:{mode:'Standardverlauf für Zähler',discard:'Vom verdichteten Verlauf ausschließen'},fr:{mode:'Historique des compteurs par défaut',discard:'Exclure de l’historique consolidé'},es:{mode:'Histórico predeterminado de contadores',discard:'Excluir del histórico consolidado'}})[helpLanguage]||{mode:'Default counter history',discard:'Exclude from consolidated history'};
+	labels.counter_mode=counterUi.mode;
+	Object.assign(labels,{maintenance:historyUi.maintenance,policies:historyUi.policies,interval_s:helpLanguage==='it'?'Pausa tra passaggi (secondi)':'Pass interval (seconds)',max_work_ms:helpLanguage==='it'?'Budget per blocco (ms)':'Work budget per chunk (ms)',raw_retention_s:helpLanguage==='it'?'Frame completi recenti':'Recent complete frames',max_age_s:historyUi.age,sample_interval_s:historyUi.spacing});
+	Object.assign(parameterHelp,{
+		counter_mode:['Default treatment of codec counters: counter, packet_id, count_id, count_i/count_s/count_m/count_l and counter8/16/32. Discard removes archived numeric/unsigned readings; recent complete frames remain until the raw horizon. Explicit per-attribute or MAC policies override this default.','Trattamento predefinito dei contatori del codec: counter, packet_id, count_id, count_i/count_s/count_m/count_l e counter8/16/32. Scarta elimina le letture numeriche/unsigned archiviate; i frame completi recenti restano entro l’orizzonte grezzo. Le politiche esplicite per attributo o MAC prevalgono su questo default.'],
+		interval_s:['Delay in seconds after a complete maintenance pass. Backlogs are processed in bounded chunks with pauses; no cron is used.','Pausa in secondi dopo un passaggio completo. Gli arretrati vengono elaborati a blocchi limitati, senza cron.'],
+		max_work_ms:['SQLite execution budget per chunk, 10-1000 ms. Long statements are interrupted and rolled back; lower budgets reduce writer contention but may require smaller batches.','Budget SQLite per blocco, 10-1000 ms. Le istruzioni lunghe vengono interrotte e annullate; riduce la contesa ma può richiedere batch più piccoli.'],
+		raw_retention_s:['Keep complete original frames for this duration, then atomically split their readings into related series. The effective full-resolution horizon cannot be shorter than this. Unconfigured and discrete measurements remain forever.','Conserva i frame originali completi per questa durata, poi ne trasferisce atomicamente le letture in serie correlate. La risoluzione piena non può essere più breve di questa durata. Misure senza politica e stati discreti restano per sempre.'],
+		max_age_s:['Upper age of this band, measured from reception time. Bands must increase. After the last band numeric samples expire. A month is 365/12 days; 24 months are 730 days.','Età massima della fascia dalla ricezione. Le età devono crescere. Oltre l’ultima fascia i numerici scadono. Un mese vale 365/12 giorni: 24 mesi sono 730 giorni.'],
+		sample_interval_s:['0 keeps every sample. Otherwise retain the latest real sample in each UTC-aligned interval. Intervals must not decrease in older bands. No averaging or min/max columns.','0 conserva ogni campione; altrimenti conserva l’ultimo campione reale di ogni intervallo allineato UTC. La granularità non può diminuire nelle fasce più vecchie. Nessuna media o colonna min/max.']
+	});
+	function durationField(parent,object,key,onChange,scope) {
+		const label=document.createElement('label');label.className='bbField';fieldHelp(label,key,scope);
+		const pair=document.createElement('span');pair.className='bbDuration';
+		const input=document.createElement('input');input.type='number';input.min=key==='sample_interval_s'?'0':'1';input.step='any';input.setAttribute('aria-label',title(key));input.title=fieldExplanation(key,scope);input.dataset.parameter=scope+'.'+key;
+		const select=document.createElement('select');select.setAttribute('aria-label',title(key)+' unit');select.title=input.title;
+		const factors=[1,60,3600,86400,604800,2628000];factors.forEach((factor,index)=>select.add(new Option(historyUi.units[index],String(factor))));
+		select.value=String([...factors].reverse().find(factor=>object[key]>0&&object[key]%factor===0)||1);input.value=String(object[key]/Number(select.value));
+		input.oninput=()=>{object[key]=Number(input.value)*Number(select.value);onChange();};
+		select.onchange=()=>{object[key]=Number(input.value)*Number(select.value);onChange();};
+		pair.append(input,select);label.append(pair);parent.append(label);
+	}
+	function historyPolicies(parent,policies,onChange) {
+		const section=document.createElement('fieldset');section.className='bbGroup';section.id='bbHistoryPolicies';
+		const legend=document.createElement('legend');legend.textContent=historyUi.policies;section.append(legend);parent.append(section);
+		const render=()=>{
+			section.replaceChildren(legend);
+			policies.forEach((policy,index)=>{
+				const item=document.createElement('div');item.className='bbHistoryPolicy';item.dataset.policy=String(index);
+				const bar=document.createElement('div');bar.className='bbBar';const heading=document.createElement('strong');heading.textContent=historyUi.policy+' '+(index+1);
+				bar.append(heading,button(historyUi.remove,()=>{policies.splice(index,1);onChange();render();}));item.append(bar);
+				const grid=document.createElement('div');grid.className='bbGrid';
+				for(const key of ['attribute','mac']){const label=document.createElement('label');label.className='bbField';label.append(historyUi[key]);const input=document.createElement('input');input.type='text';input.value=policy[key];input.setAttribute('aria-label',historyUi[key]);input.title=key==='mac'?(helpLanguage==='it'?'Override per un singolo MAC; vuoto applica la politica a tutti i dispositivi.':'Override for one MAC; empty applies to all devices.'):fieldExplanation('attribute','history');if(key==='attribute')input.setAttribute('list','bbAttributes');input.oninput=()=>{policy[key]=input.value;onChange();};label.append(input);grid.append(label);}
+				const modeLabel=document.createElement('label');modeLabel.className='bbField';modeLabel.append(historyUi.mode);const mode=document.createElement('select');mode.setAttribute('aria-label',historyUi.mode);mode.title=historyUi.warning;mode.add(new Option(historyUi.keep,'keep_all'));mode.add(new Option(historyUi.progressive,'progressive'));mode.add(new Option(counterUi.discard,'discard'));mode.value=policy.mode;mode.onchange=()=>{policy.mode=mode.value;onChange();render();};modeLabel.append(mode);grid.append(modeLabel);item.append(grid);
+				const presets=document.createElement('div');presets.className='bbBar';
+				for(const kind of ['temperature','battery'])presets.append(button(historyUi[kind],()=>run(async()=>{const result=await api('history-presets');const preset=result.maintenance.policies.find(entry=>entry.attribute===(kind==='temperature'?'temperature':'battery_level'));policy.mode=preset.mode;policy.tiers=copy(preset.tiers);onChange();render();}),historyUi[kind]));
+				item.append(presets);
+				if(policy.mode==='progressive'){
+					policy.tiers.forEach((tier,tierIndex)=>{const row=document.createElement('div');row.className='bbTier';row.dataset.tier=String(tierIndex);for(const key of ['max_age_s','sample_interval_s'])durationField(row,tier,key,onChange,'frontends.sqlite.maintenance.policies[].tiers[]');row.append(button('×',()=>{policy.tiers.splice(tierIndex,1);onChange();render();},historyUi.remove));item.append(row);});
+					item.append(button(historyUi.band,()=>{const last=policy.tiers.at(-1);policy.tiers.push({max_age_s:last?last.max_age_s*2:3600,sample_interval_s:last?last.sample_interval_s:60});onChange();render();}));
+					const expiry=document.createElement('p');expiry.className='bbHint';expiry.textContent=historyUi.expiry;item.append(expiry);
+				}
+				section.append(item);
+			});
+			section.append(button(historyUi.add,()=>{policies.push({mac:'',attribute:'',mode:'keep_all',tiers:[]});onChange();render();}));
+		};render();
+	}
+	function availabilityRules(parent,rules,onChange) {
+		const section=document.createElement('fieldset');section.id='bbAvailabilityRules';section.className='bbGroup';
+		const legend=document.createElement('legend');legend.textContent=availabilityUi.title;section.append(legend);parent.append(section);
+		const render=()=>{if(availabilityStatusEditor){availabilityStatusEditor.destroy();availabilityStatusEditor=null;}section.replaceChildren(legend);rules.forEach((rule,index)=>{
+			const item=document.createElement('div');item.className='bbAvailabilityRule';item.dataset.availabilityRule=String(index);
+			const bar=document.createElement('div');bar.className='bbBar';const name=document.createElement('strong');name.textContent=availabilityUi.rule+' '+(index+1);
+			bar.append(name,button(availabilityUi.remove,()=>{rules.splice(index,1);onChange();render();}));
+			bar.append(button(availabilityUi.test,()=>run(async()=>{if(await confirmAction(availabilityUi.confirm)){await api('availability-test',{rule});message('HTTPS webhook test delivered');}}),availabilityUi.confirm));item.append(bar);
+			const editable=Object.fromEntries(Object.entries(rule).filter(([key])=>key!=='id'));
+			fields(item,editable,()=>{Object.assign(rule,editable);onChange();},'device.rules[]');section.append(item);
+		});
+		const tools=document.createElement('div');tools.className='bbBar';
+		tools.append(button(availabilityUi.add,()=>run(async()=>{const preset=await api('availability-presets');const rule=copy(preset.rule);let suffix=rules.length+1;while(rules.some(existing=>existing.id==='availability_'+suffix))suffix++;rule.id='availability_'+suffix;rules.push(rule);onChange();render();})));
+		const status=document.createElement('div');status.id='bbAvailabilityStatus';status.className='bbOutput';status.hidden=true;status.setAttribute('aria-label',availabilityUi.status);
+		tools.append(button(availabilityUi.status,()=>run(async()=>{
+			let result;try{result=await api('availability-status');if(result.watches)result.watches=result.watches.filter(watch=>normalize(watch.mac)===normalize(draft.mac));}catch(error){result={success:false,error:error.message};message(error.message,true);}
+			if(!status.isConnected)return;status.hidden=false;const text=JSON.stringify(result,null,2);
+			try{const editor=availabilityStatusEditor||await jsonEditor(status);if(!status.isConnected){editor.destroy();return;}availabilityStatusEditor=editor;editor.setValue(text,-1);editor.resize(true);}catch(error){status.textContent=text;message(error.message,true);}
+		}),availabilityUi.status));section.append(tools,status);
+		};render();
+	}
 	function fields(parent, object, onChange, scope='') {
 		const grid = document.createElement('div'); grid.className = 'bbGrid'; parent.append(grid);
-		Object.keys(object).forEach(key => {
+		const keys=Object.keys(object);
+		if(keys.includes('enabled')){keys.splice(keys.indexOf('enabled'),1);keys.unshift('enabled');}
+		keys.forEach(key => {
 			const value = object[key];
-			if (Array.isArray(value) && ['whitelist','blacklist'].includes(key)) {
-				const label = document.createElement('label'); label.className = 'bbField'; label.append(title(key));
-				const input = document.createElement('textarea'); input.rows = 3; input.value = value.join('\n'); input.title=ht.filterList;input.id=key==='whitelist'?'bbWhitelist':'bbBlacklist';input.placeholder='A4:C1:38\nA4C1383406CE';input.setAttribute('aria-describedby','bbFilterCommon bbFilterState');input.oninput = () => {object[key] = input.value.split(/[\s,]+/).filter(Boolean); onChange();}; label.append(input);
+			if(key==='rules'){
+				if(scope==='device')availabilityRules(parent,value,onChange);
+			} else if(scope==='frontends.sqlite.maintenance'&&key==='policies'){
+				historyPolicies(parent,value,onChange);
+			} else if(scope==='frontends.sqlite.maintenance'&&key==='raw_retention_s'){
+				durationField(grid,object,key,onChange,scope);
+			} else if (Array.isArray(value) && ['whitelist','blacklist'].includes(key)) {
+				const label = document.createElement('label'); label.className = 'bbField'; fieldHelp(label,key,scope);
+				const input = document.createElement('textarea'); input.rows = 3; input.value = value.join('\n'); input.title=ht.filterList;input.setAttribute('aria-label',title(key));input.id=key==='whitelist'?'bbWhitelist':'bbBlacklist';input.placeholder='A4:C1:38\nA4C1383406CE';input.setAttribute('aria-describedby','bbFilterCommon bbFilterState');input.oninput = () => {object[key] = input.value.split(/[\s,]+/).filter(Boolean); onChange();}; label.append(input);
 				const lists=scope==='scanner'?parent.querySelector('#bbMacFilterLists'):null;
 				if(lists){if(key==='whitelist')lists.prepend(label);else lists.append(label);}else grid.append(label);
 			} else if (Array.isArray(value)) {
-				const group = document.createElement('fieldset'); group.className = 'bbGroup'; const legend = document.createElement('legend'); legend.textContent = title(key); if(key==='rules'){legend.title=ht.rules;legend.tabIndex=0;}group.append(legend); parent.append(group);
+				const group = document.createElement('fieldset'); group.className = 'bbGroup'; const legend = document.createElement('legend'); legend.textContent = title(key); if(key==='expose'){legend.title=helpLanguage==='it'?'Attributi pubblicati come endpoint MySensors/Matter. MQTT e database conservano anche altri valori decodificati.':'Attributes published as MySensors/Matter endpoints. MQTT and databases also retain other decoded values.';legend.tabIndex=0;}group.append(legend); parent.append(group);
 				const render = () => {
 					group.replaceChildren(legend);
-					if(key==='rules')group.append(ruleHelp());
 					value.forEach((item, index) => {
 						const row = document.createElement('div'); row.className = 'bbItem';
 						row.append(button('Remove ' + (index + 1), () => {value.splice(index,1); render(); onChange();}));
 						fields(row, item, onChange,scope+'.'+key+'[]'); group.append(row);
 					});
-					group.append(button('Add ' + (key === 'expose' ? 'attribute' : 'rule'), () => {value.push(key === 'expose' ? {attribute:'', child:null, kind:null} : {name:'',label:'',source:'',equals:'',after_s:0,mirror:false}); render(); onChange();},key==='rules'?ht.addRule:undefined));
+					group.append(button('Add attribute', () => {value.push({attribute:'', child:null, kind:null}); render(); onChange();}));
 				}; render();
 			} else if (value && typeof value === 'object') {
-				const group = document.createElement('fieldset'); group.className = 'bbGroup'; const legend = document.createElement('legend'); legend.textContent = title(key); group.append(legend);if(key==='scanner')scannerHelp(group);
+				const maintenance=scope==='frontends.sqlite'&&key==='maintenance',webhook=scope==='device.rules[]'&&key==='webhook';
+				const group = document.createElement(maintenance||webhook?'details':'fieldset'); group.className = 'bbGroup'+(webhook?' bbAvailabilityWebhook':''); const legend = document.createElement(maintenance||webhook?'summary':'legend'); legend.textContent = title(key); group.append(legend);if(key==='scanner')scannerHelp(group);
+				if(webhook)group.open=!String(value.url||'').trim();
+				if(scope==='frontends.sqlite'&&key==='maintenance'){group.id='bbHistoryMaintenance';const warning=document.createElement('p');warning.className='bbHint bbError';warning.textContent=historyUi.warning;group.append(warning);}
 				if(key==='frontends'){
 					group.id='bbFrontends';
 					const missing=['mysensors','mqtt','matter','influx','sqlite'].filter(name=>!Object.prototype.hasOwnProperty.call(value,name));
 					if(missing.length){const warning=document.createElement('p');warning.id='bbFrontendNotice';warning.className='bbError';warning.setAttribute('role','alert');warning.textContent=ht.frontendMissing.replace('{frontends}',missing.map(title).join(', '));group.append(warning);}
 				}
-				if(scope==='frontends')group.dataset.frontend=key;
+				if(scope==='frontends'){
+					group.dataset.frontend=key;
+					group.classList.toggle('bbInactive',!value.enabled);
+					const status=document.createElement('span');status.dataset.frontendStatus='';status.textContent=' · '+(value.enabled?ui.enabled:ui.disabled);legend.append(status);
+					if(key==='sqlite'){const note=document.createElement('p');note.className='bbHint';note.textContent=ui.sqlite;group.append(note);}
+				}
 				fields(group, value, onChange,scope?scope+'.'+key:key); parent.append(group);
 			} else {
-				const label = document.createElement('label'); label.className = 'bbField'; label.append(title(key));
+				const label = document.createElement('label'); label.className = 'bbField';fieldHelp(label,key,scope);
 				let input;
-				if (key === 'log_level') {input = document.createElement('select'); ['off','error','warn','info','debug','trace'].forEach(level => input.add(new Option(level,level))); input.value = value;}
+				if(scope==='device.rules[]'&&key==='message'){input=document.createElement('textarea');input.rows=3;input.maxLength=4096;input.value=value;}
+				else if(scope==='device.rules[].webhook'&&key==='provider'){input=document.createElement('select');['ntfy','gotify'].forEach(provider=>input.add(new Option(provider,provider)));input.value=value;}
+				else if(scope==='frontends.sqlite.maintenance'&&key==='counter_mode'){input=document.createElement('select');input.add(new Option(counterUi.discard,'discard'));input.add(new Option(historyUi.keep,'keep_all'));input.value=value;}
+				else if (key === 'log_level') {input = document.createElement('select'); ['off','error','warn','info','debug','trace'].forEach(level => input.add(new Option(level,level))); input.value = value;}
+				else if (scope==='serial'&&key==='baudrate') {input=document.createElement('select');input.setAttribute('aria-label',title(key));const rates=[9600,19200,38400,57600,115200,230400,460800,921600,1000000,2000000];if(!rates.includes(value))rates.push(value);rates.forEach(rate=>input.add(new Option(String(rate),String(rate))));input.value=String(value);}
 				else if (key === 'mdns_backend') {input = document.createElement('select'); ['auto','builtin','avahi','resolved','zeroconf','astro','disabled'].forEach(backend => input.add(new Option(backend,backend))); input.value = value || 'auto';}
 				else {input = document.createElement('input'); input.type = typeof value === 'boolean' ? 'checkbox' : typeof value === 'number' || key === 'child' ? 'number' : /^(bindkey|password|token)$/.test(key) ? 'password' : 'text'; if (input.type === 'checkbox') input.checked = value; else input.value = value == null ? '' : value;}
 				input.autocomplete = 'off';
+				input.setAttribute('aria-label',title(key));input.title=fieldExplanation(key,scope);input.dataset.parameter=(scope?scope+'.':'')+key;
 				if (input.type === 'number') {input.min = '0'; input.step = '1'; if (key === 'child') input.max = '255'; if (key === 'port') {input.min='1';input.max='65535';}}
 				if (key === 'format') input.setAttribute('list','bbFormats');
 				if (key === 'attribute') input.setAttribute('list','bbAttributes');
 				if (key === 'bindkey') {input.maxLength=32; input.pattern='[A-Fa-f0-9]{32}';input.setAttribute('aria-label',title(key));}
 				if(scope==='scanner'&&key==='filter_known_devices'){input.title=ht.filterKnown+' '+ht.filterAll;input.setAttribute('aria-describedby','bbFilterCommon bbFilterState');}
-				input.oninput = () => {object[key] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? (input.value === '' ? null : Number(input.value)) : input.value; onChange();};
+				input.oninput = () => {object[key] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? (input.value === '' ? null : Number(input.value)) : scope==='serial'&&key==='baudrate' ? Number(input.value) : input.value;if(key==='enabled'&&parent.dataset.frontend){parent.classList.toggle('bbInactive',!input.checked);parent.querySelector('[data-frontend-status]').textContent=' · '+(input.checked?ui.enabled:ui.disabled);} onChange();};
 				if(input.type==='password') {
 					const secret=document.createElement('div');secret.className='bbSecret';const name=key==='bindkey'?'bindkey':title(key).toLowerCase();
 					const reveal=button('Show',event=>{event.preventDefault();const visible=input.type==='password';input.type=visible?'text':'password';reveal.textContent=visible?'Hide':'Show';reveal.setAttribute('aria-pressed',String(visible));reveal.setAttribute('aria-label',(visible?'Hide ':'Show ')+name);},'Show or hide '+name);
@@ -718,7 +1175,7 @@ cat << 'EOF'
 	}
 	function renderSettings() {
 		const parent = element('bbSettings'); parent.replaceChildren();
-		const editable = Object.fromEntries(Object.entries(config).filter(([key]) => !['devices','version'].includes(key)));
+		const editable = Object.fromEntries(Object.entries(config).filter(([key]) => !['devices','version','rules','automation','availability_state_file'].includes(key)));
 		fields(parent, editable, () => {Object.assign(config,editable); changed();refreshFilterHelp();});refreshFilterHelp();
 	}
 	function renderDevices() {
@@ -727,19 +1184,32 @@ cat << 'EOF'
 			if (![device.mac,device.label,device.manufacturer,device.model].join(' ').toLowerCase().includes(query)) return;
 			const row = body.insertRow(); const enabled = document.createElement('input'); enabled.type='checkbox'; enabled.checked=device.enabled; enabled.setAttribute('aria-label','Enable '+device.mac); enabled.onchange=()=>{device.enabled=enabled.checked;changed();}; cell(row,'').append(enabled);
 			cell(row,device.mac,'bbMac'); cell(row,[device.label,device.manufacturer,device.model].filter(Boolean).join(' / ')); cell(row,device.format || 'Automatic'); cell(row,device.expose.map(item=>item.attribute + (item.child == null ? '' : ' ['+item.child+']')).join(', '));
-			actionsCell(row,button('Edit',()=>editDevice(index)),button('Remove',()=>removeDevice(index)));
+			actionsCell(row,button('Edit',()=>run(()=>editDevice(index))),button('Remove',()=>removeDevice(index)));
 		});
 		if (!body.rows.length) cell(body.insertRow(),'No matching configured devices').colSpan=6;
 	}
-	function editDevice(index, found) {
+	async function editDevice(index, found) {
 		editIndex=index;
-		draft=index>=0 ? copy(config.devices[index]) : {mac:found ? found.mac : '',label:found ? found.name : '',manufacturer:'',model:'',firmware_version:'',bindkey:'',enabled:true,format:'',expose:found && found.format ? [{attribute:'temperature',child:0,kind:null},{attribute:'humidity',child:1,kind:null},{attribute:'battery_level',child:2,kind:null}] : [],rules:[]};
-		element('bbDeviceTitle').textContent=index>=0?'Edit device':'Add device'; element('bbDeviceFields').replaceChildren(); element('bbDeviceError').textContent='';
-		fields(element('bbDeviceFields'),draft,()=>{}); element('bbDeviceDialog').showModal();
+		editObservation=found||null;
+		draft=index>=0 ? copy(config.devices[index]) : {mac:found ? found.mac : '',label:found ? found.name : '',manufacturer:'',model:'',firmware_version:'',bindkey:'',enabled:true,format:'',expose:[],rules:[]};
+		element('bbDeviceTitle').textContent=index>=0?ui.edit:found?ui.detected:ui.manualTitle;element('bbDeviceApply').textContent=index>=0?ui.update:ui.add;
+		element('bbDeviceFields').replaceChildren(); element('bbDeviceError').textContent='';element('bbSuggestAttributes').hidden=!found;
+		if(found&&index<0){try{await detectAttributes();}catch(error){element('bbDeviceError').textContent=error.message;}}
+		fields(element('bbDeviceFields'),draft,()=>{},'device'); element('bbDeviceDialog').showModal();
+	}
+	async function detectAttributes() {
+		const [result,supported]=await Promise.all([api('inspect',{observation:editObservation,device:draft}),api('attributes')]);
+		if(result.decode_status!=='ok')throw new Error(ui.detectionFailed+' '+(result.error||''));
+		const preferred=['temperature','humidity','battery_level'];
+		const names=Object.keys(result.measurements||{}).filter(name=>supported.attributes.includes(name));
+		names.sort((first,second)=>{const priority=name=>preferred.includes(name)?preferred.indexOf(name):preferred.length;return priority(first)-priority(second)||first.localeCompare(second);});
+		if(!names.length)throw new Error(ui.detectionFailed);
+		const used=new Set(draft.expose.map(item=>item.child).filter(child=>child!==null));
+		names.forEach(attribute=>{if(!draft.expose.some(item=>item.attribute===attribute)){let child=0;while(used.has(child))child++;draft.expose.push({attribute,child:child<=255?child:null,kind:null});used.add(child);}});
 	}
 	async function keepDevice() {
 		const candidate=copy(config); if(editIndex>=0)candidate.devices[editIndex]=draft;else candidate.devices.push(draft);
-		try {const data=await api('check',{config:candidate}); config=data.config; changed();renderDevices();renderFound();element('bbDeviceDialog').close();} catch(error){element('bbDeviceError').textContent=error.message;}
+		try {const data=await api('check',{config:candidate}); config=data.config; changed();renderDevices();renderFound();element('bbDeviceDialog').close();message(ui.pending);await switchTab('devices');element('bbSave').focus();} catch(error){element('bbDeviceError').textContent=error.message;}
 	}
 	function renderFound() {
 		const vendor=element('bbVendor').value, query=element('bbSearch').value.toLowerCase(), sort=element('bbSort').value;
@@ -747,7 +1217,7 @@ cat << 'EOF'
 		const found=observations.filter(device=>(!vendor||device.vendor===vendor)&&[device.mac,device.name,device.format,device.vendor].join(' ').toLowerCase().includes(query)&&(!element('bbNewOnly').checked||!config.devices.some(known=>normalize(known.mac)===device.mac)));
 		found.sort((first,second)=>['rssi','count'].includes(sort)?second[sort]-first[sort]:sort==='last_seen'?String(second[sort]).localeCompare(first[sort]):String(first[sort]).localeCompare(String(second[sort])));
 		const body=element('bbFound');body.replaceChildren();
-		found.forEach(device=>{const row=body.insertRow();cell(row,device.mac+(device.name?' / '+device.name:''),'bbMac');cell(row,device.vendor);cell(row,device.format||'Unrecognized');cell(row,device.rssi+' dBm');cell(row,device.phy.replace(/^phy_raw=\S+ /,''));cell(row,device.count+' / '+device.last_seen);const index=config.devices.findIndex(known=>normalize(known.mac)===device.mac);const actions=actionsCell(row,button(index>=0?'Edit':'Configure',()=>editDevice(index,device)),button('Inspect',()=>inspectDevice(device)));if(index>=0)actions.append(button('Remove',()=>removeDevice(index)));});
+		found.forEach(device=>{const row=body.insertRow();cell(row,device.mac+(device.name?' / '+device.name:''),'bbMac');cell(row,device.vendor);cell(row,device.format||'Unrecognized');cell(row,device.rssi+' dBm');cell(row,device.phy.replace(/^phy_raw=\S+ /,''));cell(row,device.count+' / '+device.last_seen);const index=config.devices.findIndex(known=>normalize(known.mac)===device.mac);const actions=actionsCell(row,button(index>=0?'Edit':'Configure',()=>run(()=>editDevice(index,device))),button('Inspect',()=>inspectDevice(device)));if(index>=0)actions.append(button('Remove',()=>removeDevice(index)));});
 		if(!body.rows.length)cell(body.insertRow(),'No matching observations').colSpan=7;
 	}
 	async function inspectDevice(device) {
@@ -774,19 +1244,21 @@ cat << 'EOF'
 		tab=next;app.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==tab);app.querySelectorAll('[data-tab]').forEach(control=>control.setAttribute('aria-selected',String(control.dataset.tab===tab)));if(tab==='discovery')poll();
 		if(tab==='yaml')yamlEditor.resize(true);
 		if(tab==='discovery'&&packetEditor)packetEditor.resize(true);
-		if(tab==='commands')await radioStatus();
+		if(tab==='commands'){Object.values(commandEditors).forEach(editor=>editor.resize(true));await radioStatus();}
 	}
 	function payload(){return {...(tab==='yaml'&&rawDirty?{yaml:getYaml()}:{config}),revision};}
 	function download(name,content,type){const url=URL.createObjectURL(new Blob([content],{type}));const link=document.createElement('a');link.href=url;link.download=name;link.click();URL.revokeObjectURL(url);}
 	async function load(){if(dirty&&!await confirmAction('Reload and discard unsaved changes?'))return;const data=await api('read');config=data.config;revision=data.revision;dirty=false;rawDirty=false;setYaml(data.yaml);element('bbDirty').textContent='';renderSettings();renderDevices();message('Configuration loaded');if(tab==='discovery')poll();}
 	element('bbReload').onclick=()=>run(load);
 	element('bbCheck').onclick=()=>run(async()=>{await api('check',payload());message('Configuration is valid');});
-	element('bbSave').onclick=()=>run(async()=>{const data=await api('save',payload());config=data.config;revision=data.revision;dirty=false;rawDirty=false;setYaml(data.yaml);element('bbDirty').textContent='Saved';renderSettings();renderDevices();message('Saved. Running settings are unchanged.');});
-	element('bbRestart').onclick=()=>run(async()=>{if(await confirmAction('Restart the service using the saved configuration?')){await api('restart');message('Service restarted');poll();}});
+	element('bbSave').onclick=()=>run(async()=>{const data=await api('save',payload());config=data.config;revision=data.revision;rawDirty=false;setYaml(data.yaml);renderSettings();renderDevices();try{await api('persist');}catch(error){changed();throw new Error('YAML saved; persistence not confirmed: '+error.message);}dirty=false;element('bbDirty').textContent=ui.saved;message('Saved. Running settings are unchanged. Restart from Status to activate devices/frontends.');});
 	element('bbLogging').onclick=()=>run(async()=>{await api('reload-logging');message('Logging reload requested');});
-	element('bbAdd').onclick=()=>{if(config)editDevice(-1);};element('bbDeviceApply').onclick=keepDevice;element('bbDeviceCancel').onclick=()=>element('bbDeviceDialog').close();
+	element('bbAdd').onclick=()=>{if(config)run(()=>editDevice(-1));};element('bbDeviceApply').onclick=keepDevice;element('bbDeviceCancel').onclick=()=>element('bbDeviceDialog').close();
 	element('bbDeviceApply').title=ht.keep;element('bbDeviceCancel').title=ht.cancel;
-	element('bbKeepHelp').textContent='Keep changes: '+ht.keep;element('bbCancelHelp').textContent='Cancel: '+ht.cancel;
+	element('bbAdd').textContent=ui.manual;element('bbDiscoverDevices').textContent=ui.discover;element('bbDeviceFilterLabel').textContent=ui.filter;
+	element('bbDiscoverDevices').onclick=()=>run(()=>switchTab('discovery'));
+	element('bbSuggestAttributes').textContent=ui.detect;element('bbSuggestAttributes').onclick=async()=>{const control=element('bbSuggestAttributes');control.disabled=true;try{await detectAttributes();element('bbDeviceFields').replaceChildren();fields(element('bbDeviceFields'),draft,()=>{},'device');element('bbDeviceError').textContent='';}catch(error){element('bbDeviceError').textContent=error.message;}finally{control.disabled=false;}};
+	element('bbParameterClose').textContent=ui.close;element('bbParameterClose').onclick=()=>element('bbParameterDialog').close();
 	element('bbPacketHint').textContent=ht.hint;element('bbPacketHelpTitle').textContent=ht.guide;
 	Object.entries(ht.fields).forEach(([key,text])=>{const term=document.createElement('dt');term.textContent=key;term.dataset.field=key;const description=document.createElement('dd');description.textContent=text;element('bbPacketFields').append(term,description);});
 	element('bbDiscoveryFilterNote').textContent=ht.discoveryFilters;element('bbOpenFilters').textContent=ht.filterLink;
@@ -804,7 +1276,19 @@ cat << 'EOF'
 	app.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.tagName==='INPUT')event.preventDefault();});
 	window.addEventListener('keydown',event=>{if(event.key==='Escape')hidePacketTooltip();});
 	window.addEventListener('scroll',hidePacketTooltip,true);window.addEventListener('resize',hidePacketTooltip);window.addEventListener('blur',hidePacketTooltip);
-	window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+	window.addEventListener('beforeunload',event=>{if(dirty||gattToken){event.preventDefault();event.returnValue='';}});
+	function startupControls() {
+		const startup=element('bbStartup'),form=app.closest('form');if(!startup||!form)return;
+		const advanced=element('bbStartupAdvanced');if(advanced)startup.append(advanced);
+		startup.append(element('bbStartupActions'));
+		const submit=form.querySelector('input[type=submit]');
+		if(submit){submit.value=ui.startup;submit.title=ui.startupConfirm;element('bbStartupActions').append(submit);}
+		form.addEventListener('submit',async event=>{event.preventDefault();if(dirty){message(ui.unsaved,true);element('bbSave').focus();return;}if(await confirmAction(ui.startupConfirm))form.submit();});
+		document.querySelectorAll('form').forEach(candidate=>{if(candidate.action===form.action+'?default')candidate.hidden=true;});
+		const startupHelp={enabled:['Service startup mode; saving this section restarts a running service.','Modalità di avvio del servizio; salvare questa sezione riavvia il servizio se attivo.'],store:['Configuration directory. Select a mounted persistent disk. Existing store contents are copied, not deleted; save startup settings and restart to use the new path.','Directory di configurazione. Scegli un disco persistente montato. Il contenuto esistente viene copiato, non eliminato; salva avvio/percorso e riavvia per usare il nuovo percorso.'],serial:['Initial serial path, used only for a new YAML file.','Seriale iniziale, usata solo per un nuovo YAML.'],baudrate:parameterHelp.baudrate,config_wait:['Boot wait in seconds for external resources; 0 means no wait.','Attesa al boot in secondi delle risorse esterne; 0 significa nessuna attesa.'],verbose:['Initial debug logging override; runtime logging is also configurable in Settings.','Override debug iniziale; il log runtime è configurabile anche in Settings.'],extra_args:['Extra daemon CLI arguments. They can override YAML settings; leave empty unless required.','Argomenti CLI aggiuntivi: possono sovrascrivere le impostazioni YAML. Lasciare vuoto se non necessari.']};
+		startup.querySelectorAll('input,select').forEach(control=>{const help=startupHelp[control.name];if(help)control.title=help[helpLanguage==='it'?1:0];});
+	}
+	if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startupControls,{once:true});else startupControls();
 	setInterval(()=>{if(tab==='discovery'&&!document.hidden)poll();},1200);
 	run(load);
 })();
@@ -812,6 +1296,7 @@ cat << 'EOF'
 EOF
 sec_end
 
+echo '<div id="bbStartupAdvanced">'
 sec_begin "$(lang de:"Erweitert" en:"Advanced")"
 cgi_print_radiogroup_active "verbose" "$BLE2UART_GATEWAY_VERBOSE" "" "$(lang de:"Debug-Protokoll" en:"Debug logging")"
 cat << EOF
@@ -819,3 +1304,4 @@ cat << EOF
 <p style="font-size:11px;">$(lang de:"Protokoll: Status -> Logs -> rc.ble2uart_gateway" en:"Log: Status -> Logs -> rc.ble2uart_gateway"): <code>/tmp/rc.ble2uart_gateway.log</code></p>
 EOF
 sec_end
+echo '</div>'

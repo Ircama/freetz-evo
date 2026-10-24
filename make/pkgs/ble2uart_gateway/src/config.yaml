@@ -1,0 +1,72 @@
+version: 1
+serial:
+  port: /dev/ttyACM0
+  baudrate: 115200
+  command_timeout_ms: 2000
+  reconnect_delay_ms: 3000
+  reset_on_open: false
+scanner:
+  filter_known_devices: true
+  phy_1m: true
+  phy_coded: true
+  window_1m: 320
+  window_coded: 64
+  active_scan: false
+  dup_filter: true
+  discard_random: false
+  discard_rpa: false
+  whitelist: []
+  blacklist: []
+devices: []
+rules: []
+frontends:
+  sqlite:
+    enabled: false
+    path: ''
+    batch_size: 100
+    queue_capacity: 1024
+    flush_interval_ms: 1000
+    busy_timeout_ms: 1000
+  influx:
+    enabled: false
+    endpoint: http://127.0.0.1:8181
+    database: ble
+    measurement: ble
+    token: ''
+    batch_size: 100
+    queue_capacity: 1024
+    flush_interval_ms: 5000
+    timeout_ms: 3000
+  mysensors:
+    enabled: true
+    bind: 127.0.0.1
+    port: 5003
+    node_id_base: 10
+  mqtt:
+    local_broker: false
+    domoticz_discovery: false
+    discovery_prefix: homeassistant
+    client_id: ble2uart-gateway
+    enabled: false
+    host: 127.0.0.1
+    port: 1883
+    base_topic: ble2uart-gateway
+    username: ''
+    password: ''
+    retain: true
+  matter:
+    domoticz_port: 0
+    bind: '::'
+    advertise: true
+    mdns_interface: ''
+    mdns_backend: auto
+    mdns_hostname: ''
+    enabled: false
+    port: 5541
+    store: ''
+log_level: info
+diagnostics:
+  tx_hex: false
+  rx_hex: false
+  decode: false
+  phy: false

@@ -167,9 +167,9 @@ pub struct DeviceConfig {
     /// listed are decoded but only kept in memory for rules.
     #[serde(default)]
     pub expose: Vec<ExposeConfig>,
-    /// Per-device derived states (door left open, stale values, ...).
-    #[serde(default)]
-    pub rules: Vec<RuleConfig>,
+    /// Per-device missing-reading monitors with independent HTTPS destinations.
+    #[serde(default,deserialize_with="crate::automation::deserialize_rules")]
+    pub rules: Vec<crate::automation::AutomationRule>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -189,6 +189,7 @@ impl DeviceMetadata {
         attribute.replace('_', " ")
     }
 
+    #[cfg(feature="matter")]
     pub fn resource_name(&self, attribute: &str) -> String {
         format!("{} {}", self.name, Self::measurement_name(attribute))
     }
@@ -230,26 +231,6 @@ pub struct ExposeConfig {
     pub child: Option<u8>,
     #[serde(default)]
     pub kind: Option<String>,
-}
-
-/// A derived state: a timer or a condition evaluated on the decoded values.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RuleConfig {
-    /// Name of the derived attribute, e.g. "door_timeout".
-    pub name: String,
-    #[serde(default)]
-    pub label: String,
-    /// Attribute the rule watches.
-    pub source: String,
-    /// Value of `source` that starts the rule (empty: any change).
-    #[serde(default)]
-    pub equals: String,
-    /// Seconds to wait before the derived attribute becomes true.
-    #[serde(default)]
-    pub after_s: u64,
-    /// When true the derived attribute mirrors `source == equals` (no timer).
-    #[serde(default)]
-    pub mirror: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -400,10 +381,12 @@ impl MdnsBackend {
 
 impl MatterConfig {
     /// Effective backend: `advertise: false` (legacy switch) disables DNS-SD.
+    #[cfg(any(feature="matter",test))]
     pub fn effective_mdns_backend(&self) -> MdnsBackend {
         if self.advertise { self.mdns_backend } else { MdnsBackend::Disabled }
     }
 
+    #[cfg(any(feature="matter",test))]
     pub fn effective_mdns_hostname(&self) -> String {
         if self.mdns_hostname.is_empty() { crate::profile::default_name() } else { self.mdns_hostname.clone() }
     }
@@ -486,13 +469,16 @@ pub struct Config {
     #[serde(default)]
     pub devices: Vec<DeviceConfig>,
     #[serde(default)]
-    pub rules: Vec<RuleConfig>,
-    #[serde(default)]
     pub frontends: Frontends,
     #[serde(default)]
     pub log_level: String,
     #[serde(default)]
     pub diagnostics: DiagnosticsConfig,
+    #[serde(default)]
+    #[serde(skip_serializing)]
+    pub automation: Option<crate::automation::LegacyAutomationConfig>,
+    #[serde(default)]
+    pub availability_state_file: String,
 }
 
 impl Default for Config {
@@ -504,7 +490,6 @@ impl Default for Config {
             serial: SerialConfig::default(),
             scanner: ScannerConfig::default(),
             devices: Vec::new(),
-            rules: Vec::new(),
             frontends: Frontends {
                 sqlite: crate::sqlite::SqliteConfig::default(),
                 influx: crate::influx::InfluxConfig::default(),
@@ -517,11 +502,37 @@ impl Default for Config {
             },
             log_level: "info".into(),
             diagnostics: DiagnosticsConfig::default(),
+            automation: None,
+            availability_state_file: String::new(),
         }
     }
 }
 
 impl Config {
+    pub fn prepare_availability(&mut self,path: &Path) -> Result<(),String> {
+        if let Some(legacy)=self.automation.take() {
+            if self.availability_state_file.is_empty() {self.availability_state_file=legacy.state_file;}
+            for device in &mut self.devices {
+                let address=parse_mac(&device.mac)?;
+                for old in &legacy.rules {
+                    if !old.mac.is_empty() && parse_mac(&old.mac)?!=address {continue;}
+                    if device.rules.iter().any(|rule|rule.id==old.id) {continue;}
+                    device.rules.push(crate::automation::AutomationRule {
+                        id:old.id.clone(),enabled:legacy.enabled&&old.enabled&&legacy.webhook.enabled,
+                        attribute:old.attribute.clone(),stale_after_s:old.stale_after_s,
+                        notify_recovery:old.notify_recovery,webhook:legacy.webhook.clone(),
+                        ..Default::default()
+                    });
+                }
+            }
+        }
+        if self.availability_state_file.is_empty() {
+            let absolute=if path.is_absolute() {path.to_owned()} else {std::env::current_dir().map_err(|error|error.to_string())?.join(path)};
+            self.availability_state_file=absolute.parent().unwrap_or(Path::new("/")).join("automation-state.json").to_string_lossy().into_owned();
+        }
+        Ok(())
+    }
+
     pub fn mac_filters(&self) -> Result<(bool, Vec<Vec<u8>>), String> {
         let whitelist = self.scanner.whitelist.iter().map(|value| parse_mac_prefix(value)).collect::<Result<Vec<_>, _>>()?;
         let blacklist = self.scanner.blacklist.iter().map(|value| parse_mac_prefix(value)).collect::<Result<Vec<_>, _>>()?;
@@ -552,6 +563,7 @@ impl Config {
     pub fn load(path: &Path, port_override: Option<&str>, baud_override: Option<u32>) -> Result<Config, String> {
         let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
         let mut config: Config = serde_yaml::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+        config.prepare_availability(path)?;
         if let Some(port) = port_override {
             if !port.is_empty() {
                 config.serial.port = port.to_string();
@@ -566,6 +578,12 @@ impl Config {
 
     pub fn validate(&self) -> Result<(), String> {
         crate::logger::parse_level(&self.log_level)?;
+        if self.devices.iter().map(|device|device.rules.len()).sum::<usize>()>4096 {
+            return Err("at most 4096 automation device/rule watches are supported".into());
+        }
+        if !self.availability_state_file.is_empty() && (!Path::new(&self.availability_state_file).is_absolute()||self.availability_state_file.chars().any(char::is_control)) {
+            return Err("availability state file must be an absolute path".into());
+        }
         if self.version != CONFIG_VERSION {
             return Err(format!(
                 "unsupported configuration version {} (this build understands {CONFIG_VERSION})",
@@ -598,6 +616,12 @@ impl Config {
             if !device.bindkey.is_empty() {
                 parse_key(&device.bindkey)?;
             }
+            if device.rules.len()>32 {return Err("at most 32 availability rules per device are supported".into());}
+            let mut rule_ids=std::collections::HashSet::new();
+            for rule in &device.rules {
+                rule.validate()?;
+                if !rule_ids.insert(&rule.id) {return Err("availability rule IDs must be unique within each device".into());}
+            }
             for expose in &device.expose {
                 if expose.attribute.trim().is_empty() {
                     return Err(format!("device {mac:02X?}: expose.attribute must not be empty"));
@@ -608,14 +632,6 @@ impl Config {
         if self.frontends.influx.enabled { self.frontends.influx.validate()?; }
         if self.frontends.sqlite.enabled { self.frontends.sqlite.validate()?; }
         if self.frontends.matter.enabled { self.frontends.matter.validate_mdns()?; }
-        for rule in self.rules.iter().chain(self.devices.iter().flat_map(|d| d.rules.iter())) {
-            if rule.name.trim().is_empty() || rule.source.trim().is_empty() {
-                return Err("every rule needs a name and a source attribute".into());
-            }
-            if !rule.mirror && rule.after_s == 0 {
-                return Err(format!("rule {}: after_s must be > 0 unless mirror is set", rule.name));
-            }
-        }
         if self.frontends.mqtt.enabled && self.frontends.mqtt.base_topic.trim().is_empty() {
             return Err("frontends.mqtt.base_topic must not be empty".into());
         }

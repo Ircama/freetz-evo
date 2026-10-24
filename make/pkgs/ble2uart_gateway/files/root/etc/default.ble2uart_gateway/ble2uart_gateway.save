@@ -1,10 +1,34 @@
 #!/bin/sh
 
 # Hook script called by the freetz configuration framework when the ble2uart_gateway
-# settings are saved. pkg_pre_save() runs before the values are stored
-# (validation only, it may abort the save), pkg_apply_save() runs afterwards.
+# settings are saved. The framework passes pending values in settings and runs
+# hooks in pipelines, so pre-save environment changes do not reach apply-save.
+
+BB_STORE_OLD=$(
+	[ -r /mod/etc/conf/ble2uart_gateway.cfg ] && . /mod/etc/conf/ble2uart_gateway.cfg
+	echo "${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
+)
 
 pkg_pre_save() {
+	local bb_pending bb_base
+	bb_base=/mod/etc/default.ble2uart_gateway/ble2uart_gateway.cfg
+	[ ! -r /mod/etc/conf/ble2uart_gateway.cfg ] || bb_base=/mod/etc/conf/ble2uart_gateway.cfg
+	bb_pending=$(mktemp /tmp/ble2uart_gateway-save.XXXXXX) || {
+		echo "Error: could not prepare pending gateway settings" >&2
+		return 1
+	}
+	if ! printf '%s\n' "$settings" | modconf merge "$bb_base" > "$bb_pending"; then
+		rm -f "$bb_pending"
+		echo "Error: could not load pending gateway settings" >&2
+		return 1
+	fi
+	if ! . "$bb_pending"; then
+		rm -f "$bb_pending"
+		echo "Error: could not read pending gateway settings" >&2
+		return 1
+	fi
+	rm -f "$bb_pending"
+
 	case "$BLE2UART_GATEWAY_BAUDRATE" in
 		''|*[!0-9]*)
 			echo "Error: the baud rate must be numeric" >&2
@@ -33,15 +57,6 @@ pkg_pre_save() {
 			esac
 			;;
 	esac
-
-	# Remember the store that is currently in use: pkg_apply_save() runs after
-	# the framework has written the new values and moves its content over, so a
-	# relocated store does not lose the devices and their bind keys.
-	BB_STORE_OLD=$(
-		[ -r /mod/etc/conf/ble2uart_gateway.cfg ] && . /mod/etc/conf/ble2uart_gateway.cfg
-		echo "${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
-	)
-	[ -n "$BB_STORE_OLD" ] || BB_STORE_OLD=/tmp/flash/ble2uart_gateway
 
 	if [ "$BLE2UART_GATEWAY_ENABLED" = "yes" ]; then
 		case "$BLE2UART_GATEWAY_STORE" in
@@ -76,6 +91,12 @@ pkg_pre_save() {
 }
 
 pkg_apply_save() {
+	if [ ! -r /mod/etc/conf/ble2uart_gateway.cfg ]; then
+		echo "Error: could not read saved gateway settings" >&2
+		return 1
+	fi
+	. /mod/etc/conf/ble2uart_gateway.cfg || return 1
+
 	# The store moved: take the configuration and the exposed-id state along.
 	if [ -n "$BB_STORE_OLD" ] && [ "$BB_STORE_OLD" != "$BLE2UART_GATEWAY_STORE" ] && [ -d "$BB_STORE_OLD" ]; then
 		umask 077

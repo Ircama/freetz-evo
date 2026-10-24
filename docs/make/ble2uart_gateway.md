@@ -1,7 +1,7 @@
 # ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3/SQLite)
   - Package: [master/make/pkgs/ble2uart_gateway/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/ble2uart_gateway/)
   - Steward: Ircama
-  - Provides: `/usr/bin/ble2uart-gateway`, init script `rc.ble2uart_gateway`, web page `/cgi-bin/conf/ble2uart_gateway`
+  - Provides: `/usr/bin/ble2uart-gateway`, init script `rc.ble2uart_gateway`, web page `/cgi-bin/conf/ble2uart_gateway`, read-only sensor dashboard `/cgi-bin/extra/ble2uart_gateway/portal` (standard freetz login)
   - Configuration: `/mod/etc/conf/ble2uart_gateway.cfg` (service) and `<store>/ble2uart_gateway.yaml` (devices, bind keys, rules, front-ends); default store `/tmp/flash/ble2uart_gateway`
   - Log: `/tmp/rc.ble2uart_gateway.log`
 
@@ -11,6 +11,27 @@ pvvx ADV_BLE2UART (`esp32-c3/ble50_scan`). It decodes BLE advertisements
 values through MySensors TCP (Domoticz), MQTT, a Matter bridge, InfluxDB 3 and
 an optional local SQLite history frontend.
 
+The expanded **Startup and storage** section displays the selected YAML path
+and lets you choose its directory. **Save configuration** saves the gateway
+draft without restarting and archives `/tmp/flash` using `modsave flash`; Freetz
+restores that archive at boot. The separate startup/storage save confirms a
+restart if the service is running. The misleading framework **Default** action
+is hidden; use **Status → restart** to activate saved gateway changes.
+
+**Devices** separates **Discover devices**, **Add manually** and the list filter.
+Discovery prefills supported attributes from the selected packet; after entering
+an encrypted device's bindkey, use **Detect attributes**. Device edits first enter
+the configuration draft and still require **Save configuration**. Frontend groups
+show their enabled state, put **Enabled** first and provide contextual **?** help.
+
+**Devices → Edit → Availability monitoring** manages simple per-device rules.
+Each rule has its own enable switch, missing-reading timeout, complete HTTPS
+ntfy/Gotify configuration and confirmed test button. No global ITTT/workflow
+engine or webhook controls appear in Settings. Persistent episode state prevents
+repeated stale/recovery alerts; older global configurations migrate to devices.
+See the [monitoring guide](../../make/pkgs/ble2uart_gateway/src/README.md#device-availability-monitoring)
+for retry/deduplication semantics and private CA support.
+
 The package documentation lives next to the sources:
 
   - [Freetz-EVO integration](../../make/pkgs/ble2uart_gateway/README.md): web
@@ -18,14 +39,32 @@ The package documentation lives next to the sources:
   - [Portable daemon](../../make/pkgs/ble2uart_gateway/src/README.md): the
     standalone `ble2uart-gateway` for ordinary Linux hosts, Cargo features,
     Matter DNS-SD backends, logging options.
+  - [ATC parameters and patches (Italian)](../../make/pkgs/ble2uart_gateway/ATC_PARAMETERS.md):
+    firmware C/JavaScript comparison, field-by-field examples, version/model
+    differences, persistence and codec compatibility.
+  - [ATC Construct schema review (Italian)](../../make/pkgs/ble2uart_gateway/ATC_CONSTRUCT_REVIEW.md):
+    native Xiaomi versus ATC profiles, required Python schema revisions,
+    missing command layouts and reproduced decoding errors.
+  - [ATC Python package (Italian)](../../atc_mi_interface/README.md):
+    declarative firmware layouts and one Bleak application API with native,
+    dedicated UART and shared daemon backends.
 
 Live diagnostic, GATT and TXADV commands are available through the **Commands**
 web tab or `ble2uart-gateway --command '<JSON>'`; both use the running daemon's
-serial link. Temporary commands pause/resume an active scan even after errors.
+serial link without stopping or restarting the service. ATC read/patch buttons
+send directly after confirmation; the patch is editable in Ace and request/
+response JSON is shown in read-only Ace views. GATT supports token-owned
+interactive sessions, full attribute
+discovery, arbitrary subscriptions, typed ATT completions and filtered
+notification request/reply exchanges. Scan, Discovery time and daemon-configured
+TXADV are suspended and restored on close, timeout or error. Codec-backed patches
+read/modify/verify configuration in one connection, including ATC `0x55`.
 TXADV start instead leaves scanning disabled until an explicit `scan-start`
 request (or service restart); TXADV stop alone never resumes it.
 See the [command reference](../../make/pkgs/ble2uart_gateway/src/README.md#firmware-commands-while-the-daemon-is-running)
-for the required `esp32-c3` firmware branch, payload limits and confirmation levels.
+for the required host-managed firmware features, payload limits and the
+ATC/Coded PHY example. ATT completion and actual Coded advertisement reception
+are distinct from the sensor's application response.
 
 ## Host build for testing
 
@@ -97,3 +136,19 @@ using `done.` as a success indicator; the staged executable is under
 SQLite is bundled and cross-compiled with the target C compiler; no SQLite
 server or target shared library is required. Configure its file path explicitly
 in Settings/YAML; see the [SQLite frontend guide](../../make/pkgs/ble2uart_gateway/src/README.md#sqlite-history).
+SQLite commits a full batch or flushes at the configured interval (default one
+second), not only when `batch_size` is reached. Queries of the live database see
+committed WAL rows even if the main `.db` modification time is older. Finish a
+long-lived read transaction to refresh its snapshot; use the SQLite backup API,
+not a copy of `.db` alone, to obtain a consistent database while recording.
+
+Optional **Settings → Frontends → SQLite → History maintenance** starts an
+internal maintenance thread, disabled by default. Per-measurement/MAC policies
+and all age bands are editable graphically. Temperature has progressive presets;
+battery/voltage use much coarser sampling. Recognized counters are discarded
+from consolidated history by default; per-attribute/MAC overrides are available.
+Other unconfigured readings and discrete states keep every sample. Consolidation retains real samples,
+without min/max columns, in related per-measurement series. Back up before
+enabling: old full frames are replaced and discarded samples cannot be restored.
+Use the schema-2 `history` view for both recent and consolidated readings; see
+the [maintenance guide](../../make/pkgs/ble2uart_gateway/src/README.md#progressive-history-maintenance).

@@ -8,7 +8,7 @@ make/pkgs/ble2uart_gateway/src/src/codec.rs
 
 make/pkgs/ble2uart_gateway/src/src/main.rs
 
-CODEC è un motore dichiarativo di encoding/decoding in Rust, ispirato a Construct. Non ha obiettivo di emulazione completa della libreria Python Construct e si limita alla compatibilità con i formati usati da `atc_mi_interface`.
+CODEC (codec.rs) è un motore dichiarativo di encoding/decoding in Rust, ispirato a Construct. Non ha obiettivo di emulazione completa della libreria Python Construct e si limita alla compatibilità con i formati usati da `atc_mi_interface`.
 
 ## 1. Come funziona oggi
 
@@ -19,7 +19,7 @@ Definizioni Python di atc_mi_interface basate su Construct
                          │
                          ▼
                 tools/atc2spec.py
-             conversione durante lo sviluppo
+             conversione durante lo sviluppo (build)
                          │
                          ▼
                      codec.yaml
@@ -30,7 +30,40 @@ Definizioni Python di atc_mi_interface basate su Construct
                   decoding / encoding
 ```
 
+`codec.yaml` è incorporato nell’eseguibile (tramite `include_str!`). Non occorre quindi distribuirlo separatamente. Un eventuale `<store>/codec.yaml` esterno può aggiungere o sovrascrivere definizioni del codec incorporato. Per applicarlo al daemon serve un riavvio; modificare direttamente la copia incorporata richiede invece una ricompilazione.
+
 Il `convertitore atc2spec.py` importa gli oggetti Construct e li traduce nel vocabolario dello `schema codec.yaml`.
+
+### Configurazione dei sensori via GATT
+
+Il codec include `cfg`, `trigger`, `comfort_values` e altre strutture di
+`atc_mi_construct.py`, ma **non** la tabella degli ID comando e delle slice
+di `atc_mi_config.py`. Non va quindi confuso con il protocollo GATT o con un
+catalogo completo dei comandi supportati dalle diverse versioni dei sensori.
+
+CLI e CGI usano lo stesso daemon per aprire una sessione host-managed,
+scoprire caratteristiche e descrittori, sottoscrivere notifiche, scrivere e
+attendere risposte nella stessa connessione. I comandi generici accettano
+byte grezzi oppure decodificano le risposte con una struttura del codec attivo;
+`patch` legge, modifica i soli campi richiesti, riscrive e verifica la risposta.
+
+Per ATC `0x55`, `codec: "cfg"` e `offset: 1` saltano l'ID comando nella
+notifica. `write_offset: 1` omette inoltre la versione firmware dalla
+struttura ricodificata: la scrittura contiene `55 + parametri`, non
+`55 + versione + parametri`. Questo corrisponde alla slice del client Python.
+Non si presume un handle fisso per UUID `1F1F`, ne' un CCCD adiacente.
+
+La decodifica GATT strutturata richiede il consumo completo dei byte.
+Prima di applicare una patch il daemon verifica anche che il codec ricostruisca
+esattamente il payload originale: code sconosciute, conversioni numeriche con
+perdita o campi non rappresentabili producono un errore, non una sovrascrittura.
+La decodifica degli advertisement mantiene invece la compatibilita' Construct
+preesistente, compresa l'accettazione dei byte finali.
+
+Vedere [sessioni e configurazione ATC](src/README.md#persistent-sessions-and-atc-configuration)
+per CLI, limiti, timeout, ripristino SCAN/TXADV e l'esempio Coded PHY. Gli schemi
+devono corrispondere al firmware installato; una risposta `0x55` corretta non
+dimostra da sola che gli advertisement siano ricevuti su PHY Coded.
 
 ### Perche' lo schema e' YAML e il risultato e' JSON?
 

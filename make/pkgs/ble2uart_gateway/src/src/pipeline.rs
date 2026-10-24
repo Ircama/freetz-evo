@@ -541,6 +541,7 @@ pub struct Gateway {
     pub mqtt: Option<crate::mqtt::MqttPublisher>,
     pub influx: Option<crate::influx::InfluxPublisher>,
     pub sqlite: Option<crate::sqlite::SqlitePublisher>,
+    pub automation: Option<crate::automation::Automation>,
     pub matter: Option<crate::matter::MatterPublisher>,
     /// Statistics for the log, so a silent gateway can be told apart from an
     /// empty radio.
@@ -575,7 +576,10 @@ impl Gateway {
             if config.frontends.matter.enabled {return Err("Matter support is not built into this binary".into());}
             None
         };
-        let gateway = Gateway { spec, registry, mysensors, mqtt, influx, sqlite, matter, decoded: 0, skipped: 0 };
+        let automation=if config.devices.iter().any(|device|device.enabled&&device.rules.iter().any(|rule|rule.enabled)) {
+            Some(crate::automation::Automation::start(&config.availability_state_file,&config.devices)?)
+        } else {None};
+        let gateway = Gateway { spec, registry, mysensors, mqtt, influx, sqlite, matter, automation, decoded: 0, skipped: 0 };
         if let Some(frontend) = &gateway.mysensors {
             frontend.present(&gateway.registry);
         }
@@ -648,6 +652,7 @@ impl Gateway {
         }
 
         let measures = measurements(&decoded);
+        if let Some(automation)=&self.automation {automation.observe(&mac,&measures);}
         if crate::logger::decode_enabled() {
             log::info!(target: "ble.decode", "mac={mac} wire_format={format} measurements=[{}]", measures.iter().map(|measure| format!("{}={}", measure.name, measure.text())).collect::<Vec<_>>().join(","));
         }

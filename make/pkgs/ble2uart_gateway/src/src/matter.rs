@@ -1,15 +1,19 @@
 use serde_json::Value;
 use std::collections::BTreeMap;
+#[cfg(any(feature="matter",test))]
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+#[cfg(feature="matter")]
 pub const VENDOR_CLUSTER: u32 = 0xFFF1FC00;
+#[cfg(any(feature="matter",test))]
 pub const JSON_CHUNK_BYTES: usize = 256;
 
 #[derive(Clone)]
 pub struct Snapshot {
     pub version: u32,
     pub value: Value,
+    #[cfg(any(feature="matter",test))]
     pub json: Vec<u8>,
 }
 
@@ -53,18 +57,21 @@ impl MatterPublisher {
             .unwrap_or(1);
         let mut value = value.clone();
         crate::pipeline::merge_latest_values(states.get(mac).map(|state| &state.value), &mut value);
+        #[cfg(any(feature="matter",test))]
         let json = serde_json::to_vec(&value).expect("JSON state serialization");
         states.insert(
             mac.into(),
             Snapshot {
                 version,
                 value,
+                #[cfg(any(feature="matter",test))]
                 json,
             },
         );
     }
 }
 
+#[cfg(any(feature="matter",test))]
 pub fn endpoint_ids(store: &Path, keys: &[String]) -> Result<BTreeMap<String, u16>, String> {
     use std::os::unix::fs::PermissionsExt;
     std::fs::create_dir_all(store).map_err(|error| error.to_string())?;
@@ -114,6 +121,7 @@ pub fn endpoint_ids(store: &Path, keys: &[String]) -> Result<BTreeMap<String, u1
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg(any(feature="matter",test))]
 pub enum Standard {
     Temperature,
     Humidity,
@@ -125,6 +133,7 @@ pub enum Standard {
     BatteryVoltage,
 }
 
+#[cfg(any(feature="matter",test))]
 impl Standard {
     pub fn for_attribute(name: &str) -> Option<Self> {
         match name {
@@ -142,6 +151,7 @@ impl Standard {
         }
     }
 
+    #[cfg(feature="matter")]
     pub fn cluster(self) -> u32 {
         match self {
             Self::Temperature => 0x0402,

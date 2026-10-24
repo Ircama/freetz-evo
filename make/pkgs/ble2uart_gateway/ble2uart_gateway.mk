@@ -126,8 +126,10 @@ $(PKG)_STAGING_SOURCES := \
 	$(BLE2UART_GATEWAY_MAKE_DIR)/files/root/etc/init.d/rc.ble2uart_gateway \
 	$(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/lib/cgi-bin/ble2uart_gateway.cgi \
 	$(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/lib/cgi-bin/ble2uart_gateway/api.cgi \
-	$(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/mode-yaml.js
-$(PKG)_STAGING_TARGET := $($(PKG)_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway.cgi
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/lib/cgi-bin/ble2uart_gateway/portal.cgi \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/mode-yaml.js \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/portal.css \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/portal.js
 
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES)
 	mkdir -p $(BLE2UART_GATEWAY_TARGET_DIR)/root
@@ -136,8 +138,8 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES)
 		$(BLE2UART_GATEWAY_DEST_DIR)/etc/init.d/rc.ble2uart_gateway \
 		$(BLE2UART_GATEWAY_DEST_DIR)/etc/default.ble2uart_gateway/ble2uart_gateway.save \
 		$(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway.cgi \
-		$(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway/api.cgi
-
+                $(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway/api.cgi \
+                $(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway/portal.cgi
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:
