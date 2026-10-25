@@ -1,0 +1,11 @@
+--- src/gl/Makefile.in
++++ src/gl/Makefile.in
+@@ -3974,7 +3974,7 @@
+ unistringtests_libunistring_LTLIBOBJS = @unistringtests_libunistring_LTLIBOBJS@
+ AUTOMAKE_OPTIONS = 1.14 gnits subdir-objects
+ # No GNU Make output.
+-SUBDIRS = . tests
++SUBDIRS = .
+ TESTS_ENVIRONMENT = 
+ noinst_HEADERS = 
+ noinst_LIBRARIES = 

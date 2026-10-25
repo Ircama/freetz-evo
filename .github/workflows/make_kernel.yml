@@ -7,12 +7,13 @@ on:
       - '.github/workflows/make_kernel.yml'
   schedule:
     - cron: '00 15 28 * *'
+      timezone: "Etc/GMT-5"
   workflow_dispatch:
     inputs:
       fos:
         description: "FOS Version to build"
         required: true
-        default: "08_2X"
+        default: "08_5X"
         type: choice
         options:
           - "freetz_org"
@@ -76,7 +77,7 @@ jobs:
         id: parse
         run: |
           FOS="${{ github.event.inputs.fos }}"
-          [ -z "$FOS" ] && FOS="08_2X"
+          [ -z "$FOS" ] && FOS="08_5X"
           [ "$FOS" = "alles" ] && FOS="$(sed -rn "s/^config FREETZ_AVM_HAS_FIRMWARE_//p" config/avm/availability.in)"
           [ "$FOS" = "freetz_org" ] && FOS="$(sed -rn "s/^config FREETZ_AVM_HAS_FIRMWARE_(0[456])/\1/p" config/avm/availability.in) 07_0X 07_1X"
           [ "$FOS" = "freetz-ng" ] && FOS="07_2X 07_5X $(sed -rn "s/^config FREETZ_AVM_HAS_FIRMWARE_(0[89])/\1/p" config/avm/availability.in)"

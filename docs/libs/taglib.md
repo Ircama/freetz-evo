@@ -1,4 +1,4 @@
-# taglib (libtag.so) 2.3
+# taglib (libtag.so) - DEPRECATED 2.3
   - Homepage: [https://taglib.org/](https://taglib.org/)
   - Changelog: [https://github.com/taglib/taglib/releases](https://github.com/taglib/taglib/releases)
   - Repository: [https://github.com/taglib/taglib](https://github.com/taglib/taglib)

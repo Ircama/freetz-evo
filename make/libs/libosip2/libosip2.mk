@@ -16,7 +16,7 @@ $(PKG)_PARSER_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libosipparser2.so.$($(PKG)_LIB
 
 $(PKG)_DEPENDS_ON += config-host
 
-$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./scripts)
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./scripts/)
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static

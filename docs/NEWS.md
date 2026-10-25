@@ -1,5 +1,22 @@
 # Neuigkeiten
 
+### 2026-10-25
+Das menuconfig von kconfig nutzt jetzt das neue Theme `dark`, vorher war es `bluetitle`.<br>
+Es stehen 5 Themes zur Auswahl: `menuconfig` - `Toolchain options` - `Theme for menuconfig`<br>
+
+  - Siehe [28a3e561](https://github.com/Freetz-NG/freetz-ng/commit/28a3e5611371dbfbb361db7f51e9410a87529d4c)<br>
+
+### 2026-10-20
+Es gibt jetzt keine host-tools mehr die ausschliesslich 32-Bit unterstützen. Somit kann alles auch unter aarch64 genutzt werden.<br>
+Siehe<br>
+
+   - [a609823d](https://github.com/Freetz-NG/freetz-ng/commit/a609823d9cade184862e15fa4a18fb721ce0b8a9)<br>
+   - [ee4d76a7](https://github.com/Freetz-NG/freetz-ng/commit/ee4d76a790142f424f4a0b79967877e20adcf422)<br>
+
+### 2026-10-18
+Im menuconfig können bereits manche Fritzos 8.5x ausgwählt werden. Diese sind NICHT GETESTET.<br>
+Außerdem passen viele Patches noch nicht und brechen ab. Workaround: Problem beheben oder Patch deselektieren!<br>
+
 ### 2026-09-29
 AVM hat die Recovery für 1700, 2700 und 5690xgs gepimpt.
 Diese unterstützen nun U-Boot und recovern via IPv6.<br>

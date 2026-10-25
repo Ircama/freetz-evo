@@ -109,6 +109,7 @@ resmnt() {
 	mkdir $OUTER
 	[ -d /wrapper ] && fst=yaffs2 || fst=squashfs
 	[ "$FREETZ_TYPE_CABLE" != "y" ] && DEV=mtdblock || DEV=mmcblk0p
+	[ ! -b "/dev/$DEV$DEAD" ] && DEV=ubiblock0_ && DEAD="$(grep -l "^avm_filesys_${LFS_DEAD}$" /sys/class/ubi/ubi0/ubi0_*/name 2>/dev/null | sed 's|.*_||;s|/.*||')"
 	mount -t $fst -o ro /dev/$DEV$DEAD $OUTER || mount -o ro /dev/$DEV$DEAD $OUTER
 	MNT=$OUTER
 

@@ -1,7 +1,7 @@
 --- Makefile
 +++ Makefile
-@@ -16,7 +16,7 @@
- PREFIX = /usr/local
+@@ -22,7 +22,7 @@
+ UnixWare-gcc OpenUNIX-gcc HP-UX-gcc SunOS-gcc
  
  all:
 -	${CC} ${CFLAGS} -Wall ${LIBS} -o empty empty.c

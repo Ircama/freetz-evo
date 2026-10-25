@@ -5,8 +5,8 @@
  PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris
  
 +# Lua version and release.
-+export V=5.4
-+export R=$V.9
++export V=5.5
++export R=$V.1
 +
  # What to install.
  TO_BIN= lua luac
@@ -17,8 +17,8 @@
  TO_MAN= lua.1 luac.1
  
 -# Lua version and release.
--V= 5.4
--R= $V.9
+-V= 5.5
+-R= $V.1
 -
  # Targets start here.
  all:	$(PLAT)
@@ -87,10 +87,10 @@
  
  test:
  	./$(LUA_T) -v
-@@ -123,10 +132,10 @@
- Linux linux:	linux-noreadline
+@@ -121,10 +130,10 @@
+ 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_IOS"
  
- linux-noreadline:
+ Linux linux:
 -	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl"
 +	$(MAKE) $(ALL) SYSCFLAGS+="-DLUA_USE_LINUX" SYSLIBS="-Wl,-E -ldl"
  
@@ -99,4 +99,4 @@
 +	$(MAKE) $(ALL) SYSCFLAGS+="-DLUA_USE_LINUX -DLUA_USE_READLINE" SYSLIBS="-Wl,-E -ldl -lreadline"
  
  Darwin macos macosx:
- 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX -DLUA_USE_READLINE" SYSLIBS="-lreadline"
+ 	$(MAKE) $(ALL) SYSCFLAGS="-DLUA_USE_MACOSX" SYSLIBS="-lreadline"

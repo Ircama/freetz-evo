@@ -1,3 +1,23 @@
+choice
+	prompt "MbedTLS version"
+	default FREETZ_MBEDTLS_VERSION_306
+	default FREETZ_MBEDTLS_VERSION_228
+	default FREETZ_MBEDTLS_VERSION_207
+
+	config FREETZ_MBEDTLS_VERSION_207
+		bool "2.7 - DEPRECATED"
+		depends on  FREETZ_TARGET_GCC_4_MAX && !FREETZ_SYSTEM_TYPE_PUMA6
+
+	config FREETZ_MBEDTLS_VERSION_228
+		bool "2.28 - DEPRECATED"
+		depends on !FREETZ_TARGET_GCC_4_MAX ||  FREETZ_SYSTEM_TYPE_PUMA6
+
+	config FREETZ_MBEDTLS_VERSION_306
+		bool "3.6"
+		depends on !FREETZ_TARGET_GCC_4_MAX
+
+endchoice # "MbedTLS version"
+
 config FREETZ_LIB_libmbedcrypto
 	bool "mbedCrypto (libmbedcrypto.so)"
 	default n
@@ -22,26 +42,6 @@ config FREETZ_LIB_libmbedtls
 config FREETZ_LIB_libmbedx509
 	bool "mbedX.509 (libmbedx509.so)"
 	default n
-
-choice
-	prompt "MbedTLS version"
-	default FREETZ_MBEDTLS_VERSION_306
-	default FREETZ_MBEDTLS_VERSION_228
-	default FREETZ_MBEDTLS_VERSION_207
-
-	config FREETZ_MBEDTLS_VERSION_207
-		bool "2.7 - DEPRECATED"
-		depends on  FREETZ_TARGET_GCC_4_MAX && !FREETZ_SYSTEM_TYPE_PUMA6
-
-	config FREETZ_MBEDTLS_VERSION_228
-		bool "2.28 - DEPRECATED"
-		depends on !FREETZ_TARGET_GCC_4_MAX ||  FREETZ_SYSTEM_TYPE_PUMA6
-
-	config FREETZ_MBEDTLS_VERSION_306
-		bool "3.6"
-		depends on !FREETZ_TARGET_GCC_4_MAX
-
-endchoice # "MbedTLS version"
 
 config FREETZ_MBEDTLS_SHORT_VERSION
 	string
@@ -84,5 +84,4 @@ config FREETZ_MBEDTLS_VERSION_306_MAX
 	depends on \
 		FREETZ_MBEDTLS_VERSION_306 || \
 		FREETZ_MBEDTLS_VERSION_228_MAX
-
 

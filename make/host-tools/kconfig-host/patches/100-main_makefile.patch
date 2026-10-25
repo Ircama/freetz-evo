@@ -10,7 +10,7 @@ The only manual changes:
 +++ Makefile
 @@ -0,0 +1,101 @@
 +VERSION = 7
-+PATCHLEVEL = 2
++PATCHLEVEL = 3
 +SUBLEVEL = 0
 +EXTRAVERSION =
 +NAME = "Linux for Workgroups"

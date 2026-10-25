@@ -1,12 +1,12 @@
 name: make_precompiled
 
 on:
-  pull_request:
-    branches: [ master ]
-    paths:
-      - 'make/pkgs/**'
-      - 'make/libs/**'
-      - '!.github/**'
+# pull_request:
+#   branches: [ master ]
+#   paths:
+#     - 'make/pkgs/**'
+#     - 'make/libs/**'
+#     - '!.github/**'
   push:
     branches: [ master ]
     paths:

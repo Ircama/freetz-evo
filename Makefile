@@ -288,13 +288,6 @@ DLCHG:=$(shell echo 'y' ; sed 's/^FREETZ_TOOLCHAIN_CCACHE=.*/\# FREETZ_TOOLCHAIN
 $(warning You are running WSL, ccache automatically disabled.)
 endif
 endif
-# check cpu for aarch64
-ifeq ($(shell uname -m),aarch64)
-ifeq ($(FREETZ_AVM_KERNEL_CONFIG_AREA_KNOWN),y)
-DLCHG:=y
-$(warning You have an aarch64 CPU+OS and so you can not compile and run 32-bit code, required by yf-akcarea-host which is used for this avm device.)
-endif
-endif
 # check gcc for ccache
 ifeq ($(FREETZ_TOOLCHAIN_CCACHE),y)
 ifneq ($(FREETZ_DOWNLOAD_TOOLCHAIN),y)
@@ -582,7 +575,7 @@ $(patsubst %,%-recompile,$(TOOLS)): %-recompile : %-distclean %-precompiled
 $(patsubst %,%-fixhardcoded,$(TOOLS)): %-fixhardcoded : 
 
 tools: $(DL_DIR) $(SOURCE_DIR_ROOT) $(TOOLS_STAGING_DIR) $(filter-out $(TOOLS_CONDITIONAL),$(TOOLS))
-tools-all: $(DL_DIR) $(SOURCE_DIR_ROOT) $(TOOLS_STAGING_DIR) $(filter-out $(if $(HOST_RUN32BIT),,$(TOOLS_32BIT_ONLY)) $(TOOLS_TARXZBUNDLE),$(TOOLS))
+tools-all: $(DL_DIR) $(SOURCE_DIR_ROOT) $(TOOLS_STAGING_DIR) $(filter-out $(TOOLS_TARXZBUNDLE),$(TOOLS))
 tools-allexcept-local: $(DL_DIR) $(SOURCE_DIR_ROOT) $(TOOLS_STAGING_DIR) $(filter-out $(TOOLS_BUILD_LOCAL),$(TOOLS))
 tools-distclean-local: $(patsubst %,%-distclean,$(filter-out $(TOOLS_TARXZBUNDLE),$(TOOLS_BUILD_LOCAL)))
 tools-cacheclean: $(TOOLS_CACHECLEAN)

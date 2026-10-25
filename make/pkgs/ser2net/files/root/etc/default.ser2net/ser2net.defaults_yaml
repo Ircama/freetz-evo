@@ -1,0 +1,9 @@
+%YAML 1.1
+---
+
+#connection: &mytelnet
+#  accepter: telnet(rfc2217),tcp,2001
+#  connector: serialdev,/dev/ttyUSB0,19200n81 local
+
+define: &confver 1.0
+

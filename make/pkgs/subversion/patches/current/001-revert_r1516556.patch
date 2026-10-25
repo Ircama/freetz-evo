@@ -2,7 +2,7 @@ Revert http://svn.apache.org/viewvc?view=revision&revision=r1516556 as it doesn'
 
 --- subversion/svnserve/svnserve.c
 +++ subversion/svnserve/svnserve.c
-@@ -666,9 +666,8 @@
+@@ -686,9 +686,8 @@
    const char *contents = apr_psprintf(pool, "%" APR_PID_T_FMT "\n",
                                               getpid());
  

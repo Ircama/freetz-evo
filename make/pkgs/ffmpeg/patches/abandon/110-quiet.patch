@@ -1,6 +1,6 @@
 --- configure
 +++ configure
-@@ -4195,6 +4195,9 @@
+@@ -4200,6 +4200,9 @@
          ;;
          --quiet|-q) quiet=yes
          ;;

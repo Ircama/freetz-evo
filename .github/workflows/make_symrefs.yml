@@ -7,12 +7,13 @@ on:
       - '.github/workflows/make_symrefs.yml'
   schedule:
     - cron: '00 15 14 * *'
+      timezone: "Etc/GMT-5"
   workflow_dispatch:
     inputs:
       fos:
         description: "FOS Version to build"
         required: true
-        default: "08_2X"
+        default: "08_5X"
         type: choice
         options:
           - "alles"
@@ -61,7 +62,7 @@ jobs:
         id: parse
         run: |
           FOS="${{ github.event.inputs.fos }}"
-          [ -z "$FOS" ] && FOS="08_2X"
+          [ -z "$FOS" ] && FOS="08_5X"
           [ "$FOS" = "alles" ] && FOS="07_5X $(sed -rn "s/^config FREETZ_AVM_HAS_FIRMWARE_(0[89])/\1/p" config/avm/availability.in)"
           [ "$FOS" == "Fos07" ] && FOS="07_5X"
           [ "$FOS" != "${FOS#Fos}" ] && FOS="$(sed -rn "s/^config FREETZ_AVM_HAS_FIRMWARE_(${FOS#Fos})/\1/p" config/avm/availability.in)"

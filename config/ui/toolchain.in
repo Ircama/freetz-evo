@@ -1537,5 +1537,44 @@ config FREETZ_TOOLS_KCONFIG_OLDSCHOOL
 		Not only select+exit+help buttons at bottom
 		but additional useless load+save buttons.
 
+choice
+
+	prompt "Theme for menuconfig"
+		default FREETZ_TOOLS_KCONFIG_THEME_DARK
+		help
+			Available themes are:
+			- dark       => charcoal background with cyan accents. (freetz default)
+			- mono       => selects colors suitable for monochrome displays
+			- blackbg    => selects a color scheme with black background
+			- classic    => theme with blue background. The classic look
+			- bluetitle  => a LCD friendly version of classic. (default)
+
+	config FREETZ_TOOLS_KCONFIG_THEME_DARK
+		bool "dark"
+		help
+			charcoal background with cyan accents. (freetz default)
+
+	config FREETZ_TOOLS_KCONFIG_THEME_MONO
+		bool "mono"
+		help
+			selects colors suitable for monochrome displays
+
+	config FREETZ_TOOLS_KCONFIG_THEME_BLACKBG
+		bool "blackbg"
+		help
+			selects a color scheme with black background
+
+	config FREETZ_TOOLS_KCONFIG_THEME_CLASSIC
+		bool "classic"
+		help
+			theme with blue background. The classic look
+
+	config FREETZ_TOOLS_KCONFIG_THEME_BLUETITLE
+		bool "bluetitle"
+		help
+			a LCD friendly version of classic. (kconfig default)
+
+endchoice # "Theme for menuconfig"
+
 endmenu # "Toolchain options" #
 

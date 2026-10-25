@@ -62,13 +62,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[bat 0.26.1](bat.md)<a id='bat'></a>**<br>
 
-  * **[Bftpd 6.6](bftpd.md)<a id='bftpd'></a>**<br>
+  * **[Bftpd 6.7](bftpd.md)<a id='bftpd'></a>**<br>
     Small FTP Server
 
   * **<u>bfusb: AVM BlueFRITZ! USB stick support (binary only)</u><a id='bfusb'></a>**<br>
     This package adds support for the AVM BlueFRITZ! USB stick.
 
-  * **[BIND 9.11.37/9.20.29](bind.md)<a id='bind'></a>**<br>
+  * **[BIND 9.11.37/9.20.30](bind.md)<a id='bind'></a>**<br>
     BIND is a suite of software for interacting with the Domain Name System (DNS). The name BIND stands for "Berkeley Internet Name Daemon".
 
   * **[Bip 0.9.2 - DEPRECATED](bip.md)<a id='bip'></a>**<br>
@@ -89,8 +89,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[br2684ctl (binary only) - DEPRECATED](br2684ctl.md)<a id='br2684ctl'></a>**<br>
     ATM Ethernet bridging configuration utility
 
-  * **[bridge-utils 1.4 (binary only) - DEPRECATED](bridge-utils.md)<a id='bridge-utils'></a>**<br>
-    This package contains utilities for configuring the Linux ethernet bridge. The Linux ethernet bridge can be used for connecting multiple ethernet devices together. The connection is fully transparent: hosts connected to one ethernet device see hosts connected to the other ethernet devices directly. Authors: Lennert Buytenhek <buytenh@gnu.org>
+  * **[bridge-utils 1.7.1 (binary only)](bridge-utils.md)<a id='bridge-utils'></a>**<br>
+    This package contains utilities for configuring the Linux ethernet bridge. The Linux ethernet bridge can be used for connecting multiple ethernet devices together. The connection is fully transparent: hosts connected to one ethernet device see hosts connected to the other ethernet devices directly.
 
   * **[broot 1.56.4](broot.md)<a id='broot'></a>**<br>
     broot utility package built from source using Rust/Cargo.
@@ -106,7 +106,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[CA-bundle 2026-09-25](ca-bundle.md)<a id='ca-bundle'></a>**<br>
+  * **[CA-bundle 2026-10-20](ca-bundle.md)<a id='ca-bundle'></a>**<br>
     The Mozilla CA certificate store in PEM format, see https://www.curl.se/docs/caextract.html Size of uncompressed file is about 250 KB.
 
   * **[caddy 2.11.2 (binary only)](caddy.md)<a id='caddy'></a>**<br>
@@ -148,7 +148,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Ctorrent dnh3.3.2 (binary only) - DEPRECATED](ctorrent.md)<a id='ctorrent'></a>**<br>
     CTorrent is a BitTorrent client written in the C programming language, known to be a very robust and mature programming language, which produces fast and optimized application.
 
-  * **[Curl 8.12.1/8.22.0 (binary only)](curl.md)<a id='curl'></a>**<br>
+  * **[Curl 8.12.1/8.23.0 (binary only)](curl.md)<a id='curl'></a>**<br>
     Curl is a command line tool for transferring files with URL syntax, supporting FTP, FTPS, HTTP, HTTPS, GOPHER, TELNET, DICT, FILE and LDAP. Curl supports HTTPS certificates, HTTP POST, HTTP PUT, FTP uploading, kerberos, HTTP form based upload, proxies, cookies, user+password authentication, file transfer resume, http proxy tunneling and a busload of other useful tricks.
 
   * **<u>CurlFtpFS 0.9.2 - DEPRECATED</u><a id='curlftpfs'></a>**<br>
@@ -218,10 +218,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[emailrelay: E-MailRelay 1.9 - DEPRECATED](emailrelay.md)<a id='emailrelay'></a>**<br>
     E-MailRelay is a simple store-and-forward message transfer agent and proxy server. It runs on Unix-like operating systems (including Linux), and on Windows. When used as proxy server the E-MailRelay program (emailrelay) runs in the background and accepts e-mail from local e-mail client programs (KMail, Outlook etc.) or from the outside world, using the SMTP protocol. As soon as an e-mail message is received it is forwarded on to the next SMTP server for onward delivery. This becomes more useful when you add in your own message processing: as each message is received it can be passed one of your programs for editing, filtering, encrypting etc. When used as a store-and-forward transfer agent E-Mail- Relay runs in two modes: the storage daemon part, and the forwarding agent. The storage daemon waits for incoming mail and stores anything it receives in a spool directory. As a forwarding agent E-MailRelay pulls messages out of the	spool directory and passes them on to a remote server -- perhaps your ISP mail server. E-MailRelay can also run as a POP3 server so that e-mail client programs can read the spooled messages.
 
-  * **[Empty 0.6.15b (binary only) - DEPRECATED](empty.md)<a id='empty'></a>**<br>
+  * **[Empty 0.6.23d (binary only) - DEPRECATED](empty.md)<a id='empty'></a>**<br>
     empty is an utility that provides an interface to execute and/or interact with processes under pseudo-terminal sessions (PTYs). This tool is definitely useful in programming of shell scripts designed to communicate with interactive programs like telnet, ssh, ftp, etc. In some cases, empty can be the simplest replacement for TCL/expect or other similar programming tools.
 
-  * **[endlessh 1.0](endlessh.md)<a id='endlessh'></a>**<br>
+  * **[endlessh 1.1](endlessh.md)<a id='endlessh'></a>**<br>
     Endlessh is an SSH tarpit that very slowly sends an endless, random SSH banner. It keeps SSH clients locked up for hours or even days at a time. The purpose is to put your real SSH server on another port and then let the script kiddies get stuck in this tarpit instead of bothering a real server.
 
   * **[eSpeak 1.48.04 (binary only) - DEPRECATED](espeak.md)<a id='espeak'></a>**<br>
@@ -231,7 +231,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### F
 
-  * **[FFmpeg 5.1.4/7.1.1](ffmpeg.md)<a id='ffmpeg'></a>**<br>
+  * **[FFmpeg 5.1.10/7.1.5](ffmpeg.md)<a id='ffmpeg'></a>**<br>
     FFmpeg is a complete, cross-platform solution to record, convert and stream audio and video.
 
   * **[Fontconfig 2.17.1/2.18.3 (binary only)](fontconfig.md)<a id='fontconfig'></a>**<br>
@@ -269,7 +269,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Ghostscript fonts 8.11 (binary only) - DEPRECATED</u><a id='ghostscript-fonts'></a>**<br>
     This package provides the Ghostscript fonts.
 
-  * **[Git 2.26.2/2.55.0](git.md)<a id='git'></a>**<br>
+  * **[Git 2.26.2/2.56.0](git.md)<a id='git'></a>**<br>
     Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
   * **[gitui 0.28.1](gitui.md)<a id='gitui'></a>**<br>
@@ -284,11 +284,14 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>gnu-make: Make 4.2.1/4.4.1 (binary only)</u><a id='gnu-make'></a>**<br>
     Make is a tool which controls the generation of executables and other non-source files of a program from the program's source files.
 
-  * **[GnuTLS 3.7.8 (binary only) - DEPRECATED](gnutls.md)<a id='gnutls'></a>**<br>
+  * **[GnuTLS 3.7.11/3.8.13 (binary only)](gnutls.md)<a id='gnutls'></a>**<br>
     GnuTLS is a project that aims to develop a library which provides a secure layer, over a reliable transport layer. Currently the GnuTLS library implements TLS 1.3, 1.2, 1.1, 1.0 protocols and SSL 3.0.
 
   * **<u>gocr 0.49 (binary only) - DEPRECATED</u><a id='gocr'></a>**<br>
     GOCR is an optical character recognition program, released under the GNU General Public License. It reads images in many formats and outputs a text file.
+
+  * **[Grafana 13.2.4](grafana.md)<a id='grafana'></a>**<br>
+    Cross-compiles the OSS backend and installs the matching official frontend assets. The build downloads the Go 1.26.9 toolchain. Uses the bundled C SQLite driver through CGO, including on MIPS where the upstream pure-Go SQLite driver is not supported. Requires persistent USB storage and substantial free RAM (upstream recommends at least 512 MB). Externalize the binary and web assets: they are much too large for normal router flash memory. Configure through the Freetz web interface; Grafana listens on port 3000. The service is disabled by default. Keep it on a trusted LAN. See https://grafana.com/oss/grafana/
 
   * **[gum 0.17.0 (binary only)](gum.md)<a id='gum'></a>**<br>
     This package cross-compiles the upstream Go sources and installs the gum executable on the target. Can be externalized to save flash memory.
@@ -348,7 +351,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[IGMPproxy 0.4](igmpproxy.md)<a id='igmpproxy'></a>**<br>
     IGMPproxy is a simple dynamic Multicast Routing Daemon using only IGMP signalling. It's intended for simple forwarding of Multicast traffic between networks.
 
-  * **[ImageMagick 7.1.0-62/7.1.2-32 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
+  * **[ImageMagick 7.1.0-62/7.1.2-34 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
     ImageMagick is a robust collection of tools and libraries to read, write, and manipulate an image in many image formats, including popular formats like TIFF, JPEG, PNG, PDF, PhotoCD, and GIF. With ImageMagick, you can create images dynamically, making it suitable for Web applications. You can also resize, rotate, sharpen, color-reduce, or add special effects to an image and save your completed work in many different image formats. Image processing operations are available from the command line as well as through C, C++, and PERL-based programming interfaces.
 
   * **[Inadyn-mt 02.28.10 - DEPRECATED](inadyn-mt.md)<a id='inadyn-mt'></a>**<br>
@@ -434,7 +437,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[lnav-rs 0.1.0](lnav-rs.md)<a id='lnav-rs'></a>**<br>
     lnav-rs utility package built from source using Rust/Cargo.
 
-  * **[Lua 5.1.5/5.4.9 (binary only)](lua.md)<a id='lua'></a>**<br>
+  * **[Lua 5.1.5/5.5.1 (binary only)](lua.md)<a id='lua'></a>**<br>
     Lua Scripting Language. Lua is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. Lua combines simple procedural syntax with powerful data description constructs based on associative arrays and extensible semantics. Lua is dynamically typed, runs by interpreting bytecode with a register-based virtual machine, and has automatic memory management with incremental garbage collection, making it ideal for configuration, scripting, and rapid prototyping.
 
   * **[Lynx 2.9.3 (binary only)](lynx.md)<a id='lynx'></a>**<br>
@@ -492,7 +495,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[nagios 2.11 (binary only) - DEPRECATED](nagios.md)<a id='nagios'></a>**<br>
     Nagios is an Open Source host, service and network monitoring program.
 
-  * **[Nano 9.2 (binary only)](nano.md)<a id='nano'></a>**<br>
+  * **[Nano 9.2/9.3 (binary only)](nano.md)<a id='nano'></a>**<br>
     GNU GPL'd Pico clone with more functionality. GNU nano is a small and friendly text editor. Besides basic text editing, nano offers many extra features like an interactive search and replace, go to line and column number, auto-indentation, feature toggles and filename tab completion. The original goal for nano was a complete bug-for-bug compatible emulation of Pico, but nano's current goal is to be as compatible as possible while offering a superset of Pico's functionality. IMPORTANT NOTES: 1.) Selecting any option besides "Tiny binary" will make the nano binary bigger. The range is somewhere between 142 KB and 249 KB, depending on the options chosen. 2.) Please also be aware of the fact that changing any feature options results in an automatic rebuild of the package - just in case you were wondering. 3.) Note that UTF8 support and spell checking is disabled by default.
 
   * **<u>nc6 1.0 (binary only) - DEPRECATED</u><a id='nc6'></a>**<br>
@@ -537,7 +540,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>ngircd 22 - DEPRECATED</u><a id='ngircd'></a>**<br>
     ngIRCd is an Open Source server for the Internet Relay Chat (IRC), which is developed and published under the terms of the GNU General Public Licence (URL: http://www.gnu.org/licenses/gpl.html). ngIRCd means "next generation IRC daemon", it's written from scratch and not deduced from the "grandfather of IRC daemons", the daemon of the IRCNet. For documentation see: http://ngircd.barton.de/documentation.php.de
 
-  * **[Nmap 4.76/5.51/7.991 (binary only)](nmap.md)<a id='nmap'></a>**<br>
+  * **[Nmap 4.76/5.51/7.992 (binary only)](nmap.md)<a id='nmap'></a>**<br>
     Nmap ("Network Mapper") is a free and open source (license) utility for network exploration or security auditing. Many systems and network administrators also find it useful for tasks such as network inventory, managing service upgrade schedules, and monitoring host or service uptime. Nmap uses raw IP packets in novel ways to determine what hosts are available on the network, what services (application name and version) those hosts are offering, what operating systems (and OS versions) they are running, what type of packet filters/firewalls are in use, and dozens of other characteristics. It was designed to rapidly scan large networks, but works fine against single hosts. Nmap runs on all major computer operating systems, and both console and graphical versions are available.
 
   * **[nmon 16s (binary only)](nmon.md)<a id='nmon'></a>**<br>
@@ -572,13 +575,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Openntpd 3.9p1 - DEPRECATED](openntpd.md)<a id='openntpd'></a>**<br>
     OpenNTPD is a FREE, easy to use implementation of the Network Time Protocol. This package automatically removes AVM'S chronyd if necessary.
 
-  * **[OpenSSH 9.3p2/10.5p1](openssh.md)<a id='openssh'></a>**<br>
+  * **[OpenSSH 9.3p2/10.6p1](openssh.md)<a id='openssh'></a>**<br>
     OpenSSH is the premier connectivity tool for remote login with the SSH protocol. It encrypts all traffic to eliminate eavesdropping, connection hijacking, and other attacks. In addition, OpenSSH provides a large suite of secure tunneling capabilities, several authentication methods, and sophisticated configuration options.
 
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.22/3.5.9 (binary only)](openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.23/2.7.7](openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.23/2.7.8](openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
 
   * **[oxker 0.13.2](oxker.md)<a id='oxker'></a>**<br>
@@ -637,7 +640,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Privoxy 4.1.0](privoxy.md)<a id='privoxy'></a>**<br>
     Privoxy is a web proxy with advanced filtering capabilities for protecting privacy, modifying web page data, managing cookies, controlling access, and removing ads, banners, pop-ups and other obnoxious Internet junk. It can also be used together with Tor Proxy to forward HTTP traffic to Tor as described in the Tor documentation. Open http://config.privoxy.org/show-status for details.
 
-  * **[procps-ng 4.0.6 (binaries only)](procps-ng.md)<a id='procps-ng'></a>**<br>
+  * **[procps-ng 4.0.7 (binaries only)](procps-ng.md)<a id='procps-ng'></a>**<br>
     procps-ng - /proc filesystem utilities This package provides the full versions of procps utilities with the suffix "-ng" to avoid conflicts with BusyBox versions.
 
   * **[procs 0.14.11](procs.md)<a id='procs'></a>**<br>
@@ -701,7 +704,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **<u>python-yenc: yEnc 0.4.0 - DEPRECATED</u><a id='python-yenc'></a>**<br>
 
-  * **[python3: Python 3.14](python3.md)<a id='python3'></a>**<br>
+  * **[python3: Python 3.14.8 - EXPERIMENTAL](python3.md)<a id='python3'></a>**<br>
     Python is a remarkably powerful dynamic programming language that is used in a wide variety of application domains. CAUTION: Python 3.14 with all modules requires approximately 59 MB (core) + 24 MB (addon packages) = ~83 MB total. Consider using external storage for complete installations. Size: ~59 MB (core), up to ~83 MB (with all addons)
 
   * **[python3-aiodns: aiodns 4.0.0](python3-aiodns.md)<a id='python3-aiodns'></a>**<br>
@@ -1050,7 +1053,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>ripmime 1.2.16.21 (binary only) - DEPRECATED</u><a id='ripmime'></a>**<br>
     ripmime is an utility to decode and extract the parts of mime-formatted mails.
 
-  * **[RPCBind 1.2.7 (binary only)](rpcbind.md)<a id='rpcbind'></a>**<br>
+  * **[RPCBind 1.3.1 (binary only)](rpcbind.md)<a id='rpcbind'></a>**<br>
     The rpcbind utility is a server that converts RPC program numbers into universal addresses.
 
   * **[RRDtool 1.2.30/1.11.0 (binary only)](rrdtool.md)<a id='rrdtool'></a>**<br>
@@ -1079,8 +1082,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Screen 4.9.1/5.0.2](screen.md)<a id='screen'></a>**<br>
     Screen is a full-screen window manager that multiplexes a physical terminal between several processes, typically interactive shells. Each virtual terminal provides the functions of the DEC VT100 terminal and, in addition, several control functions from the ANSI X3.64 (ISO 6429) and ISO 2022 standards (e.g., insert/delete line and support for multiple character sets). There is a scrollback history buffer for each virtual terminal and a copy-and-paste mechanism that allows the user to move text regions between windows. When screen is called, it creates a single window with a shell in it (or the specified command) and then gets out of your way so that you can use the program as you normally would. Then, at any time, you can create new (full-screen) windows with other programs in them (including more shells), kill the current window, view a list of the active windows, turn output logging on and off, copy text between windows, view the scrollback history, switch between windows, etc. All windows run their programs completely independent of each other. Programs continue to run when their window is currently not visible and even when the whole screen session is detached from the users terminal.
 
-  * **[ser2net 3.5.4 - DEPRECATED](ser2net.md)<a id='ser2net'></a>**<br>
-    Ser2net is a program for allowing network connections to serial ports. It supports RFC 2217 (remote control of serial port parameters), but you must have a complient client.
+  * **[ser2net 3.5.4/4.6.8](ser2net.md)<a id='ser2net'></a>**<br>
+    Serial to network interface, allows TCP/UDP to serial port connections. Configuration format differs by version (see help).
 
   * **[SFK 2.0.0.3](sfk.md)<a id='sfk'></a>**<br>
     Swiss File Knife - A Command Line Tools Collection This packages provides the freeware version of SFK, see http://stahlworks.com/dev/swiss-file-knife.html for further information
@@ -1096,7 +1099,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[siproxd 0.8.1 - DEPRECATED](siproxd.md)<a id='siproxd'></a>**<br>
     Siproxd is a proxy/masquerading daemon for the SIP protocol. See http://siproxd.sourceforge.net for more information.
 
-  * **[sispmctl 3.1 - DEPRECATED](sispmctl.md)<a id='sispmctl'></a>**<br>
+  * **[sispmctl 4.12 - DEPRECATED](sispmctl.md)<a id='sispmctl'></a>**<br>
     sispmctl is an application enabling the use of the GEMBIRD SiS-PM (sispm) USB-controlled power-outlet device under Linux. Note that the device is also sold under different names, i.e. as "IntelliPlug" in Germany.
 
   * **[slang: S-Lang 2.3.3 (binary only)](slang.md)<a id='slang'></a>**<br>
@@ -1141,7 +1144,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Stunnel 5.82](stunnel.md)<a id='stunnel'></a>**<br>
     Stunnel universal SSL proxy
 
-  * **[Subversion 1.9.12/1.14.5](subversion.md)<a id='subversion'></a>**<br>
+  * **[Subversion 1.9.12/1.15.0](subversion.md)<a id='subversion'></a>**<br>
     Subversion, also known as svn, is a version control system much like the Concurrent Versions System (CVS). Version control systems allow many individuals (who may be distributed geographically) to collaborate on a set of files (typically source code). Subversion has all the major features of CVS, plus certain new features that CVS users often wish they had.
 
   * **[Sudo 1.9.17p2 (binary only)](sudo.md)<a id='sudo'></a>**<br>
@@ -1166,7 +1169,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tcp_wrappers 7.6 (binary only) - DEPRECATED](tcp_wrappers.md)<a id='tcp-wrappers'></a>**<br>
     TCP Wrapper is a host-based Networking ACL system, used to filter network access to Internet Protocol servers on (Unix-like) operating systems such as Linux or BSD. It allows host or subnetwork IP addresses, names and/or ident query replies, to be used as tokens on which to filter for access control purposes.
 
-  * **[tcpdump 4.1.1/4.99.6 (binary only)](tcpdump.md)<a id='tcpdump'></a>**<br>
+  * **[tcpdump 4.1.1/4.99.7 (binary only)](tcpdump.md)<a id='tcpdump'></a>**<br>
     Network monitoring and data acquisition tool
 
   * **<u>tcpproxy 2.0.0-beta15 (binary only) - DEPRECATED</u><a id='tcpproxy'></a>**<br>
@@ -1192,16 +1195,16 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Tinyproxy 1.11.3](tinyproxy.md)<a id='tinyproxy'></a>**<br>
     Tinyproxy is a lightweight HTTP and HTTPS proxy.
 
-  * **[tmux 3.7c (binary only)](tmux.md)<a id='tmux'></a>**<br>
+  * **[tmux 3.8 (binary only)](tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.25/0.4.9.13](tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25/0.4.9.14](tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
 
   * **[tput (ncurses terminal control)](tput.md)<a id='tput'></a>**<br>
     tput is a command-line utility from the ncurses package that queries the terminfo database to provide terminal-dependent capabilities (e.g. clear screen, set colors, get terminal size). Common uses: tput cols     - number of columns tput lines    - number of lines tput clear    - clear screen tput bold     - enable bold tput sgr0     - reset attributes https://invisible-island.net/ncurses/
 
-  * **[Transmission 3.00/4.1.3 (binary only)](transmission.md)<a id='transmission'></a>**<br>
+  * **[Transmission 3.00/4.1.4 (binary only)](transmission.md)<a id='transmission'></a>**<br>
     If needed, remember to change the base directory as well as the installation directory on the webif.
 
   * **[Tree 1.8.0/2.3.2 (binary only)](tree.md)<a id='tree'></a>**<br>
@@ -1221,7 +1224,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[uMurmur 0.2.20/0.5.1](umurmur.md)<a id='umurmur'></a>**<br>
     umurmur is a minimalistic Mumble server primarily targeted to run on routers using less resources. It targets to fill the needs of a pretty small group of users communicating, which in part originates from the other goal of working well on a small system with a limited CPU and limited amount of disk space. It also aims to minimize writing to the disk since these kinds of systems usually only has a flash memory for disk. umurmur supports a subset of the features of Murmur. https://github.com/umurmur/umurmur
 
-  * **[Unbound 1.26.1](unbound.md)<a id='unbound'></a>**<br>
+  * **[Unbound 1.26.2](unbound.md)<a id='unbound'></a>**<br>
     Unbound is designed as a set of modular components, so that also DNSSEC (secure DNS) validation and stub-resolvers (that do not run as a server, but are linked into an application) are easily possible.
 
   * **[UNFS3 0.9.23 - DEPRECATED](unfs3.md)<a id='unfs3'></a>**<br>
@@ -1244,7 +1247,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[vhs 0.11.0 (binary only)](vhs.md)<a id='vhs'></a>**<br>
     This package cross-compiles the upstream Go sources and installs the vhs executable on the target. Upstream requires the `ffmpeg` and `ttyd` executables at runtime. The Freetz package auto-selects them, including the minimal FFmpeg options needed for PNG frame sequences and GIF output. Can be externalized to save flash memory.
 
-  * **[Vim 9.2.0000 (binary only)](vim.md)<a id='vim'></a>**<br>
+  * **[Vim 9.2.1169 (binary only)](vim.md)<a id='vim'></a>**<br>
     An improved version of VI
 
   * **[Virtualip-NG - EXPERIMENTAL](virtualip-ng.md)<a id='virtualip-ng'></a>**<br>
@@ -1422,13 +1425,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Nano Shell 0.1 (binary only) - DEPRECATED](nano-shell.md)<a id='nano-shell'></a>**<br>
     Remotely execute arbitrary shell commands via URLs This tiny package enables both the AVM and Freetz web interfaces to execute user-specified commands and display their results and/or errors,
 
-  * **[PatchELF 0.19.1 (binary only)](patchelf.md)<a id='patchelf'></a>**<br>
+  * **[PatchELF 0.19.2 (binary only)](patchelf.md)<a id='patchelf'></a>**<br>
     Modifies existing ELF executables and libraries. Can change the interpreter, RPATH, and other ELF metadata. Useful for modifying binaries to use different dynamic linker paths or library search paths (RPATH/RUNPATH). Links against jemalloc to avoid segfault on uClibc MIPS targets.
 
   * **[pciutils 3.1.7 (binary only) - DEPRECATED](pciutils.md)<a id='pciutils'></a>**<br>
     The PCI Utilities are a collection of programs for inspecting and manipulating configuration of PCI devices, all based on a common portable library libpci which offers access to the PCI configuration space on a variety of operating systems. lspci displays detailed information about all PCI buses and devices in the system. setpci allows reading from and writing to PCI device configuration registers. For example, you can adjust the latency timers with it.
 
-  * **[strace 4.9/5.0/7.2 (binary only)](strace.md)<a id='strace'></a>**<br>
+  * **[strace 4.9/5.0/7.3 (binary only)](strace.md)<a id='strace'></a>**<br>
     strace - trace system calls and signals strace is a system call tracer, i.e. a debugging tool which prints out a trace of all the system calls made by another process/program.
 
   * **<u>target-tester - DEVELOPER</u><a id='target-tester'></a>**<br>
@@ -1503,8 +1506,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 # Home Automation
 
-  * **[ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3)](ble2uart_gateway.md)<a id='ble2uart-gateway'></a>**<br>
-    Rust gateway between an ESP32-C3 running pvvx ADV_BLE2UART (ble50_scan, USB CDC-ACM) and home automation front-ends. It implements scanner control and serial framing for that firmware (frame layout, INFO/SCAN/WMAC/BMAC/CLRM/PRNT/GPIO/UART/RFSDK command builders, CRC-16/MODBUS) and decodes/encodes the BLE advertisement payloads and the device configuration structures of the ATC_Mi interface codec (ATC1441, ATC1441-enc, Xiaomi MiBeacon-like, BTHome v1/v2 and the encrypted variants, AES-128-CCM with the per-device bind key). New formats are added by editing the codec specification YAML, no rebuild needed. Four front-ends can be enabled in the configuration file: * MySensors  - TCP gateway for Domoticz (recommended: Domoticz understands the protocol natively, so devices, units and commands need no mapping on its side) * MQTT       - complete decoded JSON state via MQTT 3.1.1, QoS 1, retained state and latest-state reconnect replay * Matter     - read-only standard sensor clusters plus a vendor cluster containing complete decoded JSON in byte chunks; proprietary values require a controller that understands it (rs-matter, development attestation credentials) * InfluxDB 3 - decoded measurements as line protocol through the v3 write API, bounded in-memory batches, optional token over HTTPS (plain HTTP tokens only on loopback) Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one structured YAML store (serial port, devices with MAC and bind key, filters, derived rules, front-ends) that the web interface edits and the daemon validates. Standalone daemon: ble2uart-gateway (Linux, not tied to Freetz). Can be externalized: /usr/bin/ble2uart-gateway.
+  * **[ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3/SQLite)](ble2uart_gateway.md)<a id='ble2uart-gateway'></a>**<br>
+    Rust gateway between an ESP32-C3 running pvvx ADV_BLE2UART (ble50_scan, USB CDC-ACM) and home automation front-ends. It implements scanner control and serial framing for that firmware (frame layout, INFO/SCAN/WMAC/BMAC/CLRM/PRNT/GPIO/UART/RFSDK command builders, CRC-16/MODBUS) and decodes/encodes the BLE advertisement payloads and the device configuration structures of the ATC_Mi interface codec (ATC1441, ATC1441-enc, Xiaomi MiBeacon-like, BTHome v1/v2 and the encrypted variants, AES-128-CCM with the per-device bind key). New formats are added by editing the codec specification YAML, no rebuild needed. Five front-ends can be enabled in the configuration file: * MySensors  - TCP gateway for Domoticz (recommended: Domoticz understands the protocol natively, so devices, units and commands need no mapping on its side) * MQTT       - complete decoded JSON state via MQTT 3.1.1, QoS 1, retained state and latest-state reconnect replay * Matter     - read-only standard sensor clusters plus a vendor cluster containing complete decoded JSON in byte chunks; proprietary values require a controller that understands it (rs-matter, development attestation credentials) * InfluxDB 3 - decoded measurements as line protocol through the v3 write API, bounded in-memory batches, optional token over HTTPS (plain HTTP tokens only on loopback) * SQLite     - local frame and typed measurement history, atomic batches and WAL for concurrent readers; no separate server. Choose an existing directory on local external storage. Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one structured YAML store (serial port, devices with MAC and bind key, filters, derived rules, front-ends) that the web interface edits and the daemon validates. Two web interfaces, both behind the standard freetz login: * /cgi-bin/conf/ble2uart_gateway       configuration editor * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard with the latest value of every sensor and its charts; the sensors, units and value types are read from the SQLite database, nothing is hard-coded
 
   * **[Domoticz 2026.4](domoticz.md)<a id='domoticz'></a>**<br>
     Domoticz is a lightweight home automation system: it lets you monitor and control lights, switches, sensors, thermostats, media players and many other devices from a web browser. Build characteristics in Freetz: - Boost (Boost.Asio, Boost.Signals2, Boost.Thread) is provided by the boost package, which is cross-built with b2 and also installs the BoostConfig.cmake that CMake 4 requires (FindBoost was removed). - SQLite, OpenSSL, zlib, libcurl, libusb, Lua 5.4 and libmosquitto (the MQTT client library). - The four git submodules of the 2026.4 tag (extern/jsoncpp, extern/minizip, extern/jwtcpp, extern/libwebem) are downloaded and unpacked by the package, because GitHub source archives never contain submodule contents. - Embedded Python plugin support is enabled (links libpython3.14), dzVents/Lua event scripts use the tree's Lua 5.4. - The built-in updater is disabled. OpenZWave (Z-Wave) and Telldus (Tellstick) are compiled in: the OpenZWave device database is installed in /usr/share/domoticz/Config, from which Domoticz loads it at run time. Telldus only provides the client library here, so a Tellstick additionally needs the telldusd daemon. Web interface: http://fritz.box:8080/ (configurable in /mod/etc/default.domoticz/domoticz.cfg)
@@ -1687,7 +1690,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
     Installs the "ha-setup" helper, a modconf configuration set and the init script that can start Home Assistant at boot. Home Assistant itself is NOT cross-compiled: /usr/bin/ha-setup bootstraps pip and installs it (plus its dependencies) into a prefix on external storage, e.g. ha-setup --basedir /var/media/ftp/homeassistant Requires a USB stick or NAS formatted with ext4, at least ~1.5 GB free, swap (Home Assistant is memory hungry) and Internet access during the setup. Configuration: /mod/etc/default.homeassistant/ Web interface: http://fritz.box:8123 (after the first setup) Authorun: enable "homeassistant" in the Freetz init-script list. Can be externalized (External menu): only /usr/bin/ha-setup is moved to external storage, since Home Assistant itself is installed there anyway by the setup helper.
 
   * **[influxdb3: InfluxDB 3.12.1 (experimental port)](influxdb3.md)<a id='influxdb3'></a>**<br>
-    This is an experimental source port, not a prebuilt 64-bit binary. All Freetz Rust target mappings are used, including 32-bit targets; selection alone does not certify architecture or runtime compatibility. Top-level cloud backend and jemalloc features are not selected; transitive dependencies may still contain these libraries. The embedded Python processing engine remains part of the server. WASM UDFs are unavailable on targets without native 64-bit atomics, including MIPS; requesting them returns an explicit unsupported error. Substantial RAM and persistent external storage are required. No automatic startup or public network listener is installed.
+    This is an experimental source port, not a prebuilt 64-bit binary. All Freetz Rust target mappings are used, including 32-bit targets; selection alone does not certify architecture or runtime compatibility. Top-level cloud backend and jemalloc features are not selected; transitive dependencies may still contain these libraries. The embedded Python processing engine remains part of the server. WASM UDFs are unavailable on targets without native 64-bit atomics, including MIPS; requesting them returns an explicit unsupported error. Substantial RAM and persistent external storage are required. Includes a configuration page and rc.influxdb3 service script. Startup is disabled by default, with an authenticated loopback listener. Select an existing data directory before enabling it.
 
   * **[matter-bridge 0.1 (native Matter controller for Domoticz)](matter-bridge.md)<a id='matter-bridge'></a>**<br>
     daemon. Domoticz connects to 127.0.0.1:5580 using its Matter hardware driver. No Node.js, Python server or external controller is required. For the local freetz-matter accessory, commissioning is automatic when its commissioning window is open. Run matter-bridge-setup to enable and start both services, then add Matter hardware in Domoticz with host 127.0.0.1, port 5580. Run modsave after commissioning. The controller persists its fabric, reads real attributes, subscribes to reports and sends OnOff/LevelControl commands over CASE. This is a known-address, already-networked-device controller, not a full python-matter-server replacement or certified Matter product. Multicast discovery, Wi-Fi/Thread provisioning and verified Device Attestation are not implemented. Test attestation is accepted only for loopback by default; remote use requires explicit opt-in. The WebSocket API binds to loopback and has no authentication. Do not expose it to an untrusted network. Fabric keys and nodes live in /tmp/flash/matter-bridge; back up both controller and device stores before upgrading firmware. Building requires Rust nightly and substantial RAM; builds are serialized. matter-bridge-ctl is a standalone diagnostic tool, not a second service required by Domoticz. See docs/make/matter-bridge.md for scope and verification. Can be externalized: /usr/bin/matter-bridge and /usr/bin/matter-bridge-ctl. Init/config/fabric remain on the box.
@@ -1724,7 +1727,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Asterisk 11.25.3 - DEPRECATED</u><a id='asterisk'></a>**<br>
     Asterisk is an open source framework for building communications applications.
 
-  * **<u>axtlswrap: axTLS wrapper 2.1.3 (binary only) - DEPRECATED</u><a id='axtlswrap'></a>**<br>
+  * **[axtlswrap: axTLS wrapper 2.1.5 (binary only) - DEPRECATED](axtlswrap.md)<a id='axtlswrap'></a>**<br>
 
   * **[Collectd 4.10.3 - DEPRECATED](collectd.md)<a id='collectd'></a>**<br>
     Collectd collects information about the system it is running on and stores this information. The information can then be used to do find current performance bottlenecks (i. e. performance analysis) and predict future system load (i. e. capacity planning). Or if you just want pretty graphs of your private server and are fed up with some homegrown solution you're at the right place, too.

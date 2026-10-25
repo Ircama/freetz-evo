@@ -1,0 +1,40 @@
+--- a/configure
++++ b/configure
+@@ -12888,7 +12888,8 @@
+ fi
+ 
+ if test $have_crypt_r != "yes"; then
+-  as_fn_error $? "No libcrypt with crypt_r()" "$LINENO" 5
++  { printf "%s\n" "$as_me: using crypt() fallback; linking with pthread" >&6; }
++  LIBS="$LIBS -lpthread"
+ fi
+ LIBS="$LIBS -lcrypt"
+ 
+--- a/auth.c
++++ b/auth.c
+@@ -29,6 +29,25 @@
+ #include <stdlib.h>
+ #include <dirent.h>
+ #include <crypt.h>
++#ifdef __UCLIBC__
++#include <pthread.h>
++struct crypt_data { char buf[256]; };
++static pthread_mutex_t crypt_lock = PTHREAD_MUTEX_INITIALIZER;
++static inline char *crypt_r(const char *key, const char *salt,
++                            struct crypt_data *data)
++{
++    char *hash;
++    if (pthread_mutex_lock(&crypt_lock) != 0)
++        return NULL;
++    hash = crypt(key, salt);
++    if (hash && strlen(hash) < sizeof(data->buf))
++        strcpy(data->buf, hash);
++    else
++        hash = NULL;
++    pthread_mutex_unlock(&crypt_lock);
++    return hash ? data->buf : NULL;
++}
++#endif
+ #include <gensio/gensio.h>
+ #include <gensio/gensio_list.h>
+ #include "ser2net.h"

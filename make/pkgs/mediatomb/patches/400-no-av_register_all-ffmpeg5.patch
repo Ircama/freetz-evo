@@ -1,0 +1,274 @@
+--- configure.ac
++++ configure.ac
+@@ -1538,7 +1538,7 @@
+     fi
+ 
+     if test "x$AVFORMAT_STATUS" = xyes; then
+-        MT_CHECK_LIBRARY([avformat], [avformat], [av_register_all])
++        MT_CHECK_LIBRARY([avformat], [avformat], [avformat_version])
+         MT_CHECK_LIBRARY([avutil], [avutil], [av_log_set_callback])
+     fi
+     AC_LANG_RESTORE
+--- configure
++++ configure
+@@ -33457,11 +33457,11 @@
+ 
+ 
+     if test "$mt_avformat_search_libs" ; then
+-        unset ac_cv_lib_avformat_av_register_all
++        unset ac_cv_lib_avformat_avformat_version
+         LDFLAGS="$LDFLAGS -L$mt_avformat_search_libs"
+-        { $as_echo "$as_me:$LINENO: checking for av_register_all in -lavformat" >&5
+-$as_echo_n "checking for av_register_all in -lavformat... " >&6; }
+-if test "${ac_cv_lib_avformat_av_register_all+set}" = set; then
++        { $as_echo "$as_me:$LINENO: checking for avformat_version in -lavformat" >&5
++$as_echo_n "checking for avformat_version in -lavformat... " >&6; }
++if test "${ac_cv_lib_avformat_avformat_version+set}" = set; then
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+@@ -33479,11 +33479,11 @@
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char av_register_all ();
++char avformat_version ();
+ int
+ main ()
+ {
+-return av_register_all ();
++return avformat_version ();
+   ;
+   return 0;
+ }
+@@ -33509,12 +33509,12 @@
+ 	 test "$cross_compiling" = yes ||
+ 	 $as_test_x conftest$ac_exeext
+        }; then
+-  ac_cv_lib_avformat_av_register_all=yes
++  ac_cv_lib_avformat_avformat_version=yes
+ else
+   $as_echo "$as_me: failed program was:" >&5
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+-	ac_cv_lib_avformat_av_register_all=no
++	ac_cv_lib_avformat_avformat_version=no
+ fi
+ 
+ rm -rf conftest.dSYM
+@@ -33522,9 +33522,9 @@
+       conftest$ac_exeext conftest.$ac_ext
+ LIBS=$ac_check_lib_save_LIBS
+ fi
+-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_av_register_all" >&5
+-$as_echo "$ac_cv_lib_avformat_av_register_all" >&6; }
+-if test "x$ac_cv_lib_avformat_av_register_all" = x""yes; then
++{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_avformat_version" >&5
++$as_echo "$ac_cv_lib_avformat_avformat_version" >&6; }
++if test "x$ac_cv_lib_avformat_avformat_version" = x""yes; then
+ 
+                 mt_avformat_libs="-lavformat"
+                 mt_avformat_ldflags="-L$mt_avformat_search_libs"
+@@ -33545,10 +33545,10 @@
+ fi
+ 
+     else
+-        unset ac_cv_lib_avformat_av_register_all
+-        { $as_echo "$as_me:$LINENO: checking for av_register_all in -lavformat" >&5
+-$as_echo_n "checking for av_register_all in -lavformat... " >&6; }
+-if test "${ac_cv_lib_avformat_av_register_all+set}" = set; then
++        unset ac_cv_lib_avformat_avformat_version
++        { $as_echo "$as_me:$LINENO: checking for avformat_version in -lavformat" >&5
++$as_echo_n "checking for avformat_version in -lavformat... " >&6; }
++if test "${ac_cv_lib_avformat_avformat_version+set}" = set; then
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+@@ -33566,11 +33566,11 @@
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char av_register_all ();
++char avformat_version ();
+ int
+ main ()
+ {
+-return av_register_all ();
++return avformat_version ();
+   ;
+   return 0;
+ }
+@@ -33596,12 +33596,12 @@
+ 	 test "$cross_compiling" = yes ||
+ 	 $as_test_x conftest$ac_exeext
+        }; then
+-  ac_cv_lib_avformat_av_register_all=yes
++  ac_cv_lib_avformat_avformat_version=yes
+ else
+   $as_echo "$as_me: failed program was:" >&5
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+-	ac_cv_lib_avformat_av_register_all=no
++	ac_cv_lib_avformat_avformat_version=no
+ fi
+ 
+ rm -rf conftest.dSYM
+@@ -33609,19 +33609,19 @@
+       conftest$ac_exeext conftest.$ac_ext
+ LIBS=$ac_check_lib_save_LIBS
+ fi
+-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_av_register_all" >&5
+-$as_echo "$ac_cv_lib_avformat_av_register_all" >&6; }
+-if test "x$ac_cv_lib_avformat_av_register_all" = x""yes; then
++{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_avformat_version" >&5
++$as_echo "$ac_cv_lib_avformat_avformat_version" >&6; }
++if test "x$ac_cv_lib_avformat_avformat_version" = x""yes; then
+ 
+                 mt_avformat_libs="-lavformat"
+ 
+ else
+ 
+                 LDFLAGS="$LDFLAGS -L$MT_SEARCHPATH_LIBS"
+-                unset ac_cv_lib_avformat_av_register_all
+-                { $as_echo "$as_me:$LINENO: checking for av_register_all in -lavformat" >&5
+-$as_echo_n "checking for av_register_all in -lavformat... " >&6; }
+-if test "${ac_cv_lib_avformat_av_register_all+set}" = set; then
++                unset ac_cv_lib_avformat_avformat_version
++                { $as_echo "$as_me:$LINENO: checking for avformat_version in -lavformat" >&5
++$as_echo_n "checking for avformat_version in -lavformat... " >&6; }
++if test "${ac_cv_lib_avformat_avformat_version+set}" = set; then
+   $as_echo_n "(cached) " >&6
+ else
+   ac_check_lib_save_LIBS=$LIBS
+@@ -33639,11 +33639,11 @@
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char av_register_all ();
++char avformat_version ();
+ int
+ main ()
+ {
+-return av_register_all ();
++return avformat_version ();
+   ;
+   return 0;
+ }
+@@ -33669,12 +33669,12 @@
+ 	 test "$cross_compiling" = yes ||
+ 	 $as_test_x conftest$ac_exeext
+        }; then
+-  ac_cv_lib_avformat_av_register_all=yes
++  ac_cv_lib_avformat_avformat_version=yes
+ else
+   $as_echo "$as_me: failed program was:" >&5
+ sed 's/^/| /' conftest.$ac_ext >&5
+ 
+-	ac_cv_lib_avformat_av_register_all=no
++	ac_cv_lib_avformat_avformat_version=no
+ fi
+ 
+ rm -rf conftest.dSYM
+@@ -33682,9 +33682,9 @@
+       conftest$ac_exeext conftest.$ac_ext
+ LIBS=$ac_check_lib_save_LIBS
+ fi
+-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_av_register_all" >&5
+-$as_echo "$ac_cv_lib_avformat_av_register_all" >&6; }
+-if test "x$ac_cv_lib_avformat_av_register_all" = x""yes; then
++{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_avformat_avformat_version" >&5
++$as_echo "$ac_cv_lib_avformat_avformat_version" >&6; }
++if test "x$ac_cv_lib_avformat_avformat_version" = x""yes; then
+ 
+                         mt_avformat_libs="-lavformat"
+                         mt_avformat_ldflags="-L$MT_SEARCHPATH_LIBS"
+--- src/metadata/ffmpeg_handler.cc
++++ src/metadata/ffmpeg_handler.cc
+@@ -192,45 +192,54 @@
+ 	for(i=0; i<pFormatCtx->nb_streams; i++) 
+     {
+ 		AVStream *st = pFormatCtx->streams[i];
+-		if((st != NULL) && (videoset == false) && (st->codec->codec_type == AVMEDIA_TYPE_VIDEO))
++        if (st == NULL)
++            continue;
++#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 33, 100)
++        const AVCodecParameters *codec = st->codecpar;
++#else
++        const AVCodecContext *codec = st->codec;
++#endif
++        if (codec == NULL)
++            continue;
++		if((videoset == false) && (codec->codec_type == AVMEDIA_TYPE_VIDEO))
+         {
+-            if (st->codec->codec_tag > 0)
++            if (codec->codec_tag > 0)
+             {
+                 char fourcc[5];
+-                fourcc[0] = st->codec->codec_tag;
+-                fourcc[1] = st->codec->codec_tag >> 8;
+-                fourcc[2] = st->codec->codec_tag >> 16;
+-                fourcc[3] = st->codec->codec_tag >> 24;
++                fourcc[0] = codec->codec_tag;
++                fourcc[1] = codec->codec_tag >> 8;
++                fourcc[2] = codec->codec_tag >> 16;
++                fourcc[3] = codec->codec_tag >> 24;
+                 fourcc[4] = '\0';
+ 
+                 log_debug("FourCC: %x = %s\n", 
+-                                        st->codec->codec_tag, fourcc);
++                                        codec->codec_tag, fourcc);
+                 String fcc = fourcc;
+                 if (string_ok(fcc))
+                     item->getResource(0)->addOption(_(RESOURCE_OPTION_FOURCC), 
+                                                     fcc);
+             }
+ 
+-			if ((st->codec->width > 0) && (st->codec->height > 0)) 
++			if ((codec->width > 0) && (codec->height > 0)) 
+             {
+-                resolution = String::from(st->codec->width) + "x" + 
+-                                    String::from(st->codec->height);
++                resolution = String::from(codec->width) + "x" + 
++                                    String::from(codec->height);
+ 
+ 				log_debug("Added resolution: %s pixel\n", resolution.c_str());
+ 		        item->getResource(0)->addAttribute(MetadataHandler::getResAttrName(R_RESOLUTION), resolution);
+ 				videoset = true;
+-                *x = st->codec->width;
+-                *y = st->codec->height;
++                *x = codec->width;
++                *y = codec->height;
+ 			}
+ 		} 
+-		if(st->codec->codec_type == AVMEDIA_TYPE_AUDIO) 
++		if(codec->codec_type == AVMEDIA_TYPE_AUDIO) 
+         {
+ 			// Increase number of audiochannels
+ 			audioch++;
+ 			// Get the sample rate
+-			if ((audioset == false) && (st->codec->sample_rate > 0)) 
++			if ((audioset == false) && (codec->sample_rate > 0)) 
+             {
+-				samplefreq = st->codec->sample_rate;
++				samplefreq = codec->sample_rate;
+ 			    if (samplefreq > 0) 
+                 {
+ 		    	    log_debug("Added sample frequency: %d Hz\n", samplefreq);
+@@ -265,13 +274,15 @@
+     int x = 0;
+     int y = 0;
+ 
+-	AVFormatContext *pFormatCtx;
++	AVFormatContext *pFormatCtx = NULL;
+ 	
+ 	// Suppress all log messages
+ 	av_log_set_callback(FfmpegNoOutputStub);
+ 	
+-	// Register all formats and codecs
++#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
++	// Older FFmpeg versions need explicit format and codec registration.
+     av_register_all();
++#endif
+ 
+     // Open video file
+ #if LIBAVFORMAT_VERSION_INT >= ((53<<16)+(2<<8)+0)

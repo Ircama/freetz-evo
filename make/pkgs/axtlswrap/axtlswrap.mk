@@ -1,7 +1,11 @@
-$(call PKG_INIT_BIN, 2.1.3)
+$(call PKG_INIT_BIN, 2.1.5)
 $(PKG)_SOURCE:=axTLS-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=555ce7adf743c97ca7562e4e5644f8d678c9d88139aeeadb758282f1d37db8a9
+$(PKG)_HASH:=cf00b07617bfbf903cbe60821b54dc000415fae737f1db84b7f8da69537a2910
 $(PKG)_SITE:=@SF/axtls
+### WEBSITE:=https://axtls.sourceforge.net/
+### MANPAGE:=https://axtls.sourceforge.net/README/index.html
+### CHANGES:=https://sourceforge.net/projects/axtls/files/
+### CVSREPO:=https://sourceforge.net/p/axtls/code/HEAD/tree/
 
 $(PKG)_CATEGORY_PKGS:=Unstable
 
@@ -12,6 +16,7 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/axtlswrap
 $(PKG)_PATCH_PRE_CMDS += $(SED) -i -e 's%\r$$$$%%' axtlswrap/axtlswrap.c
 
 $(PKG)_PATCH_POST_CMDS += cp $(abspath $($(PKG)_MAKE_DIR)/Config.axtls) config/.config;
+
 
 $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
@@ -38,6 +43,7 @@ $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 $(pkg):
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY)
+
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(AXTLSWRAP_DIR) clean

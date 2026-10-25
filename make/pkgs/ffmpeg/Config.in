@@ -1,5 +1,5 @@
 menuconfig FREETZ_PACKAGE_FFMPEG
-	bool "FFmpeg 5.1.4/7.1.1"
+	bool "FFmpeg 5.1.10/7.1.5"
 	default n
 	depends on !FREETZ_TARGET_UCLIBC_0_9_28 && !FREETZ_TARGET_UCLIBC_0_9_29
 	help
@@ -13,19 +13,21 @@ if FREETZ_PACKAGE_FFMPEG
 			default FREETZ_PACKAGE_FFMPEG_VERSION_CURRENT
 
 		config FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON
-			bool "5.1.4"
+			bool "5.1.10"
+			depends on FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON
 
 		config FREETZ_PACKAGE_FFMPEG_VERSION_CURRENT
-			bool "7.1.1"
-			depends on !FREETZ_TARGET_GCC_4_MAX
-			depends on !FREETZ_PACKAGE_MEDIATOMB
-			depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
-			help
-				FFmpeg 7.1.1 requires uClibc 1.0.58 or newer: its
-				configure checks for C11 static assertions using
-				`static_assert` from <assert.h>, which older uClibc
-				versions do not provide. On older toolchains use
-				FFmpeg 5.1.4 instead.
+                        bool "7.1.5"
+                        depends on !FREETZ_TARGET_GCC_4_MAX
+                        depends on !FREETZ_PACKAGE_MEDIATOMB
+                        depends on FREETZ_TARGET_UCLIBC_1_0_58_MIN
+                        depends on FREETZ_LIB_ffmpeg_WITH_VERSION_CURRENT
+                        help
+                                FFmpeg 7.1.x requires uClibc 1.0.58 or newer: its
+                                configure checks for C11 static assertions using
+                                `static_assert` from <assert.h>, which older uClibc
+                                versions do not provide. On older toolchains use
+                                FFmpeg 5.1.4 instead.
 
 	endchoice
 

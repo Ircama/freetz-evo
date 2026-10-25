@@ -27,6 +27,12 @@
 
 #include "lib_avm_kernel_config.h"
 
+/* The dump always contains 32-bit target addresses, not native host pointers. */
+struct _avm_kernel_config32 {
+	uint32_t tag;
+	uint32_t config;
+};
+
 static void swapEndianness(bool needed, uint32_t *ptr)
 {
 	if (!needed)
@@ -48,7 +54,7 @@ bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_
 
 	uint32_t *					ptr = NULL;
 	uint32_t					ptrValue;
-	struct _avm_kernel_config *	entry;
+	struct _avm_kernel_config32 *	entry;
 
 	bool						assumeSwapped = false;
 	uint32_t					_moduleStructSize = 0;
@@ -128,7 +134,7 @@ bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_
 		return false;
 
 	// check avm_kernel_config_tags_last entry first
-	entry = (struct _avm_kernel_config *) arrayEnd - 1;
+	entry = (struct _avm_kernel_config32 *) arrayEnd - 1;
 	lastTag = entry->tag;
 
 	// guess if endianness swap is required
@@ -147,7 +153,7 @@ bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_
 #endif
 
 	// check other tags
-	for (entry = (struct _avm_kernel_config *) arrayStart; entry->config != NULL; entry++)
+	for (entry = (struct _avm_kernel_config32 *) arrayStart; entry->config != 0; entry++)
 	{
 		uint32_t tag = entry->tag;
 		swapEndianness(assumeSwapped, &tag);
@@ -166,9 +172,9 @@ bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_
 		return false;
 
 	// check each entry->config pointer, if its value is in range
-	for (entry = (struct _avm_kernel_config *) arrayStart; entry->config != NULL; entry++)
+	for (entry = (struct _avm_kernel_config32 *) arrayStart; entry->config != 0; entry++)
 	{
-		ptrValue = (uint32_t) entry->config;
+		ptrValue = entry->config;
 		swapEndianness(assumeSwapped, &ptrValue);
 
 		// check if it points to an address within kernel config area
@@ -211,12 +217,28 @@ bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_
 	return true;
 }
 
+void freeConfigArea(struct _avm_kernel_config **configArea)
+{
+	if (configArea == NULL)
+		return;
+
+	for (struct _avm_kernel_config *entry = *configArea; entry->config != NULL; entry++)
+	{
+		if (entry->tag == avm_kernel_config_tags_modulememory)
+			free(entry->config);
+	}
+	free(configArea);
+}
+
 struct _avm_kernel_config* * relocateConfigArea(void *configArea, size_t configSize, uint32_t *moduleStructSize)
 {
 	bool swapNeeded;
 	uint32_t _moduleStructSize;
 	uint32_t kernelSegmentStart;
-	struct _avm_kernel_config * entry;
+	uint32_t ptrValue;
+	struct _avm_kernel_config32 *source;
+	struct _avm_kernel_config **relocated;
+	size_t entryCount = 0;
 
 	//  - the configuration area is aligned on a 4K boundary and the first 32 bit contain a
 	//    pointer to an 'struct _avm_kernel_config' array
@@ -226,60 +248,96 @@ struct _avm_kernel_config* * relocateConfigArea(void *configArea, size_t configS
 	if (!isConsistentConfigArea(configArea, configSize, configSize, &swapNeeded, &_moduleStructSize))
 		return NULL;
 
-	swapEndianness(swapNeeded, (uint32_t *) configArea);
-	kernelSegmentStart = determineConfigAreaKernelSegment(*((uint32_t *)configArea));
+	ptrValue = *((uint32_t *)configArea);
+	swapEndianness(swapNeeded, &ptrValue);
+	kernelSegmentStart = determineConfigAreaKernelSegment(ptrValue);
+	source = targetPtr2HostPtr(ptrValue, kernelSegmentStart, configArea);
+	while (source[entryCount].config != 0)
+		entryCount++;
 
-	entry = (struct _avm_kernel_config *) targetPtr2HostPtr(*((uint32_t *)configArea), kernelSegmentStart, configArea);
-	*((struct _avm_kernel_config **)configArea) = entry;
+	/* Keep the 32-bit dump intact and allocate native host structures separately. */
+	relocated = calloc(1, sizeof(*relocated) + (entryCount + 1) * sizeof(**relocated));
+	if (relocated == NULL)
+		return NULL;
+	*relocated = (struct _avm_kernel_config *)(relocated + 1);
 
-	swapEndianness(swapNeeded, &entry->tag);
-
-	while (entry->config != NULL)
+	for (size_t i = 0; i <= entryCount; i++, source++)
 	{
-		swapEndianness(swapNeeded, (uint32_t *) &entry->config);
-		entry->config = (void *) targetPtr2HostPtr((uint32_t)entry->config, kernelSegmentStart, configArea);
+		struct _avm_kernel_config *entry = *relocated + i;
+		uint32_t tag = source->tag;
+		swapEndianness(swapNeeded, &tag);
+		entry->tag = tag;
 
-		if ((int) entry->tag == avm_kernel_config_tags_modulememory)
+		if (i == entryCount)
+			break;
+
+		ptrValue = source->config;
+		swapEndianness(swapNeeded, &ptrValue);
+		void *config = targetPtr2HostPtr(ptrValue, kernelSegmentStart, configArea);
+
+		if (entry->tag == avm_kernel_config_tags_modulememory)
 		{
-			// only _kernel_modulmemory_config entries need relocation of members
+			uint32_t *moduleSource = config;
+			size_t moduleCount = 0;
+			size_t maxModules;
+
+			if (_moduleStructSize != 2 && _moduleStructSize != 4) {
+				fprintf(stderr, "Error: unknown _kernel_modulmemory_config size\n");
+				goto ERROR;
+			}
+
+			maxModules = (configSize - ((char *)config - (char *)configArea)) / (_moduleStructSize * sizeof(uint32_t));
+			while (moduleCount < maxModules && moduleSource[moduleCount * _moduleStructSize] != 0)
+				moduleCount++;
+			if (moduleCount == maxModules)
+				goto ERROR;
 
 			if (_moduleStructSize == 2) {
-				struct _kernel_modulmemory_config2 * module = (struct _kernel_modulmemory_config2 *) entry->config;
+				struct _kernel_modulmemory_config2 *module = calloc(moduleCount + 1, sizeof(*module));
+				if (module == NULL)
+					goto ERROR;
+				entry->config = module;
 
-				while (module->name != NULL)
+				for (size_t j = 0; j < moduleCount; j++, module++, moduleSource += 2)
 				{
-					swapEndianness(swapNeeded, (uint32_t *) &module->name);
-					module->name = (char *) targetPtr2HostPtr((uint32_t)module->name, kernelSegmentStart, configArea);
+					ptrValue = moduleSource[0];
+					swapEndianness(swapNeeded, &ptrValue);
+					module->name = targetPtr2HostPtr(ptrValue, kernelSegmentStart, configArea);
+					module->size = moduleSource[1];
 					swapEndianness(swapNeeded, &module->size);
-
-					module++;
 				}
-			} else if (_moduleStructSize == 4) {
-				struct _kernel_modulmemory_config4 * module = (struct _kernel_modulmemory_config4 *) entry->config;
+			} else {
+				struct _kernel_modulmemory_config4 *module = calloc(moduleCount + 1, sizeof(*module));
+				if (module == NULL)
+					goto ERROR;
+				entry->config = module;
 
-				while (module->name != NULL)
+				for (size_t j = 0; j < moduleCount; j++, module++, moduleSource += 4)
 				{
-					swapEndianness(swapNeeded, (uint32_t *) &module->name);
-					module->name = (char *) targetPtr2HostPtr((uint32_t)module->name, kernelSegmentStart, configArea);
+					ptrValue = moduleSource[0];
+					swapEndianness(swapNeeded, &ptrValue);
+					module->name = targetPtr2HostPtr(ptrValue, kernelSegmentStart, configArea);
+					module->size = moduleSource[1];
+					module->symbol_size = moduleSource[2];
+					module->symbol_text_size = moduleSource[3];
 					swapEndianness(swapNeeded, &module->size);
 					swapEndianness(swapNeeded, &module->symbol_size);
 					swapEndianness(swapNeeded, &module->symbol_text_size);
-
-					module++;
 				}
-			} else {
-				fprintf(stderr, "Error: unknown _kernel_modulmemory_config size\n");
 			}
+		} else {
+			entry->config = config;
 		}
-
-		entry++;
-		swapEndianness(swapNeeded, &entry->tag);
 	}
 
 	if (moduleStructSize)
 		*moduleStructSize = _moduleStructSize;
 
-	return (struct _avm_kernel_config **)configArea;
+	return relocated;
+
+ERROR:
+	freeConfigArea(relocated);
+	return NULL;
 }
 
 uint32_t determineConfigAreaKernelSegment(uint32_t targetAddressSpacePtr)
@@ -291,7 +349,7 @@ void* targetPtr2HostPtr(uint32_t targetAddressSpacePtr, uint32_t targetAddressSp
 {
 	if (!(targetAddressSpaceBasePtr <= targetAddressSpacePtr)) {
 		fprintf(stderr, "Warning: targetAddressSpaceBasePtr(0x%08x) <= targetAddressSpacePtr(0x%08x) violated, doing no conversion\n", targetAddressSpaceBasePtr, targetAddressSpacePtr);
-		return (void*)targetAddressSpacePtr;
+		return (void*)(uintptr_t)targetAddressSpacePtr;
 	}
 
 	return (void*) ((char *)hostAddressSpaceBasePtr + (targetAddressSpacePtr - targetAddressSpaceBasePtr));

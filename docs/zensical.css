@@ -383,6 +383,17 @@ body.toc-has-content .toc-toggle-btn {
     --md-primary-fg-color: #436584;
 }
 
+.md-header__button.md-logo {
+    margin: 0 8px;
+    padding: 0;
+}
+
+.md-header__button.md-logo img {
+    width: 65px;
+    height: 39px;
+    object-fit: cover;
+}
+
 [data-md-color-scheme="default"] {
     --code-color: #0891b2;        /* teal — matches colorscheme-modern.css .part1 */
     --table-foreground: var(--md-default-bg-color); /* table header backgrounds */
@@ -821,3 +832,4 @@ body.evo-terminal-open {
         -webkit-overflow-scrolling: touch;
     }
 }
+

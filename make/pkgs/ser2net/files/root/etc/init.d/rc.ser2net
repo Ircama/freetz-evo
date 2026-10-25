@@ -1,7 +1,10 @@
 #!/bin/sh
 
+[ -r /etc/options.cfg ] && . /etc/options.cfg
+[ "$FREETZ_PACKAGE_SER2NET_ABANDON" == "y" ] && CONF_EXT="conf" || CONF_EXT="yaml"
+
 DAEMON=ser2net
-DAEMON_CFGFILE=/tmp/flash/$DAEMON/$DAEMON.conf
+DAEMON_CFGFILE=/tmp/flash/$DAEMON/$DAEMON.$CONF_EXT
 . /etc/init.d/modlibrc
 
 
@@ -11,11 +14,11 @@ start() {
 
 case $1 in
 	""|load)
-		modlib_defaults $DAEMON_CFGFILE
+		modlib_defaults $DAEMON_CFGFILE $CONF_EXT
 
 		modreg cgi $DAEMON "$DAEMON_LONG_NAME"
 		modreg daemon $DAEMON
-		modreg file $DAEMON conf "${DAEMON_CFGFILE##*/}" 0 "ser2net_conf"
+		modreg file $DAEMON $CONF_EXT "${DAEMON_CFGFILE##*/}" 0 "ser2net_$CONF_EXT"
 
 		modlib_start $SER2NET_ENABLED
 		;;

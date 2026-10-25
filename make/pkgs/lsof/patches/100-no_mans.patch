@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -1288,7 +1288,7 @@
+ tests_LTunix_CFLAGS = @LSOF_TEST_CFLAGS@ -I$(top_srcdir)/include
+ @INSTALL_LIBLSOF_TRUE@tests_LTbasic2_CFLAGS = -I$(top_srcdir)/include
+ @INSTALL_LIBLSOF_TRUE@tests_LTbasic2_LDADD = liblsof.la
+-man8_MANS = lsof.man
++man8_MANS =
+ all: config.h
+ 	$(MAKE) $(AM_MAKEFLAGS) all-am
+ 

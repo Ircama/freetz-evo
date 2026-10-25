@@ -9,13 +9,15 @@ $(PKG)_SITE:=@KERNEL/software/utils/dtc
 ### STEWARD:=fda77
 
 $(PKG)_INSTALL_DIR := $(TOOLS_DIR)/fit
+# used by yf-akcarea-host
+$(PKG)_INCLUDE_LIB := $($(PKG)_DIR)/libfdt
 
 $(PKG)_BINARIES            := dtc fdtdump fdtget fdtput fitdump
 $(PKG)_BINARIES_BUILD_DIR  := $($(PKG)_BINARIES:%=$($(PKG)_DIR)/%)
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_INSTALL_DIR)/%)
 
 
-# dtc-host and dtc using the same source, libdtc-host an older version
+# dtc-host and dtc using the same source
 $(TOOLS_SOURCE_DOWNLOAD)
 $(TOOLS_UNPACKED)
 $(TOOLS_CONFIGURED_NOP)

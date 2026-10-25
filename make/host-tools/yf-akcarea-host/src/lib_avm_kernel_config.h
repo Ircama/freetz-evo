@@ -13,6 +13,8 @@
 
 bool isConsistentConfigArea(void *configArea, size_t configAreaBufferSize, size_t configSize, bool *swapNeeded, uint32_t *moduleStructSize);
 struct _avm_kernel_config* * relocateConfigArea(void *configArea, size_t configSize, uint32_t *moduleStructSize);
+/* Free host structures before unmapping the original config area buffer. */
+void freeConfigArea(struct _avm_kernel_config **configArea);
 
 uint32_t determineConfigAreaKernelSegment(uint32_t targetAddressSpacePtr);
 void* targetPtr2HostPtr(uint32_t targetAddressSpacePtr, uint32_t targetAddressSpaceBasePtr, void* hostAddressSpaceBasePtr);

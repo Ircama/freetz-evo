@@ -8,3 +8,4 @@ config FREETZ_PACKAGE_CHOPARP
 		and sends proxy arp reply to the sender if the arp request queries
 		the MAC address (ethernet hardware address) for the network speci-
 		fied by net_addr and net_mask.
+

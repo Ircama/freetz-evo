@@ -45,7 +45,6 @@ $(PKG)_CONFIGURE_OPTIONS += --enable-shared
 $(PKG)_CONFIGURE_OPTIONS += --enable-static
 $(PKG)_CONFIGURE_OPTIONS += --disable-editline
 $(PKG)_CONFIGURE_OPTIONS += --disable-static-shell
-$(PKG)_CONFIGURE_OPTIONS += $(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),,--disable-threadsafe)
 ifneq ($(strip $(FREETZ_PACKAGE_SQLITE_WITH_READLINE)),y)
 $(PKG)_CONFIGURE_OPTIONS += --disable-readline
 else

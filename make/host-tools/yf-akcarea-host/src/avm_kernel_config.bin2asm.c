@@ -212,6 +212,7 @@ int main(int argc, char * argv[])
 		if (configArea != NULL)
 		{
 			returnCode = processConfigArea(configArea, moduleStructSize);
+			freeConfigArea(configArea);
 		}
 		else
 		{

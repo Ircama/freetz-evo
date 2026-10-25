@@ -1,0 +1,36 @@
+--- libc/misc/time/time.c
++++ libc/misc/time/time.c
+@@ -1906,7 +1906,32 @@
+ 			goto ERROR;
+ 		p = buf + r;
+ #endif
+-		if ((p > buf) && (p[-1] == '\n')) { /* Must end with newline */
++		r = p - buf;
++		if (r >= 4
++		 && strncmp(buf, "TZif", 4) == 0
++		) {
++			p = NULL;
++			if (r != TZ_BUFLEN
++			 || (unsigned char)buf[4] < 2
++			 || lseek(fd, -TZ_BUFLEN, SEEK_END) < 0
++			) {
++				goto ERROR;
++			}
++
++			r = read(fd, buf, TZ_BUFLEN);
++			if (r <= 0 || buf[--r] != '\n')
++				goto ERROR;
++			buf[r] = 0;
++			while (r != 0) {
++				if (buf[--r] == '\n') {
++					p = buf + r + 1;
++#ifndef __UCLIBC_HAS_TZ_FILE_READ_MANY__
++					TZ_file_read = 1;
++#endif
++					break;
++				}
++			} /* else ('\n' not found): p remains NULL */
++		} else if ((p > buf) && (p[-1] == '\n')) { /* Must end with newline */
+ 			p[-1] = 0;
+ 			p = buf;
+ #ifndef __UCLIBC_HAS_TZ_FILE_READ_MANY__

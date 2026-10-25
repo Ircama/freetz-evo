@@ -1,5 +1,5 @@
 menuconfig FREETZ_PACKAGE_NANO
-	bool "Nano 9.2 (binary only)"
+	bool "Nano 9.2/9.3 (binary only)"
 	depends on FREETZ_KERNEL_VERSION_2_6_28_MIN
 	select FREETZ_LIB_libncurses if !FREETZ_PACKAGE_NANO_UTF8
 	default n
@@ -28,6 +28,20 @@ menuconfig FREETZ_PACKAGE_NANO
 		3.) Note that UTF8 support and spell checking is disabled by default.
 
 if FREETZ_PACKAGE_NANO
+
+	choice
+		prompt "Version"
+			default FREETZ_PACKAGE_NANO_VERSION_CURRENT
+
+		config FREETZ_PACKAGE_NANO_VERSION_ABANDON
+			bool "9.2"
+			depends on !FREETZ_TARGET_GCC_5_MIN
+
+		config FREETZ_PACKAGE_NANO_VERSION_CURRENT
+			bool "9.3"
+			depends on FREETZ_TARGET_GCC_5_MIN
+
+	endchoice
 
 	config FREETZ_PACKAGE_NANO_UTF8
 		bool "With UTF8 support"

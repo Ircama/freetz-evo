@@ -16,6 +16,7 @@ $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/file
 $(PKG)_MAGIC_BUILD := $($(PKG)_DIR)/magic/magic.mgc
 $(PKG)_MAGIC_TARGET := $($(PKG)_DEST_DIR)/usr/share/misc/magic.mgc
 
+$(PKG)_DEPENDS_ON += wget-host
 $(PKG)_DEPENDS_ON += file-host
 
 $(PKG)_CONFIGURE_OPTIONS += --enable-static

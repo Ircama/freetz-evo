@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_STRACE_VERSION_4),4.9,$(if $(FREETZ_PACKAGE_STRACE_VERSION_5),5.0,7.2)))
+$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_STRACE_VERSION_4),4.9,$(if $(FREETZ_PACKAGE_STRACE_VERSION_5),5.0,7.3)))
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_HASH_4:=095bfea5c540b91d297ccac73b21b92fd54a24599fd70395db87ff9eb7fd6f65
 $(PKG)_HASH_5:=3b7ad77eb2b81dc6078046a9cc56eed5242b67b63748e7fc28f7c2daf4e647da
-$(PKG)_HASH_7:=4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5
+$(PKG)_HASH_7:=529634c40910895a9a1f3c5c1e65da2ca9ed72fb158dfc4bcc89efdf05e39b72
 $(PKG)_HASH:=$($(PKG)_HASH_$(call GET_MAJOR_VERSION,$($(PKG)_VERSION),1))
 $(PKG)_SITE:=https://www.strace.io/files/$($(PKG)_VERSION),https://github.com/strace/strace/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://www.strace.io/

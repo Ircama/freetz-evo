@@ -11,11 +11,19 @@
  * **Freetz-NG**<br>
    The text "FREETZ NG" is overlaid on AVM's "Fritz" logo in the web interface.<br><br>
    [![Tagging Freetz-NG](../screenshots/000-TAG_freetz-ng.png)](../screenshots/000-TAG_freetz-ng.png)
-   
+
+ * **Custom**<br>
+   The text "Custom" is overlaid on AVM's "Fritz" logo in the web interface.<br><br>
+   [![Tagging Custom](../screenshots/000-TAG_custom.png)](../screenshots/000-TAG_custom.png)
+
+ * **Modded**<br>
+   The text "Modded" is overlaid on AVM's "Fritz" logo in the web interface.<br><br>
+   [![Tagging Modded](../screenshots/000-TAG_modded.png)](../screenshots/000-TAG_modded.png)
+
  * **Pimped**<br>
    The text "Pimped" is overlaid on AVM's "Fritz" logo in the web interface.<br><br>
    [![Tagging Pimped](../screenshots/000-TAG_pimped.png)](../screenshots/000-TAG_pimped.png)
-   
+
  * **Prisrak**<br>
    The text "Freetz mod" is overlaid on AVM's "Fritz" logo in the web interface.<br><br>
    [![Tagging Prisrak](../screenshots/000-TAG_prisrak.png)](../screenshots/000-TAG_prisrak.png)

@@ -1,6 +1,6 @@
 --- libtransmission/session.h
 +++ libtransmission/session.h
-@@ -438,7 +438,7 @@
+@@ -444,7 +444,7 @@
          bool seed_queue_enabled = false;
          bool sequential_download = false;
          bool should_delete_source_torrents = false;

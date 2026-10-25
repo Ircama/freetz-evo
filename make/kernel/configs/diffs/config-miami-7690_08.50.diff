@@ -1,0 +1,36 @@
+--- avm/config-miami-7690_08.50
++++ freetz/config-miami-7690_08.50
+@@ -4,12 +4,11 @@
+ #
+ 
+ #
+-# Compiler: arm-buildroot-linux-musleabi-gcc.br_real (Buildroot -g3ba02e5e) 8.4.0
++# Compiler: arm-unknown-linux-gnueabi-gcc (GCC) 8.4.0
+ #
+ CONFIG_CC_IS_GCC=y
+ CONFIG_GCC_VERSION=80400
+ CONFIG_CLANG_VERSION=0
+-CONFIG_CC_CAN_LINK=y
+ CONFIG_CC_HAS_ASM_GOTO=y
+ CONFIG_CC_HAS_ASM_INLINE=y
+ CONFIG_IRQ_WORK=y
+@@ -676,8 +675,9 @@
+ CONFIG_ARCH_HAS_GCOV_PROFILE_ALL=y
+ # end of GCOV-based kernel profiling
+ 
+-CONFIG_PLUGIN_HOSTCC=""
++CONFIG_PLUGIN_HOSTCC="g++"
+ CONFIG_HAVE_GCC_PLUGINS=y
++# CONFIG_GCC_PLUGINS is not set
+ # end of General architecture-dependent options
+ 
+ CONFIG_RT_MUTEXES=y
+@@ -2593,6 +2593,8 @@
+ CONFIG_AVM_WATCHDOG=y
+ CONFIG_AVM_WATCHDOG_STARTED_BY_FW=y
+ CONFIG_AVM_WATCHDOG_PER_CPU=y
++CONFIG_AVM_WATCHDOG_FIQ_GENERIC=y
++CONFIG_AVM_WATCHDOG_HW=y
+ CONFIG_AVM_DEBUG=y
+ CONFIG_AVM_DEBUG_BUF_SHIFT=19
+ # CONFIG_AVM_LED_EVENTS is not set

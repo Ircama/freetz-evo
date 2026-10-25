@@ -47,6 +47,9 @@ config FREETZ_AVM_HAS_SHOWDSLDSTAT
 config FREETZ_AVM_HAS_DSLD
 	def_bool y
 
+config FREETZ_AVM_HAS_MULTID
+	def_bool y
+
 config FREETZ_AVM_HAS_WEBSRV
 	def_bool y
 

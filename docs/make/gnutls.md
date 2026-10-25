@@ -1,4 +1,4 @@
-# GnuTLS 3.7.8 (binary only) - DEPRECATED
+# GnuTLS 3.7.11/3.8.13 (binary only)
   - Homepage: [https://www.gnutls.org/](https://www.gnutls.org/)
   - Manpage: [https://www.gnutls.org/documentation.html](https://www.gnutls.org/documentation.html)
   - Changelog: [https://www.gnutls.org/news.html](https://www.gnutls.org/news.html)

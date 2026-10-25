@@ -19,10 +19,6 @@ HOST_BITNESS:=$(if $(findstring 64,$(HOST_ARCH)),64,32)
 # contains: y or nothing
 HOST_BIARCH:=$(if $(findstring aarch64,$(HOST_ARCH)),,$(if $(findstring 64,$(HOST_BITNESS)),y,))
 
-# if this cpu is able to run 32bit code, native or biarch
-# contains: y or nothing
-HOST_RUN32BIT:=$(if $(or $(findstring y,$(HOST_BIARCH)),$(findstring 32,$(HOST_BITNESS))),y,)
-
 # on 32-bit systems no special CFLAGS are required, on all other systems use -m32 [ and hope it's supported :-) aarch64 does not :{ ]
 # contains: -m32 or nothing
 HOST_CFLAGS_FORCE_32BIT_CODE:=$(if $(findstring y,$(HOST_BIARCH)),-m32)
@@ -44,7 +40,6 @@ TOOLS_FAVORED:=kconfig-host tar-host busybox-host make-host pkgconf-host m4-host
 TOOLS_ALLOFIT:=$(sort $(basename $(notdir $(wildcard $(FREETZ_BASE_DIR)/$(MAKE_DIR)/host-tools/*/*.mk))))
 TOOLS:=$(TOOLS_FAVORED) $(filter-out $(TOOLS_FAVORED),$(TOOLS_ALLOFIT))
 
-TOOLS_32BIT_ONLY:=libdtc-host yf-akcarea-host
 TOOLS_TARXZBUNDLE:=tools-host
 
 # tools not built by default
@@ -63,7 +58,6 @@ TOOLS_CONDITIONAL+=$(if $(or $(FREETZ_STRIP_SCRIPTS),$(FREETZ_STRIP_BINARIES)),,
 TOOLS_CONDITIONAL+=$(if $(FREETZ_AVM_PROP_OUTER_FILESYSTEM_TYPE_EXT2),,genext2fs-host)
 TOOLS_CONDITIONAL+=gmp-host
 TOOLS_CONDITIONAL+=gperf-host
-TOOLS_CONDITIONAL+=libdtc-host
 TOOLS_CONDITIONAL+=lzma1-host
 TOOLS_CONDITIONAL+=lzma2-host
 TOOLS_CONDITIONAL+=meson-host

@@ -12,6 +12,7 @@ on:
       - '.github/docker/*/*'
   schedule:
     - cron: '45 18 28 * *'
+      timezone: "Etc/GMT-5"
   workflow_dispatch:
 
 concurrency:

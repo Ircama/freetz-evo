@@ -1,11 +1,8 @@
 $(call TOOLS_INIT, 1.0)
 ### STEWARD:=EOL
 
-$(PKG)_BUILD_PREREQ += $(if $(HOST_RUN32BIT),,32bit-capable-cpu)
-$(PKG)_BUILD_PREREQ_HINT := You have to use a 32-bit capable cpu to compile this
-
 $(PKG)_DEPENDS_ON+=sfk-host
-$(PKG)_DEPENDS_ON+=libdtc-host
+$(PKG)_DEPENDS_ON+=dtc-host
 
 $(PKG)_BINS:=extract bin2asm
 $(PKG)_BUILD_DIR:=$($(PKG)_BINS:%=$($(PKG)_DIR)/avm_kernel_config.%)
@@ -17,10 +14,8 @@ $(TOOLS_CONFIGURED_NOP)
 
 $($(PKG)_BUILD_DIR): $($(PKG)_DIR)/.unpacked
 	$(TOOLS_SUBMAKE) -C $(YF_AKCAREA_HOST_DIR) \
-		OPT="-O0" \
 		CC="$(TOOLS_CC)" \
-		BITNESS="$(HOST_CFLAGS_FORCE_32BIT_CODE)" \
-		LIBFDT_DIR=$(HOST_TOOLS_DIR) \
+		LIBFDT_DIR=$(DTC_HOST_INCLUDE_LIB) \
 		$(YF_AKCAREA_HOST_BINS:%=avm_kernel_config.%)
 	touch -c $@
 

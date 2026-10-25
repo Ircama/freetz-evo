@@ -8,4 +8,3 @@ config FREETZ_LIB_libopenjp2
 		Experts Group (JPEG). Since April 2015, it is officially recognized
 		by ISO/IEC and ITU-T as a JPEG 2000 Reference Software.
 
-

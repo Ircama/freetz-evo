@@ -1645,30 +1645,32 @@ if [ "$DO_MOD" -gt 0 ]; then
 		if [ "$FREETZ_TAGGING_ENABLED" == "y" ]; then
 			tagging() {
 				[ $# -lt 3 ] && return
+				local tagging_file
+				local tagging_temp
 				local tagging_geo="$1"
 				local tagging_pos="$2"
 				local tagging_arg="$3"
 				local use_gm_composite=""
 				command -v gm >/dev/null 2>&1 && use_gm_composite="1"
+				local tagging_tag="${4:+"${TAGGING_DIR}/${FREETZ_TAGGING_STRING}.${4}.svg"}"
 				for d in ${HTML_MOD_DIR}*; do
 					[ ! -d "$d" ] && continue
 					local tagging_ren=""
 					for tagging_file in $(find "$d" -name "$tagging_arg"); do
 						echo2 "${tagging_file}"
-						if [ "${tagging_file##*/}" == "logo_fritzDiamond.svg" ]; then
-							sed 's/>/&<svg>/' -i $tagging_file
-							echo "<svg>$(tail -n+2 ${TAGGING_DIR}/${FREETZ_TAGGING_STRING}.svg)</svg>" >> $tagging_file
+						if [ -n "$tagging_tag" ]; then
+							[ -s "$tagging_tag" ] || continue
+							sed '0,/<svg[^>]*>/{s//&<svg>/;}' -i "$tagging_file"
+							echo "<svg>$(tail -n+2 "$tagging_tag")</svg>" >> $tagging_file
 							continue
 						fi
 						[ "${tagging_file}" != "${tagging_file%svg}" ] && tagging_temp="${tagging_file%svg}png" || tagging_temp=""
 						if [ -n "$tagging_temp" ]; then
-							if ! inkscape "$tagging_file" --export-type=png --export-filename="$tagging_temp" -w 98 -h 77 -y 0 &>/dev/null; then
-							if ! inkscape --without-gui "$tagging_file" --export-png="$tagging_temp" -w 98 -h 77 -y 0 &>/dev/null; then
-							if ! convert -compress NONE -background NONE -resize 98x77 "$tagging_file" "$tagging_temp"; then
-								error 1 "tagging failed on converting, is inkscape installed?"
-							fi
-							fi
-							fi
+							inkscape "$tagging_file" --export-type=png --export-filename="$tagging_temp" -w 98 -h 77 -y 0 &>/dev/null || \
+							inkscape --without-gui "$tagging_file" --export-png="$tagging_temp" -w 98 -h 77 -y 0 &>/dev/null || \
+							magick -compress NONE -background NONE "$tagging_file" -resize 98x77 "$tagging_temp" || \
+							convert -compress NONE -background NONE -resize 98x77 "$tagging_file" "$tagging_temp" || \
+							error 1 "tagging failed on converting, is inkscape installed?"
 						fi
 						set -- -dissolve 100% -quality 100
 						[ -n "$tagging_pos" ] && set -- "$@" -gravity "$tagging_pos"
@@ -1691,13 +1693,14 @@ if [ "$DO_MOD" -gt 0 ]; then
 				done
 			}
 			echo1 "tagging avm webif (tag by ${FREETZ_TAGGING_STRING})"
-			tagging      "" ""       logo_fritzDiamond.svg    # svg since  Fritz!OS 7.1x (eg 7490 07.11)
-			tagging  "+0+6" "center" fritzLogo.svg            # svg since  Fritz!OS 6.5x (eg 7320 06.50)
-			tagging  "+0+6" "center" kopfbalken_links.png     # lua since  Fritz!OS 6.2x (small logo @left, eg 7390 06.23)
-			tagging  "+0+0" "center" kopfbalken_links.gif     # lua before Fritz!OS 6.2x (small logo @left, eg 7270 04.88)
-			tagging "-20+0" "west"   kopfbalken.gif           # newer html (big header @top, eg 7320 05.29)
-			tagging  "+0+0" "west"   fw_header980.gif         # older (big header @top, eg 7141 04.76)
-			tagging  "+0-5" "west"   fw_header.gif            # even older (big header @top, eg 7050 04.03)
+			tagging      "" ""       "Fritz_Logo_sRGB_w.svg" "fritz"  # svg since  Fritz!OS 8.5x (eg 7690 08.50)
+			tagging      "" ""       "logo_fritzDiamond.svg" "avm"    # svg since  Fritz!OS 7.1x (eg 7490 07.11)
+			tagging  "+0+6" "center" "fritzLogo.svg"                  # svg since  Fritz!OS 6.5x (eg 7320 06.50)
+			tagging  "+0+6" "center" "kopfbalken_links.png"           # lua since  Fritz!OS 6.2x (small logo @left, eg 7390 06.23)
+			tagging  "+0+0" "center" "kopfbalken_links.gif"           # lua before Fritz!OS 6.2x (small logo @left, eg 7270 04.88)
+			tagging "-20+0" "west"   "kopfbalken.gif"                 # newer html (big header @top, eg 7320 05.29)
+			tagging  "+0+0" "west"   "fw_header980.gif"               # older (big header @top, eg 7141 04.76)
+			tagging  "+0-5" "west"   "fw_header.gif"                  # even older (big header @top, eg 7050 04.03)
 		fi
 
 	fi
@@ -1982,7 +1985,7 @@ if [ "$action_names" ]; then
 
 	# Remove left over version-constrol-system files
 	echo1 "checking for left over version-control-system files"
-	find "$MOD_DIR" \( -type d -name '.svn' \) -o \( -type d -name '.git' \) -o -name '.gitignore' | xargs rm -rf
+	find "$MOD_DIR" \( -type d -name '.svn' \) -o \( -type d -name '.git' \) -o -name '.gitignore' -o -name '.gitattributes' | xargs rm -rf
 
 	# Delete all files that we are going to re-create now
 	rm -f "$VARTAR_MOD"
@@ -2425,7 +2428,7 @@ if [ "$DO_PACK" -gt 0 ]; then
 		fi
 		# make fit image with avm-magic
 		SOURCE_DATE_EPOCH="$(cat "$FITIMAGE_MOD_DIR/date.txt")" $TOOLS_DIR/fit/mkimage -f "$FITIMAGE_MOD_DIR/image.its" "$FITIMAGE_MOD_DIR/image.itb" >/dev/null || error 1 "packing failed"
-		$TOOLS_DIR/yf/fit_tools/fit-add-avm-header.sh -k "$FIRMWARE_DIR/var/tmp/fit-image" "$FITIMAGE_MOD_DIR/image.itb" > "$FIRMWARE_MOD_DIR/var/tmp/fit-image" || error 1 "packing failed"
+		$TOOLS_DIR/yf/fit_tools/fit-add-avm-header.sh "$FITIMAGE_MOD_DIR/image.itb" > "$FIRMWARE_MOD_DIR/var/tmp/fit-image" || error 1 "packing failed"
 		# size info
 		FITIMAGE_SIZE="$(wc -c < "$FIRMWARE_MOD_DIR/var/tmp/fit-image")"
 		if [ -n "$FILESYSTEM_LIMIT" ]; then
@@ -2478,6 +2481,19 @@ if [ "$DO_PACK" -gt 0 ]; then
 
 	echo1 -l "source firmware: ${SOURCE_IMAGE_DETAILS} ${SOURCE_IMAGE_SIZE}"
 	echo1 "source image file size: $(byte_to_mb $(wc -c < "${FIRMWARE}")) ($(wc -c < "${FIRMWARE}") bytes)"
+
+	# unmodified fit for fiber cpu
+	if [ -n "$FREETZ_AVM_HAS_AR7_LITE" ]; then
+		fit_src="${img_name%.*}.fit"
+		fit_dst="${AVM_FW_VERSION}-${AVM_FW_REVISION}.fit"
+		ln -f "$FIRMWARE_DIR/var/tmp/fit-image" "$fit_src" 2>/dev/null || cp -p "$FIRMWARE_DIR/var/tmp/fit-image" "$fit_src"
+		hint "The fiber module needs an unmodified fit-image."
+		hint "Put '$fit_src'"
+		hint "to the internal storage on your device into"
+		hint "directory 'fit-image' with file name '$fit_dst'."
+		hint "Full path: '/var/media/ftp/fit-image/$fit_dst'"
+		hint "This should be done befor flashing this image!"
+	fi
 
 	# create the link images/latest.image to the just created .image
 	img_link="${img_name%/*}/latest.image"

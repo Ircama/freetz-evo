@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 # generates thumbnails of docs/screenshots/* to docs/README/*_md.*
 MYPWD="$(dirname $(realpath $0))"
+command -v magick >/dev/null && IM="magick" || IM="convert"
 
 for file in $MYPWD/*.???; do
 	src="${file##*/}"
@@ -21,7 +22,7 @@ for file in $MYPWD/*.???; do
 		*)
 			[ -e "$MYPWD/$dst" ] && continue
 			echo "$src -> $dst"
-			${MAGICK:-convert} "$MYPWD/$src" -resize x333 "$MYPWD/$dst"
+			"$IM" "$MYPWD/$src" -resize x333 "$MYPWD/$dst"
 			chmod -x "$MYPWD/$src" "$MYPWD/$dst"
 			;;
 	esac

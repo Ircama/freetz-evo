@@ -1,4 +1,4 @@
-# libzip (libzip.so) 1.11.4
+# libzip (libzip.so) 1.12.1
   - Homepage: [https://libzip.org/](https://libzip.org/)
   - Manpage: [https://libzip.org/documentation/](https://libzip.org/documentation/)
   - Changelog: [https://github.com/nih-at/libzip/releases](https://github.com/nih-at/libzip/releases)

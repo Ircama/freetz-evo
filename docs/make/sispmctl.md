@@ -1,4 +1,8 @@
-# sispmctl 3.1 - DEPRECATED
+# sispmctl 4.12 - DEPRECATED
+  - Homepage: [https://sourceforge.net/projects/sispmctl/](https://sourceforge.net/projects/sispmctl/)
+  - Manpage: [https://sispmctl.sourceforge.net/#mozTocId756141](https://sispmctl.sourceforge.net/#mozTocId756141)
+  - Changelog: [https://sourceforge.net/projects/sispmctl/files/sispmctl/](https://sourceforge.net/projects/sispmctl/files/sispmctl/)
+  - Repository: [https://sourceforge.net/p/sispmctl/git/ci/master/tree/](https://sourceforge.net/p/sispmctl/git/ci/master/tree/)
   - Package: [master/make/pkgs/sispmctl/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/sispmctl/)
   - Steward: -
 

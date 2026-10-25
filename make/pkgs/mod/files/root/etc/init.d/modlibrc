@@ -61,6 +61,7 @@ stop_post() { :; }
 #     its content to /tmp/flash/$DAEMON/$DAEMON.cfg file - if it
 #     does not yet exists.
 #   $1: Use as target file instead: /tmp/flash/$DAEMON/${1##*/}
+#   $2: Use as defaults file instead: /mod/etc/default.$DAEMON/$DAEMON.defaults_${2##*/}
 modlib_defaults() {
 	local dir="/tmp/flash/$DAEMON"
 	if [ ! -d "$dir" ]; then
@@ -68,8 +69,9 @@ modlib_defaults() {
 		[ ! -d "$dir" ] && return
 	fi
 	local arg="${1##*/}"
+	local def="${2##*/}"
 	local dst="/tmp/flash/$DAEMON/${arg:-$DAEMON.cfg}"
-	local src="/mod/etc/default.$DAEMON/$DAEMON.defaults"
+	local src="/mod/etc/default.$DAEMON/$DAEMON.defaults${def:+_$def}"
 	[ -e "$src" -a ! -e "$dst" ] && cat "$src" > "$dst"
 }
 

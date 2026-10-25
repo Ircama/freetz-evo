@@ -388,6 +388,9 @@ warn1() { [ "$FREETZ_VERBOSITY_LEVEL" -ge 1 ] && warn "$@"; }
 warn2() { [ "$FREETZ_VERBOSITY_LEVEL" -ge 2 ] && warn "$@"; }
 warn3() { [ "$FREETZ_VERBOSITY_LEVEL" -ge 3 ] && warn "$@"; }
 
+# Important message
+hint() { echoX -c -p "IMPORTANT: " "$@" >&2; }
+
 
 # Error message + exit with specified error code
 error() {

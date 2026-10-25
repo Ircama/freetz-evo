@@ -1,8 +1,48 @@
 config FREETZ_PACKAGE_SER2NET
-	bool "ser2net 3.5.4 - DEPRECATED"
+	bool "ser2net 3.5.4/4.6.8"
 	default n
 	help
-		Ser2net is a program for allowing network connections to serial
-		ports. It supports RFC 2217 (remote control of serial port
-		parameters), but you must have a complient client.
+		Serial to network interface, allows TCP/UDP to serial port
+		connections.
+		Configuration format differs by version (see help).
+
+if FREETZ_PACKAGE_SER2NET
+
+	choice
+		prompt "Version"
+			default FREETZ_PACKAGE_SER2NET_CURRENT
+
+		config FREETZ_PACKAGE_SER2NET_ABANDON
+			bool "3.5.4 - DEPRECATED"
+#			depends on  (FREETZ_TARGET_UCLIBC_0_9_28 || FREETZ_TARGET_UCLIBC_0_9_29)
+			help
+				Ser2net v3 is a program for allowing network connections to
+				serial ports. It supports RFC 2217 (remote control of serial
+				portparameters), but you must have a compliant client.
+				
+				This version uses traditional config format (ser2net.conf).
+				No additional libraries are required.
+
+		config FREETZ_PACKAGE_SER2NET_CURRENT
+			bool "4.6.8"
+			depends on !(FREETZ_TARGET_UCLIBC_0_9_28 || FREETZ_TARGET_UCLIBC_0_9_29)
+			select FREETZ_LIB_libgensio
+			select FREETZ_LIB_libgensioosh
+			select FREETZ_LIB_libgensiomdns
+			select FREETZ_LIB_libyaml
+			select FREETZ_LIB_libcrypt if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+			select FREETZ_LIB_libpthread if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
+			help
+				This is ser2net v4, a program for allowing connections between gensio
+				accepters and gensio connectors. Generally, this would be a network
+				connections to serial ports or IPMI Serial Over Lan (SOL) connections,
+				but there are lots of gensios and lots of options. See gensio(5) for
+				information on gensios.
+				
+				This version uses YAML configuration format (ser2net.yaml).
+				Requires gensio and yaml libraries and also uClibc 0.9.30 or newer.
+
+	endchoice
+
+endif # FREETZ_PACKAGE_SER2NET
 

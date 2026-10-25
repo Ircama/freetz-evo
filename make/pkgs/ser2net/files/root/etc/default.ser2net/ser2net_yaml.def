@@ -1,0 +1,7 @@
+CAPTION='ser2net.yaml'
+DESCRIPTION="$(lang de:"Dokumentation" en:"Documentation"): <a target=blank href=https://github.com/cminyard/ser2net/blob/master/ser2net.yaml.5>https://github.com/cminyard/ser2net/blob/master/ser2net.yaml.5</a>"
+
+CONFIG_FILE='/tmp/flash/ser2net/ser2net.yaml'
+CONFIG_SAVE='modsave flash; killall -0 ser2net && /mod/etc/init.d/rc.ser2net restart'
+CONFIG_TYPE='text'
+

@@ -23,7 +23,6 @@ Currently supported devices and firmwares
   * [T-Com derivatives](#t-com-derivatives)
   * [Alice derivatives](#alice-derivatives)
 
-<br>
 
 ### Not supported devices
 
@@ -163,13 +162,14 @@ Currently supported devices and firmwares
     - 272.08.25 rev133860 {ALL} [Smart24 P2 NL1]
 
   * __Fritz!Box 5630 (UNTESTED)__
-    - 302.08.40 rev135923 {ALL} [MyFRITZOS P1] (Inhaus)
+    - 302.08.50 rev137059 {ALL} [MyFRITZOS P1]
   * __Fritz!Box 5630 XGS (UNTESTED)__
     - 309.08.40 rev135925 {ALL} [MyFRITZOS P1] (Inhaus)
 
   * __Fritz!Box 5690 (UNTESTED)__
     - 298.08.04 rev119423 {ALL} [Smart24 P1 FCS]
     - 298.08.25 rev134002 {ALL} [Smart24 P2 NL1]
+    - 298.08.50 rev137518 {ALL} [MyFRITZOS P1]
   * __Fritz!Box 5690 Pro__
     - 279.07.62 rev115017 {ALL} [FCS23]
     - 279.08.03 rev118508 {ALL} [Smart24 P1 FCS]
@@ -466,7 +466,7 @@ Currently supported devices and firmwares
     - 271.07.59 rev113715 {ALL} [MOVE21NL2]
     - 271.08.02 rev117988 {ALL} [Smart24 P1 NL1]
     - 271.08.26 rev134664 {ALL} [Smart24 P2 NL1]
-    - 271.08.40 rev136585 {ALL} [MyFRITZOS P1] (Inhaus)
+    - 271.08.40 rev137640 {ALL} [MyFRITZOS P1] (Labor)
   * __Fritz!Box Fon WLAN 7520__
     - 175.07.14 rev73182 {GER} [MESH18 NL4]
     - 175.07.29 rev92061 {ALL} [PSQ19P2NL4]
@@ -493,6 +493,7 @@ Currently supported devices and firmwares
     - 256.07.57 rev109901 {ALL} [MOVE21NL1]
     - 256.08.02 rev117981 {ALL} [Smart24 P1 NL1]
     - 256.08.25 rev131440 {ALL} [Smart24 P2 NL1]
+    - 256.08.50 rev137523 {ALL} [MyFRITZOS P1]
   * __Fritz!Box Fon WLAN 7530 AX B__
     - 278.08.02 rev119131 {ALL} [Smart24 P1 FCS]
   * __Fritz!Box Fon WLAN 7560__
@@ -562,6 +563,9 @@ Currently supported devices and firmwares
     - 285.07.62 rev115134 {ALL} [FCS23]
     - 285.08.02 rev117971 {ALL} [Smart24 P1 FCS]
     - 285.08.25 rev134025 {ALL} [Smart24 P2 NL1]
+    - 285.08.50 rev136731 {ALL} [MyFRITZOS P1]
+  * __Fritz!Box 7695 <DSL/Fiber 7-90>__
+    - 316.08.47 rev136899 {ALL} [MyFRITZOS P1]
 
 ### Fritz!Powerline
 
@@ -647,7 +651,7 @@ Currently supported devices and firmwares
     - 296.08.26 rev135004 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 1610 Outdoor (UNTESTED)__
     - 305.08.25 rev134317 {ALL} [Smart24 P2 NL1]
-  * __Fritz!Repeater 1700 (UNTESTED)__
+  * __Fritz!Repeater 1700__
     - 290.08.07 rev128069 {ALL} [Smart24 P1 FCS]
     - 290.08.26 rev136867 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 2400__
@@ -655,7 +659,7 @@ Currently supported devices and firmwares
     - 169.07.29 rev93265 {ALL} [PSQ19P2NL4]
     - 169.07.58 rev111615 {ALL} [MOVE21NL1]
     - 169.08.25 rev132922 {ALL} [Smart24 P2 NL1]
-  * __Fritz!Repeater 2700 (UNTESTED)__
+  * __Fritz!Repeater 2700__
     - 301.08.07 rev128070 {ALL} [Smart24 P1 FCS]
     - 301.08.26 rev136868 {ALL} [Smart24 P2 NL1]
   * __Fritz!Repeater 3000__
@@ -683,6 +687,7 @@ Currently supported devices and firmwares
     - 265.07.63 rev116265 {ALL} [MOVE21NL1]
     - 265.08.02 rev119969 {ALL} [Smart24 P1 NL1]
     - 265.08.26 rev131168 {ALL} [Smart24 P2 NL1]
+    - 265.08.50 rev136031 {ALL} [MyFRITZOS P1]
 
 ### T-Com derivatives
 

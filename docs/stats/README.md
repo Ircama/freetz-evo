@@ -24,7 +24,7 @@
 </tbody></table>
 </details>
 
-<details><summary>140 verschiedene HWR</summary>
+<details><summary>141 verschiedene HWR</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -170,10 +170,11 @@
 <tr><td>FRITZ!Box 6835 5G</td><td>313</td></tr>
 <tr><td>FRITZ!Box 6860 5G v2</td><td>314</td></tr>
 <tr><td>FRITZ!Repeater 6700 Pro</td><td>315</td></tr>
+<tr><td>FRITZ!Box DSL/Fiber 7-90</td><td>316</td></tr>
 </tbody></table>
 </details>
 
-<details><summary>141 verschiedene Produkte</summary>
+<details><summary>142 verschiedene Produkte</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -313,6 +314,7 @@
 <tr><td>FRITZ!Box 6835 5G</td><td>Fritz_Box_HW313</td></tr>
 <tr><td>FRITZ!Box 6860 5G v2</td><td>Fritz_Box_HW314</td></tr>
 <tr><td>FRITZ!Repeater 6700 Pro</td><td>Fritz_Box_HW315</td></tr>
+<tr><td>FRITZ!Box DSL/Fiber 7-90</td><td>Fritz_Box_HW316</td></tr>
 <tr><td>FRITZ!WLAN Repeater 300E</td><td>Fritz_Box_Neon</td></tr>
 <tr><td>FRITZ!Box 6360 Cable</td><td>Fritz_Box_Puma</td></tr>
 <tr><td>FRITZ!Box SL WLAN</td><td>Fritz_Box_SL_WLAN</td></tr>
@@ -323,7 +325,7 @@
 </tbody></table>
 </details>
 
-<details><summary>137 verschiedene Geräte</summary>
+<details><summary>138 verschiedene Geräte</summary>
 
 <table>
 <caption style='background-color:gray'>T-Com (2)</caption>
@@ -428,7 +430,7 @@
 <tr><td>6890</td><td>FREETZ_TYPE_6890</td></tr>
 </tbody></table>
 <table>
-<caption style='background-color:gray'>Fon WLAN (47)</caption>
+<caption style='background-color:gray'>Fon WLAN (48)</caption>
 <thead><tr><th style='width:450px'>Name</th><th style='width:300px'>Symbol</th></tr></thead>
 <tbody>
 <tr><td>Fon WLAN</td><td>FREETZ_TYPE_WLAN</td></tr>
@@ -478,6 +480,7 @@
 <tr><td>7632</td><td>FREETZ_TYPE_7632</td></tr>
 <tr><td>7682</td><td>FREETZ_TYPE_7682</td></tr>
 <tr><td>7690</td><td>FREETZ_TYPE_7690</td></tr>
+<tr><td>7695 <DSL/Fiber 7-90></td><td>FREETZ_TYPE_7695</td></tr>
 </tbody></table>
 <table>
 <caption style='background-color:gray'>Powerline (6)</caption>
@@ -524,7 +527,7 @@
 </tbody></table>
 </details>
 
-<details><summary>415 verschiedene Images</summary>
+<details><summary>420 verschiedene Images</summary>
 
 <table>
 <caption style='background-color:gray'>&nbsp;</caption>
@@ -680,10 +683,11 @@
 <tr><td>FRITZ.Box_5590_Fiber-07.58-V2.image/FRITZ.Box_5590_Fiber-07.58.image</td><td>FREETZ_TYPE_5590 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_5590_Fiber-08.02.image</td><td>FREETZ_TYPE_5590 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_5590_Fiber-08.25.image</td><td>FREETZ_TYPE_5590 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
-<tr><td>FRITZ.Box_5630-08.40-135923-Inhaus.image</td><td>FREETZ_TYPE_5630_NIX &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
+<tr><td>FRITZ.Box_5630-08.50.image</td><td>FREETZ_TYPE_5630_NIX &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Box_5630_XGS-08.40-135925-Inhaus.image</td><td>FREETZ_TYPE_5630_XGS &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Box_5690-08.04.image</td><td>FREETZ_TYPE_5690_NIX &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_5690-08.25.image</td><td>FREETZ_TYPE_5690_NIX &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_5690-08.50.image</td><td>FREETZ_TYPE_5690_NIX &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Box_5690_Pro-07.62.image</td><td>FREETZ_TYPE_5690_PRO &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_5690_Pro-08.03.image</td><td>FREETZ_TYPE_5690_PRO &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_5690_Pro-08.25.image</td><td>FREETZ_TYPE_5690_PRO &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
@@ -867,7 +871,7 @@
 <tr><td>FRITZ.Box_7510-07.59.image</td><td>FREETZ_TYPE_7510 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_7510-08.02.image</td><td>FREETZ_TYPE_7510 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_7510-08.26.image</td><td>FREETZ_TYPE_7510 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
-<tr><td>FRITZ.Box_7510-08.40-136585-Inhaus.image</td><td>FREETZ_TYPE_7510 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
+<tr><td>FRITZ.Box_7510-08.40-137640-LabBETA.image</td><td>FREETZ_TYPE_7510 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Box_7520-07.14.image</td><td>FREETZ_TYPE_7520_V1 &amp;&amp;<br> FREETZ_TYPE_LANG_DE &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_1X</td></tr>
 <tr><td>FRITZ.Box_7520-07.29.image</td><td>FREETZ_TYPE_7520_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_2X</td></tr>
 <tr><td>FRITZ.Box_7520-07.59.image</td><td>FREETZ_TYPE_7520_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
@@ -889,6 +893,7 @@
 <tr><td>FRITZ.Box_7530_AX-07.57-V2.image/FRITZ.Box_7530_AX-07.57.image</td><td>FREETZ_TYPE_7530_W6_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_7530_AX-08.02.image</td><td>FREETZ_TYPE_7530_W6_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_7530_AX-08.25.image</td><td>FREETZ_TYPE_7530_W6_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_7530_AX-08.50.image</td><td>FREETZ_TYPE_7530_W6_V1 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Box_7530_AX_B-08.02-119131-Release.image</td><td>FREETZ_TYPE_7530_W6_V2 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_7560.en-de-es-it-fr-pl.149.06.83.image</td><td>FREETZ_TYPE_7560 &amp;&amp;<br> FREETZ_TYPE_LANG_EN &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_06_8X</td></tr>
 <tr><td>FRITZ.Box_7560.en-de-es-it-fr-pl.149.07.01.image</td><td>FREETZ_TYPE_7560 &amp;&amp;<br> FREETZ_TYPE_LANG_EN &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_0X</td></tr>
@@ -941,9 +946,12 @@
 <tr><td>FRITZ.Box_7690-07.62.image</td><td>FREETZ_TYPE_7690 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Box_7690-08.02.image</td><td>FREETZ_TYPE_7690 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Box_7690-08.25.image</td><td>FREETZ_TYPE_7690 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Box_7690-08.50.image</td><td>FREETZ_TYPE_7690 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
+<tr><td>FRITZ.Box_DSL_Fiber_7-90-08.47.image</td><td>FREETZ_TYPE_7695 &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>FRITZ.Smart_Gateway-07.63-Release.image</td><td>FREETZ_TYPE_GATE &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_07_5X</td></tr>
 <tr><td>FRITZ.Smart_Gateway-08.02-Release.image</td><td>FREETZ_TYPE_GATE &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_0X</td></tr>
 <tr><td>FRITZ.Smart_Gateway-08.26-Release.image</td><td>FREETZ_TYPE_GATE &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_2X</td></tr>
+<tr><td>FRITZ.Smart_Gateway-08.50-Release.image</td><td>FREETZ_TYPE_GATE &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_08_5X</td></tr>
 <tr><td>fw_Speedport_W501V_v_28.04.38.image</td><td>FREETZ_TYPE_W501V &amp;&amp;<br> FREETZ_TYPE_FIRMWARE_04_XX</td></tr>
 </tbody></table>
 </details>
@@ -1074,7 +1082,7 @@
 <tr><td>FRITZ!Box 6690 Pro</td><td>FREETZ_TYPE_6690_PRO</td></tr>
 </tbody></table>
 <table>
-<caption style='background-color:gray'>Gen5: fit-boot (33)</caption>
+<caption style='background-color:gray'>Gen5: fit-boot (34)</caption>
 <thead><tr><th style='width:450px'>Name</th><th style='width:300px'>Symbol</th></tr></thead>
 <tbody>
 <tr><td>FRITZ!Box 4050</td><td>FREETZ_TYPE_4050</td></tr>
@@ -1100,6 +1108,7 @@
 <tr><td>FRITZ!Box 7632</td><td>FREETZ_TYPE_7632</td></tr>
 <tr><td>FRITZ!Box 7682</td><td>FREETZ_TYPE_7682</td></tr>
 <tr><td>FRITZ!Box 7690</td><td>FREETZ_TYPE_7690</td></tr>
+<tr><td>FRITZ!Box DSL/Fiber 7-90</td><td>FREETZ_TYPE_7695</td></tr>
 <tr><td>FRITZ!Powerline 1240 AX</td><td>FREETZ_TYPE_1240_W6</td></tr>
 <tr><td>FRITZ!Repeater 1200 AX</td><td>FREETZ_TYPE_1200_W6_V1</td></tr>
 <tr><td>FRITZ!Repeater 1200 AX v2</td><td>FREETZ_TYPE_1200_W6_V2</td></tr>

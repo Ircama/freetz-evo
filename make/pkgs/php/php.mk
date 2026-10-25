@@ -1,20 +1,15 @@
 # Version selection based on menuconfig
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_4)),y)
-$(call PKG_INIT_BIN,8.4.26)
-$(PKG)_HASH:=32a2de53862ad44ed4a5005244ce4f1b50c271e74dced215449a4443b40569f1
+$(call PKG_INIT_BIN,8.4.27)
+$(PKG)_HASH:=dcf93923b0e38e0d5252b25b796520b5a47761a08b3488b6d0b5d1115764d3f0
 else ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_5)),y)
-$(call PKG_INIT_BIN,8.5.11)
-$(PKG)_HASH:=d9be75c08e8c316f4c8f4194d8fbe1750a15f6a6d9d4e3fe72082abeeb800360
+$(call PKG_INIT_BIN,8.5.12)
+$(PKG)_HASH:=08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
 else
 # Default to 8.5
-$(call PKG_INIT_BIN,8.5.11)
-$(PKG)_HASH:=d9be75c08e8c316f4c8f4194d8fbe1750a15f6a6d9d4e3fe72082abeeb800360
+$(call PKG_INIT_BIN,8.5.12)
+$(PKG)_HASH:=08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
 endif
-$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_SITE:=https://www.php.net/distributions
-### WEBSITE:=https://www.php.net/
-### MANPAGE:=https://www.php.net/manual/en/
-### CHANGES:=https://www.php.net/ChangeLog-8.php
 ### CVSREPO:=https://github.com/php/php-src
 
 # Version-specific patches directory

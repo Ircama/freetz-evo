@@ -1,4 +1,4 @@
-mainmenu "Freetz Configuration"
+mainmenu "Freetz-NG Configuration"
 
 config FREETZ_HAVE_DOT_CONFIG
 	bool

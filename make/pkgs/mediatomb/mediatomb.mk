@@ -1,17 +1,23 @@
-$(call PKG_INIT_BIN,0.12.1)
+$(call PKG_INIT_BIN, 0.12.1)
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH:=31163c34a7b9d1c9735181737cb31306f29f1f2a0335fb4f53ecccf8f62f11cd
 $(PKG)_SITE:=@SF/mediatomb
+### STEWARD:=EOL
 
 $(PKG)_BINARY:=$($(PKG)_DIR)/build/mediatomb
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/sbin/mediatomb
 $(PKG)_SHARE_DIR:=/usr/share/mediatomb
 $(PKG)_TARGET_WEBIF:=$($(PKG)_DEST_DIR)$($(PKG)_SHARE_DIR)/web/index.html
 
+$(PKG)_DEPENDS_ON += config-host
 $(PKG)_DEPENDS_ON += $(STDCXXLIB) curl expat ffmpeg libexif sqlite taglib zlib
 ifeq ($(strip $(FREETZ_PACKAGE_MEDIATOMB_WITH_PLAYLIST_SUPPORT)),y)
 $(PKG)_DEPENDS_ON += js
 endif
+
+$(PKG)_CFLAGS := $(TARGET_CFLAGS)
+$(PKG)_CFLAGS += -fcommon
+$(PKG)_CFLAGS += -fgnu89-inline
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_STDCXXLIB
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_MEDIATOMB_STATIC
@@ -20,6 +26,8 @@ ifeq ($(strip $(FREETZ_PACKAGE_MEDIATOMB_WITH_PLAYLIST_SUPPORT)),y)
 $(PKG)_REBUILD_SUBOPTS += FREETZ_OPENSSL_SHORT_VERSION
 endif
 $(PKG)_REBUILD_SUBOPTS += $(filter FREETZ_LIB_libcurl_% FREETZ_OPENSSL_SHLIB_VERSION,$(CURL_REBUILD_SUBOPTS))
+
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./configure_aux/)
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-rpl-malloc
 $(PKG)_CONFIGURE_OPTIONS += --enable-pthread-lib
@@ -55,8 +63,10 @@ $(PKG_SOURCE_DOWNLOAD)
 $(PKG_UNPACKED)
 $(PKG_CONFIGURED_CONFIGURE)
 
+
 $($(PKG)_BINARY): $($(PKG)_DIR)/.configured
 	$(SUBMAKE) -C $(MEDIATOMB_DIR) \
+		CFLAGS="$(MEDIATOMB_CFLAGS)" \
 	$(if $(FREETZ_PACKAGE_MEDIATOMB_STATIC),\
 		CURL_LIBS="$$($(TARGET_TOOLCHAIN_STAGING_DIR)/usr/bin/curl-config --static-libs)" \
 		LDFLAGS="-static" \
@@ -74,6 +84,7 @@ $($(PKG)_TARGET_WEBIF): $($(PKG)_BINARY)
 $(pkg):
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_TARGET_WEBIF)
+
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(MEDIATOMB_DIR) clean

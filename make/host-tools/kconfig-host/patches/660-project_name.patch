@@ -5,7 +5,7 @@
  		res = dialog_yesno(NULL,
  				   "Do you wish to save your new configuration?\n"
 -				     "(Press <ESC><ESC> to continue kernel configuration.)",
-+				     "(Press <ESC><ESC> to continue Freetz configuration.)",
++				     "(Press <ESC><ESC> to continue Freetz-NG configuration.)",
  				   6, 60);
  	else
  		res = -1;

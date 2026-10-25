@@ -1,8 +1,8 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON),5.1.4,7.1.1))
+$(call PKG_INIT_BIN, $(if $(FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON),5.1.10,7.1.5))
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH_ABANDON:=54383bb890a1cd62580e9f1eaa8081203196ed53bde9e98fb6b0004423f49063
-$(PKG)_HASH_CURRENT:=733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1
-$(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON),ABANDON,CURRENT))
+$(PKG)_HASH_ABANDON:=392306d6fc45dab0e9e0ea55381e071842e83a2fb31d320aeda40477a7766293
+$(PKG)_HASH_CURRENT:=de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f
+$(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON),ABANDON,CURRENT))
 $(PKG)_SITE:=https://www.ffmpeg.org/releases
 ### WEBSITE:=https://www.ffmpeg.org/
 ### MANPAGE:=https://www.ffmpeg.org/documentation.html
@@ -16,7 +16,7 @@ $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_FFMPEG_DECODER_libopenjpeg),openjpeg)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_FFMPEG_LZMA),xz)
 $(PKG)_DEPENDS_ON += $(if $(FREETZ_PACKAGE_FFMPEG_LIBMP3LAME),lame)
 
-$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON),abandon,current)
+$(PKG)_CONDITIONAL_PATCHES+=$(if $(FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON),abandon,current)
 
 $(PKG)_BINARIES_ALL        := ffmpeg ffprobe
 $(PKG)_BINARIES            := $(call PKG_SELECTED_SUBOPTIONS,$($(PKG)_BINARIES_ALL))
@@ -25,12 +25,12 @@ $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DEST_DIR)/usr/bin/%)
 
 $(PKG)_LIBNAMES_SHORT      := avcodec avdevice avfilter avformat avutil postproc swresample swscale
 
-ifeq ($(strip $(FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON)),y)
+ifeq ($(strip $(FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON)),y)
 $(PKG)_LIBVERSIONS_MAJOR   := 59      59       8        59       57     56       4          6
 $(PKG)_LIBVERSIONS_MINOR   := 37.100  7.100    44.100   27.100   28.100 6.100    7.100      7.100
 else
 $(PKG)_LIBVERSIONS_MAJOR   := 61      61       10       61       59     58       5          8
-$(PKG)_LIBVERSIONS_MINOR   := 19.101  3.100    4.100    7.100    39.100 3.100    3.100      3.100
+$(PKG)_LIBVERSIONS_MINOR   := 19.101  3.100    5.100    7.103    39.100 3.100    3.100      3.100
 endif
 
 $(PKG)_LIBNAMES_LONG_MAJOR := $(join $($(PKG)_LIBNAMES_SHORT:%=lib%.so.),$($(PKG)_LIBVERSIONS_MAJOR))
@@ -46,7 +46,7 @@ $(PKG)_DEMUXERS  := aac ac3 avi flv h264 hls image2 matroska mjpeg mov mp3 mpegp
 $(PKG)_PARSERS   := aac ac3 h264 mjpeg mpegaudio mpegvideo mpeg4video
 $(PKG)_PROTOCOLS := file http https pipe rtp tcp udp
 
-$(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_VERSION_ABANDON
+$(PKG)_REBUILD_SUBOPTS += FREETZ_LIB_ffmpeg_WITH_VERSION_ABANDON
 $(PKG)_REBUILD_SUBOPTS += FREETZ_TARGET_IPV6_SUPPORT
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_ffmpeg
 $(PKG)_REBUILD_SUBOPTS += FREETZ_PACKAGE_FFMPEG_ffprobe
@@ -77,6 +77,11 @@ ifeq ($(strip $(FREETZ_TARGET_ARCH_MIPS)),y)
 $(PKG)_CONFIGURE_OPTIONS += --disable-inline-asm
 # {standard input}:31: Error: opcode not supported on this processor: mips32r2 (mips32r2) `dmult $2,$3'
 # {standard input}:33: Error: opcode not supported on this processor: mips32r2 (mips32r2) `dsrl $2,$2,32'
+endif
+ifeq ($(strip $(FREETZ_TARGET_ARCH_X86)),y)
+$(PKG)_CONFIGURE_OPTIONS += --disable-inline-asm
+# error: 'asm' operand has impossible constraints
+#     __asm__ volatile(
 endif
 
 ifeq ($(strip $(FREETZ_TARGET_ARCH_X86)),y)

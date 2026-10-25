@@ -1,0 +1,96 @@
+--- scripts/kconfig/lxdialog/util.c
++++ scripts/kconfig/lxdialog/util.c
+@@ -108,6 +108,54 @@
+ 	DLG_COLOR(darrow, COLOR_RED, COLOR_BLACK, false);
+ }
+ 
++/*
++ * Charcoal surfaces and cool accents. Keep a basic palette for terminals
++ * that do not provide the standard 256-color palette.
++ */
++static void set_dark_theme(void)
++{
++	const bool extended = COLORS >= 256;
++	const int background = extended ? 234 : COLOR_BLACK;
++	const int panel = extended ? 235 : COLOR_BLACK;
++	const int shadow = extended ? 232 : COLOR_BLACK;
++	const int foreground = extended ? 252 : COLOR_WHITE;
++	const int muted = extended ? 244 : COLOR_WHITE;
++	const int border = extended ? 240 : COLOR_WHITE;
++	const int accent = extended ? 80 : COLOR_CYAN;
++	const int selection = extended ? 24 : COLOR_BLUE;
++	const int selected = extended ? 255 : COLOR_WHITE;
++	const int check = extended ? 114 : COLOR_GREEN;
++
++	DLG_COLOR(screen,                muted,      background, false);
++	DLG_COLOR(shadow,                shadow,     shadow,     false);
++	DLG_COLOR(dialog,                foreground, panel,      false);
++	DLG_COLOR(title,                 accent,     panel,      true);
++	DLG_COLOR(border,                border,     panel,      false);
++
++	DLG_COLOR(button_active,         selected,   selection,  true);
++	DLG_COLOR(button_inactive,       foreground, panel,      false);
++	DLG_COLOR(button_key_active,     accent,     selection,  true);
++	DLG_COLOR(button_key_inactive,   accent,     panel,      true);
++	DLG_COLOR(button_label_active,   selected,   selection,  true);
++	DLG_COLOR(button_label_inactive, foreground, panel,      false);
++
++	DLG_COLOR(inputbox,              selected,   background, false);
++	DLG_COLOR(position_indicator,    muted,      panel,      false);
++	DLG_COLOR(menubox,               foreground, panel,      false);
++	DLG_COLOR(menubox_border,        border,     panel,      false);
++
++	DLG_COLOR(item,                  foreground, panel,      false);
++	DLG_COLOR(item_selected,         selected,   selection,  false);
++	DLG_COLOR(tag,                   accent,     panel,      false);
++	DLG_COLOR(tag_selected,          accent,     selection,  true);
++	DLG_COLOR(tag_key,               accent,     panel,      true);
++	DLG_COLOR(tag_key_selected,      accent,     selection,  true);
++	DLG_COLOR(check,                 check,      panel,      true);
++	DLG_COLOR(check_selected,        check,      selection,  true);
++	DLG_COLOR(uarrow,                accent,     panel,      false);
++	DLG_COLOR(darrow,                accent,     panel,      false);
++}
++
+ static void set_bluetitle_theme(void)
+ {
+ 	set_classic_theme();
+@@ -127,7 +175,9 @@
+ {
+ 	int use_color = 1;
+ 	if (!theme)
+-		set_bluetitle_theme();
++		set_dark_theme ( ) ;
++	else if (strcmp(theme, "dark") == 0)
++		set_dark_theme();
+ 	else if (strcmp(theme, "classic") == 0)
+ 		set_classic_theme();
+ 	else if (strcmp(theme, "bluetitle") == 0)
+@@ -188,9 +236,11 @@
+ {
+ 	int use_color;
+ 
++	if (has_colors())
++		start_color();
++
+ 	use_color = set_theme(theme);
+ 	if (use_color && has_colors()) {
+-		start_color();
+ 		init_dialog_colors();
+ 	} else
+ 		set_mono_theme();
+--- scripts/kconfig/mconf.c
++++ scripts/kconfig/mconf.c
+@@ -177,10 +177,11 @@
+ "make MENUCONFIG_COLOR=<theme> menuconfig\n"
+ "\n"
+ "Available themes are\n"
++" dark       => charcoal background with cyan accents. (freetz default)\n"
+ " mono       => selects colors suitable for monochrome displays\n"
+ " blackbg    => selects a color scheme with black background\n"
+ " classic    => theme with blue background. The classic look\n"
+-" bluetitle  => an LCD friendly version of classic. (default)\n"
++" bluetitle  => an LCD friendly version of classic. (kconfig default)\n"
+ "\n",
+ menu_instructions[] =
+ 	"Arrow keys navigate the menu.  "

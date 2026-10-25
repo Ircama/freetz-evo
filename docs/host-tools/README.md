@@ -16,7 +16,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[ca-bundle 2026-09-25](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
+  * **[ca-bundle 2026-10-20](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
   * **[cmake 4.4.4](cmake-host.md)<a id='cmake-host'></a>**<br>
 
@@ -58,11 +58,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### K
 
-  * **[kconfig 7.2](kconfig-host.md)<a id='kconfig-host'></a>**<br>
+  * **[kconfig 7.3](kconfig-host.md)<a id='kconfig-host'></a>**<br>
 
 ### L
-
-  * **[libdtc 1.6.1](libdtc-host.md)<a id='libdtc-host'></a>**<br>
 
   * **[libtool 2.6.2](libtool-host.md)<a id='libtool-host'></a>**<br>
 
@@ -102,11 +100,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### P
 
-  * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
-
-  * **[patchelf 0.14.5/0.19.1](patchelf-host.md)<a id='patchelf-host'></a>**<br>
+  * **[patchelf 0.14.5/0.19.2](patchelf-host.md)<a id='patchelf-host'></a>**<br>
 
   * **[patchelf-target 0.14.5/0.15.0](patchelf-target-host.md)<a id='patchelf-target-host'></a>**<br>
+
+  * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
 
   * **[pkgconf 3.0.7](pkgconf-host.md)<a id='pkgconf-host'></a>**<br>
 
@@ -122,7 +120,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python3-attrs 26.1.0](python3-attrs-host.md)<a id='python3-attrs-host'></a>**<br>
 
-  * **[python3 3.14.8](python3-host.md)<a id='python3-host'></a>**<br>
+  * **[python3 3.14.9](python3-host.md)<a id='python3-host'></a>**<br>
 
   * **[python3-jsonschema 4.26.0](python3-jsonschema-host.md)<a id='python3-jsonschema-host'></a>**<br>
 
@@ -160,11 +158,11 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-10-02](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-10-20](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 
-  * **[uboot 2026.07](uboot-host.md)<a id='uboot-host'></a>**<br>
+  * **[uboot 2026.10](uboot-host.md)<a id='uboot-host'></a>**<br>
 
   * **[uimg 871930d](uimg-host.md)<a id='uimg-host'></a>**<br>
 

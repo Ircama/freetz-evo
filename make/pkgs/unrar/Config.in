@@ -30,3 +30,4 @@ if FREETZ_PACKAGE_UNRAR
 			Causes all libraries unrar depends on to be linked in statically
 
 endif # FREETZ_PACKAGE_UNRAR
+

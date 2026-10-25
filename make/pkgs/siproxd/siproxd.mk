@@ -21,7 +21,7 @@ $(PKG)_EXCLUDED += $(patsubst %,$($(PKG)_DEST_DIR)$($(PKG)_MODULES_DIR)/plugin_%
 $(PKG)_DEPENDS_ON += libosip2 libtool
 $(PKG)_DEPENDS_ON += config-host
 
-$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./scripts)
+$(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_UPDATE_CONFIGS,./scripts/)
 $(PKG)_CONFIGURE_PRE_CMDS += $(call PKG_PREVENT_RPATH_HARDCODING,./configure)
 
 # use system libltdl, not the bundled one

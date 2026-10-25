@@ -1,0 +1,11 @@
+--- Makefile.in
++++ Makefile.in
+@@ -421,7 +421,7 @@
+ EXTRA_DIST = $(man_MANS) ser2net.yaml ser2net.spec ser2net.init reconf \
+ 	     ser2net.service.in
+ 
+-SUBDIRS = tests
++SUBDIRS =
+ DIST_SUBDIRS = $(SUBDIRS)
+ noinst_DATA = ser2net.service
+ all: all-recursive

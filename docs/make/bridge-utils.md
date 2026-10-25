@@ -1,4 +1,8 @@
-# bridge-utils 1.4 (binary only) - DEPRECATED
+# bridge-utils 1.7.1 (binary only)
+  - Homepage: [https://wiki.linuxfoundation.org/networking/bridge](https://wiki.linuxfoundation.org/networking/bridge)
+  - Manpage: [https://linux.die.net/man/8/brctl](https://linux.die.net/man/8/brctl)
+  - Changelog: [https://www.kernel.org/pub/linux/utils/net/bridge-utils/](https://www.kernel.org/pub/linux/utils/net/bridge-utils/)
+  - Repository: [https://git.kernel.org/pub/scm/network/bridge/bridge-utils.git/](https://git.kernel.org/pub/scm/network/bridge/bridge-utils.git/)
   - Package: [master/make/pkgs/bridge-utils/](https://github.com/Freetz-NG/freetz-ng/tree/master/make/pkgs/bridge-utils/)
   - Steward: -
 

@@ -1,6 +1,6 @@
 --- src/defs.h
 +++ src/defs.h
-@@ -408,6 +408,7 @@
+@@ -409,6 +409,7 @@
  # define n_args(tcp) MIN(tcp_sysent(tcp)->nargs, MAX_ARGS)
  
  # include "xlat.h"

@@ -25,9 +25,9 @@ $(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_AVMSERVICES_PRELOAD),usr/bin/wrapper/ds
 $(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_AVMSERVICES_PRELOAD),usr/bin/wrapper/multid etc/init.d/rc.multid)
 $(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_AVMSERVICES_PRELOAD),usr/bin/wrapper/rextd  etc/init.d/rc.rextd)
 
-$(PKG)_EXCLUDED += $(if $(FREETZ_TYPE_EXTENDER) ,usr/bin/wrapper/dsld   etc/init.d/rc.dsld)
-$(PKG)_EXCLUDED += $(if $(FREETZ_TYPE_EXTENDER) ,usr/bin/wrapper/multid etc/init.d/rc.multid)
-$(PKG)_EXCLUDED += $(if $(FREETZ_TYPE_EXTENDER),,usr/bin/wrapper/rextd  etc/init.d/rc.rextd)
+$(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_DSLD),,usr/bin/wrapper/dsld   etc/init.d/rc.dsld)
+$(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_MULTID),,usr/bin/wrapper/multid etc/init.d/rc.multid)
+$(PKG)_EXCLUDED += $(if $(FREETZ_AVM_HAS_REXTD),,usr/bin/wrapper/rextd  etc/init.d/rc.rextd)
 
 $(PKG)_EXCLUDED += $(if $(or $(call not-y,$(FREETZ_AVM_HAS_USB_HOST)),$(FREETZ_REMOVE_FTPD)),etc/init.d/rc.ftpd)
 $(PKG)_EXCLUDED += $(if $(or $(call not-y,$(FREETZ_AVM_HAS_USB_HOST)),$(FREETZ_REMOVE_SAMBA),$(FREETZ_PACKAGE_SAMBA_SMBD),$(FREETZ_AVM_HAS_SAMBA_NQCS)),etc/init.d/rc.smbd)

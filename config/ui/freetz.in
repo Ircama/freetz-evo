@@ -419,7 +419,13 @@ menu "Web Interface"
 			bool "Freetz MOD"
 
 		config FREETZ_TAGGING_NG
-			bool "Freetz-EVO"
+                        bool "Freetz-EVO"
+
+                config FREETZ_TAGGING_CUSTOM
+                        bool "Custom"
+
+                config FREETZ_TAGGING_MODDED
+                        bool "Modded"
 
 		config FREETZ_TAGGING_PIMPED
 			bool "Pimped"
@@ -437,6 +443,8 @@ menu "Web Interface"
 		default "freetz-evo"    if FREETZ_TAGGING_EVO
 		default "cuma"          if FREETZ_TAGGING_CUMA
 		default "freetz-ng"     if FREETZ_TAGGING_NG
+		default "custom"        if FREETZ_TAGGING_CUSTOM
+		default "modded"        if FREETZ_TAGGING_MODDED
 		default "pimped"        if FREETZ_TAGGING_PIMPED
 
 	config FREETZ_PACKAGE_MOD_SKINNED_LOGIN

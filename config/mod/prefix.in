@@ -139,6 +139,7 @@ config FREETZ_TYPE_PREFIX
 	default "7632"              if FREETZ_TYPE_7632
 	default "7682"              if FREETZ_TYPE_7682
 	default "7690"              if FREETZ_TYPE_7690
+	default "7695"              if FREETZ_TYPE_7695
 	default "Gateway"           if FREETZ_TYPE_GATE
 	default "W501V"             if FREETZ_TYPE_W501V
 
