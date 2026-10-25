@@ -205,6 +205,33 @@ pub fn decode(payload: &Json) -> Option<Json> {
     serde_json::from_str(&answer).ok()
 }
 
+/// Why a Theengs inspection produced no JSON.
+pub const STATUS_DECODED: &str = "decoded";
+pub const STATUS_NO_DATA: &str = "no_service_or_manufacturer_data";
+pub const STATUS_UNKNOWN_PAYLOAD: &str = "no_theengs_decoder_for_payload";
+pub const STATUS_UNAVAILABLE: &str = "decoder_not_compiled_in";
+
+/// Decode one advertisement and report why the answer is empty.
+///
+/// The reason matters in the web UI: an advertisement without service or
+/// manufacturer data cannot be decoded by anybody, while a payload the library
+/// does not know only means that this model is missing from Theengs.
+///   * [`STATUS_NO_DATA`]: no 16/32/128 bit service data and no manufacturer data
+///   * [`STATUS_UNKNOWN_PAYLOAD`]: payload built, the library matched nothing
+///   * [`STATUS_UNAVAILABLE`]: built without the `theengs` feature
+pub fn inspect(mac: &str, advertisement: &[u8]) -> (Json, &'static str) {
+    if !available() {
+        return (Json::Null, STATUS_UNAVAILABLE);
+    }
+    let Some(payload) = payload(mac, "", 0, advertisement) else {
+        return (Json::Null, STATUS_NO_DATA);
+    };
+    match decode(&payload) {
+        Some(value) => (value, STATUS_DECODED),
+        None => (Json::Null, STATUS_UNKNOWN_PAYLOAD),
+    }
+}
+
 /// Convert a Theengs result into canonical measurements.
 ///
 /// `prefix` is used by the `both` mode so the two attribute sets cannot
@@ -427,6 +454,44 @@ mod tests {
             assert!(decode(&payload).is_some());
         } else {
             assert!(decode(&payload).is_none());
+        }
+    }
+
+    #[test]
+    fn inspection_reports_why_theengs_stayed_empty() {
+        // The reason is only meaningful when the library is linked in.
+        let empty = if available() {
+            STATUS_NO_DATA
+        } else {
+            STATUS_UNAVAILABLE
+        };
+        // Flags, TX power and a name only: nothing to hand to the library.
+        assert_eq!(
+            inspect("A4C138B3326C", &hex("0201060B09446576696365")),
+            (Json::Null, empty)
+        );
+        assert_eq!(inspect("A4C138B3326C", &[]), (Json::Null, empty));
+        // A well formed service data record the library has no decoder for.
+        let unknown = inspect("A4C138B3326C", &hex("02010605163412AABB"));
+        assert_eq!(unknown.0, Json::Null);
+        assert_eq!(
+            unknown.1,
+            if available() {
+                STATUS_UNKNOWN_PAYLOAD
+            } else {
+                STATUS_UNAVAILABLE
+            }
+        );
+        // The ATC/PVVX payload is decoded only when the library is linked in.
+        let atc = inspect(
+            "A4C138B3326C",
+            &hex("02010612161A186C32B338C1A4C305C1199B0B64A10E"),
+        );
+        if available() {
+            assert_eq!(atc.1, STATUS_DECODED);
+            assert_eq!(model(&atc.0), Some("LYWSD03MMC/MJWSD05MMC_PVVX"));
+        } else {
+            assert_eq!(atc, (Json::Null, STATUS_UNAVAILABLE));
         }
     }
 }

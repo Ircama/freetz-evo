@@ -226,20 +226,19 @@ fn inspect_limited(path: &Path, spec: &crate::codec::spec::Spec, input: &str, ma
     wire_mac.reverse();
     let report = crate::link::AdvReport {rssi:0, event_type:0, addr_type:0, directed:false, phys:0, mac:wire_mac, data};
     // Optional second decoder: the response always carries the Theengs result
-    // (or null), so Inspect can compare both backends without a second request.
-    let theengs = crate::theengs::payload(observation["mac"].as_str().unwrap_or(""), "", 0, &report.data)
-        .and_then(|payload| crate::theengs::decode(&payload))
-        .unwrap_or(Value::Null);
+    // (or null plus the reason), so Inspect can compare both backends without a
+    // second request.
+    let (theengs, theengs_status) = crate::theengs::inspect(observation["mac"].as_str().unwrap_or(""), &report.data);
     let Some((detected, service)) = crate::pipeline::detect_format(&report, spec) else {
-        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"theengs":theengs,"error":"No supported service-data format in this advertisement"}));
+        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"error":"No supported service-data format in this advertisement"}));
     };
     let format = if device.forced_format.is_empty() { detected } else { device.forced_format.clone() };
     match crate::pipeline::decode(spec, &device, &format, service, &report) {
         Ok(decoded) => {
             let measurements = crate::pipeline::measurements(&decoded).into_iter().map(|measure| (measure.name.clone(), json!(measure.text()))).collect::<serde_json::Map<_, _>>();
-            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements,"theengs":theengs}))
+            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements,"theengs":theengs,"theengs_status":theengs_status}))
         },
-        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"theengs":theengs,"error":error})),
+        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"error":error})),
     }
 }
 
@@ -435,8 +434,12 @@ mod tests {
         assert_eq!(decoded["measurements"]["opened"], "1");
         assert!(!decoded.to_string().contains("11111111111111111111111111111111"));
         assert!(!decoded["decoded"].is_null());
+        // The response always explains why the optional Theengs result is null.
+        assert!(decoded["theengs_status"].is_string());
         let unsupported = json!({"observation":{"mac":"A4C1383406CE","data":"020106"}});
-        assert_eq!(inspect(&path, &spec, &unsupported.to_string()).unwrap()["decode_status"], "unsupported_format");
+        let unsupported = inspect(&path, &spec, &unsupported.to_string()).unwrap();
+        assert_eq!(unsupported["decode_status"], "unsupported_format");
+        assert_eq!(unsupported["theengs_status"], if crate::theengs::available() { crate::theengs::STATUS_NO_DATA } else { crate::theengs::STATUS_UNAVAILABLE });
         let mut invalid = request.clone();
         invalid["observation"]["data"] = json!("not hex");
         assert!(inspect(&path, &spec, &invalid.to_string()).is_err());

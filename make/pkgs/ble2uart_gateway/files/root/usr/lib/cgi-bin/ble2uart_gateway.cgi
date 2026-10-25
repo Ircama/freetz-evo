@@ -708,6 +708,10 @@ cat << 'EOF'
 	}
 	let theengsInput=null, theengsResult=null, theengsDecoder=null, theengsText='', theengsNative='', theengsReady=false, theengsBusy=false;
 	const theengsNativeUi=({en:'Decoded by the gateway (compiled-in Theengs library)',it:'Decodificato dal gateway (libreria Theengs compilata)',de:'Vom Gateway decodiert (eingebaute Theengs-Bibliothek)',fr:'Décodé par la passerelle (bibliothèque Theengs intégrée)',es:'Decodificado por la puerta de enlace (biblioteca Theengs integrada)'})[helpLanguage]||'Decoded by the gateway (compiled-in Theengs library)';
+	/* Why the native library returned nothing: an advertisement without service
+	 * or manufacturer data cannot be decoded by anybody, while an unknown model
+	 * only means that Theengs has no decoder for it. */
+	const theengsNativeStatus=({en:{noDecoder:'Native decoder: Theengs has no decoder for this payload; the JSON above is still valid.',unavailable:'Native decoder: the Theengs library is not compiled into this build; use the WebAssembly decoder below.'},it:{noDecoder:'Decoder nativo: Theengs non ha un decoder per questo payload; il JSON qui sopra resta valido.',unavailable:'Decoder nativo: la libreria Theengs non è compilata in questo build; usa il decoder WebAssembly qui sotto.'},de:{noDecoder:'Eingebauter Decoder: Theengs hat keinen Decoder für diesen Payload; das JSON oben bleibt gültig.',unavailable:'Eingebauter Decoder: die Theengs-Bibliothek ist in diesem Build nicht enthalten; nutze den WebAssembly-Decoder unten.'},fr:{noDecoder:'Décodeur natif : Theengs n’a pas de décodeur pour ce payload ; le JSON ci-dessus reste valide.',unavailable:'Décodeur natif : la bibliothèque Theengs n’est pas compilée dans ce build ; utilisez le décodeur WebAssembly ci-dessous.'},es:{noDecoder:'Decodificador nativo: Theengs no tiene decodificador para este payload; el JSON de arriba sigue siendo válido.',unavailable:'Decodificador nativo: la biblioteca Theengs no está compilada en este build; usa el decodificador WebAssembly de abajo.'}})[helpLanguage]||{noDecoder:'Native decoder: Theengs has no decoder for this payload; the JSON above is still valid.',unavailable:'Native decoder: the Theengs library is not compiled into this build; use the WebAssembly decoder below.'};
 	const theengsDecodeUi=({en:{decode:'Decode with Theengs',loading:'Loading the Theengs decoder (about 0.7 MB from decoder.theengs.io)…',decoding:'Decoding…',decoded:'Decoded by Theengs',noDecoder:'Theengs has no decoder for this payload; the JSON itself is valid.',failed:'Theengs decode failed',invalid:'Invalid JSON',result:'Theengs result'},it:{decode:'Decodifica con Theengs',loading:'Carico il decoder Theengs (circa 0,7 MB da decoder.theengs.io)…',decoding:'Decodifica in corso…',decoded:'Decodificato da Theengs',noDecoder:'Theengs non ha un decoder per questo payload; il JSON resta valido.',failed:'Decodifica Theengs non riuscita',invalid:'JSON non valido',result:'Risultato Theengs'},de:{decode:'Mit Theengs decodieren',loading:'Theengs-Decoder wird geladen (etwa 0,7 MB von decoder.theengs.io)…',decoding:'Decodiere…',decoded:'Von Theengs decodiert',noDecoder:'Theengs hat keinen Decoder für diesen Payload; das JSON selbst ist gültig.',failed:'Theengs-Dekodierung fehlgeschlagen',invalid:'Ungültiges JSON',result:'Theengs-Ergebnis'},fr:{decode:'Décoder avec Theengs',loading:'Chargement du décodeur Theengs (environ 0,7 Mo depuis decoder.theengs.io)…',decoding:'Décodage…',decoded:'Décodé par Theengs',noDecoder:'Theengs n’a pas de décodeur pour ce payload ; le JSON reste valide.',failed:'Échec du décodage Theengs',invalid:'JSON invalide',result:'Résultat Theengs'},es:{decode:'Decodificar con Theengs',loading:'Cargando el decodificador Theengs (unos 0,7 MB desde decoder.theengs.io)…',decoding:'Decodificando…',decoded:'Decodificado por Theengs',noDecoder:'Theengs no tiene decodificador para este payload; el JSON sigue siendo válido.',failed:'Falló la decodificación de Theengs',invalid:'JSON no válido',result:'Resultado Theengs'}})[helpLanguage]||{decode:'Decode with Theengs (WebAssembly)',loading:'Loading the Theengs decoder…',decoding:'Decoding…',decoded:'Decoded by Theengs',noDecoder:'Theengs has no decoder for this payload; the JSON itself is valid.',failed:'Theengs decode failed',invalid:'Invalid JSON',result:'Theengs result'};
 	function theengsStatus(text,error){const node=element('bbTheengsStatus');if(!node)return;node.textContent=text||'';node.classList.toggle('bbError',!!error);}
 	async function ensureTheengsEditors() {
@@ -717,6 +721,17 @@ cat << 'EOF'
 		if(theengsText)theengsInput.setValue(theengsText,-1);
 		if(theengsNative)theengsResult.setValue(theengsNative,-1);
 		theengsInput.resize(true);theengsResult.resize(true);
+	}
+	/* Drop every trace of the previous inspection before a new one starts, so a
+	 * stale result can never be attributed to the advertisement on screen. */
+	function resetTheengs() {
+		theengsReady=false;theengsText='';theengsNative='';
+		if(theengsInput)theengsInput.setValue('',-1);
+		if(theengsResult)theengsResult.setValue('',-1);
+		const decode=element('bbTheengsDecode'),copy=element('bbTheengsCopy');
+		if(decode)decode.disabled=true;
+		if(copy)copy.disabled=true;
+		theengsStatus('',false);
 	}
 	function setTheengs(observation) {
 		const payload=observation?theengsPayload(observation):null;
@@ -729,7 +744,13 @@ cat << 'EOF'
 		const decode=element('bbTheengsDecode'),copy=element('bbTheengsCopy');
 		if(decode)decode.disabled=!payload;
 		if(copy)copy.disabled=!payload;
-		theengsStatus(native?theengsNativeUi:(payload?'':theengsUi.empty),false);
+		const reason=observation?observation.theengs_status:'';
+		let text='',error=false;
+		if(native)text=theengsNativeUi;
+		else if(!payload)text=theengsUi.empty;
+		else if(reason==='no_theengs_decoder_for_payload')text=theengsNativeStatus.noDecoder;
+		else if(reason==='decoder_not_compiled_in'){text=theengsNativeStatus.unavailable;error=true;}
+		theengsStatus(text,error);
 	}
 	async function decodeWithTheengs() {
 		if(theengsBusy)return;
@@ -1484,12 +1505,13 @@ cat << 'EOF'
 	}
 	async function inspectDevice(device) {
 		const sequence=++inspectionSequence;
+		resetTheengs();
 		element('bbPacketDetails').open=true;element('bbPacketError').hidden=true;setPacket({...device,decode_status:'decoding'});
 		ensurePacketEditor().catch(error=>{if(sequence===inspectionSequence){element('bbPacketError').textContent=error.message;element('bbPacketError').hidden=false;}});
 		const configured=config.devices.find(known=>normalize(known.mac)===device.mac);
 		try {
 			const decoded=await api('inspect',{observation:device,device:configured});
-			if(sequence===inspectionSequence)setPacket({...device,decode_status:decoded.decode_status,wire_format:decoded.wire_format,measurements:decoded.measurements,decoded:decoded.decoded,theengs:decoded.theengs,decode_error:decoded.error});
+			if(sequence===inspectionSequence)setPacket({...device,decode_status:decoded.decode_status,wire_format:decoded.wire_format,measurements:decoded.measurements,decoded:decoded.decoded,theengs:decoded.theengs,theengs_status:decoded.theengs_status,decode_error:decoded.error});
 		} catch(error) {if(sequence===inspectionSequence)setPacket({...device,decode_status:'failed',decode_error:error.message});}
 	}
 	async function poll() {
