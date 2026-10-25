@@ -448,7 +448,7 @@ filesystem requirements. Without optional history maintenance the DB grows.
 An optional thread inside the gateway archives and consolidates history; no
 cron, external process or database server is required. It is disabled by default.
 Freetz users can configure every setting and age band graphically under
-**Settings → Frontends → SQLite → History maintenance**. Save and explicitly
+**Settings → Frontends → SQLite → Retention policies**. Save and explicitly
 restart to apply changes. The standalone YAML/CLI uses the same schema and
 validation as reception and the CGI:
 
@@ -563,6 +563,11 @@ can postpone it. Rendering and rollup charts remain the external reader's job.
 
 ### Sensor dashboard CGI
 
+The configuration CGI also exposes `--web-config log` (`{"lines":N}` on stdin,
+at most 2000, 64 KiB read from the end of the file multiplied by nothing: only
+the tail is read), which the **Log** tab uses to show
+`/tmp/rc.ble2uart_gateway.log`.
+
 `ble2uart-gateway --portal` is a CGI program (`portal.rs`) that serves both the
 HTML shell and the JSON API; it is reached through the shell wrapper
 `usr/lib/cgi-bin/ble2uart_gateway/portal.cgi`, which sources
@@ -576,6 +581,7 @@ can be recovered) and immediately sets `PRAGMA query_only=ON`.
 | `?action=info` | schema version, table counts, file/WAL sizes, own RSS |
 | `?action=catalog` | devices, series (attribute/unit/kind), latest value and timestamps |
 | `?action=series&mac=..&attribute=..&unit=..&kind=numeric\|boolean&range=<s>` | bucketed points `[unix_ms, average, samples]`; `range=0` means the whole series |
+| `?action=series&...+&from=<ns>&to=<ns>` | explicit window (used by the browser zoom); it wins over `range` |
 
 The catalog merges two independent sources, so nothing is hard-coded and the
 dashboard also works before history maintenance has ever run:
@@ -592,9 +598,11 @@ scan the whole `measurements` table when maintenance is disabled. Charts are
 bucketed in SQL per series and merged with sample-count weighting, so archived
 and raw data can be combined without interpolation.
 
-Static assets stay plain files (`portal.css`, `portal.js`) and draw the chart on
-a canvas without any library: the page works on a router without Internet
-access. Measured on the FRITZ!Box 7590 AX against the production database, one
+Static assets stay plain files (`portal.css`, `portal.js`, referenced with a
+version query so a caching httpd serves new copies) and draw the chart on a
+canvas without any library: the page works on a router without Internet access.
+Hovering draws a crosshair plus one marker per series; dragging selects a time
+window, `+`/`−`/reset change it and `⛶` uses the Fullscreen API. Measured on the FRITZ!Box 7590 AX against the production database, one
 request peaks at about 7 MB RSS; the equivalent PHP 8.5 `php-cgi` script with
 `pdo_sqlite` peaks at about 19 MB (about 14 MB for PHP alone before doing any
 query), which is why the portal is part of the Rust binary rather than a PHP page.
@@ -602,6 +610,11 @@ query), which is why the portal is part of the Rust binary rather than a PHP pag
 ## Device Availability Monitoring
 
 Availability monitoring is configured only through each device's `rules` list,
+where a rule can also carry a `recovery_message` (sent instead of the automatic
+recovery text) and a `webhook.provider` of `ntfy`, `gotify` or `rest`; the REST
+provider adds `method`, `content_type`, `body` and `header` with `{event}`,
+`{message}`, `{title}`, `{device}`, `{attribute}`, `{value}`, `{unit}` and `{id}`
+placeholders.
 or **Devices → Edit → Availability monitoring** in the CGI. There is no global
 rule engine, workflow library or Settings-tab webhook configuration.
 

@@ -34,6 +34,7 @@ mod managed_process;
 mod matter;
 mod portal;
 mod profile;
+mod theengs;
 #[cfg(feature = "matter")]
 mod matter_server;
 #[cfg(feature = "matter")]
@@ -273,7 +274,7 @@ fn main() -> std::process::ExitCode {
         Comando::DecodeCaptures => decode_captures(&args),
         Comando::WebConfig(action) => {
             let mut input = String::new();
-            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups") {
+            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups"|"log") {
                 let _ = std::io::stdin().take(262145).read_to_string(&mut input);
             }
             let response = if input.len() > 262144 {

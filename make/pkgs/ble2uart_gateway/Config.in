@@ -46,3 +46,26 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
                     with the latest value of every sensor and its charts; the
                     sensors, units and value types are read from the SQLite
                     database, nothing is hard-coded
+
+config FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS
+	bool "  Second decoder: Theengs Decoder (GPL-3.0-or-later)"
+	depends on FREETZ_PACKAGE_BLE2UART_GATEWAY
+	default n
+	help
+		Link the Theengs Decoder C++ library as a static library, so a
+		device can be decoded with `decoder: theengs` (that library only)
+		or `decoder: both` (both attribute sets, the Theengs ones
+		prefixed with theengs_) in the YAML configuration.
+
+		The library supports more than 140 devices, including formats
+		this gateway does not know, but it cannot decrypt bindkey
+		advertisements: encrypted devices keep working with the built-in
+		codec. It is licensed GPL-3.0-or-later, so the daemon binary
+		built with this option has to be distributed under GPL-3.0; the
+		option is off by default to keep the default build EUPL-1.2.
+
+		Costs measured on a 7590 AX: about 0.5 MB of flash (libstdc++
+		is linked statically) and 0.7-25 ms per advertisement (the worst
+		case is an advertisement no decoder matches), 192 kB of RAM.
+		The sources are pinned by revision and checksum and downloaded by
+		`make ble2uart_gateway-download`.

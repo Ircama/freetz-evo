@@ -225,17 +225,63 @@ fn inspect_limited(path: &Path, spec: &crate::codec::spec::Spec, input: &str, ma
     let mut wire_mac = mac;
     wire_mac.reverse();
     let report = crate::link::AdvReport {rssi:0, event_type:0, addr_type:0, directed:false, phys:0, mac:wire_mac, data};
+    // Optional second decoder: the response always carries the Theengs result
+    // (or null), so Inspect can compare both backends without a second request.
+    let theengs = crate::theengs::payload(observation["mac"].as_str().unwrap_or(""), "", 0, &report.data)
+        .and_then(|payload| crate::theengs::decode(&payload))
+        .unwrap_or(Value::Null);
     let Some((detected, service)) = crate::pipeline::detect_format(&report, spec) else {
-        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"error":"No supported service-data format in this advertisement"}));
+        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"theengs":theengs,"error":"No supported service-data format in this advertisement"}));
     };
     let format = if device.forced_format.is_empty() { detected } else { device.forced_format.clone() };
     match crate::pipeline::decode(spec, &device, &format, service, &report) {
         Ok(decoded) => {
             let measurements = crate::pipeline::measurements(&decoded).into_iter().map(|measure| (measure.name.clone(), json!(measure.text()))).collect::<serde_json::Map<_, _>>();
-            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements}))
+            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements,"theengs":theengs}))
         },
-        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"error":error})),
+        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"theengs":theengs,"error":error})),
     }
+}
+
+/// Last lines of the service log. The file is read from its end (bounded to
+/// 64 KiB) so a large log never allocates the whole file.
+pub fn log_tail(lines: usize) -> Value {
+    const READ_LIMIT: u64 = 65536;
+    let path = std::env::var("BLE2UART_GATEWAY_LOG")
+        .ok().filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "/tmp/rc.ble2uart_gateway.log".into());
+    let lines = lines.clamp(1, 2000);
+    let mut file = match std::fs::File::open(&path) {
+        Ok(file) => file,
+        Err(_) => return json!({"success": true, "path": path, "lines": [], "missing": true}),
+    };
+    let size = file.metadata().map(|metadata| metadata.len()).unwrap_or(0);
+    let start = size.saturating_sub(READ_LIMIT);
+    use std::io::Seek;
+    if file.seek(std::io::SeekFrom::Start(start)).is_err() {
+        return json!({"success": false, "error": "cannot seek the service log"});
+    }
+    let mut buffer = Vec::new();
+    if file.take(READ_LIMIT + 1).read_to_end(&mut buffer).is_err() {
+        return json!({"success": false, "error": "cannot read the service log"});
+    }
+    let text = String::from_utf8_lossy(&buffer);
+    let mut parts: Vec<&str> = text.split('\n').collect();
+    if start > 0 && !parts.is_empty() {
+        // Drop the first partial line when the read started mid-file.
+        parts.remove(0);
+    }
+    while parts.last().is_some_and(|line| line.is_empty()) {
+        parts.pop();
+    }
+    let slice = if parts.len() > lines { &parts[parts.len() - lines..] } else { &parts[..] };
+    json!({
+        "success": true,
+        "path": path,
+        "size": size,
+        "truncated": start > 0 && parts.len() >= lines,
+        "lines": slice.iter().map(|line| line.trim_end_matches('\r')).collect::<Vec<_>>(),
+    })
 }
 
 pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, String> {
@@ -263,6 +309,11 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
     }
     if action == "attributes" {
         return Ok(json!({"success":true,"attributes":crate::pipeline::supported_attributes().collect::<Vec<_>>()}));
+    }
+    if action == "log" {
+        let lines=serde_json::from_str::<Value>(input).ok().and_then(|request|request["lines"].as_u64())
+            .unwrap_or(200) as usize;
+        return Ok(log_tail(lines));
     }
     if action == "backups" {
         let prefix = format!("{}.", path.file_name().ok_or("invalid config path")?.to_string_lossy());
@@ -315,6 +366,20 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn log_tail_returns_the_last_lines_only() {
+        let directory=std::env::temp_dir().join(format!("ble-log-{}",std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        let path=directory.join("rc.log");
+        std::fs::write(&path,"one\ntwo\nthree\n").unwrap();
+        std::env::set_var("BLE2UART_GATEWAY_LOG",&path);
+        let tail=log_tail(2);
+        std::env::remove_var("BLE2UART_GATEWAY_LOG");
+        assert_eq!(tail["lines"],json!(["two","three"]));
+        assert_eq!(tail["success"],true);
+        std::fs::remove_dir_all(directory).ok();
+    }
 
     #[test]
     fn control_socket_refuses_symlinked_private_directory() {

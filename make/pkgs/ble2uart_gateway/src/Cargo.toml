@@ -41,6 +41,9 @@ matter = ["dep:rs-matter", "dep:rand", "dep:async-io", "dep:futures-lite", "dep:
 # Platform profile: Freetz-EVO helper paths and FRITZ!Box
 # interface preference. Enabled by make/pkgs/ble2uart_gateway.
 freetz = []
+# GPL-3.0-or-later Theengs Decoder linked as a static library. Enabled by
+# FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS; adds `decoder: theengs|both`.
+theengs = []
 # Optional Matter DNS-SD backends besides the always available builtin
 # responder (frontends.matter.mdns_backend). avahi/resolved talk D-Bus (pure
 # Rust zbus); zeroconf links the native Avahi/Bonjour client libraries;

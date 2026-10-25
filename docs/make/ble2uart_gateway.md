@@ -142,9 +142,9 @@ committed WAL rows even if the main `.db` modification time is older. Finish a
 long-lived read transaction to refresh its snapshot; use the SQLite backup API,
 not a copy of `.db` alone, to obtain a consistent database while recording.
 
-Optional **Settings → Frontends → SQLite → History maintenance** starts an
-internal maintenance thread, disabled by default. Per-measurement/MAC policies
-and all age bands are editable graphically. Temperature has progressive presets;
+Optional **Settings → Frontends → SQLite → Retention policies** starts an
+internal maintenance thread, disabled by default. Per-measurement/MAC retention
+cards and all age bands are editable graphically. Temperature has progressive presets;
 battery/voltage use much coarser sampling. Recognized counters are discarded
 from consolidated history by default; per-attribute/MAC overrides are available.
 Other unconfigured readings and discrete states keep every sample. Consolidation retains real samples,

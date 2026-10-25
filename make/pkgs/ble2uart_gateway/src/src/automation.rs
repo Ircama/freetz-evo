@@ -49,6 +49,8 @@ pub enum Provider {
     #[default]
     Ntfy,
     Gotify,
+    /// Generic HTTPS endpoint: method, content type and body are configurable.
+    Rest,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -66,6 +68,15 @@ pub struct WebhookConfig {
     pub timeout_ms: u64,
     pub max_attempts: u32,
     pub retry_s: u64,
+    /// REST only: HTTP method (POST, PUT, PATCH or GET).
+    pub method: String,
+    /// REST only: request content type.
+    pub content_type: String,
+    /// REST only: request body template, `{event}`, `{message}`, `{device}`,
+    /// `{attribute}`, `{value}`, `{unit}`, `{title}` are substituted.
+    pub body: String,
+    /// REST only: one extra header written as `Name: value`.
+    pub header: String,
 }
 
 impl std::fmt::Debug for WebhookConfig {
@@ -78,7 +89,9 @@ impl std::fmt::Debug for WebhookConfig {
 impl Default for WebhookConfig {
     fn default() -> Self {
         Self { enabled:false,provider:Provider::Ntfy,url:String::new(),token:String::new(),ca_file:String::new(),priority:4,tags:"thermometer".into(),ipv4_only:false,
-            timeout_ms:5000,max_attempts:1,retry_s:60 }
+            timeout_ms:5000,max_attempts:1,retry_s:60,method:"POST".into(),content_type:"application/json".into(),
+            body:r#"{"event":"{event}","device":"{device}","attribute":"{attribute}","value":"{value}","unit":"{unit}","message":"{message}"}"#.into(),
+            header:String::new() }
     }
 }
 
@@ -92,6 +105,8 @@ pub struct AutomationRule {
     pub startup_grace_s: u64,
     pub notify_recovery: bool,
     pub message: String,
+    /// Text sent when a notified outage ends; empty keeps the automatic text.
+    pub recovery_message: String,
     pub tgs: String,
     pub webhook: WebhookConfig,
 }
@@ -99,7 +114,8 @@ pub struct AutomationRule {
 impl Default for AutomationRule {
     fn default() -> Self {
         Self { id:"temperature_missing".into(),enabled:false,attribute:"temperature".into(),
-            stale_after_s:600,startup_grace_s:600,notify_recovery:true,message:String::new(),tgs:String::new(),webhook:WebhookConfig::default() }
+            stale_after_s:600,startup_grace_s:600,notify_recovery:true,message:String::new(),
+            recovery_message:String::new(),tgs:String::new(),webhook:WebhookConfig::default() }
     }
 }
 
@@ -122,12 +138,35 @@ impl WebhookConfig {
         }
         if required || !webhook.url.is_empty() {
             let uri: ureq::http::Uri=webhook.url.parse().map_err(|_|"automation webhook URL is invalid")?;
+            let generic=webhook.provider==Provider::Rest;
             if uri.scheme_str()!=Some("https") || uri.host().is_none() || uri.authority().is_some_and(|value|value.as_str().contains('@'))
-                || uri.query().is_some() || webhook.url.contains('#') || uri.path()=="/" {
+                || webhook.url.contains('#')
+                || (!generic && (uri.query().is_some() || uri.path()=="/")) {
                 return Err("automation webhook requires HTTPS, a topic or /message path, and no URL credentials/query/fragment".into());
             }
             if webhook.provider==Provider::Gotify && (!uri.path().ends_with("/message") || webhook.token.is_empty()) {
                 return Err("Gotify requires a /message endpoint and an application token".into());
+            }
+            if generic {
+                let method=webhook.method.to_ascii_uppercase();
+                if !matches!(method.as_str(),"POST"|"PUT"|"PATCH"|"GET") {
+                    return Err("REST webhook method must be POST, PUT, PATCH or GET".into());
+                }
+                if webhook.content_type.len()>128 || !webhook.content_type.is_ascii()
+                    || webhook.content_type.bytes().any(|byte|byte.is_ascii_control()) {
+                    return Err("REST webhook content type must be bounded ASCII header text".into());
+                }
+                if webhook.body.len()>8192 || webhook.body.contains('\0') {
+                    return Err("REST webhook body must be at most 8192 bytes without NUL".into());
+                }
+                if !webhook.header.trim().is_empty() {
+                    let (name,value)=webhook.header.split_once(':').ok_or("REST webhook header must be written as 'Name: value'")?;
+                    if name.trim().is_empty()
+                        || !name.trim().bytes().all(|byte|byte.is_ascii_alphanumeric()||b"-_".contains(&byte))
+                        || value.bytes().any(|byte|byte.is_ascii_control()) {
+                        return Err("REST webhook header must be written as 'Name: value' with a simple ASCII name".into());
+                    }
+                }
             }
         }
         Ok(())
@@ -144,6 +183,9 @@ impl AutomationRule {
         if self.message.len()>4096 || self.message.chars().any(|character|character.is_control()&&!matches!(character,'\n'|'\r'|'\t')) {
             return Err("availability message must be at most 4096 bytes without unsupported control characters".into());
         }
+        if self.recovery_message.len()>4096 || self.recovery_message.chars().any(|character|character.is_control()&&!matches!(character,'\n'|'\r'|'\t')) {
+            return Err("availability recovery message must be at most 4096 bytes without unsupported control characters".into());
+        }
         if self.tgs.len()>256 || !self.tgs.is_ascii() || self.tgs.bytes().any(|byte|byte.is_ascii_control()) {
             return Err("availability tgs must be bounded ASCII header text".into());
         }
@@ -156,8 +198,9 @@ impl AutomationRule {
         webhook
     }
 
-    fn notification_message(&self,default: impl FnOnce()->String) -> String {
-        if self.message.trim().is_empty() {default()} else {self.message.clone()}
+    fn notification_message(&self,action: &str,default: impl FnOnce()->String) -> String {
+        let custom=if action=="recovery" {&self.recovery_message} else {&self.message};
+        if custom.trim().is_empty() {default()} else {custom.clone()}
     }
 }
 
@@ -199,11 +242,20 @@ struct WatchState {
 
 #[derive(Debug,Clone,Serialize,Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(Default)]
 struct Notification {
     id: String,
     key: String,
     kind: String,
     message: String,
+    #[serde(default)]
+    device: String,
+    #[serde(default)]
+    attribute: String,
+    #[serde(default)]
+    value: String,
+    #[serde(default)]
+    unit: String,
     attempts: u32,
     next_attempt_s: u64,
 }
@@ -290,15 +342,25 @@ fn transition(state: &mut Persistent,key: &str,action: &str,rule: &AutomationRul
         watch.active=false;
         if !notify {watch.stale_delivered=false;return true;}
     } else {return false;}
-    let message=rule.notification_message(||if action=="stale" {
+    let message=rule.notification_message(action,||if action=="stale" {
         format!("{} ({}): no {} reading received for at least {} seconds.",watch.label,watch.mac,watch.attribute,rule.stale_after_s)
     } else {
         format!("{} ({}): {} readings resumed.",watch.label,watch.mac,watch.attribute)
     });
+    let value=watch.last_value.as_ref().map(render_value).unwrap_or_default();
     log::warn!(target:"ble.automation","{message}");
     state.pending.push_back(Notification {id:format!("{}-{}-{}-{action}",watch.rule_id,watch.mac,watch.episode),
-        key:key.into(),kind:action.into(),message,attempts:0,next_attempt_s:now});
+        key:key.into(),kind:action.into(),message,device:watch.label.clone(),attribute:watch.attribute.clone(),
+        value,unit:crate::pipeline::default_unit(&watch.attribute).unwrap_or("").to_string(),attempts:0,next_attempt_s:now});
     true
+}
+
+/// Compact textual form of the last decoded value, used by REST templates.
+fn render_value(value: &Value) -> String {
+    match value {
+        Value::String(text)=>text.clone(),
+        other=>other.to_string(),
+    }
 }
 
 pub fn status(path: &str,devices: &[crate::config::DeviceConfig]) -> Result<Value,String> {
@@ -328,23 +390,75 @@ fn http_agent(config: &WebhookConfig) -> Result<ureq::Agent,String> {
     Ok(builder.build().into())
 }
 
+/// Substitute `{name}` placeholders in REST URL/body/header templates.
+fn expand_template(template: &str,event: &Notification,title: &str) -> String {
+    let mut text=template.to_string();
+    let values=[("event",event.kind.as_str()),("message",event.message.as_str()),("id",event.id.as_str()),
+        ("title",title),("device",event.device.as_str()),("attribute",event.attribute.as_str()),
+        ("value",event.value.as_str()),("unit",event.unit.as_str())];
+    for (name,value) in values {text=text.replace(&format!("{{{name}}}"),value);}
+    text
+}
+
+fn split_header(header: &str) -> Option<(&str,&str)> {
+    let (name,value)=header.split_once(':')?;
+    let name=name.trim();
+    if name.is_empty() {return None;}
+    Some((name,value.trim()))
+}
+
 fn deliver(agent: &ureq::Agent,config: &WebhookConfig,event: &Notification) -> Result<(),String> {
     let title=if event.kind=="recovery" {"BLE gateway: readings resumed"} else {"BLE gateway: missing reading"};
-    let mut request=agent.post(&config.url).header("Idempotency-Key",&event.id);
-    let body=match config.provider {
-        Provider::Ntfy=>{
-            request=request.header("Content-Type","text/plain; charset=utf-8").header("Title",title)
-                .header("Priority",config.priority.to_string());
-            if !config.tags.is_empty() {request=request.header("Tags",&config.tags);}
-            if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
-            event.message.clone()
+    let outcome = match config.provider {
+        Provider::Ntfy|Provider::Gotify=>{
+            let mut request=agent.post(&config.url).header("Idempotency-Key",&event.id);
+            let body=if config.provider==Provider::Ntfy {
+                request=request.header("Content-Type","text/plain; charset=utf-8").header("Title",title)
+                    .header("Priority",config.priority.to_string());
+                if !config.tags.is_empty() {request=request.header("Tags",&config.tags);}
+                if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
+                event.message.clone()
+            } else {
+                request=request.header("Content-Type","application/json").header("X-Gotify-Key",&config.token);
+                json!({"title":title,"message":event.message,"priority":config.priority,
+                    "extras":{"client::display":{"contentType":"text/plain"}}}).to_string()
+            };
+            request.send(body)
         }
-        Provider::Gotify=>{
-            request=request.header("Content-Type","application/json").header("X-Gotify-Key",&config.token);
-            json!({"title":title,"message":event.message,"priority":config.priority,"extras":{"client::display":{"contentType":"text/plain"}}}).to_string()
+        Provider::Rest=>{
+            let url=expand_template(&config.url,event,title);
+            let body=expand_template(&config.body,event,title);
+            let mut request=agent.get(&url).header("Idempotency-Key",&event.id)
+                .header("Accept",config.content_type.as_str());
+            if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
+            if let Some((name,value))=split_header(&config.header) {request=request.header(name,value);}
+            match config.method.to_ascii_uppercase().as_str() {
+                "GET"=>request.call(),
+                "PUT"=>{
+                    let mut request=agent.put(&url).header("Idempotency-Key",&event.id)
+                        .header("Content-Type",config.content_type.as_str());
+                    if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
+                    if let Some((name,value))=split_header(&config.header) {request=request.header(name,value);}
+                    request.send(body)
+                }
+                "PATCH"=>{
+                    let mut request=agent.patch(&url).header("Idempotency-Key",&event.id)
+                        .header("Content-Type",config.content_type.as_str());
+                    if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
+                    if let Some((name,value))=split_header(&config.header) {request=request.header(name,value);}
+                    request.send(body)
+                }
+                _=>{
+                    let mut request=agent.post(&url).header("Idempotency-Key",&event.id)
+                        .header("Content-Type",config.content_type.as_str());
+                    if !config.token.is_empty() {request=request.header("Authorization",format!("Bearer {}",config.token));}
+                    if let Some((name,value))=split_header(&config.header) {request=request.header(name,value);}
+                    request.send(body)
+                }
+            }
         }
     };
-    match request.send(body) {
+    match outcome {
         Ok(response) if (200..300).contains(&response.status().as_u16())=>Ok(()),
         Ok(response)=>Err(format!("webhook returned HTTP {}",response.status().as_u16())),
         Err(_)=>Err("HTTPS webhook delivery failed; check connectivity, clock and trusted CA".into()),
@@ -357,13 +471,14 @@ pub fn test_webhook(config: &WebhookConfig) -> Result<Value,String> {
 
 pub fn test_rule(rule: &AutomationRule) -> Result<Value,String> {
     rule.validate()?;
-    send_webhook_test(&rule.effective_webhook(),rule.notification_message(||"BLE gateway: explicit webhook configuration test.".into()))
+    send_webhook_test(&rule.effective_webhook(),rule.notification_message("test",||"BLE gateway: explicit webhook configuration test.".into()))
 }
 
 fn send_webhook_test(config: &WebhookConfig,message: String) -> Result<Value,String> {
     config.validate(true)?;
     let event=Notification {id:format!("ble-test-{}",now_seconds()),key:String::new(),kind:"test".into(),
-        message,attempts:0,next_attempt_s:0};
+        message,device:"test".into(),attribute:"test".into(),value:String::new(),unit:String::new(),
+        attempts:0,next_attempt_s:0};
     deliver(&http_agent(config)?,config,&event)?;
     Ok(json!({"success":true,"message":"HTTPS webhook test delivered"}))
 }
@@ -512,18 +627,63 @@ mod tests {
     #[test]
     fn rule_message_and_tgs_override_only_when_filled() {
         let mut rule=AutomationRule::default();
-        assert_eq!(rule.notification_message(||"automatic".into()),"automatic");
+        assert_eq!(rule.notification_message("stale",||"automatic".into()),"automatic");
         assert_eq!(rule.effective_webhook().tags,"thermometer");
         rule.message="Custom reading alert\nSecond line".into();rule.tgs="warning,thermometer".into();rule.validate().unwrap();
-        assert_eq!(rule.notification_message(||panic!("default must not replace a compiled message")),rule.message);
+        assert_eq!(rule.notification_message("stale",||panic!("default must not replace a compiled message")),rule.message);
         assert_eq!(rule.effective_webhook().tags,"warning,thermometer");
         assert_eq!(rule.webhook.tags,"thermometer");
         let key="temperature_missing|AABBCCDDEEFF";let mut state=Persistent::default();
         state.watches.insert(key.into(),WatchState {rule_id:rule.id.clone(),mac:"AABBCCDDEEFF".into(),attribute:"temperature".into(),..Default::default()});
         assert!(transition(&mut state,key,"stale",&rule,10,1000));assert_eq!(state.pending[0].message,rule.message);
         rule.message=" \n\t".into();rule.tgs="   ".into();rule.validate().unwrap();
-        assert_eq!(rule.notification_message(||"automatic".into()),"automatic");assert_eq!(rule.effective_webhook().tags,"thermometer");
+        assert_eq!(rule.notification_message("stale",||"automatic".into()),"automatic");assert_eq!(rule.effective_webhook().tags,"thermometer");
         rule.tgs="unsafe\r\nHeader: value".into();assert!(rule.validate().is_err());
+    }
+
+    #[test]
+    fn recovery_message_overrides_only_the_recovery_notification() {
+        let mut rule=AutomationRule::default();
+        rule.message="Rilettura mancante".into();
+        rule.recovery_message="Rilettura ripresa".into();
+        rule.validate().unwrap();
+        assert_eq!(rule.notification_message("stale",||panic!("custom stale text")),"Rilettura mancante");
+        assert_eq!(rule.notification_message("recovery",||panic!("custom recovery text")),"Rilettura ripresa");
+        // A blank recovery text keeps the automatic wording.
+        rule.recovery_message="  \n ".into();
+        assert_eq!(rule.notification_message("recovery",||"automatic recovery".into()),"automatic recovery");
+        // Recovery text is bounded exactly like the stale text.
+        rule.recovery_message="x".repeat(4097);assert!(rule.validate().is_err());
+    }
+
+    #[test]
+    fn rest_provider_validates_and_expands_templates() {
+        let mut webhook=WebhookConfig::default();
+        webhook.provider=Provider::Rest;webhook.url="https://example.invalid/hook?kind=ble".into();
+        webhook.method="post".into();webhook.validate(true).unwrap();
+        assert_eq!(webhook.method.to_ascii_uppercase(),"POST");
+        webhook.method="DELETE".into();assert!(webhook.validate(true).is_err());
+        webhook.method="PUT".into();webhook.validate(true).unwrap();
+        webhook.content_type="application/json\r\nX: y".into();assert!(webhook.validate(true).is_err());
+        webhook.content_type="application/json".into();
+        webhook.header="X-Token: abc".into();webhook.validate(true).unwrap();
+        webhook.header="X-Token abc".into();assert!(webhook.validate(true).is_err());
+        webhook.header="X-Token: a\r\nb".into();assert!(webhook.validate(true).is_err());
+        webhook.header=String::new();
+        // Generic REST endpoints may keep a query string, ntfy/gotify may not.
+        webhook.provider=Provider::Ntfy;assert!(webhook.validate(true).is_err());
+        webhook.url="http://example.invalid/hook".into();webhook.provider=Provider::Rest;
+        assert!(webhook.validate(true).is_err());
+
+        let event=Notification {id:"id-1".into(),kind:"stale".into(),message:"m".into(),
+            device:"Cucina".into(),attribute:"temperature".into(),value:"21.5".into(),unit:"°C".into(),
+            ..Notification::default()};
+        let expanded=expand_template(webhook_probe(),&event,"BLE gateway: missing reading");
+        assert_eq!(expanded,r#"{"event":"stale","device":"Cucina","attribute":"temperature","value":"21.5","unit":"°C","message":"m","title":"BLE gateway: missing reading"}"#);
+    }
+
+    fn webhook_probe() -> &'static str {
+        r#"{"event":"{event}","device":"{device}","attribute":"{attribute}","value":"{value}","unit":"{unit}","message":"{message}","title":"{title}"}"#
     }
 
     #[test]
@@ -629,13 +789,13 @@ mod tests {
         let directory=std::env::temp_dir().join(format!("ble-automation-attempt-{}",std::process::id()));std::fs::create_dir_all(&directory).unwrap();
         let path=directory.join("state.json");let store=StateStore::open(&path).unwrap();
         let config=WebhookConfig::default();let mut state=Persistent::default();
-        state.pending.push_back(Notification {id:"test-episode".into(),key:"watch".into(),kind:"stale".into(),message:"Test".into(),attempts:0,next_attempt_s:0});
+        state.pending.push_back(Notification {id:"test-episode".into(),key:"watch".into(),kind:"stale".into(),message:"Test".into(),..Notification::default()});
         sender_step(&store,&mut state,&config,100,|_|{
             assert_eq!(load_state(&path).unwrap().pending[0].attempts,1);
             Err("simulated transport failure".into())
         }).unwrap();
         assert!(state.pending.is_empty());
-        state.pending.push_back(Notification {id:"interrupted-episode".into(),key:"watch".into(),kind:"stale".into(),message:"Test".into(),attempts:1,next_attempt_s:0});
+        state.pending.push_back(Notification {id:"interrupted-episode".into(),key:"watch".into(),kind:"stale".into(),message:"Test".into(),attempts:1,..Notification::default()});
         store.save(&state).unwrap();let mut restarted=load_state(&path).unwrap();
         sender_step(&store,&mut restarted,&config,200,|_|panic!("an interrupted attempt must not be replayed by default")).unwrap();
         assert!(restarted.pending.is_empty());drop(store);std::fs::remove_dir_all(directory).unwrap();

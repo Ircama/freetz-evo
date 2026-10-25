@@ -205,6 +205,13 @@ def run(binary):
         assert [point[1] for point in coarse["points"]] == [21.0], coarse["points"]
         assert coarse["points"][0][2] == 3, coarse["points"]
 
+        # An explicit window (used by the browser zoom) wins over `range`.
+        zoomed = json.loads(call(
+            binary, database,
+            f"action=series&mac=AABBCCDDEEFF&attribute=temperature&unit=%C2%B0C"
+            f"&kind=numeric&range=86400&from={now - 70 * SECOND}&to={now}")[1])
+        assert [point[1] for point in zoomed["points"]] == [21.0, 22.0], zoomed["points"]
+
         whole = json.loads(call(
             binary, database,
             "action=series&mac=AABBCCDDEEFF&attribute=temperature"

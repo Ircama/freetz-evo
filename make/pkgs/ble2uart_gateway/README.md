@@ -51,7 +51,10 @@ share the same archive reader; frontend integration tests share the emulator.
 
 1. Open `/cgi-bin/conf/ble2uart_gateway` in the authenticated freetz interface.
 2. Under **Startup and storage**, choose the start type and configuration store.
-   Prefer persistent external storage and keep its contents private.
+   The store holds the gateway YAML (devices, bind keys, availability rules), the
+   availability state file and, if you keep it there, the Matter fabric store.
+   Prefer persistent external storage and keep its contents private; the list of
+   mounted disks is behind a disclosure and clicking a path fills the field.
    Apply these startup settings and start the service to initialize a new store.
 3. In **Settings**, configure the serial device and MySensors listener. Typical
    values are `/dev/ttyACM0` and `127.0.0.1:5003` respectively.
@@ -69,8 +72,10 @@ Startup validation uses the pending settings prepared by the framework, not
 stale/unset shell variables. Apply-save reads the newly saved configuration.
 
 **Startup and storage** is expanded and shows the selected YAML path. Its
-dedicated save button applies only Freetz startup/storage options and explicitly
-confirms the framework's restart of a running service. Save or reload any gateway
+dedicated **Save startup settings** button applies only Freetz startup/storage
+options (start type, initial serial device, configuration directory) and
+explicitly confirms the framework's restart of a running service; the gateway
+draft is not included. Save or reload any gateway
 draft first. The unrelated framework **Default** button is hidden because it does
 not reset the gateway YAML. Service restart is available once, under **Status**.
 **Save configuration** writes the validated YAML without restarting; for stores
@@ -375,6 +380,24 @@ counters/timestamps, and decoded values. Failed inspection also displays a
 notice: an unexpected API response or expired web session does not establish
 that the received BLE packet is invalid.
 
+Below the selected advertisement, the collapsible **Theengs decoder
+(decoder.theengs.io)** section shows the same advertisement converted into the
+JSON object expected by the Theengs Web Parser: `id`/`mac`, `name`, `rssi` and
+either `servicedata` + `servicedatauuid` (16-, 32- or 128-bit) or
+`manufacturerdata`, parsed from the raw advertisement. Hex values and the UUID
+are emitted in lowercase, because the Theengs decoder compares the service UUID
+case-sensitively. The text is an editable ACE JSON editor, so the payload can be
+adjusted before use.
+
+**Decode with Theengs (WebAssembly)** runs the same decoder inside the page: the
+first click downloads the Theengs WebAssembly module (about 0.7 MB from
+`decoder.theengs.io`, CORS-enabled) and instantiates it locally, so no payload
+leaves the browser; the gateway itself never contacts the network. The decoded
+JSON appears in a second, read-only ACE editor. A payload that Theengs does not
+know is reported as such — the JSON remains valid. **Copy JSON** and **Open
+decoder.theengs.io** remain available as a fallback when the page has no
+Internet access.
+
 The device dialog explains the draft action and **Cancel** through tooltips.
 Adding/updating validates the device and updates only the page draft; Cancel
 discards only edits in that dialog, preserving other page changes.
@@ -432,6 +455,11 @@ the service itself. These settings configure the gateway, not sensor firmware.
 
 The **YAML** tab provides an ACE editor, validation, import/export and backup
 loading. A loaded backup is a draft: save and restart to apply it.
+The toolbar above the editor has its own **Save YAML** (identical to **Save
+configuration**, also on `Ctrl+S`) and **Discard changes**, and hovering a
+configuration key shows its documentation with the scope of that key (serial,
+scanner, frontend, availability rule or webhook), so the file can be read without
+leaving the page.
 
 Replace the example MACs below and expose only attributes returned by Inspect.
 For an existing configuration, append entries to its existing `devices` list;
@@ -584,10 +612,12 @@ end it before querying for fresh data. Do not copy only `.db` while recording;
 use SQLite's backup API rather than an incomplete file copy or `immutable=1`.
 
 See [SQLite configuration, schema, queries and operational limits](src/README.md#sqlite-history).
-Optional **History maintenance** runs in a dedicated gateway thread, not cron.
-It is disabled by default. The CGI provides enable/cadence/work-budget controls
-and per-attribute policies with optional MAC overrides. Edit age bands with
-duration/unit fields, add/remove bands and restore temperature/battery presets.
+Optional **Retention policies** (Settings → Frontends → SQLite) run in a dedicated
+gateway thread, not cron. They are disabled by default. The CGI provides
+enable/cadence/work-budget controls and per-measurement retention cards with
+optional MAC overrides, each rendered like the device rule cards: title, presets
+and remove button in one header row. Edit age bands with duration/unit fields,
+add/remove bands and restore temperature/battery presets.
 The temperature defaults preserve every sample for ten minutes, then use
 1 minute / 150 seconds / 1 hour / 4 hours / 6 hours until respectively one hour /
 one day / one week / eight weeks / 24 months, then expire older numeric samples.
@@ -606,6 +636,71 @@ view to combine recent raw measurements and consolidated series. Disabling
 maintenance stops future reductions without removing existing archives.
 See [maintenance settings and schema](src/README.md#progressive-history-maintenance)
 for presets, transaction limits and migration/downgrade precautions.
+
+## Optional Theengs Decoder
+
+The package option **Second decoder: Theengs Decoder (GPL-3.0-or-later)**
+(`FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS`, off by default) compiles
+[Theengs Decoder](https://github.com/theengs/decoder) as a static library into
+the daemon. It brings decoders for more than 140 BLE devices, including formats
+this gateway does not know. The sources are pinned by revision and checksum and
+fetched by `make ble2uart_gateway-download`; no C++ runtime is needed on the
+target because libstdc++ is linked statically.
+
+With the option enabled, `decoder` selects the backend, globally and per device:
+
+```yaml
+decoder: builtin          # default: the generated specification of this gateway
+# decoder: theengs         # Theengs only
+# decoder: both            # both sets, the Theengs ones prefixed with theengs_
+
+devices:
+  - mac: A4:C1:38:B3:32:6C
+    decoder: both          # overrides the global value for this device
+```
+
+Choose which decoded fields become published attributes — for both decoders —
+with a per-device `publish` list. An empty list keeps every field (the
+historical behaviour); otherwise only the listed sources are published, under
+the given name and unit, in the SQLite columns, the MQTT state, InfluxDB, the
+Matter clusters and the availability rules:
+
+```yaml
+devices:
+  - mac: A4C138B3326C
+    decoder: both
+    publish:
+      - {source: theengs_temperature, attribute: temp, unit: "°C"}
+      - {source: theengs_humidity, attribute: hum}
+      - {source: battery_level, attribute: battery}
+```
+
+`source` is the field name produced by the selected decoder (`temperature` for
+the built-in codec, `theengs_temperature` in the `both` mode); `attribute` and
+`unit` are optional. Add the key once in the YAML tab, then the device dialog
+shows an editable list with **Add field**, and duplicate published names or an
+empty source are rejected by validation. A `decoder: theengs`/`both` value in a
+build without the library is refused with a clear error instead of silently
+falling back.
+
+In **Settings** the same choice is a select; the YAML editor accepts it on every
+device. `builtin` is unchanged, so an existing configuration behaves exactly as
+before. In `theengs` mode the built-in codec is not used, so the attributes come
+from Theengs (aliased to the canonical names: `tempc` → `temperature`, `hum` →
+`humidity`, `pres` → `pressure`, `batt` → `battery_level`, `volt` → `battery_v`,
+others keep their Theengs name); in `both` mode the extra set never collides
+because every name is prefixed (`theengs_temperature`, …).
+
+The library cannot decrypt bindkey advertisements, so encrypted formats must
+keep `builtin`. Advertisements no decoder matches cost the most (about 25 ms on
+a 7590 AX; a match is 0.7-7 ms), the library needs 192 kB of RAM and adds about
+0.33 MB to the binary. Because it is GPL-3.0-or-later, the daemon built with
+this option has to be distributed under GPL-3.0; that is why the option is off
+by default.
+
+The **Inspect** panel shows the Theengs result next to the gateway one whenever
+the library is compiled in ("Decoded by the gateway"), or after pressing
+**Decode with Theengs (WebAssembly)** on a build without it.
 
 ## Sensor Dashboard
 
@@ -632,6 +727,15 @@ the whole history; the chart is downsampled server-side with weighted per-bucket
 averages, merging archived samples and the recent raw frames. Values are never
 interpolated. The page refreshes the values every 30 seconds.
 
+Moving the pointer over the chart draws a vertical time marker and one dot per
+series at the sample nearest to the pointer, with a tooltip listing every value;
+drag horizontally to zoom into that time window, use **+** / **−** to zoom by a
+factor of two, **↺** to go back to the selected range and **⛶** to view the chart
+full screen. The same actions are available from the keyboard (`←`/`→` to pan,
+`Shift` for a small step, `+/−`, `0`, `F`, `Shift`+drag to pan); the **?** button
+next to the chart controls, the link under the point count and the `?` key open a
+help dialog with the complete list, so no long tooltip covers the chart.
+
 Resource use (measured on the FRITZ!Box 7590 AX with the production database,
 one CGI request): peak RSS about 7 MB for this implementation against about
 19 MB for an equivalent PHP `php-cgi` script (PHP 8.5 with `pdo_sqlite`) that runs
@@ -654,14 +758,21 @@ Open **Devices → Edit → Availability monitoring**. Each device owns its rule
 Settings contains no global ITTT, availability-rule or webhook section.
 Each rule can be added, edited, removed, enabled and disabled independently.
 Set the attribute and **Notify if no reading received for more than (seconds)**,
-then open its **Webhook configuration** for ntfy/Gotify, HTTPS URL, private token,
-priority/tags, IPv4 selection, timeouts/retries and optional trusted PEM CA.
+then open its **Webhook configuration** for ntfy/Gotify/REST, HTTPS URL, private
+token, priority/tags, IPv4 selection, timeouts/retries and optional trusted PEM
+CA. The generic **rest** provider sends a custom HTTPS request: method
+(POST/PUT/PATCH/GET), content type, one extra `Name: value` header and a body
+template with `{event}` (stale/recovery/test), `{message}`, `{title}`, `{device}`,
+`{attribute}`, `{value}`, `{unit}` and `{id}`; the same placeholders work in the
+URL. A non-empty token is sent as `Authorization: Bearer`.
 
 New rules start disabled with temperature/600-second defaults. Each rule has a
 confirmed **Test webhook** button using its draft without saving or restarting.
-The rule's optional notification message overrides automatic alert/recovery/test
-text only when filled. Its optional **tgs** field overrides `webhook.tags` for
-that rule; blank fields retain the existing defaults. Missing webhook URLs open
+The rule's optional notification message overrides the automatic alert and test
+text; a separate **Recovery message** overrides only the text sent when a notified
+outage ends, so the two notifications can differ. Both fields fall back to the
+automatic wording when empty. The optional **tgs** field overrides
+`webhook.tags` for that rule. Missing webhook URLs open
 the configuration panel automatically. Device status is read-only Ace JSON.
 Save the device draft, Save configuration and explicitly restart to apply.
 Identical temperatures refresh freshness; battery-only packets do not. One stale
@@ -669,6 +780,11 @@ episode and one recovery are retained across restarts; no periodic reminders run
 There is no external rule engine or editable workflow language. Earlier global
 configurations migrate to their devices without placing private URLs in sources.
 See [monitoring settings and delivery semantics](src/README.md#device-availability-monitoring).
+
+The **Log** tab of the configuration interface shows the last lines of
+`/tmp/rc.ble2uart_gateway.log` (100 to 2000 lines, auto-refresh every five
+seconds, download button). The **Sensor graphs** button in the toolbar opens the
+read-only dashboard described below.
 
 ## MQTT And Matter
 

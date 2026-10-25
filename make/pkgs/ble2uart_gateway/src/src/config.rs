@@ -140,6 +140,43 @@ impl Default for ScannerConfig {
     }
 }
 
+/// Which decoder produces the attributes of a device.
+///
+/// The Theengs modes need the package option
+/// `FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS`; with a build without it the
+/// configuration stays valid and the device keeps using the built-in codec.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DecoderMode {
+    /// The generated specification of this gateway (default).
+    #[default]
+    Builtin,
+    /// Theengs Decoder only: it also handles formats this gateway does not
+    /// know, but it cannot decrypt bindkey advertisements.
+    Theengs,
+    /// Both: the built-in attributes plus the Theengs ones prefixed with
+    /// `theengs_`.
+    Both,
+}
+
+impl DecoderMode {
+    pub fn uses_builtin(self) -> bool {
+        matches!(self, DecoderMode::Builtin | DecoderMode::Both)
+    }
+
+    pub fn uses_theengs(self) -> bool {
+        matches!(self, DecoderMode::Theengs | DecoderMode::Both)
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            DecoderMode::Builtin => "builtin",
+            DecoderMode::Theengs => "theengs",
+            DecoderMode::Both => "both",
+        }
+    }
+}
+
 /// A device the user cares about. `bindkey` is the AES-128 key of the
 /// encrypted formats and is never written to logs or to the web interface in
 /// clear.
@@ -170,6 +207,12 @@ pub struct DeviceConfig {
     /// Per-device missing-reading monitors with independent HTTPS destinations.
     #[serde(default,deserialize_with="crate::automation::deserialize_rules")]
     pub rules: Vec<crate::automation::AutomationRule>,
+    /// Overrides the global `decoder` for this device.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decoder: Option<DecoderMode>,
+    /// Fields to publish (and their published names); empty publishes all.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub publish: Vec<PublishConfig>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -231,6 +274,25 @@ pub struct ExposeConfig {
     pub child: Option<u8>,
     #[serde(default)]
     pub kind: Option<String>,
+}
+
+/// Which decoded field becomes which published attribute.
+///
+/// An empty `publish` list keeps every field the decoder produced (the
+/// historical behaviour). When the list is not empty only the listed sources
+/// are published, so the SQLite columns, the MQTT state, InfluxDB and the
+/// Matter clusters receive exactly the chosen attributes.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct PublishConfig {
+    /// Field name produced by the decoder, e.g. `temperature` (built-in) or
+    /// `theengs_temperature` in the `both` mode.
+    pub source: String,
+    /// Published attribute name; empty keeps `source`.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub attribute: String,
+    /// Unit override; empty keeps the unit of the decoder.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub unit: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -479,6 +541,10 @@ pub struct Config {
     pub automation: Option<crate::automation::LegacyAutomationConfig>,
     #[serde(default)]
     pub availability_state_file: String,
+    /// Decoder shared by every device; `builtin` keeps the historical
+    /// behaviour.
+    #[serde(default)]
+    pub decoder: DecoderMode,
 }
 
 impl Default for Config {
@@ -504,6 +570,7 @@ impl Default for Config {
             diagnostics: DiagnosticsConfig::default(),
             automation: None,
             availability_state_file: String::new(),
+            decoder: DecoderMode::default(),
         }
     }
 }
@@ -578,6 +645,36 @@ impl Config {
 
     pub fn validate(&self) -> Result<(), String> {
         crate::logger::parse_level(&self.log_level)?;
+        if !crate::theengs::available()
+            && (self.decoder != DecoderMode::Builtin
+                || self.devices.iter().any(|device| {
+                    matches!(device.decoder, Some(mode) if mode != DecoderMode::Builtin)
+                }))
+        {
+            return Err(
+                "decoder theengs/both needs a build with FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS"
+                    .into(),
+            );
+        }
+        for device in &self.devices {
+            let mut names = std::collections::BTreeSet::new();
+            for entry in &device.publish {
+                if entry.source.trim().is_empty() {
+                    return Err(format!("{}: publish source must not be empty", device.mac));
+                }
+                let attribute = if entry.attribute.trim().is_empty() {
+                    entry.source.trim()
+                } else {
+                    entry.attribute.trim()
+                };
+                if !names.insert(attribute.to_string()) {
+                    return Err(format!(
+                        "{}: duplicate published attribute {attribute}",
+                        device.mac
+                    ));
+                }
+            }
+        }
         if self.devices.iter().map(|device|device.rules.len()).sum::<usize>()>4096 {
             return Err("at most 4096 automation device/rule watches are supported".into());
         }

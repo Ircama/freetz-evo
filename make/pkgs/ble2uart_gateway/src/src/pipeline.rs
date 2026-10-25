@@ -98,6 +98,11 @@ pub struct Device {
     pub forced_format: String,
     /// attribute -> child id, in configuration order (stable across restarts).
     pub children: Vec<(String, u8)>,
+    /// Decoder chosen for this device (global default already applied).
+    pub decoder: crate::config::DecoderMode,
+    /// Published fields as (decoder source, published attribute, unit
+    /// override); empty publishes everything the decoder produced.
+    pub publish: Vec<(String, String, String)>,
 }
 
 impl Device {
@@ -131,6 +136,19 @@ impl Registry {
                 params: bindkey_of(device),
                 forced_format: device.format.clone(),
                 children: children_of(device),
+                decoder: device.decoder.unwrap_or(config.decoder),
+                publish: device
+                    .publish
+                    .iter()
+                    .map(|entry| {
+                        let attribute = if entry.attribute.is_empty() {
+                            entry.source.clone()
+                        } else {
+                            entry.attribute.clone()
+                        };
+                        (entry.source.clone(), attribute, entry.unit.clone())
+                    })
+                    .collect(),
             });
         }
         Registry { devices, last: HashMap::new(), unknown: HashMap::new() }
@@ -279,6 +297,30 @@ pub fn measurements(decoded: &Value) -> Vec<Measurement> {
     out
 }
 
+/// Restrict and rename the measurements before any front-end sees them.
+///
+/// With an empty `publish` list every decoded field is published, which is the
+/// historical behaviour. Otherwise the list decides both the selection and the
+/// attribute names stored in SQLite, published over MQTT, exported to InfluxDB,
+/// forwarded to Matter and exposed through MySensors.
+fn published_measures(device: &Device, measures: Vec<Measurement>) -> Vec<Measurement> {
+    if device.publish.is_empty() {
+        return measures;
+    }
+    let mut out = Vec::with_capacity(device.publish.len());
+    for (source, attribute, unit) in &device.publish {
+        let Some(mut measure) = measures.iter().find(|measure| &measure.name == source).cloned() else {
+            continue;
+        };
+        measure.name = attribute.clone();
+        if !unit.is_empty() {
+            measure.unit = unit.clone();
+        }
+        out.push(measure);
+    }
+    out
+}
+
 /// Field names that are part of the frame but not measurements.
 const NOT_MEASURED: &[&str] = &[
     "version", "UUID", "MAC", "mac_vendor", "counter", "device_id", "flags", "ctrl",
@@ -347,7 +389,7 @@ fn collect(value: &Value, prefix: Option<&str>, out: &mut Vec<Measurement>) {
 
 /// Units for the decoded fields whose unit is not carried by the codec (the
 /// generic TLV payloads of `mi_like` and `bt_home`).
-fn default_unit(name: &str) -> Option<&'static str> {
+pub(crate) fn default_unit(name: &str) -> Option<&'static str> {
     let last = name.rsplit('.').next().unwrap_or(name);
     match last {
         "temperature" | "dew_point" => Some("°C"),
@@ -516,18 +558,19 @@ pub fn merge_latest_values(previous: Option<&serde_json::Value>, current: &mut s
 }
 
 /// Complete decoded state, independent of a frontend's native sensor types.
-pub fn decoded_state(device: &Device, report: &AdvReport, format: &str, decoded: &Value) -> serde_json::Value {
+pub fn decoded_state(device: &Device, report: &AdvReport, format: &str, decoded: &Value, measures: &[Measurement]) -> serde_json::Value {
     serde_json::json!({
         "schema": 1,
         "mac": device.mac,
         "label": device.label,
         "device": device.metadata,
         "wire_format": format,
+        "decoder": device.decoder.as_str(),
         "received_at": crate::logger::timestamp(),
         "radio": {"rssi": report.rssi, "phy_raw": report.phys, "phy": report.phy_summary(),
                   "event_type": report.event_type, "addr_type": report.addr_type, "directed": report.directed},
         "decoded": decoded.to_json(),
-        "measurements": measurements(decoded).into_iter().map(|measure| serde_json::json!({
+        "measurements": measures.iter().map(|measure| serde_json::json!({
             "name": measure.name, "value": measure.value.to_json(), "unit": measure.unit
         })).collect::<Vec<_>>()
     })
@@ -619,42 +662,87 @@ impl Gateway {
             return;
         };
 
-        let Some((format, service_data)) = detect_format(report, &self.spec) else {
-            crate::logger::phy(report, "decode", "unsupported_format", "unknown");
-            log::debug!("{mac}: no known service data in {} bytes", report.data.len());
-            self.skipped += 1;
-            return;
+        let device = &self.registry.devices[device_index];
+        let mode = device.decoder;
+        let mut wire_format = String::new();
+        let mut builtin = None;
+        if mode.uses_builtin() {
+            if let Some((format, service_data)) = detect_format(report, &self.spec) {
+                let format = if device.forced_format.is_empty() { format } else { device.forced_format.clone() };
+                if crate::logger::decode_enabled() {
+                    log::info!(target: "ble.decode", "mac={mac} wire_format={format} service_hex={}", crate::codec::value::hex(service_data));
+                }
+                match decode(&self.spec, device, &format, service_data, report) {
+                    Ok(value) => {
+                        wire_format = format;
+                        builtin = Some(value);
+                    }
+                    Err(error) => {
+                        crate::logger::phy(report, "decode", "failed", &format);
+                        log::warn!("{mac} ({format}): {error}");
+                    }
+                }
+            } else {
+                log::debug!("{mac}: no known service data in {} bytes", report.data.len());
+            }
+        }
+
+        // Optional second opinion: the Theengs decoder understands the formats
+        // this gateway does not know, but cannot decrypt bindkey payloads.
+        let theengs = if mode.uses_theengs() {
+            crate::theengs::payload(&mac, "", report.rssi as i16, &report.data)
+                .and_then(|payload| crate::theengs::decode(&payload))
+        } else {
+            None
         };
 
-        let device = &self.registry.devices[device_index];
-        let format = if device.forced_format.is_empty() { format } else { device.forced_format.clone() };
-        if crate::logger::decode_enabled() {
-            log::info!(target: "ble.decode", "mac={mac} wire_format={format} service_hex={}", crate::codec::value::hex(service_data));
-        }
-        let decoded = match decode(&self.spec, device, &format, service_data, report) {
-            Ok(value) => value,
-            Err(error) => {
-                crate::logger::phy(report, "decode", "failed", &format);
-                log::warn!("{mac} ({format}): {error}");
+        let (decoded, measures) = match (builtin, theengs) {
+            (Some(value), None) => {
+                let measures = measurements(&value);
+                (value, measures)
+            }
+            (None, Some(value)) => {
+                let measures = crate::theengs::measures(&value, None);
+                wire_format = match crate::theengs::model(&value) {
+                    Some(model) => format!("theengs:{model}"),
+                    None => "theengs".to_string(),
+                };
+                (Value::from_json(&value), measures)
+            }
+            (Some(mut builtin), Some(value)) => {
+                let mut measures = measurements(&builtin);
+                measures.extend(crate::theengs::measures(&value, Some("theengs")));
+                if let Value::Map(ref mut entries) = builtin {
+                    entries.push(("theengs".to_string(), Value::from_json(&value)));
+                }
+                (builtin, measures)
+            }
+            (None, None) => {
+                crate::logger::phy(report, "decode", "unsupported_format", "unknown");
+                log::debug!("{mac}: no decoder matched {} bytes", report.data.len());
                 self.skipped += 1;
                 return;
             }
         };
+        // Which decoded fields are published, and under which name.
+        let measures = published_measures(device, measures);
+        if wire_format.is_empty() {
+            wire_format = "unknown".into();
+        }
         self.decoded += 1;
-        crate::logger::phy(report, "decode", "ok", &format);
+        crate::logger::phy(report, "decode", "ok", &wire_format);
 
         if self.mqtt.is_some() || self.matter.is_some() || self.influx.is_some() || self.sqlite.is_some() {
-            let state=decoded_state(device,report,&format,&decoded);
+            let state=decoded_state(device,report,&wire_format,&decoded,&measures);
             if let Some(mqtt)=&self.mqtt {mqtt.publish(&mac,&state);}
             if let Some(influx)=&self.influx {influx.publish(&state);}
             if let Some(sqlite)=&self.sqlite {sqlite.publish(&state);}
             if let Some(matter)=&self.matter {matter.publish(&mac,&state);}
         }
 
-        let measures = measurements(&decoded);
         if let Some(automation)=&self.automation {automation.observe(&mac,&measures);}
         if crate::logger::decode_enabled() {
-            log::info!(target: "ble.decode", "mac={mac} wire_format={format} measurements=[{}]", measures.iter().map(|measure| format!("{}={}", measure.name, measure.text())).collect::<Vec<_>>().join(","));
+            log::info!(target: "ble.decode", "mac={mac} wire_format={wire_format} measurements=[{}]", measures.iter().map(|measure| format!("{}={}", measure.name, measure.text())).collect::<Vec<_>>().join(","));
         }
         let mut published = Vec::new();
         for measure in &measures {
@@ -671,7 +759,7 @@ impl Gateway {
 
         if published.is_empty() {
             log::debug!(
-                "{mac} ({label}, wire_format={format}): decoded attributes=[{}], none exposed",
+                "{mac} ({label}, wire_format={wire_format}): decoded attributes=[{}], none exposed",
                 measures.iter().map(|measure| measure.name.as_str()).collect::<Vec<_>>().join(",")
             );
             return;
@@ -780,7 +868,7 @@ mod tests {
         assert!(snapshot[&format!("{node};8;0;0;{humidity_kind}")].ends_with("Living room humidity"));
         drop(snapshot);
         let advertisement = report(&device.mac, &[]);
-        let state = decoded_state(device, &advertisement, "bt_home_v2", &Value::Null);
+        let state = decoded_state(device, &advertisement, "bt_home_v2", &Value::Null, &[]);
         assert_eq!(state["device"]["model"], "LYWSD03MMC");
         assert_eq!(state["device"]["manufacturer"], "Xiaomi");
         assert_eq!(state["device"]["firmware_version"], "custom;build");
@@ -791,6 +879,39 @@ mod tests {
         assert_eq!((updated.devices[0].node, updated.devices[0].children.clone()), before);
         assert_eq!(mysensors_text("ééééééééééééé").len(), 24);
         assert!(mysensors_child_name(&device.metadata, "very_long_attribute_name_that_will_not_fit").len() <= 25);
+    }
+
+    #[test]
+    fn publish_selects_and_renames_measurements() {
+        let mut device = Device {
+            mac: "AABBCCDDEEFF".into(),
+            label: "test".into(),
+            metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() },
+            node: 1,
+            params: None,
+            forced_format: String::new(),
+            children: Vec::new(),
+            decoder: Default::default(),
+            publish: Vec::new(),
+        };
+        let measures = vec![
+            Measurement { name: "temperature".into(), value: Value::Float(20.0), unit: "°C".into() },
+            Measurement { name: "theengs_temperature".into(), value: Value::Float(20.1), unit: "°C".into() },
+            Measurement { name: "battery_level".into(), value: Value::Int(80), unit: "%".into() },
+        ];
+        // Empty list: everything is published, unchanged.
+        assert_eq!(published_measures(&device, measures.clone()).len(), 3);
+        // Only the chosen fields are published, renamed and re-united.
+        device.publish = vec![
+            ("theengs_temperature".into(), "temp".into(), "°C".into()),
+            ("battery_level".into(), "battery".into(), String::new()),
+        ];
+        let published = published_measures(&device, measures);
+        assert_eq!(published.len(), 2);
+        assert_eq!(published[0].name, "temp");
+        assert!(matches!(published[0].value, Value::Float(value) if (value - 20.1).abs() < 0.001));
+        assert_eq!(published[1].name, "battery");
+        assert_eq!(published[1].unit, "%");
     }
 
     #[test]
@@ -814,7 +935,7 @@ mod tests {
         ]);
         let report = AdvReport {rssi:-65, event_type:0, addr_type:0, directed:false, phys:0x33,
                                 mac:[0xFF,0xEE,0xDD,0xCC,0xBB,0xAA], data:Vec::new()};
-        let state = decoded_state(&device, &report, "vendor_extension", &decoded);
+        let state = decoded_state(&device, &report, "vendor_extension", &decoded, &measurements(&decoded));
         assert_eq!(state["decoded"], decoded.to_json());
         assert_eq!(state["decoded"]["unmapped_sensor"], 12.3456789);
         assert_eq!(state["decoded"]["objects"][1], serde_json::Value::Null);
@@ -869,7 +990,7 @@ mod tests {
         let spec = spec_for_tests();
         let document: serde_json::Value = serde_json::from_str(include_str!("../tests/vectors.json")).unwrap();
         let params = Params::new(&[0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-        let device = Device { mac: "AABBCCDDEEFF".into(), label: "test".into(), metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() }, node: 1, params: Some(params.clone()), forced_format: String::new(), children: Vec::new() };
+        let device = Device { mac: "AABBCCDDEEFF".into(), label: "test".into(), metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() }, node: 1, params: Some(params.clone()), forced_format: String::new(), children: Vec::new(), decoder: Default::default(), publish: Vec::new() };
         let mut covered = std::collections::BTreeSet::new();
         let publisher=crate::matter::MatterPublisher::default();
         let mut count = 0;
@@ -891,7 +1012,7 @@ mod tests {
                 let (format, service) = detect_format(&report, &spec).unwrap_or_else(|| panic!("no format: {expected}: {encoded}"));
                 assert_eq!(&format, expected);
                 let decoded=decode(&spec, &device, &format, service, &report).unwrap();
-                let state=decoded_state(&device,&report,&format,&decoded);
+                let state=decoded_state(&device,&report,&format,&decoded,&measurements(&decoded));
                 assert_eq!(state["decoded"],decoded.to_json());
                 assert_eq!(serde_json::from_slice::<serde_json::Value>(&serde_json::to_vec(&state).unwrap()).unwrap()["decoded"],decoded.to_json());
                 publisher.publish(&device.mac,&state);
@@ -991,6 +1112,8 @@ mod tests {
                     },
                 ],
                 rules: Vec::new(),
+                decoder: None,
+                publish: Vec::new(),
             },
             DeviceConfig {
                 mac: "54:EF:44:C6:33:6B".into(),
@@ -1003,6 +1126,8 @@ mod tests {
                 format: String::new(),
                 expose: Vec::new(),
                 rules: Vec::new(),
+                decoder: None,
+                publish: Vec::new(),
             },
         ];
         let registry = Registry::new(&config);

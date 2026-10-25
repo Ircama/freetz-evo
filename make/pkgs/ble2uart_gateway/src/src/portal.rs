@@ -685,8 +685,15 @@ fn series_action(config: &Path, params: &BTreeMap<String, String>) -> Result<Val
         }
     }
 
-    // "range=0" means the whole history of this series.
-    let (from, to) = if window == 0 {
+    // "range=0" means the whole history of this series. An explicit `from`
+    // wins: the browser sends it after a zoom selection.
+    let requested_from = params
+        .get("from")
+        .and_then(|value| value.parse::<i64>().ok())
+        .filter(|value| *value > 0 && *value < to);
+    let (from, to) = if let Some(from) = requested_from {
+        (from, to)
+    } else if window == 0 {
         let first = first_timestamp(&connection, mac, &series).unwrap_or(to);
         (first, to.max(first + 1))
     } else {
@@ -883,7 +890,7 @@ fn page() -> String {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ble2uart_gateway &middot; Sensori</title>
-<link rel="stylesheet" href="/ble2uart_gateway/portal.css">
+<link rel="stylesheet" href="/ble2uart_gateway/portal.css?v={v}">
 </head>
 <body>
 <header class="ptop">
@@ -901,22 +908,44 @@ fn page() -> String {
     <aside class="pchart">
       <div class="pcharthead">
         <h2 id="charttitle">&mdash;</h2>
-        <div class="pranges" id="ranges"></div>
+        <div class="pcontrols">
+          <div class="pranges" id="ranges"></div>
+          <div class="pzoom">
+            <button type="button" id="panleft" title="Pan">&lsaquo;</button>
+            <button type="button" id="panright" title="Pan">&rsaquo;</button>
+            <button type="button" id="zoomin" title="Zoom +">+</button>
+            <button type="button" id="zoomout" title="Zoom &minus;">&minus;</button>
+            <button type="button" id="zoomreset" title="Reset">&#8634;</button>
+            <button type="button" id="fullscreen" title="Fullscreen">&#9974;</button>
+            <button type="button" id="help" title="Help">?</button>
+          </div>
+        </div>
       </div>
+      <div class="pzoominfo" id="zoominfo" hidden></div>
       <div class="pcanvas"><canvas id="canvas"></canvas><div class="pempty" id="chartempty"></div></div>
       <div class="plegend" id="legend"></div>
-      <p class="phint" id="chartinfo"></p>
+      <p class="phint"><span id="chartinfo"></span><button type="button" class="plink" id="helplink"></button></p>
+      <div class="ptip" id="tip" hidden></div>
+      <dialog class="phelp" id="helpbox" aria-labelledby="helptitle">
+        <h3 id="helptitle"></h3>
+        <dl id="helpbody"></dl>
+        <p class="phelpnote" id="helpnote"></p>
+        <form method="dialog"><button type="submit" id="helpclose"></button></form>
+      </dialog>
     </aside>
   </div>
 </main>
-<div class="ptip" id="tip" hidden></div>
 <noscript><p>JavaScript richiesto.</p></noscript>
-<script src="/ble2uart_gateway/portal.js"></script>
+<script src="/ble2uart_gateway/portal.js?v={v}"></script>
 </body>
 </html>
 "#
-    .to_string()
+    .replace("{v}", ASSET_VERSION)
 }
+
+/// Bumped whenever `portal.css` or `portal.js` change, so a router that
+/// caches static files still serves the new version.
+const ASSET_VERSION: &str = "4";
 
 // ---------------------------------------------------------------------------
 // Tests

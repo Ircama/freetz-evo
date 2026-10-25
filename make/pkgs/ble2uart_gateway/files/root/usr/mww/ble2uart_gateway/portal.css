@@ -86,15 +86,15 @@ button { font: inherit; }
 }
 .pdevice > header {
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-  padding: 10px 12px; border-bottom: 1px solid var(--line);
+  padding: 8px 10px; border-bottom: 1px solid var(--line);
 }
 .pdevice h3 { margin: 0; font-size: 14px; font-weight: 650; }
 .pdevice .pmac { color: var(--muted); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; }
 .pdevice .page { color: var(--muted); font-size: 11px; white-space: nowrap; }
-.pseries { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px; padding: 10px 12px 12px; }
+.pseries { display: grid; grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); gap: 6px; padding: 8px 10px 10px; }
 .pcard {
-  position: relative; text-align: left; padding: 9px 10px; cursor: pointer;
-  background: var(--bg); border: 1px solid var(--line); border-radius: 9px; color: inherit;
+  position: relative; text-align: left; padding: 6px 8px; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: inherit;
   transition: border-color .12s, background .12s, transform .12s;
 }
 .pcard:hover { border-color: var(--accent); }
@@ -106,11 +106,11 @@ button { font: inherit; }
   content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
   border-radius: 3px; background: var(--swatch, var(--accent));
 }
-.pcard .a { display: block; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pcard .v { display: block; margin-top: 3px; font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pcard .v .u { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 2px; }
-.pcard .t { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); }
-.pcard .v.pboo { font-size: 15px; }
+.pcard .a { display: block; color: var(--muted); font-size: 10.5px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard .v { display: block; margin-top: 1px; font-size: 16px; line-height: 1.25; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard .v .u { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.pcard .t { display: block; margin-top: 1px; font-size: 10px; color: var(--muted); }
+.pcard .v.pboo { font-size: 14px; }
 .pcard .v.pboo.pon { color: var(--ok); }
 .pcard .v.pboo.poff { color: var(--muted); }
 .pempty { color: var(--muted); font-size: 13px; padding: 14px; text-align: center; }
@@ -124,6 +124,15 @@ button { font: inherit; }
 @media (max-width: 960px) { .pchart { position: static; } }
 .pcharthead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .pcharthead h2 { font-size: 14px; }
+.pcontrols { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pzoom { display: flex; gap: 4px; }
+.pzoom button {
+  padding: 4px 8px; min-width: 30px; font-size: 13px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--bg); color: var(--muted); cursor: pointer;
+}
+.pzoom button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.pzoom button:disabled { opacity: .4; cursor: default; }
+.pzoominfo { color: var(--muted); font-size: 12px; margin: -2px 0 6px; }
 .pranges { display: flex; gap: 4px; flex-wrap: wrap; }
 .pranges button {
   padding: 4px 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 7px;
@@ -133,7 +142,11 @@ button { font: inherit; }
 .pranges button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 .pcanvas { position: relative; height: 320px; min-height: 220px; }
 @media (max-width: 640px) { .pcanvas { height: 250px; } }
-.pcanvas canvas { display: block; width: 100%; height: 100%; }
+.pcanvas canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: pan-y; }
+.pchart:fullscreen { display: flex; flex-direction: column; border: 0; border-radius: 0; padding: 14px; background: var(--panel); }
+.pchart:fullscreen .pcanvas { flex: 1; height: auto; }
+.pchart:-webkit-full-screen { display: flex; flex-direction: column; border: 0; border-radius: 0; padding: 14px; width: 100%; height: 100%; background: var(--panel); }
+.pchart:-webkit-full-screen .pcanvas { flex: 1; height: auto; }
 .pcanvas .pempty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 10px; }
 .pcanvas .pempty[hidden], .ptip[hidden] { display: none; }
 .plegend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -145,7 +158,30 @@ button { font: inherit; }
 .plegend .chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--swatch); flex: none; }
 .plegend .chip span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .plegend .chip:hover { border-color: var(--bad); color: var(--bad); }
-.phint { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.phint { margin: 8px 0 0; color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.plink {
+  border: 0; background: transparent; color: var(--accent); cursor: pointer;
+  font: inherit; font-size: 12px; padding: 0; text-decoration: underline dotted;
+}
+.plink:hover { text-decoration: underline; }
+
+/* help dialog */
+.phelp {
+  max-width: min(520px, calc(100vw - 24px)); padding: 16px 18px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, .25);
+}
+.phelp::backdrop { background: rgba(15, 23, 42, .38); }
+.phelp h3 { margin: 0 0 10px; font-size: 15px; }
+.phelp dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0 0 10px; }
+.phelp dt { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 650; color: var(--accent); white-space: nowrap; }
+.phelp dd { margin: 0; font-size: 12.5px; }
+.phelp .phelpnote { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+.phelp form { display: flex; justify-content: flex-end; margin: 0; }
+.phelp button {
+  padding: 6px 14px; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent); color: #fff; cursor: pointer; font: inherit; font-size: 13px;
+}
 
 /* tooltip */
 .ptip {
