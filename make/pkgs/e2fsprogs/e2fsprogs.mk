@@ -39,6 +39,15 @@ $(PKG)_LIBS_TARGET_DIR  := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_TARGET_LIBDIR)/%)
 $(PKG)_LIBS_BUILD_DIR   := $($(PKG)_LIBNAMES_LONG:%=$($(PKG)_DIR)/lib/%)
 $(PKG)_LIBS_STAGING_DIR := $($(PKG)_LIBNAMES_LONG:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%)
 
+# Library files owned by this package, restricted to its own sonames. A plain
+# 'libcom_err.so*' glob would also match libcom_err.so.3.0, which krb5 stages in
+# the same shared directory (util-linux documents the same conflict for
+# libblkid/libuuid), so clean and uninstall must stay within these versions.
+$(PKG)_LIBS_OWNED_VERSIONED := \
+	libcom_err.so.2* libe2p.so.2* libext2fs.so.2* libss.so.2* libuuid.so.1*
+$(PKG)_LIBS_OWNED_LINKS := \
+	libcom_err.so libe2p.so libext2fs.so libss.so libuuid.so
+
 $(PKG)_MAKE_ALL_EXTRAS  := && ln -fsT et $($(PKG)_DIR)/lib/com_err
 
 $(PKG)_BINARIES_ALL := \
@@ -256,7 +265,8 @@ $(pkg)-clean:
 		$(E2FSPROGS_DIR)/lib/com_err $(E2FSPROGS_DIR)/misc/e2fsck \
 		$(E2FSPROGS_DIR)/misc/debugfs $(E2FSPROGS_DIR)/misc/resize2fs
 	$(RM) \
-		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.so*) \
+		$(E2FSPROGS_LIBS_OWNED_VERSIONED:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%) \
+		$(E2FSPROGS_LIBS_OWNED_LINKS:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%) \
 		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%.a) \
 		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/lib%_pic.a) \
 		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/pkgconfig/%.pc)
@@ -265,7 +275,7 @@ $(pkg)-clean:
 
 $(pkg)-uninstall:
 	$(RM) \
-		$(E2FSPROGS_LIBNAMES_SHORT_ALL:%=$(E2FSPROGS_TARGET_LIBDIR)/lib%.so*) \
+		$(E2FSPROGS_LIBS_OWNED_VERSIONED:%=$($(PKG)_TARGET_LIBDIR)/%) \
 		$(E2FSPROGS_BINARIES_ALL:%=$(E2FSPROGS_DEST_DIR)/usr/sbin/%) \
 		$(E2FSPROGS_BINARIES_ALL:%=$(E2FSPROGS_DEST_DIR)/usr/sbin/%-ng) \
 		$(E2FSPROGS_DEST_DIR)/usr/sbin/fsck.ext2-ng \

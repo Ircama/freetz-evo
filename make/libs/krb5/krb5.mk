@@ -71,7 +71,15 @@ $($(PKG)_STAGING_SENTINEL): $($(PKG)_BINARY)
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/share/man
 	touch $@
 
+# Restaging guard: a file here can disappear behind our back, because libcom_err
+# is also provided by e2fsprogs (whose clean matches libcom_err.so*). Without a
+# recipe the sentinel alone would claim the stale staging is still complete.
 $($(PKG)_STAGING_BINARIES): $($(PKG)_STAGING_SENTINEL)
+	@test -f "$@" || { \
+		echo "staging lost $@, re-staging $(pkg)"; \
+		$(RM) $(KRB5_STAGING_SENTINEL); \
+		$(MAKE) --no-print-directory $(KRB5_STAGING_SENTINEL); \
+	}
 
 $($(PKG)_TARGET_BINARIES): $($(PKG)_TARGET_DIR)/%: $(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/%
 	$(INSTALL_LIBRARY_STRIP)
@@ -82,6 +90,7 @@ $(pkg)-precompiled: $($(PKG)_TARGET_BINARIES)
 
 $(pkg)-clean:
 	-$(SUBMAKE) -C $(KRB5_DIR)/src clean
+	$(RM) $(KRB5_STAGING_SENTINEL)
 	$(RM) -r \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/include/{krb5.h,gssapi,profile.h,com_err.h,krb5} \
 		$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcom_err.so.3* \

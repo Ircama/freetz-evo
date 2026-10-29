@@ -3722,5 +3722,47 @@
     "timestamp": "2026-10-07T09:16:26Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:Remote administration of the FRITZ!Box by the provider": {
+    "original": "Remote administration of the FRITZ!Box by the provider",
+    "translation": "Amministrazione remota del FRITZ!Box da parte del provider",
+    "timestamp": "2026-10-28T23:43:33Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Your FRITZ!Box can be reached by AVM to retrieve or modify selected data.": {
+    "original": "Your FRITZ!Box can be reached by AVM to retrieve or modify selected data.",
+    "translation": "Il tuo FRITZ!Box può essere raggiunto da AVM per recuperare o modificare dati selezionati.",
+    "timestamp": "2026-10-28T23:43:34Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Upload of diagnostics data (ARGO) at request of AVM": {
+    "original": "Upload of diagnostics data (ARGO) at request of AVM",
+    "translation": "Caricamento dei dati diagnostici (ARGO) su richiesta di AVM",
+    "timestamp": "2026-10-28T23:43:35Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:ARGO: AVM remote maintenance": {
+    "original": "ARGO: AVM remote maintenance",
+    "translation": "ARGO: Manutenzione remota AVM",
+    "timestamp": "2026-10-28T23:43:36Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Version of U-Boot": {
+    "original": "Version of U-Boot",
+    "translation": "Versione di U-Boot",
+    "timestamp": "2026-10-28T23:43:38Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Service Code": {
+    "original": "Service Code",
+    "translation": "Codice di servizio",
+    "timestamp": "2026-10-28T23:43:39Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

@@ -10,6 +10,8 @@ else
 $(call PKG_INIT_BIN,8.5.12)
 $(PKG)_HASH:=08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
 endif
+$(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
+$(PKG)_SITE:=https://www.php.net/distributions,https://de.php.net/distributions,https://de2.php.net/distributions
 ### CVSREPO:=https://github.com/php/php-src
 
 # Version-specific patches directory
