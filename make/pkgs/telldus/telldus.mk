@@ -155,6 +155,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(TELLDUS_DEST_DIR)/etc/init.d/rc.telldus \
 		$(TELLDUS_DEST_DIR)/etc/default.telldus/telldus.save \
 		$(TELLDUS_DEST_DIR)/usr/lib/cgi-bin/telldus.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(TELLDUS_TARGET_DIR)/root
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
