@@ -144,6 +144,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(MATTER_BRIDGE_DEST_DIR)/etc/default.matter-bridge/matter-bridge.save \
 		$(MATTER_BRIDGE_DEST_DIR)/usr/bin/matter-bridge-setup \
 		$(MATTER_BRIDGE_DEST_DIR)/usr/lib/cgi-bin/matter-bridge.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(MATTER_BRIDGE_TARGET_DIR)/root
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_CTL_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
