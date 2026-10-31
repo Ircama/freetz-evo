@@ -128,6 +128,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 	chmod 755 \
 		$(OT_BR_POSIX_DEST_DIR)/etc/init.d/rc.otbr \
 		$(OT_BR_POSIX_DEST_DIR)/etc/default.otbr/otbr.save
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(OT_BR_POSIX_TARGET_DIR)/root
 
 $(pkg):
 
