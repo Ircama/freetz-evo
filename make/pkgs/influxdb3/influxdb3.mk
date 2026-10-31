@@ -86,6 +86,10 @@ $($(PKG)_STAGING_TARGET): $(INFLUXDB3_STAGING_SOURCES)
 		$(INFLUXDB3_DEST_DIR)/etc/init.d/rc.influxdb3 \
 		$(INFLUXDB3_DEST_DIR)/etc/default.influxdb3/influxdb3.save \
 		$(INFLUXDB3_DEST_DIR)/usr/lib/cgi-bin/influxdb3.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(INFLUXDB3_TARGET_DIR)/root
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
