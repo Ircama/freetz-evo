@@ -14,7 +14,11 @@ $(PKG)_CATEGORY_LIBS:=Local Network
 # sources directly in $(PKG)_DIR.
 $(PKG)_TARBALL_STRIP_COMPONENTS := 1
 
-$(PKG)_BINARY:=$($(PKG)_DIR)/src/.libs/libcoap-3-openssl.so.$($(PKG)_LIB_VERSION)
+# libtool puts the shared library in the top level .libs/ directory (the
+# per-source tree is src/.libs/ and only holds the object files). With the
+# wrong path the target never appears, so the build and the install step ran on
+# every make invocation.
+$(PKG)_BINARY:=$($(PKG)_DIR)/.libs/libcoap-3-openssl.so.$($(PKG)_LIB_VERSION)
 $(PKG)_STAGING_BINARY:=$(TARGET_TOOLCHAIN_STAGING_DIR)/usr/lib/libcoap-3-openssl.so.$($(PKG)_LIB_VERSION)
 $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/libcoap-3-openssl.so.$($(PKG)_LIB_VERSION)
 
