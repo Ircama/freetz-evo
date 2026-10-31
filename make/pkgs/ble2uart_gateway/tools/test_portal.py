@@ -89,6 +89,8 @@ def build(directory):
     database = directory / "portal.db"
     # Keep the synthetic samples inside the "last 24 hours" window.
     now = int(time.time()) * SECOND
+    bucket_start = now // (288 * SECOND) * (288 * SECOND)
+    sample_times = [bucket_start - offset * SECOND for offset in (90, 60, 30)]
     connection = sqlite3.connect(database)
     connection.executescript(SCHEMA)
 
@@ -110,10 +112,10 @@ def build(directory):
         ("AABBCCDDEEFF", "Sonda cucina"))
     connection.execute(
         "INSERT INTO history_series (id, mac, attribute, unit) VALUES (1,'AABBCCDDEEFF','temperature','°C')")
-    for offset, value in ((90, "20.0"), (60, "21.0"), (30, "22.0")):
+    for received_at_ns, value in zip(sample_times, ("20.0", "21.0", "22.0")):
         connection.execute(
             "INSERT INTO history_samples (series_id, received_at_ns, type, value_json)"
-            " VALUES (1, ?, 'real', ?)", (now - offset * SECOND, value))
+            " VALUES (1, ?, 'real', ?)", (received_at_ns, value))
     frame(1, "AABBCCDDEEFF", "Sonda cucina", 10 * SECOND)
     measure(1, 0, "humidity", "%", "real", real=55.5)
     measure(1, 1, "contact", "", "boolean", integer=1)
@@ -126,10 +128,10 @@ def build(directory):
     measure(2, 1, "battery_v", "V", "real", real=2.9)
     connection.commit()
     connection.close()
-    return database, now
+    return database, now, sample_times
 
 
-def call(binary, database, query, method="GET"):
+def call(binary, database, query, method="GET", config=None):
     environment = dict(os.environ)
     environment.update({
         "BLE2UART_PORTAL_DB": str(database),
@@ -138,7 +140,11 @@ def call(binary, database, query, method="GET"):
         "GATEWAY_INTERFACE": "CGI/1.1",
         "SERVER_PROTOCOL": "HTTP/1.1",
     })
-    result = subprocess.run([binary, "--portal"], env=environment,
+    command = [binary]
+    if config is not None:
+        command.extend(["--config", str(config)])
+    command.append("--portal")
+    result = subprocess.run(command, env=environment,
                             capture_output=True, timeout=120)
     # Do not use text=True: universal newlines would rewrite the CRLF
     # separators the CGI protocol requires.
@@ -154,13 +160,15 @@ def digest(path):
 def run(binary):
     with tempfile.TemporaryDirectory(prefix="ble-portal-smoke-") as temporary:
         directory = Path(temporary)
-        database, now = build(directory)
+        database, now, sample_times = build(directory)
         before = digest(database)
 
         head, body, _ = call(binary, database, "action=page")
         assert "200 OK" in head, head
         assert "text/html" in head, head
         assert "/ble2uart_gateway/portal.js" in body, body[:200]
+        assert 'id="unitbox"' in body and 'id="unit_temperature"' in body, body[:500]
+        assert 'id="chartmeta"' in body and 'id="splitter"' in body, body[:500]
 
         head, body, _ = call(binary, database, "action=page", method="HEAD")
         assert "200 OK" in head and body == "", (head, body[:80])
@@ -189,6 +197,24 @@ def run(binary):
         assert raw_only["temperature"]["series_id"] is None
         assert raw_only["battery_v"]["value"] == 2.9
 
+        config = directory / "gateway.yaml"
+        config.write_text(
+            "version: 1\n"
+            "devices:\n"
+            "  - mac: AABBCCDDEEFF\n"
+            "    label: Termometro cucina\n"
+            "    manufacturer: Xiaomi\n"
+            "    model: LYWSD03MMC\n"
+            "    firmware_version: 1.2.3\n",
+            encoding="utf-8",
+        )
+        configured = json.loads(call(binary, database, "action=catalog", config=config)[1])
+        first_device = next(item for item in configured["devices"] if item["mac"] == "AABBCCDDEEFF")
+        assert first_device["label"] == "Termometro cucina", first_device
+        assert first_device["manufacturer"] == "Xiaomi", first_device
+        assert first_device["model"] == "LYWSD03MMC", first_device
+        assert first_device["firmware_version"] == "1.2.3", first_device
+
         # 1 hour with 300 buckets keeps the three archived samples apart.
         series = json.loads(call(
             binary, database,
@@ -209,7 +235,8 @@ def run(binary):
         zoomed = json.loads(call(
             binary, database,
             f"action=series&mac=AABBCCDDEEFF&attribute=temperature&unit=%C2%B0C"
-            f"&kind=numeric&range=86400&from={now - 70 * SECOND}&to={now}")[1])
+            f"&kind=numeric&range=86400&from={sample_times[0] + SECOND}"
+            f"&to={sample_times[2] + SECOND}")[1])
         assert [point[1] for point in zoomed["points"]] == [21.0, 22.0], zoomed["points"]
 
         whole = json.loads(call(

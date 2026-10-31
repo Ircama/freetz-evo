@@ -107,6 +107,7 @@ pub struct SqliteConfig {
 pub struct MaintenanceConfig {
     pub enabled: bool,
     pub counter_mode: HistoryMode,
+    pub other_numeric_mode: HistoryMode,
     pub interval_s: u64,
     pub batch_size: usize,
     pub max_work_ms: u64,
@@ -167,7 +168,7 @@ impl Default for MaintenanceConfig {
             });
         }
         Self { enabled: false, counter_mode: HistoryMode::Discard, interval_s: 300, batch_size: 100, max_work_ms: 100,
-            raw_retention_s: 600, policies }
+            raw_retention_s: 600, other_numeric_mode: HistoryMode::KeepAll, policies }
     }
 }
 
@@ -175,6 +176,9 @@ impl MaintenanceConfig {
     pub fn validate(&self) -> Result<(), String> {
         if self.counter_mode == HistoryMode::Progressive {
             return Err("SQLite default counter history must be discard or keep_all; use a per-attribute policy for progressive retention".into());
+        }
+        if self.other_numeric_mode == HistoryMode::Progressive {
+            return Err("SQLite default history for other numeric attributes must be discard or keep_all; use a per-attribute policy for progressive retention".into());
         }
         if !(1..=86400).contains(&self.interval_s) || !(1..=1000).contains(&self.batch_size)
             || !(10..=1000).contains(&self.max_work_ms)
@@ -349,6 +353,175 @@ fn open(config: &SqliteConfig) -> Result<Connection, String> {
         .map_err(|error| format!("cannot initialize SQLite database {}: {error}", config.path))
 }
 
+#[derive(Debug, Serialize)]
+pub struct StoredAttribute {
+    pub mac: String,
+    pub attribute: String,
+    pub unit: String,
+    pub samples: i64,
+    pub last_received_at_ns: i64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DeletedAttribute {
+    pub raw_measurements: usize,
+    pub raw_frames: usize,
+    pub archived_samples: usize,
+    pub series: usize,
+}
+
+fn open_existing(path: &Path, read_only: bool) -> Result<Connection, String> {
+    let metadata = std::fs::metadata(path)
+        .map_err(|error| format!("cannot access SQLite database {}: {error}", path.display()))?;
+    if !metadata.is_file() {
+        return Err(format!("SQLite database is not a regular file: {}", path.display()));
+    }
+    let flags = if read_only {
+        OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX
+    } else {
+        OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX
+    };
+    let connection = Connection::open_with_flags(path, flags)
+        .map_err(|error| format!("cannot open SQLite database {}: {error}", path.display()))?;
+    connection.busy_timeout(Duration::from_secs(5))
+        .map_err(|error| format!("cannot configure SQLite access: {error}"))?;
+    let application: i64 = connection.query_row("PRAGMA application_id", [], |row| row.get(0))
+        .map_err(|error| format!("cannot read SQLite application id: {error}"))?;
+    let version: i64 = connection.query_row("PRAGMA user_version", [], |row| row.get(0))
+        .map_err(|error| format!("cannot read SQLite schema version: {error}"))?;
+    if application != APPLICATION_ID || !matches!(version, 1 | 2) {
+        return Err(format!("not a supported ble2uart-gateway database (application_id={application}, version={version})"));
+    }
+    Ok(connection)
+}
+
+fn table_exists(connection: &Connection, name: &str) -> rusqlite::Result<bool> {
+    connection.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1)",
+        [name],
+        |row| row.get(0),
+    )
+}
+
+pub fn stored_attributes(path: &Path) -> Result<Vec<StoredAttribute>, String> {
+    let connection = open_existing(path, true)?;
+    if !table_exists(&connection, "frames").map_err(|error| error.to_string())?
+        || !table_exists(&connection, "measurements").map_err(|error| error.to_string())? {
+        return Err("SQLite database is missing gateway measurement tables".into());
+    }
+    let has_history = table_exists(&connection, "history_series").map_err(|error| error.to_string())?
+        && table_exists(&connection, "history_samples").map_err(|error| error.to_string())?;
+    let query = if has_history {
+        "SELECT mac,attribute,unit,count(*),max(received_at_ns) FROM (
+            SELECT frame.mac,measure.attribute,measure.unit,frame.received_at_ns
+            FROM frames frame JOIN measurements measure ON measure.frame_id=frame.id
+            UNION ALL
+            SELECT series.mac,series.attribute,series.unit,sample.received_at_ns
+            FROM history_samples sample JOIN history_series series ON series.id=sample.series_id
+        ) GROUP BY mac,attribute,unit ORDER BY mac,attribute,unit"
+    } else {
+        "SELECT frame.mac,measure.attribute,measure.unit,count(*),max(frame.received_at_ns)
+         FROM frames frame JOIN measurements measure ON measure.frame_id=frame.id
+         GROUP BY frame.mac,measure.attribute,measure.unit ORDER BY frame.mac,measure.attribute,measure.unit"
+    };
+    let mut statement = connection.prepare(query).map_err(|error| error.to_string())?;
+    let rows = statement.query_map([], |row| {
+        Ok(StoredAttribute {
+            mac: row.get(0)?,
+            attribute: row.get(1)?,
+            unit: row.get(2)?,
+            samples: row.get(3)?,
+            last_received_at_ns: row.get(4)?,
+        })
+    }).map_err(|error| error.to_string())?;
+    rows
+        .collect::<rusqlite::Result<Vec<_>>>()
+        .map_err(|error| format!("cannot list SQLite measurements: {error}"))
+}
+
+pub fn delete_attribute(path: &Path, mac: &str, attribute: &str) -> Result<DeletedAttribute, String> {
+    let bytes = crate::config::parse_mac(mac)?;
+    let mac = bytes.iter().map(|byte| format!("{byte:02X}")).collect::<String>();
+    if attribute.is_empty() || attribute.len() > 128
+        || !attribute.bytes().all(|byte| byte.is_ascii_alphanumeric() || b"_.-".contains(&byte)) {
+        return Err("invalid SQLite attribute name".into());
+    }
+
+    let mut connection = open_existing(path, false)?;
+    if !table_exists(&connection, "frames").map_err(|error| error.to_string())?
+        || !table_exists(&connection, "measurements").map_err(|error| error.to_string())? {
+        return Err("SQLite database is missing gateway measurement tables".into());
+    }
+    let has_history = table_exists(&connection, "history_series").map_err(|error| error.to_string())?
+        && table_exists(&connection, "history_samples").map_err(|error| error.to_string())?;
+    let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|error| format!("cannot lock SQLite database for attribute deletion: {error}"))?;
+    let frames: Vec<(i64, String)> = transaction.prepare(
+        "SELECT frame.id,frame.state_json FROM frames frame
+         WHERE frame.mac=?1 AND EXISTS(
+             SELECT 1 FROM measurements measure
+             WHERE measure.frame_id=frame.id AND measure.attribute=?2
+         ) ORDER BY frame.id"
+    ).map_err(|error| error.to_string())?
+        .query_map(params![mac, attribute], |row| Ok((row.get(0)?, row.get(1)?)))
+        .map_err(|error| error.to_string())?
+        .collect::<rusqlite::Result<_>>()
+        .map_err(|error| format!("cannot read raw SQLite frames: {error}"))?;
+    let mut result = DeletedAttribute {
+        raw_measurements: 0,
+        raw_frames: 0,
+        archived_samples: 0,
+        series: 0,
+    };
+    for (frame_id, state_json) in frames {
+        let mut state: Value = serde_json::from_str(&state_json)
+            .map_err(|error| format!("cannot sanitize raw frame {frame_id}: {error}"))?;
+        let object = state.as_object_mut()
+            .ok_or_else(|| format!("cannot sanitize raw frame {frame_id}: state is not an object"))?;
+        let measurements = object.get_mut("measurements").and_then(Value::as_array_mut)
+            .ok_or_else(|| format!("cannot sanitize raw frame {frame_id}: measurements are missing"))?;
+        measurements.retain(|measurement| measurement["name"].as_str() != Some(attribute));
+        object.remove("decoded");
+        let raw_measurements = transaction.execute(
+            "DELETE FROM measurements WHERE frame_id=?1 AND attribute=?2",
+            params![frame_id, attribute],
+        ).map_err(|error| format!("cannot delete raw SQLite measurement: {error}"))?;
+        result.raw_measurements += raw_measurements;
+        let remaining: i64 = transaction.query_row(
+            "SELECT count(*) FROM measurements WHERE frame_id=?1",
+            [frame_id],
+            |row| row.get(0),
+        ).map_err(|error| error.to_string())?;
+        if remaining == 0 {
+            result.raw_frames += transaction.execute("DELETE FROM frames WHERE id=?1", [frame_id])
+                .map_err(|error| format!("cannot delete empty raw SQLite frame: {error}"))?;
+        } else {
+            transaction.execute(
+                "UPDATE frames SET state_json=?1 WHERE id=?2",
+                params![state.to_string(), frame_id],
+            ).map_err(|error| format!("cannot update raw SQLite frame: {error}"))?;
+        }
+    }
+    if has_history {
+        result.archived_samples = transaction.execute(
+            "DELETE FROM history_samples WHERE series_id IN
+             (SELECT id FROM history_series WHERE mac=?1 AND attribute=?2)",
+            params![mac, attribute],
+        ).map_err(|error| format!("cannot delete archived SQLite samples: {error}"))?;
+        result.series = transaction.execute(
+            "DELETE FROM history_series WHERE mac=?1 AND attribute=?2",
+            params![mac, attribute],
+        ).map_err(|error| format!("cannot delete SQLite series: {error}"))?;
+        transaction.execute(
+            "DELETE FROM history_devices WHERE mac=?1
+             AND NOT EXISTS(SELECT 1 FROM history_series WHERE mac=?1)",
+            [&mac],
+        ).map_err(|error| format!("cannot clean up SQLite device metadata: {error}"))?;
+    }
+    transaction.commit().map_err(|error| format!("cannot commit SQLite attribute deletion: {error}"))?;
+    Ok(result)
+}
+
 fn typed_value(value: &Value) -> (&'static str, SqlValue, SqlValue, SqlValue) {
     let null = SqlValue::Null;
     match value {
@@ -483,7 +656,7 @@ fn reduce_series(connection: &mut Connection, config: &MaintenanceConfig, now: i
     if discrete_attribute(attribute) { return Ok((after, true)); }
     let policy = config.policy(mac, attribute);
     let mode = policy.map(|policy| policy.mode).unwrap_or_else(||
-        if counter_attribute(attribute) { config.counter_mode } else { HistoryMode::KeepAll });
+        if counter_attribute(attribute) { config.counter_mode } else { config.other_numeric_mode });
     if mode == HistoryMode::KeepAll { return Ok((after, true)); }
     let deadline = Instant::now() + Duration::from_millis(config.max_work_ms / 2);
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
@@ -846,6 +1019,7 @@ mod tests {
         assert_eq!(config.policy("AABBCCDDEEFF", "temperature").unwrap().tiers[2].sample_interval_s, 150);
         assert!(config.policy("AABBCCDDEEFF", "packet_id").is_none());
         assert_eq!(config.counter_mode,HistoryMode::Discard);
+        assert_eq!(config.other_numeric_mode,HistoryMode::KeepAll);
         assert!(config.policy("AABBCCDDEEFF", "opened").is_none());
         let mut override_policy = config.policies[0].clone();
         override_policy.mac = "AA:BB:CC:DD:EE:FF".into();
@@ -953,6 +1127,74 @@ mod tests {
             if !maintenance_step(connection, config, now, &mut cursor, &stopped).unwrap() { return; }
         }
         panic!("maintenance did not finish its bounded chunks");
+    }
+
+    #[test]
+    fn other_numeric_fallback_discards_unmapped_numeric_samples_only() {
+        let mut database = Database::new();
+        database.config.maintenance.enabled = true;
+        database.config.maintenance.raw_retention_s = 1;
+        database.config.maintenance.other_numeric_mode = HistoryMode::Discard;
+        database.config.maintenance.policies.clear();
+        let now = 1_800_000_000 * SECOND_NS;
+        let mut connection = open(&database.config).unwrap();
+        let data = serde_json::json!({"mac":"AABBCCDDEEFF","measurements":[
+            {"name":"pm10","value":12.5,"unit":"µg/m³"},
+            {"name":"custom_text","value":"hello","unit":""},
+            {"name":"custom_state","value":true,"unit":""}
+        ]});
+        let mut frame = Frame::new(&data).unwrap();
+        frame.timestamp_ns = now - 60 * SECOND_NS;
+        write_batch(&mut connection, &[frame]).unwrap();
+        drain_history(&mut connection, &database.config.maintenance, now);
+        let attributes: Vec<String> = connection.prepare("SELECT DISTINCT attribute FROM history ORDER BY attribute")
+            .unwrap().query_map([], |row| row.get(0)).unwrap()
+            .collect::<rusqlite::Result<_>>().unwrap();
+        assert_eq!(attributes, vec!["custom_state", "custom_text"]);
+    }
+
+    #[test]
+    fn stored_attribute_removal_clears_raw_and_archived_values_by_device_and_name() {
+        let mut database = Database::new();
+        database.config.maintenance.enabled = true;
+        database.config.maintenance.raw_retention_s = 60;
+        let now = 1_800_000_000 * SECOND_NS;
+        let mut connection = open(&database.config).unwrap();
+        let data = serde_json::json!({
+            "mac":"AABBCCDDEEFF","label":"Outside","wire_format":"test",
+            "decoded":{"temperature":21.0,"humidity":50.0},
+            "measurements":[
+                {"name":"temperature","value":21.0,"unit":"°C"},
+                {"name":"temperature","value":69.8,"unit":"°F"},
+                {"name":"humidity","value":50.0,"unit":"%"}
+            ]
+        });
+        let mut archived = Frame::new(&data).unwrap();
+        archived.timestamp_ns = now - 600 * SECOND_NS;
+        let mut recent = Frame::new(&data).unwrap();
+        recent.timestamp_ns = now - 10 * SECOND_NS;
+        write_batch(&mut connection, &[archived, recent]).unwrap();
+        drain_history(&mut connection, &database.config.maintenance, now);
+        drop(connection);
+
+        let before = stored_attributes(Path::new(&database.config.path)).unwrap();
+        assert_eq!(before.iter().filter(|item| item.attribute == "temperature").map(|item| item.samples).sum::<i64>(), 4);
+        let deleted = delete_attribute(Path::new(&database.config.path), "aa:bb:cc:dd:ee:ff", "temperature").unwrap();
+        assert_eq!(deleted.raw_measurements, 2);
+        assert_eq!(deleted.raw_frames, 0);
+        assert_eq!(deleted.archived_samples, 2);
+        assert_eq!(deleted.series, 2);
+
+        let remaining = stored_attributes(Path::new(&database.config.path)).unwrap();
+        assert_eq!(remaining.len(), 1);
+        assert_eq!(remaining[0].attribute, "humidity");
+        let connection = Connection::open(&database.config.path).unwrap();
+        let state_json: String = connection.query_row("SELECT state_json FROM frames", [], |row| row.get(0)).unwrap();
+        let state: Value = serde_json::from_str(&state_json).unwrap();
+        assert!(state.get("decoded").is_none());
+        assert_eq!(state["measurements"].as_array().unwrap().len(), 1);
+        assert_eq!(state["measurements"][0]["name"], "humidity");
+        assert_eq!(connection.query_row("SELECT count(*) FROM history_series WHERE attribute='temperature'", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
     }
 
     #[test]

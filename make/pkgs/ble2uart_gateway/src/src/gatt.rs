@@ -8,8 +8,10 @@ use std::collections::{BTreeMap, VecDeque};
 use std::io::Read;
 use std::time::{Duration, Instant};
 
+pub const MAX_TIMEOUT_MS: u64 = 120_000;
+
 pub fn default_timeout() -> u64 {
-    10000
+    60_000
 }
 fn default_idle_timeout() -> u64 {
     60000
@@ -208,8 +210,8 @@ impl Request {
 }
 
 fn validate_timeout(timeout: u64) -> Result<(), String> {
-    if !(100..=30000).contains(&timeout) {
-        return Err("timeout_ms must be 100-30000".into());
+    if !(100..=MAX_TIMEOUT_MS).contains(&timeout) {
+        return Err("timeout_ms must be 100-120000".into());
     }
     Ok(())
 }
@@ -310,9 +312,17 @@ impl Notification {
 }
 
 fn decode_value(spec: &Spec, request: &Request, bytes: &[u8]) -> Result<Value, String> {
+    let full = bytes;
     let bytes = bytes
         .get(request.offset..)
         .ok_or("codec offset exceeds received value")?;
+    // ble_send_cfg() notifies sizeof(cfg)+3 bytes from a buffer of sizeof(cfg)+2:
+    // the last byte is an out-of-bounds read of the firmware, not configuration.
+    let bytes = if request.codec == "cfg" && request.offset == 1 && full.first() == Some(&0x55) && bytes.len() == 13 {
+        &bytes[..12]
+    } else {
+        bytes
+    };
     Decoder::new(spec, bytes)
         .decode_exact(&request.codec)
         .map(|value| value.to_json())
@@ -519,6 +529,7 @@ impl Wire<'_> {
     }
 
     fn connection_state(&mut self, expected: Option<u8>) -> Result<u8, String> {
+        let mut saw_connecting = false;
         let state = self.wait(|event| match event {
             Event::Response {
                 cmd: 0x0C,
@@ -530,7 +541,10 @@ impl Wire<'_> {
                     Some(Err(format!("CONN: {}", status.as_str())))
                 } else if expected.is_none_or(|state| state == payload[0]) {
                     Some(Ok(payload[0]))
-                } else if expected == Some(2) && payload[0] == 0 {
+                } else if expected == Some(2) && payload[0] == 1 {
+                    saw_connecting = true;
+                    None
+                } else if expected == Some(2) && payload[0] == 0 && saw_connecting {
                     Some(Err("BLE connection closed before open completed".into()))
                 } else {
                     None
@@ -557,6 +571,7 @@ impl Wire<'_> {
     }
 
     fn discover(&mut self) -> Result<Value, String> {
+        log::info!("GATT stage: discovering services");
         self.send(ConnOp::DiscoverServices, &[])?;
         let mut entries: Vec<Attribute> = Vec::new();
         let mut service = None;
@@ -629,6 +644,7 @@ impl Wire<'_> {
         })?;
         self.state.attributes = entries;
         self.state.discovered = true;
+        log::info!("GATT stage: discovery completed; attributes={}", self.state.attributes.len());
         Ok(json!({"entries": self.state.attributes, "confirmation": "discovery-complete"}))
     }
 
@@ -663,6 +679,7 @@ impl Wire<'_> {
     }
 
     fn subscribe(&mut self, handle: u16, mode: u8) -> Result<(), String> {
+        log::info!("GATT stage: configuring subscription; handle={handle} mode={mode}");
         let mut parameters = vec![0];
         parameters.extend_from_slice(&handle.to_le_bytes());
         parameters.push(mode);
@@ -676,6 +693,7 @@ impl Wire<'_> {
         } else {
             self.state.subscriptions.insert(handle, mode);
         }
+        log::info!("GATT stage: subscription completed; handle={handle} mode={mode}");
         Ok(())
     }
 
@@ -757,8 +775,12 @@ impl Wire<'_> {
         }
         self.drain()?;
         let after = self.state.sequence;
+        log::info!("GATT stage: writing request; handle={handle} bytes={}", bytes.len());
         self.write(handle, bytes, Operation::Write)?;
-        self.notifications(handle, &hex_bytes(&request.prefix, 197)?, request.count, after)
+        log::info!("GATT stage: waiting for notification; handle={handle} count={}", request.count);
+        let notifications = self.notifications(handle, &hex_bytes(&request.prefix, 197)?, request.count, after)?;
+        log::info!("GATT stage: notification received; handle={handle} count={}", notifications.len());
+        Ok(notifications)
     }
 }
 
@@ -793,11 +815,14 @@ pub fn open(link: &mut Link, state: &mut State, open: &Open) -> (Result<Value, S
         let mut address = crate::config::parse_mac(&open.mac)?;
         address.reverse();
         owns_connection = true;
+        log::info!("GATT stage: connecting; peer={} coded={}", open.mac, open.coded);
         wire.link
             .send(&link::conn_open_managed_command(open.addr_type, &address, open.coded))?;
         wire.connection_state(Some(2))?;
+        log::info!("GATT stage: connected; waiting for MTU");
         let mtu = wire.completion(ConnOp::ExchangeMtu, 0)?;
         wire.state.set_mtu(&mtu)?;
+        log::info!("GATT stage: MTU negotiated; mtu={}", wire.state.mtu);
         wire.state.touch();
         Ok(json!({"session": wire.state.token, "connection": wire.state.snapshot(),
             "confirmation": "connected", "host_managed": true}))
@@ -1058,6 +1083,11 @@ mod tests {
 
     #[test]
     fn gatt_limits_and_operation_fields_are_checked_before_radio_access() {
+        let open: Open = serde_json::from_value(json!({"mac":"AABBCCDDEEFF"})).unwrap();
+        assert_eq!(open.timeout_ms, 60_000);
+        assert_eq!(request(json!({})).timeout_ms, 60_000);
+        assert!(request(json!({"timeout_ms":120_000})).validate().is_ok());
+        assert!(request(json!({"timeout_ms":120_001})).validate().is_err());
         assert!(request(json!({})).validate().is_ok());
         for extra in [
             json!({"handle":42}),
@@ -1125,9 +1155,11 @@ mod tests {
         let mut raw = hex_bytes("5543851000002804A9313104B4", 13).unwrap();
         assert!(decode_value(&spec, &request, &raw).is_ok());
         raw.push(0);
+        assert!(decode_value(&spec, &request, &raw).is_ok());
+        raw.push(0);
         assert!(decode_value(&spec, &request, &raw)
             .unwrap_err()
-            .contains("consumed 12 of 13"));
+            .contains("consumed 12 of 14"));
         raw.truncate(3);
         assert!(decode_value(&spec, &request, &raw).is_err());
     }

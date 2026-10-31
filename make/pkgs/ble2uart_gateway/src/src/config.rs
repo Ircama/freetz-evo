@@ -521,6 +521,22 @@ pub struct DiagnosticsConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct LoggingConfig {
+    pub max_size_kb: u32,
+    pub history: u8,
+}
+
+impl Default for LoggingConfig {
+    fn default() -> Self {
+        Self {
+            max_size_kb: 128,
+            history: 2,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default = "default_version")]
     pub version: u32,
@@ -534,6 +550,8 @@ pub struct Config {
     pub frontends: Frontends,
     #[serde(default)]
     pub log_level: String,
+    #[serde(default)]
+    pub logging: LoggingConfig,
     #[serde(default)]
     pub diagnostics: DiagnosticsConfig,
     #[serde(default)]
@@ -567,6 +585,7 @@ impl Default for Config {
                 matter: MatterConfig::default(),
             },
             log_level: "info".into(),
+            logging: LoggingConfig::default(),
             diagnostics: DiagnosticsConfig::default(),
             automation: None,
             availability_state_file: String::new(),
@@ -645,6 +664,12 @@ impl Config {
 
     pub fn validate(&self) -> Result<(), String> {
         crate::logger::parse_level(&self.log_level)?;
+        if !(16..=4096).contains(&self.logging.max_size_kb) {
+            return Err("logging.max_size_kb must be between 16 and 4096".into());
+        }
+        if self.logging.history > 10 {
+            return Err("logging.history must be between 0 and 10".into());
+        }
         if !crate::theengs::available()
             && (self.decoder != DecoderMode::Builtin
                 || self.devices.iter().any(|device| {
@@ -1015,10 +1040,16 @@ mod tests {
         config.set("diagnostics.decode", "true").unwrap();
         config.set("diagnostics.phy", "true").unwrap();
         config.set("log_level", "off").unwrap();
+        config.set("logging.max_size_kb", "256").unwrap();
+        config.set("logging.history", "3").unwrap();
         assert!(config.diagnostics.tx_hex && config.diagnostics.rx_hex && config.diagnostics.decode);
         assert!(config.diagnostics.phy);
         assert_eq!(config.log_level, "off");
+        assert_eq!(config.logging.max_size_kb, 256);
+        assert_eq!(config.logging.history, 3);
         assert!(config.set("log_level", "typo").is_err());
+        assert!(config.set("logging.max_size_kb", "8").is_err());
+        assert!(config.set("logging.history", "11").is_err());
     }
 
     #[test]

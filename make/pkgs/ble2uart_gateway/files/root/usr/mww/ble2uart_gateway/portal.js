@@ -22,6 +22,8 @@
 	var TEXT = {
 		it: {
 			subtitle: "Sensori", refresh: "Aggiorna ora", config: "Configurazione",
+			resetView: "Reimposta le viste salvate",
+			resetViewConfirm: "Azzerare grandezze, intervallo e zoom salvati in questo browser?",
 			devices: "Dispositivi", series: "Grandezze", samples: "Campioni", updated: "Ultimo dato",
 			never: "nessun dato", chartHint: "Tocca una grandezza per disegnarne il grafico.",
 			chartEmpty: "Seleziona una grandezza dall'elenco.",
@@ -51,6 +53,8 @@
 		},
 		en: {
 			subtitle: "Sensors", refresh: "Refresh now", config: "Configuration",
+			resetView: "Reset the saved views",
+			resetViewConfirm: "Clear the attributes, time range and zoom saved in this browser?",
 			devices: "Devices", series: "Attributes", samples: "Samples", updated: "Latest sample",
 			never: "no data", chartHint: "Tap an attribute to draw its chart.",
 			chartEmpty: "Select an attribute from the list.",
@@ -80,6 +84,8 @@
 		},
 		de: {
 			subtitle: "Sensoren", refresh: "Jetzt aktualisieren", config: "Konfiguration",
+			resetView: "Gespeicherte Ansichten zur\u00fccksetzen",
+			resetViewConfirm: "Gespeicherte Messwerte, Zeitraum und Zoom in diesem Browser l\u00f6schen?",
 			devices: "Ger\u00e4te", series: "Messwerte", samples: "Messwerte", updated: "Letzter Wert",
 			never: "keine Daten", chartHint: "Messwert antippen, um das Diagramm zu zeichnen.",
 			chartEmpty: "Messwert aus der Liste w\u00e4hlen.",
@@ -149,6 +155,88 @@
 		try { stored = window.localStorage.getItem("ble2uart-portal-lang"); } catch (e) { stored = null; }
 		var candidate = (stored || navigator.language || "en").slice(0, 2).toLowerCase();
 		lang = TEXT[candidate] ? candidate : "en";
+	}
+
+	/* ---------------------------------------------------------- persistence
+	 * The selected attributes, the time range and the zoom window are stored in
+	 * the browser (localStorage, with a cookie as a fallback), so closing and
+	 * reopening the portal restores the last views. The header button with the
+	 * reset icon (id="resetview") deletes the stored state. */
+	var STORE_KEY = "ble2uart-portal-view";
+	var STORE_DAYS = 365;
+
+	function cookieRead(name) {
+		var parts = document.cookie ? document.cookie.split("; ") : [];
+		for (var index = 0; index < parts.length; index++) {
+			var pair = parts[index].split("=");
+			if (pair[0] === name) {
+				try { return decodeURIComponent(pair.slice(1).join("=")); } catch (e) { return null; }
+			}
+		}
+		return null;
+	}
+
+	function cookieWrite(name, value, days) {
+		var expires = "";
+		if (days > 0) {
+			expires = "; expires=" + new Date(Date.now() + days * 86400000).toUTCString();
+		} else {
+			expires = "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+		}
+		document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
+	}
+
+	function readStore() {
+		var raw = null;
+		try { raw = window.localStorage.getItem(STORE_KEY); } catch (e) { raw = null; }
+		if (raw === null) { raw = cookieRead(STORE_KEY); }
+		if (!raw) { return null; }
+		try { return JSON.parse(raw); } catch (e) { return null; }
+	}
+
+	function writeStore() {
+		var data = {
+			selected: state.selected.slice(0, MAX_SERIES),
+			range: state.range,
+			zoom: state.zoom ? { from: Math.round(state.zoom.from), to: Math.round(state.zoom.to) } : null
+		};
+		var raw = JSON.stringify(data);
+		try { window.localStorage.setItem(STORE_KEY, raw); } catch (e) { /* private mode */ }
+		try { cookieWrite(STORE_KEY, raw, STORE_DAYS); } catch (e) { /* cookies disabled */ }
+	}
+
+	function clearStore() {
+		try { window.localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+		try { cookieWrite(STORE_KEY, "", -1); } catch (e) { /* ignore */ }
+	}
+
+	function restoreStore() {
+		var data = readStore();
+		if (!data || typeof data !== "object") { return; }
+		if (Object.prototype.toString.call(data.selected) === "[object Array]") {
+			state.selected = data.selected
+				.filter(function (key) { return typeof key === "string"; })
+				.slice(0, MAX_SERIES);
+		}
+		var ranges = RANGES.map(function (item) { return item.seconds; });
+		if (ranges.indexOf(data.range) >= 0) { state.range = data.range; }
+		var zoom = data.zoom;
+		if (zoom && typeof zoom.from === "number" && typeof zoom.to === "number" && zoom.to > zoom.from) {
+			state.zoom = { from: zoom.from, to: zoom.to };
+		}
+	}
+
+	/** Header button: forget the stored views and start from an empty chart. */
+	function resetView() {
+		if (!window.confirm(t("resetViewConfirm"))) { return; }
+		clearStore();
+		state.selected = [];
+		state.charts = [];
+		state.range = 86400;
+		state.zoom = null;
+		state.hover = null;
+		state.error = "";
+		render();
 	}
 
 	/* ---------------------------------------------------------------- fetch */
@@ -388,6 +476,7 @@
 		state.error = "";
 		state.zoom = null;
 		state.hover = null;
+		writeStore();
 		loadCharts();
 		render();
 	}
@@ -403,6 +492,7 @@
 				state.range = item.seconds;
 				state.zoom = null;
 				state.hover = null;
+				writeStore();
 				loadCharts();
 				render();
 			});
@@ -425,6 +515,7 @@
 		els.panleft.disabled = !hasChart;
 		els.panright.disabled = !hasChart;
 		els.help.title = t("helpOpen");
+		if (els.resetview) { els.resetview.title = t("resetView"); }
 		els.helplink.textContent = t("helpLink");
 		var full = document.fullscreenElement === els.panel;
 		els.fullscreen.title = full ? t("exitFullscreen") : t("fullscreen");
@@ -499,6 +590,7 @@
 				state.charts = state.charts.filter(function (item) { return item.key !== chart.key; });
 				state.zoom = null;
 				state.hover = null;
+				writeStore();
 				render();
 			});
 			els.legend.appendChild(chip);
@@ -912,6 +1004,7 @@
 		if (!(to - from >= MIN_WINDOW_MS)) { to = from + MIN_WINDOW_MS; }
 		state.zoom = { from: Math.round(from), to: Math.round(to) };
 		state.hover = null;
+		writeStore();
 		loadCharts();
 		render();
 	}
@@ -978,6 +1071,7 @@
 	function resetZoom() {
 		state.zoom = null;
 		state.hover = null;
+		writeStore();
 		loadCharts();
 		render();
 	}
@@ -1085,6 +1179,7 @@
 			zoominfo: document.getElementById("zoominfo"),
 			fullscreen: document.getElementById("fullscreen"),
 			help: document.getElementById("help"),
+			resetview: document.getElementById("resetview"),
 			helplink: document.getElementById("helplink"),
 			helpbox: document.getElementById("helpbox"),
 			helptitle: document.getElementById("helptitle"),
@@ -1094,6 +1189,11 @@
 		};
 		pickLanguage();
 		document.documentElement.lang = lang;
+		restoreStore();
+		if (els.resetview) {
+			els.resetview.title = t("resetView");
+			els.resetview.addEventListener("click", resetView);
+		}
 		document.getElementById("reload").addEventListener("click", function () { loadCatalog(true); });
 		els.canvas.addEventListener("mousemove", onMove);
 		els.canvas.addEventListener("mousedown", onDown);

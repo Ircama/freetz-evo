@@ -20,7 +20,8 @@ DAEMON_BIN=/usr/bin/ble2uart-gateway
 	. /mod/etc/default.ble2uart_gateway/ble2uart_gateway.cfg
 [ -r /mod/etc/conf/ble2uart_gateway.cfg ] &&
 	. /mod/etc/conf/ble2uart_gateway.cfg
-: "${BLE2UART_GATEWAY_STORE:=/tmp/flash/ble2uart_gateway}"
+: "${BLE2UART_GATEWAY_STORE:=/var/media/ftp/ble2uart_gateway}"
+BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE%/}"
 YAML="$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml"
 
 if [ ! -x "$DAEMON_BIN" ]; then

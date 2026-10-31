@@ -53,7 +53,7 @@ use link::{Cmd, Event, Link, ScanFlags};
 use std::io::Read;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 const DEFAULT_CONFIG: &str = "/etc/ble2uart-gateway/config.yaml";
 static STOP_REQUESTED: AtomicBool = AtomicBool::new(false);
@@ -274,7 +274,7 @@ fn main() -> std::process::ExitCode {
         Comando::DecodeCaptures => decode_captures(&args),
         Comando::WebConfig(action) => {
             let mut input = String::new();
-            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups"|"log") {
+            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"sqlite-attributes"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups"|"log") {
                 let _ = std::io::stdin().take(262145).read_to_string(&mut input);
             }
             let response = if input.len() > 262144 {
@@ -372,6 +372,16 @@ fn configure_logging(args: &Args, config: Option<&Config>) -> Result<(), String>
     let color = logging_color(args, environment_color.as_deref())?;
     logger::configure(level, args.log_stdout, tx, rx, decode, phy);
     logger::configure_color(color);
+    if let Some(config) = config {
+        let path = std::env::var_os("BLE2UART_GATEWAY_LOG")
+            .filter(|value| !value.is_empty())
+            .map(PathBuf::from);
+        logger::configure_file(
+            path.as_deref(),
+            config.logging.max_size_kb,
+            config.logging.history,
+        )?;
+    }
     Ok(())
 }
 
@@ -567,10 +577,8 @@ fn module_info(args: &Args) -> Result<(), String> {
 fn configure_scanner(link: &mut Link, config: &Config) -> Result<bool, String> {
     let (whitelist, addresses) = config.mac_filters()?;
     let timeout = Duration::from_millis(config.serial.command_timeout_ms);
-    let (status, _) = link.request(&link::stop_scan_command(), Cmd::Scan, timeout)?;
-    if !status.is_ok() {
-        return Err(format!("cannot stop scanner before MAC filtering: {}", status.as_str()));
-    }
+    commands::set_scan(link, None, timeout)
+        .map_err(|error| format!("cannot stop scanner before MAC filtering: {error}"))?;
     let (status, _) = link.request(&link::clear_mac_list_command(), Cmd::Clrm, timeout)?;
     match status {
         link::Status::Metadata(capacity) if usize::from(capacity) >= addresses.len() => {}
@@ -601,10 +609,7 @@ fn configure_scanner(link: &mut Link, config: &Config) -> Result<bool, String> {
         phy_coded: config.scanner.phy_coded,
         phy_1m: config.scanner.phy_1m,
     };
-    let (status, _) = link.request(&link::scan_command(&flags, config.scanner.window_1m, config.scanner.window_coded), Cmd::Scan, timeout)?;
-    if !status.is_ok() {
-        return Err(format!("SCAN: {}", status.as_str()));
-    }
+    commands::set_scan(link, Some(&config.scanner), timeout)?;
     log::info!("scanner started: requested_1m={} requested_coded={}", flags.phy_1m, flags.phy_coded);
     Ok(flags.phy_1m || flags.phy_coded)
 }
@@ -656,8 +661,8 @@ fn scan(args: &Args, seconds: u64) -> Result<(), String> {
             None => {}
         }
     }
-    let (status, _) = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(3))?;
-    println!("STOP   status={}", status.as_str());
+    commands::set_scan(&mut link, None, Duration::from_secs(3))?;
+    println!("STOP   status=OK");
     Ok(())
 }
 
@@ -750,7 +755,9 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                     Ok(scanning) => radio.scanning = scanning,
                     Err(error) => {
                         log::warn!("scanner configuration failed; scanning will not start: {error}");
-                        let _ = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(1));
+                        if let Err(stop_error) = commands::set_scan(&mut link, None, Duration::from_secs(3)) {
+                            log::warn!("cannot confirm scanner stopped after configuration failure: {stop_error}");
+                        }
                         std::thread::sleep(Duration::from_millis(config.serial.reconnect_delay_ms));
                         continue;
                     }
@@ -818,9 +825,12 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                     if STOP_REQUESTED.load(Ordering::Relaxed) { "gateway is stopping" } else { "serial link lost" });
                 if let Err(error) = &cleanup { log::warn!("GATT cleanup: {error}"); }
                 if STOP_REQUESTED.load(Ordering::Relaxed) {
-                    let _ = link.request(&link::stop_scan_command(), Cmd::Scan, Duration::from_secs(1));
+                    let scan_stop = commands::set_scan(&mut link, None, Duration::from_secs(3));
+                    if let Err(error) = &scan_stop {
+                        log::warn!("cannot confirm scanner stopped during shutdown: {error}");
+                    }
                     log::info!("gateway stopped");
-                    return cleanup;
+                    return cleanup.and(scan_stop);
                 }
                 log::warn!("serial link lost, reconnecting");
                 radio.scanning = false;
@@ -892,37 +902,66 @@ fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, ra
                         Ok(scanning) => radio.scanning = scanning,
                         Err(error) => { restore_failed = Some(error.clone()); return Err(error); }
                     }
+                    log::info!("discovery stopped; configured scanner restored (scanning={})", radio.scanning);
                 }
             },
             "command" => {
-                let command = commands::parse(request["payload"].clone())?;
-                let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
-                let timeout = Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000));
-                if matches!(command, commands::Command::ScanStart) {
-                    if radio.has_session() { return Err("close the active GATT session before starting scan".into()); }
-                    if radio.txadv_active {
-                        commands::execute(serial, radio, &config.scanner, timeout, spec, &commands::Command::TxadvStop)?;
+                let command = match commands::parse(request["payload"].clone()) {
+                    Ok(command) => command,
+                    Err(error) => {
+                        log::warn!("radio command rejected: invalid request");
+                        return Err(error);
                     }
-                    discovery.cancel();
-                    radio.scanning = false;
-                    match configure_scanner(serial, config) {
-                        Ok(scanning) => radio.scanning = scanning,
-                        Err(error) => { radio.recovery_required = true; return Err(error); }
-                    }
-                    radio.scan_suppressed = false;
-                    return Ok(serde_json::json!({"success":true,"radio":radio.snapshot()}));
-                }
-                let scanner = if discovery.until.is_some() { discovery_config(config).scanner } else { config.scanner.clone() };
-                discovery.pause();
-                let result = commands::execute(serial, radio, &scanner, timeout, spec, &command);
-                if !radio.has_session() { discovery.resume(); }
-                if radio.scan_suppressed && !radio.has_session() { discovery.cancel(); }
-                let mut response = match result {
-                    Ok(result) => serde_json::json!({"success":true,"result":result}),
-                    Err(error) => serde_json::json!({"success":false,"error":error}),
                 };
-                response["radio"] = radio.snapshot();
-                return Ok(response);
+                let summary = command.log_summary();
+                let started = Instant::now();
+                log::info!("radio command started: {summary}");
+                let result = (|| -> Result<serde_json::Value, String> {
+                    let serial = link.as_deref_mut().ok_or("serial link is unavailable")?;
+                    let timeout = Duration::from_millis(config.serial.command_timeout_ms.clamp(100, 10000));
+                    if matches!(command, commands::Command::ScanStart) {
+                        if radio.has_session() { return Err("close the active GATT session before starting scan".into()); }
+                        if radio.txadv_active {
+                            commands::execute(serial, radio, &config.scanner, timeout, spec, &commands::Command::TxadvStop)?;
+                        }
+                        discovery.cancel();
+                        radio.scanning = false;
+                        match configure_scanner(serial, config) {
+                            Ok(scanning) => radio.scanning = scanning,
+                            Err(error) => { radio.recovery_required = true; return Err(error); }
+                        }
+                        radio.scan_suppressed = false;
+                        return Ok(serde_json::json!({"success":true,"radio":radio.snapshot()}));
+                    }
+                    let scanner = if discovery.until.is_some() { discovery_config(config).scanner } else { config.scanner.clone() };
+                    discovery.pause();
+                    let result = commands::execute(serial, radio, &scanner, timeout, spec, &command);
+                    if !radio.has_session() { discovery.resume(); }
+                    if radio.scan_suppressed && !radio.has_session() { discovery.cancel(); }
+                    let mut response = match result {
+                        Ok(result) => serde_json::json!({"success":true,"result":result}),
+                        Err(error) => serde_json::json!({"success":false,"error":error}),
+                    };
+                    response["radio"] = radio.snapshot();
+                    Ok(response)
+                })();
+                let error = match &result {
+                    Ok(response) if response["success"] == true => None,
+                    Ok(response) => Some(response["error"].as_str().unwrap_or("command failed without error details")),
+                    Err(error) => Some(error.as_str()),
+                };
+                if let Some(error) = error {
+                    let error = if error.starts_with("unknown codec structure ")
+                        || error.starts_with("unknown patch field ")
+                        || error.starts_with("patch ") {
+                        "invalid codec or patch; see command response"
+                    } else { error };
+                    log::warn!("radio command failed: {summary}; elapsed_ms={}; error={error}", started.elapsed().as_millis());
+                } else {
+                    log::info!("radio command completed: {summary}; elapsed_ms={}; scanning={}; scan_suppressed={}",
+                        started.elapsed().as_millis(), radio.scanning, radio.scan_suppressed);
+                }
+                return result;
             },
             _ => return Err("unknown control action".into()),
         }
@@ -1014,7 +1053,10 @@ mod cli_tests {
                     offset += count;
                 }
                 assert_eq!(received, expected);
-                let mut response = vec![0, command, metadata, 0, 0xFF, 0, 0, 0, 0, 0, 0];
+                let payload = if command == Cmd::Scan as u8 { &expected[1..expected.len() - 2] } else { &[] };
+                let mut response = vec![0, command, metadata, payload.len() as u8, 0xFF];
+                response.extend_from_slice(payload);
+                response.resize(11, 0);
                 response.extend_from_slice(&link::crc16_arc(&response).to_le_bytes());
                 master.write_all(&response).unwrap();
             }

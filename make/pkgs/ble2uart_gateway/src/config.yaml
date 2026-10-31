@@ -27,6 +27,14 @@ frontends:
     queue_capacity: 1024
     flush_interval_ms: 1000
     busy_timeout_ms: 1000
+    maintenance:
+      enabled: false
+      counter_mode: discard
+      other_numeric_mode: keep_all
+      interval_s: 300
+      batch_size: 100
+      max_work_ms: 100
+      raw_retention_s: 600
   influx:
     enabled: false
     endpoint: http://127.0.0.1:8181
@@ -65,6 +73,9 @@ frontends:
     port: 5541
     store: ''
 log_level: info
+logging:
+  max_size_kb: 128
+  history: 2
 diagnostics:
   tx_hex: false
   rx_hex: false

@@ -6,8 +6,9 @@
 
 BB_STORE_OLD=$(
 	[ -r /mod/etc/conf/ble2uart_gateway.cfg ] && . /mod/etc/conf/ble2uart_gateway.cfg
-	echo "${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
+	echo "${BLE2UART_GATEWAY_STORE:-/var/media/ftp/ble2uart_gateway}"
 )
+BB_STORE_OLD="${BB_STORE_OLD%/}"
 
 pkg_pre_save() {
 	local bb_pending bb_base
@@ -49,6 +50,11 @@ pkg_pre_save() {
 		/*) ;;
 		*) echo "Error: the store directory must be an absolute path" >&2; return 1 ;;
 	esac
+	BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE%/}"
+	if [ -n "$BB_STORE_OLD" ] && [ "$BB_STORE_OLD" != "$BLE2UART_GATEWAY_STORE" ] &&
+		[ -s "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" ]; then
+		echo "Note: $BLE2UART_GATEWAY_STORE already contains a configuration; it will be kept and nothing will be copied from $BB_STORE_OLD." >&2
+	fi
 	case "$BLE2UART_GATEWAY_STORE$BLE2UART_GATEWAY_SERIAL$BLE2UART_GATEWAY_EXTRA_ARGS" in
 		*[[:space:]]*)
 			case "$BLE2UART_GATEWAY_EXTRA_ARGS" in
@@ -63,11 +69,8 @@ pkg_pre_save() {
 			/var/media/ftp/*)
 				# On a disk: nothing to archive, the state is already safe.
 				;;
-			/tmp/flash/*)
-				echo "Note: $BLE2UART_GATEWAY_STORE is the box ramdisk. It is written to the box flash by modsave when the service stops and on every save, so a clean reboot keeps the devices and their keys - a power cut loses them. A directory on a disk (see the storage list, for example /var/media/ftp/<disk>/ble2uart_gateway) is safer." >&2
-				;;
 			*)
-				echo "Warning: $BLE2UART_GATEWAY_STORE is neither on /tmp/flash nor on /var/media/ftp, the configuration is lost on reboot" >&2
+				echo "Warning: $BLE2UART_GATEWAY_STORE is not on /var/media/ftp; make sure it is a persistent directory (see the storage list), otherwise the configuration is lost on reboot" >&2
 				;;
 		esac
 
@@ -97,16 +100,29 @@ pkg_apply_save() {
 	fi
 	. /mod/etc/conf/ble2uart_gateway.cfg || return 1
 
-	# The store moved: take the configuration and the exposed-id state along.
+	# The store moved: take the configuration and the exposed-id state along -
+	# but never overwrite a configuration that already exists in the new
+	# location. The old store may hold nothing but the placeholder YAML that the
+	# init script writes on first start (no devices, no SQLite path); copying it
+	# over a real configuration would silently drop devices, bind keys and
+	# front-end/retention settings.
 	if [ -n "$BB_STORE_OLD" ] && [ "$BB_STORE_OLD" != "$BLE2UART_GATEWAY_STORE" ] && [ -d "$BB_STORE_OLD" ]; then
 		umask 077
-		if mkdir -p "$BLE2UART_GATEWAY_STORE" 2>/dev/null &&
-			cp -a "$BB_STORE_OLD"/. "$BLE2UART_GATEWAY_STORE"/ 2>/dev/null; then
-			chmod 700 "$BLE2UART_GATEWAY_STORE" 2>/dev/null
-			chmod 600 "$BLE2UART_GATEWAY_STORE"/ble2uart_gateway.yaml 2>/dev/null
-			echo "ble2uart_gateway store moved from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE - restart the service to use it." >&2
+		if mkdir -p "$BLE2UART_GATEWAY_STORE" 2>/dev/null; then
+			if [ -s "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" ]; then
+				echo "Note: $BLE2UART_GATEWAY_STORE already contains a configuration; it was kept as it is and nothing was copied from $BB_STORE_OLD." >&2
+				if [ -f "$BB_STORE_OLD/automation-state.json" ] && [ ! -f "$BLE2UART_GATEWAY_STORE/automation-state.json" ]; then
+					cp -a "$BB_STORE_OLD/automation-state.json" "$BLE2UART_GATEWAY_STORE"/ 2>/dev/null
+				fi
+			elif cp -a -n "$BB_STORE_OLD"/. "$BLE2UART_GATEWAY_STORE"/ 2>/dev/null; then
+				chmod 700 "$BLE2UART_GATEWAY_STORE" 2>/dev/null
+				chmod 600 "$BLE2UART_GATEWAY_STORE"/ble2uart_gateway.yaml 2>/dev/null
+				echo "ble2uart_gateway store moved from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE - restart the service to use it." >&2
+			else
+				echo "Warning: could not move the store from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE; the devices have to be configured again" >&2
+			fi
 		else
-			echo "Warning: could not move the store from $BB_STORE_OLD to $BLE2UART_GATEWAY_STORE; the devices have to be configured again" >&2
+			echo "Warning: could not create $BLE2UART_GATEWAY_STORE; nothing was copied from $BB_STORE_OLD" >&2
 		fi
 	fi
 

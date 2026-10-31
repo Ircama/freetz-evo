@@ -26,7 +26,7 @@ A typical chain looks like this:
 
 ### `esp-serial-flasher` — ESP32/ESP8266 flashing over UART
 
-[esp-serial-flasher](https://github.com/espressif/esp-serial-flasher) is Espressif's portable flashing library, built here as a Linux host-style CLI tool (`linux_flasher`) that programs ESP32/ESP8266-class chips over a serial connection using address/file pairs. Combined with the `cdc-acm` driver and a USB-to-UART adapter, it lets the FRITZ!Box update ESP-based devices in the field — for example sensor nodes or BLE bridges deployed around the house — without pulling them off the wall.
+[esp-serial-flasher](https://github.com/espressif/esp-serial-flasher) is Espressif's portable flashing library, built here as a Linux host-style CLI tool (`esp-flasher`) that programs ESP32/ESP8266-class chips over a serial connection using address/file pairs. Combined with the `cdc-acm` driver and a USB-to-UART adapter, it lets the FRITZ!Box update ESP-based devices in the field — for example sensor nodes or BLE bridges deployed around the house — without pulling them off the wall.
 
 ### `micronucleus` 2.6 — ATtiny USB bootloader tool
 

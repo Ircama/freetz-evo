@@ -49,7 +49,7 @@ For deeper coverage of specific areas, see also:
 | **[`wavemon`](make/wavemon.md)** 0.9.7 | Ncurses wireless monitor for signal quality, bitrate, channels, and interface statistics. | EVO only |
 | **[`cdc-acm` kernel driver](make/cdc-acm.md)** | Exposes `cdc-acm.ko` in menuconfig on compatible targets, enabling native USB CDC ACM serial devices such as ESP32-C3 boards and other USB serial gadgets. | EVO only |
 | **[`avrdude`](make/avrdude.md)** 8.1 | AVR downloader/uploader toolchain with `avrdude`, `elf2tag`, and default `/etc/avrdude.conf` for full AVR flash/program workflows. | EVO only |
-| **[`esp-serial-flasher`](make/esp-serial-flasher.md)** git-f1cccac | ESP serial flashing toolkit shipping `linux_flasher` and `esp_fw_upload` for multi-image ESP32-family firmware upload layouts. | EVO only |
+| **[`esp-serial-flasher`](make/esp-serial-flasher.md)** git-f1cccac | ESP serial flashing toolkit shipping `esp-flasher` and `esp_fw_upload` for multi-image ESP32-family firmware upload layouts. | EVO only |
 | **[`micronucleus`](make/micronucleus.md)** 2.6 | USB bootloader uploader for Digispark/ATTiny devices using Micronucleus (`/usr/bin/micronucleus`). | EVO only |
 | **[`telink_tools`](make/telink_tools.md)** 1.0 | Native C Telink BLE bootloader CLI for TB-03F-KIT/TB-04-KIT style devices; supports burn, triad programming, and flash read/write/erase operations. | EVO only |
 | **[`ja11-config`](make/ja11-config.md)** 1.0 | FiiO JA11 / KT02H20 tool set: `ja11-config-tui` (5-band parametric EQ, DAC digital filters, global preamp gain, preset management, persistent flash save, i18n EN/IT), `ja11-boot` (enter firmware-update mode), and `ja11-flash` (firmware flashing over the update-mode serial port). | EVO only |

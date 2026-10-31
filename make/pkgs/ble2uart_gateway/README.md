@@ -54,7 +54,7 @@ share the same archive reader; frontend integration tests share the emulator.
    The store holds the gateway YAML (devices, bind keys, availability rules), the
    availability state file and, if you keep it there, the Matter fabric store.
    Prefer persistent external storage and keep its contents private; the list of
-   mounted disks is behind a disclosure and clicking a path fills the field.
+   mounted disks is initially collapsed and clicking a path fills the field.
    Apply these startup settings and start the service to initialize a new store.
 3. In **Settings**, configure the serial device and MySensors listener. Typical
    values are `/dev/ttyACM0` and `127.0.0.1:5003` respectively.
@@ -683,6 +683,14 @@ empty source are rejected by validation. A `decoder: theengs`/`both` value in a
 build without the library is refused with a clear error instead of silently
 falling back.
 
+Decoder output is distinct from `expose`: `publish` selects and optionally
+renames the decoded source before SQLite and the other publishing frontends;
+SQLite stores the destination `attribute` name. `expose` only configures which
+MySensors children (and standard Matter endpoints) are created. To stop an
+attribute from being stored, remove it from `publish`; deleting it from the
+SQLite inventory only removes existing data, so it will reappear if still
+published.
+
 In **Settings** the same choice is a select; the YAML editor accepts it on every
 device. `builtin` is unchanged, so an existing configuration behaves exactly as
 before. In `theengs` mode the built-in codec is not used, so the attributes come
@@ -690,6 +698,9 @@ from Theengs (aliased to the canonical names: `tempc` → `temperature`, `hum` �
 `humidity`, `pres` → `pressure`, `batt` → `battery_level`, `volt` → `battery_v`,
 others keep their Theengs name); in `both` mode the extra set never collides
 because every name is prefixed (`theengs_temperature`, …).
+Theengs' `tempf` value is also kept as `tempf` or `theengs_tempf` (unit `°F`);
+if a result has no `tempc`, the gateway additionally derives the canonical
+Celsius `temperature` measurement.
 
 The library cannot decrypt bindkey advertisements, so encrypted formats must
 keep `builtin`. Advertisements no decoder matches cost the most (about 25 ms on
@@ -781,9 +792,10 @@ There is no external rule engine or editable workflow language. Earlier global
 configurations migrate to their devices without placing private URLs in sources.
 See [monitoring settings and delivery semantics](src/README.md#device-availability-monitoring).
 
-The **Log** tab of the configuration interface shows the last lines of
-`/tmp/rc.ble2uart_gateway.log` (100 to 2000 lines, auto-refresh every five
-seconds, download button). The **Sensor graphs** button in the toolbar opens the
+The **Log** tab shows the last lines of `rc.ble2uart_gateway.log` in the
+configuration store (also linked from `/tmp/rc.ble2uart_gateway.log` for the
+Freetz status page). The active file is limited by `logging.max_size_kb`; up to
+`logging.history` rotated files are retained. The **Sensor graphs** button in the toolbar opens the
 read-only dashboard described below.
 
 ## MQTT And Matter
@@ -1021,10 +1033,25 @@ the service to apply them.
 
 ## Diagnostics
 
-The service log is `/tmp/rc.ble2uart_gateway.log`. In Settings, choose a log
-level (`off`, `error`, `warn`, `info`, `debug`, `trace`) and independently enable
+The service log is stored beside the YAML configuration; `/tmp/rc.ble2uart_gateway.log`
+is a compatibility symlink. Startup refuses to create the store if its mounted
+volume under `/var/media/ftp` is unavailable, rather than silently filling RAM;
+an explicitly selected `/tmp/flash` store remains supported. In Settings,
+choose a log level (`off`, `error`, `warn`, `info`, `debug`, `trace`) and
+configure `logging.max_size_kb` (16–4096 KiB) and
+`logging.history` (0–10 archived files).
+The defaults retain one active
+128 KiB log and two rotated files. Independently enable
 TX, RX, decode or PHY traces. Dumps require at least `info` and may contain
 private data. The startup Debug logging option overrides the YAML log level.
+On the first start after this change, an existing regular `/tmp/rc.ble2uart_gateway.log`
+is preserved in the store as `rc.ble2uart_gateway.log.previous.<timestamp>.<pid>`.
+This one-time backup is not included in the rotation limit. Early startup and
+standard-error diagnostics go to `rc.ble2uart_gateway.log.startup` in the store;
+that file is reset on each service start.
+On FAT filesystems Unix permissions cannot protect the log, which may contain
+device names and MAC addresses; use a filesystem with permission support when
+other users can access the storage.
 
 After saving logging changes, **Reload logging** applies them without restarting
 the scanner. Device, scanner and codec changes require **Restart service**.

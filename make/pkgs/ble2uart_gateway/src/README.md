@@ -149,6 +149,11 @@ ble2uart-gateway --command '{"command":"scan-start"}'
   configured filters/scanner. `scan-stop` explicitly disables scanning without
   stopping TXADV. `txadv-stop` only stops transmission. Discovery cannot start
   while TXADV is active; stop TXADV first.
+- The gateway checks that the firmware echoes the requested scan parameters.
+  The updated ESP32 firmware waits for the controller's stop/start completion
+  before echoing them; older firmware may acknowledge before the radio stops.
+- Stopping or expiring Discovery restores the configured scanner; it does not
+  stop advertisement reception. Use `scan-stop` to stop the scanner itself.
 - These overrides are runtime state, not persisted YAML: an explicit service
   restart returns to the saved scanner configuration. Stop TXADV before
   restarting the service; the adapter may retain advertising across host restarts.
@@ -175,7 +180,9 @@ Diagnostics are read-only queries: `info`, `version`, `uart`, `rfsdk`, `vbat`,
 where applicable, firmware metadata.
 
 One-shot GATT accepts `mac`, `addr_type` (0 public, 1 random), `coded` (default
-false), `operation`, and `timeout_ms` (100-30000, default 10000).
+false), `operation`, and `timeout_ms` (100-120000, default 60000).
+The timeout covers connection and the requested operation; a sleeping sensor may
+need a longer value. Scanning is suspended during that wait.
 For an open session, replace all peer parameters with `session`.
 `gatt-open` accepts the same peer/timeout fields and `idle_timeout_ms`
 (1000-300000, default 60000). Successful operations renew the idle timeout;
@@ -460,6 +467,7 @@ frontends:
     maintenance:
       enabled: true
       counter_mode: discard
+      other_numeric_mode: keep_all
       interval_s: 300
       batch_size: 100
       max_work_ms: 100
@@ -506,11 +514,25 @@ It also applies to existing policy lists that omit those attributes. Choose
 with `keep_all`, `discard` or a progressive policy. Recent complete raw frames
 still contain these fields until `raw_retention_s` expires.
 
-Other unconfigured attributes and discrete states keep every sample forever.
-Known contact/GPIO/discrete attributes reject both progressive and discard
-policies. Boolean, text, JSON and null values are never pruned; unsigned values
-can be discarded but are not progressively thinned. Custom numeric discrete
-attributes should use `keep_all`.
+For numeric attributes without an explicit policy, `other_numeric_mode:
+keep_all` preserves every sample (the default); `discard` removes eligible
+numeric history after the raw-frame horizon. This fallback excludes recognized
+counters, which use `counter_mode`. A specific MAC/attribute policy takes
+precedence over both defaults. Known contact/GPIO/discrete attributes reject
+discard and progressive policies. Boolean, text, JSON and null values are never
+pruned; unsigned values can be discarded but are not progressively thinned.
+Custom numeric discrete attributes should use `keep_all`.
+
+The raw horizon is a minimum, not a strict expiration deadline: work is
+performed in bounded chunks and can be delayed by a backlog, database contention,
+or storage errors. With maintenance disabled no retention runs and the database
+continues to grow. In the Freetz retention settings, **Stored SQLite attributes**
+lists stored measurements by device/attribute and can permanently delete one
+attribute from both raw frames and consolidated history. Back up first. This
+does not shrink the database file immediately; SQLite reuses freed pages, and
+the gateway deliberately does not run a disruptive automatic `VACUUM`. If the
+decoder still produces a deleted attribute, it will be stored again unless it
+is removed from that device's `publish` list.
 
 **Back up the database before enabling.** First activation extends schema 1 to
 schema 2 transactionally, without rewriting existing samples. The thread moves
@@ -565,8 +587,13 @@ can postpone it. Rendering and rollup charts remain the external reader's job.
 
 The configuration CGI also exposes `--web-config log` (`{"lines":N}` on stdin,
 at most 2000, 64 KiB read from the end of the file multiplied by nothing: only
-the tail is read), which the **Log** tab uses to show
-`/tmp/rc.ble2uart_gateway.log`.
+the tail is read), which the **Log** tab uses to show the service log from the configured store.
+The Freetz status page keeps its `/tmp/rc.ble2uart_gateway.log` path through a
+symlink; the file itself is rotated on persistent storage.
+Early startup and standard-error diagnostics are written separately to
+`rc.ble2uart_gateway.log.startup` and reset on each start. A pre-existing
+non-symlink RAM log is preserved once as a `.previous.<timestamp>.<pid>` file
+in the store, outside the rotation limit.
 
 `ble2uart-gateway --portal` is a CGI program (`portal.rs`) that serves both the
 HTML shell and the JSON API; it is reached through the shell wrapper
@@ -606,6 +633,11 @@ window, `+`/`−`/reset change it and `⛶` uses the Fullscreen API. Measured on
 request peaks at about 7 MB RSS; the equivalent PHP 8.5 `php-cgi` script with
 `pdo_sqlite` peaks at about 19 MB (about 14 MB for PHP alone before doing any
 query), which is why the portal is part of the Rust binary rather than a PHP page.
+The portal's unit dialog converts supported temperature, pressure, distance and
+speed readings, and the device cards/chart metadata use the configured YAML
+labels, manufacturer, model and firmware fields. On wide screens, the vertical
+separator between the device list and chart can be dragged or moved with the
+arrow keys; its position is saved in the browser.
 
 ## Device Availability Monitoring
 
@@ -730,6 +762,13 @@ python3 tools/test_automation.py --binary target/debug/ble2uart-gateway
 ```
 
 ## Logging
+
+Radio commands are logged when started and when completed or failed, including
+their type, elapsed time and scanner state. GATT logs identify the peer or an
+anonymous session, but do not include session tokens, request values or decoded
+configuration. Frequent status and advertisement-event polls are not logged.
+At INFO level, GATT also reports connection, MTU, discovery, subscription,
+request-write and notification stages, so a timeout can be located.
 
 Measurement logs include the configured child number, parameter name and decoded
 unit, for example `child 0: temperature=16.08 °C` or

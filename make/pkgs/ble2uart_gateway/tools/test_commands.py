@@ -115,7 +115,7 @@ class CommandFirmware(Firmware):
                     command = packet[0]
                     if command == 1:
                         self.scanning.set() if packet[1] & 3 else self.scanning.clear()
-                        self.reply(1)
+                        self.reply(1, data=packet[1:])
                     elif command == 4:
                         self.reply(4, 64)
                     elif command == 0:
@@ -286,6 +286,17 @@ class CommandTests(unittest.TestCase):
                     reply = command({"command": "diagnostic", "name": "version"})
                     self.assertTrue(reply["radio"]["scanning"])
                     self.assertEqual(reply["result"]["data"], "0102")
+                    stopped = command({"command": "scan-stop"})
+                    self.assertFalse(stopped["radio"]["scanning"])
+                    self.assertTrue(stopped["radio"]["scan_suppressed"])
+                    self.assertFalse(firmware.scanning.is_set())
+                    restarted = command({"command": "scan-start"})
+                    self.assertTrue(restarted["radio"]["scanning"])
+                    self.assertFalse(restarted["radio"]["scan_suppressed"])
+                    logs = (directory / "daemon.log").read_text()
+                    self.assertIn("radio command started: diagnostic Version", logs)
+                    self.assertIn("radio command completed: scan-stop", logs)
+                    self.assertIn("radio command completed: scan-start", logs)
                     cgi = (ROOT / "files/root/usr/lib/cgi-bin/ble2uart_gateway.cgi").read_text()
                     ajax = cgi[cgi.index('if [ "$(cgi_param ajax)"'):cgi.index("# Page")]
                     script = 'cgi_param() { case "$1" in ajax) printf 1;; action) printf command;; esac; }\n'
@@ -334,6 +345,7 @@ class CommandTests(unittest.TestCase):
                     self.assertTrue(read["radio"]["scanning"])
                     self.assertTrue(control("--control", "status")["active"])
                     control("--control", "discover-stop")
+                    self.assertIn("discovery stopped; configured scanner restored", (directory / "daemon.log").read_text())
                     discovered = command({"command": "gatt", "mac": "AABBCCDDEEFF", "operation": "discover"})
                     self.assertEqual(len(discovered["result"]["entries"]), 3)
                     self.assertEqual(discovered["result"]["entries"][1]["uuid"], "00001F1F-0000-1000-8000-00805F9B34FB")

@@ -58,7 +58,7 @@ const ALIASES: &[(&str, &str)] = &[
 
 /// Explicit units for Theengs keys that are published unchanged.
 const UNITS: &[(&str, &str)] = &[
-    ("tempf", "°F"),
+    ("tempc", "°C"),
     ("temp", "°C"),
     ("hum", "%"),
     ("pres", "hPa"),
@@ -240,9 +240,37 @@ pub fn measures(value: &Json, prefix: Option<&str>) -> Vec<Measurement> {
     let Some(object) = value.as_object() else {
         return Vec::new();
     };
+    // Keep Theengs' original Fahrenheit field and also provide the canonical
+    // Celsius temperature when the decoder reports only `tempf`.
+    let celsius_available = object.contains_key("tempc");
     let mut out = Vec::new();
     for (key, item) in object {
         if NOT_MEASURED.contains(&key.as_str()) {
+            continue;
+        }
+        if key == "tempf" {
+            if let Some(fahrenheit) = item.as_f64() {
+                let raw_name = match prefix {
+                    Some(prefix) => format!("{prefix}_tempf"),
+                    None => "tempf".to_string(),
+                };
+                out.push(Measurement {
+                    name: raw_name,
+                    value: Value::Float(fahrenheit),
+                    unit: "°F".into(),
+                });
+                if !celsius_available {
+                    let name = match prefix {
+                        Some(prefix) => format!("{prefix}_temperature"),
+                        None => "temperature".to_string(),
+                    };
+                    out.push(Measurement {
+                        name,
+                        value: Value::Float((fahrenheit - 32.0) * 5.0 / 9.0),
+                        unit: "°C".into(),
+                    });
+                }
+            }
             continue;
         }
         let canonical = ALIASES
@@ -421,12 +449,49 @@ mod tests {
         let voltage = by_name("battery_v").unwrap();
         assert_eq!(voltage.unit, "V");
         assert!(by_name("pressure").is_some());
+        let fahrenheit = by_name("tempf").unwrap();
+        assert_eq!(fahrenheit.unit, "°F");
+        assert!(matches!(fahrenheit.value, Value::Float(value) if (value - 58.55).abs() < 0.001));
         // The informational fields are not measurements.
         for absent in ["id", "model_id", "brand", "rssi"] {
             assert!(by_name(absent).is_none(), "{absent} must not be a measurement");
         }
-        // Fahrenheit stays a separate attribute with its own unit.
-        assert_eq!(by_name("tempf").unwrap().unit, "°F");
+    }
+
+    #[test]
+    fn fahrenheit_only_models_are_converted_to_celsius() {
+        let decoded = serde_json::json!({"tempf": 58.55, "hum": 40});
+        let measures = measures(&decoded, Some("theengs"));
+        let fahrenheit = measures
+            .iter()
+            .find(|measure| measure.name == "theengs_tempf")
+            .expect("original Fahrenheit series");
+        assert_eq!(fahrenheit.unit, "°F");
+        assert!(matches!(fahrenheit.value, Value::Float(value) if (value - 58.55).abs() < 0.01));
+        let temperature = measures
+            .iter()
+            .find(|measure| measure.name == "theengs_temperature")
+            .expect("converted temperature series");
+        assert_eq!(temperature.unit, "°C");
+        assert!(matches!(temperature.value, Value::Float(value) if (value - 14.75).abs() < 0.01));
+    }
+
+    #[test]
+    fn both_temperature_scales_keep_theengs_fahrenheit_measurement() {
+        let decoded = serde_json::json!({"tempc": 14.75, "tempf": 58.55});
+        let measures = measures(&decoded, Some("theengs"));
+        let celsius = measures
+            .iter()
+            .find(|measure| measure.name == "theengs_temperature")
+            .expect("canonical Celsius series");
+        let fahrenheit = measures
+            .iter()
+            .find(|measure| measure.name == "theengs_tempf")
+            .expect("original Fahrenheit series");
+        assert_eq!(celsius.unit, "°C");
+        assert_eq!(fahrenheit.unit, "°F");
+        assert!(matches!(celsius.value, Value::Float(value) if (value - 14.75).abs() < 0.001));
+        assert!(matches!(fahrenheit.value, Value::Float(value) if (value - 58.55).abs() < 0.001));
     }
 
     #[test]

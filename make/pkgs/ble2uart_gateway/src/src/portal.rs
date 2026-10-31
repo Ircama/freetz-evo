@@ -898,6 +898,7 @@ fn page() -> String {
   <nav class="pactions">
     <span class="pstamp" id="stamp">&mdash;</span>
     <button class="pbtn" id="reload" type="button" title="Aggiorna">&#8635;</button>
+    <button class="pbtn" id="resetview" type="button" title="Reimposta le viste salvate">&#10226;</button>
     <a class="pbtn" id="config" href="/cgi-bin/conf/ble2uart_gateway" title="Configurazione">&#9881;</a>
   </nav>
 </header>
@@ -945,7 +946,7 @@ fn page() -> String {
 
 /// Bumped whenever `portal.css` or `portal.js` change, so a router that
 /// caches static files still serves the new version.
-const ASSET_VERSION: &str = "4";
+const ASSET_VERSION: &str = "5";
 
 // ---------------------------------------------------------------------------
 // Tests

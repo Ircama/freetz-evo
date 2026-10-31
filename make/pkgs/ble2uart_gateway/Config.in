@@ -40,12 +40,12 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
 		key, filters, derived rules, front-ends) that the web interface
 		edits and the daemon validates.
 
-                Two web interfaces, both behind the standard freetz login:
-                  * /cgi-bin/conf/ble2uart_gateway       configuration editor
-                  * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard
-                    with the latest value of every sensor and its charts; the
-                    sensors, units and value types are read from the SQLite
-                    database, nothing is hard-coded
+		Two web interfaces, both behind the standard freetz login:
+		  * /cgi-bin/conf/ble2uart_gateway       configuration editor
+		  * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard
+		    with the latest value of every sensor and its charts; the
+		    sensors, units and value types are read from the SQLite
+		    database, nothing is hard-coded
 
 config FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS
 	bool "  Second decoder: Theengs Decoder (GPL-3.0-or-later)"

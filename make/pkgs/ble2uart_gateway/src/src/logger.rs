@@ -5,8 +5,11 @@
 //! Diagnostic payload dumps are opt-in and independent from ordinary verbosity.
 
 use log::{Level, LevelFilter, Log, Metadata, Record};
+use std::fs::{File, OpenOptions};
 use std::io::{IsTerminal, Write};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
 
 static STDOUT: AtomicBool = AtomicBool::new(false);
 static COLOR: AtomicBool = AtomicBool::new(false);
@@ -14,8 +17,121 @@ static TX_HEX: AtomicBool = AtomicBool::new(false);
 static RX_HEX: AtomicBool = AtomicBool::new(false);
 static DECODE: AtomicBool = AtomicBool::new(false);
 static PHY: AtomicBool = AtomicBool::new(false);
+static FILE_LOG_ERROR_REPORTED: AtomicBool = AtomicBool::new(false);
+static FILE_LOG: Mutex<Option<RotatingLog>> = Mutex::new(None);
 
 struct GatewayLogger;
+
+struct RotatingLog {
+    path: PathBuf,
+    file: File,
+    max_size: u64,
+    history: u8,
+}
+
+impl RotatingLog {
+    fn open(path: &Path, max_size_kb: u32, history: u8) -> Result<Self, String> {
+        if !(16..=4096).contains(&max_size_kb) || history > 10 {
+            return Err("invalid log rotation settings".into());
+        }
+        let file = open_log(path).map_err(|error| error.to_string())?;
+        let output = Self {
+            path: path.to_owned(),
+            file,
+            max_size: u64::from(max_size_kb) * 1024,
+            history,
+        };
+        output.prune_archives().map_err(|error| error.to_string())?;
+        Ok(output)
+    }
+
+    fn prune_archives(&self) -> std::io::Result<()> {
+        for index in (self.history + 1)..=10 {
+            match std::fs::remove_file(rotated_path(&self.path, index)) {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(())
+    }
+
+    fn write(&mut self, message: &[u8]) -> std::io::Result<()> {
+        if message.len() as u64 > self.max_size {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "log entry exceeds the configured file size",
+            ));
+        }
+        let size = self.file.metadata()?.len();
+        if size.saturating_add(message.len() as u64) > self.max_size {
+            self.rotate()?;
+        }
+        self.file.write_all(message)?;
+        self.file.flush()
+    }
+
+    fn rotate(&mut self) -> std::io::Result<()> {
+        self.file.flush()?;
+        if self.history == 0 {
+            self.file = open_log_truncate(&self.path)?;
+            return Ok(());
+        }
+
+        let oldest = rotated_path(&self.path, self.history);
+        if oldest.exists() {
+            std::fs::remove_file(oldest)?;
+        }
+        for index in (1..self.history).rev() {
+            let source = rotated_path(&self.path, index);
+            if source.exists() {
+                std::fs::rename(source, rotated_path(&self.path, index + 1))?;
+            }
+        }
+        if self.path.exists() {
+            std::fs::rename(&self.path, rotated_path(&self.path, 1))?;
+        }
+        self.file = open_log(&self.path)?;
+        Ok(())
+    }
+}
+
+fn rotated_path(path: &Path, index: u8) -> PathBuf {
+    let mut name = path.as_os_str().to_owned();
+    name.push(format!(".{index}"));
+    PathBuf::from(name)
+}
+
+fn open_log(path: &Path) -> std::io::Result<File> {
+    let file = open_log_options(path, false)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(file)
+}
+
+fn open_log_truncate(path: &Path) -> std::io::Result<File> {
+    let file = open_log_options(path, true)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(file)
+}
+
+fn open_log_options(path: &Path, truncate: bool) -> std::io::Result<File> {
+    let mut options = OpenOptions::new();
+    options.create(true).write(true).append(!truncate).truncate(truncate);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options.open(path)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorMode {
@@ -99,6 +215,18 @@ impl Log for GatewayLogger {
             return;
         }
         let message = format_record(record, &timestamp(), COLOR.load(Ordering::Relaxed));
+        if let Ok(mut configured) = FILE_LOG.lock() {
+            if let Some(output) = configured.as_mut() {
+                match output.write(message.as_bytes()) {
+                    Ok(()) => FILE_LOG_ERROR_REPORTED.store(false, Ordering::Relaxed),
+                    Err(error) if !FILE_LOG_ERROR_REPORTED.swap(true, Ordering::Relaxed) => {
+                        let _ = writeln!(std::io::stderr(), "ble2uart-gateway: cannot write service log: {error}");
+                    }
+                    Err(_) => {}
+                }
+                return;
+            }
+        }
         if STDOUT.load(Ordering::Relaxed) {
             let mut output = std::io::stdout().lock();
             let _ = output.write_all(message.as_bytes());
@@ -106,9 +234,21 @@ impl Log for GatewayLogger {
         } else {
             let _ = std::io::stderr().lock().write_all(message.as_bytes());
         }
+
     }
 
     fn flush(&self) {}
+}
+
+pub fn configure_file(path: Option<&Path>, max_size_kb: u32, history: u8) -> Result<(), String> {
+    let output = path
+        .map(|path| RotatingLog::open(path, max_size_kb, history))
+        .transpose()?;
+    let mut configured = FILE_LOG
+        .lock()
+        .map_err(|_| "service logger lock is poisoned")?;
+    *configured = output;
+    Ok(())
 }
 
 /// UTC timestamp without a chrono/time dependency: the firmware logs of the
@@ -251,6 +391,46 @@ mod tests {
             assert!(colored.contains(ansi));
             assert_eq!(colored.replace(ansi, "").replace("\x1b[0m", ""), plain);
         }
+    }
+
+    #[test]
+    fn rotating_log_keeps_a_bounded_history() {
+        let directory = std::env::temp_dir().join(format!(
+            "ble-gateway-log-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&directory).unwrap();
+        let path = directory.join("gateway.log");
+        let mut output = RotatingLog::open(&path, 16, 2).unwrap();
+        let line = vec![b'x'; 10 * 1024];
+        output.write(&line).unwrap();
+        output.write(&line).unwrap();
+        output.write(&line).unwrap();
+        assert_eq!(std::fs::metadata(&path).unwrap().len(), line.len() as u64);
+        assert_eq!(
+            std::fs::metadata(rotated_path(&path, 1)).unwrap().len(),
+            line.len() as u64
+        );
+        assert_eq!(
+            std::fs::metadata(rotated_path(&path, 2)).unwrap().len(),
+            line.len() as u64
+        );
+        output.write(&line).unwrap();
+        assert!(!rotated_path(&path, 3).exists());
+        drop(output);
+        let mut output = RotatingLog::open(&path, 16, 0).unwrap();
+        assert!(!rotated_path(&path, 1).exists());
+        assert!(!rotated_path(&path, 2).exists());
+        output.write(&line).unwrap();
+        assert_eq!(std::fs::metadata(&path).unwrap().len(), line.len() as u64);
+        assert!(!rotated_path(&path, 1).exists());
+        assert!(output.write(&vec![b'x'; 16 * 1024 + 1]).is_err());
+        drop(output);
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]

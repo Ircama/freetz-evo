@@ -12,12 +12,48 @@ LOG=/tmp/rc.$DAEMON.log
 
 BLE2UART_GATEWAY_SERIAL="${BLE2UART_GATEWAY_SERIAL:-/dev/ttyACM0}"
 BLE2UART_GATEWAY_BAUDRATE="${BLE2UART_GATEWAY_BAUDRATE:-115200}"
-BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE:-/tmp/flash/ble2uart_gateway}"
+BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE:-/var/media/ftp/ble2uart_gateway}"
+BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE%/}"
 BLE2UART_GATEWAY_CONFIG_WAIT="${BLE2UART_GATEWAY_CONFIG_WAIT:-120}"
 
-BLE2UART_GATEWAY_ARGS=
 GATEWAY_BIN=/usr/bin/ble2uart-gateway
 [ -x "$GATEWAY_BIN" ] || GATEWAY_BIN=/mod/external/usr/bin/ble2uart-gateway
+
+store_is_persistent() {
+	local path="$1"
+	local fstype
+	while [ ! -e "$path" ]; do
+		path="${path%/*}"
+		[ -n "$path" ] || path=/
+	done
+	fstype="$(df -T "$path" 2>/dev/null | awk 'NR > 1 { print $2; exit }')"
+	case "$fstype" in
+		''|tmpfs|ramfs|devtmpfs|rootfs|squashfs|overlay) return 1 ;;
+	esac
+}
+
+setup_service_log() {
+	local target="$BLE2UART_GATEWAY_STORE/rc.$DAEMON.log"
+	local link_tmp="${LOG}.$$.link"
+	local backup
+
+	if [ -e "$LOG" ] && [ ! -L "$LOG" ]; then
+		backup="$BLE2UART_GATEWAY_STORE/rc.$DAEMON.log.previous.$(date +%Y%m%d-%H%M%S).$$"
+		if ! cp -p "$LOG" "$backup"; then
+			echo "Cannot preserve the previous gateway log" >&2
+			return 1
+		fi
+	fi
+	if ! ln -s "$target" "$link_tmp"; then
+		echo "Cannot create the gateway log link" >&2
+		return 1
+	fi
+	if ! mv -f "$link_tmp" "$LOG"; then
+		rm -f "$link_tmp"
+		echo "Cannot install the gateway log link" >&2
+		return 1
+	fi
+}
 
 # Called by modlib_startdaemon before the daemon is spawned.
 config() {
@@ -25,8 +61,17 @@ config() {
 	# exposed-id state: keep it private, and create a first configuration when
 	# there is none, so that the web interface has something to edit.
 	umask 077
+	case "$BLE2UART_GATEWAY_STORE" in
+		/var/media/ftp|/var/media/ftp/*)
+			if ! store_is_persistent "$BLE2UART_GATEWAY_STORE"; then
+				echo "Gateway storage is not on a mounted persistent filesystem: $BLE2UART_GATEWAY_STORE" >&2
+				return 1
+			fi
+			;;
+	esac
 	mkdir -p "$BLE2UART_GATEWAY_STORE" || return 1
 	chmod 700 "$BLE2UART_GATEWAY_STORE" || return 1
+	setup_service_log || return 1
 	if [ ! -s "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" ]; then
 		"$GATEWAY_BIN" --write-default-config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" \
 			>>$LOG 2>&1
@@ -35,9 +80,7 @@ config() {
 		chmod 600 "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" 2>/dev/null
 	fi
 
-	BLE2UART_GATEWAY_ARGS="--config $BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml"
 	[ "$BLE2UART_GATEWAY_VERBOSE" = "yes" ] && DAEMON_ENV="RUST_LOG=debug"
-	[ -n "$BLE2UART_GATEWAY_EXTRA_ARGS" ] && BLE2UART_GATEWAY_ARGS="$BLE2UART_GATEWAY_ARGS $BLE2UART_GATEWAY_EXTRA_ARGS"
 
 	return 0
 }
@@ -78,8 +121,9 @@ start() {
 	SERIAL_DEVICE=$("$GATEWAY_BIN" --config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" --get serial.port) || return 1
 	[ -c "$SERIAL_DEVICE" ] || return 1
 	modlib_startdaemon start-stop-daemon -S -b -m -p "$PID_FILE" \
-		-x /bin/sh -- -c 'log=$1; shift; exec "$@" >>"$log" 2>&1' \
-		sh "$LOG" "$GATEWAY_BIN" $BLE2UART_GATEWAY_ARGS >>"$LOG" 2>&1
+		-x /bin/sh -- -c 'log=$1; shift; export BLE2UART_GATEWAY_LOG="$log"; exec "$@" >"$log.startup" 2>&1' \
+		sh "$BLE2UART_GATEWAY_STORE/rc.$DAEMON.log" "$GATEWAY_BIN" \
+		--config "$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml" $BLE2UART_GATEWAY_EXTRA_ARGS >>"$LOG" 2>&1
 }
 
 # Terminates the daemon. modlib_stop() calls this function, therefore it must
@@ -98,18 +142,9 @@ stop() {
 		kill -9 "$pid" 2>/dev/null
 	fi
 
-	# Archiving the ramdisk: the configuration with the bind keys lives in
-	# /tmp/flash unless the store was moved to a disk in the web interface.
-	# modsave writes the whole /tmp/flash to the box flash, so a clean stop (and
-	# a reboot that goes through rc.mod stop) keeps it.
-	case "$BLE2UART_GATEWAY_STORE" in
-		/tmp/flash/*)
-			if [ -x /usr/bin/modsave ]; then
-				/usr/bin/modsave flash >/dev/null 2>&1 &&
-					echo "$(date): $BLE2UART_GATEWAY_STORE archived to the box flash" >> $LOG
-			fi
-			;;
-	esac
+	# Nothing is archived here: the store is a plain directory on a mounted
+	# disk, so the YAML with the bind keys is already persistent. A store in the
+	# RAM disk was a second, fragile source of truth and has been dropped.
 
 	return 0
 }

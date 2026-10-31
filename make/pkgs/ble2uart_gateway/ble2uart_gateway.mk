@@ -192,6 +192,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES)
 		$(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway.cgi \
                 $(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway/api.cgi \
                 $(BLE2UART_GATEWAY_DEST_DIR)/usr/lib/cgi-bin/ble2uart_gateway/portal.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(BLE2UART_GATEWAY_TARGET_DIR)/root
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
 $(pkg)-clean:

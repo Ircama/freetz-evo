@@ -35,6 +35,30 @@ pub enum Diagnostic {
     AnalogRead, ConnectionStatus, TxadvStatus,
 }
 
+impl Command {
+    pub fn log_summary(&self) -> String {
+        match self {
+            Self::Diagnostic { name, pin } => format!("diagnostic {name:?} pin={pin}"),
+            Self::Gatt(request) => format!(
+                "gatt {:?} peer={} timeout_ms={}",
+                request.operation,
+                if request.session.is_empty() { request.mac.as_str() } else { "session" },
+                request.timeout_ms,
+            ),
+            Self::GattOpen(open) => format!(
+                "gatt-open peer={} coded={} timeout_ms={}",
+                open.mac, open.coded, open.timeout_ms,
+            ),
+            Self::GattClose { .. } => "gatt-close".into(),
+            Self::TxadvStart { phy, interval_units, .. } =>
+                format!("txadv-start phy={phy} interval_units={interval_units}"),
+            Self::TxadvStop => "txadv-stop".into(),
+            Self::ScanStart => "scan-start".into(),
+            Self::ScanStop => "scan-stop".into(),
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct Radio {
     pub scanning: bool,
@@ -119,7 +143,11 @@ fn checked_request(link: &mut Link, frame: &[u8], cmd: Cmd, timeout: Duration) -
 
 pub fn set_scan(link: &mut Link, scanner: Option<&ScannerConfig>, timeout: Duration) -> Result<(), String> {
     let frame = scanner.map(scan_frame).unwrap_or_else(link::stop_scan_command);
-    checked_request(link, &frame, Cmd::Scan, timeout).map(|_| ())
+    let (_, payload) = checked_request(link, &frame, Cmd::Scan, timeout)?;
+    if payload != frame[1..frame.len() - 2] {
+        return Err("SCAN: firmware did not confirm the requested configuration".into());
+    }
+    Ok(())
 }
 
 fn diagnostic(link: &mut Link, name: Diagnostic, pin: u8, timeout: Duration) -> Result<Value, String> {
@@ -296,8 +324,13 @@ pub fn execute(link: &mut Link, radio: &mut Radio, scanner: &ScannerConfig, time
     if matches!(command, Command::ScanStop) {
         radio.scan_suppressed = true;
         radio.scanning = false;
-        return set_scan(link, None, timeout)
-            .map(|_| json!({"confirmation": "scanner-stopped"}));
+        return match set_scan(link, None, timeout) {
+            Ok(()) => Ok(json!({"confirmation": "scanner-stopped"})),
+            Err(error) => {
+                radio.recovery_required = true;
+                Err(error)
+            }
+        };
     }
     let resume = radio.scanning;
     if resume {
@@ -367,7 +400,7 @@ mod tests {
             json!({"command":"diagnostic","name":"info","raw":"00"}),
             json!({"command":"gatt","mac":"bad","operation":"read","handle":1}),
             json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"read","handle":0}),
-            json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"read","handle":1,"timeout_ms":30001}),
+            json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"read","handle":1,"timeout_ms":120001}),
             json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"write","handle":1,"value":"AB".repeat(57)}),
             json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"read","handle":1,"uuid":"1F1F"}),
             json!({"command":"gatt","session":"bad","operation":"discover"}),
@@ -380,7 +413,23 @@ mod tests {
         ] { assert!(parse(invalid.clone()).is_err(), "{invalid}"); }
         assert!(parse(json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"write","handle":0xFF01,"value":"01"})).is_ok());
         assert!(parse(json!({"command":"gatt-open","mac":"AABBCCDDEEFF"})).is_ok());
+        assert!(parse(json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"discover","timeout_ms":120000})).is_ok());
+        assert!(parse(json!({"command":"gatt-open","mac":"AABBCCDDEEFF","timeout_ms":120000})).is_ok());
         assert_eq!(hex_bytes("01 ab\nFF", 3).unwrap(), [1, 0xAB, 0xFF]);
+    }
+
+    #[test]
+    fn command_log_summary_excludes_session_tokens_and_payloads() {
+        let token = "A".repeat(32);
+        let command = parse(json!({
+            "command":"gatt", "session":token, "operation":"write",
+            "handle":1, "value":"DEADBEEF"
+        })).unwrap();
+        let summary = command.log_summary();
+        assert!(summary.contains("gatt Write peer=session"));
+        assert!(!summary.contains(&token));
+        assert!(!summary.contains("DEADBEEF"));
+        assert_eq!(parse(json!({"command":"gatt-close","session":token})).unwrap().log_summary(), "gatt-close");
     }
 
     fn response(cmd: u8, status: u8, payload: &[u8]) -> Vec<u8> {
@@ -432,7 +481,7 @@ mod tests {
     }
 
     fn stop_step() -> (Vec<u8>, Vec<Vec<u8>>) {
-        (vec![1, 0, 0, 0], vec![response(1, 0, &[])])
+        (vec![1, 0, 0, 0], vec![response(1, 0, &[0, 0, 0])])
     }
 
     fn txadv_idle_step() -> (Vec<u8>, Vec<Vec<u8>>) {
@@ -444,7 +493,36 @@ mod tests {
     fn resume_step() -> (Vec<u8>, Vec<Vec<u8>>) {
         let mut frame = scan_frame(&ScannerConfig::default());
         frame.truncate(frame.len() - 2);
-        (frame, vec![response(1, 0, &[])])
+        let reply = response(1, 0, &frame[1..]);
+        (frame, vec![reply])
+    }
+
+    #[test]
+    fn gatt_open_reports_denial_after_an_idle_response() {
+        let idle = response(12, 0, &[0; 6]);
+        let denied = response(12, 3, &[0; 6]);
+        let (result, radio, _) = run_steps(vec![
+            txadv_idle_step(),
+            stop_step(),
+            (vec![12, 0], vec![idle.clone()]),
+            (vec![12, 1, 0, 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 1], vec![idle.clone(), denied]),
+            (vec![12, 0], vec![idle]),
+            resume_step(),
+        ], json!({"command":"gatt","mac":"AABBCCDDEEFF","operation":"discover","timeout_ms":1000}), true);
+        assert_eq!(result.unwrap_err(), "CONN: denied");
+        assert!(radio.scanning);
+        assert!(!radio.recovery_required);
+    }
+
+    #[test]
+    fn scan_stop_requires_firmware_confirmation() {
+        let (result, radio, _) = run_steps(
+            vec![(vec![1, 0, 0, 0], vec![response(1, 0, &[])])],
+            json!({"command":"scan-stop"}), true,
+        );
+        assert!(result.unwrap_err().contains("did not confirm"));
+        assert!(radio.scan_suppressed);
+        assert!(radio.recovery_required);
     }
 
     #[test]

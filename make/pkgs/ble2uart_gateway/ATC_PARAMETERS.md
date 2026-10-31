@@ -81,7 +81,7 @@ dei campi descrivano correttamente il firmware corrente.
 | `write_prefix` | Prefisso del commit; se omesso, coincide con `value` |
 | `patch` | Solo campi gia' presenti nella struttura decodificata |
 | `coded` | PHY usato per **connettersi**, non abilita il Coded nel sensore |
-| `timeout_ms` | Budget dell'operazione; 100..30000 ms, non un tempo di persistenza |
+| `timeout_ms` | Budget dell'operazione; 100..120000 ms, predefinito 60000 ms, non un tempo di persistenza |
 
 Il servizio deve essere attivo: si usa la sua connessione seriale, non si avvia
 un secondo lettore UART. SCAN e TX ADV gestiti dal daemon sono sospesi e poi
@@ -425,6 +425,13 @@ nelle build che li usano; non e' salvato nella configurazione persistente.
 `0x4A` non e' un comando di questo parser.
 
 ## 6. Configurazione corrente: `flg3`, eventi e layout intero
+
+**Il byte in più nella risposta `0x55`.** In `ble.h`, `ble_send_cfg()` copia
+`55 VERSIONE cfg[11]` in `my_RxTx_Data` (dimensione `sizeof(cfg)+2` = 13) ma
+notifica `sizeof(cfg)+3` = 14 byte: l'ultimo è una lettura oltre il buffer
+(osservato `00`), non un campo di configurazione. Vale per 4.7 (`A4C138B3326C`)
+e 5.9 (`A4C1383406CE`). Il gateway lo scarta solo per codec `cfg`, `offset:1`,
+risposta `0x55` di 14 byte; ogni altra lunghezza resta un errore.
 
 Nel C esaminato `VERSION=0x59` (5.9); la selezione
 `VERSION < 0x47` distingue offset storici da `flg3/event_adv_cnt`.
@@ -1015,6 +1022,21 @@ considerarla una nuova versione di configurazione.
 Verificare la lunghezza realmente ricevuta dal binario del dispositivo.
 Per il sorgente in questione serve una correzione upstream della lunghezza
 o una build verificata; questo documento non modifica il firmware.
+
+Il pulsante **Leggi configurazione ATC** restituisce pertanto la notifica
+grezza, senza applicare automaticamente `cfg`: il byte finale resta visibile.
+La decodifica richiede uno schema adatto al firmware verificato; il pulsante
+di patch continua a rifiutare i dati che non corrispondono esattamente allo
+schema, senza scrivere la configurazione.
+Nel sorgente ATC corrente anche la richiesta `55` senza parametri esegue
+`test_config()` e `flash_write_cfg()`: la funzione evita una nuova scrittura
+se i dati sono identici, ma puo' salvare valori normalizzati. Una lettura
+non e' quindi necessariamente priva di effetti sul sensore.
+Su alcuni dispositivi la transazione automatica puo' scadere in attesa della
+notifica anche dopo la scrittura ATT. In tal caso si puo' aprire prima una
+sessione GATT, usare il pulsante di lettura nella sessione e poi chiuderla:
+lo scanner rimane sospeso fino alla chiusura. Non ripetere automaticamente
+richieste o scritture il cui effetto sul sensore non e' noto.
 
 ### 13.3 Il JavaScript non e' una copia uno-a-uno del C
 

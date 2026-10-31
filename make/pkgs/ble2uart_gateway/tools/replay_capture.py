@@ -108,7 +108,8 @@ class Firmware:
                         self.scanning.clear()
                     elif command not in (0, 1, 5, 8, 10):
                         status = 1
-                    response = bytes([0, command, status, 0, 0xFF]) + bytes(6)
+                    reply_data = packet[1:-2] if command == 1 else b""
+                    response = bytes([0, command, status, len(reply_data), 0xFF]) + reply_data.ljust(6, b"\0")
                     self.write(response + crc16(response))
                     if command == 1 and packet[1]:
                         self.scanning.set()

@@ -75,11 +75,13 @@ pub fn control_client(action: &str, seconds: u64) -> Result<Value, String> {
     control_request(&json!({"action": action, "seconds": seconds}))
 }
 
+const CONTROL_RESPONSE_TIMEOUT: Duration = Duration::from_secs(crate::gatt::MAX_TIMEOUT_MS / 1000 + 90);
+
 pub fn control_request(request: &Value) -> Result<Value, String> {
     let encoded = serde_json::to_string(request).map_err(|error| error.to_string())?;
     if encoded.len() > 4096 { return Err("control request exceeds 4096 bytes".into()); }
     let mut stream = UnixStream::connect(control_socket()).map_err(|_| "gateway is not running or control socket is unavailable")?;
-    stream.set_read_timeout(Some(Duration::from_secs(90))).map_err(|error| error.to_string())?;
+    stream.set_read_timeout(Some(CONTROL_RESPONSE_TIMEOUT)).map_err(|error| error.to_string())?;
     stream.set_write_timeout(Some(Duration::from_secs(2))).map_err(|error| error.to_string())?;
     writeln!(stream, "{encoded}").map_err(|error| error.to_string())?;
     let mut response = String::new();
@@ -252,9 +254,14 @@ pub fn log_tail(lines: usize) -> Value {
     let lines = lines.clamp(1, 2000);
     let mut file = match std::fs::File::open(&path) {
         Ok(file) => file,
-        Err(_) => return json!({"success": true, "path": path, "lines": [], "missing": true}),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound =>
+            return json!({"success": true, "path": path, "lines": [], "missing": true}),
+        Err(error) => return json!({"success": false, "error": format!("cannot open the service log: {error}")}),
     };
-    let size = file.metadata().map(|metadata| metadata.len()).unwrap_or(0);
+    let size = match file.metadata() {
+        Ok(metadata) => metadata.len(),
+        Err(error) => return json!({"success": false, "error": format!("cannot inspect the service log: {error}")}),
+    };
     let start = size.saturating_sub(READ_LIMIT);
     use std::io::Seek;
     if file.seek(std::io::SeekFrom::Start(start)).is_err() {
@@ -305,6 +312,28 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
     }
     if action == "history-presets" {
         return Ok(json!({"success":true,"maintenance":crate::sqlite::MaintenanceConfig::default()}));
+    }
+    if action == "sqlite-attributes" {
+        let config = Config::load(path, None, None)?;
+        let sqlite = &config.frontends.sqlite;
+        if sqlite.path.is_empty() {
+            return Err("SQLite database path is not configured in the saved settings".into());
+        }
+        sqlite.validate()?;
+        return Ok(json!({"success":true,"attributes":crate::sqlite::stored_attributes(Path::new(&sqlite.path))?}));
+    }
+    if action == "sqlite-delete-attribute" {
+        let request: Value = serde_json::from_str(input).map_err(|_| "invalid SQLite deletion request")?;
+        let mac = request["mac"].as_str().ok_or("missing device MAC")?;
+        let attribute = request["attribute"].as_str().ok_or("missing attribute name")?;
+        let config = Config::load(path, None, None)?;
+        let sqlite = &config.frontends.sqlite;
+        if sqlite.path.is_empty() {
+            return Err("SQLite database path is not configured in the saved settings".into());
+        }
+        sqlite.validate()?;
+        let deleted = crate::sqlite::delete_attribute(Path::new(&sqlite.path), mac, attribute)?;
+        return Ok(json!({"success":true,"deleted":deleted}));
     }
     if action == "attributes" {
         return Ok(json!({"success":true,"attributes":crate::pipeline::supported_attributes().collect::<Vec<_>>()}));
@@ -367,6 +396,11 @@ mod tests {
     use super::*;
 
     #[test]
+    fn control_response_timeout_covers_gatt_deadline_and_cleanup() {
+        assert!(CONTROL_RESPONSE_TIMEOUT >= Duration::from_millis(crate::gatt::MAX_TIMEOUT_MS) + Duration::from_secs(60));
+    }
+
+    #[test]
     fn log_tail_returns_the_last_lines_only() {
         let directory=std::env::temp_dir().join(format!("ble-log-{}",std::process::id()));
         std::fs::create_dir_all(&directory).unwrap();
@@ -374,9 +408,13 @@ mod tests {
         std::fs::write(&path,"one\ntwo\nthree\n").unwrap();
         std::env::set_var("BLE2UART_GATEWAY_LOG",&path);
         let tail=log_tail(2);
-        std::env::remove_var("BLE2UART_GATEWAY_LOG");
         assert_eq!(tail["lines"],json!(["two","three"]));
         assert_eq!(tail["success"],true);
+        std::env::set_var("BLE2UART_GATEWAY_LOG",directory.join("missing"));
+        assert_eq!(log_tail(2)["missing"], true);
+        std::env::set_var("BLE2UART_GATEWAY_LOG",&directory);
+        assert_eq!(log_tail(2)["success"], false);
+        std::env::remove_var("BLE2UART_GATEWAY_LOG");
         std::fs::remove_dir_all(directory).ok();
     }
 
@@ -417,6 +455,99 @@ mod tests {
         let names: std::collections::HashSet<_> = attributes.iter().map(|name| name.as_str().unwrap()).collect();
         assert_eq!(names.len(), attributes.len());
         assert_eq!(names.len(), crate::pipeline::supported_attributes().count());
+    }
+
+    fn sqlite_api_fixture(name: &str, with_history: bool) -> (std::path::PathBuf, std::path::PathBuf) {
+        let directory = std::env::temp_dir().join(format!("ble-web-sqlite-{name}-{}", std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        let config_path = directory.join("config.yaml");
+        let database_path = directory.join("readings.sqlite3");
+        let mut config = Config::default();
+        config.frontends.sqlite.enabled = true;
+        config.frontends.sqlite.path = database_path.to_string_lossy().into_owned();
+        config.save(&config_path).unwrap();
+
+        let connection = rusqlite::Connection::open(&database_path).unwrap();
+        connection.execute_batch(crate::sqlite::SCHEMA).unwrap();
+        if with_history {
+            connection.execute_batch(crate::sqlite::HISTORY_SCHEMA).unwrap();
+        }
+        let state = json!({"measurements":[
+            {"name":"temperature","value":21.5,"unit":"°C"},
+            {"name":"humidity","value":50.0,"unit":"%"}
+        ],"decoded":{"temperature":21.5,"humidity":50.0}});
+        connection.execute(
+            "INSERT INTO frames(received_at_ns,mac,sensor_name,wire_format,state_json)
+             VALUES(1800000000000000000,'AABBCCDDEEFF','Sensor','test',?1)",
+            [state.to_string()],
+        ).unwrap();
+        connection.execute(
+            "INSERT INTO measurements(frame_id,ordinal,attribute,unit,type,value_real,value_int,value_text)
+             VALUES(1,0,'temperature','°C','real',21.5,NULL,NULL),
+                   (1,1,'humidity','%','real',50.0,NULL,NULL)",
+            [],
+        ).unwrap();
+        if with_history {
+            connection.execute(
+                "INSERT INTO history_devices(mac,sensor_name,device_json) VALUES('AABBCCDDEEFF','Sensor','{}')",
+                [],
+            ).unwrap();
+            connection.execute(
+                "INSERT INTO history_series(id,mac,attribute,unit) VALUES(1,'AABBCCDDEEFF','temperature','°C')",
+                [],
+            ).unwrap();
+            connection.execute(
+                "INSERT INTO history_samples(id,series_id,received_at_ns,type,value_json)
+                 VALUES(1,1,1799999999000000000,'real','20.0')",
+                [],
+            ).unwrap();
+        }
+        drop(connection);
+        (directory, config_path)
+    }
+
+    #[test]
+    fn sqlite_attribute_api_lists_and_deletes_schema_v1_measurements() {
+        let (directory, config_path) = sqlite_api_fixture("v1", false);
+        let mut config = Config::load(&config_path, None, None).unwrap();
+        config.frontends.sqlite.enabled = false;
+        config.save(&config_path).unwrap();
+        let listed = config_action(&config_path, "sqlite-attributes", "").unwrap();
+        assert_eq!(listed["attributes"].as_array().unwrap().len(), 2);
+        let deleted = config_action(
+            &config_path,
+            "sqlite-delete-attribute",
+            &json!({"mac":"AABBCCDDEEFF","attribute":"temperature"}).to_string(),
+        ).unwrap();
+        assert_eq!(deleted["deleted"]["raw_measurements"], 1);
+        assert_eq!(deleted["deleted"]["raw_frames"], 0);
+        assert_eq!(deleted["deleted"]["archived_samples"], 0);
+        let remaining = config_action(&config_path, "sqlite-attributes", "").unwrap();
+        assert_eq!(remaining["attributes"].as_array().unwrap().len(), 1);
+        assert_eq!(remaining["attributes"][0]["attribute"], "humidity");
+        std::fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn sqlite_attribute_api_deletes_raw_and_archived_schema_v2_measurements() {
+        let (directory, config_path) = sqlite_api_fixture("v2", true);
+        let listed = config_action(&config_path, "sqlite-attributes", "").unwrap();
+        let temperature = listed["attributes"].as_array().unwrap().iter()
+            .find(|item| item["attribute"] == "temperature").unwrap();
+        assert_eq!(temperature["samples"], 2);
+        let deleted = config_action(
+            &config_path,
+            "sqlite-delete-attribute",
+            &json!({"mac":"AABBCCDDEEFF","attribute":"temperature"}).to_string(),
+        ).unwrap();
+        assert_eq!(deleted["deleted"]["raw_measurements"], 1);
+        assert_eq!(deleted["deleted"]["raw_frames"], 0);
+        assert_eq!(deleted["deleted"]["archived_samples"], 1);
+        assert_eq!(deleted["deleted"]["series"], 1);
+        let remaining = config_action(&config_path, "sqlite-attributes", "").unwrap();
+        assert_eq!(remaining["attributes"].as_array().unwrap().len(), 1);
+        assert_eq!(remaining["attributes"][0]["attribute"], "humidity");
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     #[test]

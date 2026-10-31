@@ -111,13 +111,15 @@ const server = http.createServer(async (request, response) => {
             if(command.session)assert.equal(command.session,sessionToken);
             if(['exchange','patch'].includes(command.operation)){
                 assert.equal(command.uuid,'1F1F');assert.equal(command.value,'55');assert.equal(command.prefix,'55');
-                assert.equal(command.codec,'cfg');assert.equal(command.offset,1);
+                assert.equal(command.codec,command.operation==='patch'?'cfg':'');assert.equal(command.offset,command.operation==='patch'?1:0);
                 if(command.operation==='patch'){
                     assert.equal(command.write_offset,1);assert.equal(command.write_prefix,undefined);
                     if(command.patch.flg2)Object.assign(atcConfig.flg2,command.patch.flg2);
                 }
                 const flags=0x10+(atcConfig.flg2.bt5phy?0x20:0)+(atcConfig.flg2.longrange?0x40:0);
-                confirmation={confirmation:'application-notification',notifications:[{handle:42,value:'554385'+flags.toString(16).padStart(2,'0').toUpperCase()+'00002804A9313104B4',decoded:JSON.parse(JSON.stringify(atcConfig))}]};
+                const notification={handle:42,value:'554385'+flags.toString(16).padStart(2,'0').toUpperCase()+'00002804A9313104B4'};
+                if(command.operation==='patch')notification.decoded=JSON.parse(JSON.stringify(atcConfig));
+                confirmation={confirmation:'application-notification',notifications:[notification]};
                 if(command.operation==='patch')confirmation.patch_verified=true;
             }
         }
@@ -466,6 +468,13 @@ if(process.env.BLE_WEB_UI_SERVE_ONLY){
         assert.deepEqual(await checkOutput(page,'bbCommandResult'),commandResult);
         assert.deepEqual(commands.at(-1),{command:'diagnostic',name:'info',pin:0});
         await page.locator('#bbCommandType').selectOption('gatt');
+        assert.equal(await page.locator('#bbCmd_timeout_ms').inputValue(),'60000');
+        assert.equal(await page.locator('#bbCmd_timeout_ms').getAttribute('max'),'120000');
+        await page.locator('#bbCmd_timeout_ms').fill('120000');
+        assert(await page.locator('#bbCmd_timeout_ms').evaluate(input=>input.checkValidity()));
+        await page.locator('#bbCmd_timeout_ms').fill('120001');
+        assert.equal(await page.locator('#bbCmd_timeout_ms').evaluate(input=>input.checkValidity()),false);
+        await page.locator('#bbCmd_timeout_ms').fill('60000');
         await page.locator('#bbCmd_mac').fill('AABBCCDDEEFF');
         await page.locator('#bbCmd_operation').selectOption('write');
         await page.locator('#bbCmd_handle').fill('42');
@@ -473,7 +482,7 @@ if(process.env.BLE_WEB_UI_SERVE_ONLY){
         await page.getByRole('button',{name:'Send command',exact:true}).click();
         await page.getByRole('button',{name:'Continue',exact:true}).click();
         await waitOutput(page,'bbCommandResult','stack-accepted');
-        assert.deepEqual(commands.at(-1),{command:'gatt',mac:'AABBCCDDEEFF',addr_type:0,coded:false,operation:'write',handle:42,uuid:'',value:'0102',timeout_ms:10000});
+        assert.deepEqual(commands.at(-1),{command:'gatt',mac:'AABBCCDDEEFF',addr_type:0,coded:false,operation:'write',handle:42,uuid:'',value:'0102',timeout_ms:60000});
         await page.locator('#bbCmd_addr_type').fill('1');
         await page.locator('#bbCmd_coded').check();
         await page.locator('#bbCmd_timeout_ms').fill('3000');
@@ -492,6 +501,8 @@ if(process.env.BLE_WEB_UI_SERVE_ONLY){
         assert.equal(commands.at(-1).coded,true);
         assert.equal(commands.at(-1).timeout_ms,3000);
         await page.locator('#bbCommandType').selectOption('gatt-open');
+        assert.equal(await page.locator('#bbCmd_timeout_ms').inputValue(),'60000');
+        assert.equal(await page.locator('#bbCmd_timeout_ms').getAttribute('max'),'120000');
         await page.locator('#bbCmd_mac').fill('AABBCCDDEEFF');
         await page.getByRole('button',{name:'Send command',exact:true}).click();
         await page.getByRole('button',{name:'Continue',exact:true}).click();
@@ -514,7 +525,8 @@ if(process.env.BLE_WEB_UI_SERVE_ONLY){
         assert.equal(commands.length,preparedCount,'direct reads must not bypass confirmation');
         assert.equal(await page.locator('#bbCmd_uuid').inputValue(),'1F1F');
         assert.equal(await page.locator('#bbCmd_value').inputValue(),'55');
-        assert.equal(await page.locator('#bbCmd_offset').inputValue(),'1');
+        assert.equal(await page.locator('#bbCmd_codec').inputValue(),'');
+        assert.equal(await page.locator('#bbCmd_offset').inputValue(),'0');
         await confirmCommand(page);
         await waitOutput(page,'bbCommandResult','application-notification');
         assert.equal(commands.length,preparedCount+1);

@@ -23,8 +23,11 @@ DAEMON_BIN=/usr/bin/ble2uart-gateway
 [ -x "$DAEMON_BIN" ] || DAEMON_BIN=/mod/external/usr/bin/ble2uart-gateway
 [ -r /mod/etc/default.ble2uart_gateway/ble2uart_gateway.cfg ] && . /mod/etc/default.ble2uart_gateway/ble2uart_gateway.cfg
 [ -r /mod/etc/conf/ble2uart_gateway.cfg ] && . /mod/etc/conf/ble2uart_gateway.cfg
-: "${BLE2UART_GATEWAY_STORE:=/tmp/flash/ble2uart_gateway}"
+: "${BLE2UART_GATEWAY_STORE:=/var/media/ftp/ble2uart_gateway}"
+BLE2UART_GATEWAY_STORE="${BLE2UART_GATEWAY_STORE%/}"
 YAML="$BLE2UART_GATEWAY_STORE/ble2uart_gateway.yaml"
+BLE2UART_GATEWAY_LOG="$BLE2UART_GATEWAY_STORE/rc.ble2uart_gateway.log"
+export BLE2UART_GATEWAY_LOG
 
 # ---------------------------------------------------------------------------
 # AJAX actions: the configuration file is a structured YAML document owned by
@@ -45,7 +48,7 @@ Content-Type: text/html; charset=UTF-8
 EOF
 
 	api_reply() {
-		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ] && [ "$ACTION" != attributes ] && [ "$ACTION" != history-presets ] && [ "$ACTION" != availability-presets ] && [ "$ACTION" != availability-status ]; then
+		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ] && [ "$ACTION" != attributes ] && [ "$ACTION" != history-presets ] && [ "$ACTION" != sqlite-attributes ] && [ "$ACTION" != availability-presets ] && [ "$ACTION" != availability-status ]; then
 			echo '{"success":false,"error":"POST is required"}'
 			return
 		fi
@@ -57,8 +60,8 @@ EOF
 			return
 		fi
 		case "$ACTION" in
-			read|backups|attributes|history-presets|availability-presets|availability-status) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
-			check|save|restore|inspect|availability-test|log)
+			read|backups|attributes|history-presets|sqlite-attributes|availability-presets|availability-status) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
+			check|save|restore|inspect|availability-test|sqlite-delete-attribute|log)
 				case "$CONTENT_LENGTH" in ''|*[!0-9]*) echo '{"success":false,"error":"invalid request length"}'; return ;; esac
 				if [ "$CONTENT_LENGTH" -gt 262144 ] || [ "$CONTENT_TYPE" != application/json ]; then
 					echo '{"success":false,"error":"expected JSON, at most 256 KiB"}'
@@ -67,16 +70,7 @@ EOF
 				fi
 				;;
 			persist)
-				case "$BLE2UART_GATEWAY_STORE" in
-					/tmp/flash/*)
-						if /usr/bin/modsave flash >/dev/null 2>&1; then
-							echo '{"success":true,"message":"configuration archived to flash"}'
-						else
-							echo '{"success":false,"error":"modsave flash failed; YAML is saved in RAM but not confirmed persistent"}'
-						fi
-						;;
-					*) echo '{"success":true,"message":"configuration saved at the selected storage path"}' ;;
-				esac
+				echo '{"success":true,"message":"configuration saved at the selected storage path"}'
 				;;
 			status|discover-stop) "$DAEMON_BIN" --control "$ACTION" ;;
 			command)
@@ -94,7 +88,7 @@ EOF
 			restart)
 				SERVICE=/etc/init.d/rc.ble2uart_gateway
 				[ -x "$SERVICE" ] || SERVICE=/mod/external/etc/init.d/rc.ble2uart_gateway
-				if "$SERVICE" restart >>/tmp/rc.ble2uart_gateway.log 2>&1; then
+				if "$SERVICE" restart >/dev/null 2>&1; then
 					echo '{"success":true,"message":"service restarted"}'
 				else
 					echo '{"success":false,"error":"service restart failed; see service log"}'
@@ -150,7 +144,22 @@ sec_end
 
 # Storage chooser: same pattern as the other freetz packages; the bind keys are
 # secrets, so the store should live on a disk and never in a world readable
-# place.
+# place. The filesystem of the current value is shown, because FAT has no
+# permissions at all and keeps the bind keys readable by every user.
+BB_STORE_FS=
+[ -d "$BLE2UART_GATEWAY_STORE" ] &&
+	BB_STORE_FS=$(df -T "$BLE2UART_GATEWAY_STORE" 2>/dev/null | tail -1 | awk '{print $2}')
+case "$BB_STORE_FS" in
+	'')
+		BB_STORE_FS_NOTE="$(lang de:"- das Verzeichnis existiert noch nicht und wird beim ersten Start angelegt." en:"- the directory does not exist yet; it is created at the first start." it:"- la directory non esiste ancora: viene creata al primo avvio.")"
+		;;
+	vfat|msdos|fat|exfat|ntfs|antfs)
+		BB_STORE_FS_NOTE="$(lang de:"- dieses Dateisystem kennt keine Dateirechte: YAML und Bindkeys sind für alle Benutzer lesbar. Ein ext4-Datenträger ist die bessere Wahl." en:"- this filesystem has no file permissions: the YAML and its bind keys are readable by every user. An ext4 disk is the better choice." it:"- questo filesystem non ha permessi: lo YAML e i bind key sono leggibili da tutti. Meglio un disco ext4.")"
+		;;
+	*)
+		BB_STORE_FS_NOTE="$(lang de:"- Rechte 0700 auf dem Verzeichnis und 0600 auf der YAML." en:"- directory 0700 and YAML 0600." it:"- directory 0700 e YAML 0600.")"
+		;;
+esac
 sec_begin "$(lang de:"Speicherort" en:"Store location" it:"Percorso di configurazione")"
 cat << EOF
 <style>
@@ -173,13 +182,23 @@ cat << EOF
 <p><label class="bbStoreLabel" for="store">$(lang de:"Verzeichnis der Konfiguration" en:"Configuration directory" it:"Percorso della configurazione")</label>
 <input type="text" id="store" name="store" size="40" maxlength="255" value="$(html "$BLE2UART_GATEWAY_STORE")">
 <span class="bbStoreHint">$(lang de:"Enthält die Gateway-YAML (Geräte, Bindkeys, Verfügbarkeitsregeln), die Zustandsdatei der Regeln und – falls hier abgelegt – den Matter-Store." en:"Holds the gateway YAML (devices, bind keys, availability rules), the availability state file and, if you keep it here, the Matter fabric store." it:"Contiene lo YAML del gateway (dispositivi, bind key, regole di disponibilità), il file di stato delle regole e, se decidi di tenerlo qui, lo store delle identità Matter.")</span>
+<span class="bbStoreHint">$(lang de:"Dateisystem" en:"Filesystem" it:"Filesystem"): <code>$(html "${BB_STORE_FS:-?}")</code> $BB_STORE_FS_NOTE</span>
 <span class="bbStoreHint">$(lang de:"Muss ein persistenter Ort sein: der Dienst liest sie nach jedem Neustart erneut. Beim Ändern des Pfads werden vorhandene Dateien kopiert, nie gelöscht." en:"Use a persistent location: the service reads it again after every reboot. Changing the path copies the existing files, it never deletes them." it:"Deve essere una posizione persistente: il servizio la rilegge dopo ogni riavvio. Cambiando percorso i file esistenti vengono copiati, mai cancellati.")</span></p>
 <details id="bbStoreDisks"><summary>$(lang de:"Gemountete Datenträger anzeigen (zum Öffnen klicken)" en:"Show mounted disks (click to open)" it:"Mostra i dischi montati (clic per aprire)")</summary>
 <table>
 <tr><th>$(lang de:"Gerät" en:"Device" it:"Dispositivo")</th><th>$(lang de:"Typ" en:"Type" it:"Tipo")</th><th style="text-align:right;">$(lang de:"Frei / Gesamt" en:"Free / total" it:"Libero / totale")</th></tr>
 EOF
 storage_row() {
-	echo "<tr><td><code class='bbStorePick' onclick=\"document.getElementById('store').value='$1/ble2uart_gateway';\">$1</code></td><td class='bbStoreType'>$2</td><td class='bbStoreFree'>$3</td></tr>"
+	# The store path may not contain whitespace (the save hook rejects it), so
+	# entries like "/var/media/ftp/Teatro francese" are listed but not clickable.
+	case "$1" in
+		*[[:space:]\'\"\`]*)
+			echo "<tr><td><code title=\"$(lang de:"Pfad mit Leerzeichen: als Speicherort nicht verwendbar" en:"path with spaces: cannot be used as store" it:"percorso con spazi: non utilizzabile come store")\">$1</code></td><td class='bbStoreType'>$2</td><td class='bbStoreFree'>$3</td></tr>"
+			;;
+		*)
+			echo "<tr><td><code class='bbStorePick' onclick=\"document.getElementById('store').value='$1/ble2uart_gateway';\">$1</code></td><td class='bbStoreType'>$2</td><td class='bbStoreFree'>$3</td></tr>"
+			;;
+	esac
 }
 DFOUT=$(df -hP 2>/dev/null)
 mount | sed -rn '
@@ -216,17 +235,10 @@ fi
 cat << EOF
 </table>
 </details>
-<div id="bbStartupActions"></div>
+<div id="bbStartupActions"><input type="submit" id="bbStartupSave" value="$(lang de:"Starteinstellungen speichern" en:"Save startup settings" it:"Salva impostazioni di avvio" fr:"Enregistrer les réglages de démarrage" es:"Guardar ajustes de arranque")"></div>
 <p id="bbStartupHint">$(lang de:"Diese Schaltfläche speichert nur die Freetz-Starteinstellungen (Starttyp, initiales serielles Gerät, Konfigurationsverzeichnis) in /mod/etc/conf und startet einen laufenden Dienst neu. „Save configuration“ oben speichert dagegen den Gateway-Entwurf (YAML: Geräte, Regeln, Frontends) und startet nichts neu." en:"This button saves only the Freetz startup options (start type, initial serial device, configuration directory) into /mod/etc/conf and restarts the service when it is running. “Save configuration” above saves the gateway draft (YAML: devices, rules, frontends) and never restarts anything." it:"Questo pulsante salva solo le impostazioni di avvio di Freetz (tipo di avvio, seriale iniziale, percorso della configurazione) in /mod/etc/conf e riavvia il servizio se è attivo. «Save configuration» in alto salva invece la bozza del gateway (YAML: dispositivi, regole, frontend) e non riavvia nulla.")</p>
 </div>
 EOF
-case "$BLE2UART_GATEWAY_STORE" in
-	/tmp/flash/*)
-		cat << EOF
-<p class="bbStoreHint" style="display:block;font-size:11px;line-height:1.55;color:#555;margin:4px 0 8px;max-width:70em;">$(lang de:"/tmp/flash ist kein flüchtiger Speicher: Freetz archiviert es beim Speichern mit modsave im Flash und stellt es beim Booten wieder her, die Konfiguration übersteht also einen Neustart. Es ist klein und liegt im Router-Flash: hier nur YAML und Bindkeys ablegen, aktive SQLite-Datenbanken und Matter-Store gehören auf externen Speicher." en:"/tmp/flash is not volatile memory: Freetz archives it into flash with modsave when you save and restores it at boot, so the configuration survives a reboot. It is small and lives in the router flash: keep only the YAML and the bind keys here; live SQLite databases and the Matter store belong on external storage." it:"/tmp/flash non è memoria volatile: Freetz la archivia in flash con modsave al salvataggio e la ripristina al boot, quindi la configurazione sopravvive al riavvio. È però piccola e risiede nella flash del router: qui vanno bene solo lo YAML e i bind key; database SQLite attivi e store Matter vanno su memoria esterna.")</p>
-EOF
-		;;
-esac
 sec_end
 
 echo '</details>'
@@ -815,7 +827,7 @@ cat << 'EOF'
 	}
 	element('bbPacketDetails').addEventListener('toggle',()=>{hidePacketTooltip();if(element('bbPacketDetails').open&&packetEditor)packetEditor.resize(true);});
 	element('bbPacketHelp').addEventListener('toggle',hidePacketTooltip);
-	const labels = {filter_known_devices:'Filter registered devices in ESP32', phy_1m:'1M PHY', phy_coded:'Coded PHY', dup_filter:'Duplicate filter', discard_random:'Discard random addresses', discard_rpa:'Discard resolvable private addresses', active_scan:'Active scan', window_1m:'1M window (0.625 ms units)', window_coded:'Coded window (0.625 ms units)', whitelist:'Whitelist MAC prefixes', blacklist:'Blacklist MAC prefixes', reset_on_open:'Reset ESP32 on open', command_timeout_ms:'Command timeout (ms)', reconnect_delay_ms:'Reconnect delay (ms)', bindkey:'Bindkey (32 hexadecimal digits)', format:'Forced wire format (empty = automatic)', expose:'Exposed attributes', child:'MySensors child ID', node_id_base:'First MySensors node ID', tx_hex:'Raw TX trace', rx_hex:'Raw RX trace', decode:'Codec decode trace', phy:'PHY reception / decode trace', after_s:'Delay (seconds)', kind:'Kind override', mysensors:'MySensors / Domoticz', mqtt:'MQTT', matter:'Matter', influx:'InfluxDB 3', advertise:'Advertise via DNS-SD', mdns_backend:'DNS-SD backend', mdns_hostname:'mDNS host name (empty = default)', mdns_interface:'mDNS interface (empty = automatic)', endpoint:'Endpoint URL', batch_size:'Batch size', queue_capacity:'Queue capacity', flush_interval_ms:'Flush interval (ms)', timeout_ms:'Timeout (ms)', diagnostics:'Diagnostics', rules:'Rules', serial:'Serial', scanner:'Scanner', log_level:'Log level', frontends:'Frontends', mac:'MAC', rssi:'RSSI'};
+	const labels = {filter_known_devices:'Filter registered devices in ESP32', phy_1m:'1M PHY', phy_coded:'Coded PHY', dup_filter:'Duplicate filter', discard_random:'Discard random addresses', discard_rpa:'Discard resolvable private addresses', active_scan:'Active scan', window_1m:'1M window (0.625 ms units)', window_coded:'Coded window (0.625 ms units)', whitelist:'Whitelist MAC prefixes', blacklist:'Blacklist MAC prefixes', reset_on_open:'Reset ESP32 on open', command_timeout_ms:'Command timeout (ms)', reconnect_delay_ms:'Reconnect delay (ms)', bindkey:'Bindkey (32 hexadecimal digits)', format:'Forced wire format (empty = automatic)', expose:'Exposed attributes', child:'MySensors child ID', node_id_base:'First MySensors node ID', tx_hex:'Raw TX trace', rx_hex:'Raw RX trace', decode:'Codec decode trace', phy:'PHY reception / decode trace', after_s:'Delay (seconds)', kind:'Kind override', mysensors:'MySensors / Domoticz', mqtt:'MQTT', matter:'Matter', influx:'InfluxDB 3', advertise:'Advertise via DNS-SD', mdns_backend:'DNS-SD backend', mdns_hostname:'mDNS host name (empty = default)', mdns_interface:'mDNS interface (empty = automatic)', endpoint:'Endpoint URL', batch_size:'Batch size', queue_capacity:'Queue capacity', flush_interval_ms:'Flush interval (ms)', timeout_ms:'Timeout (ms)', diagnostics:'Diagnostics', rules:'Rules', serial:'Serial', scanner:'Scanner', log_level:'Log level', logging:'Logging / rotation', max_size_kb:'Maximum log size (KiB)', history:'Rotated files retained', frontends:'Frontends', mac:'MAC', rssi:'RSSI'};
 	Object.assign(labels, {manufacturer:'Manufacturer',model:'Device model',firmware_version:'Device firmware version',label:'Device name',sqlite:'SQLite',path:'Database file (absolute local path)',busy_timeout_ms:'SQLite busy timeout (ms)'});
 	const title = key => key==='whitelist'?ht.include:key==='blacklist'?ht.exclude:labels[key] || key.replace(/_/g, ' ').replace(/^./, letter => letter.toUpperCase());
 	const workflowTranslations={
@@ -1007,7 +1019,7 @@ cat << 'EOF'
 	async function api(action, body, params = {}, keepalive = false) {
 		const url = new URL('/cgi-bin/extra/ble2uart_gateway/api', location.href);
 		url.search = new URLSearchParams({ajax:'1', action, ...params}).toString();
-		const response = await fetch(url, {method: ['read','status','attributes','history-presets','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
+		const response = await fetch(url, {method: ['read','status','attributes','history-presets','sqlite-attributes','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
 		const document = new DOMParser().parseFromString(await response.text(), 'text/html');
 		const pre = document.querySelector('.ajax-json-content pre');
 		if (!pre) throw new Error('Invalid response or session expired');
@@ -1043,11 +1055,11 @@ cat << 'EOF'
 		});
 	}
 	const commandTranslations = {
-		en: {tab:'Commands',type:'Command',send:'Send command',refresh:'Refresh radio status',note:'Temporary commands pause scanning and restore it afterwards, including on error. TXADV start leaves scanning OFF until explicitly restarted. Commands use the running daemon, not unsaved settings.',confirm:'Send this command to the device? Writes and pairing can change the device. TXADV start stops scanning until you explicitly restart it.',pending:'Command running; do not retry while awaiting its result.',done:'Command completed; inspect the confirmation level below.',diagnostic:'Firmware diagnostics',gatt:'BLE GATT transaction',start:'Start TXADV (leave scan OFF)',stop:'Stop TXADV (leave scan OFF)',scanStart:'Start configured scan (stop TXADV)',scanStop:'Stop scan',name:'Diagnostic',pin:'GPIO pin',mac:'Peer MAC',addr_type:'Address type (0 public, 1 random)',coded:'Connect on Coded PHY',operation:'GATT operation',handle:'ATT handle (decimal, reads/writes only)',value:'Write value (hex, at most 20 bytes)',timeout_ms:'Transaction timeout (100-30000 ms)',phy:'TX PHY (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'TX interval (0.625 ms units, minimum 32)',data:'Advertisement data (hex, at most 31 bytes)'},
-		de: {tab:'Befehle',type:'Befehl',send:'Befehl senden',refresh:'Funkstatus aktualisieren',note:'Temporäre Befehle pausieren den Scan und stellen ihn auch bei Fehlern wieder her. TXADV lässt den Scan bis zum manuellen Neustart AUS. Es gelten die laufenden Einstellungen.',confirm:'Befehl senden? Schreiben und Pairing können das Gerät ändern. TXADV stoppt den Scan bis zum manuellen Neustart.',pending:'Befehl läuft; nicht erneut senden.',done:'Befehl beendet; Bestätigungsstufe unten prüfen.',diagnostic:'Firmware-Diagnose',gatt:'BLE-GATT-Transaktion',start:'TXADV starten (Scan AUS)',stop:'TXADV stoppen (Scan bleibt AUS)',scanStart:'Scan starten (TXADV stoppen)',scanStop:'Scan stoppen',name:'Diagnose',pin:'GPIO-Pin',mac:'Geräte-MAC',addr_type:'Adresstyp (0 öffentlich, 1 zufällig)',coded:'Coded-PHY-Verbindung',operation:'GATT-Operation',handle:'ATT-Handle (dezimal, nur Lesen/Schreiben)',value:'Schreibwert (Hex, maximal 20 Bytes)',timeout_ms:'Zeitlimit (100-30000 ms)',phy:'TX-PHY (0 Legacy 1M, 1 Extended 1M, 2 Coded)',interval_units:'TX-Intervall (0,625 ms, mindestens 32)',data:'Advertisement-Daten (Hex, maximal 31 Bytes)'},
-		it: {tab:'Comandi',type:'Comando',send:'Invia comando',refresh:'Aggiorna stato radio',note:'I comandi temporanei sospendono lo scan e lo ripristinano anche in caso di errore. TXADV lascia lo scan SPENTO fino a un riavvio esplicito. Si usano le impostazioni del daemon, non le modifiche non salvate.',confirm:'Inviare il comando? Scritture e pairing possono modificare il dispositivo. TXADV interrompe lo scan fino al riavvio esplicito.',pending:'Comando in corso; non reinviarlo in attesa del risultato.',done:'Comando terminato; verificare il livello di conferma qui sotto.',diagnostic:'Diagnostica firmware',gatt:'Transazione BLE GATT',start:'Avvia TXADV (scan SPENTO)',stop:'Ferma TXADV (scan resta SPENTO)',scanStart:'Avvia scan configurato (ferma TXADV)',scanStop:'Ferma scan',name:'Diagnostica',pin:'Pin GPIO',mac:'MAC destinatario',addr_type:'Tipo indirizzo (0 pubblico, 1 casuale)',coded:'Connessione su PHY Coded',operation:'Operazione GATT',handle:'Handle ATT (decimale, solo letture/scritture)',value:'Valore da scrivere (hex, massimo 20 byte)',timeout_ms:'Timeout transazione (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervallo TX (unità 0,625 ms, minimo 32)',data:'Dati advertisement (hex, massimo 31 byte)'},
-		fr: {tab:'Commandes',type:'Commande',send:'Envoyer la commande',refresh:'Actualiser la radio',note:'Les commandes temporaires suspendent puis rétablissent le scan, même en cas d’erreur. TXADV laisse le scan ARRÊTÉ jusqu’au redémarrage explicite. Les paramètres actifs du daemon sont utilisés.',confirm:'Envoyer cette commande ? Écriture et appairage peuvent modifier le périphérique. TXADV arrête le scan jusqu’au redémarrage explicite.',pending:'Commande en cours ; ne pas la renvoyer.',done:'Commande terminée ; vérifier le niveau de confirmation ci-dessous.',diagnostic:'Diagnostic firmware',gatt:'Transaction BLE GATT',start:'Démarrer TXADV (scan ARRÊTÉ)',stop:'Arrêter TXADV (scan reste ARRÊTÉ)',scanStart:'Démarrer le scan (arrêter TXADV)',scanStop:'Arrêter le scan',name:'Diagnostic',pin:'Broche GPIO',mac:'MAC du périphérique',addr_type:'Type d’adresse (0 publique, 1 aléatoire)',coded:'Connexion PHY Coded',operation:'Opération GATT',handle:'Handle ATT (décimal, lecture/écriture)',value:'Valeur (hex, 20 octets maximum)',timeout_ms:'Délai (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalle TX (0,625 ms, minimum 32)',data:'Données advertisement (hex, 31 octets maximum)'},
-		es: {tab:'Comandos',type:'Comando',send:'Enviar comando',refresh:'Actualizar radio',note:'Los comandos temporales pausan el escaneo y lo restauran incluso si fallan. TXADV deja el escaneo APAGADO hasta reiniciarlo explícitamente. Se usan los ajustes activos del daemon.',confirm:'¿Enviar el comando? Escritura y emparejamiento pueden modificar el dispositivo. TXADV detiene el escaneo hasta reiniciarlo explícitamente.',pending:'Comando en curso; no volver a enviarlo.',done:'Comando terminado; comprobar el nivel de confirmación abajo.',diagnostic:'Diagnóstico del firmware',gatt:'Transacción BLE GATT',start:'Iniciar TXADV (escaneo APAGADO)',stop:'Detener TXADV (escaneo sigue APAGADO)',scanStart:'Iniciar escaneo (detener TXADV)',scanStop:'Detener escaneo',name:'Diagnóstico',pin:'Pin GPIO',mac:'MAC del dispositivo',addr_type:'Tipo de dirección (0 pública, 1 aleatoria)',coded:'Conexión PHY Coded',operation:'Operación GATT',handle:'Handle ATT (decimal, lectura/escritura)',value:'Valor (hex, máximo 20 bytes)',timeout_ms:'Tiempo límite (100-30000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalo TX (0,625 ms, mínimo 32)',data:'Datos advertisement (hex, máximo 31 bytes)'}
+		en: {tab:'Commands',type:'Command',send:'Send command',refresh:'Refresh radio status',note:'Temporary commands pause scanning and restore it afterwards, including on error. TXADV start leaves scanning OFF until explicitly restarted. Commands use the running daemon, not unsaved settings.',confirm:'Send this command to the device? Writes and pairing can change the device. TXADV start stops scanning until you explicitly restart it.',pending:'Command running; do not retry while awaiting its result.',done:'Command completed; inspect the confirmation level below.',diagnostic:'Firmware diagnostics',gatt:'BLE GATT transaction',start:'Start TXADV (leave scan OFF)',stop:'Stop TXADV (leave scan OFF)',scanStart:'Start configured scan (stop TXADV)',scanStop:'Stop scan',name:'Diagnostic',pin:'GPIO pin',mac:'Peer MAC',addr_type:'Address type (0 public, 1 random)',coded:'Connect on Coded PHY',operation:'GATT operation',handle:'ATT handle (decimal, reads/writes only)',value:'Write value (hex, at most 20 bytes)',timeout_ms:'Transaction timeout (100-120000 ms)',phy:'TX PHY (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'TX interval (0.625 ms units, minimum 32)',data:'Advertisement data (hex, at most 31 bytes)'},
+		de: {tab:'Befehle',type:'Befehl',send:'Befehl senden',refresh:'Funkstatus aktualisieren',note:'Temporäre Befehle pausieren den Scan und stellen ihn auch bei Fehlern wieder her. TXADV lässt den Scan bis zum manuellen Neustart AUS. Es gelten die laufenden Einstellungen.',confirm:'Befehl senden? Schreiben und Pairing können das Gerät ändern. TXADV stoppt den Scan bis zum manuellen Neustart.',pending:'Befehl läuft; nicht erneut senden.',done:'Befehl beendet; Bestätigungsstufe unten prüfen.',diagnostic:'Firmware-Diagnose',gatt:'BLE-GATT-Transaktion',start:'TXADV starten (Scan AUS)',stop:'TXADV stoppen (Scan bleibt AUS)',scanStart:'Scan starten (TXADV stoppen)',scanStop:'Scan stoppen',name:'Diagnose',pin:'GPIO-Pin',mac:'Geräte-MAC',addr_type:'Adresstyp (0 öffentlich, 1 zufällig)',coded:'Coded-PHY-Verbindung',operation:'GATT-Operation',handle:'ATT-Handle (dezimal, nur Lesen/Schreiben)',value:'Schreibwert (Hex, maximal 20 Bytes)',timeout_ms:'Zeitlimit (100-120000 ms)',phy:'TX-PHY (0 Legacy 1M, 1 Extended 1M, 2 Coded)',interval_units:'TX-Intervall (0,625 ms, mindestens 32)',data:'Advertisement-Daten (Hex, maximal 31 Bytes)'},
+		it: {tab:'Comandi',type:'Comando',send:'Invia comando',refresh:'Aggiorna stato radio',note:'I comandi temporanei sospendono lo scan e lo ripristinano anche in caso di errore. TXADV lascia lo scan SPENTO fino a un riavvio esplicito. Si usano le impostazioni del daemon, non le modifiche non salvate.',confirm:'Inviare il comando? Scritture e pairing possono modificare il dispositivo. TXADV interrompe lo scan fino al riavvio esplicito.',pending:'Comando in corso; non reinviarlo in attesa del risultato.',done:'Comando terminato; verificare il livello di conferma qui sotto.',diagnostic:'Diagnostica firmware',gatt:'Transazione BLE GATT',start:'Avvia TXADV (scan SPENTO)',stop:'Ferma TXADV (scan resta SPENTO)',scanStart:'Avvia scan configurato (ferma TXADV)',scanStop:'Ferma scan',name:'Diagnostica',pin:'Pin GPIO',mac:'MAC destinatario',addr_type:'Tipo indirizzo (0 pubblico, 1 casuale)',coded:'Connessione su PHY Coded',operation:'Operazione GATT',handle:'Handle ATT (decimale, solo letture/scritture)',value:'Valore da scrivere (hex, massimo 20 byte)',timeout_ms:'Timeout transazione (100-120000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervallo TX (unità 0,625 ms, minimo 32)',data:'Dati advertisement (hex, massimo 31 byte)'},
+		fr: {tab:'Commandes',type:'Commande',send:'Envoyer la commande',refresh:'Actualiser la radio',note:'Les commandes temporaires suspendent puis rétablissent le scan, même en cas d’erreur. TXADV laisse le scan ARRÊTÉ jusqu’au redémarrage explicite. Les paramètres actifs du daemon sont utilisés.',confirm:'Envoyer cette commande ? Écriture et appairage peuvent modifier le périphérique. TXADV arrête le scan jusqu’au redémarrage explicite.',pending:'Commande en cours ; ne pas la renvoyer.',done:'Commande terminée ; vérifier le niveau de confirmation ci-dessous.',diagnostic:'Diagnostic firmware',gatt:'Transaction BLE GATT',start:'Démarrer TXADV (scan ARRÊTÉ)',stop:'Arrêter TXADV (scan reste ARRÊTÉ)',scanStart:'Démarrer le scan (arrêter TXADV)',scanStop:'Arrêter le scan',name:'Diagnostic',pin:'Broche GPIO',mac:'MAC du périphérique',addr_type:'Type d’adresse (0 publique, 1 aléatoire)',coded:'Connexion PHY Coded',operation:'Opération GATT',handle:'Handle ATT (décimal, lecture/écriture)',value:'Valeur (hex, 20 octets maximum)',timeout_ms:'Délai (100-120000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalle TX (0,625 ms, minimum 32)',data:'Données advertisement (hex, 31 octets maximum)'},
+		es: {tab:'Comandos',type:'Comando',send:'Enviar comando',refresh:'Actualizar radio',note:'Los comandos temporales pausan el escaneo y lo restauran incluso si fallan. TXADV deja el escaneo APAGADO hasta reiniciarlo explícitamente. Se usan los ajustes activos del daemon.',confirm:'¿Enviar el comando? Escritura y emparejamiento pueden modificar el dispositivo. TXADV detiene el escaneo hasta reiniciarlo explícitamente.',pending:'Comando en curso; no volver a enviarlo.',done:'Comando terminado; comprobar el nivel de confirmación abajo.',diagnostic:'Diagnóstico del firmware',gatt:'Transacción BLE GATT',start:'Iniciar TXADV (escaneo APAGADO)',stop:'Detener TXADV (escaneo sigue APAGADO)',scanStart:'Iniciar escaneo (detener TXADV)',scanStop:'Detener escaneo',name:'Diagnóstico',pin:'Pin GPIO',mac:'MAC del dispositivo',addr_type:'Tipo de dirección (0 pública, 1 aleatoria)',coded:'Conexión PHY Coded',operation:'Operación GATT',handle:'Handle ATT (decimal, lectura/escritura)',value:'Valor (hex, máximo 20 bytes)',timeout_ms:'Tiempo límite (100-120000 ms)',phy:'PHY TX (0 legacy 1M, 1 extended 1M, 2 coded)',interval_units:'Intervalo TX (0,625 ms, mínimo 32)',data:'Datos advertisement (hex, máximo 31 bytes)'}
 	};
 	const gattTranslations = {
 		en: {
@@ -1138,10 +1150,10 @@ cat << 'EOF'
 	}
 	function renderCommand(previous = {}) {
 		const type = element('bbCommandType').value, command = type === 'gatt-session' ? 'gatt' : type;
-		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : type === 'gatt-open' ? {command,mac:'',addr_type:0,coded:false,timeout_ms:10000,idle_timeout_ms:60000} : type === 'gatt-close' ? {command,session:gattToken} : type === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
+		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : type === 'gatt-open' ? {command,mac:'',addr_type:0,coded:false,timeout_ms:60000,idle_timeout_ms:60000} : type === 'gatt-close' ? {command,session:gattToken} : type === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
 		if(command === 'gatt') {
 			const operation = previous.operation || 'discover';
-			Object.assign(commandDraft,type === 'gatt-session' ? {session:gattToken} : {mac:'',addr_type:0,coded:false},{operation,timeout_ms:10000});
+			Object.assign(commandDraft,type === 'gatt-session' ? {session:gattToken} : {mac:'',addr_type:0,coded:false},{operation,timeout_ms:60000});
 			if(!['discover','mtu','unpair'].includes(operation))Object.assign(commandDraft,{handle:0,uuid:''});
 			if(['write','write-descriptor','write-without-response','exchange','patch'].includes(operation))commandDraft.value='';
 			if(['subscribe','exchange','patch'].includes(operation))commandDraft.mode=1;
@@ -1161,7 +1173,7 @@ cat << 'EOF'
 			input.setAttribute('form',commandForm.id);
 			if(input.type==='checkbox')input.checked=value;else input.value=value;
 			if(input.type==='number'){input.min='0';input.step='1';}
-			if(key==='timeout_ms'){input.min='100';input.max='30000';}
+			if(key==='timeout_ms'){input.min='100';input.max='120000';}
 			if(key==='idle_timeout_ms'){input.min='1000';input.max='300000';}
 			if(key==='interval_units'){input.min='32';input.max='65535';}
 			if(key==='handle')input.max='65535';
@@ -1190,7 +1202,8 @@ cat << 'EOF'
 		if(commandDraft.operation==='patch')await ensurePatchEditor();
 	}
 	element('bbCommandsTab').textContent=ct.tab;element('bbCommandTypeLabel').textContent=ct.type;element('bbCommandNote').textContent=ct.note;
-	element('bbGattHelp').textContent=ct.help;
+	const atcReadNotice={en:'ATC read returns raw bytes; some sensor firmware may normalize and save settings when processing 0x55.',de:'Die ATC-Lesung liefert Rohdaten; manche Sensor-Firmware kann Einstellungen bei 0x55 normalisieren und speichern.',it:'La lettura ATC restituisce byte grezzi; alcuni firmware del sensore possono normalizzare e salvare le impostazioni quando elaborano 0x55.',fr:'La lecture ATC renvoie les octets bruts ; certains micrologiciels peuvent normaliser et enregistrer les réglages lors de 0x55.',es:'La lectura ATC devuelve bytes sin procesar; algunos firmwares pueden normalizar y guardar ajustes al procesar 0x55.'};
+	element('bbGattHelp').textContent=ct.help+' '+(atcReadNotice[helpLanguage]||atcReadNotice.en);
 	element('bbCommandPatchLabel').textContent=ct.patch;element('bbCmd_patch').title=ct.patch;element('bbCmd_patch').setAttribute('aria-label',ct.patch);
 	element('bbCommandRequestLabel').textContent=ct.request;
 	for(const id of ['bbCommandRequest','bbConfirmRequest'])element(id).setAttribute('aria-label',ct.request);
@@ -1203,7 +1216,7 @@ cat << 'EOF'
 		const session=['gatt-session','gatt-close'].includes(type)?previous.session:['gatt','gatt-open'].includes(type)?'':gattToken;
 		const patch=operation==='patch'?(patchInitialized?patchValue():{flg2:{bt5phy:true,longrange:true}}):null;
 		element('bbCommandType').value=sessionMode?'gatt-session':'gatt';
-		const draft={operation,uuid:'1F1F',handle:0,value:'55',prefix:'55',codec:'cfg',offset:1,write_offset:1};
+		const draft={operation,uuid:'1F1F',handle:0,value:'55',prefix:'55',codec:operation==='patch'?'cfg':'',offset:operation==='patch'?1:0,write_offset:1};
 		if(sessionMode)draft.session=session;
 		else for(const key of ['mac','addr_type','coded','timeout_ms'])if(Object.hasOwn(previous,key))draft[key]=previous[key];
 		renderCommand(draft);
@@ -1261,11 +1274,11 @@ cat << 'EOF'
 		if(status.textContent!==text)status.textContent=text;
 	}
 	const historyTranslations={
-		en:{maintenance:'Retention policies',policies:'Per-measurement retention',policiesHint:'Overrides for one attribute or one MAC address. Explicit rules win over the settings above; measurements without a policy are never consolidated.',policy:'Policy',attribute:'Attribute',mac:'MAC (empty = all devices)',mode:'History mode',keep:'Keep every sample, forever',progressive:'Progressive resolution',age:'Until age',spacing:'Sample interval',all:'Every sample',add:'Add policy',band:'Add age band',remove:'Remove',temperature:'Temperature preset',battery:'Battery preset',warning:'Irreversible consolidation: back up the database before enabling. Older full frames are replaced by related measurement series; discarded samples cannot be recovered.',expiry:'After the last age band: delete numeric samples.',units:['s','min','h','days','weeks','months'],close:'Close'},
-		it:{maintenance:'Politiche di conservazione (retention)',policies:'Conservazione per singola misura',policiesHint:'Eccezioni per un singolo attributo o un singolo MAC. Le regole esplicite prevalgono sulle impostazioni qui sopra; le misure senza politica non vengono mai consolidate.',policy:'Politica',attribute:'Attributo',mac:'MAC (vuoto = tutti i dispositivi)',mode:'Trattamento storico',keep:'Conserva tutti i campioni, per sempre',progressive:'Risoluzione progressiva',age:'Fino all’età',spacing:'Intervallo campioni',all:'Tutti i campioni',add:'Aggiungi politica',band:'Aggiungi fascia',remove:'Rimuovi',temperature:'Preset temperatura',battery:'Preset batteria',warning:'Consolidamento irreversibile: eseguire un backup del database prima di abilitare. I vecchi frame completi vengono sostituiti da serie di misure correlate; i campioni scartati non sono recuperabili.',expiry:'Oltre l’ultima fascia: elimina i campioni numerici.',units:['s','min','h','giorni','settimane','mesi'],close:'Chiudi'},
-		de:{maintenance:'Aufbewahrungsrichtlinien (Retention)',policies:'Aufbewahrung je Messwert',policiesHint:'Ausnahmen für einen Messwert oder eine MAC. Explizite Regeln gelten vor den Einstellungen oben; Messwerte ohne Richtlinie werden nie verdichtet.',policy:'Richtlinie',attribute:'Attribut',mac:'MAC (leer = alle Geräte)',mode:'Verlaufsmodus',keep:'Alle Werte unbegrenzt behalten',progressive:'Abgestufte Auflösung',age:'Bis zum Alter',spacing:'Werteintervall',all:'Alle Werte',add:'Richtlinie hinzufügen',band:'Altersstufe hinzufügen',remove:'Entfernen',temperature:'Temperaturvorgabe',battery:'Batterievorgabe',warning:'Nicht umkehrbare Verdichtung: Datenbank vorher sichern. Alte vollständige Frames werden durch verknüpfte Messreihen ersetzt; entfernte Werte sind nicht wiederherstellbar.',expiry:'Nach der letzten Altersstufe: numerische Werte löschen.',units:['s','min','h','Tage','Wochen','Monate'],close:'Schließen'},
-		fr:{maintenance:'Politiques de rétention',policies:'Rétention par mesure',policiesHint:'Exceptions pour un attribut ou une adresse MAC. Les règles explicites priment sur les réglages ci-dessus ; les mesures sans politique ne sont jamais consolidées.',policy:'Politique',attribute:'Attribut',mac:'MAC (vide = tous)',mode:'Mode historique',keep:'Conserver tous les échantillons',progressive:'Résolution progressive',age:'Jusqu’à cet âge',spacing:'Intervalle',all:'Tous les échantillons',add:'Ajouter une politique',band:'Ajouter une tranche',remove:'Supprimer',temperature:'Profil température',battery:'Profil batterie',warning:'Consolidation irréversible : sauvegarder la base avant activation. Les anciens paquets complets sont remplacés par des séries liées ; les échantillons supprimés sont irrécupérables.',expiry:'Après la dernière tranche : supprimer les échantillons numériques.',units:['s','min','h','jours','semaines','mois'],close:'Fermer'},
-		es:{maintenance:'Políticas de retención',policies:'Retención por medida',policiesHint:'Excepciones para un atributo o una MAC. Las reglas explícitas prevalecen sobre los ajustes anteriores; las medidas sin política nunca se consolidan.',policy:'Política',attribute:'Atributo',mac:'MAC (vacío = todos)',mode:'Modo histórico',keep:'Conservar todas las muestras',progressive:'Resolución progresiva',age:'Hasta esta edad',spacing:'Intervalo',all:'Todas las muestras',add:'Añadir política',band:'Añadir tramo',remove:'Eliminar',temperature:'Perfil temperatura',battery:'Perfil batería',warning:'Consolidación irreversible: hacer una copia antes de activar. Los paquetes antiguos se sustituyen por series relacionadas; las muestras eliminadas no se recuperan.',expiry:'Tras el último tramo: eliminar muestras numéricas.',units:['s','min','h','días','semanas','meses'],close:'Cerrar'}
+		en:{maintenance:'Retention policies',policies:'Per-measurement retention',policiesHint:'Overrides for one attribute or one MAC address. Explicit rules win over the settings above; other numeric measurements use the default mode above.',policy:'Policy',attribute:'Attribute',mac:'MAC (empty = all devices)',mode:'History mode',keep:'Keep every sample, forever',progressive:'Progressive resolution',age:'Until age',spacing:'Sample interval',all:'Every sample',add:'Add policy',band:'Add age band',remove:'Remove',temperature:'Temperature preset',battery:'Battery preset',warning:'Irreversible consolidation: back up the database before enabling. Older full frames are replaced by related measurement series; discarded samples cannot be recovered.',expiry:'After the last age band: delete numeric samples.',units:['s','min','h','days','weeks','months'],close:'Close',otherNumeric:'Unmatched numeric measurements',keepNumeric:'Keep indefinitely',discardNumeric:'Discard after raw retention',stored:'Stored SQLite attributes',storedHint:'The inventory includes recent raw frames and archived history in the saved SQLite database. Deletion removes every unit and value for this device/attribute, including its raw decoded snapshot. If the decoder still produces it, new values will be stored again. Remove it from Publish to stop storing it.',loadStored:'Load database attributes',loading:'Loading…',noStored:'No stored measurements found.',lastSample:'Last sample',samples:'samples',deleteStored:'Delete stored data',confirmDelete:'Permanently delete all stored values for {attribute} on {mac}? This includes raw frames and consolidated history.',deleted:'Deleted {raw} raw readings, {archived} archived samples and {frames} empty frames.',unavailable:'Could not load stored SQLite attributes.'},
+		it:{maintenance:'Politiche di conservazione (retention)',policies:'Conservazione per singola misura',policiesHint:'Eccezioni per un singolo attributo o un singolo MAC. Le regole esplicite prevalgono; le altre misure numeriche seguono il trattamento predefinito qui sopra.',policy:'Politica',attribute:'Attributo',mac:'MAC (vuoto = tutti i dispositivi)',mode:'Trattamento storico',keep:'Conserva tutti i campioni, per sempre',progressive:'Risoluzione progressiva',age:'Fino all’età',spacing:'Intervallo campioni',all:'Tutti i campioni',add:'Aggiungi politica',band:'Aggiungi fascia',remove:'Rimuovi',temperature:'Preset temperatura',battery:'Preset batteria',warning:'Consolidamento irreversibile: eseguire un backup del database prima di abilitare. I vecchi frame completi vengono sostituiti da serie di misure correlate; i campioni scartati non sono recuperabili.',expiry:'Oltre l’ultima fascia: elimina i campioni numerici.',units:['s','min','h','giorni','settimane','mesi'],close:'Chiudi',otherNumeric:'Misure numeriche senza politica specifica',keepNumeric:'Conserva senza scadenza',discardNumeric:'Scarta dopo la retention grezza',stored:'Attributi già memorizzati in SQLite',storedHint:'L’elenco include frame grezzi recenti e storico consolidato del DB configurato e salvato. La cancellazione rimuove tutte le unità e i valori dell’attributo per quel dispositivo, inclusi i dati decodificati grezzi. Se il decoder continua a produrlo, verrà memorizzato di nuovo. Rimuovilo da Publish per interrompere la registrazione.',loadStored:'Carica attributi dal database',loading:'Caricamento…',noStored:'Nessuna misura memorizzata.',lastSample:'Ultimo campione',samples:'campioni',deleteStored:'Elimina dati memorizzati',confirmDelete:'Eliminare definitivamente tutti i valori memorizzati di {attribute} per {mac}? Include frame grezzi e storico consolidato.',deleted:'Eliminati {raw} valori grezzi, {archived} campioni archiviati e {frames} frame vuoti.',unavailable:'Impossibile leggere gli attributi SQLite memorizzati.'},
+		de:{maintenance:'Aufbewahrungsrichtlinien (Retention)',policies:'Aufbewahrung je Messwert',policiesHint:'Ausnahmen für einen Messwert oder eine MAC. Explizite Regeln gelten zuerst; andere numerische Messwerte verwenden den Standardmodus oben.',policy:'Richtlinie',attribute:'Attribut',mac:'MAC (leer = alle Geräte)',mode:'Verlaufsmodus',keep:'Alle Werte unbegrenzt behalten',progressive:'Abgestufte Auflösung',age:'Bis zum Alter',spacing:'Werteintervall',all:'Alle Werte',add:'Richtlinie hinzufügen',band:'Altersstufe hinzufügen',remove:'Entfernen',temperature:'Temperaturvorgabe',battery:'Batterievorgabe',warning:'Nicht umkehrbare Verdichtung: Datenbank vorher sichern. Alte vollständige Frames werden durch verknüpfte Messreihen ersetzt; entfernte Werte sind nicht wiederherstellbar.',expiry:'Nach der letzten Altersstufe: numerische Werte löschen.',units:['s','min','h','Tage','Wochen','Monate'],close:'Schließen',otherNumeric:'Nicht zugeordnete numerische Messwerte',keepNumeric:'Unbegrenzt behalten',discardNumeric:'Nach Rohdaten-Aufbewahrung löschen',stored:'Gespeicherte SQLite-Attribute',storedHint:'Die Liste enthält aktuelle Rohdaten und archivierten Verlauf der gespeicherten SQLite-Datenbank. Löschen entfernt alle Einheiten und Werte dieses Attributs für das Gerät, einschließlich des Roh-Decodierergebnisses. Solange der Decoder es erzeugt, werden neue Werte wieder gespeichert. Aus Publish entfernen, um die Speicherung zu stoppen.',loadStored:'Datenbankattribute laden',loading:'Wird geladen…',noStored:'Keine Messwerte gespeichert.',lastSample:'Letzter Messwert',samples:'Messwerte',deleteStored:'Gespeicherte Daten löschen',confirmDelete:'Alle gespeicherten Werte für {attribute} auf {mac} dauerhaft löschen? Rohdaten und Verlauf sind eingeschlossen.',deleted:'{raw} Rohwerte, {archived} archivierte Werte und {frames} leere Frames gelöscht.',unavailable:'SQLite-Attribute konnten nicht geladen werden.'},
+		fr:{maintenance:'Politiques de rétention',policies:'Rétention par mesure',policiesHint:'Exceptions pour un attribut ou une adresse MAC. Les règles explicites sont prioritaires ; les autres mesures numériques utilisent le mode par défaut ci-dessus.',policy:'Politique',attribute:'Attribut',mac:'MAC (vide = tous)',mode:'Mode historique',keep:'Conserver tous les échantillons',progressive:'Résolution progressive',age:'Jusqu’à cet âge',spacing:'Intervalle',all:'Tous les échantillons',add:'Ajouter une politique',band:'Ajouter une tranche',remove:'Supprimer',temperature:'Profil température',battery:'Profil batterie',warning:'Consolidation irréversible : sauvegarder la base avant activation. Les anciens paquets complets sont remplacés par des séries liées ; les échantillons supprimés sont irrécupérables.',expiry:'Après la dernière tranche : supprimer les échantillons numériques.',units:['s','min','h','jours','semaines','mois'],close:'Fermer',otherNumeric:'Mesures numériques sans règle spécifique',keepNumeric:'Conserver sans limite',discardNumeric:'Supprimer après la rétention brute',stored:'Attributs SQLite enregistrés',storedHint:'La liste couvre les frames brutes récentes et l’historique archivé de la base SQLite enregistrée. La suppression efface toutes les unités et valeurs de cet attribut pour cet appareil, y compris les données décodées brutes. Si le décodeur le produit encore, les nouvelles valeurs seront enregistrées. Retirez-le de Publish pour arrêter l’enregistrement.',loadStored:'Charger les attributs de la base',loading:'Chargement…',noStored:'Aucune mesure enregistrée.',lastSample:'Dernière mesure',samples:'mesures',deleteStored:'Supprimer les données',confirmDelete:'Supprimer définitivement toutes les valeurs de {attribute} pour {mac} ? Frames brutes et historique inclus.',deleted:'{raw} valeurs brutes, {archived} échantillons archivés et {frames} frames vides supprimés.',unavailable:'Impossible de charger les attributs SQLite.'},
+		es:{maintenance:'Políticas de retención',policies:'Retención por medida',policiesHint:'Excepciones para un atributo o una MAC. Las reglas explícitas tienen prioridad; las demás medidas numéricas usan el modo predeterminado anterior.',policy:'Política',attribute:'Atributo',mac:'MAC (vacío = todos)',mode:'Modo histórico',keep:'Conservar todas las muestras',progressive:'Resolución progresiva',age:'Hasta esta edad',spacing:'Intervalo',all:'Todas las muestras',add:'Añadir política',band:'Añadir tramo',remove:'Eliminar',temperature:'Perfil temperatura',battery:'Perfil batería',warning:'Consolidación irreversible: hacer una copia antes de activar. Los paquetes antiguos se sustituyen por series relacionadas; las muestras eliminadas no se recuperan.',expiry:'Tras el último tramo: eliminar muestras numéricas.',units:['s','min','h','días','semanas','meses'],close:'Cerrar',otherNumeric:'Medidas numéricas sin política específica',keepNumeric:'Conservar indefinidamente',discardNumeric:'Eliminar después de la retención bruta',stored:'Atributos SQLite almacenados',storedHint:'El inventario incluye frames brutos recientes e historial archivado de la base SQLite guardada. El borrado elimina todas las unidades y valores de este atributo para el dispositivo, incluidos los datos decodificados brutos. Si el decodificador aún lo produce, volverá a almacenarse. Elimínelo de Publish para detenerlo.',loadStored:'Cargar atributos de la base',loading:'Cargando…',noStored:'No hay medidas almacenadas.',lastSample:'Última muestra',samples:'muestras',deleteStored:'Eliminar datos almacenados',confirmDelete:'¿Eliminar permanentemente todos los valores de {attribute} en {mac}? Incluye frames brutos e historial.',deleted:'Eliminadas {raw} lecturas brutas, {archived} muestras archivadas y {frames} frames vacíos.',unavailable:'No se pudieron cargar los atributos SQLite.'}
 	};
 	const historyUi=historyTranslations[helpLanguage]||historyTranslations.en;
 	const availabilityTranslations={
@@ -1307,12 +1320,14 @@ cat << 'EOF'
 	});
 	const counterUi=({en:{mode:'Default counter history',discard:'Exclude from consolidated history'},it:{mode:'Storico predefinito dei contatori',discard:'Escludi dallo storico consolidato'},de:{mode:'Standardverlauf für Zähler',discard:'Vom verdichteten Verlauf ausschließen'},fr:{mode:'Historique des compteurs par défaut',discard:'Exclure de l’historique consolidé'},es:{mode:'Histórico predeterminado de contadores',discard:'Excluir del histórico consolidado'}})[helpLanguage]||{mode:'Default counter history',discard:'Exclude from consolidated history'};
 	labels.counter_mode=counterUi.mode;
+	labels.other_numeric_mode=historyUi.otherNumeric;
 	Object.assign(labels,{maintenance:historyUi.maintenance,policies:historyUi.policies,interval_s:helpLanguage==='it'?'Pausa tra passaggi (secondi)':'Pass interval (seconds)',max_work_ms:helpLanguage==='it'?'Budget per blocco (ms)':'Work budget per chunk (ms)',raw_retention_s:helpLanguage==='it'?'Frame completi recenti':'Recent complete frames',max_age_s:historyUi.age,sample_interval_s:historyUi.spacing});
 	Object.assign(parameterHelp,{
 		counter_mode:['Default treatment of codec counters: counter, packet_id, count_id, count_i/count_s/count_m/count_l and counter8/16/32. Discard removes archived numeric/unsigned readings; recent complete frames remain until the raw horizon. Explicit per-attribute or MAC policies override this default.','Trattamento predefinito dei contatori del codec: counter, packet_id, count_id, count_i/count_s/count_m/count_l e counter8/16/32. Scarta elimina le letture numeriche/unsigned archiviate; i frame completi recenti restano entro l’orizzonte grezzo. Le politiche esplicite per attributo o MAC prevalgono su questo default.'],
 		interval_s:['Delay in seconds after a complete maintenance pass. Backlogs are processed in bounded chunks with pauses; no cron is used.','Pausa in secondi dopo un passaggio completo. Gli arretrati vengono elaborati a blocchi limitati, senza cron.'],
 		max_work_ms:['SQLite execution budget per chunk, 10-1000 ms. Long statements are interrupted and rolled back; lower budgets reduce writer contention but may require smaller batches.','Budget SQLite per blocco, 10-1000 ms. Le istruzioni lunghe vengono interrotte e annullate; riduce la contesa ma può richiedere batch più piccoli.'],
-		raw_retention_s:['Keep complete original frames for this duration, then atomically split their readings into related series. The effective full-resolution horizon cannot be shorter than this. Unconfigured and discrete measurements remain forever.','Conserva i frame originali completi per questa durata, poi ne trasferisce atomicamente le letture in serie correlate. La risoluzione piena non può essere più breve di questa durata. Misure senza politica e stati discreti restano per sempre.'],
+		other_numeric_mode:['Default for numeric measurements without an explicit per-attribute policy. Discard removes eligible numeric history after the raw-frame horizon; text, boolean/discrete and null values are not automatically pruned. Keep all preserves existing behavior.','Trattamento predefinito delle misure numeriche senza politica specifica. Scarta elimina lo storico numerico idoneo dopo l’orizzonte dei frame grezzi; testo, booleani/discreti e null non vengono eliminati automaticamente. Conserva mantiene il comportamento attuale.'],
+		raw_retention_s:['Keep complete original frames for at least this duration, then atomically split their readings into related series. This is a minimum raw-data horizon, not a hard maximum age; backlog and bounded maintenance can delay deletion.','Conserva i frame originali completi almeno per questa durata, poi trasferisce atomicamente le misure in serie correlate. È un minimo, non una scadenza massima rigida: arretrati e manutenzione limitata possono ritardare la cancellazione.'],
 		max_age_s:['Upper age of this band, measured from reception time. Bands must increase. After the last band numeric samples expire. A month is 365/12 days; 24 months are 730 days.','Età massima della fascia dalla ricezione. Le età devono crescere. Oltre l’ultima fascia i numerici scadono. Un mese vale 365/12 giorni: 24 mesi sono 730 giorni.'],
 		sample_interval_s:['0 keeps every sample. Otherwise retain the latest real sample in each UTC-aligned interval. Intervals must not decrease in older bands. No averaging or min/max columns.','0 conserva ogni campione; altrimenti conserva l’ultimo campione reale di ogni intervallo allineato UTC. La granularità non può diminuire nelle fasce più vecchie. Nessuna media o colonna min/max.']
 	});
@@ -1350,7 +1365,43 @@ cat << 'EOF'
 			});
 			const tools=document.createElement('div');tools.className='bbBar bbLocalActions';
 			tools.append(button(historyUi.add,()=>{policies.push({mac:'',attribute:'',mode:'keep_all',tiers:[]});onChange();render();}));section.append(tools);
+			sqliteStoredAttributes(section);
 		};render();
+	}
+	function sqliteStoredAttributes(parent) {
+		const section=document.createElement('section');section.className='bbLocalActions';
+		const heading=document.createElement('strong');heading.textContent=historyUi.stored;
+		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=historyUi.storedHint;
+		const list=document.createElement('div');list.className='bbStoredAttributes';
+		const controls=document.createElement('div');controls.className='bbBar';
+		const refresh=button(historyUi.loadStored,()=>run(load),historyUi.loadStored);
+		controls.append(refresh);section.append(heading,hint,controls,list);parent.append(section);
+
+		async function load() {
+			refresh.disabled=true;list.textContent=historyUi.loading;
+			try {
+				const result=await api('sqlite-attributes');
+				list.replaceChildren();
+				if(!result.attributes.length){const empty=document.createElement('p');empty.className='bbHint';empty.textContent=historyUi.noStored;list.append(empty);return;}
+				result.attributes.forEach(item=>{
+					const row=document.createElement('div');row.className='bbHistoryPolicy';
+					const title=document.createElement('strong');title.textContent=item.mac+' · '+item.attribute+(item.unit?' ('+item.unit+')':'');
+					const detail=document.createElement('p');detail.className='bbHint';
+					detail.textContent=item.samples+' '+historyUi.samples+' · '+historyUi.lastSample+': '+new Date(item.last_received_at_ns/1e6).toLocaleString();
+					const remove=button(historyUi.deleteStored,()=>run(async()=>{
+						const request={mac:item.mac,attribute:item.attribute};
+						const confirmation=historyUi.confirmDelete.replace('{attribute}',item.attribute).replace('{mac}',item.mac);
+						if(!await confirmAction(confirmation,request))return;
+						const deleted=await api('sqlite-delete-attribute',request);
+						const summary=historyUi.deleted.replace('{raw}',String(deleted.deleted.raw_measurements)).replace('{archived}',String(deleted.deleted.archived_samples)).replace('{frames}',String(deleted.deleted.raw_frames));
+						message(summary);await load();
+					}),historyUi.deleteStored);
+					const bar=document.createElement('div');bar.className='bbBar';bar.append(title,remove);row.append(bar,detail);list.append(row);
+				});
+			} catch(error) {
+				list.replaceChildren();const failure=document.createElement('p');failure.className='bbHint bbError';failure.textContent=error.message||historyUi.unavailable;list.append(failure);
+			} finally {refresh.disabled=false;}
+		}
 	}
 	function availabilityRules(parent,rules,onChange) {
 		const section=document.createElement('fieldset');section.id='bbAvailabilityRules';section.className='bbGroup';
@@ -1433,6 +1484,7 @@ cat << 'EOF'
 				else if(scope==='device.rules[].webhook'&&key==='body'){input=document.createElement('textarea');input.rows=4;input.maxLength=8192;input.value=value;input.setAttribute('spellcheck','false');}
 				else if(scope==='device.rules[].webhook'&&key==='provider'){input=document.createElement('select');['ntfy','gotify','rest'].forEach(provider=>input.add(new Option(provider,provider)));input.value=value;}
 				else if(scope==='frontends.sqlite.maintenance'&&key==='counter_mode'){input=document.createElement('select');input.add(new Option(counterUi.discard,'discard'));input.add(new Option(historyUi.keep,'keep_all'));input.value=value;}
+				else if(scope==='frontends.sqlite.maintenance'&&key==='other_numeric_mode'){input=document.createElement('select');input.add(new Option(historyUi.keepNumeric,'keep_all'));input.add(new Option(historyUi.discardNumeric,'discard'));input.value=value;}
 				else if (key === 'log_level') {input = document.createElement('select'); ['off','error','warn','info','debug','trace'].forEach(level => input.add(new Option(level,level))); input.value = value;}
 				else if (scope==='serial'&&key==='baudrate') {input=document.createElement('select');input.setAttribute('aria-label',title(key));const rates=[9600,19200,38400,57600,115200,230400,460800,921600,1000000,2000000];if(!rates.includes(value))rates.push(value);rates.forEach(rate=>input.add(new Option(String(rate),String(rate))));input.value=String(value);}
 				else if (key === 'decoder') {input = document.createElement('select');['builtin','theengs','both'].forEach(mode => input.add(new Option(mode, mode)));input.value = value || 'builtin';}
@@ -1587,10 +1639,17 @@ cat << 'EOF'
 	function startupControls() {
 		const startup=element('bbStartup'),form=app.closest('form');if(!startup||!form)return;
 		const advanced=element('bbStartupAdvanced');if(advanced)startup.append(advanced);
-		startup.append(element('bbStartupActions'));
-		const startupHint=element('bbStartupHint');if(startupHint)startup.append(startupHint);
-		const submit=form.querySelector('input[type=submit]');
-		if(submit){submit.value=ui.startup;submit.title=ui.startupConfirm;element('bbStartupActions').append(submit);}
+		const actions=element('bbStartupActions');
+		let submit=element('bbStartupSave');
+		// The wrapper (edit_body.sh) prints its own "Apply" submit after the whole
+		// page body. It submits exactly the same form as "Save startup settings",
+		// so a second button did the same thing - and it also sat below the
+		// "Gateway configuration" section. Keep one button only, and use the
+		// wrapper one as a fallback when the package button is missing.
+		const extra=Array.from(form.querySelectorAll('input[type=submit]')).filter(control=>control!==submit&&!control.closest('#bbApp'));
+		if(!submit&&extra.length){submit=extra.pop();if(submit){submit.value=ui.startup;actions.append(submit);}}
+		extra.forEach(control=>control.remove());
+		if(submit)submit.title=ui.startupConfirm;
 		form.addEventListener('submit',async event=>{event.preventDefault();if(dirty){message(ui.unsaved,true);element('bbSave').focus();return;}if(await confirmAction(ui.startupConfirm))form.submit();});
 		document.querySelectorAll('form').forEach(candidate=>{if(candidate.action===form.action+'?default')candidate.hidden=true;});
 		const startupHelp={enabled:['Service startup mode; saving this section restarts a running service.','Modalità di avvio del servizio; salvare questa sezione riavvia il servizio se attivo.'],store:['Configuration directory. Select a mounted persistent disk. Existing store contents are copied, not deleted; save startup settings and restart to use the new path.','Directory di configurazione. Scegli un disco persistente montato. Il contenuto esistente viene copiato, non eliminato; salva avvio/percorso e riavvia per usare il nuovo percorso.'],serial:['Initial serial path, used only for a new YAML file.','Seriale iniziale, usata solo per un nuovo YAML.'],baudrate:parameterHelp.baudrate,config_wait:['Boot wait in seconds for external resources; 0 means no wait.','Attesa al boot in secondi delle risorse esterne; 0 significa nessuna attesa.'],verbose:['Initial debug logging override; runtime logging is also configurable in Settings.','Override debug iniziale; il log runtime è configurabile anche in Settings.'],extra_args:['Extra daemon CLI arguments. They can override YAML settings; leave empty unless required.','Argomenti CLI aggiuntivi: possono sovrascrivere le impostazioni YAML. Lasciare vuoto se non necessari.']};
@@ -1609,7 +1668,7 @@ sec_begin "$(lang de:"Erweitert" en:"Advanced")"
 cgi_print_radiogroup_active "verbose" "$BLE2UART_GATEWAY_VERBOSE" "" "$(lang de:"Debug-Protokoll" en:"Debug logging")"
 cat << EOF
 <p>$(lang de:"Zusaetzliche Kommandozeilenoptionen" en:"Additional command line options"): <input type="text" name="extra_args" size="60" maxlength="255" value="$(html "$BLE2UART_GATEWAY_EXTRA_ARGS")"></p>
-<p style="font-size:11px;">$(lang de:"Protokoll: Status -> Logs -> rc.ble2uart_gateway" en:"Log: Status -> Logs -> rc.ble2uart_gateway"): <code>/tmp/rc.ble2uart_gateway.log</code></p>
+<p style="font-size:11px;">$(lang de:"Protokoll: Status -> Logs -> rc.ble2uart_gateway" en:"Log: Status -> Logs -> rc.ble2uart_gateway"): <code>$(html "$BLE2UART_GATEWAY_LOG")</code>. $(lang de:"Die Protokolldatei liegt im Konfigurationsverzeichnis; maximale Dateigröße und Anzahl der Sicherungen werden unter Settings → Logging festgelegt." en:"The log is stored with the configuration; maximum file size and number of backups are set under Settings → Logging." it:"Il log è salvato insieme alla configurazione; dimensione massima e numero di copie storiche si impostano in Settings → Logging.")</p>
 EOF
 sec_end
 echo '</div>'
