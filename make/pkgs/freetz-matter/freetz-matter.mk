@@ -143,6 +143,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(FREETZ_MATTER_DEST_DIR)/etc/init.d/rc.freetz-matter \
 		$(FREETZ_MATTER_DEST_DIR)/etc/default.freetz-matter/freetz-matter.save \
 		$(FREETZ_MATTER_DEST_DIR)/usr/lib/cgi-bin/freetz-matter.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(FREETZ_MATTER_TARGET_DIR)/root
 
 $(pkg)-precompiled: $($(PKG)_TARGET_BINARY) $($(PKG)_STAGING_TARGET)
 
