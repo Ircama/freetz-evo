@@ -225,6 +225,10 @@ $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES) | $(PACKAGES_DIR)
 		$(DOMOTICZ_DEST_DIR)/etc/init.d/rc.domoticz \
 		$(DOMOTICZ_DEST_DIR)/etc/default.domoticz/domoticz.save \
 		$(DOMOTICZ_DEST_DIR)/usr/lib/cgi-bin/domoticz.cgi
+# Also advance the staging directory timestamp: copying files/
+# restores the source directory times, so without this the generic
+# copy would run again on the next make and undo the touch.
+	touch $@ $(DOMOTICZ_TARGET_DIR)/root
 
 $($(PKG)_TARGET_BINARY): $($(PKG)_BINARY)
 	$(INSTALL_BINARY_STRIP)
@@ -244,6 +248,11 @@ $($(PKG)_DATA_DIR)/%: $($(PKG)_DIR)/.unpacked
 	else \
 		cp -a $(DOMOTICZ_DIR)/$* $@; \
 	fi
+# cp -a restores the source timestamps, which are older than the .unpacked
+# stamp, so the target would look out of date on every make and the copy
+# would be repeated forever. Advance the timestamp of the copied file or
+# directory after the copy.
+	@touch $@
 
 $(pkg):
 
