@@ -4,4 +4,7 @@ config FREETZ_PACKAGE_ESP_SERIAL_FLASHER
 	help
 		ESP Serial Flasher for Linux hosts.
 		Builds one CLI tool:
-		 - linux_flasher: upstream generic CLI (<addr> <file> pairs)
+                 - esp-flasher: generic CLI (<addr> <file> pairs). It drives the
+                   esptool reset sequences itself, so an ESP32-C3/C6/H2/S3 on
+                   native USB needs no BOOT/RESET button presses (--before and
+                   --after select the strategy).

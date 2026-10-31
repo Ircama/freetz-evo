@@ -9,8 +9,8 @@ $(PKG)_SITE:=https://github.com/espressif/esp-serial-flasher/archive
 
 $(PKG)_CATEGORY_PKGS:=Flasher tools
 
-$(PKG)_BINARY_GENERIC_BUILD:=$($(PKG)_DIR)/linux_flasher
-$(PKG)_BINARY_GENERIC_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/linux_flasher
+$(PKG)_BINARY_GENERIC_BUILD:=$($(PKG)_DIR)/esp-flasher
+$(PKG)_BINARY_GENERIC_TARGET:=$($(PKG)_DEST_DIR)/usr/bin/esp-flasher
 
 $(PKG)_COMMON_CFLAGS:=\
 	-I$($(PKG)_DIR)/include \
@@ -38,7 +38,7 @@ $($(PKG)_BINARY_GENERIC_BUILD): $($(PKG)_DIR)/.configured
 	$(MAKE_ENV) $(TARGET_CC) $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -Wall -Wextra -Os \
 		$(ESP_SERIAL_FLASHER_COMMON_CFLAGS) \
 		$(ESP_SERIAL_FLASHER_COMMON_SOURCES) \
-		$(ESP_SERIAL_FLASHER_MAKE_DIR)/files/src/linux_flasher.c \
+		$(ESP_SERIAL_FLASHER_MAKE_DIR)/files/src/esp_flasher.c \
 		-o $@
 
 $($(PKG)_BINARY_GENERIC_TARGET): $($(PKG)_BINARY_GENERIC_BUILD)

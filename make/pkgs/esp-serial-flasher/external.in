@@ -4,4 +4,4 @@ config EXTERNAL_FREETZ_PACKAGE_ESP_SERIAL_FLASHER
 	default n
 	help
 		externals the following file(s):
-		 /usr/bin/linux_flasher
+		 /usr/bin/esp-flasher

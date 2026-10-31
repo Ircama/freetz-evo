@@ -6,26 +6,48 @@
   - Steward: -
 
   - Depends on: none
-  - Provides: /usr/bin/linux_flasher
+  - Provides: /usr/bin/esp-flasher
   - Externalization: supported
 
 The package ships one command line tool:
 
-- linux_flasher: upstream utility using explicit address/file pairs
+- esp-flasher: CLI using explicit address/file pairs (`esp_flasher.c`,
+  derived from the upstream `examples/linux_example` of the library)
 
 Both tools also accept an optional chip check:
 
 - `-c, --chip <name>` validates the detected chip (`esp32c3`, `esp32s3`, `esp32c6`, ...)
 
+## Automatic reset (no BOOT/RESET buttons)
+
+The tool drives the same reset sequences as esptool, so an ESP32-C3/C6/H2/S3
+wired through its built-in USB Serial/JTAG does not need the buttons:
+
+- `-m auto` (default) the flasher drives DTR/RTS itself; the library is told
+  not to touch them (`LINUX_GPIO_NONE`)
+- `-m dtr-rts` let esp-serial-flasher drive them (classic auto-reset circuit)
+- `-m gpio` reset/boot through libgpiod lines
+- `-m none` no reset handling: the target must already be in download mode
+- `--before auto|usb-jtag|classic|no-reset` how to enter download mode
+  (`auto` picks `usb-jtag` on `/dev/ttyACM*`, `classic` elsewhere)
+- `--after hard-reset|no-reset` restart into the new firmware when done (default)
+
+With the defaults, flashing from the router is:
+
+```bash
+esp-flasher -p /dev/ttyACM0 -c esp32c3 0x0 build/bootloader/bootloader.bin \
+  0x8000 build/partition_table/partition-table.bin 0x10000 build/ble50_scan.bin
+```
+
 ## Complete usage examples
 
 Flash ESP32-C3 bootloader + partition table + app image:
 
-linux_flasher -p /dev/ttyACM0 -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
+esp-flasher -p /dev/ttyACM0 -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
 
 Flash with explicit baudrate and no stub (ROM mode):
 
-linux_flasher -p /dev/ttyACM0 -b 460800 -n -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
+esp-flasher -p /dev/ttyACM0 -b 460800 -n -c esp32c3 0x0 bootloader.bin 0x8000 partition-table.bin 0x10000 firmware.bin
 
 Typical ESP32-C3 map used by these examples:
 
@@ -45,7 +67,7 @@ is exactly:
 - partition table at `0x8000`
 - app image at `0x10000`
 
-`linux_flasher` always uses explicit `<addr> <file>` pairs.
+`esp-flasher` always uses explicit `<addr> <file>` pairs.
 
 ## Externalization
 
