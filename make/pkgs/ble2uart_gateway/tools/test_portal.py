@@ -167,11 +167,43 @@ def run(binary):
         assert "200 OK" in head, head
         assert "text/html" in head, head
         assert "/ble2uart_gateway/portal.js" in body, body[:200]
-        assert 'id="unitbox"' in body and 'id="unit_temperature"' in body, body[:500]
-        assert 'id="chartmeta"' in body and 'id="splitter"' in body, body[:500]
+        assert 'rel="manifest"' in body and 'id="install"' in body, body[:600]
+        assert 'apple-touch-icon' in body and 'name="theme-color"' in body, body[:600]
+        assert 'id="kpis"' in body and 'id="devices"' in body, body[:500]
+        assert 'id="canvas"' in body and 'id="helpbox"' in body, body[:500]
 
         head, body, _ = call(binary, database, "action=page", method="HEAD")
         assert "200 OK" in head and body == "", (head, body[:80])
+
+        # The dashboard is installable: the manifest must describe a standalone
+        # app whose scope covers the CGI, and the icons must live in the web
+        # root that freetz serves at /ble2uart_gateway/.
+        head, body, _ = call(binary, database, "action=manifest&lang=it")
+        assert "200 OK" in head and "application/manifest+json" in head, head
+        manifest = json.loads(body)
+        assert manifest["start_url"] == "./?action=page", manifest
+        assert manifest["scope"] == "./", manifest
+        # The installed app must launch without browser chrome: fullscreen with
+        # standalone as the first fallback for browsers that ignore it.
+        assert manifest["display"] == "fullscreen", manifest
+        assert manifest["display_override"][0] == "fullscreen", manifest
+        assert "standalone" in manifest["display_override"], manifest
+        assert manifest["lang"] == "it", manifest
+        kinds = {(icon["sizes"], icon["purpose"]) for icon in manifest["icons"]}
+        assert ("192x192", "any") in kinds, manifest["icons"]
+        assert ("512x512", "any") in kinds and ("512x512", "maskable") in kinds, manifest["icons"]
+        assert all(icon["src"].startswith("/ble2uart_gateway/") for icon in manifest["icons"]), manifest["icons"]
+        english = json.loads(call(binary, database, "action=manifest&lang=en")[1])
+        assert english["lang"] == "en" and english["short_name"] == "BLE sensors", english
+
+        # The service worker needs a scope wider than its own directory, which
+        # only the Service-Worker-Allowed header can grant.
+        head, body, _ = call(binary, database, "action=sw")
+        assert "200 OK" in head and "text/javascript" in head, head
+        assert "Service-Worker-Allowed: /" in head, head
+        assert "__V__" not in body and "__ASSETS__" not in body, body[:200]
+        assert 'ASSETS + "portal.js?v=" + VERSION' in body, body[:600]
+        assert "ble2uart-portal-" in body and "action=catalog|series|info" in body, body[:600]
 
         info = json.loads(call(binary, database, "action=info")[1])
         assert info["ok"] and info["schema"] == 2, info
@@ -197,23 +229,10 @@ def run(binary):
         assert raw_only["temperature"]["series_id"] is None
         assert raw_only["battery_v"]["value"] == 2.9
 
-        config = directory / "gateway.yaml"
-        config.write_text(
-            "version: 1\n"
-            "devices:\n"
-            "  - mac: AABBCCDDEEFF\n"
-            "    label: Termometro cucina\n"
-            "    manufacturer: Xiaomi\n"
-            "    model: LYWSD03MMC\n"
-            "    firmware_version: 1.2.3\n",
-            encoding="utf-8",
-        )
-        configured = json.loads(call(binary, database, "action=catalog", config=config)[1])
-        first_device = next(item for item in configured["devices"] if item["mac"] == "AABBCCDDEEFF")
-        assert first_device["label"] == "Termometro cucina", first_device
-        assert first_device["manufacturer"] == "Xiaomi", first_device
-        assert first_device["model"] == "LYWSD03MMC", first_device
-        assert first_device["firmware_version"] == "1.2.3", first_device
+        # BLE2UART_PORTAL_DB wins over the configuration file, so the CGI works
+        # even when the YAML cannot be read (a diagnostic run, a test).
+        plain = json.loads(call(binary, database, "action=catalog", config=directory / "absent.yaml")[1])
+        assert plain["ok"] is True and plain["database"] == str(database), plain["database"]
 
         # 1 hour with 300 buckets keeps the three archived samples apart.
         series = json.loads(call(

@@ -16,6 +16,7 @@
 	var endpoint = ENDPOINTS[0];
 	var REFRESH_MS = 30000;
 	var MAX_SERIES = 6;
+	var MAX_SELECTED = 18;
 	var MIN_WINDOW_MS = 60000;
 	var COLORS = ["#0b6bcb", "#1a7f37", "#b45309", "#8250df", "#b42318", "#0e7490", "#6b7280", "#a16207"];
 
@@ -23,11 +24,16 @@
 		it: {
 			subtitle: "Sensori", refresh: "Aggiorna ora", config: "Configurazione",
 			resetView: "Reimposta le viste salvate",
+			splitHint: "Trascina per ridimensionare i valori e il grafico (frecce sinistra/destra)",
 			resetViewConfirm: "Azzerare grandezze, intervallo e zoom salvati in questo browser?",
 			devices: "Dispositivi", series: "Grandezze", samples: "Campioni", updated: "Ultimo dato",
 			never: "nessun dato", chartHint: "Tocca una grandezza per disegnarne il grafico.",
 			chartEmpty: "Seleziona una grandezza dall'elenco.",
 			chartLimit: "Massimo {n} grandezze per grafico.",
+			chartModeUnits: "Dividi per unit\u00e0",
+			chartModeSingle: "Un solo grafico",
+			chartModeHint: "Un grafico per unit\u00e0 (temperatura, umidit\u00e0, tensione\u2026)",
+			noRange: "Nessun dato nell'intervallo selezionato.",
 			loading: "Caricamento\u2026", failed: "Errore: {error}", noDevices: "Nessun sensore nel database.",
 			on: "attivo", off: "inattivo", true_: "s\u00ec", false_: "no", now: "ora",
 			sec: "s", min: "min", hour: "h", day: "g",
@@ -49,16 +55,31 @@
 			helpDragZoom: "Trascina sul grafico per selezionare un intervallo di tempo.",
 			helpDragPan: "Trascina tenendo premuto Maiusc per spostare la finestra.",
 			helpHelp: "Apre o chiude questa finestra di aiuto.",
-			helpClose: "Chiudi", helpNote: "I dati si aggiornano da soli ogni 30 secondi."
+			helpClose: "Chiudi", helpNote: "I dati si aggiornano da soli ogni 30 secondi.",
+			maximize: "Schermo intero della pagina (senza barra del browser)",
+			maximizeOff: "Esci da schermo intero",
+			helpAppFullscreen: "Schermo intero della pagina: nasconde la barra del browser e la barra di stato, come un'app installata.",
+			install: "Installa l'app",
+			offlineBanner: "Offline: valori salvati dall'ultimo aggiornamento riuscito.",
+			offlineData: "nessun collegamento al Fritz!Box e nessun dato in cache",
+			pwaTitle: "Installa il portale come app",
+			pwaBodyChrome: "Il browser non ha ancora offerto l'installazione. Apri il menu del browser (\u22ee) e scegli \u201cInstalla app\u201d o \u201cAggiungi a schermata Home\u201d. L'installazione richiede https oppure localhost: con http://fritz.box il browser mostra solo un segnalibro.",
+			pwaBodyIos: "Tocca <kbd>Condividi</kbd>, poi <kbd>Aggiungi a Home</kbd>: il portale si apre a schermo intero con l'icona dei sensori.",
+			pwaBodyInstalled: "Il portale \u00e8 installato: aprilo dall'icona sul telefono o dal menu delle app del browser."
 		},
 		en: {
 			subtitle: "Sensors", refresh: "Refresh now", config: "Configuration",
 			resetView: "Reset the saved views",
+			splitHint: "Drag to resize the values and the chart (left/right arrows)",
 			resetViewConfirm: "Clear the attributes, time range and zoom saved in this browser?",
 			devices: "Devices", series: "Attributes", samples: "Samples", updated: "Latest sample",
 			never: "no data", chartHint: "Tap an attribute to draw its chart.",
 			chartEmpty: "Select an attribute from the list.",
 			chartLimit: "At most {n} attributes per chart.",
+			chartModeUnits: "Split by unit",
+			chartModeSingle: "Single chart",
+			chartModeHint: "One chart per unit (temperature, humidity, voltage\u2026)",
+			noRange: "No data in the selected range.",
 			loading: "Loading\u2026", failed: "Error: {error}", noDevices: "No sensors in the database.",
 			on: "on", off: "off", true_: "yes", false_: "no", now: "now",
 			sec: "s", min: "min", hour: "h", day: "d",
@@ -80,16 +101,31 @@
 			helpDragZoom: "Drag on the chart to select a time range.",
 			helpDragPan: "Drag while holding Shift to move the window.",
 			helpHelp: "Open or close this help window.",
-			helpClose: "Close", helpNote: "Data refreshes automatically every 30 seconds."
+			helpClose: "Close", helpNote: "Data refreshes automatically every 30 seconds.",
+			maximize: "Page fullscreen (no browser bar)",
+			maximizeOff: "Leave fullscreen",
+			helpAppFullscreen: "Fullscreen for the whole page: hides the browser and status bars, like an installed app.",
+			install: "Install the app",
+			offlineBanner: "Offline: values cached by the last successful refresh.",
+			offlineData: "no connection to the router and no cached data",
+			pwaTitle: "Install the portal as an app",
+			pwaBodyChrome: "The browser has not offered the installation yet. Open the browser menu (\u22ee) and choose \u201cInstall app\u201d or \u201cAdd to Home screen\u201d. Installing needs https or localhost: over http://fritz.box the browser only stores a bookmark.",
+			pwaBodyIos: "Tap <kbd>Share</kbd>, then <kbd>Add to Home Screen</kbd>: the portal opens full screen with the sensor icon.",
+			pwaBodyInstalled: "The portal is installed: open it from the icon on the phone or from the browser app menu."
 		},
 		de: {
 			subtitle: "Sensoren", refresh: "Jetzt aktualisieren", config: "Konfiguration",
 			resetView: "Gespeicherte Ansichten zur\u00fccksetzen",
+			splitHint: "Ziehen, um Werte und Diagramm zu skalieren (Pfeiltasten links/rechts)",
 			resetViewConfirm: "Gespeicherte Messwerte, Zeitraum und Zoom in diesem Browser l\u00f6schen?",
 			devices: "Ger\u00e4te", series: "Messwerte", samples: "Messwerte", updated: "Letzter Wert",
 			never: "keine Daten", chartHint: "Messwert antippen, um das Diagramm zu zeichnen.",
 			chartEmpty: "Messwert aus der Liste w\u00e4hlen.",
 			chartLimit: "H\u00f6chstens {n} Messwerte pro Diagramm.",
+			chartModeUnits: "Nach Einheit trennen",
+			chartModeSingle: "Ein Diagramm",
+			chartModeHint: "Ein Diagramm pro Einheit (Temperatur, Feuchte, Spannung\u2026)",
+			noRange: "Keine Daten im gew\u00e4hlten Zeitraum.",
 			loading: "Lade\u2026", failed: "Fehler: {error}", noDevices: "Keine Sensoren in der Datenbank.",
 			on: "aktiv", off: "inaktiv", true_: "ja", false_: "nein", now: "jetzt",
 			sec: "s", min: "min", hour: "h", day: "T",
@@ -111,7 +147,17 @@
 			helpDragZoom: "Im Diagramm ziehen, um einen Zeitraum zu w\u00e4hlen.",
 			helpDragPan: "Mit gedr\u00fcckter Umschalttaste ziehen, um das Fenster zu verschieben.",
 			helpHelp: "\u00d6ffnet oder schlie\u00dft dieses Hilfefenster.",
-			helpClose: "Schlie\u00dfen", helpNote: "Die Daten werden alle 30 Sekunden automatisch aktualisiert."
+			helpClose: "Schlie\u00dfen", helpNote: "Die Daten werden alle 30 Sekunden automatisch aktualisiert.",
+			maximize: "Ganzseitiges Vollbild (ohne Browserleiste)",
+			maximizeOff: "Vollbild beenden",
+			helpAppFullscreen: "Vollbild der ganzen Seite: blendet Browser- und Statusleiste aus, wie eine installierte App.",
+			install: "App installieren",
+			offlineBanner: "Offline: Werte aus der letzten erfolgreichen Aktualisierung.",
+			offlineData: "keine Verbindung zum Router und keine gespeicherten Daten",
+			pwaTitle: "Portal als App installieren",
+			pwaBodyChrome: "Der Browser hat die Installation noch nicht angeboten. Browsermen\u00fc (\u22ee) \u00f6ffnen und \u201eApp installieren\u201c bzw. \u201eZum Startbildschirm hinzuf\u00fcgen\u201c w\u00e4hlen. Die Installation braucht https oder localhost: \u00fcber http://fritz.box legt der Browser nur ein Lesezeichen an.",
+			pwaBodyIos: "<kbd>Teilen</kbd> antippen, dann <kbd>Zum Home-Bildschirm</kbd>: Das Portal \u00f6ffnet im Vollbild mit dem Sensor-Symbol.",
+			pwaBodyInstalled: "Das Portal ist installiert: \u00fcber das Symbol am Telefon oder das App-Men\u00fc des Browsers \u00f6ffnen."
 		}
 	};
 
@@ -125,6 +171,8 @@
 	];
 
 	var lang = "en";
+	var CHART_MODE_KEY = "ble2uart-portal-chartmode";
+
 	var state = {
 		catalog: null,
 		selected: [],
@@ -135,7 +183,10 @@
 		hover: null,
 		drag: null,
 		pan: null,
-		view: null
+		view: null,
+		blocks: [],
+		active: null,
+		chartMode: "unit"
 	};
 	var els = {};
 
@@ -196,7 +247,7 @@
 
 	function writeStore() {
 		var data = {
-			selected: state.selected.slice(0, MAX_SERIES),
+			selected: state.selected.slice(0, MAX_SELECTED),
 			range: state.range,
 			zoom: state.zoom ? { from: Math.round(state.zoom.from), to: Math.round(state.zoom.to) } : null
 		};
@@ -207,6 +258,7 @@
 
 	function clearStore() {
 		try { window.localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+		try { window.localStorage.removeItem(SPLIT_KEY); } catch (e) { /* ignore */ }
 		try { cookieWrite(STORE_KEY, "", -1); } catch (e) { /* ignore */ }
 	}
 
@@ -216,7 +268,7 @@
 		if (Object.prototype.toString.call(data.selected) === "[object Array]") {
 			state.selected = data.selected
 				.filter(function (key) { return typeof key === "string"; })
-				.slice(0, MAX_SERIES);
+				.slice(0, MAX_SELECTED);
 		}
 		var ranges = RANGES.map(function (item) { return item.seconds; });
 		if (ranges.indexOf(data.range) >= 0) { state.range = data.range; }
@@ -224,6 +276,87 @@
 		if (zoom && typeof zoom.from === "number" && typeof zoom.to === "number" && zoom.to > zoom.from) {
 			state.zoom = { from: zoom.from, to: zoom.to };
 		}
+	}
+
+	/* ------------------------------------------------------------- splitter
+	 * Values on the left, chart on the right, with a draggable vertical line
+	 * between them. The share is kept in the browser like the chart view, and
+	 * the splitter element is created here because the page shell is generated
+	 * by the daemon: a missing splitter would make the chart fall into the
+	 * fixed 8px grid column and disappear. */
+	var SPLIT_KEY = "ble2uart-portal-split-v2";
+	var splitPct = 47;   /* share of the values column, in percent */
+	var SPLIT_COLUMNS_FIXED = 28;   /* 8px splitter + two 10px gaps */
+	var SPLIT_POINTER_OFFSET = 14;   /* 10px gap + half of the 8px splitter */
+
+	function splitRead() {
+		var stored = null;
+		try { stored = window.localStorage.getItem(SPLIT_KEY); } catch (e) { stored = null; }
+		var value = Number(stored);
+		if (!isFinite(value) || value < 20 || value > 80) { return 47; }
+		return value;
+	}
+
+	function splitApply(pct) {
+		var layout = document.querySelector(".playout");
+		if (!layout) { return; }
+		splitPct = Math.min(80, Math.max(20, Math.round(pct)));
+		layout.style.setProperty("--device-fr", splitPct + "fr");
+		layout.style.setProperty("--chart-fr", (100 - splitPct) + "fr");
+		try { window.localStorage.setItem(SPLIT_KEY, String(splitPct)); } catch (e) { /* ignore */ }
+		drawChart();
+	}
+
+	function ensureSplitter() {
+		var layout = document.querySelector(".playout");
+		var chart = layout && layout.querySelector(".pchart");
+		if (!layout || !chart) { return; }
+		splitApply(splitRead());
+		if (layout.querySelector(".psplitter")) { return; }
+		var bar = document.createElement("div");
+		bar.className = "psplitter";
+		bar.tabIndex = 0;
+		bar.setAttribute("role", "separator");
+		bar.setAttribute("aria-orientation", "vertical");
+		bar.setAttribute("aria-valuemin", "25");
+		bar.setAttribute("aria-valuemax", "80");
+		bar.title = t("splitHint");
+		layout.insertBefore(bar, chart);
+		var dragging = false;
+		var onMove = function (event) {
+			if (!dragging) { return; }
+			var rect = layout.getBoundingClientRect();
+			var available = rect.width - SPLIT_COLUMNS_FIXED;
+			if (available <= 0) { return; }
+			// The pointer position *is* the left share: the fr split distributes only
+			// the space left after the splitter column and the two gaps, and the gap
+			// plus half of the splitter has to be discounted so the line stays under
+			// the cursor.
+			splitApply((event.clientX - rect.left - SPLIT_POINTER_OFFSET) / available * 100);
+		};
+		var onStop = function () {
+			if (!dragging) { return; }
+			dragging = false;
+			bar.removeAttribute("aria-valuenow");
+			window.removeEventListener("pointermove", onMove);
+			window.removeEventListener("pointerup", onStop);
+			window.removeEventListener("pointercancel", onStop);
+		};
+		bar.addEventListener("pointerdown", function (event) {
+			if (event.button !== 0) { return; }
+			dragging = true;
+			bar.setAttribute("aria-valuenow", String(splitPct));
+			window.addEventListener("pointermove", onMove);
+			window.addEventListener("pointerup", onStop);
+			window.addEventListener("pointercancel", onStop);
+			event.preventDefault();
+		});
+		bar.addEventListener("keydown", function (event) {
+			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") { return; }
+			splitApply(splitPct + (event.key === "ArrowLeft" ? -2 : 2));
+			bar.setAttribute("aria-valuenow", String(splitPct));
+			event.preventDefault();
+		});
 	}
 
 	/** Header button: forget the stored views and start from an empty chart. */
@@ -234,8 +367,9 @@
 		state.charts = [];
 		state.range = 86400;
 		state.zoom = null;
-		state.hover = null;
+		state.blocks.forEach(function (item) { item.hover = null; });
 		state.error = "";
+		splitApply(47);
 		render();
 	}
 
@@ -255,7 +389,7 @@
 						throw new Error(t("loginExpired"));
 					}
 					if (data.ok === false) {
-						throw new Error(data.error || "unknown error");
+						throw new Error(data.error === "offline" ? t("offlineData") : (data.error || "unknown error"));
 					}
 					return data;
 				});
@@ -466,7 +600,9 @@
 		if (index >= 0) {
 			state.selected.splice(index, 1);
 		} else {
-			if (state.selected.length >= MAX_SERIES) {
+			var unit = series && series.unit ? series.unit : "";
+			var samePanel = state.charts.filter(function (chart) { return (chart.unit || "") === unit; }).length;
+			if (samePanel >= MAX_SERIES) {
 				state.error = t("chartLimit", { n: MAX_SERIES });
 				render();
 				return;
@@ -528,6 +664,7 @@
 		{ keys: "+ \u2212", label: "helpZoom" },
 		{ keys: "0 / Home / R", label: "helpReset" },
 		{ keys: "F", label: "helpFullscreen" },
+		{ keys: "M", label: "helpAppFullscreen" },
 		{ keys: "Drag", label: "helpDragZoom" },
 		{ keys: "Shift + drag", label: "helpDragPan" },
 		{ keys: "?", label: "helpHelp" }
@@ -572,28 +709,157 @@
 		return null;
 	}
 
-	function renderLegend() {
-		els.legend.textContent = "";
-		state.charts.forEach(function (chart, index) {
+	/* ------------------------------------------------------ chart panels */
+
+	/** Colour of a series: stable across panels and the legend. */
+	function colorOf(chart) {
+		var index = state.charts.indexOf(chart);
+		return COLORS[(index < 0 ? 0 : index) % COLORS.length];
+	}
+
+	/** Panel key of a series: its unit (booleans and unitless values group too). */
+	function panelKey(chart) {
+		if (chart.unit) { return chart.unit; }
+		if (chart.kind === "boolean") { return "\u2022"; }
+		return "";
+	}
+
+	/** Series split into panels: one per unit when chartMode is "unit". */
+	function groupCharts() {
+		if (!state.charts.length || state.chartMode === "single") { return [state.charts.slice()]; }
+		var groups = [];
+		var seen = {};
+		state.charts.forEach(function (chart) {
+			var key = panelKey(chart);
+			if (!seen.hasOwnProperty(key)) { seen[key] = groups.length; groups.push([]); }
+			groups[seen[key]].push(chart);
+		});
+		return groups;
+	}
+
+	function removeSeries(chart) {
+		state.selected = state.selected.filter(function (key) { return key !== chart.key; });
+		state.charts = state.charts.filter(function (item) { return item.key !== chart.key; });
+		state.zoom = null;
+		state.blocks.forEach(function (block) { block.hover = null; });
+		writeStore();
+		render();
+	}
+
+	function createBlock() {
+		var root = document.createElement("div");
+		root.className = "pchartblock";
+		var title = document.createElement("h3");
+		title.className = "pchartblocktitle";
+		var wrap = document.createElement("div");
+		wrap.className = "pcanvas";
+		var canvas = document.createElement("canvas");
+		var empty = document.createElement("div");
+		empty.className = "pempty";
+		wrap.appendChild(canvas);
+		wrap.appendChild(empty);
+		var legend = document.createElement("div");
+		legend.className = "plegend";
+		root.appendChild(title);
+		root.appendChild(wrap);
+		root.appendChild(legend);
+		var block = {
+			root: root, title: title, canvas: canvas, empty: empty, legend: legend,
+			charts: [], view: null, hover: null, drag: null, pan: null
+		};
+		root.__block = block;
+		canvas.addEventListener("mousemove", function (event) { onMove(block, event); });
+		canvas.addEventListener("mousedown", function (event) { onDown(block, event); });
+		canvas.addEventListener("mouseleave", function () { if (!block.drag) { hideTip(block); } });
+		canvas.addEventListener("touchstart", function (event) {
+			if (event.touches.length === 1) {
+				state.active = block;
+				var ms = timeAt(block, event.touches[0].clientX);
+				if (ms !== null) { showTip(block, ms, event.touches[0].clientX, event.touches[0].clientY); }
+			}
+		}, { passive: true });
+		canvas.addEventListener("touchend", function () { hideTip(block); });
+		return block;
+	}
+
+	/** Create/remove panels so that there is one per series group. */
+	function syncBlocks(groups) {
+		var host = els.blocks;
+		if (!host) { return; }
+		while (host.children.length > groups.length) { host.removeChild(host.lastElementChild); }
+		while (host.children.length < groups.length) { host.appendChild(createBlock().root); }
+		state.blocks = [];
+		for (var index = 0; index < groups.length; index++) {
+			var block = host.children[index].__block;
+			if (!block) { continue; }
+			block.charts = groups[index];
+			state.blocks.push(block);
+		}
+		if (state.blocks.indexOf(state.active) < 0) { state.active = state.blocks[0] || null; }
+	}
+
+	/** Host element for the panels, plus the split/merge toggle button. */
+	function ensureChartHost() {
+		if (els.blocks) { return; }
+		var panel = els.panel;
+		var single = panel.querySelector(".pcanvas");
+		var host = document.createElement("div");
+		host.className = "pcanvases";
+		if (single && single.parentNode === panel) { panel.insertBefore(host, single); } else { panel.appendChild(host); }
+		if (single) { single.hidden = true; }
+		var legend = document.getElementById("legend");
+		if (legend) { legend.hidden = true; }
+		var title = document.getElementById("charttitle");
+		if (title) { title.hidden = true; }
+		els.blocks = host;
+		var controls = panel.querySelector(".pcontrols");
+		if (controls && !els.chartmode) {
+			var button = document.createElement("button");
+			button.type = "button";
+			button.id = "chartmode";
+			button.addEventListener("click", function () {
+				state.chartMode = state.chartMode === "unit" ? "single" : "unit";
+				chartModeWrite(state.chartMode);
+				render();
+			});
+			controls.appendChild(button);
+			els.chartmode = button;
+		}
+	}
+
+	function chartModeWrite(mode) {
+		try { window.localStorage.setItem(CHART_MODE_KEY, mode); } catch (e) { /* ignore */ }
+	}
+
+	function chartModeRead() {
+		var stored = null;
+		try { stored = window.localStorage.getItem(CHART_MODE_KEY); } catch (e) { stored = null; }
+		return stored === "single" ? "single" : "unit";
+	}
+
+	function renderChartMode() {
+		if (!els.chartmode) { return; }
+		var split = state.chartMode === "unit";
+		els.chartmode.textContent = split ? t("chartModeSingle") : t("chartModeUnits");
+		els.chartmode.title = t("chartModeHint");
+		els.chartmode.setAttribute("aria-pressed", split ? "true" : "false");
+	}
+
+	function renderLegend(block) {
+		block.legend.textContent = "";
+		block.charts.forEach(function (chart) {
 			var chip = document.createElement("button");
 			chip.type = "button";
 			chip.className = "chip";
-			chip.style.setProperty("--swatch", COLORS[index % COLORS.length]);
+			chip.style.setProperty("--swatch", colorOf(chart));
 			var dot = document.createElement("i");
 			var text = document.createElement("span");
 			text.textContent = seriesLabel(chart);
 			chip.appendChild(dot);
 			chip.appendChild(text);
 			chip.title = t("chartHint");
-			chip.addEventListener("click", function () {
-				state.selected = state.selected.filter(function (key) { return key !== chart.key; });
-				state.charts = state.charts.filter(function (item) { return item.key !== chart.key; });
-				state.zoom = null;
-				state.hover = null;
-				writeStore();
-				render();
-			});
-			els.legend.appendChild(chip);
+			chip.addEventListener("click", function () { removeSeries(chart); });
+			block.legend.appendChild(chip);
 		});
 	}
 
@@ -621,25 +887,36 @@
 	}
 
 	function drawChart() {
-		var canvas = els.canvas;
-		var empty = els.chartempty;
-		var title = els.charttitle;
-		renderLegend();
+		ensureChartHost();
+		syncBlocks(groupCharts());
+		renderChartMode();
 		renderZoom();
+		state.blocks.forEach(drawBlock);
+		var total = 0;
+		state.charts.forEach(function (chart) {
+			if (chart.points) { total += chart.points.length; }
+		});
+		els.chartinfo.textContent = state.selected.length && total ? t("points", { n: total }) : "";
+	}
 
-		var charts = state.charts.filter(function (chart) { return chart.points && chart.points.length; });
+	function drawBlock(block) {
+		var canvas = block.canvas;
+		var empty = block.empty;
+		var title = block.title;
+		renderLegend(block);
+
+		var charts = block.charts.filter(function (chart) { return chart.points && chart.points.length; });
 		if (!state.selected.length) {
 			title.textContent = "\u2014";
 			empty.textContent = t("chartEmpty");
 			empty.hidden = false;
-			els.chartinfo.textContent = "";
-			state.view = null;
+			block.view = null;
 			clearCanvas(canvas);
 			return;
 		}
-		title.textContent = state.charts.map(seriesLabel).join("  \u00b7  ");
+		title.textContent = block.charts.map(seriesLabel).join("  \u00b7  ");
 		if (!charts.length) {
-			empty.textContent = t("loading");
+			empty.textContent = state.zoom ? t("noRange") : t("loading");
 			empty.hidden = false;
 			clearCanvas(canvas);
 			return;
@@ -717,14 +994,13 @@
 		context.fillStyle = ink;
 
 		charts.forEach(function (chart) {
-			var index = state.charts.indexOf(chart);
-			drawSeries(context, chart, box, from, to, yMin, yMax, COLORS[index % COLORS.length]);
+			drawSeries(block, context, chart, box, from, to, yMin, yMax, colorOf(chart));
 		});
 
-		state.view = { box: box, from: from, to: to, yMin: yMin, yMax: yMax };
+		block.view = { box: box, from: from, to: to, yMin: yMin, yMax: yMax };
 
-		if (state.hover) {
-			var hoverX = box.left + (state.hover.ms - from) / (to - from) * (box.right - box.left);
+		if (block.hover) {
+			var hoverX = box.left + (block.hover.ms - from) / (to - from) * (box.right - box.left);
 			if (hoverX >= box.left && hoverX <= box.right) {
 				context.save();
 				context.strokeStyle = accent;
@@ -739,9 +1015,9 @@
 			}
 		}
 
-		if (state.drag) {
-			var left = Math.min(state.drag.x0, state.drag.x1);
-			var right = Math.max(state.drag.x0, state.drag.x1);
+		if (block.drag) {
+			var left = Math.min(block.drag.x0, block.drag.x1);
+			var right = Math.max(block.drag.x0, block.drag.x1);
 			context.save();
 			context.fillStyle = accent;
 			context.globalAlpha = 0.12;
@@ -753,10 +1029,9 @@
 			context.restore();
 		}
 
-		els.chartinfo.textContent = t("points", { n: charts.reduce(function (sum, chart) { return sum + chart.points.length; }, 0) });
 	}
 
-	function drawSeries(context, chart, box, from, to, yMin, yMax, color) {
+	function drawSeries(block, context, chart, box, from, to, yMin, yMax, color) {
 		var points = chart.points;
 		if (!points.length) { return; }
 		var scaleX = function (ms) { return box.left + (ms - from) / (to - from) * (box.right - box.left); };
@@ -790,10 +1065,10 @@
 
 		// Hover: one marker per series, at the sample nearest to the pointer,
 		// only when that sample is close enough to the cursor time.
-		if (state.hover) {
-			var point = nearest(points, state.hover.ms);
+		if (block.hover) {
+			var point = nearest(points, block.hover.ms);
 			var tolerance = Math.max((chart.bucket_ns || 6e10) / 1e6 / 2, 60000);
-			if (point && Math.abs(point[0] - state.hover.ms) <= tolerance) {
+			if (point && Math.abs(point[0] - block.hover.ms) <= tolerance) {
 				var markerX = scaleX(point[0]);
 				var markerY = scaleY(point[1]);
 				context.fillStyle = color;
@@ -877,48 +1152,49 @@
 
 	/* ------------------------------------------------------- pointer / zoom */
 
-	function timeAt(clientX) {
-		var view = state.view;
+	function timeAt(block, clientX) {
+		var view = block.view;
 		if (!view) { return null; }
-		var x = localX(clientX);
+		var x = localX(block.canvas, clientX);
 		if (x < view.box.left || x > view.box.right) { return null; }
 		return view.from + (x - view.box.left) / (view.box.right - view.box.left) * (view.to - view.from);
 	}
 
-	function localX(clientX) {
-		var rect = els.canvas.getBoundingClientRect();
+	function localX(canvas, clientX) {
+		var rect = canvas.getBoundingClientRect();
 		return clientX - rect.left;
 	}
 
-	function onMove(event) {
-		if (state.pan) {
-			var moved = localX(event.clientX) - state.pan.x;
-			if (Math.abs(moved) > 2) { state.pan.moved = true; }
-			var view = state.view;
+	function onMove(block, event) {
+		if (block.pan) {
+			var moved = localX(block.canvas, event.clientX) - block.pan.x;
+			if (Math.abs(moved) > 2) { block.pan.moved = true; }
+			var view = block.view;
 			if (view) {
-				var span = state.pan.to - state.pan.from;
+				var span = block.pan.to - block.pan.from;
 				var shift = -moved * span / (view.box.right - view.box.left);
-				var shifted = clampWindow(state.pan.from + shift, state.pan.to + shift);
+				var shifted = clampWindow(block.pan.from + shift, block.pan.to + shift);
 				state.zoom = { from: shifted.from, to: shifted.to };
 				els.tip.hidden = true;
 				drawChart();
 			}
 			return;
 		}
-		if (state.drag) {
-			state.drag.x1 = localX(event.clientX);
+		if (block.drag) {
+			block.drag.x1 = localX(block.canvas, event.clientX);
 			els.tip.hidden = true;
 			drawChart();
 			return;
 		}
-		var ms = timeAt(event.clientX);
-		if (ms === null) { hideTip(); return; }
-		showTip(ms, event.clientX, event.clientY);
+		state.active = block;
+		var ms = timeAt(block, event.clientX);
+		if (ms === null) { hideTip(block); return; }
+		showTip(block, ms, event.clientX, event.clientY);
 	}
 
-	function showTip(ms, clientX, clientY) {
-		var changed = !state.hover || Math.abs(state.hover.ms - ms) > 1;
-		state.hover = { ms: ms };
+	function showTip(block, ms, clientX, clientY) {
+		var changed = !block.hover || Math.abs(block.hover.ms - ms) > 1;
+		block.hover = { ms: ms };
 		if (changed) { drawChart(); }
 
 		els.tip.textContent = "";
@@ -926,13 +1202,13 @@
 		var date = new Date(ms);
 		head.textContent = stamp(ms) + ":" + pad2(date.getSeconds());
 		els.tip.appendChild(head);
-		state.charts.forEach(function (chart, index) {
+		block.charts.forEach(function (chart) {
 			if (!chart.points || !chart.points.length) { return; }
 			var point = nearest(chart.points, ms);
 			var tolerance = Math.max((chart.bucket_ns || 6e10) / 1e6, 60000);
 			var row = document.createElement("div");
 			row.className = "row";
-			row.style.setProperty("--swatch", COLORS[index % COLORS.length]);
+			row.style.setProperty("--swatch", colorOf(chart));
 			var dot = document.createElement("i");
 			var label = document.createElement("span");
 			label.textContent = chart.attribute;
@@ -957,38 +1233,39 @@
 		els.tip.style.top = Math.max(6, clientY - 12) + "px";
 	}
 
-	function hideTip() {
-		if (state.hover) { state.hover = null; drawChart(); }
+	function hideTip(block) {
+		if (block.hover) { block.hover = null; drawChart(); }
 		els.tip.hidden = true;
 	}
 
-	function onDown(event) {
-		if (!state.view || event.button !== 0) { return; }
-		var x = localX(event.clientX);
-		if (x < state.view.box.left || x > state.view.box.right) { return; }
+	function onDown(block, event) {
+		if (!block.view || event.button !== 0) { return; }
+		state.active = block;
+		var x = localX(block.canvas, event.clientX);
+		if (x < block.view.box.left || x > block.view.box.right) { return; }
 		if (event.shiftKey) {
-			state.pan = { x: x, from: state.view.from, to: state.view.to, moved: false };
-			hideTip();
-			els.canvas.style.cursor = "grabbing";
+			block.pan = { x: x, from: block.view.from, to: block.view.to, moved: false };
+			hideTip(block);
+			block.canvas.style.cursor = "grabbing";
 			return;
 		}
-		state.drag = { x0: x, x1: x };
-		hideTip();
-		els.canvas.style.cursor = "col-resize";
+		block.drag = { x0: x, x1: x };
+		hideTip(block);
+		block.canvas.style.cursor = "col-resize";
 	}
 
-	function onUp() {
-		var pan = state.pan;
-		state.pan = null;
-		els.canvas.style.cursor = "crosshair";
+	function onUp(block) {
+		var pan = block.pan;
+		block.pan = null;
+		block.canvas.style.cursor = "crosshair";
 		if (pan) {
 			if (pan.moved) { loadCharts(); render(); } else { drawChart(); }
 			return;
 		}
-		var drag = state.drag;
-		state.drag = null;
+		var drag = block.drag;
+		block.drag = null;
 		if (!drag) { return; }
-		var view = state.view;
+		var view = block.view;
 		if (!view) { drawChart(); return; }
 		var width = Math.abs(drag.x1 - drag.x0);
 		if (width < 8) { drawChart(); return; }
@@ -997,13 +1274,13 @@
 		var ratioTo = (drag.x1 - view.box.left) / (view.box.right - view.box.left);
 		var from = view.from + Math.min(ratioFrom, ratioTo) * span;
 		var to = view.from + Math.max(ratioFrom, ratioTo) * span;
-		applyZoom(from, to);
+		applyZoom(block, from, to);
 	}
 
-	function applyZoom(from, to) {
+	function applyZoom(block, from, to) {
 		if (!(to - from >= MIN_WINDOW_MS)) { to = from + MIN_WINDOW_MS; }
 		state.zoom = { from: Math.round(from), to: Math.round(to) };
-		state.hover = null;
+		block.hover = null;
 		writeStore();
 		loadCharts();
 		render();
@@ -1018,13 +1295,14 @@
 		return { from: Math.round(from), to: Math.round(to) };
 	}
 
-	function panBy(fraction) {
-		var view = state.view;
+	function panBy(block, fraction) {
+		if (!block) { return; }
+		var view = block.view;
 		if (!view) { return; }
 		var span = Math.max(view.to - view.from, MIN_WINDOW_MS);
 		var shift = span * fraction;
 		var clamped = clampWindow(view.from + shift, view.to + shift);
-		applyZoom(clamped.from, clamped.to);
+		applyZoom(block, clamped.from, clamped.to);
 	}
 
 	function onKey(event) {
@@ -1041,19 +1319,21 @@
 		if (!state.selected.length) { return; }
 		var handled = true;
 		switch (event.key) {
-		case "ArrowLeft": panBy(event.shiftKey ? -0.1 : -0.25); break;
-		case "ArrowRight": panBy(event.shiftKey ? 0.1 : 0.25); break;
-		case "+": case "=": zoomBy(0.5); break;
-		case "-": case "_": zoomBy(2); break;
+		case "ArrowLeft": panBy(state.active, event.shiftKey ? -0.1 : -0.25); break;
+		case "ArrowRight": panBy(state.active, event.shiftKey ? 0.1 : 0.25); break;
+		case "+": case "=": zoomBy(state.active, 0.5); break;
+		case "-": case "_": zoomBy(state.active, 2); break;
 		case "0": case "Home": case "r": case "R": resetZoom(); break;
 		case "f": case "F": toggleFullscreen(); break;
+		case "m": case "M": toggleAppFullscreen(); break;
 		default: handled = false;
 		}
 		if (handled) { event.preventDefault(); }
 	}
 
-	function zoomBy(factor) {
-		var view = state.view;
+	function zoomBy(block, factor) {
+		if (!block) { return; }
+		var view = block.view;
 		var current = state.zoom || (view ? { from: view.from, to: view.to } : null);
 		if (!current) { return; }
 		var center = (current.from + current.to) / 2;
@@ -1065,12 +1345,12 @@
 			to = now;
 			from = Math.max(0, to - half * 2);
 		}
-		applyZoom(from, to);
+		applyZoom(block, from, to);
 	}
 
 	function resetZoom() {
 		state.zoom = null;
-		state.hover = null;
+		state.blocks.forEach(function (item) { item.hover = null; });
 		writeStore();
 		loadCharts();
 		render();
@@ -1156,6 +1436,167 @@
 		});
 	}
 
+	/* --------------------------------------------------------------- web app
+	 * The portal is installable: the CGI also serves a manifest
+	 * (?action=manifest) and a service worker (?action=sw) that caches this page
+	 * and the last JSON answers, so a home-screen icon opens it without the
+	 * browser chrome and the values stay readable when the router is offline.
+	 * Browsers only allow this in a secure context (https or localhost), so the
+	 * registration is skipped over plain http and the icon button explains the
+	 * manual "Add to Home screen" instead. */
+	var installEvent = null;
+
+	function pwaStandalone() {
+		if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) { return true; }
+		return window.navigator.standalone === true;
+	}
+
+	function pwaIos() {
+		return /iPad|iPhone|iPod/.test(window.navigator.userAgent || "") ||
+			(window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+	}
+
+	function showInstall(visible) {
+		if (!els.install) { return; }
+		els.install.hidden = !visible;
+		els.install.title = t("install");
+		els.install.setAttribute("aria-label", t("install"));
+	}
+
+	function openPwaHelp() {
+		if (!els.pwahelp) { return; }
+		els.pwahelptitle.textContent = t("pwaTitle");
+		var body = pwaStandalone() ? t("pwaBodyInstalled") : (pwaIos() ? t("pwaBodyIos") : t("pwaBodyChrome"));
+		els.pwahelpbody.innerHTML = body;
+		els.pwahelpclose.textContent = t("helpClose");
+		if (typeof els.pwahelp.showModal === "function") {
+			els.pwahelp.showModal();
+		} else {
+			els.pwahelp.setAttribute("open", "");
+		}
+	}
+
+	function updateNet() {
+		var offline = window.navigator.onLine === false;
+		if (els.netstate) {
+			els.netstate.hidden = !offline;
+			els.netstate.textContent = t("offlineBanner");
+		}
+	}
+
+	/* Page-level fullscreen: an installed web app launches without browser
+	 * chrome (manifest "display": "fullscreen"); this button and the M key do
+	 * the same in a normal tab and hide the system status bar too, so the
+	 * dashboard fills the screen like a native app. The chart keeps its own
+	 * fullscreen button (F). */
+	function appFullscreenApi() {
+		var root = document.documentElement;
+		if (root.requestFullscreen) {
+			return { enter: "requestFullscreen", exit: "exitFullscreen", element: "fullscreenElement" };
+		}
+		if (root.webkitRequestFullscreen) {
+			return { enter: "webkitRequestFullscreen", exit: "webkitExitFullscreen", element: "webkitFullscreenElement" };
+		}
+		return null;
+	}
+
+	function appFullscreenOn() {
+		return !!(document.fullscreenElement || document.webkitFullscreenElement);
+	}
+
+	function toggleAppFullscreen() {
+		var api = appFullscreenApi();
+		if (!api) { return; }
+		if (appFullscreenOn()) {
+			var exit = document.exitFullscreen || document.webkitExitFullscreen;
+			if (exit) {
+				var leaving = exit.call(document);
+				if (leaving && leaving.catch) { leaving.catch(function () { }); }
+			}
+			return;
+		}
+		var entered = document.documentElement[api.enter]({ navigationUI: "hide" });
+		if (entered && entered.catch) { entered.catch(function () { }); }
+	}
+
+	function syncMaximize() {
+		if (!els.maximize) { return; }
+		var on = appFullscreenOn();
+		if (on) { els.maximize.classList.add("on"); } else { els.maximize.classList.remove("on"); }
+		els.maximize.title = on ? t("maximizeOff") : t("maximize");
+		els.maximize.setAttribute("aria-label", els.maximize.title);
+		els.maximize.setAttribute("aria-pressed", on ? "true" : "false");
+	}
+
+	function registerServiceWorker() {
+		if (!("serviceWorker" in window.navigator)) { return; }
+		/* Without a secure context the browser rejects every registration; the
+		 * manifest stays valid, so the manual "Add to Home screen" still works. */
+		if (!window.isSecureContext) { return; }
+		window.navigator.serviceWorker.register("?action=sw", { scope: "/" })
+			.then(function (registration) {
+				/* A new asset version waits instead of taking over mid-load.
+				 * Activate it now that the page is idle, so the next reload
+				 * already uses the fresh CSS and JavaScript. */
+				var promote = function (worker) {
+					if (worker) { worker.postMessage("skip-waiting"); }
+				};
+				promote(registration.waiting);
+				registration.addEventListener("updatefound", function () {
+					var installing = registration.installing;
+					if (!installing) { return; }
+					installing.addEventListener("statechange", function () {
+						if (installing.state === "installed" && registration.waiting) { promote(installing); }
+					});
+				});
+			})
+			.catch(function (error) {
+				if (window.console && console.warn) { console.warn("service worker not registered:", error); }
+			});
+	}
+
+	function setupPwa() {
+		if (els.manifest) { els.manifest.href = "?action=manifest&lang=" + lang; }
+		if (pwaStandalone()) { document.documentElement.classList.add("pwa-standalone"); }
+		showInstall(false);
+		if (els.install) {
+			els.install.addEventListener("click", function () {
+				if (installEvent) {
+					var prompt = installEvent;
+					installEvent = null;
+					prompt.prompt();
+					if (prompt.userChoice && prompt.userChoice.then) {
+						prompt.userChoice.then(function (choice) {
+							if (choice && choice.outcome === "accepted") { showInstall(false); }
+						});
+					}
+					return;
+				}
+				openPwaHelp();
+			});
+		}
+		window.addEventListener("beforeinstallprompt", function (event) {
+			event.preventDefault();
+			installEvent = event;
+			showInstall(true);
+		});
+		window.addEventListener("appinstalled", function () {
+			installEvent = null;
+			showInstall(false);
+		});
+		/* Safari never fires beforeinstallprompt: offer the Share menu instead. */
+		if (pwaIos() && !pwaStandalone()) { showInstall(true); }
+		if (els.maximize) {
+			els.maximize.hidden = !appFullscreenApi();
+			els.maximize.addEventListener("click", toggleAppFullscreen);
+			syncMaximize();
+		}
+		window.addEventListener("online", updateNet);
+		window.addEventListener("offline", updateNet);
+		updateNet();
+		registerServiceWorker();
+	}
+
 	/* ----------------------------------------------------------------- init */
 
 	function start() {
@@ -1180,6 +1621,14 @@
 			fullscreen: document.getElementById("fullscreen"),
 			help: document.getElementById("help"),
 			resetview: document.getElementById("resetview"),
+			install: document.getElementById("install"),
+			maximize: document.getElementById("maximize"),
+			manifest: document.getElementById("manifest"),
+			netstate: document.getElementById("netstate"),
+			pwahelp: document.getElementById("pwahelp"),
+			pwahelptitle: document.getElementById("pwahelptitle"),
+			pwahelpbody: document.getElementById("pwahelpbody"),
+			pwahelpclose: document.getElementById("pwahelpclose"),
 			helplink: document.getElementById("helplink"),
 			helpbox: document.getElementById("helpbox"),
 			helptitle: document.getElementById("helptitle"),
@@ -1189,34 +1638,33 @@
 		};
 		pickLanguage();
 		document.documentElement.lang = lang;
+		setupPwa();
 		restoreStore();
+		ensureSplitter();
+		ensureChartHost();
+		state.chartMode = chartModeRead();
 		if (els.resetview) {
 			els.resetview.title = t("resetView");
 			els.resetview.addEventListener("click", resetView);
 		}
 		document.getElementById("reload").addEventListener("click", function () { loadCatalog(true); });
-		els.canvas.addEventListener("mousemove", onMove);
-		els.canvas.addEventListener("mousedown", onDown);
-		window.addEventListener("mouseup", onUp);
-		els.canvas.addEventListener("mouseleave", function () {
-			if (!state.drag) { hideTip(); }
-		});
-		els.canvas.addEventListener("touchstart", function (event) {
-			if (event.touches.length === 1) {
-				var ms = timeAt(event.touches[0].clientX);
-				if (ms !== null) { showTip(ms, event.touches[0].clientX, event.touches[0].clientY); }
+		/* Pointer events live on each chart panel, see createBlock(). */
+		window.addEventListener("mouseup", function () {
+			for (var index = 0; index < state.blocks.length; index++) {
+				var block = state.blocks[index];
+				if (block.drag || block.pan) { onUp(block); return; }
 			}
-		}, { passive: true });
-		els.canvas.addEventListener("touchend", function () { hideTip(); });
-		els.panleft.addEventListener("click", function () { panBy(-0.25); });
-		els.panright.addEventListener("click", function () { panBy(0.25); });
-		els.zoomin.addEventListener("click", function () { zoomBy(0.5); });
-		els.zoomout.addEventListener("click", function () { zoomBy(2); });
+		});
+		els.panleft.addEventListener("click", function () { panBy(state.active, -0.25); });
+		els.panright.addEventListener("click", function () { panBy(state.active, 0.25); });
+		els.zoomin.addEventListener("click", function () { zoomBy(state.active, 0.5); });
+		els.zoomout.addEventListener("click", function () { zoomBy(state.active, 2); });
 		els.zoomreset.addEventListener("click", resetZoom);
 		els.fullscreen.addEventListener("click", toggleFullscreen);
 		els.help.addEventListener("click", openHelp);
 		els.helplink.addEventListener("click", openHelp);
-		document.addEventListener("fullscreenchange", function () { renderZoom(); drawChart(); });
+		document.addEventListener("fullscreenchange", function () { syncMaximize(); renderZoom(); drawChart(); });
+		document.addEventListener("webkitfullscreenchange", function () { syncMaximize(); });
 		window.addEventListener("resize", function () { drawChart(); });
 		document.addEventListener("keydown", onKey);
 		loadCatalog(false);

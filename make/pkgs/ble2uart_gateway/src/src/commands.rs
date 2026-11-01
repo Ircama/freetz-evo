@@ -150,6 +150,23 @@ pub fn set_scan(link: &mut Link, scanner: Option<&ScannerConfig>, timeout: Durat
     Ok(())
 }
 
+fn set_scan_with_retry(link: &mut Link, scanner: Option<&ScannerConfig>, timeout: Duration) -> Result<(), String> {
+    // The firmware needs a moment to confirm a scan transition; a single
+    // attempt often reports "SCAN: timed out" while the adapter is still busy
+    // finishing the previous state change, which would block diagnostics.
+    let mut last = String::new();
+    for attempt in 0..3 {
+        match set_scan(link, scanner, timeout) {
+            Ok(()) => return Ok(()),
+            Err(error) => {
+                last = error;
+                if attempt < 2 { std::thread::sleep(Duration::from_millis(150)); }
+            }
+        }
+    }
+    Err(last)
+}
+
 fn diagnostic(link: &mut Link, name: Diagnostic, pin: u8, timeout: Duration) -> Result<Value, String> {
     let (cmd, parameters) = match name {
         Diagnostic::Info => (Cmd::Info, vec![]),
@@ -184,7 +201,7 @@ fn suspend_radio(link: &mut Link, radio: &mut Radio, scanner: &ScannerConfig, ti
         scanner: scanner.clone(), txadv });
     if radio.scanning {
         radio.scanning = false;
-        set_scan(link, None, timeout)?;
+        set_scan_with_retry(link, None, timeout)?;
     }
     if radio.txadv_active {
         checked_request(link, &link::build_command(Cmd::TxAdv, [0; 6], &[0]), Cmd::TxAdv, timeout)?;
@@ -203,7 +220,7 @@ pub fn restore_radio(link: &mut Link, radio: &mut Radio, timeout: Duration) -> R
                 .map_err(|error| format!("cannot restore TXADV: {error}"))?;
         }
         if saved.scanning {
-            set_scan(link, Some(&saved.scanner), timeout).map_err(|error| format!("cannot restore scanner: {error}"))?;
+            set_scan_with_retry(link, Some(&saved.scanner), timeout).map_err(|error| format!("cannot restore scanner: {error}"))?;
             radio.scanning = true;
         }
         radio.scan_suppressed = saved.scan_suppressed;
@@ -305,7 +322,23 @@ pub fn execute(link: &mut Link, radio: &mut Radio, scanner: &ScannerConfig, time
             let remaining = Duration::from_millis(request.timeout_ms).saturating_sub(started.elapsed());
             bounded.timeout_ms = remaining.as_millis() as u64;
             let result = gatt::execute(link, state, &bounded, spec);
-            let close = request.session.is_empty() || result.is_err() || request.operation == gatt::Operation::Unpair;
+            // A pvvx/ATC sensor resets its radio when a configuration patch changes
+            // flg2.bt5phy or flg2.longrange: the peer drops the link by itself. Report
+            // that, so the caller closes the session instead of keeping a dead token.
+            let mut result = result;
+            let mut peer_closed = false;
+            if result.is_ok() && !request.session.is_empty() && request.operation != gatt::Operation::Unpair {
+                if let Ok(false) = gatt::link_connected(link, timeout) {
+                    peer_closed = true;
+                    if let Ok(value) = &mut result {
+                        if let Value::Object(fields) = value {
+                            fields.insert("confirmation".to_string(), json!("disconnected"));
+                            fields.insert("peer_closed".to_string(), json!(true));
+                        }
+                    }
+                }
+            }
+            let close = request.session.is_empty() || result.is_err() || peer_closed || request.operation == gatt::Operation::Unpair;
             if close {
                 if let Err(error) = &result { radio.gatt_error = error.clone(); log::warn!("GATT operation failed: {error}"); }
                 if let Err(cleanup) = finish_gatt(link, radio, timeout, true) {
@@ -335,8 +368,8 @@ pub fn execute(link: &mut Link, radio: &mut Radio, scanner: &ScannerConfig, time
     let resume = radio.scanning;
     if resume {
         radio.scanning = false;
-        if let Err(pause) = set_scan(link, None, timeout) {
-            return match set_scan(link, Some(scanner), timeout) {
+        if let Err(pause) = set_scan_with_retry(link, None, timeout) {
+            return match set_scan_with_retry(link, Some(scanner), timeout) {
                 Ok(()) => {
                     radio.scanning = true;
                     Err(format!("cannot pause scanner; command not sent: {pause}"))
@@ -376,7 +409,7 @@ pub fn execute(link: &mut Link, radio: &mut Radio, scanner: &ScannerConfig, time
         Command::ScanStart | Command::ScanStop => unreachable!(),
     };
     if resume && !radio.scan_suppressed {
-        if let Err(error) = set_scan(link, Some(scanner), timeout) {
+        if let Err(error) = set_scan_with_retry(link, Some(scanner), timeout) {
             radio.recovery_required = true;
             let previous = result.err().map(|error| format!("{error}; ")).unwrap_or_default();
             return Err(format!("{previous}cannot restore scanner: {error}"));
@@ -638,10 +671,29 @@ mod tests {
 
     #[test]
     fn failed_pause_does_not_send_command_and_attempts_to_restore_scan() {
-        let (result, radio, _) = run_steps(vec![(stop_step().0, vec![]), resume_step()],
-            json!({"command":"diagnostic","name":"vbat"}), true);
+        // The pause is retried because a busy adapter often misses the first
+        // SCAN confirmation; only after the retries fail is the command refused.
+        let (result, radio, _) = run_steps(vec![
+            (stop_step().0, vec![]),
+            (stop_step().0, vec![]),
+            (stop_step().0, vec![]),
+            resume_step(),
+        ], json!({"command":"diagnostic","name":"vbat"}), true);
         assert!(result.unwrap_err().contains("command not sent"));
         assert!(radio.scanning);
+    }
+
+    #[test]
+    fn scan_pause_is_retried_before_the_command_is_sent() {
+        let (result, radio, _) = run_steps(vec![
+            (stop_step().0, vec![]),
+            stop_step(),
+            (vec![15], vec![response(15, 0, &[0, 0, 0, 0, 0, 0])]),
+            resume_step(),
+        ], json!({"command":"diagnostic","name":"vbat"}), true);
+        assert!(result.is_ok(), "{result:?}");
+        assert!(radio.scanning);
+        assert!(!radio.recovery_required);
     }
 
     #[test]

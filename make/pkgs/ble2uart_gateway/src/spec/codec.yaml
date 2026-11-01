@@ -11697,6 +11697,320 @@ structures:
     - kind: int
       fmt: <B
       name: averaging_measurements
+  cfg47:
+    kind: struct
+    fields:
+    - kind: literal
+      value: 1
+      name: version
+    - kind: transform
+      func: bytes2bits
+      sub:
+        kind: struct
+        fields:
+        - kind: bits
+          length: 4
+          signed: false
+          swapped: false
+          name: major
+        - kind: bits
+          length: 4
+          signed: false
+          swapped: false
+          name: minor
+      name: firmware_version
+    - kind: transform
+      func: bytes2bits
+      sub:
+        kind: struct
+        fields:
+        - kind: boolean
+          name: lp_measures
+        - kind: boolean
+          name: tx_measures
+        - kind: boolean
+          name: show_batt_enabled
+        - kind: enum
+          mapping:
+            '1': temp_F
+            '0': temp_C
+          sub:
+            kind: boolean
+          name: temp_F_or_C
+        - kind: enum
+          mapping:
+            '0': blinking_smile
+            '1': blinking_time
+          sub:
+            kind: boolean
+          name: blinking_time_smile
+        - kind: boolean
+          name: comfort_smiley
+        - kind: enum
+          mapping:
+            '0': adv_type_atc1441
+            '1': adv_type_custom
+            '2': adv_type_mi
+            '3': adv_type_ha_ble
+          sub:
+            kind: bits
+            length: 2
+            signed: false
+            swapped: false
+          name: advertising_type
+      name: flg
+    - kind: transform
+      func: bytes2bits
+      sub:
+        kind: struct
+        fields:
+        - kind: boolean
+          name: screen_off
+        - kind: boolean
+          name: longrange
+        - kind: boolean
+          name: bt5phy
+        - kind: boolean
+          name: adv_flags
+        - kind: boolean
+          name: adv_crypto
+        - kind: enum
+          mapping:
+            '0': smiley_off
+            '1': smiley_happy
+            '2': smiley_sad
+            '3': smiley_ooo
+            '4': smiley_p_off
+            '5': smiley_p_happy
+            '6': smiley_p_sad
+            '7': smiley_p_ooo
+          sub:
+            kind: bits
+            length: 3
+            signed: false
+            swapped: false
+          name: smiley
+      name: flg2
+    - kind: transform
+      func: bytes2bits
+      sub:
+        kind: struct
+        fields:
+        - kind: bits
+          length: 4
+          signed: false
+          swapped: false
+          name: adv_interval_delay
+        - kind: bits
+          length: 2
+          signed: false
+          swapped: false
+          name: reserved
+        - kind: boolean
+          name: date_ddmm
+        - kind: boolean
+          name: not_day_of_week
+      name: flg3
+    - kind: int
+      fmt: <B
+      name: event_adv_cnt
+    - kind: transform
+      func: affine
+      factor: 0.0625
+      offset: 0.0
+      decoder:
+        op: multiply
+        left:
+          op: input
+        right:
+          op: literal
+          value: 0.0625
+      encoder:
+        op: int
+        argument:
+          op: divide
+          left:
+            op: float
+            argument:
+              op: input
+          right:
+            op: literal
+            value: 0.0625
+      sub:
+        kind: int
+        fmt: <B
+      name: advertising_interval
+    - kind: literal
+      value: sec.
+      name: adv_int_unit
+    - kind: int
+      fmt: <B
+      name: measure_interval
+    - kind: enum
+      mapping:
+        '191': RF_POWER_Positive_3p01_dBm
+        '189': RF_POWER_Positive_2p81_dBm
+        '187': RF_POWER_Positive_2p61_dBm
+        '185': RF_POWER_Positive_2p39_dBm
+        '182': RF_POWER_Positive_1p99_dBm
+        '180': RF_POWER_Positive_1p73_dBm
+        '178': RF_POWER_Positive_1p45_dBm
+        '176': RF_POWER_Positive_1p17_dBm
+        '174': RF_POWER_Positive_0p90_dBm
+        '172': RF_POWER_Positive_0p58_dBm
+        '169': RF_POWER_Positive_0p04_dBm
+        '168': RF_POWER_Negative_0p14_dBm
+        '164': RF_POWER_Negative_0p97_dBm
+        '162': RF_POWER_Negative_1p42_dBm
+        '160': RF_POWER_Negative_1p89_dBm
+        '158': RF_POWER_Negative_2p48_dBm
+        '156': RF_POWER_Negative_3p03_dBm
+        '154': RF_POWER_Negative_3p61_dBm
+        '152': RF_POWER_Negative_4p26_dBm
+        '150': RF_POWER_Negative_5p03_dBm
+        '148': RF_POWER_Negative_5p81_dBm
+        '146': RF_POWER_Negative_6p67_dBm
+        '144': RF_POWER_Negative_7p65_dBm
+        '142': RF_POWER_Negative_8p65_dBm
+        '140': RF_POWER_Negative_9p89_dBm
+        '138': RF_POWER_Negative_11p4_dBm
+        '136': RF_POWER_Negative_13p29_dBm
+        '134': RF_POWER_Negative_15p88_dBm
+        '132': RF_POWER_Negative_19p27_dBm
+        '130': RF_POWER_Negative_25p18_dBm
+        '255': RF_POWER_Negative_30_dBm
+        '128': RF_POWER_Negative_50_dBm
+        '63': RF_POWER_Positive_10p46_dBm
+        '61': RF_POWER_Positive_10p29_dBm
+        '58': RF_POWER_Positive_10p01_dBm
+        '56': RF_POWER_Positive_9p81_dBm
+        '53': RF_POWER_Positive_9p48_dBm
+        '51': RF_POWER_Positive_9p24_dBm
+        '49': RF_POWER_Positive_8p97_dBm
+        '47': RF_POWER_Positive_8p73_dBm
+        '45': RF_POWER_Positive_8p44_dBm
+        '43': RF_POWER_Positive_8p13_dBm
+        '41': RF_POWER_Positive_7p79_dBm
+        '39': RF_POWER_Positive_7p41_dBm
+        '37': RF_POWER_Positive_7p02_dBm
+        '35': RF_POWER_Positive_6p60_dBm
+        '33': RF_POWER_Positive_6p14_dBm
+        '31': RF_POWER_Positive_5p65_dBm
+        '29': RF_POWER_Positive_5p13_dBm
+        '27': RF_POWER_Positive_4p57_dBm
+        '25': RF_POWER_Positive_3p94_dBm
+        '23': RF_POWER_Positive_3p23_dBm
+      sub:
+        kind: int
+        fmt: <B
+      name: rf_tx_power
+    - kind: transform
+      func: affine
+      factor: 0.02
+      offset: 0.02
+      decoder:
+        op: multiply
+        left:
+          op: add
+          left:
+            op: input
+          right:
+            op: literal
+            value: 1
+        right:
+          op: literal
+          value: 0.02
+      encoder:
+        op: subtract
+        left:
+          op: int
+          argument:
+            op: divide
+            left:
+              op: float
+              argument:
+                op: input
+            right:
+              op: literal
+              value: 0.02
+        right:
+          op: literal
+          value: 1
+      sub:
+        kind: int
+        fmt: <B
+      name: connect_latency
+    - kind: literal
+      value: sec.
+      name: connect_latency_unit
+    - kind: transform
+      func: affine
+      factor: 0.05
+      offset: 0.0
+      decoder:
+        op: multiply
+        left:
+          op: input
+        right:
+          op: literal
+          value: 0.05
+      encoder:
+        op: int
+        argument:
+          op: divide
+          left:
+            op: float
+            argument:
+              op: input
+          right:
+            op: literal
+            value: 0.05
+      sub:
+        kind: int
+        fmt: <B
+      name: min_step_time_update_lcd
+    - kind: literal
+      value: sec.
+      name: min_s_t_upd_lcd_unit
+    - kind: transform
+      func: bytes2bits
+      sub:
+        kind: struct
+        fields:
+        - kind: enum
+          mapping:
+            '1': sensor_SHTC3
+            '0': sensor_SHT4x
+          sub:
+            kind: boolean
+          name: sensor
+        - kind: bits
+          length: 3
+          signed: false
+          swapped: false
+          name: reserved
+        - kind: enum
+          mapping:
+            '0': hwver_LYWSD03MMC_B1_4
+            '1': hwver_MHO_C401
+            '2': hwver_CGG1_M_OLD
+            '3': hwver_LYWSD03MMC_B1_9
+            '4': hwver_LYWSD03MMC_B1_6
+            '5': hwver_LYWSD03MMC_B1_7
+            '6': hwver_CGDK2
+            '7': hwver_CGG1_M_2022
+            '8': hwver_MHO_C401N_2022
+            '9': hwver_MJWSD05MMC
+          sub:
+            kind: bits
+            length: 4
+            signed: false
+            swapped: false
+          name: hwver
+      name: hw_cfg
+    - kind: int
+      fmt: <B
+      name: averaging_measurements
   trigger:
     kind: struct
     fields:

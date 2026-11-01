@@ -47,6 +47,12 @@ config FREETZ_PACKAGE_BLE2UART_GATEWAY
 		    sensors, units and value types are read from the SQLite
 		    database, nothing is hard-coded
 
+		The dashboard is also an installable web app (manifest, icons and
+		a service worker that keeps the last data readable offline). The
+		browser offers the installation only in a secure context, that is
+		over HTTPS or on localhost: over http://fritz.box it can still be
+		added to the home screen, but without the offline cache.
+
 config FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS
 	bool "  Second decoder: Theengs Decoder (GPL-3.0-or-later)"
 	depends on FREETZ_PACKAGE_BLE2UART_GATEWAY

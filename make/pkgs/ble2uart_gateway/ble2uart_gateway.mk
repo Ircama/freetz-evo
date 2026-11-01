@@ -181,7 +181,11 @@ $(PKG)_STAGING_SOURCES := \
         $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/lib/cgi-bin/ble2uart_gateway/portal.cgi \
         $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/mode-yaml.js \
         $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/portal.css \
-        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/portal.js
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/portal.js \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/icon-180.png \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/icon-192.png \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/icon-512.png \
+        $(BLE2UART_GATEWAY_MAKE_DIR)/files/root/usr/mww/ble2uart_gateway/icon-maskable-512.png
 
 $($(PKG)_STAGING_TARGET): $($(PKG)_STAGING_SOURCES)
 	mkdir -p $(BLE2UART_GATEWAY_TARGET_DIR)/root

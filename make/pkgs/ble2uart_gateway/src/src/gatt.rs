@@ -11,10 +11,10 @@ use std::time::{Duration, Instant};
 pub const MAX_TIMEOUT_MS: u64 = 120_000;
 
 pub fn default_timeout() -> u64 {
-    60_000
+    30_000
 }
 fn default_idle_timeout() -> u64 {
-    60000
+    120_000
 }
 fn one() -> u8 {
     1
@@ -312,21 +312,57 @@ impl Notification {
 }
 
 fn decode_value(spec: &Spec, request: &Request, bytes: &[u8]) -> Result<Value, String> {
-    let full = bytes;
-    let bytes = bytes
-        .get(request.offset..)
-        .ok_or("codec offset exceeds received value")?;
-    // ble_send_cfg() notifies sizeof(cfg)+3 bytes from a buffer of sizeof(cfg)+2:
-    // the last byte is an out-of-bounds read of the firmware, not configuration.
-    let bytes = if request.codec == "cfg" && request.offset == 1 && full.first() == Some(&0x55) && bytes.len() == 13 {
-        &bytes[..12]
-    } else {
-        bytes
-    };
-    Decoder::new(spec, bytes)
+    Decoder::new(spec, codec_slice(request, bytes)?)
         .decode_exact(&request.codec)
         .map(|value| value.to_json())
         .map_err(|error| error.to_string())
+}
+
+/// Bytes that the codec actually describes.
+///
+/// `ble_send_cfg()` notifies sizeof(cfg)+3 bytes from a buffer of sizeof(cfg)+2:
+/// the last byte is an out-of-bounds read of the firmware, not configuration.
+/// Decoding and the patch byte-exact check must agree on this slice, otherwise
+/// every patch on such a firmware is refused as "not byte-exact".
+fn codec_slice<'a>(request: &Request, bytes: &'a [u8]) -> Result<&'a [u8], String> {
+    let tail = bytes
+        .get(request.offset..)
+        .ok_or("codec offset exceeds received value")?;
+    // "cfg" is the pre-4.7 ATC layout, "cfg47" the one used from firmware 4.7
+    // on (flg3 + event_adv_cnt instead of temp_offset + humi_offset): both are
+    // notified as 0x55 + version + 11 bytes + one out-of-bounds byte.
+    let atc = matches!(request.codec.as_str(), "cfg" | "cfg47");
+    Ok(if atc && request.offset == 1 && bytes.first() == Some(&0x55) && tail.len() == 13 {
+        &tail[..12]
+    } else {
+        tail
+    })
+}
+
+/// True when the adapter still reports an established BLE link.
+///
+/// A pvvx/ATC sensor resets its radio (and therefore drops the connection) when
+/// a configuration patch changes `flg2.bt5phy` or `flg2.longrange`; the caller
+/// uses this to close a session whose peer is already gone.
+pub fn link_connected(link: &mut Link, timeout: Duration) -> Result<bool, String> {
+    let mut state = State::empty(&Open {
+        mac: String::new(),
+        addr_type: 0,
+        coded: false,
+        timeout_ms: 1000,
+        idle_timeout_ms: 1000,
+    });
+    let mut wire = Wire {
+        link,
+        state: &mut state,
+        deferred: Vec::new(),
+        deadline: Instant::now() + timeout,
+        cancellable: false,
+    };
+    wire.check_deadline()?;
+    wire.drain()?;
+    wire.send(ConnOp::StatusQuery, &[])?;
+    Ok(wire.connection_state(None)? == 2)
 }
 
 pub struct State {
@@ -940,14 +976,25 @@ pub fn execute(link: &mut Link, state: &mut State, request: &Request, spec: &Spe
                 Operation::Patch => {
                     let before = wire.exchange(handle, &hex_bytes(&request.value, 56)?, request)?;
                     let raw = &before[0].value;
+                    let received = codec_slice(request, raw)?;
                     let mut decoded = decode_value(spec, request, raw)?;
                     let original = decoded.clone();
                     let encoded = Encoder::new(spec).encode(&request.codec, &value::Value::from_json(&decoded))?;
-                    if raw.get(request.offset..) != Some(encoded.as_slice()) {
-                        return Err("codec is not byte-exact for this configuration; patch refused without writing. Use a firmware-matched codec or an explicit raw write".into());
+                    if received != encoded.as_slice() {
+                        return Err(format!(
+                            "codec is not byte-exact for this configuration; patch refused without writing (device {} vs codec {}). Use a firmware-matched codec or an explicit raw write",
+                            value::hex(received),
+                            value::hex(&encoded)
+                        ));
                     }
                     merge_patch(&mut decoded, request.patch.as_ref().expect("validated patch"), "")?;
                     let updated = Encoder::new(spec).encode(&request.codec, &value::Value::from_json(&decoded))?;
+                    if updated == encoded {
+                        // The device already holds these values: say so instead of
+                        // flashing the same configuration again and waiting for a
+                        // notification that some firmwares do not send for no-ops.
+                        return Err("patch does not change the configuration: the device already has these values, nothing was written".into());
+                    }
                     if updated.len() != encoded.len()
                         || request.write_offset > updated.len()
                         || updated[..request.write_offset] != encoded[..request.write_offset]
@@ -1082,10 +1129,48 @@ mod tests {
     }
 
     #[test]
+    fn numeric_cfg_patches_encode_and_verify() {
+        // humi_offset/temp_offset are affine fields: an integer in the JSON
+        // patch must produce the same encoded frame as the decoded float, and
+        // the verification must accept it.
+        let spec = Spec::embedded().unwrap();
+        let frame = hex_bytes("554785B000002804A9313104B400", 56).unwrap();
+        for patch in [json!({"humi_offset": 0}), json!({"temp_offset": 0}), json!({"humi_offset": -3.5})] {
+            let request = request(json!({"value":"55","codec":"cfg","offset":1,"write_offset":1,"patch":patch}));
+            let received = codec_slice(&request, &frame).unwrap();
+            let mut decoded = decode_value(&spec, &request, &frame).unwrap();
+            let encoded = Encoder::new(&spec).encode("cfg", &value::Value::from_json(&decoded)).unwrap();
+            assert_eq!(received, encoded.as_slice());
+            merge_patch(&mut decoded, request.patch.as_ref().unwrap(), "").unwrap();
+            let updated = Encoder::new(&spec).encode("cfg", &value::Value::from_json(&decoded)).unwrap();
+            assert_eq!(updated.len(), encoded.len(), "{patch}");
+            let check = Decoder::new(&spec, &updated).decode_exact("cfg").unwrap().to_json();
+            assert!(patch_matches(&check, request.patch.as_ref().unwrap()), "{patch} -> {check}");
+        }
+    }
+
+    #[test]
+    fn cfg_frame_slice_matches_the_codec_encoding() {
+        // Regression: the ATC firmware notifies sizeof(cfg)+3 bytes from a buffer
+        // of sizeof(cfg)+2, so the decoded slice is one byte shorter than the
+        // notification. Comparing the untrimmed bytes with the codec output
+        // refused every patch as "not byte-exact".
+        let spec = Spec::embedded().unwrap();
+        let request = request(json!({"codec":"cfg","offset":1,"value":"55"}));
+        let frame = hex_bytes("554785B000002804A9313104B400", 56).unwrap();
+        let slice = codec_slice(&request, &frame).unwrap();
+        assert_eq!(slice.len(), 12);
+        let decoded = decode_value(&spec, &request, &frame).unwrap();
+        let encoded = Encoder::new(&spec).encode("cfg", &value::Value::from_json(&decoded)).unwrap();
+        assert_eq!(slice, encoded.as_slice(), "decoded and re-encoded cfg frames must be identical");
+    }
+
+    #[test]
     fn gatt_limits_and_operation_fields_are_checked_before_radio_access() {
         let open: Open = serde_json::from_value(json!({"mac":"AABBCCDDEEFF"})).unwrap();
-        assert_eq!(open.timeout_ms, 60_000);
-        assert_eq!(request(json!({})).timeout_ms, 60_000);
+        assert_eq!(open.timeout_ms, 30_000);
+        assert_eq!(open.idle_timeout_ms, 120_000);
+        assert_eq!(request(json!({})).timeout_ms, 30_000);
         assert!(request(json!({"timeout_ms":120_000})).validate().is_ok());
         assert!(request(json!({"timeout_ms":120_001})).validate().is_err());
         assert!(request(json!({})).validate().is_ok());

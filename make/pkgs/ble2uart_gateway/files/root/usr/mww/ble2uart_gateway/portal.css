@@ -66,11 +66,22 @@ button { font: inherit; }
 /* layout */
 .pmain { padding: 14px 16px 28px; max-width: 1600px; margin: 0 auto; }
 .playout { display: grid; grid-template-columns: minmax(240px, var(--device-fr, 47fr)) 8px minmax(320px, var(--chart-fr, 53fr)); gap: 10px; align-items: start; }
+/* Pin the three columns explicitly: the splitter is created by portal.js, and
+ * without it the chart would fall into the fixed 8px column and vanish. */
+.playout > .pdevices { grid-column: 1; }
+.playout > .psplitter { grid-column: 2; }
+.playout > .pchart { grid-column: 3; min-width: 0; }
 .psplitter { align-self: stretch; min-height: 100%; cursor: col-resize; touch-action: none; position: relative; }
 .psplitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; border-radius: 2px; background: var(--line); }
 .psplitter:hover::after, .psplitter:focus-visible::after, .psplitter[aria-valuenow]:active::after { background: var(--accent); }
 .psplitter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-@media (max-width: 960px) { .playout { grid-template-columns: 1fr; } .psplitter { display: none; } }
+@media (max-width: 960px) {
+  .playout { grid-template-columns: 1fr; }
+  .playout > .pdevices, .playout > .pchart { grid-column: auto; }
+  .psplitter { display: none; }
+  /* stacked layout: the values and the chart are separated by a horizontal line */
+  .playout > .pchart { border-top: 1px solid var(--line); padding-top: 12px; }
+}
 
 /* kpis */
 .pkpis { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
@@ -155,6 +166,20 @@ button { font: inherit; }
 .pchart:-webkit-full-screen .pcanvas { flex: 1; height: auto; }
 .pcanvas .pempty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 10px; }
 .pcanvas .pempty[hidden], .ptip[hidden] { display: none; }
+/* several chart panels: one per unit (temperature, humidity, voltage, ...) */
+.pcanvases { display: flex; flex-direction: column; gap: 12px; }
+.pchartblock { min-width: 0; }
+.pchartblock + .pchartblock { border-top: 1px dashed var(--line); padding-top: 12px; }
+.pchartblocktitle { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.pchartblock .pcanvas { height: 240px; }
+.pchart:fullscreen .pcanvases { flex: 1; }
+.pchart:fullscreen .pchartblock { display: flex; flex-direction: column; }
+#chartmode {
+  padding: 4px 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--bg); color: var(--muted); cursor: pointer;
+}
+#chartmode:hover { border-color: var(--accent); color: var(--accent); }
+#chartmode[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 .plegend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .plegend .chip {
   display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
@@ -210,3 +235,35 @@ button { font: inherit; }
 .ptip .row em { margin-left: auto; font-style: normal; font-variant-numeric: tabular-nums; }
 
 .pfail { margin: 0 0 14px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--bad); background: color-mix(in srgb, var(--bad) 10%, transparent); color: var(--bad); }
+
+/* Web app (PWA) ---------------------------------------------------------- */
+/* Offline notice: the service worker keeps the last answer of the CGI, so the
+ * page stays readable with stale values. */
+.pnet {
+  margin: 0 0 14px; padding: 8px 12px; border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  color: var(--warn); font-size: 12.5px;
+}
+/* Launched from the home screen there is no browser bar: keep the top and the
+ * bottom clear of the notch and of the gesture area. */
+html.pwa-standalone .ptop { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+html.pwa-standalone .pmain { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+/* Page-level fullscreen (the maximize button, or the manifest that launches the
+ * installed app without browser chrome): keep the same safe areas and give the
+ * chart the whole viewport. */
+html:fullscreen, html:-webkit-full-screen { background: var(--bg); }
+html:fullscreen .ptop, html:-webkit-full-screen .ptop { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+html:fullscreen .pmain, html:-webkit-full-screen .pmain { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+html:fullscreen .playout, html:-webkit-full-screen .playout { min-height: calc(100vh - 120px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+/* Give the charts the extra room the browser bar used to take. */
+html:fullscreen .pchartblock .pcanvas,
+html:-webkit-full-screen .pchartblock .pcanvas { height: clamp(220px, 62vh, 760px); }
+#maximize[hidden] { display: none; }
+#maximize.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+#install[hidden] { display: none; }
+#pwahelp p { margin: 0 0 12px; font-size: 12.5px; }
+#pwahelp p kbd {
+  padding: 1px 5px; border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 5px; background: var(--bg); font: inherit; font-size: 12px;
+}

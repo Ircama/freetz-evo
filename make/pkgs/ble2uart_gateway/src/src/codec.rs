@@ -1086,7 +1086,10 @@ pub mod decode {
                 }
             }
             let bits = (unit * 8) as u32;
-            let signed = first.is_ascii_lowercase() && first != 'b';
+            // 'b' is a signed 8-bit integer (Python struct): an unsigned byte is
+            // 'B', and 'c' is a plain character. Treating 'b' as unsigned hid
+            // every negative temp/humi offset and broke their patch verification.
+            let signed = matches!(first, 'b' | 'h' | 'i' | 'l' | 'q');
             Ok(Value::Int(sign_extend(value, bits, signed)))
         }
 

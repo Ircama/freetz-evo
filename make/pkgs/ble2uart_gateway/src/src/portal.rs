@@ -18,6 +18,8 @@
 //!   `?action=catalog`   devices, series and latest values (JSON)
 //!   `?action=series`    downsampled time series for one attribute (JSON)
 //!   `?action=info`      database statistics and process footprint (JSON)
+//!   `?action=manifest`  web app manifest, so the dashboard can be installed
+//!   `?action=sw`        service worker that caches the shell for offline use
 
 use crate::config::Config;
 use rusqlite::{Connection, OpenFlags, params};
@@ -66,6 +68,21 @@ pub fn run(config: &Path) -> Result<(), String> {
         "catalog" => json_reply(catalog_action(config), head),
         "series" => json_reply(series_action(config, &params), head),
         "info" => json_reply(info_action(config), head),
+        "manifest" => {
+            let lang = params.get("lang").map(String::as_str).unwrap_or("it");
+            reply_head(200, "application/manifest+json; charset=UTF-8", &manifest(lang), head)
+        }
+        // The worker must be able to cache the static assets that the page
+        // loads from `/ble2uart_gateway/`, so its scope has to sit above the
+        // CGI directory: the header below is what the specification requires
+        // for a scope wider than the script directory.
+        "sw" => reply_extra(
+            200,
+            "text/javascript; charset=UTF-8",
+            "Service-Worker-Allowed: /\r\n",
+            &service_worker(),
+            head,
+        ),
         other => reply(404, "text/plain; charset=UTF-8", &format!("unknown action: {other}\n")),
     }
 }
@@ -83,6 +100,16 @@ fn reply(status: u16, content_type: &str, body: &str) -> Result<(), String> {
 }
 
 fn reply_head(status: u16, content_type: &str, body: &str, head: bool) -> Result<(), String> {
+    reply_extra(status, content_type, "", body, head)
+}
+
+fn reply_extra(
+    status: u16,
+    content_type: &str,
+    extra_headers: &str,
+    body: &str,
+    head: bool,
+) -> Result<(), String> {
     let reason = match status {
         200 => "OK",
         403 => "Forbidden",
@@ -95,6 +122,7 @@ fn reply_head(status: u16, content_type: &str, body: &str, head: bool) -> Result
          Content-Type: {content_type}\r\n\
          Content-Length: {}\r\n\
          Cache-Control: no-store\r\n\
+         {extra_headers}\
          X-Content-Type-Options: nosniff\r\n\
          Referrer-Policy: same-origin\r\n\
          \r\n",
@@ -880,29 +908,252 @@ fn process_json() -> Value {
 }
 
 // ---------------------------------------------------------------------------
+// Web app manifest and service worker
+// ---------------------------------------------------------------------------
+
+/// Static assets of the dashboard, reachable at this URL prefix because
+/// freetz serves `/usr/mww` (plus the `/mod/external/usr/mww` overlay) as the
+/// document root of the web server.
+const ASSETS: &str = "/ble2uart_gateway/";
+
+/// Web app manifest. `start_url` and `scope` are relative on purpose: the
+/// portal is reachable as `/cgi-bin/extra/ble2uart_gateway/portal` on a freetz
+/// image and as `/cgi-bin/ble2uart_gateway/portal.cgi` when the CGI is called
+/// directly, and relative values stay correct in both cases.
+fn manifest(lang: &str) -> String {
+    let (name, short, description) = match lang {
+        "en" => (
+            "Sensors of the BLE gateway",
+            "BLE sensors",
+            "Read-only dashboard of the measurements collected by ble2uart_gateway.",
+        ),
+        "de" => (
+            "Sensoren des BLE-Gateways",
+            "BLE-Sensoren",
+            "Schreibgeschuetztes Dashboard der von ble2uart_gateway erfassten Messwerte.",
+        ),
+        _ => (
+            "Sensori del gateway BLE",
+            "Sensori BLE",
+            "Dashboard in sola lettura delle misure raccolte da ble2uart_gateway.",
+        ),
+    };
+    let icon = |file: &str, size: u32, purpose: &str| {
+        json!({
+            "src": format!("{ASSETS}{file}"),
+            "sizes": format!("{size}x{size}"),
+            "type": "image/png",
+            "purpose": purpose,
+        })
+    };
+    json!({
+        "name": name,
+        "short_name": short,
+        "description": description,
+        "lang": lang,
+        "dir": "ltr",
+        "start_url": "./?action=page",
+        "scope": "./",
+        // Fullscreen is what makes the installed icon look like a native app:
+        // no URL bar, no browser toolbar and no system status bar. Browsers
+        // that ignore it fall back to standalone (no browser chrome only).
+        "display": "fullscreen",
+        "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
+        "orientation": "any",
+        "background_color": "#f4f6f8",
+        "theme_color": "#0b6bcb",
+        "categories": ["utilities", "health"],
+        "icons": [
+            icon("icon-192.png", 192, "any"),
+            icon("icon-512.png", 512, "any"),
+            icon("icon-maskable-512.png", 512, "maskable"),
+        ],
+    })
+    .to_string()
+}
+
+/// Service worker served by this CGI: the version and the asset prefix are
+/// substituted, everything else is plain JavaScript.
+fn service_worker() -> String {
+    PORTAL_SW
+        .replace("__V__", ASSET_VERSION)
+        .replace("__ASSETS__", ASSETS)
+}
+
+/// Caches the application shell and keeps the last data readable offline.
+/// Only the portal paths are handled: the login page, the configuration CGI
+/// and every other request are forwarded untouched.
+const PORTAL_SW: &str = r#"/* Service worker of the ble2uart_gateway sensor portal.
+ *
+ * The dashboard is one CGI page plus static assets, so the worker keeps a copy
+ * of both:
+ *   navigation requests        network first, cached page as fallback;
+ *   ?action=catalog|series|info  network first, last answer as fallback;
+ *   /ble2uart_gateway/*        cache first, refreshed in the background.
+ */
+const VERSION = "__V__";
+const ASSETS = "__ASSETS__";
+const CACHE = "ble2uart-portal-" + VERSION;
+const PAGE = self.location.pathname;
+const SHELL = [
+	ASSETS + "portal.css?v=" + VERSION,
+	ASSETS + "portal.js?v=" + VERSION,
+	ASSETS + "icon-192.png",
+	ASSETS + "icon-512.png",
+	ASSETS + "icon-maskable-512.png"
+];
+const OFFLINE_JSON = '{"ok":false,"error":"offline"}';
+const OFFLINE_HTML = '<!DOCTYPE html><html lang="it"><meta charset="utf-8">' +
+	'<meta name="viewport" content="width=device-width,initial-scale=1">' +
+	'<title>Offline</title><body style="font:15px/1.5 system-ui,sans-serif;padding:24px;color:#1f2933">' +
+	'<h1 style="font-size:18px">Portale non raggiungibile</h1>' +
+	'<p>Nessuna copia in cache: riconnettersi al Fritz!Box e ricaricare.</p>' +
+	'<p>The portal is unreachable and no page is cached: reconnect to the router and reload.</p>' +
+	'</body></html>';
+
+self.addEventListener("install", function (event) {
+	/* A new version waits instead of taking over a page that is already
+	 * loading: skipWaiting during a navigation can leave the request hanging
+	 * until the browser gives up. On the very first install there is nothing to
+	 * wait for, so the worker activates at once and starts caching. */
+	const first = !self.registration.active;
+	event.waitUntil(
+		caches.open(CACHE)
+			.then(function (cache) {
+				/* The page itself is precached: the worker takes control only
+				 * after the first navigation, so without this copy the very
+				 * first offline reload would have nothing to fall back to. */
+				const page = cache.add(new Request(PAGE, { cache: "reload" })).catch(function () { });
+				return Promise.all(SHELL.map(function (url) {
+					return cache.add(new Request(url, { cache: "reload" })).catch(function () { });
+				}).concat([page]));
+			})
+			.then(function () { return first ? self.skipWaiting() : undefined; })
+	);
+});
+
+/* The page asks for the pending version when the user reopens the app. */
+self.addEventListener("message", function (event) {
+	if (event.data === "skip-waiting") { self.skipWaiting(); }
+});
+
+self.addEventListener("activate", function (event) {
+	event.waitUntil(
+		caches.keys()
+			.then(function (keys) {
+				return Promise.all(keys
+					.filter(function (key) { return key.indexOf("ble2uart-portal-") === 0 && key !== CACHE; })
+					.map(function (key) { return caches.delete(key); }));
+			})
+			.then(function () { return self.clients.claim(); })
+	);
+});
+
+function isPage(url) {
+	return url.pathname === PAGE && (url.search === "" || /[?&]action=page(&|$)/.test(url.search));
+}
+
+function isData(url) {
+	return url.pathname === PAGE && /[?&]action=(catalog|series|info)(&|$)/.test(url.search);
+}
+
+function offlineJson() {
+	return new Response(OFFLINE_JSON, {
+		status: 200,
+		headers: { "Content-Type": "application/json; charset=UTF-8", "X-Portal-Cache": "offline" }
+	});
+}
+
+function remember(request, response, key) {
+	if (response && response.ok) {
+		caches.open(CACHE).then(function (cache) { cache.put(key, response.clone()); });
+	}
+	return response;
+}
+
+self.addEventListener("fetch", function (event) {
+	const request = event.request;
+	if (request.method !== "GET") { return; }
+	const url = new URL(request.url);
+	if (url.origin !== self.location.origin) { return; }
+
+	if (isPage(url)) {
+		event.respondWith(
+			fetch(request)
+				.then(function (response) { return remember(request, response, PAGE); })
+				.catch(function () {
+					return caches.match(PAGE).then(function (hit) {
+						return hit || new Response(OFFLINE_HTML, {
+							status: 503,
+							headers: { "Content-Type": "text/html; charset=UTF-8" }
+						});
+					});
+				})
+		);
+		return;
+	}
+
+	if (isData(url)) {
+		event.respondWith(
+			fetch(request)
+				.then(function (response) { return remember(request, response, request); })
+				.catch(function () {
+					return caches.match(request).then(function (hit) { return hit || offlineJson(); });
+				})
+		);
+		return;
+	}
+
+	if (url.pathname.indexOf(ASSETS) === 0) {
+		event.respondWith(
+			caches.match(request).then(function (hit) {
+				const network = fetch(request)
+					.then(function (response) { return remember(request, response, request); })
+					.catch(function () { return hit; });
+				return hit || network;
+			})
+		);
+	}
+});
+"#;
+
+// ---------------------------------------------------------------------------
 // HTML shell
 // ---------------------------------------------------------------------------
 
 fn page() -> String {
-    r#"<!DOCTYPE html>
+    r##"<!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ble2uart_gateway &middot; Sensori</title>
-<link rel="stylesheet" href="/ble2uart_gateway/portal.css?v={v}">
+<meta name="description" content="Dashboard dei sensori BLE gestiti da ble2uart_gateway.">
+<meta name="theme-color" content="#0b6bcb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161c" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sensori">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" id="manifest" href="?action=manifest">
+<link rel="icon" type="image/png" sizes="192x192" href="{a}icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{a}icon-180.png">
+<link rel="stylesheet" href="{a}portal.css?v={v}">
 </head>
 <body>
 <header class="ptop">
   <div class="ptitle"><span class="pdot"></span><h1 id="title">ble2uart_gateway</h1><span class="psub" id="subtitle">Sensori</span></div>
   <nav class="pactions">
     <span class="pstamp" id="stamp">&mdash;</span>
+    <button class="pbtn" id="maximize" type="button" hidden>&#10530;</button>
+    <button class="pbtn" id="install" type="button" hidden>&#10515;</button>
     <button class="pbtn" id="reload" type="button" title="Aggiorna">&#8635;</button>
     <button class="pbtn" id="resetview" type="button" title="Reimposta le viste salvate">&#10226;</button>
     <a class="pbtn" id="config" href="/cgi-bin/conf/ble2uart_gateway" title="Configurazione">&#9881;</a>
   </nav>
 </header>
 <main class="pmain">
+  <p class="pnet" id="netstate" hidden></p>
   <section class="pkpis" id="kpis"></section>
   <div class="playout">
     <section class="pdevices" id="devices"><p class="pempty">Caricamento&hellip;</p></section>
@@ -936,17 +1187,24 @@ fn page() -> String {
     </aside>
   </div>
 </main>
+<dialog class="phelp" id="pwahelp" aria-labelledby="pwahelptitle">
+  <h3 id="pwahelptitle"></h3>
+  <p id="pwahelpbody"></p>
+  <form method="dialog"><button type="submit" id="pwahelpclose"></button></form>
+</dialog>
 <noscript><p>JavaScript richiesto.</p></noscript>
-<script src="/ble2uart_gateway/portal.js?v={v}"></script>
+<script src="{a}portal.js?v={v}"></script>
 </body>
 </html>
-"#
+"##
     .replace("{v}", ASSET_VERSION)
+    .replace("{a}", ASSETS)
 }
 
 /// Bumped whenever `portal.css` or `portal.js` change, so a router that
-/// caches static files still serves the new version.
-const ASSET_VERSION: &str = "5";
+/// caches static files still serves the new version. The service worker uses
+/// the same value as cache name, so a bump also retires the older caches.
+const ASSET_VERSION: &str = "9";
 
 // ---------------------------------------------------------------------------
 // Tests

@@ -272,7 +272,19 @@ cat << 'EOF'
 #bbApp #bbFrontends > [data-frontend] > .bbGrid > .bbField:first-child {grid-column:1 / -1;border-bottom:1px solid var(--bb-line);padding-bottom:10px;}
 #bbApp .bbItem {border-left:2px solid var(--bb-line);padding:4px 0 12px 12px;margin:8px 0;}
 #bbApp .bbStatus {min-height:24px;margin:8px 0;overflow-wrap:anywhere;}
-#bbApp .bbError {color:#b73030;}
+#bbApp .bbHelpBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; min-height: 18px; padding: 0; margin: 0; flex: none;
+  font-size: 12px; line-height: 18px; font-weight: 700; cursor: pointer;
+  color: var(--bb-accent,#087e83); background: transparent; border: 1px solid var(--bb-accent,#087e83);
+  border-radius: 50%; vertical-align: middle;
+}
+#bbApp .bbHelpBtn:hover, #bbApp .bbHelpBtn:focus { color: #fff; background: var(--bb-accent,#087e83); border-color: var(--bb-accent,#087e83); }
+#bbApp .bbFieldHead { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+#bbFieldHelp { max-width: 640px; }
+#bbFieldHelp h4 { margin: 0 0 8px; }
+#bbFieldHelpBody { font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.bbError {color:#b73030;}
 #bbApp dialog {color:inherit;background:var(--evo-surface,#fff);border:1px solid var(--bb-line);border-radius:6px;width:720px;max-width:calc(100vw - 24px);max-height:90vh;padding:20px;overflow:auto;}
 #bbApp dialog::backdrop {background:rgba(0,0,0,.4);}
 #bbApp textarea {width:100%;resize:vertical;font:12px/1.5 monospace;}
@@ -381,10 +393,35 @@ cat << 'EOF'
 <div id="bbCommandFields" class="bbGrid"></div>
 <div id="bbCommandPatch" hidden><p id="bbCommandPatchLabel"></p><div id="bbCmd_patch" class="bbOutput" aria-labelledby="bbCommandPatchLabel" aria-describedby="bbCommandPatchError"></div><p id="bbCommandPatchError" class="bbError" role="alert" hidden></p></div>
 <p id="bbGattHelp" class="bbHint"></p>
-<div class="bbBar"><button type="button" id="bbAtcRead"></button><button type="button" id="bbAtcPatch"></button></div>
+<div class="bbBar"><button type="button" id="bbAtcRead"></button><button type="button" id="bbAtcPatch"></button><label><span id="bbAttemptsLabel"></span> <input type="number" id="bbAttempts" min="1" max="10" step="1" value="3" style="width:64px"></label><label><span id="bbRetryDelayLabel"></span> <input type="number" id="bbRetryDelay" min="0" max="60000" step="500" value="2000" style="width:88px"></label></div>
+<h4 id="bbRequestTitle"></h4>
 <details id="bbCommandRequestDetails" class="bbHelp"><summary id="bbCommandRequestLabel"></summary><div id="bbCommandRequest" class="bbOutput">{}</div></details>
+<h4 id="bbRadioTitle"></h4>
 <div id="bbRadio" class="bbOutput"></div>
+<h4 id="bbCommandResultTitle"></h4>
 <div id="bbCommandResult" class="bbOutput"></div>
+<dialog id="bbFieldHelp">
+<h4 id="bbFieldHelpTitle"></h4>
+<div id="bbFieldHelpBody"></div>
+<div class="bbBar"><button type="button" id="bbFieldHelpClose"></button></div>
+</dialog>
+<div id="bbAtcPanel" hidden>
+<h4 id="bbAtcTitle"></h4>
+<p id="bbAtcHint" class="bbHint"></p>
+<details id="bbAtcFrame" class="bbHelp"><summary id="bbAtcFrameLabel"></summary>
+<p id="bbAtcFrameHint" class="bbHint"></p>
+<div class="bbGrid">
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcUuidLabel"></span><span data-atc-help="frame.uuid"></span></span><input id="bbAtcUuid" autocomplete="off" spellcheck="false"></label>
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcValueLabel"></span><span data-atc-help="frame.value"></span></span><input id="bbAtcValue" autocomplete="off" spellcheck="false"></label>
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcPrefixLabel"></span><span data-atc-help="frame.prefix"></span></span><input id="bbAtcPrefix" autocomplete="off" spellcheck="false"></label>
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcCodecLabel"></span><span data-atc-help="frame.codec"></span></span><input id="bbAtcCodec" autocomplete="off" spellcheck="false"></label>
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcOffsetLabel"></span><span data-atc-help="frame.offset"></span></span><input id="bbAtcOffset" type="number" min="0" max="197" step="1"></label>
+<label class="bbField"><span class="bbFieldHead"><span id="bbAtcWriteOffsetLabel"></span><span data-atc-help="frame.write_offset"></span></span><input id="bbAtcWriteOffset" type="number" min="0" max="197" step="1"></label>
+</div></details>
+<div id="bbAtcFields" class="bbGrid"></div>
+<div class="bbBar"><button type="button" id="bbAtcBuild"></button></div>
+<p id="bbAtcStatus" class="bbHint" role="status"></p>
+</div>
 </section>
 <section data-panel="log" role="tabpanel" hidden>
 <div class="bbBar"><label>Lines <select id="bbLogLines"><option value="100">100</option><option value="300" selected>300</option><option value="1000">1000</option><option value="2000">2000</option></select></label><button type="button" id="bbLogRefresh">Refresh</button><label><input type="checkbox" id="bbLogAuto" checked> Auto-refresh every 5 s</label><button type="button" id="bbLogDownload">Download</button><span id="bbLogStatus" class="bbHint" role="status"></span></div>
@@ -1064,38 +1101,237 @@ cat << 'EOF'
 	const gattTranslations = {
 		en: {
 			open:'Open BLE GATT session',sessionCommand:'GATT operation in open session',close:'Close GATT session',session:'Session token (returned by Open)',idle_timeout_ms:'Idle timeout (1000-300000 ms)',uuid:'Characteristic/descriptor UUID (leave handle 0)',handle:'ATT handle (decimal; 0 selects UUID)',value:'Write/request value (hex; 56 bytes, 58 without response)',prefix:'Notification prefix filter (hex; empty = any)',mode:'Subscription (0 disable, 1 notify, 2 indicate)',count:'Matching notifications to await (1-64)',codec:'Codec structure (empty = raw bytes)',offset:'Response bytes to skip before decoding',write_offset:'Decoded bytes to omit when writing (response-only fields)',write_prefix:'Write prefix (hex; empty = request value)',patch:'JSON patch (only existing fields)',invalidJson:'Enter a nonempty JSON object',
-			atcRead:'Read ATC configuration (0x55)',atcPatch:'Apply ATC configuration patch (0x55)',request:'Request JSON',cancelled:'Command cancelled; nothing sent.',
+			atcRead:'Read ATC configuration (0x{hex})',atcPatch:'Apply ATC configuration patch (0x{hex})',request:'Request JSON',cancelled:'Command cancelled; nothing sent.',
+			attempts:'Attempts',retryDelay:'Delay between attempts (ms)',attempt:'Attempt {n} of {total}',requestTitle:'JSON request',radioTitle:'Radio state',resultTitle:'Response',
+			atcTitle:'ATC 0x55 configuration (decoded)',atcHint:'Values read from the device. Change what you need, then create the patch: only the modified fields are written.',atcBuild:'Create patch from these values',atcNoChange:'No field changed: modify at least one value.',atcReady:'Patch with {n} field(s) loaded in the editor; send it to apply.',atcUnknown:'Read the configuration first with "Read ATC configuration (0x55)".',atcReadOnly:'read-only',
 			help:'Open a session to discover, subscribe, write and await notifications without reconnecting. Copy its token for CLI use and close it when finished. ATC buttons send the read or patch after confirmation, using the selected peer/session. Edit the patch in Ace; the initial ATC patch enables bt5phy and longrange. Verify the installed firmware and codec first. Coded PHY needs compatible ATC firmware (4.2+ for LYWSD03MMC); confirm it from received advertisements, not the connection PHY.',
 			note:'Commands require the running daemon; the service stays active. GATT pauses scan and daemon-configured TXADV, then restores them on close or error. Discovery time is paused; other radio commands are blocked during an open session. TXADV start leaves scan OFF. No settings are saved and the service is not restarted.',closeFailed:'Page-exit GATT cleanup failed; the idle timeout remains active'
 		},
 		de: {
 			open:'BLE-GATT-Sitzung öffnen',sessionCommand:'GATT-Operation in offener Sitzung',close:'GATT-Sitzung schließen',session:'Sitzungstoken (vom Öffnen)',idle_timeout_ms:'Inaktivitätslimit (1000-300000 ms)',uuid:'UUID von Merkmal/Deskriptor (Handle 0)',handle:'ATT-Handle (dezimal; 0 wählt UUID)',value:'Schreib-/Anfragewert (Hex; 56 Bytes, 58 ohne Antwort)',prefix:'Benachrichtigungspräfix (Hex; leer = alle)',mode:'Abonnement (0 aus, 1 Notify, 2 Indicate)',count:'Passende Benachrichtigungen (1-64)',codec:'Codec-Struktur (leer = Rohdaten)',offset:'Vor dem Dekodieren übersprungene Antwortbytes',write_offset:'Beim Schreiben ausgelassene dekodierte Antwortbytes',write_prefix:'Schreibpräfix (Hex; leer = Anfragewert)',patch:'JSON-Patch (nur vorhandene Felder)',invalidJson:'Ein nicht leeres JSON-Objekt eingeben',
-			atcRead:'ATC-Konfiguration lesen (0x55)',atcPatch:'ATC-Konfigurationspatch anwenden (0x55)',request:'JSON-Anfrage',cancelled:'Befehl abgebrochen; nichts gesendet.',
+			atcRead:'ATC-Konfiguration lesen (0x{hex})',atcPatch:'ATC-Konfigurationspatch anwenden (0x{hex})',request:'JSON-Anfrage',cancelled:'Befehl abgebrochen; nichts gesendet.',
+			attempts:'Versuche',retryDelay:'Wartezeit zwischen Versuchen (ms)',attempt:'Versuch {n} von {total}',requestTitle:'JSON-Anfrage',radioTitle:'Funkstatus',resultTitle:'Antwort',
+			atcTitle:'ATC-0x55-Konfiguration (dekodiert)',atcHint:'Vom Gerät gelesene Werte. Gewünschte Werte ändern und dann den Patch erzeugen: geschrieben werden nur die geänderten Felder.',atcBuild:'Patch aus diesen Werten erzeugen',atcNoChange:'Kein Feld geändert: mindestens einen Wert ändern.',atcReady:'Patch mit {n} Feld(ern) im Editor; zum Anwenden senden.',atcUnknown:'Zuerst die Konfiguration mit „ATC-Konfiguration lesen (0x55)“ lesen.',atcReadOnly:'schreibgeschützt',
 			help:'Eine Sitzung öffnen, um ohne Neuverbindung zu suchen, abonnieren, schreiben und Benachrichtigungen abzuwarten. Token auch für CLI nutzbar; danach schließen. Die ATC-Tasten senden Lesen oder Patch nach Bestätigung an das gewählte Gerät bzw. die Sitzung. Patch in Ace bearbeiten; anfangs werden bt5phy und longrange aktiviert. Firmware und Codec vorher prüfen. Coded PHY erfordert passende ATC-Firmware (4.2+ bei LYWSD03MMC); empfangene Advertisements prüfen, nicht die Verbindungs-PHY.',
 			note:'Befehle erfordern den laufenden Daemon; der Dienst bleibt aktiv. GATT pausiert Scan und vom Daemon konfiguriertes TXADV bis zum Schließen, auch bei Fehlern. Die Discovery-Zeit pausiert; andere Funkbefehle sind während der Sitzung gesperrt. TXADV-Start lässt den Scan AUS. Kein Speichern oder Dienstneustart.',closeFailed:'GATT-Bereinigung beim Seitenende fehlgeschlagen; Inaktivitätslimit bleibt aktiv'
 		},
 		it: {
 			open:'Apri sessione BLE GATT',sessionCommand:'Operazione GATT nella sessione aperta',close:'Chiudi sessione GATT',session:'Token sessione (restituito da Apri)',idle_timeout_ms:'Timeout inattività (1000-300000 ms)',uuid:'UUID caratteristica/descrittore (lasciare handle 0)',handle:'Handle ATT (decimale; 0 seleziona UUID)',value:'Valore scrittura/richiesta (hex; 56 byte, 58 senza risposta)',prefix:'Prefisso notifiche (hex; vuoto = qualsiasi)',mode:'Sottoscrizione (0 disabilita, 1 notify, 2 indicate)',count:'Notifiche corrispondenti da attendere (1-64)',codec:'Struttura codec (vuota = byte grezzi)',offset:'Byte risposta da saltare prima della decodifica',write_offset:'Byte decodificati da omettere in scrittura (sola risposta)',write_prefix:'Prefisso scrittura (hex; vuoto = valore richiesta)',patch:'Patch JSON (solo campi esistenti)',invalidJson:'Inserire un oggetto JSON non vuoto',
-			atcRead:'Leggi configurazione ATC (0x55)',atcPatch:'Applica patch configurazione ATC (0x55)',request:'Richiesta JSON',cancelled:'Comando annullato; nessun invio.',
+			atcRead:'Leggi configurazione ATC (0x{hex})',atcPatch:'Applica patch configurazione ATC (0x{hex})',request:'Richiesta JSON',cancelled:'Comando annullato; nessun invio.',
+			attempts:'Tentativi',retryDelay:'Attesa tra tentativi (ms)',attempt:'Tentativo {n} di {total}',requestTitle:'Richiesta JSON',radioTitle:'Stato radio',resultTitle:'Risposta',
+			atcTitle:'Configurazione ATC 0x55 (decodificata)',atcHint:'Valori letti dal dispositivo. Modifica quelli necessari, poi crea la patch: vengono scritti solo i campi modificati.',atcBuild:'Crea patch da questi valori',atcNoChange:'Nessun campo modificato: cambia almeno un valore.',atcReady:'Patch con {n} campo/i caricata nell’editor; inviala per applicarla.',atcUnknown:'Leggi prima la configurazione con «Leggi configurazione ATC (0x55)».',atcReadOnly:'sola lettura',
 			help:'Aprire una sessione per discovery, sottoscrizioni, scritture e attesa notifiche senza riconnettersi. Il token è utilizzabile dalla CLI; chiudere la sessione al termine. I pulsanti ATC inviano lettura o patch dopo conferma, usando il destinatario o la sessione selezionati. Modificare la patch in Ace; quella ATC iniziale abilita bt5phy e longrange. Verificare prima firmware installato e codec. Coded PHY richiede firmware ATC compatibile (4.2+ per LYWSD03MMC); verificarlo negli advertisement ricevuti, non nella PHY della connessione.',
 			note:'I comandi richiedono il daemon in esecuzione; il servizio resta attivo. GATT sospende scan e TXADV configurato dal daemon e li ripristina alla chiusura o in caso di errore. Il tempo di Discovery è sospeso; altri comandi radio sono bloccati durante la sessione. Avviare TXADV lascia lo scan SPENTO. Nessun salvataggio o riavvio del servizio.',closeFailed:'Pulizia GATT in uscita dalla pagina fallita; resta attivo il timeout di inattività'
 		},
 		fr: {
 			open:'Ouvrir une session BLE GATT',sessionCommand:'Opération GATT dans la session ouverte',close:'Fermer la session GATT',session:'Jeton de session (fourni à l’ouverture)',idle_timeout_ms:'Délai d’inactivité (1000-300000 ms)',uuid:'UUID caractéristique/descripteur (handle 0)',handle:'Handle ATT (décimal ; 0 sélectionne UUID)',value:'Valeur écrite/requête (hex ; 56 octets, 58 sans réponse)',prefix:'Préfixe des notifications (hex ; vide = toutes)',mode:'Abonnement (0 arrêt, 1 notify, 2 indicate)',count:'Notifications correspondantes attendues (1-64)',codec:'Structure codec (vide = octets bruts)',offset:'Octets de réponse à ignorer avant décodage',write_offset:'Octets décodés à omettre en écriture (réponse seule)',write_prefix:'Préfixe écrit (hex ; vide = requête)',patch:'Patch JSON (champs existants uniquement)',invalidJson:'Saisir un objet JSON non vide',
-			atcRead:'Lire la configuration ATC (0x55)',atcPatch:'Appliquer le patch ATC (0x55)',request:'Requête JSON',cancelled:'Commande annulée ; aucun envoi.',
+			atcRead:'Lire la configuration ATC (0x{hex})',atcPatch:'Appliquer le patch ATC (0x{hex})',request:'Requête JSON',cancelled:'Commande annulée ; aucun envoi.',
+			attempts:'Tentatives',retryDelay:'Délai entre tentatives (ms)',attempt:'Tentative {n} sur {total}',requestTitle:'Requête JSON',radioTitle:'État radio',resultTitle:'Réponse',
+			atcTitle:'Configuration ATC 0x55 (décodée)',atcHint:'Valeurs lues sur l’appareil. Modifiez ce qui est nécessaire puis créez le patch : seuls les champs modifiés sont écrits.',atcBuild:'Créer le patch à partir de ces valeurs',atcNoChange:'Aucun champ modifié : modifiez au moins une valeur.',atcReady:'Patch de {n} champ(s) chargé dans l’éditeur ; envoyez-le pour l’appliquer.',atcUnknown:'Lisez d’abord la configuration avec « Lire la configuration ATC (0x55) ».',atcReadOnly:'lecture seule',
 			help:'Ouvrir une session pour découvrir, s’abonner, écrire et attendre les notifications sans reconnexion. Le jeton fonctionne en CLI ; fermer ensuite. Les boutons ATC envoient lecture ou patch après confirmation vers le périphérique ou la session sélectionnés. Modifier le patch dans Ace ; le patch ATC initial active bt5phy et longrange. Vérifier firmware et codec. Coded PHY nécessite un firmware ATC compatible (4.2+ pour LYWSD03MMC) ; vérifier les advertisements reçus, pas la PHY de connexion.',
 			note:'Les commandes nécessitent le daemon en cours ; le service reste actif. GATT suspend scan et TXADV configuré par le daemon, puis les rétablit à la fermeture ou sur erreur. Le temps Discovery est suspendu ; les autres commandes radio sont bloquées pendant la session. Démarrer TXADV laisse le scan ARRÊTÉ. Aucun enregistrement ni redémarrage du service.',closeFailed:'Échec du nettoyage GATT à la sortie ; le délai d’inactivité reste actif'
 		},
 		es: {
 			open:'Abrir sesión BLE GATT',sessionCommand:'Operación GATT en sesión abierta',close:'Cerrar sesión GATT',session:'Token de sesión (devuelto al abrir)',idle_timeout_ms:'Tiempo de inactividad (1000-300000 ms)',uuid:'UUID de característica/descriptor (handle 0)',handle:'Handle ATT (decimal; 0 selecciona UUID)',value:'Valor escrito/solicitud (hex; 56 bytes, 58 sin respuesta)',prefix:'Prefijo de notificaciones (hex; vacío = todas)',mode:'Suscripción (0 desactivar, 1 notify, 2 indicate)',count:'Notificaciones coincidentes esperadas (1-64)',codec:'Estructura codec (vacía = bytes sin procesar)',offset:'Bytes de respuesta a omitir antes de decodificar',write_offset:'Bytes decodificados a omitir al escribir (solo respuesta)',write_prefix:'Prefijo escrito (hex; vacío = solicitud)',patch:'Parche JSON (solo campos existentes)',invalidJson:'Introducir un objeto JSON no vacío',
-			atcRead:'Leer configuración ATC (0x55)',atcPatch:'Aplicar parche ATC (0x55)',request:'Solicitud JSON',cancelled:'Comando cancelado; no se ha enviado.',
+			atcRead:'Leer configuración ATC (0x{hex})',atcPatch:'Aplicar parche ATC (0x{hex})',request:'Solicitud JSON',cancelled:'Comando cancelado; no se ha enviado.',
+			attempts:'Intentos',retryDelay:'Espera entre intentos (ms)',attempt:'Intento {n} de {total}',requestTitle:'Solicitud JSON',radioTitle:'Estado de radio',resultTitle:'Respuesta',
+			atcTitle:'Configuración ATC 0x55 (decodificada)',atcHint:'Valores leídos del dispositivo. Cambia lo necesario y crea el parche: solo se escriben los campos modificados.',atcBuild:'Crear parche con estos valores',atcNoChange:'Ningún campo cambiado: modifica al menos un valor.',atcReady:'Parche con {n} campo(s) cargado en el editor; envíalo para aplicarlo.',atcUnknown:'Lee primero la configuración con «Leer configuración ATC (0x55)».',atcReadOnly:'solo lectura',
 			help:'Abrir una sesión para descubrir, suscribirse, escribir y esperar notificaciones sin reconectar. El token también sirve en CLI; cerrar al terminar. Los botones ATC envían lectura o parche tras confirmar, usando el dispositivo o la sesión seleccionados. Editar el parche en Ace; el inicial activa bt5phy y longrange. Verificar firmware y codec. Coded PHY necesita firmware ATC compatible (4.2+ para LYWSD03MMC); comprobar los advertisements recibidos, no la PHY de conexión.',
 			note:'Los comandos necesitan el daemon en ejecución; el servicio sigue activo. GATT pausa escaneo y TXADV configurado por el daemon y los restaura al cerrar o fallar. Se pausa el tiempo de Discovery; otras órdenes de radio se bloquean durante la sesión. Iniciar TXADV deja el escaneo APAGADO. No se guarda ni reinicia el servicio.',closeFailed:'Falló la limpieza GATT al salir; sigue activo el tiempo de inactividad'
 		}
 	};
 	const commandLanguage = (navigator.language || 'en').split('-')[0];
 	const ct = {...(commandTranslations[commandLanguage] || commandTranslations.en),...(gattTranslations[commandLanguage] || gattTranslations.en)};
-	let commandDraft, gattToken = '', commandRunning = false;
+	// Additions kept apart so the main tables stay readable.
+	const extraTranslations = {
+		en:{unavailable:'not available yet',atcHint47:'Firmware 4.7 and newer replaced temp_offset/humi_offset with flg3 + event_adv_cnt: this device does not accept a temperature or humidity offset through 0x55, so only the fields shown here can be patched.',atcHelpPvvx:'Recipient recognised: {device}, firmware pvvx/ATC {version}. The two buttons use the ATC 0x55 configuration protocol: read the current configuration, change the values, then apply the verified patch.',atcHelpKnown:'Recipient recognised as {device}, a LYWSD03MMC-class sensor, but the firmware version is not verified yet. The two buttons are specific commands for LYWSD03MMC running pvvx/ATC firmware 4.2 or newer: “Read configuration” confirms the version, and a device that does not answer is not running pvvx/ATC firmware.',atcHelpUnknown:'The recipient is not recognised in this configuration, so the device and its firmware cannot be deduced from the GATT connection. The two buttons are specific commands for LYWSD03MMC sensors running pvvx/ATC firmware 4.2 or newer (0x55 protocol on characteristic 1F1F); they do not answer on other devices or on the stock Xiaomi firmware. Use “Read configuration” to verify the device before patching.',peerClosed:'The device closed the GATT connection by itself, as the pvvx/ATC firmware does when a patch changes bt5phy or longrange: the session has been closed.',helpOpen:'show the help for this field',closeHelp:'Close',atcNoReply:'The device sent no answer: without pvvx/ATC (0x55) firmware there is no configuration frame to read here, and a bind-key protected sensor stays silent.',atcFrame:'ATC frame',atcFrameHint:'Request byte, notification prefix, codec and offsets. The defaults match the ATC 0x55 firmware (pvvx/ATC); change them for other vendors.',atcUuid:'Characteristic UUID',atcValue:'Request value (hex)',atcPrefix:'Notification prefix (hex)',atcCodec:'Codec (cfg; empty = raw bytes)',atcOffset:'Decoded response offset',atcWriteOffset:'Write offset',atcDisabled:'Open or resume a GATT session to use the ATC commands.',atcApplied:'Patch applied ({written}); the GATT session stays open.',macPick:'Known device',macManual:'Enter a MAC manually',diagHint:'Firmware diagnostics pause the scan while they run. VBAT is not implemented by this adapter firmware and always answers "denied".'},
+		de:{unavailable:'noch nicht verfügbar',atcHint47:'Ab Firmware 4.7 ersetzen flg3 + event_adv_cnt die Felder temp_offset/humi_offset: dieses Gerät nimmt keinen Temperatur- oder Feuchte-Offset über 0x55 an, patchbar sind nur die hier gezeigten Felder.',atcHelpPvvx:'Empfänger erkannt: {device}, Firmware pvvx/ATC {version}. Die beiden Schaltflächen nutzen das ATC-0x55-Konfigurationsprotokoll: Konfiguration lesen, Werte ändern, geprüften Patch anwenden.',atcHelpKnown:'Empfänger als {device} (LYWSD03MMC-Klasse) erkannt, die Firmware-Version ist aber noch nicht bestätigt. Die beiden Schaltflächen sind spezielle Befehle für LYWSD03MMC mit pvvx/ATC-Firmware 4.2 oder neuer: „Konfiguration lesen“ bestätigt die Version; antwortet das Gerät nicht, läuft keine pvvx/ATC-Firmware.',atcHelpUnknown:'Der Empfänger ist in dieser Konfiguration nicht bekannt, daher lassen sich Gerät und Firmware nicht aus der GATT-Verbindung ableiten. Die beiden Schaltflächen sind spezielle Befehle für LYWSD03MMC mit pvvx/ATC-Firmware 4.2 oder neuer (0x55-Protokoll auf Charakteristik 1F1F); bei anderen Geräten oder Original-Xiaomi-Firmware antworten sie nicht. Vor dem Patchen mit „Konfiguration lesen“ prüfen.',peerClosed:'Das Gerät hat die GATT-Verbindung selbst geschlossen, wie es die pvvx/ATC-Firmware beim Ändern von bt5phy oder longrange tut: die Sitzung wurde beendet.',helpOpen:'Hilfe zu diesem Feld anzeigen',closeHelp:'Schließen',atcNoReply:'Das Gerät hat nicht geantwortet: ohne pvvx/ATC-Firmware (0x55) gibt es hier keinen Konfigurationsrahmen, und ein Sensor mit Bindkey bleibt still.',atcFrame:'ATC-Rahmen',atcFrameHint:'Anfragebyte, Benachrichtigungspräfix, Codec und Offsets. Die Vorgaben passen zur ATC-0x55-Firmware (pvvx/ATC); für andere Hersteller anpassen.',atcUuid:'Charakteristik-UUID',atcValue:'Anfragewert (hex)',atcPrefix:'Benachrichtigungspräfix (hex)',atcCodec:'Codec (cfg; leer = Rohbytes)',atcOffset:'Offset der Antwort',atcWriteOffset:'Schreib-Offset',atcDisabled:'GATT-Sitzung öffnen oder fortsetzen, um die ATC-Befehle zu nutzen.',atcApplied:'Patch angewendet ({written}); die GATT-Sitzung bleibt offen.',macPick:'Bekanntes Gerät',macManual:'MAC manuell eingeben',diagHint:'Firmware-Diagnosen pausieren das Scannen. VBAT ist in dieser Adapter-Firmware nicht implementiert und antwortet immer "denied".'},
+		it:{unavailable:'non disponibile',atcHint47:'Dal firmware 4.7 i campi temp_offset/humi_offset sono stati sostituiti da flg3 + event_adv_cnt: questo dispositivo non accetta un offset di temperatura o umidità via 0x55, quindi sono modificabili solo i campi mostrati qui.',atcHelpPvvx:'Destinatario riconosciuto: {device}, firmware pvvx/ATC {version}. I due pulsanti usano il protocollo di configurazione ATC 0x55: leggono la configurazione attuale, consentono di modificare i valori e applicano la patch verificata.',atcHelpKnown:'Destinatario riconosciuto come {device} (classe LYWSD03MMC), ma la versione del firmware non è ancora verificata. I due pulsanti sono comandi specifici per LYWSD03MMC con firmware pvvx/ATC 4.2 o superiore: «Leggi configurazione» conferma la versione, e un dispositivo che non risponde non ha firmware pvvx/ATC.',atcHelpUnknown:'Il destinatario non è riconosciuto in questa configurazione, quindi dispositivo e firmware non sono deducibili dalla connessione GATT. I due pulsanti sono comandi specifici per LYWSD03MMC con firmware pvvx/ATC 4.2 o superiore (protocollo 0x55 sulla caratteristica 1F1F); su altri dispositivi o con firmware Xiaomi originale non rispondono. Usa «Leggi configurazione» per verificare il dispositivo prima di applicare una patch.',peerClosed:'Il dispositivo ha chiuso da solo la connessione GATT, come fa il firmware pvvx/ATC quando una patch cambia bt5phy o longrange: la sessione è stata chiusa.',helpOpen:'mostra la guida di questo campo',closeHelp:'Chiudi',atcNoReply:'Il dispositivo non ha risposto: senza firmware pvvx/ATC (0x55) non c’è una configurazione da leggere qui, e un sensore protetto da bind key resta muto.',atcFrame:'Fotogramma ATC',atcFrameHint:'Byte di richiesta, prefisso delle notifiche, codec e offset. I valori predefiniti valgono per il firmware ATC 0x55 (pvvx/ATC): cambiali per altri produttori.',atcUuid:'UUID caratteristica',atcValue:'Valore di richiesta (hex)',atcPrefix:'Prefisso notifiche (hex)',atcCodec:'Codec (cfg; vuoto = byte grezzi)',atcOffset:'Offset risposta decodificata',atcWriteOffset:'Offset di scrittura',atcDisabled:'Apri o riprendi una sessione GATT per usare i comandi ATC.',atcApplied:'Patch applicata ({written}); la sessione GATT resta aperta.',macPick:'Dispositivo noto',macManual:'Inserisci il MAC a mano',diagHint:'Le diagnostiche firmware sospendono la scansione. VBAT non è implementato in questo firmware e risponde sempre "denied".'},
+		fr:{unavailable:'pas encore disponible',atcHint47:'Depuis le firmware 4.7, flg3 + event_adv_cnt remplacent temp_offset/humi_offset : cet appareil n’accepte pas d’offset de température ou d’humidité via 0x55, seuls les champs affichés ici sont modifiables.',atcHelpPvvx:'Destinataire reconnu : {device}, firmware pvvx/ATC {version}. Les deux boutons utilisent le protocole de configuration ATC 0x55 : lire la configuration, modifier les valeurs, appliquer le patch vérifié.',atcHelpKnown:'Destinataire reconnu comme {device} (classe LYWSD03MMC), mais la version du firmware n’est pas encore vérifiée. Les deux boutons sont des commandes spécifiques aux LYWSD03MMC avec firmware pvvx/ATC 4.2 ou supérieur : « Lire la configuration » confirme la version, et un appareil qui ne répond pas n’a pas de firmware pvvx/ATC.',atcHelpUnknown:'Le destinataire n’est pas reconnu dans cette configuration : l’appareil et son firmware ne peuvent pas être déduits de la connexion GATT. Les deux boutons sont des commandes spécifiques aux LYWSD03MMC avec firmware pvvx/ATC 4.2 ou supérieur (protocole 0x55 sur la caractéristique 1F1F) ; ils ne répondent pas sur d’autres appareils ni avec le firmware Xiaomi d’origine. Utilisez « Lire la configuration » pour vérifier l’appareil avant tout patch.',peerClosed:'L’appareil a fermé lui-même la connexion GATT, comme le fait le firmware pvvx/ATC lorsqu’un patch modifie bt5phy ou longrange : la session a été fermée.',helpOpen:'afficher l’aide de ce champ',closeHelp:'Fermer',atcNoReply:'L’appareil n’a pas répondu : sans firmware pvvx/ATC (0x55) il n’y a pas de configuration à lire ici, et un capteur protégé par bind key reste muet.',atcFrame:'Trame ATC',atcFrameHint:'Octet de requête, préfixe de notification, codec et offsets. Les valeurs par défaut correspondent au firmware ATC 0x55 (pvvx/ATC) : adaptez-les à d’autres fabricants.',atcUuid:'UUID de caractéristique',atcValue:'Valeur de requête (hex)',atcPrefix:'Préfixe de notification (hex)',atcCodec:'Codec (cfg ; vide = octets bruts)',atcOffset:'Offset de la réponse',atcWriteOffset:'Offset d’écriture',atcDisabled:'Ouvrez ou reprenez une session GATT pour utiliser les commandes ATC.',atcApplied:'Patch appliqué ({written}) ; la session GATT reste ouverte.',macPick:'Appareil connu',macManual:'Saisir un MAC manuellement',diagHint:'Les diagnostics firmware suspendent le scan. VBAT n’est pas implémenté par ce firmware et répond toujours « denied ».'},
+		es:{unavailable:'aún no disponible',atcHint47:'Desde el firmware 4.7, flg3 + event_adv_cnt sustituyen a temp_offset/humi_offset: este dispositivo no acepta un offset de temperatura o humedad por 0x55, así que solo se pueden modificar los campos aquí mostrados.',atcHelpPvvx:'Destinatario reconocido: {device}, firmware pvvx/ATC {version}. Los dos botones usan el protocolo de configuración ATC 0x55: leer la configuración, cambiar los valores y aplicar el parche verificado.',atcHelpKnown:'Destinatario reconocido como {device} (clase LYWSD03MMC), pero la versión del firmware aún no está verificada. Los dos botones son comandos específicos para LYWSD03MMC con firmware pvvx/ATC 4.2 o superior: «Leer configuración» confirma la versión, y un dispositivo que no responde no tiene firmware pvvx/ATC.',atcHelpUnknown:'El destinatario no está reconocido en esta configuración, así que el dispositivo y su firmware no se pueden deducir de la conexión GATT. Los dos botones son comandos específicos para LYWSD03MMC con firmware pvvx/ATC 4.2 o superior (protocolo 0x55 en la característica 1F1F); en otros dispositivos o con el firmware original de Xiaomi no responden. Usa «Leer configuración» para verificar el dispositivo antes de aplicar un parche.',peerClosed:'El dispositivo cerró por sí mismo la conexión GATT, como hace el firmware pvvx/ATC cuando un parche cambia bt5phy o longrange: la sesión se ha cerrado.',helpOpen:'mostrar la ayuda de este campo',closeHelp:'Cerrar',atcNoReply:'El dispositivo no respondió: sin firmware pvvx/ATC (0x55) no hay configuración que leer aquí, y un sensor protegido por bind key permanece mudo.',atcFrame:'Trama ATC',atcFrameHint:'Byte de petición, prefijo de notificaciones, codec y offsets. Los valores por defecto valen para el firmware ATC 0x55 (pvvx/ATC): cámbialos para otros fabricantes.',atcUuid:'UUID de característica',atcValue:'Valor de petición (hex)',atcPrefix:'Prefijo de notificaciones (hex)',atcCodec:'Codec (cfg; vacío = bytes crudos)',atcOffset:'Offset de la respuesta',atcWriteOffset:'Offset de escritura',atcDisabled:'Abre o reanuda una sesión GATT para usar los comandos ATC.',atcApplied:'Parche aplicado ({written}); la sesión GATT sigue abierta.',macPick:'Dispositivo conocido',macManual:'Introducir el MAC a mano',diagHint:'Los diagnósticos de firmware suspenden el escaneo. VBAT no está implementado en este firmware y siempre responde "denied".'}
+	};
+	Object.assign(ct, extraTranslations[commandLanguage] || extraTranslations.en);
+
+	// ---------------------------------------------------------------- help ---
+	// Field descriptions follow the pvvx/ATC firmware sources
+	// (github.com/pvvx/ATC_MiThermometer, github.com/pvvx/BLE_THSensor) and the
+	// GATT transaction model of this daemon. English and Italian are complete;
+	// other languages fall back to English.
+	const FIELD_HELP = {
+		en: {
+			diagnostic: 'Firmware command executed on the ESP32 serial adapter, not over BLE. Scanning is paused for the duration of the command and restored afterwards.',
+			name: 'Diagnostic to run.\ninfo - BT MAC address and software version of the adapter.\nversion - hardware version and ESP-IDF version.\nuart - serial bridge speed table.\nrfsdk - RF parameters: TX power index, crystal capacitor, scan channels, coded minimum window.\nvbat - battery voltage; this adapter firmware does not implement it and always answers "denied".\ngpio-events - bitmap of the pins armed for edge events.\ngpio-status - level of a pin plus the supported-pin mask.\ngpio-read - same as gpio-status, read operation.\nanalog-read - raw ADC value of a pin.\nconnection-status - BLE link state, peer address type, notification handle, connection interval.\ntxadv-status - state of the extended advertiser (PHY, interval, payload length).',
+			pin: 'GPIO number used by gpio-status, gpio-read and analog-read. The firmware maps it to its own pin index; unsupported pins still answer, with the mask showing which ones exist.',
+			mac: 'Bluetooth address of the peer, six hex bytes. It must match the address the device advertises; a device with a random (static or resolvable) address is only reachable when that address is still valid.',
+			session: 'Session token returned by "Open BLE GATT session" (32 hex digits). While the session is open the adapter stays connected: no reconnect per command, and the connection parameters negotiated once are reused.',
+			addr_type: 'Address type of the peer: 0 = public, 1 = random (static or resolvable private). Xiaomi/Mijia sensors normally use a public address; use 1 when the scan shows a random one.',
+			coded: 'Connect on the Bluetooth 5 Coded PHY (Long Range). The peer must advertise with long-range support (pvvx firmware: flg2.bt5phy + flg2.longrange) and the adapter must support coded scanning.',
+			timeout_ms: 'Budget in milliseconds for the whole transaction: connect, MTU, discovery, the operation itself and the teardown. 100-120000 ms; the default 30000 covers a normal sensor. Too short fails on a busy link, too long hides the fact that a device is not answering.',
+			idle_timeout_ms: 'How long an open session may stay idle before the daemon closes it and restores scanning (1000-300000 ms). Every operation resets the countdown.',
+			operation: 'GATT operation:\ndiscover - list services, characteristics and descriptors (needed once per device).\nread / read-descriptor - read a value, optionally decoded with a codec.\nwrite / write-descriptor - write with response.\nwrite-without-response - write command, no ATT confirmation.\nmtu - exchange MTU (bigger notifications).\nunpair - remove the bonding and disconnect.\nsubscribe - enable notifications/indications on a characteristic.\nnotifications - wait for notifications on an open session.\nexchange - write a request and wait for the matching notification in one transaction.\npatch - read, decode, apply a JSON patch, write and verify (ATC configuration).',
+			handle: 'ATT handle of the characteristic or descriptor (decimal). Leave 0 and use a UUID unless you already know the handle from a discovery; handles are only valid for the same device firmware.',
+			uuid: 'Characteristic or descriptor UUID. Short forms such as 1F1F are expanded with the Bluetooth base UUID (00001F1F-0000-1000-8000-00805F9B34FB). ATC firmware exposes the command characteristic 0x1F1F in service 0x1F10.',
+			value: 'Hex bytes sent to the device (max 56 bytes, 58 without response). For ATC firmware 0x55 asks for the configuration; 0x55 followed by the configuration structure writes it.',
+			prefix: 'Hex prefix that a notification must start with to be accepted. Empty accepts any notification on the subscribed handle. ATC configuration answers start with 0x55.',
+			mode: 'Subscription mode: 0 = disable, 1 = notifications (unacknowledged), 2 = indications (acknowledged). ATC uses notifications.',
+			count: 'How many matching notifications to collect before the operation completes. Patch requires exactly one: the configuration echo.',
+			codec: 'Name of a structure in codec.yaml used to decode the answer and, for patch, to encode the modified configuration. Empty means raw bytes; "cfg" is the ATC configuration (firmware version + 11 fields).',
+			offset: 'Bytes of the received value skipped before decoding. ATC configuration notifications start with the 0x55 command byte, so the codec sees the frame from byte 1.',
+			write_offset: 'Bytes of the encoded structure skipped when the write frame is built, because they are supplied by the write prefix. For the ATC configuration the first byte is the firmware version and must not be sent back, so 1 keeps 0x55 + the 11 configuration bytes.',
+			write_prefix: 'Hex bytes put before the encoded structure when writing (default: the request value). For ATC this is 0x55.',
+			patch: 'JSON object with the fields to change. Only fields present in the decoded structure are accepted, computed/read-only fields are refused, and the values must change at least one byte. The device answer is decoded again and compared field by field before the patch is reported as applied.',
+			phy: 'PHY used by the extended advertiser: 0 = legacy 1M, 1 = extended 1M, 2 = coded (Long Range).',
+			interval_units: 'Advertising interval in 0.625 ms units (32-65535, i.e. 20 ms - 40.9 s).',
+			data: 'Advertising payload in hex (max 31 bytes). The firmware sends it as manufacturer data; the ATC/MiBeacon header is not added automatically.',
+			seconds: 'How long the discovery window stays open.',
+			macPick: 'Pick a device already present in the configuration; its MAC is copied into the field above. "Enter a MAC manually" leaves the field unchanged.',
+			radio: 'Current radio arbitration state: whether scanning is running, whether it was suppressed by a command, whether TXADV is active, and whether a recovery (re-send of the scanner configuration) is required.'
+		},
+		it: {
+			diagnostic: 'Comando eseguito sull’adattatore seriale ESP32, non via BLE. La scansione viene sospesa per la durata del comando e poi ripristinata.',
+			name: 'Diagnostica da eseguire.\ninfo - indirizzo BT e versione software dell’adattatore.\nversion - versione hardware e versione ESP-IDF.\nuart - tabella delle velocità del bridge seriale.\nrfsdk - parametri radio: indice potenza TX, capacità del quarzo, canali di scansione, finestra minima coded.\nvbat - tensione batteria; questo firmware non la implementa e risponde sempre "denied".\ngpio-events - bitmap dei pin armati per gli eventi di fronte.\ngpio-status - livello di un pin e maschera dei pin supportati.\ngpio-read - come gpio-status, operazione di lettura.\nanalog-read - valore ADC grezzo di un pin.\nconnection-status - stato del link BLE, tipo di indirizzo del peer, handle di notifica, intervallo di connessione.\ntxadv-status - stato dell’advertiser esteso (PHY, intervallo, lunghezza payload).',
+			pin: 'Numero GPIO usato da gpio-status, gpio-read e analog-read. Il firmware lo converte nel proprio indice di pin; i pin non supportati rispondono comunque, con la maschera che indica quali esistono.',
+			mac: 'Indirizzo Bluetooth del peer, sei byte esadecimali. Deve corrispondere all’indirizzo che il dispositivo annuncia; un dispositivo con indirizzo casuale (statico o risolvibile) è raggiungibile solo finché quell’indirizzo è valido.',
+			session: 'Token di sessione restituito da "Apri sessione BLE GATT" (32 cifre hex). Con la sessione aperta l’adattatore resta connesso: nessuna riconnessione per comando e parametri di connessione riusati.',
+			addr_type: 'Tipo di indirizzo del peer: 0 = pubblico, 1 = casuale (statico o privato risolvibile). I sensori Xiaomi/Mijia usano normalmente un indirizzo pubblico; usa 1 se la scansione ne mostra uno casuale.',
+			coded: 'Connetti sul PHY Coded (Long Range) del Bluetooth 5. Il peer deve annunciare in long range (firmware pvvx: flg2.bt5phy + flg2.longrange) e l’adattatore deve supportare la scansione coded.',
+			timeout_ms: 'Tempo massimo in millisecondi per l’intera transazione: connessione, MTU, discovery, operazione e chiusura. 100-120000 ms; il default 30000 basta per un sensore normale. Troppo basso fallisce su link occupato, troppo alto nasconde un dispositivo che non risponde.',
+			idle_timeout_ms: 'Per quanto una sessione aperta può restare inattiva prima che il daemon la chiuda e ripristini la scansione (1000-300000 ms). Ogni operazione azzera il conteggio.',
+			operation: 'Operazione GATT:\ndiscover - elenca service, caratteristiche e descrittori (serve una volta per dispositivo).\nread / read-descriptor - legge un valore, eventualmente decodificato con un codec.\nwrite / write-descriptor - scrittura con risposta.\nwrite-without-response - write command, nessuna conferma ATT.\nmtu - scambio MTU (notifiche più grandi).\nunpair - rimuove il bonding e disconnette.\nsubscribe - abilita notifiche/indicazioni su una caratteristica.\nnotifications - attende notifiche su una sessione aperta.\nexchange - scrive una richiesta e attende la notifica corrispondente in un’unica transazione.\npatch - legge, decodifica, applica una patch JSON, scrive e verifica (configurazione ATC).',
+			handle: 'Handle ATT della caratteristica o del descrittore (decimale). Lascia 0 e usa la UUID se non conosci l’handle da una discovery; gli handle valgono solo per lo stesso firmware del dispositivo.',
+			uuid: 'UUID della caratteristica o del descrittore. Le forme brevi come 1F1F sono espanse con la base Bluetooth (00001F1F-0000-1000-8000-00805F9B34FB). Il firmware ATC espone la caratteristica di comando 0x1F1F nel service 0x1F10.',
+			value: 'Byte esadecimali inviati al dispositivo (max 56 byte, 58 senza risposta). Per il firmware ATC 0x55 chiede la configurazione; 0x55 seguito dalla struttura di configurazione la scrive.',
+			prefix: 'Prefisso esadecimale che una notifica deve avere per essere accettata. Vuoto accetta qualunque notifica sull’handle sottoscritto. Le risposte di configurazione ATC iniziano con 0x55.',
+			mode: 'Modalità di sottoscrizione: 0 = disattivata, 1 = notifiche (senza conferma), 2 = indicazioni (con conferma). ATC usa notifiche.',
+			count: 'Quante notifiche corrispondenti raccogliere prima di completare l’operazione. La patch ne richiede esattamente una: l’eco della configurazione.',
+			codec: 'Nome di una struttura in codec.yaml usata per decodificare la risposta e, per la patch, per codificare la configurazione modificata. Vuoto = byte grezzi; "cfg" è la configurazione ATC (versione firmware + 11 campi).',
+			offset: 'Byte del valore ricevuto saltati prima della decodifica. Le notifiche di configurazione ATC iniziano con il byte di comando 0x55, quindi il codec vede il frame dal byte 1.',
+			write_offset: 'Byte della struttura codificata saltati quando si costruisce il frame di scrittura, perché forniti dal prefisso. Per la configurazione ATC il primo byte è la versione firmware e non va rispedito: 1 mantiene 0x55 + gli 11 byte di configurazione.',
+			write_prefix: 'Byte esadecimali anteposti alla struttura codificata in scrittura (default: il valore di richiesta). Per ATC è 0x55.',
+			patch: 'Oggetto JSON con i campi da modificare. Sono accettati solo campi presenti nella struttura decodificata, i campi calcolati/sola lettura sono rifiutati e i valori devono cambiare almeno un byte. La risposta del dispositivo viene ridecodificata e confrontata campo per campo prima di dichiarare la patch applicata.',
+			phy: 'PHY usato dall’advertiser esteso: 0 = legacy 1M, 1 = esteso 1M, 2 = coded (Long Range).',
+			interval_units: 'Intervallo di advertising in unità da 0,625 ms (32-65535, cioè 20 ms - 40,9 s).',
+			data: 'Payload di advertising in hex (max 31 byte). Il firmware lo invia come manufacturer data; l’intestazione ATC/MiBeacon non viene aggiunta automaticamente.',
+			seconds: 'Per quanti secondi resta aperta la finestra di discovery.',
+			macPick: 'Scegli un dispositivo già presente nella configurazione: il suo MAC viene copiato nel campo sopra. "Inserisci il MAC a mano" lascia il campo invariato.',
+			radio: 'Stato di arbitraggio della radio: se la scansione è attiva, se è stata sospesa da un comando, se TXADV è attivo e se serve un ripristino (reinoltro della configurazione dello scanner).'
+		}
+	};
+	const ATC_HELP = {
+		en: {
+			'frame.uuid': 'UUID of the command characteristic. ATC firmware: service 0x1F10, characteristic 0x1F1F.',
+			'frame.value': 'Byte that requests the configuration. ATC firmware: 0x55. A different vendor firmware usually uses another command byte.',
+			'frame.prefix': 'Notifications starting with this byte are accepted as the answer. ATC firmware answers with 0x55 + firmware version + configuration.',
+			'frame.codec': 'Codec used to decode the answer. "cfg" is the ATC configuration structure (firmware version, flg, flg2, temp_offset, humi_offset, advertising_interval, measure_interval, rf_tx_power, connect_latency, ext_hw_id/min_step_time_update_lcd, hw_cfg, averaging_measurements).',
+			'frame.offset': 'Bytes skipped before decoding: 1 drops the 0x55 command byte.',
+			'frame.write_offset': 'Bytes of the encoded structure skipped when writing: 1 keeps 0x55 + the 11 configuration bytes (the firmware version is not written back).',
+			version: 'Structure version reported by the firmware (only one exists today).',
+			firmware_version: 'Firmware version of the sensor, major.minor, taken from the first byte after 0x55. pvvx/ATC builds are numbered like 4.7, 4.8, 5.0.',
+			flg: 'First flag byte of the configuration.',
+			'flg.lp_measures': 'Low-power measurements: the firmware measures in a low-power mode (slower, saves battery). Not shown on recent builds ("reserved").',
+			'flg.tx_measures': 'Send measurements while a GATT connection is open, not only in the advertisement.',
+			'flg.show_batt_enabled': 'Show the battery level on the LCD / in the advertisement. Reserved in the newest builds.',
+			'flg.temp_F_or_C': 'Temperature unit on the LCD and in the advertisement: °C or °F.',
+			'flg.blinking_time_smile': 'What the LCD alternates with the temperature: a blinking smiley or the clock (only with a real-time clock).',
+			'flg.comfort_smiley': 'Use the comfort smiley: the face depends on the comfort range (temperature and humidity), not on fixed thresholds.',
+			'flg.advertising_type': 'Advertisement format: atc1441 (original), custom pvvx, Mi (Xiaomi token based) or HA BLE (Home Assistant BTHome). The gateway decoder follows the format reported in the packet.',
+			flg2: 'Second flag byte: display, PHY and encryption options.',
+			'flg2.screen_off': 'Turn the LCD off (battery saving). Reserved on the newest builds.',
+			'flg2.longrange': 'Advertise in Long Range (Coded PHY, S=8). Doubles or triples the range: the firmware sends extended packets (ADV_EXT_IND + AUX_ADV_IND) with 8x the airtime of a 1M packet, so a long-range device already transmits far fewer events, each one much longer on air. The flag is reset by a power loss; bt5phy is enabled automatically.',
+			'flg2.bt5phy': 'Bluetooth 5 all-PHY support. Required for long-range advertising; the device restarts the radio after the write (the reset is applied on disconnect).',
+			'flg2.adv_flags': 'Add the BLE Flags field to the advertisement (needed by some receivers to classify the packet).',
+			'flg2.adv_crypto': 'Encrypt the advertisement with the bindkey (MiBeacon style). Without the matching key the gateway cannot decode it.',
+			'flg2.smiley': 'Which face the LCD shows: off, happy, sad, surprised, or the "p" variants with the comfort range.',
+			temp_offset: 'Temperature correction in steps of 0.1 °C, from -12.5 to +12.5. It is added to every measurement and to the advertisement. A positive value makes the sensor read higher.',
+			humi_offset: 'Humidity correction in steps of 0.1 %, from -12.5 to +12.5. It is added to every measurement and to the advertisement.',
+			advertising_interval: 'Advertisement interval in units of 62.5 ms (1-160, i.e. 62.5 ms to 10 s). Shorter means faster updates but much higher battery consumption.',
+			measure_interval: 'Measurements are taken every advertising_interval x measure_interval (2-25). It only affects how often the sensor reads, not how often it advertises.',
+			rf_tx_power: 'Transmit power level chosen with the firmware enum. Values 0x17-0x3F apply to battery-powered boards, 0x82-0xBF to boards supplied externally; higher is not always better for a coin cell.',
+			connect_latency: 'Connection interval/latency: (value + 1) x 20 ms when the sensor has to keep a connection. Small values answer faster and drain the battery, large values save power.',
+			min_step_time_update_lcd: 'Field name of older builds: LCD refresh step in units of 50 ms. Newer firmwares reuse the same byte as ext_hw_id (external hardware id / OTA flag), so treat it as informational.',
+			hw_cfg: 'Hardware description, read only.',
+			'hw_cfg.sensor': 'Sensor chip detected by the firmware: SHTC3 or SHT4x. It changes the measurement code path, not the advertisement.',
+			'hw_cfg.hwver': 'Hardware revision: LYWSD03MMC B1.4/B1.6/B1.7/B1.9, MHO-C401, CGG1/CGG1-M 2022, CGDK2, MJWSD05MMC. It selects the LCD layout and the pin map.',
+			averaging_measurements: 'Average N measurements before publishing (0 = off); the average is stored in flash and survives a power loss. Larger values smooth the curve but delay the reported changes.',
+			temperature_unit: 'Unit label of the temperature field, fixed by flg.temp_F_or_C.',
+			humidity_unit: 'Unit label of the humidity field (always %).',
+			adv_int_unit: 'Unit of advertising_interval (seconds in the decoded view, 62.5 ms in the raw field).',
+			connect_latency_unit: 'Unit of connect_latency (seconds in the decoded view).',
+			'min_s_t_upd_lcd_unit': 'Unit of min_step_time_update_lcd (seconds in the decoded view).'
+		},
+		it: {
+			'frame.uuid': 'UUID della caratteristica di comando. Firmware ATC: service 0x1F10, caratteristica 0x1F1F.',
+			'frame.value': 'Byte che richiede la configurazione. Firmware ATC: 0x55. Un firmware di altro produttore usa di norma un byte di comando diverso.',
+			'frame.prefix': 'Le notifiche che iniziano con questo byte sono accettate come risposta. Il firmware ATC risponde con 0x55 + versione firmware + configurazione.',
+			'frame.codec': 'Codec usato per decodificare la risposta. "cfg" è la struttura di configurazione ATC (versione firmware, flg, flg2, temp_offset, humi_offset, advertising_interval, measure_interval, rf_tx_power, connect_latency, ext_hw_id/min_step_time_update_lcd, hw_cfg, averaging_measurements).',
+			'frame.offset': 'Byte saltati prima della decodifica: 1 elimina il byte di comando 0x55.',
+			'frame.write_offset': 'Byte della struttura codificata saltati in scrittura: 1 mantiene 0x55 + gli 11 byte di configurazione (la versione firmware non viene riscritta).',
+			version: 'Versione della struttura riportata dal firmware (oggi ne esiste una sola).',
+			firmware_version: 'Versione firmware del sensore, major.minor, presa dal primo byte dopo 0x55. Le build pvvx/ATC sono numerate come 4.7, 4.8, 5.0.',
+			flg: 'Primo byte di flag della configurazione.',
+			'flg.lp_measures': 'Misure a basso consumo: il firmware misura in modalità risparmio (più lento, consuma meno). Non più usato nelle build recenti ("reserved").',
+			'flg.tx_measures': 'Invia le misure anche mentre la connessione GATT è aperta, non solo nell’advertisement.',
+			'flg.show_batt_enabled': 'Mostra il livello batteria su LCD / nell’advertisement. Riservato nelle build più recenti.',
+			'flg.temp_F_or_C': 'Unità di temperatura su LCD e advertisement: °C oppure °F.',
+			'flg.blinking_time_smile': 'Cosa alterna il display alla temperatura: una faccina lampeggiante o l’orologio (solo con RTC).',
+			'flg.comfort_smiley': 'Usa la faccina di comfort: l’espressione dipende dall’intervallo di comfort (temperatura e umidità), non da soglie fisse.',
+			'flg.advertising_type': 'Formato dell’advertisement: atc1441 (originale), custom pvvx, Mi (con token Xiaomi) o HA BLE (BTHome di Home Assistant). Il decoder del gateway segue il formato riportato nel pacchetto.',
+			flg2: 'Secondo byte di flag: display, PHY e cifratura.',
+			'flg2.screen_off': 'Spegne il display LCD (risparmio batteria). Riservato nelle build più recenti.',
+			'flg2.longrange': 'Annuncia in Long Range (PHY Coded, S=8). Raddoppia o triplica la portata: il firmware trasmette pacchetti estesi (ADV_EXT_IND + AUX_ADV_IND) con un tempo d\u2019aria 8 volte maggiore di un pacchetto 1M, quindi un dispositivo in long range trasmette già molti meno eventi, ciascuno però molto più lungo in aria. Il flag si azzera togliendo alimentazione; bt5phy viene abilitato automaticamente.',
+			'flg2.bt5phy': 'Supporto Bluetooth 5 per tutti i PHY. Necessario per il long range; il dispositivo riavvia la radio dopo la scrittura (reset applicato alla disconnessione).',
+			'flg2.adv_flags': 'Aggiunge il campo BLE Flags all’advertisement (serve ad alcuni ricevitori per classificare il pacchetto).',
+			'flg2.adv_crypto': 'Cifra l’advertisement con la bindkey (stile MiBeacon). Senza la chiave corrispondente il gateway non riesce a decodificarlo.',
+			'flg2.smiley': 'Quale faccina mostra il display: spenta, felice, triste, sorpresa, oppure le varianti "p" con intervallo di comfort.',
+			temp_offset: 'Correzione di temperatura a passi di 0,1 °C, da -12,5 a +12,5. Viene sommata a ogni misura e all’advertisement. Un valore positivo fa leggere più alto.',
+			humi_offset: 'Correzione di umidità a passi di 0,1 %, da -12,5 a +12,5. Viene sommata a ogni misura e all’advertisement.',
+			advertising_interval: 'Intervallo di advertising in unità da 62,5 ms (1-160, cioè da 62,5 ms a 10 s). Più corto = aggiornamenti rapidi ma consumo di batteria molto più alto.',
+			measure_interval: 'Le misure vengono prese ogni advertising_interval x measure_interval (2-25). Influisce solo su quanto spesso il sensore misura, non su quanto spesso trasmette.',
+			rf_tx_power: 'Livello di potenza di trasmissione secondo l’enum del firmware. I valori 0x17-0x3F valgono per schede a batteria, 0x82-0xBF per schede alimentate: più potenza non sempre aiuta una batteria a moneta.',
+			connect_latency: 'Intervallo/latenza di connessione: (valore + 1) x 20 ms quando il sensore deve mantenere una connessione. Valori bassi rispondono prima e consumano, valori alti risparmiano.',
+			min_step_time_update_lcd: 'Nome del campo nelle build precedenti: passo di aggiornamento LCD in unità da 50 ms. I firmware recenti riusano lo stesso byte come ext_hw_id (id hardware esterno / flag OTA), quindi va letto come informativo.',
+			hw_cfg: 'Descrizione hardware, sola lettura.',
+			'hw_cfg.sensor': 'Chip sensore rilevato dal firmware: SHTC3 o SHT4x. Cambia il percorso di misura, non l’advertisement.',
+			'hw_cfg.hwver': 'Revisione hardware: LYWSD03MMC B1.4/B1.6/B1.7/B1.9, MHO-C401, CGG1/CGG1-M 2022, CGDK2, MJWSD05MMC. Determina layout LCD e mappa dei pin.',
+			averaging_measurements: 'Media di N misure prima di pubblicare (0 = disattivata); la media è salvata in flash e sopravvive alla mancanza di alimentazione. Valori alti smussano la curva ma ritardano i cambiamenti.',
+			temperature_unit: 'Etichetta dell’unità di temperatura, fissata da flg.temp_F_or_C.',
+			humidity_unit: 'Etichetta dell’unità di umidità (sempre %).',
+			adv_int_unit: 'Unità di advertising_interval (secondi nella vista decodificata, 62,5 ms nel campo grezzo).',
+			connect_latency_unit: 'Unità di connect_latency (secondi nella vista decodificata).',
+			'min_s_t_upd_lcd_unit': 'Unità di min_step_time_update_lcd (secondi nella vista decodificata).'
+		}
+	};
+	function helpText(key) {
+		const table = FIELD_HELP[commandLanguage] || FIELD_HELP.en;
+		return table[key] || FIELD_HELP.en[key] || '';
+	}
+	function atcHelpText(path) {
+		const table = ATC_HELP[commandLanguage] || ATC_HELP.en;
+		return table[path] || ATC_HELP.en[path] || '';
+	}
+	function helpButton(title, body) {
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'bbHelpBtn';
+		button.textContent = '?';
+		button.title = (title || '?') + ' - ' + ct.helpOpen;
+		button.setAttribute('aria-label', (title || '?') + ' - ' + ct.helpOpen);
+		button.addEventListener('click', event => {
+			event.preventDefault();
+			event.stopPropagation();
+			showFieldHelp(title, body);
+		});
+		return button;
+	}
+	function showFieldHelp(title, body) {
+		const dialog = element('bbFieldHelp');
+		if (!dialog) return;
+		element('bbFieldHelpTitle').textContent = title || '';
+		element('bbFieldHelpBody').textContent = body || '';
+		if (!dialog.open) dialog.showModal();
+	}
+
+	let commandDraft, gattToken = '', sessionMac = '', commandRunning = false;
 	let patchEditor=null, patchEditorLoading=null, patchText='{}', patchInitialized=false, syncingPatch=false;
 	// Live command validation must not block the enclosing Freetz settings form.
 	const commandForm=document.createElement('form');commandForm.id='bbCommandForm';commandForm.hidden=true;
@@ -1142,18 +1378,176 @@ cat << 'EOF'
 		})().catch(error=>{patchEditorLoading=null;throw error;});
 		return patchEditorLoading.then(()=>{patchEditor.setReadOnly(commandRunning);patchEditor.resize(true);});
 	}
+	const DIAG_POWER=['-12 dBm','-9 dBm','-6 dBm','-3 dBm','0 dBm','+3 dBm','+6 dBm','+9 dBm'];
+	function diagBytes(result) {
+		const digits=String(result&&result.data||'').replace(/[^0-9a-fA-F]/g,''),bytes=[];
+		for(let index=0;index+2<=digits.length;index+=2)bytes.push(parseInt(digits.slice(index,index+2),16));
+		return bytes;
+	}
+	// Firmware diagnostics answer with fixed six-byte records; decode them so
+	// the response pane shows values instead of raw hex only.
+	function decodeDiagnostic(name,result) {
+		if(!result||!result.data)return null;
+		const bytes=diagBytes(result);
+		const at=index=>index<bytes.length?bytes[index]:null;
+		const word=index=>at(index)===null||at(index+1)===null?null:at(index)|(at(index+1)<<8);
+		const pad=value=>value===null||value===undefined?null:'0x'+value.toString(16).toUpperCase().padStart(2,'0');
+		switch(name){
+		case 'info':return {bluetooth_mac:bytes.slice(0,6).map(byte=>byte.toString(16).toUpperCase().padStart(2,'0')).join(':'),rgb_led_ready:at(6)===null?null:at(6)===1,software_version:result.metadata};
+		case 'version':return {hardware_version:pad(at(0)),protocol:[at(1),at(2)],esp_idf:[at(3),at(4),at(5)].join('.')};
+		case 'uart':return {operation:at(0),baud_index:at(1),baud_indexes:at(2),baud_rate:at(3)===null?null:at(3)|(at(4)<<8)|(at(5)<<16)};
+		case 'rfsdk':return {tx_power_index:at(0),tx_power:DIAG_POWER[at(0)]||'chip specific',xtal_cap:pad(at(1)),scan_channels:[at(2),at(3),at(4)],coded_min_units:at(5)};
+		case 'gpio-status':case 'gpio-read':return {operation:at(0),pin:at(1),level:at(2),is_led:at(3)===1,supported_mask:word(4)};
+		case 'analog-read':return {operation:at(0),pin:at(1),raw:word(2),supported_mask:word(4)};
+		case 'gpio-events':return {armed_mask:at(0)===null?null:(at(0)|((at(1)||0)<<8)|((at(2)||0)<<16)|((at(3)||0)<<24))};
+		case 'connection-status':return {state:at(0),peer_addr_type:at(1),notify_handle:word(2),interval_units:word(4)};
+		case 'txadv-status':return {active:at(0)>0,phy:at(0)>0?at(0)-1:null,interval_units:word(1),data_len:at(3)};
+		default:return null;
+		}
+	}
+	// The ATC commands need a peer: a plain GATT transaction with a MAC or an
+	// already open session. On "Open BLE GATT session" there is no session yet,
+	// so the buttons stay disabled instead of failing on an empty MAC.
+	const ATC_FRAME_KEY='ble2uart-atc-frame';
+	function atcAllowed() {
+		const type=element('bbCommandType').value;
+		if(type==='gatt')return true;
+		if(type==='gatt-session')return !!gattToken;
+		return false;
+	}
+	function atcFrameRead() {
+		let stored=null;
+		try{stored=JSON.parse(window.localStorage.getItem(ATC_FRAME_KEY)||'null');}catch(error){stored=null;}
+		return stored&&typeof stored==='object'?stored:{};
+	}
+	const ATC_INPUTS={uuid:'bbAtcUuid',value:'bbAtcValue',prefix:'bbAtcPrefix',codec:'bbAtcCodec',offset:'bbAtcOffset',write_offset:'bbAtcWriteOffset'};
+	function atcInput(id){return element(ATC_INPUTS[id]||('bbAtc_'+id));}
+	function firmwareAtLeast(text,major,minor) {
+		const parts=String(text||'').split('.');
+		if(parts.length<2)return false;
+		const ma=Number(parts[0]),mi=Number(parts[1]);
+		if(!Number.isFinite(ma)||!Number.isFinite(mi))return false;
+		return ma>major||(ma===major&&mi>=minor);
+	}
+	// The firmware version selects the layout: cfg up to 4.6, cfg47 from 4.7.
+	function atcCodecFor(mac) {
+		return firmwareAtLeast(atcFirmwareGet(mac),4,7)?'cfg47':'cfg';
+	}
+	function atcFrame(operation) {
+		const stored=atcFrameRead();
+		const read=id=>{const input=atcInput(id);return input?String(input.value).trim():'';};
+		const pick=(id,fallback)=>{
+			const current=read(id);
+			if(current!=='')return current;
+			return stored[id]===undefined?fallback:String(stored[id]);
+		};
+		const frame={
+			uuid:pick('uuid','1F1F'),
+			value:pick('value','55'),
+			prefix:pick('prefix','55'),
+			codec:pick('codec',atcCodecFor(atcPeerMac())),
+			offset:Number(pick('offset','1')),
+			write_offset:Number(pick('write_offset','1'))
+		};
+		if(!Number.isFinite(frame.offset)||frame.offset<0)frame.offset=1;
+		if(!Number.isFinite(frame.write_offset)||frame.write_offset<0)frame.write_offset=1;
+		// The ATC read stays raw for the default cfg layout: the browser decodes
+		// it, so an unexpected firmware cannot make the read itself fail.
+		if(operation==='exchange'&&(frame.codec==='cfg'||frame.codec==='cfg47')){frame.codec='';frame.offset=0;}
+		try{window.localStorage.setItem(ATC_FRAME_KEY,JSON.stringify(frame));}catch(error){/* private mode */}
+		return frame;
+	}
+	const ATC_FW_KEY='ble2uart-atc-firmware';
+	function atcFirmwareMap() {
+		let map=null;
+		try{map=JSON.parse(window.localStorage.getItem(ATC_FW_KEY)||'null');}catch(error){map=null;}
+		return map&&typeof map==='object'?map:{};
+	}
+	function atcFirmwareGet(mac) {
+		const key=String(mac||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase();
+		return key?(atcFirmwareMap()[key]||''):'';
+	}
+	function atcFirmwareSet(mac,version) {
+		const key=String(mac||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase();
+		if(!key||!version)return;
+		const map=atcFirmwareMap();map[key]=version;
+		try{window.localStorage.setItem(ATC_FW_KEY,JSON.stringify(map));}catch(error){/* private mode */}
+	}
+	function atcPeerMac() {
+		const type=element('bbCommandType')?element('bbCommandType').value:'';
+		if(type==='gatt-session')return sessionMac||gattToken;
+		const input=element('bbCmd_mac');
+		return input?String(input.value).trim():'';
+	}
+	function configuredDevice(mac) {
+		const target=String(mac||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase();
+		if(!target)return null;
+		const found=knownDevices().find(device=>String(device.mac||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase()===target);
+		return found||null;
+	}
+	// What the ATC buttons can do depends on the peer: when the configuration
+	// names the device (and a previous read reported its firmware) the text says
+	// so, otherwise it states that these are pvvx/ATC-only commands.
+	function renderAtcHelp() {
+		const node=element('bbGattHelp');
+		if(!node)return;
+		const mac=atcPeerMac();
+		const device=configuredDevice(mac);
+		const version=atcFirmwareGet(mac);
+		let text=ct.atcHelpUnknown;
+		if(device&&version)text=ct.atcHelpPvvx.replace('{device}','\u201c'+(device.label||device.mac)+'\u201d').replace('{version}',version);
+		else if(device)text=ct.atcHelpKnown.replace('{device}','\u201c'+(device.label||device.mac)+'\u201d');
+		node.textContent=text;
+	}
+	function syncAtc() {
+		if(!element('bbAtcRead'))return;
+		renderAtcHelp();
+		const allowed=atcAllowed()&&!commandRunning;
+		const hex=(atcFrame().value||'55').toUpperCase();
+		for(const [id,key] of [['bbAtcRead','atcRead'],['bbAtcPatch','atcPatch']]){
+			const button=element(id);
+			button.disabled=!allowed;
+			button.textContent=ct[key].replace('{hex}',hex);
+			button.title=allowed?ct.help:ct.atcDisabled;
+		}
+	}
 	function commandBusy(pending) {
 		commandRunning=pending;
-		for(const id of ['bbCommandSend','bbAtcRead','bbAtcPatch','bbCommandType','bbRadioRefresh'])element(id).disabled=pending;
+		for(const id of ['bbCommandSend','bbAtcRead','bbAtcPatch','bbCommandType','bbRadioRefresh','bbAttempts','bbRetryDelay','bbAtcBuild'])element(id).disabled=pending;
 		element('bbCommandFields').querySelectorAll('input,select').forEach(input=>input.disabled=pending);
 		if(patchEditor)patchEditor.setReadOnly(pending);
+		syncAtc();
+	}
+	function knownDevices() {
+		const devices=config&&Array.isArray(config.devices)?config.devices:[];
+		return devices.filter(device=>device&&device.mac);
+	}
+	function appendMacPicker(parent) {
+		const devices=knownDevices();
+		if(!devices.length)return;
+		const label=document.createElement('label');label.className='bbField';
+		const caption=document.createElement('span');caption.className='bbFieldHead';caption.textContent=ct.macPick;
+		caption.append(helpButton(ct.macPick,helpText('macPick')));
+		label.append(caption);
+		const select=document.createElement('select');select.id='bbCmdMacPick';select.autocomplete='off';
+		select.add(new Option(ct.macManual,''));
+		devices.forEach(device=>select.add(new Option((device.label||device.mac)+' \u2014 '+device.mac,device.mac)));
+		select.value=devices.some(device=>device.mac===commandDraft.mac)?commandDraft.mac:'';
+		select.onchange=()=>{
+			if(!select.value)return;
+			commandDraft.mac=select.value;
+			const input=element('bbCmd_mac');
+			if(input){input.value=select.value;input.reportValidity();}
+			syncAtc();
+		};
+		label.append(select);parent.append(label);
 	}
 	function renderCommand(previous = {}) {
 		const type = element('bbCommandType').value, command = type === 'gatt-session' ? 'gatt' : type;
-		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : type === 'gatt-open' ? {command,mac:'',addr_type:0,coded:false,timeout_ms:60000,idle_timeout_ms:60000} : type === 'gatt-close' ? {command,session:gattToken} : type === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
+		commandDraft = command === 'diagnostic' ? {command,name:'info',pin:0} : type === 'gatt-open' ? {command,mac:'',addr_type:0,coded:false,timeout_ms:30000,idle_timeout_ms:120000} : type === 'gatt-close' ? {command,session:gattToken} : type === 'txadv-start' ? {command,phy:0,interval_units:160,data:''} : {command};
 		if(command === 'gatt') {
 			const operation = previous.operation || 'discover';
-			Object.assign(commandDraft,type === 'gatt-session' ? {session:gattToken} : {mac:'',addr_type:0,coded:false},{operation,timeout_ms:60000});
+			Object.assign(commandDraft,type === 'gatt-session' ? {session:gattToken} : {mac:'',addr_type:0,coded:false},{operation,timeout_ms:30000});
 			if(!['discover','mtu','unpair'].includes(operation))Object.assign(commandDraft,{handle:0,uuid:''});
 			if(['write','write-descriptor','write-without-response','exchange','patch'].includes(operation))commandDraft.value='';
 			if(['subscribe','exchange','patch'].includes(operation))commandDraft.mode=1;
@@ -1164,7 +1558,10 @@ cat << 'EOF'
 		Object.keys(commandDraft).forEach(key=>{if(key!=='command'&&Object.hasOwn(previous,key))commandDraft[key]=previous[key];});
 		const parent = element('bbCommandFields'); parent.replaceChildren();
 		Object.entries(commandDraft).filter(([key])=>key!=='command'&&key!=='patch').forEach(([key,value])=>{
-			const label=document.createElement('label');label.className='bbField';label.append(ct[key]);
+			const label=document.createElement('label');label.className='bbField';
+			const caption=document.createElement('span');caption.className='bbFieldHead';caption.textContent=ct[key];
+			caption.append(helpButton(ct[key],helpText(key)));
+			label.append(caption);
 			const input=document.createElement(commandOptions[key]?'select':'input');
 			if(commandOptions[key])commandOptions[key].forEach(option=>input.add(new Option(option,option)));
 			else input.type=typeof value==='boolean'?'checkbox':typeof value==='number'?'number':'text';
@@ -1185,38 +1582,49 @@ cat << 'EOF'
 			input.oninput=()=>{
 				commandDraft[key]=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;
 				if(key==='operation')renderCommand(commandDraft);
+				if(key==='mac')renderAtcHelp();
 			};
 			label.append(input);parent.append(label);
+			if(key==='mac')appendMacPicker(parent);
 		});
 		element('bbCommandPatch').hidden=commandDraft.operation!=='patch';
+		const retryVisible=command==='gatt';
+		element('bbAttempts').parentElement.hidden=!retryVisible;
+		element('bbRetryDelay').parentElement.hidden=!retryVisible;
 		if(commandDraft.operation==='patch')ensurePatchEditor().catch(error=>{element('bbCommandPatchError').textContent=error.message;element('bbCommandPatchError').hidden=false;message(error.message,true);});
 		commandBusy(commandRunning);
 	}
 	async function radioStatus() {
 		const status=await api('status');setCommandOutput('bbRadio',{connected:status.connected,...status.radio});
+		sessionMac=status.radio?.gatt?.mac||'';
 		if(status.radio?.gatt===null&&gattToken){
 			if(commandDraft?.session===gattToken){commandDraft.session='';const input=element('bbCmd_session');if(input)input.value='';}
 			gattToken='';
 		}
 		await ensureCommandEditors();
 		if(commandDraft.operation==='patch')await ensurePatchEditor();
+		syncAtc();
 	}
 	element('bbCommandsTab').textContent=ct.tab;element('bbCommandTypeLabel').textContent=ct.type;element('bbCommandNote').textContent=ct.note;
-	const atcReadNotice={en:'ATC read returns raw bytes; some sensor firmware may normalize and save settings when processing 0x55.',de:'Die ATC-Lesung liefert Rohdaten; manche Sensor-Firmware kann Einstellungen bei 0x55 normalisieren und speichern.',it:'La lettura ATC restituisce byte grezzi; alcuni firmware del sensore possono normalizzare e salvare le impostazioni quando elaborano 0x55.',fr:'La lecture ATC renvoie les octets bruts ; certains micrologiciels peuvent normaliser et enregistrer les réglages lors de 0x55.',es:'La lectura ATC devuelve bytes sin procesar; algunos firmwares pueden normalizar y guardar ajustes al procesar 0x55.'};
-	element('bbGattHelp').textContent=ct.help+' '+(atcReadNotice[helpLanguage]||atcReadNotice.en);
-	element('bbCommandPatchLabel').textContent=ct.patch;element('bbCmd_patch').title=ct.patch;element('bbCmd_patch').setAttribute('aria-label',ct.patch);
+	element('bbGattHelp').textContent=ct.atcHelpUnknown;
+	element('bbCommandPatchLabel').textContent=ct.patch;element('bbCommandPatchLabel').append(helpButton(ct.patch,helpText('patch')));element('bbCmd_patch').title=ct.patch;element('bbCmd_patch').setAttribute('aria-label',ct.patch);
 	element('bbCommandRequestLabel').textContent=ct.request;
 	for(const id of ['bbCommandRequest','bbConfirmRequest'])element(id).setAttribute('aria-label',ct.request);
 	element('bbCommandRequestDetails').addEventListener('toggle',()=>commandEditors.bbCommandRequest?.resize(true));
 	[['diagnostic','diagnostic'],['gatt','gatt'],['gatt-open','open'],['gatt-session','sessionCommand'],['gatt-close','close'],['txadv-start','start'],['txadv-stop','stop'],['scan-start','scanStart'],['scan-stop','scanStop']].forEach(([value,key])=>element('bbCommandType').add(new Option(ct[key],value)));
+	// "BLE GATT transaction" is unreliable with the current adapter firmware (the
+	// coded-PHY connect often fails): keep the code path for the ATC buttons but
+	// do not offer it in the picker until it works again.
+	const gattOption=element('bbCommandType').querySelector('option[value="gatt"]');
+	if(gattOption){gattOption.hidden=true;gattOption.disabled=true;gattOption.textContent=ct.gatt+' ('+ct.unavailable+')';}
 	element('bbCommandType').title=ct.type;element('bbCommandType').onchange=()=>renderCommand();
-	function prepareAtc(operation) {
+	function prepareAtc(operation, patchOverride) {
 		const previous=commandDraft,type=element('bbCommandType').value;
 		const sessionMode=['gatt-session','gatt-close'].includes(type)||(!['gatt','gatt-open'].includes(type)&&!!gattToken);
 		const session=['gatt-session','gatt-close'].includes(type)?previous.session:['gatt','gatt-open'].includes(type)?'':gattToken;
-		const patch=operation==='patch'?(patchInitialized?patchValue():{flg2:{bt5phy:true,longrange:true}}):null;
+		const patch=operation==='patch'?(patchOverride||(patchInitialized?patchValue():{flg2:{bt5phy:true,longrange:true}})):null;
 		element('bbCommandType').value=sessionMode?'gatt-session':'gatt';
-		const draft={operation,uuid:'1F1F',handle:0,value:'55',prefix:'55',codec:operation==='patch'?'cfg':'',offset:operation==='patch'?1:0,write_offset:1};
+		const draft={operation,handle:0,...atcFrame(operation)};
 		if(sessionMode)draft.session=session;
 		else for(const key of ['mac','addr_type','coded','timeout_ms'])if(Object.hasOwn(previous,key))draft[key]=previous[key];
 		renderCommand(draft);
@@ -1225,14 +1633,178 @@ cat << 'EOF'
 	for(const [id,key,operation] of [['bbAtcRead','atcRead','exchange'],['bbAtcPatch','atcPatch','patch']]){
 		element(id).textContent=ct[key];element(id).title=ct.help;element(id).onclick=()=>run(()=>sendCommand(operation));
 	}
+	element('bbAttemptsLabel').textContent=ct.attempts;element('bbRetryDelayLabel').textContent=ct.retryDelay;
+	element('bbAttempts').title=ct.attempts;element('bbRetryDelay').title=ct.retryDelay;
+	element('bbRequestTitle').textContent=ct.requestTitle;element('bbRadioTitle').textContent=ct.radioTitle;element('bbCommandResultTitle').textContent=ct.resultTitle;
+	element('bbAtcTitle').textContent=ct.atcTitle;element('bbAtcHint').textContent=ct.atcHint;element('bbAtcBuild').textContent=ct.atcBuild;
+	element('bbAtcFrameLabel').textContent=ct.atcFrame;element('bbAtcFrameHint').textContent=ct.atcFrameHint;
+	element('bbAtcUuidLabel').textContent=ct.atcUuid;element('bbAtcValueLabel').textContent=ct.atcValue;
+	element('bbAtcPrefixLabel').textContent=ct.atcPrefix;element('bbAtcCodecLabel').textContent=ct.atcCodec;
+	element('bbAtcOffsetLabel').textContent=ct.atcOffset;element('bbAtcWriteOffsetLabel').textContent=ct.atcWriteOffset;
+	document.querySelectorAll('[data-atc-help]').forEach(slot=>{
+		const path=slot.dataset.atcHelp;
+		slot.replaceChildren(helpButton(slot.previousElementSibling?slot.previousElementSibling.textContent:path,atcHelpText(path)));
+	});
+	element('bbFieldHelpClose').textContent=ct.closeHelp;
+	element('bbFieldHelpClose').onclick=()=>element('bbFieldHelp').close();
+	(function initAtcFrame(){
+		const stored=atcFrameRead();
+		const defaults={uuid:'1F1F',value:'55',prefix:'55',codec:'cfg',offset:1,write_offset:1};
+		for(const key of Object.keys(defaults)){
+			const input=atcInput(key);
+			if(!input)continue;
+			input.value=stored[key]===undefined?defaults[key]:stored[key];
+			input.oninput=()=>{syncAtc();};
+		}
+	})();
 	element('bbCommandSend').textContent=ct.send;element('bbCommandSend').title=ct.send;
 	element('bbRadioRefresh').textContent=ct.refresh;element('bbRadioRefresh').title=ct.refresh;
 	element('bbRadio').setAttribute('aria-label',ct.refresh);element('bbCommandResult').setAttribute('aria-label',ct.done);
 	element('bbRadioRefresh').onclick=()=>run(radioStatus);
+
+	// ------------------------------------------------------------- ATC 0x55 --
+	// Editable subset of the configuration reported by the ATC 0x55 firmware
+	// (codec "cfg"). The daemon decodes the notification, so the panel always
+	// starts from the values stored on the device; only the fields the user
+	// modifies end up in the patch.
+	const atcRfPower=['RF_POWER_Positive_10p46_dBm','RF_POWER_Positive_10p29_dBm','RF_POWER_Positive_10p01_dBm','RF_POWER_Positive_9p81_dBm','RF_POWER_Positive_9p48_dBm','RF_POWER_Positive_9p24_dBm','RF_POWER_Positive_8p97_dBm','RF_POWER_Positive_8p73_dBm','RF_POWER_Positive_8p44_dBm','RF_POWER_Positive_8p13_dBm','RF_POWER_Positive_7p79_dBm','RF_POWER_Positive_7p41_dBm','RF_POWER_Positive_7p02_dBm','RF_POWER_Positive_6p60_dBm','RF_POWER_Positive_6p14_dBm','RF_POWER_Positive_5p65_dBm','RF_POWER_Positive_5p13_dBm','RF_POWER_Positive_4p57_dBm','RF_POWER_Positive_3p94_dBm','RF_POWER_Positive_3p23_dBm','RF_POWER_Positive_3p01_dBm','RF_POWER_Positive_2p81_dBm','RF_POWER_Positive_2p61_dBm','RF_POWER_Positive_2p39_dBm','RF_POWER_Positive_1p99_dBm','RF_POWER_Positive_1p73_dBm','RF_POWER_Positive_1p45_dBm','RF_POWER_Positive_1p17_dBm','RF_POWER_Positive_0p90_dBm','RF_POWER_Positive_0p58_dBm','RF_POWER_Positive_0p04_dBm','RF_POWER_Negative_0p14_dBm','RF_POWER_Negative_0p97_dBm','RF_POWER_Negative_1p42_dBm','RF_POWER_Negative_1p89_dBm','RF_POWER_Negative_2p48_dBm','RF_POWER_Negative_3p03_dBm','RF_POWER_Negative_3p61_dBm','RF_POWER_Negative_4p26_dBm','RF_POWER_Negative_5p03_dBm','RF_POWER_Negative_5p81_dBm','RF_POWER_Negative_6p67_dBm','RF_POWER_Negative_7p65_dBm','RF_POWER_Negative_8p65_dBm','RF_POWER_Negative_9p89_dBm','RF_POWER_Negative_11p4_dBm','RF_POWER_Negative_13p29_dBm','RF_POWER_Negative_15p88_dBm','RF_POWER_Negative_19p27_dBm','RF_POWER_Negative_25p18_dBm','RF_POWER_Negative_30_dBm','RF_POWER_Negative_50_dBm'];
+	const atcFields=[
+		['flg.lp_measures','bool'],['flg.tx_measures','bool'],['flg.show_batt_enabled','bool'],
+		['flg.temp_F_or_C','enum',['temp_C','temp_F']],
+		['flg.blinking_time_smile','enum',['blinking_smile','blinking_time']],
+		['flg.comfort_smiley','bool'],
+		['flg.advertising_type','enum',['adv_type_atc1441','adv_type_custom','adv_type_mi','adv_type_ha_ble']],
+		['flg2.screen_off','bool'],['flg2.longrange','bool'],['flg2.bt5phy','bool'],['flg2.adv_flags','bool'],['flg2.adv_crypto','bool'],
+		['flg3.adv_interval_delay','number',1],['flg3.reserved','number',1],['flg3.date_ddmm','bool'],['flg3.not_day_of_week','bool'],['event_adv_cnt','number',1],
+		['flg2.smiley','enum',['smiley_off','smiley_happy','smiley_sad','smiley_ooo','smiley_p_off','smiley_p_happy','smiley_p_sad','smiley_p_ooo']],
+		['temp_offset','number',0.1],['humi_offset','number',0.1],
+		['advertising_interval','number',0.0625],['measure_interval','number',1],
+		['rf_tx_power','enum',atcRfPower],
+		['connect_latency','number',0.02],['min_step_time_update_lcd','number',0.05],
+		['averaging_measurements','number',1]
+	];
+	const atcReadOnly=[['version','Version'],['firmware_version','Firmware'],['temperature_unit','Temperature unit'],['humidity_unit','Humidity unit'],['adv_int_unit','Adv interval unit'],['connect_latency_unit','Connect latency unit'],['min_s_t_upd_lcd_unit','LCD update unit'],['hw_cfg.sensor','Sensor'],['hw_cfg.hwver','Hardware']];
+	let atcOriginal=null, atcExpectRead=false;
+	function atcGet(object,path){return path.split('.').reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,object);}
+	function atcLabel(path){return path.replace('.',' \u00b7 ').replace(/_/g,' ');}
+	function showAtc(decoded) {
+		atcOriginal=decoded;
+		const modern=atcLayoutModern(decoded);
+		element('bbAtcHint').textContent=modern?ct.atcHint47:ct.atcHint;
+		const parent=element('bbAtcFields');parent.replaceChildren();
+		element('bbAtcPanel').hidden=false;
+		element('bbAtcStatus').textContent='';
+		const add=(name,node,path)=>{
+			const label=document.createElement('label');label.className='bbField';
+			const caption=document.createElement('span');caption.className='bbFieldHead';caption.textContent=name;
+			caption.append(helpButton(name,atcHelpText(path)));
+			label.append(caption);
+			label.append(node);parent.append(label);
+		};
+		for(const [path,kind,extra] of atcFields){
+			const current=atcGet(decoded,path);
+			if(current===undefined)continue;
+			let input;
+			if(kind==='bool'){
+				input=document.createElement('input');input.type='checkbox';input.checked=!!current;
+			} else if(kind==='enum'){
+				input=document.createElement('select');(extra||[]).forEach(value=>input.add(new Option(value,value)));
+				if(current!==undefined)input.value=String(current);
+			} else {
+				input=document.createElement('input');input.type='number';input.step=String(extra);input.value=current===undefined?'':String(current);
+			}
+			input.dataset.path=path;input.dataset.kind=kind;input.autocomplete='off';input.title=atcLabel(path);
+			add(atcLabel(path),input,path);
+		}
+		for(const [path,name] of atcReadOnly){
+			const value=atcGet(decoded,path);
+			const text=document.createElement('span');
+			text.textContent=(value===undefined?'\u2014':(typeof value==='object'?JSON.stringify(value):String(value)))+' ('+ct.atcReadOnly+')';
+			add(name,text,path);
+		}
+	}
+	function atcPatch() {
+		if(!atcOriginal)throw new Error(ct.atcUnknown);
+		const patch={};let count=0;
+		element('bbAtcFields').querySelectorAll('[data-path]').forEach(input=>{
+			const path=input.dataset.path,current=atcGet(atcOriginal,path);
+			let value;
+			if(input.dataset.kind==='bool')value=input.checked;
+			else if(input.dataset.kind==='number'){
+				if(input.value==='')return;
+				value=Number(input.value);
+				if(!Number.isFinite(value))return;
+			}
+			else value=input.value;
+			const same=input.dataset.kind==='number'?Math.abs(Number(current)-value)<1e-9:current===value;
+			if(same)return;
+			const keys=path.split('.');let node=patch;
+			keys.slice(0,-1).forEach(key=>{node[key]=node[key]||{};node=node[key];});
+			node[keys[keys.length-1]]=value;count++;
+		});
+		if(!count)throw new Error(ct.atcNoChange);
+		return {patch,count};
+	}
+	// Fallback decoder for the raw 0x55 reply: the ATC read is sent without a
+	// codec so an unexpected firmware cannot make it fail. Layout of the
+	// pvvx/ATC configuration frame; the patch path is still decoded and
+	// byte-verified by the daemon before anything is written.
+	const atcRfPowerByByte={191:'RF_POWER_Positive_3p01_dBm',189:'RF_POWER_Positive_2p81_dBm',187:'RF_POWER_Positive_2p61_dBm',185:'RF_POWER_Positive_2p39_dBm',182:'RF_POWER_Positive_1p99_dBm',180:'RF_POWER_Positive_1p73_dBm',178:'RF_POWER_Positive_1p45_dBm',176:'RF_POWER_Positive_1p17_dBm',174:'RF_POWER_Positive_0p90_dBm',172:'RF_POWER_Positive_0p58_dBm',169:'RF_POWER_Positive_0p04_dBm',168:'RF_POWER_Negative_0p14_dBm',164:'RF_POWER_Negative_0p97_dBm',162:'RF_POWER_Negative_1p42_dBm',160:'RF_POWER_Negative_1p89_dBm',158:'RF_POWER_Negative_2p48_dBm',156:'RF_POWER_Negative_3p03_dBm',154:'RF_POWER_Negative_3p61_dBm',152:'RF_POWER_Negative_4p26_dBm',150:'RF_POWER_Negative_5p03_dBm',148:'RF_POWER_Negative_5p81_dBm',146:'RF_POWER_Negative_6p67_dBm',144:'RF_POWER_Negative_7p65_dBm',142:'RF_POWER_Negative_8p65_dBm',140:'RF_POWER_Negative_9p89_dBm',138:'RF_POWER_Negative_11p4_dBm',136:'RF_POWER_Negative_13p29_dBm',134:'RF_POWER_Negative_15p88_dBm',132:'RF_POWER_Negative_19p27_dBm',130:'RF_POWER_Negative_25p18_dBm',255:'RF_POWER_Negative_30_dBm',128:'RF_POWER_Negative_50_dBm',63:'RF_POWER_Positive_10p46_dBm',61:'RF_POWER_Positive_10p29_dBm',58:'RF_POWER_Positive_10p01_dBm',56:'RF_POWER_Positive_9p81_dBm',53:'RF_POWER_Positive_9p48_dBm',51:'RF_POWER_Positive_9p24_dBm',49:'RF_POWER_Positive_8p97_dBm',47:'RF_POWER_Positive_8p73_dBm',45:'RF_POWER_Positive_8p44_dBm',43:'RF_POWER_Positive_8p13_dBm',41:'RF_POWER_Positive_7p79_dBm',39:'RF_POWER_Positive_7p41_dBm',37:'RF_POWER_Positive_7p02_dBm',35:'RF_POWER_Positive_6p60_dBm',33:'RF_POWER_Positive_6p14_dBm',31:'RF_POWER_Positive_5p65_dBm',29:'RF_POWER_Positive_5p13_dBm',27:'RF_POWER_Positive_4p57_dBm',25:'RF_POWER_Positive_3p94_dBm',23:'RF_POWER_Positive_3p23_dBm'};
+	const atcHwver={0:'hwver_LYWSD03MMC_B1_4',1:'hwver_MHO_C401',2:'hwver_CGG1_M_OLD',3:'hwver_LYWSD03MMC_B1_9',4:'hwver_LYWSD03MMC_B1_6',5:'hwver_LYWSD03MMC_B1_7',6:'hwver_CGDK2',7:'hwver_CGG1_M_2022',8:'hwver_MHO_C401N_2022',9:'hwver_MJWSD05MMC'};
+	// Two layouts share the same 12-byte frame: up to firmware 4.6 the bytes
+	// after flg2 are temp_offset/humi_offset, from 4.7 they are flg3 and
+	// event_adv_cnt (pvvx ATC_MiThermometer src/app.h, VERSION >= 0x47).
+	function atcLayoutModern(decoded) {
+		const fw=decoded&&decoded.firmware_version;
+		if(!fw)return false;
+		const major=Number(fw.major),minor=Number(fw.minor);
+		return major>4||(major===4&&minor>=7);
+	}
+	function atcDecode(hex) {
+		const clean=String(hex||'').replace(/[^0-9a-fA-F]/g,'');
+		if(clean.length!==28||clean.slice(0,2).toLowerCase()!=='55')return null;
+		const b=[];for(let i=0;i<clean.length;i+=2)b.push(parseInt(clean.slice(i,i+2),16));
+		const signed=value=>value>127?value-256:value;
+		const round=value=>Math.round(value*1000)/1000;
+		const fw=b[1],flg=b[2],flg2=b[3],flg3=b[4],hw=b[11];
+		const decoded={
+			version:1,
+			firmware_version:{major:fw>>4,minor:fw&15},
+			flg:{lp_measures:!!(flg&0x80),tx_measures:!!(flg&0x40),show_batt_enabled:!!(flg&0x20),temp_F_or_C:(flg&0x10)?'temp_F':'temp_C',blinking_time_smile:(flg&0x08)?'blinking_time':'blinking_smile',comfort_smiley:!!(flg&0x04),advertising_type:['adv_type_atc1441','adv_type_custom','adv_type_mi','adv_type_ha_ble'][flg&0x03]},
+			flg2:{screen_off:!!(flg2&0x80),longrange:!!(flg2&0x40),bt5phy:!!(flg2&0x20),adv_flags:!!(flg2&0x10),adv_crypto:!!(flg2&0x08),smiley:['smiley_off','smiley_happy','smiley_sad','smiley_ooo','smiley_p_off','smiley_p_happy','smiley_p_sad','smiley_p_ooo'][flg2&0x07]}
+		};
+		if(fw>=0x47){
+			decoded.flg3={adv_interval_delay:flg3&0x0f,reserved:(flg3>>4)&0x03,date_ddmm:!!(flg3&0x40),not_day_of_week:!!(flg3&0x80)};
+			decoded.event_adv_cnt=b[5];
+			decoded.advertising_interval=round(b[6]*0.0625);
+			decoded.measure_interval=b[7];
+			decoded.rf_tx_power=atcRfPowerByByte[b[8]]||('RF_POWER_byte_'+b[8]);
+			decoded.connect_latency=round((b[9]+1)*0.02);
+			decoded.min_step_time_update_lcd=round(b[10]*0.05);
+		} else {
+			decoded.temp_offset=signed(b[4])/10;
+			decoded.humi_offset=signed(b[5])/10;
+			decoded.advertising_interval=round(b[6]*0.0625);
+			decoded.measure_interval=b[7];
+			decoded.rf_tx_power=atcRfPowerByByte[b[8]]||('RF_POWER_byte_'+b[8]);
+			decoded.connect_latency=round((b[9]+1)*0.02);
+			decoded.min_step_time_update_lcd=round(b[10]*0.05);
+		}
+		decoded.hw_cfg={sensor:(hw&0x80)?'sensor_SHTC3':'sensor_SHT4x',reserved:(hw>>4)&0x07,hwver:atcHwver[hw&0x0f]||('hwver_'+(hw&0x0f))};
+		decoded.averaging_measurements=b[12];
+		return decoded;
+	}
+	element('bbAtcBuild').onclick=()=>run(()=>{
+		const {patch,count}=atcPatch();
+		prepareAtc('patch',patch);
+		element('bbAtcStatus').textContent=ct.atcReady.replace('{n}',count);
+	});
 	async function sendCommand(atcOperation) {
 		let sent=false;
+		atcExpectRead=atcOperation==='exchange';
 		try {
 			if(atcOperation)prepareAtc(atcOperation);
+			if(!atcExpectRead){atcOriginal=null;element('bbAtcPanel').hidden=true;element('bbAtcStatus').textContent='';}
 			if(!Array.from(element('bbCommandFields').querySelectorAll('input,select')).every(input=>input.reportValidity()))return;
 			commandBusy(true);
 			await ensureCommandEditors();
@@ -1243,12 +1815,58 @@ cat << 'EOF'
 			setCommandOutput('bbCommandRequest',payload);element('bbCommandRequestDetails').open=true;
 			commandEditors.bbCommandRequest.resize(true);
 			if(!await confirmAction(ct.confirm,payload)){message(ct.cancelled);setCommandOutput('bbCommandResult',ct.cancelled,'text');return;}
-			message(ct.pending);setCommandOutput('bbCommandResult','','text');sent=true;
-			const response=await api('command',payload);setCommandOutput('bbCommandResult',response);message(ct.done);
+			// The transaction (connect, operation, disconnect) is retried as a
+			// whole: the first attempt often meets a busy or absent peer and the
+			// firmware only reports "GATT operation timed out" after the timeout.
+			const attempts=Math.max(1,Math.min(10,Number(element('bbAttempts').value)||1));
+			const retryDelay=Math.max(0,Number(element('bbRetryDelay').value)||0);
+			const diagnosticName=payload.command==='diagnostic'?payload.name:null;
+			let response=null,lastError=null;
+			sent=true;
+			for(let attempt=1;attempt<=attempts;attempt++){
+				message(attempt>1?ct.attempt.replace('{n}',attempt).replace('{total}',attempts):ct.pending);
+				try{response=await api('command',payload);lastError=null;break;}
+				catch(error){
+					lastError=error;
+					setCommandOutput('bbCommandResult',{attempt,total:attempts,error:String(error.message||error)});
+					if(attempt<attempts)await new Promise(resolve=>setTimeout(resolve,retryDelay));
+				}
+			}
+			if(lastError)throw lastError;
+			const decodedDiagnostic=diagnosticName?decodeDiagnostic(diagnosticName,response.result):null;
+			setCommandOutput('bbCommandResult',decodedDiagnostic?{...response,decoded:decodedDiagnostic}:response);
+			message(decodedDiagnostic?ct.diagHint:ct.done);
+			// Only the answer to an ATC read may fill the ATC panel: a failed
+			// connection or another command must not leave values on screen that
+			// the device never reported for that request.
+			const notification=atcExpectRead?response.result?.notifications?.[0]:null;
+			const decoded=notification?(notification.decoded||atcDecode(notification.value)):null;
+			if(decoded&&decoded.firmware_version){
+				const fw=decoded.firmware_version;
+				atcFirmwareSet(payload.mac||sessionMac,String(fw.major)+'.'+String(fw.minor));
+				// Keep the codec field in step with the firmware that answered.
+				const codecInput=element('bbAtc_codec');
+				if(codecInput)codecInput.value=atcLayoutModern(decoded)?'cfg47':'cfg';
+				renderAtcHelp();
+			}
+			if(decoded)showAtc(decoded);
+			else if(atcExpectRead){atcOriginal=null;element('bbAtcStatus').textContent=ct.atcUnknown;}
+			if(atcOperation==='patch'&&response.result?.written)element('bbAtcStatus').textContent=ct.atcApplied.replace('{written}',response.result.written);
 			if(response.result?.session){gattToken=response.result.session;element('bbCommandType').value='gatt-session';renderCommand();}
-			if(response.result?.confirmation==='disconnected'){gattToken='';element('bbCommandType').value='gatt-open';renderCommand();}
+			if(response.result?.confirmation==='disconnected'){
+				gattToken='';sessionMac='';
+				element('bbCommandType').value='gatt-open';renderCommand();
+				if(response.result?.peer_closed)message(ct.peerClosed);
+			}
 		}
-		catch(error){setCommandOutput('bbCommandResult',error.message,'text');throw error;}
+		catch(error){
+			setCommandOutput('bbCommandResult',error.message,'text');
+			if(atcExpectRead){
+				atcOriginal=null;element('bbAtcFields').replaceChildren();
+				element('bbAtcPanel').hidden=false;element('bbAtcStatus').textContent=ct.atcNoReply;
+			}
+			throw error;
+		}
 		finally{
 			commandBusy(false);
 			if(sent)try{await radioStatus();}catch(error){setCommandOutput('bbRadio',error.message,'text');message(error.message,true);}
