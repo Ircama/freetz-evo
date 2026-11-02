@@ -14,6 +14,34 @@
 		"/cgi-bin/ble2uart_gateway/portal.cgi"
 	];
 	var endpoint = ENDPOINTS[0];
+	/* The freetz proxy exposes the portal as
+	 *   /cgi-bin/freetz_proxy?service=freetz&path=/cgi-bin/extra/ble2uart_gateway/portal
+	 * and forwards every other query parameter upstream. Inside that context the
+	 * API calls have to go back through the proxy, otherwise they hit the FRITZ!
+	 * web server on that path, which answers with its login page ("sessione
+	 * scaduta"). */
+	var PROXY = (function () {
+		try {
+			var params = new URLSearchParams(window.location.search || "");
+			var service = params.get("service") || "";
+			var path = params.get("path") || "";
+			if (service && path.indexOf("ble2uart_gateway") >= 0) {
+				return { service: service, path: path };
+			}
+		} catch (e) { /* no URLSearchParams: older browser, direct access */ }
+		return null;
+	})();
+
+	function endpointUrl(path, query) {
+		if (PROXY) {
+			var base = window.location.pathname +
+				"?service=" + encodeURIComponent(PROXY.service) +
+				"&path=" + encodeURIComponent(PROXY.path);
+			return query ? base + "&" + query : base;
+		}
+		return query ? path + "?" + query : path;
+	}
+
 	var REFRESH_MS = 30000;
 	var MAX_SERIES = 6;
 	var MAX_SELECTED = 18;
@@ -23,7 +51,7 @@
 	 * to brown, which looked like the same colour on a small screen. */
 	var HUE_STEP = 137.508;
 	function colorAt(index) {
-		var dark = !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+		var dark = document.documentElement.getAttribute("data-theme") === "dark";
 		var hue = Math.round(((index < 0 ? 0 : index) * HUE_STEP) % 360);
 		return "hsl(" + hue + (dark ? " 72% 66%" : " 70% 40%") + ")";
 	}
@@ -62,11 +90,19 @@
 			moveUp: "Sposta su", moveDown: "Sposta gi\u00f9",
 			prefsTitle: "Preferenze",
 			prefTitle: "Titolo",
+			prefTheme: "Tema", themeSystem: "Tema di sistema", themeLight: "Tema chiaro", themeDark: "Tema scuro",
 			prefSubtitle: "Sottotitolo",
 			prefHint: "Vuoto = valore predefinito. Le preferenze restano in questo browser.",
 			prefFullscreen: "Avvia a schermo intero",
-			prefFullscreenHint: "Nell'app installata lo schermo intero arriva dal manifest (display: fullscreen). In una scheda del browser serve un gesto: si attiva al primo tocco sulla pagina.",
+			prefFullscreenHint: "L'app installata si apre senza barra del browser (manifest display: standalone). Lo schermo intero vero e proprio si aggiunge col pulsante \u2b1c o col tasto M; in una scheda serve un gesto: si attiva al primo tocco sulla pagina.",
+			prefUiLock: "Blocca le modifiche alla UX",
+			prefUiLockHint: "Nasconde le croci dei widget, le frecce di riordino dei grafici, la selezione delle grandezze, il pulsante che ripristina le viste e le opzioni del grafico. Le preferenze tornano modificabili togliendo questa spunta. Con il blocco attivo, toccando un valore il grafico scorre fino alla sua curva e la illumina.",
+			prefSplitLock: "Blocca la larghezza delle colonne",
+			prefSplitLockHint: "Il separatore fra valori e grafico non si trascina pi\u00f9 (e le frecce non lo spostano): la suddivisione resta quella scelta, anche su un tablet.",
+			tapToChart: "Tocca per vedere la curva nel grafico",
+			notCharted: "Questa grandezza non \u00e8 nel grafico: sblocca le modifiche alla UX per aggiungerla.",
 			prefConfig: "Mostra il collegamento alla configurazione",
+			prefMaximize: "Mostra il pulsante di massimizzazione",
 			prefResetHidden: "Mostra di nuovo riquadri e grafici nascosti",
 			prefHidden: "Nascosti: {n} riquadri, {m} grafici, {k} sensori",
 			hideBox: "Nascondi questo riquadro",
@@ -74,6 +110,12 @@
 			showHidden: "mostra {n} nascosti",
 			showHiddenDevices: "mostra {n} sensori nascosti",
 			hideDevice: "Nascondi questo sensore",
+			prefKpis: "Indicatori",
+			prefShowKpis: "Mostra la sezione degli indicatori",
+			prefSensors: "Sensori",
+			prefBoxes: "Riquadri dei valori",
+			prefNoItems: "Nessun elemento da elencare.",
+			hideKpi: "Nascondi questo indicatore",
 			optPanels: "Grafici visibili",
 			optNoPanels: "Nessun grafico: seleziona prima una grandezza.",
 			family_temperature: "Temperatura", family_humidity: "Umidit\u00e0",
@@ -106,7 +148,7 @@
 			offlineBanner: "Offline: valori salvati dall'ultimo aggiornamento riuscito.",
 			offlineData: "nessun collegamento al Fritz!Box e nessun dato in cache",
 			pwaTitle: "Installa il portale come app",
-			pwaBodyChrome: "Il browser non ha ancora offerto l'installazione. Apri il menu del browser (\u22ee) e scegli \u201cInstalla app\u201d o \u201cAggiungi a schermata Home\u201d. L'installazione richiede https oppure localhost: con http://fritz.box il browser mostra solo un segnalibro.",
+			pwaBodyChrome: "Il browser non ha offerto l'installazione. Su http://fritz.box manca il contesto sicuro richiesto (https oppure localhost): senza di esso non c'\u00e8 service worker, non compare l'icona + di Samsung Internet n\u00e9 il pulsante Installa, e \u201cAggiungi a schermata Home\u201d crea solo un segnalibro che si apre con la barra dell'URL. Per un'app vera apri il portale in https, oppure in localhost con un tunnel SSH (ssh -L 8181:localhost:81 root@fritz.box).",
 			pwaBodyIos: "Tocca <kbd>Condividi</kbd>, poi <kbd>Aggiungi a Home</kbd>: il portale si apre a schermo intero con l'icona dei sensori.",
 			pwaBodyInstalled: "Il portale \u00e8 installato: aprilo dall'icona sul telefono o dal menu delle app del browser."
 		},
@@ -143,11 +185,19 @@
 			moveUp: "Move up", moveDown: "Move down",
 			prefsTitle: "Preferences",
 			prefTitle: "Title",
+			prefTheme: "Theme", themeSystem: "System theme", themeLight: "Light theme", themeDark: "Dark theme",
 			prefSubtitle: "Subtitle",
 			prefHint: "Empty = default value. The preferences stay in this browser.",
 			prefFullscreen: "Start in fullscreen",
-			prefFullscreenHint: "In the installed app fullscreen comes from the manifest (display: fullscreen). In a browser tab it needs a gesture: it starts on the first tap on the page.",
+			prefFullscreenHint: "The installed app opens without the browser chrome (manifest display: standalone). True fullscreen is added with the \u2b1c button or the M key; in a browser tab it needs a gesture: it starts on the first tap on the page.",
+			prefUiLock: "Lock the UI changes",
+			prefUiLockHint: "Hides the crosses of the widgets, the chart reorder arrows, the series selection, the button that resets the saved views and the chart options. Clear this box to edit the preferences again. While locked, tapping a value scrolls to its curve and highlights it.",
+			prefSplitLock: "Lock the column width",
+			prefSplitLockHint: "The separator between the values and the chart cannot be dragged any more (and the arrow keys do not move it): the split stays as chosen, also on a tablet.",
+			tapToChart: "Tap to find its curve in the chart",
+			notCharted: "This value is not in the chart: clear the UI lock to add it.",
 			prefConfig: "Show the link to the configuration",
+			prefMaximize: "Show the maximize button",
 			prefResetHidden: "Show the hidden boxes and charts again",
 			prefHidden: "Hidden: {n} boxes, {m} charts, {k} sensors",
 			hideBox: "Hide this box",
@@ -155,6 +205,12 @@
 			showHidden: "show {n} hidden",
 			showHiddenDevices: "show {n} hidden sensors",
 			hideDevice: "Hide this sensor",
+			prefKpis: "Indicators",
+			prefShowKpis: "Show the indicator section",
+			prefSensors: "Sensors",
+			prefBoxes: "Value boxes",
+			prefNoItems: "Nothing to list here.",
+			hideKpi: "Hide this indicator",
 			optPanels: "Visible charts",
 			optNoPanels: "No charts: select a quantity first.",
 			family_temperature: "Temperature", family_humidity: "Humidity",
@@ -187,7 +243,7 @@
 			offlineBanner: "Offline: values cached by the last successful refresh.",
 			offlineData: "no connection to the router and no cached data",
 			pwaTitle: "Install the portal as an app",
-			pwaBodyChrome: "The browser has not offered the installation yet. Open the browser menu (\u22ee) and choose \u201cInstall app\u201d or \u201cAdd to Home screen\u201d. Installing needs https or localhost: over http://fritz.box the browser only stores a bookmark.",
+			pwaBodyChrome: "The browser has not offered the installation. http://fritz.box is not a secure context (https or localhost), so there is no service worker, no + icon in Samsung Internet and no install button - \u201cAdd to Home screen\u201d only stores a bookmark that opens with the URL bar. For a real app open the portal over https, or over localhost through an SSH tunnel (ssh -L 8181:localhost:81 root@fritz.box).",
 			pwaBodyIos: "Tap <kbd>Share</kbd>, then <kbd>Add to Home Screen</kbd>: the portal opens full screen with the sensor icon.",
 			pwaBodyInstalled: "The portal is installed: open it from the icon on the phone or from the browser app menu."
 		},
@@ -224,11 +280,19 @@
 			moveUp: "Nach oben", moveDown: "Nach unten",
 			prefsTitle: "Einstellungen",
 			prefTitle: "Titel",
+			prefTheme: "Design", themeSystem: "Systemdesign", themeLight: "Helles Design", themeDark: "Dunkles Design",
 			prefSubtitle: "Untertitel",
 			prefHint: "Leer = Standardwert. Die Einstellungen bleiben in diesem Browser.",
 			prefFullscreen: "Im Vollbild starten",
-			prefFullscreenHint: "In der installierten App kommt das Vollbild aus dem Manifest (display: fullscreen). Im Browser-Tab braucht es eine Geste: es startet beim ersten Tippen.",
+			prefFullscreenHint: "Die installierte App \u00f6ffnet ohne Browserleiste (Manifest display: standalone). Das echte Vollbild kommt mit der \u2b1c-Taste oder der Taste M; im Browser-Tab braucht es eine Geste: es startet beim ersten Tippen.",
+			prefUiLock: "UX-\u00c4nderungen sperren",
+			prefUiLockHint: "Blendet die Kreuze der Widgets, die Pfeile zum Umsortieren der Diagramme, die Auswahl der Messgr\u00f6\u00dfen, die R\u00fccksetzung der gespeicherten Ansichten und die Diagrammoptionen aus. Zum Bearbeiten der Einstellungen das H\u00e4kchen wieder entfernen. Bei gesperrter Oberfl\u00e4che springt ein Tippen auf einen Wert zur Kurve und hebt sie hervor.",
+			prefSplitLock: "Spaltenbreite sperren",
+			prefSplitLockHint: "Der Trenner zwischen Werten und Diagramm l\u00e4sst sich nicht mehr ziehen (auch nicht mit den Pfeiltasten): die Aufteilung bleibt wie gew\u00e4hlt, auch auf einem Tablet.",
+			tapToChart: "Tippen, um die Kurve im Diagramm zu finden",
+			notCharted: "Dieser Wert ist nicht im Diagramm: zum Hinzuf\u00fcgen die Sperre der Oberfl\u00e4che aufheben.",
 			prefConfig: "Link zur Konfiguration anzeigen",
+			prefMaximize: "Maximieren-Schaltfl\u00e4che anzeigen",
 			prefResetHidden: "Versteckte Kacheln und Diagramme wieder anzeigen",
 			prefHidden: "Versteckt: {n} Kacheln, {m} Diagramme, {k} Sensoren",
 			hideBox: "Diese Kachel ausblenden",
@@ -236,6 +300,12 @@
 			showHidden: "{n} versteckte anzeigen",
 			showHiddenDevices: "{n} versteckte Sensoren anzeigen",
 			hideDevice: "Diesen Sensor ausblenden",
+			prefKpis: "Kennzahlen",
+			prefShowKpis: "Kennzahlen-Bereich anzeigen",
+			prefSensors: "Sensoren",
+			prefBoxes: "Messwert-Kacheln",
+			prefNoItems: "Nichts aufzulisten.",
+			hideKpi: "Diese Kennzahl ausblenden",
 			optPanels: "Sichtbare Diagramme",
 			optNoPanels: "Keine Diagramme: zuerst eine Messgröße wählen.",
 			family_temperature: "Temperatur", family_humidity: "Luftfeuchte",
@@ -268,7 +338,7 @@
 			offlineBanner: "Offline: Werte aus der letzten erfolgreichen Aktualisierung.",
 			offlineData: "keine Verbindung zum Router und keine gespeicherten Daten",
 			pwaTitle: "Portal als App installieren",
-			pwaBodyChrome: "Der Browser hat die Installation noch nicht angeboten. Browsermen\u00fc (\u22ee) \u00f6ffnen und \u201eApp installieren\u201c bzw. \u201eZum Startbildschirm hinzuf\u00fcgen\u201c w\u00e4hlen. Die Installation braucht https oder localhost: \u00fcber http://fritz.box legt der Browser nur ein Lesezeichen an.",
+			pwaBodyChrome: "Der Browser hat die Installation nicht angeboten. http://fritz.box ist kein sicherer Kontext (https oder localhost): damit gibt es keinen Service Worker, kein +-Symbol in Samsung Internet und keinen Installieren-Knopf - \u201eZum Startbildschirm hinzuf\u00fcgen\u201c legt nur ein Lesezeichen an, das mit Adressleiste \u00f6ffnet. F\u00fcr eine echte App das Portal \u00fcber https \u00f6ffnen, oder \u00fcber localhost mit einem SSH-Tunnel (ssh -L 8181:localhost:81 root@fritz.box).",
 			pwaBodyIos: "<kbd>Teilen</kbd> antippen, dann <kbd>Zum Home-Bildschirm</kbd>: Das Portal \u00f6ffnet im Vollbild mit dem Sensor-Symbol.",
 			pwaBodyInstalled: "Das Portal ist installiert: \u00fcber das Symbol am Telefon oder das App-Men\u00fc des Browsers \u00f6ffnen."
 		}
@@ -301,14 +371,29 @@
 		view: null,
 		blocks: [],
 		active: null,
+		/* Last answer of `action=info`: the catalog is refreshed every 30 s but
+		 * the statistics are not, and without them the "samples" indicator
+		 * would fall back to a dash after the first refresh. */
+		stats: null,
+		/* false until the charts are composed: only then the page is shown, and
+		 * never covered again by the placeholder. */
+		firstLoad: false,
 		/* Preferences of the page, kept in the browser: how series are grouped,
 		 * which unit system is shown, whether a dot marks every sample, the two
 		 * titles, the default fullscreen mode, the config link and the boxes or
 		 * panels the user hid. */
 		settings: {
+			theme: "system",
 			group: "unit", units: "native", points: false,
-			title: "", subtitle: "", fullscreen: false, showConfig: true,
-			hiddenSeries: [], hiddenPanels: [], hiddenDevices: []
+			title: "", subtitle: "", fullscreen: false, showConfig: true, showMaximize: true,
+			showKpis: true, hiddenKpis: [],
+			hiddenSeries: [], hiddenPanels: [], hiddenDevices: [],
+			/* Locked: the layout becomes read-only (no crosses, no reorder
+			 * arrows, no adding/removing series, no reset, no chart options). */
+			uiLocked: false,
+			/* Locked separately: the separator between the values and the chart
+			 * does not move, so a touch on a tablet cannot resize the columns. */
+			splitLocked: false
 		},
 		order: []
 	};
@@ -409,9 +494,16 @@
 	function settingsRead() {
 		var raw = null;
 		try { raw = window.localStorage.getItem(SETTINGS_KEY); } catch (e) { raw = null; }
+		/* Cookie fallback, like the saved views: a private window or an embedded
+		 * webview can drop localStorage between sessions, and then the UI lock
+		 * would silently come back unlocked. */
+		if (!raw) { raw = cookieRead(SETTINGS_KEY); }
 		var stored = null;
 		try { stored = raw ? JSON.parse(raw) : null; } catch (e) { stored = null; }
 		if (stored && typeof stored === "object") {
+			if (stored.theme === "system" || stored.theme === "light" || stored.theme === "dark") {
+				state.settings.theme = stored.theme;
+			}
 			if (stored.group === "unit" || stored.group === "family" || stored.group === "single") {
 				state.settings.group = stored.group;
 			}
@@ -421,11 +513,16 @@
 			state.settings.points = stored.points === true;
 			state.settings.fullscreen = stored.fullscreen === true;
 			state.settings.showConfig = stored.showConfig !== false;
+			state.settings.showMaximize = stored.showMaximize !== false;
 			state.settings.title = typeof stored.title === "string" ? stored.title.slice(0, 60) : "";
 			state.settings.subtitle = typeof stored.subtitle === "string" ? stored.subtitle.slice(0, 60) : "";
 			state.settings.hiddenSeries = stringList(stored.hiddenSeries);
 			state.settings.hiddenPanels = stringList(stored.hiddenPanels);
 			state.settings.hiddenDevices = stringList(stored.hiddenDevices);
+			state.settings.hiddenKpis = stringList(stored.hiddenKpis);
+			state.settings.showKpis = stored.showKpis !== false;
+			state.settings.uiLocked = stored.uiLocked === true;
+			state.settings.splitLocked = stored.splitLocked === true;
 			return;
 		}
 		/* Migrate the old split/merge toggle of the previous version. */
@@ -435,7 +532,29 @@
 	}
 
 	function settingsWrite() {
-		try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch (e) { /* ignore */ }
+		var raw = JSON.stringify(state.settings);
+		try { window.localStorage.setItem(SETTINGS_KEY, raw); } catch (e) { /* ignore */ }
+		/* The lock is the one setting that cannot be restored by tapping
+		 * something, so it is also kept in a cookie for browsers that forget
+		 * localStorage (private windows, embedded webviews). The lists of hidden
+		 * items can push the JSON over the cookie limit, so the cookie keeps the
+		 * switches and the layout fields only: everything else comes from
+		 * localStorage anyway. */
+		var small = {
+			theme: state.settings.theme,
+			group: state.settings.group,
+			units: state.settings.units,
+			points: state.settings.points,
+			fullscreen: state.settings.fullscreen,
+			showConfig: state.settings.showConfig,
+			showMaximize: state.settings.showMaximize,
+			showKpis: state.settings.showKpis,
+			uiLocked: state.settings.uiLocked,
+			splitLocked: state.settings.splitLocked,
+			title: state.settings.title,
+			subtitle: state.settings.subtitle
+		};
+		cookieWrite(SETTINGS_KEY, JSON.stringify(small), STORE_DAYS);
 	}
 
 	/** Keep only the strings of an array read from the browser storage. */
@@ -658,7 +777,8 @@
 			window.removeEventListener("pointercancel", onStop);
 		};
 		bar.addEventListener("pointerdown", function (event) {
-			if (event.button !== 0) { return; }
+			/* Frozen separator (preferences): no drag, no keyboard step. */
+			if (event.button !== 0 || splitLocked()) { return; }
 			dragging = true;
 			bar.setAttribute("aria-valuenow", String(splitPct));
 			window.addEventListener("pointermove", onMove);
@@ -667,7 +787,7 @@
 			event.preventDefault();
 		});
 		bar.addEventListener("keydown", function (event) {
-			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") { return; }
+			if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" || splitLocked()) { return; }
 			splitApply(splitPct + (event.key === "ArrowLeft" ? -2 : 2));
 			bar.setAttribute("aria-valuenow", String(splitPct));
 			event.preventDefault();
@@ -691,7 +811,7 @@
 	/* ---------------------------------------------------------------- fetch */
 
 	function request(query) {
-		var url = endpoint + "?" + query;
+		var url = endpointUrl(endpoint, query);
 		return fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
 			.then(function (response) {
 				return response.text().then(function (body) {
@@ -756,6 +876,7 @@
 	/* --------------------------------------------------------------- render */
 
 	function render() {
+		syncUiLock();
 		renderHeader();
 		renderKpis();
 		renderDevices();
@@ -766,6 +887,7 @@
 	}
 
 	function renderHeader() {
+		syncMaximize();
 		var catalog = state.catalog;
 		/* The two titles and the link to the configuration page are user
 		 * preferences: an empty field falls back to the strings the daemon
@@ -791,37 +913,129 @@
 		els.stamp.textContent = newest ? age(newest, Date.now() * 1e6) : t("never");
 	}
 
-	function renderKpis() {
+	/** The four indicators, in the order they are also listed in the
+	 *  preferences (key, caption, value, tooltip). */
+	function kpiItems() {
 		var catalog = state.catalog;
-		els.kpis.textContent = "";
-		if (!catalog) { return; }
 		var series = 0;
 		var newest = 0;
-		var devices = catalog.devices || [];
+		var devices = (catalog && catalog.devices) || [];
 		devices.forEach(function (device) {
 			(device.series || []).forEach(function (item) {
 				series++;
 				if (item.last_ns > newest) { newest = item.last_ns; }
 			});
 		});
-		var kpis = [
-			[t("devices"), String(devices.length), ""],
-			[t("series"), String(series), ""],
-			[t("samples"), catalog.samples ? String(catalog.samples) : "\u2014", ""],
-			[t("updated"), newest ? age(newest, catalog.now_ns) : t("never"), catalog.database || ""]
+		return [
+			{ key: "devices", label: t("devices"), value: String(devices.length), note: "" },
+			{ key: "series", label: t("series"), value: String(series), note: "" },
+			{ key: "samples", label: t("samples"), value: catalog && catalog.samples ? String(catalog.samples) : "\u2014", note: "" },
+			{ key: "updated", label: t("updated"), value: newest ? age(newest, catalog.now_ns) : t("never"), note: (catalog && catalog.database) || "" }
 		];
-		kpis.forEach(function (item) {
+	}
+
+	/** Layout locked: everything that edits the page is hidden and ignored. */
+	function uiLocked() {
+		return state.settings.uiLocked === true;
+	}
+
+	/** Locked tap on a value box: scroll to its curve and flash it. A value
+	 *  that is not in the chart cannot be added while the layout is locked, so
+	 *  the panel says so instead of doing nothing at all. */
+	function flashSeries(key) {
+		var chart = null;
+		var block = null;
+		state.charts.forEach(function (item) {
+			if (item.key === key) { chart = item; }
+		});
+		if (chart) {
+			state.blocks.forEach(function (item) {
+				if (item.charts.indexOf(chart) >= 0) { block = item; }
+			});
+		}
+		if (!block) {
+			if (els.panel && els.panel.scrollIntoView) {
+				els.panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+			}
+			flashMessage(t("notCharted"));
+			return;
+		}
+		if (block.root.scrollIntoView) {
+			block.root.scrollIntoView({ block: "nearest", behavior: "smooth" });
+		}
+		block.flash = { key: key, until: Date.now() + 1600 };
+		drawBlock(block);
+		window.setTimeout(function () {
+			if (!block.flash || Date.now() < block.flash.until) { return; }
+			block.flash = null;
+			drawBlock(block);
+		}, 1700);
+	}
+
+	/** Short note above the chart, used when a tap cannot do what it promises. */
+	function flashMessage(text) {
+		if (!els.panel) { return; }
+		var note = document.getElementById("flashmsg");
+		if (!note) {
+			note = document.createElement("p");
+			note.id = "flashmsg";
+			note.className = "pflashmsg";
+			note.hidden = true;
+			els.panel.insertBefore(note, els.panel.firstElementChild);
+		}
+		note.textContent = text;
+		note.hidden = false;
+		if (flashMessage.timer) { window.clearTimeout(flashMessage.timer); }
+		flashMessage.timer = window.setTimeout(function () { note.hidden = true; }, 3200);
+	}
+
+	/** The lock is one class on <body>: CSS hides the crosses, the arrows, the
+	 *  reset and the chart options button, and it comes back the moment the
+	 *  option is cleared in the preferences. */
+/** The separator between the values and the chart, frozen too. */
+	function splitLocked() {
+		return state.settings.splitLocked === true;
+	}
+
+	function syncUiLock() {
+		if (!document.body) { return; }
+		if (uiLocked()) { document.body.classList.add("pui-locked"); }
+		else { document.body.classList.remove("pui-locked"); }
+		if (splitLocked()) { document.body.classList.add("psplit-locked"); }
+		else { document.body.classList.remove("psplit-locked"); }
+	}
+
+	function renderKpis() {
+		var catalog = state.catalog;
+		els.kpis.textContent = "";
+		els.kpis.hidden = state.settings.showKpis === false;
+		if (!catalog || state.settings.showKpis === false) { return; }
+		kpiItems().forEach(function (item) {
+			if (state.settings.hiddenKpis.indexOf(item.key) >= 0) { return; }
 			var box = document.createElement("div");
 			box.className = "pkpi";
 			var name = document.createElement("span");
 			name.className = "k";
-			name.textContent = item[0];
+			name.textContent = item.label;
 			var value = document.createElement("span");
 			value.className = "v";
-			value.textContent = item[1];
-			if (item[2]) { value.title = item[2]; }
+			value.textContent = item.value;
+			if (item.note) { value.title = item.note; }
+			/* Same cross as the data boxes and the charts. */
+			var hide = document.createElement("button");
+			hide.type = "button";
+			hide.className = "pkpihide";
+			hide.textContent = "\u00d7";
+			hide.title = t("hideKpi");
+			hide.setAttribute("aria-label", t("hideKpi"));
+			hide.addEventListener("click", function () {
+				listAdd(state.settings.hiddenKpis, item.key);
+				settingsWrite();
+				render();
+			});
 			box.appendChild(name);
 			box.appendChild(value);
+			box.appendChild(hide);
 			els.kpis.appendChild(box);
 		});
 	}
@@ -880,13 +1094,10 @@
 			header.appendChild(hide);
 			section.appendChild(header);
 
-			/* Boxes the user hid: they are counted, not rendered, and one click
-			 * brings them all back. */
-			var hidden = [];
+			/* Boxes the user hid: not rendered here, they stay listed in the
+			 * preferences, where they can be shown again. */
 			var visible = (device.series || []).filter(function (series) {
-				var key = keyOf(device.mac, series);
-				if (isHiddenSeries(key)) { hidden.push(key); return false; }
-				return true;
+				return !isHiddenSeries(keyOf(device.mac, series));
 			});
 
 			/* Second line: vendor, model and firmware from the YAML file plus the
@@ -906,15 +1117,6 @@
 			mac.className = "pmac";
 			mac.textContent = device.mac;
 			meta.appendChild(mac);
-			if (hidden.length) {
-				var restore = document.createElement("button");
-				restore.type = "button";
-				restore.className = "plink pshowhidden";
-				restore.textContent = t("showHidden", { n: hidden.length });
-				restore.addEventListener("click", function () { showSeries(hidden); });
-				meta.appendChild(document.createTextNode(" \u00b7 "));
-				meta.appendChild(restore);
-			}
 			section.appendChild(meta);
 
 			var grid = document.createElement("div");
@@ -926,14 +1128,6 @@
 			els.devices.appendChild(section);
 		});
 
-		if (hiddenDevices.length) {
-			var restoreAll = document.createElement("button");
-			restoreAll.type = "button";
-			restoreAll.className = "plink pshowhidden pshowdevices";
-			restoreAll.textContent = t("showHiddenDevices", { n: hiddenDevices.length });
-			restoreAll.addEventListener("click", function () { showDevices(hiddenDevices); });
-			els.devices.appendChild(restoreAll);
-		}
 	}
 
 	function card(mac, series, now) {
@@ -988,13 +1182,20 @@
 		});
 		button.appendChild(hide);
 		if (series.kind !== "text") {
-			button.addEventListener("click", function () { toggle(mac, series); });
-			button.title = t("chartHint");
+			/* Unlocked the tap adds/removes the series; locked the page must not
+			 * change, so the tap points at the chart instead. */
+			button.addEventListener("click", function () {
+				if (uiLocked()) { flashSeries(key); return; }
+				toggle(mac, series);
+			});
+			button.title = uiLocked() ? t("tapToChart") : t("chartHint");
 		}
 		return button;
 	}
 
 	function toggle(mac, series) {
+		/* Locked layout: the boxes only show values, they do not add series. */
+		if (uiLocked()) { return; }
 		var key = keyOf(mac, series);
 		var index = state.selected.indexOf(key);
 		if (index >= 0) {
@@ -1185,6 +1386,7 @@
 
 	/** Move a panel one position up or down and remember the order. */
 	function moveBlock(block, delta) {
+		if (uiLocked()) { return; }
 		var keys = state.blocks.map(function (item) { return item.key; });
 		var index = keys.indexOf(block.key);
 		var target = index + delta;
@@ -1196,6 +1398,7 @@
 	}
 
 	function removeSeries(chart) {
+		if (uiLocked()) { return; }
 		state.selected = state.selected.filter(function (key) { return key !== chart.key; });
 		state.charts = state.charts.filter(function (item) { return item.key !== chart.key; });
 		state.zoom = null;
@@ -1499,8 +1702,13 @@
 			text.textContent = legendLabel(chart, block);
 			chip.appendChild(dot);
 			chip.appendChild(text);
-			chip.title = seriesLabel(chart) + " \u2014 " + t("chartHint");
-			chip.addEventListener("click", function () { removeSeries(chart); });
+			chip.title = seriesLabel(chart) + " \u2014 " + t(uiLocked() ? "tapToChart" : "chartHint");
+			chip.addEventListener("click", function () {
+				/* Locked: the chip cannot remove the series, it highlights the
+				 * curve - the same answer as a tap on a value box. */
+				if (uiLocked()) { flashSeries(chart.key); return; }
+				removeSeries(chart);
+			});
 			block.legend.appendChild(chip);
 		});
 	}
@@ -1749,6 +1957,19 @@
 				if (index === 0) { context.moveTo(x, y); } else { context.lineTo(x, y); }
 			});
 		}
+		/* A tap on a value box marks its curve for a moment, so the eye finds it
+		 * among the others. */
+		var flash = block.flash && block.flash.key === chart.key && Date.now() < block.flash.until;
+		if (flash) {
+			context.save();
+			context.strokeStyle = color;
+			context.globalAlpha = 0.3;
+			context.lineWidth = 10;
+			context.stroke();
+			context.restore();
+			context.strokeStyle = color;
+			context.lineWidth = 1.8;
+		}
 		context.stroke();
 
 		/* Optional dots: one per sample, thinned out only when they would overlap
@@ -1945,7 +2166,17 @@
 	}
 
 	function hideTip(block) {
-		if (block.hover) { block.hover = null; drawChart(); }
+		if (block) {
+			if (block.hover) { block.hover = null; drawChart(); }
+		} else {
+			/* No panel given (help button, keyboard): clear the marker
+			 * everywhere. */
+			var redraw = false;
+			state.blocks.forEach(function (item) {
+				if (item.hover) { item.hover = null; redraw = true; }
+			});
+			if (redraw) { drawChart(); }
+		}
 		els.tip.hidden = true;
 	}
 
@@ -2081,27 +2312,98 @@
 
 	/* ----------------------------------------------------------------- data */
 
-	function loadCatalog(silent) {
+	/* ------------------------------------------------------------- busy state
+	 * The first request takes a moment on the router: instead of showing
+	 * widgets without data (empty KPIs and half-drawn charts), the whole page is
+	 * hidden behind a single spinner until the charts are composed. Periodic
+	 * refreshes are silent: they never show it again. */
+	function updateBusy() {
+		setBusy(!state.firstLoad);
+	}
+
+	/** Show the page: called once the charts are drawn (or when the watchdog
+	 *  fires), and never undone by a later periodic refresh. */
+	function revealPage() {
+		if (state.firstLoad) { return; }
+		state.firstLoad = true;
+		updateBusy();
+		/* The panels were drawn while the page was still hidden, and a
+		 * display:none element has no width: without this second pass the first
+		 * chart would stay blank until the next refresh or a window resize.
+		 * Showing the page and drawing it here is what makes the charts appear
+		 * together with everything else. */
+		drawChart();
+	}
+
+	/** Full-page placeholder: one spinner while the first answers are pending. */
+	function ensureFirstLoad() {
+		if (document.getElementById("firstload")) { return; }
+		var main = document.querySelector("main.pmain");
+		if (!main) { return; }
+		var box = document.createElement("div");
+		box.className = "pfirstload";
+		box.id = "firstload";
+		var spinner = document.createElement("div");
+		spinner.className = "pspinner";
+		var label = document.createElement("p");
+		label.textContent = t("loading");
+		box.appendChild(spinner);
+		box.appendChild(label);
+		main.appendChild(box);
+	}
+
+	function setBusy(busy) {
+		var main = document.querySelector("main.pmain");
+		if (main) {
+			if (busy) { main.classList.add("pfirst"); } else { main.classList.remove("pfirst"); }
+		}
+	}
+
+	/** The database statistics that the KPI row shows next to the devices. */
+	function mergeStats(catalog, info) {
+		if (!catalog || !info) { return; }
+		catalog.samples = info.samples;
+		catalog.size = info.size_bytes;
+		catalog.wal = info.wal_bytes;
+		catalog.schema = info.schema;
+	}
+
+	function loadCatalog(silent, withStats) {
 		if (!silent && !state.catalog) { render(); }
-		return request("action=info").then(function (info) {
-			return request("action=catalog").then(function (catalog) {
-				catalog.samples = info.samples;
-				catalog.size = info.size_bytes;
-				catalog.wal = info.wal_bytes;
-				catalog.schema = info.schema;
-				state.catalog = catalog;
-				state.error = "";
-				var known = {};
-				(catalog.devices || []).forEach(function (device) {
-					(device.series || []).forEach(function (series) { known[keyOf(device.mac, series)] = true; });
-				});
-				state.selected = state.selected.filter(function (key) { return known[key]; });
-				render();
-				if (state.selected.length) { loadCharts(); }
+		/* `action=info` counts the rows of the samples table and sizes the
+		 * database on the USB disk: it takes seconds on a router and nothing on
+		 * the first screen needs it, so it runs *beside* the catalog and only
+		 * refreshes the KPI row when it lands. Blocking the first paint on it
+		 * was what made the charts show up late. */
+		var stats = withStats ? request("action=info").catch(function () { return null; }) : null;
+		return request("action=catalog").then(function (catalog) {
+			state.catalog = catalog;
+			state.error = "";
+			if (state.stats) { mergeStats(catalog, state.stats); }
+			var known = {};
+			(catalog.devices || []).forEach(function (device) {
+				(device.series || []).forEach(function (series) { known[keyOf(device.mac, series)] = true; });
 			});
+			state.selected = state.selected.filter(function (key) { return known[key]; });
+			render();
+			if (state.selected.length) {
+				loadCharts();
+			} else {
+				/* Nothing to draw: the page is complete as it is. */
+				revealPage();
+			}
+			if (stats) {
+				stats.then(function (info) {
+					if (!info || info.ok === false || !state.catalog) { return; }
+					state.stats = info;
+					mergeStats(state.catalog, info);
+					renderKpis();
+				});
+			}
 		}).catch(function (error) {
 			state.error = error.message || String(error);
 			render();
+			revealPage();
 		});
 	}
 
@@ -2144,6 +2446,11 @@
 		return Promise.all(jobs).then(function (charts) {
 			state.charts = charts;
 			drawChart();
+		}).catch(function () {
+			/* A broken series must not keep the first-load placeholder up. */
+		}).then(function () {
+			/* Every panel has its series: the page is composed, show it. */
+			revealPage();
 		});
 	}
 
@@ -2153,9 +2460,8 @@
 	 * and the last JSON answers, so a home-screen icon opens it without the
 	 * browser chrome and the values stay readable when the router is offline.
 	 * Browsers only allow this in a secure context (https or localhost), so the
-	 * registration is skipped over plain http and the icon button explains the
-	 * manual "Add to Home screen" instead. */
-	var installEvent = null;
+	 * registration is skipped over plain http, where an icon on the home
+	 * screen only opens a bookmark with the URL bar. */
 	var DEFAULT_TITLE = "ble2uart_gateway";
 
 	/** Ask for page fullscreen as soon as the user touches the page: browsers
@@ -2188,31 +2494,6 @@
 		return window.matchMedia("(display-mode: standalone)").matches ||
 			window.matchMedia("(display-mode: fullscreen)").matches ||
 			window.matchMedia("(display-mode: minimal-ui)").matches;
-	}
-
-	function pwaIos() {
-		return /iPad|iPhone|iPod/.test(window.navigator.userAgent || "") ||
-			(window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
-	}
-
-	function showInstall(visible) {
-		if (!els.install) { return; }
-		els.install.hidden = !visible;
-		els.install.title = t("install");
-		els.install.setAttribute("aria-label", t("install"));
-	}
-
-	function openPwaHelp() {
-		if (!els.pwahelp) { return; }
-		els.pwahelptitle.textContent = t("pwaTitle");
-		var body = pwaStandalone() ? t("pwaBodyInstalled") : (pwaIos() ? t("pwaBodyIos") : t("pwaBodyChrome"));
-		els.pwahelpbody.innerHTML = body;
-		els.pwahelpclose.textContent = t("helpClose");
-		if (typeof els.pwahelp.showModal === "function") {
-			els.pwahelp.showModal();
-		} else {
-			els.pwahelp.setAttribute("open", "");
-		}
 	}
 
 	function updateNet() {
@@ -2260,6 +2541,7 @@
 
 	function syncMaximize() {
 		if (!els.maximize) { return; }
+		els.maximize.hidden = state.settings.showMaximize === false || !appFullscreenApi();
 		var on = appFullscreenOn();
 		if (on) { els.maximize.classList.add("on"); } else { els.maximize.classList.remove("on"); }
 		els.maximize.title = on ? t("maximizeOff") : t("maximize");
@@ -2271,7 +2553,7 @@
 		if (!("serviceWorker" in window.navigator)) { return; }
 		/* Without a secure context the browser rejects every registration; the
 		 * manifest stays valid, so the manual "Add to Home screen" still works. */
-		if (!window.isSecureContext) { return; }
+		if (!window.isSecureContext || PROXY) { return; }
 		window.navigator.serviceWorker.register("?action=sw", { scope: "/" })
 			.then(function (registration) {
 				/* A new asset version waits instead of taking over mid-load.
@@ -2294,39 +2576,52 @@
 			});
 	}
 
-	function setupPwa() {
-		if (els.manifest) { els.manifest.href = "?action=manifest&lang=" + lang; }
-		if (pwaStandalone()) { document.documentElement.classList.add("pwa-standalone"); }
-		showInstall(false);
-		if (els.install) {
-			els.install.addEventListener("click", function () {
-				if (installEvent) {
-					var prompt = installEvent;
-					installEvent = null;
-					prompt.prompt();
-					if (prompt.userChoice && prompt.userChoice.then) {
-						prompt.userChoice.then(function (choice) {
-							if (choice && choice.outcome === "accepted") { showInstall(false); }
-						});
-					}
-					return;
-				}
-				openPwaHelp();
-			});
+	/* The manifest is a static file in the asset directory, never the CGI:
+	 * a browser fetches a manifest **without** credentials, and the CGI path is
+	 * behind the freetz session, so `?action=manifest` answered with the login
+	 * page and the manifest was dropped as invalid ("Syntax error"). Without a
+	 * manifest there is no "display" either, so the installed app kept the URL
+	 * bar. The static copies need no session; English is the fallback. */
+	var MANIFEST_BASE = "/ble2uart_gateway/";
+
+	/** Manifest of the current language: the static copies are per language
+	 *  (`manifest.json` is English and also the fallback), so the installed app
+	 *  is named and described in the language the user reads. It has to be a
+	 *  static file - see the comment in setupPwa(). */
+	function manifestHref() {
+		var file = lang && lang !== "en" ? "manifest." + lang + ".json" : "manifest.json";
+		return MANIFEST_BASE + file;
+	}
+
+	function ensureManifestLink() {
+		var link = document.getElementById("manifest");
+		/* Behind the freetz proxy the page comes from the AVM gateway, whose
+		 * CSP is default-src 'none' without manifest-src: a manifest is blocked
+		 * there and the proxy already strips the tag from the HTML. Leave it out
+		 * instead of provoking a violation - install the app from the freetz
+		 * URL (http://fritz.box:81/...), where the static manifest is served
+		 * without a session and the app really opens fullscreen. */
+		if (PROXY) {
+			if (link && link.parentNode) { link.parentNode.removeChild(link); }
+			return;
 		}
-		window.addEventListener("beforeinstallprompt", function (event) {
-			event.preventDefault();
-			installEvent = event;
-			showInstall(true);
-		});
-		window.addEventListener("appinstalled", function () {
-			installEvent = null;
-			showInstall(false);
-		});
-		/* Safari never fires beforeinstallprompt: offer the Share menu instead. */
-		if (pwaIos() && !pwaStandalone()) { showInstall(true); }
+		if (!link || !link.parentNode) {
+			link = document.createElement("link");
+			link.rel = "manifest";
+			link.id = "manifest";
+			document.head.appendChild(link);
+		}
+		var href = manifestHref();
+		if (link.getAttribute("href") !== href) { link.href = href; }
+	}
+
+	function setupPwa() {
+		ensureManifestLink();
+		if (pwaStandalone()) { document.documentElement.classList.add("pwa-standalone"); }
+		/* There is no install button: over plain http the browser cannot install
+		 * anything and "add to home screen" only stores a bookmark. The header
+		 * keeps the page-fullscreen button instead. */
 		if (els.maximize) {
-			els.maximize.hidden = !appFullscreenApi();
 			els.maximize.addEventListener("click", toggleAppFullscreen);
 			syncMaximize();
 		}
@@ -2377,6 +2672,16 @@
 		return hint;
 	}
 
+	function applyTheme() {
+		var dark = state.settings.theme === "dark" || (state.settings.theme === "system" &&
+			window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+		document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+		var metas = document.querySelectorAll('meta[name="theme-color"]');
+		for (var index = 0; index < metas.length; index++) {
+			metas[index].content = dark ? "#12161c" : "#0b6bcb";
+		}
+	}
+
 	function ensurePrefs() {
 		if (els.prefsbox) { return; }
 		if (els.prefs) {
@@ -2392,6 +2697,14 @@
 		box.appendChild(head);
 		var body = document.createElement("div");
 		body.className = "psettingsbody";
+		body.appendChild(selectRow("preftheme", t("prefTheme"), [
+			["system", t("themeSystem")], ["light", t("themeLight")], ["dark", t("themeDark")]
+		], state.settings.theme, function (value) {
+			state.settings.theme = value;
+			settingsWrite();
+			applyTheme();
+			render();
+		}));
 		body.appendChild(textRow("preftitle", t("prefTitle"), state.settings.title, DEFAULT_TITLE, function (value) {
 			state.settings.title = value;
 			settingsWrite();
@@ -2409,11 +2722,50 @@
 			if (checked) { armAutoFullscreen(); } else if (appFullscreenOn()) { toggleAppFullscreen(); }
 		}));
 		body.appendChild(hintRow(t("prefFullscreenHint")));
+		body.appendChild(checkRow("prefmaximize", t("prefMaximize"), state.settings.showMaximize !== false, function (checked) {
+			state.settings.showMaximize = checked;
+			settingsWrite();
+			syncMaximize();
+		}));
 		body.appendChild(checkRow("prefconfig", t("prefConfig"), state.settings.showConfig !== false, function (checked) {
 			state.settings.showConfig = checked;
 			settingsWrite();
 			renderHeader();
 		}));
+		body.appendChild(checkRow("prefshowkpis", t("prefShowKpis"), state.settings.showKpis !== false, function (checked) {
+			state.settings.showKpis = checked;
+			settingsWrite();
+			render();
+		}));
+		/* Lock of the layout: a wall display or a shared browser should not be
+		 * rearranged by a tap on a cross or an arrow. The lock lives here, so
+		 * the same dialog that locks it also unlocks it. */
+		body.appendChild(checkRow("prefuilock", t("prefUiLock"), state.settings.uiLocked === true, function (checked) {
+			state.settings.uiLocked = checked;
+			settingsWrite();
+			render();
+		}));
+		body.appendChild(hintRow(t("prefUiLockHint")));
+		body.appendChild(checkRow("prefsplitlock", t("prefSplitLock"), state.settings.splitLocked === true, function (checked) {
+			state.settings.splitLocked = checked;
+			settingsWrite();
+			render();
+		}));
+		body.appendChild(hintRow(t("prefSplitLockHint")));
+		/* The elements of the main window can be hidden and shown here, like the
+		 * charts in the chart options: one list per kind. */
+		[["prefkpis", t("prefKpis")],
+		 ["prefsensors", t("prefSensors")],
+		 ["prefboxes", t("prefBoxes")]].forEach(function (section) {
+			var head = document.createElement("p");
+			head.className = "psettingsgroup";
+			head.textContent = section[1];
+			body.appendChild(head);
+			var list = document.createElement("div");
+			list.className = "ppanels";
+			list.id = section[0];
+			body.appendChild(list);
+		});
 		var hidden = document.createElement("p");
 		hidden.className = "phelphint";
 		hidden.id = "prefhidden";
@@ -2426,6 +2778,8 @@
 			state.settings.hiddenSeries = [];
 			state.settings.hiddenPanels = [];
 			state.settings.hiddenDevices = [];
+			state.settings.hiddenKpis = [];
+			state.settings.showKpis = true;
 			settingsWrite();
 			render();
 		});
@@ -2460,11 +2814,17 @@
 		var subtitle = box.querySelector("#prefsubtitle");
 		var fullscreen = box.querySelector("#preffullscreen");
 		var config = box.querySelector("#prefconfig");
+		var maximize = box.querySelector("#prefmaximize");
 		var hidden = box.querySelector("#prefhidden");
+		var theme = box.querySelector("#preftheme");
+		if (theme) { theme.value = state.settings.theme; }
 		if (title) { title.value = state.settings.title; title.placeholder = DEFAULT_TITLE; }
 		if (subtitle) { subtitle.value = state.settings.subtitle; }
 		if (fullscreen) { fullscreen.checked = state.settings.fullscreen === true; }
 		if (config) { config.checked = state.settings.showConfig !== false; }
+		if (maximize) { maximize.checked = state.settings.showMaximize !== false; }
+		var showKpis = box.querySelector("#prefshowkpis");
+		if (showKpis) { showKpis.checked = state.settings.showKpis !== false; }
 		if (hidden) {
 			hidden.textContent = t("prefHidden", {
 				n: state.settings.hiddenSeries.length,
@@ -2472,6 +2832,110 @@
 				k: state.settings.hiddenDevices.length
 			});
 		}
+		fillChoices(box.querySelector("#prefkpis"), kpiChoices());
+		fillChoices(box.querySelector("#prefsensors"), deviceChoices());
+		fillChoices(box.querySelector("#prefboxes"), seriesChoices());
+		var lock = box.querySelector("#prefuilock");
+		if (lock) { lock.checked = state.settings.uiLocked === true; }
+		var splitLock = box.querySelector("#prefsplitlock");
+		if (splitLock) { splitLock.checked = state.settings.splitLocked === true; }
+		lockPrefs();
+	}
+
+	/** While the layout is locked every control of the dialog is read-only
+	 *  except the lock itself and the close button: otherwise the lock could be
+	 *  bypassed from here (or from the lists that hide the widgets). */
+	function lockPrefs() {
+		var box = els.prefsbox;
+		if (!box) { return; }
+		var locked = uiLocked();
+		var controls = box.querySelectorAll("input, button");
+		for (var index = 0; index < controls.length; index++) {
+			var control = controls[index];
+			if (control.id === "prefuilock" || control.id === "prefsplitlock" || control.type === "submit") { continue; }
+			control.disabled = locked;
+		}
+	}
+
+	/** One checkbox per element of a list: checked means visible. */
+	function fillChoices(container, choices) {
+		if (!container) { return; }
+		container.textContent = "";
+		if (!choices.length) {
+			var none = document.createElement("p");
+			none.className = "phelphint";
+			none.textContent = t("prefNoItems");
+			container.appendChild(none);
+			return;
+		}
+		choices.forEach(function (choice) {
+			var row = document.createElement("label");
+			row.className = "pcheck";
+			var input = document.createElement("input");
+			input.type = "checkbox";
+			input.checked = choice.visible;
+			input.addEventListener("change", function () { choice.toggle(input.checked); });
+			var text = document.createElement("span");
+			text.textContent = choice.label;
+			row.appendChild(input);
+			row.appendChild(text);
+			container.appendChild(row);
+		});
+	}
+
+	function kpiChoices() {
+		return kpiItems().map(function (item) {
+			return {
+				label: item.label,
+				visible: state.settings.hiddenKpis.indexOf(item.key) < 0,
+				toggle: function (visible) {
+					if (visible) { listRemove(state.settings.hiddenKpis, item.key); }
+					else { listAdd(state.settings.hiddenKpis, item.key); }
+					settingsWrite();
+					render();
+				}
+			};
+		});
+	}
+
+	function deviceChoices() {
+		var catalog = state.catalog;
+		if (!catalog || !catalog.devices) { return []; }
+		return catalog.devices.map(function (device) {
+			return {
+				label: device.label || device.name || device.mac,
+				visible: !isHiddenDevice(device.mac),
+				toggle: function (visible) {
+					if (visible) { listRemove(state.settings.hiddenDevices, device.mac); }
+					else { listAdd(state.settings.hiddenDevices, device.mac); }
+					settingsWrite();
+					render();
+				}
+			};
+		});
+	}
+
+	function seriesChoices() {
+		var catalog = state.catalog;
+		if (!catalog || !catalog.devices) { return []; }
+		var choices = [];
+		catalog.devices.forEach(function (device) {
+			(device.series || []).forEach(function (series) {
+				var key = keyOf(device.mac, series);
+				var unit = series.unit ? " (" + series.unit + ")" : "";
+				choices.push({
+					label: (device.label || device.name || device.mac) + " \u00b7 " + series.attribute + unit,
+					visible: !isHiddenSeries(key),
+					toggle: function (visible) {
+						if (visible) { listRemove(state.settings.hiddenSeries, key); }
+						else { listAdd(state.settings.hiddenSeries, key); }
+						settingsWrite();
+						render();
+					}
+				});
+			});
+		});
+		return choices;
 	}
 
 	/* ------------------------------------------------ hidden boxes and charts
@@ -2482,6 +2946,7 @@
 	}
 
 	function hideSeries(key) {
+		if (uiLocked()) { return; }
 		listAdd(state.settings.hiddenSeries, key);
 		settingsWrite();
 		render();
@@ -2494,6 +2959,7 @@
 	}
 
 	function hidePanel(key) {
+		if (uiLocked()) { return; }
 		listAdd(state.settings.hiddenPanels, key);
 		settingsWrite();
 		render();
@@ -2504,6 +2970,7 @@
 	}
 
 	function hideDevice(mac) {
+		if (uiLocked()) { return; }
 		listAdd(state.settings.hiddenDevices, mac);
 		settingsWrite();
 		render();
@@ -2539,18 +3006,13 @@
 			fullscreen: document.getElementById("fullscreen"),
 			help: document.getElementById("help"),
 			resetview: document.getElementById("resetview"),
-			install: document.getElementById("install"),
 			maximize: document.getElementById("maximize"),
 			prefs: document.getElementById("prefs"),
 			title: document.getElementById("title"),
 			subtitle: document.getElementById("subtitle"),
 			config: document.getElementById("config"),
-			manifest: document.getElementById("manifest"),
+	
 			netstate: document.getElementById("netstate"),
-			pwahelp: document.getElementById("pwahelp"),
-			pwahelptitle: document.getElementById("pwahelptitle"),
-			pwahelpbody: document.getElementById("pwahelpbody"),
-			pwahelpclose: document.getElementById("pwahelpclose"),
 			helplink: document.getElementById("helplink"),
 			helpbox: document.getElementById("helpbox"),
 			helptitle: document.getElementById("helptitle"),
@@ -2560,6 +3022,18 @@
 		};
 		pickLanguage();
 		document.documentElement.lang = lang;
+		settingsRead();
+		applyTheme();
+		if (window.matchMedia) {
+			var themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+			var themeChanged = function () {
+				if (state.settings.theme !== "system") { return; }
+				applyTheme();
+				render();
+			};
+			if (themeMedia.addEventListener) { themeMedia.addEventListener("change", themeChanged); }
+			else if (themeMedia.addListener) { themeMedia.addListener(themeChanged); }
+		}
 		if (els.title) { DEFAULT_TITLE = els.title.textContent; }
 		ensurePrefs();
 		if (state.settings.fullscreen) { armAutoFullscreen(); }
@@ -2567,13 +3041,12 @@
 		restoreStore();
 		ensureSplitter();
 		ensureChartHost();
-		settingsRead();
 		orderRead();
 		if (els.resetview) {
 			els.resetview.title = t("resetView");
 			els.resetview.addEventListener("click", resetView);
 		}
-		document.getElementById("reload").addEventListener("click", function () { loadCatalog(true); });
+		document.getElementById("reload").addEventListener("click", function () { loadCatalog(true, true); });
 		/* Pointer events live on each chart panel, see createBlock(). */
 		window.addEventListener("mouseup", function () {
 			for (var index = 0; index < state.blocks.length; index++) {
@@ -2593,8 +3066,14 @@
 		document.addEventListener("webkitfullscreenchange", function () { syncMaximize(); });
 		window.addEventListener("resize", function () { drawChart(); });
 		document.addEventListener("keydown", onKey);
-		loadCatalog(false);
-		window.setInterval(function () { loadCatalog(true); }, REFRESH_MS);
+		ensureFirstLoad();
+		updateBusy();
+		/* Safety net: a stalled request must never hide the page for good. */
+		window.setTimeout(revealPage, 20000);
+		loadCatalog(false, true);
+		/* The periodic refresh skips the database statistics: they do not change
+		 * between two refreshes and cost the router seconds of disk access. */
+		window.setInterval(function () { loadCatalog(true, false); }, REFRESH_MS);
 	}
 
 	if (document.readyState === "loading") {

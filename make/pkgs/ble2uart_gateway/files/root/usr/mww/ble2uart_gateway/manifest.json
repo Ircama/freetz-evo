@@ -1,0 +1,39 @@
+{
+  "id": "/cgi-bin/extra/ble2uart_gateway/portal",
+  "name": "BLE gateway sensors",
+  "short_name": "BLE sensors",
+  "description": "Read-only dashboard of the temperature, humidity and battery measurements collected by ble2uart_gateway, with charts per unit and offline data.",
+  "start_url": "/cgi-bin/extra/ble2uart_gateway/portal?action=page",
+  "scope": "/cgi-bin/extra/ble2uart_gateway/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b6bcb",
+  "lang": "en",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/ble2uart_gateway/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/ble2uart_gateway/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/ble2uart_gateway/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

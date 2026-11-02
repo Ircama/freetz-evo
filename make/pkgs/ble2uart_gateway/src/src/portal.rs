@@ -69,8 +69,30 @@ pub fn run(config: &Path) -> Result<(), String> {
         "series" => json_reply(series_action(config, &params), head),
         "info" => json_reply(info_action(config), head),
         "manifest" => {
-            let lang = params.get("lang").map(String::as_str).unwrap_or("it");
-            reply_head(200, "application/manifest+json; charset=UTF-8", &manifest(lang), head)
+            // The URL stays the same for every request: browsers compare the
+            // manifest by URL, so no language parameter is added here. The
+            // language comes from the browser when it is not given explicitly.
+            let lang = params
+                .get("lang")
+                .map(String::as_str)
+                .map(str::to_string)
+                .unwrap_or_else(|| {
+                    let header = std::env::var("HTTP_ACCEPT_LANGUAGE").unwrap_or_default();
+                    let candidate = header
+                        .split(',')
+                        .next()
+                        .unwrap_or("")
+                        .split('-')
+                        .next()
+                        .unwrap_or("")
+                        .to_ascii_lowercase();
+                    if candidate == "en" || candidate == "de" {
+                        candidate
+                    } else {
+                        "it".to_string()
+                    }
+                });
+            reply_head(200, "application/manifest+json; charset=UTF-8", &manifest(&lang), head)
         }
         // The worker must be able to cache the static assets that the page
         // loads from `/ble2uart_gateway/`, so its scope has to sit above the
@@ -964,26 +986,45 @@ fn process_json() -> Value {
 /// document root of the web server.
 const ASSETS: &str = "/ble2uart_gateway/";
 
-/// Web app manifest. `start_url` and `scope` are relative on purpose: the
-/// portal is reachable as `/cgi-bin/extra/ble2uart_gateway/portal` on a freetz
-/// image and as `/cgi-bin/ble2uart_gateway/portal.cgi` when the CGI is called
-/// directly, and relative values stay correct in both cases.
+/// Web app manifest.
+///
+/// The copy that browsers actually read is the **static** file
+/// `files/root/usr/mww/ble2uart_gateway/manifest.json` (plus `manifest.it.json`
+/// and `manifest.de.json`, English names in the default one): a browser fetches a
+/// manifest without credentials, so this CGI action answers with the freetz
+/// login page and the manifest is rejected ("Syntax error", no `display` at
+/// all). The static file sits in the asset directory, which the web server
+/// serves without a session. This action stays for callers that already have a
+/// session, and the test compares the static file against it so the two cannot
+/// drift apart.
 fn manifest(lang: &str) -> String {
+    // English is the fallback for every language the portal does not ship, and
+    // the `lang` field names the language of the texts, not the request.
+    let lang = match lang {
+        "it" => "it",
+        "de" => "de",
+        _ => "en",
+    };
     let (name, short, description) = match lang {
-        "en" => (
-            "Sensors of the BLE gateway",
-            "BLE sensors",
-            "Read-only dashboard of the measurements collected by ble2uart_gateway.",
+        "it" => (
+            "Sensori del gateway BLE",
+            "Sensori BLE",
+            "Dashboard in sola lettura delle misure di temperatura, umidit\u{e0} e \
+             batteria raccolte da ble2uart_gateway, con grafici per unit\u{e0} e \
+             dati offline.",
         ),
         "de" => (
             "Sensoren des BLE-Gateways",
             "BLE-Sensoren",
-            "Schreibgeschuetztes Dashboard der von ble2uart_gateway erfassten Messwerte.",
+            "Schreibgesch\u{fc}tztes Dashboard der von ble2uart_gateway erfassten \
+             Messwerte f\u{fc}r Temperatur, Luftfeuchte und Batterie, mit Diagrammen \
+             je Einheit und Offline-Daten.",
         ),
         _ => (
-            "Sensori del gateway BLE",
-            "Sensori BLE",
-            "Dashboard in sola lettura delle misure raccolte da ble2uart_gateway.",
+            "BLE gateway sensors",
+            "BLE sensors",
+            "Read-only dashboard of the temperature, humidity and battery measurements \
+             collected by ble2uart_gateway, with charts per unit and offline data.",
         ),
     };
     let icon = |file: &str, size: u32, purpose: &str| {
@@ -999,18 +1040,22 @@ fn manifest(lang: &str) -> String {
         "short_name": short,
         "description": description,
         "lang": lang,
-        "dir": "ltr",
-        "start_url": "./?action=page",
-        "scope": "./",
-        // Fullscreen is what makes the installed icon look like a native app:
-        // no URL bar, no browser toolbar and no system status bar. Browsers
-        // that ignore it fall back to standalone (no browser chrome only).
-        "display": "fullscreen",
-        "display_override": ["fullscreen", "standalone", "minimal-ui", "browser"],
+        // Absolute references: the file is served from the asset directory, so
+        // a query-only "?action=page" would resolve against /ble2uart_gateway/
+        // and the installed app would open a directory instead of the dashboard.
+        "id": "/cgi-bin/extra/ble2uart_gateway/portal",
+        "start_url": "/cgi-bin/extra/ble2uart_gateway/portal?action=page",
+        "scope": "/cgi-bin/extra/ble2uart_gateway/",
+        // Standalone: the installed icon opens without the URL bar and the
+        // browser toolbar. The window-controls-overlay comes first for desktop
+        // browsers that can blend the title bar into the page; the portal adds
+        // true fullscreen on demand (the + button or the M key).
+        "display": "standalone",
+        "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
         "orientation": "any",
         "background_color": "#f4f6f8",
         "theme_color": "#0b6bcb",
-        "categories": ["utilities", "health"],
+        "prefer_related_applications": false,
         "icons": [
             icon("icon-192.png", 192, "any"),
             icon("icon-512.png", 512, "any"),
@@ -1183,7 +1228,7 @@ fn page() -> String {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sensori">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" id="manifest" href="?action=manifest">
+<link rel="manifest" id="manifest" href="/ble2uart_gateway/manifest.json" data-lang="en">
 <link rel="icon" type="image/png" sizes="192x192" href="{a}icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="{a}icon-180.png">
 <link rel="stylesheet" href="{a}portal.css?v={v}">
@@ -1195,8 +1240,7 @@ fn page() -> String {
     <span class="pstamp" id="stamp">&mdash;</span>
     <button class="pbtn" id="prefs" type="button" title="Preferenze">&#9881;</button>
     <button class="pbtn" id="maximize" type="button" hidden>&#10530;</button>
-    <button class="pbtn" id="install" type="button" hidden>&#10515;</button>
-    <button class="pbtn" id="reload" type="button" title="Aggiorna">&#8635;</button>
+      <button class="pbtn" id="reload" type="button" title="Aggiorna">&#8635;</button>
     <button class="pbtn" id="resetview" type="button" title="Reimposta le viste salvate">&#10226;</button>
     <a class="pbtn" id="config" href="/cgi-bin/conf/ble2uart_gateway" title="Configurazione">&#9776;</a>
   </nav>
@@ -1236,11 +1280,6 @@ fn page() -> String {
     </aside>
   </div>
 </main>
-<dialog class="phelp" id="pwahelp" aria-labelledby="pwahelptitle">
-  <h3 id="pwahelptitle"></h3>
-  <p id="pwahelpbody"></p>
-  <form method="dialog"><button type="submit" id="pwahelpclose"></button></form>
-</dialog>
 <noscript><p>JavaScript richiesto.</p></noscript>
 <script src="{a}portal.js?v={v}"></script>
 </body>
@@ -1253,7 +1292,7 @@ fn page() -> String {
 /// Bumped whenever `portal.css` or `portal.js` change, so a router that
 /// caches static files still serves the new version. The service worker uses
 /// the same value as cache name, so a bump also retires the older caches.
-const ASSET_VERSION: &str = "16";
+const ASSET_VERSION: &str = "33";
 
 // ---------------------------------------------------------------------------
 // Tests

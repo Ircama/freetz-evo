@@ -1,5 +1,6 @@
 /* ble2uart_gateway sensor portal ------------------------------------------ */
 :root {
+  color-scheme: light;
   --bg: #f4f6f8;
   --panel: #ffffff;
   --ink: #1f2933;
@@ -13,8 +14,8 @@
   --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 8px rgba(15, 23, 42, .05);
   --radius: 10px;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
+    color-scheme: dark;
     --bg: #12161c;
     --panel: #1a2029;
     --ink: #e6edf3;
@@ -26,7 +27,6 @@
     --warn: #e3a008;
     --bad: #ff7b72;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 10px rgba(0, 0, 0, .25);
-  }
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -46,12 +46,12 @@ button { font: inherit; }
   padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
-.ptitle { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.ptitle h1 { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pdot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.ptitle { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.ptitle h1 { margin: 0; font-size: 16px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; align-self: center; }
 .pdot.pok { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
 .pdot.pstale { background: var(--warn); }
-.psub { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.psub { color: var(--muted); font-size: 12px; line-height: 1.25; white-space: nowrap; }
 .pactions { display: flex; align-items: center; gap: 8px; flex: none; }
 .pstamp { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .pbtn {
@@ -75,9 +75,15 @@ button { font: inherit; }
 .psplitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; border-radius: 2px; background: var(--line); }
 .psplitter:hover::after, .psplitter:focus-visible::after, .psplitter[aria-valuenow]:active::after { background: var(--accent); }
 .psplitter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+body.psplit-locked .psplitter { display: none; }
+body.psplit-locked .playout {
+  grid-template-columns: minmax(240px, var(--device-fr, 47fr)) minmax(320px, var(--chart-fr, 53fr));
+}
+body.psplit-locked .playout > .pchart { grid-column: 2; }
 @media (max-width: 960px) {
-  .playout { grid-template-columns: 1fr; }
-  .playout > .pdevices, .playout > .pchart { grid-column: auto; }
+  .playout, body.psplit-locked .playout { grid-template-columns: 1fr; }
+  .playout > .pdevices, .playout > .pchart,
+  body.psplit-locked .playout > .pchart { grid-column: auto; }
   .psplitter { display: none; }
   /* stacked layout: the values and the chart are separated by a horizontal line */
   .playout > .pchart { border-top: 1px solid var(--line); padding-top: 12px; }
@@ -238,6 +244,61 @@ button { font: inherit; }
 }
 .pwide:hover { border-color: var(--accent); color: var(--accent); }
 #config[hidden] { display: none; }
+/* KPI cross: same idea as the boxes and the charts */
+.pkpi { position: relative; }
+.pkpihide {
+  position: absolute; top: 2px; right: 2px; width: 16px; height: 16px;
+  padding: 0; border: 0; border-radius: 50%; background: transparent;
+  color: var(--muted); font: inherit; font-size: 13px; line-height: 16px;
+  opacity: .5; cursor: pointer;
+}
+.pkpihide:hover, .pkpihide:focus-visible { color: var(--bad); background: var(--panel); opacity: 1; }
+/* Locked layout (preferences, "Lock the UI changes"): everything that edits the
+ * page disappears - the crosses of the widgets, the chart reorder arrows, the
+ * chart options button and the reset of the saved views. The JavaScript ignores
+ * the same actions, so a keyboard shortcut cannot edit the page either. */
+body.pui-locked .pkpihide,
+body.pui-locked .pcardhide,
+body.pui-locked .pmove,
+body.pui-locked #chartopts,
+body.pui-locked #resetview { display: none !important; }
+/* A tap on a value does not edit the page while locked: the box must not light
+ * up as if it had been selected, it only points at the curve (the script
+ * scrolls to the panel and flashes it). */
+body.pui-locked .pcard { -webkit-tap-highlight-color: transparent; }
+body.pui-locked .pcard:hover,
+body.pui-locked .pcard:active,
+body.pui-locked .pcard:focus {
+  border-color: var(--line); background: var(--bg); transform: none; outline: none;
+}
+body.pui-locked .chip { cursor: default; -webkit-tap-highlight-color: transparent; }
+body.pui-locked .chip:hover { border-color: var(--line); }
+
+/* Note shown when a tap on a value cannot do what it promises. */
+.pflashmsg {
+  margin: 0 0 8px; padding: 6px 9px; border-radius: 8px; font-size: 12px;
+  background: var(--accent-soft); color: inherit; border: 1px solid var(--accent);
+}
+.pflashmsg[hidden] { display: none; }
+
+/* First load only: every widget of the page is hidden and a single spinner is
+ * shown. A periodic refresh never brings this back. */
+.pfirstload { display: none; }
+main.pfirst > .pkpis,
+main.pfirst > .playout { display: none; }
+main.pfirst > .pfirstload {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; min-height: 320px; color: var(--muted);
+}
+.pfirstload p { margin: 0; font-size: 13px; }
+.pspinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--accent);
+  animation: pspin .9s linear infinite;
+}
+@keyframes pspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .pspinner { animation-duration: 2.4s; } }
+.ppanels input[type=checkbox] { flex: none; }
 /* hide cross of a whole sensor section: it sits in the device header */
 .pdevhide { align-self: center; margin-left: 2px; }
 .pshowdevices { display: block; margin: 2px 0 0; }
@@ -246,6 +307,31 @@ button { font: inherit; }
 @media (max-width: 560px) {
   .pchartblock .pcanvas { height: 290px; }
   .pchartblocktitle { font-size: 11.5px; }
+}
+@media (max-width: 640px) and (orientation: portrait) {
+  .ptop { flex-wrap: wrap; padding-inline: 10px; }
+  .pactions { margin-left: auto; gap: 6px; }
+  .pmain {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .pmain > .pnet, .pmain > .pfirstload { margin-inline: 10px; }
+  .pmain > .pkpis, .playout > .pdevices { margin-inline: 0; }
+  .pkpis { gap: 8px; }
+  .pkpi, .pdevice {
+    border-left: 0; border-right: 0; border-radius: 0; box-shadow: none;
+  }
+  .pseries { padding-inline: 8px; }
+  .pchart, .pchartblock {
+    padding-inline: 0; border-left: 0; border-right: 0;
+    border-radius: 0; box-shadow: none;
+  }
+  .pchart > :not(.pcanvases), .pchartblockhead, .plegend { margin-inline: 10px; }
+  .pcharthead, .pchartblockhead { row-gap: 8px; }
+  .pcontrols { width: 100%; }
+  .pranges button, .pzoom button, #chartopts, #chartmode { min-height: 40px; }
+  .pmove { width: 32px; height: 32px; }
+  .chip { min-height: 36px; }
 }
 #chartmode {
   padding: 4px 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 7px;

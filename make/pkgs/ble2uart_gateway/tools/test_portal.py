@@ -167,7 +167,14 @@ def run(binary):
         assert "200 OK" in head, head
         assert "text/html" in head, head
         assert "/ble2uart_gateway/portal.js" in body, body[:200]
-        assert 'rel="manifest"' in body and 'id="install"' in body, body[:600]
+        assert 'rel="manifest"' in body and 'id="prefs"' in body, body[:600]
+        # No install button: over plain http the browser cannot install anything.
+        assert 'id="install"' not in body, body[:600]
+        # The link must point at the static copy: a browser fetches a manifest
+        # without credentials, so a CGI URL would answer with the freetz login
+        # page and the manifest would be rejected (no "display": the installed
+        # icon would keep the URL bar).
+        assert 'href="/ble2uart_gateway/manifest.json"' in body, body[:600]
         assert 'id="prefs"' in body and 'id="maximize"' in body, body[:600]
         assert 'apple-touch-icon' in body and 'name="theme-color"' in body, body[:600]
         assert 'id="kpis"' in body and 'id="devices"' in body, body[:500]
@@ -176,26 +183,43 @@ def run(binary):
         head, body, _ = call(binary, database, "action=page", method="HEAD")
         assert "200 OK" in head and body == "", (head, body[:80])
 
-        # The dashboard is installable: the manifest must describe a standalone
-        # app whose scope covers the CGI, and the icons must live in the web
-        # root that freetz serves at /ble2uart_gateway/.
-        head, body, _ = call(binary, database, "action=manifest&lang=it")
-        assert "200 OK" in head and "application/manifest+json" in head, head
-        manifest = json.loads(body)
-        assert manifest["start_url"] == "./?action=page", manifest
-        assert manifest["scope"] == "./", manifest
-        # The installed app must launch without browser chrome: fullscreen with
-        # standalone as the first fallback for browsers that ignore it.
-        assert manifest["display"] == "fullscreen", manifest
-        assert manifest["display_override"][0] == "fullscreen", manifest
-        assert "standalone" in manifest["display_override"], manifest
-        assert manifest["lang"] == "it", manifest
-        kinds = {(icon["sizes"], icon["purpose"]) for icon in manifest["icons"]}
-        assert ("192x192", "any") in kinds, manifest["icons"]
-        assert ("512x512", "any") in kinds and ("512x512", "maskable") in kinds, manifest["icons"]
-        assert all(icon["src"].startswith("/ble2uart_gateway/") for icon in manifest["icons"]), manifest["icons"]
-        english = json.loads(call(binary, database, "action=manifest&lang=en")[1])
-        assert english["lang"] == "en" and english["short_name"] == "BLE sensors", english
+        # The dashboard is installable: the static manifests must describe an
+        # app that opens the portal without the URL bar and the browser toolbar.
+        assets = Path(__file__).resolve().parent.parent / "files/root/usr/mww/ble2uart_gateway"
+        manifests = {
+            "en": json.loads((assets / "manifest.json").read_text(encoding="utf-8")),
+            "it": json.loads((assets / "manifest.it.json").read_text(encoding="utf-8")),
+            "de": json.loads((assets / "manifest.de.json").read_text(encoding="utf-8")),
+        }
+        for lang, manifest in manifests.items():
+            # Absolute URLs: the file is not reached through the CGI, so relative
+            # values would resolve against /ble2uart_gateway/ (a directory).
+            assert manifest["start_url"] == "/cgi-bin/extra/ble2uart_gateway/portal?action=page", manifest
+            assert manifest["scope"] == "/cgi-bin/extra/ble2uart_gateway/", manifest
+            assert manifest["start_url"].startswith(manifest["scope"]), manifest
+            assert manifest["id"] in manifest["start_url"], manifest
+            assert manifest["display"] == "standalone", manifest
+            assert manifest["display_override"] == ["window-controls-overlay", "standalone", "minimal-ui"], manifest
+            assert manifest["orientation"] == "any", manifest
+            assert manifest["prefer_related_applications"] is False, manifest
+            assert manifest["lang"] == lang, manifest
+            assert manifest["name"] and manifest["short_name"] and manifest["description"], manifest
+            kinds = {(icon["sizes"], icon["purpose"]) for icon in manifest["icons"]}
+            assert ("192x192", "any") in kinds, manifest["icons"]
+            assert ("512x512", "any") in kinds and ("512x512", "maskable") in kinds, manifest["icons"]
+            assert all(icon["src"].startswith("/ble2uart_gateway/") for icon in manifest["icons"]), manifest["icons"]
+            # The CGI action is kept in sync with the static file of the same
+            # language, so a change in one cannot leave the other behind.
+            head, body, _ = call(binary, database, "action=manifest&lang=" + lang)
+            assert "200 OK" in head and "application/manifest+json" in head, head
+            assert json.loads(body) == manifest, "static manifest differs from ?action=manifest&lang=" + lang
+        # Localized text, with English as the fallback for every other language.
+        assert manifests["it"]["short_name"] == "Sensori BLE", manifests["it"]
+        assert manifests["de"]["short_name"] == "BLE-Sensoren", manifests["de"]
+        assert manifests["en"]["short_name"] == "BLE sensors", manifests["en"]
+        assert manifests["it"]["description"] != manifests["en"]["description"], manifests
+        fallback = json.loads(call(binary, database, "action=manifest&lang=fr")[1])
+        assert fallback["lang"] == "en" and fallback["name"] == manifests["en"]["name"], fallback
 
         # The service worker needs a scope wider than its own directory, which
         # only the Service-Worker-Allowed header can grant.
