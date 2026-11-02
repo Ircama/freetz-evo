@@ -377,12 +377,19 @@ struct Device {
     name: String,
     last_ns: i64,
     series: BTreeMap<(String, String), Series>,
+    // Identity from the YAML configuration: the decoder only knows the name
+    // that was broadcast, the file knows vendor, model and firmware.
+    label: String,
+    manufacturer: String,
+    model: String,
+    firmware_version: String,
 }
 
 fn catalog_action(config: &Path) -> Result<Value, String> {
     let (connection, path) = connect(config)?;
     let now = now_ns();
-    let devices = catalog(&connection, now)?;
+    let mut devices = catalog(&connection, now)?;
+    apply_identity(config, &mut devices);
     Ok(json!({
         "ok": true,
         "now_ns": now,
@@ -391,6 +398,30 @@ fn catalog_action(config: &Path) -> Result<Value, String> {
         "archived": archived(&connection),
         "devices": devices.iter().map(device_json).collect::<Vec<_>>(),
     }))
+}
+
+/// Copy the label, vendor, model and firmware of the configured devices into
+/// the catalog. A missing or unreadable configuration is not an error: the
+/// dashboard still shows the names that the advertisements carried.
+fn apply_identity(config: &Path, devices: &mut [Device]) {
+    let loaded = match Config::load(config, None, None) {
+        Ok(loaded) => loaded,
+        Err(_) => return,
+    };
+    for device in devices.iter_mut() {
+        let mac = device.mac.to_ascii_uppercase();
+        let Some(entry) = loaded
+            .devices
+            .iter()
+            .find(|entry| entry.mac.trim().to_ascii_uppercase() == mac)
+        else {
+            continue;
+        };
+        device.label = entry.label.trim().to_string();
+        device.manufacturer = entry.manufacturer.trim().to_string();
+        device.model = entry.model.trim().to_string();
+        device.firmware_version = entry.firmware_version.trim().to_string();
+    }
 }
 
 fn catalog(connection: &Connection, now: i64) -> Result<Vec<Device>, String> {
@@ -655,6 +686,10 @@ fn device_json(device: &Device) -> Value {
     json!({
         "mac": device.mac,
         "name": device.name,
+        "label": device.label,
+        "manufacturer": device.manufacturer,
+        "model": device.model,
+        "firmware_version": device.firmware_version,
         "last_ns": device.last_ns,
         "series": series,
     })
@@ -822,11 +857,24 @@ fn buckets_between(
         .into_iter()
         .map(|(bucket, (sum, count))| {
             let value = sum / count as f64;
-            (bucket, (value * 1000.0).round() / 1000.0, count)
+            let value = if kind == Kind::Boolean {
+                // A bucket that mixes on and off samples averages to a
+                // fraction: a state has no intermediate value, so the bucket
+                // reports the majority and the chart only sees 0 or 1.
+                snap_boolean(value)
+            } else {
+                (value * 1000.0).round() / 1000.0
+            };
+            (bucket, value, count)
         })
         .collect();
     points.sort_by_key(|point| point.0);
     Ok(points)
+}
+
+/// A boolean sample is either off (0) or on (1): anything from a half on is on.
+fn snap_boolean(value: f64) -> f64 {
+    if value >= 0.5 { 1.0 } else { 0.0 }
 }
 
 /// Accumulate `(sum, count)` so archived and raw averages are weighted.
@@ -1145,11 +1193,12 @@ fn page() -> String {
   <div class="ptitle"><span class="pdot"></span><h1 id="title">ble2uart_gateway</h1><span class="psub" id="subtitle">Sensori</span></div>
   <nav class="pactions">
     <span class="pstamp" id="stamp">&mdash;</span>
+    <button class="pbtn" id="prefs" type="button" title="Preferenze">&#9881;</button>
     <button class="pbtn" id="maximize" type="button" hidden>&#10530;</button>
     <button class="pbtn" id="install" type="button" hidden>&#10515;</button>
     <button class="pbtn" id="reload" type="button" title="Aggiorna">&#8635;</button>
     <button class="pbtn" id="resetview" type="button" title="Reimposta le viste salvate">&#10226;</button>
-    <a class="pbtn" id="config" href="/cgi-bin/conf/ble2uart_gateway" title="Configurazione">&#9881;</a>
+    <a class="pbtn" id="config" href="/cgi-bin/conf/ble2uart_gateway" title="Configurazione">&#9776;</a>
   </nav>
 </header>
 <main class="pmain">
@@ -1204,7 +1253,7 @@ fn page() -> String {
 /// Bumped whenever `portal.css` or `portal.js` change, so a router that
 /// caches static files still serves the new version. The service worker uses
 /// the same value as cache name, so a bump also retires the older caches.
-const ASSET_VERSION: &str = "9";
+const ASSET_VERSION: &str = "16";
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -1407,7 +1456,7 @@ mod tests {
     }
 
     #[test]
-    fn boolean_series_are_averaged_as_zero_and_one() {
+    fn boolean_series_are_snapped_to_zero_or_one() {
         let connection = database();
         let now = 1_700_000_000_000_000_000_i64;
         let series = Series {
@@ -1434,7 +1483,18 @@ mod tests {
         .unwrap();
         assert_eq!(points.len(), 1);
         assert_eq!(points[0].2, 2);
-        assert!((points[0].1 - 0.5).abs() < 0.001);
+        // One off and one on sample: the bucket is a coin toss, the chart still
+        // gets a state (on from half upwards) and never a fraction.
+        assert_eq!(points[0].1, 1.0);
+    }
+
+    #[test]
+    fn boolean_snapping_has_no_middle() {
+        assert_eq!(snap_boolean(0.0), 0.0);
+        assert_eq!(snap_boolean(0.49), 0.0);
+        assert_eq!(snap_boolean(0.5), 1.0);
+        assert_eq!(snap_boolean(0.75), 1.0);
+        assert_eq!(snap_boolean(1.0), 1.0);
     }
 
     #[test]

@@ -18,7 +18,15 @@
 	var MAX_SERIES = 6;
 	var MAX_SELECTED = 18;
 	var MIN_WINDOW_MS = 60000;
-	var COLORS = ["#0b6bcb", "#1a7f37", "#b45309", "#8250df", "#b42318", "#0e7490", "#6b7280", "#a16207"];
+	/* Series colours: hues 137.5° apart (the golden angle), so any number of
+	 * lines stays distinct - a fixed list put blue next to teal and amber next
+	 * to brown, which looked like the same colour on a small screen. */
+	var HUE_STEP = 137.508;
+	function colorAt(index) {
+		var dark = !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+		var hue = Math.round(((index < 0 ? 0 : index) * HUE_STEP) % 360);
+		return "hsl(" + hue + (dark ? " 72% 66%" : " 70% 40%") + ")";
+	}
 
 	var TEXT = {
 		it: {
@@ -39,6 +47,41 @@
 			sec: "s", min: "min", hour: "h", day: "g",
 			range1h: "1 h", range6h: "6 h", range24h: "24 h", range7d: "7 g", range30d: "30 g", rangeAll: "tutto",
 			points: "{n} punti", loginExpired: "Sessione scaduta: ricaricare la pagina e accedere.",
+			options: "Opzioni del grafico",
+			optGroup: "Suddivisione",
+			optGroupUnit: "Un grafico per unit\u00e0 di misura",
+			optGroupFamily: "Un grafico per grandezza",
+			optGroupSingle: "Un solo grafico",
+			optGroupHint: "Per grandezza raggruppa nomi equivalenti come temperature, temp e theengs_temperature.",
+			optUnits: "Unit\u00e0 di misura",
+			optUnitsNative: "Come memorizzate",
+			optUnitsMetric: "Metriche (\u00b0C, mm, kg\u2026)",
+			optUnitsImperial: "Imperiali (\u00b0F, in, lb\u2026)",
+			optPoints: "Mostra i punti",
+			optPointsHint: "Un puntino per ogni campione del grafico",
+			moveUp: "Sposta su", moveDown: "Sposta gi\u00f9",
+			prefsTitle: "Preferenze",
+			prefTitle: "Titolo",
+			prefSubtitle: "Sottotitolo",
+			prefHint: "Vuoto = valore predefinito. Le preferenze restano in questo browser.",
+			prefFullscreen: "Avvia a schermo intero",
+			prefFullscreenHint: "Nell'app installata lo schermo intero arriva dal manifest (display: fullscreen). In una scheda del browser serve un gesto: si attiva al primo tocco sulla pagina.",
+			prefConfig: "Mostra il collegamento alla configurazione",
+			prefResetHidden: "Mostra di nuovo riquadri e grafici nascosti",
+			prefHidden: "Nascosti: {n} riquadri, {m} grafici, {k} sensori",
+			hideBox: "Nascondi questo riquadro",
+			hidePanel: "Nascondi questo grafico",
+			showHidden: "mostra {n} nascosti",
+			showHiddenDevices: "mostra {n} sensori nascosti",
+			hideDevice: "Nascondi questo sensore",
+			optPanels: "Grafici visibili",
+			optNoPanels: "Nessun grafico: seleziona prima una grandezza.",
+			family_temperature: "Temperatura", family_humidity: "Umidit\u00e0",
+			family_absolute_humidity: "Umidit\u00e0 assoluta", family_pressure: "Pressione",
+			family_illuminance: "Illuminamento", family_voltage: "Tensione",
+			family_battery: "Batteria", family_conductivity: "Conducibilit\u00e0",
+			family_co2: "CO\u2082", family_particulates: "Particolato",
+			family_weight: "Peso", family_speed: "Velocit\u00e0", family_distance: "Distanza",
 			emptyDatabase: "Il database non contiene ancora misure.",
 			zoomIn: "Ingrandisci", zoomOut: "Riduci", zoomReset: "Reimposta zoom",
 			fullscreen: "Schermo intero", exitFullscreen: "Esci da schermo intero",
@@ -85,6 +128,41 @@
 			sec: "s", min: "min", hour: "h", day: "d",
 			range1h: "1 h", range6h: "6 h", range24h: "24 h", range7d: "7 d", range30d: "30 d", rangeAll: "all",
 			points: "{n} points", loginExpired: "Session expired: reload the page and sign in.",
+			options: "Chart options",
+			optGroup: "Grouping",
+			optGroupUnit: "One chart per unit",
+			optGroupFamily: "One chart per quantity",
+			optGroupSingle: "Single chart",
+			optGroupHint: "Per quantity folds equivalent names such as temperature, temp and theengs_temperature.",
+			optUnits: "Unit system",
+			optUnitsNative: "As stored",
+			optUnitsMetric: "Metric (\u00b0C, mm, kg\u2026)",
+			optUnitsImperial: "Imperial (\u00b0F, in, lb\u2026)",
+			optPoints: "Show the points",
+			optPointsHint: "A small dot for every sample of the chart",
+			moveUp: "Move up", moveDown: "Move down",
+			prefsTitle: "Preferences",
+			prefTitle: "Title",
+			prefSubtitle: "Subtitle",
+			prefHint: "Empty = default value. The preferences stay in this browser.",
+			prefFullscreen: "Start in fullscreen",
+			prefFullscreenHint: "In the installed app fullscreen comes from the manifest (display: fullscreen). In a browser tab it needs a gesture: it starts on the first tap on the page.",
+			prefConfig: "Show the link to the configuration",
+			prefResetHidden: "Show the hidden boxes and charts again",
+			prefHidden: "Hidden: {n} boxes, {m} charts, {k} sensors",
+			hideBox: "Hide this box",
+			hidePanel: "Hide this chart",
+			showHidden: "show {n} hidden",
+			showHiddenDevices: "show {n} hidden sensors",
+			hideDevice: "Hide this sensor",
+			optPanels: "Visible charts",
+			optNoPanels: "No charts: select a quantity first.",
+			family_temperature: "Temperature", family_humidity: "Humidity",
+			family_absolute_humidity: "Absolute humidity", family_pressure: "Pressure",
+			family_illuminance: "Illuminance", family_voltage: "Voltage",
+			family_battery: "Battery", family_conductivity: "Conductivity",
+			family_co2: "CO\u2082", family_particulates: "Particulates",
+			family_weight: "Weight", family_speed: "Speed", family_distance: "Distance",
 			emptyDatabase: "The database does not contain measurements yet.",
 			zoomIn: "Zoom in", zoomOut: "Zoom out", zoomReset: "Reset zoom",
 			fullscreen: "Fullscreen", exitFullscreen: "Exit fullscreen",
@@ -131,6 +209,41 @@
 			sec: "s", min: "min", hour: "h", day: "T",
 			range1h: "1 h", range6h: "6 h", range24h: "24 h", range7d: "7 T", range30d: "30 T", rangeAll: "alles",
 			points: "{n} Punkte", loginExpired: "Sitzung abgelaufen: Seite neu laden und anmelden.",
+			options: "Diagrammoptionen",
+			optGroup: "Aufteilung",
+			optGroupUnit: "Ein Diagramm pro Einheit",
+			optGroupFamily: "Ein Diagramm pro Messgr\u00f6\u00dfe",
+			optGroupSingle: "Ein einziges Diagramm",
+			optGroupHint: "Pro Messgr\u00f6\u00dfe werden gleichwertige Namen wie temperature, temp und theengs_temperature zusammengefasst.",
+			optUnits: "Einheitensystem",
+			optUnitsNative: "Wie gespeichert",
+			optUnitsMetric: "Metrisch (\u00b0C, mm, kg\u2026)",
+			optUnitsImperial: "Imperial (\u00b0F, in, lb\u2026)",
+			optPoints: "Punkte anzeigen",
+			optPointsHint: "Ein kleiner Punkt pro Messwert im Diagramm",
+			moveUp: "Nach oben", moveDown: "Nach unten",
+			prefsTitle: "Einstellungen",
+			prefTitle: "Titel",
+			prefSubtitle: "Untertitel",
+			prefHint: "Leer = Standardwert. Die Einstellungen bleiben in diesem Browser.",
+			prefFullscreen: "Im Vollbild starten",
+			prefFullscreenHint: "In der installierten App kommt das Vollbild aus dem Manifest (display: fullscreen). Im Browser-Tab braucht es eine Geste: es startet beim ersten Tippen.",
+			prefConfig: "Link zur Konfiguration anzeigen",
+			prefResetHidden: "Versteckte Kacheln und Diagramme wieder anzeigen",
+			prefHidden: "Versteckt: {n} Kacheln, {m} Diagramme, {k} Sensoren",
+			hideBox: "Diese Kachel ausblenden",
+			hidePanel: "Dieses Diagramm ausblenden",
+			showHidden: "{n} versteckte anzeigen",
+			showHiddenDevices: "{n} versteckte Sensoren anzeigen",
+			hideDevice: "Diesen Sensor ausblenden",
+			optPanels: "Sichtbare Diagramme",
+			optNoPanels: "Keine Diagramme: zuerst eine Messgröße wählen.",
+			family_temperature: "Temperatur", family_humidity: "Luftfeuchte",
+			family_absolute_humidity: "Absolute Feuchte", family_pressure: "Luftdruck",
+			family_illuminance: "Beleuchtungsst\u00e4rke", family_voltage: "Spannung",
+			family_battery: "Batterie", family_conductivity: "Leitf\u00e4higkeit",
+			family_co2: "CO\u2082", family_particulates: "Feinstaub",
+			family_weight: "Gewicht", family_speed: "Geschwindigkeit", family_distance: "Entfernung",
 			emptyDatabase: "Die Datenbank enth\u00e4lt noch keine Messwerte.",
 			zoomIn: "Vergr\u00f6\u00dfern", zoomOut: "Verkleinern", zoomReset: "Zoom zur\u00fccksetzen",
 			fullscreen: "Vollbild", exitFullscreen: "Vollbild beenden",
@@ -171,7 +284,9 @@
 	];
 
 	var lang = "en";
-	var CHART_MODE_KEY = "ble2uart-portal-chartmode";
+	var SETTINGS_KEY = "ble2uart-portal-settings-v1";
+	var ORDER_KEY = "ble2uart-portal-order-v1";
+	var LEGACY_CHART_KEY = "ble2uart-portal-chartmode";
 
 	var state = {
 		catalog: null,
@@ -186,7 +301,16 @@
 		view: null,
 		blocks: [],
 		active: null,
-		chartMode: "unit"
+		/* Preferences of the page, kept in the browser: how series are grouped,
+		 * which unit system is shown, whether a dot marks every sample, the two
+		 * titles, the default fullscreen mode, the config link and the boxes or
+		 * panels the user hid. */
+		settings: {
+			group: "unit", units: "native", points: false,
+			title: "", subtitle: "", fullscreen: false, showConfig: true,
+			hiddenSeries: [], hiddenPanels: [], hiddenDevices: []
+		},
+		order: []
 	};
 	var els = {};
 
@@ -277,6 +401,197 @@
 			state.zoom = { from: zoom.from, to: zoom.to };
 		}
 	}
+
+	/* ------------------------------------------------- chart preferences
+	 * Grouping, unit system and sample dots are per browser preferences, kept
+	 * next to the view. The daemon always serves the stored units and values,
+	 * so switching to imperial is only a display change. */
+	function settingsRead() {
+		var raw = null;
+		try { raw = window.localStorage.getItem(SETTINGS_KEY); } catch (e) { raw = null; }
+		var stored = null;
+		try { stored = raw ? JSON.parse(raw) : null; } catch (e) { stored = null; }
+		if (stored && typeof stored === "object") {
+			if (stored.group === "unit" || stored.group === "family" || stored.group === "single") {
+				state.settings.group = stored.group;
+			}
+			if (stored.units === "native" || stored.units === "metric" || stored.units === "imperial") {
+				state.settings.units = stored.units;
+			}
+			state.settings.points = stored.points === true;
+			state.settings.fullscreen = stored.fullscreen === true;
+			state.settings.showConfig = stored.showConfig !== false;
+			state.settings.title = typeof stored.title === "string" ? stored.title.slice(0, 60) : "";
+			state.settings.subtitle = typeof stored.subtitle === "string" ? stored.subtitle.slice(0, 60) : "";
+			state.settings.hiddenSeries = stringList(stored.hiddenSeries);
+			state.settings.hiddenPanels = stringList(stored.hiddenPanels);
+			state.settings.hiddenDevices = stringList(stored.hiddenDevices);
+			return;
+		}
+		/* Migrate the old split/merge toggle of the previous version. */
+		try {
+			if (window.localStorage.getItem(LEGACY_CHART_KEY) === "single") { state.settings.group = "single"; }
+		} catch (e) { /* ignore */ }
+	}
+
+	function settingsWrite() {
+		try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch (e) { /* ignore */ }
+	}
+
+	/** Keep only the strings of an array read from the browser storage. */
+	function stringList(value) {
+		if (Object.prototype.toString.call(value) !== "[object Array]") { return []; }
+		return value.filter(function (item) { return typeof item === "string"; });
+	}
+
+	function listAdd(list, key) {
+		if (list.indexOf(key) < 0) { list.push(key); }
+		return list;
+	}
+
+	function listRemove(list, key) {
+		var index = list.indexOf(key);
+		if (index >= 0) { list.splice(index, 1); }
+		return list;
+	}
+
+	function orderRead() {
+		var raw = null;
+		try { raw = window.localStorage.getItem(ORDER_KEY); } catch (e) { raw = null; }
+		var stored = null;
+		try { stored = raw ? JSON.parse(raw) : null; } catch (e) { stored = null; }
+		if (Object.prototype.toString.call(stored) === "[object Array]") {
+			state.order = stored.filter(function (key) { return typeof key === "string"; });
+		}
+	}
+
+	function orderWrite() {
+		try { window.localStorage.setItem(ORDER_KEY, JSON.stringify(state.order)); } catch (e) { /* ignore */ }
+	}
+
+	/* ------------------------------------------------- attribute families
+	 * The ATC decoder publishes "temperature", the Theengs decoder
+	 * "theengs_temperature": the same physical quantity under two names. The
+	 * classifier folds synonyms into one family, so "one chart per quantity"
+	 * can put them on the same axis. */
+	var FAMILY_ALIASES = {
+		temperature: ["temperature", "temp", "tempc", "tempf", "temp_c", "temp_f", "celsius", "fahrenheit", "dew_point", "dewpoint", "heat_index", "apparent_temperature"],
+		humidity: ["humidity", "hum", "rel_humidity", "relative_humidity"],
+		absolute_humidity: ["absolute_humidity", "abs_humidity", "humidity_absolute"],
+		pressure: ["pressure", "press", "barometer"],
+		illuminance: ["illuminance", "lux", "light", "light_level", "brightness"],
+		voltage: ["voltage", "battery_v", "batt_v", "battery_voltage"],
+		battery: ["battery", "battery_level", "battery_percent", "battery_percentage", "batt"],
+		conductivity: ["conductivity", "ec"],
+		co2: ["co2", "carbon_dioxide"],
+		particulates: ["pm1", "pm2_5", "pm25", "pm10"],
+		weight: ["weight", "mass"],
+		speed: ["speed", "wind_speed"],
+		distance: ["depth", "distance", "rain", "precipitation"]
+	};
+	var FAMILY_LOOKUP = null;
+
+	function familyLookup() {
+		if (FAMILY_LOOKUP) { return FAMILY_LOOKUP; }
+		var map = {};
+		Object.keys(FAMILY_ALIASES).forEach(function (family) {
+			map[family] = family;
+			FAMILY_ALIASES[family].forEach(function (alias) { map[alias] = family; });
+		});
+		FAMILY_LOOKUP = map;
+		return map;
+	}
+
+	/** Canonical quantity of an attribute name ("theengs_temp" -> temperature). */
+	function familyOf(attribute) {
+		var name = String(attribute || "").toLowerCase()
+			.replace(/^theengs_/, "")
+			.replace(/[\s-]+/g, "_");
+		var map = familyLookup();
+		if (map[name]) { return map[name]; }
+		var stripped = name.replace(/_(c|f|celsius|fahrenheit|percent|pct|value|level)$/, "");
+		if (map[stripped]) { return map[stripped]; }
+		return name;
+	}
+
+	function familyTitle(family) {
+		var table = TEXT[lang] || TEXT.en;
+		var key = "family_" + family;
+		return table[key] || TEXT.en[key] || family.replace(/_/g, " ");
+	}
+
+	/* ------------------------------------------------------- unit systems
+	 * Conversions are pure display: the stored series keeps its own unit. */
+	var UNIT_ALIASES = {
+		"c": "\u00b0C", "\u00b0c": "\u00b0C", "celsius": "\u00b0C",
+		"f": "\u00b0F", "\u00b0f": "\u00b0F", "fahrenheit": "\u00b0F",
+		"g/m3": "g/m\u00b3", "gr/m3": "g/m\u00b3", "lx": "lux", "degc": "\u00b0C", "degf": "\u00b0F"
+	};
+
+	function canonicalUnit(unit) {
+		var text = String(unit || "").trim();
+		if (!text) { return ""; }
+		var key = text.toLowerCase();
+		return UNIT_ALIASES.hasOwnProperty(key) ? UNIT_ALIASES[key] : text;
+	}
+
+	function identity(value) { return value; }
+
+	/* unit -> [target unit, transform] for each non-native system */
+	var CONVERSIONS = {
+		"\u00b0C": { imperial: ["\u00b0F", function (v) { return v * 9 / 5 + 32; }] },
+		"\u00b0F": { metric: ["\u00b0C", function (v) { return (v - 32) * 5 / 9; }] },
+		"K": {
+			metric: ["\u00b0C", function (v) { return v - 273.15; }],
+			imperial: ["\u00b0F", function (v) { return (v - 273.15) * 9 / 5 + 32; }]
+		},
+		"mm": { imperial: ["in", function (v) { return v / 25.4; }] },
+		"cm": { imperial: ["in", function (v) { return v / 2.54; }] },
+		"m": { imperial: ["ft", function (v) { return v * 3.28084; }] },
+		"g/m\u00b3": { imperial: ["gr/ft\u00b3", function (v) { return v * 0.436995; }] },
+		"hPa": { imperial: ["inHg", function (v) { return v * 0.02953; }] },
+		"mb": { imperial: ["inHg", function (v) { return v * 0.02953; }] },
+		"kPa": { imperial: ["inHg", function (v) { return v * 0.2953; }] },
+		"Pa": { imperial: ["inHg", function (v) { return v * 0.0002953; }] },
+		"m/s": { imperial: ["mph", function (v) { return v * 2.236936; }] },
+		"km/h": { imperial: ["mph", function (v) { return v * 0.621371; }] },
+		"kg": { imperial: ["lb", function (v) { return v * 2.204623; }] },
+		"g": { imperial: ["oz", function (v) { return v * 0.035274; }] },
+		"lux": { imperial: ["fc", function (v) { return v / 10.7639; }] }
+	};
+
+	/** Display unit and value transform of a stored unit. */
+	function unitPlan(unit, system) {
+		var canonical = canonicalUnit(unit);
+		var rule = CONVERSIONS[canonical] && CONVERSIONS[canonical][system];
+		if (system === "native" || !rule) {
+			return { unit: unit || "", convert: identity };
+		}
+		return { unit: rule[0], convert: rule[1] };
+	}
+
+	/** Cached plan of a series: unit and points already converted. */
+	function chartPlan(chart) {
+		var system = state.settings.units;
+		if (chart.planFor === system && chart.plan) { return chart.plan; }
+		var plan = unitPlan(chart.unit, system);
+		chart.planFor = system;
+		chart.plan = {
+			unit: plan.unit,
+			convert: plan.convert,
+			points: (chart.points || []).map(function (point) {
+				var value = plan.convert(point[1]);
+				/* A boolean has no intermediate value: a bucket that mixes on and
+				 * off samples would otherwise be drawn halfway up the chart. */
+				if (chart.kind === "boolean") { value = value >= 0.5 ? 1 : 0; }
+				return [point[0], value, point[2]];
+			})
+		};
+		return chart.plan;
+	}
+
+	function chartUnit(chart) { return chartPlan(chart).unit; }
+	function chartPoints(chart) { return chartPlan(chart).points; }
 
 	/* ------------------------------------------------------------- splitter
 	 * Values on the left, chart on the right, with a draggable vertical line
@@ -447,13 +762,22 @@
 		renderRanges();
 		renderZoom();
 		drawChart();
+		if (els.prefsbox) { renderPrefs(); }
 	}
 
 	function renderHeader() {
 		var catalog = state.catalog;
-		document.getElementById("subtitle").textContent = t("subtitle");
+		/* The two titles and the link to the configuration page are user
+		 * preferences: an empty field falls back to the strings the daemon
+		 * shipped with the page. */
+		if (els.title) { els.title.textContent = state.settings.title || DEFAULT_TITLE; }
+		if (els.subtitle) { els.subtitle.textContent = state.settings.subtitle || t("subtitle"); }
+		if (els.config) {
+			els.config.hidden = state.settings.showConfig === false;
+			els.config.title = t("config");
+			els.config.setAttribute("aria-label", t("config"));
+		}
 		document.getElementById("reload").title = t("refresh");
-		document.getElementById("config").title = t("config");
 		if (!catalog) { return; }
 		var newest = 0;
 		(catalog.devices || []).forEach(function (device) {
@@ -527,31 +851,89 @@
 			els.devices.appendChild(empty);
 			return;
 		}
-		catalog.devices.forEach(function (device) {
+		var hiddenDevices = [];
+		var shownDevices = catalog.devices.filter(function (device) {
+			if (isHiddenDevice(device.mac)) { hiddenDevices.push(device.mac); return false; }
+			return true;
+		});
+		shownDevices.forEach(function (device) {
 			var section = document.createElement("section");
 			section.className = "pdevice";
 			var header = document.createElement("header");
 			var title = document.createElement("h3");
-			title.textContent = device.name || device.mac;
+			title.textContent = device.label || device.name || device.mac;
 			var right = document.createElement("span");
 			right.className = "page";
 			right.textContent = age(device.last_ns, now);
 			header.appendChild(title);
 			header.appendChild(right);
+
+			/* Cross: hide the whole sensor section, like the charts and the
+			 * single boxes. */
+			var hide = document.createElement("button");
+			hide.type = "button";
+			hide.className = "pmove phide pdevhide";
+			hide.textContent = "\u00d7";
+			hide.title = t("hideDevice");
+			hide.setAttribute("aria-label", t("hideDevice"));
+			hide.addEventListener("click", function () { hideDevice(device.mac); });
+			header.appendChild(hide);
+			section.appendChild(header);
+
+			/* Boxes the user hid: they are counted, not rendered, and one click
+			 * brings them all back. */
+			var hidden = [];
+			var visible = (device.series || []).filter(function (series) {
+				var key = keyOf(device.mac, series);
+				if (isHiddenSeries(key)) { hidden.push(key); return false; }
+				return true;
+			});
+
+			/* Second line: vendor, model and firmware from the YAML file plus the
+			 * MAC of the advertisement, so two devices of the same model stay
+			 * distinguishable. */
+			var meta = document.createElement("div");
+			meta.className = "pdevmeta";
+			var maker = deviceDetail(device);
+			if (maker) {
+				var from = document.createElement("span");
+				from.className = "pmaker";
+				from.textContent = maker;
+				meta.appendChild(from);
+				meta.appendChild(document.createTextNode(" \u00b7 "));
+			}
 			var mac = document.createElement("span");
 			mac.className = "pmac";
 			mac.textContent = device.mac;
-			header.appendChild(mac);
-			section.appendChild(header);
+			meta.appendChild(mac);
+			if (hidden.length) {
+				var restore = document.createElement("button");
+				restore.type = "button";
+				restore.className = "plink pshowhidden";
+				restore.textContent = t("showHidden", { n: hidden.length });
+				restore.addEventListener("click", function () { showSeries(hidden); });
+				meta.appendChild(document.createTextNode(" \u00b7 "));
+				meta.appendChild(restore);
+			}
+			section.appendChild(meta);
 
 			var grid = document.createElement("div");
 			grid.className = "pseries";
-			(device.series || []).forEach(function (series) {
+			visible.forEach(function (series) {
 				grid.appendChild(card(device.mac, series, now));
 			});
 			section.appendChild(grid);
 			els.devices.appendChild(section);
 		});
+
+		if (hiddenDevices.length) {
+			var restoreAll = document.createElement("button");
+			restoreAll.type = "button";
+			restoreAll.className = "plink pshowhidden pshowdevices";
+			restoreAll.textContent = t("showHiddenDevices", { n: hiddenDevices.length });
+			restoreAll.addEventListener("click", function () { showDevices(hiddenDevices); });
+			els.devices.appendChild(restoreAll);
+		}
 	}
 
 	function card(mac, series, now) {
@@ -562,7 +944,7 @@
 		button.type = "button";
 		button.className = "pcard" + (series.kind === "text" ? " pstatic" : "") + (selected ? " psel" : "");
 		if (selected) {
-			button.style.setProperty("--swatch", COLORS[index % COLORS.length]);
+			button.style.setProperty("--swatch", colorAt(index));
 		}
 		var attribute = document.createElement("span");
 		attribute.className = "a";
@@ -587,6 +969,24 @@
 		button.appendChild(attribute);
 		button.appendChild(value);
 		button.appendChild(stampLine);
+		/* Cross in the corner: hide this box. The series keeps feeding the
+		 * charts, only its card disappears from the list. */
+		var hide = document.createElement("span");
+		hide.className = "pcardhide";
+		hide.setAttribute("role", "button");
+		hide.tabIndex = 0;
+		hide.textContent = "\u00d7";
+		hide.title = t("hideBox");
+		hide.setAttribute("aria-label", t("hideBox"));
+		var doHide = function (event) {
+			if (event) { event.stopPropagation(); event.preventDefault(); }
+			hideSeries(key);
+		};
+		hide.addEventListener("click", doHide);
+		hide.addEventListener("keydown", function (event) {
+			if (event.key === "Enter" || event.key === " ") { doHide(event); }
+		});
+		button.appendChild(hide);
 		if (series.kind !== "text") {
 			button.addEventListener("click", function () { toggle(mac, series); });
 			button.title = t("chartHint");
@@ -647,7 +1047,10 @@
 		els.zoomreset.title = t("zoomReset") + " (0)";
 		els.panleft.title = t("panLeft") + " (\u2190)";
 		els.panright.title = t("panRight") + " (\u2192)";
-		var hasChart = !!(state.charts && state.charts.some(function (chart) { return chart.points && chart.points.length; }));
+		var hasChart = !!(state.charts && state.charts.some(function (chart) {
+			var points = chartPoints(chart);
+			return points && points.length;
+		}));
 		els.panleft.disabled = !hasChart;
 		els.panright.disabled = !hasChart;
 		els.help.title = t("helpOpen");
@@ -696,8 +1099,10 @@
 
 	function seriesLabel(chart) {
 		var device = findDevice(chart.mac);
-		var name = device ? (device.name || device.mac) : chart.mac;
-		return name + " \u00b7 " + chart.attribute + (chart.unit ? " (" + chart.unit + ")" : "");
+		var name = deviceLabel(chart.mac);
+		var unit = chartUnit(chart);
+		var detail = device ? deviceDetail(device) : "";
+		return name + " \u00b7 " + chart.attribute + (unit ? " (" + unit + ")" : "") + (detail ? " \u00b7 " + detail : "");
 	}
 
 	function findDevice(mac) {
@@ -711,30 +1116,83 @@
 
 	/* ------------------------------------------------------ chart panels */
 
+	/** Name of a device: the YAML label first, then the name the decoder saw. */
+	function deviceLabel(mac) {
+		var device = findDevice(mac);
+		if (!device) { return mac; }
+		return device.label || device.name || mac;
+	}
+
+	/** "Xiaomi \u00b7 LYWSD03MMC \u00b7 fw 5.9" from the YAML identity, or "". */
+	function deviceDetail(device) {
+		if (!device) { return ""; }
+		var parts = [];
+		if (device.manufacturer) { parts.push(device.manufacturer); }
+		if (device.model) { parts.push(device.model); }
+		if (device.firmware_version) { parts.push("fw " + device.firmware_version); }
+		return parts.join(" \u00b7 ");
+	}
+
 	/** Colour of a series: stable across panels and the legend. */
 	function colorOf(chart) {
-		var index = state.charts.indexOf(chart);
-		return COLORS[(index < 0 ? 0 : index) % COLORS.length];
+		return colorAt(state.charts.indexOf(chart));
 	}
 
-	/** Panel key of a series: its unit (booleans and unitless values group too). */
+	/** Panel key of a series: its unit, its quantity, or the boolean panel. */
 	function panelKey(chart) {
-		if (chart.unit) { return chart.unit; }
-		if (chart.kind === "boolean") { return "\u2022"; }
-		return "";
+		var unit = chartUnit(chart);
+		/* Booleans carry no unit and are states, not quantities: they always
+		 * share one panel - in both grouping modes - where the lane offsets keep
+		 * their two levels apart. */
+		if (!unit && chart.kind === "boolean") { return "\u2022"; }
+		if (state.settings.group === "family") {
+			return familyOf(chart.attribute) + "|" + unit + "|" + chart.kind;
+		}
+		return unit;
 	}
 
-	/** Series split into panels: one per unit when chartMode is "unit". */
-	function groupCharts() {
-		if (!state.charts.length || state.chartMode === "single") { return [state.charts.slice()]; }
-		var groups = [];
-		var seen = {};
+	/** Series split into panels, in the order the user chose. */
+	function groupCharts(includeHidden) {
+		if (!state.charts.length) { return []; }
+		if (state.settings.group === "single") {
+			return [{ key: "single", charts: state.charts.slice() }];
+		}
+		var order = [];
+		var byKey = {};
 		state.charts.forEach(function (chart) {
 			var key = panelKey(chart);
-			if (!seen.hasOwnProperty(key)) { seen[key] = groups.length; groups.push([]); }
-			groups[seen[key]].push(chart);
+			if (!byKey.hasOwnProperty(key)) { byKey[key] = []; order.push(key); }
+			byKey[key].push(chart);
 		});
+		var groups = [];
+		var placed = {};
+		(state.order || []).forEach(function (key) {
+			if (byKey.hasOwnProperty(key) && !placed[key]) {
+				groups.push({ key: key, charts: byKey[key] });
+				placed[key] = true;
+			}
+		});
+		order.forEach(function (key) {
+			if (!placed[key]) { groups.push({ key: key, charts: byKey[key] }); }
+		});
+		if (!includeHidden) {
+			groups = groups.filter(function (group) {
+				return state.settings.hiddenPanels.indexOf(group.key) < 0;
+			});
+		}
 		return groups;
+	}
+
+	/** Move a panel one position up or down and remember the order. */
+	function moveBlock(block, delta) {
+		var keys = state.blocks.map(function (item) { return item.key; });
+		var index = keys.indexOf(block.key);
+		var target = index + delta;
+		if (index < 0 || target < 0 || target >= keys.length) { return; }
+		keys.splice(target, 0, keys.splice(index, 1)[0]);
+		state.order = keys;
+		orderWrite();
+		render();
 	}
 
 	function removeSeries(chart) {
@@ -749,8 +1207,31 @@
 	function createBlock() {
 		var root = document.createElement("div");
 		root.className = "pchartblock";
+		var head = document.createElement("div");
+		head.className = "pchartblockhead";
 		var title = document.createElement("h3");
 		title.className = "pchartblocktitle";
+		var move = document.createElement("div");
+		move.className = "pchartblockmove";
+		var up = document.createElement("button");
+		up.type = "button";
+		up.className = "pmove";
+		up.textContent = "\u25b2";
+		var down = document.createElement("button");
+		down.type = "button";
+		down.className = "pmove";
+		down.textContent = "\u25bc";
+		var hide = document.createElement("button");
+		hide.type = "button";
+		hide.className = "pmove phide";
+		hide.textContent = "\u00d7";
+		hide.title = t("hidePanel");
+		hide.setAttribute("aria-label", t("hidePanel"));
+		move.appendChild(up);
+		move.appendChild(down);
+		move.appendChild(hide);
+		head.appendChild(title);
+		head.appendChild(move);
 		var wrap = document.createElement("div");
 		wrap.className = "pcanvas";
 		var canvas = document.createElement("canvas");
@@ -760,14 +1241,18 @@
 		wrap.appendChild(empty);
 		var legend = document.createElement("div");
 		legend.className = "plegend";
-		root.appendChild(title);
+		root.appendChild(head);
 		root.appendChild(wrap);
 		root.appendChild(legend);
 		var block = {
 			root: root, title: title, canvas: canvas, empty: empty, legend: legend,
+			key: "", up: up, down: down,
 			charts: [], view: null, hover: null, drag: null, pan: null
 		};
 		root.__block = block;
+		up.addEventListener("click", function () { moveBlock(block, -1); });
+		down.addEventListener("click", function () { moveBlock(block, 1); });
+		hide.addEventListener("click", function () { hidePanel(block.key); });
 		canvas.addEventListener("mousemove", function (event) { onMove(block, event); });
 		canvas.addEventListener("mousedown", function (event) { onDown(block, event); });
 		canvas.addEventListener("mouseleave", function () { if (!block.drag) { hideTip(block); } });
@@ -792,13 +1277,16 @@
 		for (var index = 0; index < groups.length; index++) {
 			var block = host.children[index].__block;
 			if (!block) { continue; }
-			block.charts = groups[index];
+			block.charts = groups[index].charts;
+			block.key = groups[index].key;
+			block.up.disabled = index === 0;
+			block.down.disabled = index === groups.length - 1;
 			state.blocks.push(block);
 		}
 		if (state.blocks.indexOf(state.active) < 0) { state.active = state.blocks[0] || null; }
 	}
 
-	/** Host element for the panels, plus the split/merge toggle button. */
+	/** Host element for the panels, plus the chart options button. */
 	function ensureChartHost() {
 		if (els.blocks) { return; }
 		var panel = els.panel;
@@ -812,37 +1300,191 @@
 		var title = document.getElementById("charttitle");
 		if (title) { title.hidden = true; }
 		els.blocks = host;
-		var controls = panel.querySelector(".pcontrols");
-		if (controls && !els.chartmode) {
-			var button = document.createElement("button");
-			button.type = "button";
-			button.id = "chartmode";
-			button.addEventListener("click", function () {
-				state.chartMode = state.chartMode === "unit" ? "single" : "unit";
-				chartModeWrite(state.chartMode);
-				render();
-			});
-			controls.appendChild(button);
-			els.chartmode = button;
+		ensureOptions();
+	}
+
+	/** Row of the options dialog: a caption and a <select>. */
+	function selectRow(id, caption, values, current, onPick) {
+		var row = document.createElement("label");
+		var text = document.createElement("span");
+		text.textContent = caption;
+		var select = document.createElement("select");
+		select.id = id;
+		values.forEach(function (item) {
+			var option = document.createElement("option");
+			option.value = item[0];
+			option.textContent = item[1];
+			select.appendChild(option);
+		});
+		select.value = current;
+		select.addEventListener("change", function () { onPick(select.value); });
+		row.appendChild(text);
+		row.appendChild(select);
+		return row;
+	}
+
+	/** Dialog with the grouping, unit system and sample dots. */
+	function ensureOptions() {
+		if (els.options) { return; }
+		var controls = els.panel.querySelector(".pcontrols");
+		var button = document.createElement("button");
+		button.type = "button";
+		button.id = "chartopts";
+		button.textContent = "\u2699";
+		button.addEventListener("click", openOptions);
+		if (controls) { controls.appendChild(button); } else { els.panel.appendChild(button); }
+		els.options = button;
+
+		var box = document.createElement("dialog");
+		box.className = "phelp psettings";
+		box.id = "chartoptsbox";
+		var head = document.createElement("h3");
+		head.textContent = t("options");
+		box.appendChild(head);
+		var body = document.createElement("div");
+		body.className = "psettingsbody";
+		body.appendChild(selectRow("optgroup", t("optGroup"), [
+			["unit", t("optGroupUnit")],
+			["family", t("optGroupFamily")],
+			["single", t("optGroupSingle")]
+		], state.settings.group, function (value) {
+			state.settings.group = value;
+			settingsWrite();
+			render();
+		}));
+		var groupHint = document.createElement("p");
+		groupHint.className = "phelphint";
+		groupHint.textContent = t("optGroupHint");
+		body.appendChild(groupHint);
+		body.appendChild(selectRow("optunits", t("optUnits"), [
+			["native", t("optUnitsNative")],
+			["metric", t("optUnitsMetric")],
+			["imperial", t("optUnitsImperial")]
+		], state.settings.units, function (value) {
+			state.settings.units = value;
+			settingsWrite();
+			render();
+		}));
+		var points = document.createElement("label");
+		points.className = "pcheck";
+		var box2 = document.createElement("input");
+		box2.type = "checkbox";
+		box2.id = "optpoints";
+		box2.checked = state.settings.points === true;
+		box2.addEventListener("change", function () {
+			state.settings.points = box2.checked;
+			settingsWrite();
+			render();
+		});
+		var pointsText = document.createElement("span");
+		pointsText.textContent = t("optPoints");
+		points.appendChild(box2);
+		points.appendChild(pointsText);
+		body.appendChild(points);
+		var pointsHint = document.createElement("p");
+		pointsHint.className = "phelphint";
+		pointsHint.textContent = t("optPointsHint");
+		body.appendChild(pointsHint);
+		var panelsHead = document.createElement("p");
+		panelsHead.className = "psettingsgroup";
+		panelsHead.textContent = t("optPanels");
+		body.appendChild(panelsHead);
+		var panels = document.createElement("div");
+		panels.className = "ppanels";
+		panels.id = "optpanels";
+		body.appendChild(panels);
+		box.appendChild(body);
+		var form = document.createElement("form");
+		form.method = "dialog";
+		var close = document.createElement("button");
+		close.type = "submit";
+		close.textContent = t("helpClose");
+		form.appendChild(close);
+		box.appendChild(form);
+		document.body.appendChild(box);
+		els.optionsbox = box;
+		renderOptions();
+	}
+
+	function openOptions() {
+		if (!els.optionsbox) { return; }
+		renderOptions();
+		if (typeof els.optionsbox.showModal === "function") {
+			els.optionsbox.showModal();
+		} else {
+			els.optionsbox.setAttribute("open", "");
 		}
 	}
 
-	function chartModeWrite(mode) {
-		try { window.localStorage.setItem(CHART_MODE_KEY, mode); } catch (e) { /* ignore */ }
+	function renderOptions() {
+		if (!els.options) { return; }
+		els.options.title = t("options");
+		els.options.setAttribute("aria-label", t("options"));
+		var box = els.optionsbox;
+		if (!box) { return; }
+		var group = box.querySelector("#optgroup");
+		var units = box.querySelector("#optunits");
+		var points = box.querySelector("#optpoints");
+		if (group) { group.value = state.settings.group; }
+		if (units) { units.value = state.settings.units; }
+		if (points) { points.checked = state.settings.points === true; }
+		var list = box.querySelector("#optpanels");
+		if (list) {
+			list.textContent = "";
+			var groups = groupCharts(true);
+			if (!groups.length) { list.appendChild(hintRow(t("optNoPanels"))); }
+			groups.forEach(function (group) {
+				var row = document.createElement("label");
+				row.className = "pcheck";
+				var input = document.createElement("input");
+				input.type = "checkbox";
+				input.checked = state.settings.hiddenPanels.indexOf(group.key) < 0;
+				input.addEventListener("change", function () {
+					if (input.checked) { listRemove(state.settings.hiddenPanels, group.key); }
+					else { listAdd(state.settings.hiddenPanels, group.key); }
+					settingsWrite();
+					render();
+				});
+				var text = document.createElement("span");
+				text.textContent = titleForCharts(group.charts);
+				row.appendChild(input);
+				row.appendChild(text);
+				list.appendChild(row);
+			});
+		}
+		els.options.setAttribute("aria-pressed", state.settings.group === "single" ? "false" : "true");
 	}
 
-	function chartModeRead() {
-		var stored = null;
-		try { stored = window.localStorage.getItem(CHART_MODE_KEY); } catch (e) { stored = null; }
-		return stored === "single" ? "single" : "unit";
+	/** Legend of a panel: the device name, plus the attribute when needed. */
+	function legendLabel(chart, block) {
+		var name = deviceLabel(chart.mac);
+		var shared = 0;
+		block.charts.forEach(function (item) {
+			if (deviceLabel(item.mac) === name) { shared++; }
+		});
+		if (shared > 1) { return name + " \u00b7 " + chart.attribute; }
+		return name;
 	}
 
-	function renderChartMode() {
-		if (!els.chartmode) { return; }
-		var split = state.chartMode === "unit";
-		els.chartmode.textContent = split ? t("chartModeSingle") : t("chartModeUnits");
-		els.chartmode.title = t("chartModeHint");
-		els.chartmode.setAttribute("aria-pressed", split ? "true" : "false");
+	/** Panel title without repeating "attribute (unit)" for every device. */
+	function blockTitle(block) {
+		return titleForCharts(block.charts);
+	}
+
+	function titleForCharts(charts) {
+		var kinds = [];
+		var names = [];
+		charts.forEach(function (chart) {
+			var label = state.settings.group === "family"
+				? familyTitle(familyOf(chart.attribute))
+				: chart.attribute;
+			var unit = chartUnit(chart);
+			var text = unit && chart.kind !== "boolean" ? label + " (" + unit + ")" : label;
+			if (kinds.indexOf(text) < 0) { kinds.push(text); }
+			var name = deviceLabel(chart.mac);
+			if (names.indexOf(name) < 0) { names.push(name); }
+		});
+		return kinds.join(" \u00b7 ") + (names.length ? " \u2014 " + names.join(", ") : "");
 	}
 
 	function renderLegend(block) {
@@ -854,10 +1496,10 @@
 			chip.style.setProperty("--swatch", colorOf(chart));
 			var dot = document.createElement("i");
 			var text = document.createElement("span");
-			text.textContent = seriesLabel(chart);
+			text.textContent = legendLabel(chart, block);
 			chip.appendChild(dot);
 			chip.appendChild(text);
-			chip.title = t("chartHint");
+			chip.title = seriesLabel(chart) + " \u2014 " + t("chartHint");
 			chip.addEventListener("click", function () { removeSeries(chart); });
 			block.legend.appendChild(chip);
 		});
@@ -873,7 +1515,7 @@
 			var from = Infinity;
 			var to = -Infinity;
 			charts.forEach(function (chart) {
-				var points = chart.points || [];
+				var points = chartPoints(chart);
 				if (points.length) {
 					from = Math.min(from, points[0][0]);
 					to = Math.max(to, points[points.length - 1][0]);
@@ -889,12 +1531,13 @@
 	function drawChart() {
 		ensureChartHost();
 		syncBlocks(groupCharts());
-		renderChartMode();
+		renderOptions();
 		renderZoom();
 		state.blocks.forEach(drawBlock);
 		var total = 0;
 		state.charts.forEach(function (chart) {
-			if (chart.points) { total += chart.points.length; }
+			var points = chartPoints(chart);
+			total += points ? points.length : 0;
 		});
 		els.chartinfo.textContent = state.selected.length && total ? t("points", { n: total }) : "";
 	}
@@ -905,7 +1548,10 @@
 		var title = block.title;
 		renderLegend(block);
 
-		var charts = block.charts.filter(function (chart) { return chart.points && chart.points.length; });
+		var charts = block.charts.filter(function (chart) {
+			var points = chartPoints(chart);
+			return points && points.length;
+		});
 		if (!state.selected.length) {
 			title.textContent = "\u2014";
 			empty.textContent = t("chartEmpty");
@@ -914,7 +1560,7 @@
 			clearCanvas(canvas);
 			return;
 		}
-		title.textContent = block.charts.map(seriesLabel).join("  \u00b7  ");
+		title.textContent = blockTitle(block);
 		if (!charts.length) {
 			empty.textContent = state.zoom ? t("noRange") : t("loading");
 			empty.hidden = false;
@@ -930,20 +1576,37 @@
 
 		var values = [];
 		charts.forEach(function (chart) {
-			chart.points.forEach(function (point) {
+			chartPoints(chart).forEach(function (point) {
 				if (point[0] >= from && point[0] <= to) { values.push(point[1]); }
 			});
 		});
 		if (!values.length) {
 			charts.forEach(function (chart) {
-				chart.points.forEach(function (point) { values.push(point[1]); });
+				chartPoints(chart).forEach(function (point) { values.push(point[1]); });
 			});
 		}
 		var yMin = Math.min.apply(null, values);
 		var yMax = Math.max.apply(null, values);
-		if (charts.every(function (chart) { return chart.kind === "boolean"; })) {
-			yMin = 0;
-			yMax = 1;
+		/* Boolean panels have two states, not a numeric scale. Two series would
+		 * sit exactly on top of each other at 0 and at 1, so every series gets a
+		 * small lane offset: parallel lines, a few pixels apart, all visible. */
+		var lanes = {};
+		var onlyBoolean = charts.every(function (chart) { return chart.kind === "boolean"; });
+		if (onlyBoolean) {
+			/* The series of the same level stay packed a few pixels apart, while
+			 * "on" and "off" keep the whole height between them: a segment is
+			 * therefore always clearly at the top (on) or at the bottom (off). */
+			var step = 0.045;
+			var lowest = 0;
+			var highest = 0;
+			charts.forEach(function (chart, index) {
+				var offset = (index - (charts.length - 1) / 2) * step;
+				lanes[chart.key] = offset;
+				lowest = Math.min(lowest, offset);
+				highest = Math.max(highest, offset);
+			});
+			yMin = lowest - 0.10;
+			yMax = 1 + highest + 0.10;
 		} else if (yMax - yMin < 0.5) {
 			yMin -= 0.5;
 			yMax += 0.5;
@@ -961,13 +1624,27 @@
 		var muted = style.getPropertyValue("--muted").trim() || "#888";
 		var accent = style.getPropertyValue("--accent").trim() || "#0b6bcb";
 
-		var box = { left: 52, right: size.width - 12, top: 10, bottom: size.height - 26 };
+		/* On a phone in portrait the timestamp labels do not fit side by side:
+		 * they are rotated by 45 degrees. The margin follows the real width of
+		 * the longest label (sin 45 = 0.71), otherwise the first and the last
+		 * characters are cut off at the bottom of the canvas. */
+		var rotateLabels = size.width < 560;
+		var steps = rotateLabels ? (size.width < 380 ? 2 : 3) : (size.width < 700 ? 4 : 5);
+		var timeFormat = timeFormatter(to - from);
+		context.font = "11px -apple-system, Segoe UI, Roboto, sans-serif";
+		var longest = 0;
+		for (var probe = 0; probe <= steps; probe++) {
+			var width = context.measureText(timeFormat(from + (to - from) * probe / steps)).width;
+			if (width > longest) { longest = width; }
+		}
+		var bottomPad = rotateLabels ? Math.min(110, Math.ceil(longest * 0.72) + 16) : 26;
+		var box = { left: 52, right: size.width - 12, top: 10, bottom: size.height - bottomPad };
 		context.clearRect(0, 0, size.width, size.height);
 		if (box.right - box.left < 40 || box.bottom - box.top < 40) { return; }
 		context.font = "11px -apple-system, Segoe UI, Roboto, sans-serif";
 		context.textBaseline = "middle";
 
-		var ticks = niceTicks(yMin, yMax, 5);
+		var ticks = onlyBoolean ? [0, 1] : niceTicks(yMin, yMax, 5);
 		context.strokeStyle = line;
 		context.fillStyle = muted;
 		context.lineWidth = 1;
@@ -978,23 +1655,33 @@
 			context.lineTo(box.right, Math.round(y) + 0.5);
 			context.stroke();
 			context.textAlign = "right";
-			context.fillText(formatTick(value), box.left - 6, y);
+			context.fillText(onlyBoolean ? (value >= 0.5 ? t("on") : t("off")) : formatTick(value), box.left - 6, y);
 		});
 
-		var steps = size.width < 520 ? 3 : 5;
-		var timeFormat = timeFormatter(to - from);
 		for (var step = 0; step <= steps; step++) {
 			var moment = from + (to - from) * step / steps;
 			var x = box.left + (box.right - box.left) * step / steps;
 			context.fillStyle = muted;
-			context.textAlign = step === 0 ? "left" : step === steps ? "right" : "center";
-			context.fillText(timeFormat(moment), x, box.bottom + 13);
+			if (rotateLabels) {
+				/* Anchor at the tick and read the label upwards, so long stamps
+				 * ("01/11 05:00") never overlap on a narrow screen. */
+				context.save();
+				context.translate(x, box.bottom + 5);
+				context.rotate(-Math.PI / 4);
+				context.textAlign = "right";
+				context.textBaseline = "middle";
+				context.fillText(timeFormat(moment), step === 0 ? -4 : 0, 0);
+				context.restore();
+			} else {
+				context.textAlign = step === 0 ? "left" : step === steps ? "right" : "center";
+				context.fillText(timeFormat(moment), x, box.bottom + 13);
+			}
 		}
 		context.textAlign = "center";
 		context.fillStyle = ink;
 
 		charts.forEach(function (chart) {
-			drawSeries(block, context, chart, box, from, to, yMin, yMax, colorOf(chart));
+			drawSeries(block, context, chart, box, from, to, yMin, yMax, colorOf(chart), lanes[chart.key] || 0);
 		});
 
 		block.view = { box: box, from: from, to: to, yMin: yMin, yMax: yMax };
@@ -1031,21 +1718,29 @@
 
 	}
 
-	function drawSeries(block, context, chart, box, from, to, yMin, yMax, color) {
-		var points = chart.points;
+	function drawSeries(block, context, chart, box, from, to, yMin, yMax, color, lane) {
+		var points = chartPoints(chart);
 		if (!points.length) { return; }
 		var scaleX = function (ms) { return box.left + (ms - from) / (to - from) * (box.right - box.left); };
-		var scaleY = function (value) { return box.bottom - (value - yMin) / (yMax - yMin) * (box.bottom - box.top); };
+		var lift = lane || 0;
+		var scaleY = function (value) { return box.bottom - (value + lift - yMin) / (yMax - yMin) * (box.bottom - box.top); };
 		context.strokeStyle = color;
 		context.lineWidth = 1.8;
 		context.lineJoin = "round";
 		context.lineCap = "round";
 		context.beginPath();
+		/* A state holds until the next sample: the boolean series is drawn as a
+		 * square wave, with a vertical edge exactly at the time of the change. */
 		if (chart.kind === "boolean") {
 			points.forEach(function (point, index) {
 				var x = scaleX(point[0]);
 				var y = scaleY(point[1]);
-				if (index === 0) { context.moveTo(x, y); } else { context.lineTo(x, scaleY(points[index - 1][1])); context.lineTo(x, y); }
+				if (index === 0) {
+					context.moveTo(x, y);
+				} else {
+					context.lineTo(x, scaleY(points[index - 1][1]));
+					context.lineTo(x, y);
+				}
 			});
 		} else {
 			points.forEach(function (point, index) {
@@ -1055,6 +1750,20 @@
 			});
 		}
 		context.stroke();
+
+		/* Optional dots: one per sample, thinned out only when they would overlap
+		 * (600 px wide chart with 5000 samples would otherwise be a solid band). */
+		if (state.settings.points) {
+			var span = Math.abs(box.right - box.left);
+			var step = 1;
+			if (span > 0 && points.length > span / 3) { step = Math.ceil(points.length / (span / 3)); }
+			context.fillStyle = color;
+			for (var index = 0; index < points.length; index += step) {
+				context.beginPath();
+				context.arc(scaleX(points[index][0]), scaleY(points[index][1]), 1.9, 0, Math.PI * 2);
+				context.fill();
+			}
+		}
 
 		if (points.length === 1) {
 			context.fillStyle = color;
@@ -1203,8 +1912,9 @@
 		head.textContent = stamp(ms) + ":" + pad2(date.getSeconds());
 		els.tip.appendChild(head);
 		block.charts.forEach(function (chart) {
-			if (!chart.points || !chart.points.length) { return; }
-			var point = nearest(chart.points, ms);
+			var series = chartPoints(chart);
+			if (!series || !series.length) { return; }
+			var point = nearest(series, ms);
 			var tolerance = Math.max((chart.bucket_ns || 6e10) / 1e6, 60000);
 			var row = document.createElement("div");
 			row.className = "row";
@@ -1214,9 +1924,10 @@
 			label.textContent = chart.attribute;
 			var value = document.createElement("em");
 			if (point && Math.abs(point[0] - ms) <= tolerance) {
+				var unit = chartUnit(chart);
 				value.textContent = chart.kind === "boolean"
 					? (point[1] >= 0.5 ? t("on") : t("off"))
-					: number(point[1], chart.unit) + (chart.unit ? " " + chart.unit : "");
+					: number(point[1], unit) + (unit ? " " + unit : "");
 			} else {
 				value.textContent = "\u2014";
 			}
@@ -1445,10 +2156,38 @@
 	 * registration is skipped over plain http and the icon button explains the
 	 * manual "Add to Home screen" instead. */
 	var installEvent = null;
+	var DEFAULT_TITLE = "ble2uart_gateway";
 
+	/** Ask for page fullscreen as soon as the user touches the page: browsers
+	 *  reject requestFullscreen without a gesture, so a saved preference can
+	 *  only be honoured on the first interaction. */
+	function pwaFullscreenMode() {
+		return !!(window.matchMedia && window.matchMedia("(display-mode: fullscreen)").matches);
+	}
+
+	function armAutoFullscreen() {
+		/* An app installed with "display": "fullscreen" is already fullscreen:
+		 * asking again would open an element fullscreen inside the app window. */
+		if (!state.settings.fullscreen || appFullscreenOn() || pwaFullscreenMode()) { return; }
+		var go = function () {
+			document.removeEventListener("pointerdown", go, true);
+			document.removeEventListener("keydown", go, true);
+			if (state.settings.fullscreen && !appFullscreenOn()) { toggleAppFullscreen(); }
+		};
+		document.addEventListener("pointerdown", go, true);
+		document.addEventListener("keydown", go, true);
+	}
+
+	/* An installed app can be launched in any of the display modes of the
+	 * manifest: "display-mode: standalone" alone missed "display: fullscreen",
+	 * which is the mode this portal asks for. */
 	function pwaStandalone() {
-		if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) { return true; }
-		return window.navigator.standalone === true;
+		if (window.navigator.standalone === true) { return true; }
+		if (document.referrer && document.referrer.indexOf("android-app://") === 0) { return true; }
+		if (!window.matchMedia) { return false; }
+		return window.matchMedia("(display-mode: standalone)").matches ||
+			window.matchMedia("(display-mode: fullscreen)").matches ||
+			window.matchMedia("(display-mode: minimal-ui)").matches;
 	}
 
 	function pwaIos() {
@@ -1597,6 +2336,185 @@
 		registerServiceWorker();
 	}
 
+	/* ---------------------------------------------------------- preferences
+	 * Titles, default fullscreen mode and the configuration link are page
+	 * preferences (browser only, never sent to the daemon). */
+	function textRow(id, caption, value, placeholder, onInput) {
+		var row = document.createElement("label");
+		var text = document.createElement("span");
+		text.textContent = caption;
+		var input = document.createElement("input");
+		input.type = "text";
+		input.id = id;
+		input.maxLength = 60;
+		input.value = value || "";
+		input.placeholder = placeholder || "";
+		input.addEventListener("input", function () { onInput(input.value.trim()); });
+		row.appendChild(text);
+		row.appendChild(input);
+		return row;
+	}
+
+	function checkRow(id, caption, checked, onChange) {
+		var row = document.createElement("label");
+		row.className = "pcheck";
+		var input = document.createElement("input");
+		input.type = "checkbox";
+		input.id = id;
+		input.checked = checked === true;
+		input.addEventListener("change", function () { onChange(input.checked); });
+		var text = document.createElement("span");
+		text.textContent = caption;
+		row.appendChild(input);
+		row.appendChild(text);
+		return row;
+	}
+
+	function hintRow(text) {
+		var hint = document.createElement("p");
+		hint.className = "phelphint";
+		hint.textContent = text;
+		return hint;
+	}
+
+	function ensurePrefs() {
+		if (els.prefsbox) { return; }
+		if (els.prefs) {
+			els.prefs.title = t("prefsTitle");
+			els.prefs.setAttribute("aria-label", t("prefsTitle"));
+			els.prefs.addEventListener("click", openPrefs);
+		}
+		var box = document.createElement("dialog");
+		box.className = "phelp psettings";
+		box.id = "prefsbox";
+		var head = document.createElement("h3");
+		head.textContent = t("prefsTitle");
+		box.appendChild(head);
+		var body = document.createElement("div");
+		body.className = "psettingsbody";
+		body.appendChild(textRow("preftitle", t("prefTitle"), state.settings.title, DEFAULT_TITLE, function (value) {
+			state.settings.title = value;
+			settingsWrite();
+			renderHeader();
+		}));
+		body.appendChild(textRow("prefsubtitle", t("prefSubtitle"), state.settings.subtitle, t("subtitle"), function (value) {
+			state.settings.subtitle = value;
+			settingsWrite();
+			renderHeader();
+		}));
+		body.appendChild(hintRow(t("prefHint")));
+		body.appendChild(checkRow("preffullscreen", t("prefFullscreen"), state.settings.fullscreen, function (checked) {
+			state.settings.fullscreen = checked;
+			settingsWrite();
+			if (checked) { armAutoFullscreen(); } else if (appFullscreenOn()) { toggleAppFullscreen(); }
+		}));
+		body.appendChild(hintRow(t("prefFullscreenHint")));
+		body.appendChild(checkRow("prefconfig", t("prefConfig"), state.settings.showConfig !== false, function (checked) {
+			state.settings.showConfig = checked;
+			settingsWrite();
+			renderHeader();
+		}));
+		var hidden = document.createElement("p");
+		hidden.className = "phelphint";
+		hidden.id = "prefhidden";
+		body.appendChild(hidden);
+		var reset = document.createElement("button");
+		reset.type = "button";
+		reset.className = "pwide";
+		reset.textContent = t("prefResetHidden");
+		reset.addEventListener("click", function () {
+			state.settings.hiddenSeries = [];
+			state.settings.hiddenPanels = [];
+			state.settings.hiddenDevices = [];
+			settingsWrite();
+			render();
+		});
+		body.appendChild(reset);
+		box.appendChild(body);
+		var form = document.createElement("form");
+		form.method = "dialog";
+		var close = document.createElement("button");
+		close.type = "submit";
+		close.textContent = t("helpClose");
+		form.appendChild(close);
+		box.appendChild(form);
+		document.body.appendChild(box);
+		els.prefsbox = box;
+		renderPrefs();
+	}
+
+	function openPrefs() {
+		if (!els.prefsbox) { return; }
+		renderPrefs();
+		if (typeof els.prefsbox.showModal === "function") {
+			els.prefsbox.showModal();
+		} else {
+			els.prefsbox.setAttribute("open", "");
+		}
+	}
+
+	function renderPrefs() {
+		var box = els.prefsbox;
+		if (!box) { return; }
+		var title = box.querySelector("#preftitle");
+		var subtitle = box.querySelector("#prefsubtitle");
+		var fullscreen = box.querySelector("#preffullscreen");
+		var config = box.querySelector("#prefconfig");
+		var hidden = box.querySelector("#prefhidden");
+		if (title) { title.value = state.settings.title; title.placeholder = DEFAULT_TITLE; }
+		if (subtitle) { subtitle.value = state.settings.subtitle; }
+		if (fullscreen) { fullscreen.checked = state.settings.fullscreen === true; }
+		if (config) { config.checked = state.settings.showConfig !== false; }
+		if (hidden) {
+			hidden.textContent = t("prefHidden", {
+				n: state.settings.hiddenSeries.length,
+				m: state.settings.hiddenPanels.length,
+				k: state.settings.hiddenDevices.length
+			});
+		}
+	}
+
+	/* ------------------------------------------------ hidden boxes and charts
+	 * Hiding is a display choice of this browser: the data stays in the
+	 * database and the series stay selected for the charts that are visible. */
+	function isHiddenSeries(key) {
+		return state.settings.hiddenSeries.indexOf(key) >= 0;
+	}
+
+	function hideSeries(key) {
+		listAdd(state.settings.hiddenSeries, key);
+		settingsWrite();
+		render();
+	}
+
+	function showSeries(keys) {
+		keys.forEach(function (key) { listRemove(state.settings.hiddenSeries, key); });
+		settingsWrite();
+		render();
+	}
+
+	function hidePanel(key) {
+		listAdd(state.settings.hiddenPanels, key);
+		settingsWrite();
+		render();
+	}
+
+	function isHiddenDevice(mac) {
+		return state.settings.hiddenDevices.indexOf(mac) >= 0;
+	}
+
+	function hideDevice(mac) {
+		listAdd(state.settings.hiddenDevices, mac);
+		settingsWrite();
+		render();
+	}
+
+	function showDevices(macs) {
+		macs.forEach(function (mac) { listRemove(state.settings.hiddenDevices, mac); });
+		settingsWrite();
+		render();
+	}
+
 	/* ----------------------------------------------------------------- init */
 
 	function start() {
@@ -1623,6 +2541,10 @@
 			resetview: document.getElementById("resetview"),
 			install: document.getElementById("install"),
 			maximize: document.getElementById("maximize"),
+			prefs: document.getElementById("prefs"),
+			title: document.getElementById("title"),
+			subtitle: document.getElementById("subtitle"),
+			config: document.getElementById("config"),
 			manifest: document.getElementById("manifest"),
 			netstate: document.getElementById("netstate"),
 			pwahelp: document.getElementById("pwahelp"),
@@ -1638,11 +2560,15 @@
 		};
 		pickLanguage();
 		document.documentElement.lang = lang;
+		if (els.title) { DEFAULT_TITLE = els.title.textContent; }
+		ensurePrefs();
+		if (state.settings.fullscreen) { armAutoFullscreen(); }
 		setupPwa();
 		restoreStore();
 		ensureSplitter();
 		ensureChartHost();
-		state.chartMode = chartModeRead();
+		settingsRead();
+		orderRead();
 		if (els.resetview) {
 			els.resetview.title = t("resetView");
 			els.resetview.addEventListener("click", resetView);

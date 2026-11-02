@@ -168,6 +168,7 @@ def run(binary):
         assert "text/html" in head, head
         assert "/ble2uart_gateway/portal.js" in body, body[:200]
         assert 'rel="manifest"' in body and 'id="install"' in body, body[:600]
+        assert 'id="prefs"' in body and 'id="maximize"' in body, body[:600]
         assert 'apple-touch-icon' in body and 'name="theme-color"' in body, body[:600]
         assert 'id="kpis"' in body and 'id="devices"' in body, body[:500]
         assert 'id="canvas"' in body and 'id="helpbox"' in body, body[:500]
@@ -233,6 +234,29 @@ def run(binary):
         # even when the YAML cannot be read (a diagnostic run, a test).
         plain = json.loads(call(binary, database, "action=catalog", config=directory / "absent.yaml")[1])
         assert plain["ok"] is True and plain["database"] == str(database), plain["database"]
+
+        # The identity of a configured device (label, vendor, model, firmware)
+        # is merged into the catalogue: the web app shows vendor and model next
+        # to the name the advertisement carried.
+        config = directory / "gateway.yaml"
+        config.write_text(
+            "version: 1\n"
+            "devices:\n"
+            "  - mac: aabbccddeeff\n"
+            "    label: Termometro cucina\n"
+            "    manufacturer: Xiaomi Mijia\n"
+            "    model: LYWSD03MMC\n"
+            "    firmware_version: 5.9\n",
+            encoding="utf-8",
+        )
+        identified = json.loads(call(binary, database, "action=catalog", config=config)[1])
+        device = next(item for item in identified["devices"] if item["mac"] == "AABBCCDDEEFF")
+        assert device["label"] == "Termometro cucina", device
+        assert device["manufacturer"] == "Xiaomi Mijia", device
+        assert device["model"] == "LYWSD03MMC", device
+        assert device["firmware_version"] == "5.9", device
+        other = next(item for item in identified["devices"] if item["mac"] == "112233445566")
+        assert other["manufacturer"] == "" and other["model"] == "", other
 
         # 1 hour with 300 buckets keeps the three archived samples apart.
         series = json.loads(call(

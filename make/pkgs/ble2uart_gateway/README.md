@@ -803,6 +803,76 @@ without installing. In both cases the layout honours `env(safe-area-inset-*)`
 (the notch and the gesture bar) and the charts grow to 62 % of the viewport
 height instead of the fixed 240 px.
 
+### Chart options
+
+The **⚙** button above the charts (kept in `localStorage`, never sent to the
+daemon) sets three things:
+
+* **Grouping** — one chart per unit (default), one chart per *quantity*, or a
+  single chart. The quantity mode uses a classifier that folds synonyms:
+  `temperature`, `temp`, `tempc` and `theengs_temperature` all become the
+  *Temperature* family, `humidity`/`theengs_humidity` the *Humidity* family, and
+  so on (`FAMILY_ALIASES` in `portal.js`); unknown attributes stay in their own
+  group.
+* **Unit system** — as stored, metric or imperial. The conversion is display
+  only: °C↔°F and K, mm/cm/m→in/ft, g/m³→gr/ft³, hPa/kPa/Pa→inHg, m/s and
+  km/h→mph, kg→lb, g→oz, lux→fc. The axis, the tooltip, the legend and the
+  panel title all follow the choice, and the panel key uses the display unit, so
+  a converted series joins the chart of its target unit.
+* **Sample dots** — a small dot on every sample, thinned out automatically when
+  the points would overlap.
+
+Each panel is a card with its own title, so the boundary between two charts is a
+solid box instead of a thin dashed line; the **▲ ▼** buttons move a panel up or
+down and the order is remembered. Titles list the quantity once and then the
+devices that contribute it (`Temperature (°F) — Termometro interno, Termometro
+esterno`), and the legend chips shorten to the device name (plus the attribute
+only when one device contributes two series). Series colours are generated with
+the golden angle (hue step 137.5°), so any number of lines keeps distinct hues.
+In chart fullscreen the panels scroll vertically instead of being squeezed when
+the total height exceeds the screen.
+
+The device heading shows the YAML identity next to the advertised name:
+`label` (or the decoder's name), then `manufacturer · model · fw …` and the MAC,
+so two sensors of the same model stay distinguishable.
+
+Boolean series have no numeric 0…1 axis: the axis shows `off` and `on`, and the
+series of the same level are packed a few pixels apart while the two levels keep
+almost the whole height between them, so a segment is always clearly `on` (top)
+or `off` (bottom) and no line hides another. The series is drawn as a square
+wave: the state holds until the next sample and changes with a vertical edge at
+its time. A state has no intermediate value, so a bucket that mixes on and off
+samples is reported as the majority (on from half upwards) both by the CGI
+(`snap_boolean`) and by the page, and the chart only ever draws the two levels. On a narrow screen (portrait phone)
+the time labels are rotated by 45°, the bottom margin is measured from the
+longest label and the canvas grows to 290 px, so `01/11 05:00` is neither
+overlapping nor cut off.
+
+### Preferences and visibility
+
+The **☰** button in the header opens the page preferences (all kept in
+`localStorage`):
+
+* **Title / subtitle** — replace `ble2uart_gateway` and `Sensors`; an empty
+  field falls back to the shipped strings.
+* **Start in fullscreen** — browsers only allow `requestFullscreen` after a
+  gesture, so the saved choice is applied on the first tap or key press.
+* **Show the link to the configuration** — hides or shows the ⚙ link to
+  `/cgi-bin/conf/ble2uart_gateway`.
+* **Show the hidden boxes and charts again** — single reset for everything
+  hidden, with a counter of what is currently hidden.
+
+Every sensor box carries a small **×**: it hides that box (the series keeps
+feeding the charts). The device line then offers `show N hidden`. The same cross
+in the header of a sensor section hides the whole section, and a line at the end
+of the list brings the hidden sensors back. Every chart panel has its own **×**
+(and the chart options dialog lists all panels with a checkbox), so boxes,
+sections and panels can be removed and restored without touching the daemon.
+
+The header icons are a preference and a link: **⚙** opens the preferences,
+**☰** opens the configuration page `/cgi-bin/conf/ble2uart_gateway` (the link can
+be hidden in the preferences).
+
 ## Availability Monitoring
 
 Open **Devices → Edit → Availability monitoring**. Each device owns its rules;
