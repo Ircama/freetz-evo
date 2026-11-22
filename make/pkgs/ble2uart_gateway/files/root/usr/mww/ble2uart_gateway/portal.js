@@ -42,10 +42,12 @@
 		return query ? path + "?" + query : path;
 	}
 
-	var REFRESH_MS = 30000;
+	var ERROR_GRACE_MS = 15000;
+	var REQUEST_TIMEOUT_MS = 8000;
 	var MAX_SERIES = 6;
 	var MAX_SELECTED = 18;
 	var MIN_WINDOW_MS = 60000;
+	var HOLD_RESET_MS = 650;
 	/* Series colours: hues 137.5° apart (the golden angle), so any number of
 	 * lines stays distinct - a fixed list put blue next to teal and amber next
 	 * to brown, which looked like the same colour on a small screen. */
@@ -58,6 +60,31 @@
 
 	var TEXT = {
 		it: {
+			prefRefreshInterval: "Intervallo di aggiornamento (secondi)",
+			prefRefreshDuration: "Durata massima aggiornamento (minuti, 0 = illimitata)",
+			prefRefreshIntervalHint: "Da 5 a 86400 secondi. Predefinito: 30 secondi.",
+			prefRefreshDurationHint: "Durata per ogni apertura della pagina. Modificare questi tempi fa ripartire il periodo; l'aggiornamento manuale resta disponibile alla scadenza.",
+			refreshUnlimited: "illimitata",
+			refreshEnabled: "Aggiornamento periodico attivo: ogni {seconds} secondi.",
+			refreshExpired: "Durata dell'aggiornamento periodico scaduta (periodo impostato: {seconds} s).",
+			refreshStopped: "Aggiornamento periodico disattivato manualmente (periodo impostato: {seconds} s).",
+			refreshPauseAction: "Clicca per sospendere l'aggiornamento automatico.",
+			refreshResumeAction: "Clicca per riattivare l'aggiornamento automatico e far ripartire il periodo.",
+			backendFresh: "Dati aggiornati dal backend",
+			backendUpdating: "Aggiornamento dei dati in corso",
+			backendTemporary: "Connessione temporaneamente non disponibile: nuovo tentativo automatico",
+			backendPersistent: "Connessione al backend non disponibile: il problema persiste",
+			requestTimeout: "Il backend non risponde entro il tempo previsto",
+			httpError: "Il backend ha risposto con errore HTTP {status}",
+			invalidResponse: "Risposta temporaneamente non valida dal backend",
+			deviceInfo: "Informazioni sul dispositivo", unknown: "Non disponibile",
+			deviceMac: "Indirizzo MAC", deviceName: "Nome rilevato", deviceLabel: "Etichetta",
+			deviceManufacturer: "Produttore", deviceModel: "Modello", deviceFirmware: "Versione firmware",
+			deviceLast: "Ultimo dato", deviceSeries: "Grandezze", devicePhy: "PHY radio",
+			deviceDecoder: "Decoder", deviceFormat: "Formato trasmesso",
+			seriesAttribute: "Grandezza", seriesUnit: "Unit\u00e0 di misura", seriesKind: "Categoria",
+			seriesType: "Tipo del dato", seriesId: "Identificatore serie", seriesFirst: "Primo dato",
+			seriesValue: "Valore", noUnit: "Senza unit\u00e0",
 			subtitle: "Sensori", refresh: "Aggiorna ora", config: "Configurazione",
 			resetView: "Reimposta le viste salvate",
 			splitHint: "Trascina per ridimensionare i valori e il grafico (frecce sinistra/destra)",
@@ -86,6 +113,10 @@
 			optUnitsMetric: "Metriche (\u00b0C, mm, kg\u2026)",
 			optUnitsImperial: "Imperiali (\u00b0F, in, lb\u2026)",
 			optPoints: "Mostra i punti",
+			optLine: "Linea",
+			optLineLinear: "Spezzata",
+			optLineSmooth: "Curva interpolata",
+			optLineHint: "La curva attraversa i punti senza creare picchi artificiali. Gli stati booleani restano a gradini.",
 			optPointsHint: "Un puntino per ogni campione del grafico",
 			moveUp: "Sposta su", moveDown: "Sposta gi\u00f9",
 			prefsTitle: "Preferenze",
@@ -137,10 +168,10 @@
 			helpZoom: "Ingrandisce o riduce intorno al centro della finestra.",
 			helpReset: "Torna all'intervallo scelto con i pulsanti 1 h … tutto.",
 			helpFullscreen: "Schermo intero del grafico; premi di nuovo per uscire.",
-			helpDragZoom: "Trascina sul grafico per selezionare un intervallo di tempo.",
-			helpDragPan: "Trascina tenendo premuto Maiusc per spostare la finestra.",
+			helpDragZoom: "Trascina orizzontalmente sul grafico con il mouse o un dito per selezionare un intervallo. Il trascinamento verticale scorre la pagina.",
+			helpDragPan: "Trascina orizzontalmente sulle date dell'asse per spostare la finestra, anche con un dito. Tieni premuto sulle date per ripristinare lo zoom. Con il mouse puoi anche trascinare nel grafico tenendo premuto Maiusc.",
 			helpHelp: "Apre o chiude questa finestra di aiuto.",
-			helpClose: "Chiudi", helpNote: "I dati si aggiornano da soli ogni 30 secondi.",
+			helpClose: "Chiudi", helpNote: "Aggiornamento automatico: ogni {seconds} s; durata massima: {duration}.",
 			maximize: "Schermo intero della pagina (senza barra del browser)",
 			maximizeOff: "Esci da schermo intero",
 			helpAppFullscreen: "Schermo intero della pagina: nasconde la barra del browser e la barra di stato, come un'app installata.",
@@ -153,6 +184,31 @@
 			pwaBodyInstalled: "Il portale \u00e8 installato: aprilo dall'icona sul telefono o dal menu delle app del browser."
 		},
 		en: {
+			prefRefreshInterval: "Refresh interval (seconds)",
+			prefRefreshDuration: "Maximum refresh duration (minutes, 0 = unlimited)",
+			prefRefreshIntervalHint: "From 5 to 86400 seconds. Default: 30 seconds.",
+			prefRefreshDurationHint: "Duration for each opening of the page. Changing these timings restarts the period; manual refresh remains available after expiry.",
+			refreshUnlimited: "unlimited",
+			refreshEnabled: "Periodic refresh enabled: every {seconds} seconds.",
+			refreshExpired: "Periodic refresh duration expired (configured interval: {seconds} s).",
+			refreshStopped: "Periodic refresh switched off manually (configured interval: {seconds} s).",
+			refreshPauseAction: "Click to pause automatic refresh.",
+			refreshResumeAction: "Click to enable automatic refresh and restart its duration.",
+			backendFresh: "Data updated from the backend",
+			backendUpdating: "Updating data from the backend",
+			backendTemporary: "Connection temporarily unavailable: retrying automatically",
+			backendPersistent: "Backend connection unavailable: the problem persists",
+			requestTimeout: "The backend did not respond in time",
+			httpError: "The backend returned HTTP error {status}",
+			invalidResponse: "The backend returned an invalid response",
+			deviceInfo: "Device information", unknown: "Not available",
+			deviceMac: "MAC address", deviceName: "Detected name", deviceLabel: "Label",
+			deviceManufacturer: "Manufacturer", deviceModel: "Model", deviceFirmware: "Firmware version",
+			deviceLast: "Latest sample", deviceSeries: "Attributes", devicePhy: "Radio PHY",
+			deviceDecoder: "Decoder", deviceFormat: "Wire format",
+			seriesAttribute: "Attribute", seriesUnit: "Unit", seriesKind: "Category",
+			seriesType: "Data type", seriesId: "Series identifier", seriesFirst: "First sample",
+			seriesValue: "Value", noUnit: "Unitless",
 			subtitle: "Sensors", refresh: "Refresh now", config: "Configuration",
 			resetView: "Reset the saved views",
 			splitHint: "Drag to resize the values and the chart (left/right arrows)",
@@ -181,6 +237,10 @@
 			optUnitsMetric: "Metric (\u00b0C, mm, kg\u2026)",
 			optUnitsImperial: "Imperial (\u00b0F, in, lb\u2026)",
 			optPoints: "Show the points",
+			optLine: "Line",
+			optLineLinear: "Polyline",
+			optLineSmooth: "Interpolated curve",
+			optLineHint: "The curve passes through the points without artificial peaks. Boolean states remain stepped.",
 			optPointsHint: "A small dot for every sample of the chart",
 			moveUp: "Move up", moveDown: "Move down",
 			prefsTitle: "Preferences",
@@ -232,10 +292,10 @@
 			helpZoom: "Zoom in or out around the centre of the window.",
 			helpReset: "Return to the range selected with the 1 h … all buttons.",
 			helpFullscreen: "Chart fullscreen; press again to leave it.",
-			helpDragZoom: "Drag on the chart to select a time range.",
-			helpDragPan: "Drag while holding Shift to move the window.",
+			helpDragZoom: "Drag horizontally on the chart with the mouse or one finger to select a time range. Vertical dragging scrolls the page.",
+			helpDragPan: "Drag horizontally on the time-axis labels to move the window, including with one finger. Hold on the dates to reset zoom. With the mouse you can also hold Shift and drag inside the plot.",
 			helpHelp: "Open or close this help window.",
-			helpClose: "Close", helpNote: "Data refreshes automatically every 30 seconds.",
+			helpClose: "Close", helpNote: "Automatic refresh: every {seconds} s; maximum duration: {duration}.",
 			maximize: "Page fullscreen (no browser bar)",
 			maximizeOff: "Leave fullscreen",
 			helpAppFullscreen: "Fullscreen for the whole page: hides the browser and status bars, like an installed app.",
@@ -248,6 +308,23 @@
 			pwaBodyInstalled: "The portal is installed: open it from the icon on the phone or from the browser app menu."
 		},
 		de: {
+			prefRefreshInterval: "Aktualisierungsintervall (Sekunden)",
+			prefRefreshDuration: "Maximale Aktualisierungsdauer (Minuten, 0 = unbegrenzt)",
+			prefRefreshIntervalHint: "Von 5 bis 86400 Sekunden. Standard: 30 Sekunden.",
+			prefRefreshDurationHint: "Dauer pro Seitenaufruf. Eine \u00c4nderung dieser Zeiten startet den Zeitraum neu; manuelle Aktualisierung bleibt danach verf\u00fcgbar.",
+			refreshUnlimited: "unbegrenzt",
+			refreshEnabled: "Periodische Aktualisierung aktiv: alle {seconds} Sekunden.",
+			refreshExpired: "Dauer der periodischen Aktualisierung abgelaufen (eingestelltes Intervall: {seconds} s).",
+			refreshStopped: "Periodische Aktualisierung manuell ausgeschaltet (eingestelltes Intervall: {seconds} s).",
+			refreshPauseAction: "Klicken, um die automatische Aktualisierung anzuhalten.",
+			refreshResumeAction: "Klicken, um die automatische Aktualisierung mit neuer Laufzeit zu aktivieren.",
+			backendFresh: "Daten vom Backend aktualisiert",
+			backendUpdating: "Daten werden vom Backend aktualisiert",
+			backendTemporary: "Verbindung vor\u00fcbergehend nicht verf\u00fcgbar: automatischer Wiederholungsversuch",
+			backendPersistent: "Backend-Verbindung nicht verf\u00fcgbar: das Problem besteht weiterhin",
+			requestTimeout: "Das Backend hat nicht rechtzeitig geantwortet",
+			httpError: "Das Backend meldet HTTP-Fehler {status}",
+			invalidResponse: "Das Backend hat eine ung\u00fcltige Antwort geliefert",
 			subtitle: "Sensoren", refresh: "Jetzt aktualisieren", config: "Konfiguration",
 			resetView: "Gespeicherte Ansichten zur\u00fccksetzen",
 			splitHint: "Ziehen, um Werte und Diagramm zu skalieren (Pfeiltasten links/rechts)",
@@ -276,6 +353,10 @@
 			optUnitsMetric: "Metrisch (\u00b0C, mm, kg\u2026)",
 			optUnitsImperial: "Imperial (\u00b0F, in, lb\u2026)",
 			optPoints: "Punkte anzeigen",
+			optLine: "Linie",
+			optLineLinear: "Linienzug",
+			optLineSmooth: "Interpolierte Kurve",
+			optLineHint: "Die Kurve verl\u00e4uft durch die Punkte ohne k\u00fcnstliche Spitzen. Boolsche Zust\u00e4nde bleiben stufenf\u00f6rmig.",
 			optPointsHint: "Ein kleiner Punkt pro Messwert im Diagramm",
 			moveUp: "Nach oben", moveDown: "Nach unten",
 			prefsTitle: "Einstellungen",
@@ -327,10 +408,10 @@
 			helpZoom: "Vergr\u00f6\u00dfert oder verkleinert um die Fenstermitte.",
 			helpReset: "Zur\u00fcck zum mit 1 h … alles gew\u00e4hlten Zeitraum.",
 			helpFullscreen: "Diagramm im Vollbild; erneut dr\u00fccken zum Beenden.",
-			helpDragZoom: "Im Diagramm ziehen, um einen Zeitraum zu w\u00e4hlen.",
-			helpDragPan: "Mit gedr\u00fcckter Umschalttaste ziehen, um das Fenster zu verschieben.",
+			helpDragZoom: "Mit der Maus oder einem Finger horizontal im Diagramm ziehen, um einen Zeitraum zu w\u00e4hlen. Vertikales Ziehen scrollt die Seite.",
+			helpDragPan: "Horizontal auf den Zeitbeschriftungen ziehen, auch mit einem Finger, um das Fenster zu verschieben. Auf den Daten gedr\u00fcckt halten, um den Zoom zur\u00fcckzusetzen. Mit der Maus geht dies auch im Diagramm bei gedr\u00fcckter Umschalttaste.",
 			helpHelp: "\u00d6ffnet oder schlie\u00dft dieses Hilfefenster.",
-			helpClose: "Schlie\u00dfen", helpNote: "Die Daten werden alle 30 Sekunden automatisch aktualisiert.",
+			helpClose: "Schlie\u00dfen", helpNote: "Automatische Aktualisierung: alle {seconds} s; maximale Dauer: {duration}.",
 			maximize: "Ganzseitiges Vollbild (ohne Browserleiste)",
 			maximizeOff: "Vollbild beenden",
 			helpAppFullscreen: "Vollbild der ganzen Seite: blendet Browser- und Statusleiste aus, wie eine installierte App.",
@@ -365,6 +446,13 @@
 		zoom: null,
 		charts: [],
 		error: "",
+		connection: { pending: {}, failures: {}, retry: null, deadline: null, attempts: 0 },
+		refreshTimer: null,
+		refreshStartedAt: 0,
+		refreshPaused: false,
+		catalogRequest: null,
+		chartRequest: null,
+		chartGeneration: 0,
 		hover: null,
 		drag: null,
 		pan: null,
@@ -375,6 +463,13 @@
 		 * the statistics are not, and without them the "samples" indicator
 		 * would fall back to a dash after the first refresh. */
 		stats: null,
+		/* Static decoding metadata keyed by MAC (phy, decoder, wire_format).
+		 * Fetched once via `?action=meta` and cached: these values never change
+		 * during normal operation so they must not burden the 30-second catalog
+		 * poll with json_extract() on every request. */
+		deviceMeta: {},
+		metaRequested: false,
+		openDeviceInfo: {},
 		/* false until the charts are composed: only then the page is shown, and
 		 * never covered again by the placeholder. */
 		firstLoad: false,
@@ -383,8 +478,9 @@
 		 * titles, the default fullscreen mode, the config link and the boxes or
 		 * panels the user hid. */
 		settings: {
+			refreshSeconds: 30, refreshMinutes: 0,
 			theme: "system",
-			group: "unit", units: "native", points: false,
+			group: "unit", units: "native", points: false, line: "linear",
 			title: "", subtitle: "", fullscreen: false, showConfig: true, showMaximize: true,
 			showKpis: true, hiddenKpis: [],
 			hiddenSeries: [], hiddenPanels: [], hiddenDevices: [],
@@ -501,6 +597,12 @@
 		var stored = null;
 		try { stored = raw ? JSON.parse(raw) : null; } catch (e) { stored = null; }
 		if (stored && typeof stored === "object") {
+			if (Number.isInteger(stored.refreshSeconds) && stored.refreshSeconds >= 5 && stored.refreshSeconds <= 86400) {
+				state.settings.refreshSeconds = stored.refreshSeconds;
+			}
+			if (Number.isInteger(stored.refreshMinutes) && stored.refreshMinutes >= 0 && stored.refreshMinutes <= 525600) {
+				state.settings.refreshMinutes = stored.refreshMinutes;
+			}
 			if (stored.theme === "system" || stored.theme === "light" || stored.theme === "dark") {
 				state.settings.theme = stored.theme;
 			}
@@ -511,6 +613,7 @@
 				state.settings.units = stored.units;
 			}
 			state.settings.points = stored.points === true;
+			state.settings.line = stored.line === "smooth" ? "smooth" : "linear";
 			state.settings.fullscreen = stored.fullscreen === true;
 			state.settings.showConfig = stored.showConfig !== false;
 			state.settings.showMaximize = stored.showMaximize !== false;
@@ -541,10 +644,13 @@
 		 * switches and the layout fields only: everything else comes from
 		 * localStorage anyway. */
 		var small = {
+			refreshSeconds: state.settings.refreshSeconds,
+			refreshMinutes: state.settings.refreshMinutes,
 			theme: state.settings.theme,
 			group: state.settings.group,
 			units: state.settings.units,
 			points: state.settings.points,
+			line: state.settings.line,
 			fullscreen: state.settings.fullscreen,
 			showConfig: state.settings.showConfig,
 			showMaximize: state.settings.showMaximize,
@@ -810,32 +916,125 @@
 
 	/* ---------------------------------------------------------------- fetch */
 
+	function connectionStatus() {
+		var connection = state.connection;
+		var failures = Object.keys(connection.failures);
+		if (failures.some(function (key) {
+			var failure = connection.failures[key];
+			return !failure.retryable || Date.now() - failure.since >= ERROR_GRACE_MS;
+		})) { return "backendPersistent"; }
+		if (failures.length) { return "backendTemporary"; }
+		if (!state.catalog || Object.keys(connection.pending).some(function (key) { return connection.pending[key]; })) {
+			return "backendUpdating";
+		}
+		return "backendFresh";
+	}
+
+	function renderConnection() {
+		var dot = document.querySelector(".pdot");
+		if (!dot) { return; }
+		var status = connectionStatus();
+		var refresh = refreshStatus();
+		var active = refresh === "refreshEnabled";
+		var classes = { backendFresh: "pok", backendUpdating: "pupdating", backendTemporary: "pstale", backendPersistent: "perror" };
+		dot.className = "pdot " + (active ? classes[status] : refresh === "refreshExpired" ? "pexpired" : "pmanual");
+		dot.title = t(status) + "\n" + t(refresh, { seconds: state.settings.refreshSeconds }) + "\n" +
+			t(active ? "refreshPauseAction" : "refreshResumeAction");
+		dot.setAttribute("aria-label", dot.title);
+		dot.setAttribute("aria-pressed", String(active));
+	}
+
+	function connectionChanged() {
+		var connection = state.connection;
+		var keys = Object.keys(connection.failures);
+		var persistent = keys.filter(function (key) {
+			var failure = connection.failures[key];
+			return !failure.retryable || Date.now() - failure.since >= ERROR_GRACE_MS;
+		});
+		var error = persistent.length ? connection.failures[persistent[0]].message : "";
+		renderConnection();
+		if (state.error !== error) { state.error = error; renderDevices(); }
+		if (connection.deadline !== null) { window.clearTimeout(connection.deadline); connection.deadline = null; }
+		var waits = keys.map(function (key) { return ERROR_GRACE_MS - (Date.now() - connection.failures[key].since); })
+			.filter(function (wait) { return wait > 0; });
+		if (waits.length) { connection.deadline = window.setTimeout(connectionChanged, Math.min.apply(null, waits)); }
+		if (!keys.length) {
+			if (connection.retry !== null) { window.clearTimeout(connection.retry); connection.retry = null; }
+			connection.attempts = 0;
+		} else if (autoRefreshActive() && connection.retry === null && keys.some(function (key) { return connection.failures[key].retryable; })) {
+			var delays = [1000, 3000, 6000];
+			var delay = persistent.length ? state.settings.refreshSeconds * 1000 : delays[Math.min(connection.attempts, delays.length - 1)];
+			connection.retry = window.setTimeout(function () {
+				connection.retry = null;
+				if (!autoRefreshActive()) { renderConnection(); return; }
+				connection.attempts++;
+				loadCatalog(true, false);
+			}, delay);
+		}
+	}
+
+	function updateConnection(channel, pending, error) {
+		var connection = state.connection;
+		connection.pending[channel] = pending;
+		if (error) {
+			var previous = connection.failures[channel];
+			connection.failures[channel] = {
+				since: previous ? previous.since : Date.now(),
+				message: error.message || String(error), retryable: error.retryable !== false
+			};
+		} else if (!pending) {
+			delete connection.failures[channel];
+		}
+		connectionChanged();
+	}
+
 	function request(query) {
 		var url = endpointUrl(endpoint, query);
-		return fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
+		var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+		var timer;
+		var timeout = new Promise(function (resolve, reject) {
+			timer = window.setTimeout(function () {
+				reject(new Error(t("requestTimeout")));
+				if (controller) { controller.abort(); }
+			}, REQUEST_TIMEOUT_MS);
+		});
+		var pending = fetch(url, { credentials: "same-origin", signal: controller ? controller.signal : undefined, headers: { Accept: "application/json" } })
 			.then(function (response) {
+				if (response.status === 404 && ENDPOINTS.indexOf(endpoint) === 0) {
+					throw new Error("endpoint");
+				}
+				if (!response.ok) {
+					var http = new Error(response.status === 401 || response.status === 403 ? t("loginExpired") : t("httpError", { status: response.status }));
+					http.retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+					throw http;
+				}
 				return response.text().then(function (body) {
-					if (response.status === 404 && ENDPOINTS.indexOf(endpoint) === 0) {
-						throw new Error("endpoint");
-					}
 					var data = null;
 					try { data = JSON.parse(body); } catch (e) { data = null; }
 					if (!data) {
-						throw new Error(t("loginExpired"));
+						var login = typeof DOMParser !== "undefined" && new DOMParser().parseFromString(body, "text/html").querySelector('input[type="password"]');
+						var invalid = new Error(t(login ? "loginExpired" : "invalidResponse"));
+						invalid.retryable = !login;
+						throw invalid;
 					}
 					if (data.ok === false) {
 						throw new Error(data.error === "offline" ? t("offlineData") : (data.error || "unknown error"));
 					}
+					if (response.headers.get("X-Portal-Cache") === "offline") { data._portalOffline = true; }
 					return data;
 				});
-			})
-			.catch(function (error) {
-				if (error && error.message === "endpoint" && ENDPOINTS.length > 1) {
-					endpoint = ENDPOINTS[1];
-					return request(query);
-				}
-				throw error;
 			});
+		return Promise.race([pending, timeout]).then(function (data) {
+			window.clearTimeout(timer);
+			return data;
+		}, function (error) {
+			window.clearTimeout(timer);
+			if (error && error.message === "endpoint" && ENDPOINTS.length > 1) {
+				endpoint = ENDPOINTS[1];
+				return request(query);
+			}
+			throw error;
+		});
 	}
 
 	/* --------------------------------------------------------------- format */
@@ -888,6 +1087,7 @@
 
 	function renderHeader() {
 		syncMaximize();
+		renderConnection();
 		var catalog = state.catalog;
 		/* The two titles and the link to the configuration page are user
 		 * preferences: an empty field falls back to the strings the daemon
@@ -907,9 +1107,6 @@
 				if (series.last_ns > newest) { newest = series.last_ns; }
 			});
 		});
-		var dot = document.querySelector(".pdot");
-		var seconds = newest ? (Date.now() - newest / 1e6) / 1000 : null;
-		dot.className = "pdot " + (seconds === null ? "" : seconds < 900 ? "pok" : "pstale");
 		els.stamp.textContent = newest ? age(newest, Date.now() * 1e6) : t("never");
 	}
 
@@ -1047,9 +1244,10 @@
 		if (state.error) {
 			var failure = document.createElement("p");
 			failure.className = "pfail";
+			failure.setAttribute("role", "alert");
 			failure.textContent = t("failed", { error: state.error });
 			els.devices.appendChild(failure);
-			return;
+			if (!catalog) { return; }
 		}
 		if (!catalog) {
 			var loading = document.createElement("p");
@@ -1103,7 +1301,7 @@
 			/* Second line: vendor, model and firmware from the YAML file plus the
 			 * MAC of the advertisement, so two devices of the same model stay
 			 * distinguishable. */
-			var meta = document.createElement("div");
+			var meta = document.createElement("span");
 			meta.className = "pdevmeta";
 			var maker = deviceDetail(device);
 			if (maker) {
@@ -1117,7 +1315,72 @@
 			mac.className = "pmac";
 			mac.textContent = device.mac;
 			meta.appendChild(mac);
-			section.appendChild(meta);
+			var details = document.createElement("details");
+			details.className = "pdevinfo";
+			details.open = !!state.openDeviceInfo[device.mac];
+			var summary = document.createElement("summary");
+			summary.className = "pdevsummary";
+			summary.appendChild(meta);
+			var infoIcon = document.createElement("span");
+			infoIcon.className = "pinfo";
+			infoIcon.textContent = "\u24d8";
+			infoIcon.setAttribute("aria-hidden", "true");
+			summary.appendChild(infoIcon);
+			summary.title = t("deviceInfo");
+			summary.setAttribute("aria-label", t("deviceInfo") + ": " + title.textContent);
+			details.appendChild(summary);
+			var fields = document.createElement("dl");
+			function field(label, value, target) {
+				var term = document.createElement("dt");
+				term.textContent = t(label);
+				var description = document.createElement("dd");
+				description.textContent = value === undefined || value === null || value === "" ? t("unknown") : String(value);
+				(target || fields).appendChild(term);
+				(target || fields).appendChild(description);
+				return description;
+			}
+			function timestamp(ns) {
+				return ns ? new Date(ns / 1e6).toLocaleString() + " (" + ns + " ns)" : "";
+			}
+			field("deviceMac", device.mac);
+			field("deviceName", device.name);
+			field("deviceLabel", device.label);
+			field("deviceManufacturer", device.manufacturer);
+			field("deviceModel", device.model);
+			field("deviceFirmware", device.firmware_version);
+			field("deviceLast", timestamp(device.last_ns));
+			var radio = state.deviceMeta[device.mac] || {};
+			field("devicePhy", radio.phy);
+			field("deviceDecoder", radio.decoder);
+			field("deviceFormat", radio.wire_format);
+			var seriesList = field("deviceSeries", "");
+			seriesList.className = "pdetailseries";
+			if ((device.series || []).length) { seriesList.textContent = ""; }
+			(device.series || []).forEach(function (series) {
+				var seriesInfo = document.createElement("details");
+				seriesInfo.className = "pseriesinfo";
+				var seriesSummary = document.createElement("summary");
+				seriesSummary.textContent = series.attribute + ": " +
+					(series.value === null || series.value === undefined ? t("unknown") : JSON.stringify(series.value)) +
+					(series.unit ? " " + series.unit : "");
+				seriesInfo.appendChild(seriesSummary);
+				var seriesFields = document.createElement("dl");
+				field("seriesAttribute", series.attribute, seriesFields);
+				field("seriesValue", series.value === null ? null : JSON.stringify(series.value), seriesFields);
+				field("seriesUnit", series.unit || t("noUnit"), seriesFields);
+				field("seriesKind", series.kind, seriesFields);
+				field("seriesType", series.type, seriesFields);
+				field("seriesId", series.series_id, seriesFields);
+				field("seriesFirst", timestamp(series.first_ns), seriesFields);
+				field("deviceLast", timestamp(series.last_ns), seriesFields);
+				seriesInfo.appendChild(seriesFields);
+				seriesList.appendChild(seriesInfo);
+			});
+			details.appendChild(fields);
+			details.addEventListener("toggle", function () {
+				if (details.isConnected) { state.openDeviceInfo[device.mac] = details.open; }
+			});
+			section.appendChild(details);
 
 			var grid = document.createElement("div");
 			grid.className = "pseries";
@@ -1278,7 +1541,10 @@
 	 *  it never overlaps the hover tooltip of the chart. */
 	function renderHelp() {
 		els.helptitle.textContent = t("helpTitle");
-		els.helpnote.textContent = t("helpNote");
+		els.helpnote.textContent = t("helpNote", {
+			seconds: state.settings.refreshSeconds,
+			duration: state.settings.refreshMinutes ? state.settings.refreshMinutes + " min" : t("refreshUnlimited")
+		});
 		els.helpclose.textContent = t("helpClose");
 		els.helpbody.textContent = "";
 		SHORTCUTS.forEach(function (item) {
@@ -1332,6 +1598,22 @@
 		if (device.model) { parts.push(device.model); }
 		if (device.firmware_version) { parts.push("fw " + device.firmware_version); }
 		return parts.join(" \u00b7 ");
+	}
+
+	function loadMeta() {
+		if (state.metaRequested) { return; }
+		state.metaRequested = true;
+		request("action=meta").then(function (meta) {
+			if (!meta || !Array.isArray(meta.devices)) { return; }
+			var changed = false;
+			meta.devices.forEach(function (d) {
+				if (d.mac && !state.deviceMeta[d.mac]) {
+					state.deviceMeta[d.mac] = d;
+					changed = true;
+				}
+			});
+			if (changed && state.catalog) { render(); }
+		}).catch(function () {});
 	}
 
 	/** Colour of a series: stable across panels and the legend. */
@@ -1450,23 +1732,21 @@
 		var block = {
 			root: root, title: title, canvas: canvas, empty: empty, legend: legend,
 			key: "", up: up, down: down,
-			charts: [], view: null, hover: null, drag: null, pan: null
+			charts: [], view: null, hover: null, drag: null, pan: null, gesture: null
 		};
 		root.__block = block;
 		up.addEventListener("click", function () { moveBlock(block, -1); });
 		down.addEventListener("click", function () { moveBlock(block, 1); });
 		hide.addEventListener("click", function () { hidePanel(block.key); });
-		canvas.addEventListener("mousemove", function (event) { onMove(block, event); });
-		canvas.addEventListener("mousedown", function (event) { onDown(block, event); });
-		canvas.addEventListener("mouseleave", function () { if (!block.drag) { hideTip(block); } });
-		canvas.addEventListener("touchstart", function (event) {
-			if (event.touches.length === 1) {
-				state.active = block;
-				var ms = timeAt(block, event.touches[0].clientX);
-				if (ms !== null) { showTip(block, ms, event.touches[0].clientX, event.touches[0].clientY); }
-			}
-		}, { passive: true });
-		canvas.addEventListener("touchend", function () { hideTip(block); });
+		canvas.addEventListener("pointerdown", function (event) { onPointerDown(block, event); });
+		canvas.addEventListener("pointermove", function (event) { onPointerMove(block, event); });
+		canvas.addEventListener("pointerup", function (event) { onPointerUp(block, event); });
+		canvas.addEventListener("pointercancel", function () { cancelGesture(block); });
+		canvas.addEventListener("lostpointercapture", function (event) {
+			if (block.gesture && block.gesture.id === event.pointerId) { cancelGesture(block); }
+		});
+		canvas.addEventListener("pointerleave", function () { if (!block.gesture) { hideTip(block); } });
+		canvas.addEventListener("contextmenu", function (event) { onAxisContextMenu(block, event); });
 		return block;
 	}
 
@@ -1568,6 +1848,14 @@
 			settingsWrite();
 			render();
 		}));
+		body.appendChild(selectRow("optline", t("optLine"), [
+			["linear", t("optLineLinear")], ["smooth", t("optLineSmooth")]
+		], state.settings.line, function (value) {
+			state.settings.line = value;
+			settingsWrite();
+			render();
+		}));
+		body.appendChild(hintRow(t("optLineHint")));
 		var points = document.createElement("label");
 		points.className = "pcheck";
 		var box2 = document.createElement("input");
@@ -1628,9 +1916,11 @@
 		var group = box.querySelector("#optgroup");
 		var units = box.querySelector("#optunits");
 		var points = box.querySelector("#optpoints");
+		var line = box.querySelector("#optline");
 		if (group) { group.value = state.settings.group; }
 		if (units) { units.value = state.settings.units; }
 		if (points) { points.checked = state.settings.points === true; }
+		if (line) { line.value = state.settings.line; }
 		var list = box.querySelector("#optpanels");
 		if (list) {
 			list.textContent = "";
@@ -1837,12 +2127,11 @@
 		 * the longest label (sin 45 = 0.71), otherwise the first and the last
 		 * characters are cut off at the bottom of the canvas. */
 		var rotateLabels = size.width < 560;
-		var steps = rotateLabels ? (size.width < 380 ? 2 : 3) : (size.width < 700 ? 4 : 5);
 		var timeFormat = timeFormatter(to - from);
 		context.font = "11px -apple-system, Segoe UI, Roboto, sans-serif";
 		var longest = 0;
-		for (var probe = 0; probe <= steps; probe++) {
-			var width = context.measureText(timeFormat(from + (to - from) * probe / steps)).width;
+		for (var probe = 0; probe <= 5; probe++) {
+			var width = context.measureText(timeFormat(from + (to - from) * probe / 5)).width;
 			if (width > longest) { longest = width; }
 		}
 		var bottomPad = rotateLabels ? Math.min(110, Math.ceil(longest * 0.72) + 16) : 26;
@@ -1866,9 +2155,16 @@
 			context.fillText(onlyBoolean ? (value >= 0.5 ? t("on") : t("off")) : formatTick(value), box.left - 6, y);
 		});
 
-		for (var step = 0; step <= steps; step++) {
-			var moment = from + (to - from) * step / steps;
-			var x = box.left + (box.right - box.left) * step / steps;
+		var timeSpacing = Math.max(80, rotateLabels ? longest * 0.72 + 16 : longest + 16);
+		timeTicks(from, to, box.right - box.left, timeSpacing).forEach(function (moment) {
+			var x = box.left + (box.right - box.left) * (moment - from) / (to - from);
+			context.save();
+			context.strokeStyle = line;
+			context.beginPath();
+			context.moveTo(Math.round(x) + 0.5, box.top);
+			context.lineTo(Math.round(x) + 0.5, box.bottom);
+			context.stroke();
+			context.restore();
 			context.fillStyle = muted;
 			if (rotateLabels) {
 				/* Anchor at the tick and read the label upwards, so long stamps
@@ -1878,13 +2174,13 @@
 				context.rotate(-Math.PI / 4);
 				context.textAlign = "right";
 				context.textBaseline = "middle";
-				context.fillText(timeFormat(moment), step === 0 ? -4 : 0, 0);
+				context.fillText(timeFormat(moment), x - box.left < 4 ? -4 : 0, 0);
 				context.restore();
 			} else {
-				context.textAlign = step === 0 ? "left" : step === steps ? "right" : "center";
+				context.textAlign = x - box.left < longest / 2 ? "left" : box.right - x < longest / 2 ? "right" : "center";
 				context.fillText(timeFormat(moment), x, box.bottom + 13);
 			}
-		}
+		});
 		context.textAlign = "center";
 		context.fillStyle = ink;
 
@@ -1950,6 +2246,12 @@
 					context.lineTo(x, y);
 				}
 			});
+		} else if (state.settings.line === "smooth" && points.length > 2 && typeof PortalCurves !== "undefined" &&
+			points.every(function (point, index) { return index === 0 || point[0] > points[index - 1][0]; })) {
+			var curve = PortalCurves.curveMonotoneX(context);
+			curve.lineStart();
+			points.forEach(function (point) { curve.point(scaleX(point[0]), scaleY(point[1])); });
+			curve.lineEnd();
 		} else {
 			points.forEach(function (point, index) {
 				var x = scaleX(point[0]);
@@ -2022,6 +2324,57 @@
 		return best;
 	}
 
+	function timeTicks(from, to, width, spacing) {
+		var span = to - from;
+		if (!(span > 0) || !(width > 0)) { return []; }
+		var count = Math.max(2, Math.min(12, Math.floor(width / (spacing || 100))));
+		var target = span / count;
+		var day = 86400000;
+		var intervals = [];
+		[1, 2, 5, 10, 15, 30].forEach(function (seconds) { intervals.push([seconds * 1000, "ms", seconds * 1000]); });
+		[1, 2, 5, 10, 15, 30].forEach(function (minutes) { intervals.push([minutes * 60000, "ms", minutes * 60000]); });
+		[1, 2, 3, 6, 12].forEach(function (hours) { intervals.push([hours * 3600000, "ms", hours * 3600000]); });
+		[1, 2, 7, 14].forEach(function (days) { intervals.push([days * day, "day", days]); });
+		[1, 2, 3, 6].forEach(function (months) { intervals.push([months * day * 30.4375, "month", months]); });
+		for (var scale = 1; scale <= 10000; scale *= 10) {
+			[1, 2, 5].forEach(function (years) { intervals.push([years * scale * day * 365.25, "month", years * scale * 12]); });
+		}
+		var bestIndex = 0;
+		intervals.forEach(function (interval, index) {
+			if (Math.abs(Math.log(interval[0] / target)) < Math.abs(Math.log(intervals[bestIndex][0] / target))) { bestIndex = index; }
+		});
+		for (; bestIndex >= 0; bestIndex--) {
+			var best = intervals[bestIndex];
+			var ticks = [];
+			var step = best[2];
+			var date = new Date(from);
+			var moment;
+			if (best[1] === "ms") {
+				var offset = date.getTimezoneOffset() * 60000;
+				moment = Math.ceil((from - offset) / step) * step + offset;
+				while (moment <= to && ticks.length < 32) { ticks.push(moment); moment += step; }
+			} else {
+				date.setHours(0, 0, 0, 0);
+				if (best[1] === "day") {
+					var ordinal = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / day;
+					var anchor = step >= 7 ? 4 : 0;
+					date.setDate(date.getDate() + Math.ceil((ordinal - anchor) / step) * step + anchor - ordinal);
+				} else {
+					var month = date.getFullYear() * 12 + date.getMonth();
+					month = Math.ceil(month / step) * step;
+					date.setDate(1);
+					date.setFullYear(Math.floor(month / 12), month % 12);
+				}
+				while (date.getTime() <= to && ticks.length < 32) {
+					if (date.getTime() >= from) { ticks.push(date.getTime()); }
+					if (best[1] === "day") { date.setDate(date.getDate() + step); }
+					else { date.setMonth(date.getMonth() + step); }
+				}
+			}
+			if (ticks.length >= 2 || bestIndex === 0) { return ticks; }
+		}
+	}
+
 	function niceTicks(min, max, count) {
 		var span = max - min;
 		if (!(span > 0)) { return [min]; }
@@ -2043,6 +2396,9 @@
 	}
 
 	function timeFormatter(span) {
+		if (span < 10 * 60000) {
+			return function (ms) { var date = new Date(ms); return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + ":" + pad2(date.getSeconds()); };
+		}
 		if (span <= 2 * 3600e3) {
 			return function (ms) { var date = new Date(ms); return pad2(date.getHours()) + ":" + pad2(date.getMinutes()); };
 		}
@@ -2082,6 +2438,99 @@
 
 	/* ------------------------------------------------------- pointer / zoom */
 
+	function clearHold(gesture) {
+		if (gesture && gesture.holdTimer !== null) {
+			window.clearTimeout(gesture.holdTimer);
+			gesture.holdTimer = null;
+		}
+	}
+
+	function onAxisContextMenu(block, event) {
+		if (block.view && event.clientY - block.canvas.getBoundingClientRect().top > block.view.box.bottom) {
+			event.preventDefault();
+		}
+	}
+
+	function cancelGesture(block) {
+		var gesture = block.gesture;
+		clearHold(gesture);
+		if (block.pan && block.pan.moved) { state.zoom = block.pan.originalZoom; }
+		block.gesture = null;
+		block.drag = null;
+		block.pan = null;
+		block.canvas.style.cursor = "crosshair";
+		if (gesture && block.canvas.hasPointerCapture && block.canvas.hasPointerCapture(gesture.id)) {
+			block.canvas.releasePointerCapture(gesture.id);
+		}
+		hideTip(block);
+		drawChart();
+	}
+
+	function onPointerDown(block, event) {
+		if (event.pointerType === "touch" && event.isPrimary === false) { cancelGesture(block); return; }
+		if (block.gesture) { cancelGesture(block); return; }
+		if (!block.view || event.button !== 0) { return; }
+		var touch = event.pointerType === "touch";
+		var rect = block.canvas.getBoundingClientRect();
+		var y = event.clientY - rect.top;
+		var axis = y > block.view.box.bottom;
+		if (!axis && timeAt(block, event.clientX) === null) { return; }
+		if (touch) {
+			if (y < block.view.box.top || y > rect.height) { return; }
+		}
+		var gesture = { id: event.pointerId, touch: touch, start: event, pending: touch, axis: axis, holdTimer: null };
+		block.gesture = gesture;
+		if (block.canvas.setPointerCapture) { block.canvas.setPointerCapture(event.pointerId); }
+		if (touch) {
+			state.active = block;
+			if (!axis) { showTip(block, timeAt(block, event.clientX), event.clientX, event.clientY); }
+		} else {
+			onDown(block, event, axis);
+		}
+		if (axis) {
+			gesture.holdTimer = window.setTimeout(function () {
+				if (block.gesture !== gesture) { return; }
+				cancelGesture(block);
+				resetZoom();
+			}, HOLD_RESET_MS);
+		}
+	}
+
+	function onPointerMove(block, event) {
+		var gesture = block.gesture;
+		if (!gesture) {
+			if (event.pointerType !== "touch") { onMove(block, event); }
+			return;
+		}
+		if (gesture.id !== event.pointerId) { return; }
+		if (Math.max(Math.abs(event.clientX - gesture.start.clientX), Math.abs(event.clientY - gesture.start.clientY)) >= 8) {
+			clearHold(gesture);
+		}
+		if (gesture.pending) {
+			var dx = Math.abs(event.clientX - gesture.start.clientX);
+			var dy = Math.abs(event.clientY - gesture.start.clientY);
+			if (Math.max(dx, dy) < 8) { return; }
+			if (dy >= dx) { cancelGesture(block); return; }
+			gesture.pending = false;
+			onDown(block, gesture.start, gesture.axis);
+		}
+		onMove(block, event);
+	}
+
+	function onPointerUp(block, event) {
+		var gesture = block.gesture;
+		if (!gesture || gesture.id !== event.pointerId) { return; }
+		clearHold(gesture);
+		onPointerMove(block, event);
+		if (block.gesture !== gesture) { return; }
+		block.gesture = null;
+		onUp(block);
+		if (gesture.touch) { hideTip(block); }
+		if (block.canvas.hasPointerCapture && block.canvas.hasPointerCapture(gesture.id)) {
+			block.canvas.releasePointerCapture(gesture.id);
+		}
+	}
+
 	function timeAt(block, clientX) {
 		var view = block.view;
 		if (!view) { return null; }
@@ -2111,7 +2560,7 @@
 			return;
 		}
 		if (block.drag) {
-			block.drag.x1 = localX(block.canvas, event.clientX);
+			block.drag.x1 = Math.max(block.view.box.left, Math.min(block.view.box.right, localX(block.canvas, event.clientX)));
 			els.tip.hidden = true;
 			drawChart();
 			return;
@@ -2180,13 +2629,14 @@
 		els.tip.hidden = true;
 	}
 
-	function onDown(block, event) {
+	function onDown(block, event, axis) {
 		if (!block.view || event.button !== 0) { return; }
 		state.active = block;
 		var x = localX(block.canvas, event.clientX);
-		if (x < block.view.box.left || x > block.view.box.right) { return; }
-		if (event.shiftKey) {
-			block.pan = { x: x, from: block.view.from, to: block.view.to, moved: false };
+		if (!axis && (x < block.view.box.left || x > block.view.box.right)) { return; }
+		if (event.shiftKey || axis) {
+			block.pan = { x: x, from: block.view.from, to: block.view.to, moved: false,
+				originalZoom: state.zoom ? { from: state.zoom.from, to: state.zoom.to } : null };
 			hideTip(block);
 			block.canvas.style.cursor = "grabbing";
 			return;
@@ -2201,7 +2651,7 @@
 		block.pan = null;
 		block.canvas.style.cursor = "crosshair";
 		if (pan) {
-			if (pan.moved) { loadCharts(); render(); } else { drawChart(); }
+			if (pan.moved) { writeStore(); loadCharts(); render(); } else { drawChart(); }
 			return;
 		}
 		var drag = block.drag;
@@ -2368,7 +2818,57 @@
 		catalog.schema = info.schema;
 	}
 
+	function refreshStatus() {
+		if (state.refreshPaused) { return "refreshStopped"; }
+		if (state.settings.refreshMinutes > 0 && Date.now() - state.refreshStartedAt >= state.settings.refreshMinutes * 60000) {
+			return "refreshExpired";
+		}
+		return "refreshEnabled";
+	}
+
+	function autoRefreshActive() {
+		return refreshStatus() === "refreshEnabled";
+	}
+
+	function toggleRefresh() {
+		if (autoRefreshActive()) {
+			state.refreshPaused = true;
+			scheduleRefresh();
+			connectionChanged();
+			return Promise.resolve();
+		}
+		state.refreshPaused = false;
+		configureRefresh();
+		return loadCatalog(true, false);
+	}
+
+	function scheduleRefresh() {
+		if (state.refreshTimer !== null) { window.clearTimeout(state.refreshTimer); state.refreshTimer = null; }
+		if (!autoRefreshActive()) {
+			if (state.connection.retry !== null) { window.clearTimeout(state.connection.retry); state.connection.retry = null; }
+			renderConnection();
+			return;
+		}
+		var delay = state.settings.refreshSeconds * 1000;
+		if (state.settings.refreshMinutes > 0) {
+			delay = Math.min(delay, state.refreshStartedAt + state.settings.refreshMinutes * 60000 - Date.now());
+		}
+		state.refreshTimer = window.setTimeout(function () {
+			state.refreshTimer = null;
+			if (!autoRefreshActive()) { scheduleRefresh(); return; }
+			loadCatalog(true, false).then(scheduleRefresh);
+		}, delay);
+	}
+
+	function configureRefresh() {
+		state.refreshStartedAt = Date.now();
+		scheduleRefresh();
+		connectionChanged();
+	}
+
 	function loadCatalog(silent, withStats) {
+		if (state.catalogRequest) { return state.catalogRequest; }
+		updateConnection("catalog", true);
 		if (!silent && !state.catalog) { render(); }
 		/* `action=info` counts the rows of the samples table and sizes the
 		 * database on the USB disk: it takes seconds on a router and nothing on
@@ -2376,10 +2876,11 @@
 		 * refreshes the KPI row when it lands. Blocking the first paint on it
 		 * was what made the charts show up late. */
 		var stats = withStats ? request("action=info").catch(function () { return null; }) : null;
-		return request("action=catalog").then(function (catalog) {
+		state.catalogRequest = request("action=catalog").then(function (catalog) {
 			state.catalog = catalog;
-			state.error = "";
+			updateConnection("catalog", false, catalog._portalOffline ? new Error(t("offlineData")) : null);
 			if (state.stats) { mergeStats(catalog, state.stats); }
+			loadMeta();
 			var known = {};
 			(catalog.devices || []).forEach(function (device) {
 				(device.series || []).forEach(function (series) { known[keyOf(device.mac, series)] = true; });
@@ -2401,16 +2902,28 @@
 				});
 			}
 		}).catch(function (error) {
-			state.error = error.message || String(error);
+			updateConnection("catalog", false, error);
 			render();
 			revealPage();
+		}).then(function () {
+			state.catalogRequest = null;
 		});
+		return state.catalogRequest;
 	}
 
 	function loadCharts() {
 		var keys = state.selected.slice();
+		var signature = JSON.stringify([keys, state.range, state.zoom]);
+		if (state.chartRequest && state.chartRequest.signature === signature) { return state.chartRequest.promise; }
+		var generation = ++state.chartGeneration;
 		state.charts = state.charts.filter(function (chart) { return keys.indexOf(chart.key) >= 0; });
-		if (!keys.length) { state.charts = []; drawChart(); return Promise.resolve(); }
+		if (!keys.length) {
+			state.chartRequest = null;
+			updateConnection("charts", false);
+			state.charts = []; drawChart(); return Promise.resolve();
+		}
+		updateConnection("charts", true);
+		var errors = [];
 		var jobs = keys.map(function (key) {
 			var parts = key.split("|");
 			var device = findDevice(parts[0]);
@@ -2430,6 +2943,7 @@
 				query += "&from=" + Math.round(state.zoom.from * 1e6) + "&to=" + Math.round(state.zoom.to * 1e6);
 			}
 			return request(query).then(function (data) {
+				if (data._portalOffline) { errors.push(new Error(t("offlineData"))); }
 				return {
 					key: key,
 					mac: parts[0],
@@ -2439,19 +2953,26 @@
 					bucket_ns: data.bucket_ns,
 					points: data.points || []
 				};
-			}).catch(function () {
-				return { key: key, mac: parts[0], attribute: parts[1], unit: parts[2], kind: kind, points: [] };
+			}).catch(function (error) {
+				errors.push(error);
+				return state.charts.filter(function (chart) { return chart.key === key; })[0] ||
+					{ key: key, mac: parts[0], attribute: parts[1], unit: parts[2], kind: kind, points: [] };
 			});
 		});
-		return Promise.all(jobs).then(function (charts) {
+		var promise = Promise.all(jobs).then(function (charts) {
+			if (generation !== state.chartGeneration) { return; }
 			state.charts = charts;
+			var fatal = errors.filter(function (error) { return error.retryable === false; })[0];
+			updateConnection("charts", false, fatal || errors[0]);
 			drawChart();
-		}).catch(function () {
-			/* A broken series must not keep the first-load placeholder up. */
 		}).then(function () {
+			if (generation !== state.chartGeneration) { return; }
+			state.chartRequest = null;
 			/* Every panel has its series: the page is composed, show it. */
 			revealPage();
 		});
+		state.chartRequest = { signature: signature, promise: promise };
+		return promise;
 	}
 
 	/* --------------------------------------------------------------- web app
@@ -2498,6 +3019,7 @@
 
 	function updateNet() {
 		var offline = window.navigator.onLine === false;
+		if (offline) { updateConnection("catalog", false, new Error(t("offlineData"))); }
 		if (els.netstate) {
 			els.netstate.hidden = !offline;
 			els.netstate.textContent = t("offlineBanner");
@@ -2625,7 +3147,7 @@
 			els.maximize.addEventListener("click", toggleAppFullscreen);
 			syncMaximize();
 		}
-		window.addEventListener("online", updateNet);
+		window.addEventListener("online", function () { updateNet(); if (autoRefreshActive()) { loadCatalog(true, false); } });
 		window.addEventListener("offline", updateNet);
 		updateNet();
 		registerServiceWorker();
@@ -2645,6 +3167,34 @@
 		input.value = value || "";
 		input.placeholder = placeholder || "";
 		input.addEventListener("input", function () { onInput(input.value.trim()); });
+		row.appendChild(text);
+		row.appendChild(input);
+		return row;
+	}
+
+	function refreshNumberRow(id, key, caption, minimum, maximum, tooltip) {
+		var row = document.createElement("label");
+		var text = document.createElement("span");
+		text.textContent = t(caption);
+		var input = document.createElement("input");
+		input.type = "number";
+		input.id = id;
+		input.min = minimum;
+		input.max = maximum;
+		input.step = 1;
+		input.value = state.settings[key];
+		input.title = t(tooltip);
+		input.addEventListener("change", function () {
+			var value = Number(input.value);
+			if (input.value === "" || !input.checkValidity() || !Number.isInteger(value)) {
+				input.reportValidity();
+				input.value = state.settings[key];
+				return;
+			}
+			state.settings[key] = value;
+			settingsWrite();
+			configureRefresh();
+		});
 		row.appendChild(text);
 		row.appendChild(input);
 		return row;
@@ -2697,6 +3247,8 @@
 		box.appendChild(head);
 		var body = document.createElement("div");
 		body.className = "psettingsbody";
+		body.appendChild(refreshNumberRow("prefrefreshinterval", "refreshSeconds", "prefRefreshInterval", 5, 86400, "prefRefreshIntervalHint"));
+		body.appendChild(refreshNumberRow("prefrefreshduration", "refreshMinutes", "prefRefreshDuration", 0, 525600, "prefRefreshDurationHint"));
 		body.appendChild(selectRow("preftheme", t("prefTheme"), [
 			["system", t("themeSystem")], ["light", t("themeLight")], ["dark", t("themeDark")]
 		], state.settings.theme, function (value) {
@@ -2817,6 +3369,10 @@
 		var maximize = box.querySelector("#prefmaximize");
 		var hidden = box.querySelector("#prefhidden");
 		var theme = box.querySelector("#preftheme");
+		["refreshSeconds", "refreshMinutes"].forEach(function (key, index) {
+			var input = box.querySelector(index ? "#prefrefreshduration" : "#prefrefreshinterval");
+			if (input && document.activeElement !== input) { input.value = state.settings[key]; }
+		});
 		if (theme) { theme.value = state.settings.theme; }
 		if (title) { title.value = state.settings.title; title.placeholder = DEFAULT_TITLE; }
 		if (subtitle) { subtitle.value = state.settings.subtitle; }
@@ -3047,13 +3603,7 @@
 			els.resetview.addEventListener("click", resetView);
 		}
 		document.getElementById("reload").addEventListener("click", function () { loadCatalog(true, true); });
-		/* Pointer events live on each chart panel, see createBlock(). */
-		window.addEventListener("mouseup", function () {
-			for (var index = 0; index < state.blocks.length; index++) {
-				var block = state.blocks[index];
-				if (block.drag || block.pan) { onUp(block); return; }
-			}
-		});
+		document.querySelector(".pdot").addEventListener("click", toggleRefresh);
 		els.panleft.addEventListener("click", function () { panBy(state.active, -0.25); });
 		els.panright.addEventListener("click", function () { panBy(state.active, 0.25); });
 		els.zoomin.addEventListener("click", function () { zoomBy(state.active, 0.5); });
@@ -3073,7 +3623,7 @@
 		loadCatalog(false, true);
 		/* The periodic refresh skips the database statistics: they do not change
 		 * between two refreshes and cost the router seconds of disk access. */
-		window.setInterval(function () { loadCatalog(true, false); }, REFRESH_MS);
+		configureRefresh();
 	}
 
 	if (document.readyState === "loading") {

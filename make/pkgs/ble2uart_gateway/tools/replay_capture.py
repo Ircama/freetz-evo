@@ -153,35 +153,19 @@ def offsets(captures, timing, interval, speed):
     return [(stamp - stamps[0]) / speed for stamp in stamps]
 
 
-def expose_all_attributes(devices, attributes):
+def list_all_attributes(devices, attributes):
+    """List every given attribute on the enabled devices, so the gateway logs it."""
     for device in devices:
         mac = normalize_mac(device["mac"])
         if not device["enabled"]:
-            print(f"replay warning: {mac}: device disabled; exposure does not enable it", file=sys.stderr)
+            print(f"replay warning: {mac}: device disabled; listing attributes does not enable it", file=sys.stderr)
             continue
-        exposed = device.setdefault("expose", [])
-        used, next_child = set(), 0
-        for entry in exposed:
-            child = entry.get("child")
-            if child is None:
-                child = next_child
-                next_child = min(255, next_child + 1)
-                entry["child"] = child
-            used.add(child)
-        names = {entry["attribute"] for entry in exposed}
-        added = []
-        for name in attributes:
-            if name in names:
-                continue
-            child = next((child for child in range(255) if child not in used), None)
-            if child is None:
-                raise ValueError(f"{mac}: no free measurement child IDs")
-            exposed.append({"attribute": name, "child": child})
-            used.add(child)
-            names.add(name)
-            added.append(f"{name}=child {child}")
+        listed = device.setdefault("attributes", [])
+        used = {entry["source"] for entry in listed} | {entry["name"] for entry in listed if entry.get("name")}
+        added = [name for name in attributes if name not in used]
+        listed.extend({"source": name, "mysensors": True} for name in added)
         if added:
-            print(f"replay config: {mac}: missing exposures added privately: {', '.join(added)}", file=sys.stderr)
+            print(f"replay config: {mac}: missing attributes listed privately: {', '.join(added)}", file=sys.stderr)
 
 
 def validate_binary_args(arguments):
@@ -201,7 +185,7 @@ def validate_binary_args(arguments):
         index += 1
 
 
-def prepare_config(binary, source, path, firmware, captures, allow_frontends=False, import_bindkeys=False, expose_all=False):
+def prepare_config(binary, source, path, firmware, captures, allow_frontends=False, import_bindkeys=False, list_all=False):
     if source is None:
         subprocess.run([binary, "--write-default-config", str(path)], check=True, stdout=subprocess.DEVNULL)
         source = path
@@ -212,16 +196,16 @@ def prepare_config(binary, source, path, firmware, captures, allow_frontends=Fal
         devices = {}
         for capture in captures:
             device = devices.setdefault(capture.mac, {"mac": capture.mac, "label": capture.mac, "enabled": True,
-                "expose": [{"attribute": name, "child": child} for child, name in enumerate(("temperature", "humidity", "battery_level", "flooding"))]})
+                "attributes": [{"source": name, "mysensors": True} for name in ("temperature", "humidity", "battery_level", "flooding")]})
             if import_bindkeys and capture.bindkey:
                 if device.get("bindkey") and device["bindkey"] != capture.bindkey:
                     raise ValueError("conflicting capture bindkeys; provide a device configuration")
                 device["bindkey"] = capture.bindkey
         config["devices"] = list(devices.values())
-    if expose_all:
-        result = subprocess.run([binary, "--web-config", "attributes"], input="",
+    if list_all:
+        result = subprocess.run([binary, "--config", str(source), "--web-config", "catalog"], input="",
                                 capture_output=True, text=True, check=True)
-        expose_all_attributes(config["devices"], json.loads(result.stdout)["attributes"])
+        list_all_attributes(config["devices"], json.loads(result.stdout)["mysensors"])
         enabled = {normalize_mac(device["mac"]) for device in config["devices"] if device["enabled"]}
         for mac in sorted({capture.mac for capture in captures} - enabled):
             print(f"replay warning: {mac}: no enabled device configuration; packets will not be decoded", file=sys.stderr)
@@ -285,7 +269,7 @@ def run(args):
                 binary = shutil.which(args.binary)
                 if binary is None:
                     raise ValueError("gateway executable not found; set --binary")
-                prepare_config(binary, args.config, config_path, firmware, captures, args.allow_frontends, args.import_bindkeys, args.expose_all)
+                prepare_config(binary, args.config, config_path, firmware, captures, args.allow_frontends, args.import_bindkeys, args.list_all)
                 environment = {**os.environ, "BLE2UART_GATEWAY_CONTROL_SOCKET": str(Path(directory) / "control/control.sock")}
                 child = subprocess.Popen([binary, "--config", str(config_path), "--foreground", *args.binary_arg],
                                          env=environment, stdout=sys.stderr)
@@ -348,7 +332,7 @@ def main():
     parser.add_argument("--allow-frontends", action="store_true", help="explicitly allow publishing simulated data to configured frontends")
     parser.add_argument("--import-bindkeys", action="store_true", help="copy capture keys only into the private generated device config")
     parser.add_argument("--skip-invalid", action="store_true")
-    parser.add_argument("--expose-all", action="store_true", help="add every supported measurement to private device exposures, preserving existing child IDs")
+    parser.add_argument("--list-all", action="store_true", help="list every MySensors measurement in the private device configuration, so the gateway logs it; existing attribute settings are kept")
     parser.add_argument("--binary-arg", action="append", default=[], help="forward a logging/trace argument; use --binary-arg=--trace-decode or put gateway options after --")
     arguments = sys.argv[1:]
     forwarded = []
@@ -363,7 +347,7 @@ def main():
         parser.error(str(error))
     if args.repeat < 0 or not math.isfinite(args.start_timeout) or args.start_timeout <= 0 or not math.isfinite(args.settle) or args.settle < 0:
         parser.error("invalid repetition count, timeout or settling interval")
-    if args.no_launch and (args.config or args.import_bindkeys or args.allow_frontends or args.expose_all or args.binary_arg):
+    if args.no_launch and (args.config or args.import_bindkeys or args.allow_frontends or args.list_all or args.binary_arg):
         parser.error("PTY-only mode does not modify an external gateway's config/frontends")
     try:
         run(args)

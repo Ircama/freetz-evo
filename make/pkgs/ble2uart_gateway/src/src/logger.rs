@@ -186,9 +186,10 @@ fn format_record(record: &Record, timestamp: &str, color: bool) -> String {
 }
 
 /// `value` is `name=VALUE[ unit]`; with colors only `VALUE` is bold.
-fn format_measurement(mac: &str, label: &str, child: u8, value: &str, color: bool) -> String {
+fn format_measurement(mac: &str, label: &str, child: Option<u8>, value: &str, color: bool) -> String {
+    let child = child.map(|child| format!(" child {child}")).unwrap_or_default();
     if !color {
-        return format!("{mac} ({label}) child {child}: {value}");
+        return format!("{mac} ({label}){child}: {value}");
     }
     let value = match value.split_once('=') {
         Some((name, rest)) => {
@@ -198,10 +199,11 @@ fn format_measurement(mac: &str, label: &str, child: u8, value: &str, color: boo
         }
         None => format!("\x1b[1;33m{value}\x1b[0m"),
     };
-    format!("{mac} (\x1b[1;36m{label}\x1b[0m) child {child}: {value}")
+    format!("{mac} (\x1b[1;36m{label}\x1b[0m){child}: {value}")
 }
 
-pub fn measurement(mac: &str, label: &str, child: u8, value: &str) -> String {
+/// One published measurement; `child` is its MySensors child, if routed there.
+pub fn measurement(mac: &str, label: &str, child: Option<u8>, value: &str) -> String {
     format_measurement(mac, label, child, value, COLOR.load(Ordering::Relaxed))
 }
 
@@ -438,18 +440,19 @@ mod tests {
         let mac = "A4C138B3326C";
         let label = "Termometro esterno senza display";
         let value = "battery level=100 %";
-        let plain = format_measurement(mac, label, 2, value, false);
+        let plain = format_measurement(mac, label, Some(2), value, false);
         assert_eq!(plain, "A4C138B3326C (Termometro esterno senza display) child 2: battery level=100 %");
         assert!(!plain.contains('\x1b'));
-        let colored = format_measurement(mac, label, 2, value, true);
+        let colored = format_measurement(mac, label, Some(2), value, true);
         assert!(colored.contains("(\x1b[1;36mTermometro esterno senza display\x1b[0m)"));
         assert!(colored.ends_with("battery level=\x1b[1;33m100\x1b[0m %"));
-        let temperature = format_measurement(mac, label, 0, "temperature=15.65 °C", true);
+        let temperature = format_measurement(mac, label, Some(0), "temperature=15.65 °C", true);
         assert!(temperature.ends_with("temperature=\x1b[1;33m15.65\x1b[0m °C"));
-        assert!(format_measurement(mac, label, 4, "opened=1", true).ends_with("opened=\x1b[1;33m1\x1b[0m"));
+        assert!(format_measurement(mac, label, Some(4), "opened=1", true).ends_with("opened=\x1b[1;33m1\x1b[0m"));
         assert_eq!(colored.replace("\x1b[1;36m", "").replace("\x1b[1;33m", "").replace("\x1b[0m", ""), plain);
-        let punctuation = format_measurement(mac, "Termometro (esterno): USB", 3, "battery v=3.01 V", false);
+        let punctuation = format_measurement(mac, "Termometro (esterno): USB", Some(3), "battery v=3.01 V", false);
         assert_eq!(punctuation, "A4C138B3326C (Termometro (esterno): USB) child 3: battery v=3.01 V");
+        assert_eq!(format_measurement(mac, label, None, "humidity=48 %", false), "A4C138B3326C (Termometro esterno senza display): humidity=48 %");
     }
 
     #[test]

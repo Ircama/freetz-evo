@@ -131,17 +131,20 @@ fn info_text(entry: &Entry, attribute: u32) -> Option<&str> {
     Some(crate::config::truncate_utf8(text, limit))
 }
 
+/// Devices with the published names they send to Matter.
+pub type MatterDevices = [(DeviceConfig, Vec<String>)];
+
 fn model(
     config: &MatterConfig,
-    devices: &[DeviceConfig],
+    devices: &MatterDevices,
 ) -> Result<(Node<'static>, Vec<Entry>), String> {
     let mut keys = Vec::new();
-    for device in devices {
+    for (device, names) in devices {
         let mac = crate::pipeline::normalize_mac(&device.mac);
         keys.push(mac.clone());
-        for expose in &device.expose {
-            if Standard::for_attribute(&expose.attribute).is_some() {
-                keys.push(format!("{mac}/{}", expose.attribute));
+        for name in names {
+            if Standard::for_attribute(name).is_some() {
+                keys.push(format!("{mac}/{name}"));
             }
         }
     }
@@ -158,7 +161,7 @@ fn model(
             permanent(vec![desc::DescHandler::CLUSTER]),
         ),
     ];
-    for device in devices.iter().filter(|device| device.enabled) {
+    for (device, names) in devices.iter().filter(|(device, _)| device.enabled) {
         let mac = crate::pipeline::normalize_mac(&device.mac);
         let parent = ids[&mac];
         let metadata = device.metadata();
@@ -185,14 +188,14 @@ fn model(
             ]),
         ));
         let mut seen = std::collections::HashSet::new();
-        for expose in &device.expose {
-            let Some(kind) = Standard::for_attribute(&expose.attribute) else {
+        for name in names {
+            let Some(kind) = Standard::for_attribute(name) else {
                 continue;
             };
-            if !seen.insert(expose.attribute.clone()) {
+            if !seen.insert(name.clone()) {
                 continue;
             }
-            let endpoint = ids[&format!("{mac}/{}", expose.attribute)];
+            let endpoint = ids[&format!("{mac}/{name}")];
             let device_type = match kind {
                 Standard::Temperature => 0x0302,
                 Standard::Humidity => 0x0307,
@@ -200,7 +203,7 @@ fn model(
                 Standard::Illuminance => 0x0106,
                 Standard::Occupancy => 0x0107,
                 Standard::Boolean
-                    if matches!(expose.attribute.as_str(), "opened" | "contact" | "door") =>
+                    if matches!(name.as_str(), "opened" | "contact" | "door") =>
                 {
                     0x0015
                 }
@@ -211,9 +214,9 @@ fn model(
                 endpoint,
                 parent,
                 mac: mac.clone(),
-                label: metadata.resource_name(&expose.attribute),
+                label: metadata.resource_name(name),
                 metadata: metadata.clone(),
-                attribute: Some(expose.attribute.clone()),
+                attribute: Some(name.clone()),
                 standard: Some(kind),
             });
             endpoints.push(Endpoint::new(
@@ -494,7 +497,7 @@ impl Handler for BleHandler {
     }
 }
 
-pub fn start(config: &MatterConfig, devices: &[DeviceConfig]) -> Result<MatterPublisher, String> {
+pub fn start(config: &MatterConfig, devices: &MatterDevices) -> Result<MatterPublisher, String> {
     if config.store.is_empty()
         || !Path::new(&config.store).is_absolute()
         || Path::new(&config.store).parent().is_none()
@@ -658,8 +661,10 @@ mod tests {
     fn physical_metadata_uses_standard_attributes_and_preserves_endpoint_identity() {
         let directory = std::env::temp_dir().join(format!("ble-metadata-matter-{}", std::process::id()));
         let config = MatterConfig { store: directory.to_string_lossy().into(), ..Default::default() };
-        let mut device: DeviceConfig = serde_yaml::from_str("mac: AABBCCDDEEFF\nmanufacturer: Xiaomi\nmodel: LYWSD03MMC\nfirmware_version: custom-build\nexpose:\n- {attribute: temperature}\n- {attribute: battery_level}\n").unwrap();
-        let (node, entries) = model(&config, &[device.clone()]).unwrap();
+        let mut device: DeviceConfig = serde_yaml::from_str("mac: AABBCCDDEEFF\nmanufacturer: Xiaomi\nmodel: LYWSD03MMC\nfirmware_version: custom-build\n").unwrap();
+        let names = vec!["temperature".to_string(), "battery_level".to_string(), "packet_id".to_string()];
+        let (node, entries) = model(&config, &[(device.clone(), names.clone())]).unwrap();
+        assert_eq!(entries.len(), 3, "only standard names get an endpoint");
         let parent = &entries[0];
         assert_eq!(info_text(parent, 1), Some("Xiaomi"));
         assert_eq!(info_text(parent, 3), Some("LYWSD03MMC"));
@@ -670,7 +675,7 @@ mod tests {
         device.label = "é".repeat(20);
         device.manufacturer.clear();
         device.model = "Updated model".into();
-        let (updated_node, updated) = model(&config, &[device]).unwrap();
+        let (updated_node, updated) = model(&config, &[(device, names)]).unwrap();
         assert_eq!(info_text(&updated[0], 5).unwrap().len(), 32);
         assert!(info_text(&updated[0], 1).is_none());
         assert!(!updated_node.endpoint(updated[0].endpoint).unwrap().cluster(0x0039).unwrap().attributes.iter().any(|attribute| attribute.id == 1));
@@ -694,13 +699,14 @@ mod tests {
             store: directory.to_string_lossy().into(),
             ..MatterConfig::default()
         };
-        let devices=vec![serde_yaml::from_str("mac: AABBCCDDEEFF\nexpose:\n- {attribute: temperature}\n- {attribute: battery_level}\n- {attribute: new_value}\n").unwrap()];
+        let device: DeviceConfig = serde_yaml::from_str("mac: AABBCCDDEEFF\n").unwrap();
+        let devices = vec![(device, vec!["temperature".to_string(), "battery_level".to_string(), "new_value".to_string()])];
         let publisher = start(&config, &devices).unwrap();
-        let state = serde_json::json!({"decoded":{"new_value":[true,null,1.23456789]},"measurements":[{"name":"temperature","value":22.1234,"unit":"C"}]});
+        let state = serde_json::json!({"measurements":[{"name":"temperature","value":22.1234,"unit":"C"},{"name":"new_value","value":[true,null,1.23456789],"unit":""}]});
         publisher.publish("AABBCCDDEEFF", &state);
         assert_eq!(
-            publisher.states.lock().unwrap()["AABBCCDDEEFF"].value["decoded"],
-            state["decoded"]
+            publisher.states.lock().unwrap()["AABBCCDDEEFF"].value["latest_values"]["new_value"]["value"],
+            serde_json::json!([true,null,1.23456789])
         );
         assert!(UdpSocket::bind((std::net::Ipv6Addr::LOCALHOST, port)).is_err());
         drop(publisher);

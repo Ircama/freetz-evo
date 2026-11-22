@@ -19,6 +19,15 @@ pub struct Snapshot {
 
 pub type SharedStates = Arc<Mutex<BTreeMap<String, Snapshot>>>;
 
+/// Published names that become standard Matter endpoints; every other name
+/// reaches Matter only through the vendor cluster.
+pub const STANDARD_ATTRIBUTES: &[&str] = &[
+    "temperature", "humidity", "pressure", "illuminance", "lux", "motion", "battery",
+    "battery_level", "battery_v", "voltage", "opened", "contact", "door", "water_leak",
+    "flooding", "switch", "boolean", "humidity_trigger", "temp_trigger",
+    "out_gpio_trg_flag", "out_gpio_trg_value", "input_gpio_value",
+];
+
 pub struct MatterPublisher {
     pub states: SharedStates,
     pub(crate) stopped: Arc<std::sync::atomic::AtomicBool>,
@@ -246,6 +255,16 @@ impl Standard {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn standard_attribute_list_matches_the_cluster_mapping() {
+        for name in STANDARD_ATTRIBUTES {
+            assert!(Standard::for_attribute(name).is_some(), "{name}");
+        }
+        for name in crate::pipeline::supported_attributes().chain(["packet_id", "theengs_temperature"]) {
+            assert_eq!(Standard::for_attribute(name).is_some(), STANDARD_ATTRIBUTES.contains(&name), "{name}");
+        }
+    }
 
     #[test]
     fn matter_preserves_complete_json_and_endpoint_identity() {

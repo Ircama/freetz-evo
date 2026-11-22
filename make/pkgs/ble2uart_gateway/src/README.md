@@ -372,10 +372,13 @@ frontends:
   sqlite:
     enabled: true
     path: /absolute/path/on/local-storage/readings.sqlite3
+    recent_frames_s: 600
     batch_size: 100
     queue_capacity: 1024
     flush_interval_ms: 1000
     busy_timeout_ms: 1000
+attribute_defaults:
+  sqlite: history
 ```
 
 The path has no default: explicitly select storage before enabling it. Its
@@ -386,17 +389,18 @@ Existing databases must have this gateway's application ID and schema version;
 unrelated databases are rejected. Startup fails explicitly if storage or WAL
 initialization is unavailable.
 
-Each successfully decoded advertisement for an enabled configured device
-creates one `frames` row, independent of `expose`:
+Each decoded advertisement of a configured device with at least one attribute
+stored in SQLite (`sqlite: live` or `history`, from the device `attributes` or
+`attribute_defaults`; nothing is stored by default) creates one `frames` row:
 
 | Column | Meaning |
 |--------|---------|
 | `id` | Monotonically allocated frame ID, not reused after retention deletes |
 | `received_at_ns` | Unix nanoseconds captured before enqueueing, not a sensor-provided clock |
 | `mac`, `sensor_name`, `wire_format` | Sensor identity and format at reception |
-| `state_json` | Complete decoded state, including device metadata, radio/RSSI, decoded payload and measurements; no bindkeys |
+| `state_json` | Device state: metadata, radio/RSSI and the stored measurements; no bindkeys |
 
-All measurements from that frame are stored in `measurements`, linked by
+The stored measurements of that frame are in `measurements`, linked by
 `frame_id`. `ordinal` preserves their order and permits repeated attribute names
 in one frame. `attribute` and `unit` identify the measure. `type` selects exactly
 one value representation:
@@ -412,9 +416,9 @@ one value representation:
 
 Other value columns are NULL by design. CHECK constraints prevent incompatible
 combinations. There is no last-value carry-forward: an absent attribute stays
-absent from that frame. Complete JSON retains the decoder's representation,
-including calculated attributes, rather than labelling them all as raw readings.
-Successfully decoded repeats are separate receptions, not timestamp upserts.
+absent from that frame. Values keep the decoder's representation under their
+published names. Successfully decoded repeats are separate receptions, not
+timestamp upserts.
 
 For example, query complete frames and typed values:
 
@@ -448,96 +452,89 @@ than copying only the main file of a live database; do not delete its WAL/SHM.
 
 Prefer local USB ext4 storage with reliable locking/shared memory, not a network
 share or continuous writes to router internal flash. WAL does not bypass
-filesystem requirements. Without optional history maintenance the DB grows.
+filesystem requirements. History series grow without limit unless their
+attributes use a progressive retention rule.
 
 ### Progressive History Maintenance
 
-An optional thread inside the gateway archives and consolidates history; no
-cron, external process or database server is required. It is disabled by default.
-Freetz users can configure every setting and age band graphically under
-**Settings → Frontends → SQLite → Retention policies**. Save and explicitly
-restart to apply changes. The standalone YAML/CLI uses the same schema and
-validation as reception and the CGI:
+A thread inside the gateway archives recent frames and applies the retention
+rules; no cron, external process or database server is required. It runs while
+SQLite is enabled, every `maintenance.interval_s` seconds. Freetz users configure
+it under **Settings → Frontends → SQLite**; the standalone YAML/CLI uses the same
+schema and validation:
 
 ```yaml
 frontends:
   sqlite:
     enabled: true
     path: /absolute/path/on/local-storage/readings.sqlite3
+    recent_frames_s: 600
+    retention_rules:
+      climate:
+        mode: progressive
+        tiers:
+          - {max_age_s: 600, sample_interval_s: 0}
+          - {max_age_s: 3600, sample_interval_s: 60}
+          - {max_age_s: 86400, sample_interval_s: 150}
+          - {max_age_s: 604800, sample_interval_s: 3600}
+          - {max_age_s: 4838400, sample_interval_s: 14400}
+          - {max_age_s: 63072000, sample_interval_s: 21600}
     maintenance:
-      enabled: true
-      counter_mode: discard
-      other_numeric_mode: keep_all
       interval_s: 300
       batch_size: 100
       max_work_ms: 100
-      raw_retention_s: 600
+attribute_defaults:
+  sqlite: history
+  retention: climate
+devices:
+  - mac: AABBCCDDEEFF
+    attributes:
+      - {source: opened, retention: events}
+      - {source: packet_id, sqlite: off}
 ```
 
-Omitting `policies` loads all built-in presets. Setting it explicitly replaces
-that list. Each policy has `mac` (empty = all devices), `attribute`, `mode`
-(`keep_all`, `discard` or `progressive`) and `tiers`, an ordered list of
-`{max_age_s, sample_interval_s}`. A specific MAC/attribute overrides the global
-attribute policy. Attribute and unit identify separate measurement series.
+The attribute settings decide what is kept: `sqlite: off` stores nothing,
+`live` keeps the value only in the recent complete frames, `history` also moves
+it into a series when its frame expires, and `retention` names the rule applied
+to that series. A device or attribute that is no longer configured is not
+archived. Frames older than `recent_frames_s` (default 600 s, at most one year)
+are archived and deleted. `recent_frames_s: 0` writes `history` attributes
+directly into their series and rejects `live`.
 
-The temperature preset is:
+A rule has `mode` `keep_all` (also `default`) or `progressive` and, for
+`progressive`, 1-16 `tiers` of `{max_age_s, sample_interval_s}`. Rule names have
+1-64 letters, digits, `_`, `.` or `-` and cannot be `default`. Omitting
+`retention_rules` loads three rules; writing the key replaces them:
 
-| Sample age | Sample interval |
-|------------|-----------------|
-| 0–10 minutes | Every sample |
-| 10 minutes–1 hour | 60 seconds |
-| 1 hour–1 day | 150 seconds (two intervals per five minutes) |
-| 1 day–1 week | 1 hour |
-| 1–8 weeks | 4 hours |
-| 8 weeks–24 months | 6 hours |
-| Older | Delete |
+| Rule | Bands |
+|------|-------|
+| `climate` | every sample for 10 minutes, then 60 s until 1 hour, 150 s until 1 day, 1 hour until 1 week, 4 hours until 8 weeks, 6 hours until 24 months |
+| `battery` | 15 minutes until 1 hour, 1 hour until 1 day, 4 hours until 1 week, 1 day until 8 weeks, 2 days until 24 months |
+| `events` | every sample for 30 days |
 
-Battery percentage (`battery_level`, `battery`) and voltage (`battery_v`,
-`voltage`) use much coarser presets: 15 minutes until one hour old, one hour
-until one day, four hours until one week, one day until eight weeks, then
-48 hours until 24 months, followed by deletion. A month here is 365/12 days;
-24 months are 730 days, not calendar-month boundaries.
+A month here is 365/12 days; 24 months are 730 days, not calendar-month
+boundaries. Within a band, intervals retain the latest **remaining real
+sample** of each UTC-aligned bucket: no averages, interpolation, min/max columns
+or synthetic readings. `sample_interval_s: 0` keeps every sample in that band.
+Age limits must strictly increase, intervals must not decrease and must not
+exceed the band age. Integers and reals are thinned; booleans, unsigned
+integers, text, JSON and null are never thinned. Every sample older than the
+last band is deleted, whatever its type. A `history` attribute without a rule
+keeps every sample. Thinning and deletion are irreversible: changing bands
+cannot reconstruct samples removed earlier.
 
-Intervals retain the latest **remaining real sample** in each UTC-aligned
-bucket: no averages, interpolation, min/max columns or synthetic readings.
-Progressive thinning is irreversible; changing bands cannot reconstruct samples
-removed by an earlier policy. Age limits must strictly increase, intervals must
-not decrease, and `sample_interval_s: 0` keeps every sample in that band.
-Complete raw frames remain for at least `raw_retention_s`, so that horizon is
-also a lower bound on full-resolution retention.
+The age bands are a target, not a strict deadline: work is performed in
+bounded chunks and can be delayed by a backlog, database contention or storage
+errors. In the Freetz settings, **Stored series** lists the series by
+device/attribute with the treatment of the saved configuration, deletes one of
+them (recent measurements and history), and deletes in one step every series
+the configuration no longer stores. Back up first. Deletion does not shrink the
+database file immediately; SQLite reuses freed pages, and the gateway
+deliberately does not run a disruptive automatic `VACUUM`. A series stored
+again is recreated by its next value.
 
-**Recognized counters are excluded from consolidated history by default.**
-`counter_mode: discard` covers `counter`, `packet_id`, `count_id`,
-`count_i/count_s/count_m/count_l` and `counter8/16/32`, including unsigned values.
-It also applies to existing policy lists that omit those attributes. Choose
-`keep_all` to retain counters globally, or override an individual attribute/MAC
-with `keep_all`, `discard` or a progressive policy. Recent complete raw frames
-still contain these fields until `raw_retention_s` expires.
-
-For numeric attributes without an explicit policy, `other_numeric_mode:
-keep_all` preserves every sample (the default); `discard` removes eligible
-numeric history after the raw-frame horizon. This fallback excludes recognized
-counters, which use `counter_mode`. A specific MAC/attribute policy takes
-precedence over both defaults. Known contact/GPIO/discrete attributes reject
-discard and progressive policies. Boolean, text, JSON and null values are never
-pruned; unsigned values can be discarded but are not progressively thinned.
-Custom numeric discrete attributes should use `keep_all`.
-
-The raw horizon is a minimum, not a strict expiration deadline: work is
-performed in bounded chunks and can be delayed by a backlog, database contention,
-or storage errors. With maintenance disabled no retention runs and the database
-continues to grow. In the Freetz retention settings, **Stored SQLite attributes**
-lists stored measurements by device/attribute and can permanently delete one
-attribute from both raw frames and consolidated history. Back up first. This
-does not shrink the database file immediately; SQLite reuses freed pages, and
-the gateway deliberately does not run a disruptive automatic `VACUUM`. If the
-decoder still produces a deleted attribute, it will be stored again unless it
-is removed from that device's `publish` list.
-
-**Back up the database before enabling.** First activation extends schema 1 to
-schema 2 transactionally, without rewriting existing samples. The thread moves
-older frames in atomic chunks into these normalized tables before deleting the
-source frame and its measurements:
+Opening a database creates the history tables, extending schema 1 to schema 2
+transactionally without rewriting existing samples:
 
 - `history_devices(mac, sensor_name, device_json)` stores shared device metadata.
 - `history_series(id, mac, attribute, unit)` identifies each independent series.
@@ -557,10 +554,8 @@ ORDER BY received_at_ns DESC;
 
 `frames`/`measurements` contain only the recent complete-frame horizon after
 maintenance catches up. The archive intentionally does not retain old full
-packet/radio JSON. Disable maintenance to stop further transfers/deletions;
-existing archives remain accessible through `history`, but are not expanded
-back into full frames. Older schema-1-only binaries cannot reopen schema 2:
-restore the pre-migration backup if downgrading.
+packet/radio JSON. Older schema-1-only binaries cannot reopen schema 2: restore
+a backup if downgrading.
 
 The thread uses a separate connection, small transactions and SQLite progress
 cancellation. Receiver and maintenance share a write gate that prioritizes
@@ -578,10 +573,7 @@ write access is released. SQL cancellation cannot bound a stalled
 filesystem/fsync. An unsynchronized clock before 2020 postpones maintenance.
 Shutdown wakes the thread rather than waiting for `interval_s` (1–86400 seconds).
 
-Background deletion makes pages reusable; it does not promise a smaller `.db`
-file. No disruptive automatic full `VACUUM` is run. Retention is eventual, not
-a hard deletion deadline: a backlog, storage error or insufficient work budget
-can postpone it. Rendering and rollup charts remain the external reader's job.
+Rendering and rollup charts remain the external reader's job.
 
 ### Sensor dashboard CGI
 
@@ -621,13 +613,14 @@ dashboard also works before history maintenance has ever run:
 The newest value of a series is the newer of the last `history_samples` row and
 a raw lookup that walks `frames_mac_time` backwards with
 `INDEXED BY frames_mac_time` and stops at the first hit; it therefore does not
-scan the whole `measurements` table when maintenance is disabled. Charts are
+scan the whole `measurements` table. Charts are
 bucketed in SQL per series and merged with sample-count weighting, so archived
 and raw data can be combined without interpolation.
 
 Static assets stay plain files (`portal.css`, `portal.js`, referenced with a
 version query so a caching httpd serves new copies) and draw the chart on a
-canvas without any library: the page works on a router without Internet access.
+canvas, with a small bundled D3 Shape interpolator for the optional smooth line:
+the page works on a router without Internet access.
 Hovering draws a crosshair plus one marker per series; dragging selects a time
 window, `+`/`−`/reset change it and `⛶` uses the Fullscreen API. Measured on the FRITZ!Box 7590 AX against the production database, one
 request peaks at about 7 MB RSS; the equivalent PHP 8.5 `php-cgi` script with
@@ -691,8 +684,9 @@ The device availability status uses a read-only Ace JSON editor. Webhook
 configuration is automatically expanded when its URL is missing, including for
 a newly added disabled rule; configured destinations start collapsed.
 
-Freshness is recorded from valid decoded measurements before `expose` filtering,
-independently of SQLite batching, retention and merged last-value snapshots.
+Freshness is recorded from valid decoded measurements under their published
+names, whether or not a frontend publishes them, and independently of SQLite
+batching, retention and merged last-value snapshots.
 An unchanged temperature received again is fresh; a battery-only packet,
 unknown device, unsupported packet or decoding failure does not refresh it.
 Devices that have never produced a reading can also expire after startup grace.
@@ -770,11 +764,13 @@ configuration. Frequent status and advertisement-event polls are not logged.
 At INFO level, GATT also reports connection, MTU, discovery, subscription,
 request-write and notification stages, so a timeout can be located.
 
-Measurement logs include the configured child number, parameter name and decoded
-unit, for example `child 0: temperature=16.08 °C` or
-`child 3: battery v=3.01 V`. Unitless values such as GPIO states have no invented
-unit. Child numbers are per-device mappings from `expose`; logging does not
-change child IDs or any MySensors, MQTT or Matter payload.
+Measurement logs report, for each advertisement, the attributes listed in the
+device that are published to at least one frontend, with name and decoded unit,
+for example `temperature=16.08 °C` or `battery v=3.01 V`. `child N` precedes
+the value when it is sent to MySensors; child IDs are fixed per published name.
+Unitless values such as GPIO states have no invented unit. `--trace-decode`
+logs every decoded attribute. Logging does not change any MySensors, MQTT or
+Matter payload.
 
 `--log-color auto|always|never` colors severity levels, device labels (cyan)
 and complete parameter/value/unit descriptions (yellow). The default `auto`
@@ -824,35 +820,33 @@ values: use isolated brokers/ports, never production automation. Matter always
 uses a private simulation fabric without mDNS or the managed Domoticz controller.
 Capture bindkeys are not imported automatically; `--import-bindkeys` permits
 them only in a generated private configuration. Original files are not changed.
-Generated devices expose temperature (child 0), humidity (child 1), battery level
-(child 2) and flooding (child 3), so flood alarms appear in ordinary replay logs.
-Existing device configurations retain their own `expose` mappings; include
-`flooding` there to log flood alarms when replaying with `--config`.
+Generated devices list temperature, humidity, battery level and flooding for
+MySensors, so these values, flood alarms included, appear in ordinary replay
+logs (without a child number, since frontends are disabled). Existing device
+configurations keep their own `attributes`; list `flooding` there to log flood
+alarms when replaying with `--config`.
 
-Use `--expose-all` to add every gateway-supported measurement to each enabled
-device's private `expose` list, preserving existing explicit and implicit child
-IDs. The supported list comes from the binary, not a second Python decoder.
-Stderr lists the missing exposures added and warns about captured devices without
-an enabled configuration or archived keys absent from the configuration. It does
-not enable disabled devices, add missing devices to an existing device list,
-import keys without permission, or modify the source configuration. Not every
-device transmits every supported measurement. The gateway's 200-exposure total
-limit still applies; exceeding it rejects the simulation explicitly.
+Use `--list-all` to list every MySensors measurement in each enabled device's
+private configuration, keeping the attribute settings already present. The
+list comes from the binary (`--web-config catalog`), not a second Python
+decoder. Stderr lists the attributes added and warns about captured devices
+without an enabled configuration or archived keys absent from the configuration.
+It does not enable disabled devices, add missing devices to an existing device
+list, import keys without permission, or modify the source configuration. Not
+every device transmits every measurement.
 
 Gateway logging/trace options can follow `--`, or be passed as repeated
 `--binary-arg` tokens:
 
 ```sh
-python3 tools/replay_capture.py trace.pickle --binary ./target/debug/ble2uart-gateway --import-bindkeys --expose-all -- --trace-decode --log-level debug
+python3 tools/replay_capture.py trace.pickle --binary ./target/debug/ble2uart-gateway --import-bindkeys --list-all -- --trace-decode --log-level debug
 python3 tools/replay_capture.py trace.pickle --binary ./target/debug/ble2uart-gateway --binary-arg=--log-color --binary-arg=always
 ```
 
-`--trace-decode` also displays decoded fields that have no supported exposure.
+`--trace-decode` also displays decoded attributes that are not listed.
 Forwarding is limited to logging/trace options: configuration, serial-device and
 alternate command overrides are rejected to preserve simulation isolation.
-These options and `--expose-all` require supervisor mode, not `--no-launch`.
-Rebuild the binary after updating the supported-attributes API used by
-`--expose-all` (`--web-config attributes`).
+These options and `--list-all` require supervisor mode, not `--no-launch`.
 
 ## Freetz Integration And Publishing
 

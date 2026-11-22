@@ -81,7 +81,7 @@ def run(binary):
 
         process = start()
         try:
-            wait_query(process, "PRAGMA user_version", [(1,)])
+            wait_query(process, "PRAGMA user_version", [(2,)])
             wait_query(process, "SELECT count(*) FROM frames", [(0,)])
         finally:
             stop(process)
@@ -106,13 +106,19 @@ def run(binary):
                         (frame, ordinal, attribute, unit, kind, real, integer),
                     )
 
-        maintenance = sqlite["maintenance"]
-        maintenance.update(enabled=True, interval_s=1, raw_retention_s=1, batch_size=2)
-        maintenance["policies"] = [
-            {"mac": "", "attribute": attribute, "mode": "progressive",
-             "tiers": [{"max_age_s": 2 * 86400, "sample_interval_s": interval}]}
-            for attribute, interval in [("temperature", 60), ("battery_level", 86400)]
-        ]
+        # Recent frames expire after one second; listed attributes become
+        # history series, the unlisted counter is not stored.
+        sqlite.update(recent_frames_s=1, retention_rules={
+            name: {"mode": "progressive", "tiers": [{"max_age_s": 2 * 86400, "sample_interval_s": interval}]}
+            for name, interval in [("climate", 60), ("battery", 86400)]
+        })
+        sqlite["maintenance"].update(interval_s=1, batch_size=2)
+        config["devices"] = [{"mac": "AABBCCDDEEFF", "label": "Synthetic", "attributes": [
+            {"source": "temperature", "sqlite": "history", "retention": "climate"},
+            {"source": "battery_level", "sqlite": "history", "retention": "battery"},
+            {"source": "opened", "sqlite": "history"},
+            {"source": "humidity", "sqlite": "history"},
+        ]}]
         process = start()
         expected = [("battery_level", 1), ("opened", 5), ("temperature", 2)]
         try:
@@ -139,14 +145,13 @@ def run(binary):
         finally:
             stop(process)
 
-        maintenance["enabled"] = False
         process = start()
         try:
             wait_query(process, "SELECT attribute,count(*) FROM history GROUP BY attribute ORDER BY attribute", expected)
         finally:
             stop(process)
         return {"schema": 2, "temperature_samples": 2, "battery_samples": 1,
-            "contact_samples": 5, "counter_samples": 0, "reopen_without_maintenance": True,
+            "contact_samples": 5, "counter_samples": 0, "reopen_keeps_history": True,
             "external_writer_lock_recovered": True, "transient_lock_warning_spam": False}
 
 

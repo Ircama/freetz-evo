@@ -62,6 +62,10 @@ fn default_frontend_bind() -> String {
     "127.0.0.1".into()
 }
 
+fn default_theengs_prefix() -> String {
+    "theengs_".into()
+}
+
 /// Serial link parameters (the firmware ignores the baud rate: it uses the
 /// ESP32-C3 native USB Serial/JTAG, but a serial stack needs a baud rate to
 /// open the port, hence it is kept in the configuration).
@@ -150,16 +154,26 @@ impl Default for ScannerConfig {
 pub enum DecoderMode {
     /// The generated specification of this gateway (default).
     #[default]
+    #[serde(alias = "default")]
     Builtin,
     /// Theengs Decoder only: it also handles formats this gateway does not
     /// know, but it cannot decrypt bindkey advertisements.
     Theengs,
     /// Both: the built-in attributes plus the Theengs ones prefixed with
-    /// `theengs_`.
+    /// `theengs_prefix`.
     Both,
 }
 
 impl DecoderMode {
+    fn parse(text: &str) -> Option<Self> {
+        match text {
+            "builtin" => Some(Self::Builtin),
+            "theengs" => Some(Self::Theengs),
+            "both" => Some(Self::Both),
+            _ => None,
+        }
+    }
+
     pub fn uses_builtin(self) -> bool {
         matches!(self, DecoderMode::Builtin | DecoderMode::Both)
     }
@@ -177,42 +191,264 @@ impl DecoderMode {
     }
 }
 
+/// A device decoder of `default` (or none) inherits the global `decoder`.
+fn inherited_decoder<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Option<DecoderMode>, D::Error> {
+    match Option::<String>::deserialize(deserializer)?.as_deref() {
+        None | Some("default") => Ok(None),
+        Some(text) => DecoderMode::parse(text).map(Some)
+            .ok_or_else(|| serde::de::Error::custom("expected builtin, theengs, both or default")),
+    }
+}
+
+/// Text settings where `default` means the same as leaving the key out.
+fn default_text<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    let text = String::deserialize(deserializer)?;
+    let text = text.trim();
+    Ok(if text == "default" { String::new() } else { text.to_string() })
+}
+
+/// `true`, `false` or `default`; `default` and an omitted key both inherit.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum Toggle {
+    #[default]
+    Default,
+    On,
+    Off,
+}
+
+impl Toggle {
+    pub fn is_default(&self) -> bool {
+        *self == Toggle::Default
+    }
+
+    pub fn or(self, fallback: bool) -> bool {
+        match self {
+            Toggle::On => true,
+            Toggle::Off => false,
+            Toggle::Default => fallback,
+        }
+    }
+}
+
+impl Serialize for Toggle {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Toggle::On => serializer.serialize_bool(true),
+            Toggle::Off => serializer.serialize_bool(false),
+            Toggle::Default => serializer.serialize_str("default"),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Toggle {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            Flag(bool),
+            Text(String),
+        }
+        match Raw::deserialize(deserializer)? {
+            Raw::Flag(true) => Ok(Toggle::On),
+            Raw::Flag(false) => Ok(Toggle::Off),
+            Raw::Text(text) => match text.as_str() {
+                "default" => Ok(Toggle::Default),
+                "true" => Ok(Toggle::On),
+                "false" => Ok(Toggle::Off),
+                _ => Err(serde::de::Error::custom("expected true, false or default")),
+            },
+        }
+    }
+}
+
+/// What SQLite keeps of an attribute: nothing, the recent frames shown by the
+/// portal, or the recent frames plus the retained history.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SqliteMode {
+    #[default]
+    Default,
+    Off,
+    Live,
+    History,
+}
+
+impl SqliteMode {
+    pub fn is_default(&self) -> bool {
+        *self == SqliteMode::Default
+    }
+
+    pub fn or(self, fallback: SqliteMode) -> SqliteMode {
+        match (self, fallback) {
+            (SqliteMode::Default, SqliteMode::Default) => SqliteMode::Off,
+            (SqliteMode::Default, fallback) => fallback,
+            (mode, _) => mode,
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            SqliteMode::Default => "default",
+            SqliteMode::Off => "off",
+            SqliteMode::Live => "live",
+            SqliteMode::History => "history",
+        }
+    }
+}
+
+/// How one decoded attribute is named and where it is published.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct AttributeConfig {
+    /// Name produced by the decoder, `theengs_prefix` included in `both` mode.
+    pub source: String,
+    /// Published name; empty or `default` keeps `source`.
+    #[serde(default, deserialize_with = "default_text", skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// Unit override; empty or `default` keeps the decoder unit.
+    #[serde(default, deserialize_with = "default_text", skip_serializing_if = "String::is_empty")]
+    pub unit: String,
+    #[serde(default, skip_serializing_if = "Toggle::is_default")]
+    pub mqtt: Toggle,
+    #[serde(default, skip_serializing_if = "Toggle::is_default")]
+    pub influx: Toggle,
+    #[serde(default, skip_serializing_if = "Toggle::is_default")]
+    pub matter: Toggle,
+    #[serde(default, skip_serializing_if = "Toggle::is_default")]
+    pub mysensors: Toggle,
+    #[serde(default, skip_serializing_if = "SqliteMode::is_default")]
+    pub sqlite: SqliteMode,
+    /// Name of a `frontends.sqlite.retention_rules` entry; empty or `default` inherits.
+    #[serde(default, deserialize_with = "default_text", skip_serializing_if = "String::is_empty")]
+    pub retention: String,
+}
+
+impl AttributeConfig {
+    pub fn name(&self) -> &str {
+        if self.name.is_empty() { &self.source } else { &self.name }
+    }
+}
+
+/// Publication of every attribute that a device does not list, and of the
+/// `default` values of the listed ones. Everything off by default.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default, deny_unknown_fields)]
+pub struct AttributeDefaults {
+    #[serde(skip_serializing_if = "Toggle::is_default")]
+    pub mqtt: Toggle,
+    #[serde(skip_serializing_if = "Toggle::is_default")]
+    pub influx: Toggle,
+    #[serde(skip_serializing_if = "Toggle::is_default")]
+    pub matter: Toggle,
+    #[serde(skip_serializing_if = "Toggle::is_default")]
+    pub mysensors: Toggle,
+    #[serde(skip_serializing_if = "SqliteMode::is_default")]
+    pub sqlite: SqliteMode,
+    #[serde(deserialize_with = "default_text", skip_serializing_if = "String::is_empty")]
+    pub retention: String,
+}
+
+impl AttributeDefaults {
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+}
+
+/// Effective publication of one attribute after `default` inheritance.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Route {
+    /// Published name; empty for the fallback route, which keeps the source.
+    pub name: String,
+    /// Unit override; empty keeps the decoder unit.
+    pub unit: String,
+    pub mqtt: bool,
+    pub influx: bool,
+    pub matter: bool,
+    pub mysensors: bool,
+    /// `Off`, `Live` or `History`, never `Default`.
+    pub sqlite: SqliteMode,
+    /// Retention rule name; empty keeps every historical sample.
+    pub retention: String,
+}
+
+/// The routes of one device: the listed attributes and the fallback.
+#[derive(Debug, Clone, Default)]
+pub struct Routing {
+    listed: Vec<(String, Route)>,
+    fallback: Route,
+}
+
+impl Routing {
+    /// Published name and route of a decoded attribute. A source shadowed by a
+    /// listed attribute that already publishes its name is dropped.
+    pub fn route<'a>(&'a self, source: &'a str) -> Option<(&'a str, &'a Route)> {
+        if let Some((_, route)) = self.listed.iter().find(|(listed, _)| listed == source) {
+            return Some((&route.name, route));
+        }
+        if self.listed.iter().any(|(_, route)| route.name == source) {
+            return None;
+        }
+        Some((source, &self.fallback))
+    }
+
+    pub fn listed(&self) -> impl Iterator<Item = &Route> {
+        self.listed.iter().map(|(_, route)| route)
+    }
+
+    /// Whether the device configures this decoded attribute explicitly.
+    pub fn is_listed(&self, source: &str) -> bool {
+        self.listed.iter().any(|(listed, _)| listed == source)
+    }
+
+    /// Effective SQLite mode and rule of a stored (published) name.
+    pub fn stored(&self, name: &str) -> (SqliteMode, &str) {
+        if let Some(route) = self.listed().find(|route| route.name == name) {
+            return (route.sqlite, &route.retention);
+        }
+        if self.listed.iter().any(|(source, _)| source == name) {
+            return (SqliteMode::Off, "");
+        }
+        (self.fallback.sqlite, &self.fallback.retention)
+    }
+}
+
+fn valid_name(name: &str, limit: usize) -> bool {
+    !name.is_empty() && name.len() <= limit
+        && name.bytes().all(|byte| byte.is_ascii_alphanumeric() || b"_.-".contains(&byte))
+}
+
 /// A device the user cares about. `bindkey` is the AES-128 key of the
 /// encrypted formats and is never written to logs or to the web interface in
 /// clear.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DeviceConfig {
     pub mac: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub manufacturer: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub model: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub firmware_version: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub label: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub bindkey: String,
     #[serde(default = "default_true")]
     pub enabled: bool,
     /// Force a codec format when the advertisement UUID is ambiguous, e.g.
     /// "atc1441_enc" or "bt_home_v2". Empty: detect from the service data.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub format: String,
-    /// Which canonical attributes to expose, and optionally the fixed
-    /// (node, child) pair of the MySensors front-end. Attributes that are not
-    /// listed are decoded but only kept in memory for rules.
-    #[serde(default)]
-    pub expose: Vec<ExposeConfig>,
-    /// Per-device missing-reading monitors with independent HTTPS destinations.
-    #[serde(default,deserialize_with="crate::automation::deserialize_rules")]
-    pub rules: Vec<crate::automation::AutomationRule>,
-    /// Overrides the global `decoder` for this device.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Overrides the global `decoder`; omitted or `default` inherits it.
+    #[serde(default, deserialize_with = "inherited_decoder", skip_serializing_if = "Option::is_none")]
     pub decoder: Option<DecoderMode>,
-    /// Fields to publish (and their published names); empty publishes all.
+    /// Attributes whose name or publication differs from `attribute_defaults`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub publish: Vec<PublishConfig>,
+    pub attributes: Vec<AttributeConfig>,
+    /// Per-device missing-reading monitors with independent HTTPS destinations.
+    #[serde(default, deserialize_with = "crate::automation::deserialize_rules", skip_serializing_if = "Vec::is_empty")]
+    pub rules: Vec<crate::automation::AutomationRule>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -264,36 +500,6 @@ impl DeviceConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExposeConfig {
-    /// Canonical attribute name, e.g. "temperature", "humidity", "battery".
-    pub attribute: String,
-    /// MySensors child id (0..=255). Fixed when given, allocated and persisted
-    /// otherwise, so Domoticz devices never move.
-    #[serde(default)]
-    pub child: Option<u8>,
-    #[serde(default)]
-    pub kind: Option<String>,
-}
-
-/// Which decoded field becomes which published attribute.
-///
-/// An empty `publish` list keeps every field the decoder produced (the
-/// historical behaviour). When the list is not empty only the listed sources
-/// are published, so the SQLite columns, the MQTT state, InfluxDB and the
-/// Matter clusters receive exactly the chosen attributes.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct PublishConfig {
-    /// Field name produced by the decoder, e.g. `temperature` (built-in) or
-    /// `theengs_temperature` in the `both` mode.
-    pub source: String,
-    /// Published attribute name; empty keeps `source`.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub attribute: String,
-    /// Unit override; empty keeps the unit of the decoder.
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub unit: String,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MySensorsConfig {
@@ -544,6 +750,9 @@ pub struct Config {
     pub serial: SerialConfig,
     #[serde(default)]
     pub scanner: ScannerConfig,
+    /// Publication of the attributes a device does not list.
+    #[serde(default, skip_serializing_if = "AttributeDefaults::is_default")]
+    pub attribute_defaults: AttributeDefaults,
     #[serde(default)]
     pub devices: Vec<DeviceConfig>,
     #[serde(default)]
@@ -563,6 +772,8 @@ pub struct Config {
     /// behaviour.
     #[serde(default)]
     pub decoder: DecoderMode,
+    #[serde(default = "default_theengs_prefix")]
+    pub theengs_prefix: String,
 }
 
 impl Default for Config {
@@ -573,6 +784,7 @@ impl Default for Config {
             version: CONFIG_VERSION,
             serial: SerialConfig::default(),
             scanner: ScannerConfig::default(),
+            attribute_defaults: AttributeDefaults::default(),
             devices: Vec::new(),
             frontends: Frontends {
                 sqlite: crate::sqlite::SqliteConfig::default(),
@@ -590,11 +802,90 @@ impl Default for Config {
             automation: None,
             availability_state_file: String::new(),
             decoder: DecoderMode::default(),
+            theengs_prefix: default_theengs_prefix(),
         }
     }
 }
 
 impl Config {
+    /// Routes of a device after `default` inheritance.
+    pub fn routing(&self, device: &DeviceConfig) -> Routing {
+        let defaults = &self.attribute_defaults;
+        let fallback = Route {
+            name: String::new(),
+            unit: String::new(),
+            mqtt: defaults.mqtt.or(false),
+            influx: defaults.influx.or(false),
+            matter: defaults.matter.or(false),
+            mysensors: defaults.mysensors.or(false),
+            sqlite: defaults.sqlite.or(SqliteMode::Off),
+            retention: defaults.retention.clone(),
+        };
+        let listed = device.attributes.iter().map(|attribute| {
+            let sqlite = attribute.sqlite.or(fallback.sqlite);
+            (attribute.source.clone(), Route {
+                name: attribute.name().to_string(),
+                unit: attribute.unit.clone(),
+                mqtt: attribute.mqtt.or(fallback.mqtt),
+                influx: attribute.influx.or(fallback.influx),
+                matter: attribute.matter.or(fallback.matter),
+                mysensors: attribute.mysensors.or(fallback.mysensors),
+                sqlite,
+                retention: if attribute.retention.is_empty() { fallback.retention.clone() } else { attribute.retention.clone() },
+            })
+        }).collect();
+        Routing { listed, fallback }
+    }
+
+    fn validate_attributes(&self) -> Result<(), String> {
+        let sqlite = &self.frontends.sqlite;
+        sqlite.validate_rules()?;
+        let rule = |name: &str| name.is_empty() || sqlite.retention_rules.contains_key(name);
+        let defaults = &self.attribute_defaults;
+        if !rule(&defaults.retention) {
+            return Err(format!("attribute_defaults: unknown retention rule {}", defaults.retention));
+        }
+        if sqlite.enabled && sqlite.recent_frames_s == 0 && defaults.sqlite == SqliteMode::Live {
+            return Err("attribute_defaults: sqlite live needs recent frames (frontends.sqlite.recent_frames_s > 0)".into());
+        }
+        for device in &self.devices {
+            if device.attributes.len() > 256 {
+                return Err(format!("{}: at most 256 attributes per device", device.mac));
+            }
+            let mut sources = std::collections::BTreeSet::new();
+            let mut names = std::collections::BTreeSet::new();
+            for attribute in &device.attributes {
+                let context = format!("{} {}", device.mac, attribute.source);
+                if !valid_name(&attribute.source, 128) || !valid_name(attribute.name(), 128) {
+                    return Err(format!("{context}: source and name need 1-128 ASCII letters, digits, '_', '.' or '-'"));
+                }
+                if !sources.insert(attribute.source.as_str()) {
+                    return Err(format!("{context}: attribute listed twice"));
+                }
+                if !names.insert(attribute.name()) {
+                    return Err(format!("{context}: published name {} is used twice", attribute.name()));
+                }
+                if attribute.unit.len() > 32 || attribute.unit.chars().any(char::is_control) {
+                    return Err(format!("{context}: unit must be at most 32 characters without control characters"));
+                }
+                if !rule(&attribute.retention) {
+                    return Err(format!("{context}: unknown retention rule {}", attribute.retention));
+                }
+                let mode = attribute.sqlite.or(defaults.sqlite);
+                if !attribute.retention.is_empty() && mode != SqliteMode::History {
+                    return Err(format!("{context}: a retention rule needs sqlite history"));
+                }
+                if sqlite.enabled && sqlite.recent_frames_s == 0 && mode == SqliteMode::Live {
+                    return Err(format!("{context}: sqlite live needs recent frames (frontends.sqlite.recent_frames_s > 0)"));
+                }
+                if attribute.mysensors == Toggle::On && crate::pipeline::mysensors_child(attribute.name()).is_none() {
+                    return Err(format!("{context}: MySensors has no sensor type for {}", attribute.name()));
+                }
+            }
+        }
+        Ok(())
+    }
+
     pub fn prepare_availability(&mut self,path: &Path) -> Result<(),String> {
         if let Some(legacy)=self.automation.take() {
             if self.availability_state_file.is_empty() {self.availability_state_file=legacy.state_file;}
@@ -663,6 +954,11 @@ impl Config {
     }
 
     pub fn validate(&self) -> Result<(), String> {
+        if self.theengs_prefix.is_empty() || self.theengs_prefix.len() > 64
+            || !self.theengs_prefix.bytes().all(|byte| byte.is_ascii_alphanumeric() || b"_.-".contains(&byte))
+        {
+            return Err("Theengs prefix must contain 1-64 ASCII letters, digits, underscores, dots or hyphens".into());
+        }
         crate::logger::parse_level(&self.log_level)?;
         if !(16..=4096).contains(&self.logging.max_size_kb) {
             return Err("logging.max_size_kb must be between 16 and 4096".into());
@@ -680,25 +976,6 @@ impl Config {
                 "decoder theengs/both needs a build with FREETZ_PACKAGE_BLE2UART_GATEWAY_THEENGS"
                     .into(),
             );
-        }
-        for device in &self.devices {
-            let mut names = std::collections::BTreeSet::new();
-            for entry in &device.publish {
-                if entry.source.trim().is_empty() {
-                    return Err(format!("{}: publish source must not be empty", device.mac));
-                }
-                let attribute = if entry.attribute.trim().is_empty() {
-                    entry.source.trim()
-                } else {
-                    entry.attribute.trim()
-                };
-                if !names.insert(attribute.to_string()) {
-                    return Err(format!(
-                        "{}: duplicate published attribute {attribute}",
-                        device.mac
-                    ));
-                }
-            }
         }
         if self.devices.iter().map(|device|device.rules.len()).sum::<usize>()>4096 {
             return Err("at most 4096 automation device/rule watches are supported".into());
@@ -744,12 +1021,8 @@ impl Config {
                 rule.validate()?;
                 if !rule_ids.insert(&rule.id) {return Err("availability rule IDs must be unique within each device".into());}
             }
-            for expose in &device.expose {
-                if expose.attribute.trim().is_empty() {
-                    return Err(format!("device {mac:02X?}: expose.attribute must not be empty"));
-                }
-            }
         }
+        self.validate_attributes()?;
         self.mac_filters()?;
         if self.frontends.influx.enabled { self.frontends.influx.validate()?; }
         if self.frontends.sqlite.enabled { self.frontends.sqlite.validate()?; }
@@ -774,10 +1047,6 @@ impl Config {
         }
         if self.frontends.matter.enabled && (self.frontends.matter.port == 0 || self.frontends.matter.bind.parse::<std::net::IpAddr>().is_err() || !Path::new(&self.frontends.matter.store).is_absolute() || Path::new(&self.frontends.matter.store).parent().is_none()) {
             return Err("Matter requires a bind IP, nonzero port and an absolute persistent store".into());
-        }
-        let children: usize = self.devices.iter().map(|d| d.expose.len()).sum();
-        if children > 200 {
-            return Err("at most 200 exposed attributes are supported".into());
         }
         Ok(())
     }
@@ -888,6 +1157,8 @@ fn set_in(node: &mut serde_yaml::Value, parts: &[&str], value: &str) -> Result<(
                 }
             }
             Some(serde_yaml::Value::Sequence(_)) => serde_yaml::from_str(value).map_err(|error| format!("{key}: {error}"))?,
+            // Omitted optional lists and maps (for example empty attributes) take YAML.
+            None if value.trim_start().starts_with(['[', '{']) => serde_yaml::from_str(value).map_err(|error| format!("{key}: {error}"))?,
             _ => serde_yaml::Value::String(value.to_string()),
         };
         mapping.insert(yaml_key, new);
@@ -966,6 +1237,19 @@ pub fn parse_key(text: &str) -> Result<[u8; 16], String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn theengs_prefix_defaults_and_roundtrips() {
+        let mut config: Config = serde_yaml::from_str("version: 1\n").unwrap();
+        assert_eq!(config.theengs_prefix, "theengs_");
+        config.set("theengs_prefix", "td_").unwrap();
+        let restored: Config = serde_yaml::from_str(&serde_yaml::to_string(&config).unwrap()).unwrap();
+        assert_eq!(restored.theengs_prefix, "td_");
+        for prefix in ["", "bad prefix", "bad/prefix", "\n"] {
+            config.theengs_prefix = prefix.into();
+            assert!(config.validate().is_err());
+        }
+    }
 
     #[test]
     fn matter_mdns_backend_options_are_validated_and_backward_compatible() {
@@ -1064,11 +1348,12 @@ mod tests {
 
     #[test]
     fn parses_the_portal_yaml() {
-        let text = "version: 1\ndevices:\n  - mac: 582D343B8A1D\n    bindkey: 9EF35BFD252659747191ED20F9B2B07D\n    model: Mi Temperature and Humidity Monitor 2\n    expose:\n      - attribute: temperature\n      - attribute: humidity\n";
+        let text = "version: 1\ndevices:\n  - mac: 582D343B8A1D\n    bindkey: 9EF35BFD252659747191ED20F9B2B07D\n    model: Mi Temperature and Humidity Monitor 2\n    attributes:\n      - {source: temperature, mqtt: true}\n      - {source: humidity, sqlite: history}\n";
         let config: Config = serde_yaml::from_str(text).unwrap();
         config.validate().unwrap();
         assert_eq!(config.devices.len(), 1);
-        assert_eq!(config.devices[0].expose.len(), 2);
+        assert_eq!(config.devices[0].attributes.len(), 2);
+        assert!(serde_yaml::from_str::<DeviceConfig>("mac: 582D343B8A1D\nexpose: []\n").is_err(), "removed keys are reported");
     }
 
     #[test]
@@ -1078,15 +1363,70 @@ mod tests {
     }
 
     #[test]
-    fn edits_device_exposure_lists_with_structured_yaml() {
+    fn edits_device_attribute_lists_with_structured_yaml() {
         let mut config = Config::default();
         config.set("devices", "[{mac: AABBCCDDEEFF}]").unwrap();
         config.set("devices.0.label", "PVVX").unwrap();
-        config.set("devices.0.expose", "[{attribute: input_gpio_value, child: 4}]").unwrap();
+        config.set("devices.0.attributes", "[{source: input_gpio_value, mysensors: true}]").unwrap();
         assert_eq!(config.devices[0].label, "PVVX");
-        assert_eq!(config.devices[0].expose[0].attribute, "input_gpio_value");
-        assert_eq!(config.devices[0].expose[0].child, Some(4));
+        assert_eq!(config.devices[0].attributes[0].source, "input_gpio_value");
+        assert_eq!(config.devices[0].attributes[0].mysensors, Toggle::On);
         assert!(config.set("devices.1.label", "missing").is_err());
+    }
+
+    #[test]
+    fn default_values_are_omitted_and_inherited() {
+        let yaml = concat!(
+            "attribute_defaults: {mqtt: default, sqlite: history, retention: climate}\n",
+            "frontends: {sqlite: {retention_rules: {climate: {mode: progressive, tiers: [{max_age_s: 60, sample_interval_s: 0}]}, ",
+            "everything: {mode: default}}}}\n",
+            "devices:\n- mac: AABBCCDDEEFF\n  decoder: default\n  attributes:\n",
+            "  - {source: temperature, name: default, unit: default, mqtt: default, influx: true, sqlite: default, retention: default}\n",
+            "  - {source: humidity, sqlite: off, matter: false}\n",
+            "  - {source: battery_level, retention: everything}\n",
+        );
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        config.validate().unwrap();
+        let device = &config.devices[0];
+        assert_eq!(device.decoder, None);
+        let temperature = &device.attributes[0];
+        assert_eq!((temperature.name.as_str(), temperature.unit.as_str(), temperature.mqtt), ("", "", Toggle::Default));
+        assert_eq!(temperature.sqlite, SqliteMode::Default);
+        let routing = config.routing(device);
+        assert_eq!(routing.route("temperature").unwrap().1.retention, "climate");
+        assert!(routing.route("temperature").unwrap().1.influx);
+        assert_eq!(routing.route("humidity").unwrap().1.sqlite, SqliteMode::Off);
+        assert_eq!(routing.route("battery_level").unwrap().1.retention, "everything");
+        let saved = serde_yaml::to_string(&config).unwrap();
+        assert!(saved.contains("- source: temperature\n    influx: true\n"), "{saved}");
+        assert!(!saved.contains(": default"), "{saved}");
+        assert!(serde_yaml::from_str::<Config>("attribute_defaults: {mqtt: maybe}\n").is_err());
+        assert!(serde_yaml::from_str::<Config>("devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: x, unknown: 1}]}\n").is_err());
+    }
+
+    #[test]
+    fn attribute_validation_reports_inconsistent_routes() {
+        let base = Config::default();
+        let invalid = [
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a}, {source: a}]}\n",
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a, name: x}, {source: b, name: x}]}\n",
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: 'a b'}]}\n",
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a, sqlite: history, retention: missing}]}\n",
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a, sqlite: live, retention: climate}]}\n",
+            "devices:\n- {mac: AABBCCDDEEFF, attributes: [{source: packet_id, mysensors: true}]}\n",
+            "attribute_defaults: {retention: missing}\n",
+            "frontends: {sqlite: {retention_rules: {bad: {tiers: [{max_age_s: 60, sample_interval_s: 0}]}}}}\n",
+            "frontends: {sqlite: {retention_rules: {default: {}}}}\n",
+            "frontends: {sqlite: {enabled: true, path: /tmp/x.db, recent_frames_s: 0}}\ndevices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a, sqlite: live}]}\n",
+        ];
+        for yaml in invalid {
+            let config: Config = serde_yaml::from_str(yaml).unwrap();
+            assert!(config.validate().is_err(), "{yaml}");
+        }
+        base.validate().unwrap();
+        let valid: Config = serde_yaml::from_str("frontends: {sqlite: {enabled: true, path: /tmp/x.db, recent_frames_s: default}}\ndevices:\n- {mac: AABBCCDDEEFF, attributes: [{source: a, sqlite: history, retention: climate}]}\n").unwrap();
+        valid.validate().unwrap();
+        assert_eq!(valid.frontends.sqlite.recent_frames_s, 600);
     }
 
     #[test]

@@ -90,7 +90,8 @@ pub const fn available() -> bool {
 ///
 /// The AD structures are walked in order and the first service data (16, 32 or
 /// 128 bit UUID) or manufacturer data wins, exactly like the CGI does for the
-/// WebAssembly decoder. Hex is lowercase because the library compares the
+/// WebAssembly decoder. The local name is collected from the entire advertisement
+/// before selecting data. Hex is lowercase because the library compares the
 /// service UUID case-sensitively.
 pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option<Json> {
     let mut object = Map::new();
@@ -117,7 +118,29 @@ pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option
     // The advertised local name helps a few decoders and is often the only
     // human readable field of the advertisement.
     let mut advertised = String::new();
+    let mut name_kind = 0;
     let mut index = 0usize;
+    while index + 2 <= advertisement.len() {
+        let length = advertisement[index] as usize;
+        if length == 0 || index + 1 + length > advertisement.len() {
+            break;
+        }
+        let kind = advertisement[index + 1];
+        if matches!(kind, 0x08 | 0x09) && kind >= name_kind {
+            let value = String::from_utf8_lossy(&advertisement[index + 2..=index + length])
+                .trim()
+                .to_string();
+            if !value.is_empty() {
+                advertised = value;
+                name_kind = kind;
+            }
+        }
+        index += 1 + length;
+    }
+    if !advertised.is_empty() {
+        object.insert("name".into(), Json::String(advertised));
+    }
+    index = 0;
     while index + 2 <= advertisement.len() {
         let length = advertisement[index] as usize;
         if length == 0 || index + 1 + length > advertisement.len() {
@@ -126,13 +149,7 @@ pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option
         let kind = advertisement[index + 1];
         let value = &advertisement[index + 2..=index + length];
         match kind {
-            0x08 | 0x09 if !value.is_empty() => {
-                advertised = String::from_utf8_lossy(value).trim().to_string();
-            }
             0x16 if value.len() > 2 => {
-                if !advertised.is_empty() {
-                    object.insert("name".into(), Json::String(advertised));
-                }
                 object.insert("servicedata".into(), Json::String(lower_hex(&value[2..])));
                 object.insert(
                     "servicedatauuid".into(),
@@ -141,9 +158,6 @@ pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option
                 return Some(Json::Object(object));
             }
             0x20 if value.len() > 4 => {
-                if !advertised.is_empty() {
-                    object.insert("name".into(), Json::String(advertised));
-                }
                 object.insert("servicedata".into(), Json::String(lower_hex(&value[4..])));
                 object.insert(
                     "servicedatauuid".into(),
@@ -152,9 +166,6 @@ pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option
                 return Some(Json::Object(object));
             }
             0x21 if value.len() > 16 => {
-                if !advertised.is_empty() {
-                    object.insert("name".into(), Json::String(advertised));
-                }
                 object.insert("servicedata".into(), Json::String(lower_hex(&value[16..])));
                 object.insert(
                     "servicedatauuid".into(),
@@ -163,9 +174,6 @@ pub fn payload(mac: &str, name: &str, rssi: i16, advertisement: &[u8]) -> Option
                 return Some(Json::Object(object));
             }
             0xff if value.len() > 2 => {
-                if !advertised.is_empty() {
-                    object.insert("name".into(), Json::String(advertised));
-                }
                 object.insert("manufacturerdata".into(), Json::String(lower_hex(value)));
                 return Some(Json::Object(object));
             }
@@ -251,7 +259,7 @@ pub fn measures(value: &Json, prefix: Option<&str>) -> Vec<Measurement> {
         if key == "tempf" {
             if let Some(fahrenheit) = item.as_f64() {
                 let raw_name = match prefix {
-                    Some(prefix) => format!("{prefix}_tempf"),
+                    Some(prefix) => format!("{prefix}tempf"),
                     None => "tempf".to_string(),
                 };
                 out.push(Measurement {
@@ -261,7 +269,7 @@ pub fn measures(value: &Json, prefix: Option<&str>) -> Vec<Measurement> {
                 });
                 if !celsius_available {
                     let name = match prefix {
-                        Some(prefix) => format!("{prefix}_temperature"),
+                        Some(prefix) => format!("{prefix}temperature"),
                         None => "temperature".to_string(),
                     };
                     out.push(Measurement {
@@ -279,14 +287,14 @@ pub fn measures(value: &Json, prefix: Option<&str>) -> Vec<Measurement> {
             .map(|(_, target)| *target)
             .unwrap_or(key.as_str());
         let name = match prefix {
-            Some(prefix) => format!("{prefix}_{canonical}"),
+            Some(prefix) => format!("{prefix}{canonical}"),
             None => canonical.to_string(),
         };
         let unit = UNITS
             .iter()
             .find(|(source, _)| source == key)
             .map(|(_, unit)| (*unit).to_string())
-            .or_else(|| default_unit(&name).map(str::to_string))
+            .or_else(|| default_unit(canonical).map(str::to_string))
             .unwrap_or_default();
         let value = match item {
             Json::Bool(flag) => Value::Bool(*flag),
@@ -426,6 +434,61 @@ mod tests {
     }
 
     #[test]
+    fn local_name_order_does_not_change_any_data_type() {
+        let name = hex("0B094154435F333430364345");
+        for data in [
+            hex("0D16D2FC40008A0C0E0B10001101"),
+            hex("072078563412AABB"),
+            hex("1321000102030405060708090A0B0C0D0E0FAABB"),
+            hex("05FF5900AABB"),
+        ] {
+            let before = [name.as_slice(), data.as_slice()].concat();
+            let after = [data.as_slice(), name.as_slice()].concat();
+            let expected = payload("A4C1383406CE", "Friendly label", -60, &before).unwrap();
+            let actual = payload("A4C1383406CE", "Friendly label", -60, &after).unwrap();
+            assert_eq!(actual["name"], "ATC_3406CE");
+            assert_eq!(actual, expected);
+        }
+    }
+
+    #[test]
+    fn complete_name_wins_over_short_name_in_either_order() {
+        let complete = hex("0B094154435F333430364345");
+        let shortened = hex("0408415443");
+        let data = hex("05FF5900AABB");
+        for names in [
+            [complete.as_slice(), shortened.as_slice()].concat(),
+            [shortened.as_slice(), complete.as_slice()].concat(),
+        ] {
+            let advertisement = [data.as_slice(), names.as_slice()].concat();
+            assert_eq!(payload("A4C1383406CE", "", -60, &advertisement).unwrap()["name"], "ATC_3406CE");
+        }
+    }
+
+    #[test]
+    fn malformed_suffix_preserves_data_and_fallback_name() {
+        let advertisement = hex("05FF5900AABB1A09415443");
+        let built = payload("A4C1383406CE", "Fallback", -60, &advertisement).unwrap();
+        assert_eq!(built["name"], "Fallback");
+        assert_eq!(built["manufacturerdata"], "5900aabb");
+    }
+
+    #[cfg(feature = "theengs")]
+    #[test]
+    fn bthome_v2_with_trailing_name_is_decoded_by_theengs() {
+        for (service, attribute, expected) in [
+            ("0D16D2FC40008A0C0E0B10001101", "volt", 2.83),
+            ("0E16D2FC400001016402D007038813", "tempc", 20.0),
+        ] {
+            let advertisement = hex(&format!("020106{service}0B094154435F333430364345"));
+            let (decoded, status) = inspect("A4C1383406CE", &advertisement);
+            assert_eq!(status, STATUS_DECODED);
+            assert_eq!(model(&decoded), Some("LYWSD03MMC/MJWSD05MMC_PVVX_BTHOME"));
+            assert!((decoded[attribute].as_f64().unwrap() - expected).abs() < 0.0001);
+        }
+    }
+
+    #[test]
     fn decoded_values_become_canonical_measurements() {
         let decoded = serde_json::json!({
             "id": "A4:C1:38:B3:32:6C",
@@ -461,7 +524,7 @@ mod tests {
     #[test]
     fn fahrenheit_only_models_are_converted_to_celsius() {
         let decoded = serde_json::json!({"tempf": 58.55, "hum": 40});
-        let measures = measures(&decoded, Some("theengs"));
+        let measures = measures(&decoded, Some("theengs_"));
         let fahrenheit = measures
             .iter()
             .find(|measure| measure.name == "theengs_tempf")
@@ -479,7 +542,7 @@ mod tests {
     #[test]
     fn both_temperature_scales_keep_theengs_fahrenheit_measurement() {
         let decoded = serde_json::json!({"tempc": 14.75, "tempf": 58.55});
-        let measures = measures(&decoded, Some("theengs"));
+        let measures = measures(&decoded, Some("theengs_"));
         let celsius = measures
             .iter()
             .find(|measure| measure.name == "theengs_temperature")
@@ -497,11 +560,22 @@ mod tests {
     #[test]
     fn the_both_prefix_separates_the_attribute_sets() {
         let decoded = serde_json::json!({"tempc": 21.5, "hum": 40, "motion": true});
-        let measures = measures(&decoded, Some("theengs"));
+        let measures = measures(&decoded, Some("theengs_"));
         let names: Vec<_> = measures.iter().map(|measure| measure.name.as_str()).collect();
         assert!(names.contains(&"theengs_temperature"));
         assert!(names.contains(&"theengs_humidity"));
         assert!(names.contains(&"theengs_motion"));
+    }
+
+    #[test]
+    fn custom_prefix_keeps_canonical_units_and_fahrenheit_conversion() {
+        let decoded = serde_json::json!({"temperature": 20.0, "batt": 80, "tempf": 68.0});
+        let measures = measures(&decoded, Some("td_"));
+        assert!(measures.iter().all(|measure| measure.name.starts_with("td_")));
+        for attribute in ["td_temperature", "td_battery_level", "td_tempf"] {
+            let measure = measures.iter().find(|measure| measure.name == attribute).unwrap();
+            assert_eq!(measure.unit, if attribute == "td_tempf" { "°F" } else if attribute == "td_battery_level" { "%" } else { "°C" });
+        }
     }
 
     #[test]

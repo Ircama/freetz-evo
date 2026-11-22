@@ -231,16 +231,25 @@ fn inspect_limited(path: &Path, spec: &crate::codec::spec::Spec, input: &str, ma
     // (or null plus the reason), so Inspect can compare both backends without a
     // second request.
     let (theengs, theengs_status) = crate::theengs::inspect(observation["mac"].as_str().unwrap_or(""), &report.data);
+    // The attributes the gateway would produce, named as the pipeline names them.
+    let theengs_used = (device.decoder.uses_theengs() && !theengs.is_null()).then_some(&theengs);
+    let sources = |builtin: Option<&crate::codec::value::Value>| {
+        crate::pipeline::combine(builtin, theengs_used, &configured.theengs_prefix).iter().map(|measure| json!({
+            "source": measure.name, "unit": measure.unit, "type": crate::catalog::kind_of(measure),
+            "value": measure.value.to_json(), "technical": crate::catalog::technical(&measure.name, &configured.theengs_prefix),
+        })).collect::<Vec<_>>()
+    };
     let Some((detected, service)) = crate::pipeline::detect_format(&report, spec) else {
-        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"error":"No supported service-data format in this advertisement"}));
+        return Ok(json!({"success":true,"decode_status":"unsupported_format","wire_format":null,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"sources":sources(None),"error":"No supported service-data format in this advertisement"}));
     };
     let format = if device.forced_format.is_empty() { detected } else { device.forced_format.clone() };
     match crate::pipeline::decode(spec, &device, &format, service, &report) {
         Ok(decoded) => {
             let measurements = crate::pipeline::measurements(&decoded).into_iter().map(|measure| (measure.name.clone(), json!(measure.text()))).collect::<serde_json::Map<_, _>>();
-            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements,"theengs":theengs,"theengs_status":theengs_status}))
+            let sources = sources(device.decoder.uses_builtin().then_some(&decoded));
+            Ok(json!({"success":true,"decode_status":"ok","wire_format":format,"decoded":decoded.to_json(),"measurements":measurements,"sources":sources,"theengs":theengs,"theengs_status":theengs_status}))
         },
-        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"error":error})),
+        Err(error) => Ok(json!({"success":true,"decode_status":"failed","wire_format":format,"decoded":null,"theengs":theengs,"theengs_status":theengs_status,"sources":sources(None),"error":error})),
     }
 }
 
@@ -290,6 +299,37 @@ pub fn log_tail(lines: usize) -> Value {
     })
 }
 
+/// Attributes decoded per configured device: the names saved by the daemon plus
+/// the latest values of a running one, and what each frontend can carry.
+fn attribute_catalog(path: &Path) -> Result<Value, String> {
+    let config = Config::load(path, None, None)?;
+    let mut devices: BTreeMap<String, BTreeMap<String, Value>> = BTreeMap::new();
+    for (mac, attributes) in crate::catalog::read(&crate::catalog::path_for(path)) {
+        for (source, known) in attributes {
+            let technical = crate::catalog::technical(&source, &config.theengs_prefix);
+            devices.entry(mac.clone()).or_default().insert(source.clone(),
+                json!({"source": source, "unit": known.unit, "type": known.kind, "technical": technical}));
+        }
+    }
+    let live = control_request(&json!({"action": "catalog"})).ok().filter(|reply| reply["success"] == true);
+    if let Some(rows) = live.as_ref().and_then(|reply| reply["devices"].as_object()) {
+        for (mac, rows) in rows {
+            for row in rows.as_array().into_iter().flatten() {
+                if let Some(source) = row["source"].as_str() {
+                    devices.entry(mac.clone()).or_default().insert(source.to_string(), row.clone());
+                }
+            }
+        }
+    }
+    Ok(json!({
+        "success": true,
+        "running": live.is_some(),
+        "devices": devices.into_iter().map(|(mac, rows)| (mac, Value::Array(rows.into_values().collect()))).collect::<serde_json::Map<_, _>>(),
+        "mysensors": crate::pipeline::supported_attributes().collect::<Vec<_>>(),
+        "matter": crate::matter::STANDARD_ATTRIBUTES,
+    }))
+}
+
 pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, String> {
     if matches!(action,"availability-presets"|"automation-presets") {
         return Ok(json!({"success":true,"rule":crate::automation::AutomationRule::default()}));
@@ -311,7 +351,7 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
         return crate::automation::test_webhook(&webhook);
     }
     if action == "history-presets" {
-        return Ok(json!({"success":true,"maintenance":crate::sqlite::MaintenanceConfig::default()}));
+        return Ok(json!({"success":true,"rules":crate::sqlite::retention_presets()}));
     }
     if action == "sqlite-attributes" {
         let config = Config::load(path, None, None)?;
@@ -320,7 +360,15 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
             return Err("SQLite database path is not configured in the saved settings".into());
         }
         sqlite.validate()?;
-        return Ok(json!({"success":true,"attributes":crate::sqlite::stored_attributes(Path::new(&sqlite.path))?}));
+        let plan = crate::sqlite::HistoryPlan::new(&config);
+        let attributes = crate::sqlite::stored_attributes(Path::new(&sqlite.path))?.into_iter().map(|stored| {
+            let (mode, rule) = plan.plan(&stored.mac, &stored.attribute);
+            let mut row = serde_json::to_value(&stored).unwrap_or_default();
+            row["sqlite"] = mode.as_str().into();
+            row["retention"] = rule.map(|(name, _)| name).unwrap_or("").into();
+            row
+        }).collect::<Vec<_>>();
+        return Ok(json!({"success":true,"attributes":attributes}));
     }
     if action == "sqlite-delete-attribute" {
         let request: Value = serde_json::from_str(input).map_err(|_| "invalid SQLite deletion request")?;
@@ -335,8 +383,8 @@ pub fn config_action(path: &Path, action: &str, input: &str) -> Result<Value, St
         let deleted = crate::sqlite::delete_attribute(Path::new(&sqlite.path), mac, attribute)?;
         return Ok(json!({"success":true,"deleted":deleted}));
     }
-    if action == "attributes" {
-        return Ok(json!({"success":true,"attributes":crate::pipeline::supported_attributes().collect::<Vec<_>>()}));
+    if action == "catalog" {
+        return attribute_catalog(path);
     }
     if action == "log" {
         let lines=serde_json::from_str::<Value>(input).ok().and_then(|request|request["lines"].as_u64())
@@ -446,15 +494,34 @@ mod tests {
     }
 
     #[test]
-    fn supported_attributes_are_available_without_a_configuration() {
-        let response = config_action(Path::new("/dev/null/config.yaml"), "attributes", "").unwrap();
-        assert_eq!(response["success"], true);
-        let attributes = response["attributes"].as_array().unwrap();
-        assert!(attributes.contains(&json!("flooding")));
-        assert!(attributes.contains(&json!("battery_level")));
-        let names: std::collections::HashSet<_> = attributes.iter().map(|name| name.as_str().unwrap()).collect();
-        assert_eq!(names.len(), attributes.len());
-        assert_eq!(names.len(), crate::pipeline::supported_attributes().count());
+    fn catalog_merges_saved_names_with_frontend_capabilities() {
+        let directory = std::env::temp_dir().join(format!("ble-web-catalog-{}", std::process::id()));
+        std::fs::create_dir_all(&directory).unwrap();
+        let path = directory.join("config.yaml");
+        let mut config = Config::default();
+        config.devices.push(serde_yaml::from_str("mac: AABBCCDDEEFF").unwrap());
+        config.save(&path).unwrap();
+        let mut catalog = crate::catalog::Catalog::load(Some(crate::catalog::path_for(&path)), &config.theengs_prefix);
+        catalog.observe("AABBCCDDEEFF", &[
+            crate::pipeline::Measurement { name: "temperature".into(), value: crate::codec::value::Value::Float(21.5), unit: "°C".into() },
+            crate::pipeline::Measurement { name: "Version".into(), value: crate::codec::value::Value::Int(2), unit: String::new() },
+        ]);
+        drop(catalog);
+        std::env::set_var("BLE2UART_GATEWAY_CONTROL_SOCKET", directory.join("absent.sock"));
+        let response = config_action(&path, "catalog", "").unwrap();
+        std::env::remove_var("BLE2UART_GATEWAY_CONTROL_SOCKET");
+        assert_eq!(response["running"], false);
+        let rows = response["devices"]["AABBCCDDEEFF"].as_array().unwrap();
+        let row = |source: &str| rows.iter().find(|row| row["source"] == source).unwrap();
+        assert_eq!((row("temperature")["unit"].as_str(), row("temperature")["type"].as_str()), (Some("°C"), Some("real")));
+        assert_eq!(row("temperature")["technical"], false);
+        assert_eq!(row("Version")["technical"], true);
+        assert!(row("temperature").get("value").is_none(), "values come only from a running daemon");
+        let mysensors = response["mysensors"].as_array().unwrap();
+        assert!(mysensors.contains(&json!("flooding")) && mysensors.contains(&json!("battery_level")));
+        assert_eq!(mysensors.len(), crate::pipeline::supported_attributes().count());
+        assert!(response["matter"].as_array().unwrap().contains(&json!("temperature")));
+        std::fs::remove_dir_all(directory).unwrap();
     }
 
     fn sqlite_api_fixture(name: &str, with_history: bool) -> (std::path::PathBuf, std::path::PathBuf) {
@@ -535,6 +602,15 @@ mod tests {
         let temperature = listed["attributes"].as_array().unwrap().iter()
             .find(|item| item["attribute"] == "temperature").unwrap();
         assert_eq!(temperature["samples"], 2);
+        assert_eq!(temperature["sqlite"], "off", "stored by a device that is no longer configured");
+        let mut config = Config::load(&config_path, None, None).unwrap();
+        config.devices.push(serde_yaml::from_str("mac: AABBCCDDEEFF\nattributes: [{source: temperature, sqlite: history, retention: climate}]").unwrap());
+        config.save(&config_path).unwrap();
+        let listed = config_action(&config_path, "sqlite-attributes", "").unwrap();
+        let state = |name: &str| listed["attributes"].as_array().unwrap().iter()
+            .find(|item| item["attribute"] == name).map(|item| (item["sqlite"].clone(), item["retention"].clone())).unwrap();
+        assert_eq!(state("temperature"), (json!("history"), json!("climate")));
+        assert_eq!(state("humidity"), (json!("off"), json!("")));
         let deleted = config_action(
             &config_path,
             "sqlite-delete-attribute",
@@ -565,6 +641,9 @@ mod tests {
         assert_eq!(decoded["measurements"]["opened"], "1");
         assert!(!decoded.to_string().contains("11111111111111111111111111111111"));
         assert!(!decoded["decoded"].is_null());
+        let sources = decoded["sources"].as_array().unwrap();
+        assert!(sources.iter().any(|row| row["source"] == "opened" && row["technical"] == false));
+        assert!(sources.iter().any(|row| row["source"] == "Version" && row["technical"] == true));
         // The response always explains why the optional Theengs result is null.
         assert!(decoded["theengs_status"].is_string());
         let unsupported = json!({"observation":{"mac":"A4C1383406CE","data":"020106"}});
@@ -661,12 +740,11 @@ mod tests {
         assert_eq!(loaded["config"]["frontends"]["sqlite"], request["config"]["frontends"]["sqlite"]);
         let presets = config_action(&path, "history-presets", "").unwrap();
         request["revision"] = loaded["revision"].clone();
-        request["config"]["frontends"]["sqlite"]["maintenance"] = presets["maintenance"].clone();
-        request["config"]["frontends"]["sqlite"]["maintenance"]["enabled"] = json!(true);
+        request["config"]["frontends"]["sqlite"]["retention_rules"] = json!({"custom": presets["rules"]["battery"].clone()});
         config_action(&path, "save", &request.to_string()).unwrap();
         let history = config_action(&path, "read", "").unwrap();
-        assert_eq!(history["config"]["frontends"]["sqlite"]["maintenance"], request["config"]["frontends"]["sqlite"]["maintenance"]);
-        request["config"]["frontends"]["sqlite"]["maintenance"]["policies"][0]["tiers"][1]["max_age_s"] = json!(1);
+        assert_eq!(history["config"]["frontends"]["sqlite"]["retention_rules"], request["config"]["frontends"]["sqlite"]["retention_rules"]);
+        request["config"]["frontends"]["sqlite"]["retention_rules"]["custom"]["tiers"][1]["max_age_s"] = json!(1);
         assert!(config_action(&path, "check", &request.to_string()).is_err());
         std::fs::remove_dir_all(directory).unwrap();
     }

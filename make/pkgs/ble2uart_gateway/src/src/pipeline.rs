@@ -55,6 +55,12 @@ pub fn supported_attributes() -> impl Iterator<Item = &'static str> {
     MYSENSORS_ATTRIBUTES.iter().map(|(name, _, _)| *name)
 }
 
+/// MySensors child of a published name: its position in the table below, so
+/// a child never moves. Append new names only, never reorder.
+pub fn mysensors_child(attribute: &str) -> Option<u8> {
+    MYSENSORS_ATTRIBUTES.iter().position(|(name, _, _)| *name == attribute).map(|index| index as u8)
+}
+
 // S_* sensor types and V_* value types of the MySensors library.
 const MYSENSORS_ATTRIBUTES: &[(&str, u8, u8)] = &[
     ("temperature", 7, 0),      // S_TEMP / V_TEMP
@@ -87,7 +93,7 @@ fn mysensors_kind(attribute: &str) -> Option<(u8, u8)> {
     MYSENSORS_ATTRIBUTES.iter().find(|(name, _, _)| *name == attribute).map(|(_, s, v)| (*s, *v))
 }
 
-/// A device the user configured, with its allocated MySensors node and children.
+/// A device the user configured, with its MySensors node and its routes.
 pub struct Device {
     pub mac: String,
     pub label: String,
@@ -96,19 +102,10 @@ pub struct Device {
     pub params: Option<Params>,
     /// Forced format, empty to detect it from the service data.
     pub forced_format: String,
-    /// attribute -> child id, in configuration order (stable across restarts).
-    pub children: Vec<(String, u8)>,
     /// Decoder chosen for this device (global default already applied).
     pub decoder: crate::config::DecoderMode,
-    /// Published fields as (decoder source, published attribute, unit
-    /// override); empty publishes everything the decoder produced.
-    pub publish: Vec<(String, String, String)>,
-}
-
-impl Device {
-    pub fn child_of(&self, attribute: &str) -> Option<u8> {
-        self.children.iter().find(|(name, _)| name == attribute).map(|(_, child)| *child)
-    }
+    /// Published name and frontends of every decoded attribute.
+    pub routing: crate::config::Routing,
 }
 
 /// Devices in configuration order plus the last seen values, so a front-end that
@@ -135,20 +132,8 @@ impl Registry {
                 node,
                 params: bindkey_of(device),
                 forced_format: device.format.clone(),
-                children: children_of(device),
                 decoder: device.decoder.unwrap_or(config.decoder),
-                publish: device
-                    .publish
-                    .iter()
-                    .map(|entry| {
-                        let attribute = if entry.attribute.is_empty() {
-                            entry.source.clone()
-                        } else {
-                            entry.attribute.clone()
-                        };
-                        (entry.source.clone(), attribute, entry.unit.clone())
-                    })
-                    .collect(),
+                routing: config.routing(device),
             });
         }
         Registry { devices, last: HashMap::new(), unknown: HashMap::new() }
@@ -213,20 +198,6 @@ fn bindkey_of(device: &DeviceConfig) -> Option<Params> {
     let mut bindkey = [0u8; 16];
     bindkey.copy_from_slice(&key);
     Some(Params::new(&mac_bytes, &bindkey))
-}
-
-fn children_of(device: &DeviceConfig) -> Vec<(String, u8)> {
-    let mut children = Vec::new();
-    let mut next = 0u8;
-    for expose in &device.expose {
-        let child = expose.child.unwrap_or_else(|| {
-            let value = next;
-            next = next.saturating_add(1);
-            value
-        });
-        children.push((expose.attribute.clone(), child));
-    }
-    children
 }
 
 /// The service data of an advertisement, with the media access address.
@@ -297,28 +268,19 @@ pub fn measurements(decoded: &Value) -> Vec<Measurement> {
     out
 }
 
-/// Restrict and rename the measurements before any front-end sees them.
-///
-/// With an empty `publish` list every decoded field is published, which is the
-/// historical behaviour. Otherwise the list decides both the selection and the
-/// attribute names stored in SQLite, published over MQTT, exported to InfluxDB,
-/// forwarded to Matter and exposed through MySensors.
-fn published_measures(device: &Device, measures: Vec<Measurement>) -> Vec<Measurement> {
-    if device.publish.is_empty() {
-        return measures;
-    }
-    let mut out = Vec::with_capacity(device.publish.len());
-    for (source, attribute, unit) in &device.publish {
-        let Some(mut measure) = measures.iter().find(|measure| &measure.name == source).cloned() else {
-            continue;
-        };
-        measure.name = attribute.clone();
-        if !unit.is_empty() {
-            measure.unit = unit.clone();
+/// Attributes of one advertisement: the built-in ones, the Theengs ones, or
+/// both with the Theengs names prefixed.
+pub fn combine(builtin: Option<&Value>, theengs: Option<&serde_json::Value>, prefix: &str) -> Vec<Measurement> {
+    match (builtin, theengs) {
+        (Some(value), None) => measurements(value),
+        (None, Some(value)) => crate::theengs::measures(value, None),
+        (Some(value), Some(theengs)) => {
+            let mut measures = measurements(value);
+            measures.extend(crate::theengs::measures(theengs, Some(prefix)));
+            measures
         }
-        out.push(measure);
+        (None, None) => Vec::new(),
     }
-    out
 }
 
 /// Field names that are part of the frame but not measurements.
@@ -510,9 +472,9 @@ impl MySensors {
         });
     }
 
-    /// Presentation of every configured device and child, followed by the
-    /// current values: a controller that connects later starts with the full
-    /// picture instead of waiting for the next advertisement.
+    /// Presentation of every configured device and listed child, followed by
+    /// the current values: a controller that connects later starts with the
+    /// full picture instead of waiting for the next advertisement.
     pub fn present(&self, registry: &Registry) {
         self.send(&format!("0;255;3;0;14;{}",crate::profile::READY_MESSAGE));
         for device in &registry.devices {
@@ -526,22 +488,26 @@ impl MySensors {
             if !device.metadata.firmware_version.is_empty() {
                 self.send(&format!("{};255;3;0;12;{}", device.node, mysensors_text(&device.metadata.firmware_version)));
             }
-            for (attribute, child) in &device.children {
-                if let Some((sensor, _)) = mysensors_kind(attribute) {
-                    self.send(&format!(
-                        "{};{};0;0;{};{}",
-                        device.node, child, sensor, mysensors_child_name(&device.metadata, attribute)
-                    ));
-                }
+            for route in device.routing.listed().filter(|route| route.mysensors) {
+                self.present_child(device.node, &device.metadata, &route.name);
             }
         }
         for (node, child, value) in registry.state() {
-            if let Some(attribute) = registry.devices.iter().find(|device| device.node == node)
-                .and_then(|device| device.children.iter().find(|(_, id)| *id == child))
-                .and_then(|(attribute, _)| mysensors_kind(attribute)) {
-                self.send(&format!("{node};{child};1;0;{};{value}", attribute.1));
+            if let Some((_, _, set)) = MYSENSORS_ATTRIBUTES.get(usize::from(child)) {
+                self.send(&format!("{node};{child};1;0;{set};{value}"));
             }
         }
+    }
+
+    /// Child and set type of a published name, presented on first use.
+    fn present_child(&self, node: u16, metadata: &crate::config::DeviceMetadata, attribute: &str) -> Option<(u8, u8)> {
+        let child = mysensors_child(attribute)?;
+        let (sensor, set) = mysensors_kind(attribute)?;
+        let key = format!("{node};{child};0;0;{sensor}");
+        if !self.snapshot.lock().unwrap().contains_key(&key) {
+            self.send(&format!("{key};{}", mysensors_child_name(metadata, attribute)));
+        }
+        Some((child, set))
     }
 }
 
@@ -557,8 +523,8 @@ pub fn merge_latest_values(previous: Option<&serde_json::Value>, current: &mut s
     current["latest_values"] = latest.into();
 }
 
-/// Complete decoded state, independent of a frontend's native sensor types.
-pub fn decoded_state(device: &Device, report: &AdvReport, format: &str, decoded: &Value, measures: &[Measurement]) -> serde_json::Value {
+/// State of one advertisement for a frontend, with the measurements it receives.
+pub fn decoded_state<'a>(device: &Device, report: &AdvReport, format: &str, received_at: &str, measures: impl IntoIterator<Item = &'a Measurement>) -> serde_json::Value {
     serde_json::json!({
         "schema": 1,
         "mac": device.mac,
@@ -566,11 +532,10 @@ pub fn decoded_state(device: &Device, report: &AdvReport, format: &str, decoded:
         "device": device.metadata,
         "wire_format": format,
         "decoder": device.decoder.as_str(),
-        "received_at": crate::logger::timestamp(),
+        "received_at": received_at,
         "radio": {"rssi": report.rssi, "phy_raw": report.phys, "phy": report.phy_summary(),
                   "event_type": report.event_type, "addr_type": report.addr_type, "directed": report.directed},
-        "decoded": decoded.to_json(),
-        "measurements": measures.iter().map(|measure| serde_json::json!({
+        "measurements": measures.into_iter().map(|measure| serde_json::json!({
             "name": measure.name, "value": measure.value.to_json(), "unit": measure.unit
         })).collect::<Vec<_>>()
     })
@@ -579,7 +544,10 @@ pub fn decoded_state(device: &Device, report: &AdvReport, format: &str, decoded:
 /// The running gateway: specification, devices and front-ends.
 pub struct Gateway {
     pub spec: Spec,
+    theengs_prefix: String,
     pub registry: Registry,
+    /// Every attribute decoded per device, published or not.
+    pub catalog: crate::catalog::Catalog,
     pub mysensors: Option<MySensors>,
     pub mqtt: Option<crate::mqtt::MqttPublisher>,
     pub influx: Option<crate::influx::InfluxPublisher>,
@@ -593,7 +561,7 @@ pub struct Gateway {
 }
 
 impl Gateway {
-    pub fn new(config: &Config, spec: Spec) -> Result<Gateway, String> {
+    pub fn new(config: &Config, spec: Spec, catalog: crate::catalog::Catalog) -> Result<Gateway, String> {
         let registry = Registry::new(config);
         let mysensors = if config.frontends.mysensors.enabled {
             Some(MySensors::start(
@@ -610,10 +578,24 @@ impl Gateway {
             Some(crate::influx::InfluxPublisher::start(&config.frontends.influx)?)
         } else { None };
         let sqlite = if config.frontends.sqlite.enabled {
-            Some(crate::sqlite::SqlitePublisher::start(&config.frontends.sqlite)?)
+            Some(crate::sqlite::SqlitePublisher::start(&config.frontends.sqlite, crate::sqlite::HistoryPlan::new(config))?)
         } else { None };
         #[cfg(feature = "matter")]
-        let matter = if config.frontends.matter.enabled {Some(crate::matter_server::start(&config.frontends.matter,&config.devices)?)} else {None};
+        let matter = if config.frontends.matter.enabled {
+            let devices = config.devices.iter().map(|device| {
+                let routing = config.routing(device);
+                let mut names: Vec<String> = routing.listed().filter(|route| route.matter).map(|route| route.name.clone()).collect();
+                if config.attribute_defaults.matter.or(false) {
+                    for source in catalog.sources(&normalize_mac(&device.mac)) {
+                        if let Some((name, route)) = routing.route(source) {
+                            if route.matter && !names.iter().any(|known| known == name) { names.push(name.to_string()); }
+                        }
+                    }
+                }
+                (device.clone(), names)
+            }).collect::<Vec<_>>();
+            Some(crate::matter_server::start(&config.frontends.matter, &devices)?)
+        } else {None};
         #[cfg(not(feature = "matter"))]
         let matter = {
             if config.frontends.matter.enabled {return Err("Matter support is not built into this binary".into());}
@@ -622,7 +604,7 @@ impl Gateway {
         let automation=if config.devices.iter().any(|device|device.enabled&&device.rules.iter().any(|rule|rule.enabled)) {
             Some(crate::automation::Automation::start(&config.availability_state_file,&config.devices)?)
         } else {None};
-        let gateway = Gateway { spec, registry, mysensors, mqtt, influx, sqlite, matter, automation, decoded: 0, skipped: 0 };
+        let gateway = Gateway { spec, theengs_prefix: config.theengs_prefix.clone(), registry, catalog, mysensors, mqtt, influx, sqlite, matter, automation, decoded: 0, skipped: 0 };
         if let Some(frontend) = &gateway.mysensors {
             frontend.present(&gateway.registry);
         }
@@ -696,94 +678,94 @@ impl Gateway {
             None
         };
 
-        let (decoded, measures) = match (builtin, theengs) {
-            (Some(value), None) => {
-                let measures = measurements(&value);
-                (value, measures)
-            }
-            (None, Some(value)) => {
-                let measures = crate::theengs::measures(&value, None);
-                wire_format = match crate::theengs::model(&value) {
-                    Some(model) => format!("theengs:{model}"),
-                    None => "theengs".to_string(),
-                };
-                (Value::from_json(&value), measures)
-            }
-            (Some(mut builtin), Some(value)) => {
-                let mut measures = measurements(&builtin);
-                measures.extend(crate::theengs::measures(&value, Some("theengs")));
-                if let Value::Map(ref mut entries) = builtin {
-                    entries.push(("theengs".to_string(), Value::from_json(&value)));
-                }
-                (builtin, measures)
-            }
-            (None, None) => {
-                crate::logger::phy(report, "decode", "unsupported_format", "unknown");
-                log::debug!("{mac}: no decoder matched {} bytes", report.data.len());
-                self.skipped += 1;
-                return;
-            }
-        };
-        // Which decoded fields are published, and under which name.
-        let measures = published_measures(device, measures);
+        if builtin.is_none() && theengs.is_none() {
+            crate::logger::phy(report, "decode", "unsupported_format", "unknown");
+            log::debug!("{mac}: no decoder matched {} bytes", report.data.len());
+            self.skipped += 1;
+            return;
+        }
+        if let (None, Some(value)) = (&builtin, &theengs) {
+            wire_format = match crate::theengs::model(value) {
+                Some(model) => format!("theengs:{model}"),
+                None => "theengs".to_string(),
+            };
+        }
+        let decoded = combine(builtin.as_ref(), theengs.as_ref(), &self.theengs_prefix);
         if wire_format.is_empty() {
             wire_format = "unknown".into();
         }
         self.decoded += 1;
         crate::logger::phy(report, "decode", "ok", &wire_format);
+        self.catalog.observe(&mac, &decoded);
 
-        if self.mqtt.is_some() || self.matter.is_some() || self.influx.is_some() || self.sqlite.is_some() {
-            let state=decoded_state(device,report,&wire_format,&decoded,&measures);
-            if let Some(mqtt)=&self.mqtt {mqtt.publish(&mac,&state);}
-            if let Some(influx)=&self.influx {influx.publish(&state);}
-            if let Some(sqlite)=&self.sqlite {sqlite.publish(&state);}
-            if let Some(matter)=&self.matter {matter.publish(&mac,&state);}
+        // Published name, unit and frontends of every decoded attribute.
+        let mut measures = Vec::with_capacity(decoded.len());
+        let mut routes = Vec::with_capacity(decoded.len());
+        let mut listed = Vec::with_capacity(decoded.len());
+        for mut measure in decoded {
+            let Some((name, route)) = device.routing.route(&measure.name)
+                .map(|(name, route)| (name.to_string(), route.clone())) else { continue; };
+            listed.push(device.routing.is_listed(&measure.name));
+            measure.name = name;
+            if !route.unit.is_empty() {
+                measure.unit = route.unit.clone();
+            }
+            measures.push(measure);
+            routes.push(route);
+        }
+        let selected = |wanted: fn(&crate::config::Route) -> bool| {
+            measures.iter().zip(&routes).filter(move |(_, route)| wanted(route)).map(|(measure, _)| measure)
+        };
+        // One reception instant for every frontend of this advertisement.
+        let received_at = crate::logger::timestamp();
+        let state = |wanted: fn(&crate::config::Route) -> bool| {
+            let mut chosen = selected(wanted).peekable();
+            chosen.peek().is_some().then(|| decoded_state(device, report, &wire_format, &received_at, chosen))
+        };
+        if let Some(state) = self.mqtt.as_ref().and_then(|_| state(|route| route.mqtt)) {
+            self.mqtt.as_ref().unwrap().publish(&mac, &state);
+        }
+        if let Some(state) = self.influx.as_ref().and_then(|_| state(|route| route.influx)) {
+            self.influx.as_ref().unwrap().publish(&state);
+        }
+        if let Some(state) = self.sqlite.as_ref().and_then(|_| state(|route| route.sqlite != crate::config::SqliteMode::Off)) {
+            self.sqlite.as_ref().unwrap().publish(&state);
+        }
+        if let Some(state) = self.matter.as_ref().and_then(|_| state(|route| route.matter)) {
+            self.matter.as_ref().unwrap().publish(&mac, &state);
         }
 
         if let Some(automation)=&self.automation {automation.observe(&mac,&measures);}
         if crate::logger::decode_enabled() {
             log::info!(target: "ble.decode", "mac={mac} wire_format={wire_format} measurements=[{}]", measures.iter().map(|measure| format!("{}={}", measure.name, measure.text())).collect::<Vec<_>>().join(","));
         }
-        let mut published = Vec::new();
-        for measure in &measures {
-            let Some(child) = device.child_of(&measure.name)
-            else {
-                continue;
-            };
-            let Some((_, set)) = mysensors_kind(&measure.name) else {
-                continue;
-            };
-            published.push((child, set, measure.text(), measure.log_text()));
-        }
+        // The service log reports the listed attributes that the configuration
+        // publishes; the MySensors child is shown when the value is sent there.
         let label = device.label.clone();
-
-        if published.is_empty() {
-            log::debug!(
-                "{mac} ({label}, wire_format={wire_format}): decoded attributes=[{}], none exposed",
-                measures.iter().map(|measure| measure.name.as_str()).collect::<Vec<_>>().join(",")
-            );
-            return;
-        }
-
-        // Send first, then remember: the front-end borrow and the registry
-        // update must not overlap, and the state must not be replayed twice.
-        let node = self.registry.devices[device_index].node;
-        let mut lines = Vec::with_capacity(published.len());
-        for (child, set, text, description) in published {
-            log::info!("{}", crate::logger::measurement(&mac, &label, child, &description));
-            lines.push((child, format!("{node};{child};1;0;{set};{text}"), text));
-        }
-        if let Some(frontend) = &self.mysensors {
-            for measure in measures.iter().filter(|measure| matches!(measure.name.as_str(), "battery" | "battery_level")) {
+        let node = device.node;
+        let mut sent = Vec::new();
+        for ((measure, route), listed) in measures.iter().zip(&routes).zip(listed) {
+            let mysensors = match &self.mysensors {
+                Some(frontend) if route.mysensors => frontend.present_child(node, &device.metadata, &measure.name),
+                _ => None,
+            };
+            let published = route.mqtt || route.influx || route.matter || route.mysensors
+                || route.sqlite != crate::config::SqliteMode::Off;
+            if listed && published {
+                log::info!("{}", crate::logger::measurement(&mac, &label, mysensors.map(|(child, _)| child), &measure.log_text()));
+            }
+            let (Some((child, set)), Some(frontend)) = (mysensors, &self.mysensors) else { continue; };
+            if matches!(measure.name.as_str(), "battery" | "battery_level") {
                 if let Some(level) = measure.value.as_f64().filter(|level| (0.0..=100.0).contains(level)) {
                     frontend.send(&format!("{node};255;3;0;0;{level:.0}"));
                 }
             }
-            for (_, line, _) in &lines {
-                frontend.send(line);
-            }
+            let text = measure.text();
+            frontend.send(&format!("{node};{child};1;0;{set};{text}"));
+            sent.push((child, text));
         }
-        for (child, _, text) in lines {
+        // Remember after sending, so a reconnecting controller gets each value once.
+        for (child, text) in sent {
             self.registry.remember(node, child, text);
         }
     }
@@ -853,7 +835,7 @@ mod tests {
     #[test]
     fn metadata_reaches_state_and_standard_mysensors_presentation_without_new_ids() {
         let mut config = Config::default();
-        config.devices.push(serde_yaml::from_str("mac: AABBCCDDEEFF\nlabel: 'Living;room'\nmanufacturer: Xiaomi\nmodel: LYWSD03MMC\nfirmware_version: 'custom;build'\nexpose:\n - attribute: temperature\n   child: 7\n - attribute: humidity\n   child: 8\n").unwrap());
+        config.devices.push(serde_yaml::from_str("mac: AABBCCDDEEFF\nlabel: 'Living;room'\nmanufacturer: Xiaomi\nmodel: LYWSD03MMC\nfirmware_version: 'custom;build'\nattributes:\n - {source: temperature, mysensors: true}\n - {source: humidity, mysensors: true}\n").unwrap());
         let registry = Registry::new(&config);
         let device = &registry.devices[0];
         let server = MySensors { clients: Default::default(), snapshot: Default::default() };
@@ -864,54 +846,53 @@ mod tests {
         assert_eq!(snapshot[&format!("{node};255;3;0;12")], format!("{node};255;3;0;12;custom build"));
         let temperature_kind = mysensors_kind("temperature").unwrap().0;
         let humidity_kind = mysensors_kind("humidity").unwrap().0;
-        assert!(snapshot[&format!("{node};7;0;0;{temperature_kind}")].ends_with("Living room temperature"));
-        assert!(snapshot[&format!("{node};8;0;0;{humidity_kind}")].ends_with("Living room humidity"));
+        assert!(snapshot[&format!("{node};0;0;0;{temperature_kind}")].ends_with("Living room temperature"));
+        assert!(snapshot[&format!("{node};1;0;0;{humidity_kind}")].ends_with("Living room humidity"));
         drop(snapshot);
         let advertisement = report(&device.mac, &[]);
-        let state = decoded_state(device, &advertisement, "bt_home_v2", &Value::Null, &[]);
+        let state = decoded_state(device, &advertisement, "bt_home_v2", "2026-01-01T00:00:00Z", &Vec::<Measurement>::new());
         assert_eq!(state["device"]["model"], "LYWSD03MMC");
         assert_eq!(state["device"]["manufacturer"], "Xiaomi");
         assert_eq!(state["device"]["firmware_version"], "custom;build");
-        let before = (device.node, device.children.clone());
+        assert!(state.get("decoded").is_none(), "frontends receive the routed measurements only");
         config.devices[0].label = "Renamed".into();
         config.devices[0].model = "Updated model".into();
         let updated = Registry::new(&config);
-        assert_eq!((updated.devices[0].node, updated.devices[0].children.clone()), before);
+        assert_eq!(updated.devices[0].node, device.node);
+        assert_eq!(mysensors_child("temperature"), Some(0));
+        assert_eq!(mysensors_child("humidity"), Some(1));
+        assert_eq!(mysensors_child("theengs_temperature"), None);
         assert_eq!(mysensors_text("ééééééééééééé").len(), 24);
         assert!(mysensors_child_name(&device.metadata, "very_long_attribute_name_that_will_not_fit").len() <= 25);
     }
 
     #[test]
-    fn publish_selects_and_renames_measurements() {
-        let mut device = Device {
-            mac: "AABBCCDDEEFF".into(),
-            label: "test".into(),
-            metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() },
-            node: 1,
-            params: None,
-            forced_format: String::new(),
-            children: Vec::new(),
-            decoder: Default::default(),
-            publish: Vec::new(),
-        };
-        let measures = vec![
-            Measurement { name: "temperature".into(), value: Value::Float(20.0), unit: "°C".into() },
-            Measurement { name: "theengs_temperature".into(), value: Value::Float(20.1), unit: "°C".into() },
-            Measurement { name: "battery_level".into(), value: Value::Int(80), unit: "%".into() },
-        ];
-        // Empty list: everything is published, unchanged.
-        assert_eq!(published_measures(&device, measures.clone()).len(), 3);
-        // Only the chosen fields are published, renamed and re-united.
-        device.publish = vec![
-            ("theengs_temperature".into(), "temp".into(), "°C".into()),
-            ("battery_level".into(), "battery".into(), String::new()),
-        ];
-        let published = published_measures(&device, measures);
-        assert_eq!(published.len(), 2);
-        assert_eq!(published[0].name, "temp");
-        assert!(matches!(published[0].value, Value::Float(value) if (value - 20.1).abs() < 0.001));
-        assert_eq!(published[1].name, "battery");
-        assert_eq!(published[1].unit, "%");
+    fn routing_renames_selects_and_inherits_defaults() {
+        let mut config: Config = serde_yaml::from_str(concat!(
+            "attribute_defaults: {mqtt: true}\n",
+            "devices:\n- mac: AABBCCDDEEFF\n  attributes:\n",
+            "  - {source: theengs_temperature, name: temperature, unit: °C, sqlite: history, retention: climate}\n",
+            "  - {source: battery_level, mqtt: false, sqlite: live}\n",
+            "  - {source: packet_id, mqtt: default}\n",
+        )).unwrap();
+        config.validate().unwrap();
+        let routing = config.routing(&config.devices[0]);
+        let (name, route) = routing.route("theengs_temperature").unwrap();
+        assert_eq!((name, route.unit.as_str(), route.mqtt, route.sqlite, route.retention.as_str()),
+            ("temperature", "°C", true, crate::config::SqliteMode::History, "climate"));
+        assert!(routing.route("temperature").is_none(), "a listed name shadows the same decoder name");
+        let (_, battery) = routing.route("battery_level").unwrap();
+        assert!(!battery.mqtt && battery.sqlite == crate::config::SqliteMode::Live);
+        assert!(routing.route("packet_id").unwrap().1.mqtt);
+        let (name, unlisted) = routing.route("humidity").unwrap();
+        assert_eq!((name, unlisted.mqtt, unlisted.sqlite), ("humidity", true, crate::config::SqliteMode::Off));
+        assert_eq!(routing.stored("temperature"), (crate::config::SqliteMode::History, "climate"));
+        assert_eq!(routing.stored("theengs_temperature").0, crate::config::SqliteMode::Off);
+        config.attribute_defaults = Default::default();
+        let routing = config.routing(&config.devices[0]);
+        let (_, nothing) = routing.route("humidity").unwrap();
+        assert!(!nothing.mqtt && !nothing.influx && !nothing.matter && !nothing.mysensors);
+        assert_eq!(nothing.sqlite, crate::config::SqliteMode::Off);
     }
 
     #[test]
@@ -924,7 +905,7 @@ mod tests {
     }
 
     #[test]
-    fn generic_state_preserves_unmapped_nested_values_without_expose_filters() {
+    fn generic_state_carries_unmapped_nested_values_as_measurements() {
         let mut config = Config::default();
         config.devices.push(serde_yaml::from_str("mac: AABBCCDDEEFF").unwrap());
         let device = Registry::new(&config).devices.remove(0);
@@ -935,12 +916,13 @@ mod tests {
         ]);
         let report = AdvReport {rssi:-65, event_type:0, addr_type:0, directed:false, phys:0x33,
                                 mac:[0xFF,0xEE,0xDD,0xCC,0xBB,0xAA], data:Vec::new()};
-        let state = decoded_state(&device, &report, "vendor_extension", &decoded, &measurements(&decoded));
-        assert_eq!(state["decoded"], decoded.to_json());
-        assert_eq!(state["decoded"]["unmapped_sensor"], 12.3456789);
-        assert_eq!(state["decoded"]["objects"][1], serde_json::Value::Null);
-        assert!(!state["measurements"].as_array().unwrap().is_empty());
-        assert!(device.children.is_empty());
+        let measures = measurements(&decoded);
+        let state = decoded_state(&device, &report, "vendor_extension", "2026-01-01T00:00:00Z", &measures);
+        let value = |name: &str| state["measurements"].as_array().unwrap().iter()
+            .find(|measure| measure["name"] == name).map(|measure| measure["value"].clone());
+        assert_eq!(value("unmapped_sensor"), Some(serde_json::json!(12.3456789)));
+        assert_eq!(value("active"), Some(serde_json::json!(true)));
+        assert!(state.get("decoded").is_none());
         assert!(mysensors_kind("unmapped_sensor").is_none());
     }
 
@@ -990,7 +972,7 @@ mod tests {
         let spec = spec_for_tests();
         let document: serde_json::Value = serde_json::from_str(include_str!("../tests/vectors.json")).unwrap();
         let params = Params::new(&[0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
-        let device = Device { mac: "AABBCCDDEEFF".into(), label: "test".into(), metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() }, node: 1, params: Some(params.clone()), forced_format: String::new(), children: Vec::new(), decoder: Default::default(), publish: Vec::new() };
+        let device = Device { mac: "AABBCCDDEEFF".into(), label: "test".into(), metadata: crate::config::DeviceMetadata { name: "test".into(), ..Default::default() }, node: 1, params: Some(params.clone()), forced_format: String::new(), decoder: Default::default(), routing: Default::default() };
         let mut covered = std::collections::BTreeSet::new();
         let publisher=crate::matter::MatterPublisher::default();
         let mut count = 0;
@@ -1012,11 +994,13 @@ mod tests {
                 let (format, service) = detect_format(&report, &spec).unwrap_or_else(|| panic!("no format: {expected}: {encoded}"));
                 assert_eq!(&format, expected);
                 let decoded=decode(&spec, &device, &format, service, &report).unwrap();
-                let state=decoded_state(&device,&report,&format,&decoded,&measurements(&decoded));
-                assert_eq!(state["decoded"],decoded.to_json());
-                assert_eq!(serde_json::from_slice::<serde_json::Value>(&serde_json::to_vec(&state).unwrap()).unwrap()["decoded"],decoded.to_json());
+                let measures=measurements(&decoded);
+                let state=decoded_state(&device,&report,&format,"2026-01-01T00:00:00Z",&measures);
+                let expected=measures.iter().map(|measure| serde_json::json!({"name":measure.name,"value":measure.value.to_json(),"unit":measure.unit})).collect::<Vec<_>>();
+                assert_eq!(state["measurements"],serde_json::Value::from(expected.clone()));
+                assert_eq!(serde_json::from_slice::<serde_json::Value>(&serde_json::to_vec(&state).unwrap()).unwrap()["measurements"],serde_json::Value::from(expected));
                 publisher.publish(&device.mac,&state);
-                assert_eq!(publisher.states.lock().unwrap()[&device.mac].value["decoded"],decoded.to_json());
+                assert_eq!(publisher.states.lock().unwrap()[&device.mac].value["measurements"],state["measurements"]);
             }
             covered.insert(expected.as_str());
             count += 1;
@@ -1087,55 +1071,22 @@ mod tests {
 
     #[test]
     fn node_and_child_ids_are_stable() {
-        let mut config = Config::default();
-        config.frontends.mysensors.node_id_base = 1;
-        config.devices = vec![
-            DeviceConfig {
-                mac: "A4:C1:38:B3:32:6C".into(),
-                label: "esterno".into(),
-                bindkey: "000102030405060708090A0B0C0D0E0F".into(),
-                manufacturer: String::new(),
-                model: String::new(),
-                firmware_version: String::new(),
-                enabled: true,
-                format: String::new(),
-                expose: vec![
-                    crate::config::ExposeConfig {
-                        attribute: "temperature".into(),
-                        child: None,
-                        kind: None,
-                    },
-                    crate::config::ExposeConfig {
-                        attribute: "humidity".into(),
-                        child: None,
-                        kind: None,
-                    },
-                ],
-                rules: Vec::new(),
-                decoder: None,
-                publish: Vec::new(),
-            },
-            DeviceConfig {
-                mac: "54:EF:44:C6:33:6B".into(),
-                label: "flood".into(),
-                bindkey: "000102030405060708090A0B0C0D0E0F".into(),
-                manufacturer: String::new(),
-                model: String::new(),
-                firmware_version: String::new(),
-                enabled: true,
-                format: String::new(),
-                expose: Vec::new(),
-                rules: Vec::new(),
-                decoder: None,
-                publish: Vec::new(),
-            },
-        ];
+        let mut config: Config = serde_yaml::from_str(concat!(
+            "frontends: {mysensors: {node_id_base: 1}}\n",
+            "devices:\n",
+            "- {mac: 'A4:C1:38:B3:32:6C', label: esterno, bindkey: 000102030405060708090A0B0C0D0E0F,\n",
+            "   attributes: [{source: humidity, mysensors: true}, {source: temperature, mysensors: true}]}\n",
+            "- {mac: '54:EF:44:C6:33:6B', label: flood, bindkey: 000102030405060708090A0B0C0D0E0F}\n",
+        )).unwrap();
+        config.validate().unwrap();
         let registry = Registry::new(&config);
         assert_eq!(registry.devices[0].node, 1);
         assert_eq!(registry.devices[1].node, 2);
-        assert_eq!(registry.devices[0].child_of("temperature"), Some(0));
-        assert_eq!(registry.devices[0].child_of("humidity"), Some(1));
+        assert_eq!(mysensors_child("temperature"), Some(0), "the order of the attributes does not move children");
+        assert_eq!(mysensors_child("humidity"), Some(1));
         assert!(registry.devices[0].params.is_some(), "the bindkey is parsed");
         assert!(registry.devices[1].params.is_some());
+        config.devices[0].attributes[0].source = "packet_id".into();
+        assert!(config.validate().unwrap_err().contains("MySensors"));
     }
 }

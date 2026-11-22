@@ -1,6 +1,8 @@
 use rusqlite::{params, types::Value as SqlValue, Connection, OpenFlags, TransactionBehavior};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::config::SqliteMode;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::OpenOptions;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
@@ -95,6 +97,12 @@ PRAGMA user_version = 2;
 pub struct SqliteConfig {
     pub enabled: bool,
     pub path: String,
+    /// Seconds of complete recent frames kept for the portal; afterwards only
+    /// `history` attributes remain. 0 writes `history` attributes directly.
+    #[serde(deserialize_with = "recent_frames")]
+    pub recent_frames_s: u64,
+    /// Named retention rules referenced by the `retention` of the attributes.
+    pub retention_rules: BTreeMap<String, RetentionRule>,
     pub batch_size: usize,
     pub queue_capacity: usize,
     pub flush_interval_ms: u64,
@@ -102,34 +110,72 @@ pub struct SqliteConfig {
     pub maintenance: MaintenanceConfig,
 }
 
+const DEFAULT_RECENT_FRAMES_S: u64 = 600;
+
+fn recent_frames<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Raw {
+        Seconds(u64),
+        Text(String),
+    }
+    match Raw::deserialize(deserializer)? {
+        Raw::Seconds(seconds) => Ok(seconds),
+        Raw::Text(text) if text == "default" => Ok(DEFAULT_RECENT_FRAMES_S),
+        Raw::Text(_) => Err(serde::de::Error::custom("expected seconds or default")),
+    }
+}
+
+/// Work budget of the background job that archives recent frames and
+/// applies the retention rules.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct MaintenanceConfig {
-    pub enabled: bool,
-    pub counter_mode: HistoryMode,
-    pub other_numeric_mode: HistoryMode,
     pub interval_s: u64,
     pub batch_size: usize,
     pub max_work_ms: u64,
-    pub raw_retention_s: u64,
-    pub policies: Vec<HistoryPolicy>,
+}
+
+impl Default for MaintenanceConfig {
+    fn default() -> Self {
+        Self { interval_s: 300, batch_size: 100, max_work_ms: 100 }
+    }
+}
+
+impl MaintenanceConfig {
+    pub fn validate(&self) -> Result<(), String> {
+        if !(1..=86400).contains(&self.interval_s) || !(1..=1000).contains(&self.batch_size)
+            || !(10..=1000).contains(&self.max_work_ms) {
+            return Err("SQLite maintenance interval/batch/work budget limits are invalid".into());
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-pub enum HistoryMode {
+pub enum RetentionMode {
     #[default]
+    Default,
     KeepAll,
-    Discard,
     Progressive,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+impl RetentionMode {
+    pub fn is_default(&self) -> bool {
+        *self == RetentionMode::Default
+    }
+}
+
+/// A named retention rule. `keep_all` (also `default`) keeps every sample;
+/// `progressive` thins numbers per age band and deletes every sample older
+/// than the last band. Booleans and text are expired, never thinned.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(default, deny_unknown_fields)]
-pub struct HistoryPolicy {
-    pub mac: String,
-    pub attribute: String,
-    pub mode: HistoryMode,
+pub struct RetentionRule {
+    #[serde(skip_serializing_if = "RetentionMode::is_default")]
+    pub mode: RetentionMode,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tiers: Vec<HistoryTier>,
 }
 
@@ -140,87 +186,47 @@ pub struct HistoryTier {
     pub sample_interval_s: u64,
 }
 
-fn discrete_attribute(attribute: &str) -> bool {
-    matches!(attribute, "contact" | "door" | "opened" | "switch" | "boolean"
-        | "motion" | "occupancy" | "water_leak" | "flooding" | "humidity_trigger"
-        | "temp_trigger" | "out_gpio_trg_flag" | "out_gpio_trg_value" | "input_gpio_value" | "one")
-}
-
-fn counter_attribute(attribute: &str) -> bool {
-    matches!(attribute, "counter" | "packet_id" | "count_id" | "count_i" | "count_s"
-        | "count_m" | "count_l" | "counter8" | "counter16" | "counter32")
-}
-
-impl Default for MaintenanceConfig {
-    fn default() -> Self {
-        let temperature = [(600, 0), (3600, 60), (86400, 150), (604800, 3600),
-            (4838400, 14400), (63072000, 21600)];
-        let battery = [(3600, 900), (86400, 3600), (604800, 14400),
-            (4838400, 86400), (63072000, 172800)];
-        let mut policies = Vec::new();
-        for (attribute, bands) in [("temperature", temperature.as_slice()),
-            ("battery_level", battery.as_slice()), ("battery", battery.as_slice()),
-            ("battery_v", battery.as_slice()), ("voltage", battery.as_slice())] {
-            policies.push(HistoryPolicy {
-                mac: String::new(), attribute: attribute.into(), mode: HistoryMode::Progressive,
-                tiers: bands.iter().map(|&(max_age_s, sample_interval_s)|
-                    HistoryTier { max_age_s, sample_interval_s }).collect(),
-            });
+impl RetentionRule {
+    fn progressive(bands: &[(u64, u64)]) -> Self {
+        Self {
+            mode: RetentionMode::Progressive,
+            tiers: bands.iter().map(|&(max_age_s, sample_interval_s)| HistoryTier { max_age_s, sample_interval_s }).collect(),
         }
-        Self { enabled: false, counter_mode: HistoryMode::Discard, interval_s: 300, batch_size: 100, max_work_ms: 100,
-            raw_retention_s: 600, other_numeric_mode: HistoryMode::KeepAll, policies }
     }
-}
 
-impl MaintenanceConfig {
-    pub fn validate(&self) -> Result<(), String> {
-        if self.counter_mode == HistoryMode::Progressive {
-            return Err("SQLite default counter history must be discard or keep_all; use a per-attribute policy for progressive retention".into());
+    fn validate(&self, name: &str) -> Result<(), String> {
+        if self.mode != RetentionMode::Progressive {
+            if !self.tiers.is_empty() {
+                return Err(format!("retention rule {name}: age bands need mode progressive"));
+            }
+            return Ok(());
         }
-        if self.other_numeric_mode == HistoryMode::Progressive {
-            return Err("SQLite default history for other numeric attributes must be discard or keep_all; use a per-attribute policy for progressive retention".into());
+        if self.tiers.is_empty() || self.tiers.len() > 16 {
+            return Err(format!("retention rule {name}: progressive retention requires 1-16 age bands"));
         }
-        if !(1..=86400).contains(&self.interval_s) || !(1..=1000).contains(&self.batch_size)
-            || !(10..=1000).contains(&self.max_work_ms)
-            || !(1..=31536000).contains(&self.raw_retention_s) || self.policies.len() > 128 {
-            return Err("SQLite maintenance interval/batch/work budget/raw retention limits are invalid".into());
-        }
-        let mut keys = std::collections::HashSet::new();
-        for policy in &self.policies {
-            let mac = if policy.mac.is_empty() { None } else { Some(crate::config::parse_mac(&policy.mac)?) };
-            if policy.attribute.is_empty() || policy.attribute.len() > 128
-                || !policy.attribute.bytes().all(|byte| byte.is_ascii_alphanumeric() || b"_.-".contains(&byte))
-                || !keys.insert((mac, policy.attribute.as_str())) {
-                return Err("SQLite history policies require a unique MAC/attribute and a valid attribute name".into());
+        let mut previous_age = 0;
+        let mut previous_interval = 0;
+        for tier in &self.tiers {
+            if tier.max_age_s <= previous_age || tier.max_age_s > 3155760000
+                || tier.sample_interval_s < previous_interval || tier.sample_interval_s > tier.max_age_s {
+                return Err(format!("retention rule {name}: ages must increase and sampling intervals must not decrease (0 = every sample)"));
             }
-            if policy.mode == HistoryMode::KeepAll { continue; }
-            if discrete_attribute(&policy.attribute) {
-                return Err("SQLite boolean/discrete attributes must use keep_all history".into());
-            }
-            if policy.mode == HistoryMode::Discard { continue; }
-            if policy.tiers.is_empty() || policy.tiers.len() > 16 {
-                return Err("SQLite progressive history requires 1-16 age bands".into());
-            }
-            let mut previous_age = 0;
-            let mut previous_interval = 0;
-            for tier in &policy.tiers {
-                if tier.max_age_s <= previous_age || tier.max_age_s > 3155760000
-                    || tier.sample_interval_s < previous_interval || tier.sample_interval_s > tier.max_age_s {
-                    return Err("SQLite history ages must increase and sampling intervals must not decrease (0 = every sample)".into());
-                }
-                previous_age = tier.max_age_s;
-                previous_interval = tier.sample_interval_s;
-            }
+            previous_age = tier.max_age_s;
+            previous_interval = tier.sample_interval_s;
         }
         Ok(())
     }
+}
 
-    fn policy(&self, mac: &str, attribute: &str) -> Option<&HistoryPolicy> {
-        let address = crate::config::parse_mac(mac).ok();
-        self.policies.iter().find(|policy| policy.attribute == attribute && !policy.mac.is_empty()
-            && crate::config::parse_mac(&policy.mac).ok() == address)
-            .or_else(|| self.policies.iter().find(|policy| policy.attribute == attribute && policy.mac.is_empty()))
-    }
+/// Ready-made rules offered to new configurations and by the web interface.
+pub fn retention_presets() -> BTreeMap<String, RetentionRule> {
+    BTreeMap::from([
+        ("climate".to_string(), RetentionRule::progressive(&[(600, 0), (3600, 60), (86400, 150),
+            (604800, 3600), (4838400, 14400), (63072000, 21600)])),
+        ("battery".to_string(), RetentionRule::progressive(&[(3600, 900), (86400, 3600),
+            (604800, 14400), (4838400, 86400), (63072000, 172800)])),
+        ("events".to_string(), RetentionRule::progressive(&[(2592000, 0)])),
+    ])
 }
 
 impl Default for SqliteConfig {
@@ -228,6 +234,8 @@ impl Default for SqliteConfig {
         Self {
             enabled: false,
             path: String::new(),
+            recent_frames_s: DEFAULT_RECENT_FRAMES_S,
+            retention_rules: retention_presets(),
             batch_size: 100,
             queue_capacity: 1024,
             flush_interval_ms: 1000,
@@ -238,6 +246,21 @@ impl Default for SqliteConfig {
 }
 
 impl SqliteConfig {
+    /// Rules are checked even with SQLite off, because attributes name them.
+    pub fn validate_rules(&self) -> Result<(), String> {
+        if self.retention_rules.len() > 128 {
+            return Err("at most 128 SQLite retention rules are supported".into());
+        }
+        for (name, rule) in &self.retention_rules {
+            if name.is_empty() || name.len() > 64 || name == "default"
+                || !name.bytes().all(|byte| byte.is_ascii_alphanumeric() || b"_.-".contains(&byte)) {
+                return Err(format!("retention rule name {name:?} needs 1-64 ASCII letters, digits, '_', '.' or '-' and must not be 'default'"));
+            }
+            rule.validate(name)?;
+        }
+        Ok(())
+    }
+
     pub fn validate(&self) -> Result<(), String> {
         if !Path::new(&self.path).is_absolute() || self.path.chars().any(char::is_control) {
             return Err(
@@ -252,7 +275,38 @@ impl SqliteConfig {
         {
             return Err("SQLite batch/queue or flush/busy timeout limits are invalid".into());
         }
+        if self.recent_frames_s > 31536000 {
+            return Err("SQLite recent_frames_s must be at most one year".into());
+        }
+        self.validate_rules()?;
         self.maintenance.validate()
+    }
+}
+
+/// What SQLite keeps of every stored name, resolved from the configuration.
+#[derive(Debug, Clone, Default)]
+pub struct HistoryPlan {
+    devices: HashMap<String, crate::config::Routing>,
+    rules: BTreeMap<String, RetentionRule>,
+}
+
+impl HistoryPlan {
+    pub fn new(config: &crate::config::Config) -> Self {
+        Self {
+            devices: config.devices.iter()
+                .map(|device| (crate::pipeline::normalize_mac(&device.mac), config.routing(device)))
+                .collect(),
+            rules: config.frontends.sqlite.retention_rules.clone(),
+        }
+    }
+
+    /// Mode and rule of a stored name; devices no longer configured are off.
+    pub fn plan(&self, mac: &str, attribute: &str) -> (SqliteMode, Option<(&str, &RetentionRule)>) {
+        let Some(routing) = self.devices.get(&crate::pipeline::normalize_mac(mac)) else {
+            return (SqliteMode::Off, None);
+        };
+        let (mode, rule) = routing.stored(attribute);
+        (mode, self.rules.get_key_value(rule).map(|(name, rule)| (name.as_str(), rule)))
     }
 }
 
@@ -263,6 +317,15 @@ struct Frame {
 
 impl Frame {
     fn new(state: &Value) -> Result<Self, String> {
+        Self::new_at(state, SystemTime::now())
+    }
+
+    fn new_at(state: &Value, received_at: SystemTime) -> Result<Self, String> {
+        let received_at = received_at.duration_since(UNIX_EPOCH)
+            .map_err(|error| format!("SQLite receive timestamp unavailable: {error}"))?;
+        if received_at.as_secs() < 1_577_836_800 {
+            return Err("SQLite recording skipped: system time is not synchronized".into());
+        }
         if state["mac"].as_str().is_none_or(str::is_empty) {
             return Err("SQLite frame is missing its MAC".into());
         }
@@ -276,10 +339,7 @@ impl Frame {
                 return Err("SQLite measurement is missing its name or value".into());
             }
         }
-        let timestamp_ns = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map_err(|error| format!("SQLite receive timestamp unavailable: {error}"))?
-            .as_nanos();
+        let timestamp_ns = received_at.as_nanos();
         let timestamp_ns = i64::try_from(timestamp_ns)
             .map_err(|error| format!("SQLite timestamp out of range: {error}"))?;
         Ok(Self {
@@ -340,13 +400,11 @@ fn open(config: &SqliteConfig) -> Result<Connection, String> {
             transaction.execute_batch(SCHEMA)?;
             transaction.commit()?;
         }
-        if config.maintenance.enabled {
-            let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
-            let current: i64 = transaction.query_row("PRAGMA user_version", [], |row| row.get(0))?;
-            if current == 1 { transaction.execute_batch(HISTORY_SCHEMA)?; }
-            else { transaction.execute_batch("CREATE INDEX IF NOT EXISTS history_series_order ON history_samples(series_id,id)")?; }
-            transaction.commit()?;
-        }
+        let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let current: i64 = transaction.query_row("PRAGMA user_version", [], |row| row.get(0))?;
+        if current == 1 { transaction.execute_batch(HISTORY_SCHEMA)?; }
+        else { transaction.execute_batch("CREATE INDEX IF NOT EXISTS history_series_order ON history_samples(series_id,id)")?; }
+        transaction.commit()?;
         Ok(connection)
     };
     initialize()
@@ -561,8 +619,62 @@ fn typed_value(value: &Value) -> (&'static str, SqlValue, SqlValue, SqlValue) {
     }
 }
 
-fn write_batch(connection: &mut Connection, frames: &[Frame]) -> rusqlite::Result<()> {
+/// Where a frame goes: recent frames, direct history, and the rules.
+#[derive(Clone)]
+struct Storage {
+    recent_frames_s: u64,
+    plan: HistoryPlan,
+    maintenance: MaintenanceConfig,
+}
+
+impl Storage {
+    fn archived(&self, mac: &str, attribute: &str) -> bool {
+        self.plan.plan(mac, attribute).0 == SqliteMode::History
+    }
+}
+
+fn upsert_device(connection: &Connection, mac: &str, sensor_name: &str, device_json: &str) -> rusqlite::Result<()> {
+    connection.prepare_cached(
+        "INSERT INTO history_devices(mac,sensor_name,device_json) VALUES (?1,?2,?3)
+         ON CONFLICT(mac) DO UPDATE SET sensor_name=excluded.sensor_name,device_json=excluded.device_json
+         WHERE sensor_name IS NOT excluded.sensor_name OR device_json IS NOT excluded.device_json",
+    )?.execute(params![mac, sensor_name, device_json])?;
+    Ok(())
+}
+
+fn archive_sample(connection: &Connection, mac: &str, attribute: &str, unit: &str,
+    timestamp: i64, kind: &str, value_json: &str) -> rusqlite::Result<()> {
+    connection.prepare_cached("INSERT OR IGNORE INTO history_series(mac,attribute,unit) VALUES (?1,?2,?3)")?
+        .execute(params![mac, attribute, unit])?;
+    connection.prepare_cached(
+        "INSERT INTO history_samples(series_id,received_at_ns,type,value_json)
+         SELECT id,?4,?5,?6 FROM history_series WHERE mac=?1 AND attribute=?2 AND unit=?3",
+    )?.execute(params![mac, attribute, unit, timestamp, kind, value_json])?;
+    Ok(())
+}
+
+fn write_batch(connection: &mut Connection, frames: &[Frame], storage: &Storage) -> rusqlite::Result<()> {
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    if storage.recent_frames_s == 0 {
+        for frame in frames {
+            let state = &frame.state;
+            let mac = state["mac"].as_str().unwrap_or("");
+            let mut device_stored = false;
+            for measurement in state["measurements"].as_array().expect("validated frame") {
+                let name = measurement["name"].as_str().unwrap_or("");
+                if !storage.archived(mac, name) { continue; }
+                if !device_stored {
+                    let device = state.get("device").cloned().unwrap_or_else(|| Value::Object(Default::default()));
+                    upsert_device(&transaction, mac, state["label"].as_str().unwrap_or(""), &device.to_string())?;
+                    device_stored = true;
+                }
+                let (kind, ..) = typed_value(&measurement["value"]);
+                archive_sample(&transaction, mac, name, measurement["unit"].as_str().unwrap_or(""),
+                    frame.timestamp_ns, kind, &measurement["value"].to_string())?;
+            }
+        }
+        return transaction.commit();
+    }
     {
         let mut insert_frame = transaction.prepare_cached(
             "INSERT INTO frames(received_at_ns,mac,sensor_name,wire_format,state_json) VALUES (?1,?2,?3,?4,?5)",
@@ -606,43 +718,43 @@ fn write_batch(connection: &mut Connection, frames: &[Frame]) -> rusqlite::Resul
 
 const SECOND_NS: i64 = 1_000_000_000;
 
-fn archive_frames(connection: &mut Connection, config: &MaintenanceConfig, now: i64) -> rusqlite::Result<usize> {
-    let cutoff = now.saturating_sub(config.raw_retention_s as i64 * SECOND_NS);
-    let deadline = Instant::now() + Duration::from_millis(config.max_work_ms / 2);
+/// Move recent frames older than the horizon into the history: `history`
+/// attributes become samples, everything else of the frame is dropped.
+fn archive_frames(connection: &mut Connection, storage: &Storage, now: i64) -> rusqlite::Result<usize> {
+    let cutoff = now.saturating_sub(storage.recent_frames_s as i64 * SECOND_NS);
+    let deadline = Instant::now() + Duration::from_millis(storage.maintenance.max_work_ms / 2);
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
     let frames: Vec<(i64, i64, String, String, String)> = transaction.prepare(
         "SELECT id,received_at_ns,mac,sensor_name,state_json FROM frames
          WHERE received_at_ns < ?1 ORDER BY received_at_ns,id LIMIT ?2",
-    )?.query_map(params![cutoff, config.batch_size as i64], |row|
+    )?.query_map(params![cutoff, storage.maintenance.batch_size as i64], |row|
         Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)))?
         .collect::<rusqlite::Result<_>>()?;
     let mut moved = 0;
     for (id, timestamp, mac, name, state) in frames {
-        transaction.execute(
-            "INSERT INTO history_devices(mac,sensor_name,device_json)
-             VALUES (?1,?2,COALESCE(json_extract(?3,'$.device'),'{}'))
-             ON CONFLICT(mac) DO UPDATE SET sensor_name=excluded.sensor_name,device_json=excluded.device_json",
-            params![mac, name, state],
-        )?;
-        transaction.execute(
-            "INSERT OR IGNORE INTO history_series(mac,attribute,unit)
-             SELECT ?1,attribute,unit FROM measurements WHERE frame_id=?2",
-            params![mac, id],
-        )?;
-        transaction.execute(
-            "INSERT INTO history_samples(series_id,received_at_ns,type,value_json)
-             SELECT series.id,?1,measure.type,
-               CASE measure.type
-                 WHEN 'real' THEN printf('%!.17g',measure.value_real)
-                 WHEN 'integer' THEN CAST(measure.value_int AS TEXT)
-                 WHEN 'boolean' THEN CASE measure.value_int WHEN 0 THEN 'false' ELSE 'true' END
-                 WHEN 'text' THEN json_quote(measure.value_text)
-                 WHEN 'null' THEN 'null' ELSE measure.value_text END
-             FROM measurements measure JOIN history_series series
-               ON series.mac=?2 AND series.attribute=measure.attribute AND series.unit=measure.unit
-             WHERE measure.frame_id=?3 ORDER BY measure.ordinal",
-            params![timestamp, mac, id],
-        )?;
+        let measurements: Vec<(String, String, String, String)> = transaction.prepare_cached(
+            "SELECT attribute,unit,type,
+               CASE type
+                 WHEN 'real' THEN printf('%!.17g',value_real)
+                 WHEN 'integer' THEN CAST(value_int AS TEXT)
+                 WHEN 'boolean' THEN CASE value_int WHEN 0 THEN 'false' ELSE 'true' END
+                 WHEN 'text' THEN json_quote(value_text)
+                 WHEN 'null' THEN 'null' ELSE value_text END
+             FROM measurements WHERE frame_id=?1 ORDER BY ordinal",
+        )?.query_map([id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))?
+            .collect::<rusqlite::Result<_>>()?;
+        let mut device_stored = false;
+        for (attribute, unit, kind, value_json) in measurements {
+            if !storage.archived(&mac, &attribute) { continue; }
+            if !device_stored {
+                let device = serde_json::from_str::<Value>(&state).ok()
+                    .and_then(|state| state.get("device").cloned())
+                    .unwrap_or_else(|| Value::Object(Default::default()));
+                upsert_device(&transaction, &mac, &name, &device.to_string())?;
+                device_stored = true;
+            }
+            archive_sample(&transaction, &mac, &attribute, &unit, timestamp, &kind, &value_json)?;
+        }
         transaction.execute("DELETE FROM frames WHERE id=?1", [id])?;
         moved += 1;
         if Instant::now() >= deadline { break; }
@@ -651,32 +763,35 @@ fn archive_frames(connection: &mut Connection, config: &MaintenanceConfig, now: 
     Ok(moved)
 }
 
-fn reduce_series(connection: &mut Connection, config: &MaintenanceConfig, now: i64,
+/// Apply the progressive rule of a series; other series are left untouched.
+fn reduce_series(connection: &mut Connection, storage: &Storage, now: i64,
     series: i64, mac: &str, attribute: &str, after: i64) -> rusqlite::Result<(i64, bool)> {
-    if discrete_attribute(attribute) { return Ok((after, true)); }
-    let policy = config.policy(mac, attribute);
-    let mode = policy.map(|policy| policy.mode).unwrap_or_else(||
-        if counter_attribute(attribute) { config.counter_mode } else { config.other_numeric_mode });
-    if mode == HistoryMode::KeepAll { return Ok((after, true)); }
-    let deadline = Instant::now() + Duration::from_millis(config.max_work_ms / 2);
+    let rule = match storage.plan.plan(mac, attribute) {
+        (SqliteMode::History, Some((_, rule))) if rule.mode == RetentionMode::Progressive => rule,
+        _ => return Ok((after, true)),
+    };
+    let deadline = Instant::now() + Duration::from_millis(storage.maintenance.max_work_ms / 2);
     let transaction = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
-    let raw_cutoff = now.saturating_sub(config.raw_retention_s as i64 * SECOND_NS);
+    let horizon = now.saturating_sub(storage.recent_frames_s as i64 * SECOND_NS);
     let samples: Vec<(i64,i64,String)> = transaction.prepare(
         "SELECT id,received_at_ns,type FROM history_samples WHERE series_id=?1 AND id>?2 ORDER BY id LIMIT ?3",
-    )?.query_map(params![series,after,config.batch_size as i64],|row|Ok((row.get(0)?,row.get(1)?,row.get(2)?)))?
+    )?.query_map(params![series,after,storage.maintenance.batch_size as i64],|row|Ok((row.get(0)?,row.get(1)?,row.get(2)?)))?
         .collect::<rusqlite::Result<_>>()?;
     let mut last = after;
     let mut processed = 0;
     for (id,timestamp,kind) in &samples {
-        if *timestamp < raw_cutoff && (matches!(kind.as_str(),"integer"|"real")
-            || (mode == HistoryMode::Discard && kind == "unsigned")) {
-            let tier = policy.into_iter().flat_map(|policy| policy.tiers.iter().enumerate()).find(|(_,tier)|
+        if *timestamp < horizon {
+            let numeric = matches!(kind.as_str(), "integer" | "real");
+            let tier = rule.tiers.iter().enumerate().find(|(_,tier)|
                 *timestamp >= now.saturating_sub(tier.max_age_s as i64 * SECOND_NS));
-            let remove = if mode == HistoryMode::Discard { true } else if let Some((index,tier)) = tier {
-                if tier.sample_interval_s == 0 { false } else {
+            let remove = match tier {
+                None => true,
+                Some(_) if !numeric => false,
+                Some((_, tier)) if tier.sample_interval_s == 0 => false,
+                Some((index, tier)) => {
                     let width = tier.sample_interval_s as i64 * SECOND_NS;
-                    let previous_age = if index == 0 {0} else {policy.unwrap().tiers[index-1].max_age_s};
-                    let upper = now.saturating_sub(previous_age as i64 * SECOND_NS).min(raw_cutoff)
+                    let previous_age = if index == 0 {0} else {rule.tiers[index-1].max_age_s};
+                    let upper = now.saturating_sub(previous_age as i64 * SECOND_NS).min(horizon)
                         .min((timestamp / width).saturating_add(1).saturating_mul(width));
                     transaction.query_row(
                         "SELECT EXISTS(SELECT 1 FROM history_samples WHERE series_id=?1
@@ -684,7 +799,7 @@ fn reduce_series(connection: &mut Connection, config: &MaintenanceConfig, now: i
                          AND (received_at_ns > ?2 OR id > ?4))",
                         params![series,timestamp,upper,id],|row|row.get::<_,bool>(0))?
                 }
-            } else { true };
+            };
             if remove { transaction.execute("DELETE FROM history_samples WHERE id=?1",[id])?; }
         }
         last = *id;
@@ -692,7 +807,7 @@ fn reduce_series(connection: &mut Connection, config: &MaintenanceConfig, now: i
         if Instant::now() >= deadline { break; }
     }
     transaction.commit()?;
-    Ok((last, samples.len() < config.batch_size && processed == samples.len()))
+    Ok((last, samples.len() < storage.maintenance.batch_size && processed == samples.len()))
 }
 
 #[derive(Default)]
@@ -733,13 +848,13 @@ fn maintenance_warning_due(last: &mut Option<Instant>,now: Instant) -> bool {
     } else {false}
 }
 
-fn maintenance_step(connection: &mut Connection, config: &MaintenanceConfig, now: i64,
+fn maintenance_step(connection: &mut Connection, storage: &Storage, now: i64,
     cursor: &mut MaintenanceCursor, stopped: &Arc<AtomicBool>) -> rusqlite::Result<bool> {
-    let deadline = Instant::now() + Duration::from_millis(config.max_work_ms);
+    let deadline = Instant::now() + Duration::from_millis(storage.maintenance.max_work_ms);
     let cancelled = Arc::clone(stopped);
     connection.progress_handler(1000, Some(move || cancelled.load(Ordering::Relaxed) || Instant::now() >= deadline));
     let result = (|| {
-        let moved = archive_frames(connection, config, now)?;
+        let moved = archive_frames(connection, storage, now)?;
         if moved > 0 { *cursor = MaintenanceCursor::default(); return Ok(true); }
         let next: Option<(i64, String, String)> = {
             let mut statement = connection.prepare("SELECT id,mac,attribute FROM history_series WHERE id>?1 ORDER BY id LIMIT 1")?;
@@ -747,7 +862,7 @@ fn maintenance_step(connection: &mut Connection, config: &MaintenanceConfig, now
             rows.next()?.map(|row| -> rusqlite::Result<_> { Ok((row.get(0)?, row.get(1)?, row.get(2)?)) }).transpose()?
         };
         if let Some((series, mac, attribute)) = next {
-            let (last,done) = reduce_series(connection, config, now, series, &mac, &attribute,cursor.sample)?;
+            let (last,done) = reduce_series(connection, storage, now, series, &mac, &attribute,cursor.sample)?;
             if done { cursor.series=series;cursor.sample=0; } else { cursor.sample=last; }
             Ok(true)
         } else {
@@ -760,17 +875,17 @@ fn maintenance_step(connection: &mut Connection, config: &MaintenanceConfig, now
     result
 }
 
-fn maintenance_attempt(connection: &mut Connection,config: &MaintenanceConfig,now: i64,
+fn maintenance_attempt(connection: &mut Connection,storage: &Storage,now: i64,
     cursor: &mut MaintenanceCursor,stopped: &Arc<AtomicBool>,gate: &WriteGate) -> rusqlite::Result<Option<bool>> {
     let Some(_permit)=gate.maintenance() else {return Ok(None);};
-    match maintenance_step(connection,config,now,cursor,stopped) {
+    match maintenance_step(connection,storage,now,cursor,stopped) {
         Err(rusqlite::Error::SqliteFailure(error,_))
             if matches!(error.code,rusqlite::ErrorCode::DatabaseBusy|rusqlite::ErrorCode::DatabaseLocked)=>Ok(None),
         result=>result.map(Some),
     }
 }
 
-fn run_maintenance(mut connection: Connection, config: MaintenanceConfig, stopped: Arc<AtomicBool>,gate: Arc<WriteGate>) {
+fn run_maintenance(mut connection: Connection, storage: Storage, stopped: Arc<AtomicBool>,gate: Arc<WriteGate>) {
     let mut cursor = MaintenanceCursor::default();
     let mut last_warning=None;
     let mut waiting_since=None;
@@ -779,11 +894,11 @@ fn run_maintenance(mut connection: Connection, config: MaintenanceConfig, stoppe
             .filter(|time| time.as_secs() >= 1577836800)
             .and_then(|time| i64::try_from(time.as_nanos()).ok());
         let result = now.ok_or_else(|| "system time is not synchronized".to_string())
-            .and_then(|now| maintenance_attempt(&mut connection, &config, now, &mut cursor, &stopped,&gate).map_err(|error| error.to_string()));
+            .and_then(|now| maintenance_attempt(&mut connection, &storage, now, &mut cursor, &stopped,&gate).map_err(|error| error.to_string()));
         let wait = match result {
             Ok(Some(more)) => {
                 waiting_since=None;
-                if more { Duration::from_millis(20) } else { Duration::from_secs(config.interval_s) }
+                if more { Duration::from_millis(20) } else { Duration::from_secs(storage.maintenance.interval_s) }
             }
             Ok(None)=>{
                 let now=Instant::now();
@@ -811,6 +926,7 @@ fn run_worker(
     receiver: Receiver<Frame>,
     stopped: Arc<AtomicBool>,
     gate: Arc<WriteGate>,
+    storage: Storage,
 ) {
     let interval = Duration::from_millis(config.flush_interval_ms);
     let mut deadline = Instant::now() + interval;
@@ -840,7 +956,7 @@ fn run_worker(
         if Instant::now() < deadline && (failures > 0 || pending.len() < config.batch_size) {
             continue;
         }
-        let result={let _permit=gate.writer();write_batch(&mut connection,&pending)};
+        let result={let _permit=gate.writer();write_batch(&mut connection,&pending,&storage)};
         match result {
             Ok(()) => {
                 if failures > 0 {
@@ -867,7 +983,7 @@ fn run_worker(
     pending.extend(receiver.try_iter());
     if !pending.is_empty() {
         let _permit=gate.writer();
-        if let Err(error) = write_batch(&mut connection, &pending) {
+        if let Err(error) = write_batch(&mut connection, &pending, &storage) {
             log::error!("SQLite shutdown lost {} uncommitted frames: {error}; memory queue is not a persistent spool", pending.len());
         }
     }
@@ -879,57 +995,55 @@ pub struct SqlitePublisher {
     worker: Option<JoinHandle<()>>,
     maintenance_worker: Option<JoinHandle<()>>,
     dropped: AtomicUsize,
+    rejected: AtomicUsize,
 }
 
 impl SqlitePublisher {
-    pub fn start(config: &SqliteConfig) -> Result<Self, String> {
+    pub fn start(config: &SqliteConfig, plan: HistoryPlan) -> Result<Self, String> {
         config.validate()?;
         if !config.enabled {
             return Err("SQLite frontend is disabled".into());
         }
         let connection = open(config)?;
-        let maintenance_connection = if config.maintenance.enabled {
-            let connection = Connection::open_with_flags(&config.path,
-                OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX).map_err(|error| error.to_string())?;
-            connection.busy_timeout(Duration::ZERO).map_err(|error| error.to_string())?;
-            connection.execute_batch("PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;").map_err(|error| error.to_string())?;
-            Some(connection)
-        } else { None };
+        let maintenance_connection = Connection::open_with_flags(&config.path,
+            OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX).map_err(|error| error.to_string())?;
+        maintenance_connection.busy_timeout(Duration::ZERO).map_err(|error| error.to_string())?;
+        maintenance_connection.execute_batch("PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;").map_err(|error| error.to_string())?;
+        let storage = Storage { recent_frames_s: config.recent_frames_s, plan, maintenance: config.maintenance.clone() };
         let (sender, receiver) = mpsc::sync_channel(config.queue_capacity);
         let stopped = Arc::new(AtomicBool::new(false));
         let worker_stopped = Arc::clone(&stopped);
         let gate=Arc::new(WriteGate::default());
         let writer_gate=Arc::clone(&gate);
         let worker_config = config.clone();
+        let worker_storage = storage.clone();
         let worker = std::thread::Builder::new()
             .name("ble-sqlite".into())
-            .spawn(move || run_worker(connection, worker_config, receiver, worker_stopped,writer_gate))
+            .spawn(move || run_worker(connection, worker_config, receiver, worker_stopped,writer_gate,worker_storage))
             .map_err(|error| format!("cannot start SQLite writer: {error}"))?;
-        log::info!("SQLite recording to {} (WAL)", config.path);
-        let mut publisher = Self {
+        log::info!("SQLite recording to {} (WAL, recent frames {} s)", config.path, config.recent_frames_s);
+        let maintenance_stopped = Arc::clone(&stopped);
+        let maintenance_worker = std::thread::Builder::new().name("ble-sqlite-history".into())
+            .spawn(move || run_maintenance(maintenance_connection, storage, maintenance_stopped,gate))
+            .map_err(|error| format!("cannot start SQLite maintenance: {error}"))?;
+        Ok(Self {
             sender,
             stopped,
             worker: Some(worker),
-            maintenance_worker: None,
+            maintenance_worker: Some(maintenance_worker),
             dropped: AtomicUsize::new(0),
-        };
-        if let Some(connection) = maintenance_connection {
-            let maintenance = config.maintenance.clone();
-            let maintenance_stopped = Arc::clone(&publisher.stopped);
-            publisher.maintenance_worker = Some(std::thread::Builder::new().name("ble-sqlite-history".into())
-                .spawn(move || run_maintenance(connection, maintenance, maintenance_stopped,gate))
-                .map_err(|error| format!("cannot start SQLite maintenance: {error}"))?);
-            log::info!("SQLite history maintenance enabled ({} s cadence, {} ms work budget)",
-                config.maintenance.interval_s, config.maintenance.max_work_ms);
-        }
-        Ok(publisher)
+            rejected: AtomicUsize::new(0),
+        })
     }
 
     pub fn publish(&self, state: &Value) {
         let frame = match Frame::new(state) {
             Ok(frame) => frame,
             Err(error) => {
-                log::error!("SQLite frame rejected: {error}");
+                let rejected = self.rejected.fetch_add(1, Ordering::Relaxed) + 1;
+                if rejected == 1 || rejected % 100 == 0 {
+                    log::error!("SQLite frame rejected: {error}; {rejected} frames rejected");
+                }
                 return;
             }
         };
@@ -963,24 +1077,34 @@ mod tests {
     use std::os::unix::fs::PermissionsExt;
 
     #[test]
+    fn frames_require_a_synchronized_clock() {
+        let state = state();
+        for seconds in [0, 60, 1_577_836_799] {
+            assert!(Frame::new_at(&state, UNIX_EPOCH + Duration::from_secs(seconds)).is_err());
+        }
+        let frame = Frame::new_at(&state, UNIX_EPOCH + Duration::from_secs(1_577_836_800)).unwrap();
+        assert_eq!(frame.timestamp_ns, 1_577_836_800_000_000_000);
+    }
+
+    #[test]
     fn maintenance_yields_to_internal_and_external_writers_and_resumes() {
-        let mut database=Database::new();database.config.maintenance.enabled=true;
+        let database=Database::new();let storage=history_storage(&database.config);
         let mut maintenance=open(&database.config).unwrap();maintenance.busy_timeout(Duration::ZERO).unwrap();
         let mut writer=open(&database.config).unwrap();
         let now=1_800_000_000*SECOND_NS;
         let mut frame=Frame::new(&state()).unwrap();frame.timestamp_ns=now-7200*SECOND_NS;
-        write_batch(&mut writer,&[frame]).unwrap();
+        write_batch(&mut writer,&[frame],&storage).unwrap();
         let gate=WriteGate::default();let stopped=Arc::new(AtomicBool::new(false));let mut cursor=MaintenanceCursor::default();
         let receiver=gate.writer();
-        assert_eq!(maintenance_attempt(&mut maintenance,&database.config.maintenance,now,&mut cursor,&stopped,&gate).unwrap(),None);
+        assert_eq!(maintenance_attempt(&mut maintenance,&storage,now,&mut cursor,&stopped,&gate).unwrap(),None);
         assert!(maintenance.is_autocommit());drop(receiver);
         writer.execute_batch("BEGIN IMMEDIATE").unwrap();
-        assert_eq!(maintenance_attempt(&mut maintenance,&database.config.maintenance,now,&mut cursor,&stopped,&gate).unwrap(),None);
+        assert_eq!(maintenance_attempt(&mut maintenance,&storage,now,&mut cursor,&stopped,&gate).unwrap(),None);
         assert!(maintenance.is_autocommit());writer.execute_batch("ROLLBACK").unwrap();
-        assert_eq!(maintenance_attempt(&mut maintenance,&database.config.maintenance,now,&mut cursor,&stopped,&gate).unwrap(),Some(true));
+        assert_eq!(maintenance_attempt(&mut maintenance,&storage,now,&mut cursor,&stopped,&gate).unwrap(),Some(true));
         assert!(maintenance.is_autocommit());
         assert_eq!(writer.query_row("SELECT count(*) FROM frames",[],|row|row.get::<_,i64>(0)).unwrap(),0);
-        write_batch(&mut writer,&[Frame::new(&state()).unwrap()]).unwrap();
+        write_batch(&mut writer,&[Frame::new(&state()).unwrap()],&storage).unwrap();
     }
 
     #[test]
@@ -1012,30 +1136,30 @@ mod tests {
     }
 
     #[test]
-    fn maintenance_defaults_and_policy_validation() {
-        let mut config = MaintenanceConfig::default();
-        assert!(!config.enabled);
-        config.validate().unwrap();
-        assert_eq!(config.policy("AABBCCDDEEFF", "temperature").unwrap().tiers[2].sample_interval_s, 150);
-        assert!(config.policy("AABBCCDDEEFF", "packet_id").is_none());
-        assert_eq!(config.counter_mode,HistoryMode::Discard);
-        assert_eq!(config.other_numeric_mode,HistoryMode::KeepAll);
-        assert!(config.policy("AABBCCDDEEFF", "opened").is_none());
-        let mut override_policy = config.policies[0].clone();
-        override_policy.mac = "AA:BB:CC:DD:EE:FF".into();
-        override_policy.mode = HistoryMode::KeepAll;
-        config.policies.push(override_policy.clone());
-        config.validate().unwrap();
-        assert_eq!(config.policy("AABBCCDDEEFF", "temperature").unwrap().mode, HistoryMode::KeepAll);
-        override_policy.mac = "AABBCCDDEEFF".into();
-        config.policies.push(override_policy);
-        assert!(config.validate().is_err());
-        config.policies.pop();
-        config.policies[0].tiers[2].max_age_s = 10;
-        assert!(config.validate().is_err());
-        config.policies[0] = MaintenanceConfig::default().policies.remove(0);
-        config.policies[0].attribute = "opened".into();
-        assert!(config.validate().is_err());
+    fn retention_rules_presets_and_validation() {
+        let config = SqliteConfig::default();
+        config.validate_rules().unwrap();
+        assert_eq!(config.recent_frames_s, 600);
+        assert_eq!(config.retention_rules["climate"].mode, RetentionMode::Progressive);
+        assert_eq!(config.retention_rules["climate"].tiers[2].sample_interval_s, 150);
+        assert!(config.retention_rules.contains_key("battery") && config.retention_rules.contains_key("events"));
+        let mut rules = config.clone();
+        rules.retention_rules.get_mut("climate").unwrap().tiers[2].max_age_s = 10;
+        assert!(rules.validate_rules().is_err());
+        let mut rules = config.clone();
+        rules.retention_rules.insert("plain".into(), RetentionRule { mode: RetentionMode::KeepAll, tiers: vec![HistoryTier { max_age_s: 60, sample_interval_s: 0 }] });
+        assert!(rules.validate_rules().is_err(), "age bands need progressive");
+        let mut rules = config.clone();
+        rules.retention_rules.insert("forever".into(), RetentionRule::default());
+        rules.validate_rules().unwrap();
+        rules.retention_rules.insert("bad name".into(), RetentionRule::default());
+        assert!(rules.validate_rules().is_err());
+        let parsed: SqliteConfig = serde_yaml::from_str("retention_rules: {forever: {mode: default}, all: {mode: keep_all}}\nrecent_frames_s: default\n").unwrap();
+        assert_eq!(parsed.retention_rules["forever"], RetentionRule::default());
+        assert_eq!(parsed.recent_frames_s, 600);
+        assert!(serde_yaml::to_string(&parsed).unwrap().contains("forever: {}"));
+        assert!(serde_yaml::from_str::<SqliteConfig>("retention_rules: {x: {mode: forever}}\n").is_err());
+        assert!(serde_yaml::from_str::<SqliteConfig>("recent_frames_s: soon\n").is_err());
     }
 
     struct Database {
@@ -1090,6 +1214,23 @@ mod tests {
         })
     }
 
+    /// Storage for a configuration whose devices are given as YAML.
+    fn storage_for(config: &SqliteConfig, yaml: &str) -> Storage {
+        let mut full: crate::config::Config = serde_yaml::from_str(yaml).unwrap();
+        full.frontends.sqlite = config.clone();
+        Storage { recent_frames_s: config.recent_frames_s, plan: HistoryPlan::new(&full), maintenance: config.maintenance.clone() }
+    }
+
+    const EVERYTHING: &str = "attribute_defaults: {sqlite: history}\ndevices: [{mac: AABBCCDDEEFF}, {mac: '112233445566'}]\n";
+
+    fn history_storage(config: &SqliteConfig) -> Storage {
+        storage_for(config, EVERYTHING)
+    }
+
+    fn history_plan(config: &SqliteConfig) -> HistoryPlan {
+        history_storage(config).plan
+    }
+
     #[test]
     fn sqlite_configuration_defaults_validation_and_roundtrip() {
         let mut config = crate::config::Config::default();
@@ -1120,44 +1261,69 @@ mod tests {
         assert!(Frame::new(&serde_json::json!({"mac":"A","measurements":[{"name":"x"}]})).is_err());
     }
 
-    fn drain_history(connection: &mut Connection, config: &MaintenanceConfig, now: i64) {
+    fn drain_history(connection: &mut Connection, storage: &Storage, now: i64) {
         let mut cursor = MaintenanceCursor::default();
         let stopped = Arc::new(AtomicBool::new(false));
         for _ in 0..1000 {
-            if !maintenance_step(connection, config, now, &mut cursor, &stopped).unwrap() { return; }
+            if !maintenance_step(connection, storage, now, &mut cursor, &stopped).unwrap() { return; }
         }
         panic!("maintenance did not finish its bounded chunks");
     }
 
     #[test]
-    fn other_numeric_fallback_discards_unmapped_numeric_samples_only() {
+    fn only_history_attributes_of_configured_devices_are_archived() {
         let mut database = Database::new();
-        database.config.maintenance.enabled = true;
-        database.config.maintenance.raw_retention_s = 1;
-        database.config.maintenance.other_numeric_mode = HistoryMode::Discard;
-        database.config.maintenance.policies.clear();
+        database.config.recent_frames_s = 1;
+        let storage = storage_for(&database.config, concat!(
+            "devices:\n- mac: AABBCCDDEEFF\n  attributes:\n",
+            "  - {source: pm10, sqlite: history}\n  - {source: custom_text, sqlite: history}\n",
+            "  - {source: custom_state, sqlite: live}\n"));
         let now = 1_800_000_000 * SECOND_NS;
         let mut connection = open(&database.config).unwrap();
-        let data = serde_json::json!({"mac":"AABBCCDDEEFF","measurements":[
-            {"name":"pm10","value":12.5,"unit":"µg/m³"},
-            {"name":"custom_text","value":"hello","unit":""},
-            {"name":"custom_state","value":true,"unit":""}
-        ]});
-        let mut frame = Frame::new(&data).unwrap();
-        frame.timestamp_ns = now - 60 * SECOND_NS;
-        write_batch(&mut connection, &[frame]).unwrap();
-        drain_history(&mut connection, &database.config.maintenance, now);
-        let attributes: Vec<String> = connection.prepare("SELECT DISTINCT attribute FROM history ORDER BY attribute")
-            .unwrap().query_map([], |row| row.get(0)).unwrap()
+        for mac in ["AABBCCDDEEFF", "112233445566"] {
+            let data = serde_json::json!({"mac":mac,"measurements":[
+                {"name":"pm10","value":12.5,"unit":"µg/m³"},
+                {"name":"custom_text","value":"hello","unit":""},
+                {"name":"custom_state","value":true,"unit":""}
+            ]});
+            let mut frame = Frame::new(&data).unwrap();
+            frame.timestamp_ns = now - 60 * SECOND_NS;
+            write_batch(&mut connection, &[frame], &storage).unwrap();
+        }
+        assert_eq!(connection.query_row("SELECT count(*) FROM measurements", [], |row| row.get::<_, i64>(0)).unwrap(), 6, "recent frames keep everything");
+        drain_history(&mut connection, &storage, now);
+        let rows: Vec<(String, String)> = connection.prepare("SELECT mac,attribute FROM history ORDER BY mac,attribute")
+            .unwrap().query_map([], |row| Ok((row.get(0)?, row.get(1)?))).unwrap()
             .collect::<rusqlite::Result<_>>().unwrap();
-        assert_eq!(attributes, vec!["custom_state", "custom_text"]);
+        assert_eq!(rows, vec![("AABBCCDDEEFF".into(), "custom_text".into()), ("AABBCCDDEEFF".into(), "pm10".into())]);
+        assert_eq!(connection.query_row("SELECT count(*) FROM frames", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
+        assert_eq!(connection.query_row("SELECT count(*) FROM history_devices", [], |row| row.get::<_, i64>(0)).unwrap(), 1);
+    }
+
+    #[test]
+    fn without_recent_frames_history_attributes_are_written_directly() {
+        let mut database = Database::new();
+        database.config.recent_frames_s = 0;
+        let storage = storage_for(&database.config, "devices:\n- mac: AABBCCDDEEFF\n  attributes:\n  - {source: temperature, sqlite: history}\n");
+        let mut connection = open(&database.config).unwrap();
+        let data = serde_json::json!({"mac":"AABBCCDDEEFF","label":"Outside","device":{"model":"Multi"},"measurements":[
+            {"name":"temperature","value":16.34,"unit":"C"},
+            {"name":"humidity","value":82.89,"unit":"%"}]});
+        write_batch(&mut connection, &[Frame::new(&data).unwrap(), Frame::new(&data).unwrap()], &storage).unwrap();
+        assert_eq!(connection.query_row("SELECT count(*) FROM frames", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
+        let rows: Vec<(String, String, String)> = connection.prepare("SELECT attribute,type,value_json FROM history ORDER BY received_at_ns")
+            .unwrap().query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?))).unwrap()
+            .collect::<rusqlite::Result<_>>().unwrap();
+        assert_eq!(rows, vec![("temperature".into(), "real".into(), "16.34".into()); 2]);
+        let device: String = connection.query_row("SELECT device_json FROM history_devices", [], |row| row.get(0)).unwrap();
+        assert_eq!(serde_json::from_str::<Value>(&device).unwrap(), serde_json::json!({"model":"Multi"}));
     }
 
     #[test]
     fn stored_attribute_removal_clears_raw_and_archived_values_by_device_and_name() {
         let mut database = Database::new();
-        database.config.maintenance.enabled = true;
-        database.config.maintenance.raw_retention_s = 60;
+        database.config.recent_frames_s = 60;
+        let storage = history_storage(&database.config);
         let now = 1_800_000_000 * SECOND_NS;
         let mut connection = open(&database.config).unwrap();
         let data = serde_json::json!({
@@ -1173,8 +1339,8 @@ mod tests {
         archived.timestamp_ns = now - 600 * SECOND_NS;
         let mut recent = Frame::new(&data).unwrap();
         recent.timestamp_ns = now - 10 * SECOND_NS;
-        write_batch(&mut connection, &[archived, recent]).unwrap();
-        drain_history(&mut connection, &database.config.maintenance, now);
+        write_batch(&mut connection, &[archived, recent], &storage).unwrap();
+        drain_history(&mut connection, &storage, now);
         drop(connection);
 
         let before = stored_attributes(Path::new(&database.config.path)).unwrap();
@@ -1198,78 +1364,85 @@ mod tests {
     }
 
     #[test]
-    fn maintenance_normalizes_legacy_frames_atomically_and_preserves_exact_values() {
-        let mut database = Database::new();
+    fn maintenance_upgrades_legacy_frames_atomically_and_preserves_exact_values() {
+        let database = Database::new();
+        let storage = history_storage(&database.config);
         let now = 1_800_000_000 * SECOND_NS;
-        let mut connection = open(&database.config).unwrap();
-        let mut frame = Frame::new(&state()).unwrap();
-        frame.timestamp_ns = now - 7200 * SECOND_NS;
-        write_batch(&mut connection, &[frame]).unwrap();
-        drop(connection);
-        database.config.maintenance.enabled = true;
+        {
+            let mut legacy = Connection::open(&database.config.path).unwrap();
+            legacy.execute_batch(SCHEMA).unwrap();
+            let mut frame = Frame::new(&state()).unwrap();
+            frame.timestamp_ns = now - 7200 * SECOND_NS;
+            write_batch(&mut legacy, &[frame], &storage).unwrap();
+        }
         let mut connection = open(&database.config).unwrap();
         assert_eq!(connection.query_row("PRAGMA user_version", [], |row| row.get::<_, i64>(0)).unwrap(), 2);
         assert_eq!(connection.query_row("SELECT count(*) FROM history", [], |row| row.get::<_, i64>(0)).unwrap(), 10);
         connection.execute_batch("CREATE TRIGGER fail_archive BEFORE INSERT ON history_samples
             BEGIN SELECT RAISE(ABORT,'test archive failure'); END;").unwrap();
-        assert!(archive_frames(&mut connection, &database.config.maintenance, now).is_err());
+        assert!(archive_frames(&mut connection, &storage, now).is_err());
         assert_eq!(connection.query_row("SELECT count(*) FROM frames", [], |row| row.get::<_, i64>(0)).unwrap(), 1);
         assert_eq!(connection.query_row("SELECT count(*) FROM history_samples", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
         connection.execute_batch("DROP TRIGGER fail_archive").unwrap();
-        archive_frames(&mut connection, &database.config.maintenance, now).unwrap();
+        archive_frames(&mut connection, &storage, now).unwrap();
         assert_eq!(connection.query_row("SELECT count(*) FROM frames", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
         let stored: Vec<(String, String)> = connection.prepare("SELECT type,value_json FROM history_samples ORDER BY id")
             .unwrap().query_map([], |row| Ok((row.get(0)?,row.get(1)?))).unwrap().collect::<rusqlite::Result<_>>().unwrap();
         for (entry, original) in stored.iter().zip(state()["measurements"].as_array().unwrap()) {
             assert_eq!(serde_json::from_str::<Value>(&entry.1).unwrap(), original["value"]);
         }
-        drain_history(&mut connection, &database.config.maintenance, now);
+        drain_history(&mut connection, &storage, now);
         let once: i64 = connection.query_row("SELECT count(*) FROM history", [], |row| row.get(0)).unwrap();
-        drain_history(&mut connection, &database.config.maintenance, now);
+        drain_history(&mut connection, &storage, now);
         assert_eq!(connection.query_row("SELECT count(*) FROM history", [], |row| row.get::<_, i64>(0)).unwrap(), once);
         assert_eq!(connection.query_row("SELECT count(*) FROM pragma_foreign_key_check", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
         drop(connection);
-        database.config.maintenance.enabled = false;
         open(&database.config).unwrap();
     }
 
     #[test]
-    fn maintenance_uses_independent_tiers_and_never_deletes_discrete_or_counter_samples() {
+    fn progressive_rules_thin_numbers_and_expire_every_type() {
         let mut database = Database::new();
         let now = 1_800_000_000 * SECOND_NS;
-        database.config.maintenance.enabled = true;
-        database.config.maintenance.raw_retention_s = 1;
+        database.config.recent_frames_s = 1;
         database.config.maintenance.batch_size = 3;
-        database.config.maintenance.policies = vec![
-            HistoryPolicy { attribute: "temperature".into(), mode: HistoryMode::Progressive,
-                tiers: vec![HistoryTier {max_age_s:10,sample_interval_s:0},HistoryTier {max_age_s:60,sample_interval_s:10},HistoryTier {max_age_s:120,sample_interval_s:30}], ..Default::default() },
-            HistoryPolicy { attribute: "battery_level".into(), mode: HistoryMode::Progressive,
-                tiers: vec![HistoryTier {max_age_s:120,sample_interval_s:60}], ..Default::default() },
-            HistoryPolicy { mac:"112233445566".into(), attribute:"temperature".into(), ..Default::default() },
-        ];
+        database.config.retention_rules = BTreeMap::from([
+            ("fast".to_string(), RetentionRule { mode: RetentionMode::Progressive,
+                tiers: vec![HistoryTier {max_age_s:10,sample_interval_s:0},HistoryTier {max_age_s:60,sample_interval_s:10},HistoryTier {max_age_s:120,sample_interval_s:30}] }),
+            ("battery".to_string(), RetentionRule { mode: RetentionMode::Progressive,
+                tiers: vec![HistoryTier {max_age_s:120,sample_interval_s:60}] }),
+        ]);
         database.config.validate().unwrap();
+        let storage = storage_for(&database.config, concat!(
+            "attribute_defaults: {sqlite: history}\n",
+            "devices:\n- mac: AABBCCDDEEFF\n  attributes:\n",
+            "  - {source: temperature, retention: fast}\n  - {source: battery_level, retention: battery}\n",
+            "  - {source: opened, retention: fast}\n",
+            "- mac: '112233445566'\n  attributes:\n  - {source: battery_level, retention: battery}\n"));
         let mut connection = open(&database.config).unwrap();
         for mac in ["AABBCCDDEEFF", "112233445566"] {
             for age in [5, 15, 16, 25, 26, 80, 85, 200] {
                 let data = serde_json::json!({"mac":mac,"measurements":[
                     {"name":"temperature","value":age,"unit":"C"},
                     {"name":"battery_level","value":90,"unit":"%"},
-                    {"name":"opened","value":age%2,"unit":""},
+                    {"name":"opened","value":age%2==0,"unit":""},
                     {"name":"custom_contact","value":true,"unit":""},
                     {"name":"counter","value":age,"unit":""}]});
                 let mut frame = Frame::new(&data).unwrap();frame.timestamp_ns=now-age*SECOND_NS;
-                write_batch(&mut connection, &[frame]).unwrap();
+                write_batch(&mut connection, &[frame], &storage).unwrap();
             }
         }
-        drain_history(&mut connection, &database.config.maintenance, now);
+        drain_history(&mut connection, &storage, now);
         let count = |mac: &str, attribute: &str| connection.query_row(
             "SELECT count(*) FROM history WHERE mac=?1 AND attribute=?2", params![mac,attribute], |row| row.get::<_, i64>(0)).unwrap();
         assert_eq!(count("AABBCCDDEEFF","temperature"),4);
-        assert_eq!(count("112233445566","temperature"),8);
+        assert_eq!(count("112233445566","temperature"),8, "no rule keeps every sample");
+        assert_eq!(count("AABBCCDDEEFF","opened"),7, "booleans are expired, never thinned");
+        assert_eq!(count("112233445566","opened"),8);
         for mac in ["AABBCCDDEEFF", "112233445566"] {
             assert_eq!(count(mac,"battery_level"),2);
-            for attribute in ["opened","custom_contact"] { assert_eq!(count(mac,attribute),8); }
-            assert_eq!(count(mac,"counter"),0);
+            assert_eq!(count(mac,"custom_contact"),8);
+            assert_eq!(count(mac,"counter"),8);
         }
         let values: Vec<i64> = connection.prepare("SELECT CAST(value_json AS INTEGER) FROM history WHERE mac='AABBCCDDEEFF' AND attribute='temperature' ORDER BY received_at_ns DESC")
             .unwrap().query_map([],|row|row.get(0)).unwrap().collect::<rusqlite::Result<_>>().unwrap();
@@ -1279,11 +1452,12 @@ mod tests {
     #[test]
     fn sqlite_preserves_complete_multimeasure_frames_and_exact_types_after_reopen() {
         let database = Database::new();
+        let storage = history_storage(&database.config);
         {
             let mut connection = open(&database.config).unwrap();
             let mut frame = Frame::new(&state()).unwrap();
             frame.timestamp_ns = 1792356358293394316;
-            write_batch(&mut connection, &[frame]).unwrap();
+            write_batch(&mut connection, &[frame], &storage).unwrap();
         }
         let connection = open(&database.config).unwrap();
         let (timestamp, mac, name, format, json): (i64, String, String, String, String) =
@@ -1399,6 +1573,7 @@ mod tests {
     #[test]
     fn sqlite_failed_batch_rolls_back_frames_and_all_measurements() {
         let database = Database::new();
+        let storage = history_storage(&database.config);
         let mut connection = open(&database.config).unwrap();
         connection
             .execute_batch(
@@ -1409,7 +1584,7 @@ mod tests {
         let good = Frame::new(&state()).unwrap();
         let mut bad = state();
         bad["measurements"][1]["name"] = "bad".into();
-        assert!(write_batch(&mut connection, &[good, Frame::new(&bad).unwrap()]).is_err());
+        assert!(write_batch(&mut connection, &[good, Frame::new(&bad).unwrap()], &storage).is_err());
         for table in ["frames", "measurements"] {
             assert_eq!(
                 connection
@@ -1424,8 +1599,9 @@ mod tests {
     #[test]
     fn sqlite_wal_reader_keeps_consistent_snapshot_without_blocking_writer() {
         let database = Database::new();
+        let storage = history_storage(&database.config);
         let mut writer = open(&database.config).unwrap();
-        write_batch(&mut writer, &[Frame::new(&state()).unwrap()]).unwrap();
+        write_batch(&mut writer, &[Frame::new(&state()).unwrap()], &storage).unwrap();
         let reader =
             Connection::open_with_flags(&database.config.path, OpenFlags::SQLITE_OPEN_READ_ONLY)
                 .unwrap();
@@ -1437,7 +1613,7 @@ mod tests {
                 .unwrap(),
             1
         );
-        write_batch(&mut writer, &[Frame::new(&state()).unwrap()]).unwrap();
+        write_batch(&mut writer, &[Frame::new(&state()).unwrap()], &storage).unwrap();
         assert_eq!(
             reader
                 .query_row("SELECT count(*) FROM frames", [], |row| row
@@ -1465,7 +1641,7 @@ mod tests {
     #[test]
     fn sqlite_worker_retries_locked_database_and_flushes_on_shutdown() {
         let database = Database::new();
-        let publisher = SqlitePublisher::start(&database.config).unwrap();
+        let publisher = SqlitePublisher::start(&database.config, history_plan(&database.config)).unwrap();
         let lock = Connection::open(&database.config.path).unwrap();
         lock.execute_batch("BEGIN IMMEDIATE").unwrap();
         publisher.publish(&state());
@@ -1507,6 +1683,7 @@ mod tests {
             worker: None,
             maintenance_worker: None,
             dropped: AtomicUsize::new(0),
+            rejected: AtomicUsize::new(0),
         };
         publisher.publish(&state());
         publisher.publish(&state());
@@ -1520,7 +1697,7 @@ mod tests {
             .to_str()
             .unwrap()
             .into();
-        assert!(SqlitePublisher::start(&database.config).is_err());
+        assert!(SqlitePublisher::start(&database.config, HistoryPlan::default()).is_err());
         assert!(!database.directory.join("absent").exists());
         database.config.path = database.directory.join("other.db").to_str().unwrap().into();
         let other = Connection::open(&database.config.path).unwrap();
@@ -1528,20 +1705,20 @@ mod tests {
             .execute_batch("CREATE TABLE unrelated(value TEXT)")
             .unwrap();
         drop(other);
-        assert!(SqlitePublisher::start(&database.config).is_err());
+        assert!(SqlitePublisher::start(&database.config, HistoryPlan::default()).is_err());
     }
 
     #[test]
     fn maintenance_thread_runs_with_receiver_and_stops_without_waiting_for_schedule() {
         let mut database = Database::new();
+        let storage = history_storage(&database.config);
         let mut connection = open(&database.config).unwrap();
         let mut old = Frame::new(&state()).unwrap();
         old.timestamp_ns -= 7200 * SECOND_NS;
-        write_batch(&mut connection, &[old]).unwrap();
+        write_batch(&mut connection, &[old], &storage).unwrap();
         drop(connection);
-        database.config.maintenance.enabled = true;
         database.config.maintenance.interval_s = 86400;
-        let publisher = SqlitePublisher::start(&database.config).unwrap();
+        let publisher = SqlitePublisher::start(&database.config, history_plan(&database.config)).unwrap();
         let reader = Connection::open(&database.config.path).unwrap();
         for _ in 0..10 { publisher.publish(&state()); }
         let deadline = Instant::now() + Duration::from_secs(5);
@@ -1559,14 +1736,12 @@ mod tests {
     }
 
     #[test]
-    fn maintenance_separates_units_preserves_boolean_values_and_yields_to_writer_locks() {
+    fn maintenance_separates_units_expires_booleans_and_yields_to_writer_locks() {
         let mut database = Database::new();
-        database.config.maintenance.enabled = true;
-        database.config.maintenance.raw_retention_s = 1;
-        database.config.maintenance.policies = vec![HistoryPolicy {
-            attribute:"temperature".into(),mode:HistoryMode::Progressive,
-            tiers:vec![HistoryTier {max_age_s:120,sample_interval_s:60}],..Default::default()
-        }];
+        database.config.recent_frames_s = 1;
+        database.config.retention_rules = BTreeMap::from([("short".to_string(), RetentionRule {
+            mode: RetentionMode::Progressive, tiers: vec![HistoryTier {max_age_s:120,sample_interval_s:60}] })]);
+        let storage = storage_for(&database.config, "devices:\n- mac: AABBCCDDEEFF\n  attributes:\n  - {source: temperature, sqlite: history, retention: short}\n");
         let now = 1_800_000_000 * SECOND_NS;
         let mut connection = open(&database.config).unwrap();
         for age in [5,10,200] {
@@ -1576,46 +1751,45 @@ mod tests {
                 {"name":"temperature","unit":"","value":true}
             ]});
             let mut frame = Frame::new(&value).unwrap();frame.timestamp_ns=now-age*SECOND_NS;
-            write_batch(&mut connection,&[frame]).unwrap();
+            write_batch(&mut connection,&[frame],&storage).unwrap();
         }
         let writer = Connection::open(&database.config.path).unwrap();
         writer.execute_batch("BEGIN IMMEDIATE").unwrap();
         connection.busy_timeout(Duration::ZERO).unwrap();
         let before = Instant::now();
-        assert!(archive_frames(&mut connection,&database.config.maintenance,now).is_err());
+        assert!(archive_frames(&mut connection,&storage,now).is_err());
         assert!(before.elapsed()<Duration::from_secs(1));
         writer.execute_batch("ROLLBACK").unwrap();
-        drain_history(&mut connection,&database.config.maintenance,now);
+        drain_history(&mut connection,&storage,now);
         let rows: Vec<(String,i64)> = connection.prepare("SELECT unit,count(*) FROM history GROUP BY unit ORDER BY unit")
             .unwrap().query_map([],|row|Ok((row.get(0)?,row.get(1)?))).unwrap().collect::<rusqlite::Result<_>>().unwrap();
-        assert_eq!(rows,vec![("".into(),3),("C".into(),1),("F".into(),1)]);
+        assert_eq!(rows,vec![("".into(),2),("C".into(),1),("F".into(),1)]);
     }
 
     #[test]
     fn maintenance_bounds_scanned_samples_even_when_nothing_can_be_deleted() {
         let mut database=Database::new();
-        database.config.maintenance.enabled=true;
         database.config.maintenance.batch_size=3;
+        let storage=storage_for(&database.config,"devices:\n- mac: AABBCCDDEEFF\n  attributes:\n  - {source: temperature, sqlite: history, retention: climate}\n");
         let now=1_800_000_000*SECOND_NS;
         let mut connection=open(&database.config).unwrap();
         connection.execute_batch("INSERT INTO history_devices VALUES ('AABBCCDDEEFF','Test','{}');
             INSERT INTO history_series VALUES (1,'AABBCCDDEEFF','temperature','C');
             WITH RECURSIVE sample(id) AS (SELECT 1 UNION ALL SELECT id+1 FROM sample WHERE id<20)
             INSERT INTO history_samples SELECT id,1,1800000000000000000-id*3600000000000,'real','20.0' FROM sample;").unwrap();
-        let (last,done)=reduce_series(&mut connection,&database.config.maintenance,now,1,"AABBCCDDEEFF","temperature",0).unwrap();
+        let (last,done)=reduce_series(&mut connection,&storage,now,1,"AABBCCDDEEFF","temperature",0).unwrap();
         assert_eq!((last,done),(3,false));
-        drain_history(&mut connection,&database.config.maintenance,now);
+        drain_history(&mut connection,&storage,now);
         assert_eq!(connection.query_row("SELECT count(*) FROM history_samples",[],|row|row.get::<_,i64>(0)).unwrap(),20);
     }
 
     #[test]
-    fn counter_history_discards_by_default_with_explicit_keep_override() {
+    fn defaults_decide_unlisted_attributes_and_listed_ones_override_them() {
         let mut database=Database::new();
-        database.config.maintenance.enabled=true;
-        database.config.maintenance.raw_retention_s=1;
-        database.config.maintenance.policies.push(HistoryPolicy {
-            mac:"112233445566".into(),attribute:"packet_id".into(),mode:HistoryMode::KeepAll,tiers:vec![],
-        });
+        database.config.recent_frames_s=1;
+        let storage=storage_for(&database.config,concat!(
+            "attribute_defaults: {sqlite: live}\n",
+            "devices:\n- {mac: '112233445566', attributes: [{source: packet_id, sqlite: history}]}\n- {mac: AABBCCDDEEFF}\n"));
         let now=1_800_000_000*SECOND_NS;
         let mut connection=open(&database.config).unwrap();
         for mac in ["AABBCCDDEEFF","112233445566"] {
@@ -1624,11 +1798,11 @@ mod tests {
                 {"name":"counter32","value":u64::MAX,"unit":""},
                 {"name":"opened","value":1,"unit":""}]});
             let mut frame=Frame::new(&data).unwrap();frame.timestamp_ns=now-100*SECOND_NS;
-            write_batch(&mut connection,&[frame]).unwrap();
+            write_batch(&mut connection,&[frame],&storage).unwrap();
         }
-        drain_history(&mut connection,&database.config.maintenance,now);
+        drain_history(&mut connection,&storage,now);
         let rows: Vec<(String,String)>=connection.prepare("SELECT mac,attribute FROM history ORDER BY mac,attribute")
             .unwrap().query_map([],|row|Ok((row.get(0)?,row.get(1)?))).unwrap().collect::<rusqlite::Result<_>>().unwrap();
-        assert_eq!(rows,vec![("112233445566".into(),"opened".into()),("112233445566".into(),"packet_id".into()),("AABBCCDDEEFF".into(),"opened".into())]);
+        assert_eq!(rows,vec![("112233445566".into(),"packet_id".into())]);
     }
 }

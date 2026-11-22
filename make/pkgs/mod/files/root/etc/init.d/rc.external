@@ -105,7 +105,9 @@ start_deferred_services() {
 		fi
 
 		status="$($rc status 2>/dev/null)"
-		[ -n "$status" -a "$status" != "stopped" ] && continue
+		if printf '%s\n' "$status" | grep -Eq '^([[:alnum:]_.-]+:[[:space:]]*)?(running|inetd)$'; then
+			continue
+		fi
 
 		# Use load (not start) so package init hooks run (modreg/pre_config).
 		log "$($rc load 2>&1)"

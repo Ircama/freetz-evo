@@ -20,7 +20,7 @@ import unittest
 from unittest import mock
 
 from capture_trace import RestrictedUnpickler, load_captures
-from replay_capture import Firmware, crc16, expose_all_attributes, offsets, validate_binary_args
+from replay_capture import Firmware, crc16, list_all_attributes, offsets, validate_binary_args
 
 
 class RejectedObject:
@@ -29,22 +29,22 @@ class RejectedObject:
 
 
 class ReplayTests(unittest.TestCase):
-    def test_expose_all_preserves_explicit_and_implicit_children(self):
-        devices = [{"mac": "AABBCCDDEEFF", "enabled": True, "expose": [
-            {"attribute": "battery_level", "child": 2},
-            {"attribute": "humidity", "child": None},
+    def test_list_all_keeps_existing_settings_and_published_names(self):
+        devices = [{"mac": "AABBCCDDEEFF", "enabled": True, "attributes": [
+            {"source": "battery_level", "sqlite": "off"},
+            {"source": "theengs_tempc", "name": "temperature"},
         ]}]
         with mock.patch("sys.stderr", new_callable=io.StringIO) as messages:
-            expose_all_attributes(devices, ["humidity", "battery_level", "temperature", "flooding"])
-        self.assertEqual(devices[0]["expose"], [
-            {"attribute": "battery_level", "child": 2}, {"attribute": "humidity", "child": 0},
-            {"attribute": "temperature", "child": 1}, {"attribute": "flooding", "child": 3},
+            list_all_attributes(devices, ["humidity", "battery_level", "temperature", "flooding"])
+        self.assertEqual(devices[0]["attributes"], [
+            {"source": "battery_level", "sqlite": "off"}, {"source": "theengs_tempc", "name": "temperature"},
+            {"source": "humidity", "mysensors": True}, {"source": "flooding", "mysensors": True},
         ])
-        self.assertIn("missing exposures added privately", messages.getvalue())
+        self.assertIn("missing attributes listed privately: humidity, flooding", messages.getvalue())
         with mock.patch("sys.stderr", new_callable=io.StringIO) as messages:
-            expose_all_attributes(devices, ["humidity", "battery_level", "temperature", "flooding"])
+            list_all_attributes(devices, ["humidity", "battery_level", "temperature", "flooding"])
         self.assertEqual(messages.getvalue(), "")
-        self.assertEqual(len(devices[0]["expose"]), 4)
+        self.assertEqual(len(devices[0]["attributes"]), 4)
 
     def test_gateway_forwarding_accepts_diagnostics_and_rejects_isolation_overrides(self):
         validate_binary_args(["--log-level", "debug", "--trace-decode", "--log-color", "always"])
@@ -53,21 +53,17 @@ class ReplayTests(unittest.TestCase):
             with self.subTest(arguments=arguments), self.assertRaises(ValueError):
                 validate_binary_args(arguments)
 
-    def test_expose_all_leaves_disabled_devices_disabled_and_reports_child_exhaustion(self):
-        disabled = {"mac": "AABBCCDDEEFF", "enabled": False, "expose": []}
+    def test_list_all_leaves_disabled_devices_disabled(self):
+        disabled = {"mac": "AABBCCDDEEFF", "enabled": False, "attributes": []}
         with mock.patch("sys.stderr", new_callable=io.StringIO) as messages:
-            expose_all_attributes([disabled], ["flooding"])
+            list_all_attributes([disabled], ["flooding"])
         self.assertIn("device disabled", messages.getvalue())
-        self.assertEqual(disabled["expose"], [])
-        full = {"mac": "AABBCCDDEEFF", "enabled": True,
-                "expose": [{"attribute": str(child), "child": child} for child in range(255)]}
-        with self.assertRaisesRegex(ValueError, "no free measurement child IDs"):
-            expose_all_attributes([full], ["flooding"])
+        self.assertEqual(disabled["attributes"], [])
 
     def test_cli_rejects_forwarding_overrides_and_supervision_options_in_pty_only_mode(self):
         replay = str(Path(__file__).with_name("replay_capture.py"))
         for options in (["--", "--serial", "/dev/ttyUSB0"],
-                        ["--no-launch", "--expose-all"],
+                        ["--no-launch", "--list-all"],
                         ["--no-launch", "--", "--trace-decode"]):
             with self.subTest(options=options):
                 result = subprocess.run(["python3", replay, "unused.pickle", *options],
@@ -195,10 +191,10 @@ class ReplayTests(unittest.TestCase):
             source = root / "source.yaml"
             source.write_text(json.dumps({"version": 1, "devices": [{
                 "mac": "AABBCCDDEEFF", "enabled": True,
-                "expose": [{"attribute": "flooding", "child": 7}],
+                "attributes": [{"source": "flooding", "mysensors": True}],
             }]}))
             original = source.read_bytes()
-            for configured, child in ((False, 3), (True, 7)):
+            for configured in (False, True):
                 with self.subTest(configured=configured):
                     command = ["python3", str(Path(__file__).with_name("replay_capture.py")), str(capture),
                                "--binary", str(binary), "--interval", "0.02",
@@ -207,8 +203,10 @@ class ReplayTests(unittest.TestCase):
                         command.extend(["--config", str(source)])
                     result = subprocess.run(command, capture_output=True, text=True, timeout=20)
                     self.assertEqual(result.returncode, 0, result.stderr)
-                    self.assertEqual(result.stderr.count(f"child {child}: flooding=1"), 1, result.stderr)
-                    self.assertEqual(result.stderr.count(f"child {child}: flooding=0"), 1, result.stderr)
+                    # Frontends are disabled in replay: no MySensors child is shown.
+                    self.assertEqual(result.stderr.count("): flooding=1"), 1, result.stderr)
+                    self.assertEqual(result.stderr.count("): flooding=0"), 1, result.stderr)
+                    self.assertNotIn(" child ", result.stderr)
                     self.assertNotIn("authentication failed", result.stderr)
                     reports = [json.loads(line) for line in result.stdout.splitlines()]
                     self.assertEqual(reports[-1]["emitted_packets"], 2)
@@ -217,7 +215,7 @@ class ReplayTests(unittest.TestCase):
 
             source.write_text(json.dumps({"version": 1, "devices": [{
                 "mac": "AABBCCDDEEFF", "enabled": True,
-                "expose": [{"attribute": "battery_level", "child": 2}],
+                "attributes": [{"source": "battery_level", "mysensors": True}],
             }]}))
             original = source.read_bytes()
             for forwarded in (["--", "--log-level", "debug", "--trace-decode"],
@@ -226,14 +224,13 @@ class ReplayTests(unittest.TestCase):
                 with self.subTest(forwarded=forwarded):
                     result = subprocess.run([
                         "python3", str(Path(__file__).with_name("replay_capture.py")), str(capture),
-                        "--binary", str(binary), "--config", str(source), "--expose-all",
+                        "--binary", str(binary), "--config", str(source), "--list-all",
                         "--interval", "0.02", "--settle", "0.3", "--start-timeout", "5", *forwarded,
                     ], capture_output=True, text=True, timeout=20)
                     self.assertEqual(result.returncode, 0, result.stderr)
-                    self.assertIn("missing exposures added privately", result.stderr)
-                    self.assertIn("flooding=child ", result.stderr)
-                    self.assertRegex(result.stderr, r"child \d+: flooding=1")
-                    self.assertRegex(result.stderr, r"child \d+: flooding=0")
+                    self.assertRegex(result.stderr, r"missing attributes listed privately: .*flooding")
+                    self.assertIn("): flooding=1", result.stderr)
+                    self.assertIn("): flooding=0", result.stderr)
                     self.assertIn("ble.decode", result.stderr)
                     self.assertEqual(source.read_bytes(), original)
 
@@ -255,6 +252,7 @@ class ReplayTests(unittest.TestCase):
             source.write_text(json.dumps({
                 "version": 1,
                 "frontends": {"sqlite": {"enabled": True, "path": str(database), "flush_interval_ms": 10}},
+                "attribute_defaults": {"sqlite": "live"},
                 "devices": [{"mac": "AABBCCDDEEFF", "label": "Outside", "manufacturer": "Test", "enabled": True}],
             }))
             original = source.read_bytes()
@@ -314,6 +312,7 @@ class ReplayTests(unittest.TestCase):
             source.write_text(json.dumps({"version": 1, "frontends": {"influx": {
                 "enabled": True, "endpoint": f"http://127.0.0.1:{server.server_port}", "database": "ble test",
                 "measurement": "ble", "token": "private-token", "batch_size": 1, "flush_interval_ms": 10}},
+                "attribute_defaults": {"influx": True},
                 "devices": [{"mac": "AABBCCDDEEFF", "label": "Wet room", "enabled": True}]}))
             result = subprocess.run([
                 "python3", str(Path(__file__).with_name("replay_capture.py")), str(capture), "--binary", str(binary),

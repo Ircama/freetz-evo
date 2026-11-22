@@ -66,6 +66,7 @@ pub fn run(config: &Path) -> Result<(), String> {
     match action {
         "" | "page" => reply_head(200, "text/html; charset=UTF-8", &page(), head),
         "catalog" => json_reply(catalog_action(config), head),
+        "meta" => json_reply(meta_action(config), head),
         "series" => json_reply(series_action(config, &params), head),
         "info" => json_reply(info_action(config), head),
         "manifest" => {
@@ -718,6 +719,60 @@ fn device_json(device: &Device) -> Value {
 }
 
 // ---------------------------------------------------------------------------
+// Device metadata (static: PHY, decoder, wire format)
+// ---------------------------------------------------------------------------
+
+/// Primary PHY name from the raw `phys` byte (low nibble).
+fn phy_name(raw: u8) -> &'static str {
+    match raw & 0x0F {
+        1 => "1M",
+        2 => "2M",
+        3 => "Coded",
+        _ => "",
+    }
+}
+
+/// Static decoding metadata for every known device: PHY, decoder mode and wire
+/// format, read from the most recent frame of each device via a single CTE.
+/// Called once per page session by the client (`?action=meta`) so the catalog
+/// refresh path (`?action=catalog`) is not burdened with json_extract() on every
+/// 30-second poll.
+fn meta_action(config: &Path) -> Result<Value, String> {
+    let (connection, _) = connect(config)?;
+    let mut stmt = connection
+        .prepare(
+            "WITH latest AS (SELECT mac, MAX(received_at_ns) AS ts FROM frames GROUP BY mac) \
+             SELECT f.mac, f.wire_format, \
+                    COALESCE(json_extract(f.state_json, '$.decoder'), '') AS decoder, \
+                    COALESCE(json_extract(f.state_json, '$.radio.phy_raw'), 0) AS phy_raw \
+             FROM frames f \
+             INNER JOIN latest ON f.mac=latest.mac AND f.received_at_ns=latest.ts",
+        )
+        .map_err(|error| error.to_string())?;
+    let devices: Vec<Value> = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, i64>(3)?,
+            ))
+        })
+        .map_err(|error| error.to_string())?
+        .flatten()
+        .map(|(mac, wire_format, decoder, phy_raw)| {
+            json!({
+                "mac": mac,
+                "wire_format": wire_format,
+                "decoder": decoder,
+                "phy": phy_name(phy_raw as u8),
+            })
+        })
+        .collect();
+    Ok(json!({ "ok": true, "devices": devices }))
+}
+
+// ---------------------------------------------------------------------------
 // Time series
 // ---------------------------------------------------------------------------
 
@@ -1090,6 +1145,7 @@ const CACHE = "ble2uart-portal-" + VERSION;
 const PAGE = self.location.pathname;
 const SHELL = [
 	ASSETS + "portal.css?v=" + VERSION,
+    ASSETS + "portal-curves.js?v=" + VERSION,
 	ASSETS + "portal.js?v=" + VERSION,
 	ASSETS + "icon-192.png",
 	ASSETS + "icon-512.png",
@@ -1150,10 +1206,12 @@ function isData(url) {
 	return url.pathname === PAGE && /[?&]action=(catalog|series|info)(&|$)/.test(url.search);
 }
 
-function offlineJson() {
-	return new Response(OFFLINE_JSON, {
+function offlineJson(hit) {
+    const headers = new Headers(hit ? hit.headers : { "Content-Type": "application/json; charset=UTF-8" });
+    headers.set("X-Portal-Cache", "offline");
+    return new Response(hit ? hit.body : OFFLINE_JSON, {
 		status: 200,
-		headers: { "Content-Type": "application/json; charset=UTF-8", "X-Portal-Cache": "offline" }
+        headers: headers
 	});
 }
 
@@ -1191,7 +1249,7 @@ self.addEventListener("fetch", function (event) {
 			fetch(request)
 				.then(function (response) { return remember(request, response, request); })
 				.catch(function () {
-					return caches.match(request).then(function (hit) { return hit || offlineJson(); });
+                    return caches.match(request).then(function (hit) { return offlineJson(hit); });
 				})
 		);
 		return;
@@ -1235,7 +1293,7 @@ fn page() -> String {
 </head>
 <body>
 <header class="ptop">
-  <div class="ptitle"><span class="pdot"></span><h1 id="title">ble2uart_gateway</h1><span class="psub" id="subtitle">Sensori</span></div>
+    <div class="ptitle"><button class="pdot" type="button" aria-label="Toggle automatic refresh"></button><h1 id="title">ble2uart_gateway</h1><span class="psub" id="subtitle">Sensori</span></div>
   <nav class="pactions">
     <span class="pstamp" id="stamp">&mdash;</span>
     <button class="pbtn" id="prefs" type="button" title="Preferenze">&#9881;</button>
@@ -1281,6 +1339,7 @@ fn page() -> String {
   </div>
 </main>
 <noscript><p>JavaScript richiesto.</p></noscript>
+<script src="{a}portal-curves.js?v={v}"></script>
 <script src="{a}portal.js?v={v}"></script>
 </body>
 </html>
@@ -1292,7 +1351,7 @@ fn page() -> String {
 /// Bumped whenever `portal.css` or `portal.js` change, so a router that
 /// caches static files still serves the new version. The service worker uses
 /// the same value as cache name, so a bump also retires the older caches.
-const ASSET_VERSION: &str = "33";
+const ASSET_VERSION: &str = "43";
 
 // ---------------------------------------------------------------------------
 // Tests

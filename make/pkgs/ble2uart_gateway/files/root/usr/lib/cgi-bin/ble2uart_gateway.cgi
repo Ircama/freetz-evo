@@ -48,7 +48,7 @@ Content-Type: text/html; charset=UTF-8
 EOF
 
 	api_reply() {
-		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ] && [ "$ACTION" != attributes ] && [ "$ACTION" != history-presets ] && [ "$ACTION" != sqlite-attributes ] && [ "$ACTION" != availability-presets ] && [ "$ACTION" != availability-status ]; then
+		if [ "$REQUEST_METHOD" != POST ] && [ "$ACTION" != read ] && [ "$ACTION" != status ] && [ "$ACTION" != catalog ] && [ "$ACTION" != history-presets ] && [ "$ACTION" != sqlite-attributes ] && [ "$ACTION" != availability-presets ] && [ "$ACTION" != availability-status ]; then
 			echo '{"success":false,"error":"POST is required"}'
 			return
 		fi
@@ -60,7 +60,7 @@ EOF
 			return
 		fi
 		case "$ACTION" in
-			read|backups|attributes|history-presets|sqlite-attributes|availability-presets|availability-status) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
+			read|backups|catalog|history-presets|sqlite-attributes|availability-presets|availability-status) "$DAEMON_BIN" --config "$YAML" --web-config "$ACTION" ;;
 			check|save|restore|inspect|availability-test|sqlite-delete-attribute|log)
 				case "$CONTENT_LENGTH" in ''|*[!0-9]*) echo '{"success":false,"error":"invalid request length"}'; return ;; esac
 				if [ "$CONTENT_LENGTH" -gt 262144 ] || [ "$CONTENT_TYPE" != application/json ]; then
@@ -335,8 +335,22 @@ cat << 'EOF'
 #bbApp #bbAvailabilityRules > .bbBar button:hover,#bbApp .bbAvailabilityRule > .bbBar:first-child button:hover,#bbApp .bbPolicies .bbBar button:hover {background:color-mix(in srgb,var(--bb-accent) 10%,transparent);}
 #bbApp .bbHistoryPolicy {border:1px solid var(--bb-line);border-left:4px solid var(--bb-accent);border-radius:6px;padding:10px 12px;margin:12px 0;min-width:0;background:color-mix(in srgb,var(--bb-accent) 4%,transparent);}
 #bbApp .bbHistoryPolicy > .bbPolicyHead {margin:0 0 4px;gap:8px;}
-#bbApp .bbPolicyPresets {display:flex;flex-wrap:wrap;gap:6px;margin-right:auto;}
 #bbApp .bbLocalActions {border-top:1px dashed var(--bb-line);padding-top:10px;margin-top:12px;}
+#bbApp #bbDeviceDialog {width:1180px;}
+#bbApp .bbMatrix th,#bbApp .bbMatrix td {padding:4px 6px;min-width:0;vertical-align:middle;}
+#bbApp .bbMatrix select,#bbApp .bbMatrix input {font-size:12px;padding:3px 4px;min-height:28px;}
+#bbApp .bbMatrix input[type=text] {width:130px;}
+#bbApp .bbMatrix input.bbUnit {width:64px;}
+#bbApp .bbMatrix button {min-height:28px;padding:2px 8px;}
+#bbApp .bbMatrix tr.bbConfigured > td:first-child {box-shadow:inset 3px 0 var(--bb-accent);}
+#bbApp .bbMatrix .bbOffColumn {opacity:.5;}
+#bbApp .bbMatrix .bbValue {white-space:nowrap;}
+#bbApp select.bbExplicit {border-color:var(--bb-accent);font-weight:bold;}
+#bbApp .bbMono {font-family:monospace;white-space:nowrap;}
+#bbApp #bbAttributeMatrix > .bbBar input[type=text] {flex:0 1 260px;min-width:160px;}
+#bbApp .bbStoredSeries tr.bbUnused td {color:#b73030;}
+#bbApp .bbPolicyHead {align-items:flex-end;}
+#bbApp .bbPolicyHead > .bbHint {margin-right:auto;}
 #bbApp #bbYamlHint {margin:0 0 8px;}
 #bbApp #bbTheengs {margin:14px 0 0;padding-top:10px;border-top:1px dashed var(--bb-line);}
 #bbApp #bbTheengsJson,#bbApp #bbTheengsResult {height:190px;min-height:120px;}
@@ -377,7 +391,7 @@ cat << 'EOF'
 <section data-panel="devices" role="tabpanel">
 <div class="bbBar"><button type="button" id="bbDiscoverDevices">Discover devices</button><button type="button" id="bbAdd">Add manually</button></div>
 <div class="bbBar bbFilterBar"><label for="bbDeviceSearch" id="bbDeviceFilterLabel">Filter configured devices</label><input id="bbDeviceSearch" type="search" placeholder="MAC, name, manufacturer or model"></div>
-<div class="bbScroll"><table><thead><tr><th>Enabled</th><th>MAC</th><th>Name / manufacturer / model</th><th>Format</th><th>Exposed attributes</th><th>Actions</th></tr></thead><tbody id="bbDevices"></tbody></table></div>
+<div class="bbScroll"><table><thead><tr><th>Enabled</th><th>MAC</th><th>Name / manufacturer / model</th><th>Format</th><th id="bbDevicesAttributesHead">Attributes</th><th>Actions</th></tr></thead><tbody id="bbDevices"></tbody></table></div>
 </section>
 <section data-panel="discovery" role="tabpanel" hidden>
 <div class="bbBar"><label>Duration (s) <input type="number" id="bbDuration" min="1" max="300" value="30" style="width:80px"></label><button type="button" id="bbStart">Start discovery</button><button type="button" id="bbStop" disabled>Stop</button><span id="bbDiscoveryStatus" role="status"></span></div>
@@ -431,7 +445,7 @@ cat << 'EOF'
 <section data-panel="yaml" role="tabpanel" hidden><p class="bbHint" id="bbYamlHint"></p><div class="bbBar"><button type="button" class="bbBtnPrimary" id="bbYamlSave">Save YAML</button><button type="button" id="bbYamlRevert">Discard changes</button><button type="button" id="bbDownload">Download YAML</button><label>Import YAML <input type="file" id="bbImport" accept=".yaml,.yml,text/plain"></label></div><div class="bbBar"><button type="button" id="bbHistory">List backups</button><select id="bbBackups" aria-label="Configuration backup"><option value="">Select backup</option></select><button type="button" id="bbRestore">Load backup</button></div><div id="bbYaml" aria-label="Complete gateway YAML configuration" aria-describedby="bbYamlHint"></div></section>
 <datalist id="bbFormats"><option value="custom"><option value="custom_enc"><option value="atc1441"><option value="atc1441_enc"><option value="mi_like"><option value="bt_home"><option value="bt_home_enc"><option value="bt_home_v2"></datalist>
 <datalist id="bbAttributes"><option value="temperature"><option value="humidity"><option value="battery_level"><option value="battery_v"><option value="switch"><option value="opened"><option value="boolean"><option value="humidity_trigger"><option value="temp_trigger"><option value="out_gpio_trg_flag"><option value="out_gpio_trg_value"><option value="input_gpio_value"></datalist>
-<dialog id="bbDeviceDialog"><h3 id="bbDeviceTitle">Device</h3><div id="bbDeviceFields"></div><div class="bbBar"><button type="button" id="bbSuggestAttributes" hidden>Detect attributes</button></div><div id="bbDeviceError" role="alert" class="bbError"></div><div class="bbDialogFooter"><span class="bbFooterButtons"><button type="button" class="bbBtnSecondary" id="bbDeviceCancel">Cancel</button><button type="button" class="bbBtnPrimary" id="bbDeviceApply">Add to configuration draft</button></span></div></dialog>
+<dialog id="bbDeviceDialog"><h3 id="bbDeviceTitle">Device</h3><div id="bbDeviceFields"></div><div id="bbDeviceError" role="alert" class="bbError"></div><div class="bbDialogFooter"><span class="bbFooterButtons"><button type="button" class="bbBtnSecondary" id="bbDeviceCancel">Cancel</button><button type="button" class="bbBtnPrimary" id="bbDeviceApply">Add to configuration draft</button></span></div></dialog>
 <dialog id="bbParameterDialog"><h3 id="bbParameterTitle"></h3><p><code id="bbParameterPath"></code></p><p id="bbParameterText"></p><button type="button" id="bbParameterClose">Close</button></dialog>
 <dialog id="bbConfirm"><h3>Confirm</h3><p id="bbConfirmText"></p><div id="bbConfirmRequest" class="bbOutput" hidden></div><div class="bbBar"><button type="button" id="bbConfirmOk">Continue</button><button type="button" id="bbConfirmCancel">Cancel</button></div></dialog>
 <div id="bbFieldTooltip" role="tooltip" hidden><strong></strong><span></span></div>
@@ -468,7 +482,7 @@ cat << 'EOF'
 				decode_status:'Inspect result: ok = decoded; unsupported_format = no supported Service Data; failed = decoding or the inspection request failed. Check decode_error: an expired web session is not evidence of a bad BLE packet.',
 				decode_error:'Diagnostic from the decoder or the CGI/API request. Missing/wrong bindkeys and malformed packets differ from HTTP/session errors. "Invalid response or session expired" means the web response was not the expected API envelope: check login/session and server logs, then retry Inspect.',
 				wire_format:'Format actually selected for Inspect, possibly overridden by the configured Forced wire format. It can differ from the automatically detected format. It does not encode 1M/Coded PHY.',
-				measurements:'Normalized values extracted from the decoded structure, represented as strings (for example boolean 1/0 and formatted numbers). Publishing still depends on the configured device and Exposed attributes.',
+				measurements:'Normalized values extracted from the decoded structure, represented as strings (for example boolean 1/0 and formatted numbers). Publishing still depends on the configured device and its attribute settings.',
 				decoded:'Typed structure produced by the selected codec, with nested objects, numbers, booleans and units. Fields depend on the protocol; this is different from the original raw advertisement and from the codec schema.'
 			},
 			nested:'Field defined by the selected codec. Its meaning depends on the containing object and protocol; related *_unit fields describe units. Consult the codec schema for protocol-specific fields.',
@@ -510,7 +524,7 @@ cat << 'EOF'
 				decode_status:'Inspect-Ergebnis: ok = dekodiert; unsupported_format = keine unterstützten Service Data; failed = Dekodierung oder Webanfrage fehlgeschlagen. decode_error prüfen; eine abgelaufene Sitzung beweist kein defektes BLE-Paket.',
 				decode_error:'Diagnose vom Decoder oder CGI/API. Bindkey-/Paketfehler von HTTP-/Sitzungsfehlern unterscheiden. "Invalid response or session expired" bedeutet eine unerwartete API-Antwort: Anmeldung/Sitzung und Serverprotokoll prüfen, Inspect erneut versuchen.',
 				wire_format:'Tatsächlich für Inspect gewähltes Format, eventuell durch Forced wire format überschrieben. Kann von format abweichen; enthält keine 1M/Coded-PHY-Angabe.',
-				measurements:'Normalisierte dekodierte Werte als Zeichenketten, z. B. 1/0 für Boolesche Werte und formatierte Zahlen. Veröffentlichung hängt von Gerät und Exposed attributes ab.',
+				measurements:'Normalisierte dekodierte Werte als Zeichenketten, z. B. 1/0 für Boolesche Werte und formatierte Zahlen. Veröffentlichung hängt von Gerät und dessen Attributeinstellungen ab.',
 				decoded:'Typisierte Struktur des Codecs mit Objekten, Zahlen, Booleschen Werten und Einheiten. Protokollabhängig und weder Roh-Advertisement noch Codec-Schema.'
 			},
 			nested:'Feld des gewählten Codecs; Bedeutung hängt von Objekt und Protokoll ab. Zugehörige *_unit-Felder geben Einheiten an. Protokollspezifische Details stehen im Codec-Schema.',
@@ -552,7 +566,7 @@ cat << 'EOF'
 				decode_status:'Esito di Inspect: ok = decodificato; unsupported_format = nessun Service Data supportato; failed = errore del decoder oppure della richiesta web. Leggere decode_error: una sessione scaduta non prova che il pacchetto BLE sia errato.',
 				decode_error:'Diagnostica del decoder o della richiesta CGI/API. Chiave mancante/errata e pacchetto malformato sono diversi da errori HTTP/sessione. "Invalid response or session expired" indica una risposta web diversa dall’API attesa: controllare accesso/sessione e log del server, poi riprovare Inspect.',
 				wire_format:'Formato effettivamente scelto per Inspect, eventualmente imposto da Forced wire format nella configurazione del dispositivo. Può differire da format rilevato automaticamente. Non descrive la PHY 1M/Coded.',
-				measurements:'Valori normalizzati estratti dalla struttura decodificata, rappresentati come stringhe (ad esempio booleani 1/0 e numeri formattati). La pubblicazione dipende comunque dal dispositivo configurato e da Exposed attributes.',
+				measurements:'Valori normalizzati estratti dalla struttura decodificata, rappresentati come stringhe (ad esempio booleani 1/0 e numeri formattati). La pubblicazione dipende comunque dal dispositivo configurato e dalle impostazioni dei suoi attributi.',
 				decoded:'Struttura tipizzata prodotta dal codec scelto, con oggetti annidati, numeri, booleani e unità. I campi dipendono dal protocollo: non è né l’advertisement grezzo né lo schema del codec.'
 			},
 			nested:'Campo definito dal codec selezionato. Il significato dipende dall’oggetto che lo contiene e dal protocollo; i campi *_unit indicano le unità. Per i campi specifici consultare lo schema del codec.',
@@ -594,7 +608,7 @@ cat << 'EOF'
 				decode_status:'Résultat Inspect : ok = décodé ; unsupported_format = aucune Service Data supportée ; failed = échec du décodeur ou de la requête web. Lire decode_error ; une session expirée ne prouve pas un paquet BLE incorrect.',
 				decode_error:'Diagnostic du décodeur ou de CGI/API. Distinguer bindkey/paquet incorrect d’un problème HTTP/session. "Invalid response or session expired" signifie une réponse API inattendue : vérifier connexion/session et journaux serveur, puis relancer Inspect.',
 				wire_format:'Format réellement choisi pour Inspect, éventuellement imposé par Forced wire format. Peut différer du format détecté ; ne décrit pas le PHY 1M/Coded.',
-				measurements:'Valeurs normalisées extraites du décodage sous forme de chaînes, par exemple 1/0 et nombres formatés. Leur publication dépend du périphérique configuré et de Exposed attributes.',
+				measurements:'Valeurs normalisées extraites du décodage sous forme de chaînes, par exemple 1/0 et nombres formatés. Leur publication dépend du périphérique configuré et des réglages de ses attributs.',
 				decoded:'Structure typée du codec avec objets, nombres, booléens et unités. Les champs dépendent du protocole ; ce n’est ni le paquet brut ni le schéma du codec.'
 			},
 			nested:'Champ du codec choisi, dont le sens dépend de l’objet et du protocole. Les champs *_unit donnent les unités ; voir le schéma pour les détails spécifiques.',
@@ -636,7 +650,7 @@ cat << 'EOF'
 				decode_status:'Resultado Inspect: ok = decodificado; unsupported_format = ningún Service Data compatible; failed = fallo del decoder o de la petición web. Leer decode_error; una sesión caducada no demuestra un paquete BLE erróneo.',
 				decode_error:'Diagnóstico del decoder o CGI/API. Distinguir problemas de bindkey/paquete de errores HTTP/sesión. "Invalid response or session expired" indica una respuesta API inesperada: revisar acceso/sesión y registros del servidor, después repetir Inspect.',
 				wire_format:'Formato realmente seleccionado para Inspect, quizá impuesto por Forced wire format. Puede diferir del formato detectado; no describe la PHY 1M/Coded.',
-				measurements:'Valores normalizados extraídos del decoder como cadenas, por ejemplo booleanos 1/0 y números formateados. Publicar depende del dispositivo configurado y de Exposed attributes.',
+				measurements:'Valores normalizados extraídos del decoder como cadenas, por ejemplo booleanos 1/0 y números formateados. Publicar depende del dispositivo configurado y de los ajustes de sus atributos.',
 				decoded:'Estructura tipada del codec con objetos, números, booleanos y unidades. Los campos dependen del protocolo; no es el advertisement bruto ni el esquema del codec.'
 			},
 			nested:'Campo del codec seleccionado; su significado depende del objeto y protocolo. Los campos *_unit indican unidades; consultar el esquema para detalles específicos.',
@@ -742,6 +756,19 @@ cat << 'EOF'
 		if(typeof observation.rssi==='number')payload.rssi=observation.rssi;
 		const data=String(observation.data||'').replace(/[^0-9A-Fa-f]/g,'');
 		let offset=0;
+		let nameType=0;
+		while(offset+4<=data.length){
+			const length=parseInt(data.substr(offset,2),16);
+			if(!length||offset+2+length*2>data.length)break;
+			const type=parseInt(data.substr(offset+2,2),16);
+			if((type===0x08||type===0x09)&&type>=nameType){
+				const value=data.substr(offset+4,(length-1)*2);
+				const name=new TextDecoder().decode(Uint8Array.from(value.match(/../g)||[],byte=>parseInt(byte,16))).trim();
+				if(name){payload.name=name;nameType=type;}
+			}
+			offset+=2+length*2;
+		}
+		offset=0;
 		while(offset+4<=data.length){
 			const length=parseInt(data.substr(offset,2),16);
 			if(!length||offset+2+length*2>data.length)break;
@@ -864,17 +891,50 @@ cat << 'EOF'
 	}
 	element('bbPacketDetails').addEventListener('toggle',()=>{hidePacketTooltip();if(element('bbPacketDetails').open&&packetEditor)packetEditor.resize(true);});
 	element('bbPacketHelp').addEventListener('toggle',hidePacketTooltip);
-	const labels = {filter_known_devices:'Filter registered devices in ESP32', phy_1m:'1M PHY', phy_coded:'Coded PHY', dup_filter:'Duplicate filter', discard_random:'Discard random addresses', discard_rpa:'Discard resolvable private addresses', active_scan:'Active scan', window_1m:'1M window (0.625 ms units)', window_coded:'Coded window (0.625 ms units)', whitelist:'Whitelist MAC prefixes', blacklist:'Blacklist MAC prefixes', reset_on_open:'Reset ESP32 on open', command_timeout_ms:'Command timeout (ms)', reconnect_delay_ms:'Reconnect delay (ms)', bindkey:'Bindkey (32 hexadecimal digits)', format:'Forced wire format (empty = automatic)', expose:'Exposed attributes', child:'MySensors child ID', node_id_base:'First MySensors node ID', tx_hex:'Raw TX trace', rx_hex:'Raw RX trace', decode:'Codec decode trace', phy:'PHY reception / decode trace', after_s:'Delay (seconds)', kind:'Kind override', mysensors:'MySensors / Domoticz', mqtt:'MQTT', matter:'Matter', influx:'InfluxDB 3', advertise:'Advertise via DNS-SD', mdns_backend:'DNS-SD backend', mdns_hostname:'mDNS host name (empty = default)', mdns_interface:'mDNS interface (empty = automatic)', endpoint:'Endpoint URL', batch_size:'Batch size', queue_capacity:'Queue capacity', flush_interval_ms:'Flush interval (ms)', timeout_ms:'Timeout (ms)', diagnostics:'Diagnostics', rules:'Rules', serial:'Serial', scanner:'Scanner', log_level:'Log level', logging:'Logging / rotation', max_size_kb:'Maximum log size (KiB)', history:'Rotated files retained', frontends:'Frontends', mac:'MAC', rssi:'RSSI'};
+	const labels = {filter_known_devices:'Filter registered devices in ESP32', phy_1m:'1M PHY', phy_coded:'Coded PHY', dup_filter:'Duplicate filter', discard_random:'Discard random addresses', discard_rpa:'Discard resolvable private addresses', active_scan:'Active scan', window_1m:'1M window (0.625 ms units)', window_coded:'Coded window (0.625 ms units)', whitelist:'Whitelist MAC prefixes', blacklist:'Blacklist MAC prefixes', reset_on_open:'Reset ESP32 on open', command_timeout_ms:'Command timeout (ms)', reconnect_delay_ms:'Reconnect delay (ms)', bindkey:'Bindkey (32 hexadecimal digits)', format:'Forced wire format (empty = automatic)', node_id_base:'First MySensors node ID', tx_hex:'Raw TX trace', rx_hex:'Raw RX trace', decode:'Codec decode trace', phy:'PHY reception / decode trace', after_s:'Delay (seconds)', mysensors:'MySensors / Domoticz', mqtt:'MQTT', matter:'Matter', influx:'InfluxDB 3', advertise:'Advertise via DNS-SD', mdns_backend:'DNS-SD backend', mdns_hostname:'mDNS host name (empty = default)', mdns_interface:'mDNS interface (empty = automatic)', endpoint:'Endpoint URL', batch_size:'Batch size', queue_capacity:'Queue capacity', flush_interval_ms:'Flush interval (ms)', timeout_ms:'Timeout (ms)', diagnostics:'Diagnostics', rules:'Rules', serial:'Serial', scanner:'Scanner', log_level:'Log level', logging:'Logging / rotation', max_size_kb:'Maximum log size (KiB)', history:'Rotated files retained', frontends:'Frontends', mac:'MAC', rssi:'RSSI'};
 	Object.assign(labels, {manufacturer:'Manufacturer',model:'Device model',firmware_version:'Device firmware version',label:'Device name',sqlite:'SQLite',path:'Database file (absolute local path)',busy_timeout_ms:'SQLite busy timeout (ms)'});
 	const title = key => key==='whitelist'?ht.include:key==='blacklist'?ht.exclude:labels[key] || key.replace(/_/g, ' ').replace(/^./, letter => letter.toUpperCase());
 	const workflowTranslations={
-		en:{manual:'Add manually',discover:'Discover devices',filter:'Filter configured devices',add:'Add to configuration draft',update:'Update configuration draft',detected:'Configure discovered device',manualTitle:'Add device manually',edit:'Edit device',detect:'Detect attributes',close:'Close',help:'Help',enabled:'Enabled',disabled:'Disabled',rules:'Rules (not executed)',saved:'Saved',pending:'Device added to draft. Save configuration to write it to disk, then restart from Status to activate it.',detectionFailed:'Attributes could not be detected. Check the bindkey/format, then retry, or add attributes manually.',startup:'Save startup settings',startupConfirm:'Save the startup settings (start type, initial serial device, configuration directory)? Freetz restarts a running service. The gateway draft is not saved: use “Save configuration” for that.',unsaved:'Save or reload the gateway draft before changing startup/storage.',sqlite:'SQLite reads include committed WAL data. The .db file timestamp alone does not indicate freshness.'},
-		it:{manual:'Aggiungi manualmente',discover:'Scopri dispositivi',filter:'Filtra dispositivi configurati',add:'Aggiungi alla bozza',update:'Aggiorna nella bozza',detected:'Configura dispositivo rilevato',manualTitle:'Aggiungi dispositivo manualmente',edit:'Modifica dispositivo',detect:'Rileva attributi',close:'Chiudi',help:'Aiuto',enabled:'Abilitato',disabled:'Disabilitato',rules:'Rules (non eseguite)',saved:'Salvato',pending:'Dispositivo nella bozza. Premi Save configuration per salvarlo su disco, poi riavvia dalla sezione Stato per attivarlo.',detectionFailed:'Impossibile rilevare gli attributi. Verifica bindkey/formato e riprova, oppure aggiungi gli attributi manualmente.',startup:'Salva impostazioni di avvio',startupConfirm:'Salvare le impostazioni di avvio (tipo di avvio, seriale iniziale, percorso della configurazione)? Freetz riavvia il servizio se è attivo. La bozza del gateway non viene salvata: per quella usa «Save configuration».',unsaved:'Salva o ricarica la bozza del gateway prima di modificare avvio/percorso.',sqlite:'Le letture SQLite includono i dati WAL confermati. La data del solo file .db non indica la freschezza dei dati.'},
-		de:{manual:'Manuell hinzufügen',discover:'Geräte suchen',filter:'Konfigurierte Geräte filtern',add:'Zum Entwurf hinzufügen',update:'Im Entwurf aktualisieren',detected:'Gefundenes Gerät konfigurieren',manualTitle:'Gerät manuell hinzufügen',edit:'Gerät bearbeiten',detect:'Attribute erkennen',close:'Schließen',help:'Hilfe',enabled:'Aktiviert',disabled:'Deaktiviert',rules:'Regeln (nicht ausgeführt)',saved:'Gespeichert',pending:'Gerät im Entwurf. Save configuration schreibt auf Datenträger; danach unter Status neu starten.',detectionFailed:'Attribute nicht erkannt. Bindkey/Format prüfen oder manuell ergänzen.',startup:'Starteinstellungen speichern',startupConfirm:'Starteinstellungen (Starttyp, initiales serielles Gerät, Konfigurationsverzeichnis) speichern? Freetz startet einen laufenden Dienst neu. Der Gateway-Entwurf wird nicht gespeichert: dafür „Save configuration“ verwenden.',unsaved:'Gateway-Entwurf zuerst speichern oder neu laden.',sqlite:'SQLite liest auch bestätigte WAL-Daten. Der .db-Zeitstempel allein zeigt nicht die Aktualität.'},
-		fr:{manual:'Ajouter manuellement',discover:'Découvrir les appareils',filter:'Filtrer les appareils configurés',add:'Ajouter au brouillon',update:'Modifier le brouillon',detected:'Configurer cet appareil',manualTitle:'Ajouter un appareil manuellement',edit:'Modifier cet appareil',detect:'Détecter les attributs',close:'Fermer',help:'Aide',enabled:'Activé',disabled:'Désactivé',rules:'Règles (non exécutées)',saved:'Enregistré',pending:'Appareil dans le brouillon. Save configuration écrit sur disque ; redémarrer ensuite depuis État.',detectionFailed:'Attributs non détectés. Vérifier bindkey/format ou les ajouter manuellement.',startup:'Enregistrer les réglages de démarrage',startupConfirm:'Enregistrer les réglages de démarrage (type, port série initial, répertoire de configuration) ? Freetz redémarre le service actif. Le brouillon du gateway n’est pas enregistré : utilisez « Save configuration ».',unsaved:'Enregistrer ou recharger le brouillon du gateway avant de continuer.',sqlite:'SQLite lit aussi les données WAL validées. La date du fichier .db seule ne prouve pas leur fraîcheur.'},
-		es:{manual:'Añadir manualmente',discover:'Descubrir dispositivos',filter:'Filtrar dispositivos configurados',add:'Añadir al borrador',update:'Actualizar borrador',detected:'Configurar dispositivo detectado',manualTitle:'Añadir dispositivo manualmente',edit:'Editar dispositivo',detect:'Detectar atributos',close:'Cerrar',help:'Ayuda',enabled:'Activado',disabled:'Desactivado',rules:'Reglas (no ejecutadas)',saved:'Guardado',pending:'Dispositivo en el borrador. Save configuration guarda en disco; después reiniciar desde Estado.',detectionFailed:'No se detectaron atributos. Revisar bindkey/formato o añadirlos manualmente.',startup:'Guardar ajustes de inicio',startupConfirm:'¿Guardar los ajustes de inicio (tipo, puerto serie inicial, directorio de configuración)? Freetz reinicia el servicio activo. El borrador del gateway no se guarda: use « Save configuration ».',unsaved:'Guardar o recargar el borrador del gateway antes de continuar.',sqlite:'SQLite incluye los datos WAL confirmados. La fecha del archivo .db no indica por sí sola su actualidad.'}
+		en:{manual:'Add manually',discover:'Discover devices',filter:'Filter configured devices',add:'Add to configuration draft',update:'Update configuration draft',detected:'Configure discovered device',manualTitle:'Add device manually',edit:'Edit device',close:'Close',help:'Help',enabled:'Enabled',disabled:'Disabled',rules:'Rules (not executed)',saved:'Saved',pending:'Device added to draft. Save configuration to write it to disk, then restart from Status to activate it.',startup:'Save startup settings',startupConfirm:'Save the startup settings (start type, initial serial device, configuration directory)? Freetz restarts a running service. The gateway draft is not saved: use “Save configuration” for that.',unsaved:'Save or reload the gateway draft before changing startup/storage.',sqlite:'SQLite reads include committed WAL data. The .db file timestamp alone does not indicate freshness.'},
+		it:{manual:'Aggiungi manualmente',discover:'Scopri dispositivi',filter:'Filtra dispositivi configurati',add:'Aggiungi alla bozza',update:'Aggiorna nella bozza',detected:'Configura dispositivo rilevato',manualTitle:'Aggiungi dispositivo manualmente',edit:'Modifica dispositivo',close:'Chiudi',help:'Aiuto',enabled:'Abilitato',disabled:'Disabilitato',rules:'Rules (non eseguite)',saved:'Salvato',pending:'Dispositivo nella bozza. Premi Save configuration per salvarlo su disco, poi riavvia dalla sezione Stato per attivarlo.',startup:'Salva impostazioni di avvio',startupConfirm:'Salvare le impostazioni di avvio (tipo di avvio, seriale iniziale, percorso della configurazione)? Freetz riavvia il servizio se è attivo. La bozza del gateway non viene salvata: per quella usa «Save configuration».',unsaved:'Salva o ricarica la bozza del gateway prima di modificare avvio/percorso.',sqlite:'Le letture SQLite includono i dati WAL confermati. La data del solo file .db non indica la freschezza dei dati.'},
+		de:{manual:'Manuell hinzufügen',discover:'Geräte suchen',filter:'Konfigurierte Geräte filtern',add:'Zum Entwurf hinzufügen',update:'Im Entwurf aktualisieren',detected:'Gefundenes Gerät konfigurieren',manualTitle:'Gerät manuell hinzufügen',edit:'Gerät bearbeiten',close:'Schließen',help:'Hilfe',enabled:'Aktiviert',disabled:'Deaktiviert',rules:'Regeln (nicht ausgeführt)',saved:'Gespeichert',pending:'Gerät im Entwurf. Save configuration schreibt auf Datenträger; danach unter Status neu starten.',startup:'Starteinstellungen speichern',startupConfirm:'Starteinstellungen (Starttyp, initiales serielles Gerät, Konfigurationsverzeichnis) speichern? Freetz startet einen laufenden Dienst neu. Der Gateway-Entwurf wird nicht gespeichert: dafür „Save configuration“ verwenden.',unsaved:'Gateway-Entwurf zuerst speichern oder neu laden.',sqlite:'SQLite liest auch bestätigte WAL-Daten. Der .db-Zeitstempel allein zeigt nicht die Aktualität.'},
+		fr:{manual:'Ajouter manuellement',discover:'Découvrir les appareils',filter:'Filtrer les appareils configurés',add:'Ajouter au brouillon',update:'Modifier le brouillon',detected:'Configurer cet appareil',manualTitle:'Ajouter un appareil manuellement',edit:'Modifier cet appareil',close:'Fermer',help:'Aide',enabled:'Activé',disabled:'Désactivé',rules:'Règles (non exécutées)',saved:'Enregistré',pending:'Appareil dans le brouillon. Save configuration écrit sur disque ; redémarrer ensuite depuis État.',startup:'Enregistrer les réglages de démarrage',startupConfirm:'Enregistrer les réglages de démarrage (type, port série initial, répertoire de configuration) ? Freetz redémarre le service actif. Le brouillon du gateway n’est pas enregistré : utilisez « Save configuration ».',unsaved:'Enregistrer ou recharger le brouillon du gateway avant de continuer.',sqlite:'SQLite lit aussi les données WAL validées. La date du fichier .db seule ne prouve pas leur fraîcheur.'},
+		es:{manual:'Añadir manualmente',discover:'Descubrir dispositivos',filter:'Filtrar dispositivos configurados',add:'Añadir al borrador',update:'Actualizar borrador',detected:'Configurar dispositivo detectado',manualTitle:'Añadir dispositivo manualmente',edit:'Editar dispositivo',close:'Cerrar',help:'Ayuda',enabled:'Activado',disabled:'Desactivado',rules:'Reglas (no ejecutadas)',saved:'Guardado',pending:'Dispositivo en el borrador. Save configuration guarda en disco; después reiniciar desde Estado.',startup:'Guardar ajustes de inicio',startupConfirm:'¿Guardar los ajustes de inicio (tipo, puerto serie inicial, directorio de configuración)? Freetz reinicia el servicio activo. El borrador del gateway no se guarda: use « Save configuration ».',unsaved:'Guardar o recargar el borrador del gateway antes de continuar.',sqlite:'SQLite incluye los datos WAL confirmados. La fecha del archivo .db no indica por sí sola su actualidad.'}
 	};
 	const ui=workflowTranslations[helpLanguage]||workflowTranslations.en;
+	const attributeTranslations={
+		en:{title:'Attributes',hint:'Every decoded attribute follows the attribute defaults (Settings) unless a cell of this table says otherwise. Rows left entirely on “default” are not written to the YAML.',source:'Decoded attribute',value:'Last value',name:'Published name',unit:'Unit',retention:'Retention',on:'on',off:'off',live:'recent frames',history:'history',keepAll:'keep all',defaultOf:'default ({value})',technical:'Show technical fields',add:'Add attribute',addLabel:'Attribute name produced by the decoder',refresh:'Refresh values',loading:'Loading attributes…',empty:'No attribute received from this device yet: attributes appear after the gateway decodes an advertisement. They can also be added manually.',stopped:'The gateway is not running: saved attribute names are shown without current values.',notSeen:'not received yet',shadowed:'replaced by {source}',disabledFrontend:'{frontend} is disabled in Settings: the choice is saved but has no effect until it is enabled.',mysensorsUnsupported:'MySensors has no sensor type for this name.',matterVendor:'Not a standard Matter attribute: published only through the vendor cluster.',retentionNeedsHistory:'Retention applies only to attributes stored as SQLite history.',reset:'Reset this row to the defaults',invalidName:'Use 1-128 letters, digits, “_”, “.” or “-”.',defaults:'Attribute defaults',defaultsHint:'Treatment of every decoded attribute that a device does not configure, and of the “default” cells of the device tables. By default nothing is published or stored.',lastSeen:'Last received'},
+		it:{title:'Attributi',hint:'Ogni attributo decodificato segue i default degli attributi (Impostazioni), salvo diversa indicazione in una cella di questa tabella. Le righe interamente su «default» non vengono scritte nello YAML.',source:'Attributo decodificato',value:'Ultimo valore',name:'Nome pubblicato',unit:'Unità',retention:'Conservazione',on:'attivo',off:'disattivo',live:'frame recenti',history:'storico',keepAll:'conserva tutto',defaultOf:'default ({value})',technical:'Mostra campi tecnici',add:'Aggiungi attributo',addLabel:'Nome dell’attributo prodotto dal decoder',refresh:'Aggiorna valori',loading:'Caricamento attributi…',empty:'Nessun attributo ancora ricevuto da questo dispositivo: gli attributi compaiono dopo che il gateway decodifica un advertisement. Si possono anche aggiungere manualmente.',stopped:'Il gateway non è in esecuzione: i nomi salvati sono mostrati senza valori attuali.',notSeen:'non ancora ricevuto',shadowed:'sostituito da {source}',disabledFrontend:'{frontend} è disattivato nelle Impostazioni: la scelta viene salvata ma non ha effetto finché non viene attivato.',mysensorsUnsupported:'MySensors non ha un tipo di sensore per questo nome.',matterVendor:'Non è un attributo Matter standard: pubblicato solo nel cluster vendor.',retentionNeedsHistory:'La conservazione si applica solo agli attributi storicizzati in SQLite.',reset:'Riporta la riga ai default',invalidName:'Usare 1-128 lettere, cifre, «_», «.» o «-».',defaults:'Default degli attributi',defaultsHint:'Trattamento di ogni attributo decodificato non configurato su un dispositivo e delle celle «default» delle tabelle dei dispositivi. Per default nulla viene pubblicato o memorizzato.',lastSeen:'Ultima ricezione'},
+		de:{title:'Attribute',hint:'Jedes dekodierte Attribut folgt den Attribut-Standards (Einstellungen), außer eine Zelle dieser Tabelle legt etwas anderes fest. Zeilen, die ganz auf „default“ stehen, werden nicht ins YAML geschrieben.',source:'Dekodiertes Attribut',value:'Letzter Wert',name:'Veröffentlichter Name',unit:'Einheit',retention:'Aufbewahrung',on:'an',off:'aus',live:'aktuelle Frames',history:'Verlauf',keepAll:'alles behalten',defaultOf:'default ({value})',technical:'Technische Felder zeigen',add:'Attribut hinzufügen',addLabel:'Vom Decoder erzeugter Attributname',refresh:'Werte aktualisieren',loading:'Attribute werden geladen…',empty:'Von diesem Gerät wurde noch kein Attribut empfangen: Attribute erscheinen, sobald das Gateway ein Advertisement dekodiert. Sie können auch manuell hinzugefügt werden.',stopped:'Das Gateway läuft nicht: gespeicherte Attributnamen ohne aktuelle Werte.',notSeen:'noch nicht empfangen',shadowed:'ersetzt durch {source}',disabledFrontend:'{frontend} ist in den Einstellungen deaktiviert: die Auswahl wird gespeichert, wirkt aber erst nach der Aktivierung.',mysensorsUnsupported:'MySensors hat für diesen Namen keinen Sensortyp.',matterVendor:'Kein Matter-Standardattribut: nur im Hersteller-Cluster veröffentlicht.',retentionNeedsHistory:'Aufbewahrung gilt nur für als SQLite-Verlauf gespeicherte Attribute.',reset:'Zeile auf die Standards zurücksetzen',invalidName:'1-128 Buchstaben, Ziffern, „_“, „.“ oder „-“ verwenden.',defaults:'Attribut-Standards',defaultsHint:'Behandlung jedes dekodierten Attributs, das ein Gerät nicht konfiguriert, und der „default“-Zellen der Gerätetabellen. Standardmäßig wird nichts veröffentlicht oder gespeichert.',lastSeen:'Zuletzt empfangen'},
+		fr:{title:'Attributs',hint:'Chaque attribut décodé suit les valeurs par défaut des attributs (Réglages), sauf si une cellule de ce tableau indique autre chose. Les lignes entièrement sur « default » ne sont pas écrites dans le YAML.',source:'Attribut décodé',value:'Dernière valeur',name:'Nom publié',unit:'Unité',retention:'Rétention',on:'activé',off:'désactivé',live:'trames récentes',history:'historique',keepAll:'tout conserver',defaultOf:'default ({value})',technical:'Afficher les champs techniques',add:'Ajouter un attribut',addLabel:'Nom d’attribut produit par le décodeur',refresh:'Actualiser les valeurs',loading:'Chargement des attributs…',empty:'Aucun attribut reçu de cet appareil pour l’instant : les attributs apparaissent quand le gateway décode un advertisement. Ils peuvent aussi être ajoutés manuellement.',stopped:'Le gateway n’est pas en cours d’exécution : noms enregistrés sans valeurs actuelles.',notSeen:'pas encore reçu',shadowed:'remplacé par {source}',disabledFrontend:'{frontend} est désactivé dans les réglages : le choix est enregistré mais sans effet tant qu’il n’est pas activé.',mysensorsUnsupported:'MySensors n’a pas de type de capteur pour ce nom.',matterVendor:'Pas un attribut Matter standard : publié seulement dans le cluster fabricant.',retentionNeedsHistory:'La rétention s’applique seulement aux attributs conservés en historique SQLite.',reset:'Remettre la ligne aux valeurs par défaut',invalidName:'Utiliser 1 à 128 lettres, chiffres, « _ », « . » ou « - ».',defaults:'Valeurs par défaut des attributs',defaultsHint:'Traitement de chaque attribut décodé qu’un appareil ne configure pas, et des cellules « default » des tableaux d’appareils. Par défaut rien n’est publié ni enregistré.',lastSeen:'Dernière réception'},
+		es:{title:'Atributos',hint:'Cada atributo decodificado sigue los valores predeterminados de atributos (Ajustes), salvo que una celda de esta tabla indique otra cosa. Las filas completamente en «default» no se escriben en el YAML.',source:'Atributo decodificado',value:'Último valor',name:'Nombre publicado',unit:'Unidad',retention:'Retención',on:'activado',off:'desactivado',live:'frames recientes',history:'historial',keepAll:'conservar todo',defaultOf:'default ({value})',technical:'Mostrar campos técnicos',add:'Añadir atributo',addLabel:'Nombre de atributo producido por el decodificador',refresh:'Actualizar valores',loading:'Cargando atributos…',empty:'Aún no se ha recibido ningún atributo de este dispositivo: aparecen cuando el gateway decodifica un advertisement. También pueden añadirse manualmente.',stopped:'El gateway no está en ejecución: se muestran los nombres guardados sin valores actuales.',notSeen:'aún no recibido',shadowed:'sustituido por {source}',disabledFrontend:'{frontend} está desactivado en Ajustes: la elección se guarda pero no tiene efecto hasta activarlo.',mysensorsUnsupported:'MySensors no tiene tipo de sensor para este nombre.',matterVendor:'No es un atributo Matter estándar: solo se publica en el clúster del fabricante.',retentionNeedsHistory:'La retención solo se aplica a los atributos guardados como historial SQLite.',reset:'Restablecer la fila a los valores predeterminados',invalidName:'Usar 1-128 letras, dígitos, «_», «.» o «-».',defaults:'Valores predeterminados de atributos',defaultsHint:'Tratamiento de cada atributo decodificado que un dispositivo no configura y de las celdas «default» de las tablas de dispositivos. De forma predeterminada no se publica ni almacena nada.',lastSeen:'Última recepción'}
+	};
+	const atUi=attributeTranslations[helpLanguage]||attributeTranslations.en;
+	/** Help of the attribute settings, shared by the device table, the
+	 *  attribute defaults and the YAML editor. */
+	const attributeHelp=(helpLanguage==='it'?{
+		source:'Nome dell’attributo prodotto dal decoder; con il decoder both i nomi Theengs hanno il prefisso Theengs.',
+		value:'Ultimo valore ricevuto dal gateway in esecuzione o mostrato da Inspect.',
+		name:'Nome usato da tutti i frontend e nel database; vuoto mantiene il nome decodificato. Rinominare avvia una nuova serie in SQLite e InfluxDB.',
+		unit:'Unità sostitutiva; vuota mantiene l’unità del decoder.',
+		mqtt:'Pubblica l’attributo nello stato MQTT del dispositivo. default eredita i default degli attributi (disattivo se non impostato lì).',
+		influx:'Scrive l’attributo su InfluxDB 3. default eredita i default degli attributi.',
+		matter:'Pubblica l’attributo tramite il bridge Matter: i nomi standard diventano endpoint Matter, gli altri sono visibili solo nel cluster vendor. default eredita i default degli attributi.',
+		mysensors:'Presenta l’attributo come child MySensors con ID stabile; possibile solo per nomi con un tipo di sensore MySensors. default eredita i default degli attributi.',
+		sqlite:'off non memorizza nulla; frame recenti conserva il valore solo nei frame completi recenti mostrati dal portale; storico lo conserva anche come serie dopo i frame recenti, secondo la regola di conservazione. default eredita i default degli attributi (off se non impostato lì).',
+		retention:'Regola di conservazione con nome applicata allo storico dell’attributo (Impostazioni › SQLite › Regole di conservazione). default eredita i default degli attributi; senza regola ogni campione viene conservato.'
+	}:{
+		source:'Attribute name produced by the decoder; with the both decoder, Theengs names carry the Theengs prefix.',
+		value:'Latest value received by the running gateway, or shown by Inspect.',
+		name:'Name used by every frontend and in the database; empty keeps the decoded name. Renaming starts a new series in SQLite and InfluxDB.',
+		unit:'Unit override; empty keeps the decoder unit.',
+		mqtt:'Publish the attribute in the MQTT device state. default inherits the attribute defaults (off unless set there).',
+		influx:'Write the attribute to InfluxDB 3. default inherits the attribute defaults.',
+		matter:'Publish the attribute through the Matter bridge: standard names become Matter endpoints, other names are visible only in the vendor cluster. default inherits the attribute defaults.',
+		mysensors:'Present the attribute as a MySensors child with a stable child ID; possible only for names with a MySensors sensor type. default inherits the attribute defaults.',
+		sqlite:'off stores nothing; recent frames keeps the value only in the recent complete frames shown by the portal; history also keeps it as a series after the recent frames, subject to the retention rule. default inherits the attribute defaults (off unless set there).',
+		retention:'Named retention rule applied to the history of the attribute (Settings › SQLite › Retention rules). default inherits the attribute defaults; without a rule every sample is kept.'
+	});
 	const parameterHelp={
 		enabled:['Enable this device or frontend after saving and explicitly restarting the service. Other frontends are independent.','Abilita questo dispositivo o frontend dopo il salvataggio e il riavvio esplicito. Gli altri frontend sono indipendenti.'],
 		batch_size:['Maximum items per write: SQLite counts advertisement frames, InfluxDB counts measurement lines. Writes also happen when the flush interval expires, even with a smaller batch. Range 1-1024; must not exceed queue capacity.','Massimo per scrittura: SQLite conta i frame advertisement, InfluxDB le righe di misura. La scrittura avviene anche allo scadere del flush, senza attendere un batch pieno. Da 1 a 1024, non oltre la capacità della coda.'],
@@ -925,8 +985,6 @@ cat << 'EOF'
 		bindkey:['AES-128 key for encrypted advertisements: exactly 32 hexadecimal digits. Not needed for unencrypted packets. Never share exported YAML containing keys.','Chiave AES-128 per advertisement cifrati: esattamente 32 cifre esadecimali. Non serve per pacchetti in chiaro. Non condividere YAML esportati contenenti chiavi.'],
 		format:['Empty detects the payload format automatically. Force a format only if you know the actual sensor protocol; it does not choose the radio PHY.','Vuoto rileva automaticamente il formato. Forzarlo solo conoscendo il protocollo effettivo; non seleziona la PHY radio.'],
 		attribute:['Canonical decoded measurement name, for example temperature, humidity, battery_level or opened. An attribute must exist in received data to produce values.','Nome canonico della misura decodificata, ad esempio temperature, humidity, battery_level o opened. Deve esistere nei dati ricevuti per produrre valori.'],
-		child:['Optional MySensors child ID, 0-255. Keep existing IDs stable to preserve controller device associations.','ID child MySensors opzionale, 0-255. Conservare gli ID esistenti per mantenere le associazioni nel controller.'],
-		kind:['Optional MySensors type override. Empty uses the supported attribute mapping.','Override opzionale del tipo MySensors. Vuoto usa la mappatura prevista per l’attributo.'],
 		name:['Name of the proposed derived attribute. Rules are stored and validated but are not executed in this daemon.','Nome dell’attributo derivato proposto. Le Rules sono salvate e validate ma non eseguite da questo daemon.'],
 		source:['Decoded attribute watched by the proposed rule. Rules are not executed in this version.','Attributo decodificato osservato dalla regola proposta. Le Rules non sono eseguite in questa versione.'],
 		equals:['Comparison value for the proposed rule; empty means any change. Definitions only, not an active automation.','Valore di confronto proposto; vuoto significa qualsiasi variazione. Solo definizione, non automazione attiva.'],
@@ -942,7 +1000,7 @@ cat << 'EOF'
 		if(scope==='device.rules[]'&&key==='enabled')return helpLanguage==='it'?'Abilita questa regola e il relativo webhook dopo il salvataggio e il riavvio del servizio.':'Enable this availability rule and its webhook after saving and restarting the service.';
 		if(scope==='device.rules[].webhook'&&key==='token')return helpLanguage==='it'?'Token privato: Bearer per ntfy o chiave applicazione Gotify. Inviato solo negli header HTTPS, mai nella URL o nello stato.':'Private ntfy bearer or Gotify application token. Sent only in HTTPS headers, never in URLs or saved episode state.';
 		if(scope==='device.rules[].webhook'&&key==='timeout_ms')return helpLanguage==='it'?'Timeout HTTPS in millisecondi (100-10000). Le richieste non bloccano la ricezione BLE.':'HTTPS timeout in milliseconds (100-10000). Requests do not block BLE reception.';
-		if(scope==='frontends.sqlite.maintenance'&&key==='enabled')return historyUi.warning;
+		if((scope==='attribute_defaults'||scope==='device.attributes[]')&&attributeHelp[key])return attributeHelp[key];
 		if(scope==='frontends.sqlite.maintenance'&&key==='batch_size')return helpLanguage==='it'?'Massimo di frame trasferiti o campioni esaminati per blocco (1-1000). Non è il batch del ricevitore.':'Maximum frames archived or samples examined per chunk (1-1000). Independent of receiver batching.';
 		if(key==='port'&&scope==='serial')return helpLanguage==='it'?'Percorso della seriale attiva, ad esempio /dev/ttyACM0. Richiede salvataggio e riavvio.':'Active serial device path, for example /dev/ttyACM0. Save and restart to apply.';
 		if(key==='filter_known_devices')return ht.filterKnown+' '+ht.filterAll;
@@ -979,15 +1037,16 @@ cat << 'EOF'
 		version:['Schema version written by the daemon. Do not edit it by hand: a different value can invalidate the file.','Versione dello schema scritta dal daemon. Non modificarla a mano: un valore diverso può invalidare il file.'],
 		serial:['Serial link to the BLE adapter: device path, baud rate and timeouts.','Collegamento seriale all’adattatore BLE: percorso, baud rate e timeout.'],
 		scanner:['BLE advertisement reception: PHY, scan windows, duplicate filter and MAC allow/deny lists.','Ricezione degli advertisement BLE: PHY, finestre di scansione, filtro duplicati e liste MAC.'],
-		devices:['Configured sensors. Each entry binds one MAC address to a wire format, a bind key and the exposed attributes.','Sensori configurati. Ogni voce associa un MAC a formato dati, bind key e attributi esposti.'],
-		expose:['Attributes published for this device as MySensors/Matter endpoints. Other decoded values are stored anyway.','Attributi pubblicati per questo dispositivo come endpoint MySensors/Matter. Gli altri valori decodificati vengono salvati comunque.'],
+		devices:['Configured sensors. Each entry binds one MAC address to a wire format, an optional bind key, its attribute settings and its availability rules.','Sensori configurati. Ogni voce associa un MAC a formato dati, bind key opzionale, impostazioni degli attributi e regole di disponibilità.'],
+		attributes:['Attribute settings of this device: published name, unit, frontends, SQLite storage and retention rule. Attributes not listed follow attribute_defaults; an omitted key or the value default inherits.','Impostazioni degli attributi del dispositivo: nome pubblicato, unità, frontend, memorizzazione SQLite e regola di conservazione. Gli attributi non elencati seguono attribute_defaults; una chiave omessa o il valore default eredita.'],
+		attribute_defaults:['Treatment of every attribute a device does not list, and of the default values of the listed ones. When omitted everything is off: nothing is published or stored.','Trattamento di ogni attributo non elencato da un dispositivo e dei valori default di quelli elencati. Se omesso tutto è disattivato: nulla viene pubblicato o memorizzato.'],
 		frontends:['Optional consumers of the decoded values: SQLite history, InfluxDB, MySensors, MQTT and Matter.','Consumatori opzionali dei valori decodificati: storico SQLite, InfluxDB, MySensors, MQTT e Matter.'],
 		influx:['InfluxDB 3 HTTP writer: endpoint, database, measurement and batching.','Scrittura su InfluxDB 3 via HTTP: endpoint, database, measurement e batching.'],
-		sqlite:['Local SQLite history: database path, batching and retention maintenance.','Storico SQLite locale: percorso del database, batching e manutenzione della conservazione.'],
-		maintenance:['Background consolidation of old complete frames into per-series samples.','Consolidamento in background dei vecchi frame completi in campioni per serie.'],
-		policies:['Retention overrides for one attribute or one MAC address.','Eccezioni di conservazione per un attributo o un MAC.'],
-		tiers:['Age bands of a progressive policy: each band keeps one sample per interval, after the last band numeric samples expire.','Fasce di età di una politica progressiva: ogni fascia conserva un campione per intervallo, oltre l’ultima i campioni numerici scadono.'],
-		mode:['keep_all keeps every sample, progressive applies the age bands, discard removes archived numeric samples.','keep_all conserva ogni campione, progressive applica le fasce di età, discard elimina i campioni numerici archiviati.'],
+		sqlite:['Local SQLite database: recent complete frames for the portal, per-attribute history and named retention rules.','Database SQLite locale: frame completi recenti per il portale, storico per attributo e regole di conservazione con nome.'],
+		maintenance:['Work budget of the background job that archives expired recent frames and applies the retention rules.','Budget del job in background che archivia i frame recenti scaduti e applica le regole di conservazione.'],
+		retention_rules:['Named retention rules referenced by the retention of the attributes: keep_all or progressive age bands.','Regole di conservazione con nome, richiamate dalla retention degli attributi: keep_all o fasce di età progressive.'],
+		tiers:['Age bands of a progressive rule: each band keeps one sample per interval; every sample older than the last band is deleted.','Fasce di età di una regola progressiva: ogni fascia conserva un campione per intervallo; ogni campione più vecchio dell’ultima fascia viene eliminato.'],
+		mode:['keep_all (or default) keeps every sample; progressive applies the age bands.','keep_all (o default) conserva ogni campione; progressive applica le fasce di età.'],
 		mysensors:['MySensors/Domoticz gateway frontend on a serial or TCP socket.','Frontend gateway MySensors/Domoticz su seriale o socket TCP.'],
 		mqtt:['MQTT publisher, optionally backed by a gateway-managed local broker.','Publisher MQTT, con broker locale opzionale gestito dal gateway.'],
 		matter:['Matter bridge published over IPv6, with its own fabric store.','Bridge Matter pubblicato su IPv6, con il proprio store di fabric.'],
@@ -1003,12 +1062,13 @@ cat << 'EOF'
 	function buildYamlLines(text) {
 		const stack=[];yamlLines=[];
 		String(text||'').split('\n').forEach(line=>{
-			const match=/^(\s*)(?:-\s+)?([A-Za-z0-9_]+):(\s|$)/.exec(line);
+			const match=/^(\s*)(-\s+)?([A-Za-z0-9_]+):(\s|$)/.exec(line);
 			if(!match){yamlLines.push(null);return;}
-			const indent=match[1].length,key=match[2];
+			// A list item key is indented past its dash, below the parent key.
+			const indent=match[1].length+(match[2]?match[2].length:0),key=match[3];
 			while(stack.length&&stack[stack.length-1].indent>=indent)stack.pop();
 			const chain=stack.map(entry=>entry.key);
-			const start=line.indexOf(key,match[1].length);
+			const start=line.indexOf(key,indent);
 			yamlLines.push({key,chain,start,end:start+key.length});
 			stack.push({indent,key});
 		});
@@ -1017,16 +1077,20 @@ cat << 'EOF'
 		const last=chain[chain.length-1]||'';
 		if(chain.includes('webhook'))return 'device.rules[].webhook';
 		if(chain.includes('rules'))return 'device.rules[]';
-		if(chain.includes('maintenance')||chain.includes('policies')||chain.includes('tiers'))return 'frontends.sqlite.maintenance';
+		if(chain.includes('attribute_defaults'))return 'attribute_defaults';
+		if(chain.includes('attributes'))return 'device.attributes[]';
+		if(chain.includes('maintenance'))return 'frontends.sqlite.maintenance';
 		if(chain.includes('scanner'))return 'scanner';
 		if(chain.includes('serial')||last==='serial')return 'serial';
 		if(chain.includes('frontends'))return 'frontends';
 		return '';
 	}
 	function yamlExplanation(entry) {
+		const scope=yamlScope(entry.chain);
+		if(['attribute_defaults','device.attributes[]'].includes(scope)&&attributeHelp[entry.key])return attributeHelp[entry.key];
 		const own=yamlHelp[entry.key];
 		if(own)return own[helpLanguage==='it'?1:0];
-		return fieldExplanation(entry.key,yamlScope(entry.chain));
+		return fieldExplanation(entry.key,scope);
 	}
 	function yamlHover(event) {
 		if(!yamlEditor)return;
@@ -1056,7 +1120,7 @@ cat << 'EOF'
 	async function api(action, body, params = {}, keepalive = false) {
 		const url = new URL('/cgi-bin/extra/ble2uart_gateway/api', location.href);
 		url.search = new URLSearchParams({ajax:'1', action, ...params}).toString();
-		const response = await fetch(url, {method: ['read','status','attributes','history-presets','sqlite-attributes','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
+		const response = await fetch(url, {method: ['read','status','catalog','history-presets','sqlite-attributes','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
 		const document = new DOMParser().parseFromString(await response.text(), 'text/html');
 		const pre = document.querySelector('.ajax-json-content pre');
 		if (!pre) throw new Error('Invalid response or session expired');
@@ -1892,11 +1956,11 @@ cat << 'EOF'
 		if(status.textContent!==text)status.textContent=text;
 	}
 	const historyTranslations={
-		en:{maintenance:'Retention policies',policies:'Per-measurement retention',policiesHint:'Overrides for one attribute or one MAC address. Explicit rules win over the settings above; other numeric measurements use the default mode above.',policy:'Policy',attribute:'Attribute',mac:'MAC (empty = all devices)',mode:'History mode',keep:'Keep every sample, forever',progressive:'Progressive resolution',age:'Until age',spacing:'Sample interval',all:'Every sample',add:'Add policy',band:'Add age band',remove:'Remove',temperature:'Temperature preset',battery:'Battery preset',warning:'Irreversible consolidation: back up the database before enabling. Older full frames are replaced by related measurement series; discarded samples cannot be recovered.',expiry:'After the last age band: delete numeric samples.',units:['s','min','h','days','weeks','months'],close:'Close',otherNumeric:'Unmatched numeric measurements',keepNumeric:'Keep indefinitely',discardNumeric:'Discard after raw retention',stored:'Stored SQLite attributes',storedHint:'The inventory includes recent raw frames and archived history in the saved SQLite database. Deletion removes every unit and value for this device/attribute, including its raw decoded snapshot. If the decoder still produces it, new values will be stored again. Remove it from Publish to stop storing it.',loadStored:'Load database attributes',loading:'Loading…',noStored:'No stored measurements found.',lastSample:'Last sample',samples:'samples',deleteStored:'Delete stored data',confirmDelete:'Permanently delete all stored values for {attribute} on {mac}? This includes raw frames and consolidated history.',deleted:'Deleted {raw} raw readings, {archived} archived samples and {frames} empty frames.',unavailable:'Could not load stored SQLite attributes.'},
-		it:{maintenance:'Politiche di conservazione (retention)',policies:'Conservazione per singola misura',policiesHint:'Eccezioni per un singolo attributo o un singolo MAC. Le regole esplicite prevalgono; le altre misure numeriche seguono il trattamento predefinito qui sopra.',policy:'Politica',attribute:'Attributo',mac:'MAC (vuoto = tutti i dispositivi)',mode:'Trattamento storico',keep:'Conserva tutti i campioni, per sempre',progressive:'Risoluzione progressiva',age:'Fino all’età',spacing:'Intervallo campioni',all:'Tutti i campioni',add:'Aggiungi politica',band:'Aggiungi fascia',remove:'Rimuovi',temperature:'Preset temperatura',battery:'Preset batteria',warning:'Consolidamento irreversibile: eseguire un backup del database prima di abilitare. I vecchi frame completi vengono sostituiti da serie di misure correlate; i campioni scartati non sono recuperabili.',expiry:'Oltre l’ultima fascia: elimina i campioni numerici.',units:['s','min','h','giorni','settimane','mesi'],close:'Chiudi',otherNumeric:'Misure numeriche senza politica specifica',keepNumeric:'Conserva senza scadenza',discardNumeric:'Scarta dopo la retention grezza',stored:'Attributi già memorizzati in SQLite',storedHint:'L’elenco include frame grezzi recenti e storico consolidato del DB configurato e salvato. La cancellazione rimuove tutte le unità e i valori dell’attributo per quel dispositivo, inclusi i dati decodificati grezzi. Se il decoder continua a produrlo, verrà memorizzato di nuovo. Rimuovilo da Publish per interrompere la registrazione.',loadStored:'Carica attributi dal database',loading:'Caricamento…',noStored:'Nessuna misura memorizzata.',lastSample:'Ultimo campione',samples:'campioni',deleteStored:'Elimina dati memorizzati',confirmDelete:'Eliminare definitivamente tutti i valori memorizzati di {attribute} per {mac}? Include frame grezzi e storico consolidato.',deleted:'Eliminati {raw} valori grezzi, {archived} campioni archiviati e {frames} frame vuoti.',unavailable:'Impossibile leggere gli attributi SQLite memorizzati.'},
-		de:{maintenance:'Aufbewahrungsrichtlinien (Retention)',policies:'Aufbewahrung je Messwert',policiesHint:'Ausnahmen für einen Messwert oder eine MAC. Explizite Regeln gelten zuerst; andere numerische Messwerte verwenden den Standardmodus oben.',policy:'Richtlinie',attribute:'Attribut',mac:'MAC (leer = alle Geräte)',mode:'Verlaufsmodus',keep:'Alle Werte unbegrenzt behalten',progressive:'Abgestufte Auflösung',age:'Bis zum Alter',spacing:'Werteintervall',all:'Alle Werte',add:'Richtlinie hinzufügen',band:'Altersstufe hinzufügen',remove:'Entfernen',temperature:'Temperaturvorgabe',battery:'Batterievorgabe',warning:'Nicht umkehrbare Verdichtung: Datenbank vorher sichern. Alte vollständige Frames werden durch verknüpfte Messreihen ersetzt; entfernte Werte sind nicht wiederherstellbar.',expiry:'Nach der letzten Altersstufe: numerische Werte löschen.',units:['s','min','h','Tage','Wochen','Monate'],close:'Schließen',otherNumeric:'Nicht zugeordnete numerische Messwerte',keepNumeric:'Unbegrenzt behalten',discardNumeric:'Nach Rohdaten-Aufbewahrung löschen',stored:'Gespeicherte SQLite-Attribute',storedHint:'Die Liste enthält aktuelle Rohdaten und archivierten Verlauf der gespeicherten SQLite-Datenbank. Löschen entfernt alle Einheiten und Werte dieses Attributs für das Gerät, einschließlich des Roh-Decodierergebnisses. Solange der Decoder es erzeugt, werden neue Werte wieder gespeichert. Aus Publish entfernen, um die Speicherung zu stoppen.',loadStored:'Datenbankattribute laden',loading:'Wird geladen…',noStored:'Keine Messwerte gespeichert.',lastSample:'Letzter Messwert',samples:'Messwerte',deleteStored:'Gespeicherte Daten löschen',confirmDelete:'Alle gespeicherten Werte für {attribute} auf {mac} dauerhaft löschen? Rohdaten und Verlauf sind eingeschlossen.',deleted:'{raw} Rohwerte, {archived} archivierte Werte und {frames} leere Frames gelöscht.',unavailable:'SQLite-Attribute konnten nicht geladen werden.'},
-		fr:{maintenance:'Politiques de rétention',policies:'Rétention par mesure',policiesHint:'Exceptions pour un attribut ou une adresse MAC. Les règles explicites sont prioritaires ; les autres mesures numériques utilisent le mode par défaut ci-dessus.',policy:'Politique',attribute:'Attribut',mac:'MAC (vide = tous)',mode:'Mode historique',keep:'Conserver tous les échantillons',progressive:'Résolution progressive',age:'Jusqu’à cet âge',spacing:'Intervalle',all:'Tous les échantillons',add:'Ajouter une politique',band:'Ajouter une tranche',remove:'Supprimer',temperature:'Profil température',battery:'Profil batterie',warning:'Consolidation irréversible : sauvegarder la base avant activation. Les anciens paquets complets sont remplacés par des séries liées ; les échantillons supprimés sont irrécupérables.',expiry:'Après la dernière tranche : supprimer les échantillons numériques.',units:['s','min','h','jours','semaines','mois'],close:'Fermer',otherNumeric:'Mesures numériques sans règle spécifique',keepNumeric:'Conserver sans limite',discardNumeric:'Supprimer après la rétention brute',stored:'Attributs SQLite enregistrés',storedHint:'La liste couvre les frames brutes récentes et l’historique archivé de la base SQLite enregistrée. La suppression efface toutes les unités et valeurs de cet attribut pour cet appareil, y compris les données décodées brutes. Si le décodeur le produit encore, les nouvelles valeurs seront enregistrées. Retirez-le de Publish pour arrêter l’enregistrement.',loadStored:'Charger les attributs de la base',loading:'Chargement…',noStored:'Aucune mesure enregistrée.',lastSample:'Dernière mesure',samples:'mesures',deleteStored:'Supprimer les données',confirmDelete:'Supprimer définitivement toutes les valeurs de {attribute} pour {mac} ? Frames brutes et historique inclus.',deleted:'{raw} valeurs brutes, {archived} échantillons archivés et {frames} frames vides supprimés.',unavailable:'Impossible de charger les attributs SQLite.'},
-		es:{maintenance:'Políticas de retención',policies:'Retención por medida',policiesHint:'Excepciones para un atributo o una MAC. Las reglas explícitas tienen prioridad; las demás medidas numéricas usan el modo predeterminado anterior.',policy:'Política',attribute:'Atributo',mac:'MAC (vacío = todos)',mode:'Modo histórico',keep:'Conservar todas las muestras',progressive:'Resolución progresiva',age:'Hasta esta edad',spacing:'Intervalo',all:'Todas las muestras',add:'Añadir política',band:'Añadir tramo',remove:'Eliminar',temperature:'Perfil temperatura',battery:'Perfil batería',warning:'Consolidación irreversible: hacer una copia antes de activar. Los paquetes antiguos se sustituyen por series relacionadas; las muestras eliminadas no se recuperan.',expiry:'Tras el último tramo: eliminar muestras numéricas.',units:['s','min','h','días','semanas','meses'],close:'Cerrar',otherNumeric:'Medidas numéricas sin política específica',keepNumeric:'Conservar indefinidamente',discardNumeric:'Eliminar después de la retención bruta',stored:'Atributos SQLite almacenados',storedHint:'El inventario incluye frames brutos recientes e historial archivado de la base SQLite guardada. El borrado elimina todas las unidades y valores de este atributo para el dispositivo, incluidos los datos decodificados brutos. Si el decodificador aún lo produce, volverá a almacenarse. Elimínelo de Publish para detenerlo.',loadStored:'Cargar atributos de la base',loading:'Cargando…',noStored:'No hay medidas almacenadas.',lastSample:'Última muestra',samples:'muestras',deleteStored:'Eliminar datos almacenados',confirmDelete:'¿Eliminar permanentemente todos los valores de {attribute} en {mac}? Incluye frames brutos e historial.',deleted:'Eliminadas {raw} lecturas brutas, {archived} muestras archivadas y {frames} frames vacíos.',unavailable:'No se pudieron cargar los atributos SQLite.'}
+		en:{rules:'Retention rules',rulesHint:'Named rules for the attributes stored as SQLite history. Assign them in the Retention column of a device or in the attribute defaults. keep_all keeps every sample; progressive keeps one sample per interval in each age band and deletes every sample older than the last band. Booleans and text are never thinned, only expired.',warning:'Irreversible: samples removed by a rule cannot be recovered. Back up the database before tightening a rule in use.',name:'Rule name',invalidName:'Rule names need 1-64 letters, digits, “_”, “.” or “-”, must be unique and cannot be “default”.',mode:'Mode',keep:'Keep every sample',progressive:'Progressive resolution',age:'Until age',spacing:'Sample interval',band:'Add age band',remove:'Remove',add:'Add rule',presets:'Add missing presets',presetsAdded:'{count} preset rules added',used:'Used by {count} attribute settings',unused:'Not used',inUse:'Used by attribute settings: choose another rule there before removing it.',expiry:'After the last age band: delete every sample.',units:['s','min','h','days','weeks','months'],maintenance:'Maintenance budget',recent:'Recent frames (0 = disabled)',stored:'Stored series',storedHint:'Series in the SQLite database, with the treatment of the saved configuration. “Not stored” series are no longer written (attribute off, renamed or device removed) and can be deleted. Deletion removes the recent frames and the history of the series; values are written again if the configuration stores them again.',loadStored:'Load stored series',loading:'Loading…',noStored:'No stored series found.',lastSample:'Last sample',samples:'Samples',device:'Device',attribute:'Attribute',treatment:'Treatment',deleteStored:'Delete',confirmDelete:'Permanently delete all stored values of {attribute} on {mac}? Recent frames and history are included.',deleted:'Deleted {raw} recent values, {archived} history samples and {frames} empty frames.',unavailable:'Could not load the stored SQLite series.',notStored:'not stored',deleteUnused:'Delete series not stored ({count})',confirmUnused:'Permanently delete the {count} series that the saved configuration no longer stores? This cannot be undone.',deletingUnused:'Deleting {done}/{count}…',deletedUnused:'Deleted {count} series not stored.',savedOnly:'Treatments follow the saved configuration: save the draft first to apply pending changes.'},
+		it:{rules:'Regole di conservazione',rulesHint:'Regole con nome per gli attributi storicizzati in SQLite. Si assegnano nella colonna Conservazione di un dispositivo o nei default degli attributi. keep_all conserva ogni campione; progressive conserva un campione per intervallo in ogni fascia di età ed elimina ogni campione più vecchio dell’ultima fascia. Booleani e testi non vengono mai diradati, solo eliminati alla scadenza.',warning:'Irreversibile: i campioni eliminati da una regola non sono recuperabili. Eseguire un backup del database prima di restringere una regola in uso.',name:'Nome regola',invalidName:'Il nome di una regola richiede 1-64 lettere, cifre, «_», «.» o «-», deve essere univoco e diverso da «default».',mode:'Modalità',keep:'Conserva ogni campione',progressive:'Risoluzione progressiva',age:'Fino all’età',spacing:'Intervallo campioni',band:'Aggiungi fascia',remove:'Rimuovi',add:'Aggiungi regola',presets:'Aggiungi preset mancanti',presetsAdded:'{count} regole preset aggiunte',used:'Usata da {count} impostazioni di attributi',unused:'Non usata',inUse:'Usata da impostazioni di attributi: sceglierne un’altra prima di rimuoverla.',expiry:'Oltre l’ultima fascia: elimina ogni campione.',units:['s','min','h','giorni','settimane','mesi'],maintenance:'Budget di manutenzione',recent:'Frame recenti (0 = disattivati)',stored:'Serie memorizzate',storedHint:'Serie presenti nel database SQLite, con il trattamento previsto dalla configurazione salvata. Le serie «non memorizzate» non vengono più scritte (attributo disattivato, rinominato o dispositivo rimosso) e possono essere eliminate. L’eliminazione rimuove frame recenti e storico della serie; i valori tornano a essere scritti se la configurazione li memorizza di nuovo.',loadStored:'Carica serie memorizzate',loading:'Caricamento…',noStored:'Nessuna serie memorizzata.',lastSample:'Ultimo campione',samples:'Campioni',device:'Dispositivo',attribute:'Attributo',treatment:'Trattamento',deleteStored:'Elimina',confirmDelete:'Eliminare definitivamente tutti i valori memorizzati di {attribute} per {mac}? Include frame recenti e storico.',deleted:'Eliminati {raw} valori recenti, {archived} campioni storici e {frames} frame vuoti.',unavailable:'Impossibile leggere le serie SQLite memorizzate.',notStored:'non memorizzata',deleteUnused:'Elimina serie non memorizzate ({count})',confirmUnused:'Eliminare definitivamente le {count} serie che la configurazione salvata non memorizza più? L’operazione non è reversibile.',deletingUnused:'Eliminazione {done}/{count}…',deletedUnused:'Eliminate {count} serie non memorizzate.',savedOnly:'I trattamenti seguono la configurazione salvata: salvare prima la bozza per applicare le modifiche in sospeso.'},
+		de:{rules:'Aufbewahrungsregeln',rulesHint:'Benannte Regeln für Attribute, die als SQLite-Verlauf gespeichert werden. Zuweisung in der Spalte Aufbewahrung eines Geräts oder in den Attribut-Standards. keep_all behält jeden Wert; progressive behält je Altersstufe einen Wert pro Intervall und löscht alle Werte, die älter als die letzte Stufe sind. Boolesche Werte und Texte werden nie ausgedünnt, nur gelöscht.',warning:'Nicht umkehrbar: von einer Regel entfernte Werte sind nicht wiederherstellbar. Vor dem Verschärfen einer verwendeten Regel die Datenbank sichern.',name:'Regelname',invalidName:'Regelnamen brauchen 1-64 Buchstaben, Ziffern, „_“, „.“ oder „-“, müssen eindeutig sein und dürfen nicht „default“ lauten.',mode:'Modus',keep:'Jeden Wert behalten',progressive:'Abgestufte Auflösung',age:'Bis zum Alter',spacing:'Werteintervall',band:'Altersstufe hinzufügen',remove:'Entfernen',add:'Regel hinzufügen',presets:'Fehlende Vorgaben hinzufügen',presetsAdded:'{count} Vorgaberegeln hinzugefügt',used:'Von {count} Attributeinstellungen verwendet',unused:'Nicht verwendet',inUse:'Von Attributeinstellungen verwendet: dort zuerst eine andere Regel wählen.',expiry:'Nach der letzten Altersstufe: alle Werte löschen.',units:['s','min','h','Tage','Wochen','Monate'],maintenance:'Wartungsbudget',recent:'Aktuelle Frames (0 = aus)',stored:'Gespeicherte Reihen',storedHint:'Reihen in der SQLite-Datenbank mit der Behandlung laut gespeicherter Konfiguration. „Nicht gespeicherte“ Reihen werden nicht mehr geschrieben (Attribut aus, umbenannt oder Gerät entfernt) und können gelöscht werden. Löschen entfernt aktuelle Frames und Verlauf der Reihe; speichert die Konfiguration sie wieder, werden neue Werte geschrieben.',loadStored:'Gespeicherte Reihen laden',loading:'Wird geladen…',noStored:'Keine gespeicherten Reihen.',lastSample:'Letzter Wert',samples:'Werte',device:'Gerät',attribute:'Attribut',treatment:'Behandlung',deleteStored:'Löschen',confirmDelete:'Alle gespeicherten Werte von {attribute} auf {mac} dauerhaft löschen? Aktuelle Frames und Verlauf sind eingeschlossen.',deleted:'{raw} aktuelle Werte, {archived} Verlaufswerte und {frames} leere Frames gelöscht.',unavailable:'Gespeicherte SQLite-Reihen konnten nicht geladen werden.',notStored:'nicht gespeichert',deleteUnused:'Nicht gespeicherte Reihen löschen ({count})',confirmUnused:'Die {count} Reihen, die die gespeicherte Konfiguration nicht mehr speichert, dauerhaft löschen? Dies ist nicht umkehrbar.',deletingUnused:'Lösche {done}/{count}…',deletedUnused:'{count} nicht gespeicherte Reihen gelöscht.',savedOnly:'Die Behandlung folgt der gespeicherten Konfiguration: zuerst den Entwurf speichern.'},
+		fr:{rules:'Règles de rétention',rulesHint:'Règles nommées pour les attributs conservés en historique SQLite. Elles s’attribuent dans la colonne Rétention d’un appareil ou dans les valeurs par défaut des attributs. keep_all conserve chaque échantillon ; progressive conserve un échantillon par intervalle dans chaque tranche d’âge et supprime tout échantillon plus ancien que la dernière tranche. Booléens et textes ne sont jamais éclaircis, seulement expirés.',warning:'Irréversible : les échantillons supprimés par une règle sont irrécupérables. Sauvegarder la base avant de resserrer une règle utilisée.',name:'Nom de la règle',invalidName:'Un nom de règle comporte 1 à 64 lettres, chiffres, « _ », « . » ou « - », doit être unique et différent de « default ».',mode:'Mode',keep:'Conserver chaque échantillon',progressive:'Résolution progressive',age:'Jusqu’à cet âge',spacing:'Intervalle',band:'Ajouter une tranche',remove:'Supprimer',add:'Ajouter une règle',presets:'Ajouter les profils manquants',presetsAdded:'{count} règles prédéfinies ajoutées',used:'Utilisée par {count} réglages d’attributs',unused:'Inutilisée',inUse:'Utilisée par des réglages d’attributs : y choisir une autre règle avant de la supprimer.',expiry:'Après la dernière tranche : supprimer chaque échantillon.',units:['s','min','h','jours','semaines','mois'],maintenance:'Budget de maintenance',recent:'Trames récentes (0 = désactivées)',stored:'Séries enregistrées',storedHint:'Séries de la base SQLite, avec le traitement de la configuration enregistrée. Les séries « non enregistrées » ne sont plus écrites (attribut désactivé, renommé ou appareil supprimé) et peuvent être supprimées. La suppression efface les trames récentes et l’historique de la série ; les valeurs sont de nouveau écrites si la configuration les enregistre.',loadStored:'Charger les séries enregistrées',loading:'Chargement…',noStored:'Aucune série enregistrée.',lastSample:'Dernier échantillon',samples:'Échantillons',device:'Appareil',attribute:'Attribut',treatment:'Traitement',deleteStored:'Supprimer',confirmDelete:'Supprimer définitivement toutes les valeurs de {attribute} pour {mac} ? Trames récentes et historique inclus.',deleted:'{raw} valeurs récentes, {archived} échantillons d’historique et {frames} trames vides supprimés.',unavailable:'Impossible de charger les séries SQLite enregistrées.',notStored:'non enregistrée',deleteUnused:'Supprimer les séries non enregistrées ({count})',confirmUnused:'Supprimer définitivement les {count} séries que la configuration enregistrée n’enregistre plus ? Opération irréversible.',deletingUnused:'Suppression {done}/{count}…',deletedUnused:'{count} séries non enregistrées supprimées.',savedOnly:'Les traitements suivent la configuration enregistrée : enregistrer d’abord le brouillon.'},
+		es:{rules:'Reglas de retención',rulesHint:'Reglas con nombre para los atributos guardados como historial SQLite. Se asignan en la columna Retención de un dispositivo o en los valores predeterminados de los atributos. keep_all conserva cada muestra; progressive conserva una muestra por intervalo en cada tramo de edad y elimina toda muestra más antigua que el último tramo. Booleanos y textos nunca se reducen, solo caducan.',warning:'Irreversible: las muestras eliminadas por una regla no se recuperan. Hacer una copia de la base antes de endurecer una regla en uso.',name:'Nombre de la regla',invalidName:'El nombre de una regla necesita 1-64 letras, dígitos, «_», «.» o «-», debe ser único y distinto de «default».',mode:'Modo',keep:'Conservar cada muestra',progressive:'Resolución progresiva',age:'Hasta esta edad',spacing:'Intervalo',band:'Añadir tramo',remove:'Eliminar',add:'Añadir regla',presets:'Añadir predefinidas que faltan',presetsAdded:'{count} reglas predefinidas añadidas',used:'Usada por {count} ajustes de atributos',unused:'Sin usar',inUse:'Usada por ajustes de atributos: elegir allí otra regla antes de eliminarla.',expiry:'Tras el último tramo: eliminar cada muestra.',units:['s','min','h','días','semanas','meses'],maintenance:'Presupuesto de mantenimiento',recent:'Frames recientes (0 = desactivados)',stored:'Series almacenadas',storedHint:'Series de la base SQLite, con el tratamiento de la configuración guardada. Las series «no almacenadas» ya no se escriben (atributo desactivado, renombrado o dispositivo eliminado) y pueden borrarse. El borrado elimina los frames recientes y el historial de la serie; los valores vuelven a escribirse si la configuración los almacena de nuevo.',loadStored:'Cargar series almacenadas',loading:'Cargando…',noStored:'No hay series almacenadas.',lastSample:'Última muestra',samples:'Muestras',device:'Dispositivo',attribute:'Atributo',treatment:'Tratamiento',deleteStored:'Eliminar',confirmDelete:'¿Eliminar permanentemente todos los valores de {attribute} en {mac}? Incluye frames recientes e historial.',deleted:'Eliminados {raw} valores recientes, {archived} muestras de historial y {frames} frames vacíos.',unavailable:'No se pudieron cargar las series SQLite almacenadas.',notStored:'no almacenada',deleteUnused:'Eliminar series no almacenadas ({count})',confirmUnused:'¿Eliminar permanentemente las {count} series que la configuración guardada ya no almacena? No se puede deshacer.',deletingUnused:'Eliminando {done}/{count}…',deletedUnused:'Eliminadas {count} series no almacenadas.',savedOnly:'Los tratamientos siguen la configuración guardada: guardar antes el borrador.'}
 	};
 	const historyUi=historyTranslations[helpLanguage]||historyTranslations.en;
 	const availabilityTranslations={
@@ -1936,23 +2000,20 @@ cat << 'EOF'
 		retry_s:['Seconds between explicitly enabled delivery retries (1-86400). No repeated reminder messages are generated.','Secondi tra tentativi successivi esplicitamente abilitati (1-86400). Non vengono generati promemoria ripetuti.'],
 		ca_file:['Optional absolute path to a trusted PEM CA for a private HTTPS server. Empty uses bundled public roots; certificate verification is never disabled.','Percorso assoluto opzionale di una CA PEM fidata per un server privato. Vuoto usa le CA pubbliche incluse; la verifica non viene mai disabilitata.'],
 	});
-	const counterUi=({en:{mode:'Default counter history',discard:'Exclude from consolidated history'},it:{mode:'Storico predefinito dei contatori',discard:'Escludi dallo storico consolidato'},de:{mode:'Standardverlauf für Zähler',discard:'Vom verdichteten Verlauf ausschließen'},fr:{mode:'Historique des compteurs par défaut',discard:'Exclure de l’historique consolidé'},es:{mode:'Histórico predeterminado de contadores',discard:'Excluir del histórico consolidado'}})[helpLanguage]||{mode:'Default counter history',discard:'Exclude from consolidated history'};
-	labels.counter_mode=counterUi.mode;
-	labels.other_numeric_mode=historyUi.otherNumeric;
-	Object.assign(labels,{maintenance:historyUi.maintenance,policies:historyUi.policies,interval_s:helpLanguage==='it'?'Pausa tra passaggi (secondi)':'Pass interval (seconds)',max_work_ms:helpLanguage==='it'?'Budget per blocco (ms)':'Work budget per chunk (ms)',raw_retention_s:helpLanguage==='it'?'Frame completi recenti':'Recent complete frames',max_age_s:historyUi.age,sample_interval_s:historyUi.spacing});
+	Object.assign(labels,{attributes:atUi.title,attribute_defaults:atUi.defaults,retention:atUi.retention,recent_frames_s:historyUi.recent,retention_rules:historyUi.rules,maintenance:historyUi.maintenance,interval_s:helpLanguage==='it'?'Pausa tra passaggi (secondi)':'Pass interval (seconds)',max_work_ms:helpLanguage==='it'?'Budget per blocco (ms)':'Work budget per chunk (ms)',max_age_s:historyUi.age,sample_interval_s:historyUi.spacing,decoder:'Decoder',theengs_prefix:helpLanguage==='it'?'Prefisso attributi Theengs':'Theengs attribute prefix'});
 	Object.assign(parameterHelp,{
-		counter_mode:['Default treatment of codec counters: counter, packet_id, count_id, count_i/count_s/count_m/count_l and counter8/16/32. Discard removes archived numeric/unsigned readings; recent complete frames remain until the raw horizon. Explicit per-attribute or MAC policies override this default.','Trattamento predefinito dei contatori del codec: counter, packet_id, count_id, count_i/count_s/count_m/count_l e counter8/16/32. Scarta elimina le letture numeriche/unsigned archiviate; i frame completi recenti restano entro l’orizzonte grezzo. Le politiche esplicite per attributo o MAC prevalgono su questo default.'],
+		recent_frames_s:['Keep complete recent frames for this time, so the portal shows every attribute stored as recent frames or history; afterwards only history attributes remain, as separate series. 0 disables recent frames and writes history attributes directly. Default 600 s.','Conserva i frame completi recenti per questo tempo, così il portale mostra ogni attributo memorizzato come frame recenti o storico; poi restano solo gli attributi storicizzati, come serie separate. 0 disattiva i frame recenti e scrive direttamente lo storico. Predefinito 600 s.'],
 		interval_s:['Delay in seconds after a complete maintenance pass. Backlogs are processed in bounded chunks with pauses; no cron is used.','Pausa in secondi dopo un passaggio completo. Gli arretrati vengono elaborati a blocchi limitati, senza cron.'],
 		max_work_ms:['SQLite execution budget per chunk, 10-1000 ms. Long statements are interrupted and rolled back; lower budgets reduce writer contention but may require smaller batches.','Budget SQLite per blocco, 10-1000 ms. Le istruzioni lunghe vengono interrotte e annullate; riduce la contesa ma può richiedere batch più piccoli.'],
-		other_numeric_mode:['Default for numeric measurements without an explicit per-attribute policy. Discard removes eligible numeric history after the raw-frame horizon; text, boolean/discrete and null values are not automatically pruned. Keep all preserves existing behavior.','Trattamento predefinito delle misure numeriche senza politica specifica. Scarta elimina lo storico numerico idoneo dopo l’orizzonte dei frame grezzi; testo, booleani/discreti e null non vengono eliminati automaticamente. Conserva mantiene il comportamento attuale.'],
-		raw_retention_s:['Keep complete original frames for at least this duration, then atomically split their readings into related series. This is a minimum raw-data horizon, not a hard maximum age; backlog and bounded maintenance can delay deletion.','Conserva i frame originali completi almeno per questa durata, poi trasferisce atomicamente le misure in serie correlate. È un minimo, non una scadenza massima rigida: arretrati e manutenzione limitata possono ritardare la cancellazione.'],
-		max_age_s:['Upper age of this band, measured from reception time. Bands must increase. After the last band numeric samples expire. A month is 365/12 days; 24 months are 730 days.','Età massima della fascia dalla ricezione. Le età devono crescere. Oltre l’ultima fascia i numerici scadono. Un mese vale 365/12 giorni: 24 mesi sono 730 giorni.'],
-		sample_interval_s:['0 keeps every sample. Otherwise retain the latest real sample in each UTC-aligned interval. Intervals must not decrease in older bands. No averaging or min/max columns.','0 conserva ogni campione; altrimenti conserva l’ultimo campione reale di ogni intervallo allineato UTC. La granularità non può diminuire nelle fasce più vecchie. Nessuna media o colonna min/max.']
+		max_age_s:['Upper age of this band, measured from reception time. Bands must increase. Every sample older than the last band is deleted. A month is 365/12 days; 24 months are 730 days.','Età massima della fascia dalla ricezione. Le età devono crescere. Ogni campione più vecchio dell’ultima fascia viene eliminato. Un mese vale 365/12 giorni: 24 mesi sono 730 giorni.'],
+		sample_interval_s:['0 keeps every sample. Otherwise retain the latest real sample in each UTC-aligned interval. Intervals must not decrease in older bands. No averaging or min/max columns.','0 conserva ogni campione; altrimenti conserva l’ultimo campione reale di ogni intervallo allineato UTC. La granularità non può diminuire nelle fasce più vecchie. Nessuna media o colonna min/max.'],
+		decoder:['builtin uses the gateway codec; theengs uses the Theengs decoder; both combines them, and Theengs names get the Theengs prefix. On a device, default inherits the global decoder.','builtin usa il codec del gateway; theengs usa il decoder Theengs; both li combina e i nomi Theengs ricevono il prefisso Theengs. Su un dispositivo, default eredita il decoder globale.'],
+		theengs_prefix:['Prefix of the Theengs attribute names with the both decoder, so they do not collide with the builtin names. Changing it renames those attributes in every frontend.','Prefisso dei nomi degli attributi Theengs con il decoder both, per non collidere con i nomi builtin. Cambiarlo rinomina quegli attributi in tutti i frontend.']
 	});
 	function durationField(parent,object,key,onChange,scope) {
 		const label=document.createElement('label');label.className='bbField';fieldHelp(label,key,scope);
 		const pair=document.createElement('span');pair.className='bbDuration';
-		const input=document.createElement('input');input.type='number';input.min=key==='sample_interval_s'?'0':'1';input.step='any';input.setAttribute('aria-label',title(key));input.title=fieldExplanation(key,scope);input.dataset.parameter=scope+'.'+key;
+		const input=document.createElement('input');input.type='number';input.min=['sample_interval_s','recent_frames_s'].includes(key)?'0':'1';input.step='any';input.setAttribute('aria-label',title(key));input.title=fieldExplanation(key,scope);input.dataset.parameter=scope+'.'+key;
 		const select=document.createElement('select');select.setAttribute('aria-label',title(key)+' unit');select.title=input.title;
 		const factors=[1,60,3600,86400,604800,2628000];factors.forEach((factor,index)=>select.add(new Option(historyUi.units[index],String(factor))));
 		select.value=String([...factors].reverse().find(factor=>object[key]>0&&object[key]%factor===0)||1);input.value=String(object[key]/Number(select.value));
@@ -1960,65 +2021,242 @@ cat << 'EOF'
 		select.onchange=()=>{object[key]=Number(input.value)*Number(select.value);onChange();};
 		pair.append(input,select);label.append(pair);parent.append(label);
 	}
-	function historyPolicies(parent,policies,onChange) {
-		const section=document.createElement('div');section.className='bbPolicies';section.id='bbHistoryPolicies';
-		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=historyUi.policiesHint;parent.append(section);
-		const render=()=>{
-			section.replaceChildren(hint);
-			policies.forEach((policy,index)=>{
-				const item=document.createElement('div');item.className='bbHistoryPolicy';item.dataset.policy=String(index);
-				const bar=document.createElement('div');bar.className='bbBar bbPolicyHead';const heading=document.createElement('strong');heading.textContent=historyUi.policy+' '+(index+1);
-				const presets=document.createElement('span');presets.className='bbPolicyPresets';
-				for(const kind of ['temperature','battery'])presets.append(button(historyUi[kind],()=>run(async()=>{const result=await api('history-presets');const preset=result.maintenance.policies.find(entry=>entry.attribute===(kind==='temperature'?'temperature':'battery_level'));policy.mode=preset.mode;policy.tiers=copy(preset.tiers);onChange();render();}),historyUi[kind]));
-				bar.append(heading,presets,button(historyUi.remove,()=>{policies.splice(index,1);onChange();render();}));item.append(bar);
-				const grid=document.createElement('div');grid.className='bbGrid';
-				for(const key of ['attribute','mac']){const label=document.createElement('label');label.className='bbField';label.append(historyUi[key]);const input=document.createElement('input');input.type='text';input.value=policy[key];input.setAttribute('aria-label',historyUi[key]);input.title=key==='mac'?(helpLanguage==='it'?'Override per un singolo MAC; vuoto applica la politica a tutti i dispositivi.':'Override for one MAC; empty applies to all devices.'):fieldExplanation('attribute','history');if(key==='attribute')input.setAttribute('list','bbAttributes');input.oninput=()=>{policy[key]=input.value;onChange();};label.append(input);grid.append(label);}
-				const modeLabel=document.createElement('label');modeLabel.className='bbField';modeLabel.append(historyUi.mode);const mode=document.createElement('select');mode.setAttribute('aria-label',historyUi.mode);mode.title=historyUi.warning;mode.add(new Option(historyUi.keep,'keep_all'));mode.add(new Option(historyUi.progressive,'progressive'));mode.add(new Option(counterUi.discard,'discard'));mode.value=policy.mode;mode.onchange=()=>{policy.mode=mode.value;onChange();render();};modeLabel.append(mode);grid.append(modeLabel);item.append(grid);
-				if(policy.mode==='progressive'){
-					policy.tiers.forEach((tier,tierIndex)=>{const row=document.createElement('div');row.className='bbTier';row.dataset.tier=String(tierIndex);for(const key of ['max_age_s','sample_interval_s'])durationField(row,tier,key,onChange,'frontends.sqlite.maintenance.policies[].tiers[]');row.append(button('×',()=>{policy.tiers.splice(tierIndex,1);onChange();render();},historyUi.remove));item.append(row);});
-					item.append(button(historyUi.band,()=>{const last=policy.tiers.at(-1);policy.tiers.push({max_age_s:last?last.max_age_s*2:3600,sample_interval_s:last?last.sample_interval_s:60});onChange();render();}));
+	/** Attribute settings (attribute defaults and device attributes) naming a rule. */
+	function retentionUsage(name) {
+		let count=(config.attribute_defaults||{}).retention===name?1:0;
+		config.devices.forEach(device=>(device.attributes||[]).forEach(item=>{if(item.retention===name)count++;}));
+		return count;
+	}
+	let refreshDefaultRetention=()=>{},refreshRetentionRules=()=>{};
+	function retentionRules(parent,rules,onChange) {
+		const section=document.createElement('fieldset');section.className='bbGroup bbPolicies';section.id='bbRetentionRules';
+		const legend=document.createElement('legend');legend.textContent=historyUi.rules;
+		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=historyUi.rulesHint;
+		const warning=document.createElement('p');warning.className='bbHint bbError';warning.textContent=historyUi.warning;
+		parent.append(section);
+		const changed=()=>{onChange();refreshDefaultRetention();render();};
+		const rename=(from,to)=>{
+			const entries=Object.entries(rules);entries.forEach(([key])=>delete rules[key]);
+			entries.forEach(([key,rule])=>{rules[key===from?to:key]=rule;});
+			if(config.attribute_defaults&&config.attribute_defaults.retention===from)config.attribute_defaults.retention=to;
+			config.devices.forEach(device=>(device.attributes||[]).forEach(item=>{if(item.retention===from)item.retention=to;}));
+		};
+		function render() {
+			section.replaceChildren(legend,hint,warning);
+			Object.entries(rules).forEach(([ruleName,rule])=>{
+				const item=document.createElement('div');item.className='bbHistoryPolicy';item.dataset.rule=ruleName;
+				const bar=document.createElement('div');bar.className='bbBar bbPolicyHead';
+				const nameLabel=document.createElement('label');nameLabel.className='bbField';nameLabel.append(historyUi.name);
+				const name=document.createElement('input');name.type='text';name.value=ruleName;name.maxLength=64;name.spellcheck=false;name.autocomplete='off';name.setAttribute('aria-label',historyUi.name);name.title=historyUi.invalidName;
+				name.onchange=()=>{
+					const next=name.value.trim();
+					if(next===ruleName)return;
+					if(!/^[A-Za-z0-9_.-]{1,64}$/.test(next)||next==='default'||Object.prototype.hasOwnProperty.call(rules,next)){name.value=ruleName;message(historyUi.invalidName,true);return;}
+					rename(ruleName,next);changed();
+				};
+				nameLabel.append(name);
+				const used=retentionUsage(ruleName);
+				const usage=document.createElement('span');usage.className='bbHint';usage.textContent=used?historyUi.used.replace('{count}',String(used)):historyUi.unused;
+				const remove=button(historyUi.remove,()=>{delete rules[ruleName];changed();},used?historyUi.inUse:historyUi.remove);remove.disabled=used>0;
+				bar.append(nameLabel,usage,remove);item.append(bar);
+				const modeLabel=document.createElement('label');modeLabel.className='bbField';modeLabel.append(historyUi.mode);
+				const mode=document.createElement('select');mode.setAttribute('aria-label',historyUi.mode);mode.title=yamlHelp.mode[helpLanguage==='it'?1:0];
+				mode.add(new Option(historyUi.keep,'keep_all'));mode.add(new Option(historyUi.progressive,'progressive'));mode.value=rule.mode==='progressive'?'progressive':'keep_all';
+				mode.onchange=()=>{if(mode.value==='progressive'){rule.mode='progressive';if(!rule.tiers||!rule.tiers.length)rule.tiers=[{max_age_s:2592000,sample_interval_s:0}];}else{rule.mode='keep_all';delete rule.tiers;}changed();};
+				modeLabel.append(mode);const grid=document.createElement('div');grid.className='bbGrid';grid.append(modeLabel);item.append(grid);
+				if(rule.mode==='progressive'){
+					rule.tiers=rule.tiers||[];
+					rule.tiers.forEach((tier,index)=>{const row=document.createElement('div');row.className='bbTier';row.dataset.tier=String(index);for(const key of ['max_age_s','sample_interval_s'])durationField(row,tier,key,onChange,'frontends.sqlite.retention_rules.'+ruleName+'.tiers[]');row.append(button('×',()=>{rule.tiers.splice(index,1);changed();},historyUi.remove));item.append(row);});
+					item.append(button(historyUi.band,()=>{const last=rule.tiers.at(-1);rule.tiers.push({max_age_s:last?last.max_age_s*2:3600,sample_interval_s:last?last.sample_interval_s:60});changed();}));
 					const expiry=document.createElement('p');expiry.className='bbHint';expiry.textContent=historyUi.expiry;item.append(expiry);
 				}
 				section.append(item);
 			});
-			const tools=document.createElement('div');tools.className='bbBar bbLocalActions';
-			tools.append(button(historyUi.add,()=>{policies.push({mac:'',attribute:'',mode:'keep_all',tiers:[]});onChange();render();}));section.append(tools);
-			sqliteStoredAttributes(section);
-		};render();
+			const tools=document.createElement('div');tools.className='bbBar';
+			tools.append(button(historyUi.add,()=>{let index=Object.keys(rules).length+1;while(Object.prototype.hasOwnProperty.call(rules,'rule_'+index))index++;rules['rule_'+index]={mode:'keep_all'};changed();}));
+			tools.append(button(historyUi.presets,()=>run(async()=>{const result=await api('history-presets');let added=0;for(const [key,rule] of Object.entries(result.rules)){if(!Object.prototype.hasOwnProperty.call(rules,key)){rules[key]=rule;added++;}}if(added)changed();message(historyUi.presetsAdded.replace('{count}',String(added)));})));
+			section.append(tools);
+		}
+		refreshRetentionRules=()=>{if(section.isConnected)render();};
+		render();
+	}
+	let attributeCatalog={running:false,devices:{},mysensors:[],matter:[]};
+	const FRONTENDS=['mqtt','influx','matter','mysensors'];
+	const flagValue=value=>value===true?'on':value===false?'off':'default';
+	const modeText=mode=>({off:atUi.off,live:atUi.live,history:atUi.history})[mode]||mode;
+	const shortValue=value=>{const text=value!==null&&typeof value==='object'?JSON.stringify(value):String(value);return text.length>24?text.slice(0,23)+'…':text;};
+	/** What a "default" cell of a device attribute resolves to. */
+	function inheritedAttribute() {
+		const defaults=config.attribute_defaults||{};
+		return {mqtt:defaults.mqtt===true,influx:defaults.influx===true,matter:defaults.matter===true,mysensors:defaults.mysensors===true,sqlite:defaults.sqlite&&defaults.sqlite!=='default'?defaults.sqlite:'off',retention:defaults.retention&&defaults.retention!=='default'?defaults.retention:''};
+	}
+	function choice(options,value,label,onChange) {
+		const select=document.createElement('select');select.setAttribute('aria-label',label);
+		options.forEach(([optionValue,text])=>select.add(new Option(text,optionValue)));
+		select.value=value;select.classList.toggle('bbExplicit',value!=='default');
+		select.onchange=()=>{select.classList.toggle('bbExplicit',select.value!=='default');onChange(select.value);};
+		return select;
+	}
+	const flagOptions=inherited=>[['default',atUi.defaultOf.replace('{value}',inherited?atUi.on:atUi.off)],['on',atUi.on],['off',atUi.off]];
+	const sqliteOptions=inherited=>[['default',atUi.defaultOf.replace('{value}',modeText(inherited))],['off',atUi.off],['live',atUi.live],['history',atUi.history]];
+	function retentionOptions(inherited,current) {
+		const names=Object.keys(((config.frontends||{}).sqlite||{}).retention_rules||{});
+		if(current&&current!=='default'&&!names.includes(current))names.push(current);
+		return [['default',atUi.defaultOf.replace('{value}',inherited||atUi.keepAll)],...names.map(name=>[name,name])];
+	}
+	function attributeDefaultsSection(parent,defaults,onChange) {
+		const group=document.createElement('fieldset');group.className='bbGroup';group.id='bbAttributeDefaults';
+		const legend=document.createElement('legend');legend.textContent=atUi.defaults;
+		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=atUi.defaultsHint;
+		const grid=document.createElement('div');grid.className='bbGrid';group.append(legend,hint,grid);parent.append(group);
+		const set=(key,value)=>{if(value==='default')delete defaults[key];else defaults[key]=value;onChange();};
+		const field=(key,select)=>{const label=document.createElement('label');label.className='bbField';fieldHelp(label,key,'attribute_defaults');select.title=fieldExplanation(key,'attribute_defaults');select.dataset.parameter='attribute_defaults.'+key;label.append(select);grid.append(label);return select;};
+		FRONTENDS.forEach(key=>field(key,choice(flagOptions(false),flagValue(defaults[key]),title(key),value=>set(key,value==='default'?value:value==='on'))));
+		field('sqlite',choice(sqliteOptions('off'),defaults.sqlite||'default',title('sqlite'),value=>set('sqlite',value)));
+		const retention=field('retention',choice(retentionOptions('',defaults.retention),defaults.retention||'default',title('retention'),value=>{set('retention',value);refreshRetentionRules();}));
+		refreshDefaultRetention=()=>{
+			if(!retention.isConnected)return;
+			retention.replaceChildren(...retentionOptions('',defaults.retention).map(([value,text])=>new Option(text,value)));
+			retention.value=defaults.retention||'default';retention.classList.toggle('bbExplicit',retention.value!=='default');
+		};
+	}
+	function fillAttributeList() {
+		const list=element('bbAttributes'),known=new Set([...list.options].map(option=>option.value));
+		[...attributeCatalog.mysensors,...Object.values(attributeCatalog.devices).flat().map(row=>row.source)].forEach(name=>{if(name&&!known.has(name)){known.add(name);list.append(new Option(name,name));}});
+	}
+	/** Always visible table of the attributes of a device: the decoded ones
+	 *  (catalog of the daemon, Inspect of a discovered device), the configured
+	 *  ones and those added by hand. Only rows differing from the defaults are
+	 *  kept in device.attributes. */
+	function attributeMatrix(parent,device) {
+		device.attributes=device.attributes||[];
+		const group=document.createElement('fieldset');group.className='bbGroup';group.id='bbAttributeMatrix';
+		const legend=document.createElement('legend');legend.textContent=atUi.title;
+		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=atUi.hint;
+		const tools=document.createElement('div');tools.className='bbBar';
+		const addInput=document.createElement('input');addInput.type='text';addInput.setAttribute('list','bbAttributes');addInput.placeholder=atUi.addLabel;addInput.setAttribute('aria-label',atUi.addLabel);addInput.spellcheck=false;addInput.autocomplete='off';addInput.maxLength=128;
+		const technicalLabel=document.createElement('label');const technical=document.createElement('input');technical.type='checkbox';const technicalText=document.createElement('span');technicalLabel.append(technical,technicalText);
+		const status=document.createElement('p');status.className='bbHint';status.setAttribute('role','status');
+		const scroll=document.createElement('div');scroll.className='bbScroll';const table=document.createElement('table');table.className='bbMatrix';scroll.append(table);
+		const observed=new Map(),manual=new Set();
+		const add=()=>{const source=addInput.value.trim();if(!/^[A-Za-z0-9_.-]{1,128}$/.test(source)){addInput.setCustomValidity(atUi.invalidName);addInput.reportValidity();return;}addInput.setCustomValidity('');manual.add(source);addInput.value='';render();};
+		addInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();add();}});
+		addInput.addEventListener('input',()=>addInput.setCustomValidity(''));
+		technical.onchange=()=>render();
+		tools.append(addInput,button(atUi.add,add),technicalLabel,button(atUi.refresh,()=>load()));
+		group.append(legend,hint,tools,status,scroll);parent.append(group);
+		const entry=source=>device.attributes.find(item=>item.source===source);
+		const update=(source,change)=>{
+			let item=entry(source);
+			if(!item){item={source};device.attributes.push(item);}
+			change(item);
+			if(Object.keys(item).every(key=>key==='source'))device.attributes.splice(device.attributes.indexOf(item),1);
+			render();
+		};
+		function render() {
+			const focused=table.contains(document.activeElement)?document.activeElement.dataset.cell:'';
+			const inherited=inheritedAttribute(),frontends=config.frontends||{};
+			const off=key=>['mqtt','influx','matter','mysensors','sqlite','retention'].includes(key)&&!(frontends[key==='retention'?'sqlite':key]||{}).enabled;
+			table.replaceChildren();
+			const head=table.createTHead().insertRow();
+			const columns=[['source',atUi.source],['value',atUi.value],['name',atUi.name],['unit',atUi.unit],['mqtt','MQTT'],['influx','InfluxDB'],['matter','Matter'],['mysensors','MySensors'],['sqlite','SQLite'],['retention',atUi.retention],['reset','']];
+			columns.forEach(([key,text])=>{const th=document.createElement('th');th.textContent=text;th.dataset.column=key;th.title=key==='reset'?atUi.reset:off(key)?atUi.disabledFrontend.replace('{frontend}',key==='retention'?'SQLite':text):fieldExplanation(key,'device.attributes[]');th.classList.toggle('bbOffColumn',off(key));head.append(th);});
+			// Stable order: editing a cell must not move its row.
+			const sources=[...observed.keys()];
+			[...device.attributes.map(item=>item.source),...manual].forEach(source=>{if(!sources.includes(source))sources.push(source);});
+			const body=table.createTBody();let technicalRows=0;
+			sources.forEach(source=>{
+				const item=entry(source),info=observed.get(source)||{},settings=item||{source};
+				if(info.technical&&!item){technicalRows++;if(!technical.checked)return;}
+				const row=body.insertRow();row.dataset.source=source;row.classList.toggle('bbConfigured',!!item);
+				const published=settings.name||source;
+				const sourceCell=cell(row,source,'bbMono');if(info.type)sourceCell.title=info.type;
+				const shadow=item?null:device.attributes.find(other=>other.source!==source&&other.name===source);
+				const valueCell=cell(row,shadow?atUi.shadowed.replace('{source}',shadow.source):'value' in info?shortValue(info.value)+(info.unit?' '+info.unit:''):observed.has(source)?'–':atUi.notSeen,'bbValue');
+				if(info.last_seen_ns)valueCell.title=atUi.lastSeen+': '+new Date(info.last_seen_ns/1e6).toLocaleString();
+				const text=(key,label,value,placeholder,maxLength,apply)=>{const input=document.createElement('input');input.type='text';input.value=value;input.placeholder=placeholder;input.maxLength=maxLength;input.spellcheck=false;input.autocomplete='off';input.dataset.cell=source+'/'+key;input.setAttribute('aria-label',label+': '+source);input.title=fieldExplanation(key,'device.attributes[]');input.onchange=()=>apply(input);row.insertCell().append(input);return input;};
+				text('name',atUi.name,settings.name||'',source,128,input=>{const value=input.value.trim();if(value&&!/^[A-Za-z0-9_.-]{1,128}$/.test(value)){input.setCustomValidity(atUi.invalidName);input.reportValidity();return;}input.setCustomValidity('');update(source,target=>{if(!value||value===source)delete target.name;else target.name=value;});});
+				text('unit',atUi.unit,settings.unit||'',info.unit||'',32,input=>{const value=input.value.trim();update(source,target=>{if(!value||value===info.unit)delete target.unit;else target.unit=value;});}).classList.add('bbUnit');
+				FRONTENDS.forEach(key=>{
+					const select=choice(flagOptions(inherited[key]),flagValue(settings[key]),title(key)+': '+source,value=>update(source,target=>{if(value==='default')delete target[key];else target[key]=value==='on';}));
+					select.dataset.cell=source+'/'+key;select.title=fieldExplanation(key,'device.attributes[]');
+					if(key==='mysensors'&&!attributeCatalog.mysensors.includes(published)){select.title=atUi.mysensorsUnsupported;select.disabled=settings.mysensors!==true;}
+					if(key==='matter'&&!attributeCatalog.matter.includes(published))select.title=atUi.matterVendor;
+					const target=row.insertCell();target.append(select);target.classList.toggle('bbOffColumn',off(key));
+				});
+				const mode=settings.sqlite&&settings.sqlite!=='default'?settings.sqlite:inherited.sqlite;
+				const sqlite=choice(sqliteOptions(inherited.sqlite),settings.sqlite||'default','SQLite: '+source,value=>update(source,target=>{if(value==='default')delete target.sqlite;else target.sqlite=value;if((target.sqlite||inherited.sqlite)!=='history')delete target.retention;}));
+				sqlite.dataset.cell=source+'/sqlite';sqlite.title=fieldExplanation('sqlite','device.attributes[]');
+				const sqliteCell=row.insertCell();sqliteCell.append(sqlite);sqliteCell.classList.toggle('bbOffColumn',off('sqlite'));
+				const retention=choice(retentionOptions(inherited.retention,settings.retention),settings.retention||'default',atUi.retention+': '+source,value=>update(source,target=>{if(value==='default')delete target.retention;else target.retention=value;}));
+				retention.dataset.cell=source+'/retention';
+				if(mode==='history')retention.title=fieldExplanation('retention','device.attributes[]');else{retention.title=atUi.retentionNeedsHistory;retention.disabled=!settings.retention;}
+				const retentionCell=row.insertCell();retentionCell.append(retention);retentionCell.classList.toggle('bbOffColumn',off('retention'));
+				const reset=button('↺',()=>{const index=device.attributes.findIndex(other=>other.source===source);if(index>=0)device.attributes.splice(index,1);manual.delete(source);render();},atUi.reset);
+				reset.dataset.cell=source+'/reset';reset.setAttribute('aria-label',atUi.reset+': '+source);reset.disabled=!item&&!manual.has(source);row.insertCell().append(reset);
+			});
+			scroll.hidden=!body.rows.length;
+			technicalText.textContent=' '+atUi.technical+' ('+technicalRows+')';technicalLabel.hidden=!technicalRows;
+			if(focused){const target=table.querySelector('[data-cell="'+CSS.escape(focused)+'"]');if(target)target.focus();}
+		}
+		async function load() {
+			status.textContent=atUi.loading;status.classList.remove('bbError');
+			try {
+				const [catalog,inspected]=await Promise.all([api('catalog'),editObservation?api('inspect',{observation:editObservation,device}).catch(()=>null):null]);
+				attributeCatalog=catalog;fillAttributeList();
+				observed.clear();
+				(catalog.devices[normalize(device.mac)]||[]).forEach(row=>observed.set(row.source,row));
+				((inspected&&inspected.sources)||[]).forEach(row=>observed.set(row.source,{...(observed.get(row.source)||{}),...row}));
+				status.textContent=!observed.size?atUi.empty:catalog.running||(inspected&&inspected.sources)?'':atUi.stopped;
+			} catch(error) {status.textContent=error.message;status.classList.add('bbError');}
+			if(group.isConnected)render();
+		}
+		render();load();
 	}
 	function sqliteStoredAttributes(parent) {
-		const section=document.createElement('section');section.className='bbLocalActions';
+		const section=document.createElement('section');section.className='bbLocalActions';section.id='bbStoredSeries';
 		const heading=document.createElement('strong');heading.textContent=historyUi.stored;
-		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=historyUi.storedHint;
-		const list=document.createElement('div');list.className='bbStoredAttributes';
+		const hint=document.createElement('p');hint.className='bbHint';hint.textContent=historyUi.storedHint+' '+historyUi.savedOnly;
 		const controls=document.createElement('div');controls.className='bbBar';
 		const refresh=button(historyUi.loadStored,()=>run(load),historyUi.loadStored);
-		controls.append(refresh);section.append(heading,hint,controls,list);parent.append(section);
-
+		const purge=button('',()=>run(removeUnused));purge.hidden=true;
+		const status=document.createElement('p');status.className='bbHint';status.setAttribute('role','status');
+		const list=document.createElement('div');list.className='bbScroll';list.hidden=true;
+		controls.append(refresh,purge);section.append(heading,hint,controls,status,list);parent.append(section);
+		let unused=[];
+		const treatment=row=>row.sqlite==='live'?atUi.live:row.sqlite==='history'?atUi.history+' · '+(row.retention||atUi.keepAll):historyUi.notStored;
+		const owner=mac=>{const device=config.devices.find(known=>normalize(known.mac)===normalize(mac));return device&&device.label?device.label+' · '+mac:mac;};
 		async function load() {
-			refresh.disabled=true;list.textContent=historyUi.loading;
+			refresh.disabled=true;status.textContent=historyUi.loading;status.classList.remove('bbError');
 			try {
-				const result=await api('sqlite-attributes');
-				list.replaceChildren();
-				if(!result.attributes.length){const empty=document.createElement('p');empty.className='bbHint';empty.textContent=historyUi.noStored;list.append(empty);return;}
-				result.attributes.forEach(item=>{
-					const row=document.createElement('div');row.className='bbHistoryPolicy';
-					const title=document.createElement('strong');title.textContent=item.mac+' · '+item.attribute+(item.unit?' ('+item.unit+')':'');
-					const detail=document.createElement('p');detail.className='bbHint';
-					detail.textContent=item.samples+' '+historyUi.samples+' · '+historyUi.lastSample+': '+new Date(item.last_received_at_ns/1e6).toLocaleString();
-					const remove=button(historyUi.deleteStored,()=>run(async()=>{
+				const {attributes}=await api('sqlite-attributes');
+				unused=attributes.filter(row=>row.sqlite==='off');
+				purge.textContent=historyUi.deleteUnused.replace('{count}',String(unused.length));purge.hidden=!unused.length;
+				status.textContent=attributes.length?'':historyUi.noStored;
+				const table=document.createElement('table');table.className='bbStoredSeries';
+				const head=table.createTHead().insertRow();
+				[historyUi.device,historyUi.attribute,historyUi.treatment,historyUi.samples,historyUi.lastSample,''].forEach(text=>{const th=document.createElement('th');th.textContent=text;head.append(th);});
+				const body=table.createTBody();
+				attributes.forEach(item=>{
+					const row=body.insertRow();row.classList.toggle('bbUnused',item.sqlite==='off');
+					cell(row,owner(item.mac));cell(row,item.attribute+(item.unit?' ('+item.unit+')':''),'bbMono');cell(row,treatment(item));cell(row,String(item.samples));cell(row,new Date(item.last_received_at_ns/1e6).toLocaleString());
+					row.insertCell().append(button(historyUi.deleteStored,()=>run(async()=>{
 						const request={mac:item.mac,attribute:item.attribute};
-						const confirmation=historyUi.confirmDelete.replace('{attribute}',item.attribute).replace('{mac}',item.mac);
-						if(!await confirmAction(confirmation,request))return;
-						const deleted=await api('sqlite-delete-attribute',request);
-						const summary=historyUi.deleted.replace('{raw}',String(deleted.deleted.raw_measurements)).replace('{archived}',String(deleted.deleted.archived_samples)).replace('{frames}',String(deleted.deleted.raw_frames));
-						message(summary);await load();
-					}),historyUi.deleteStored);
-					const bar=document.createElement('div');bar.className='bbBar';bar.append(title,remove);row.append(bar,detail);list.append(row);
+						if(!await confirmAction(historyUi.confirmDelete.replace('{attribute}',item.attribute).replace('{mac}',item.mac),request))return;
+						const deleted=(await api('sqlite-delete-attribute',request)).deleted;
+						message(historyUi.deleted.replace('{raw}',String(deleted.raw_measurements)).replace('{archived}',String(deleted.archived_samples)).replace('{frames}',String(deleted.raw_frames)));await load();
+					}),historyUi.deleteStored));
 				});
+				list.replaceChildren(table);list.hidden=!attributes.length;
 			} catch(error) {
-				list.replaceChildren();const failure=document.createElement('p');failure.className='bbHint bbError';failure.textContent=error.message||historyUi.unavailable;list.append(failure);
+				list.replaceChildren();list.hidden=true;purge.hidden=true;status.textContent=error.message||historyUi.unavailable;status.classList.add('bbError');
 			} finally {refresh.disabled=false;}
+		}
+		async function removeUnused() {
+			const series=unused.map(({mac,attribute})=>({mac,attribute}));
+			if(!series.length||!await confirmAction(historyUi.confirmUnused.replace('{count}',String(series.length)),{series}))return;
+			for(const [index,request] of series.entries()){message(historyUi.deletingUnused.replace('{done}',String(index+1)).replace('{count}',String(series.length)));await api('sqlite-delete-attribute',request);}
+			message(historyUi.deletedUnused.replace('{count}',String(series.length)));await load();
 		}
 	}
 	function availabilityRules(parent,rules,onChange) {
@@ -2049,14 +2287,19 @@ cat << 'EOF'
 	function fields(parent, object, onChange, scope='') {
 		const grid = document.createElement('div'); grid.className = 'bbGrid'; parent.append(grid);
 		const keys=Object.keys(object);
-		if(keys.includes('enabled')){keys.splice(keys.indexOf('enabled'),1);keys.unshift('enabled');}
+		const leading=scope==='frontends.sqlite'?['enabled','path','recent_frames_s']:['enabled'];
+		leading.slice().reverse().forEach(key=>{if(keys.includes(key)){keys.splice(keys.indexOf(key),1);keys.unshift(key);}});
 		keys.forEach(key => {
 			const value = object[key];
 			if(key==='rules'){
 				if(scope==='device')availabilityRules(parent,value,onChange);
-			} else if(scope==='frontends.sqlite.maintenance'&&key==='policies'){
-				historyPolicies(parent,value,onChange);
-			} else if(scope==='frontends.sqlite.maintenance'&&key==='raw_retention_s'){
+			} else if(scope==='device'&&key==='attributes'){
+				attributeMatrix(parent,object);
+			} else if(scope===''&&key==='attribute_defaults'){
+				attributeDefaultsSection(parent,value,onChange);
+			} else if(scope==='frontends.sqlite'&&key==='retention_rules'){
+				retentionRules(parent,value,onChange);
+			} else if(scope==='frontends.sqlite'&&key==='recent_frames_s'){
 				durationField(grid,object,key,onChange,scope);
 			} else if (Array.isArray(value) && ['whitelist','blacklist'].includes(key)) {
 				const label = document.createElement('label'); label.className = 'bbField'; fieldHelp(label,key,scope);
@@ -2064,7 +2307,7 @@ cat << 'EOF'
 				const lists=scope==='scanner'?parent.querySelector('#bbMacFilterLists'):null;
 				if(lists){if(key==='whitelist')lists.prepend(label);else lists.append(label);}else grid.append(label);
 			} else if (Array.isArray(value)) {
-				const group = document.createElement('fieldset'); group.className = 'bbGroup'; const legend = document.createElement('legend'); legend.textContent = title(key); if(key==='expose'){legend.title=helpLanguage==='it'?'Attributi pubblicati come endpoint MySensors/Matter. MQTT e database conservano anche altri valori decodificati.':'Attributes published as MySensors/Matter endpoints. MQTT and databases also retain other decoded values.';legend.tabIndex=0;}group.append(legend); parent.append(group);
+				const group = document.createElement('fieldset'); group.className = 'bbGroup'; const legend = document.createElement('legend'); legend.textContent = title(key); group.append(legend); parent.append(group);
 				const render = () => {
 					group.replaceChildren(legend);
 					value.forEach((item, index) => {
@@ -2072,13 +2315,12 @@ cat << 'EOF'
 						row.append(button('Remove ' + (index + 1), () => {value.splice(index,1); render(); onChange();}));
 						fields(row, item, onChange,scope+'.'+key+'[]'); group.append(row);
 					});
-					group.append(button(key==='publish'?labels.publish_add||'Add field':'Add attribute', () => {value.push(key==='publish'?{source:'',attribute:'',unit:''}:{attribute:'', child:null, kind:null}); render(); onChange();}));
 				}; render();
 			} else if (value && typeof value === 'object') {
 				const maintenance=scope==='frontends.sqlite'&&key==='maintenance',webhook=scope==='device.rules[]'&&key==='webhook';
 				const group = document.createElement(maintenance||webhook?'details':'fieldset'); group.className = 'bbGroup'+(webhook?' bbAvailabilityWebhook':''); const legend = document.createElement(maintenance||webhook?'summary':'legend'); legend.textContent = title(key); group.append(legend);if(key==='scanner')scannerHelp(group);
 				if(webhook)group.open=!String(value.url||'').trim();
-				if(scope==='frontends.sqlite'&&key==='maintenance'){group.id='bbHistoryMaintenance';const warning=document.createElement('p');warning.className='bbHint bbError';warning.textContent=historyUi.warning;group.append(warning);}
+				if(maintenance)group.id='bbHistoryMaintenance';
 				if(key==='frontends'){
 					group.id='bbFrontends';
 					const missing=['mysensors','mqtt','matter','influx','sqlite'].filter(name=>!Object.prototype.hasOwnProperty.call(value,name));
@@ -2091,6 +2333,7 @@ cat << 'EOF'
 				}
 				const childScope=scope?scope+'.'+key:key;
 				fields(group, value, onChange,childScope); parent.append(group);
+				if(childScope==='frontends.sqlite')sqliteStoredAttributes(group);
 				if(typeof value.enabled==='boolean')toggleGroup(group,value,childScope);
 			} else {
 				const label = document.createElement('label'); label.className = 'bbField';fieldHelp(label,key,scope);
@@ -2101,16 +2344,14 @@ cat << 'EOF'
 				else if(scope==='device.rules[].webhook'&&key==='method'){input=document.createElement('select');['POST','PUT','PATCH','GET'].forEach(method=>input.add(new Option(method,method)));input.value=value||'POST';}
 				else if(scope==='device.rules[].webhook'&&key==='body'){input=document.createElement('textarea');input.rows=4;input.maxLength=8192;input.value=value;input.setAttribute('spellcheck','false');}
 				else if(scope==='device.rules[].webhook'&&key==='provider'){input=document.createElement('select');['ntfy','gotify','rest'].forEach(provider=>input.add(new Option(provider,provider)));input.value=value;}
-				else if(scope==='frontends.sqlite.maintenance'&&key==='counter_mode'){input=document.createElement('select');input.add(new Option(counterUi.discard,'discard'));input.add(new Option(historyUi.keep,'keep_all'));input.value=value;}
-				else if(scope==='frontends.sqlite.maintenance'&&key==='other_numeric_mode'){input=document.createElement('select');input.add(new Option(historyUi.keepNumeric,'keep_all'));input.add(new Option(historyUi.discardNumeric,'discard'));input.value=value;}
 				else if (key === 'log_level') {input = document.createElement('select'); ['off','error','warn','info','debug','trace'].forEach(level => input.add(new Option(level,level))); input.value = value;}
 				else if (scope==='serial'&&key==='baudrate') {input=document.createElement('select');input.setAttribute('aria-label',title(key));const rates=[9600,19200,38400,57600,115200,230400,460800,921600,1000000,2000000];if(!rates.includes(value))rates.push(value);rates.forEach(rate=>input.add(new Option(String(rate),String(rate))));input.value=String(value);}
-				else if (key === 'decoder') {input = document.createElement('select');['builtin','theengs','both'].forEach(mode => input.add(new Option(mode, mode)));input.value = value || 'builtin';}
+				else if (key === 'decoder') {input = document.createElement('select');if(scope==='device')input.add(new Option(atUi.defaultOf.replace('{value}',config.decoder||'builtin'),'default'));['builtin','theengs','both'].forEach(mode => input.add(new Option(mode, mode)));input.value = value || (scope==='device'?'default':'builtin');}
 				else if (key === 'mdns_backend') {input = document.createElement('select'); ['auto','builtin','avahi','resolved','zeroconf','astro','disabled'].forEach(backend => input.add(new Option(backend,backend))); input.value = value || 'auto';}
-				else {input = document.createElement('input'); input.type = typeof value === 'boolean' ? 'checkbox' : typeof value === 'number' || key === 'child' ? 'number' : /^(bindkey|password|token)$/.test(key) ? 'password' : 'text'; if (input.type === 'checkbox') input.checked = value; else input.value = value == null ? '' : value;}
+				else {input = document.createElement('input'); input.type = typeof value === 'boolean' ? 'checkbox' : typeof value === 'number' ? 'number' : /^(bindkey|password|token)$/.test(key) ? 'password' : 'text'; if (input.type === 'checkbox') input.checked = value; else input.value = value == null ? '' : value;}
 				input.autocomplete = 'off';
 				input.setAttribute('aria-label',title(key));input.title=fieldExplanation(key,scope);input.dataset.parameter=(scope?scope+'.':'')+key;
-				if (input.type === 'number') {input.min = '0'; input.step = '1'; if (key === 'child') input.max = '255'; if (key === 'port') {input.min='1';input.max='65535';}}
+				if (input.type === 'number') {input.min = '0'; input.step = '1'; if (key === 'port') {input.min='1';input.max='65535';}}
 				if (key === 'format') input.setAttribute('list','bbFormats');
 				if (key === 'attribute') input.setAttribute('list','bbAttributes');
 				if (key === 'bindkey') {input.maxLength=32; input.pattern='[A-Fa-f0-9]{32}';input.setAttribute('aria-label',title(key));}
@@ -2128,7 +2369,11 @@ cat << 'EOF'
 	}
 	function renderSettings() {
 		const parent = element('bbSettings'); parent.replaceChildren();
-		const editable = Object.fromEntries(Object.entries(config).filter(([key]) => !['devices','version','rules','automation','availability_state_file'].includes(key)));
+		// attribute_defaults is omitted from the JSON when everything is default; always show it first.
+		const editable = {attribute_defaults:config.attribute_defaults = config.attribute_defaults || {}};
+		for (const [key,value] of Object.entries(config)) {
+			if (!['devices','version','rules','automation','availability_state_file','attribute_defaults'].includes(key)) editable[key] = value;
+		}
 		fields(parent, editable, () => {Object.assign(config,editable); changed();refreshFilterHelp();});refreshFilterHelp();
 	}
 	function renderDevices() {
@@ -2136,7 +2381,7 @@ cat << 'EOF'
 		config.devices.forEach((device,index) => {
 			if (![device.mac,device.label,device.manufacturer,device.model].join(' ').toLowerCase().includes(query)) return;
 			const row = body.insertRow(); const enabled = document.createElement('input'); enabled.type='checkbox'; enabled.checked=device.enabled; enabled.setAttribute('aria-label','Enable '+device.mac); enabled.onchange=()=>{device.enabled=enabled.checked;changed();}; cell(row,'').append(enabled);
-			cell(row,device.mac,'bbMac'); cell(row,[device.label,device.manufacturer,device.model].filter(Boolean).join(' / ')); cell(row,device.format || 'Automatic'); cell(row,device.expose.map(item=>item.attribute + (item.child == null ? '' : ' ['+item.child+']')).join(', '));
+			cell(row,device.mac,'bbMac'); cell(row,[device.label,device.manufacturer,device.model].filter(Boolean).join(' / ')); cell(row,device.format || 'Automatic'); cell(row,(device.attributes||[]).map(item=>item.name&&item.name!==item.source?item.source+' → '+item.name:item.source).join(', ')||atUi.defaults);
 			actionsCell(row,button('Edit',()=>run(()=>editDevice(index))),button('Remove',()=>removeDevice(index)));
 		});
 		if (!body.rows.length) cell(body.insertRow(),'No matching configured devices').colSpan=6;
@@ -2144,21 +2389,11 @@ cat << 'EOF'
 	async function editDevice(index, found) {
 		editIndex=index;
 		editObservation=found||null;
-		draft=index>=0 ? copy(config.devices[index]) : {mac:found ? found.mac : '',label:found ? found.name : '',manufacturer:'',model:'',firmware_version:'',bindkey:'',enabled:true,format:'',expose:[],rules:[]};
+		// Stable field order; omitted keys (inherited decoder, no attributes) get their defaults.
+		draft=Object.assign({mac:found ? found.mac : '',label:found ? found.name : '',manufacturer:'',model:'',firmware_version:'',bindkey:'',enabled:true,format:'',decoder:'default',attributes:[],rules:[]},index>=0 ? copy(config.devices[index]) : {});
 		element('bbDeviceTitle').textContent=index>=0?ui.edit:found?ui.detected:ui.manualTitle;element('bbDeviceApply').textContent=index>=0?ui.update:ui.add;
-		element('bbDeviceFields').replaceChildren(); element('bbDeviceError').textContent='';element('bbSuggestAttributes').hidden=!found;
-		if(found&&index<0){try{await detectAttributes();}catch(error){element('bbDeviceError').textContent=error.message;}}
+		element('bbDeviceFields').replaceChildren(); element('bbDeviceError').textContent='';
 		fields(element('bbDeviceFields'),draft,()=>{},'device'); element('bbDeviceDialog').showModal();
-	}
-	async function detectAttributes() {
-		const [result,supported]=await Promise.all([api('inspect',{observation:editObservation,device:draft}),api('attributes')]);
-		if(result.decode_status!=='ok')throw new Error(ui.detectionFailed+' '+(result.error||''));
-		const preferred=['temperature','humidity','battery_level'];
-		const names=Object.keys(result.measurements||{}).filter(name=>supported.attributes.includes(name));
-		names.sort((first,second)=>{const priority=name=>preferred.includes(name)?preferred.indexOf(name):preferred.length;return priority(first)-priority(second)||first.localeCompare(second);});
-		if(!names.length)throw new Error(ui.detectionFailed);
-		const used=new Set(draft.expose.map(item=>item.child).filter(child=>child!==null));
-		names.forEach(attribute=>{if(!draft.expose.some(item=>item.attribute===attribute)){let child=0;while(used.has(child))child++;draft.expose.push({attribute,child:child<=255?child:null,kind:null});used.add(child);}});
 	}
 	async function keepDevice() {
 		const candidate=copy(config); if(editIndex>=0)candidate.devices[editIndex]=draft;else candidate.devices.push(draft);
@@ -2227,9 +2462,8 @@ cat << 'EOF'
 	element('bbLogRefresh').onclick=()=>run(refreshLog);element('bbLogAuto').onchange=()=>setLogAuto(element('bbLogAuto').checked);element('bbLogLines').onchange=()=>run(refreshLog);element('bbLogDownload').onclick=()=>download('rc.ble2uart_gateway.log',element('bbLog').textContent,'text/plain');element('bbLogNote').textContent='Service log ('+(helpLanguage==='it'?'ultime righe, aggiornamento automatico':helpLanguage==='de'?'letzte Zeilen, automatisch aktualisiert':'last lines, auto-refreshed')+').';
 	element('bbAdd').onclick=()=>{if(config)run(()=>editDevice(-1));};element('bbDeviceApply').onclick=keepDevice;element('bbDeviceCancel').onclick=()=>element('bbDeviceDialog').close();
 	element('bbDeviceApply').title=ht.keep;element('bbDeviceCancel').title=ht.cancel;
-	element('bbAdd').textContent=ui.manual;element('bbDiscoverDevices').textContent=ui.discover;element('bbDeviceFilterLabel').textContent=ui.filter;
+	element('bbAdd').textContent=ui.manual;element('bbDevicesAttributesHead').textContent=atUi.title;element('bbDiscoverDevices').textContent=ui.discover;element('bbDeviceFilterLabel').textContent=ui.filter;
 	element('bbDiscoverDevices').onclick=()=>run(()=>switchTab('discovery'));
-	element('bbSuggestAttributes').textContent=ui.detect;element('bbSuggestAttributes').onclick=async()=>{const control=element('bbSuggestAttributes');control.disabled=true;try{await detectAttributes();element('bbDeviceFields').replaceChildren();fields(element('bbDeviceFields'),draft,()=>{},'device');element('bbDeviceError').textContent='';}catch(error){element('bbDeviceError').textContent=error.message;}finally{control.disabled=false;}};
 	element('bbParameterClose').textContent=ui.close;element('bbParameterClose').onclick=()=>element('bbParameterDialog').close();
 	element('bbPacketHint').textContent=ht.hint;element('bbPacketHelpTitle').textContent=ht.guide;
 	element('bbTheengsTitle').textContent=theengsUi.title;

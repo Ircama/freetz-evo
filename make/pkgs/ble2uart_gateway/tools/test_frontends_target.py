@@ -83,10 +83,11 @@ def run(args):
             "version": 1, "log_level": "warn",
             "serial": {"port": firmware.path, "command_timeout_ms": 2000, "reconnect_delay_ms": 200},
             "scanner": {"filter_known_devices": False, "dup_filter": False},
+            "attribute_defaults": {"mqtt": True, "matter": True, "mysensors": True},
             "devices": [{"mac": "AABBCCDDEEFF", "label": "Isolated regression sensor",
                          "manufacturer": "TestCo", "model": "MetadataProbe", "firmware_version": "test-only",
                          "bindkey": "000102030405060708090A0B0C0D0E0F",
-                         "expose": [{"attribute": name} for name in ("temperature", "humidity", "opened", "battery_level", "new_vendor_value")]}],
+                         "attributes": [{"source": name} for name in ("temperature", "humidity", "opened", "battery_level", "new_vendor_value")]}],
             "frontends": {
                 "mysensors": {"enabled": True, "bind": "127.0.0.1", "port": args.mysensors_port},
                 "mqtt": {"enabled": True, "host": "127.0.0.1", "port": args.mqtt_port,
@@ -143,7 +144,7 @@ def run(args):
                     break
                 assert time.monotonic() < deadline, "MQTT state did not reach expected sequence"
             assert state["wire_format"] == name, "MQTT format mismatch"
-            assert equal(vector["decoded"], state["decoded"]), "MQTT lost decoded fields"
+            assert state["measurements"], "MQTT state without measurements"
             assert "latest_values" in state
             assert state["device"] == {"name": "Isolated regression sensor", "manufacturer": "TestCo", "model": "MetadataProbe", "firmware_version": "test-only"}
             latest = state

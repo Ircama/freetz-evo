@@ -18,6 +18,7 @@
 //! ```
 
 mod codec;
+mod catalog;
 mod config;
 mod crypto;
 mod link;
@@ -274,7 +275,7 @@ fn main() -> std::process::ExitCode {
         Comando::DecodeCaptures => decode_captures(&args),
         Comando::WebConfig(action) => {
             let mut input = String::new();
-            if !matches!(action.as_str(),"read"|"attributes"|"history-presets"|"sqlite-attributes"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups"|"log") {
+            if !matches!(action.as_str(),"read"|"catalog"|"history-presets"|"sqlite-attributes"|"automation-presets"|"automation-status"|"availability-presets"|"availability-status"|"backups"|"log") {
                 let _ = std::io::stdin().take(262145).read_to_string(&mut input);
             }
             let response = if input.len() > 262144 {
@@ -690,14 +691,15 @@ fn run_daemon(args: &Args) -> Result<(), String> {
     // format, and a failure here is fatal because a running daemon that cannot
     // decode anything looks exactly like an empty radio band.
     let spec = load_spec(args)?;
-    let mut gateway = pipeline::Gateway::new(&config, spec)?;
+    let catalog = catalog::Catalog::load(Some(catalog::path_for(&args.config)), &config.theengs_prefix);
+    let mut gateway = pipeline::Gateway::new(&config, spec, catalog)?;
     let control = web::ControlServer::bind()?;
     let mut discovery = web::Discovery::default();
     let mut radio = commands::Radio::default();
 
     while !STOP_REQUESTED.load(Ordering::Relaxed) {
         reload_logging(args);
-        serve_control(&control, &mut discovery, &mut radio, None, &config, &gateway.spec)?;
+        serve_control(&control, &mut discovery, &mut radio, None, &config, &gateway)?;
         match Link::open(
             &config.serial.port,
             config.serial.baudrate,
@@ -779,7 +781,7 @@ fn run_daemon(args: &Args) -> Result<(), String> {
                         };
                         log::info!("discovery finished; configured firmware MAC filters restored");
                     }
-                    if let Err(error) = serve_control(&control, &mut discovery, &mut radio, Some(&mut link), &config, &gateway.spec) {
+                    if let Err(error) = serve_control(&control, &mut discovery, &mut radio, Some(&mut link), &config, &gateway) {
                         discovery.error = error;
                         break;
                     }
@@ -862,13 +864,15 @@ fn discovery_config(config: &Config) -> Config {
     unfiltered
 }
 
-fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, radio: &mut commands::Radio, mut link: Option<&mut Link>, config: &Config, spec: &codec::spec::Spec) -> Result<(), String> {
+fn serve_control(server: &web::ControlServer, discovery: &mut web::Discovery, radio: &mut commands::Radio, mut link: Option<&mut Link>, config: &Config, gateway: &pipeline::Gateway) -> Result<(), String> {
+    let spec = &gateway.spec;
     let Some((stream, request)) = server.next() else { return Ok(()); };
     let action = request["action"].as_str().unwrap_or("");
     let mut restore_failed = None;
     let result: Result<serde_json::Value, String> = (|| {
         match action {
             "status" => {},
+            "catalog" => return Ok(gateway.catalog.snapshot()),
             "advertisement-events" => {
                 let after = request["after"].as_u64().ok_or("after must be an unsigned sequence number")?;
                 return Ok(discovery.advertisement_events(after));
