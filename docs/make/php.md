@@ -9,6 +9,8 @@
 "*PHP is a widely-used general-purpose scripting language that is
 especially suited for Web development and can be embedded into HTML.*"
 
+New configurations default to PHP 8.6.0 (experimental). PHP 8.5.13 and 8.4.28 remain available as stable alternatives with the same EVO package options.
+
 ## Available Binaries
 
 The package provides:

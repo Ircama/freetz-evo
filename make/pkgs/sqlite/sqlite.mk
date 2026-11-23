@@ -1,18 +1,18 @@
-$(call PKG_INIT_BIN, $(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),3400100,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),3470100,3530300)))
+$(call PKG_INIT_BIN, $(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),3400100,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),3470100,3540100)))
 $(PKG)_LIB_VERSION_ABANDON:=0.8.6
 $(PKG)_LIB_VERSION_STABLE:=0.8.6
-$(PKG)_LIB_VERSION_CURRENT:=3.53.3
+$(PKG)_LIB_VERSION_CURRENT:=3.54.1
 $(PKG)_LIB_VERSION:=$($(PKG)_LIB_VERSION_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
 $(PKG)_SOURCE:=$(pkg)-autoconf-$($(PKG)_VERSION).tar.gz
 $(PKG)_HASH_ABANDON:=2c5dea207fa508d765af1ef620b637dcb06572afa6f01f0815bd5bbf864b33d9
 $(PKG)_HASH_STABLE:=416a6f45bf2cacd494b208fdee1beda509abda951d5f47bc4f2792126f01b452
-$(PKG)_HASH_CURRENT:=c917d7db16648ec95f714974ace5e5dcf46b7dc70e26600a0a102a3141125db0
+$(PKG)_HASH_CURRENT:=926ef8d3eab93fbf6e06011901273eec076b25594a4e1cdadd50c987f4f6d64e
 $(PKG)_HASH:=$($(PKG)_HASH_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
 $(PKG)_SITE_ABANDON:=https://www.sqlite.org/2022
 $(PKG)_SITE_STABLE:=https://www.sqlite.org/2024
 $(PKG)_SITE_CURRENT:=https://www.sqlite.org/2026
 $(PKG)_SITE:=$($(PKG)_SITE_$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON),ABANDON,$(if $(FREETZ_LIB_libsqlite3_WITH_VERSION_STABLE),STABLE,CURRENT)))
-### VERSION:=3.40.1/3.47.1/3.53.3
+### VERSION:=3.40.1/3.47.1/3.54.1
 ### WEBSITE:=https://www.sqlite.org
 ### MANPAGE:=https://www.sqlite.org/docs.html
 ### CHANGES:=https://www.sqlite.org/changes.html
@@ -55,9 +55,9 @@ $(PKG)_CONFIGURE_OPTIONS += --with-readline-ldflags="-L$(TARGET_TOOLCHAIN_STAGIN
 endif
 endif
 
+ifeq ($(strip $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON)),y)
 $(PKG)_CONFIGURE_ENV += ac_cv_header_zlib_h=no
 # Disable math functions for uClibc 0.9.28/29 (missing trunc() and other C99 math functions)
-ifeq ($(strip $(FREETZ_LIB_libsqlite3_WITH_VERSION_ABANDON)),y)
 $(PKG)_CONFIGURE_ENV += CFLAGS="$(TARGET_CFLAGS) -USQLITE_ENABLE_MATH_FUNCTIONS"
 endif
 

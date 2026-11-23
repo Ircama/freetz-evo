@@ -1,6 +1,6 @@
-$(call PKG_INIT_BIN, 0.19.2)
+$(call PKG_INIT_BIN, 0.19.3)
 $(PKG)_SOURCE:=patchelf-$($(PKG)_VERSION).tar.bz2
-$(PKG)_HASH:=d4ad9a4e5c689e09119ce2f30a94b0e8b4f98c78590123ea21665e34c6928801
+$(PKG)_HASH:=20dbe23e9dbc4ad769078a867ad002c04297a069ff93c95fb72242dd55d4dd6f
 $(PKG)_SITE:=https://github.com/NixOS/patchelf/releases/download/$($(PKG)_VERSION)
 ### WEBSITE:=https://github.com/NixOS/patchelf
 ### MANPAGE:=https://github.com/NixOS/patchelf/blob/master/README.md
@@ -16,6 +16,7 @@ $(PKG)_DEPENDS_ON += jemalloc
 $(PKG)_BINARY_BUILD := $($(PKG)_DIR)/src/patchelf
 $(PKG)_BINARY_TARGET := $($(PKG)_DEST_DIR)/usr/bin/patchelf
 
+$(PKG)_CONFIGURE_ENV += CXX="$(TARGET_CXX_GNU)"
 $(PKG)_CONFIGURE_ENV += CXXFLAGS="$(TARGET_CFLAGS) -fPIC"
 $(PKG)_CONFIGURE_ENV += LDFLAGS="$(TARGET_LDFLAGS) -ljemalloc"
 

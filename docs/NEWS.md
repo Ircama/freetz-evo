@@ -1,5 +1,44 @@
 # Neuigkeiten
 
+### 2026-11-21
+In der letzten Zeit hat es Sicherheitsverbesserungen rund um das Freetz-Webinterface gegeben.
+Es wurden `modcgi` und `haserl` gepatch und ein CSRF-Schutz eingebaut.
+Außerdem gab es viele Korrekturen rund um `new-login`, ein webbasiertes Loginverfahren mit SID und Timeout.
+Dieses Loginverfahren ist nun das Standardloginverfahren und kann wenn nötig wieder im Freetz-Webif deaktiviert werden.
+Falls `new-login` noch nie konfiguriert wurde ist das Standardpasswort bei alten Geräten `freetz`,
+bei neueren Geräten mit `webgui_pass` ist es das auf den Boden der Fritzbox gedruckte AVM-Passwort!<br>
+Außerdem wurde das Package [Stunnel](make/stunnel) überarbeitet, es ermöglicht den Zugriff auf der Freetz-Webif via HTTPS.
+In der Standardkonfiguration nutzt es der HTTPS-Zertifikat welches im Fritzos hinterlegt ist,
+also entweder ein selbst generiertes oder hochgeladenes.
+Auf das Freetz-Webif kann nach dem Starten von Stunnel über Port `:4433` statt wie bisher `:81` zugegriffen werden: `https://fritz.box:4433/`
+
+### 2026-11-13
+Eine Firmware kann als "Reproducible build" (`FREETZ_REPRODUCIBLE`) gebaut werden, dh bei<br>
+gleichem GIT-Stand und gleicher .config soll immer ein identisches .image erzeugt werden.<br>
+Falls Fehler bei aktivierter Option auftreten ist die Ursache vermutlich, dass squashfs<br>
+ohne Backport gebaut wurde.<br>
+Abhilfe entsprechend des ausgewählten Gerätes:<br>
+
+   - `make squashfs2-host-recompile`
+   - `make squashfs3-host-recompile` 
+   - `make squashfs4-be-host-recompile`
+   - `make squashfs4-le-host-recompile`
+
+### 2026-11-11
+Der Start von `make` wurde beschleunigt. So wird zum Beispiel `make menuconfig` schneller<br>
+angezeigt und `make olddefconfig` benötigt bei mir nur noch 1,5 statt 9 Sekunden.
+
+Siehe<br>
+
+   - [9c017e00](https://github.com/Freetz-NG/freetz-ng/commit/9c017e0085457bec5dc27f0b397a1e6b753be38a)<br>
+   - [d5bd114b](https://github.com/Freetz-NG/freetz-ng/commit/d5bd114bc436e4abb5e4a98a171f083b9a413f94)<br>
+   - [de15e2f3](https://github.com/Freetz-NG/freetz-ng/commit/de15e2f3b6e35519d129ecf6cb79dc6b67d4cc25)<br>
+
+### 2026-10-26
+Höhere Preise, dafür halber RAM und halber Flash. Bis zu 7 Fritzboxen betroffen.
+
+  - Siehe [Router-FAQ.de: Hat FRITZ! den Speicher (der FRITZ!Box 5690 Pro) halbiert?](https://www.router-faq.de/?id=newsuinfo&newsuinfo=202610_fb5690prospeicher)<br>
+
 ### 2026-10-25
 Das menuconfig von kconfig nutzt jetzt das neue Theme `dark`, vorher war es `bluetitle`.<br>
 Es stehen 5 Themes zur Auswahl: `menuconfig` - `Toolchain options` - `Theme for menuconfig`<br>

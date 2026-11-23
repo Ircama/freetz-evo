@@ -1,6 +1,6 @@
-CCACHE_VERSION:=4.14.2
+CCACHE_VERSION:=$(CCACHE_KERNEL_VERSION)
 CCACHE_SOURCE:=ccache-$(CCACHE_VERSION).tar.xz
-CCACHE_HASH:=0feb2707d9cb48885abb950e5d629e85f57fa79a2439cbbdfa681d6c3dc5f0dc
+CCACHE_HASH:=$(CCACHE_KERNEL_HASH)
 CCACHE_SITE:=https://github.com/ccache/ccache/releases/download/v$(CCACHE_VERSION)
 ### WEBSITE:=https://ccache.dev/
 ### MANPAGE:=https://ccache.dev/documentation.html
@@ -45,10 +45,12 @@ $(CCACHE_DIR)/.configured: $(CCACHE_DIR)/.unpacked
 		-DCMAKE_CXX_COMPILER_TARGET=$(GNU_HOST_NAME) \
 		-DCMAKE_INSTALL_PREFIX=/usr \
 		-DENABLE_DOCUMENTATION=OFF \
+		-DCCACHE_DEV_MODE=OFF \
 		-DENABLE_TESTING=OFF \
+		-DHTTP_STORAGE_BACKEND=OFF \
 		-DREDIS_STORAGE_BACKEND=OFF \
 		-DDEPS=DOWNLOAD \
-		-Wno-dev \
+		-Wno-author \
 		$(QUIETCMAKE) \
 		$(SILENT) \
 	);

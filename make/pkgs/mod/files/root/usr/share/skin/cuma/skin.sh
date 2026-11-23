@@ -5,7 +5,7 @@ skin_head() {
 	cat << EOF
 <meta name="color-scheme" content="dark">
 <meta name="darkreader-lock">
-<title>Freetz&nbsp;${hname}&ndash; $title</title>
+<title>Freetz-NG&nbsp;${hname}&ndash; $title</title>
 <link rel="stylesheet" type="text/css" href="/style/cuma/base.css">
 <link rel="stylesheet" type="text/css" href="/style/colorscheme.css">
 EOF
@@ -38,7 +38,7 @@ skin_body_begin() {
 <td id="edge-top-left"></td>
 <td id="edge-top">
 <div class="version">$(html < /etc/.freetz-version)</div>
-<div class="titlebar"><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo">Freetz EVO</a>&nbsp;${hname}<a href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span>$help &nbsp; &nbsp; $([ "$isauth" = 1 ] && echo "<small>Session timeout: $(date -d @$(( $MOD_HTTPD_SESSIONTIMEOUT + $(date +%s) )) +'%H:%M:%S')</small>") </div>
+<div class="titlebar"><a href="https://ircama.github.io/freetz-evo/" target="_blank" class="logo">Freetz EVO</a>&nbsp;${hname}<a href="/cgi-bin/about.cgi" target="_blank">&ndash;</a>&nbsp;<span class="title">$title</span>$help</div>
 </td>
 <td id="edge-top-right"></td>
 </tr>
@@ -65,7 +65,7 @@ skin_body_end() {
 <div id="footer">
 <span class="datetime" title="$(lang de:"Systemzeit des Routers" en:"Router's system time")">$(date +"$(lang de:"%d.%m.%Y" en:"%m/%d/%Y") %H:%M")</span>&nbsp;&ndash;
 <span class="uptime" title="Uptime">$(uptime | sed -r 's/.*(up.*), *load.*/\1/')</span>&nbsp;&ndash;
-<span class="opt">$(lang de:"optimiert f&uuml;r" en:"optimized for") Mozilla Firefox</span>
+<span class="opt">$([ "$isauth" = 1 ] && _cgi_print_session_timeout || echo "$(lang de:"optimiert f&uuml;r" en:"optimized for") Mozilla Firefox")</span>
 </div>
 EOF
 }
@@ -109,7 +109,7 @@ skin_login_form() {
 $errmsg
 <tr>
   <td></td>
-  <td><input type="button" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')"></td>
+	<td><input type="submit" id="id_go" value="$(lang de:"Anmelden" en:"Login")"></td>
 </tr>
 </table>
 <script>document.getElementById('inp_pw').focus();</script>

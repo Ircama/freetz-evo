@@ -101,7 +101,8 @@ new_menu_deliver() {
 	new_menu_tree "$dir/system"
 	new_menu_package_tree "mod"
 	ls /usr/lib/cgi-bin/conf.avm/* &>/dev/null && new_menu_package_tree "avm"
-	echo "<li><a id='logout' onclick='return confirm(\"Logout?\")' href='/cgi-bin/logout.cgi'>Logout</a></li>"
+	echo "<li><a id='logout' onclick='if (!confirm(\"Logout?\")) return false; return csrfPost(this.href)' href='/cgi-bin/logout.cgi'>Logout</a></li>"
+
 	echo "<hr>"
 
 	while read -r pkg; do
@@ -198,9 +199,13 @@ EOF
 EOF
 		cat << EOF
 <li><a id="support_file" href="/cgi-bin/support/index.cgi">$(lang de:"Supportdatei erstellen" en:"Create support file")</a></li>
+EOF
+		[ -x /usr/mww/cgi-bin/shell/index.cgi ] && cat << EOF
 <li><a id="rudi_shell" href="/cgi-bin/shell/index.cgi" target="_blank">$(lang de:"Rudi-Shell" en:"Rudi shell")</a></li>
+EOF
+		cat << EOF
 <li><a id="avmwif_link" href="/cgi-bin/avm" target="_blank">$(lang de:"AVM-Webinterface" en:"AVM web interface")</a></li>
-<li><a id="freetz" href="/cgi-bin/freetz.cgi">$(lang de:"&Uuml;ber" en:"About") Freetz</a></li>
+<li><a id="freetz" href="/cgi-bin/freetz.cgi">$(lang de:"&Uuml;ber" en:"About") Freetz-NG</a></li>
 EOF
 	} > "$dir/system.sub"
 

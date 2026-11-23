@@ -43,7 +43,7 @@ $($(PKG)_DIR)/.installed: $($(PKG)_BINARIES_TARGET_DIR)
 define $(PKG)_FIXHARDCODED
 	@for binfile in $(UBOOT_HOST_BINARIES_TARGET_DIR); do \
 	for libfile in libcrypto libssl; do \
-	$(PATCHELF_HOST) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $${binfile} ;\
+	$(PATCHELF) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $${binfile} ;\
 	done ;\
 	done ;
 endef

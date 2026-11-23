@@ -1,15 +1,15 @@
 #!/bin/sh
 
-if  $(echo "$QUERY_STRING" | grep -q genconfigname ); then
-	NAME=${QUERY_STRING##*genconfigname=}
-	sh /mod/etc/default.openvpn/generate_virtual_pkg "$NAME"
-	sed -i "/$NAME/ d" /tmp/flash/openvpn/configs
-	echo "$NAME" >> /tmp/flash/openvpn/configs
-fi
-
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 . /usr/lib/libmodcgi.sh
 [ -r /etc/options.cfg ] && . /etc/options.cfg
+
+eval "$(modcgi genconfigname openvpn_action)"
+if [ "$REQUEST_METHOD" == "POST" ] && [ -n "$OPENVPN_ACTION_GENCONFIGNAME" ]; then
+	sh /mod/etc/default.openvpn/generate_virtual_pkg "$OPENVPN_ACTION_GENCONFIGNAME"
+	sed -i "/$OPENVPN_ACTION_GENCONFIGNAME/ d" /tmp/flash/openvpn/configs
+	echo "$OPENVPN_ACTION_GENCONFIGNAME" >> /tmp/flash/openvpn/configs
+fi
 
 cginame=${0##*/}
 pkgname=${cginame%%.cgi}

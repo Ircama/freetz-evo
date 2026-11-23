@@ -61,7 +61,6 @@ elNewlogin.onchange = function() {
 };
 </script>
 EOF
-
 else
 
 cat << EOF
@@ -119,17 +118,17 @@ cgi_print_checkbox "mounted_temp" "$MOD_MOUNTED_TEMP" "$(lang de:"Tempor&auml;r"
 cat << EOF
 </p>
 EOF
-if [ -r "/usr/lib/cgi-bin/mod/box_info.cgi" -o -r "/usr/lib/cgi-bin/mod/flash_info.cgi" -o -r "/usr/lib/cgi-bin/mod/info.cgi" ]; then
+if [ -r "/usr/lib/cgi-bin/mod/avm_info.cgi" -o -r "/usr/lib/cgi-bin/mod/flash_info.cgi" -o -r "/usr/lib/cgi-bin/mod/info.cgi" ]; then
 	echo "<p> $(lang de:"Zus&auml;tzliche Status-Seiten" en:"Additional status pages"):"
 
-	if [ -r "/usr/lib/cgi-bin/mod/box_info.cgi" ]; then
-		cgi_print_checkbox "show_box_info" "$MOD_SHOW_BOX_INFO" "$(lang de:"Box-Info" en:"Box info")"
+	if [ -r "/usr/lib/cgi-bin/mod/avm_info.cgi" ]; then
+		cgi_print_checkbox "show_box_info" "$MOD_SHOW_BOX_INFO" "$(lang de:"AVM-Info" en:"AVM info")"
 	fi
 	if [ -r "/usr/lib/cgi-bin/mod/flash_info.cgi" ]; then
-		cgi_print_checkbox "show_flash_info" "$MOD_SHOW_FLASH_INFO" "$(lang de:"Flash-Info" en:"Flash info")"
+		cgi_print_checkbox "show_flash_info" "$MOD_SHOW_FLASH_INFO" "$(lang de:"Flashspeicher" en:"Flash storage")"
 	fi
 	if [ -r "/usr/lib/cgi-bin/mod/info.cgi" ]; then
-		cgi_print_checkbox "show_freetz_info" "$MOD_SHOW_FREETZ_INFO" "$(lang de:"Freetz-Info" en:"Freetz info")"
+		cgi_print_checkbox "show_freetz_info" "$MOD_SHOW_FREETZ_INFO" "$(lang de:"Mod-Info" en:"Mod info")"
 	fi
 
 	echo "</p>"

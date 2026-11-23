@@ -3,7 +3,7 @@ skin_head() {
 	local hname="$(hostname -s|html)"
 	[ "$hname" != "fritz" ] && hname="&#64;${hname}&nbsp;" || hname=""
 	cat << EOF
-<title>Freetz&nbsp;${hname}&ndash; $title</title>
+<title>Freetz-NG&nbsp;${hname}&ndash; $title</title>
 <link rel="stylesheet" type="text/css" href="/style/newfreetz/base.css">
 <link rel="stylesheet" type="text/css" href="/style/newfreetz/colorscheme.css">
 EOF
@@ -98,7 +98,7 @@ skin_body_end() {
 	<div id="footer">
 		<span class="datetime" title="$(lang de:"Systemzeit des Routers" en:"Router's system time")">$(date +"$(lang de:"%d.%m.%Y" en:"%m/%d/%Y") %H:%M")</span>&nbsp;&ndash;
 		<span class="uptime" title="Uptime">$(uptime | sed -r 's/.*(up.*), *load.*/\1/')</span>&nbsp;&ndash;
-		<span class="opt">$(lang de:"optimiert f&uuml;r" en:"optimized for") Mozilla Firefox</span>
+		<span class="opt">$([ "$isauth" = 1 ] && _cgi_print_session_timeout || echo "$(lang de:"optimiert f&uuml;r" en:"optimized for") Mozilla Firefox")</span>
 	</div>
 </div>
 </div>
@@ -133,7 +133,7 @@ skin_login_form() {
 $errmsg
 <tr>
   <td></td>
-  <td><input type="button" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')"></td>
+	<td><input type="submit" id="id_go" value="$(lang de:"Anmelden" en:"Login")"></td>
 </tr>
 </table>
 <script>document.getElementById('inp_pw').focus();</script>

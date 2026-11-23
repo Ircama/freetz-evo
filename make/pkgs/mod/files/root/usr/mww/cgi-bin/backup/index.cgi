@@ -11,13 +11,14 @@ cgi_begin "$(lang de:"Konfiguration sichern/wiederherstellen" en:"Backup/restore
 #  wget "https://github.com/PeterPawn/decoder/raw/master/bin/decoder.$(uname -m)" -O /mod/usr/bin/decoder
 
 cat << EOF
-<form action="do_backup.cgi" method="GET">
+<form action="do_backup.cgi" method="POST">
+$(csrf_input)
 	<h1>$(lang de:"Sicherung" en:"Backup")</h1>
 
 	<p>
 	$(lang \
-	  de:"Sichern s&auml;mtlicher Einstellungen aus dem Flash-Speicher <i>/var/flash</i>. Dies umfa&szlig;t sowohl die Einstellungen von AVM als auch die von Freetz sowie s&auml;mtlicher sonstiger installierten Erweiterungen." \
-	  en:"Save all settings from flash memory <i>/var/flash</i>. This includes firmware settings of AVM as well as Freetz and other installed extensions." \
+	  de:"Sichern s&auml;mtlicher Einstellungen aus dem Flash-Speicher <i>/var/flash</i>. Dies umfa&szlig;t sowohl die Einstellungen von AVM als auch die von Freetz-NG sowie s&auml;mtlicher sonstiger installierten Erweiterungen." \
+	  en:"Save all settings from flash memory <i>/var/flash</i>. This includes firmware settings of AVM as well as Freetz-NG and other installed extensions." \
 	)
 	</p>
 EOF
@@ -72,6 +73,7 @@ cat << EOF
 </form>
 <hr>
 <form action="do_restore.cgi" method="POST" enctype="multipart/form-data">
+	$(csrf_input)
 	<h1>$(lang de:"Wiederherstellung" en:"Restore")</h1>
 
 	<p>
@@ -108,7 +110,7 @@ fi
 
 cat << EOF
 	<input type=checkbox name="freetz_only" id="freetz_only">
-	<label for="freetz_only">$(lang de:"Nur Freetz-Einstellungen wiederherstellen" en:"Restore Freetz settings only")</label>
+	<label for="freetz_only">$(lang de:"Nur Freetz-NG Einstellungen wiederherstellen" en:"Restore Freetz-NG settings only")</label>
 	<br>
 	<input type=checkbox name="restart" id="restart" checked>
 	<label for="restart">$(lang de:"Neustart nach Wiederherstellung" en:"Reboot after restore")</label>

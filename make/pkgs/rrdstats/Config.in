@@ -72,12 +72,14 @@ if FREETZ_PACKAGE_RRDSTATS
 
 	config FREETZ_PACKAGE_RRDSTATS_TEMPERATURE_SENSOR
 		bool "Support for temperature sensor"
-		depends on FREETZ_AVM_HAS_TEMPERATURE_SENSOR
 		default y
 		help
 			Enables the options in the Webif.
 			Logging of the box's internal
 			temperature sensor is possible.
+			Not all devices have a sensor at
+			all or returning an invalid value,
+			you will notice it.
 
 	config FREETZ_PACKAGE_RRDSTATS_DIGITEMP
 		bool "Support for DigiTemp"

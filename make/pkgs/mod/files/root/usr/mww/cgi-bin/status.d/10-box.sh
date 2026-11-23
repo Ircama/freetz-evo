@@ -29,6 +29,7 @@ done
 
 if [ $brands_cnt -gt 1 -a "$FREETZ_AVM_VERSION_07_0X_MIN" != "y" ]; then
 	echo '<form class="btn" action="/cgi-bin/exec.cgi/branding" method="post">'
+	csrf_input
 	echo "$(lang de:"Branding" en:"Branding"):"
 	echo '<select name="branding" size="1">'
 	branding=$(get_env firmware_version)
@@ -53,7 +54,7 @@ cat << EOF
 </tr>
 
 <tr>
-<td>Freetz: $(cat /etc/.freetz-version |sed 's/freetz-//')</td>
+<td>Freetz-NG: $(cat /etc/.freetz-version | sed 's/freetz-//;s/^ng-//')</td>
 <td align="right">Uptime: $(uptime | sed -r 's/.* up (.*), *load .*/\1/')</td>
 </tr>
 

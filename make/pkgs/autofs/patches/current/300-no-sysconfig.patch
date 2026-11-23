@@ -1,0 +1,11 @@
+--- lib/defaults.c
++++ lib/defaults.c
+@@ -1229,7 +1229,7 @@
+ 		message(to_syslog, "failed to open config %s",
+ 			DEFAULT_CONFIG_FILE);
+ 
+-	oldconf = open_fopen_r(OLD_CONFIG_FILE);
++	oldconf = access(OLD_CONFIG_FILE, F_OK) == 0 ? open_fopen_r(OLD_CONFIG_FILE) : NULL;
+ 	if (!oldconf && !conf)
+ 		message(to_syslog, "failed to open old config %s",
+ 			OLD_CONFIG_FILE);

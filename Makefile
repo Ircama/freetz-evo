@@ -122,18 +122,19 @@ TAR:=$(TOOLS_DIR)/tar-gnu
 SED:=sed
 PATCHELF_HOST:=patchelf
 PATCHELF_TARGET:=$(FREETZ_BASE_DIR)/$(TOOLS_DIR)/patchelf-target
-PYTHON3=python3
-MESON=meson
-CMAKE=cmake
-NINJA=ninja
-PERL=perl
+PATCHELF:=$(PATCHELF_HOST)
+PYTHON3:=python3
+MESON:=meson
+CMAKE:=cmake
+NINJA:=ninja
+PERL:=perl
 ifeq ($(FREETZ_JLEVEL),0)
-NPROC=$(shell echo $$(( $$(nproc || echo 1) +1 )) )
+NPROC:=$(shell echo $$(( $$(nproc || echo 1) +1 )) )
 else
-NPROC=$(FREETZ_JLEVEL)
+NPROC:=$(FREETZ_JLEVEL)
 endif
-MAKE=make -j$(NPROC)
-MAKE1=make -j1
+MAKE:=make -j$(NPROC)
+MAKE1:=make -j1
 
 
 ifeq ($(FREETZ_REPRODUCIBLE),y)
@@ -455,6 +456,9 @@ include $(call sorted-wildcard,$(MAKE_DIR)/pkgs/*/Makefile.in)
 include $(call sorted-wildcard,$(MAKE_DIR)/busybox/Makefile.in)
 include $(call sorted-wildcard,$(MAKE_DIR)/kernel/Makefile.in)
 
+
+ifneq ($(filter-out $(KCONFIG_TARGETS),$(or $(MAKECMDGOALS),all)),)  # KCONFIG_TARGETS dont need target build rules !
+
 include $(call sorted-wildcard,$(MAKE_DIR)/libs/*/*.mk)
 include $(call sorted-wildcard,$(MAKE_DIR)/pkgs/*/*.mk)
 include $(call sorted-wildcard,$(MAKE_DIR)/busybox/busybox.mk)
@@ -491,6 +495,9 @@ include $(MAKE_DIR)/toolchain/target-toolchain.mk
 else
 include $(MAKE_DIR)/toolchain/download-toolchain.mk
 endif
+
+endif  # KCONFIG_TARGETS dont need target build rules !
+
 
 package-list: package-list-clean $(PACKAGES_LIST)
 	@touch .packages
@@ -529,7 +536,7 @@ test: $(BUILD_DIR)/modified
 toolchain-depend: | $(TOOLCHAIN)
 # Use KTV and TTV variables to provide new toolchain versions, i.e.
 #   make KTV=freetz-0.4 TTV=freetz-0.5 toolchain
-toolchain: $(DL_DIR) $(SOURCE_DIR_ROOT) $(TOOLCHAIN) tools lzma1-host
+toolchain: $(DL_DIR) $(SOURCE_DIR_ROOT) tools $(TOOLCHAIN) lzma1-host
 	@echo
 	@echo "################################################################"
 	@echo

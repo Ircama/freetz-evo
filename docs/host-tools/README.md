@@ -16,9 +16,9 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[ca-bundle 2026-10-20](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
+  * **[ca-bundle 2026-11-05](ca-bundle-host.md)<a id='ca-bundle-host'></a>**<br>
 
-  * **[cmake 4.4.4](cmake-host.md)<a id='cmake-host'></a>**<br>
+  * **[cmake 4.4.5](cmake-host.md)<a id='cmake-host'></a>**<br>
 
   * **[config 4286648](config-host.md)<a id='config-host'></a>**<br>
 
@@ -46,6 +46,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### G
 
+  * **[gawk 5.4.2](gawk-host.md)<a id='gawk-host'></a>**<br>
+
   * **[genext2fs 1.6.3](genext2fs-host.md)<a id='genext2fs-host'></a>**<br>
 
   * **[gennmtab 1.64.03](gennmtab-host.md)<a id='gennmtab-host'></a>**<br>
@@ -59,6 +61,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 ### K
 
   * **[kconfig 7.3](kconfig-host.md)<a id='kconfig-host'></a>**<br>
+
+  * **[kmod 34.3](kmod-host.md)<a id='kmod-host'></a>**<br>
 
 ### L
 
@@ -100,9 +104,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### P
 
-  * **[patchelf 0.14.5/0.19.2](patchelf-host.md)<a id='patchelf-host'></a>**<br>
-
-  * **[patchelf-target 0.14.5/0.15.0](patchelf-target-host.md)<a id='patchelf-target-host'></a>**<br>
+  * **[patchelf 0.14.5/0.19.3](patchelf-host.md)<a id='patchelf-host'></a>**<br>
 
   * **[patch 2.8](patch-host.md)<a id='patch-host'></a>**<br>
 
@@ -120,7 +122,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[python3-attrs 26.1.0](python3-attrs-host.md)<a id='python3-attrs-host'></a>**<br>
 
-  * **[python3 3.14.9](python3-host.md)<a id='python3-host'></a>**<br>
+  * **[python3 3.15.2](python3-host.md)<a id='python3-host'></a>**<br>
 
   * **[python3-jsonschema 4.26.0](python3-jsonschema-host.md)<a id='python3-jsonschema-host'></a>**<br>
 
@@ -158,7 +160,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
   * **[tichksum 1.0](tichksum-host.md)<a id='tichksum-host'></a>**<br>
 
-  * **[tools 2026-10-20](tools-host.md)<a id='tools-host'></a>**<br>
+  * **[tools 2026-11-22](tools-host.md)<a id='tools-host'></a>**<br>
 
 ### U
 

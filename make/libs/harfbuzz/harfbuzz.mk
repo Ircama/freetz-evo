@@ -1,7 +1,7 @@
-$(call PKG_INIT_LIB, 14.6.0)
-$(PKG)_LIB_VERSION:=0.61460.0
+$(call PKG_INIT_LIB, 15.2.0)
+$(PKG)_LIB_VERSION:=0.61520.0
 $(PKG)_SOURCE:=harfbuzz-$($(PKG)_VERSION).tar.xz
-$(PKG)_HASH:=d07a007327277708a2a73ae437887cdbaf282937f6d03ca5467723e9099af586
+$(PKG)_HASH:=e2ec49090744383cdbe7df808c1cedaafba06a97be8dc4211fe546ba585f12cb
 $(PKG)_SITE:=https://github.com/harfbuzz/harfbuzz/releases/download/$($(PKG)_VERSION)
 ### WEBSITE:=https://harfbuzz.github.io/
 ### MANPAGE:=https://github.com/harfbuzz/harfbuzz/wiki
@@ -18,8 +18,11 @@ $(PKG)_TARGET_BINARY:=$($(PKG)_TARGET_DIR)/$($(PKG)_LIBNAME_LONG)
 
 $(PKG)_DEPENDS_ON += meson-host
 $(PKG)_DEPENDS_ON += freetype
+$(PKG)_DEPENDS_ON += libstdcxx
 
 $(PKG)_REBUILD_SUBOPTS += FREETZ_STDCXXLIB
+
+$(PKG)_CONFIGURE_PRE_CMDS += $(SED) -i "s!$(TARGET_CXX)!$(TARGET_CXX_GNU)!g" meson.freetz;
 
 $(PKG)_CONFIGURE_OPTIONS += -D buildtype=release
 $(PKG)_CONFIGURE_OPTIONS += -D benchmark=disabled

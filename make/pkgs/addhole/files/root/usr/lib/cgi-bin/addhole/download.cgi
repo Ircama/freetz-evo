@@ -1,6 +1,7 @@
 #!/bin/sh
 
 . /usr/lib/libmodcgi.sh
+csrf_require_post
 
 cgi_begin 'Addhole - download'
 

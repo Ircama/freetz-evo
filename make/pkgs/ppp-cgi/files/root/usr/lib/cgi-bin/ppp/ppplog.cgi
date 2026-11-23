@@ -8,9 +8,9 @@
 if [ -n "$PPP_DIAGTTY" ]; then
 
 eval "$(modcgi branding:pkg:cmd mod_cgi)"
-if [ -n "$MOD_CGI_CMD" ]; then
+if [ "$REQUEST_METHOD" == "POST" ] && [ -n "$MOD_CGI_CMD" ]; then
 	sec_begin "$(lang de:"Hinweis" en:"Remark")"
-	echo "<font size=-2 color=red><br>$(lang de:"Aktualisierung wurde angefordert. Dies kann bis zu einer Minute dauern." en:"Refresh initiated. This max take up to one minute.")<br></font>"
+	echo "<font size=-2 color=red><br>$(lang de:"Aktualisierung wurde angefordert. Dies kann bis zu einer Minute dauern." en:"Refresh initiated. This may take up to one minute.")<br></font>"
 	sec_end
 	(sleep 1; echo -en "AT+CPIN?\r"  >$PPP_DIAGTTY;)&
 	(sleep 2; echo -en "AT+CSQ\r"    >$PPP_DIAGTTY;)&
@@ -109,6 +109,7 @@ cat << EOF
 
 <td>
 <form class="btn" action="$(href status ppp ppplog)" method="post" style="display:inline;">
+$(csrf_input)
 <input type="hidden" name="cmd" value="refresh">
 <input type="submit" value="$(lang de:"aktualisieren" en:"refresh")">
 </form>

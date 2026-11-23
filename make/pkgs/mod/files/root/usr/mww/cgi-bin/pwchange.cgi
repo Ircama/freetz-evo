@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /usr/lib/libmodcgi.sh
+
 if [ "$1" = "successful" ]; then
 	. /usr/lib/libmodcgi.sh
 	cgi --id=PW_changed
@@ -10,7 +12,11 @@ if [ "$1" = "successful" ]; then
 	exit
 fi
 
-if [ -n "$(echo "$QUERY_STRING" | sed -n 's%.*newhash=\([0-9a-f]*\).*%\1%p')" ]; then
+if [ "$REQUEST_METHOD" == "POST" ]; then
+	eval "$(modcgi oldhash:newhash:pw pwchange)"
+fi
+
+if [ "$REQUEST_METHOD" == "POST" ] && [ -n "${PWCHANGE_NEWHASH%%[!0123456789abcdef]*}" ]; then
 	source /usr/mww/cgi-bin/pwchange_check.sh
 else
 	source /usr/mww/cgi-bin/pwchange_page.sh

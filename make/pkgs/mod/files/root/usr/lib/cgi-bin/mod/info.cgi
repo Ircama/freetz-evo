@@ -18,8 +18,8 @@ sec_begin "$(lang de:"Firmware-Informationen" en:"Information about firmware")"
 
 cat << EOF
 <dl class="info">
-<dt>$(lang de:"Boxtyp" en:"Box type")</dt><dd>$FREETZ_INFO_BOXTYPE</dd>
-<dt>$(lang de:"AVM-Firmwareversion" en:"AVM firmware version")</dt><dd>$FREETZ_INFO_FIRMWAREVERSION</dd>
+<dt>$(lang de:"Ger&auml;t" en:"Device")</dt><dd>$FREETZ_INFO_BOXTYPE</dd>
+<dt>$(lang de:"Firmware" en:"Firmware")</dt><dd>$FREETZ_INFO_FIRMWAREVERSION</dd>
 <dt>$(lang de:"Region" en:"Region")</dt><dd>$(echo "$FREETZ_INFO_LANG" | sed 's/^de$/ger/;s/^en$/int/;s/^xx$/all/;s/^a-ch$/ach/;s/^it$/ita/')</dd>
 </dl>
 EOF
@@ -32,7 +32,7 @@ if [ -n "$_kernelversion" ]; then
 fi
 echo "<dl class='info'><dt>Freetz $(lang de:"Version" en:"version")</dt><dd>$FREETZ_INFO_VERSION</dd></dl>"
 date_de_format=$(echo "$FREETZ_INFO_MAKEDATE" \
-  | sed -re 's/([0-9]{4})([0-9]{2})([0-9]{2})-([0-9]{2})([0-9]{2})([0-9]{2})(.*)/\3.\2.\1 \4\:\5\:\6/')
+	| sed -re 's/([0-9]{4})([0-9]{2})([0-9]{2})-([0-9]{2})([0-9]{2})([0-9]{2})(.*)/\3.\2.\1 \4\:\5\:\6\7/')
 [ "$date_de_format" != "reproducible" ] && \
   echo "<dl class='info'><dt>$(lang de:"Erstellungsdatum" en:"Creation date")</dt><dd>$date_de_format</dd></dl>"
 echo "<dl class='info'><dt>$(lang de:"Urspr&uuml;nglicher Dateiname" en:"Initial file name")</dt><dd>$FREETZ_INFO_IMAGE_NAME</dd></dl>"

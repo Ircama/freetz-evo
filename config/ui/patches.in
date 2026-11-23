@@ -112,20 +112,36 @@ config FREETZ_REMOVE_DSL_CONTROL
 	help
 		Removes /usr/sbin/dsl_control. This saves about
 		540-669 KB of uncompressed data size.
-		Select this only if you don't use the the DSL modem. See
+		Select this only if you don't use the DSL modem. See
+		https://web.archive.org/20200701000000/wehavemorefun.de/fritzbox/Dsl_control
+
+config FREETZ_REMOVE_DSL_DAEMON
+	bool "Remove dsl_daemon"
+	depends on FREETZ_AVM_HAS_DSL_DAEMON && \
+		( \
+			FREETZ_REMOVE_ANNEX_A_FIRMWARE || \
+			FREETZ_REMOVE_ANNEX_B_FIRMWARE || \
+			FREETZ_REMOVE_MULTI_ANNEX_FIRMWARE_PRIME \
+		)
+	default n
+	help
+		Removes /usr/sbin/dsl_daemon, the successor of dsl_control. This saves about
+		1500 KB of uncompressed data size.
+		Select this only if you don't use the DSL modem. For dsl_control see
 		https://web.archive.org/20200701000000/wehavemorefun.de/fritzbox/Dsl_control
 
 config FREETZ_REMOVE_DSLD
 	bool "Remove dsld"
 	default n
 	depends on FREETZ_AVM_HAS_DSLD
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
-	select FREETZ_REMOVE_UPNP
+	select FREETZ_REMOVE_UPNP if FREETZ_AVM_HAS_UPNP
 	select FREETZ_REMOVE_KIDS if FREETZ_AVM_HAS_KIDS
 	help
 		Remove DSL daemon (dsld), if you are planning to use your box as a simple
 		IP client ("Internet mitbenutzen") without routing.
 		ATA ("via Lan1") and DSL mode will not work anymore.
+
+		WARNING: Switch to IP client BEFORE flash an image without dsld!
 
 		ATTENTION: You won't be able to use your box as a modem nor a router anymore.
 		As well do *not* use this option if your ATA mode box uses PPPoE passthrough,
@@ -284,6 +300,14 @@ config FREETZ_REMOVE_PCPD
 		does not work without MESHD (don't ask).
 		There are NO changes of the avm-webif!
 
+config FREETZ_REMOVE_MOVED
+	bool "Remove MOVED (settings migration)"
+	default n
+	depends on FREETZ_AVM_HAS_MOVED
+	help
+		Removes "moved" binary and related files (270kB uncompressed).
+		MOVED is used for settings migration to a new device.
+
 config FREETZ_REMOVE_PLCD
 	bool "Remove PLCD (AVM Powerline)"
 	default n
@@ -311,7 +335,6 @@ config FREETZ_REMOVE_NEXUS
 	bool "Remove NEXUS - EXPERIMENTAL"
 	default n
 	depends on FREETZ_AVM_HAS_NEXUS
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	help
 		Removes "nexus" related files like
 		the daemon, service and some scripts.
@@ -682,7 +705,6 @@ config FREETZ_REMOVE_HELP
 config FREETZ_REMOVE_LIBFUSE
 	bool "Remove libfuse.so"
 	depends on FREETZ_AVM_HAS_LIBFUSE
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	select FREETZ_REMOVE_NTFS if FREETZ_AVM_HAS_NTFS && !FREETZ_AVMPLUGINS_NTFS
 	select FREETZ_REMOVE_WEBDAV if FREETZ_AVM_HAS_WEBDAV
 	default n
@@ -806,7 +828,6 @@ config FREETZ_REMOVE_NLS
 config FREETZ_REMOVE_USBHOST
 	bool "Remove USB Host"
 	depends on FREETZ_AVM_HAS_USB_HOST
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
 	default n
 	help
 		Remove USB Host
@@ -975,8 +996,7 @@ config FREETZ_REMOVE_UMTSD
 
 config FREETZ_REMOVE_UPNP
 	bool "Remove UPnP (igdd/upnpd)"
-	depends on !FREETZ_TYPE_EXTENDER
-	depends on FREETZ_AVM_VERSION_08_0X_MAX || FREETZ_REAL_DEVELOPER_ONLY  # never tested by anyone with fos 8.2x+
+	depends on FREETZ_AVM_HAS_UPNP
 	select FREETZ_AVMDAEMON_DISABLE_IGD
 	select FREETZ_REMOVE_UPNP_LIBS if \
 		FREETZ_TYPE_2170 || \
@@ -1017,6 +1037,19 @@ config FREETZ_REMOVE_UPNP_LIBS
 	bool
 	depends on FREETZ_REMOVE_UPNP
 	default n
+
+config FREETZ_REMOVE_ASSETSD
+	bool "Remove ASSETSD (assets downloader)"
+	depends on FREETZ_AVM_HAS_ASSETSD
+	default n
+	help
+		Remove assetsd (assets downloader) files
+		At least you can no longer download and update:
+		 - AVM IP-Sperrliste with eg ExpressVPN and egypt providers
+		   Vacation in Egypt?
+		   Unfortunately, no access to your Fritzbox!
+		   Not even if you chose wrong VPN provider.
+		 - Secret and unverifiable german BPjM-Sperrliste
 
 config FREETZ_REMOVE_KIDS
 	bool "Remove kids (usermand/contfiltd)"

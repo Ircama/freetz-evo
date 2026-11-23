@@ -1,5 +1,9 @@
 <%
 . /usr/lib/libmodcgi.sh
+if [ "$_CGI_CSRF_SCOPE" != "rudi" ] || [ "$MOD_RUDI_CSRF_LEGACY" != "yes" ] || [ "$REQUEST_METHOD" != "GET" ] || [ "$SCRIPT_NAME" != "/cgi-bin/shell/cmd.cgi" ]; then
+	csrf_require_post
+fi
+
 pid1=$(cgi_param pid)
 pid2=$(cat /var/run/rudi_shell.pid)
 unset error

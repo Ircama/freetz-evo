@@ -123,8 +123,8 @@ collect_temp() {
 			RRA:MAX:0.1:144:1460 \
 			RRA:MAX:0.1:360:2920
 	fi
-	uT="$(ctlmgr_ctl r power status/act_temperature 2>/dev/null)"
-	[ $uT -gt 0 ] 2>/dev/null || return
+	uT="$(modtemp)"
+	[ -n "$uT" ] || return
 	tempdata=N:$uT
 	$_NICE $RRDTOOL update $RRDSTATS_RRDDATA/$NAMEPREFIX.rrd $tempdata --template temperature
 }

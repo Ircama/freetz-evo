@@ -13,6 +13,35 @@ It provides core system integration and central configuration for features such 
 
 Note: Depending on your selected configuration, only a subset of options is shown in the UI.
 
+### Web Interface
+
+#### Enabling HTTPS
+
+Use an additional package such as [Stunnel](stunnel.md) to access the Freetz web interface over HTTPS. The default Stunnel configuration listens on port 4433 and uses the FRITZ!OS certificate.
+
+#### Resetting the Password
+
+From an authenticated device shell, reset the WebCFG password to `freetz`, then sign in and set a new password immediately.
+
+For HTTP Basic authentication:
+
+```sh
+modconf set mod MOD_HTTPD_PASSWD='$1$freetzng$i0SVp/Hgvxd80q6MIUq701'
+modconf set mod MOD_HTTPD_USER=admin
+/mod/etc/init.d/rc.webcfg restart
+```
+
+Run `modsave` to persist the reset configuration across a reboot.
+
+For form-based login:
+
+```sh
+mkdir -p /tmp/flash/mod
+printf '%s' freetz | md5sum | sed 's/ .*//' > /tmp/flash/mod/webmd5
+```
+
+Run `modsave flash` to persist the reset across a reboot.
+
 ### Swap
 
 A common rule of thumb is to size swap roughly equal to installed RAM.

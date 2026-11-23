@@ -1,21 +1,29 @@
 #!/bin/sh
 
 post_string=""
-if [ "$REQUEST_METHOD" = "POST" ]; then
-	read post_string
+# rc.nhipt also sources this script for local configuration.
+if [ "$NHIPT_CONFIG" != "box" ] && [ -n "$REQUEST_METHOD" ]; then
+	_CGI_CSRF_SCOPE=nhipt
+	. /usr/lib/libmodcgi.sh
+	if [ "$REQUEST_METHOD" = "POST" ]; then
+		# The CSRF check may already have consumed stdin; replay its body.
+		csrf_check__read_post
+		post_string=$(cat "$_CGI_POST_FILE")
+	fi
 fi
 for INPUT_INTERFACE in $(ifconfig | grep ^[a-z] | cut -f1 -d ' '); do
 	x=$x+"$INPUT_INTERFACE"
 done
 lanip="$(ifconfig | grep -v lan:0 | grep -A 2 lan | awk -F'[ :]+' '/inet addr/{print $4}')"
 ###POSTBACK INTERFACE
-if [ "$QUERY_STRING" != "" ] || [ "$post_string" != "" ] || [ "$NHIPT_CONFIG" = "box" ]; then
+# GET/HEAD only render the interface, including legacy action URLs.
+if [ "$REQUEST_METHOD" = "POST" ] || [ "$NHIPT_CONFIG" = "box" ]; then
 
 # Ermitteln der Log Datei vom syslogd:
 	logfile="$(ps | grep -v "grep" | grep -e "syslogd" | awk '{i=1; while (i<=20){ if ($i == "-O"){ print $(i+1)}; i++;}}')"
 
 # awk Error Lines + 20 = Real Line
-	(awk -v SYSLOGDFILE=$logfile -v IFCS=$x -v PSTR=$post_string -v QSTR=$QUERY_STRING -v LANIP=$lanip 'BEGIN {
+	(awk -v SYSLOGDFILE="$logfile" -v IFCS="$x" -v PSTR="$post_string" -v QSTR="$QUERY_STRING" -v LANIP="$lanip" 'BEGIN {
 		myIP = ENVIRON["REMOTE_ADDR"];
 		changed = 0; 		# FW CONFIGURATION CHANGED
 		dirchanged = 0; 	# DIRECTORIES CHANGED
@@ -152,7 +160,9 @@ if [ "$QUERY_STRING" != "" ] || [ "$post_string" != "" ] || [ "$NHIPT_CONFIG" = 
 					ret = system(myCmd);
 					if (ret==0){changed=1;}
 				}
-			} else {
+			}
+			# Links now submit POST; keep their query parameters for the action.
+			if (ENVIRON["REQUEST_METHOD"] == "POST" && ENVIRON["NHIPT_CONFIG"] != "box") {
 				n = split(urldecode(QSTR), PA, "&"); for (i=1;i<=n;i++) {split(PA[i], PM, "=");Param[PM[1]] = PM[2]}
 				table	   = Param["TABLE"];
 				if (Param["IPV6"] == 1){myCmdPrefix = "ip6";} else {myCmdPrefix = "ip";}
@@ -225,7 +235,7 @@ function checkAirbag(){
 		if (myModules["iptable_nat"] == 1){
 			tst = system("iptables -t nat -S PREROUTING 1 | grep " RCOD " | grep \"ACCEPT\" 1> /dev/null");
 			if (tst != 0) {ret += system("iptables -t nat -I PREROUTING 1 -s " RCOD " -j ACCEPT");}
-			tst = system("iptables -t nat -S OUTPUT 1 | grep " RCOnoloadmodules=D " | grep \"ACCEPT\" 1> /dev/null");
+			tst = system("iptables -t nat -S OUTPUT 1 | grep " RCOD " | grep \"ACCEPT\" 1> /dev/null");
 			if (tst != 0) {ret += system("iptables -t nat -I OUTPUT 1 -d " RCOD " -j ACCEPT");}
 			tst = system("iptables -t nat -S POSTROUTING 1 | grep " RCOD " | grep \"ACCEPT\" 1> /dev/null");
 			if (tst != 0) {ret += system("iptables -t nat -I POSTROUTING 1 -d " RCOD " -j ACCEPT");}
@@ -241,8 +251,8 @@ function loadModules(){
 		for (x in Param) {if (index(Param[x], "ip_conntrack") > 0) {conntrack=1;} if (index(Param[x], "ip_nat") > 0) {nat=1;} if (index(Param[x], "iptable_mangle") > 0) {mangle=1;} if (index(Param[x], "iptable_raw") > 0) {raw=1;}}
 		if (conntrack==1){Param["ip_conntrack"] = "ip_conntrack";}
 		if (nat==1)		{Param["ip_nat"] = "ip_nat"; if (myModules["iptable_nat"] != 1) {system("modprobe iptable_nat"); changed=1;}} else { if (myModules["iptable_nat"] == 1){ system("rmmod ipt_REDIRECT\nrmmod iptable_nat"); changed=1;}}
-		if (mangle==1)	{if (myModules["iptable_mangle"] != 1) {system("modprobe iptable_mangle") changed=1;}} else { if (myModules["iptable_mangle"] == 1){ system("rmmod iptable_mangle"); changed=1;}}
-		if (raw==1)		{if (myModules["iptable_raw"] != 1) {system("modprobe iptable_raw") changed=1;}} else { if (myModules["iptable_raw"] == 1){ system("rmmod iptable_raw"); changed=1;}}
+		if (mangle==1)	{if (myModules["iptable_mangle"] != 1) {system("modprobe iptable_mangle"); changed=1;}} else { if (myModules["iptable_mangle"] == 1){ system("rmmod iptable_mangle"); changed=1;}}
+		if (raw==1)		{if (myModules["iptable_raw"] != 1) {system("modprobe iptable_raw"); changed=1;}} else { if (myModules["iptable_raw"] == 1){ system("rmmod iptable_raw"); changed=1;}}
 		for (x in y){
 			if (Param["ip_conntrack" y[x]] == ("ip_conntrack" y[x]) && myModules["ip_conntrack" y[x]] != 1) {ret = system("modprobe ip_conntrack" y[x]); print "Loading " x " ..."; changed=1;}
 			else if (Param["ip_conntrack" y[x]] == "" && myModules["ip_conntrack" y[x]] == 1) {ret = system("rmmod ip_conntrack" y[x]); print "Un-Load " x "..."; changed=1;}
@@ -494,7 +504,7 @@ function urldecode (s) {
 	hextab["6"] = 6; hextab["E"] = hextab["e"] = 14;
 	hextab["7"] = 7; hextab["F"] = hextab["f"] = 15;
  	decoded = "";
-	i = 1;RELATED,ESTABLISHED
+	i = 1;
 	len = length (s);
 	while ( i <= len ) {
 		c = substr (s, i, 1);
@@ -522,8 +532,7 @@ function urldecode (s) {
 } # end urldecode
 	{
 	} # end main
-	END
-	{
+	END {
 	}' 2>&1) >> /var/tmp/nhipt.log
 fi
 
@@ -556,7 +565,7 @@ else
 	if [ -n "$(ip6tables -S -t raw 	  | grep -e '^Table does not exist')" ]; then touch /var/tmp/ip6traw.tmp; else ip6tables -t raw -S > /var/tmp/ip6traw.tmp; fi
 fi
 
-  echo "$(awk -v IFCS=$x -v PSTR=$post_string -v QSTR=$QUERY_STRING 'BEGIN {
+  echo "$(awk -v IFCS="$x" -v PSTR="$post_string" -v QSTR="$QUERY_STRING" -v CSRF_TOKEN="$_CGI_CSRF_TOKEN" 'BEGIN {
 	print "Content-type: text/html"
 	print ""
 	print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\"  \"http://www.w3.org/TR/html4/strict.dtd\">";
@@ -567,6 +576,9 @@ fi
 	print "<meta http-equiv=\"pragma\" content=\"no-cache\">";
 	print "<meta http-equiv=\"expires\" content=\"-1\">";
 	print "<meta name=\"expires\" content=\"0\">";
+	print "<meta name=\"csrf-token\" content=\"" CSRF_TOKEN "\">";
+	while ((getline csrfLine < "/usr/lib/mod/cgi/csrf.js") > 0) { print csrfLine; }
+	close("/usr/lib/mod/cgi/csrf.js");
 	print "<STYLE>";
 	print "TR			{background-color:#FFFFFF;}";
 	print "TR:hover		{background-color:#CCCCCC;}";
@@ -616,6 +628,7 @@ fi
 	#END CHECK
 	if(login != 1){print "<BR><BR><BR><H1>ACCESS DENIED FROM IP : " myIP "</H1>\n</BODY>\n</HTML>"; exitSwitch=1; exit 0;};
 	myURL = ENVIRON["SCRIPT_NAME"];
+	csrfInput = "<INPUT TYPE=HIDDEN NAME=csrf_token VALUE=\"" CSRF_TOKEN "\">";
 	admIP = RCOD;
 	settingsPrinted = 0;
 	myIP  = ENVIRON["REMOTE_ADDR"];
@@ -682,8 +695,8 @@ function AdminIFC () {
 	if (myConf["DSLDOFF"] == "1") {dsldoff=" checked";}
 	if (myConf["ADMINIP"] > "") {adminr="adming";} else {adminr="adminr";}
 	myStr = "<TABLE cellspacing=\"0\" WIDTH=100%><TR><TH COLSPAN=3>INTERFACE SETTINGS </TH></TR>";
-	myStr = myStr "<FORM METHOD=POST ACTION=" myURL "><TR><TH class=right>" ipStr "ADMIN IP : </TH><TD COLSPAN=2><INPUT CLASS=" adminr " TYPE=TEXT NAME=ADMIP VALUE=\"" ifcIP "\"></TD><TD><INPUT TYPE=SUBMIT NAME=SETIP VALUE=set></TD></TR></FORM>";
-	myStr = myStr "<FORM METHOD=POST ACTION=" myURL ">";
+	myStr = myStr "<FORM METHOD=POST ACTION=" myURL ">" csrfInput "<TR><TH class=right>" ipStr "ADMIN IP : </TH><TD COLSPAN=2><INPUT CLASS=" adminr " TYPE=TEXT NAME=ADMIP VALUE=\"" ifcIP "\"></TD><TD><INPUT TYPE=SUBMIT NAME=SETIP VALUE=set></TD></TR></FORM>";
+	myStr = myStr "<FORM METHOD=POST ACTION=" myURL ">" csrfInput;
 	myStr = myStr "<TR><TH class=right>SET BACKUP DIRECTORY : </TH><TD COLSPAN=2><INPUT CLASS=admin TYPE=TEXT NAME=BACDIR VALUE=\"" myConf["BACK"] "\"></TD></TR>";
 if (nolog == 0) {
 	myStr = myStr "<TR><TH class=right>SET LOG DIRECTORY : </TH><TD COLSPAN=2><INPUT CLASS=admin TYPE=TEXT NAME=LOGDIR VALUE=\"" myConf["LOGD"] "\"></TD></TR>";
@@ -733,7 +746,7 @@ function AdminButtons(){
 	if (check["changed"] == 0)   {prStyle = "ok";} else {prStyle = "error";}
 	if (check["log_deamon"] == 0){lgStyle = "ok"; lgAction="<INPUT TYPE=SUBMIT NAME=STOPLOG VALUE=\"stop logging\">"; } else {lgStyle = "error"; lgAction="<INPUT TYPE=SUBMIT NAME=STRTLOG VALUE=\"start logging\">";}
 	myStr = "<TABLE cellspacing=\"0\" WIDTH=100%><TR><TH COLSPAN=3>ACTIONS</TH></TR>";
-	myStr = myStr "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#END" JumpMark"><TR><TD COLSPAN=3 CLASS=" prStyle "><INPUT TYPE=SUBMIT NAME=PERSIST VALUE=\"persist rules\"></TD></TR>";
+	myStr = myStr "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#END" JumpMark">" csrfInput "<TR><TD COLSPAN=3 CLASS=" prStyle "><INPUT TYPE=SUBMIT NAME=PERSIST VALUE=\"persist rules\"></TD></TR>";
 	if (nolog == 0){
 		myStr = myStr "<TR CLASS=solid><TD COLSPAN=3 CLASS=" lgStyle ">" lgAction "</TD></TR>\
 		<TR CLASS=solid><TD COLSPAN=3><INPUT TYPE=SUBMIT NAME=GETSTAT VALUE=\"check status\"></TD></TR>\
@@ -753,7 +766,7 @@ function AdminButtons(){
 }
 function myTBHL (chain) {
 	formPrinted = 1;
-	print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#" table ipv6 chain JumpMark ">"
+	print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#" table ipv6 chain JumpMark ">" csrfInput
 	print "<TR class=solid><TD COLSPAN=\"11\" class=noborder><A NAME=" table ipv6 chain CurrentJumpMark "><INPUT TYPE=HIDDEN NAME=CHAIN VALUE=" chain "><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 ">&nbsp;</TD></TR><TR><TH COLSPAN=\"11\">RULES FOR CHAIN " chain " [ " table " ] [ " ipv6txt " ]</TH></TR>";
 	print "<TR><TH>ID</TH><TH>Source IP</TH><TH>Dest IP</TH><TH>In IFC</TH><TH>Out IFC</TH><TH>Prot</TH><TH>Module</TH><TH>S-Port</TH><TH>D-Port</TH><TH>Action</TH><TH>Param</TH><TH>Edit</TH></TR>";
 }
@@ -770,7 +783,7 @@ function myTBHL (chain) {
 			if (MySection == "-P") {
 				print "<TR><TD COLSPAN=4 class=noborder>&nbsp;</TD></TR><TR><TH COLSPAN=4>CUSTOM CHAINS</TH></TR>";
 				inSubTable=1;
-				print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark "><TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
+				print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark ">" csrfInput "<TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
 			}
 			inSubTable=0; print "</TABLE><P></TD><TD CLASS=noborder COLSPAN=9></TD></TR>"
 		}
@@ -811,22 +824,22 @@ function myTBHL (chain) {
 		Chains[nTables,1] = $2;
 		Chains[nTables,2] = 0;
 		if (myArray["Target"] == "ACCEPT") {NewPol = "DROP";} else {NewPol = "ACCEPT";}
-		print "<TR><TD>" myArray["Chain"] "</TD><TD class=" myArray["Target"] ">" myArray["Target"] "</TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=" NewPol "&J=" JumpMark "#P" table ipv6 JumpMark ">[change]</A></TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=PURGE&J=" JumpMark "#P" table ipv6 JumpMark ">[purge]</A></TD></TR>";
+		print "<TR><TD>" myArray["Chain"] "</TD><TD class=" myArray["Target"] ">" myArray["Target"] "</TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=" NewPol "&J=" JumpMark "#P" table ipv6 JumpMark " onclick=\"return csrfPost(this.href)\">[change]</A></TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=PURGE&J=" JumpMark "#P" table ipv6 JumpMark " onclick=\"return csrfPost(this.href)\">[purge]</A></TD></TR>";
 	} else if (myArray["Action"] == "-N") {
 		if (MySection != $1) {inSubTable=1; print "<TR><TD COLSPAN=4 class=noborder>&nbsp;</TD></TR><TR><TH COLSPAN=4>CUSTOM CHAINS</TH></TR>"; }
 		nTables++;  Chains[nTables,1] = $2; Chains[nTables,2] = 0;
 		nCChains++; CChains[nCChains] = $2;
 		inSubTable=1;
-		print "<TR><TD COLSPAN=\"2\">" myArray["Chain"] "</TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=DEL&J=" JumpMark "#P" table ipv6 JumpMark ">[Del]</A></TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=PURGE&J=" JumpMark "#P" table ipv6 JumpMark ">[purge]</A></TD></TR>";
+		print "<TR><TD COLSPAN=\"2\">" myArray["Chain"] "</TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=DEL&J=" JumpMark "#P" table ipv6 JumpMark " onclick=\"return csrfPost(this.href)\">[Del]</A></TD><TD><A HREF=" myURL "?MODE=POL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&POL=PURGE&J=" JumpMark "#P" table ipv6 JumpMark " onclick=\"return csrfPost(this.href)\">[purge]</A></TD></TR>";
 	} else {
 		if (MySection != $1){
 			if (MySection != "-N") { print "<TR><TD COLSPAN=4 class=noborder>&nbsp;</TD></TR><TR><TH COLSPAN=4>CUSTOM CHAINS</TH></TR>"; }
 			inSubTable=1;
-			print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark "><TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
+			print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark ">" csrfInput "<TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
 			if (settingsPrinted == 0) {settingsPrinted=1;
 				print "</TABLE><P></TD><TD COLSPAN=6 class=noborder>" AdminIFC() "</TD><TD class=noborder></TD><TD COLSPAN=2 class=noborder>" AdminButtons() "</TD></TR>";
 				inSubTable=0;
-				print "<FORM METHOD=POST ACTION=" myURL ">";
+				print "<FORM METHOD=POST ACTION=" myURL ">" csrfInput;
 				print "<TR><TH COLSPAN=\"2\">Experts only: /var/mod/root # </TH><TD COLSPAN=\"9\"><INPUT TYPE=TEXT NAME=EXPERT class=expert></TD><TD><INPUT TYPE=SUBMIT NAME=EXEC VALUE=execute></TD></TR></FORM>";
 				} else {inSubTable=0; print "</TABLE><P></TD><TD CLASS=noborder COLSPAN=9></TD></TR>"}
 			}
@@ -871,7 +884,7 @@ function myTBHL (chain) {
 			myArray["SourceIP"] "</TD><TD>&nbsp;" myArray["DestIP"] "</TD><TD>&nbsp;" myArray["InIF"] "</TD><TD>&nbsp;" \
 			myArray["OutIF"] "</TD><TD>&nbsp;" myArray["Prot"] "</TD><TD>&nbsp;" myArray["Module"] "</TD><TD>&nbsp;" \
 			myArray["Sport"] "</TD><TD>&nbsp;" myArray["Dport"] "</TD><TD>&nbsp;" myArray["Target"] "</TD><TD>&nbsp;" \
-			myArray["Rej"] myArray["Log"] myArray["State"] myArray["Extra"] myArray["Comment"] "</TD><TD nowrap><A HREF=" myURL "?MODE=UP&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark ">[UP]</A> <A HREF=" myURL "?MODE=DN&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark ">[DN]</A> <A HREF=" myURL "?MODE=DEL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark ">[Del]</A> <A HREF=" myURL "?MODE=EDT&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark ">[Edit]</A></TD></TR>"
+			myArray["Rej"] myArray["Log"] myArray["State"] myArray["Extra"] myArray["Comment"] "</TD><TD nowrap><A HREF=" myURL "?MODE=UP&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark " onclick=\"return csrfPost(this.href)\">[UP]</A> <A HREF=" myURL "?MODE=DN&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark " onclick=\"return csrfPost(this.href)\">[DN]</A> <A HREF=" myURL "?MODE=DEL&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark " onclick=\"return csrfPost(this.href)\">[Del]</A> <A HREF=" myURL "?MODE=EDT&IPV6=" ipv6 "&TABLE=" table "&CHAIN=" myArray["Chain"] "&IDX=" i "&J=" JumpMark "#" table ipv6 myArray["Chain"] JumpMark ">[Edit]</A></TD></TR>"
 		}
 		i++;
 	}
@@ -883,14 +896,14 @@ function myTBHL (chain) {
 	if (MySection == "-P") {
 		print "<TR><TD COLSPAN=4 class=noborder>&nbsp;</TD></TR><TR><TH COLSPAN=4>CUSTOM CHAINS</TH></TR>";
 		inSubTable=1;
-		print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark "><TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
+		print "<FORM METHOD=POST ACTION=" myURL "?J=" JumpMark "#P" table ipv6 JumpMark ">" csrfInput "<TR><TD COLSPAN=2><INPUT TYPE=HIDDEN NAME=TABLE VALUE=" table "><INPUT TYPE=HIDDEN NAME=IPV6 VALUE=" ipv6 "><INPUT TYPE=TEXT NAME=CHAIN></TD><TD COLSPAN=2><INPUT TYPE=SUBMIT NAME=MODE VALUE=New></TD></TR></FORM>";
 		}
 	if (inSubTable ==1) {
 		 inSubTable=0;
 			if (settingsPrinted == 0) {settingsPrinted=1;
 				print "</TABLE><P></TD><TD COLSPAN=6 class=noborder>" AdminIFC() "</TD><TD class=noborder></TD><TD COLSPAN=2 class=noborder>" AdminButtons() "</TD></TR>";
 				inSubTable=0;
-				print "<FORM METHOD=POST ACTION=" myURL ">";
+				print "<FORM METHOD=POST ACTION=" myURL ">" csrfInput;
 				print "<TR><TH COLSPAN=\"2\">Experts only: /var/mod/root # </TH><TD COLSPAN=\"9\"><INPUT TYPE=TEXT NAME=EXPERT class=expert></TD><TD><INPUT TYPE=SUBMIT NAME=EXEC VALUE=execute></TD></TR></FORM>";
 				} else {inSubTable=0; print "</TABLE><P></TD><TD CLASS=noborder COLSPAN=9></TD></TR>"}
 		 }

@@ -5,7 +5,7 @@
 DAEMON=lcd4linux
 SUBDAEMON=lcd
 DAEMON_BIN=httpd-${SUBDAEMON}
-DAEMON_ENV="PATH=$PATH"
+DAEMON_ENV="PATH=$PATH _CGI_CSRF_SCOPE=$SUBDAEMON"
 
 if [ ! -r "/mod/etc/conf/${DAEMON}.cfg" ]; then
 	echo "Error[$DAEMON]: not configured" 1>&2
@@ -15,4 +15,4 @@ fi
 
 homedir=/mod/pkg/${DAEMON}/usr/mww-${SUBDAEMON}/
 
-exec env - $DAEMON_ENV $DAEMON_BIN "$@" -p "$LCD4LINUX_WEB_PORT" -h "$homedir"
+exec env - $DAEMON_ENV $DAEMON_BIN "$@" -p "$LCD4LINUX_WEB_PORT" -h "$homedir" -r "LCD4linux"

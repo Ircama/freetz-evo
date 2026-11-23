@@ -6,6 +6,18 @@ _cgi_print_extra_styles() {
 	done
 }
 
+# Helper for new-login session-timeout footer
+_cgi_print_session_timeout() {
+	local label="$(lang de:"Abmeldung bei Inaktivit&auml;t" en:"Logout on inactivity")"
+	local timeout="${MOD_HTTPD_SESSIONTIMEOUT:-600}"
+	case $timeout in ''|*[!0123456789]*) timeout=600 ;; esac
+	if [ "$timeout" -gt 0 ]; then
+		echo "$label: $(date -d "@$(($(date +%s) + ${timeout#"${timeout%%[!0]*}"}))" +'%H:%M:%S') (${timeout} s)"
+	else
+		echo "$label: $(lang de:"deaktiviert" en:"disabled")"
+	fi
+}
+
 #
 # Set options for the following CGI page
 #
@@ -78,8 +90,7 @@ Expires: 0${CRet}
 Pragma: no-cache${CRet}
 X-UA-Compatible: IE=edge${CRet}
 ${CRet}
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-   "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -87,6 +98,10 @@ EOF
 	site_refresh
 	cgi_width_setup
 	skin_head "$title" "$id"
+	if [ -n "$_CGI_CSRF_TOKEN" ]; then
+		echo "<meta name='csrf-token' content='$_CGI_CSRF_TOKEN'>"
+		cat /usr/lib/mod/cgi/csrf.js
+	fi
 	cat << EOF
 </head>
 <body${id:+ id='$id'}>

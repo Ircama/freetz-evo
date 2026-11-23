@@ -1,7 +1,10 @@
 #!/bin/sh
 
 . /usr/lib/libmodcgi.sh
+[ -r /etc/options.cfg ] && . /etc/options.cfg
 
+check "$VNSTAT_DARK_MODE" yes:dark_mode
+check "$VNSTAT_TRANS_BGD" yes:trans_bgd
 check "$VNSTAT_WEBENABLED" yes:webenabled
 check "$VNSTAT_WEB_AUTH" yes:web_auth
 check "$VNSTAT_WEB_INETD" yes:web_inetd
@@ -26,16 +29,28 @@ $(lang de:"Datenbankverzeichnis" en:"Database directory"):&nbsp;
 <input type="text" name="dbdir" size="42" maxlength="255" value="$(html "$VNSTAT_DBDIR")">
 </p>
 <p>
-$(lang de:"Zu &uuml;berwachende Interfaces" en:"Interfaces for monitoring"):&nbsp;
+$(lang de:"Zu &uuml;berwachende Interfaces (leer lassen f&uuml;r alle)" en:"Interfaces for monitoring (leave empty for all)"):&nbsp;
 <input type="text" name="interfaces" size="55" maxlength="255" value="$(html "$VNSTAT_INTERFACES")">
 <br>
+<br>
 <font size=-2>
-$(lang de:"Verf&uuml;gbare Interfaces" en:"Available interfaces")
-:&nbsp;$(ifconfig | grep "^\w" | sed 's/ .*//g')
-$(lang de:" - leer lassen f&uuml;r alle" en:" - leave empty for all")
+$(lang de:"Verf&uuml;gbare Interfaces" en:"Available interfaces"):&nbsp;
+$(vnstat --iflist | sed 's/.*: //;s/ ([^)]*)//g')
 </font>
 </p>
 EOF
+if [ "$FREETZ_PACKAGE_VNSTAT_VERSION_ABANDON" != "y" ]; then
+cat << EOF
+<p>
+<input type="hidden" name="dark_mode" value="no">
+<input id="d0" type="checkbox" name="dark_mode" value="yes"$dark_mode_chk><label for="d0">$(lang de:"Grafiken im dunklen Modus anzeigen" en:"Display graphics in dark mode")</label>
+</p>
+<p>
+<input type="hidden" name="trans_bgd" value="no">
+<input id="t0" type="checkbox" name="trans_bgd" value="yes"$trans_bgd_chk><label for="t0">$(lang de:"Grafiken mit transparentem Hintergrund" en:"Graphics with transparent background")</label>
+</p>
+EOF
+fi
 
 sec_end
 sec_begin "$(lang de:"Webserver" en:"Webserver")"

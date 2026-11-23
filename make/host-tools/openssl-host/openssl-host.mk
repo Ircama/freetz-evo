@@ -19,6 +19,7 @@ $(PKG)_INSTALLDIR         := $(OPENSSL_HOST_DIR)/installdir
 $(PKG)_PATCH_POST_CMDS += $(RM) Makefile Makefile.bak;
 $(PKG)_PATCH_POST_CMDS += ln -s Configure configure;
 
+$(PKG)_CONFIGURE_DEFOPTS := n
 $(PKG)_CONFIGURE_OPTIONS += --prefix=$(OPENSSL_HOST_INSTALLDIR)
 
 
@@ -40,9 +41,9 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 	@touch $@
 
 define $(PKG)_FIXHARDCODED
-	@$(PATCHELF_HOST) --replace-needed $(1)libcrypto.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/libcrypto.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/libssl.so.$(OPENSSL_HOST_LIB_VERSION)
+	@$(PATCHELF) --replace-needed $(1)libcrypto.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/libcrypto.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/libssl.so.$(OPENSSL_HOST_LIB_VERSION)
 	@for libfile in libcrypto libssl; do \
-	$(PATCHELF_HOST) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_TARGET_BINARY) ;\
+	$(PATCHELF) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_TARGET_BINARY) ;\
 	done ;
 endef
 

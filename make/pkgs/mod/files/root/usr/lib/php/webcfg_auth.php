@@ -89,19 +89,17 @@ if (!function_exists('webcfg_authenticated_user')) {
 if (!function_exists('webcfg_validate_sid_session')) {
     function webcfg_validate_sid_session($cfg) {
         $sid = isset($_COOKIE['SID']) ? trim((string)$_COOKIE['SID']) : '';
-        if (!preg_match('/^[a-f0-9]{16,64}$/', $sid)) {
+        if (!preg_match('/\A[a-f0-9]{32}\z/', $sid)) {
             return false;
         }
 
-        $idfile = '/tmp/' . $sid . '.webcfg';
+        $idfile = '/tmp/.webcfg.mod.' . $sid . '.sid';
         if (!is_file($idfile)) {
             return false;
         }
 
-        $timeout = (int)webcfg_cfg_get($cfg, 'MOD_HTTPD_SESSIONTIMEOUT', '600');
-        if ($timeout < 0) {
-            $timeout = 600;
-        }
+        $timeout = webcfg_cfg_get($cfg, 'MOD_HTTPD_SESSIONTIMEOUT', '600');
+        $timeout = preg_match('/\A[0-9]+\z/', $timeout) ? (int)$timeout : 600;
 
         $mtime = @filemtime($idfile);
         if (!is_int($mtime) || $mtime <= 0) {
@@ -110,7 +108,7 @@ if (!function_exists('webcfg_validate_sid_session')) {
 
         // Keep behavior consistent with login.sh semantics.
         $lastacc = time() - $mtime;
-        if ($lastacc > $timeout) {
+        if ($timeout > 0 && $lastacc > $timeout) {
             @unlink($idfile);
             return false;
         }

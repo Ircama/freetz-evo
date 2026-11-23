@@ -8,7 +8,7 @@ cgi --id=freetz
 
 false && \
   (svn log --quiet | grep '^r' | sed -rn 's/^r[^|]*.([^|]*).*/\1/p' ; echo -e 'Er4twXz\nMcBane87\nTobjasR\nL3P3\nhermann72pb\njohnbock\nM66B\nmagenbrot\nreiffert\nsf3978') \
-  | sed 's/(.*)//g;s/ //g' | sort -u | grep -vE '^(root|administrator|github-actions|github-actions\[bot\]|dependabot\[bot\]|fda77|oliver|derheimi|sfritz|SvenLuebke)$' \
+  | sed 's/(.*)//g;s/ //g' | sort -u | grep -vE '^(root|administrator|github-actions|github-actions\[bot\]|dependabot\[bot\]|fda77|oliver|derheimi|sfritz|SvenLuebke|ufo)$' \
   | sed -r 's/([äöüÄÜÖ])/\&\1uml\;/g;y/äöüÄÖÜ/aouAOU/;s/\ß/\&szlig\;/g'
 
 cgi_begin "$(lang de:"&Uuml;ber" en:"About")"
@@ -32,6 +32,7 @@ cawidtu
 ChihabDjaidja
 cinereous
 cm8
+Codex
 Conan179
 cuma
 dionysius
@@ -116,6 +117,8 @@ stblassitude
 SvenL&uuml;bke
 telsch
 thiloms
+ThomasToka
+TinoN
 TobjasR
 uwes-ufo
 Whoopie

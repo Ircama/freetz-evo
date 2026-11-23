@@ -5,7 +5,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### A
 
-  * **[ACME.sh 3.1.6](acme.md)<a id='acme'></a>**<br>
+  * **[ACME.sh 3.1.7](acme.md)<a id='acme'></a>**<br>
     A pure Unix shell script implementing ACME client protocol.
 
   * **[age 1.3.1 (binaries only)](age.md)<a id='age'></a>**<br>
@@ -14,7 +14,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[aMUTorrent 3.5.0 - DEVELOPER](amutorrent.md)<a id='amutorrent'></a>**<br>
     Experimental package, needs Node.js: installs aMUTorrent as a service with full Node.js, with the frontend built on the host system and the Express/WebSocket backend running on the target. The bootstrap preconfigures a local rTorrent via SCGI directly to 127.0.0.1:${RTORRENT_SCGI_PORT:-16891} when available. The page http://fritz.box:81/amutorrent/ redirects to the service port (4000 by default) and displays a diagnostic page if the daemon is not running. Note: the Node.js porting on the target is not yet considered functional; for this reason the package remains in developer mode, disabled by default, and should not be considered ready for normal use.
 
-  * **[Apache2 2.4.69 (binary only)](apache2.md)<a id='apache2'></a>**<br>
+  * **[Apache2 2.4.71 (binary only)](apache2.md)<a id='apache2'></a>**<br>
     The Apache httpd server
 
   * **[aria2 1.37.0/AriaNg 1.3.13 (HTTP(s)/(s)FTP/Torrent/Metalink downloader)](aria2.md)<a id='aria2'></a>**<br>
@@ -38,7 +38,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[atuin 18.16.1](atuin.md)<a id='atuin'></a>**<br>
     atuin utility package built from source using Rust/Cargo. Requires uClibc 1.0.58 or newer (the Rust/Cargo cross-build is not supported on the older toolchains).
 
-  * **[AutoFS 5.0.5/5.1.9](autofs.md)<a id='autofs'></a>**<br>
+  * **[AutoFS 5.0.5/5.2.0](autofs.md)<a id='autofs'></a>**<br>
     Autofs is a kernel-based automounter for Linux. It performs a job similar to amd(8) but relies on a small stub of kernel code instead of pretending to be an NFS server. The result is simpler code, better reliability, and much faster operation in the common case (everything already mounted).
 
   * **<u>autossh 1.4g (binary only) - DEPRECATED</u><a id='autossh'></a>**<br>
@@ -68,7 +68,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>bfusb: AVM BlueFRITZ! USB stick support (binary only)</u><a id='bfusb'></a>**<br>
     This package adds support for the AVM BlueFRITZ! USB stick.
 
-  * **[BIND 9.11.37/9.20.30](bind.md)<a id='bind'></a>**<br>
+  * **[BIND 9.11.37/9.20.31](bind.md)<a id='bind'></a>**<br>
     BIND is a suite of software for interacting with the Domain Name System (DNS). The name BIND stands for "Berkeley Internet Name Daemon".
 
   * **[Bip 0.9.2 - DEPRECATED](bip.md)<a id='bip'></a>**<br>
@@ -106,7 +106,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### C
 
-  * **[CA-bundle 2026-10-20](ca-bundle.md)<a id='ca-bundle'></a>**<br>
+  * **[CA-bundle 2026-11-05](ca-bundle.md)<a id='ca-bundle'></a>**<br>
     The Mozilla CA certificate store in PEM format, see https://www.curl.se/docs/caextract.html Size of uncompressed file is about 250 KB.
 
   * **[caddy 2.11.2 (binary only)](caddy.md)<a id='caddy'></a>**<br>
@@ -234,7 +234,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[FFmpeg 5.1.10/7.1.5](ffmpeg.md)<a id='ffmpeg'></a>**<br>
     FFmpeg is a complete, cross-platform solution to record, convert and stream audio and video.
 
-  * **[Fontconfig 2.17.1/2.18.3 (binary only)](fontconfig.md)<a id='fontconfig'></a>**<br>
+  * **[Fontconfig 2.17.1/2.18.4 (binary only)](fontconfig.md)<a id='fontconfig'></a>**<br>
     Fontconfig is a library for configuring and customizing font access. This package adds /etc/fontsfonts.conf
 
   * **[fortune 1.2 - DEPRECATED](fortune.md)<a id='fortune'></a>**<br>
@@ -269,7 +269,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>Ghostscript fonts 8.11 (binary only) - DEPRECATED</u><a id='ghostscript-fonts'></a>**<br>
     This package provides the Ghostscript fonts.
 
-  * **[Git 2.26.2/2.56.0](git.md)<a id='git'></a>**<br>
+  * **[Git 2.26.2/2.56.1](git.md)<a id='git'></a>**<br>
     Git is a fast, scalable, distributed revision control system with an unusually rich command set that provides both high-level operations and full access to internals.
 
   * **[gitui 0.28.1](gitui.md)<a id='gitui'></a>**<br>
@@ -301,7 +301,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 
 ### H
 
-  * **[HAProxy 2.6.33 - DEPRECATED](haproxy.md)<a id='haproxy'></a>**<br>
+  * **[HAProxy 2.6.35](haproxy.md)<a id='haproxy'></a>**<br>
     HAProxy is a free, very fast and reliable solution offering high availability, load balancing, and proxying for TCP and HTTP-based applications.
 
   * **[Haserl 0.9.36 (binary only)](haserl.md)<a id='haserl'></a>**<br>
@@ -325,7 +325,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[htop 1.0.3/3.5.3 (binary only)](htop.md)<a id='htop'></a>**<br>
     htop is a more powerful alternative to top, using ncurses.
 
-  * **[htpdate 2.0.2](htpdate.md)<a id='htpdate'></a>**<br>
+  * **[htpdate 2.1.0](htpdate.md)<a id='htpdate'></a>**<br>
     The HTTP Time Protocol (HTP) is used to synchronize a computer's time with web servers as reference time source. Htpdate will synchronize your computer's time by extracting timestamps from HTTP headers found in web server responses. Htpdate can be used as a daemon, to keep your computer synchronized. WWW: http://www.clevervest.com/htp/ Manpage: http://linux.die.net/man/8/htpdate This package automatically removes AVM'S chronyd if necessary.
 
   * **<u>httpry 0.1.8 - DEPRECATED</u><a id='httpry'></a>**<br>
@@ -351,7 +351,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[IGMPproxy 0.4](igmpproxy.md)<a id='igmpproxy'></a>**<br>
     IGMPproxy is a simple dynamic Multicast Routing Daemon using only IGMP signalling. It's intended for simple forwarding of Multicast traffic between networks.
 
-  * **[ImageMagick 7.1.0-62/7.1.2-34 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
+  * **[ImageMagick 7.1.0-62/7.1.2-36 (binary only)](imagemagick.md)<a id='imagemagick'></a>**<br>
     ImageMagick is a robust collection of tools and libraries to read, write, and manipulate an image in many image formats, including popular formats like TIFF, JPEG, PNG, PDF, PhotoCD, and GIF. With ImageMagick, you can create images dynamically, making it suitable for Web applications. You can also resize, rotate, sharpen, color-reduce, or add special effects to an image and save your completed work in many different image formats. Image processing operations are available from the command line as well as through C, C++, and PERL-based programming interfaces.
 
   * **[Inadyn-mt 02.28.10 - DEPRECATED](inadyn-mt.md)<a id='inadyn-mt'></a>**<br>
@@ -369,7 +369,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[iodine 0.7.0 - DEPRECATED](iodine.md)<a id='iodine'></a>**<br>
     iodine lets you tunnel IPv4 data through a DNS server. This can be usable in different situations where internet access is firewalled, but DNS queries are allowed.
 
-  * **[iPerf3 3.3/3.22 (binary only)](iperf.md)<a id='iperf'></a>**<br>
+  * **[iPerf3 3.3/3.22.1 (binary only)](iperf.md)<a id='iperf'></a>**<br>
     iPerf3 is a tool for active measurements of the maximum achievable bandwidth on IP networks. It supports tuning of various parameters related to timing, buffers and protocols (TCP, UDP, SCTP with IPv4 and IPv6). For each test it reports the bandwidth, loss, and other parameters. S. https://github.com/esnet/iperf for more details.
 
   * **<u>IPsec-tools 0.7.2 - DEPRECATED</u><a id='ipsec-tools'></a>**<br>
@@ -540,7 +540,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>ngircd 22 - DEPRECATED</u><a id='ngircd'></a>**<br>
     ngIRCd is an Open Source server for the Internet Relay Chat (IRC), which is developed and published under the terms of the GNU General Public Licence (URL: http://www.gnu.org/licenses/gpl.html). ngIRCd means "next generation IRC daemon", it's written from scratch and not deduced from the "grandfather of IRC daemons", the daemon of the IRCNet. For documentation see: http://ngircd.barton.de/documentation.php.de
 
-  * **[Nmap 4.76/5.51/7.992 (binary only)](nmap.md)<a id='nmap'></a>**<br>
+  * **[Nmap 4.76/5.51/7.993 (binary only)](nmap.md)<a id='nmap'></a>**<br>
     Nmap ("Network Mapper") is a free and open source (license) utility for network exploration or security auditing. Many systems and network administrators also find it useful for tasks such as network inventory, managing service upgrade schedules, and monitoring host or service uptime. Nmap uses raw IP packets in novel ways to determine what hosts are available on the network, what services (application name and version) those hosts are offering, what operating systems (and OS versions) they are running, what type of packet filters/firewalls are in use, and dozens of other characteristics. It was designed to rapidly scan large networks, but works fine against single hosts. Nmap runs on all major computer operating systems, and both console and graphical versions are available.
 
   * **[nmon 16s (binary only)](nmon.md)<a id='nmon'></a>**<br>
@@ -575,13 +575,13 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[Openntpd 3.9p1 - DEPRECATED](openntpd.md)<a id='openntpd'></a>**<br>
     OpenNTPD is a FREE, easy to use implementation of the Network Time Protocol. This package automatically removes AVM'S chronyd if necessary.
 
-  * **[OpenSSH 9.3p2/10.6p1](openssh.md)<a id='openssh'></a>**<br>
+  * **[OpenSSH 9.3p2/10.6p2](openssh.md)<a id='openssh'></a>**<br>
     OpenSSH is the premier connectivity tool for remote login with the SSH protocol. It encrypts all traffic to eliminate eavesdropping, connection hijacking, and other attacks. In addition, OpenSSH provides a large suite of secure tunneling capabilities, several authentication methods, and sophisticated configuration options.
 
   * **[OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.22/3.5.9 (binary only)](openssl.md)<a id='openssl'></a>**<br>
     This package contains the OpenSSL command-line utility.
 
-  * **[OpenVPN 2.4.12/2.5.11/2.6.23/2.7.8](openvpn.md)<a id='openvpn'></a>**<br>
+  * **[OpenVPN 2.4.12/2.5.11/2.6.23/2.7.9](openvpn.md)<a id='openvpn'></a>**<br>
     VPN Server
 
   * **[oxker 0.13.2](oxker.md)<a id='oxker'></a>**<br>
@@ -592,10 +592,10 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[p7zip 16.02 (binary only)](p7zip.md)<a id='p7zip'></a>**<br>
     7-Zip  is  a  file  archiver  with the highest compression ratio. The program supports 7z (that implements LZMA compression algorithm), ZIP, CAB, ARJ, GZIP, BZIP2, TAR, CPIO, RPM and DEB formats. Compression ratio in the new 7z format is 30-50% better  than ratio in ZIP format.
 
-  * **[PCP client 1c783fb (binary only)](pcp.md)<a id='pcp'></a>**<br>
-    PCP client library implements client side of PCP (RFC 6887) and NATPMP (RFC 6886) protocols. Switch to NATPMP is done automatically by version negotiation. This library enables any network application to manage network edge device (e.g. to create NAT mapping or ask router for specific flow treatment).
+  * **[pcpnatpmp: PCP/NAT-PMP client 1.0.0 (binary only)](pcpnatpmp.md)<a id='pcpnatpmp'></a>**<br>
+    Port Control Protocol (PCP) and NAT-PMP client library Implements client side of PCP (RFC 6887) and NAT-PMP (RFC 6886) protocols. Switch to NAT-PMP is done automatically by version negotiation. This library enables any network application to manage network edge device (e.g. to create NAT mapping or ask router for specific flow treatment).
 
-  * **[PCSC-lite 1.9.5/2.5.2 (binary only)](pcsc-lite.md)<a id='pcsc-lite'></a>**<br>
+  * **[PCSC-lite 1.9.5/2.5.3 (binary only)](pcsc-lite.md)<a id='pcsc-lite'></a>**<br>
     The purpose of PCSC Lite is to provide a Windows(R) SCard interface in a very small form factor for communicating to smart cards and readers.
 
   * **[pdns-authoritative: PowerDNS Authoritative Server 5.0.5](pdns-authoritative.md)<a id='pdns-authoritative'></a>**<br>
@@ -637,7 +637,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>privatekeypassword 0.7-git</u><a id='privatekeypassword'></a>**<br>
     Reveals the password for AVM's private key file (/var/flash/websrv_ssl_key.pem), makes it possible to reuse it for other packages.
 
-  * **[Privoxy 4.1.0](privoxy.md)<a id='privoxy'></a>**<br>
+  * **[Privoxy 4.2.0](privoxy.md)<a id='privoxy'></a>**<br>
     Privoxy is a web proxy with advanced filtering capabilities for protecting privacy, modifying web page data, managing cookies, controlling access, and removing ads, banners, pop-ups and other obnoxious Internet junk. It can also be used together with Tor Proxy to forward HTTP traffic to Tor as described in the Tor documentation. Open http://config.privoxy.org/show-status for details.
 
   * **[procps-ng 4.0.7 (binaries only)](procps-ng.md)<a id='procps-ng'></a>**<br>
@@ -649,7 +649,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[prometheus 3.11.3 (binary only)](prometheus.md)<a id='prometheus'></a>**<br>
     This package cross-compiles the upstream Go sources and installs the prometheus executable on the target. Can be externalized to save flash memory.
 
-  * **[ProxyChains-NG 4.17](proxychains-ng.md)<a id='proxychains-ng'></a>**<br>
+  * **[ProxyChains-NG 4.18](proxychains-ng.md)<a id='proxychains-ng'></a>**<br>
     A preloader which hooks calls to sockets in dynamically linked programs and redirects it through one or more socks/http proxies, tor is also supported. Usage: proxychains4 telnet mail.example.com 25
 
   * **<u>Pseudo-Pi-hole DNS Sinkhole</u><a id='pseudo-pi-hole'></a>**<br>
@@ -1059,7 +1059,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[RRDtool 1.2.30/1.11.0 (binary only)](rrdtool.md)<a id='rrdtool'></a>**<br>
     RRDtool is the OpenSource industry standard, high performance data logging and graphing system for time series data. Use it to write your custom monitoring shell scripts or create whole applications using its PHP bindings.
 
-  * **[rsync 3.4.1/3.5.1](rsync.md)<a id='rsync'></a>**<br>
+  * **[rsync 3.4.1/3.5.2](rsync.md)<a id='rsync'></a>**<br>
     rsync is an open source utility that provides fast incremental file transfer.
 
   * **<u>RTMPDump 2.4-git (binary only) - DEPRECATED</u><a id='rtmpdump'></a>**<br>
@@ -1120,7 +1120,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>spawn-fcgi 1.6.3 (binary only) - DEPRECATED</u><a id='spawn-fcgi'></a>**<br>
     Spawns FastCGI processes
 
-  * **[SQLite 3.40.1/3.47.1/3.53.3 (binary only)](sqlite.md)<a id='sqlite'></a>**<br>
+  * **[SQLite 3.40.1/3.47.1/3.54.1 (binary only)](sqlite.md)<a id='sqlite'></a>**<br>
     SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
 
   * **<u>squashfs3: squashfs-tools 3.4</u><a id='squashfs3'></a>**<br>
@@ -1198,7 +1198,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[tmux 3.8 (binary only)](tmux.md)<a id='tmux'></a>**<br>
     tmux, a BSD-licensed alternative to GNU screen. Uses ncurses.
 
-  * **[Tor 0.4.8.25/0.4.9.14](tor.md)<a id='tor'></a>**<br>
+  * **[Tor 0.4.8.25/0.4.9.17](tor.md)<a id='tor'></a>**<br>
     The Onion Router Anonymous Internet communication system.
 
   * **[tput (ncurses terminal control)](tput.md)<a id='tput'></a>**<br>
@@ -1233,7 +1233,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[unixODBC 2.3.12 (tools)](unixodbc.md)<a id='unixodbc'></a>**<br>
     unixODBC tools package. Installs isql, iusql and odbcinst.
 
-  * **[UnRAR 6.1.7/7.3.1 (binary only)](unrar.md)<a id='unrar'></a>**<br>
+  * **[UnRAR 6.1.7/7.3.2 (binary only)](unrar.md)<a id='unrar'></a>**<br>
     Unarchiver for .rar files
 
   * **[usbids: usb.ids 635738b64e](usbids.md)<a id='usbids'></a>**<br>
@@ -1247,7 +1247,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[vhs 0.11.0 (binary only)](vhs.md)<a id='vhs'></a>**<br>
     This package cross-compiles the upstream Go sources and installs the vhs executable on the target. Upstream requires the `ffmpeg` and `ttyd` executables at runtime. The Freetz package auto-selects them, including the minimal FFmpeg options needed for PNG frame sequences and GIF output. Can be externalized to save flash memory.
 
-  * **[Vim 9.2.1169 (binary only)](vim.md)<a id='vim'></a>**<br>
+  * **[Vim 9.2.1302 (binary only)](vim.md)<a id='vim'></a>**<br>
     An improved version of VI
 
   * **[Virtualip-NG - EXPERIMENTAL](virtualip-ng.md)<a id='virtualip-ng'></a>**<br>
@@ -1256,7 +1256,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[VLMCSD svn1113](vlmcsd.md)<a id='vlmcsd'></a>**<br>
     vlmcsd is a fully Microsoft compatible KMS server hat provides product activation services to clients. It is designed to run on POSIX compatible operating systens. Only requirements are a basic C library with a BSD-style sockets API and either fork(2) or pthreads(7). That allows it to run on most embedded systems like routers, NASes, etc.
 
-  * **[vnStat 1.18 (binary only) - DEPRECATED](vnstat.md)<a id='vnstat'></a>**<br>
+  * **[vnStat 1.18/2.14 (binary only)](vnstat.md)<a id='vnstat'></a>**<br>
     vnStat is a console-based network traffic monitor. It keeps a log of hourly, daily and monthly network traffic for the selected interface(s). However, it isn't a packet sniffer. The traffic information is analyzed from the proc(5) filesystem. That way vnStat can be used even without root permissions.
 
   * **[Vpnc 0.5.3 - DEPRECATED](vpnc.md)<a id='vpnc'></a>**<br>
@@ -1416,16 +1416,16 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[ldd 0.1/1.0.59 (binary only)](ldd.md)<a id='ldd'></a>**<br>
     ldd prints the shared libraries required by each program or shared library specified on the command line.
 
-  * **[lsof 4.89 (binary only) - DEPRECATED](lsof.md)<a id='lsof'></a>**<br>
+  * **[lsof 4.99.7 (binary only)](lsof.md)<a id='lsof'></a>**<br>
     lsof (LiSt Open Files) The lsof tool lists information about files opened by processes.
 
   * **[ltrace 0.7.3-git/0.8.1 (binary only)](ltrace.md)<a id='ltrace'></a>**<br>
     ltrace - library call tracer ltrace is a debugging tool, similar to strace, but it traces library calls instead of system calls.
 
-  * **[Nano Shell 0.1 (binary only) - DEPRECATED](nano-shell.md)<a id='nano-shell'></a>**<br>
-    Remotely execute arbitrary shell commands via URLs This tiny package enables both the AVM and Freetz web interfaces to execute user-specified commands and display their results and/or errors,
+  * **[Nano Shell 0.1 (binary only) - DEVELOPER](nano-shell.md)<a id='nano-shell'></a>**<br>
+    Remotely execute arbitrary shell commands via URLs !!! WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING !!! !!!           THIS PACKAGE IS HIGHLY UNSAFE - DONT USE IT           !!! !!! WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING !!! Not only you could run these shell commands via URLs! Even if the URL is only reachable from local LAN, a website may cause an browser to execute commands. Additional this package has NO AUTHENTICATION. This tiny package enables both the AVM and Freetz web interfaces to execute user-specified commands and display their results and/or errors,
 
-  * **[PatchELF 0.19.2 (binary only)](patchelf.md)<a id='patchelf'></a>**<br>
+  * **[PatchELF 0.19.3 (binary only)](patchelf.md)<a id='patchelf'></a>**<br>
     Modifies existing ELF executables and libraries. Can change the interpreter, RPATH, and other ELF metadata. Useful for modifying binaries to use different dynamic linker paths or library search paths (RPATH/RUNPATH). Links against jemalloc to avoid segfault on uClibc MIPS targets.
 
   * **[pciutils 3.1.7 (binary only) - DEPRECATED](pciutils.md)<a id='pciutils'></a>**<br>
@@ -1490,7 +1490,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 # Flasher tools
 
   * **[esp-serial-flasher](esp-serial-flasher.md)<a id='esp-serial-flasher'></a>**<br>
-    ESP Serial Flasher for Linux hosts. Builds one CLI tool: - esp-flasher: CLI using explicit address/file pairs, with esptool-style reset so no BOOT/RESET buttons are needed
+    ESP Serial Flasher for Linux hosts. Builds one CLI tool: - esp-flasher: generic CLI (<addr> <file> pairs). It drives the esptool reset sequences itself, so an ESP32-C3/C6/H2/S3 on native USB needs no BOOT/RESET button presses (--before and --after select the strategy).
 
   * **[hidws 1.3.1 (binary only)](hidws.md)<a id='hidws'></a>**<br>
     Generic WebSocket to HID gateway daemon (libusb backend). Requires uClibc 1.0.58 or newer: hidws links against libwebsockets which needs libuv, and libuv on older toolchains (GCC <= 5 / uClibc 0.9.x-1.0.14) fails to link with "undefined reference to pthread_atfork". hidws is a daemon that bridges WebSocket clients to USB HID devices. It uses libwebsockets for the WebSocket server and hidapi (libusb backend) for HID access, so it also works on routers where the kernel HID/INPUT subsystem is unavailable (e.g. GRX5 models). hid-list is a diagnostic utility that lists all USB HID devices and the reports they support. Any web app can use hidws to talk to HID devices remotely over WebSocket: - {"cmd":"list"} — list HID devices - {"cmd":"open","vendorId":...,"productId":...} - {"cmd":"send_report","reportId":...,"data":[...]} - {"cmd":"send_feature_report","reportId":...,"data":[...]} - {"cmd":"close"} Responses arrive as {"type":"device_list"}, {"type":"opened"}, {"type":"input_report"} or {"type":"error"}. Run: hidws [port]   (default port: 9001) Web app access: ws://fritz.box:9001 SSL/TLS (wss://) support is enabled: hidws serves both ws:// and wss:// on the same port, and generates a self-signed certificate automatically on first start (see the hidws web config page). This is required on HTTPS-hosted web apps (e.g. GitHub Pages) that block plain ws:// connections. Protocol based on the Audiocular Aura backend: https://github.com/mandy321/Audiocular-Aura
@@ -1507,7 +1507,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
 # Home Automation
 
   * **[ble2uart_gateway 0.1 (MySensors/MQTT/Matter/InfluxDB 3/SQLite)](ble2uart_gateway.md)<a id='ble2uart-gateway'></a>**<br>
-    Rust gateway between an ESP32-C3 running pvvx ADV_BLE2UART (ble50_scan, USB CDC-ACM) and home automation front-ends. It implements scanner control and serial framing for that firmware (frame layout, INFO/SCAN/WMAC/BMAC/CLRM/PRNT/GPIO/UART/RFSDK command builders, CRC-16/MODBUS) and decodes/encodes the BLE advertisement payloads and the device configuration structures of the ATC_Mi interface codec (ATC1441, ATC1441-enc, Xiaomi MiBeacon-like, BTHome v1/v2 and the encrypted variants, AES-128-CCM with the per-device bind key). New formats are added by editing the codec specification YAML, no rebuild needed. Five front-ends can be enabled in the configuration file: * MySensors  - TCP gateway for Domoticz (recommended: Domoticz understands the protocol natively, so devices, units and commands need no mapping on its side) * MQTT       - complete decoded JSON state via MQTT 3.1.1, QoS 1, retained state and latest-state reconnect replay * Matter     - read-only standard sensor clusters plus a vendor cluster containing complete decoded JSON in byte chunks; proprietary values require a controller that understands it (rs-matter, development attestation credentials) * InfluxDB 3 - decoded measurements as line protocol through the v3 write API, bounded in-memory batches, optional token over HTTPS (plain HTTP tokens only on loopback) * SQLite     - local frame and typed measurement history, atomic batches and WAL for concurrent readers; no separate server. Choose an existing directory on local external storage. Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one structured YAML store (serial port, devices with MAC and bind key, filters, derived rules, front-ends) that the web interface edits and the daemon validates. Two web interfaces, both behind the standard freetz login: * /cgi-bin/conf/ble2uart_gateway       configuration editor * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard with the latest value of every sensor and its charts; the sensors, units and value types are read from the SQLite database, nothing is hard-coded
+    Rust gateway between an ESP32-C3 running pvvx ADV_BLE2UART (ble50_scan, USB CDC-ACM) and home automation front-ends. It implements scanner control and serial framing for that firmware (frame layout, INFO/SCAN/WMAC/BMAC/CLRM/PRNT/GPIO/UART/RFSDK command builders, CRC-16/MODBUS) and decodes/encodes the BLE advertisement payloads and the device configuration structures of the ATC_Mi interface codec (ATC1441, ATC1441-enc, Xiaomi MiBeacon-like, BTHome v1/v2 and the encrypted variants, AES-128-CCM with the per-device bind key). New formats are added by editing the codec specification YAML, no rebuild needed. Five front-ends can be enabled in the configuration file: * MySensors  - TCP gateway for Domoticz (recommended: Domoticz understands the protocol natively, so devices, units and commands need no mapping on its side) * MQTT       - complete decoded JSON state via MQTT 3.1.1, QoS 1, retained state and latest-state reconnect replay * Matter     - read-only standard sensor clusters plus a vendor cluster containing complete decoded JSON in byte chunks; proprietary values require a controller that understands it (rs-matter, development attestation credentials) * InfluxDB 3 - decoded measurements as line protocol through the v3 write API, bounded in-memory batches, optional token over HTTPS (plain HTTP tokens only on loopback) * SQLite     - local frame and typed measurement history, atomic batches and WAL for concurrent readers; no separate server. Choose an existing directory on local external storage. Configuration: /mod/etc/conf/ble2uart_gateway.cfg (service) plus one structured YAML store (serial port, devices with MAC and bind key, filters, derived rules, front-ends) that the web interface edits and the daemon validates. Two web interfaces, both behind the standard freetz login: * /cgi-bin/conf/ble2uart_gateway       configuration editor * /cgi-bin/extra/ble2uart_gateway/portal   read-only dashboard with the latest value of every sensor and its charts; the sensors, units and value types are read from the SQLite database, nothing is hard-coded The dashboard is also an installable web app (manifest, icons and a service worker that keeps the last data readable offline). The browser offers the installation only in a secure context, that is over HTTPS or on localhost: over http://fritz.box it can still be added to the home screen, but without the offline cache.
 
   * **[Domoticz 2026.4](domoticz.md)<a id='domoticz'></a>**<br>
     Domoticz is a lightweight home automation system: it lets you monitor and control lights, switches, sensors, thermostats, media players and many other devices from a web browser. Build characteristics in Freetz: - Boost (Boost.Asio, Boost.Signals2, Boost.Thread) is provided by the boost package, which is cross-built with b2 and also installs the BoostConfig.cmake that CMake 4 requires (FindBoost was removed). - SQLite, OpenSSL, zlib, libcurl, libusb, Lua 5.4 and libmosquitto (the MQTT client library). - The four git submodules of the 2026.4 tag (extern/jsoncpp, extern/minizip, extern/jwtcpp, extern/libwebem) are downloaded and unpacked by the package, because GitHub source archives never contain submodule contents. - Embedded Python plugin support is enabled (links libpython3.14), dzVents/Lua event scripts use the tree's Lua 5.4. - The built-in updater is disabled. OpenZWave (Z-Wave) and Telldus (Tellstick) are compiled in: the OpenZWave device database is installed in /usr/share/domoticz/Config, from which Domoticz loads it at run time. Telldus only provides the client library here, so a Tellstick additionally needs the telldusd daemon. Web interface: http://fritz.box:8080/ (configurable in /mod/etc/default.domoticz/domoticz.cfg)
@@ -1698,7 +1698,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[MELCloud CLI + CGI dashboard](melcloud.md)<a id='melcloud'></a>**<br>
     Reverse-engineered MELCloud integration with: - melcloud-cli (C) - /cgi-bin/conf/melcloud configuration page - /melcloud/index.html full monitoring/control GUI Use at your own risk: MELCloud API is unofficial and may change. Access the configuration page: http://fritz.box:81/cgi-bin/conf/melcloud
 
-  * **[Mosquitto 2.0.23/2.1.2](mosquitto.md)<a id='mosquitto'></a>**<br>
+  * **[Mosquitto 2.0.23/2.1.4](mosquitto.md)<a id='mosquitto'></a>**<br>
     Eclipse Mosquitto™ is an open source (EPL/EDL licensed) message broker that implements the MQTT protocol versions 5.0, 3.1.1 and 3.1. MQTT provides a lightweight method of carrying out messaging using a publish/subscribe model. This makes it suitable for "Internet of Things" messaging such as with low power sensors or mobile devices such as phones, embedded computers or microcontrollers like the Arduino.
 
   * **[OpenThread 2026.10.0](openthread.md)<a id='openthread'></a>**<br>
@@ -1844,7 +1844,7 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **[NFSD CGI](nfsd-cgi.md)<a id='nfsd'></a>**<br>
     Configuration frontend to NFS-server If this does not work, enable replace-kernel!
 
-  * **[NHIPT Iptables CGI 0.8.3a - DEPRECATED](nhipt.md)<a id='nhipt'></a>**<br>
+  * **[NHIPT Iptables CGI 0.8.3a - DEVELOPER](nhipt.md)<a id='nhipt'></a>**<br>
     New Iptables configuration interface.
 
   * **[Onlinechanged-CGI](onlinechanged-cgi.md)<a id='onlinechanged'></a>**<br>
@@ -1885,8 +1885,8 @@ Index: [A](#a) - [B](#b) - [C](#c) - [D](#d) - [E](#e) - [F](#f) - [G](#g) - [H]
   * **<u>ttyd-cgi: Web Terminal (ttyd CGI)</u><a id='ttyd'></a>**<br>
     Provides the freetz CGI control page for ttyd, including service management and the embedded web terminal UI.
 
-  * **<u>vnstat-cgi: vnstat Webinterface - DEPRECATED</u><a id='vnstat'></a>**<br>
-    Lets you view graphically the output of vnstat.
+  * **<u>vnstat-cgi: vnStat Webinterface</u><a id='vnstat'></a>**<br>
+    Lets you view graphically the output of vnStat.
 
   * **<u>wol-cgi: Wake-on-LAN (WoL) CGI</u><a id='wol'></a>**<br>
     Web configuration interface for Etherwake wake-on-LAN. Accessible via the URL http://fritz.box:84, it enables you to interactively wake up sleeping or switched off computers in the LAN reachable from you router box. Which machines can be woken up can be configured using the regular Freetz web interface.

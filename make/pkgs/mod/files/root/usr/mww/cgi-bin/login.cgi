@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if echo "&${QUERY_STRING}&" | grep -q '&hash='; then
+if [ "$REQUEST_METHOD" = POST ]; then
 	source /usr/mww/cgi-bin/login_check.sh
 else
 	source /usr/mww/cgi-bin/login_page.sh

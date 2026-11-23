@@ -39,6 +39,7 @@ case "$3" in
 		rm -f /tmp/.logs.svctl.txt
 
 		do_log /proc/avm/wdt "AVM-Watchdog"
+
 		do_log /proc/kdsld/dsliface/internet/ipmasq/pcp44 "PCP-Sessions"
 
 		[ -x "$(which showdsldstat)" ] && showdsldstat > /tmp/.logs.dsldstat.txt 2>&1
@@ -48,6 +49,14 @@ case "$3" in
 		[ -x "$(which cableinfo)" ] && ctlmgr_ctl u showdocsisstate > /tmp/.logs.docsisstate.txt 2>&1
 		do_log /tmp/.logs.docsisstate.txt "AVM-DocsisState"
 		rm -f /tmp/.logs.docsisstate.txt
+
+		[ "$(cat /proc/kdsld/prefixtab/avm_v6tab 2>/dev/null | wc -l)" -gt 1 ] 2>/dev/null && cat /proc/kdsld/prefixtab/avm_v6tab > /tmp/.logs.avm_v6tab
+		do_log /tmp/.logs.avm_v6tab "AVM IPv6 blocklist"
+		rm -f /tmp/.logs.avm_v6tab
+
+		[ "$(cat /proc/kdsld/prefixtab/avm_v4tab 2>/dev/null | wc -l)" -gt 1 ] 2>/dev/null && cat /proc/kdsld/prefixtab/avm_v4tab > /tmp/.logs.avm_v4tab
+		do_log /tmp/.logs.avm_v4tab "AVM IPv4 blocklist"
+		rm -f /tmp/.logs.avm_v4tab
 
 		for x in /sys/fs/pstore/*; do do_log $x; done
 

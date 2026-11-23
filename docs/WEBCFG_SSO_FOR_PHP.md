@@ -13,7 +13,7 @@ This document describes how to reuse Freetz-EVO WebCFG authentication in php-cgi
 
 WebCFG supports two modes from `mod.cfg`:
 
-- `MOD_HTTPD_NEWLOGIN='yes'`: form-based login with SID cookie and `/tmp/<SID>.webcfg` session file.
+- `MOD_HTTPD_NEWLOGIN='yes'`: form-based login with SID cookie and `/tmp/.webcfg.mod.<SID>.sid` session file.
 - `MOD_HTTPD_NEWLOGIN!='yes'`: legacy Basic Auth.
 
 ### Authentication settings page
@@ -38,7 +38,7 @@ What it does:
 - Loads WebCFG config values from default and saved config paths.
 - If NEWLOGIN is active:
   - validates `SID` cookie format;
-  - validates `/tmp/<SID>.webcfg` presence and timeout;
+  - validates `/tmp/.webcfg.mod.<SID>.sid` presence and timeout;
   - refreshes session timestamp with `touch`.
 - If NEWLOGIN is not active:
   - enforces legacy Basic Auth against `MOD_HTTPD_USER` and `MOD_HTTPD_PASSWD`.
@@ -184,4 +184,4 @@ Authenticated browser:
 Cookie/session checks:
 
 1. SID cookie exists.
-2. `/tmp/<SID>.webcfg` exists and mtime updates on requests.
+2. `/tmp/.webcfg.mod.<SID>.sid` exists and mtime updates on requests.

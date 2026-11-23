@@ -1,0 +1,150 @@
+# Portiert von codex auf vnstat v2
+--- src/ifinfo.c
++++ src/ifinfo.c
+@@ -2,6 +2,8 @@
+ #include "ibw.h"
+ #include "ifinfo.h"
+ 
++int readfritzbox(const char *iface);
++
+ int getifinfo(const char *iface)
+ {
+ 	char inface[MAXIFLEN];
+@@ -49,6 +51,13 @@
+ 		return 1;
+ 	}
+ 
++	/* START - FRITZBOX READ */
++	if (strcmp(inface, "fritzbox") == 0 && readfritzbox(inface) == 1) {
++		ifinfo.timestamp = time(NULL);
++		return 1;
++	}
++	/* END - FRITZBOX READ */
++
+ #elif defined(BSD_VNSTAT)
+ 	if (readifaddrs(inface) == 1) {
+ 		ifinfo.timestamp = time(NULL);
+@@ -134,6 +143,13 @@
+ 	char procline[512];
+ 	uint32_t bwlimit = 0;
+ 
++	/* START - FRITZBOX ADD INTERFACE */
++	char iffb[] = "fritzbox";
++	if (!iflistadd(ifl, iffb, 0, 0)) {
++		panicexit(__FILE__, __LINE__);
++	}
++	/* END - FRITZBOX ADD INTERFACE */
++
+ 	if ((fp = fopen(PROCNETDEV, "r")) != NULL) {
+ 
+ 		/* make list of interfaces */
+@@ -270,6 +286,83 @@
+ 	return 1;
+ }
+ 
++/* START - FRITZBOX READ FUNCTION */
++int readfritzbox(const char *iface) {
++	FILE *fp;
++	uint64_t rx, tx, high, low;
++
++	strncpy_nt(ifinfo.name, iface, MAXIFLEN);
++
++	/* rx bytes high */
++	if ((fp = popen("ctlmgr_ctl r inetstat status/Today/BytesReceivedHigh", "r")) == NULL) {
++		if (debug)
++			printf("Unable to read: %s - %s\n", "fritzbox", strerror(errno));
++		return 0;
++	}
++	if (fscanf(fp, "%"SCNu64, &high) != 1) {
++		pclose(fp);
++		return 0;
++	}
++	pclose(fp);
++
++	/* rx bytes low */
++	if ((fp = popen("ctlmgr_ctl r inetstat status/Today/BytesReceivedLow", "r")) == NULL) {
++		if (debug)
++			printf("Unable to read: %s - %s\n", "fritzbox", strerror(errno));
++		return 0;
++	}
++	if (fscanf(fp, "%"SCNu64, &low) != 1) {
++		pclose(fp);
++		return 0;
++	}
++	pclose(fp);
++
++	/* rx bytes shift */
++	rx = (high << 32) + low;
++
++	/* tx bytes high */
++	if ((fp = popen("ctlmgr_ctl r inetstat status/Today/BytesSentHigh", "r")) == NULL) {
++		if (debug)
++			printf("Unable to read: %s - %s\n", "fritzbox", strerror(errno));
++		return 0;
++	}
++	if (fscanf(fp, "%"SCNu64, &high) != 1) {
++		pclose(fp);
++		return 0;
++	}
++	pclose(fp);
++
++	/* tx bytes low */
++	if ((fp = popen("ctlmgr_ctl r inetstat status/Today/BytesSentLow", "r")) == NULL) {
++		if (debug)
++			printf("Unable to read: %s - %s\n", "fritzbox", strerror(errno));
++		return 0;
++	}
++	if (fscanf(fp, "%"SCNu64, &low) != 1) {
++		pclose(fp);
++		return 0;
++	}
++	pclose(fp);
++
++	/* tx bytes shift */
++	tx = (high << 32) + low;
++
++	ifinfo.rx = rx;
++	ifinfo.tx = tx;
++	ifinfo.is64bit = 1;
++
++	/* daemon doesn't need packet data */
++	if (!noexit) {
++		ifinfo.rxp = 0;
++		ifinfo.txp = 0;
++	}
++
++	ifinfo.filled = 1;
++
++	return 1;
++}
++/* END - FRITZBOX READ FUNCTION */
++
+ int readsysclassnet(const char *iface)
+ {
+ 	FILE *fp;
+--- src/daemon.c
++++ src/daemon.c
+@@ -600,6 +600,23 @@
+ 		return 0;
+ 	}
+ 
++	/* START - FRITZBOX COUNTERS */
++	if (strcmp((*dc)->interface, "fritzbox") == 0) {
++		/* if new day or counter reset */
++		if (ifinfo.rx < (*dc)->currx || ifinfo.tx < (*dc)->curtx) {
++			(*dc)->currx = 0;
++			(*dc)->curtx = 0;
++		}
++
++		/* START - FRITZBOX BOOT WORKAROUND */
++		if (s->bootdetected) {
++			(*dc)->currx = ifinfo.rx;
++			(*dc)->curtx = ifinfo.tx;
++		}
++		/* END - FRITZBOX BOOT WORKAROUND */
++	}
++	/* END - FRITZBOX COUNTERS */
++
+ 	interval = ifinfo.timestamp - (*dc)->updated;
+ 	/* maximum configurable update interval is 5 minutes, limit here is set to 6 minutes (360 seconds) */
+ 	/* in order to be on the safe side and avoid discarding data in case there's some random extra delay */

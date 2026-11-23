@@ -1,7 +1,7 @@
-$(call TOOLS_INIT, 4.4.4)
+$(call TOOLS_INIT, 4.4.5)
 $(PKG)_MAJOR_VERSION:=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
 $(PKG)_SOURCE:=$(pkg_short)-$($(PKG)_VERSION).tar.gz
-$(PKG)_HASH:=bd24c30d80a7744ae84b845ff080cc8453b06c622ef01066564108e9cefc44cf
+$(PKG)_HASH:=a0c54c88abb8078dd8eccadb717fc6bb194bf18e7d44c86309910288886e04e2
 $(PKG)_SITE:=https://github.com/Kitware/CMake/releases/download/v$($(PKG)_VERSION)
 ### WEBSITE:=https://cmake.org/
 ### MANPAGE:=https://cmake.org/cmake/help/latest/
@@ -19,6 +19,7 @@ $(PKG)_BINARIES            := ccmake cmake cpack ctest
 $(PKG)_BINARIES_TARGET_DIR := $($(PKG)_BINARIES:%=$($(PKG)_DESTDIR)/bin/%)
 $(PKG)_DOC_TARGET_DIR      := $($(PKG)_DESTDIR)/doc/$(pkg_short)-$($(PKG)_MAJOR_VERSION)
 
+$(PKG)_CONFIGURE_DEFOPTS := n
 $(PKG)_CONFIGURE_OPTIONS += --prefix=$(CMAKE_HOST_DESTDIR)
 $(PKG)_CONFIGURE_OPTIONS += --generator='Unix Makefiles'
 $(PKG)_CONFIGURE_OPTIONS += --enable-ccache
@@ -53,7 +54,7 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 define $(PKG)_FIXHARDCODED
 	@for binfile in $(CMAKE_HOST_BINARIES); do \
 	for libfile in libcrypto libssl; do \
-	$(PATCHELF_HOST) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(CMAKE_HOST_DESTDIR)/bin/$${binfile} ;\
+	$(PATCHELF) --replace-needed $(1)$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(OPENSSL_HOST_DESTDIR)/$${libfile}.so.$(OPENSSL_HOST_LIB_VERSION) $(CMAKE_HOST_DESTDIR)/bin/$${binfile} ;\
 	done ;\
 	done ;
 endef

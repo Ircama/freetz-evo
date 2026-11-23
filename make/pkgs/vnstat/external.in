@@ -1,13 +1,13 @@
-config EXTERNAL_FREETZ_PACKAGE_VNSTAT
-	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_VNSTAT
-	bool "vnstat"
+config EXTERNAL_FREETZ_PACKAGE_VNSTAT_CLI
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_VNSTAT_CLI
+	bool "vnstat cli"
 	default n
 	help
 		externals the following file(s):
 		 /usr/bin/vnstat
 
 config EXTERNAL_FREETZ_PACKAGE_VNSTAT_DAEMON
-	depends on EXTERNAL_FREETZ_PACKAGE_VNSTAT && FREETZ_PACKAGE_VNSTAT_DAEMON
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_VNSTAT_DAEMON
 	bool "vnstat daemon"
 	default n
 	help
@@ -15,7 +15,7 @@ config EXTERNAL_FREETZ_PACKAGE_VNSTAT_DAEMON
 		 /usr/bin/vnstatd
 
 config EXTERNAL_FREETZ_PACKAGE_VNSTAT_IMAGE
-	depends on EXTERNAL_FREETZ_PACKAGE_VNSTAT && FREETZ_PACKAGE_VNSTAT_IMAGE
+	depends on EXTERNAL_ENABLED && FREETZ_PACKAGE_VNSTAT_IMAGE
 	bool "vnstat image"
 	default n
 	help

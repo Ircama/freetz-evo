@@ -40,9 +40,20 @@ $(pkg)-autofix                          Adjusts patches of package/library $(pkg
 $(pkg)-dirclean                         Removes the build directory of $(pkg)
 $(pkg)-distclean                        Removes the build directory and all target files of $(pkg)
 
+kernel-*                                Same targets as $(pkg)-*, plus:
 kernel-menuconfig                       Configuration of the selected kernel
 kernel-precompiled                      Compiles the selected kernel
 kernel-dirclean                         Cleans all files of the selected kernel
+kernel-olddefconfig                     Updates the selected kernel configuration
+kernel-diff                             Shows differences between the default and selected kernel configurations
+kernel-save                             Saves the selected kernel configuration to the repository
+kernel-load                             Loads the default kernel configuration
+kernel-symrefs                          Recompiles the kernel and creates a symrefs archive
+
+uclibc-*                                Same targets as $(pkg)-*, plus:
+uclibc-autofix                          Adjusts patches for the selected uClibc
+uclibc-menuconfig                       Configuration of the selected uClibc
+uclibc-olddefconfig                     Updates the selected uClibc .config file
 
 tools-push_firmware                     Builds the tools required by push_firmware (pfp)
 tools                                   Builds the tools required by the current selection
@@ -50,10 +61,6 @@ tools-all                               Builds all available Freetz tools
 tools-allexcept-local                   Builds all non-local Freetz tools (dl-tools)
 tools-distclean-local                   Cleans all local tools (dl-tools)
 tools-dirclean                          Cleans all Freetz tools
-
-uclibc-autofix                          Adjusts patches of the selected uClibc
-uclibc-menuconfig                       Configuration of the selected uClibc
-uclibc-olddefconfig                     Updates the selected uClibc .config file
 
 firmware-nocompile                      Creates firmware without packages and libraries
 mirror                                  Downloads all selected package source files

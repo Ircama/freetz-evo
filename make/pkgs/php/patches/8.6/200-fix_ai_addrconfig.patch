@@ -1,0 +1,20 @@
+--- a/ext/sockets/sockets.c
++++ b/ext/sockets/sockets.c
+@@ -42,6 +42,9 @@
+ # include <netinet/tcp.h>
+ # include <sys/un.h>
+ # include <arpa/inet.h>
++#ifndef AI_ADDRCONFIG
++#define AI_ADDRCONFIG 0x0020
++#endif
+ # include <sys/time.h>
+ # include <unistd.h>
+ # include <errno.h>
+--- a/ext/sockets/sockaddr_conv.c
++++ b/ext/sockets/sockaddr_conv.c
+@@ -23,2 +23,5 @@
+ #include <arpa/inet.h>
++#ifndef AI_ADDRCONFIG
++#define AI_ADDRCONFIG 0x0020
++#endif
+ #endif

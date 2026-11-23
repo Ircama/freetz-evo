@@ -64,89 +64,126 @@ Latest changes
 
 ### devel
 
+  - FritzOS
+    * Version 08.50+
+
   - Build system:
-    * ccache 4.14.2
+    * ccache 4.14.3
 
   - Host tools:
-    * ca-bundle 2026-10-20
-    * cmake 4.4.4
+    * ca-bundle 2026-11-05
+    * cmake 4.4.5
+    * gawk 5.4.2
     * kconfig 7.3
     * openssl 3.5.9
-    * patchelf 0.14.5/0.19.2
-    * python3 3.14.9
+    * patchelf 0.14.5/0.19.3
+    * python3 3.15.2
     * U-Boot 2026.10
 
   - AVM sources:
     * 1700     8.26 - 5.15.176
     * 2700     8.26 - 5.15.176
+    * 4050     8.51 - 5.4.213
+    * 4690     8.51 - 5.4.213
     * 5630     8.50 - 5.4.302
+    * 5690 XGS 8.51 - 5.4.302
+    * 6000     8.51 - 5.4.213
+    * 6670     8.51 - 5.15.215
+    * 7510     8.51 - 5.4.213
     * 7530 ax  8.50 - 4.19.183
+    * 7590     8.51 - 4.9.337
     * 7690     8.50 - 5.4.213
     * Gateway  8.50 - 5.4.213
 
   - Patches:
     * New tagging: custom & modded
+    * New Patch: Remove ASSETSD (assets downloader)
+    * New Patch: Remove DSL_DAEMON (dsl_control successor)
+    * New Patch: Remove MOVED (settings migration)
     * Various Fritzos 8.25 related fixes
     * Various Fritzos 8.50 related fixes
 
   - Packages:
-    * Apache2 2.4.69
+    * ACME.sh 3.1.7
+    * Apache2 2.4.71
+    * AutoFS 5.0.5/5.2.0
     * axTLS wrapper 2.1.5
-    * BIND 9.11.37/9.20.30
+    * BIND 9.11.37/9.20.31
     * Bftpd 6.7
     * bridge-utils 1.7.1
-    * CA-bundle 2026-10-20
+    * CA-bundle 2026-11-05
     * Curl 8.12.1/8.23.0
+    * kmod 34.3
     * Empty 0.6.23d
     * endlessh 1.1
     * FFmpeg 5.1.10/7.1.5
-    * Git 2.26.2/2.56.0
+    * Fontconfig 2.17.1/2.18.4
+    * Git 2.26.2/2.56.1
     * GnuTLS 3.7.11/3.8.13
-    * ImageMagick 7.1.0-62/7.1.2-34
-    * iPerf3 3.3/3.22
+    * HAProxy 2.6.35
+    * htpdate 2.1.0
+    * ImageMagick 7.1.0-62/7.1.2-36
+    * iPerf3 3.3/3.22.1
     * lsof 4.99.7
     * Lua 5.1.5/5.5.1
+    * Mosquitto 2.0.23/2.1.4
     * Nano 9.2/9.3
-    * Nmap 4.76/5.51/7.992
-    * OpenSSH 9.3p2/10.6p1
+    * Nmap 4.76/5.51/7.993
+    * OpenSSH 9.3p2/10.6p2
     * OpenSSL 0.9.8zh/1.0.2u/1.1.1w/3.0.22/3.5.9
-    * OpenVPN 2.4.12/2.5.11/2.6.23/2.7.8
-    * Patchelf 0.19.2
-    * PHP 5.6.40/8.2.35/8.3.36/8.4.27/8.5.12
+    * OpenVPN 2.4.12/2.5.11/2.6.23/2.7.9
+    * Patchelf 0.19.3
+    * PCP/NAT-PMP client 1.0.0
+    * PCSC-lite 1.9.5/2.5.3
+    * PHP 5.6.40/8.2.36/8.3.37/8.4.28/8.5.13/8.6.0
+    * Privoxy 4.2.0
     * procps-ng 4.0.7
+    * ProxyChains-NG 4.18
     * Python3 3.14.8
     * rpcbind 1.3.1
+    * rsync 3.4.1/3.5.2
     * ser2net 3.5.4/4.6.8
     * sispmctl 4.12
     * strace 4.9/5.0/7.3
+    * SQLite 3.40.1/3.54.1
     * Subversion 1.9.12/1.15.0
     * tcpdump 4.99.7
     * tmux 3.8
-    * Tor 0.4.8.25/0.4.9.14
+    * Tor 0.4.8.25/0.4.9.17
     * Transmission 3.00/4.1.4
     * Unbound 1.26.2
-    * Vim 9.2.1169
+    * UnRAR 6.1.7/7.3.2
+    * Vim 9.2.1302
+    * vnStat 1.18/2.14
 
   - Libraries:
-    * expat 2.7.5/2.9.0
+    * expat 2.7.5/2.10.0
     * FreeType 2.15.0
+    * fribidi 1.0.18
     * gensio 3.0.4
     * GLib2 2.32.4/2.90.1
-    * harfbuzz 14.6.0
+    * harfbuzz 15.2.0
     * libconfuse 3.4
+    * libffi 3.8.1
     * libgcrypt 1.12.4
     * libgpg-error 1.61
     * libpcap 1.11.0
     * libpng 1.6.59
     * libtasn1 4.21.0
     * libzip 1.12.1
+    * lz4 1.11.1
+    * MbedTLS 2.7.19/2.28.10/3.6.8
     * pcre2 10.49
     * utf8proc 2.12.0
+    * zlib 1.4
 
   - Firmware updates:
     * Please see [FIRMWARES](FIRMWARES.md) for the list of currently supported devices and firmwares.
 
 ### ng26090
+
+  - FritzOS
+    * Version 08.25+
 
   - Build system:
     * ccache 4.14
@@ -305,6 +342,9 @@ Latest changes
     * Please see [FIRMWARES](https://github.com/Freetz-NG/freetz-ng/blob/ng26090/docs/FIRMWARES.md) for the list of supported devices and firmwares.
 
 ### ng26020
+
+  - FritzOS
+    * Version 08.20+
 
   - Build system:
     * binutils (kernel) 2.18/2.22/2.23.2/2.24/2.25.1/2.26.1/2.31.1/2.36.1/2.42/2.45.1

@@ -1,6 +1,8 @@
 config FREETZ_PACKAGE_VNSTAT
-	bool "vnStat 1.18 (binary only) - DEPRECATED"
+	bool "vnStat 1.18/2.14 (binary only)"
 	default n
+	depends on !(FREETZ_TARGET_UCLIBC_0_9_28 || FREETZ_TARGET_UCLIBC_0_9_29)
+	select FREETZ_PACKAGE_VNSTAT_CLI if !FREETZ_PACKAGE_VNSTAT_DAEMON && !FREETZ_PACKAGE_VNSTAT_IMAGE
 	select FREETZ_LIB_libm if FREETZ_TARGET_UCLIBC_HAS_multiple_libs
 	help
 		vnStat is a console-based network traffic monitor. It keeps a log of
@@ -11,11 +13,36 @@ config FREETZ_PACKAGE_VNSTAT
 
 if FREETZ_PACKAGE_VNSTAT
 
+	choice
+		prompt "Version"
+			default FREETZ_PACKAGE_VNSTAT_VERSION_CURRENT
+
+		config FREETZ_PACKAGE_VNSTAT_VERSION_ABANDON
+			bool "1.18 - DEPRECATED"
+			help
+				This version uses a separate database file for each network interface.
+
+		config FREETZ_PACKAGE_VNSTAT_VERSION_CURRENT
+			bool "2.14"
+			select FREETZ_LIB_libsqlite3
+			help
+				This version uses a shared sqlite database for all network interfaces.
+
+	endchoice
+
+	config FREETZ_PACKAGE_VNSTAT_CLI
+		bool "vnstat cli"
+		default y
+		help
+			This is a command line tool for:
+			 - managing monitored interfaces
+			 - displaying traffic statistics
+
 	config FREETZ_PACKAGE_VNSTAT_DAEMON
 		bool "vnstat daemon"
 		default n
 		help
-			This is a daemon for collection data
+			This is a daemon for collecting data
 
 	config FREETZ_PACKAGE_VNSTAT_IMAGE
 		bool "vnstat image"

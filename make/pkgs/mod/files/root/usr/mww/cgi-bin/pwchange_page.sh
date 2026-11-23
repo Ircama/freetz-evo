@@ -2,11 +2,12 @@
 
 . /usr/lib/libmodcgi.sh
 
-CHALLENGE="$(echo -n "$(date +%s)" | md5sum | sed 's/[ ]*-//')"
+CHALLENGE="$(LC_ALL=C tr -dc 'a-f0-9' < /dev/urandom | head -c 32)"
 
 cgi_begin "$(lang de:"Passwort &auml;ndern" en:"Change password")"
 # Waren wir schonmal hier? Dann war was falsch!
-[ "$(cat /tmp/flash/mod/webmd5 | tr -d '\n' )" = "465d0ff27bb239292778dc3a0c2f28d9" ] && echo "<b>$(lang de:"Standard Passwort gesetzt. Bitte &auml;ndern!" en:"Default password set! Please change it.")</b><p>"
+[ "$(cat /tmp/flash/mod/webmd5)" = "465d0ff27bb239292778dc3a0c2f28d9" ] && \
+  echo "<b>$(lang de:"Standard Passwort gesetzt. Bitte &auml;ndern!" en:"Default password set. Please change it!")</b><p>"
 
 . /usr/mww/cgi-bin/md5hash.sh
 echo "<script>challenge=\"$CHALLENGE\";</script>"
@@ -40,7 +41,7 @@ EOF
 [ "$WRONGPW" = 1 ] && echo "<tr><td colspan=2><p><b><font color=red>$(lang de:"Das alte Passwort war falsch!" en:"The old password was wrong!")</font></b></p></td></tr>"
 cat << EOF
 <tr><td><input type="button" value="$(lang de:"Zur&uuml;ck" en:"Back")" onclick="window.location.href='/cgi-bin/conf/mod/webcfg'"></td><td><input type="button" name="go" value="$(lang de:"Speichern" en:"Save")"
-      onclick='if (checkpw (document.getElementById("inp_pw").value , document.getElementById("inp_pw2").value)) { var p = document.getElementById("inp_pw").value; location.href="/cgi-bin/pwchange.cgi?oldhash="+makemd5(document.getElementById("old_pw").value, challenge)+"&newhash="+md5(p)+"&pw="+encodeURIComponent(p) ; }'></td></tr>
+	onclick='var p = document.getElementById("inp_pw").value; if (checkpw(p, document.getElementById("inp_pw2").value)) { csrfPost("/cgi-bin/pwchange.cgi",{oldhash:makemd5(document.getElementById("old_pw").value, challenge),newhash:md5(p),pw:p}); }'></td></tr>
 </table>
 
 EOF

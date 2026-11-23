@@ -6,6 +6,7 @@ config FREETZ_DOWNLOAD_TOOLCHAIN
 	depends on FREETZ_SHOW_DEVELOPER
 	depends on !FREETZ_ANCIENT_SYSTEM
 	select FREETZ_TOOLCHAIN_CCACHE
+	select FREETZ_TARGET_UCLIBC_REDUCED_LOCALE_SET if FREETZ_TARGET_UCLIBC_0_9_29 || FREETZ_TARGET_UCLIBC_0_9_32 || FREETZ_TARGET_UCLIBC_0_9_33 || FREETZ_TARGET_UCLIBC_1_0_14
 	default n
 
 config FREETZ_BUILD_TOOLCHAIN
@@ -26,10 +27,6 @@ config FREETZ_TOOLCHAIN_CCACHE
 		The idea came from Erik Thiele wrote the original compilercache program
 		as a bourne shell script. ccache is a re-implementation of Erik's idea
 		in C with more features and better performance.
-
-config FREETZ_TOOLCHAIN_MINIMIZE_REQUIRED_GLIBC_VERSION
-#	bool "Minimize required GLIBC version" if FREETZ_BUILD_TOOLCHAIN
-	def_bool y
 
 menu "Own precompiled toolchains"
 	visible if FREETZ_SHOW_DEVELOPER
@@ -1419,13 +1416,8 @@ choice
 endchoice
 
 config FREETZ_TARGET_UCLIBC_REDUCED_LOCALE_SET
-	bool "Use reduced set of locales" if FREETZ_BUILD_TOOLCHAIN && \
-						( \
-						FREETZ_TARGET_UCLIBC_0_9_29 || \
-						FREETZ_TARGET_UCLIBC_0_9_32 || \
-						FREETZ_TARGET_UCLIBC_0_9_33 || \
-						FREETZ_TARGET_UCLIBC_1         \
-						)
+	bool "Use reduced set of locales"
+	depends on FREETZ_TARGET_UCLIBC_0_9_29 || FREETZ_TARGET_UCLIBC_0_9_32 || FREETZ_TARGET_UCLIBC_0_9_33 || FREETZ_TARGET_UCLIBC_1_0_14
 	default y
 	help
 		This option causes only the following locales to be included into uClibc:
@@ -1439,20 +1431,6 @@ config FREETZ_TARGET_UCLIBC_REDUCED_LOCALE_SET
 config FREETZ_TARGET_UCLIBC_PROVIDES_SSP
 	def_bool y
 	depends on FREETZ_TARGET_UCLIBC_1
-
-config FREETZ_TARGET_NLS
-#	bool "Native language support (NLS) for target toolchain" if FREETZ_BUILD_TOOLCHAIN
-	bool
-	default n
-	help
-		Support NLS-enabled programs and Linux tools on target system.
-
-		Example:
-			$ ls /foo/bar
-			ls: /foo/bar: No such file or directory
-			$ export LANG=de_DE.8859-1
-			$ ls /foo/bar
-			ls: /foo/bar: Datei oder Verzeichnis nicht gefunden
 
 config FREETZ_TARGET_TOOLCHAIN
 	select FREETZ_LIB_libgmp

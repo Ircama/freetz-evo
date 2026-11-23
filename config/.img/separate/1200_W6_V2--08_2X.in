@@ -95,6 +95,9 @@ config FREETZ_AVM_HAS_KMOD
 config FREETZ_AVM_HAS_SVCTL
 	def_bool y
 
+config FREETZ_AVM_HAS_UPNP
+	def_bool y
+
 config FREETZ_AVM_HAS_DMESG_FILE
 	def_bool y
 
@@ -114,6 +117,9 @@ config FREETZ_AVM_HAS_DSLD
 	def_bool y
 
 config FREETZ_AVM_HAS_MULTID
+	def_bool y
+
+config FREETZ_AVM_HAS_ASSETSD
 	def_bool y
 
 config FREETZ_AVM_HAS_VPN
@@ -144,6 +150,9 @@ config FREETZ_AVM_HAS_MESHD
 	def_bool y
 
 config FREETZ_AVM_HAS_PCPD
+	def_bool y
+
+config FREETZ_AVM_HAS_MOVED
 	def_bool y
 
 config FREETZ_AVM_HAS_PLCD

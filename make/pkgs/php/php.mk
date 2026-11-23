@@ -1,18 +1,19 @@
 # Version selection based on menuconfig
 ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_4)),y)
-$(call PKG_INIT_BIN,8.4.27)
-$(PKG)_HASH:=dcf93923b0e38e0d5252b25b796520b5a47761a08b3488b6d0b5d1115764d3f0
+$(call PKG_INIT_BIN,8.4.28)
+$(PKG)_HASH:=0c8ec360e5dd8154f270b2fd50cd44ecc824e6ee39c85f911312b80d4daecd72
 else ifeq ($(strip $(FREETZ_PACKAGE_PHP_VERSION_8_5)),y)
-$(call PKG_INIT_BIN,8.5.12)
-$(PKG)_HASH:=08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
+$(call PKG_INIT_BIN,8.5.13)
+$(PKG)_HASH:=607602acaf0c3061818e9916ec44a058e8b3d43959a83862b9cd3ec7bf5b785f
 else
-# Default to 8.5
-$(call PKG_INIT_BIN,8.5.12)
-$(PKG)_HASH:=08bc2eba2a588654ade1357174aa646b761556c862dda0678345ee29ed481209
+$(call PKG_INIT_BIN,8.6.0)
+$(PKG)_HASH:=5f84beaa3d763aee1e4feed99bf54ec692c383b322e25626807b589238c3a087
 endif
 $(PKG)_SOURCE:=$(pkg)-$($(PKG)_VERSION).tar.xz
 $(PKG)_SITE:=https://www.php.net/distributions,https://de.php.net/distributions,https://de2.php.net/distributions
 ### CVSREPO:=https://github.com/php/php-src
+
+$(PKG)_REBUILD_SUBOPTS+=FREETZ_PACKAGE_PHP_VERSION_8_4 FREETZ_PACKAGE_PHP_VERSION_8_5 FREETZ_PACKAGE_PHP_VERSION_8_6
 
 # Version-specific patches directory
 $(PKG)_CONDITIONAL_PATCHES+=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))

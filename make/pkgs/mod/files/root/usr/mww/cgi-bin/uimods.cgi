@@ -65,6 +65,7 @@ table_line() {
 
 	echo "<tr>"
 	echo "<form action='/cgi-bin/exec.cgi/uimods' method='post'>"
+	csrf_input
 
 	echo "<td><b>$short</b></td>"
 

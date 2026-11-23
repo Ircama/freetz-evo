@@ -16,6 +16,7 @@
 /cpio
 /crc32
 /debugfs
+/depmod
 /dos2unix
 /e2fsck
 /eva2bzimage
@@ -25,14 +26,16 @@
 /file
 /find-squashfs
 /ftp
-/go-host
+/gawk
 /genext2fs
 /gennmtab
+/go-host
 /gperf
 /gunzip
 /gzip
 /lunzip
 /lzma
+/patchelf-target
 /lzma2eva
 /makedevs
 /md5sum
@@ -51,7 +54,6 @@
 /openssl
 /patch
 /patchelf
-/patchelf-target
 /sed
 /sfk
 /sha1sum

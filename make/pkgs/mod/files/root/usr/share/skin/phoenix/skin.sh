@@ -3,7 +3,7 @@ skin_head() {
 	local hname="$(hostname -s|html)"
 	[ "$hname" != "fritz" ] && hname="&nbsp;&#64;${hname}" || hname=""
 	cat << EOF
-<title>$title&nbsp;&ndash; Freetz${hname}</title>
+<title>$title&nbsp;&ndash; Freetz-NG${hname}</title>
 <link rel="stylesheet" type="text/css" href="/style/phoenix/base.css">
 <link rel="stylesheet" type="text/css" href="/style/colorscheme.css">
 EOF
@@ -52,6 +52,7 @@ skin_body_end() {
 <div id="footer">
 <span class="datetime" title="$(lang de:"Systemzeit des Routers" en:"Router's system time")">$(date +'$(lang de:"%d.%m.%Y" en:"%m/%d/%Y") %H:%M')</span>&nbsp;&ndash;
 <span class="uptime" title="Uptime">$(uptime | sed -r 's/.*(up.*), *load.*/\1/')</span>
+$([ "$isauth" = 1 ] && echo "&nbsp;&ndash; <span class=\"opt\">$(_cgi_print_session_timeout)</span>")
 <span class="version">$(html < /etc/.freetz-version)</span>
 </div>
 </div>
@@ -84,7 +85,7 @@ skin_login_form() {
 $errmsg
 <tr>
   <td></td>
-  <td><input type="button" id="id_go" value="$(lang de:"Anmelden" en:"Login")" onclick="location.href='/cgi-bin/login.cgi?subpage=$subpage&amp;hash='+makemd5(document.getElementById('inp_pw').value,'$sid')"></td>
+	<td><input type="submit" id="id_go" value="$(lang de:"Anmelden" en:"Login")"></td>
 </tr>
 </table>
 <script>document.getElementById('inp_pw').focus();</script>

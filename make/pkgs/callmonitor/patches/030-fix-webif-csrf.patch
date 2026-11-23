@@ -1,0 +1,100 @@
+--- base/usr/lib/callmonitor/applets/exec.cgi.sh
++++ base/usr/lib/callmonitor/applets/exec.cgi.sh
+@@ -2,6 +2,9 @@
+ require if_jfritz_status
+ 
+ eval "$(modcgi jfritz exec)"
++case $EXEC_JFRITZ in
++    on|off) csrf_require_post ;;
++esac
+ cgi_begin callmonitor
+ 
+ case $EXEC_JFRITZ in
+--- base/usr/lib/callmonitor/applets/maint.cgi.sh
++++ base/usr/lib/callmonitor/applets/maint.cgi.sh
+@@ -14,6 +14,7 @@
+     echo "
+ <div class='btn'>
+     <form class='btn' action='$SELF' method='$method'>
++$([ "$method" != post ] || csrf_input)
+     	$(empty "$cmd" || echo "<input name='cmd' value='$cmd' type='hidden'>")
+ 	<input value='$label' type='submit'>
+     </form>
+@@ -26,6 +27,7 @@
+ cgi --help="$HELP"
+ 
+ if ! empty "$MAINT_CMD"; then
++    csrf_require_post
+     cgi_begin "$TITLE ..."
+     case $MAINT_CMD in
+ 	phonebook_tidy)
+--- base/usr/lib/callmonitor/applets/reverse.cgi.sh
++++ base/usr/lib/callmonitor/applets/reverse.cgi.sh
+@@ -32,6 +32,7 @@
+ eval "$(modcgi "$PARAMS" reverse)"
+ 
+ if [ -n "$REVERSE_SAVE" ]; then
++    csrf_require_post
+     new_provider=
+     for lkz in $LKZ_LIST other; do
+        eval "new_provider=\"\$new_provider $lkz:\$REVERSE_FULL_$lkz\""
+@@ -39,8 +40,11 @@
+     new_provider=${new_provider# }
+ 
+     ## delegate to Freetz saving mechanism
+-    PATH_INFO=/callmonitor webui_post_form_generic /usr/mww/cgi-bin/conf \
+-    	"reverse_provider=$(urlencode "$new_provider")&area_provider=$(urlencode "$REVERSE_AREA")"
++    (
++        unset _CGI_POST_FILE _CGI_CSRF_CHECKED
++        PATH_INFO=/callmonitor webui_post_form_generic /usr/mww/cgi-bin/conf \
++            "reverse_provider=$(urlencode "$new_provider")&area_provider=$(urlencode "$REVERSE_AREA")&csrf_token=$(urlencode "$_CGI_CSRF_TOKEN")"
++    )
+     exit $?
+ fi
+ 
+@@ -55,6 +59,7 @@
+ cgi_begin "$TITLE"
+ 
+ echo "<form action='$SELF' method='post'>"
++csrf_input
+ 
+ sec_begin '$(lang de:"Anbieter für vollständige Rufnummern" en:"Providers for complete numbers")'
+ 
+--- base/usr/lib/callmonitor/applets/testcall.cgi.sh
++++ base/usr/lib/callmonitor/applets/testcall.cgi.sh
+@@ -15,6 +15,7 @@
+ new_testcall_form() {
+     echo "
+ <form action='$SELF' method='post'>
++$(csrf_input)
+     <table><tr>
+ 	<td><label for='event'>$(lang de:"Ereignis" en:"Event"):</label> </td>
+ 	<td>
+@@ -74,6 +75,7 @@
+ cgi_main() {
+     cgi --help="$HELP"
+     if let "${TESTCALL_SOURCE+1}"; then
++	csrf_require_post
+ 	cgi_begin "$TITLE ..."
+ 	show_testcall_results
+     else
+--- base/usr/lib/callmonitor/applets/testlookup.cgi.sh
++++ base/usr/lib/callmonitor/applets/testlookup.cgi.sh
+@@ -87,6 +87,7 @@
+ cgi_main() {
+     cgi --help="$HELP"
+     if let "${TEST_NUMBER+1}"; then
++	csrf_require_post
+ 	cgi_begin "$TITLE ..."
+ 	show_test_results "$TEST_NUMBER"
+     else
+--- base/usr/lib/callmonitor/web/reverse/lib/test_form.sh
++++ base/usr/lib/callmonitor/web/reverse/lib/test_form.sh
+@@ -2,6 +2,7 @@
+     local test=$1
+     echo "
+ <form action='$test' method='post'>
++$(csrf_input)
+     <table><tr>
+ 	<td><label for='test-number'>$(lang
+ 	    de:"Rufnummer" en:"Number"):</label>&nbsp;</td>

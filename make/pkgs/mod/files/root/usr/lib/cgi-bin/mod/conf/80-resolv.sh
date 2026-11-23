@@ -10,7 +10,7 @@ en:"This changed the DNS server the box uses itself for name resolution. Neither
 </p>
 
 <p>
-$(lang de:"Diesen DNS-Server in die /etc/resolv.conf eintragen" en:"Write this dns server to /etc/resolv.conf"): <input type="text" name="resolv_dns" size="15" maxlength="15" value="$(html "$MOD_RESOLV_DNS")">
+$(lang de:"Diese DNS-Server in die /etc/resolv.conf eintragen (mehrere mit Leerzeichen getrennt)" en:"Write these dns server to /etc/resolv.conf (separate multiple by spaces"):<br><input type="text" name="resolv_dns" size="55" maxlength="255" value="$(html "$MOD_RESOLV_DNS")">
 </p>
 
 <p>

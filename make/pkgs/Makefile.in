@@ -15,12 +15,6 @@ CONFIGURE=conf_cmd() { ./configure $(QUIET) "$$$$@" $(SILENT) || { $(call ERROR,
 CONFCMAKE=cmake_cmd() { $(MAKE_ENV) $(CMAKE) "$$$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } };
 CONFMESON=meson_cmd() { $(MESON) setup "$$$$@" $(SILENT) || { $(call ERROR,1,$(BUILD_FAIL_MSG)) } };
 
-ifeq ($(strip $(FREETZ_TARGET_NLS)),y)
-DISABLE_NLS:=
-else
-DISABLE_NLS:=--disable-nls
-endif
-
 TARGET_CROSS:=$(call qstrip,$(FREETZ_TARGET_CROSS))
 KERNEL_CROSS:=$(call qstrip,$(FREETZ_KERNEL_CROSS))
 
@@ -133,6 +127,7 @@ TARGET_SITE:=$(FREETZ_BASE_DIR)/$(INCLUDE_DIR)/config.site/$(call qstrip,$(FREET
 TARGET_AR:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)ar
 TARGET_AS:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)as
 TARGET_CC:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)gcc
+TARGET_CXX_GNU:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)g++
 TARGET_CXX:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)g++-wrapper
 TARGET_LD:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)ld
 TARGET_LDCONFIG:=$(TARGET_MAKE_PATH)/$(TARGET_CROSS)ldconfig
@@ -194,7 +189,7 @@ TARGET_CONFIGURE_OPTIONS += --mandir=/usr/share/man
 TARGET_CONFIGURE_OPTIONS += --sbindir=/usr/sbin
 TARGET_CONFIGURE_OPTIONS += --sysconfdir=/etc
 TARGET_CONFIGURE_OPTIONS += --with-gnu-ld
-TARGET_CONFIGURE_OPTIONS += $(DISABLE_NLS)
+TARGET_CONFIGURE_OPTIONS += --disable-nls
 
 ### Convenience macros
 # Since the makefiles for the packages contain many similar parts, we define some macros to simplify
@@ -347,7 +342,7 @@ endef
 
 define INSTALL_BINARY_STRIP
 $(INSTALL_FILE) \
-[ "$(FREETZ_SEPARATE_AVM_UCLIBC)" != "y" ] || ! $(TARGET_READELF) -l $@ | grep -q INTERP || $(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $@; \
+[ "$(FREETZ_SEPARATE_AVM_UCLIBC)" != "y" ] || ! $(TARGET_READELF) -l $@ | grep -q INTERP || $(PATCHELF) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 $@; \
 $(TARGET_STRIP) $@;
 endef
 define INSTALL_LIBRARY__INT

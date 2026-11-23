@@ -8,12 +8,13 @@ $(PKG)_SITE:=https://www.python.org/ftp/python/$($(PKG)_VERSION)
 ### CVSREPO:=https://github.com/python/cpython
 ### SUPPORT:=Ircama
 
-$(PKG)_DEPENDS_ON+=patchelf-target-host
+$(PKG)_DEPENDS_ON+=patchelf-host
 
 $(PKG)_LOCAL_INSTALL_DIR:=$($(PKG)_DIR)/_install
 
 $(PKG)_MAJOR_VERSION:=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION))
 $(PKG)_MAJOR_VERSION_1:=$(call GET_MAJOR_VERSION,$($(PKG)_VERSION),1)
+$(PKG)_BUILD_PYTHON:=$(abspath $(HOST_TOOLS_DIR)/usr/bin/python$($(PKG)_MAJOR_VERSION))
 
 $(PKG)_TARGET_BINARY:=$($(PKG)_DEST_DIR)/usr/bin/python$($(PKG)_MAJOR_VERSION).bin
 $(PKG)_LIB_PYTHON3_TARGET_DIR:=$($(PKG)_TARGET_LIBDIR)/libpython$($(PKG)_MAJOR_VERSION).so.1.0
@@ -85,7 +86,7 @@ $(PKG)_CONFIGURE_ENV += OPT="-fno-inline"
 
 $(PKG)_CONFIGURE_OPTIONS += --disable-test-modules
 $(PKG)_CONFIGURE_OPTIONS += --with-system-expat
-$(PKG)_CONFIGURE_OPTIONS += --with-build-python=$(abspath $(TOOLS_DIR)/path/python3)
+$(PKG)_CONFIGURE_OPTIONS += --with-build-python=$($(PKG)_BUILD_PYTHON)
 $(PKG)_CONFIGURE_OPTIONS += --with-ensurepip=no
 $(PKG)_CONFIGURE_OPTIONS += --without-remote-debug
 $(PKG)_CONFIGURE_OPTIONS += --enable-ipv6
@@ -157,13 +158,13 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 		\
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -path "*/__pycache__/_sysconfigdata*" -name "*.pyc" -delete; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
-			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -c \
+			-exec $(PYTHON3_BUILD_PYTHON) -c \
 				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
-			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -O -c \
+			-exec $(PYTHON3_BUILD_PYTHON) -O -c \
 				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
 		find usr/lib/python$(PYTHON3_MAJOR_VERSION)/ -type f -name "_sysconfigdata*.py" \
-			-exec $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/path/python3 -OO -c \
+			-exec $(PYTHON3_BUILD_PYTHON) -OO -c \
 				"import py_compile,sys; py_compile.compile(sys.argv[1])" {} \; ; \
 		\
 		$(TARGET_STRIP) \
@@ -173,7 +174,7 @@ $($(PKG)_DIR)/.installed: $($(PKG)_DIR)/.compiled
 		\
 		mv usr/bin/python$(PYTHON3_MAJOR_VERSION) usr/bin/python$(PYTHON3_MAJOR_VERSION).bin; \
 		\
-		[ "$(FREETZ_SEPARATE_AVM_UCLIBC)" != "y" ] || $(FREETZ_BASE_DIR)/$(TOOLS_DIR)/patchelf-target --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 usr/bin/python$(PYTHON3_MAJOR_VERSION).bin; \
+		[ "$(FREETZ_SEPARATE_AVM_UCLIBC)" != "y" ] || $(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 usr/bin/python$(PYTHON3_MAJOR_VERSION).bin; \
 	)
 	touch $@
 

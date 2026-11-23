@@ -4,7 +4,7 @@
 
 DAEMON=webcfg
 DAEMON_BIN=httpd-$DAEMON
-DAEMON_ENV="PATH=$PATH WEBIF=mww"
+DAEMON_ENV="PATH=$PATH WEBIF=mww _CGI_CSRF_SCOPE=mod"
 
 
 if [ ! -r "/mod/etc/conf/mod.cfg" ]; then
@@ -13,7 +13,11 @@ if [ ! -r "/mod/etc/conf/mod.cfg" ]; then
 fi
 . /mod/etc/conf/mod.cfg
 
+## reduced entropy on boot!
+#. /usr/lib/mod/cgi/csrf.sh
+#csrf_init || exit 1
+
 homedir=/usr/mww/
 
 #redirect of stderr is needed to prevent corrupted html headers:
-exec env - $DAEMON_ENV $DAEMON_BIN "$@" -p "$MOD_HTTPD_PORT" -c /mod/etc/$DAEMON.conf -h "$homedir" -r "Freetz" 2>/dev/null
+exec env - $DAEMON_ENV $DAEMON_BIN "$@" -p "$MOD_HTTPD_PORT" -c /mod/etc/$DAEMON.conf -h "$homedir" -r "Freetz-NG" 2>/dev/null

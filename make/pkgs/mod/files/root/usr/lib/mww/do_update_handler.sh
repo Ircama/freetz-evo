@@ -1,10 +1,15 @@
 #!/bin/sh
 
-. /usr/lib/libmodcgi.sh
-[ -r /etc/options.cfg ] && . /etc/options.cfg
+trap 'touch /tmp/fw_update.done' EXIT
 
+(
 # link FIFO to stdin
-exec < $1
+exec < "$1"
+
+. /usr/lib/libmodcgi.sh
+csrf_require_post
+
+[ -r /etc/options.cfg ] && . /etc/options.cfg
 
 footer() {
 	echo "<p>"
@@ -12,7 +17,6 @@ footer() {
 	echo "</p>"
 
 	cgi_end
-	touch /tmp/fw_update.done
 }
 pre_begin() {
 	local id="${1:+ id='$1'}"
@@ -247,4 +251,6 @@ if $rebootbox; then
 fi
 
 do_exit 0
+
+)
 

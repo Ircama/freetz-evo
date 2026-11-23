@@ -2,7 +2,7 @@ if FREETZ_TYPE_7520_V2 && FREETZ_AVM_VERSION_07_5X
 
 config FREETZ_AVM_PROP_NAME
 	string
-	default "FRITZ!Box 7520"
+	default "FRITZ!Box 7520 B"
 
 config FREETZ_AVM_PROP_MAJOR
 	string
@@ -134,6 +134,9 @@ config FREETZ_AVM_HAS_KMOD
 config FREETZ_AVM_HAS_SVCTL
 	def_bool y
 
+config FREETZ_AVM_HAS_UPNP
+	def_bool y
+
 config FREETZ_AVM_HAS_UMTS
 	def_bool y
 
@@ -198,6 +201,9 @@ config FREETZ_AVM_HAS_MESHD
 	def_bool y
 
 config FREETZ_AVM_HAS_PCPD
+	def_bool y
+
+config FREETZ_AVM_HAS_MOVED
 	def_bool y
 
 config FREETZ_AVM_HAS_UNTRUSTEDD

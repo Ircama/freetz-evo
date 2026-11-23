@@ -11,7 +11,6 @@ $(PKG)_DEPENDS_ON += patchelf-target-host
 GCC_TOOLCHAIN_SOURCE_DIR:=$(TARGET_UTILS_DIR)
 GCC_TOOLCHAIN_BINARY:=$(TARGET_UTILS_DIR)/usr/bin/gcc
 GCC_TOOLCHAIN_DEST_DIR:=$(PACKAGES_DIR)/gcc-toolchain-$($(PKG)_VERSION)/root
-PATCHELF:=$(TOOLS_DIR)/patchelf-target
 
 # Use a special marker directory that tools/external will recognize and unpack
 GCC_TOOLCHAIN_ARCHIVE_MARKER:=GCC_TOOLCHAIN_ARCHIVE
@@ -129,7 +128,7 @@ endif
 			[ -x "$$bin" ] || continue; \
 			file "$$bin" | grep -q "ELF.*executable" || continue; \
 			echo "    Patching $$bin"; \
-			$(PATCHELF) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 "$$bin" 2>/dev/null || true; \
+			$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 "$$bin" 2>/dev/null || true; \
 		done; \
 	fi
 	# Patch binaries in gcc-toolchain/libexec/gcc (cc1, cc1plus, collect2, lto1, etc.)
@@ -137,7 +136,7 @@ endif
 		find "$(GCC_TOOLCHAIN_DEST_DIR)/$(GCC_TOOLCHAIN_ARCHIVE_MARKER)/usr/libexec/gcc" -type f -executable | while read bin; do \
 			file "$$bin" | grep -q "ELF.*executable" || continue; \
 			echo "    Patching $$bin"; \
-			$(PATCHELF) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 "$$bin" 2>/dev/null || true; \
+			$(PATCHELF_TARGET) --set-interpreter $(FREETZ_LIBRARY_DIR)/ld-uClibc.so.1 "$$bin" 2>/dev/null || true; \
 		done; \
 	fi
 	

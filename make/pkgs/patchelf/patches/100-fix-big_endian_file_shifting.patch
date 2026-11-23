@@ -1,0 +1,39 @@
+Fix cross-endian PT_LOAD creation in shiftFile().
+
+Decode program-header fields before subtracting host-order offsets.
+Without rdi(), editing an ELF with a different byte order from the host
+creates an invalid PT_LOAD and leaves PT_PHDR outside the load segments.
+
+Fixes: "Rework file shifting to avoid sections crossing multiple segments"
+https://github.com/NixOS/patchelf/commit/109b771f53ee3d37ede8c0f165665605183c0975
+
+Issue: https://github.com/NixOS/patchelf/issues/663
+"BE(?) broken since 0.15.0"
+
+fail: 7390-MIPS(BE) + 6360-ARMEB
+okay: 7170-MISPEL + 4040-ARM(LE) + 6430-Ix86 + 5690XGS-AARCH64(LE)
+(
+  for x in source/target-*/busybox-*/busybox; do
+    echo "##### $x"
+    cp "$x" ./busybox
+    tools/patchelf ./busybox --set-interpreter /usr/lib/freetz/ld-uClibc.so.1
+    readelf -l ./busybox #>/dev/null
+  done
+)
+readelf: Error: the PHDR segment is not covered by a LOAD segment
+
+--- a/src/patchelf.cc
++++ b/src/patchelf.cc
+@@ -586,9 +586,9 @@
+     wri(hdr()->e_phnum, rdi(hdr()->e_phnum) + 1);
+     Elf_Phdr & phdr = phdrs.at(rdi(hdr()->e_phnum) - 1);
+     wri(phdr.p_type, PT_LOAD);
+-    wri(phdr.p_offset, phdrs.at(splitIndex).p_offset - splitShift - shift);
+-    wri(phdr.p_paddr, phdrs.at(splitIndex).p_paddr - splitShift - shift);
+-    wri(phdr.p_vaddr, phdrs.at(splitIndex).p_vaddr - splitShift - shift);
++    wri(phdr.p_offset, rdi(phdrs.at(splitIndex).p_offset) - splitShift - shift);
++    wri(phdr.p_paddr, rdi(phdrs.at(splitIndex).p_paddr) - splitShift - shift);
++    wri(phdr.p_vaddr, rdi(phdrs.at(splitIndex).p_vaddr) - splitShift - shift);
+     wri(phdr.p_filesz, wri(phdr.p_memsz, splitShift + extraBytes));
+     wri(phdr.p_flags, PF_R | PF_W);
+     wri(phdr.p_align, getPageSize());

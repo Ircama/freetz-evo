@@ -40,12 +40,11 @@ homepage](http://www.stunnel.org/examples/).
    interface (step 2), are used.
    For example:
    <pre><code>
-   [freetz https Web-Interface]
+   [freetz-ng]
    client = no
-   cert = /tmp/flash/stunnel/certs.pem
-   key = /tmp/flash/stunnel/key.pem
    accept = 4433
-   connect = 81
+   connect = 127.0.0.1:81
+   sslVersionMin = TLSv1.2
    </code></pre>
 
 4. Access internally via
