@@ -65,6 +65,19 @@ QUEUE_INDEX="$(cgi_param queue_index)"
 QUEUE_PAGE="$(cgi_param qpage)"
 FORCE_SYNC="$(cgi_param sync)"
 
+if [ "$AJAX_MODE" = 1 ]; then
+	case "$ACTION" in
+		db_data) [ "$FORCE_SYNC" != 1 ] || csrf_require_post ;;
+		browse_dir|playlist_list|queue_list) ;;
+		*) csrf_require_post ;;
+	esac
+else
+	case "$ACTION" in
+		''|player_current|player_status) ;;
+		*) csrf_require_post ;;
+	esac
+fi
+
 bool_yes() {
 	case "$1" in
 		yes|true|1|on) return 0 ;;
@@ -1205,7 +1218,7 @@ elif [ -f "$DB_CACHE_FILE" ]; then
 	DB_CACHE_SIZE='0 B'
 fi
 
-if [ "$REFRESH" -gt 0 ] 2>/dev/null; then
+if [ "$REQUEST_METHOD" = GET ] && [ "$REFRESH" -gt 0 ] 2>/dev/null; then
 	cat << EOF
 <script type='text/javascript'>
 window.setTimeout(function () { window.location.reload(); }, ${REFRESH}000);
@@ -1541,7 +1554,8 @@ cat << EOF
 		<h4>$(lang de:"Aktualisieren & Setup" en:"Refresh and setup")</h4>
 		<p>$(lang de:"Aktualisiere die Ansicht, synchronisiere die Radio-Datenbank oder springe in die Konfiguration." en:"Refresh the page, sync the radio database, or jump into configuration.")</p>
 		<div class='mpc-actions mpc-control-actions'>
-			<form class='btn' action='$(href status mpd-mpc)?refresh=5' method='get'>
+			<form class='btn' action='$(href status mpd-mpc)' method='get'>
+				<input type='hidden' name='refresh' value='5'>
 				<input type='submit' value='$(lang de:"Auto-Refresh 5s" en:"Auto refresh 5s")'>
 			</form>
 			<form class='btn' action='$(href status mpd-mpc)' method='get'>
@@ -1616,11 +1630,26 @@ cat << EOF
 	</div>
 </div>
 <script>
+document.addEventListener('submit', function(event) {
+	var form = event.target;
+	if (!form.matches('form') || form.method !== 'get') return;
+	var params = new URLSearchParams(new FormData(form));
+	var action = params.get('action');
+	var url = new URL(form.action, window.location.href);
+	if (url.origin !== window.location.origin || url.pathname !== window.location.pathname ||
+	    !action || action === 'player_current' || action === 'player_status') return;
+	event.preventDefault();
+	params.forEach(function(value, key) { url.searchParams.set(key, value); });
+	csrfPost(url.href, {});
+});
 function ajaxGet(action, params, callback) {
 	var q = '?ajax=1&action=' + encodeURIComponent(action);
 	if (params) for (var k in params) q += '&' + k + '=' + encodeURIComponent(params[k]);
 	var x = new XMLHttpRequest();
-	x.open('GET', window.location.pathname + q, true);
+	var readOnly = /^(browse_dir|playlist_list|queue_list)$/.test(action) || (action === 'db_data' && (!params || String(params.sync) !== '1'));
+	x.open(readOnly ? 'GET' : 'POST', window.location.pathname + q, true);
+	var csrf = document.querySelector('meta[name="csrf-token"]');
+	if (!readOnly && csrf) x.setRequestHeader('X-CSRF-Token', csrf.content);
 	x.onload = function() {
 		try {
 			var t = x.responseText;

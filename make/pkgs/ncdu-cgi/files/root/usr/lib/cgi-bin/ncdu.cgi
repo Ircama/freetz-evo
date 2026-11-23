@@ -86,6 +86,10 @@ AJAX_MODE=$(cgi_param ajax)
 
 if [ "$AJAX_MODE" = "1" ]; then
   ACTION=$(cgi_param action)
+  case "$ACTION" in
+    clear_log|delete_entry) csrf_require_post ;;
+    scan) [ "$(cgi_param debug_log)" != 1 ] || csrf_require_post ;;
+  esac
 
   printf 'Content-Type: text/html; charset=UTF-8\n\n'
   printf '<style>\n.ajax-json-box { display: none; }\n</style>\n'
@@ -882,7 +886,14 @@ button[type="submit"] {
         q.set(k, String(params[k]));
       }
     });
-    return fetch(API_URL + '?' + q.toString())
+    var options = {};
+    var prefix = '';
+    if (action === 'clear_log' || action === 'delete_entry' || (action === 'scan' && q.get('debug_log') === '1')) {
+      prefix = 'freetz_action=1&';
+      var csrf = document.querySelector('meta[name="csrf-token"]');
+      options = { method: 'POST', headers: csrf ? { 'X-CSRF-Token': csrf.content } : {} };
+    }
+    return fetch(API_URL + '?' + prefix + q.toString(), options)
       .then(function (r) { return r.text(); })
       .then(markerPayload);
   }

@@ -339,9 +339,21 @@ foreach (array(
 // Custom command used by MovieInfo UI to persist TMDb/OMDb keys directly
 // through the authenticated connector path, avoiding endpoint alias issues.
 if (isset($_REQUEST['cmd']) && (string)$_REQUEST['cmd'] === 'movieinfo_setkeys') {
-    $_tmdbKey = isset($_REQUEST['tmdb_api_key']) ? trim((string)$_REQUEST['tmdb_api_key']) : '';
-    $_omdbKey = isset($_REQUEST['omdb_api_key']) ? trim((string)$_REQUEST['omdb_api_key']) : '';
-    $_saveCfg = isset($_REQUEST['save_config']) ? strtolower(trim((string)$_REQUEST['save_config'])) : '0';
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        http_response_code(405);
+        header('Allow: POST');
+        elfinder_json_exit(array('success' => false, 'error' => 'POST is required'));
+    }
+    $scheme = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if ($host === '' || ($_SERVER['HTTP_ORIGIN'] ?? '') !== $scheme . '://' . $host ||
+        ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'XMLHttpRequest') {
+        http_response_code(403);
+        elfinder_json_exit(array('success' => false, 'error' => 'Same-origin request required'));
+    }
+    $_tmdbKey = isset($_POST['tmdb_api_key']) ? trim((string)$_POST['tmdb_api_key']) : '';
+    $_omdbKey = isset($_POST['omdb_api_key']) ? trim((string)$_POST['omdb_api_key']) : '';
+    $_saveCfg = isset($_POST['save_config']) ? strtolower(trim((string)$_POST['save_config'])) : '0';
 
     if ($_tmdbKey !== '' && !preg_match('/^[A-Za-z0-9]{16,128}$/', $_tmdbKey)) {
         elfinder_json_exit(array('success' => false, 'error' => 'Invalid TMDb API key format'));

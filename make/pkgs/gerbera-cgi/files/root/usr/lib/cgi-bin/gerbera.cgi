@@ -10,6 +10,10 @@ AJAX_MODE=$(cgi_param ajax)
 
 if [ "$AJAX_MODE" = "1" ]; then
 	ACTION=$(cgi_param action)
+	case "$ACTION" in
+		check_directory|check_config|read_file|get_port) ;;
+		*) csrf_require_post ;;
+	esac
 	BASEDIR=$(cgi_param basedir)
 
 	echo "$(date): AJAX - ACTION=$ACTION BASEDIR=$BASEDIR" >> /tmp/gerbera_ajax.log
@@ -433,6 +437,7 @@ fi
 # ============================================================================
 WIZARD_ACTION=$(cgi_param wizard_action)
 if [ -n "$WIZARD_ACTION" ]; then
+	csrf_require_post
 	BASEDIR=$(cgi_param basedir)
 	case "$WIZARD_ACTION" in
 		auto_setup)
@@ -992,7 +997,10 @@ function makeAjaxCall(action, params, callback) {
 		data += '&' + key + '=' + encodeURIComponent(params[key]);
 	}
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url + '?' + data, true);
+	var readOnly = /^(check_directory|check_config|read_file|get_port)$/.test(action);
+	xhr.open(readOnly ? 'GET' : 'POST', url + '?' + (readOnly ? '' : 'freetz_action=1&') + data, true);
+	var csrf = document.querySelector('meta[name="csrf-token"]');
+	if (!readOnly && csrf) xhr.setRequestHeader('X-CSRF-Token', csrf.content);
 	xhr.onload = function() {
 		if (xhr.status === 200) {
 			try {
@@ -1331,7 +1339,10 @@ function makeAjaxCall(action, params, callback) {
 			data += '&' + key + '=' + encodeURIComponent(params[key]);
 	}
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url + '?' + data, true);
+	var readOnly = /^(check_directory|check_config|read_file|get_port)$/.test(action);
+	xhr.open(readOnly ? 'GET' : 'POST', url + '?' + (readOnly ? '' : 'freetz_action=1&') + data, true);
+	var csrf = document.querySelector('meta[name="csrf-token"]');
+	if (!readOnly && csrf) xhr.setRequestHeader('X-CSRF-Token', csrf.content);
 	xhr.onload = function() {
 		if (xhr.status === 200) {
 			try {

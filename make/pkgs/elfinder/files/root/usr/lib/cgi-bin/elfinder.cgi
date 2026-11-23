@@ -14,6 +14,7 @@ AJAX_MODE=$(cgi_param ajax)
 
 if [ "$AJAX_MODE" = "1" ]; then
 	ACTION=$(cgi_param action)
+	[ "$ACTION" != set_movieinfo_keys ] || csrf_require_post
 
 	cat <<'EOF'
 <style>
@@ -25,9 +26,10 @@ EOF
 
 	case "$ACTION" in
 		set_movieinfo_keys)
-			TMDB_KEY=$(cgi_param tmdb_api_key)
-			OMDB_KEY=$(cgi_param omdb_api_key)
-			SAVE_CFG=$(cgi_param save_config)
+			eval "$(modcgi tmdb_api_key:omdb_api_key:save_config movieinfo)"
+			TMDB_KEY=$MOVIEINFO_TMDB_API_KEY
+			OMDB_KEY=$MOVIEINFO_OMDB_API_KEY
+			SAVE_CFG=$MOVIEINFO_SAVE_CONFIG
 
 			if [ -n "$TMDB_KEY" ] && ! echo "$TMDB_KEY" | grep -Eq '^[A-Za-z0-9]{16,128}$'; then
 				echo '{"success": false, "error": "Invalid TMDb API key format"}'

@@ -176,11 +176,12 @@ if [ -r "$LOG_FILE" ]; then
 fi
 
 cat << EOF
-<form class='btn' action='$(href status mympd)?refresh=5' method='post' style='display:inline;'>
+<form class='btn' action='$(href status mympd)' method='get' style='display:inline;'>
+<input type='hidden' name='refresh' value='5'>
 <input type='submit' value='$(lang de:"Auto-Refresh 5s" en:"Auto refresh 5s")'>
 </form>
 &nbsp;&nbsp;
-<form class='btn' action='$(href status mympd)' method='post' style='display:inline;'>
+<form class='btn' action='$(href status mympd)' method='get' style='display:inline;'>
 <input type='submit' value='$(lang de:"Einmal aktualisieren" en:"Refresh once")'>
 </form>
 &nbsp;&nbsp;

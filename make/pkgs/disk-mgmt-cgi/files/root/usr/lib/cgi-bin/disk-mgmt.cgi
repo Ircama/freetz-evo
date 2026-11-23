@@ -4570,26 +4570,37 @@ action_poll_job() {
 AJAX_MODE=$(cgi_param ajax)
 RAW_ACTION=$(cgi_param raw_action)
 
-if [ -n "$RAW_ACTION" ]; then
+if [ "$DISK_MGMT_STREAM" = 1 ] && [ -n "$RAW_ACTION" ]; then
 	backend_log "RAW REQUEST action=$RAW_ACTION remote=${REMOTE_ADDR:-unknown} query=${QUERY_STRING:-}"
-	case "$RAW_ACTION" in
-		partclone_export_stream)
+	case "$REQUEST_METHOD:$RAW_ACTION" in
+		POST:partclone_export_stream)
 			action_raw_partclone_export
 			;;
-		partclone_import_stream)
+		POST:partclone_import_stream)
 			action_raw_partclone_import
 			;;
-		partclone_verify_stream)
+		POST:partclone_verify_stream)
 			action_raw_partclone_verify
 			;;
 		*)
-			emit_raw_json_error "Unknown raw action"
+			emit_raw_json_error "Unknown stream action or unsupported request method"
 			;;
 	esac
 	exit 0
 fi
 
+if [ "$DISK_MGMT_STREAM" = 1 ] && [ "$AJAX_MODE" != "1" ]; then
+	emit_raw_json_error "Missing stream action"
+	exit 0
+fi
+
 if [ "$AJAX_MODE" = "1" ]; then
+	[ "$DISK_MGMT_STREAM" = 1 ] || exit 0
+	if [ "$REQUEST_METHOD" != POST ]; then
+		printf 'Status: 405 Method Not Allowed\r\nAllow: POST\r\nContent-Type: text/plain\r\n\r\nPOST is required.\n'
+		exit 0
+	fi
+	printf 'Content-Type: text/html; charset=UTF-8\r\nCache-Control: no-store\r\n\r\n'
 	ACTION=$(cgi_param action)
 	DRY_RUN=$(cgi_param dry_run)
 	[ "$DRY_RUN" = "1" ] || DRY_RUN='0'
@@ -7296,7 +7307,7 @@ window.paceOptions = {
 <script src="/ace/ace.js"></script>
 <script>
 (function () {
-	var API_URL = '/cgi-bin/conf/disk-mgmt';
+	var API_URL = '/cgi-bin/extra/disk-mgmt/stream';
 	var translations = {
 		en: {
 			dangerTitle: 'Danger zone',
@@ -9151,7 +9162,7 @@ window.paceOptions = {
 				qp.set(k, String(params[k]));
 			}
 		}
-		return fetch(API_URL + '?' + qp.toString())
+		return fetch(API_URL + '?' + qp.toString(), { method: 'POST', headers: diskCsrfHeaders() })
 			.then(function (r) { return r.text(); })
 			.then(parseAjaxJson);
 	}
@@ -9224,7 +9235,7 @@ window.paceOptions = {
 	}
 
 	function openRawExportStream(params) {
-		return fetch(buildRawApiUrl('partclone_export_stream', params))
+		return fetch(buildRawApiUrl('partclone_export_stream', params), { method: 'POST', headers: diskCsrfHeaders() })
 			.then(function (response) {
 				var contentType = String(response.headers.get('content-type') || '').toLowerCase();
 				if (contentType.indexOf('application/json') !== -1 || !response.ok) {
@@ -9237,13 +9248,13 @@ window.paceOptions = {
 			});
 	}
 
+	function diskCsrfHeaders() {
+		var csrf = document.querySelector('meta[name="csrf-token"]');
+		return csrf && csrf.content ? { 'X-CSRF-Token': csrf.content } : {};
+	}
+
 	function createUploadRequestInit(file) {
-		var body = file && typeof file.stream === 'function' ? file.stream() : file;
-		var init = { method: 'POST', body: body };
-		if (body && typeof body.getReader === 'function') {
-			init.duplex = 'half';
-		}
-		return init;
+		return { method: 'POST', headers: diskCsrfHeaders(), body: file };
 	}
 
 	function appendCommandBanner(label) {
@@ -9667,16 +9678,21 @@ window.paceOptions = {
 
 	function startBrowserManagedExport(params, localName) {
 		appendCommandBanner('export ' + params.partition + ' → ' + localName + ' (browser download)');
-		var link = document.createElement('a');
-		link.href = buildRawApiUrl('partclone_export_stream', params);
-		link.download = localName || '';
-		link.rel = 'noopener';
-		link.style.display = 'none';
-		document.body.appendChild(link);
-		link.click();
-		window.setTimeout(function () {
-			if (link.parentNode) link.parentNode.removeChild(link);
-		}, 0);
+		var form = document.createElement('form');
+		form.method = 'POST';
+		form.action = buildRawApiUrl('partclone_export_stream', params);
+		form.hidden = true;
+		var token = diskCsrfHeaders()['X-CSRF-Token'];
+		if (token) {
+			var input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = 'csrf_token';
+			input.value = token;
+			form.appendChild(input);
+		}
+		document.body.appendChild(form);
+		form.submit();
+		form.remove();
 		appendAnsi('cmdOutput', '\x1b[1;32m✔ Export stream handed off to the browser download manager\x1b[0m\n');
 		refreshDevices();
 		return Promise.resolve({ started: true });

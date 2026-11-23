@@ -11,6 +11,10 @@ AJAX_MODE=$(cgi_param ajax)
 if [ "$AJAX_MODE" = "1" ]; then
 	# AJAX request - output JSON and exit
 	ACTION=$(cgi_param action)
+	case "$ACTION" in
+		check_directory|check_rtorrent_rc|check_directory_config|get_port|read_file) ;;
+		*) csrf_require_post ;;
+	esac
 	BASEDIR=$(cgi_param basedir)
 	
 	echo "$(date): AJAX - ACTION=$ACTION BASEDIR=$BASEDIR" >> /tmp/rtorrent_ajax.log
@@ -476,6 +480,7 @@ echo "$(date): Normal page rendering" >> /tmp/rtorrent_ajax.log
 # ============================================================================
 WIZARD_ACTION=$(cgi_param wizard_action)
 if [ -n "$WIZARD_ACTION" ]; then
+	csrf_require_post
 	BASEDIR=$(cgi_param basedir)
 	
 	case "$WIZARD_ACTION" in
@@ -1224,7 +1229,10 @@ function makeAjaxCall(action, params, callback) {
 	}
 	
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url + '?' + data, true);
+	var readOnly = /^(check_directory|check_rtorrent_rc|check_directory_config|get_port|read_file)$/.test(action);
+	xhr.open(readOnly ? 'GET' : 'POST', url + '?' + (readOnly ? '' : 'freetz_action=1&') + data, true);
+	var csrf = document.querySelector('meta[name="csrf-token"]');
+	if (!readOnly && csrf) xhr.setRequestHeader('X-CSRF-Token', csrf.content);
 	xhr.onload = function() {
 		if (xhr.status === 200) {
 			try {
@@ -1924,7 +1932,7 @@ EOF
 if [ -n "$RTORRENT_RC_PATH" ] && [ -f "$RTORRENT_RC_PATH" ]; then
 	BASEDIR_ESCAPED=$(dirname "$RTORRENT_RC_PATH" | sed 's/\//\\\//g')
 	cat << EOF
-<button type="button" onclick="if(confirm('$(lang de:"Sind Sie sicher, dass Sie .rtorrent.rc löschen möchten?" en:"Are you sure you want to delete .rtorrent.rc?")')) { fetch('/cgi-bin/conf/rtorrent?ajax=1&action=delete_rtorrent_rc&basedir=$(dirname "$RTORRENT_RC_PATH")').then(r=>r.text()).then(text=>{ const marker='Content-Type: application/json'; const markerPos=text.indexOf(marker); if(markerPos===-1) throw new Error('Invalid response'); const firstBrace=text.indexOf('{',markerPos+marker.length); if(firstBrace===-1) throw new Error('No JSON found'); let braceCount=0,jsonEnd=-1; for(let i=firstBrace;i<text.length;i++){ if(text[i]==='{')braceCount++; else if(text[i]==='}'){braceCount--; if(braceCount===0){jsonEnd=i+1;break;}}} if(jsonEnd===-1) throw new Error('Incomplete JSON'); const d=JSON.parse(text.substring(firstBrace,jsonEnd)); if(d.success) { alert('$(lang de:"Gelöscht" en:"Deleted")'); location.reload(); } else { alert('$(lang de:"Fehler: " en:"Error: ")' + d.message); } }).catch(err=>{alert('Error: '+err.message);}); }" class="btn" style="margin-left: 10px; background: #dc3545; color: white;">
+<button type="button" data-basedir="$(html "$(dirname "$RTORRENT_RC_PATH")")" onclick="if(confirm('$(lang de:"Sind Sie sicher, dass Sie .rtorrent.rc löschen möchten?" en:"Are you sure you want to delete .rtorrent.rc?")')) { makeAjaxCall('delete_rtorrent_rc', {basedir: this.dataset.basedir}, function(error, result) { if (!error &amp;&amp; result.success) { alert('$(lang de:"Gelöscht" en:"Deleted")'); location.reload(); } else { alert('$(lang de:"Fehler: " en:"Error: ")' + (error ? error.message : result.message)); } }); }" class="btn" style="margin-left: 10px; background: #dc3545; color: white;">
 $(lang de:"Löschen" en:"Delete") (.rtorrent.rc)
 </button>
 </p>

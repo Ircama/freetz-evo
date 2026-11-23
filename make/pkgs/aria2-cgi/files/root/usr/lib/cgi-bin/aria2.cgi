@@ -20,6 +20,7 @@ AJAX_MODE=$(cgi_param ajax)
 if [ "$AJAX_MODE" = "1" ]; then
 	ACTION=$(cgi_param action)
 	BASEDIR=$(cgi_param basedir)
+	[ "$ACTION" != create_directory ] || csrf_require_post
 
 	echo "$(date): AJAX - ACTION=$ACTION BASEDIR=$BASEDIR" >> /tmp/aria2_ajax.log
 
@@ -529,7 +530,10 @@ function createBasedir() {
 	var basedir = getBasedir();
 	if (!basedir) { setBasedirStatus('Please enter a base directory.', 'red'); return; }
 	setBasedirStatus('Creating...', '');
-	fetch('/cgi-bin/conf/aria2?ajax=1&action=create_directory&basedir=' + encodeURIComponent(basedir))
+	var csrf = document.querySelector('meta[name="csrf-token"]');
+	fetch('/cgi-bin/conf/aria2?freetz_action=1&ajax=1&action=create_directory&basedir=' + encodeURIComponent(basedir), {
+		method: 'POST', headers: csrf ? { 'X-CSRF-Token': csrf.content } : {}
+	})
 		.then(function(r) { return r.text(); })
 		.then(function(text) {
 			var d = parseAjaxJson(text);

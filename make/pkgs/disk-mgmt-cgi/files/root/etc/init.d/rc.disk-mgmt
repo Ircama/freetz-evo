@@ -6,10 +6,12 @@ DAEMON=disk-mgmt
 case "$1" in
 ""|load)
 modreg cgi 'disk-mgmt' 'Disk Management'
+modreg extra disk-mgmt '' 2 stream
 modreg daemon --hide disk-mgmt
 ;;
 unload)
 modunreg cgi 'disk-mgmt'
+modunreg extra disk-mgmt stream
 modunreg daemon 'disk-mgmt'
 ;;
 start)

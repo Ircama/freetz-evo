@@ -85,7 +85,7 @@ if [ -r /proc/asound/cards ]; then
 fi
 
 cat << EOF
-<form class='btn' action='$(href status snapcast)' method='post' style='display:inline;'>
+<form class='btn' action='$(href status snapcast)' method='get' style='display:inline;'>
 <input type='submit' value='$(lang de:"Aktualisieren" en:"Refresh")'>
 </form>
 &nbsp;&nbsp;

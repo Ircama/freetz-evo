@@ -56,7 +56,7 @@ if [ -r "$LOG_FILE" ]; then
 fi
 
 cat << EOF
-<form class='btn' action='$(href status shairport-sync)' method='post' style='display:inline;'>
+<form class='btn' action='$(href status shairport-sync)' method='get' style='display:inline;'>
 <input type='submit' value='$(lang de:"Aktualisieren" en:"Refresh")'>
 </form>
 &nbsp;&nbsp;
