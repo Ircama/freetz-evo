@@ -3764,5 +3764,124 @@
     "timestamp": "2026-10-28T23:43:39Z",
     "service": "deepl",
     "github_user": "Ircama"
+  },
+  "deepl:DSL: Firewall enabled": {
+    "original": "DSL: Firewall enabled",
+    "translation": "DSL: Firewall abilitato",
+    "timestamp": "2026-11-22T23:57:50Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:DSL: Block Teredo IPv6": {
+    "original": "DSL: Block Teredo IPv6",
+    "translation": "DSL: Blocco Teredo IPv6",
+    "timestamp": "2026-11-22T23:57:51Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:LTE: Firewall enabled": {
+    "original": "LTE: Firewall enabled",
+    "translation": "LTE: Firewall abilitato",
+    "timestamp": "2026-11-22T23:57:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:LTE: Block Teredo IPv6": {
+    "original": "LTE: Block Teredo IPv6",
+    "translation": "LTE: Blocco Teredo IPv6",
+    "timestamp": "2026-11-22T23:57:52Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:DNS WPAD filter": {
+    "original": "DNS WPAD filter",
+    "translation": "Filtro DNS WPAD",
+    "timestamp": "2026-11-22T23:57:53Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Device": {
+    "original": "Device",
+    "translation": "Dispositivo",
+    "timestamp": "2026-11-22T23:57:54Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Rudi": {
+    "original": "Rudi",
+    "translation": "Rudi",
+    "timestamp": "2026-11-22T23:57:57Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Enable additional webserver": {
+    "original": "Enable additional webserver",
+    "translation": "Abilita un server web aggiuntivo",
+    "timestamp": "2026-11-22T23:57:58Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:CSRF exception for legacy apps (via HTTP-GET)": {
+    "original": "CSRF exception for legacy apps (via HTTP-GET)",
+    "translation": "Eccezione CSRF per le app legacy (tramite HTTP-GET)",
+    "timestamp": "2026-11-22T23:57:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Authentication": {
+    "original": "Authentication",
+    "translation": "Autenticazione",
+    "timestamp": "2026-11-22T23:57:59Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Manage these externalized services": {
+    "original": "Manage these externalized services",
+    "translation": "Gestisci questi servizi esternalizzati",
+    "timestamp": "2026-11-22T23:58:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Write these dns server to /etc/resolv.conf (separate multiple by spaces": {
+    "original": "Write these dns server to /etc/resolv.conf (separate multiple by spaces",
+    "translation": "Inserisci questi server DNS nel file /etc/resolv.conf (se ce ne sono più di uno, separali con degli spazi)",
+    "timestamp": "2026-11-22T23:58:01Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Logout on inactivity": {
+    "original": "Logout on inactivity",
+    "translation": "Disconnessione in caso di inattività",
+    "timestamp": "2026-11-22T23:58:07Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Forgot password?": {
+    "original": "Forgot password?",
+    "translation": "Hai dimenticato la password?",
+    "timestamp": "2026-11-22T23:58:24Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Default password set. Please change it!": {
+    "original": "Default password set. Please change it!",
+    "translation": "Password predefinita impostata. Modificala!",
+    "timestamp": "2026-11-22T23:58:26Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Save all settings from flash memory <i>/var/flash</i>. This includes firmware settings of AVM as well as Freetz-NG and other installed extensions.": {
+    "original": "Save all settings from flash memory <i>/var/flash</i>. This includes firmware settings of AVM as well as Freetz-NG and other installed extensions.",
+    "translation": "Salva tutte le impostazioni dalla memoria flash <i>/var/flash</i>. Ciò include le impostazioni del firmware di AVM, nonché quelle di Freetz-NG e delle altre estensioni installate.",
+    "timestamp": "2026-11-22T23:58:29Z",
+    "service": "deepl",
+    "github_user": "Ircama"
+  },
+  "deepl:Restore Freetz-NG settings only": {
+    "original": "Restore Freetz-NG settings only",
+    "translation": "Ripristina solo le impostazioni di Freetz-NG",
+    "timestamp": "2026-11-22T23:58:30Z",
+    "service": "deepl",
+    "github_user": "Ircama"
   }
 }

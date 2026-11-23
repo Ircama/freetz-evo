@@ -1120,9 +1120,13 @@ cat << 'EOF'
 	async function api(action, body, params = {}, keepalive = false) {
 		const url = new URL('/cgi-bin/extra/ble2uart_gateway/api', location.href);
 		url.search = new URLSearchParams({ajax:'1', action, ...params}).toString();
-		const response = await fetch(url, {method: ['read','status','catalog','history-presets','sqlite-attributes','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST', credentials:'same-origin', cache:'no-store', keepalive, headers:body ? {'Content-Type':'application/json'} : {}, body:body ? JSON.stringify(body) : undefined});
-		const document = new DOMParser().parseFromString(await response.text(), 'text/html');
-		const pre = document.querySelector('.ajax-json-content pre');
+		const method = ['read','status','catalog','history-presets','sqlite-attributes','availability-presets','availability-status'].includes(action) ? 'GET' : 'POST';
+		const headers = body ? {'Content-Type':'application/json'} : {};
+		const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+		if (method === 'POST' && csrfToken) headers['X-CSRF-Token'] = csrfToken;
+		const response = await fetch(url, {method, credentials:'same-origin', cache:'no-store', keepalive, headers, body:body ? JSON.stringify(body) : undefined});
+		const responseDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+		const pre = responseDocument.querySelector('.ajax-json-content pre');
 		if (!pre) throw new Error('Invalid response or session expired');
 		const text = pre.textContent;
 		const marker = 'Content-Type: application/json';
